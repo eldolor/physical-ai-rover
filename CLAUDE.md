@@ -410,7 +410,7 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   the vision service's `POST /room` (one room name, Opus 5.5) and
   `brain.room_label_source: cloud` (default `frame`); each ask bounded on
   the wall clock and fitted inside the tick; 401/403/404 stop the asking
-  with `status.survey.source_error` (the twin does not show it yet). Its
+  with `status.survey.source_error` (the twin shows it since 3.127). Its
   first real call found **every reply cut**: Opus 5.5 always thinks, and
   at 16 tokens the thinking ate the cap (`unclear` every time, unlogged).
   **S2b (merged and deployed 2026-10-24, `969cfe2`):** effort `low` (only
@@ -777,8 +777,15 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   it, a goal sent after a reload's `ready` but before nav2 was up was
   rejected and explore failed that place (3.50.D4-b). `/health` `nav2`.
   Live: 0 of 5 starts rejected (`dev` 1 of 5), an explore mission `found`.
-  Open: the twin shows the hold as ROS DOWN (`ros_unavailable`); a nav2
-  that never comes up holds explore to its time limit.
+  Open: a nav2 that never comes up holds explore to its time limit.
+  **3.127 (merged 2026-10-31):** the robot server refuses a held goal
+  `nav2_starting` (nav2 inactive at most 60 s) or `slam_not_ready`
+  (`starting`/`checking`/`remapping`), still retryable; a map tap shows it
+  as information, not an error. The 60 s is a guess from the bridge's
+  body (a crash reads as "starting, or restarting" for a minute); an
+  explicit `hold` field from the bridge is the fix (the user's call). Also
+  the survey row shows `source_error`. Twin not deployed yet;
+  `vision-picar-ros:latest` predates 3.105.
 * **Older review bugs (3.64), merged 2026-10-09, deployed 2026-10-10.** Ten bugs
   from the reviewer comparison still live on `dev`, fixed red-first: the
   twin's guidance loop after Stop, a hidden page and an outage (A2, A4,
