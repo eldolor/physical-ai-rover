@@ -26,6 +26,7 @@ apart, so the rule spends time, not a verdict.
 import math
 from collections import deque
 from dataclasses import dataclass, field
+from itertools import chain
 from typing import Callable, Optional
 
 import numpy as np
@@ -131,9 +132,6 @@ class _Occupied:
     def __init__(self, cells: np.ndarray):
         self.occ = (cells == CELL_OCCUPIED)[None]
         self.h, self.w = cells.shape
-        s = np.zeros((self.h + 1, self.w + 1), dtype=np.int64)
-        s[1:, 1:] = self.occ[0].cumsum(0).cumsum(1)
-        self.s = s
 
     def clear(self, k: int) -> np.ndarray:
         if k <= 0:
@@ -141,12 +139,16 @@ class _Occupied:
         return ~_box_any_stack(self.occ, k - 1)[0]
 
     def at(self, x: int, y: int, cap: int) -> int:
-        s, h, w = self.s, self.h, self.w
-        for r in range(cap):
-            y0, y1, x0, x1 = max(0, y - r), min(h, y + r + 1), max(0, x - r), min(w, x + r + 1)
-            if s[y1, x1] - s[y0, x1] - s[y1, x0] + s[y0, x0]:
-                return r
-        return cap
+        """The least Chebyshev distance from (x, y) to an occupied cell, or
+        `cap` if none is nearer: the smallest box round it holding one."""
+        if cap <= 0:
+            return cap
+        r = cap - 1
+        y0, x0 = max(0, y - r), max(0, x - r)
+        oy, ox = np.nonzero(self.occ[0, y0:y + r + 1, x0:x + r + 1])
+        if not oy.size:
+            return cap
+        return int(np.maximum(np.abs(oy + y0 - y), np.abs(ox + x0 - x)).min())
 
 
 def _clearance(m: dict, radius_cells: int) -> list:
@@ -253,8 +255,9 @@ def reach(m: dict, x_m: float, y_m: float,
     exactly the parent the one-cell-at-a-time queue gave it, and the next
     level's queue order. Path lengths are therefore the same BFS-tree
     lengths (not shortest paths), to the bit. (Measured on the Jetson, this
-    beats a pure-Python queue, 30 vs 49 ms, and a sort-free variant keeping
-    each cell's least-ranked parent, 38 ms.)"""
+    beat a pure-Python queue, 30 vs 49 ms, and a sort-free variant keeping
+    each cell's least-ranked parent, 38 ms; 3.130's running minimum beats
+    3.77's `np.unique` per level, 16.5 vs 19.3 ms p50.)"""
     if not m.get("usable") or not m.get("resolution_m"):
         return Reach(0, 0, None, 1)
     res, w, h = m["resolution_m"], m["width"], m["height"]
@@ -281,16 +284,22 @@ def reach(m: dict, x_m: float, y_m: float,
     open_[s] = False
     level, ld = np.array([s], dtype=np.int64), np.zeros(1)
     orders, dists = [level], [ld]
+    # 3.130: each new cell's first occurrence in the level's neighbour list
+    # (its position `i`: parent i // 8, offset i % 8) found by a running
+    # minimum per cell, not a sort; `stamp` is reset after each level.
+    none = np.iinfo(np.int64).max
+    stamp = np.full(open_.size, none, dtype=np.int64)
     while True:
         cand = (level[:, None] + offs).ravel()
-        cd = (ld[:, None] + cost).ravel()
-        ok = open_[cand]
-        cand, cd = cand[ok], cd[ok]
-        if not cand.size:
+        at = np.flatnonzero(open_[cand])
+        if not at.size:
             break
-        _, first = np.unique(cand, return_index=True)
-        first.sort()
-        level, ld = cand[first], cd[first]
+        cand = cand[at]
+        np.minimum.at(stamp, cand, at)
+        first = stamp[cand] == at
+        stamp[cand] = none
+        level, at = cand[first], at[first]
+        ld = ld[at // 8] + cost[at % 8]
         open_[level] = False
         orders.append(level)
         dists.append(ld)
@@ -339,40 +348,48 @@ def _split(group: list, max_cells: int) -> list:
     lo_x = min(c[0] for c in group) - 1
     lo_y = min(c[1] for c in group) - 1
     w = max(c[0] for c in group) - lo_x + 2
-    cells = {(x - lo_x) + (y - lo_y) * w for x, y in group}
+    h = max(c[1] for c in group) - lo_y + 2
+    # 1 marks a cell of the group not yet queued (3.130: one flat byte per
+    # cell, in place of two sets; the same visits in the same order).
+    left = bytearray(w * h)
+    for x, y in group:
+        left[(x - lo_x) + (y - lo_y) * w] = 1
     offs = [dx + dy * w for dx in (-1, 0, 1) for dy in (-1, 0, 1)]
     s = (start[0] - lo_x) + (start[1] - lo_y) * w
-    order, seen, q = [], {s}, deque([s])
+    left[s] = 0
+    order, q = [], deque([s])
     while q:
         c = q.popleft()
         order.append(c)
         for o in offs:
             n = c + o
-            if n in cells and n not in seen:
-                seen.add(n)
+            if left[n]:
+                left[n] = 0
                 q.append(n)
     order = [(c % w + lo_x, c // w + lo_y) for c in order]
     return [order[i:i + max_cells] for i in range(0, len(order), max_cells)]
 
 
+def _window_any(a: np.ndarray, n: int) -> np.ndarray:
+    """Along the last axis: True where any of `n` consecutive cells is,
+    one output per full window (3.130: two overlapping power-of-two blocks,
+    each built by doubling, in place of running sums -- the same mask)."""
+    k = 1
+    while 2 * k <= n:
+        a = a[..., :-k] | a[..., k:]            # each cell: the k from it
+        k *= 2
+    out = a.shape[-1] - (n - k)
+    return a[..., :out] | a[..., n - k:n - k + out]
+
+
 def _box_any_stack(mark: np.ndarray, r: int) -> np.ndarray:
     """For a stack of masks (P, H, W): True where some set cell lies within
-    Chebyshev distance `r` in the same mask (box sums, by slicing)."""
-    def along(a, axis):
-        n = a.shape[axis]
-        shape = list(a.shape)
-        shape[axis] = n + 2 * r + 1
-        # int16: a running sum along a long row may wrap, but every box count
-        # is a difference of two of them and small, so it comes out exact.
-        c = np.zeros(shape, dtype=np.int16)
-        body = [slice(None)] * a.ndim
-        body[axis] = slice(r + 1, r + 1 + n)
-        c[tuple(body)] = a
-        c = c.cumsum(axis, dtype=np.int16)
-        hi, lo = [slice(None)] * a.ndim, [slice(None)] * a.ndim
-        hi[axis], lo[axis] = slice(2 * r + 1, 2 * r + 1 + n), slice(0, n)
-        return c[tuple(hi)] - c[tuple(lo)]
-    return along(along(mark, 2), 1) > 0
+    Chebyshev distance `r` in the same mask."""
+    if r <= 0:
+        return mark.copy()
+    rows = _window_any(np.pad(mark, ((0, 0), (0, 0), (r, r))), 2 * r + 1)
+    cols = np.swapaxes(np.pad(rows, ((0, 0), (r, r), (0, 0))), 1, 2)
+    return np.swapaxes(_window_any(cols, 2 * r + 1), 1, 2)
 
 
 # Pieces are boxed in batches of similar size, so a long piece does not
@@ -449,10 +466,16 @@ def _shortlist(ids, pid, gx, gy, x0, y0, span_x: int, span_y: int, mx, my,
     ok = _box_any_stack(mark, r) & el
     dx2 = (x0[:, None] + np.arange(bx) - mx[:, None]) ** 2
     dy2 = (y0[:, None] + np.arange(by) - my[:, None]) ** 2
-    sq = np.where(ok, dx2[:, None, :] + dy2[:, :, None], np.inf)
-    least = sq.min(axis=(1, 2))
-    short = ok & (sq <= least[:, None, None] * (1 + 1e-9) + 1e-12)
-    for k, yy, xx in zip(*(a.tolist() for a in np.nonzero(short))):
+    # Only the cells that qualify are scored (3.130), piece by piece in
+    # C order, as `np.nonzero` over the whole stack listed them.
+    k, yy, xx = np.nonzero(ok)
+    if not k.size:
+        return
+    sq = dx2[k, xx] + dy2[k, yy]
+    at = np.flatnonzero(np.diff(k, prepend=-1))       # each piece's first
+    least = np.repeat(np.minimum.reduceat(sq, at), np.diff(np.append(at, k.size)))
+    short = sq <= least * (1 + 1e-9) + 1e-12
+    for k, yy, xx in zip(*(a[short].tolist() for a in (k, yy, xx))):
         found.setdefault(int(ids[k]), []).append((int(x0[k]) + xx, int(y0[k]) + yy))
 
 
@@ -612,30 +635,57 @@ MIN_GAP_M2 = 0.09
 LOOK_FROM_CANDIDATES = 40
 
 
+def _ray_steps(res: float, range_m: float) -> np.ndarray:
+    """The distances along a ray, half a cell apart, summed as the
+    one-ray-at-a-time loop summed them."""
+    key = (res, range_m)
+    if key not in _STEPS:
+        ds, d = [], 0.0
+        while d <= range_m:
+            ds.append(d)
+            d += res * 0.5
+        _STEPS[key] = np.array(ds)
+    return _STEPS[key]
+
+
+_STEPS: dict = {}
+
+
+def _ray_dirs(pairs: list, fov_deg: float) -> tuple:
+    """(x, y, sin, -cos), each shaped (pairs, rays, 1): where each ray of
+    each (x_m, y_m, view_deg) starts and which way it points."""
+    n_rays = max(2, int(fov_deg / 1.5))
+    # view - fov/2 + fov*i/n, evaluated left to right as before.
+    spread = [fov_deg * i / n_rays for i in range(n_rays + 1)]
+    rad = math.radians
+    angles = [rad(view_deg - fov_deg / 2 + f) for _x, _y, view_deg in pairs for f in spread]
+    shape = (len(pairs), n_rays + 1, 1)
+    xs = np.array([p[0] for p in pairs])[:, None, None]
+    ys = np.array([p[1] for p in pairs])[:, None, None]
+    sin = np.array(list(map(math.sin, angles))).reshape(shape)
+    ncos = -np.array(list(map(math.cos, angles))).reshape(shape)
+    return xs, ys, sin, ncos
+
+
+def _cells_at(m: dict, x, y, sin, ncos, ds: np.ndarray) -> tuple:
+    """(col, row) of each ray at each distance in `ds` (broadcast shapes)."""
+    res = m["resolution_m"]
+    return (np.floor((x + sin * ds - m["origin_x_m"]) / res).astype(np.int64),
+            np.floor((y + ncos * ds - m["origin_y_m"]) / res).astype(np.int64))
+
+
 def _ray_cells(m: dict, pairs: list, fov_deg: float = CAMERA_FOV_DEG,
                range_m: float = CAMERA_RANGE_M) -> tuple:
     """(col, row) arrays shaped (pairs, rays, steps): the cells the camera's
     rays walk from each (x_m, y_m, view_deg) in `pairs`, all at once -- the
     same rays, the same half-cell steps and the same float arithmetic as the
     one-ray-at-a-time loop this replaced, so the same cells."""
-    res = m["resolution_m"]
-    n_rays = max(2, int(fov_deg / 1.5))
-    ds, d = [], 0.0
-    while d <= range_m:
-        ds.append(d)
-        d += res * 0.5
-    ds = np.array(ds)
-    # view - fov/2 + fov*i/n, evaluated left to right as before.
-    spread = [fov_deg * i / n_rays for i in range(n_rays + 1)]
-    rad, sin, cos = math.radians, math.sin, math.cos
-    angles = [rad(view_deg - fov_deg / 2 + f) for _x, _y, view_deg in pairs for f in spread]
-    shape = (len(pairs), n_rays + 1, 1)
-    xs = np.array([p[0] for p in pairs])[:, None, None]
-    ys = np.array([p[1] for p in pairs])[:, None, None]
-    px = xs + np.array([sin(a) for a in angles]).reshape(shape) * ds
-    py = ys + np.array([-cos(a) for a in angles]).reshape(shape) * ds
-    return (np.floor((px - m["origin_x_m"]) / res).astype(np.int64),
-            np.floor((py - m["origin_y_m"]) / res).astype(np.int64))
+    return _cells_at(m, *_ray_dirs(pairs, fov_deg), _ray_steps(m["resolution_m"], range_m))
+
+
+# Steps per stretch of `_Sight.sees`' rays: a ray blocked in one stretch,
+# or whose pair has already seen the patch, walks no further (3.130).
+_SIGHT_CHUNK = 16
 
 
 class _Sight:
@@ -653,21 +703,33 @@ class _Sight:
         labels = np.full((h + 2 * p, self.stride), -1, dtype=np.int64)
         labels[p:p + h, p:p + w] = lab.reshape(h, w)
         self.free, self.lab = free.ravel(), labels.ravel()
-
-    def walk(self, pairs: list) -> tuple:
-        """(padded flat cell, kept) per ray step; `kept` is False from each
-        ray's first cell off the map or not free."""
-        cx, cy = _ray_cells(self.m, pairs)
-        flat = (cy + self.pad) * self.stride + (cx + self.pad)
-        return flat, np.logical_and.accumulate(self.free[flat], axis=2)
+        self.ds = _ray_steps(m["resolution_m"], CAMERA_RANGE_M)
 
     def sees(self, c: int, pairs: list) -> list:
         """For each (x_m, y_m, view_deg): does the camera see a cell of
-        patch `c` -- `camera_seen(...)` meeting the patch, as before?"""
+        patch `c` -- `camera_seen(...)` meeting the patch, as before? The
+        rays walk a stretch at a time, each cell as `_ray_cells` gives it."""
         if not pairs:
             return []
-        flat, kept = self.walk(pairs)
-        return ((self.lab[flat] == c) & kept).any(axis=(1, 2)).tolist()
+        xs, ys, sin, ncos = _ray_dirs(pairs, CAMERA_FOV_DEG)
+        n_pairs, n_rays = sin.shape[:2]
+        # One row per ray, in (pair, ray) order.
+        pair = np.repeat(np.arange(n_pairs), n_rays)
+        x = np.broadcast_to(xs, sin.shape).reshape(-1, 1)
+        y = np.broadcast_to(ys, sin.shape).reshape(-1, 1)
+        sin, ncos = sin.reshape(-1, 1), ncos.reshape(-1, 1)
+        hit = np.zeros(n_pairs, dtype=bool)
+        live = np.arange(pair.size)                 # rays not yet blocked
+        for lo in range(0, self.ds.size, _SIGHT_CHUNK):
+            if not live.size:
+                break
+            cx, cy = _cells_at(self.m, x[live], y[live], sin[live], ncos[live],
+                               self.ds[lo:lo + _SIGHT_CHUNK])
+            flat = (cy + self.pad) * self.stride + (cx + self.pad)
+            kept = np.logical_and.accumulate(self.free[flat], axis=1)
+            hit[pair[live[((self.lab[flat] == c) & kept).any(axis=1)]]] = True
+            live = live[kept[:, -1] & ~hit[pair[live]]]
+        return hit.tolist()
 
 
 def camera_seen(m: dict, x_m: float, y_m: float, view_deg: float,
@@ -692,47 +754,51 @@ def _components(mask: np.ndarray) -> tuple:
     """8-connected components of `mask` as (label grid, count): runs along
     each row, joined to overlapping or diagonal-touching runs on the next
     row by union-find. Labels are arbitrary; `find_view_gaps` restores the
-    order it needs."""
+    order it needs. (3.130: the touching pairs found by `searchsorted`, so
+    Python only joins them; each root is its component's lowest run, as
+    before, so the labels are the same.)"""
     h, w = mask.shape
     edges = np.diff(np.pad(mask, ((0, 0), (1, 1))).astype(np.int8), axis=1)
     sy, sx = np.nonzero(edges == 1)
     _ey, ex = np.nonzero(edges == -1)            # exclusive ends, same order
     n = sx.size
+    labels = np.full(h * w, -1, dtype=np.int64)
+    if not n:
+        return labels.reshape(h, w), 0
+    # Run i touches the next row's runs that end at or after its start and
+    # start at or before its exclusive end (8-connected); keys in row-major
+    # order keep each search inside that row.
+    key = w + 2
+    lo = np.searchsorted(sy * key + ex, (sy + 1) * key + sx, side="left")
+    hi = np.searchsorted(sy * key + sx, (sy + 1) * key + ex, side="right")
+    many = np.maximum(hi - lo, 0)
+    first = np.repeat(np.arange(n), many)
+    second = np.repeat(lo, many) + np.arange(int(many.sum())) - np.repeat(
+        np.cumsum(many) - many, many)
     parent = list(range(n))
-
-    def find(i):
+    for i, j in zip(first.tolist(), second.tolist()):
         while parent[i] != i:
             parent[i] = parent[parent[i]]
             i = parent[i]
-        return i
-    rows = sy.tolist()
-    xs0, xs1 = sx.tolist(), ex.tolist()
-    first = {}
-    for i, y in enumerate(rows):
-        first.setdefault(y, i)
-    for y, i0 in first.items():
-        j = first.get(y + 1)
-        if j is None:
-            continue
-        i = i0
-        while i < n and rows[i] == y and j < n and rows[j] == y + 1:
-            if xs0[i] <= xs1[j] and xs0[j] <= xs1[i]:     # 8-connected
-                a, b = find(i), find(j)
-                if a != b:
-                    parent[max(a, b)] = min(a, b)
-            if xs1[i] < xs1[j]:
-                i += 1
-            else:
-                j += 1
-    roots = [find(i) for i in range(n)]
-    _, run_label = np.unique(np.array(roots, dtype=np.int64), return_inverse=True)
-    labels = np.full(h * w, -1, dtype=np.int64)
+        while parent[j] != j:
+            parent[j] = parent[parent[j]]
+            j = parent[j]
+        if i < j:
+            parent[j] = i
+        elif j < i:
+            parent[i] = j
+    roots = np.array(parent, dtype=np.int64)
+    while True:                                  # every run straight to its root
+        up = roots[roots]
+        if np.array_equal(up, roots):
+            break
+        roots = up
+    _, run_label = np.unique(roots, return_inverse=True)
     lengths = ex - sx
-    if n:
-        starts = sy * w + sx
-        offs = np.arange(lengths.sum()) - np.repeat(np.cumsum(lengths) - lengths, lengths)
-        labels[np.repeat(starts, lengths) + offs] = np.repeat(run_label, lengths)
-    return labels.reshape(h, w), (int(run_label.max()) + 1 if n else 0)
+    starts = sy * w + sx
+    offs = np.arange(lengths.sum()) - np.repeat(np.cumsum(lengths) - lengths, lengths)
+    labels[np.repeat(starts, lengths) + offs] = np.repeat(run_label, lengths)
+    return labels.reshape(h, w), int(run_label.max()) + 1
 
 
 @dataclass
@@ -758,9 +824,11 @@ def find_view_gaps(m: dict, x_m: float, y_m: float, seen: set,
         return []
     res, w, h = m["resolution_m"], m["width"], m["height"]
     unseen_mask = r.grid == CELL_FREE
-    for sx, sy in seen:
-        if 0 <= sx < w and 0 <= sy < h:
-            unseen_mask[sy, sx] = False
+    if seen:
+        xy = np.fromiter(chain.from_iterable(seen), dtype=np.int64,
+                         count=2 * len(seen)).reshape(-1, 2)
+        on = (xy[:, 0] >= 0) & (xy[:, 0] < w) & (xy[:, 1] >= 0) & (xy[:, 1] < h)
+        unseen_mask[xy[on, 1], xy[on, 0]] = False
     labels, count = _components(unseen_mask)
     lab = labels.ravel()
     cells_at = np.flatnonzero(lab >= 0)
@@ -890,8 +958,11 @@ def _ranked(r: Reach, xs: np.ndarray, ys: np.ndarray, mx: float, my: float,
             want: float, k: int) -> list:
     """The first `k` stops of `sorted(steps, key=|hypot(n - middle) - want|)`
     -- a stable sort over BFS order -- without sorting all of them: numpy
-    shortlists every stop that could be among them, Python ranks those."""
-    key = np.abs(np.hypot(xs - mx, ys - my) - want)
+    shortlists every stop that could be among them, Python ranks those.
+    (The shortlist's square root may differ from `hypot` by an ulp or two;
+    the cut's slack is far wider, and Python's `hypot` decides.)"""
+    dx, dy = xs - mx, ys - my
+    key = np.abs(np.sqrt(dx * dx + dy * dy) - want)
     if key.size > k:
         cut = np.partition(key, k - 1)[k - 1]
         idx = np.flatnonzero(key <= cut + 1e-9 * max(1.0, cut))
