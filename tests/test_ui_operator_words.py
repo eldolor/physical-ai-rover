@@ -56,7 +56,8 @@ ENDINGS = {
                        "cancelled_by": "stop"},
     "cancelled-dpad": {"outcome": "cancelled", "end_reason": "a person took over",
                        "cancelled_by": "dpad"},
-    "arrived_unconfirmed": {"arrival": {"range_m": 0.38}, "late_confirmation": None},
+    "arrived_unconfirmed": {"arrival": {"state": "unconfirmed", "range_m": 0.355, "bearing_deg": 1.2},
+                            "late_confirmation": None},
     "failed": {"error": "vision service hung past its deadline (B3.2)"},
 }
 

@@ -106,7 +106,7 @@ def test_the_admin_page_keeps_its_extensionless_key():
 
 
 @pytest.mark.parametrize("src", ["web-twin/app.js", "control/admin.js", "web-twin/index.html",
-                                 "web-shared/ui.css", "web-twin/twin.css"])
+                                 "web-shared/ui.css", "web-twin/twin.css", "web-twin/strings.js"])
 def test_the_pages_and_scripts_are_served_no_cache(src):
     """This project deliberately does not use content-hashed filenames (see
     web-twin/app.js's banner), so a cached script is a stale UI that nobody

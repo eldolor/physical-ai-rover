@@ -330,6 +330,11 @@ def test_the_twin_serves_its_stylesheets_and_links_them_in_order():
         assert "<style" not in page, "the style should be external, not inlined again"
         ui, twin = page.find('href="ui.css"'), page.find('href="twin.css"')
         assert 0 <= ui < twin, "ui.css (the tokens) must load before twin.css"
+        assert 0 <= page.find('src="strings.js"') < page.find('src="app.js"'), \
+            "strings.js (the page's words) must load before app.js"
+        js = client.get("/strings.js")
+        assert js.status_code == 200 and "application/javascript" in js.headers["content-type"]
+        assert "no-cache" in js.headers.get("cache-control", "")
         for route in ("/ui.css", "/twin.css"):
             sheet = client.get(route)
             assert sheet.status_code == 200, route

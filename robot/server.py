@@ -11,6 +11,7 @@ Endpoints:
     GET  /            serves web-twin/index.html (the digital twin UI)
     GET  /app.js                  the twin's client script (was inline)
     GET  /ui.css, /twin.css      the twin's stylesheets (3.132; were inline)
+    GET  /strings.js              the twin's words, operator and Engineer voices (3.132)
     GET  /manifest.json           PWA manifest, for "Add to Home Screen"
     GET  /icons/icon-192.png      referenced by manifest.json and
     GET  /icons/icon-512.png      index.html's <link rel="icon">
@@ -127,6 +128,7 @@ _TWIN_APP_JS = Path(__file__).resolve().parent.parent / "web-twin" / "app.js"
 # 3.132 Stage 1: the twin's style, out of index.html. ui.css is the project's
 # shared tokens and base rules (web-shared/), twin.css the twin's own.
 _SHARED_UI_CSS = Path(__file__).resolve().parent.parent / "web-shared" / "ui.css"
+_TWIN_STRINGS_JS = Path(__file__).resolve().parent.parent / "web-twin" / "strings.js"
 _TWIN_CSS = Path(__file__).resolve().parent.parent / "web-twin" / "twin.css"
 _TWIN_MANIFEST_JSON = Path(__file__).resolve().parent.parent / "web-twin" / "manifest.json"
 _TWIN_ICONS_DIR = Path(__file__).resolve().parent.parent / "web-twin" / "icons"
@@ -729,6 +731,12 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
     @app.get(prefix + "/twin.css")
     def twin_css():
         return FileResponse(_TWIN_CSS, media_type="text/css",
+                            headers={"Cache-Control": "no-cache"})
+
+    # 3.132 Stage 2A: the page's words in two voices, loaded before app.js.
+    @app.get(prefix + "/strings.js")
+    def twin_strings_js():
+        return FileResponse(_TWIN_STRINGS_JS, media_type="application/javascript",
                             headers={"Cache-Control": "no-cache"})
 
     # Explicit routes rather than a generic /icons/{filename} + StaticFiles

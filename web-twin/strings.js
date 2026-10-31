@@ -1,0 +1,242 @@
+/* web-twin/strings.js -- the twin's words, in two voices (3.132 Stage 2A).
+
+   `op` is the default: a person at home with the robot, who knows nothing
+   about how it is built. `eng` is Engineer mode (Settings), and is the
+   wording the page used before Stage 2A, kept so nothing an engineer reads
+   is lost. A key missing from `eng` falls back to `op`.
+
+   {name} placeholders are filled by t(key, vars). Text a server sent (an
+   error's message) only ever arrives through a placeholder: it is data, not
+   ours to word. tests/test_twin_strings.py checks that every toast in
+   app.js asks for a key here, and that no `op` string carries jargon (the
+   M5 deny-list of evaluations/ux-3132/measure.py).
+
+   The table between the two markers must stay strict JSON (double quotes,
+   no trailing commas, no comments): the test reads it without a browser. */
+(function () {
+  "use strict";
+
+  var TABLE = /* BEGIN STRINGS (strict JSON) */ {
+  "op": {
+    "explore.alreadyPicked": "Already chosen — the robot is on its way.",
+    "explore.pickTaken": "The robot will go there next.",
+    "explore.pickRefused": "That choice wasn't taken: {why}",
+    "explore.pickLost": "Your choice may not have arrived: {why}",
+    "explore.tapNumbered": "Tap one of the numbered spots — the robot chooses only among those.",
+    "goal.hold.nav2_starting": "The robot's navigation is still starting — try again in a few seconds.",
+    "goal.hold.slam_not_ready": "The robot's map isn't ready yet (starting, checking, or re-mapping) — try again in a few seconds.",
+    "goal.refused": "Couldn't send the robot there: {why}",
+    "goal.refusedBare": "Couldn't send the robot there.",
+    "goal.sending": "Sending the robot there.",
+    "goal.failed": "Couldn't send the robot there ({why}).",
+    "remap.slow": "Re-map: no answer after {s} s — it may have started; watch the map.",
+    "remap.started": "Re-mapping from here. New trips wait until the map is ready again, and a trip under way may be cancelled.",
+    "remap.gaveUp": "Re-map: no answer after {s} s, so the page stopped waiting — it may have started; check the map before asking again.",
+    "remap.noSavedMap": "Not re-mapped: this robot keeps no saved map.",
+    "remap.refused": "Not re-mapped: {why}",
+    "remap.refusedBare": "Not re-mapped: the robot said no.",
+    "remap.failed": "Not re-mapped ({why}).",
+    "remap.lastServer": "A re-map asked of the previous robot wasn't answered — it may have started there.",
+    "drive.refused": "The robot refused “{action}” (HTTP {status}): {why}",
+    "drive.stopLost": "Stop didn't reach the robot: {why}",
+    "drive.notSent": "“{action}” wasn't sent: {why}",
+    "action.FORWARD": "forward",
+    "action.REVERSE": "back",
+    "action.LEFT": "turn left",
+    "action.RIGHT": "turn right",
+    "action.STOP": "stop",
+    "action.LOOK_LEFT": "look left",
+    "action.LOOK_RIGHT": "look right",
+    "action.LOOK_CENTER": "look ahead",
+    "house.now": "Now in {house}.",
+    "house.notChanged": "House not changed: {why}",
+    "robot.connected": "Connected to the robot.",
+    "robot.unreachable": "Couldn't reach the robot.",
+    "robot.unreachableDetail": "Couldn't reach {url} ({why}). Check that the robot is on and on the same network as this phone.",
+    "robot.unreachableQuiet": "{url} didn't answer. Tap Connect to try again.",
+    "robot.waitingDetail": "{host} is running and has no camera picture yet, which is normal before a walk. Nothing to do here — start Robot view with “Let the autopilot drive” and this connects itself.",
+    "robot.secretRejected": "The robot didn't accept that access code.",
+    "robot.secretRejectedDetail": "{host} answered, so the access code is wrong for this robot — it isn't a network problem. Check it's the code {host} expects.",
+    "robot.error": "The robot answered with an error.",
+    "robot.errorDetail": "{host} answered with an error (HTTP {status}): {why}",
+    "brain.lost": "Lost the autopilot — retrying.",
+    "brain.errorWatching": "The autopilot answered with an error: {why} — still watching.",
+    "brain.missionLost": "The autopilot no longer has the search — it restarted, or this is a different autopilot. One that restarted stopped the robot; if another is still running it, stop it there.",
+    "brain.connected": "Connected to the autopilot.",
+    "brain.back": "The autopilot is back.",
+    "brain.notThere": "That address answered, but there's no autopilot there.",
+    "brain.addressError": "The autopilot's address answered with an error.",
+    "brain.unreachable": "Couldn't reach the autopilot.",
+    "vision.mustServe": "The vision service is up, but this page must be opened from it.",
+    "vision.ok": "Vision service reachable.",
+    "vision.unreachable": "Couldn't reach the vision service.",
+    "state.idle": "Not running",
+    "state.running": "Searching",
+    "state.found": "Found it",
+    "state.exhausted": "Looked everywhere it could reach — not found",
+    "state.outOfBudget": "Ran out of time",
+    "state.outOfBudgetWhy": "Ran out of time — {why}",
+    "state.cancelled": "Stopped",
+    "state.cancelledStop": "Stopped — you pressed Stop",
+    "state.cancelledDpad": "Stopped — you took over with the D-pad",
+    "state.arrivedUnconfirmed": "Reached it, but couldn't double-check it",
+    "state.roomReached": "Reached the room",
+    "state.failed": "Stopped by a fault",
+    "state.blocked": "Blocked",
+    "state.other": "Ended",
+    "state.brainLost": "Autopilot unreachable \u2014 retrying",
+    "state.brainError": "Autopilot error: {why}",
+    "end.toast": "{text}.",
+    "end.unconfirmed": "Reached what looks like the {target}, but couldn't double-check it — the internet couldn't be reached.{late}",
+    "end.failed": "The search stopped because something went wrong. Turn on Engineer mode in Settings for the details.",
+    "end.other": "The search ended: {state}.",
+    "end.surveyDone": "Survey done — every reachable part mapped.",
+    "late.waiting": "It will check again when the internet is back",
+    "late.confirmed": "Checked later: it is the {target}",
+    "late.refused": "Checked later: it isn't the {target}",
+    "late.failed": "Checked later, but got no answer",
+    "late.not_asked": "Not checked later: the check limit was used up",
+    "late.expired": "The internet didn't come back in time to check",
+    "late.dropped": "Not checked later: a new search or a Stop came first",
+    "late.toast": "Double-check: {words}.",
+    "mission.surveyStarted": "Survey started.",
+    "mission.started": "Search started.",
+    "mission.drillStarted": "Failsafe test started: {fault}",
+    "mission.startFailed": "Couldn't start: {why}",
+    "mission.stopped": "Stopped — and so is the robot.",
+    "mission.stopFailed": "Couldn't stop: {why} — the search may still be running.",
+    "mission.guideStopFailed": "Couldn't stop the autopilot's search: {why}",
+    "record.noBrain": "Not recording: the autopilot isn't connected.",
+    "record.started": "Recording this walk as {name}.",
+    "record.startedByBrain": "Recording this walk as {name} (every frame, saved by the autopilot).",
+    "record.frameFailed": "Frame not saved: {why}",
+    "record.savedByBrain": "{n}+ frames recorded as {name} (the rest are saved as the search ends).",
+    "record.saved": "{n} frames saved as {name}.",
+    "share.fileUrl": "Open this page from a server first — a page opened from a file can't be shared.",
+    "share.tooLong": "The setup link is too long to fit in a QR code.",
+    "debug.copied": "Debug info copied.",
+    "debug.copiedErrors": "Debug info copied ({n} errors).",
+    "setup.moved": "The link moved the {what} to a new address. Enter its access code in Settings — the one saved here was cleared, so it isn't sent to the new address.",
+    "svc.vision": "vision service",
+    "svc.robot": "robot",
+    "svc.brain": "autopilot",
+    "svc.and": " and ",
+    "word.target": "target"
+  },
+  "eng": {
+    "explore.alreadyPicked": "Already picked -- explore is on its way",
+    "explore.pickTaken": "Explore will go there next",
+    "explore.pickRefused": "Pick not taken: {why}",
+    "explore.pickLost": "Pick may not have arrived: {why}",
+    "explore.tapNumbered": "Tap one of the numbered goals -- explore picks only among those",
+    "goal.hold.nav2_starting": "nav2 is not active yet (starting, or restarting) — try again in a few seconds",
+    "goal.hold.slam_not_ready": "SLAM is not ready yet (starting, checking a saved map, or re-mapping) — try again in a few seconds",
+    "goal.refused": "Could not send the goal: {why}",
+    "goal.refusedBare": "Could not send the goal: refused",
+    "goal.sending": "Sending the robot there",
+    "goal.failed": "Could not send the goal ({why})",
+    "remap.slow": "Re-map: no answer in {s} s -- it may have started; watch the map",
+    "remap.started": "Re-mapping from here: goals wait until the map is ready again, and a goal still driving may be cancelled",
+    "remap.gaveUp": "Re-map: no answer in {s} s, stopped waiting -- it may have started; check the map before asking again",
+    "remap.noSavedMap": "Not re-mapped: this robot keeps no saved map",
+    "remap.refused": "Not re-mapped: {why}",
+    "remap.refusedBare": "Not re-mapped: refused",
+    "remap.failed": "Not re-mapped ({why})",
+    "remap.lastServer": "A re-map asked of the last server was not answered -- it may have started there",
+    "drive.refused": "{action} was refused by the robot server (HTTP {status}): {why}",
+    "drive.stopLost": "STOP did not reach the robot: {why}",
+    "drive.notSent": "{action} was not sent: {why}",
+    "action.FORWARD": "FORWARD",
+    "action.REVERSE": "REVERSE",
+    "action.LEFT": "LEFT",
+    "action.RIGHT": "RIGHT",
+    "action.STOP": "STOP",
+    "action.LOOK_LEFT": "LOOK_LEFT",
+    "action.LOOK_RIGHT": "LOOK_RIGHT",
+    "action.LOOK_CENTER": "LOOK_CENTER",
+    "robot.connected": "Connected to the robot server.",
+    "robot.unreachable": "Couldn't reach the robot server.",
+    "robot.unreachableDetail": "Could not reach {url} ({why}). Check the server is running, on the same network, and that CORS/allowed_origins in config/robot.yaml permits this page's origin.",
+    "robot.unreachableQuiet": "{url} didn't respond. Tap Connect to retry.",
+    "robot.waitingDetail": "{host} is running and simply has no camera frame yet, which is normal before a walk. Nothing to do here — start Robot view with “Drive via brain” and this connects itself.",
+    "robot.secretRejected": "The robot server rejected that secret.",
+    "robot.secretRejectedDetail": "{host} is reachable, so this is the wrong secret for THIS deployment rather than a network problem. Check it is the one {host} expects.",
+    "robot.error": "The robot server returned an error.",
+    "brain.lost": "Lost the brain service — retrying.",
+    "brain.errorWatching": "The brain service answered with an error: {why} -- still watching.",
+    "brain.missionLost": "The brain no longer has the mission -- it restarted, or this is another brain. A brain that restarted stopped the robot; if another one is still running it, stop it there.",
+    "brain.connected": "Connected to the brain service.",
+    "brain.back": "The brain service is back.",
+    "brain.notThere": "The brain address answered, but no brain service is there.",
+    "brain.addressError": "The brain address answered with an error.",
+    "brain.unreachable": "Couldn't reach the brain service.",
+    "vision.mustServe": "Vision service is up, but this page must be served from it.",
+    "state.idle": "idle",
+    "state.running": "running",
+    "state.found": "Found",
+    "state.exhausted": "Exhausted — nowhere reachable left to look",
+    "state.outOfBudget": "Out of budget",
+    "state.outOfBudgetWhy": "Out of budget — {why}",
+    "state.cancelled": "Cancelled",
+    "state.cancelledStop": "Cancelled — Stop pressed",
+    "state.cancelledDpad": "Cancelled — D-pad took over",
+    "state.brainLost": "brain unreachable — retrying",
+    "state.brainError": "brain error: {why}",
+    "end.toast": "Mission {text}",
+    "end.unconfirmed": "Mission arrived_unconfirmed: {detail}",
+    "end.failed": "Mission {outcome}{error}",
+    "end.other": "Mission {outcome}{error}",
+    "end.surveyDone": "Survey done — every reachable part mapped.",
+    "late.waiting": "will ask again when the cloud is back",
+    "late.confirmed": "asked later: the cloud sees it",
+    "late.refused": "asked later: the cloud says it is not the target",
+    "late.failed": "asked later: the cloud did not answer",
+    "late.not_asked": "not asked later: the call budget was spent",
+    "late.expired": "the cloud did not come back in time",
+    "late.dropped": "not asked later: a new mission or Stop came first",
+    "late.toast": "Late identity check: {words}.",
+    "mission.surveyStarted": "Survey started on the robot.",
+    "mission.started": "Mission started on the robot.",
+    "mission.drillStarted": "Failsafe drill started: {fault}",
+    "mission.startFailed": "Could not start: {why}",
+    "mission.stopped": "Mission stopped — and so is the robot.",
+    "mission.stopFailed": "Could not stop: {why} -- the mission may still be running.",
+    "mission.guideStopFailed": "Could not stop the brain mission: {why}",
+    "record.noBrain": "Not recording: the brain service isn't connected.",
+    "record.started": "Recording this walk as {name}",
+    "record.startedByBrain": "Recording this walk as {name} (every frame, saved by the brain)",
+    "record.savedByBrain": "{n}+ frames recorded as {name} by the brain (it saves the rest as the mission ends)",
+    "record.saved": "{n} frames saved as {name} -- replay it with python -m tests.demo_replay_mission",
+    "share.fileUrl": "Open this page from a server first — a file:// path can't be shared.",
+    "share.tooLong": "Setup link is too long to fit in a QR code.",
+    "setup.moved": "The link moved the {what} to a new address. Enter its secret in Settings -- the one saved here was cleared, so it is not sent to the new address.",
+    "svc.brain": "brain"
+  }
+} /* END STRINGS */;
+
+  // Engineer mode is Settings' switch; it sets this class on <body>.
+  function engineer() {
+    return !!(document.body && document.body.classList.contains("debug-readouts"));
+  }
+
+  function t(key, vars) {
+    var voice = engineer() ? TABLE.eng : TABLE.op;
+    var text = Object.prototype.hasOwnProperty.call(voice, key) ? voice[key] : TABLE.op[key];
+    if (text == null) {
+      try { console.warn("strings.js: no text for", key); } catch (e) { /* no console */ }
+      return key;
+    }
+    return text.replace(/\{(\w+)\}/g, function (all, name) {
+      if (!vars || vars[name] == null) return "";
+      return String(vars[name]);
+    });
+  }
+
+  // Whether `key` has words in the table (for a lookup that may miss, such
+  // as an action or a goal-hold reason the page does not know).
+  function has(key) {
+    return Object.prototype.hasOwnProperty.call(TABLE.op, key);
+  }
+
+  window.twinStrings = { t: t, has: has, engineer: engineer };
+})();

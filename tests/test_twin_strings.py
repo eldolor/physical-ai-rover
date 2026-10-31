@@ -112,9 +112,11 @@ def message_literals(arg):
     """String literals in a toast's message that are not the key of a t()
     call."""
     stripped = re.sub(r"\bt\(\s*(\"[^\"]*\"|'[^']*')", "t(", arg)
+    keys = set(table()["op"])
     # A literal with no letters (" ", ": ", " -- ") joins our words to a
     # server's; it says nothing of its own.
-    return [lit for lit in LITERAL.findall(stripped) if re.search(r"[A-Za-z]", lit[1:-1])]
+    return [lit for lit in LITERAL.findall(stripped)
+            if re.search(r"[A-Za-z]", lit[1:-1]) and lit[1:-1] not in keys]
 
 
 def test_no_toast_message_is_a_literal():
@@ -139,7 +141,9 @@ def test_every_key_is_in_both_voices_and_every_asked_key_exists():
     t = table()
     assert set(t["eng"]) <= set(t["op"]), sorted(set(t["eng"]) - set(t["op"]))
     asked = set(re.findall(r"\bt\(\s*[\"']([\w.]+)[\"']", APP_JS.read_text()))
-    missing = sorted(k for k in asked if k not in t["op"])
+    # "action." + verb: a prefix, so some key must sit under it.
+    missing = sorted(k for k in asked if (k not in t["op"]) if not
+                     (k.endswith(".") and any(o.startswith(k) for o in t["op"])))
     assert not missing, f"app.js asks for keys strings.js lacks: {missing}"
 
 
