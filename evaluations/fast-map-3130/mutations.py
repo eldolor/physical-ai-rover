@@ -52,7 +52,10 @@ MUTATIONS = [
     ("j: _Occupied.at one cell short",
      "        return int(np.maximum(np.abs(oy + y0 - y), np.abs(ox + x0 - x)).min())\n",
      "        return int(np.maximum(np.abs(oy + y0 - y), np.abs(ox + x0 - x)).min()) - 1\n"),
-    ("k: _shortlist's least taken as the most",
+    ("k2: _shortlist drops the cells at its least",
+     "    short = sq <= least * (1 + 1e-9) + 1e-12\n",
+     "    short = sq > least * (1 + 1e-9) + 1e-12\n"),
+    ("k: _shortlist's least taken as the most (equivalent: Python's min decides)",
      "    least = np.repeat(np.minimum.reduceat(sq, at), np.diff(np.append(at, k.size)))\n",
      "    least = np.repeat(np.maximum.reduceat(sq, at), np.diff(np.append(at, k.size)))\n"),
     ("m: _split's walk visits neighbours row first",
@@ -67,6 +70,9 @@ MUTATIONS = [
      "        if i < j:\n            parent[j] = i\n        elif j < i:\n            parent[i] = j\n",
      "        if i < j:\n            parent[i] = j\n        elif j < i:\n            parent[j] = i\n"),
 ]
+# k only widens the shortlist that Python's own `min` then decides, so no
+# answer can change: an equivalent mutant, kept to show it, not counted.
+EQUIVALENT = {"k: _shortlist's least taken as the most (equivalent: Python's min decides)"}
 # b alone is a bug (a stamp reset to -1 never wins a minimum); b2 needs b's
 # reset to keep the latest occurrence, so it runs with b applied.
 TOGETHER = {"b2: (with b) the running maximum": "b: a later occurrence kept in reach's level step"}
@@ -95,7 +101,9 @@ def main(out_path: str) -> None:
             f.write(original)
     with open(out_path, "w") as f:
         f.write(json.dumps({"files": FILES, "mutations": rows,
-                            "missed": [r["mutation"] for r in rows if not r["caught"]]},
+                            "equivalent": sorted(EQUIVALENT),
+                            "missed": [r["mutation"] for r in rows
+                                       if not r["caught"] and r["mutation"] not in EQUIVALENT]},
                            indent=1) + "\n")
 
 
