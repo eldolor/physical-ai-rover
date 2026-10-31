@@ -666,6 +666,19 @@ def test_the_s3_copy_holds_only_this_missions_own_landmarks(tmp_path):
     assert [d["label"] for d in seen] == ["lamp"]
     assert all("carried" not in d for d in seen) and "carried" not in up["counts"]
     assert up["counts"]["landmarks"] == len(seen)
+    assert sorted(d["id"] for d in seen) == list(range(1, len(seen) + 1))
+
     local = json.loads((tmp_path / "m2.json").read_text())
     assert local["frame_id"] == SAVED and local["carry_seq"] == 1
     assert {"stool", "box", "lamp"} <= {d["label"] for d in local["reported"] + local["candidates"]}
+
+
+def test_a_carried_landmark_seen_again_records_its_first_sighting_here():
+    saved = _session_one()
+    inv = Inventory()
+    inv.seed(SAVED, saved)
+    stool = next(d for d in saved["reported"] if d["label"] == "stool")
+    inv.observe([{"label": "stool", "bearing_deg": 0.0}], _pose(x=stool["x_m"] - 1.0,
+                y=stool["y_m"], h=90.0), _scan({0: 1.0}), step=7)
+    lm = next(lm for lm in inv.landmarks if lm.label == "stool")
+    assert (lm.first_step, lm.last_step) == (7, 7)

@@ -382,6 +382,8 @@ class Inventory:
             else:
                 lm.points.append((x, y, label))
             lm.last_step = step
+            if lm.first_step is None:
+                lm.first_step = step      # 3.50.D5: a carried landmark's first sighting here
             self._count_look(lm, label, x, y, pose, joined)
             # 3.60: seen again, from anywhere, so the last miss was the
             # detector dropping it -- not only when this look counted.

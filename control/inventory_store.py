@@ -113,6 +113,12 @@ def _for_s3(report: dict) -> dict:
     for key in ("reported", "candidates"):
         if key in out:
             out[key] = own(out[key])
+    # Renumbered from 1, so the gaps the dropped carried rows left do not
+    # say how many were carried (review of the stripping).
+    rows = sorted((d for key in ("reported", "candidates") for d in out.get(key) or []
+                   if isinstance(d, dict) and "id" in d), key=lambda d: (str(type(d["id"])), d["id"]))
+    for n, d in enumerate(rows, 1):
+        d["id"] = n
     if isinstance(out.get("counts"), dict):
         counts = {k: v for k, v in out["counts"].items() if k != "carried"}
         # As the uploaded lists hold them, not the local file's.
