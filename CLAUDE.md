@@ -1014,6 +1014,18 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   facts), bar 100 FAILED: the map work (reach, frontiers, view gaps) is
   98.6 ms alone -- the next fix. In-process sweeps keep their `rule`
   constructor default. `evaluations/goal-learn-3125/`.
+* **Explore's map work faster, exactly the old answers (3.130), merged
+  2026-10-31, criteria 1-6 met.** `brain/frontier.py` only, numpy only (scipy
+  was +22.6 MB in the brain on the board: not used). `reach()`'s level step
+  by a running minimum, box dilations by doubling ORs, the camera's rays a
+  stretch at a time, touching runs paired by `searchsorted`. Board, 15 W:
+  map work p90 89.7 -> 59.4 ms with `seen=set()` (0.662, bar 0.70) and
+  158.4 -> 101.2 ms with the camera's seen cells (0.639; 3.103's benchmark
+  passed none, understating explore's real cost); F-large's whole choice p90
+  120.8 -> 92.4 ms. Dev's file frozen as `tests/frontier_dev.py`; every call
+  in 24 missions compared (`test_frontier_3130_sweep.py`, slow tier); 17 of 17
+  planted bugs caught. Live `found`, 0 contacts. The board's brain is not
+  updated (asked first).
 * **Harness missions collect their cycles (3.113), merged 2026-10-27.**
   `evaluations/goal-learn-396/train.py` `mission()` runs `gc.collect()` in
   a `finally` (a mission's runner, agent and house are reference cycles);
