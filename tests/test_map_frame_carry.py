@@ -365,8 +365,11 @@ def test_a_save_in_flight_is_waited_for(tmp_path, monkeypatch):
 def test_a_directory_that_cannot_be_listed_is_a_failure_not_nothing(tmp_path, monkeypatch):
     store = InventoryStore(str(tmp_path))
     store.save("m0", _session_one())
-    monkeypatch.setattr(type(tmp_path), "glob", lambda self, pat: (_ for _ in ()).throw(
-        PermissionError("denied")))
+    def denied(path):
+        raise PermissionError("denied")
+    # os.listdir, as the store lists: Path.glob would have swallowed this
+    # and read as "nothing saved" (review 5).
+    monkeypatch.setattr(store_mod.os, "listdir", denied)
     with pytest.raises(PermissionError):
         store.latest_for(SAVED)
 
@@ -623,3 +626,13 @@ def test_the_read_limit_is_two_seconds_on_either_clock(moving):
         reads.append(world.reads - before)
     assert sum(reads) == 3                      # at 0, 2 and 4 s
     assert [i for i, r in enumerate(reads) if r] == [0, 20, 40]
+
+
+@pytest.mark.parametrize("weight, hits", [(0.5, 1), (2.5, 3), (0.49, 0), (3.0, 3)])
+def test_carried_hits_round_half_up(weight, hits):
+    saved = _session_one()
+    saved["reported"], saved["candidates"] = [], [
+        {"label": "sofa", "x_m": 2.0, "y_m": 2.0, "belief": 0.9, "votes": {"sofa": weight}}]
+    inv = Inventory()
+    inv.seed(SAVED, saved)
+    assert inv.landmarks[0].hits == hits

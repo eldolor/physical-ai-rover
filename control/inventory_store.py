@@ -66,7 +66,10 @@ _IN_FLIGHT_LOCK = threading.Lock()
 # directory -- module-wide, since the brain builds a store per mission. A
 # lookup waits for them (up to PENDING_WAIT_S), so a mission started while
 # the last one's report is still being written carries that report.
-PENDING_WAIT_S = 5.0      # milliseconds normally; slack for a slow fsync on the board
+# Milliseconds normally. It blocks the mission's tick, so it stays under a
+# drill's 3 s tick deadline; a slower save detaches the next mission, which
+# costs only that mission's own sightings (review 5).
+PENDING_WAIT_S = 2.0
 _PENDING: dict = {}
 _PENDING_COND = threading.Condition()
 
@@ -220,7 +223,10 @@ class InventoryStore:
                 raise TimeoutError(f"an inventory save still in flight after "
                                    f"{PENDING_WAIT_S:.0f} s")
         try:
-            listed = [p for p in self.local_dir.glob("*.json") if not p.name.startswith(".")]
+            # os.listdir, not Path.glob: glob swallows a scandir error, and a
+            # directory that cannot be listed must fail the lookup (review 5).
+            listed = [self.local_dir / n for n in os.listdir(self.local_dir)
+                      if n.endswith(".json") and not n.startswith(".")]
         except FileNotFoundError:
             return None
         best, best_key = None, None
@@ -232,10 +238,11 @@ class InventoryStore:
             except (FileNotFoundError, IsADirectoryError):
                 continue                  # removed since it was listed, or not a file
             except (OSError, UnicodeDecodeError) as e:
-                # Skipped, with its name (review 4): if it was the head, the
-                # chain forks and loses that one mission's own sightings;
-                # failing instead would stop all carrying until someone
-                # removed the file. The lesser harm.
+                # Skipped, with its name (review 4): if it was the head the
+                # chain forks -- and if it is read again later, it outranks
+                # the missions written meanwhile, whose own sightings drop out
+                # (review 5). Failing instead would stop all carrying until
+                # someone removed the file: the greater harm.
                 logger.warning("inventory: %s skipped (unreadable): %s", path.name, e)
                 continue
             if needle not in text:

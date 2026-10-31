@@ -245,14 +245,16 @@ class Landmark:
     _miss_frame: Optional[int] = None                 # when _miss_pose was taken
     _pending_miss: Optional[int] = None               # the frame of a forgiven miss
     # 3.50.D5: carried from an earlier mission on the same saved map, with
-    # the votes it had there -- kept as counts beside this mission's looks
-    # (exact, and as large as it likes in constant memory; review 3).
+    # the votes it had there -- weights beside this mission's looks, scaled to
+    # total at most CARRY_WEIGHT, never rounded in memory (review 4; a report
+    # writes them to 3 decimals).
     carried: bool = False
     _carried_votes: Counter = field(default_factory=Counter)
 
     @property
     def hits(self) -> int:
-        return len(self._looks) + round(sum(self._carried_votes.values()))
+        # Half up, not Python's round-half-even (review 5).
+        return len(self._looks) + math.floor(sum(self._carried_votes.values()) + 0.5)
 
     @property
     def misses(self) -> int:
@@ -416,8 +418,9 @@ class Inventory:
         """3.50.D5: start this inventory from an earlier mission's `report()`
         saved on the same saved map, before it has recorded anything. Each
         landmark with belief at least `CARRY_MIN_BELIEF` comes back as one
-        point at its saved position, with its belief and its votes (counts
-        kept beside this mission's looks, the saved label first); a new
+        point at its saved position, with its belief and its votes (weights
+        beside this mission's looks, bounded by `CARRY_WEIGHT`, the saved
+        label first); a new
         sighting within `MERGE_M` joins it. Nothing is carried for no frame,
         another frame, or once recording has begun. Returns how many
         landmarks were carried."""
