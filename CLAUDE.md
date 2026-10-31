@@ -989,6 +989,31 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   `desktop_lock.step_aside()` between steps (the goal-learn PPO loops do);
   the nightly waits in the queue for the exclusive lock, SKIPPED (exit 0, no
   email) after 2 h of a busy desktop. The nightly runs on the Mac only.
+* **A staged UX redesign (3.132), Stage 0 merged 2026-10-31; Stages 1-5
+  open** (the user, 2026-10-31: twin first, the two consoles merged into
+  one, vanilla JS, no build step). Audiences:
+  * A, primary: anyone at home with the Rover, using the twin's operator
+    mode;
+  * B: the engineer, using Engineer mode and one Lab console;
+  * C: Guide me, as a secondary entry.
+
+  `evaluations/ux-3132/measure.py` measures every page at 390 px, against
+  bars written before measuring (M1 taps, M2 axe, M3 under-44 px targets,
+  M4 sideways scroll, M5 jargon, M6 paid calls with no click).
+
+  The baseline, two identical runs:
+  * Stop takes 2 taps from Guide (bar 1).
+  * The mission's state needs a tap plus 120 px of scroll (bar 0).
+  * The Sim tab shows 16-19 jargon hits, and Engineer mode barely changes
+    it, so the twin has no operator mode yet.
+  * Opening the walks console makes 1 paid judge call (bar 0).
+
+  Found on the way, for Stage 3:
+  * F1: a connected twin never notices a mission started elsewhere.
+  * F2: a Start within ~1-2 s of the D-pad ends the mission "D-pad took
+    over".
+
+  Run as 3.130 until a numbering collision (3.130 is fast-map-work).
 * **The map is sent only when it changed (3.123), merged 2026-10-30 with
   criteria 2-3 failed (the user's call).** `/world/map` carries an ETag
   (the server's start token, `map_id`, `map_version`); `RemoteWorld`

@@ -1,14 +1,14 @@
-# evaluations/ux-3130 -- the UX harness (3.130)
+# evaluations/ux-3132 -- the UX harness (3.132)
 
 `measure.py` measures the twin, the walks console and the metrics console at
-a 390 x 844 phone viewport on 3.130's metrics (M1 taps per task, M2 axe-core,
+a 390 x 844 phone viewport on 3.132's metrics (M1 taps per task, M2 axe-core,
 M3 targets under 44 px, M4 sideways scroll, M5 jargon, M6 paid calls without
 a click). The definitions, amendments and bars are in
-`docs/plans/ros-alignment/3.130-ux-redesign.md`.
+`docs/plans/ros-alignment/3.132-ux-redesign.md`.
 
 ```bash
 eval "$(python tools/plan_section.py env)"      # this section's ports
-python evaluations/ux-3130/measure.py --out evaluations/ux-3130/<run>
+python evaluations/ux-3132/measure.py --out evaluations/ux-3132/<run>
 ```
 
 It starts its own robot server and brain (sim), serves `web-twin/` and

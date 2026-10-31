@@ -1,9 +1,9 @@
 """
-evaluations/ux-3130/measure.py -- 3.130's UX harness (Stage 0 and after).
+evaluations/ux-3132/measure.py -- 3.132's UX harness (Stage 0 and after).
 
 Measures the project's three pages -- the twin, the walks console and the
-metrics console -- at a 390 x 844 phone viewport, on the metrics 3.130 wrote
-down before measuring (docs/plans/ros-alignment/3.130-ux-redesign.md):
+metrics console -- at a 390 x 844 phone viewport, on the metrics 3.132 wrote
+down before measuring (docs/plans/ros-alignment/3.132-ux-redesign.md):
 
   M1 taps per task (goal state verified), M2 axe-core serious/critical,
   M3 targets under 44 px, M4 sideways scroll, M5 jargon in visible text,
@@ -16,7 +16,7 @@ twin's first run has nothing filled in. The consoles' data and every paid
 route are Playwright stubs: no recordings volume, no vision service, no
 model call, no spend.
 
-    python evaluations/ux-3130/measure.py --out evaluations/ux-3130/baseline
+    python evaluations/ux-3132/measure.py --out evaluations/ux-3132/baseline
 
 Writes <out>/results.json and <out>/shots/*.png.
 """
@@ -73,7 +73,7 @@ def axe_source() -> str:
     return src
 
 
-# ---------- M5: the jargon deny-list (frozen with 3.130's criteria) ----------
+# ---------- M5: the jargon deny-list (frozen with 3.132's criteria) ----------
 
 JARGON = [
     ("file name", re.compile(r"\b[\w./-]+\.(?:py|yaml|yml|js|json|md|html)\b")),
@@ -156,8 +156,8 @@ def _port(name: str, default: int) -> int:
     return int(os.environ.get(name, default))
 
 
-ROBOT_PORT = _port("PICAR_ROBOT_PORT", 10300)
-BRAIN_PORT = _port("PICAR_BRAIN_PORT", 10301)
+ROBOT_PORT = _port("PICAR_ROBOT_PORT", 10320)
+BRAIN_PORT = _port("PICAR_BRAIN_PORT", 10321)
 STATIC_PORT = _port("PICAR_UX_STATIC_PORT", ROBOT_PORT + 6)
 ROBOT = f"http://127.0.0.1:{ROBOT_PORT}"
 BRAIN = f"http://127.0.0.1:{BRAIN_PORT}"
@@ -196,7 +196,7 @@ def servers(logdir: Path):
     busy = [p for p in (ROBOT_PORT, BRAIN_PORT, STATIC_PORT) if _port_busy(p)]
     if busy:
         raise SystemExit(f"ports already in use: {busy} (another stack? see plan_section.py env)")
-    run = Path(tempfile.mkdtemp(prefix="ux3130-"))
+    run = Path(tempfile.mkdtemp(prefix="ux3132-"))
     env = {**os.environ, "PYTHONPATH": str(REPO), "ROBOT_URL": ROBOT,
            # A dead vision URL: nothing here may reach a paid service.
            "VISION_URL": "http://127.0.0.1:9", "INTERVENTION_DIR": str(run / "interventions")}
@@ -261,7 +261,7 @@ def reset_robot_and_brain():
         httpx.post(ROBOT + "/autonomy/resume", timeout=5)
     # A person's D-pad claim lapses watchdog_timeout_s (1 s) after its last
     # command or verb; a mission started inside it is refused and ends
-    # "D-pad took over" (3.130 finding F2). No task may inherit another's.
+    # "D-pad took over" (3.132 finding F2). No task may inherit another's.
     time.sleep(3.0)
 
 
@@ -827,7 +827,7 @@ def main():
     # exclusive lock, as any run whose numbers depend on timing (rule 7).
     sys.path.insert(0, str(REPO / "tools"))
     import desktop_lock
-    desktop_lock.hold_for_life("exclusive", "3.130 UX harness (timed page windows)")
+    desktop_lock.hold_for_life("exclusive", "3.132 UX harness (timed page windows)")
     commit = subprocess.run(["git", "rev-parse", "--short=9", "HEAD"], cwd=REPO,
                             capture_output=True, text=True).stdout.strip()
     result = {"commit": commit, "viewport": PHONE, "axe": AXE_VERSION, "states": {}, "tasks": {}, "M6": {}}
