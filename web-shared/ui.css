@@ -1,5 +1,14 @@
-/* web-shared/ui.css -- the project's design tokens and base rules (3.132 Stage 1).
-   Loaded before each page's own sheet (web-twin/twin.css). */
+/* web-shared/ui.css -- the project's design tokens and shared components
+   (3.132 Stage 1). Loaded before each page's own sheet (web-twin/twin.css).
+
+   Rules for a page's own sheet:
+   * every colour is a var() from here -- no hex, rgb() or named colour in a
+     page sheet (tests/test_ui_tokens.py);
+   * chrome colours follow the theme (dark is the default, light comes from
+     prefers-color-scheme); --media-* colours are drawn over the camera feed
+     and do NOT change with the theme;
+   * readouts with their own palette (the map's --map-*, the sim floors) keep
+     it in both themes -- a measurement's colours carry meaning (N1). */
 
 :root {
   --bg: #12151A;
@@ -77,6 +86,115 @@
   --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-primary);
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* 3.132 Stage 1: the rest of the system. */
+  color-scheme: dark;
+  --accent-primary-hover: #6FA9F6;
+  --surface-shimmer: #2C343F;
+  --env-banner-ink: #16110D;
+  /* Smallest thing a finger is asked to hit (Apple HIG, WCAG 2.5.5). */
+  --target: 44px;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px;
+  --radius-sm: 6px; --radius-md: 9px; --radius-lg: 12px; --radius-pill: 999px;
+  --dur-fast: 0.12s; --dur-med: 0.18s; --dur-slow: 0.3s;
+  --shadow-banner: 0 2px 10px rgba(0,0,0,0.45);
+  /* The QR code must stay black on white whatever the theme, or phones
+     cannot scan it. */
+  --qr-bg: #FFFFFF;
+
+  /* Over the camera feed: the same in both themes, because the video under
+     them is the same. */
+  --media-bg: #000000;
+  --media-safe: #3ECF8E;
+  --media-ink: rgba(255,255,255,0.92);
+  --media-ink-solid: #FFFFFF;
+  --media-ink-soft: rgba(232,236,239,0.85);
+  --media-ink-faint: rgba(255,255,255,0.5);
+  --media-mark: rgba(255,255,255,0.9);
+  --media-mark-strong: rgba(255,255,255,0.85);
+  --media-mark-soft: rgba(255,255,255,0.30);
+  --media-track: rgba(255,255,255,0.2);
+  --media-track-faint: rgba(255,255,255,0.14);
+  --media-fill: rgba(255,255,255,0.55);
+  --media-border: rgba(255,255,255,0.08);
+  --media-border-strong: rgba(255,255,255,0.14);
+  --media-glass: rgba(20,24,30,0.55);
+  --media-glass-strong: rgba(20,24,30,0.62);
+  --media-pill: rgba(10,20,16,0.75);
+  --media-scrim: rgba(0,0,0,0.55);
+  --media-scrim-solid: rgba(6,8,11,0.72);
+  --media-outline: rgba(0,0,0,0.5);
+  --media-outline-strong: rgba(0,0,0,0.55);
+  --media-glow: rgba(0,0,0,0.45);
+  --media-text-shadow: rgba(0,0,0,0.9);
+  --media-drop-shadow: rgba(0,0,0,0.6);
+  /* The Guide tab's idle viewfinder: a dark green screen in both themes. */
+  --preview-a: #0D1712;
+  --preview-b: #10201A;
+}
+
+/* Inside something drawn over the camera feed, or permanently dark (the
+   Guide tab's viewfinder, its fullscreen view), the chrome stays dark in
+   either theme: a light theme's deep accents would vanish into the video.
+   The dark values again, on purpose -- this block must match :root's. */
+.ui-dark {
+  color-scheme: dark;
+  --bg: #12151A;
+  --surface: #1C2129;
+  --surface-raised: #232A33;
+  --surface-hover: #2A323D;
+  --surface-shimmer: #2C343F;
+  --field-bg: #0E1116;
+  --text: #E8ECEF;
+  --text-dim: #8A93A0;
+  --border: #262C35;
+  --border-strong: #333B47;
+  --accent-primary: #5B9DF5;
+  --accent-primary-ink: #071223;
+  --accent-primary-hover: #6FA9F6;
+  --accent-safe: #3ECF8E;
+  --accent-safe-ink: #06231A;
+  --accent-alert: #FF6B35;
+  --accent-alert-ink: #2A0D02;
+  --accent-warn: #F2C94C;
+  --shadow-1: 0 1px 2px rgba(0,0,0,0.25), 0 4px 14px rgba(0,0,0,0.22);
+  --shadow-2: 0 4px 14px rgba(0,0,0,0.42), 0 18px 44px rgba(0,0,0,0.38);
+  --glass-bg: rgba(28,33,41,0.72);
+  --glass-border: rgba(255,255,255,0.07);
+}
+
+/* The light theme: the chrome only. Every value meets WCAG AA (4.5:1) for
+   the text it is used for (computed): --text-dim 7.8:1 on --surface, 7.1 on
+   --bg, 6.8 on --surface-raised; the accents as text 5.0-6.5:1 on all three;
+   white ink on the primary, safe and alert fills 5.7-6.1:1. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #F2F4F7;
+    --surface: #FFFFFF;
+    --surface-raised: #EDF0F4;
+    --surface-hover: #E3E7ED;
+    --surface-shimmer: #DCE2EA;
+    --field-bg: #F6F8FA;
+    --text: #141920;
+    --text-dim: #4A5361;
+    --border: #DCE1E8;
+    --border-strong: #BFC7D2;
+    --accent-primary: #1B5FCC;
+    --accent-primary-ink: #FFFFFF;
+    --accent-primary-hover: #174FAA;
+    --accent-safe: #0B7148;
+    --accent-safe-ink: #FFFFFF;
+    --accent-alert: #B83C0B;
+    --accent-alert-ink: #FFFFFF;
+    --accent-warn: #845300;
+    --env-banner-ink: #FFFFFF;
+    --shadow-1: 0 1px 2px rgba(16,24,40,0.06), 0 4px 14px rgba(16,24,40,0.08);
+    --shadow-2: 0 4px 14px rgba(16,24,40,0.12), 0 18px 44px rgba(16,24,40,0.14);
+    --shadow-banner: 0 2px 10px rgba(16,24,40,0.18);
+    --glass-bg: rgba(255,255,255,0.82);
+    --glass-border: rgba(16,24,40,0.08);
+  }
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -97,6 +215,18 @@ body {
   font-family: var(--sans);
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   min-height: 100vh;
+}
+
+/* Someone who has asked the OS to stop moving things gets a still page:
+   every animation and transition ends at once (3.132 Stage 1; before it,
+   2 of the twin's 17 animations honoured the setting). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ---------- shared components (moved from the twin, 3.132 Stage 1) ---------- */
@@ -124,7 +254,7 @@ button {
 }
 button:hover { background: var(--surface-hover); }
 button:active { transform: scale(0.96); }
-button.primary:hover { background: #6FA9F6; }
+button.primary:hover { background: var(--accent-primary-hover); }
 button.primary { background: var(--accent-primary); color: var(--accent-primary-ink); }
 button.danger { background: var(--accent-alert); color: var(--accent-alert-ink); }
 button.ghost { background: transparent; border: 1px solid var(--border-strong); }
@@ -153,7 +283,7 @@ button svg { width: 18px; height: 18px; flex-shrink: 0; }
    class so a change to field styling (or to --fs-input, which is load-
    bearing for the iOS zoom behavior) actually reaches all of them. */
 .text-input {
-  width: 100%; padding: 10px 12px; border-radius: 9px;
+  width: 100%; min-height: var(--target); padding: 10px 12px; border-radius: 9px;
   border: 1px solid var(--border-strong); background: var(--field-bg); color: var(--text);
   font-family: var(--mono); font-size: var(--fs-input);
   transition: border-color 0.15s;
@@ -224,6 +354,7 @@ button svg { width: 18px; height: 18px; flex-shrink: 0; }
   display: inline-flex; align-items: center; gap: 5px;
   font-family: var(--sans); font-size: var(--fs-body); font-weight: 600;
   color: var(--text-dim); padding: 5px 0; transition: color 0.12s;
+  min-height: var(--target);
 }
 .disclosure > summary::-webkit-details-marker { display: none; }
 .disclosure > summary:hover { color: var(--text); }
@@ -282,16 +413,27 @@ button svg { width: 18px; height: 18px; flex-shrink: 0; }
 
 .switch-title { display: block; font-family: var(--sans); font-size: var(--fs-md); color: var(--text); font-weight: 600; }
 .switch-sub { display: block; font-family: var(--sans); font-size: var(--fs-body); color: var(--text-dim); line-height: 1.4; margin-top: 2px; }
+/* The input is the 46 x 44 hit box; the track (::before, 46 x 28) and the
+   knob (::after) are drawn inside it, so the switch looks as it did while a
+   finger has a full target (3.132 Stage 1). */
 .switch {
   appearance: none; -webkit-appearance: none; flex-shrink: 0; margin: 0;
-  width: 46px; height: 28px; border-radius: 999px; cursor: pointer;
+  width: 46px; height: var(--target); cursor: pointer;
+  background: transparent; border: none; border-radius: 999px;
+  position: relative;
+}
+.switch::before {
+  content: ""; position: absolute; left: 0; top: 8px;
+  width: 46px; height: 28px; box-sizing: border-box; border-radius: 999px;
   background: var(--surface-raised); border: 1px solid var(--border-strong);
-  position: relative; transition: background 0.18s, border-color 0.18s;
+  transition: background 0.18s, border-color 0.18s;
 }
 .switch::after {
-  content: ""; position: absolute; top: 3px; left: 3px;
+  content: ""; position: absolute; top: 12px; left: 4px;
   width: 20px; height: 20px; border-radius: 50%; background: var(--text-dim);
   transition: transform 0.18s ease-out, background 0.18s;
 }
-.switch:checked { background: var(--accent-primary); border-color: var(--accent-primary); }
+.switch:checked::before { background: var(--accent-primary); border-color: var(--accent-primary); }
 .switch:checked::after { transform: translateX(18px); background: var(--accent-primary-ink); }
+.switch:focus-visible { box-shadow: none; }
+.switch:focus-visible::before { box-shadow: var(--focus-ring); }

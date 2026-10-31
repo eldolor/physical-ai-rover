@@ -15,12 +15,14 @@ the page.
 
 | File | What it is |
 |---|---|
-| `index.html` | markup and CSS |
+| `index.html` | markup |
+| `twin.css` | the twin's styles, on `../web-shared/ui.css`'s tokens (3.132) |
+| `../web-shared/ui.css` | the project's design tokens (dark and light) and shared components |
 | `app.js` | all behaviour |
 | `manifest.json`, `icons/` | PWA manifest and home-screen icons |
 
-Locally `robot/server.py` serves all of them (`/`, `/app.js`,
-`/manifest.json`, the icons). Deployed, CloudFront serves them from the
+Locally `robot/server.py` serves all of them (`/`, `/app.js`, `/ui.css`,
+`/twin.css`, `/manifest.json`, the icons). Deployed, CloudFront serves them from the
 serverless stack's static bucket.
 
 ## The page
@@ -100,6 +102,8 @@ than assuming it:
 
 ```bash
 curl -s https://<distribution>/app.js | diff - <(git show HEAD:web-twin/app.js)
+curl -s https://<distribution>/ui.css | diff - <(git show HEAD:web-shared/ui.css)
+curl -s https://<distribution>/twin.css | diff - <(git show HEAD:web-twin/twin.css)
 ```
 
 ## Test

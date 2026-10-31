@@ -387,6 +387,14 @@ JS_SETTLED = r"""() => {
 }"""
 
 
+def settle(page):
+    """Amendment 8: after a scheme change, wait out the colour transitions it
+    starts -- axe reading a button half way through its fade measures a
+    colour neither theme has."""
+    with contextlib.suppress(Exception):
+        page.wait_for_function(JS_SETTLED, timeout=5_000)
+
+
 def measure_state(page, name, axe, shots: Path, light_too=True) -> dict:
     page.wait_for_timeout(600)
     settled = True
@@ -398,8 +406,11 @@ def measure_state(page, name, axe, shots: Path, light_too=True) -> dict:
     if light_too:
         page.emulate_media(color_scheme="light")
         page.wait_for_timeout(200)
+        settle(page)
         page.screenshot(path=str(shots / f"{name}.light.png"), full_page=True)
         page.emulate_media(color_scheme="dark")
+        page.wait_for_timeout(200)
+        settle(page)
     if not page.evaluate("() => typeof window.axe !== 'undefined'"):
         page.add_script_tag(content=axe)
     res = page.evaluate("""async (tags) => {
@@ -410,6 +421,7 @@ def measure_state(page, name, axe, shots: Path, light_too=True) -> dict:
     # M2L (amendment 6): axe's contrast rule under the light scheme.
     page.emulate_media(color_scheme="light")
     page.wait_for_timeout(300)
+    settle(page)
     light = page.evaluate("""async () => {
       const r = await axe.run(document, {runOnly: {type: 'rule', values: ['color-contrast']},
                                          resultTypes: ['violations']});
@@ -417,6 +429,8 @@ def measure_state(page, name, axe, shots: Path, light_too=True) -> dict:
         .flatMap(v => v.nodes.map(n => n.target.join(' ')));
     }""")
     page.emulate_media(color_scheme="dark")
+    page.wait_for_timeout(200)
+    settle(page)
     # M7: under reduced motion, after the page has had time to react.
     page.emulate_media(reduced_motion="reduce")
     page.wait_for_timeout(400)

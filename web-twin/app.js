@@ -4331,7 +4331,7 @@
       guidanceChevron.style.left = "50%";
       guidanceChevron.style.top = "50%";
       guidanceChevron.style.transform = "translate(-50%, -50%) rotate(" + scan.rotation + "deg) scale(1.15)";
-      guidanceChevron.style.color = getCss("--text");
+      guidanceChevron.style.color = getCss("--media-ink");
       guidanceChevron.style.setProperty("--pulse-duration", GUIDANCE_PULSE_DURATION.unknown);
       // Read by the reduced-motion rules, which encode proximity as a
       // static size/brightness step instead of a pulse rate.
@@ -4384,7 +4384,7 @@
     guidanceChevron.style.left = (50 + offset) + "%";
     guidanceChevron.style.top = "50%";
     guidanceChevron.style.transform = "translate(-50%, -50%) rotate(" + rotation + "deg) scale(" + scale + ")";
-    guidanceChevron.style.color = result.proximity === "medium" ? getCss("--accent-safe") : getCss("--text");
+    guidanceChevron.style.color = result.proximity === "medium" ? getCss("--media-safe") : getCss("--media-ink");
     guidanceChevron.style.setProperty("--pulse-duration", GUIDANCE_PULSE_DURATION[result.proximity] || GUIDANCE_PULSE_DURATION.unknown);
     guidanceChevron.dataset.proximity = result.proximity || "unknown";
     guidanceChevron.classList.add("visible");
@@ -4472,7 +4472,7 @@
     guidanceChevron.style.top = "50%";
     guidanceChevron.style.transform =
       "translate(-50%, -50%) rotate(" + ROBOT_ACTION_ROTATION[action] + "deg) scale(1.15)";
-    guidanceChevron.style.color = action === "FORWARD" ? getCss("--accent-safe") : getCss("--text");
+    guidanceChevron.style.color = action === "FORWARD" ? getCss("--media-safe") : getCss("--media-ink");
     guidanceChevron.style.setProperty("--pulse-duration", GUIDANCE_PULSE_DURATION.unknown);
     guidanceChevron.dataset.proximity = "unknown";
     guidanceChevron.classList.add("visible");
