@@ -362,8 +362,11 @@ JS_SETTLED = r"""() => {
 
 def measure_state(page, name, axe, shots: Path, light_too=True) -> dict:
     page.wait_for_timeout(600)
-    with contextlib.suppress(Exception):
+    settled = True
+    try:
         page.wait_for_function(JS_SETTLED, timeout=10_000)
+    except Exception:  # noqa: BLE001 -- measured anyway, and marked so
+        settled = False
     page.screenshot(path=str(shots / f"{name}.png"), full_page=True)
     if light_too:
         page.emulate_media(color_scheme="light")
@@ -386,6 +389,7 @@ def measure_state(page, name, axe, shots: Path, light_too=True) -> dict:
     small = page.evaluate(JS_SMALL_TARGETS)
     sc = page.evaluate(JS_SCROLL)
     return {
+        "settled": settled,
         "M2_axe": {"rules": len(res), "nodes": sum(len(v["nodes"]) for v in res), "violations": res},
         "M3_small_targets": {"count": len(small), "elements": small},
         "M4_sideways_scroll": sc["scrollWidth"] > sc["clientWidth"] + 1, "scroll": sc,
@@ -843,7 +847,7 @@ def summary(r):
     def st(v):
         if "error" in v:
             return {"error": v["error"]}
-        return {"axe": v["M2_axe"]["rules"], "axe_nodes": v["M2_axe"]["nodes"],
+        return {"settled": v.get("settled"), "axe": v["M2_axe"]["rules"], "axe_nodes": v["M2_axe"]["nodes"],
                 "small": v["M3_small_targets"]["count"], "scroll": v["M4_sideways_scroll"],
                 "jargon": v["M5_jargon"]["count"]}
     return {
