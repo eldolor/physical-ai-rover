@@ -76,7 +76,6 @@ import json
 import logging
 import os
 import re
-import threading
 import time
 from datetime import datetime, timezone
 from typing import Callable, Optional
@@ -815,8 +814,9 @@ def create_app(
         mission_id = (datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
                       + "-" + (req.target_object or req.target_room
                                or ("survey" if req.job == "survey" else "mission")))
-        runner.inventory_sink = lambda report: threading.Thread(
-            target=store.save, args=(mission_id, report), daemon=True).start()
+        # 3.50.D5: save_async counts the save as pending until its local file
+        # is written, so the next mission's lookup waits for it.
+        runner.inventory_sink = lambda report: store.save_async(mission_id, report)
         # 3.50.D5: a mission on a saved map starts from the last inventory
         # saved on it (local files only).
         runner.inventory_prior = store.latest_for

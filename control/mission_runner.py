@@ -63,6 +63,9 @@ from brain.goal_policy import rooms_prior_informative as flat_prior_ok
 from brain.frontier import RETRY_COOLDOWN_S, RETRY_LIMIT
 from brain.inventory import MAX_RANGE_M as INVENTORY_RANGE_M
 from brain.inventory import DEFAULT_FOV_DEG, Inventory, frame_detections
+
+# 3.50.D5: frames without a usable pose before seeding gives up.
+SEED_TRIES = 30
 from brain.memory import MissionMemory
 from brain.mission_report import map_coverage
 from brain.navigate import CloudUnavailable
@@ -740,6 +743,8 @@ class MissionRunner:
         # None (sweeps, harnesses) carries nothing and reads nothing extra.
         self.inventory_prior: Optional[Callable[[str], Optional[dict]]] = None
         self._inventory_seeded = False
+        self._seed_tries = 0
+        self._seed_error_logged = False
         self.policy = policy
         # 3.70 E4: the budget is a time limit (on `self.clock`, so sim time in
         # process) and a battery floor. The step count is only a backstop
@@ -2357,7 +2362,8 @@ class MissionRunner:
             if detections is None:
                 if self.inventory_prior is not None and not self._inventory_seeded:
                     # 3.50.D5: seed on the first usable pose even before the
-                    # first detection -- one pose read a frame until then.
+                    # first detection -- one pose read a frame until then,
+                    # at most SEED_TRIES of them.
                     self._seed_inventory(self.world.get_pose())
                 return
             pose = self.world.get_pose()
@@ -2377,31 +2383,41 @@ class MissionRunner:
                 logger.warning("inventory: frame not recorded: %s", e)
 
     def _seed_inventory(self, pose: dict) -> None:
-        """3.50.D5: once, on the first usable pose: the newest inventory
-        saved on this pose's saved map (`frame_id`) seeds this one. The
-        lookup reads files, so it runs outside the lock; a failure carries
-        nothing and is logged once, like any inventory failure."""
+        """3.50.D5: once, on the first usable pose: the head of the chain
+        saved on this pose's saved map (`frame_id`) seeds this inventory.
+        The lookup reads files, so it runs outside the lock. A lookup that
+        fails detaches the inventory from the saved map, so its report can
+        never stand in for landmarks it could not read (review 1). No usable
+        pose in `SEED_TRIES` frames (a phone walk has none) gives up."""
         if self.inventory_prior is None or self._inventory_seeded:
             return
         if not pose or not pose.get("usable"):
+            self._seed_tries += 1
+            if self._seed_tries >= SEED_TRIES:
+                self._inventory_seeded = True     # no usable pose: nothing to carry
             return
         frame_id = pose.get("frame_id")
-        prior = None
+        prior, failed = None, False
         if frame_id:
             try:
                 prior = self.inventory_prior(frame_id)
             except Exception as e:  # noqa: BLE001 -- a by-product never fails a mission
-                if not self._inventory_error_logged:
-                    self._inventory_error_logged = True
-                    logger.warning("inventory: earlier landmarks not read: %s", e)
+                failed = True
+                if not self._seed_error_logged:
+                    self._seed_error_logged = True
+                    logger.warning("inventory: earlier landmarks not read, this mission's "
+                                   "kept apart from them: %s", e)
         with self._lock:
             if self._inventory_seeded or self._ended():
                 return
             self._inventory_seeded = True
+            if failed:
+                self.inventory.detach()
             n = self.inventory.seed(frame_id, prior) if prior else 0
+            source = self.inventory.carried_from
         if n:
             self._log_line(f"inventory: {n} landmarks carried from "
-                           f"{prior.get('mission') or 'an earlier mission'} on {frame_id}")
+                           f"{source or 'an earlier mission'} on {frame_id}")
 
     def inventory_report(self) -> Optional[dict]:
         if self.inventory is None:

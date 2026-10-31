@@ -100,6 +100,9 @@ from robot.safety import scan_points_cm
 L_HIT = 0.85            # one hit reads 0.70
 L_MISS = -0.4
 SCORE_CLAMP = 4.0
+# 3.50.D5: what a mission carries from the last one on the same saved map.
+CARRY_MIN_BELIEF = 0.5    # no more evidence it is gone than that it is there
+CARRY_VOTES_MAX = 20      # looks per label rebuilt; the history stays bounded
 REPORT_BELIEF = 0.8     # two independent hits, no misses
 NEW_VIEW_M = 0.5
 NEW_VIEW_DEG = 30.0
@@ -283,6 +286,12 @@ class Inventory:
         self.frame_id: Optional[str] = None
         self.carried_from: Optional[str] = None
         self.carried = 0
+        # The chain's position: the carried report's `carry_seq` plus one, so
+        # the store finds the newest by lineage, not by a clock (review 1).
+        self.carry_seq = 0
+        # A failed lookup detaches: no frame_id is taken, so this mission's
+        # report can never stand in for the chain it could not read.
+        self._detached = False
         self.landmarks: list = []
         self.frames = 0
         self.observations = 0
@@ -359,9 +368,16 @@ class Inventory:
                 self.map_id = pose.get("map_id")
             return True
         if self.map_id is None:
-            self.map_id, self.frame_id = pose.get("map_id"), pose.get("frame_id")
+            self.map_id = pose.get("map_id")
+            self.frame_id = None if self._detached else pose.get("frame_id")
             return True
         return pose.get("map_id") == self.map_id
+
+    def detach(self) -> None:
+        """3.50.D5: the earlier landmarks could not be read -- record on this
+        map only, never as the saved map's newest (review 1)."""
+        if not self.landmarks and not self.frames:
+            self._detached = True
 
     def seed(self, frame_id: Optional[str], report: Optional[dict]) -> int:
         """3.50.D5: start this inventory from an earlier mission's `report()`
@@ -386,15 +402,19 @@ class Inventory:
                 continue
             if not label or not all(map(math.isfinite, (x, y, belief))):
                 continue
+            if belief < CARRY_MIN_BELIEF:
+                continue                  # more evidence it is gone: not carried
             b = min(max(belief, 1e-6), 1 - 1e-6)
             lm = Landmark(id=self._next_id, room=str(d.get("room") or "unknown"),
                           first_step=None, points=[(x, y, label)],
                           score=min(hi, max(lo, math.log(b / (1 - b)))), carried=True)
             votes = d.get("votes") if isinstance(d.get("votes"), dict) else {}
-            for voted, n in votes.items():
+            # The saved label's looks first: a tie keeps the name it had (the
+            # store writes votes in key order).
+            for voted in sorted(votes, key=lambda v: str(v).strip().lower() != label):
                 try:
-                    n = int(n)
-                except (TypeError, ValueError):
+                    n = min(int(votes[voted]), CARRY_VOTES_MAX)
+                except (TypeError, ValueError, OverflowError):
                     continue
                 for _ in range(max(0, n)):
                     lm._looks[key] = str(voted)
@@ -404,6 +424,10 @@ class Inventory:
             carried += 1
         self.frame_id = frame_id
         self.carried = carried
+        try:
+            self.carry_seq = max(0, int(report.get("carry_seq") or 0)) + 1
+        except (TypeError, ValueError, OverflowError):
+            self.carry_seq = 1
         # The mission's id where the report has one (the brain's), else its text.
         mission = report.get("mission_id") or report.get("mission")
         self.carried_from = mission if isinstance(mission, str) else None
@@ -500,6 +524,7 @@ class Inventory:
             "map_id": self.map_id,
             "frame_id": self.frame_id,               # 3.50.D5
             "carried_from": self.carried_from,
+            "carry_seq": self.carry_seq,
             "reported": [d for d in items if d["reported"]],
             "candidates": [d for d in items if not d["reported"]],
             "counts": self.counts(),

@@ -60,6 +60,14 @@ STALE_TMP_S = 3600
 _IN_FLIGHT: set = set()          # paths of this process's saves being written now
 _IN_FLIGHT_LOCK = threading.Lock()
 
+# 3.50.D5 (review 1): local saves handed to a thread and not yet written, per
+# directory -- module-wide, since the brain builds a store per mission. A
+# lookup waits for them (up to PENDING_WAIT_S), so a mission started while
+# the last one's report is still being written carries that report.
+PENDING_WAIT_S = 10.0
+_PENDING: dict = {}
+_PENDING_COND = threading.Condition()
+
 
 def _sweep_stale_tmp(directory: Path) -> None:
     """A save cut off by a crash or a power loss leaves `.<name>.tmp`
@@ -98,7 +106,45 @@ class InventoryStore:
             self._client = boto3.client("s3")
         return self._client
 
-    def save(self, mission_id: str, report: dict) -> dict:
+    def save_async(self, mission_id: str, report: dict) -> threading.Thread:
+        """`save()` on a daemon thread (the mission's end never waits on an
+        upload), counted as pending until its local file is written, so
+        `latest_for()` can wait for it (3.50.D5)."""
+        key = str(self.local_dir.resolve())
+        with _PENDING_COND:
+            _PENDING[key] = _PENDING.get(key, 0) + 1
+
+        fired = []
+
+        def done():
+            # Once: when the local file is settled, or when the save ends
+            # without getting that far (an exception) -- whichever is first.
+            with _PENDING_COND:
+                if fired:
+                    return
+                fired.append(True)
+                _PENDING[key] -= 1
+                if not _PENDING[key]:
+                    del _PENDING[key]
+                _PENDING_COND.notify_all()
+
+        t = threading.Thread(target=self.save, args=(mission_id, report),
+                             kwargs={"_local_done": done}, daemon=True)
+        try:
+            t.start()
+        except BaseException:
+            done()
+            raise
+        return t
+
+    def save(self, mission_id: str, report: dict, _local_done=None) -> dict:
+        try:
+            return self._save(mission_id, report, _local_done)
+        finally:
+            if _local_done is not None:
+                _local_done()             # no-op if the local step already said so
+
+    def _save(self, mission_id: str, report: dict, _local_done=None) -> dict:
         name = f"{_slug(mission_id)}.json"
         body = json.dumps(report, indent=1, sort_keys=True)
         out = {"local": None, "s3": None, "errors": []}
@@ -131,6 +177,9 @@ class InventoryStore:
             out["local"] = str(path)
         except OSError as exc:
             out["errors"].append(f"local: {exc}")
+        if _local_done is not None:
+            _local_done()                 # the local file is settled: lookups may go on
+            _local_done = None
         if self.bucket:
             key = f"{self.prefix}/{self.robot}/{name}"
             try:
@@ -145,33 +194,51 @@ class InventoryStore:
         return out
 
     def latest_for(self, frame_id: Optional[str]) -> Optional[dict]:
-        """3.50.D5: the newest local report saved on this saved map (its
-        `frame_id`), or None. What a new mission on the same map carries
-        over; each report holds what its mission carried plus what it saw,
-        so only the newest is needed. Local only: S3 is never read back.
-        Files that do not parse, other frames and reports with no
-        `frame_id` are skipped; a save in progress is a hidden `.tmp`,
-        never matched."""
+        """3.50.D5: the head of the chain on this saved map (its `frame_id`):
+        the report with the highest `carry_seq` -- each mission's is the one
+        it carried plus one, so lineage decides, not a clock (review 1) --
+        and between equals the newest file. None if there is none. What a
+        new mission carries over; each report holds what its mission carried
+        plus what it saw, so only the head is needed.
+
+        Waits up to `PENDING_WAIT_S` for local saves still in flight here
+        (`save_async`). Local only: S3 is never read back. A file that does
+        not name the frame is not parsed; files that do not parse, other
+        frames and hidden `.tmp` saves are skipped. A directory that cannot
+        be listed raises (a failed lookup, not "nothing saved")."""
         if not frame_id:
             return None
-        files = []
+        key = str(self.local_dir.resolve())
+        with _PENDING_COND:
+            if not _PENDING_COND.wait_for(lambda: not _PENDING.get(key), PENDING_WAIT_S):
+                logger.warning("inventory: a save still in flight after %.0f s; "
+                               "reading without it", PENDING_WAIT_S)
         try:
             listed = [p for p in self.local_dir.glob("*.json") if not p.name.startswith(".")]
-        except OSError:
+        except FileNotFoundError:
             return None
-        for p in listed:
+        best, best_key = None, None
+        needle = json.dumps(frame_id)
+        for path in listed:
             try:
-                files.append((p.stat().st_mtime, p.name, p))
-            except OSError:
+                mtime = path.stat().st_mtime
+                text = path.read_text()
+            except FileNotFoundError:
                 continue                  # removed since it was listed
-        for _mtime, _name, path in sorted(files, reverse=True):
-            try:
-                report = json.loads(path.read_text())
-            except (OSError, ValueError):
+            if needle not in text:
                 continue
-            if isinstance(report, dict) and report.get("frame_id") == frame_id:
-                return report
-        return None
+            try:
+                report = json.loads(text)
+            except ValueError:
+                continue
+            if not isinstance(report, dict) or report.get("frame_id") != frame_id:
+                continue
+            seq = report.get("carry_seq")
+            seq = seq if isinstance(seq, int) and not isinstance(seq, bool) else 0
+            rank = (seq, mtime, path.name)
+            if best_key is None or rank > best_key:
+                best, best_key = report, rank
+        return best
 
 
 def inventory_store_from_config(config: dict) -> InventoryStore:

@@ -449,6 +449,9 @@ def test_two_missions_in_one_second_get_their_own_file(monkeypatch):
         def save(self, mission_id, report):
             ids.append(mission_id)
 
+        def save_async(self, mission_id, report):    # 3.50.D5's sink
+            self.save(mission_id, report)
+
         def latest_for(self, frame_id):       # 3.50.D5: nothing saved to carry
             return None
     monkeypatch.setattr(brain_server, "inventory_store_from_config", lambda config: Store())

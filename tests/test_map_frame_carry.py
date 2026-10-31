@@ -326,3 +326,128 @@ def test_without_a_saved_frame_nothing_is_read_or_carried(tmp_path):
     while runner.tick():
         pass
     assert asked == [] and not any(lm.carried for lm in runner.inventory.landmarks)
+
+
+# ---------- review round 1: the chain cannot be cut ----------
+
+from brain.inventory import CARRY_VOTES_MAX  # noqa: E402
+from control import inventory_store as store_mod  # noqa: E402
+from control.mission_runner import SEED_TRIES  # noqa: E402
+
+
+def test_the_head_is_chosen_by_lineage_not_by_the_clock(tmp_path):
+    """A clock set back at boot: the newest report has the older mtime."""
+    _write(tmp_path, "head.json", {"frame_id": SAVED, "mission": "head", "carry_seq": 3},
+           age_s=10_000)
+    _write(tmp_path, "older.json", {"frame_id": SAVED, "mission": "older", "carry_seq": 2},
+           age_s=0)
+    _write(tmp_path, "pre.json", {"frame_id": SAVED, "mission": "no seq"}, age_s=0)
+    assert InventoryStore(str(tmp_path)).latest_for(SAVED)["mission"] == "head"
+
+
+def test_a_save_in_flight_is_waited_for(tmp_path, monkeypatch):
+    """A mission started while the last one's report is still being written
+    carries that report, not the one before it."""
+    store = InventoryStore(str(tmp_path))
+    store.save("m0", dict(_session_one(), mission_id="m0"))
+    import threading
+    gate = threading.Event()
+    real = store_mod._fsync
+    monkeypatch.setattr(store_mod, "_fsync", lambda fd: (gate.wait(5), real(fd)))
+    newer = dict(_session_one(), mission_id="m1", carry_seq=1)
+    t = store.save_async("m1", newer)
+    threading.Timer(0.3, gate.set).start()
+    assert store.latest_for(SAVED)["mission_id"] == "m1"
+    t.join(5)
+    assert not store_mod._PENDING
+
+
+def test_a_directory_that_cannot_be_listed_is_a_failure_not_nothing(tmp_path, monkeypatch):
+    store = InventoryStore(str(tmp_path))
+    store.save("m0", _session_one())
+    monkeypatch.setattr(type(tmp_path), "glob", lambda self, pat: (_ for _ in ()).throw(
+        PermissionError("denied")))
+    with pytest.raises(PermissionError):
+        store.latest_for(SAVED)
+
+
+def test_a_failed_lookup_detaches_and_the_chain_survives(tmp_path):
+    store = InventoryStore(str(tmp_path))
+    _session(store, SAVED, "s1")
+    first = store.latest_for(SAVED)
+
+    def broken(frame_id):
+        raise OSError("disk")
+    grid = build_world("complex_house")
+    robot = MockRobot(grid, render=False)
+    runner = MissionRunner(robot, target_object="unicorn", max_steps=40, policy="frontier",
+                           world=_FramedWorld(mock_world_for(robot), SAVED, "s2"))
+    runner.mission_id = "mission-s2"
+    runner.inventory_prior = broken
+    runner.inventory_sink = lambda report: store.save(runner.mission_id, report)
+    runner.start()
+    while runner.tick():
+        pass
+    saved_two = json.loads((tmp_path / "mission-s2.json").read_text())
+    assert saved_two["frame_id"] is None and runner.inventory.frames > 0
+    assert store.latest_for(SAVED)["mission_id"] == first["mission_id"]   # still the head
+    three = _session(store, SAVED, "s3")
+    assert sum(lm.carried for lm in three.inventory.landmarks) == (
+        len([d for d in first["reported"] + first["candidates"] if d["belief"] >= 0.5]))
+
+
+def test_a_landmark_with_more_evidence_of_absence_is_not_carried():
+    saved = _session_one()
+    saved["candidates"] = saved["candidates"] + [
+        {"label": "sock", "x_m": 1.0, "y_m": 1.0, "belief": 0.3, "votes": {"sock": 1}}]
+    inv = Inventory()
+    inv.seed(SAVED, saved)
+    assert "sock" not in [lm.label for lm in inv.landmarks]
+
+
+def test_carried_looks_are_bounded_and_a_tie_keeps_the_saved_name():
+    saved = _session_one()
+    saved["candidates"] = saved["candidates"] + [
+        {"label": "shoe", "x_m": 1.0, "y_m": 1.0, "belief": 0.9,
+         "votes": {"boot": 2, "shoe": 2}},
+        {"label": "chair", "x_m": 3.0, "y_m": 3.0, "belief": 0.9,
+         "votes": {"chair": 10**9}}]
+    inv = Inventory()
+    inv.seed(SAVED, saved)
+    shoe = next(lm for lm in inv.landmarks if lm.points[0][2] == "shoe")
+    assert shoe.label == "shoe"
+    chair = next(lm for lm in inv.landmarks if lm.label == "chair")
+    assert chair.hits == CARRY_VOTES_MAX
+
+
+def test_the_report_carries_its_place_in_the_chain():
+    inv = Inventory()
+    inv.seed(SAVED, dict(_session_one(), carry_seq=4))
+    assert inv.report()["carry_seq"] == 5
+    assert Inventory().report()["carry_seq"] == 0
+
+
+def test_no_usable_pose_gives_up_after_a_bounded_number_of_reads(tmp_path):
+    """A phone walk never has a usable pose: the extra reads stop."""
+    class _NoPose:
+        def __init__(self, inner):
+            self._inner, self.reads = inner, 0
+
+        def get_pose(self):
+            self.reads += 1
+            return {"usable": False, "map_id": None, "frame_id": None,
+                    "x_m": None, "y_m": None, "heading_deg": None}
+
+        def __getattr__(self, name):
+            return getattr(self._inner, name)
+
+    grid = build_world("complex_house")
+    robot = MockRobot(grid, render=False)
+    world = _NoPose(mock_world_for(robot))
+    runner = MissionRunner(robot, target_object="unicorn", max_steps=80, policy="frontier",
+                           world=world, detections_fn=lambda frame: None)
+    runner.inventory_prior = lambda f: None
+    runner.start()
+    while runner.tick():
+        pass
+    assert runner._inventory_seeded and runner._seed_tries == SEED_TRIES
