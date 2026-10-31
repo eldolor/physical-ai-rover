@@ -2,7 +2,8 @@
 # 3.131.B: 3.125.B's board script (evaluations/goal-learn-3125/board_time.sh)
 # with this section's timing (choice_time.py: F-large as explore now makes it,
 # beside the path without the hand-off, alternating at every pose). Runs ON
-# the board from ~/bench-3131 (a `git archive` of the branch), the service venv:
+# the board from ~/bench-3131 (a git checkout of the branch: restart.sh checks each
+# server's reported revision against it), the service venv:
 #   1. quiet: the board as found (picar-stack serving the twin, sim mode)
 #   2. full:  headroom_identity.sh's window (RUNTIME=trt, VE's engines,
 #      vision-picar-ros:latest); the bench starts when the window starts and
@@ -13,6 +14,10 @@ set -uo pipefail
 cd ~/bench-3131
 # headroom_identity.sh activates the checkout's .venv; an archive has none.
 [ -e .venv ] || ln -s ~/vision-picar-service/.venv .venv
+# It runs perception from here too: the service checkout's untracked weights.
+for f in yoloe-11s-seg.pt mobileclip_blt.ts; do
+  [ -e "$f" ] || ln -s ~/vision-picar-service/"$f" "$f"
+done
 OUT=out; mkdir -p "$OUT"
 PY=~/vision-picar-service/.venv/bin/python
 log() { echo "$(date +%T) $*" | tee -a "$OUT/driver.log"; }
