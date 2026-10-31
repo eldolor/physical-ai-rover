@@ -11,6 +11,8 @@
 # PICAR_BOARD_TOKEN must be set (the board lock held by the caller).
 set -uo pipefail
 cd ~/bench-3131
+# headroom_identity.sh activates the checkout's .venv; an archive has none.
+[ -e .venv ] || ln -s ~/vision-picar-service/.venv .venv
 OUT=out; mkdir -p "$OUT"
 PY=~/vision-picar-service/.venv/bin/python
 log() { echo "$(date +%T) $*" | tee -a "$OUT/driver.log"; }
