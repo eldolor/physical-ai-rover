@@ -142,8 +142,12 @@ def test_resume_searching_stays_readable_under_hover(browser, twin_server):
     page.wait_for_timeout(200)
     bg, safe = page.evaluate("""() => [
       getComputedStyle(document.getElementById('btn-guidance-resume')).backgroundColor,
+      // 3.132 Stage 1: read the token where the button lives -- inside the
+      // fullscreen view's .ui-dark scope, which stays dark in either theme
+      // (headless Chromium reports the light scheme by default).
       (() => { const d = document.createElement('div'); d.style.background = 'var(--accent-safe)';
-               document.body.appendChild(d); const c = getComputedStyle(d).backgroundColor;
+               document.getElementById('guide-fullscreen').appendChild(d);
+               const c = getComputedStyle(d).backgroundColor;
                d.remove(); return c; })()]""")
     assert bg == safe, (bg, safe)
     page.context.close()

@@ -278,6 +278,10 @@ Resources:
           Values:
             - /autonomy/resume
             - /autonomy/relatch
+            # 3.132 Stage 1: the twin's two stylesheets, out of index.html.
+            # A page whose CSS 404s still loads -- unstyled and unusable.
+            - /ui.css
+            - /twin.css
       Actions:
         - Type: forward
           TargetGroupArn: !Ref AlbTargetGroup

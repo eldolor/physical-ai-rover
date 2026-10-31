@@ -305,6 +305,23 @@ Resources:
         - Type: forward
           TargetGroupArn: !Ref AlbTargetGroup
 
+  # 3.132 Stage 1: the twin's two stylesheets at this deployment's prefix.
+  # Rule 44 is full.
+  AlbListenerRuleTeleopStyles:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn: !ImportValue
+        Fn::Sub: "${ServiceStackName}-AlbListenerArn"
+      Priority: 45
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - /teleop-robot/ui.css
+            - /teleop-robot/twin.css
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref AlbTargetGroup
+
   TaskDefinition:
     Type: AWS::ECS::TaskDefinition
     Properties:
