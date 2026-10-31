@@ -1,0 +1,17 @@
+{
+ "host": "anshu-Legion-T5-28IMB05",
+ "machine": "x86_64",
+ "poses": 120,
+ "no_candidates": 0,
+ "candidates_median": 85.0,
+ "whole_choice": {
+  "p50_ms": 39.0,
+  "p90_ms": 48.3,
+  "max_ms": 81.5
+ },
+ "room_features": {
+  "p50_ms": 5.9,
+  "p90_ms": 6.3,
+  "max_ms": 13.6
+ }
+}

@@ -75,7 +75,9 @@ def goal_context(m: dict, seen_cells: set = frozenset()) -> dict:
     185 ms p90 a choice on the Jetson; this makes each candidate a few array
     lookups. The map and the seen set must not change while it is used;
     `features()` refuses a context built from other objects. (np.asarray,
-    not frontier's int8 `_grid`: any cell value compares as the loop's did.)"""
+    not frontier's int8 `_grid`: any cell value compares as the loop's did.)
+    `cells` is that array, which `room_features()` reuses (3.131: the map
+    list converted once a choice, not three times)."""
     res, w, h = m["resolution_m"], m["width"], m["height"]
     cells = np.asarray(m["cells"]).reshape(h, w)
     free = cells == CELL_FREE
@@ -88,7 +90,7 @@ def goal_context(m: dict, seen_cells: set = frozenset()) -> dict:
         unseen[xy[on, 1], xy[on, 0]] = False
     dx, dy = _disc(int(math.ceil(NEAR_M / res)))
     return {"w": w, "h": h, "unknown": cells == CELL_UNKNOWN, "free": free,
-            "unseen": unseen, "dx": dx, "dy": dy,
+            "unseen": unseen, "dx": dx, "dy": dy, "cells": cells,
             "cells_of": m["cells"], "seen_of": seen_cells}
 
 
@@ -225,17 +227,20 @@ ROOM_AREA_M2 = 20.0
 ROOM_RES_M = 0.30
 
 
-def coarse(m: dict, res_m: float = ROOM_RES_M) -> dict:
+def coarse(m: dict, res_m: float = ROOM_RES_M, cells=None) -> dict:
     """`m` at `res_m` (an integer factor of its own resolution): a coarse
     cell is occupied if any of its cells is, free if at least half are, and
-    unknown otherwise. A map already that coarse is returned as it is."""
+    unknown otherwise. A map already that coarse is returned as it is.
+    `cells`: `np.asarray(m["cells"])` when the caller has it (3.131), so the
+    list is not converted again."""
     k = int(round(res_m / m["resolution_m"]))
     if k <= 1:
         return m
     w, h = m["width"], m["height"]
     W, H = -(-w // k), -(-h // k)
-    cells = np.full((H * k, W * k), CELL_UNKNOWN, dtype=np.asarray(m["cells"]).dtype)
-    cells[:h, :w] = np.asarray(m["cells"]).reshape(h, w)
+    src = np.asarray(m["cells"]) if cells is None else cells
+    cells = np.full((H * k, W * k), CELL_UNKNOWN, dtype=src.dtype)
+    cells[:h, :w] = src.reshape(h, w)
     blocks = cells.reshape(H, k, W, k).swapaxes(1, 2).reshape(H, W, k * k)
     out = np.full((H, W), CELL_UNKNOWN, dtype=cells.dtype)
     out[(blocks == CELL_FREE).sum(axis=2) * 2 >= k * k] = CELL_FREE
@@ -260,11 +265,15 @@ def _seg_at_cell(seg, cx: int, cy: int) -> int:
 
 
 def room_features(m: dict, pose: dict, goals: list, *, trail, types: list,
-                  prior: dict) -> list:
+                  prior: dict, ctx: Optional[dict] = None) -> list:
     """Each candidate's ROOM_FEATURES. `goals`: the pool's (x_m, y_m) in
     order; `trail`: map-frame points the robot has stood on; `types`: each
-    goal's room type from the labels, or None; `prior`: type -> P(target)."""
-    m = coarse(m)
+    goal's room type from the labels, or None; `prior`: type -> P(target).
+    `ctx`: this choice's `goal_context(m, ...)`, whose array of the map's
+    cells is reused (3.131); one built from another map is refused."""
+    if ctx is not None and ctx["cells_of"] is not m["cells"]:
+        raise ValueError("ctx was built from another map")
+    m = coarse(m, cells=None if ctx is None else ctx["cells"])
     seg, _ = segment(m)
     res2 = m["resolution_m"] ** 2
     ids, counts = np.unique(seg[seg >= 0], return_counts=True)
@@ -353,15 +362,16 @@ class RoomGoalPolicy:
         return prior_is_informative(self.prior.get((target or "").lower()))
 
     def extend(self, m: dict, pose: dict, goals: list, feats: list, *, trail,
-               types: list, target: Optional[str]) -> list:
-        """The pool's ten features, each with its seven room features after."""
+               types: list, target: Optional[str], ctx: Optional[dict] = None) -> list:
+        """The pool's ten features, each with its seven room features after.
+        `ctx`: the choice's `goal_context()`, passed to `room_features()`."""
         if not goals:
             return []
         prior = self.prior.get((target or "").lower(), {})
         # A type the prior does not name reads as no type: in training every
         # labelled type had a prior, so "known, P = 0" meant a real zero.
         types = [t if t in prior else None for t in types]
-        room = room_features(m, pose, goals, trail=trail, types=types, prior=prior)
+        room = room_features(m, pose, goals, trail=trail, types=types, prior=prior, ctx=ctx)
         return [a + b for a, b in zip(feats, room)]
 
     def scores(self, candidates: list) -> np.ndarray:

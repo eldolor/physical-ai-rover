@@ -1047,7 +1047,7 @@ class ExploreAgent(MissionAgent):
             goals = [c.goal for _, c, _ in pool]
             feats = self.goal_policy.extend(m, pose, goals, feats, trail=self._trail,
                                             types=self._goal_types(m, goals),
-                                            target=self.memory.target_object)
+                                            target=self.memory.target_object, ctx=ctx)
         return pool, feats
 
     def _goal_types(self, m: dict, goals: list) -> list:
