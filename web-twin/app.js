@@ -867,7 +867,7 @@
   // name; told as a wait, not as the bridge's 503. (Only POST /world/goal
   // answers these; they never reach /health's last_refusal.)
   var GOAL_HOLD_TEXT = {
-    nav2_starting: "nav2 is still starting \u2014 try again in a few seconds",
+    nav2_starting: "nav2 is not active yet (starting, or restarting) \u2014 try again in a few seconds",
     slam_not_ready: "SLAM is not ready yet (starting, checking a saved map, or re-mapping) \u2014 try again in a few seconds",
   };
 

@@ -85,18 +85,12 @@ def test_every_other_bridge_error_stays_ros_unavailable(monkeypatch, reply, retr
 
 def test_hold_reason_reads_only_a_503_with_the_bridges_hold_keys():
     req = httpx.Request("POST", "http://bridge/goal")
-
-    def err(status, body=None, content=None):
-        resp = (httpx.Response(status, json=body, request=req) if content is None
-                else httpx.Response(status, content=content, request=req))
-        return httpx.HTTPStatusError("x", request=req, response=resp)
-
-    assert bridge_faults.hold_reason(err(*NAV2_HELD)) == "nav2_starting"
-    assert bridge_faults.hold_reason(err(*SLAM_HELD)) == "slam_not_ready"
-    assert bridge_faults.hold_reason(err(503, {"error": "x"})) is None
-    assert bridge_faults.hold_reason(err(503, content=b"<html>proxy</html>")) is None
-    assert bridge_faults.hold_reason(err(503, ["nav2"])) is None
-    assert bridge_faults.hold_reason(err(502, {"nav2": {"active": False}})) is None
+    assert bridge_faults.hold_reason(_err(*NAV2_HELD)) == "nav2_starting"
+    assert bridge_faults.hold_reason(_err(*SLAM_HELD)) == "slam_not_ready"
+    assert bridge_faults.hold_reason(_err(503, {"error": "x"})) is None
+    assert bridge_faults.hold_reason(_err(503, content=b"<html>proxy</html>")) is None
+    assert bridge_faults.hold_reason(_err(503, ["nav2"])) is None
+    assert bridge_faults.hold_reason(_err(502, {"nav2": {"active": False, "inactive_s": 1.0}})) is None
     assert bridge_faults.hold_reason(httpx.ConnectError("gone", request=req)) is None
     assert bridge_faults.hold_reason(ValueError("not httpx")) is None
 
@@ -125,10 +119,23 @@ def test_nav2_reads_as_starting_only_inside_a_start(inactive_s, held):
     assert (bridge_faults.hold_reason(_err(503, body)) == "nav2_starting") is held
 
 
-def _err(status, body):
+def _err(status, body=None, content=None):
     req = httpx.Request("POST", "http://bridge/goal")
-    return httpx.HTTPStatusError("x", request=req,
-                                 response=httpx.Response(status, json=body, request=req))
+    resp = (httpx.Response(status, json=body, request=req) if content is None
+            else httpx.Response(status, content=content, request=req))
+    return httpx.HTTPStatusError("x", request=req, response=resp)
+
+
+def test_slam_passing_is_every_state_the_bridge_sets_but_ready_and_failed():
+    """Review round 2: SLAM_PASSING is copied from the bridge; a state the
+    bridge adds or renames must be sorted into it (or out) here, never fall
+    silently to ROS DOWN."""
+    import pathlib
+    import re
+    src = (pathlib.Path(__file__).resolve().parents[1] / "service/slam/src/picar_bridge"
+           / "picar_bridge/bridge.py").read_text()
+    states = set(re.findall(r'slam_state = "([a-z_]+)"', src))
+    assert states - {"ready", "failed"} == set(bridge_faults.SLAM_PASSING), states
 
 
 # ---------- criterion 2: explore still waits on it ----------

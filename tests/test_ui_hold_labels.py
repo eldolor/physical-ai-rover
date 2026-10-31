@@ -4,7 +4,7 @@ room labeller.
 (a) A map tap the robot server refuses `nav2_starting` / `slam_not_ready`
 (the bridge holding goals at a start, 3.105 / 3.50.D3) is a start-up wait,
 told as information -- it was an error toast quoting the bridge's 503.
-(c) A survey whose label source refused for good shows why
+(b) A survey whose label source refused for good shows why
 (`source_error`), not "nothing can name rooms here", which a brain with no
 source at all also says. Written before the change and seen to fail
 (docs/plans/ros-alignment/3.127-twin-survey-error-nav2-hold.md).
@@ -70,7 +70,7 @@ SLAM_REPLY = {"accepted": False, "reason": "slam_not_ready", "retryable": True,
 # ---------- (a) a map tap during the hold ----------
 
 @pytest.mark.parametrize("reply, words", [
-    (NAV2_REPLY, "nav2 is still starting"),
+    (NAV2_REPLY, "nav2 is not active yet"),
     (SLAM_REPLY, "SLAM is not ready yet"),
 ])
 def test_a_map_tap_during_a_start_up_hold_is_information_not_an_error(
@@ -100,7 +100,7 @@ def test_a_map_tap_refused_as_ros_down_is_still_an_error(browser, twin_server):
     page.context.close()
 
 
-# ---------- (c) the survey row ----------
+# ---------- (b) the survey row ----------
 
 def _with_survey(**fields):
     status = survey_status(rooms=("kitchen",), calls=3)
