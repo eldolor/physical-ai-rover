@@ -27,7 +27,7 @@ every number here.
 | `control/brain_server.py` | Builds the pipeline at mission start. The sequence is described once, in [mission](../mission/ENGINEERING.md) ("How a tiered mission is built"). `_perception_available()` answers health with `find_spec` for `ultralytics`, `open_clip`, `torch`. |
 | `brain/inventory.py` | 3.46's object inventory: `frame_detections()` (a sim frame's per-cell detections grouped into one per object), `scan_returns()` / `range_at()` (the scan moved to the body centre; nearest return within 2 deg), `Landmark`, `Inventory` (`observe()`, `report()`, `counts()`, `summary()`). A merge counts each frame's look once, in either merge order and whether the parts were seen in this frame or earlier ones (`_count_look()`: each landmark taking part is due its score plus one look if this is a new view for it and it was not already seen this frame; the merged score is the largest due, never a sum, 3.55). Hits, votes and misses are kept by frame (`Landmark._looks`, frame -> voted label; `_missed`, a set of frames) and a merge unions them, so no landmark holds more hits than frames that saw it; the merged landmark keeps whichever part's last hit and last miss viewpoints are newest (3.60). Any sighting clears a pending miss, counted or not, and a frame with no scan returns infers no miss (3.60). A landmark joins the list only with its first point (3.55). Imports `robot.safety.scan_points_cm` (the lidar offset, one place) and `brain.goal_pose._wrap` (3.60) |
 | `tools/inventory_label.py` | 3.46 criterion 6 (amendment 3): `vocab` (the judge model sorts YOLOE-pf's 4,585 names into objects or not, once), `detect` (YOLOE-pf over every walk), `judge` (Claude Opus 5.5 on Bedrock, us-east-1, judges each numbered box; resumable, stops at `--budget`), `sample` (150 seeded frames on a local page the user answers blind), `score`. Writes only under recordings/inventory_eval (git-ignored); never touches a walk's `labels.json`. `RECORDINGS_DIR` and `INVENTORY_PF_WEIGHTS` point a worktree at the main checkout |
-| `control/inventory_store.py` | `InventoryStore.latest_for(frame_id)` (3.50.D5): the chain's head on that frame (highest `carry_seq`, then mtime); waits up to `PENDING_WAIT_S` (10 s) for this directory's saves still in flight (`save_async()`, counted module-wide until the local file is settled, since the brain builds a store per mission); does not parse a file whose text does not name the frame; skips files that do not parse, other frames and hidden `.tmp` saves; a directory that cannot be listed raises (a missing one is "nothing saved"); S3 is never read back. The brain's sink is `save_async(mission_id, report)`. `InventoryStore.save(mission_id, report)`: a local JSON file (written to a temporary name, fsynced, renamed, then the directory fsynced, so a cut-off save leaves the last good file; a crash's leftover `.tmp` is swept by the next save once an hour old, never this process's saves in progress; 3.55), plus `put_object` to S3 (SSE AES256) when a bucket is set; failures returned and logged, never raised. `inventory_store_from_config()` |
+| `control/inventory_store.py` | `InventoryStore.latest_for(frame_id)` (3.50.D5): the chain's head on that frame (highest `carry_seq`, then mtime); waits up to `PENDING_WAIT_S` (10 s) for this directory's saves still in flight (`save_async()`, counted module-wide until the local file is settled, since the brain builds a store per mission), raising `TimeoutError` past it; does not parse a file whose text does not name the frame; skips (with a warning) files that cannot be read, decoded or parsed, other frames and hidden `.tmp` saves; a directory that cannot be listed raises (a missing one is "nothing saved"); reads every report each lookup (the head is chosen by lineage), and nothing prunes the directory; S3 is never read back. The brain's sink is `save_async(mission_id, report)`. `InventoryStore.save(mission_id, report)`: a local JSON file (written to a temporary name, fsynced, renamed, then the directory fsynced, so a cut-off save leaves the last good file; a crash's leftover `.tmp` is swept by the next save once an hour old, never this process's saves in progress; 3.55), plus `put_object` to S3 (SSE AES256) when a bucket is set; failures returned and logged, never raised. `inventory_store_from_config()` |
 | `control/mission_runner.py` (inventory) | `_HaltGate` calls `MissionRunner._observe(frame)` inside every `get_camera_frame()`; `_observe` reads `world.get_pose()` and `robot.get_scan(max_range_m=4.5)` only when `detections_fn(frame)` is not None, then updates the inventory under `MissionRunner._lock` (the lock every reader takes) and drops a frame that lands after the mission ended, before its reads (`_ended()`, the rule `_finish` uses; 3.55). `_finish()` logs `summary()`, which may not raise on the way to the stop, and calls `inventory_sink(report)` |
 | `control/perception_eval.py` | P3's corpus scorer: `score` and `compare` subcommands. Reads each walk's `labels.json`; refuses a walk without one. |
 | `control/identity_eval.py` | 3.48: rescores saved `perception_eval` records against today's `labels.json` (counting flips and uncovered frames), adds the cloud's recorded `navigate.target_visible` as a row (only the frames it was asked about, and the command prints how many: 3.76 N1, a never-asked visible frame counted as a cloud miss), and counts YES on the cloud's confabulations, at a fixed gate per model. Measurement only; nothing in the mission path reads it. |
@@ -199,21 +199,26 @@ first usable pose the runner (`_seed_inventory()`, the lookup outside its
 lock, once) asks `inventory_prior(frame_id)` -- the brain server sets it to
 `InventoryStore.latest_for` -- and `Inventory.seed()` starts the mission
 from that report: each landmark with belief at least `CARRY_MIN_BELIEF`
-(0.5) as one point at its saved position, its belief and votes (at most
-`CARRY_VOTES_MAX`, 20, looks per label, the saved label's first so a tie
-keeps its name; looks keyed below 0, apart from this mission's frames),
+(0.5) as one point at its saved position, its belief and votes (scaled
+together so the largest is at most `CARRY_VOTES_MAX`, 20, every label kept
+at least once, the saved label's first so a tie keeps its name; looks keyed
+below 0, apart from this mission's frames),
 `carried: true`; a new sighting within `MERGE_M` joins it. Nothing is
 carried with no `frame_id` (the simulator's own world), with no report on
 it, or once recording has begun; the report names `carried_from` (the
 mission id) and `carry_seq` (the carried report's plus one, 0 with nothing
-carried). Each mission saves what it carried plus what it saw, so the
-chain's head -- the highest `carry_seq` on the frame, mtime between equals,
-never the clock alone -- is all a next mission needs. A lookup that raises
-detaches the inventory (`Inventory.detach()`: no `frame_id` taken), so a
-mission that could not read the chain never becomes its head. Seeding gives
-up after `SEED_TRIES` (30) frames with no usable pose (one extra pose read
-each until then). Without `inventory_prior` (sweeps, harnesses) nothing
-extra is read. `MissionRunner(..., inventory=True, detections_fn=None)`:
+carried; `carry_seq_of()` is the one parsing rule). Each mission saves
+what it carried plus what it saw, so the chain's head -- the highest
+`carry_seq` on the frame, mtime between equals, never the clock alone -- is
+all a next mission needs. A lookup that raises (a directory that cannot be
+listed, a save still in flight past `PENDING_WAIT_S`) detaches the
+inventory (`Inventory.detach()`: its `frame_id` cleared), so a mission that
+could not read the chain never becomes its head. Seeding never gives up:
+nothing is recorded before a usable pose either, so nothing reaches the
+frame unread. On frames with no detections the pose is read for it at most
+every `SEED_EVERY_S` (2 s, the mission clock); a frame with detections reads
+the pose anyway. Without `inventory_prior` (sweeps, harnesses) nothing extra
+is read. `MissionRunner(..., inventory=True, detections_fn=None)`:
 `detections_fn(frame) -> [{label, bearing_deg}] | None`, bearings off the
 camera axis; None means the detector did not run on that frame, so no
 miss is inferred from it.

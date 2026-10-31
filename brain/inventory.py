@@ -102,7 +102,18 @@ L_MISS = -0.4
 SCORE_CLAMP = 4.0
 # 3.50.D5: what a mission carries from the last one on the same saved map.
 CARRY_MIN_BELIEF = 0.5    # no more evidence it is gone than that it is there
-CARRY_VOTES_MAX = 20      # looks per label rebuilt; the history stays bounded
+CARRY_VOTES_MAX = 20      # the most looks a carried landmark keeps; votes scale together
+
+
+def carry_seq_of(report) -> int:
+    """3.50.D5: a saved report's place in the chain -- an integral number at
+    least 0, else 0. One rule for the store's head choice and the next seq."""
+    seq = report.get("carry_seq") if isinstance(report, dict) else None
+    if isinstance(seq, bool) or not isinstance(seq, (int, float)):
+        return 0
+    if isinstance(seq, float) and not (math.isfinite(seq) and seq.is_integer()):
+        return 0
+    return max(0, int(seq))
 REPORT_BELIEF = 0.8     # two independent hits, no misses
 NEW_VIEW_M = 0.5
 NEW_VIEW_DEG = 30.0
@@ -375,9 +386,10 @@ class Inventory:
 
     def detach(self) -> None:
         """3.50.D5: the earlier landmarks could not be read -- record on this
-        map only, never as the saved map's newest (review 1)."""
-        if not self.landmarks and not self.frames:
-            self._detached = True
+        map only, never as the saved map's head (review 1). Clears a
+        `frame_id` already taken (review 2), so it always holds."""
+        self._detached = True
+        self.frame_id = None
 
     def seed(self, frame_id: Optional[str], report: Optional[dict]) -> int:
         """3.50.D5: start this inventory from an earlier mission's `report()`
@@ -408,26 +420,31 @@ class Inventory:
             lm = Landmark(id=self._next_id, room=str(d.get("room") or "unknown"),
                           first_step=None, points=[(x, y, label)],
                           score=min(hi, max(lo, math.log(b / (1 - b)))), carried=True)
-            votes = d.get("votes") if isinstance(d.get("votes"), dict) else {}
-            # The saved label's looks first: a tie keeps the name it had (the
-            # store writes votes in key order).
-            for voted in sorted(votes, key=lambda v: str(v).strip().lower() != label):
+            raw = d.get("votes") if isinstance(d.get("votes"), dict) else {}
+            votes = {}
+            for voted, n in raw.items():
                 try:
-                    n = min(int(votes[voted]), CARRY_VOTES_MAX)
+                    n = int(n)
                 except (TypeError, ValueError, OverflowError):
                     continue
-                for _ in range(max(0, n)):
-                    lm._looks[key] = str(voted)
+                if n > 0:
+                    votes[str(voted)] = n
+            # Scaled together to fit CARRY_VOTES_MAX, so the shares (and
+            # `disputed`) hold; every label kept at least once (review 2).
+            top = max(votes.values(), default=0)
+            scale = CARRY_VOTES_MAX / top if top > CARRY_VOTES_MAX else 1.0
+            # The saved label's looks first: a tie keeps the name it had (the
+            # store writes votes in key order).
+            for voted in sorted(votes, key=lambda v: v.strip().lower() != label):
+                for _ in range(max(1, round(votes[voted] * scale))):
+                    lm._looks[key] = voted
                     key -= 1
             self._next_id += 1
             self.landmarks.append(lm)
             carried += 1
         self.frame_id = frame_id
         self.carried = carried
-        try:
-            self.carry_seq = max(0, int(report.get("carry_seq") or 0)) + 1
-        except (TypeError, ValueError, OverflowError):
-            self.carry_seq = 1
+        self.carry_seq = carry_seq_of(report) + 1
         # The mission's id where the report has one (the brain's), else its text.
         mission = report.get("mission_id") or report.get("mission")
         self.carried_from = mission if isinstance(mission, str) else None

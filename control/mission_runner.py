@@ -63,9 +63,6 @@ from brain.goal_policy import rooms_prior_informative as flat_prior_ok
 from brain.frontier import RETRY_COOLDOWN_S, RETRY_LIMIT
 from brain.inventory import MAX_RANGE_M as INVENTORY_RANGE_M
 from brain.inventory import DEFAULT_FOV_DEG, Inventory, frame_detections
-
-# 3.50.D5: frames without a usable pose before seeding gives up.
-SEED_TRIES = 30
 from brain.memory import MissionMemory
 from brain.mission_report import map_coverage
 from brain.navigate import CloudUnavailable
@@ -77,6 +74,10 @@ from robot.safety import SafetyViolation
 from world.interface import NullWorld, WorldInterface
 
 logger = logging.getLogger("mission_runner")
+
+# 3.50.D5: on frames with no detections, how often a pose is read to seed
+# the inventory before the first usable one (seconds on the mission clock).
+SEED_EVERY_S = 2.0
 
 # Deliberately NOT 30.0, which is exactly one grid cell.
 #
@@ -743,7 +744,7 @@ class MissionRunner:
         # None (sweeps, harnesses) carries nothing and reads nothing extra.
         self.inventory_prior: Optional[Callable[[str], Optional[dict]]] = None
         self._inventory_seeded = False
-        self._seed_tries = 0
+        self._seed_read_at: Optional[float] = None   # self.clock of the last no-detection read
         self._seed_error_logged = False
         self.policy = policy
         # 3.70 E4: the budget is a time limit (on `self.clock`, so sim time in
@@ -2362,9 +2363,12 @@ class MissionRunner:
             if detections is None:
                 if self.inventory_prior is not None and not self._inventory_seeded:
                     # 3.50.D5: seed on the first usable pose even before the
-                    # first detection -- one pose read a frame until then,
-                    # at most SEED_TRIES of them.
-                    self._seed_inventory(self.world.get_pose())
+                    # first detection -- a pose read for it at most every
+                    # SEED_EVERY_S until then (a phone walk never has one).
+                    now = self.clock()
+                    if self._seed_read_at is None or now - self._seed_read_at >= SEED_EVERY_S:
+                        self._seed_read_at = now
+                        self._seed_inventory(self.world.get_pose())
                 return
             pose = self.world.get_pose()
             self._seed_inventory(pose)
@@ -2387,14 +2391,13 @@ class MissionRunner:
         saved on this pose's saved map (`frame_id`) seeds this inventory.
         The lookup reads files, so it runs outside the lock. A lookup that
         fails detaches the inventory from the saved map, so its report can
-        never stand in for landmarks it could not read (review 1). No usable
-        pose in `SEED_TRIES` frames (a phone walk has none) gives up."""
+        never stand in for landmarks it could not read (review 1). It never
+        gives up: until a usable pose comes nothing is recorded either, so
+        nothing can be saved on the frame without first reading the chain
+        (review 2)."""
         if self.inventory_prior is None or self._inventory_seeded:
             return
         if not pose or not pose.get("usable"):
-            self._seed_tries += 1
-            if self._seed_tries >= SEED_TRIES:
-                self._inventory_seeded = True     # no usable pose: nothing to carry
             return
         frame_id = pose.get("frame_id")
         prior, failed = None, False

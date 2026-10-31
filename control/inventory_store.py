@@ -31,6 +31,8 @@ import time
 from pathlib import Path
 from typing import Optional
 
+from brain.inventory import carry_seq_of
+
 logger = logging.getLogger(__name__)
 
 _SAFE = re.compile(r"[^a-z0-9._-]+")
@@ -202,17 +204,20 @@ class InventoryStore:
         plus what it saw, so only the head is needed.
 
         Waits up to `PENDING_WAIT_S` for local saves still in flight here
-        (`save_async`). Local only: S3 is never read back. A file that does
-        not name the frame is not parsed; files that do not parse, other
-        frames and hidden `.tmp` saves are skipped. A directory that cannot
-        be listed raises (a failed lookup, not "nothing saved")."""
+        (`save_async`); past that it raises `TimeoutError`. Local only: S3
+        is never read back. A file that does not name the frame is not
+        parsed; files that cannot be read, decoded or parsed, other frames
+        and hidden `.tmp` saves are skipped. A directory that cannot be
+        listed raises (a failed lookup, not "nothing saved")."""
         if not frame_id:
             return None
         key = str(self.local_dir.resolve())
         with _PENDING_COND:
             if not _PENDING_COND.wait_for(lambda: not _PENDING.get(key), PENDING_WAIT_S):
-                logger.warning("inventory: a save still in flight after %.0f s; "
-                               "reading without it", PENDING_WAIT_S)
+                # Read around it and this mission would tie the save still
+                # being written (review 2): a failed lookup, so it detaches.
+                raise TimeoutError(f"an inventory save still in flight after "
+                                   f"{PENDING_WAIT_S:.0f} s")
         try:
             listed = [p for p in self.local_dir.glob("*.json") if not p.name.startswith(".")]
         except FileNotFoundError:
@@ -225,6 +230,10 @@ class InventoryStore:
                 text = path.read_text()
             except FileNotFoundError:
                 continue                  # removed since it was listed
+            except (OSError, UnicodeDecodeError) as e:
+                # One bad file must not stop every lookup (review 2).
+                logger.warning("inventory: %s skipped: %s", path.name, e)
+                continue
             if needle not in text:
                 continue
             try:
@@ -233,9 +242,7 @@ class InventoryStore:
                 continue
             if not isinstance(report, dict) or report.get("frame_id") != frame_id:
                 continue
-            seq = report.get("carry_seq")
-            seq = seq if isinstance(seq, int) and not isinstance(seq, bool) else 0
-            rank = (seq, mtime, path.name)
+            rank = (carry_seq_of(report), mtime, path.name)
             if best_key is None or rank > best_key:
                 best, best_key = report, rank
         return best

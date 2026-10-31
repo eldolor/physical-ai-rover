@@ -332,7 +332,8 @@ def test_without_a_saved_frame_nothing_is_read_or_carried(tmp_path):
 
 from brain.inventory import CARRY_VOTES_MAX  # noqa: E402
 from control import inventory_store as store_mod  # noqa: E402
-from control.mission_runner import SEED_TRIES  # noqa: E402
+from control.mission_runner import SEED_EVERY_S  # noqa: E402
+from brain.inventory import carry_seq_of  # noqa: E402
 
 
 def test_the_head_is_chosen_by_lineage_not_by_the_clock(tmp_path):
@@ -427,27 +428,109 @@ def test_the_report_carries_its_place_in_the_chain():
     assert Inventory().report()["carry_seq"] == 0
 
 
-def test_no_usable_pose_gives_up_after_a_bounded_number_of_reads(tmp_path):
-    """A phone walk never has a usable pose: the extra reads stop."""
-    class _NoPose:
-        def __init__(self, inner):
-            self._inner, self.reads = inner, 0
+class _HeldPose:
+    """A world whose pose is unusable for its first `held` reads (a reload's
+    hold, or a phone walk with None), then the inner, framed pose."""
 
-        def get_pose(self):
-            self.reads += 1
+    def __init__(self, inner, held=None):
+        self._inner, self.held, self.reads = inner, held, 0
+
+    def get_pose(self):
+        self.reads += 1
+        if self.held is None or self.reads <= self.held:
             return {"usable": False, "map_id": None, "frame_id": None,
                     "x_m": None, "y_m": None, "heading_deg": None}
+        return self._inner.get_pose()
 
-        def __getattr__(self, name):
-            return getattr(self._inner, name)
+    def __getattr__(self, name):
+        return getattr(self._inner, name)
 
+
+def test_no_usable_pose_costs_a_read_every_few_seconds_not_every_frame():
+    """A phone walk never has a usable pose (review 2: counted in time)."""
     grid = build_world("complex_house")
     robot = MockRobot(grid, render=False)
-    world = _NoPose(mock_world_for(robot))
+    world = _HeldPose(mock_world_for(robot))
     runner = MissionRunner(robot, target_object="unicorn", max_steps=80, policy="frontier",
                            world=world, detections_fn=lambda frame: None)
     runner.inventory_prior = lambda f: None
+    seeds = []
+    real = runner._seed_inventory
+    runner._seed_inventory = lambda pose: (seeds.append(pose), real(pose))
+    t0 = runner.clock()
     runner.start()
     while runner.tick():
         pass
-    assert runner._inventory_seeded and runner._seed_tries == SEED_TRIES
+    elapsed = runner.clock() - t0
+    assert not runner._inventory_seeded
+    assert 1 <= len(seeds) <= elapsed / SEED_EVERY_S + 2, (len(seeds), elapsed)
+    assert len(seeds) < runner._ticks, "a pose read on every frame"
+
+
+def test_a_long_hold_then_a_usable_pose_still_carries(tmp_path):
+    """Review 2: giving up after N frames let a held mission take the frame
+    at carry_seq 0 and cut the chain; now it seeds when the pose comes."""
+    store = InventoryStore(str(tmp_path))
+    _session(store, SAVED, "s1")
+    first = store.latest_for(SAVED)
+    grid = build_world("complex_house")
+    robot = MockRobot(grid, render=False)
+    world = _HeldPose(_FramedWorld(mock_world_for(robot), SAVED, "s2"), held=40)
+    runner = MissionRunner(robot, target_object="unicorn", max_steps=80, policy="frontier",
+                           world=world)
+    runner.mission_id = "mission-s2"
+    runner.inventory_prior = store.latest_for
+    runner.inventory_sink = lambda report: store.save(runner.mission_id, report)
+    runner.start()
+    while runner.tick():
+        pass
+    assert world.reads > 40 and runner._inventory_seeded
+    assert runner.inventory.report()["carry_seq"] == carry_seq_of(first) + 1
+    assert store.latest_for(SAVED)["mission_id"] == "mission-s2"
+    assert any(lm.carried for lm in runner.inventory.landmarks)
+
+
+def test_a_wait_that_runs_out_is_a_failed_lookup(tmp_path, monkeypatch):
+    store = InventoryStore(str(tmp_path))
+    key = str(tmp_path.resolve())
+    monkeypatch.setattr(store_mod, "PENDING_WAIT_S", 0.05)
+    with store_mod._PENDING_COND:
+        store_mod._PENDING[key] = 1
+    try:
+        with pytest.raises(TimeoutError):
+            store.latest_for(SAVED)
+    finally:
+        with store_mod._PENDING_COND:
+            store_mod._PENDING.pop(key, None)
+
+
+def test_one_unreadable_file_is_skipped_not_fatal(tmp_path):
+    _write(tmp_path, "good.json", {"frame_id": SAVED, "mission": "good"}, age_s=10)
+    (tmp_path / "bad.json").write_bytes(b"\xff\xfe" + SAVED.encode() + b"\x80")
+    (tmp_path / "dir.json").mkdir()
+    assert InventoryStore(str(tmp_path)).latest_for(SAVED)["mission"] == "good"
+
+
+def test_votes_scale_together_so_the_shares_hold():
+    saved = _session_one()
+    saved["candidates"] = saved["candidates"] + [
+        {"label": "chair", "x_m": 3.0, "y_m": 3.0, "belief": 0.9,
+         "votes": {"chair": 200, "stool": 25}}]
+    inv = Inventory()
+    inv.seed(SAVED, saved)
+    chair = next(lm for lm in inv.landmarks if lm.label == "chair")
+    assert chair.votes == {"chair": CARRY_VOTES_MAX, "stool": 2} and not chair.disputed
+
+
+@pytest.mark.parametrize("value, seq", [
+    (3, 3), (3.0, 3), (2.5, 0), ("3", 0), (True, 0), (-4, 0), (None, 0), (float("inf"), 0)])
+def test_one_carry_seq_rule(value, seq):
+    assert carry_seq_of({"carry_seq": value}) == seq
+
+
+def test_detach_clears_a_frame_already_taken():
+    inv = Inventory()
+    inv.observe([{"label": "cup", "bearing_deg": 0.0}], _pose(), _scan({0: 1.0}))
+    assert inv.frame_id == SAVED
+    inv.detach()
+    assert inv.report()["frame_id"] is None
