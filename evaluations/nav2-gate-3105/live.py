@@ -14,7 +14,9 @@ map stays in the run directory (a sim floor plan, never committed).
 Known limits (review): `ready_at` is `d3.container`'s, once `slam.state` is
 `ready` and the start truth is in, not the first `ready` read; a refusal is
 recorded by the robot server's reason (`ros_unavailable` for every bridge
-503), so the hold is told from other refusals only by when it happens; the
+503 when this ran; since 3.127 the hold reads `nav2_starting` or
+`slam_not_ready`), so the hold was told from other refusals only by when it
+happened; the
 image's contents are not checked against a commit.
 """
 import importlib.util

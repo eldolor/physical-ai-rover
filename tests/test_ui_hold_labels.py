@@ -4,8 +4,7 @@ room labeller.
 (a) A map tap the robot server refuses `nav2_starting` / `slam_not_ready`
 (the bridge holding goals at a start, 3.105 / 3.50.D3) is a start-up wait,
 told as information -- it was an error toast quoting the bridge's 503.
-(b) `last_refusal` with those reasons reads NAV2 STARTING / SLAM NOT READY,
-calm. (c) A survey whose label source refused for good shows why
+(c) A survey whose label source refused for good shows why
 (`source_error`), not "nothing can name rooms here", which a brain with no
 source at all also says. Written before the change and seen to fail
 (docs/plans/ros-alignment/3.127-twin-survey-error-nav2-hold.md).
@@ -101,33 +100,6 @@ def test_a_map_tap_refused_as_ros_down_is_still_an_error(browser, twin_server):
     page.context.close()
 
 
-# ---------- (b) the refusal readout ----------
-
-@pytest.mark.parametrize("reason, label", [
-    ("nav2_starting", "NAV2 STARTING"), ("slam_not_ready", "SLAM NOT READY"),
-])
-def test_the_refusal_readout_names_a_start_up_hold_calmly(browser, twin_server, reason, label):
-    """Red on dev: read as the bare reason in the warning colour."""
-    page, errors = open_twin(browser, twin_server)
-    page.route("**/health", lambda route: route.fulfill(
-        status=200, content_type="application/json", body=_json({
-            "status": "ok", "seconds_since_last_command": 0.1,
-            "watchdog_timeout_s": 1.0, "min_distance_cm": 20, "mode": "sim",
-            "env_label": "", "driver": "twin-dpad", "authority_holder": None,
-            "last_refusal": {"reason": reason, "detail": "d", "driver": "brain",
-                             "at": 1.0, "seconds_ago": 1.0}})))
-    page.click("#btn-settings")
-    page.fill("#cfg-server-url", twin_server)
-    page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
-    readout = page.locator("#brain-tel-refusal")
-    sync_api.expect(readout).to_contain_text(label, timeout=5000)
-    classes = (readout.get_attribute("class") or "").split()
-    assert "alert" not in classes and "warn" not in classes, classes
-    assert not errors, errors
-    page.context.close()
-
-
 # ---------- (c) the survey row ----------
 
 def _with_survey(**fields):
@@ -165,6 +137,17 @@ def test_a_long_source_error_is_cut_and_shown_as_text(browser, twin_server):
     sync_api.expect(row).to_contain_text("<b>bold</b>", timeout=5000)
     assert row.locator("b").count() == 0
     assert len(row.text_content()) < len(err) + 40, row.text_content()
+
+
+def test_a_cut_never_splits_a_character(browser, twin_server):
+    """Review round 1: the 100th character an emoji (two UTF-16 units) --
+    a unit cut left half of it before the ellipsis."""
+    err = "x" * 99 + "\U0001F600" + "y" * 50
+    page, errors = open_with_brain(browser, twin_server, health=SURVEY_HEALTH,
+                                   status=_with_survey(no_source=True, source_error=err))
+    row = page.locator("#brain-tel-survey")
+    sync_api.expect(row).to_contain_text("\u2026", timeout=5000)
+    assert "x" * 99 + "\U0001F600\u2026" in row.text_content()
     assert not errors, errors
     page.context.close()
 

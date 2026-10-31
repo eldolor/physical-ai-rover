@@ -101,6 +101,36 @@ def test_hold_reason_reads_only_a_503_with_the_bridges_hold_keys():
     assert bridge_faults.hold_reason(ValueError("not httpx")) is None
 
 
+@pytest.mark.parametrize("state", ["starting", "checking", "remapping"])
+def test_every_passing_slam_state_is_a_hold(state):
+    assert bridge_faults.hold_reason(_err(503, {"error": "x", "slam": state})) == "slam_not_ready"
+
+
+def test_a_failed_slam_is_not_a_hold():
+    """Review round 1: `failed` is for good (slam_toolbox did not start, a
+    re-map's relocalisation failed) -- an outage, not a wait."""
+    assert bridge_faults.hold_reason(_err(503, {"error": "SLAM is not ready (failed): x",
+                                                "slam": "failed"})) is None
+
+
+@pytest.mark.parametrize("inactive_s, held", [
+    (0.0, True), (12.5, True), (bridge_faults.NAV2_START_MAX_S, True),
+    (bridge_faults.NAV2_START_MAX_S + 0.1, False), (600.0, False),
+    (None, False), ("12", False), (True, False), (-1.0, False),
+])
+def test_nav2_reads_as_starting_only_inside_a_start(inactive_s, held):
+    """Review round 1: the bridge sends the same body for a nav2 that never
+    comes up (3.105's open case) -- past a start's length it is down."""
+    body = {"error": "nav2 is not active", "nav2": {"active": False, "inactive_s": inactive_s}}
+    assert (bridge_faults.hold_reason(_err(503, body)) == "nav2_starting") is held
+
+
+def _err(status, body):
+    req = httpx.Request("POST", "http://bridge/goal")
+    return httpx.HTTPStatusError("x", request=req,
+                                 response=httpx.Response(status, json=body, request=req))
+
+
 # ---------- criterion 2: explore still waits on it ----------
 
 def test_explore_waits_on_a_held_goal_and_fails_no_place():

@@ -53,14 +53,21 @@ def classify(exc: Exception) -> dict:
 # hold (picar_bridge `_goal_refusal`): `nav2` (3.105, the lifecycle manager
 # not yet active) or `slam` (3.50.D3, slam_toolbox not `ready`). The robot
 # server refuses such a goal by this name instead of `ros_unavailable`; it
-# is retryable all the same (a 503).
+# is retryable all the same (a 503). Only while the hold is a start's: the
+# bridge sends the same `nav2` body for a nav2 that never comes up, and the
+# same `slam` body for a SLAM that `failed` for good -- those stay outages.
 HOLD_NAV2 = "nav2_starting"
 HOLD_SLAM = "slam_not_ready"
+# nav2 inactive this long reads as down, not starting: 3.105 measured ~13 s
+# from a container start to active; 60 s is over four of those.
+NAV2_START_MAX_S = 60.0
+# The bridge's slam states that pass on their own (`failed` does not).
+SLAM_PASSING = ("starting", "checking", "remapping")
 
 
 def hold_reason(exc: Exception) -> Optional[str]:
     """`nav2_starting` / `slam_not_ready` for a bridge 503 whose JSON body
-    names that hold, else None (any other error is an outage or a fault)."""
+    names a hold that will pass, else None (an outage or a setup fault)."""
     if not isinstance(exc, httpx.HTTPStatusError) or exc.response.status_code != 503:
         return None
     try:
@@ -69,9 +76,13 @@ def hold_reason(exc: Exception) -> Optional[str]:
         return None
     if not isinstance(body, dict):
         return None
-    if isinstance(body.get("nav2"), dict):
-        return HOLD_NAV2
-    if isinstance(body.get("slam"), str):
+    nav2 = body.get("nav2")
+    if isinstance(nav2, dict):
+        since = nav2.get("inactive_s")
+        starting = (isinstance(since, (int, float)) and not isinstance(since, bool)
+                    and 0 <= since <= NAV2_START_MAX_S)
+        return HOLD_NAV2 if starting else None
+    if body.get("slam") in SLAM_PASSING:
         return HOLD_SLAM
     return None
 
