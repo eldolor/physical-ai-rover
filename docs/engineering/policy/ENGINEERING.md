@@ -769,7 +769,11 @@ linear policy.
 whose ten features `_pool` extends with seven room features
 (`goal_policy.room_features`, `ROOM_FEATURES`) when the policy says
 `rooms`. The map is resampled to 0.30 m (`coarse()`: occupied if any cell
-is, free if half are), cut into rooms by `brain/room_labels.segment()`, and
+is, free if half are; since 3.131 `_pool` hands its `goal_context()` down
+through `extend(ctx=)` -> `room_features(ctx=)` -> `coarse(cells=)`, so the
+map's cell list is converted to an array once a choice, not three times, with
+exactly the old answers: frozen in `tests/room_features_reference.py`), cut
+into rooms by `brain/room_labels.segment()`, and
 each candidate gets its room's newness (never stood in, by
 `ExploreAgent._trail`: one pose per 5 cm square, `TRAIL_M`, noted with the
 room in `_note_room`), area, whether it is another room than the robot's,

@@ -1,0 +1,50 @@
+{
+ "label": "desktop",
+ "host": "anshu-Legion-T5-28IMB05",
+ "machine": "x86_64",
+ "start_unix": 1793463121,
+ "end_unix": 1793463134,
+ "loadavg": [
+  1.79931640625,
+  1.89453125,
+  1.97607421875
+ ],
+ "poses": 120,
+ "candidates_median": 85.0,
+ "whole_choice": {
+  "F-large-new": {
+   "choices": 120,
+   "p50_ms": 31.18,
+   "p90_ms": 34.43,
+   "max_ms": 119.34
+  },
+  "F-large-before": {
+   "choices": 120,
+   "p50_ms": 34.1,
+   "p90_ms": 36.89,
+   "max_ms": 110.5
+  }
+ },
+ "F-large_parts": {
+  "map_work": {
+   "p50_ms": 21.27,
+   "p90_ms": 24.48,
+   "max_ms": 82.16
+  },
+  "ten_facts": {
+   "p50_ms": 6.15,
+   "p90_ms": 6.42,
+   "max_ms": 26.06
+  },
+  "room_facts": {
+   "p50_ms": 3.46,
+   "p90_ms": 3.78,
+   "max_ms": 12.95
+  },
+  "network": {
+   "p50_ms": 0.12,
+   "p90_ms": 0.13,
+   "max_ms": 0.57
+  }
+ }
+}

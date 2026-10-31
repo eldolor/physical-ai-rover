@@ -7,12 +7,14 @@ grids. The slow sweep (`test_room_features_ctx_sweep.py`) covers every call
 explore makes in 24 in-process missions."""
 import random
 
+import numpy as np
 import pytest
 
 import brain.goal_policy as G
 from brain import frontier as fr
 from tests import frontier_compare as fc
 from tests import room_features_reference as ref
+from world.interface import CELL_FREE
 
 PRIOR = {"kitchen": 0.3, "bedroom": 0.1, "office": 0.0}
 TYPES = (None, "kitchen", "bedroom", "office")
@@ -27,7 +29,13 @@ def _three_ways(m, pose, goals, trail, types, prior):
 
 
 def _trail(m, x, y, n=30):
-    return [(x + 0.05 * i, y) for i in range(n)]
+    """The 30 free cells nearest the pose, as 3.96's benchmark draws the
+    brain's trail (`time_choice.trail_near`)."""
+    w, res, ox, oy = m["width"], m["resolution_m"], m["origin_x_m"], m["origin_y_m"]
+    free = np.flatnonzero(np.asarray(m["cells"]) == CELL_FREE)
+    px, py = ox + (free % w + 0.5) * res, oy + (free // w + 0.5) * res
+    near = np.argsort((px - x) ** 2 + (py - y) ** 2, kind="stable")[:n]
+    return list(zip(px[near].tolist(), py[near].tolist()))
 
 
 @pytest.mark.parametrize("path", fc.MAPS, ids=lambda p: p.name.split(".")[0])
@@ -84,7 +92,7 @@ def test_a_context_from_another_map_is_refused():
                         prior={}, ctx=G.goal_context(other))
 
 
-def test_the_policy_hands_its_context_through():
+def test_the_policy_hands_its_context_through(monkeypatch):
     """`RoomGoalPolicy.extend(ctx=...)` reaches `room_features()` (explore's
     path) and changes no answer."""
     m = fc.load(fc.MAPS[1])
@@ -101,12 +109,9 @@ def test_the_policy_hands_its_context_through():
     def spy(*a, **k):
         seen.append(k.get("ctx"))
         return real(*a, **k)
-    G.room_features = spy
-    try:
-        ctx = G.goal_context(m)
-        with_ctx = pol.extend(m, pose, goals, feats, ctx=ctx, **kw)
-        without = pol.extend(m, pose, goals, feats, **kw)
-    finally:
-        G.room_features = real
+    monkeypatch.setattr(G, "room_features", spy)
+    ctx = G.goal_context(m)
+    with_ctx = pol.extend(m, pose, goals, feats, ctx=ctx, **kw)
+    without = pol.extend(m, pose, goals, feats, **kw)
     assert seen == [ctx, None]
     assert with_ctx == without

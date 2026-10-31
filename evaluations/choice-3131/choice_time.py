@@ -10,6 +10,11 @@ the choice's `goal_context()` is handed to the room features
 (`room_features(..., ctx=ctx)`), so the map's cell list is converted once a
 choice. The camera-seen set is empty, as 3.96/3.103/3.125 timed it.
 
+Two arms at every pose, in an order that alternates pose by pose (as
+`jetson_time.py` rotates its arms), so load reaches both alike: `new`, this
+choice, and `before`, 3.96's `time_choice.choice` -- the same code without
+the hand-off. The parts are timed on `new` after both.
+
     python evaluations/choice-3131/choice_time.py <label> <out.json>
 """
 import json
@@ -73,18 +78,23 @@ def stats(xs) -> dict:
 
 def main(label: str, out_path: str) -> None:
     P = to_np(json.load(open(T396.BEST))["params"])
-    whole, split, counts = [], {}, []
+    arms = {"new": lambda m, x, y, h, t: choice(m, x, y, h, t, P),
+            "before": lambda m, x, y, h, t: T396.choice(m, x, y, h, P, t)[0]}
+    whole, split, counts, i = {n: [] for n in arms}, {}, [], 0
     t0, rng = time.time(), random.Random(fc.SEED)
     for path in fc.MAPS:
         m = fc.load(path)
         segment(T396.coarse(m))                 # warm once, as a running brain would be
         for x, y in fc.poses(m, T396.POSES, rng):
             trail, heading = T396.trail_near(m, x, y), rng.uniform(0, 360)
-            t = time.perf_counter()
-            k = choice(m, x, y, heading, trail, P)
-            if k:
-                whole.append((time.perf_counter() - t) * 1000)
-                counts.append(k)
+            for n in (("new", "before") if i % 2 == 0 else ("before", "new")):
+                t = time.perf_counter()
+                k = arms[n](m, x, y, heading, trail)
+                if k:
+                    whole[n].append((time.perf_counter() - t) * 1000)
+                    if n == "new":
+                        counts.append(k)
+            i += 1
             ms = {}
             if choice(m, x, y, heading, trail, P, ms):
                 for part, v in ms.items():
@@ -92,9 +102,10 @@ def main(label: str, out_path: str) -> None:
         print(f"{time.strftime('%T')} {os.path.basename(path)} done", flush=True)
     out = {"label": label, "host": platform.node(), "machine": platform.machine(),
            "start_unix": round(t0), "end_unix": round(time.time()),
-           "loadavg": os.getloadavg(), "poses": len(whole),
+           "loadavg": os.getloadavg(), "poses": i,
            "candidates_median": statistics.median(counts),
-           "whole_choice": {"F-large": {"choices": len(whole), **stats(whole)}},
+           "whole_choice": {f"F-large-{n}": {"choices": len(v), **stats(v)}
+                            for n, v in whole.items()},
            "F-large_parts": {p: stats(v) for p, v in split.items()}}
     with open(out_path, "w") as f:
         f.write(json.dumps(out, indent=1) + "\n")
