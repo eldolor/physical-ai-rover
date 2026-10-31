@@ -176,19 +176,29 @@ BRAIN = f"http://127.0.0.1:{BRAIN_PORT}"
 STATIC = f"http://127.0.0.1:{STATIC_PORT}"
 
 
-class _Quiet(http.server.SimpleHTTPRequestHandler):
-    # The content types S3 serves (service/static/assets.json): without the
-    # charset a page with no <meta charset> (admin.html) decodes as cp1252.
-    extensions_map = {**http.server.SimpleHTTPRequestHandler.extensions_map,
-                      ".html": "text/html; charset=utf-8", ".js": "application/javascript",
-                      ".json": "application/json", ".png": "image/png"}
+class _Deployed(http.server.BaseHTTPRequestHandler):
+    """The static bucket as CloudFront serves it (amendment 7): exactly the
+    keys, sources and content types in service/static/assets.json, read per
+    request, so the pages load their files by the same relative paths as
+    deployed (index.html at the root, the consoles at /admin and /metrics)."""
 
     def log_message(self, *a):
         pass
 
-    def end_headers(self):
+    def do_GET(self):
+        key = self.path.split("?")[0].lstrip("/") or "index.html"
+        assets = json.loads((REPO / "service/static/assets.json").read_text())["assets"]
+        hit = next((a for a in assets if a["key"] == key), None)
+        if hit is None:
+            self.send_error(404)
+            return
+        body = (REPO / hit["src"]).read_bytes()
+        self.send_response(200)
+        self.send_header("Content-Type", hit["type"])
+        self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
-        super().end_headers()
+        self.end_headers()
+        self.wfile.write(body)
 
 
 def _port_busy(port: int) -> bool:
@@ -216,9 +226,8 @@ def servers(logdir: Path):
     logdir.mkdir(parents=True, exist_ok=True)
     procs, httpd = [], None
     try:
-        handler = partial(_Quiet, directory=str(REPO))
         socketserver.TCPServer.allow_reuse_address = True
-        httpd = socketserver.ThreadingTCPServer(("127.0.0.1", STATIC_PORT), handler)
+        httpd = socketserver.ThreadingTCPServer(("127.0.0.1", STATIC_PORT), _Deployed)
         threading.Thread(target=httpd.serve_forever, daemon=True).start()
         for mod, port in (("robot.server:app", ROBOT_PORT), ("control.brain_server:app", BRAIN_PORT)):
             log = open(logdir / f"{mod.split('.')[0]}.log", "w")
@@ -434,9 +443,9 @@ def measure_state(page, name, axe, shots: Path, light_too=True) -> dict:
 
 # ---------- the twin ----------
 
-TWIN = STATIC + "/web-twin/index.html"
-ADMIN = STATIC + "/control/admin.html"
-METRICS = STATIC + "/control/metrics.html"
+TWIN = STATIC + "/"          # the deployed keys (amendment 7)
+ADMIN = STATIC + "/admin"
+METRICS = STATIC + "/metrics"
 
 
 class Taps:

@@ -316,3 +316,23 @@ def test_the_twin_serves_its_script_and_links_to_it():
         assert script.status_code == 200
         assert "application/javascript" in script.headers["content-type"]
         assert "no-cache" in script.headers.get("cache-control", "")
+
+
+def test_the_twin_serves_its_stylesheets_and_links_them_in_order():
+    """3.132 Stage 1 criterion 1: the style left index.html for two sheets,
+    the shared tokens first, then the twin's own rules. A missing route is
+    an unstyled page that every functional test still passes."""
+    from fastapi.testclient import TestClient
+    from robot.server import create_app
+
+    with TestClient(create_app()) as client:
+        page = client.get("/").text
+        assert "<style" not in page, "the style should be external, not inlined again"
+        ui, twin = page.find('href="ui.css"'), page.find('href="twin.css"')
+        assert 0 <= ui < twin, "ui.css (the tokens) must load before twin.css"
+        for route in ("/ui.css", "/twin.css"):
+            sheet = client.get(route)
+            assert sheet.status_code == 200, route
+            assert "text/css" in sheet.headers["content-type"], route
+            assert "no-cache" in sheet.headers.get("cache-control", ""), route
+            assert sheet.text.strip(), route

@@ -10,6 +10,7 @@ config/robot.yaml's `mode` does.
 Endpoints:
     GET  /            serves web-twin/index.html (the digital twin UI)
     GET  /app.js                  the twin's client script (was inline)
+    GET  /ui.css, /twin.css      the twin's stylesheets (3.132; were inline)
     GET  /manifest.json           PWA manifest, for "Add to Home Screen"
     GET  /icons/icon-192.png      referenced by manifest.json and
     GET  /icons/icon-512.png      index.html's <link rel="icon">
@@ -123,6 +124,10 @@ logger = logging.getLogger("server")
 
 _TWIN_INDEX_HTML = Path(__file__).resolve().parent.parent / "web-twin" / "index.html"
 _TWIN_APP_JS = Path(__file__).resolve().parent.parent / "web-twin" / "app.js"
+# 3.132 Stage 1: the twin's style, out of index.html. ui.css is the project's
+# shared tokens and base rules (web-shared/), twin.css the twin's own.
+_SHARED_UI_CSS = Path(__file__).resolve().parent.parent / "web-shared" / "ui.css"
+_TWIN_CSS = Path(__file__).resolve().parent.parent / "web-twin" / "twin.css"
 _TWIN_MANIFEST_JSON = Path(__file__).resolve().parent.parent / "web-twin" / "manifest.json"
 _TWIN_ICONS_DIR = Path(__file__).resolve().parent.parent / "web-twin" / "icons"
 
@@ -712,6 +717,19 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             media_type="application/javascript",
             headers={"Cache-Control": "no-cache"},
         )
+
+    # 3.132 Stage 1: the two stylesheets index.html links, revalidated like
+    # app.js above (no-cache + ETag), for the same reason: the page and its
+    # files must never be a version apart.
+    @app.get(prefix + "/ui.css")
+    def twin_ui_css():
+        return FileResponse(_SHARED_UI_CSS, media_type="text/css",
+                            headers={"Cache-Control": "no-cache"})
+
+    @app.get(prefix + "/twin.css")
+    def twin_css():
+        return FileResponse(_TWIN_CSS, media_type="text/css",
+                            headers={"Cache-Control": "no-cache"})
 
     # Explicit routes rather than a generic /icons/{filename} + StaticFiles
     # mount -- there are exactly three icon files, and exact routes mean no
