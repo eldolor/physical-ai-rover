@@ -1051,6 +1051,20 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   in 24 missions compared (`test_frontier_3130_sweep.py`, slow tier); 17 of 17
   planted bugs caught. Live `found`, 0 contacts. The board's brain is not
   updated (asked first).
+* **F-large's whole choice under 100 ms on the board (3.131), merged
+  2026-10-31, criteria 1-4 met.** On 3.130's code, explore's `_pool()` hands
+  its `goal_context()` down (`extend(ctx=)` -> `room_features(ctx=)` ->
+  `coarse(cells=)`), so the map's cell list becomes an array once a choice,
+  not three times; exactly the old answers (frozen
+  `tests/room_features_reference.py`; every call in 24 `rooms` missions,
+  `test_room_features_ctx_sweep.py`, slow tier). Jetson, 15 W, under the full
+  stack (3.125.B's method, valid window: 0 late ticks, nav2 18/18, 0 OOM):
+  **whole choice p90 95.2 ms** (bar 100; 103.6 at the same poses without the
+  hand-off, so 3.130 alone just missed), map work 69.1, room facts 11.2;
+  quiet 81.8 (87.4). A single run, ~5 ms of margin. 3.96 criterion 6's bar
+  is met on 3.96's benchmark, whose camera-seen set is empty (3.130: with
+  explore's real seen cells the map work is ~1.7x). Live `found`, 0
+  contacts. `evaluations/choice-3131/`. The board's brain is not updated.
 * **Harness missions collect their cycles (3.113), merged 2026-10-27.**
   `evaluations/goal-learn-396/train.py` `mission()` runs `gc.collect()` in
   a `finally` (a mission's runner, agent and house are reference cycles);
