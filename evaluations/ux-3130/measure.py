@@ -347,8 +347,23 @@ def stub_vision(page):
 
 # ---------- measuring one state ----------
 
+# Amendment 5: a state is measured settled -- no toast on screen (they live
+# 3.2-5.4 s) and no finite animation running -- so a fade caught half way
+# (attempt 1's Settings contrast hit) cannot make two runs differ.
+JS_SETTLED = r"""() => {
+  const stack = document.getElementById("toast-stack");
+  if (stack && stack.children.length) return false;
+  return document.getAnimations().every(a => {
+    const t = a.effect && a.effect.getTiming ? a.effect.getTiming() : {};
+    return t.iterations === Infinity || a.playState !== "running";
+  });
+}"""
+
+
 def measure_state(page, name, axe, shots: Path, light_too=True) -> dict:
     page.wait_for_timeout(600)
+    with contextlib.suppress(Exception):
+        page.wait_for_function(JS_SETTLED, timeout=10_000)
     page.screenshot(path=str(shots / f"{name}.png"), full_page=True)
     if light_too:
         page.emulate_media(color_scheme="light")
