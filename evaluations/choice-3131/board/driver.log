@@ -1,0 +1,9 @@
+11:28:59 == quiet: active picar-stack, NV Power Mode: 15W,  11:28:59 up 3 days,  2:09,  0 users,  load average: 2.04, 2.71, 1.89
+9 passed in 18.30s
+11:29:49 quiet exit 0
+11:29:49 == full stack
+11:33:24 window started; choice bench
+11:33:58 full exit 0; window ended yet: 0
+11:40:12 harness exit 0
+11:40:27 twin units: active active; local VLM active
+11:40:27 DONE
