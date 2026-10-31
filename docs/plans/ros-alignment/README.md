@@ -137,4 +137,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.129](3.129-desktop-lock-followups.md) | The desktop lock's open items: pushes skip the queue, long jobs step aside, the nightly takes it |
 | [3.130](3.130-fast-map-work.md) | Explore's map work in numpy: reach, frontiers and view gaps with exactly the old answers |
 | [3.132](3.132-ux-redesign.md) | A staged UX redesign of the twin and consoles |
+| [3.131](3.131-choice-under-100.md) | F-large's whole goal choice <= 100 ms p90 on the Jetson under the full stack (after 3.130) |
 <!-- /sections -->
