@@ -989,8 +989,8 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   `desktop_lock.step_aside()` between steps (the goal-learn PPO loops do);
   the nightly waits in the queue for the exclusive lock, SKIPPED (exit 0, no
   email) after 2 h of a busy desktop. The nightly runs on the Mac only.
-* **A staged UX redesign (3.132), Stage 0 merged 2026-10-31; Stages 1-5
-  open** (the user, 2026-10-31: twin first, the two consoles merged into
+* **A staged UX redesign (3.132), Stages 0-1 merged 2026-10-31; Stages 2-5
+  open; the twin NOT yet deployed with Stage 1** (the user, 2026-10-31: twin first, the two consoles merged into
   one, vanilla JS, no build step). Audiences:
   * A, primary: anyone at home with the Rover, using the twin's operator
     mode;
@@ -1012,6 +1012,21 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   * F1: a connected twin never notices a mission started elsewhere.
   * F2: a Start within ~1-2 s of the D-pad ends the mission "D-pad took
     over".
+
+  **Stage 1 (one design system):**
+  * The twin's style left `index.html` for `web-shared/ui.css` (tokens
+    and shared components) and `web-twin/twin.css`.
+  * Every twin colour is a token, with no literal in `twin.css`
+    (`tests/test_ui_tokens.py`).
+  * There is a light theme under `prefers-color-scheme`. `--media-*`
+    colours, drawn over the camera, and the `.ui-dark` viewfinder stay
+    dark.
+  * Targets are 44 px (`--target`). The Guide-me contrast bug is fixed,
+    red first (`tests/test_ui_active_mode.py`).
+  * M2 dark and light, M3 and M7 are 0 on all seven twin states. Taps and
+    jargon are unchanged.
+  * A new colour goes in `ui.css` as a token. `sync.sh` must also publish
+    `ui.css` and `twin.css` (both are in `assets.json`).
 
   Run as 3.130 until a numbering collision (3.130 is fast-map-work).
 * **The map is sent only when it changed (3.123), merged 2026-10-30 with
