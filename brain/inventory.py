@@ -216,6 +216,8 @@ class Landmark:
     _miss_pose: Optional[dict] = None
     _miss_frame: Optional[int] = None                 # when _miss_pose was taken
     _pending_miss: Optional[int] = None               # the frame of a forgiven miss
+    # 3.50.D5: carried from an earlier mission on the same saved map.
+    carried: bool = False
 
     @property
     def hits(self) -> int:
@@ -263,7 +265,8 @@ class Landmark:
                 "reported": self.belief >= REPORT_BELIEF, "disputed": self.disputed,
                 "hits": self.hits, "misses": self.misses, "votes": dict(self.votes),
                 "room": self.room, "first_step": self.first_step,
-                "last_step": self.last_step, "points": len(self.points)}
+                "last_step": self.last_step, "points": len(self.points),
+                "carried": self.carried}
 
 
 class Inventory:
@@ -273,6 +276,13 @@ class Inventory:
 
     def __init__(self, map_id: Optional[str] = None):
         self.map_id = map_id
+        # 3.50.D5: the saved map whose frame the positions are in (the pose's
+        # `frame_id`), the same across sessions; None when the frame lives
+        # only with this map. With one, frames are accepted by it, so a
+        # container restart onto the same saved map keeps recording.
+        self.frame_id: Optional[str] = None
+        self.carried_from: Optional[str] = None
+        self.carried = 0
         self.landmarks: list = []
         self.frames = 0
         self.observations = 0
@@ -294,9 +304,7 @@ class Inventory:
         if not pose or not pose.get("usable"):
             self.no_pose += 1
             return
-        if self.map_id is None:
-            self.map_id = pose.get("map_id")
-        elif pose.get("map_id") != self.map_id:
+        if not self._same_frame(pose):
             # Coordinates from another map are meaningless here
             # (`get_pose()`'s map_id rule); never mix them.
             self.no_pose += 1
@@ -340,6 +348,66 @@ class Inventory:
             # 3.60: no scan, no miss. Without one nothing seen could be
             # placed (so nothing joined) and nothing can be found occluded.
             self._misses(pose, returns, pan_deg, fov_deg, joined, unplaced)
+
+    def _same_frame(self, pose: dict) -> bool:
+        """Whether this pose's coordinates mean what the landmarks' do,
+        adopting the first pose's map (and saved frame) when none is held."""
+        if self.frame_id is not None:
+            if pose.get("frame_id") != self.frame_id:
+                return False
+            if self.map_id is None:
+                self.map_id = pose.get("map_id")
+            return True
+        if self.map_id is None:
+            self.map_id, self.frame_id = pose.get("map_id"), pose.get("frame_id")
+            return True
+        return pose.get("map_id") == self.map_id
+
+    def seed(self, frame_id: Optional[str], report: Optional[dict]) -> int:
+        """3.50.D5: start this inventory from an earlier mission's `report()`
+        saved on the same saved map, before it has recorded anything. Each
+        landmark comes back as one point at its saved position, with its
+        belief and its votes (looks keyed below 0, apart from this mission's
+        frames); a new sighting within `MERGE_M` joins it. Nothing is
+        carried for no frame, another frame, or once recording has begun.
+        Returns how many landmarks were carried."""
+        if (not frame_id or not isinstance(report, dict) or report.get("frame_id") != frame_id
+                or self.landmarks or self.frames
+                or self.frame_id not in (None, frame_id)):
+            return 0
+        lo, hi = -SCORE_CLAMP, SCORE_CLAMP
+        carried = 0
+        key = -1
+        for d in list(report.get("reported") or []) + list(report.get("candidates") or []):
+            try:
+                label = str(d["label"]).strip().lower()
+                x, y, belief = float(d["x_m"]), float(d["y_m"]), float(d["belief"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if not label or not all(map(math.isfinite, (x, y, belief))):
+                continue
+            b = min(max(belief, 1e-6), 1 - 1e-6)
+            lm = Landmark(id=self._next_id, room=str(d.get("room") or "unknown"),
+                          first_step=None, points=[(x, y, label)],
+                          score=min(hi, max(lo, math.log(b / (1 - b)))), carried=True)
+            votes = d.get("votes") if isinstance(d.get("votes"), dict) else {}
+            for voted, n in votes.items():
+                try:
+                    n = int(n)
+                except (TypeError, ValueError):
+                    continue
+                for _ in range(max(0, n)):
+                    lm._looks[key] = str(voted)
+                    key -= 1
+            self._next_id += 1
+            self.landmarks.append(lm)
+            carried += 1
+        self.frame_id = frame_id
+        self.carried = carried
+        # The mission's id where the report has one (the brain's), else its text.
+        mission = report.get("mission_id") or report.get("mission")
+        self.carried_from = mission if isinstance(mission, str) else None
+        return carried
 
     def _count_look(self, lm: Landmark, label: str, x: float, y: float, pose: dict,
                     joined: set) -> None:
@@ -430,6 +498,8 @@ class Inventory:
                        key=lambda d: (-d["belief"], d["label"]))
         return {
             "map_id": self.map_id,
+            "frame_id": self.frame_id,               # 3.50.D5
+            "carried_from": self.carried_from,
             "reported": [d for d in items if d["reported"]],
             "candidates": [d for d in items if not d["reported"]],
             "counts": self.counts(),
@@ -442,7 +512,8 @@ class Inventory:
         return {"frames": self.frames, "observations": self.observations,
                 "unplaced": self.unplaced, "no_pose": self.no_pose,
                 "landmarks": len(self.landmarks),
-                "reported": sum(lm.belief >= REPORT_BELIEF for lm in self.landmarks)}
+                "reported": sum(lm.belief >= REPORT_BELIEF for lm in self.landmarks),
+                "carried": self.carried}
 
     def summary(self) -> str:
         r = self.report()

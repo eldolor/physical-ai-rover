@@ -190,6 +190,7 @@ class MockWorld(WorldInterface):
         return {
             "usable": True,
             "map_id": self.map_id,
+            "frame_id": None,      # 3.50.D5: the sim's own grid is never a saved map
             "x_m": self.world.x * CELL_M,
             "y_m": self.world.y * CELL_M,
             "heading_deg": round(self.world.heading_deg, 4),

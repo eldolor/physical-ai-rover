@@ -41,8 +41,8 @@ this process. Use `ros` or `none` there.
 ### The world contract
 
 ```text
-get_pose()  -> {"usable": bool, "map_id": str|None, "x_m": float|None,
-                "y_m": float|None, "heading_deg": float|None}
+get_pose()  -> {"usable": bool, "map_id": str|None, "frame_id": str|None,
+                "x_m": float|None, "y_m": float|None, "heading_deg": float|None}
 get_map()   -> {"usable": bool, "map_id": str|None, "map_version": int,
                 "resolution_m": float|None, "width": int, "height": int,
                 "origin_x_m": float|None, "origin_y_m": float|None,
@@ -54,6 +54,13 @@ get_truth() -> {"usable": bool, "source": "sim"|None,
 - **Frame.** `x_m` points east and `y_m` points south. `heading_deg` is a
   compass bearing, clockwise-positive: 0 points to -y_m and 90 points to
   +x_m.
+- **`frame_id`** (3.50.D5) names the saved map whose frame the coordinates
+  are in: the same across sessions on a matched reload and through a
+  re-map, new after a fall-back. `map_id` stays per session (the map's
+  ETag, the keepout spots, the room labeller's cache and explore's trail
+  rely on that). `None` in the simulator's own world, for an unusable pose,
+  and whenever the frame lives only with this map. The object inventory
+  carries landmarks across missions by it.
 - **Unusable answers.** An unusable pose has every number set to `None`. An
   unusable map has `width = height = 0`, `cells = []`, `map_version = 0` and
   `None` for the remaining numbers.
@@ -140,6 +147,12 @@ The bridge's routes and their fields are specified once, in the
   than assuming the robot had not moved; on the Jetson the old reading came
   seconds late, after motion, and anchored SLAM's frame about 20 degrees off
   for the session.
+- **The saved frame** (3.50.D5): an anchor on the bridge's start truth (a
+  matched reload replays the saved map's) or, with no truth at all (the
+  car), the identity records `/slam/pose`'s `map_id` as `Anchor.frame`,
+  and `get_pose()` / `get_odom_pose()` answer it as `frame_id`. A
+  first-contact anchor is not the saved map's frame: `frame_id` `None`. A
+  bridge that predates the field sends none: `None`.
 - **One anchor per session, installed once, never moved** (3.76 round 5).
   While the bridge's start-truth thread is still working (`/slam/pose`'s
   `start_truth_pending: true` with no `start_truth`), nothing is installed:

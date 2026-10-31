@@ -144,6 +144,35 @@ class InventoryStore:
             logger.warning("inventory %s not saved: %s", mission_id, err)
         return out
 
+    def latest_for(self, frame_id: Optional[str]) -> Optional[dict]:
+        """3.50.D5: the newest local report saved on this saved map (its
+        `frame_id`), or None. What a new mission on the same map carries
+        over; each report holds what its mission carried plus what it saw,
+        so only the newest is needed. Local only: S3 is never read back.
+        Files that do not parse, other frames and reports with no
+        `frame_id` are skipped; a save in progress is a hidden `.tmp`,
+        never matched."""
+        if not frame_id:
+            return None
+        files = []
+        try:
+            listed = [p for p in self.local_dir.glob("*.json") if not p.name.startswith(".")]
+        except OSError:
+            return None
+        for p in listed:
+            try:
+                files.append((p.stat().st_mtime, p.name, p))
+            except OSError:
+                continue                  # removed since it was listed
+        for _mtime, _name, path in sorted(files, reverse=True):
+            try:
+                report = json.loads(path.read_text())
+            except (OSError, ValueError):
+                continue
+            if isinstance(report, dict) and report.get("frame_id") == frame_id:
+                return report
+        return None
+
 
 def inventory_store_from_config(config: dict) -> InventoryStore:
     return InventoryStore(

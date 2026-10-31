@@ -59,7 +59,7 @@ def world(request):
 
 def test_get_pose_answers_the_same_shape_everywhere(world):
     pose = world.get_pose()
-    assert set(pose) == {"usable", "map_id", "x_m", "y_m", "heading_deg"}
+    assert set(pose) == {"usable", "map_id", "frame_id", "x_m", "y_m", "heading_deg"}
     assert isinstance(pose["usable"], bool)
 
 
@@ -344,7 +344,7 @@ def test_remote_world_answers_the_contract(world_over_asgi):
     robot/server.py app gets a real pose and a real map -- over HTTP,
     through the same routes the twin uses."""
     pose = world_over_asgi.get_pose()
-    assert set(pose) == {"usable", "map_id", "x_m", "y_m", "heading_deg"}
+    assert set(pose) == {"usable", "map_id", "frame_id", "x_m", "y_m", "heading_deg"}
     assert pose["usable"] is True
     assert isinstance(pose["map_id"], str)
 

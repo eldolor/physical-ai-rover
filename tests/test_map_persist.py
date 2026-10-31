@@ -1743,3 +1743,41 @@ def test_a_tracker_replaced_mid_look_keeps_the_new_trackers_scans(bridge_mod, mo
     _queue(b, [1000.0])
     b.remap_step()
     assert len(b._remap_pending) == 1 and b._remap_pending[0]["stamp_ns"] == int(2000.0 * 1e9)
+
+
+# ---- 3.50.D5: the saved map's id reaches the robot server (D5-a) ----
+
+def test_the_pose_names_the_saved_map_only_once_ready(bridge_mod):
+    """D5-a: null while a reload is judged (it may still fall back to a new
+    id), the map's id once ready."""
+    from tests.test_review_376h1 import _bridge
+    b = _bridge(bridge_mod)
+    b.start_truth, b.start_truth_pending = {"x_m": 1.0, "y_m": 1.0, "heading_deg": 0.0}, False
+    for state in ("starting", "checking", "remapping", "failed"):
+        b.slam_state = state
+        assert b.slam_pose()[1]["map_id"] is None, state
+    b.slam_state = "ready"
+    assert b.slam_pose()[1]["map_id"] == b.map_id
+    assert mapstore.MAP_ID_RE.fullmatch(b.map_id)
+
+
+def test_a_matched_reload_names_the_saved_map_and_a_fall_back_a_new_one(
+        bridge_mod, monkeypatch, tmp_path):
+    b, _, _ = _reload_bridge(bridge_mod, monkeypatch, tmp_path,
+                             relocalise.judge([0.9] * 5, (0.0, 0.0, 0.0)))
+    b.start_slam()
+    assert b.slam_pose()[1]["map_id"] == "map-0a1b2c3d"
+    b2, _, _ = _reload_bridge(bridge_mod, monkeypatch, tmp_path / "2",
+                              relocalise.judge([0.2] * 5, (0.0, 0.0, 0.0)))
+    b2.start_slam()
+    b2.slam_state = "ready"            # the fresh node is up
+    fresh = b2.slam_pose()[1]["map_id"]
+    assert fresh == b2.map_id and fresh != "map-0a1b2c3d"
+
+
+def test_a_re_map_keeps_the_saved_map_s_id(bridge_mod, monkeypatch, tmp_path):
+    b, _, _ = _matched(bridge_mod, monkeypatch, tmp_path)
+    assert b.slam_pose()[1]["map_id"] == "map-0a1b2c3d"
+    assert b.remap("request", "twin")[0] == 200
+    _settle(b)
+    assert b.slam_state == "ready" and b.slam_pose()[1]["map_id"] == "map-0a1b2c3d"

@@ -817,6 +817,9 @@ def create_app(
                                or ("survey" if req.job == "survey" else "mission")))
         runner.inventory_sink = lambda report: threading.Thread(
             target=store.save, args=(mission_id, report), daemon=True).start()
+        # 3.50.D5: a mission on a saved map starts from the last inventory
+        # saved on it (local files only).
+        runner.inventory_prior = store.latest_for
         runner.mission_id = mission_id
         # 3.99: one log, one file, for every mission's end line.
         runner.intervention_log = intervention_log

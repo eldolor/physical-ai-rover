@@ -12,7 +12,8 @@ and the other direction:
     GET /odom            diff_drive_controller's /odom, latest
     GET /scan            the LaserScan this node last published
     GET /tf?target=&source=   a tf2 lookup, for R3's measurements
-    GET /slam/pose       map -> base_footprint (SLAM) and odom -> base_footprint
+    GET /slam/pose       map -> base_footprint (SLAM) and odom -> base_footprint,
+                         and the saved map's id once ready (3.50.D5)
     GET /slam/map        slam_toolbox's OccupancyGrid, as ROS publishes it
     POST /slam/remap {by}  3.50.D4: a person's "re-map now": a reloaded map
                          being localised on is mapped again from the robot's
@@ -932,10 +933,14 @@ class Bridge(Node):
                 start, pending = self.reload_start_truth, not ready
             else:
                 start, pending = self.start_truth, self.start_truth_pending or not ready
+            # 3.50.D5: which saved map this frame is -- the same on every
+            # matched reload and through a re-map, new on a fall-back. Only
+            # once ready: a reload being judged may still fall back.
+            map_id = self.map_id if ready else None
         # 3.50.D3: no map pose, and the start truth pending, until the frame
         # is decided -- world/ros_world.py then anchors nothing and reads the
         # pose and the map unusable, rather than anchor a frame about to go.
-        return 200, {"session": self.session, "start_truth": start,
+        return 200, {"session": self.session, "map_id": map_id, "start_truth": start,
                      "start_truth_pending": pending,
                      "map": self._pose_in("map") if ready else None,
                      "odom": self._pose_in("odom"), "at": time.time()}

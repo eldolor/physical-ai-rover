@@ -57,12 +57,22 @@ class Anchor(NamedTuple):
     """SLAM's frame laid on the house: ours_world = R(alpha) . ours_slam + t,
     heading + alpha. Installed once per session and never changed (3.76
     round 5). `epoch` is added to map_version; it stays 0 while a session's
-    anchor cannot change, and is kept so a future re-anchor has to count."""
+    anchor cannot change, and is kept so a future re-anchor has to count.
+    `frame` (3.50.D5) is the bridge's saved-map id when this anchor IS that
+    map's frame -- the same across sessions -- else None."""
     session: Optional[str]
     alpha: float
     t: Tuple[float, float]
     anchored_at: Optional[str]
     epoch: int = 0
+    frame: Optional[str] = None
+
+
+def _saved_frame(reply: dict) -> Optional[str]:
+    """3.50.D5: the bridge's saved-map id on a pose reply (absent from a
+    bridge that predates it, null until `slam.state` is ready)."""
+    m = reply.get("map_id")
+    return m if isinstance(m, str) and m else None
 
 
 def _stale(pose: dict) -> bool:
@@ -225,7 +235,10 @@ class RosWorld(WorldInterface):
     def _anchor_for(self, session, reply: dict, start) -> Optional[Anchor]:
         if start is not None and self._truth is not None:
             alpha = (start["heading_deg"] - 90.0 + 180.0) % 360.0 - 180.0
-            return Anchor(session, alpha, (start["x_m"], start["y_m"]), "session_start")
+            # 3.50.D5: the bridge's start truth -- a matched reload replays
+            # the saved map's -- lays the saved map's frame, every session.
+            return Anchor(session, alpha, (start["x_m"], start["y_m"]), "session_start",
+                          frame=_saved_frame(reply))
         if self._truth is not None:
             # No start truth, and none coming (the bridge gave up, or
             # predates it): first contact, and say so, because the error it
@@ -268,8 +281,11 @@ class RosWorld(WorldInterface):
             # A truth that answered unusable this once (round 6): install
             # nothing and ask again after TRUTH_RETRY_S. An identity anchor here would
             # hold for the whole session, since an anchor never moves.
+            # (A first-contact anchor is not the saved map's frame: no
+            # `frame`, so nothing carries across sessions on it, 3.50.D5.)
             return None
-        return Anchor(session, 0.0, (0.0, 0.0), None)      # no truth at all: hardware
+        # No truth at all (the car): SLAM's frame is the saved map's own.
+        return Anchor(session, 0.0, (0.0, 0.0), None, frame=_saved_frame(reply))
 
     @property
     def map_id(self) -> Optional[str]:
@@ -287,8 +303,8 @@ class RosWorld(WorldInterface):
         if anchor is None or est is None or _stale(est):
             return unusable_pose()
         x, y, h = self._apply(*_ros_to_ours(est["x_m"], est["y_m"], est["yaw_rad"]), anchor)
-        return {"usable": True, "map_id": f"slam-{anchor.session}", "x_m": x, "y_m": y,
-                "heading_deg": round(h, 4)}
+        return {"usable": True, "map_id": f"slam-{anchor.session}", "frame_id": anchor.frame,
+                "x_m": x, "y_m": y, "heading_deg": round(h, 4)}
 
     def get_odom_pose(self) -> dict:
         """diff_drive_controller's dead reckoning, in the same anchored frame
@@ -304,8 +320,8 @@ class RosWorld(WorldInterface):
             return unusable_pose()
         # odom and map coincide at SLAM's start, so the same anchor applies.
         x, y, h = self._apply(*_ros_to_ours(o["x_m"], o["y_m"], o["yaw_rad"]), anchor)
-        return {"usable": True, "map_id": f"slam-{anchor.session}", "x_m": x, "y_m": y,
-                "heading_deg": round(h, 4)}
+        return {"usable": True, "map_id": f"slam-{anchor.session}", "frame_id": anchor.frame,
+                "x_m": x, "y_m": y, "heading_deg": round(h, 4)}
 
     def get_truth(self) -> dict:
         return self._truth.get_truth() if self._truth else unusable_truth()

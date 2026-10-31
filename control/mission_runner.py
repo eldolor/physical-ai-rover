@@ -734,6 +734,12 @@ class MissionRunner:
         self.detections_fn = detections_fn or frame_detections
         self.inventory_sink: Optional[Callable[[dict], None]] = None
         self._inventory_error_logged = False
+        # 3.50.D5: set by the brain server -- the newest saved inventory on a
+        # saved map (`InventoryStore.latest_for`), asked once, on the first
+        # usable pose with a `frame_id`, to seed this mission's inventory.
+        # None (sweeps, harnesses) carries nothing and reads nothing extra.
+        self.inventory_prior: Optional[Callable[[str], Optional[dict]]] = None
+        self._inventory_seeded = False
         self.policy = policy
         # 3.70 E4: the budget is a time limit (on `self.clock`, so sim time in
         # process) and a battery floor. The step count is only a backstop
@@ -2346,9 +2352,16 @@ class MissionRunner:
         mission ended is dropped: the report has already been saved."""
         try:
             detections = self.detections_fn(frame)
-            if detections is None or self._ended():
+            if self._ended():
                 return                        # no reads once the mission has ended
+            if detections is None:
+                if self.inventory_prior is not None and not self._inventory_seeded:
+                    # 3.50.D5: seed on the first usable pose even before the
+                    # first detection -- one pose read a frame until then.
+                    self._seed_inventory(self.world.get_pose())
+                return
             pose = self.world.get_pose()
+            self._seed_inventory(pose)
             scan = self.robot.get_scan(max_range_m=INVENTORY_RANGE_M + 0.5)
             with self._lock:
                 if self._ended():
@@ -2363,12 +2376,40 @@ class MissionRunner:
                 self._inventory_error_logged = True
                 logger.warning("inventory: frame not recorded: %s", e)
 
+    def _seed_inventory(self, pose: dict) -> None:
+        """3.50.D5: once, on the first usable pose: the newest inventory
+        saved on this pose's saved map (`frame_id`) seeds this one. The
+        lookup reads files, so it runs outside the lock; a failure carries
+        nothing and is logged once, like any inventory failure."""
+        if self.inventory_prior is None or self._inventory_seeded:
+            return
+        if not pose or not pose.get("usable"):
+            return
+        frame_id = pose.get("frame_id")
+        prior = None
+        if frame_id:
+            try:
+                prior = self.inventory_prior(frame_id)
+            except Exception as e:  # noqa: BLE001 -- a by-product never fails a mission
+                if not self._inventory_error_logged:
+                    self._inventory_error_logged = True
+                    logger.warning("inventory: earlier landmarks not read: %s", e)
+        with self._lock:
+            if self._inventory_seeded or self._ended():
+                return
+            self._inventory_seeded = True
+            n = self.inventory.seed(frame_id, prior) if prior else 0
+        if n:
+            self._log_line(f"inventory: {n} landmarks carried from "
+                           f"{prior.get('mission') or 'an earlier mission'} on {frame_id}")
+
     def inventory_report(self) -> Optional[dict]:
         if self.inventory is None:
             return None
         with self._lock:      # 3.55: the list and the outcome from one moment
             report = self.inventory.report()
             report["mission"] = self.memory.mission
+            report["mission_id"] = self.mission_id      # 3.50.D5: carried_from
             report["outcome"] = self._outcome
         return report
 

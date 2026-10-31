@@ -94,6 +94,7 @@ def unusable_pose() -> dict:
     return {
         "usable": False,
         "map_id": None,
+        "frame_id": None,
         "x_m": None,
         "y_m": None,
         "heading_deg": None,
@@ -157,6 +158,9 @@ class WorldInterface(ABC):
 
             {"usable": bool,           # False means every other field is None
              "map_id": str|None,       # WHICH map these coordinates mean
+             "frame_id": str|None,     # 3.50.D5: the saved map whose frame they
+                                       # are in, the same across sessions; None
+                                       # when the frame lives only with this map
              "x_m": float|None,        # metres, map frame
              "y_m": float|None,
              "heading_deg": float|None}  # compass, 0 = -y_m (north), 90 = +x_m

@@ -250,7 +250,7 @@ def test_status_carries_counts_not_the_list():
     runner, _ = _mission("complex_house", "frontier", True, _start("complex_house"))
     counts = runner.status()["inventory"]
     assert set(counts) == {"frames", "observations", "unplaced", "no_pose",
-                           "landmarks", "reported"}
+                           "landmarks", "reported", "carried"}     # carried: 3.50.D5
 
 
 # ---------- the store ----------
@@ -448,6 +448,9 @@ def test_two_missions_in_one_second_get_their_own_file(monkeypatch):
     class Store:
         def save(self, mission_id, report):
             ids.append(mission_id)
+
+        def latest_for(self, frame_id):       # 3.50.D5: nothing saved to carry
+            return None
     monkeypatch.setattr(brain_server, "inventory_store_from_config", lambda config: Store())
     app = create_app(robot_factory=lambda: RecordingRobot(fresh_mock_robot()))
     with TestClient(app) as client:
