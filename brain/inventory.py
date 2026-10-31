@@ -102,18 +102,6 @@ L_MISS = -0.4
 SCORE_CLAMP = 4.0
 # 3.50.D5: what a mission carries from the last one on the same saved map.
 CARRY_MIN_BELIEF = 0.5    # no more evidence it is gone than that it is there
-CARRY_VOTES_MAX = 20      # the most looks a carried landmark keeps; votes scale together
-
-
-def carry_seq_of(report) -> int:
-    """3.50.D5: a saved report's place in the chain -- an integral number at
-    least 0, else 0. One rule for the store's head choice and the next seq."""
-    seq = report.get("carry_seq") if isinstance(report, dict) else None
-    if isinstance(seq, bool) or not isinstance(seq, (int, float)):
-        return 0
-    if isinstance(seq, float) and not (math.isfinite(seq) and seq.is_integer()):
-        return 0
-    return max(0, int(seq))
 REPORT_BELIEF = 0.8     # two independent hits, no misses
 NEW_VIEW_M = 0.5
 NEW_VIEW_DEG = 30.0
@@ -214,6 +202,17 @@ def _new_view(a: Optional[dict], b: dict) -> bool:
     return moved >= NEW_VIEW_M or turned >= NEW_VIEW_DEG
 
 
+def carry_seq_of(report) -> int:
+    """3.50.D5: a saved report's place in the chain -- an integral number at
+    least 0, else 0. One rule for the store's head choice and the next seq."""
+    seq = report.get("carry_seq") if isinstance(report, dict) else None
+    if isinstance(seq, bool) or not isinstance(seq, (int, float)):
+        return 0
+    if isinstance(seq, float) and not (math.isfinite(seq) and seq.is_integer()):
+        return 0
+    return max(0, int(seq))
+
+
 @dataclass
 class Landmark:
     id: int
@@ -230,12 +229,15 @@ class Landmark:
     _miss_pose: Optional[dict] = None
     _miss_frame: Optional[int] = None                 # when _miss_pose was taken
     _pending_miss: Optional[int] = None               # the frame of a forgiven miss
-    # 3.50.D5: carried from an earlier mission on the same saved map.
+    # 3.50.D5: carried from an earlier mission on the same saved map, with
+    # the votes it had there -- kept as counts beside this mission's looks
+    # (exact, and as large as it likes in constant memory; review 3).
     carried: bool = False
+    _carried_votes: Counter = field(default_factory=Counter)
 
     @property
     def hits(self) -> int:
-        return len(self._looks)
+        return len(self._looks) + sum(self._carried_votes.values())
 
     @property
     def misses(self) -> int:
@@ -243,7 +245,9 @@ class Landmark:
 
     @property
     def votes(self) -> Counter:
-        return Counter(self._looks.values())
+        # Carried first: on a tie `most_common` keeps the order counted, so
+        # the saved label keeps its name.
+        return self._carried_votes + Counter(self._looks.values())
 
     @property
     def x(self) -> float:
@@ -394,18 +398,18 @@ class Inventory:
     def seed(self, frame_id: Optional[str], report: Optional[dict]) -> int:
         """3.50.D5: start this inventory from an earlier mission's `report()`
         saved on the same saved map, before it has recorded anything. Each
-        landmark comes back as one point at its saved position, with its
-        belief and its votes (looks keyed below 0, apart from this mission's
-        frames); a new sighting within `MERGE_M` joins it. Nothing is
-        carried for no frame, another frame, or once recording has begun.
-        Returns how many landmarks were carried."""
+        landmark with belief at least `CARRY_MIN_BELIEF` comes back as one
+        point at its saved position, with its belief and its votes (counts
+        kept beside this mission's looks, the saved label first); a new
+        sighting within `MERGE_M` joins it. Nothing is carried for no frame,
+        another frame, or once recording has begun. Returns how many
+        landmarks were carried."""
         if (not frame_id or not isinstance(report, dict) or report.get("frame_id") != frame_id
                 or self.landmarks or self.frames
                 or self.frame_id not in (None, frame_id)):
             return 0
         lo, hi = -SCORE_CLAMP, SCORE_CLAMP
         carried = 0
-        key = -1
         for d in list(report.get("reported") or []) + list(report.get("candidates") or []):
             try:
                 label = str(d["label"]).strip().lower()
@@ -421,24 +425,16 @@ class Inventory:
                           first_step=None, points=[(x, y, label)],
                           score=min(hi, max(lo, math.log(b / (1 - b)))), carried=True)
             raw = d.get("votes") if isinstance(d.get("votes"), dict) else {}
-            votes = {}
-            for voted, n in raw.items():
-                try:
-                    n = int(n)
-                except (TypeError, ValueError, OverflowError):
+            # The saved label's count first: a tie keeps the name it had (the
+            # store writes votes in key order). Exact counts (review 3).
+            for voted in sorted(raw, key=lambda v: str(v).strip().lower() != label):
+                n = raw[voted]
+                if isinstance(n, bool) or not isinstance(n, (int, float)):
+                    continue
+                if isinstance(n, float) and not (math.isfinite(n) and n.is_integer()):
                     continue
                 if n > 0:
-                    votes[str(voted)] = n
-            # Scaled together to fit CARRY_VOTES_MAX, so the shares (and
-            # `disputed`) hold; every label kept at least once (review 2).
-            top = max(votes.values(), default=0)
-            scale = CARRY_VOTES_MAX / top if top > CARRY_VOTES_MAX else 1.0
-            # The saved label's looks first: a tie keeps the name it had (the
-            # store writes votes in key order).
-            for voted in sorted(votes, key=lambda v: v.strip().lower() != label):
-                for _ in range(max(1, round(votes[voted] * scale))):
-                    lm._looks[key] = voted
-                    key -= 1
+                    lm._carried_votes[str(voted)] = int(n)
             self._next_id += 1
             self.landmarks.append(lm)
             carried += 1
@@ -497,6 +493,8 @@ class Inventory:
                 keep._hit_pose = other._hit_pose
             for frame, voted in other._looks.items():
                 keep._looks.setdefault(frame, voted)
+            keep._carried_votes += other._carried_votes   # two carried objects: both counts
+            keep.carried = keep.carried or other.carried
             keep._missed |= other._missed
             keep._missed -= keep._looks.keys()   # a frame that saw a part did not miss it
             keep.score = max(keep.score, other.score)

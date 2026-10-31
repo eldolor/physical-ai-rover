@@ -330,9 +330,8 @@ def test_without_a_saved_frame_nothing_is_read_or_carried(tmp_path):
 
 # ---------- review round 1: the chain cannot be cut ----------
 
-from brain.inventory import CARRY_VOTES_MAX  # noqa: E402
 from control import inventory_store as store_mod  # noqa: E402
-from control.mission_runner import SEED_EVERY_S  # noqa: E402
+from control import mission_runner as runner_mod  # noqa: E402
 from brain.inventory import carry_seq_of  # noqa: E402
 
 
@@ -406,19 +405,40 @@ def test_a_landmark_with_more_evidence_of_absence_is_not_carried():
     assert "sock" not in [lm.label for lm in inv.landmarks]
 
 
-def test_carried_looks_are_bounded_and_a_tie_keeps_the_saved_name():
+def test_carried_votes_are_exact_and_a_tie_keeps_the_saved_name():
+    """Review 3: counts kept beside the looks -- no cap, no rounding, so
+    shares and `disputed` hold exactly, and a corrupt count costs nothing."""
     saved = _session_one()
     saved["candidates"] = saved["candidates"] + [
         {"label": "shoe", "x_m": 1.0, "y_m": 1.0, "belief": 0.9,
          "votes": {"boot": 2, "shoe": 2}},
         {"label": "chair", "x_m": 3.0, "y_m": 3.0, "belief": 0.9,
-         "votes": {"chair": 10**9}}]
+         "votes": {"chair": 10**9, "stool": 1, "bad": "x", "neg": -3, "half": 2.5}},
+        {"label": "table", "x_m": 5.0, "y_m": 5.0, "belief": 0.9,
+         "votes": {"table": 21, "desk": 10}}]
     inv = Inventory()
     inv.seed(SAVED, saved)
     shoe = next(lm for lm in inv.landmarks if lm.points[0][2] == "shoe")
-    assert shoe.label == "shoe"
+    assert shoe.label == "shoe" and shoe.disputed
     chair = next(lm for lm in inv.landmarks if lm.label == "chair")
-    assert chair.hits == CARRY_VOTES_MAX
+    assert chair.votes == {"chair": 10**9, "stool": 1} and chair.hits == 10**9 + 1
+    table = next(lm for lm in inv.landmarks if lm.label == "table")
+    assert not table.disputed                       # 10/31 < 1/3, exactly as saved
+
+
+def test_a_carried_landmark_seen_again_counts_both():
+    saved = _session_one()
+    inv = Inventory()
+    inv.seed(SAVED, saved)
+    stool = next(d for d in saved["reported"] if d["label"] == "stool")
+    inv.observe([{"label": "stool", "bearing_deg": 0.0}], _pose(x=stool["x_m"] - 1.0,
+                y=stool["y_m"], h=90.0), _scan({0: 1.0}))
+    lm = next(lm for lm in inv.landmarks if lm.label == "stool")
+    assert lm.votes["stool"] == stool["votes"]["stool"] + 1
+    again = dict(inv.report(), mission_id="m2")
+    nxt = Inventory()
+    nxt.seed(SAVED, again)
+    assert next(lm for lm in nxt.landmarks if lm.label == "stool").hits == lm.hits
 
 
 def test_the_report_carries_its_place_in_the_chain():
@@ -457,14 +477,11 @@ def test_no_usable_pose_costs_a_read_every_few_seconds_not_every_frame():
     seeds = []
     real = runner._seed_inventory
     runner._seed_inventory = lambda pose: (seeds.append(pose), real(pose))
-    t0 = runner.clock()
     runner.start()
     while runner.tick():
         pass
-    elapsed = runner.clock() - t0
     assert not runner._inventory_seeded
-    assert 1 <= len(seeds) <= elapsed / SEED_EVERY_S + 2, (len(seeds), elapsed)
-    assert len(seeds) < runner._ticks, "a pose read on every frame"
+    assert 1 <= len(seeds) < runner._ticks, ("a pose read on every frame", len(seeds))
 
 
 def test_a_long_hold_then_a_usable_pose_still_carries(tmp_path):
@@ -504,22 +521,44 @@ def test_a_wait_that_runs_out_is_a_failed_lookup(tmp_path, monkeypatch):
             store_mod._PENDING.pop(key, None)
 
 
-def test_one_unreadable_file_is_skipped_not_fatal(tmp_path):
+def test_a_stray_file_is_skipped_not_fatal(tmp_path):
+    """Not UTF-8, or a directory: not one of our reports."""
     _write(tmp_path, "good.json", {"frame_id": SAVED, "mission": "good"}, age_s=10)
     (tmp_path / "bad.json").write_bytes(b"\xff\xfe" + SAVED.encode() + b"\x80")
     (tmp_path / "dir.json").mkdir()
     assert InventoryStore(str(tmp_path)).latest_for(SAVED)["mission"] == "good"
 
 
-def test_votes_scale_together_so_the_shares_hold():
-    saved = _session_one()
-    saved["candidates"] = saved["candidates"] + [
-        {"label": "chair", "x_m": 3.0, "y_m": 3.0, "belief": 0.9,
-         "votes": {"chair": 200, "stool": 25}}]
-    inv = Inventory()
-    inv.seed(SAVED, saved)
-    chair = next(lm for lm in inv.landmarks if lm.label == "chair")
-    assert chair.votes == {"chair": CARRY_VOTES_MAX, "stool": 2} and not chair.disputed
+def test_a_report_that_cannot_be_read_fails_the_lookup(tmp_path, monkeypatch):
+    """Review 3: it may be the head; reading around it forks the chain."""
+    _write(tmp_path, "good.json", {"frame_id": SAVED, "mission": "good"}, age_s=10)
+    _write(tmp_path, "head.json", {"frame_id": SAVED, "mission": "head", "carry_seq": 9})
+    real = type(tmp_path).read_text
+
+    def read_text(self, *a, **kw):
+        if self.name == "head.json":
+            raise PermissionError("denied")
+        return real(self, *a, **kw)
+    monkeypatch.setattr(type(tmp_path), "read_text", read_text)
+    with pytest.raises(OSError, match="head.json"):
+        InventoryStore(str(tmp_path)).latest_for(SAVED)
+
+
+def test_a_held_pose_with_no_detections_still_seeds_when_it_comes(tmp_path, monkeypatch):
+    """Review 3: the read limit must not stall seeding once the pose is usable."""
+    monkeypatch.setattr(runner_mod, "SEED_EVERY_S", 0.0)
+    store = InventoryStore(str(tmp_path))
+    store.save("m1", dict(_session_one(), mission_id="m1"))
+    grid = build_world("complex_house")
+    robot = MockRobot(grid, render=False)
+    world = _HeldPose(_FramedWorld(mock_world_for(robot), SAVED, "s2"), held=5)
+    runner = MissionRunner(robot, target_object="unicorn", max_steps=20, policy="frontier",
+                           world=world, detections_fn=lambda frame: None)
+    runner.inventory_prior = store.latest_for
+    runner.start()
+    while runner.tick():
+        pass
+    assert runner._inventory_seeded and runner.inventory.carried == 2
 
 
 @pytest.mark.parametrize("value, seq", [

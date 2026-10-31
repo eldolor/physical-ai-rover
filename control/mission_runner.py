@@ -76,7 +76,8 @@ from world.interface import NullWorld, WorldInterface
 logger = logging.getLogger("mission_runner")
 
 # 3.50.D5: on frames with no detections, how often a pose is read to seed
-# the inventory before the first usable one (seconds on the mission clock).
+# the inventory before the first usable one -- wall seconds: it limits HTTP
+# reads, and a simulated clock can stand still (review 3).
 SEED_EVERY_S = 2.0
 
 # Deliberately NOT 30.0, which is exactly one grid cell.
@@ -744,7 +745,7 @@ class MissionRunner:
         # None (sweeps, harnesses) carries nothing and reads nothing extra.
         self.inventory_prior: Optional[Callable[[str], Optional[dict]]] = None
         self._inventory_seeded = False
-        self._seed_read_at: Optional[float] = None   # self.clock of the last no-detection read
+        self._seed_read_at: Optional[float] = None   # monotonic time of the last no-detection read
         self._seed_error_logged = False
         self.policy = policy
         # 3.70 E4: the budget is a time limit (on `self.clock`, so sim time in
@@ -2365,7 +2366,7 @@ class MissionRunner:
                     # 3.50.D5: seed on the first usable pose even before the
                     # first detection -- a pose read for it at most every
                     # SEED_EVERY_S until then (a phone walk never has one).
-                    now = self.clock()
+                    now = time.monotonic()
                     if self._seed_read_at is None or now - self._seed_read_at >= SEED_EVERY_S:
                         self._seed_read_at = now
                         self._seed_inventory(self.world.get_pose())

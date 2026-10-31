@@ -66,7 +66,7 @@ _IN_FLIGHT_LOCK = threading.Lock()
 # directory -- module-wide, since the brain builds a store per mission. A
 # lookup waits for them (up to PENDING_WAIT_S), so a mission started while
 # the last one's report is still being written carries that report.
-PENDING_WAIT_S = 10.0
+PENDING_WAIT_S = 2.0      # a local save of a few KB takes milliseconds
 _PENDING: dict = {}
 _PENDING_COND = threading.Condition()
 
@@ -206,9 +206,10 @@ class InventoryStore:
         Waits up to `PENDING_WAIT_S` for local saves still in flight here
         (`save_async`); past that it raises `TimeoutError`. Local only: S3
         is never read back. A file that does not name the frame is not
-        parsed; files that cannot be read, decoded or parsed, other frames
-        and hidden `.tmp` saves are skipped. A directory that cannot be
-        listed raises (a failed lookup, not "nothing saved")."""
+        parsed; files that are not UTF-8, do not parse or are not files,
+        other frames and hidden `.tmp` saves are skipped. A directory that
+        cannot be listed, or a report that cannot be read (it may be the
+        head), raises: a failed lookup, not "nothing saved"."""
         if not frame_id:
             return None
         key = str(self.local_dir.resolve())
@@ -228,12 +229,18 @@ class InventoryStore:
             try:
                 mtime = path.stat().st_mtime
                 text = path.read_text()
-            except FileNotFoundError:
-                continue                  # removed since it was listed
-            except (OSError, UnicodeDecodeError) as e:
-                # One bad file must not stop every lookup (review 2).
+            except (FileNotFoundError, IsADirectoryError):
+                continue                  # removed since it was listed, or not a file
+            except UnicodeDecodeError as e:
+                # Not one of our reports (they are UTF-8 JSON): skipped, so a
+                # stray file does not stop every lookup (review 2).
                 logger.warning("inventory: %s skipped: %s", path.name, e)
                 continue
+            except OSError as e:
+                # A report we cannot read may be the chain's head: reading
+                # around it would fork the chain, so the lookup fails and the
+                # mission detaches (review 3), naming the file.
+                raise OSError(f"inventory {path.name} unreadable: {e}") from e
             if needle not in text:
                 continue
             try:
