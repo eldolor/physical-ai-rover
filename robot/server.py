@@ -116,7 +116,7 @@ from robot.interface import (
 DRIVER_ROS = "ros"
 from robot.safety import SafetyController, SafetyViolation, path_zone_indices
 from robot.wedge_watch import HOLD_S, SPOT_R_M, SpotBook, WedgeWatch, spot_ahead
-from world.bridge_faults import classify as bridge_fault, headers_for
+from world.bridge_faults import classify as bridge_fault, headers_for, hold_reason
 from world.factory import get_world
 
 logger = logging.getLogger("server")
@@ -1507,8 +1507,11 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                     except httpx.HTTPError as e:
                         # Handoff 4d: refused by name, not a 500. 3.82: and
                         # whether waiting can help, as fields rather than
-                        # prose -- a 401 from the bridge is no outage.
-                        return {"accepted": False, "reason": "ros_unavailable",
+                        # prose -- a 401 from the bridge is no outage. 3.127:
+                        # a goal the bridge HOLDS (nav2 starting, SLAM not
+                        # ready) by that name -- a start-up wait, not ROS down.
+                        return {"accepted": False,
+                                "reason": hold_reason(e) or "ros_unavailable",
                                 "detail": f"the ROS bridge did not take the goal: {e}",
                                 **bridge_fault(e)}
                     taken = isinstance(reply, dict) and reply.get("accepted") is True

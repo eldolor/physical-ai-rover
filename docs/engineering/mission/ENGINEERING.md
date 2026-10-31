@@ -261,8 +261,8 @@ such 4xx in a row (any other outcome resets the count) stop the asking; a
 refusal no retry fixes -- 401/403, a `/room` not deployed (404), a bad
 URL, a reply that is not JSON -- is
 `SourceRefused`: the call stays counted, the labeller stops asking and
-`status.survey.source_error` names it (the twin still shows only
-`no_source`). A frame
+`status.survey.source_error` names it (the twin shows it as "room naming
+stopped: <reason>" since 3.127). A frame
 with no pixels is `NOT_HERE`. A cloud source with no `vision_url` refuses
 the start (400). Every answer goes through `clean_room_name()` (lowercase,
 single spaces, no leading article, "none"/"n/a"/"unknown" are `unclear`),

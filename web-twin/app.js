@@ -863,6 +863,13 @@
     }
   }
 
+  // 3.127: a goal the bridge holds while ROS starts is refused by the hold's
+  // name; told as a wait, not as the bridge's 503.
+  var GOAL_HOLD_TEXT = {
+    nav2_starting: "nav2 is still starting \u2014 try again in a few seconds",
+    slam_not_ready: "SLAM is not ready yet (starting, or checking a saved map) \u2014 try again in a few seconds",
+  };
+
   // Tap the SLAM map: send the robot there (nav2, through the robot server).
   function onMapTap(ev) {
     var grid = state.lastMap;
@@ -884,7 +891,10 @@
     // A person's tap (handoff 3b): named as the D-pad is, so it outranks a
     // running brain mission the way a D-pad press does.
     apiPost("/world/goal", {x_m: x, y_m: y}, {"x-driver": "twin-dpad"}).then(function (r) {
-      if (r && r.accepted === false) {
+      if (r && r.accepted === false
+          && Object.prototype.hasOwnProperty.call(GOAL_HOLD_TEXT, r.reason)) {
+        showToast(GOAL_HOLD_TEXT[r.reason], "info");
+      } else if (r && r.accepted === false) {
         showToast("Could not send the goal: " + (r.detail || r.reason || r.error || "refused"), "err");
       } else {
         showToast("Sending the robot there", "info");
@@ -1270,6 +1280,10 @@
     // 3.34 / 3.24: faults of the robot itself, not vetoes.
     no_feedback: "NO WHEEL FEEDBACK",
     ros_unavailable: "ROS DOWN",
+    // 3.127: the bridge holding goals at a start (3.105: nav2's lifecycle
+    // not yet active; 3.50.D3: slam_toolbox not ready) -- a wait, not ROS down.
+    nav2_starting: "NAV2 STARTING",
+    slam_not_ready: "SLAM NOT READY",
   };
 
   // 3.86: what a refusal is called. A reason the twin does not know is shown
@@ -1292,7 +1306,8 @@
   // silence under the last driver's name, so the twin cannot tell a brain
   // that hung mid-mission (B3.1) from one whose mission ended (3.86 rounds
   // 5-8; open).
-  const CALM_REFUSALS = { stopped: true, person_stop: true, preempted: true };
+  const CALM_REFUSALS = { stopped: true, person_stop: true, preempted: true,
+                          nav2_starting: true, slam_not_ready: true };   // 3.127
   // The colour class of each kind, the same name on the readout and the log.
   const REFUSAL_KIND_CLASS = { veto: "alert", watchdog: "alert", fault: "warn", calm: null };
   function refusalKind(reason) {
@@ -1916,6 +1931,10 @@
     return null;
   }
 
+  // 3.127: how much of a label source's refusal the survey row shows (the
+  // brain keeps up to 200 characters).
+  const SOURCE_ERROR_CHARS = 100;
+
   // 3.70 S5: the rooms a survey has named, against its call cap. Hidden for
   // a find, and for a brain too old to report a survey.
   function renderSurveyRow(survey) {
@@ -1927,10 +1946,15 @@
       ? survey.rooms_named.join(", ") : "none yet";
     const calls = survey.label_calls + (survey.label_call_limit
       ? " of " + survey.label_call_limit : "") + " room-name calls";
-    const note = survey.no_source ? " \u2014 nothing can name rooms here"
+    // 3.127: a source that refused for good (a wrong secret, /room not
+    // deployed) says why; `no_source` alone is a brain with no source at all.
+    const why = survey.source_error ? String(survey.source_error) : "";
+    const note = why ? " \u2014 room naming stopped: "
+        + (why.length > SOURCE_ERROR_CHARS ? why.slice(0, SOURCE_ERROR_CHARS) + "\u2026" : why)
+      : survey.no_source ? " \u2014 nothing can name rooms here"
       : survey.capped ? " \u2014 cap reached, the rest stay unnamed" : "";
     setBrainText("brain-tel-survey", named + " \u00B7 " + calls + note,
-      survey.no_source ? "alert" : survey.capped ? "warn" : null);
+      survey.no_source || why ? "alert" : survey.capped ? "warn" : null);
   }
 
   // 3.70 E4/E5: "where it looked", from the brain's report. "" without one.

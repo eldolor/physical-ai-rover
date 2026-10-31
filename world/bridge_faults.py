@@ -49,6 +49,33 @@ def classify(exc: Exception) -> dict:
     return {"bridge_status": None, "retryable": False}
 
 
+# 3.127: a goal the bridge HOLDS rather than fails -- its 503 body names the
+# hold (picar_bridge `_goal_refusal`): `nav2` (3.105, the lifecycle manager
+# not yet active) or `slam` (3.50.D3, slam_toolbox not `ready`). The robot
+# server refuses such a goal by this name instead of `ros_unavailable`; it
+# is retryable all the same (a 503).
+HOLD_NAV2 = "nav2_starting"
+HOLD_SLAM = "slam_not_ready"
+
+
+def hold_reason(exc: Exception) -> Optional[str]:
+    """`nav2_starting` / `slam_not_ready` for a bridge 503 whose JSON body
+    names that hold, else None (any other error is an outage or a fault)."""
+    if not isinstance(exc, httpx.HTTPStatusError) or exc.response.status_code != 503:
+        return None
+    try:
+        body = exc.response.json()
+    except ValueError:
+        return None
+    if not isinstance(body, dict):
+        return None
+    if isinstance(body.get("nav2"), dict):
+        return HOLD_NAV2
+    if isinstance(body.get("slam"), str):
+        return HOLD_SLAM
+    return None
+
+
 def headers_for(fault: dict) -> dict:
     """The fault as the robot server's response headers."""
     out = {RETRYABLE_HEADER: "true" if fault["retryable"] else "false"}
