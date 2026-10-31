@@ -1670,6 +1670,7 @@
       // draws -- the phase's proof is that the picture does not change.
       fpvCtx.imageSmoothingEnabled = false;
       fpvCtx.drawImage(img, 0, 0, FPV_W, FPV_H);
+      fpvShowingPlaceholder = false;
       fpvCtx.imageSmoothingEnabled = true;
     };
     // Decode failure would otherwise leave the last frame on screen and
@@ -5815,9 +5816,13 @@
   // state.lastFrame exists (set once the user taps Connect), and the map
   // comes from GET /world/map rather than from anything this page knows.
 
-  var fpvPlaceholderMessage = "";   // var: painted before this line runs is fine
+  // var: painted before these lines run is fine. Whether the canvas shows a
+  // placeholder (painted from the theme's tokens) rather than a frame, and
+  // which message -- so a theme change or a resize repaints the same one.
+  var fpvPlaceholderMessage = "", fpvShowingPlaceholder = false;
   function renderFpvPlaceholder(message) {
     fpvPlaceholderMessage = message || "";
+    fpvShowingPlaceholder = true;
     fpvCtx.fillStyle = getCss("--surface");
     fpvCtx.fillRect(0, 0, FPV_W, FPV_H);
     fpvCtx.fillStyle = getCss("--text-dim");
@@ -5832,7 +5837,7 @@
   function relayoutCanvases() {
     if (sizeFpvCanvas()) {
       if (state.lastFrame) drawFPV();
-      else renderFpvPlaceholder();
+      else renderFpvPlaceholder(fpvPlaceholderMessage);
     }
   }
 
@@ -5842,7 +5847,7 @@
   // of OS theme repaints it (a real frame is pixels, not theme).
   try {
     window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", function () {
-      if (!state.lastFrame) renderFpvPlaceholder(fpvPlaceholderMessage);
+      if (fpvShowingPlaceholder) renderFpvPlaceholder(fpvPlaceholderMessage);
     });
   } catch (e) { /* an old browser without addEventListener on MediaQueryList */ }
   setEmptyState(document.getElementById("brain-log"), BRAIN_EMPTY[0], BRAIN_EMPTY[1]);

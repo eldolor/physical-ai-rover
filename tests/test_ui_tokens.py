@@ -81,3 +81,13 @@ def test_the_literal_check_catches_what_it_is_for():
                  "color: var(--text)", "border-color: var(--accent-primary)"):
         p, v = next(declarations(fine))
         assert not colour_literals(v), fine
+
+
+def test_no_color_mix_in_the_sheets():
+    """Safari before 16.2 and Chrome before 111 drop a color-mix()
+    declaration whole -- the Guide edge glow, the found outline and the
+    Robot-view zone tints vanished on an iOS 15 phone (3.132 Stage 1's bug
+    pass). Tints are rgba tokens in ui.css instead."""
+    for sheet in (TWIN_CSS, UI_CSS):
+        css = re.sub(r"/\*.*?\*/", "", sheet.read_text(), flags=re.S)
+        assert "color-mix(" not in css, sheet.name

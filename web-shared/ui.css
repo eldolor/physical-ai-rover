@@ -136,6 +136,24 @@
   --media-glow: rgba(0,0,0,0.45);
   --media-text-shadow: rgba(0,0,0,0.9);
   --media-drop-shadow: rgba(0,0,0,0.6);
+  /* Accent tints, as plain rgba rather than color-mix(): Safari before
+     16.2 and Chrome before 111 drop a color-mix() declaration whole (the
+     Stage 1 bug pass). Named by accent and alpha; the light block below
+     overrides the ones used outside .ui-dark. */
+  --tint-safe-14: rgba(62,207,142,0.14);
+  --tint-safe-16: rgba(62,207,142,0.16);
+  --tint-safe-24: rgba(62,207,142,0.24);
+  --tint-safe-25: rgba(62,207,142,0.25);
+  --tint-safe-40: rgba(62,207,142,0.40);
+  --tint-safe-55: rgba(62,207,142,0.55);
+  --tint-safe-70: rgba(62,207,142,0.70);
+  --tint-alert-10: rgba(255,107,53,0.10);
+  --tint-alert-22: rgba(255,107,53,0.22);
+  --tint-alert-28: rgba(255,107,53,0.28);
+  --tint-primary-20: rgba(91,157,245,0.20);
+  --tint-primary-55: rgba(91,157,245,0.55);
+  /* The accent at 12% over --surface, opaque (the active mode button). */
+  --primary-on-surface: #243041;
   /* The Guide tab's idle viewfinder: a dark green screen in both themes. */
   --preview-a: #0D1712;
   --preview-b: #10201A;
@@ -172,6 +190,11 @@
     --shadow-banner: 0 2px 10px rgba(16,24,40,0.18);
     --glass-bg: rgba(255,255,255,0.82);
     --glass-border: rgba(16,24,40,0.08);
+    --tint-safe-16: rgba(11,113,72,0.16);
+    --tint-safe-40: rgba(11,113,72,0.40);
+    --tint-alert-10: rgba(184,60,11,0.10);
+    --tint-alert-28: rgba(184,60,11,0.28);
+    --primary-on-surface: #E4ECF9;
   }
 }
 
