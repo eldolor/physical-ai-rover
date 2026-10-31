@@ -762,6 +762,14 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   moved object but fired on a fixed wall. D4-c, D4-e met; D4-a (nav2 does
   not enter the just-re-mapped room), D4-b (harness) and D4-d FAILED.
   The bridge's `ready` before nav2 was active is fixed by 3.105 (below).
+  **D5's code half (merged 2026-10-31):** `/slam/pose` carries the saved
+  map's `map_id` once ready, and the pose gains `frame_id` (a world-contract
+  field, `None` but on a saved map's frame; `map_id` stays per session). A
+  mission's inventory is seeded from the chain's head on that frame (the
+  report with the highest `carry_seq`; landmarks of belief >= 0.5, votes as
+  weights capped at 20); a failed lookup detaches the mission. The S3 copy
+  is stripped to the mission's own landmarks (the user's call, G12/G13).
+  Owed: criterion 7 live (15 cm) and criterion 6 (ten sessions, Jetson).
   **D4b (merged and the twin deployed
   2026-10-26; open until it re-maps on the Rover, the user 2026-10-27):** the
   Sim tab's "Re-map now" under a SLAM map -- two taps, a person's
