@@ -15,7 +15,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import measure as M  # noqa: E402
 
-LIVE = ("#brain-tel-watchdog", "#brain-tel-refusal", "#header-conn-dot .dot")
+LIVE = ("#brain-tel-watchdog", "#brain-tel-refusal", "#header-conn-dot .dot", "#btn-settings")
 STATES = ("twin.first_run", "twin.guide", "twin.guide_robot_view", "twin.sim_idle", "twin.settings")
 
 

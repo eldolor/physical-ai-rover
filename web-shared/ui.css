@@ -98,3 +98,200 @@ body {
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   min-height: 100vh;
 }
+
+/* ---------- shared components (moved from the twin, 3.132 Stage 1) ---------- */
+
+.panel {
+  background: var(--surface); border-radius: 12px; padding: 12px;
+  margin-bottom: 10px; border: 1px solid var(--border);
+  box-shadow: var(--shadow-1);
+}
+
+.section-label {
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--text-dim); margin-bottom: 8px;
+}
+
+.btn-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.btn-row:last-child { margin-bottom: 0; }
+button {
+  font-family: var(--sans); font-size: var(--fs-md); font-weight: 600;
+  border: none; border-radius: 9px; padding: 12px 10px;
+  background: var(--surface-raised); color: var(--text);
+  cursor: pointer; min-height: 44px; flex: 1;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  transition: background 0.12s, transform 0.08s;
+}
+button:hover { background: var(--surface-hover); }
+button:active { transform: scale(0.96); }
+button.primary:hover { background: #6FA9F6; }
+button.primary { background: var(--accent-primary); color: var(--accent-primary-ink); }
+button.danger { background: var(--accent-alert); color: var(--accent-alert-ink); }
+button.ghost { background: transparent; border: 1px solid var(--border-strong); }
+button.active-mode { background: var(--accent-safe); color: var(--accent-safe-ink); }
+button:disabled { opacity: 0.4; cursor: default; }
+button svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+/* Matches .text-input, for the failsafe-drill picker. */
+.select-input {
+  padding: 10px 12px; border-radius: 9px; min-height: 44px;
+  border: 1px solid var(--border-strong); background: var(--field-bg); color: var(--text);
+  font-family: var(--mono); font-size: var(--fs-input);
+  /* A flex item's min-width is `auto`, which for a <select> is the width
+     of its LONGEST OPTION -- so a descriptive option label silently
+     pushes the whole page wider than the phone and the panel starts
+     scrolling sideways. #brain-fault was already 21px over at 390px
+     before anything was added here, and the tiered policy's label took
+     it to 213px. Shrinking is what flex:1 was asking for; the native
+     control clips its own text, and the hint underneath is where the
+     full sentence lives. */
+  min-width: 0;
+}
+
+/* Every text field on this page -- previously four near-identical
+   inline style strings that had already started to drift apart. One
+   class so a change to field styling (or to --fs-input, which is load-
+   bearing for the iOS zoom behavior) actually reaches all of them. */
+.text-input {
+  width: 100%; padding: 10px 12px; border-radius: 9px;
+  border: 1px solid var(--border-strong); background: var(--field-bg); color: var(--text);
+  font-family: var(--mono); font-size: var(--fs-input);
+  transition: border-color 0.15s;
+}
+.text-input:focus { border-color: var(--accent-primary); }
+
+.hint { font-family: var(--sans); font-size: var(--fs-body); color: var(--text-dim); margin-top: 6px; line-height: 1.5; }
+
+/* Connection status. Both of these used to be plain .hint text -- dim grey
+   at body size, identical whether the thing was connected or dead, with a
+   long URL swallowing the one word that mattered. On a phone in a bright
+   room that is unreadable at a glance, which is exactly when you need it:
+   you are standing in the middle of the floor about to start a walk.
+   A tinted card, a coloured dot and the state as a heading, with the URL
+   demoted to a second line that can truncate. */
+.conn-status {
+  display: flex; align-items: flex-start; gap: 10px; margin-top: 10px;
+  padding: 10px 12px; border-radius: 10px;
+  background: var(--surface-raised); border: 1px solid var(--border);
+  border-left: 3px solid var(--text-dim);
+}
+.conn-status-dot {
+  flex: 0 0 auto; width: 10px; height: 10px; border-radius: 50%;
+  background: var(--text-dim); margin-top: 5px;
+}
+.conn-status-body { min-width: 0; flex: 1; }
+.conn-status-label {
+  display: block; font-family: var(--sans); font-weight: 700;
+  font-size: var(--fs-md); color: var(--text); line-height: 1.3;
+}
+.conn-status-detail {
+  display: block; font-family: var(--mono); font-size: var(--fs-body);
+  color: var(--text-dim); line-height: 1.4; margin-top: 3px;
+  overflow-wrap: anywhere;
+}
+.conn-status.is-ok { border-left-color: var(--accent-safe); }
+.conn-status.is-ok .conn-status-dot {
+  background: var(--accent-safe);
+  /* A live connection is the one state worth animating: it says "this is
+     true right now", not "this was true when you last tapped". */
+  animation: conn-pulse 2.2s ease-in-out infinite;
+}
+.conn-status.is-ok .conn-status-label { color: var(--accent-safe); }
+.conn-status.is-err { border-left-color: var(--accent-alert); }
+.conn-status.is-err .conn-status-dot { background: var(--accent-alert); }
+.conn-status.is-err .conn-status-label { color: var(--accent-alert); }
+.conn-status.is-busy { border-left-color: var(--accent-primary); }
+.conn-status.is-busy .conn-status-dot {
+  background: var(--accent-primary); animation: conn-pulse 1s ease-in-out infinite;
+}
+.conn-status.is-busy .conn-status-label { color: var(--accent-primary); }
+@keyframes conn-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 currentColor; }
+  50% { opacity: 0.55; box-shadow: 0 0 0 5px transparent; }
+}
+/* Someone who has asked the OS to stop moving things gets a static dot;
+   colour and weight already carry the whole message. */
+@media (prefers-reduced-motion: reduce) {
+  .conn-status .conn-status-dot { animation: none !important; }
+}
+
+/* ...and the implementation detail itself, one tap away rather than in
+   the way. Deliberately <details>: it's keyboard- and screen-reader-
+   correct for free, and survives with no JS. */
+.disclosure { margin-top: 6px; }
+.disclosure > summary {
+  list-style: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--sans); font-size: var(--fs-body); font-weight: 600;
+  color: var(--text-dim); padding: 5px 0; transition: color 0.12s;
+}
+.disclosure > summary::-webkit-details-marker { display: none; }
+.disclosure > summary:hover { color: var(--text); }
+.disclosure > summary:focus-visible { box-shadow: var(--focus-ring); border-radius: 6px; }
+.disclosure-caret { width: 13px; height: 13px; flex-shrink: 0; transition: transform 0.18s ease-out; }
+.disclosure-caret svg { width: 100%; height: 100%; }
+.disclosure[open] .disclosure-caret { transform: rotate(90deg); }
+.disclosure .hint { margin-top: 0; }
+
+/* Visually hidden but present in the accessibility tree -- the standard
+   clip technique rather than display:none, which would remove the
+   element from that tree entirely and silence the live region. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+  white-space: nowrap; border: 0;
+}
+
+/* Toasts. Status previously changed silently in place -- a .hint whose
+   text was rewritten, easy to miss entirely on a tab you weren't
+   looking at. */
+.toast-stack {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(94px + env(safe-area-inset-bottom));
+  /* Above Guide's fullscreen (200) and the onboarding sheet (150): a walk
+     recorded from Robot view warned of unsaved frames under them, unseen
+     (3.76 O). Never takes a tap (pointer-events: none). */
+  z-index: 260; display: flex; flex-direction: column; gap: 8px;
+  width: min(360px, calc(100% - 32px)); pointer-events: none;
+}
+.toast {
+  display: flex; align-items: center; gap: 9px;
+  padding: 11px 14px; border-radius: 12px;
+  font-family: var(--sans); font-size: var(--fs-body); font-weight: 600;
+  color: var(--text); line-height: 1.35;
+  background: var(--glass-bg); border: 1px solid var(--glass-border);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-2);
+  animation: toast-in 0.24s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.toast.leaving { animation: toast-out 0.2s ease-in forwards; }
+.toast-icon { width: 16px; height: 16px; flex-shrink: 0; color: var(--text-dim); }
+.toast-icon svg { width: 100%; height: 100%; }
+.toast.ok .toast-icon { color: var(--accent-safe); }
+.toast.err .toast-icon { color: var(--accent-alert); }
+.toast.warn .toast-icon { color: var(--accent-warn); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(12px); } }
+@keyframes toast-out { to { opacity: 0; transform: translateY(8px); } }
+
+/* Settings switch. */
+.switch-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  cursor: pointer; padding: 2px 0;
+}
+.switch-copy { min-width: 0; }
+
+.switch-title { display: block; font-family: var(--sans); font-size: var(--fs-md); color: var(--text); font-weight: 600; }
+.switch-sub { display: block; font-family: var(--sans); font-size: var(--fs-body); color: var(--text-dim); line-height: 1.4; margin-top: 2px; }
+.switch {
+  appearance: none; -webkit-appearance: none; flex-shrink: 0; margin: 0;
+  width: 46px; height: 28px; border-radius: 999px; cursor: pointer;
+  background: var(--surface-raised); border: 1px solid var(--border-strong);
+  position: relative; transition: background 0.18s, border-color 0.18s;
+}
+.switch::after {
+  content: ""; position: absolute; top: 3px; left: 3px;
+  width: 20px; height: 20px; border-radius: 50%; background: var(--text-dim);
+  transition: transform 0.18s ease-out, background 0.18s;
+}
+.switch:checked { background: var(--accent-primary); border-color: var(--accent-primary); }
+.switch:checked::after { transform: translateX(18px); background: var(--accent-primary-ink); }
