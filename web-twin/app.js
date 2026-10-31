@@ -38,6 +38,16 @@
     idle: "state.idle", running: "state.running", arrived_unconfirmed: "state.arrivedUnconfirmed",
     room_reached: "state.roomReached", failed: "state.failed", blocked: "state.blocked",
   };
+  // Who drives, for a person: "the autopilot", not `brain`. Engineer mode
+  // keeps the arbitration's own names.
+  const DRIVER_KEYS = {
+    brain: "driver.brain", "twin-dpad": "driver.dpad", "twin-local-brain": "driver.localBrain",
+    ros: "driver.ros", "teleop-operator": "driver.operator",
+  };
+  function driverWords(driver) {
+    if (engineerMode()) return driver;
+    return DRIVER_KEYS[driver] ? t(DRIVER_KEYS[driver]) : t("driver.someone");
+  }
   function outcomeWords(outcome) {
     if (engineerMode()) return outcome;
     return OUTCOME_KEYS[outcome] ? t(OUTCOME_KEYS[outcome]) : t("state.other");
@@ -2037,6 +2047,7 @@
   }
 
   function renderBrainStatus(status) {
+    state.lastBrainStatus = status;      // 3.132: redrawn in the other voice
     const outcome = readOutcome(status).outcome;
     const late = outcome === "arrived_unconfirmed" ? lateWords(status) : "";
     const survey = status.job === "survey";
@@ -2497,9 +2508,11 @@
       setBrainText("brain-tel-refusal", null);
       return;
     }
+    state.lastAuthorityHealth = health;   // 3.132: redrawn in the other voice
     const holder = health.authority_holder;
     setBrainText("brain-tel-driver",
-      holder ? holder : (health.driver ? health.driver + " (lapsed)" : "nobody yet"),
+      holder ? driverWords(holder)
+        : (health.driver ? t("driver.lapsed", {driver: driverWords(health.driver)}) : t("driver.nobody")),
       holder ? "safe" : null);
 
     const refusal = health.last_refusal;
@@ -2795,9 +2808,8 @@
       // is a different state from no brain at all, and the page now retries
       // the first on its own -- see startBrainLiveness().
       hint.textContent = state.brainUrl
-        ? "Brain unreachable at " + fieldHost("cfg-brain-url")
-          + " \u2014 retrying every few seconds. Start comes back on its own."
-        : "No brain service configured \u2014 open Settings to point this at one.";
+        ? t("hint.brainUnreachable", {host: fieldHost("cfg-brain-url")})
+        : t("hint.brainNone");
     }
     renderBrainPolicyHint();
     updateBrainPickersRow();
@@ -2900,10 +2912,9 @@
     const cap = state.brainLabelCap ? "at most <b>" + state.brainLabelCap + "</b> a survey"
       : state.brainLabelCap === null ? "with no cap set on this brain"
       : "up to the brain's own cap";
-    hint.innerHTML = "Drives to every reachable frontier with nav2 "
-      + "(<code>WORLD_MODE=ros</code>) and names rooms as it goes, then ends. "
-      + "In the simulator its floor plan names them, free. On the car each "
-      + "name will be a paid cloud call, " + cap + ".";
+    // innerHTML: Engineer mode's wording carries <code> and the cap's <b>;
+    // every part is this page's own text or a number.
+    hint.innerHTML = t("hint.survey", {cap: cap});
   }
 
   document.getElementById("brain-job").addEventListener("change", function () {
@@ -3430,20 +3441,19 @@
     const sub = document.getElementById("record-walk-sub");
     if (!sub) return;
     if (!state.brainConnected) {
-      sub.textContent = "Needs the brain service connected \u2014 set it up in Settings.";
+      sub.textContent = t("rec.needsBrain");
       return;
     }
     if (state.recordWalkName) {
-      sub.textContent = "Recording " + state.recordWalkName + " \u2014 " +
-        state.recordSaved + " frames saved" +
-        (state.recordByBrain ? " by the brain" : "") +
-        (state.recordFailed ? ", " + state.recordFailed + " failed" : "") +
-        (state.recordLost ? ", " + state.recordLost + " lost (the brain fell behind)" : "") +
-        (state.recordOrphaned ? ", " + state.recordOrphaned + " from a previous walk dropped" : "") + ".";
+      sub.textContent = t("rec.recording", {
+        name: state.recordWalkName, n: state.recordSaved,
+        by: state.recordByBrain ? t("rec.by") : "",
+        failed: state.recordFailed ? t("rec.failed", {n: state.recordFailed}) : "",
+        lost: state.recordLost ? t("rec.lost", {n: state.recordLost}) : "",
+        orphaned: state.recordOrphaned ? t("rec.orphaned", {n: state.recordOrphaned}) : ""});
       return;
     }
-    sub.textContent = "Saves each frame to the brain service, so the same walk " +
-      "can be replayed through the Python agent as many times as you like.";
+    sub.textContent = t("rec.idle");
   }
 
   function updateRecordRow() {
@@ -3648,24 +3658,15 @@
     const sub = document.getElementById("drive-via-brain-sub");
     if (!sub) return;
     if (!state.brainConnected) {
-      sub.textContent = "Needs the brain service connected — set it up in Settings.";
+      sub.textContent = t("drive.needsBrain");
       return;
     }
-    let text = "Runs a real mission on the brain service (PLAN-teleop-robot.md) "
-      + "instead of a one-off /navigate call -- mission memory, the step "
-      + "budget and the failsafes all apply to your walk. "
-      + "Would run: " + brainModelLabel() + ".";
+    let text = t("drive.sub", {model: brainModelLabel()});
     if (state.drivePolicy === "tiered") {
       const p = state.brainPerception;
-      text += p
-        ? " Perception runs in the brain process on your frames: "
-          + p.detector + " + " + p.clip + "."
-        : " Perception runs in the brain process on your frames.";
-      if (p && p.available === false) {
-        text += " This brain has no perception models installed, so the walk "
-          + "will refuse to start — run pip install -r "
-          + "requirements-perception.txt where the brain runs.";
-      }
+      text += p ? t("drive.perception", {detector: p.detector, clip: p.clip})
+        : t("drive.perceptionBare");
+      if (p && p.available === false) text += t("drive.noModels");
     }
     sub.textContent = text;
   }
@@ -5966,10 +5967,21 @@
     document.body.classList.toggle("debug-readouts", on);
     debugToggleEl.checked = on;
   }
+  // 3.132 Stage 2A: Engineer mode changes the page's voice, so whatever the
+  // script wrote is written again in the new one (the markup's op-only and
+  // eng-only copies follow the body class on their own).
+  function revoice() {
+    renderRecordStatus();
+    renderDriveViaBrainStatus();
+    updateBrainControls();
+    if (state.lastBrainStatus) renderBrainStatus(state.lastBrainStatus);
+    if (state.lastAuthorityHealth) renderAuthority(state.lastAuthorityHealth);
+  }
   applyDebugReadouts(prefGet(PREF.debugReadouts) === "1");
   debugToggleEl.addEventListener("change", function () {
     prefSet(PREF.debugReadouts, this.checked ? "1" : "0");
     applyDebugReadouts(this.checked);
+    revoice();
   });
 
 

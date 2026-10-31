@@ -968,3 +968,11 @@ header .header-text { min-width: 0; }
   header h1 { font-size: 24px; }
   .tab-btn { padding: 10px 4px 8px; }
 }
+
+/* ---------- 3.132 Stage 2A: Engineer mode ---------- */
+/* Settings' "Engineer mode" (the body's debug-readouts class) shows how the
+   robot works inside, in today's engineering words; off, a person at home
+   sees the plain wording. !important beats the inline display the page's
+   script toggles on these rows, which still decides within Engineer mode. */
+body:not(.debug-readouts) .eng-only { display: none !important; }
+body.debug-readouts .op-only { display: none !important; }

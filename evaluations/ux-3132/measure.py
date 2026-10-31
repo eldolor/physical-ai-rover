@@ -502,7 +502,10 @@ def configure_twin(page, *, policy="frontier"):
     page.wait_for_function(CONNECTED, timeout=20_000)
     page.click('.tab-btn[data-tab="sim"]')
     page.wait_for_selector("#btn-brain-mission:not([disabled])", timeout=20_000)
-    page.select_option("#brain-policy", policy)
+    # Amendment 9: the policy is saved as the page saves it (vp_brain_policy).
+    # Since Stage 2A its picker is Engineer mode's, and choosing it there is a
+    # one-time setup, not a task.
+    page.evaluate("p => localStorage.setItem('vp_brain_policy', p)", policy)
     page.click('.tab-btn[data-tab="guide"]')
     page.goto(TWIN)
     wait_twin_ready(page)
@@ -654,8 +657,9 @@ def t6_status(page, reqs, t):
     # The fixed tab bar covers the bottom of the viewport.
     scroll = max(0, round(box["y"] + box["height"] - (PHONE["height"] - bar)))
     text = el.inner_text().strip()
-    # The state shown must be the running mission's, not the idle default.
-    ok = bool(brain.get("running")) and "running" in text.lower()
+    # The state shown must be the running mission's, not the idle default --
+    # in either voice (amendment 9: operator mode says "Searching").
+    ok = bool(brain.get("running")) and ("running" in text.lower() or "searching" in text.lower())
     return t.result(ok, scroll_px=scroll, text=text[:60], brain=brain)
 
 
