@@ -54,6 +54,9 @@ LOCK, GATE, NOTES = "heavy-run.lock", "heavy-run.gate", "heavy-run.d"
 # A probe (`status`) or another acquirer passing the gate holds a lock for
 # microseconds: --no-wait retries this long before it calls the lock busy.
 GRACE_S = 1.5
+# How often a shared holder probes the gate to tell a queued exclusive job
+# from short holds: under the start-up gap between two quick attempts.
+QUEUE_PROBE_S = 0.02
 # Evaluations grep stderr for this line (3.79, 3.88, 3.96 harnesses).
 WAIT_LINE = "waiting for the heavy-run lock"
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -441,8 +444,12 @@ def exclusive_queued(d: str) -> bool:
     in place no shared acquirer waits at the gate; one passing through
     holds it for microseconds and a `--no-wait` one for at most GRACE_S. So
     a gate held at probes spanning longer than that is an exclusive job
-    waiting in the queue."""
-    span, step = GRACE_S + 0.3, 0.3
+    waiting in the queue. The probes are close (`QUEUE_PROBE_S`): two short
+    holds back to back -- a second `--no-wait` attempt starting a moment
+    after the first gave up -- leave the gate free only for a process's
+    start-up, and probes 0.3 s apart missed that gap, so a shared job stepped
+    aside for a job that was never queued (found 2026-10-31, 3.50.D5's gate)."""
+    span, step = GRACE_S + 0.3, QUEUE_PROBE_S
     end = time.monotonic() + span
     while True:
         if not gate_waiting(d):
