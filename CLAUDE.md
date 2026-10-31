@@ -278,7 +278,7 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
     wheel ticks (E's `A1-noload`: 0 of 12,367, max 85 ms; G3 before: 1,196).
   * A person's Stop during an arrival's confirmation now ends it
     `cancelled`, not `found` (3.104, below).
-    `vision-picar-ros:latest` rebuilt from `dev` 778846d on 2026-10-18.
+    `vision-picar-ros:latest` rebuilt from `dev` d496c67 on 2026-10-31.
 * **Calibrating the tiers (3.92), merged 2026-10-22; nothing changed in
   the code.** VE and YOLOE + CLIP on all 2,261 labelled frames (free):
   * The raw scores are already calibrated on average (VE ECE 0.034), but
@@ -453,7 +453,7 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   Failed: criteria 2 and 3 by 0.1-0.6 s in four runs (their 120 s bar is
   the goal timeout itself) and one hall run at 150.2 s; laundry 6 marks
   (bar 5). `nav2.yaml` now has the keepout filter; `vision-picar-ros:latest`
-  rebuilt from `dev` 778846d on 2026-10-18.
+  rebuilt from `dev` d496c67 on 2026-10-31.
 * **Review of the code written before the review rule (3.76): done 2026-10-18,
   every batch A-P3 merged; what waits on the user is the plan's closing list.** Both reviewers on whole files, risky files only,
   every confirmed bug fixed (the user, 2026-10-12). A (`safety.py`,
@@ -497,7 +497,7 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   DEPLOYED:** 34 fixed. The bridge forgot a goal after one cancel (a lost
   cancel left nav2 driving after a Stop): it now re-sends until nav2's
   result. Each SLAM session is anchored once, after `start_truth_pending`
-  clears, and never moved -- `vision-picar-ros:latest` rebuilt from `dev` 778846d on 2026-10-18
+  clears, and never moved -- `vision-picar-ros:latest` rebuilt from `dev` d496c67 on 2026-10-31
   (an old bridge anchors at first contact for good). The cloud read
   odd model replies and Bedrock's 3.75 MB / 8000 px limits as outages, and
   a hung call outlived the Lambda; the tunnel served an empty
@@ -589,7 +589,7 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   ROS, the local VLM), merged 2026-10-18:** 1 fixed -- the keepout mask was 0
   outside its discs, which nav2's KeepoutFilter writes over unknown cells, so
   unmapped space read free (now -1; `vision-picar-ros:latest`
-  rebuilt from `dev` 778846d on 2026-10-18). For the user: 3.83's dedupe (a wedge 0.15-0.30 m from a live spot
+  rebuilt from `dev` d496c67 on 2026-10-31). For the user: 3.83's dedupe (a wedge 0.15-0.30 m from a live spot
   marks nothing) and marks cleared only by their 300 s expiry. **L1 (brain
   perception, whole files), merged 2026-10-18:** 2 fixed -- no lock on a
   pipeline, so a new target's first frame (its text encoded in 20 s
@@ -813,7 +813,7 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   keeps the robot against the safety bar. **The garage exit is not
   solvable by nav2's parameters (3.67).** **Candidate A is adopted in
   `nav2.yaml` (merged 2026-10-11, criterion 1 waived by the user;
-  `vision-picar-ros:latest` rebuilt from `dev` 778846d on 2026-10-18).** Inflation 0.35 m (A) keeps goal 6 at 0/3 --
+  `vision-picar-ros:latest` rebuilt from `dev` d496c67 on 2026-10-31).** Inflation 0.35 m (A) keeps goal 6 at 0/3 --
   the plan runs down a 30 cm slot beside the car to an unmapped wall --
   but meets every other bar (tour 8/8/8, parked <= 99 s, coverage
   0.93-0.95, R6 6/6). Footprint padding (B) and `allow_unknown: false`
