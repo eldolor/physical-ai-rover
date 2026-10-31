@@ -8,87 +8,92 @@
   {
    "mutation": "a: BFS neighbour order changed",
    "caught": true,
-   "pytest": "1 failed in 0.40s"
+   "pytest": "1 failed in 0.53s"
   },
   {
    "mutation": "b: a later occurrence kept in reach's level step",
    "caught": true,
-   "pytest": "1 failed in 0.37s"
+   "pytest": "1 failed in 0.34s"
   },
   {
    "mutation": "b2: (with b) the running maximum",
    "caught": true,
-   "pytest": "1 failed in 0.50s"
+   "pytest": "1 failed in 0.38s"
   },
   {
    "mutation": "d: _split's start cell changed",
    "caught": true,
-   "pytest": "1 failed in 0.54s"
+   "pytest": "1 failed in 0.38s"
   },
   {
    "mutation": "d2: _split's piece order reversed",
    "caught": true,
-   "pytest": "1 failed in 0.58s"
+   "pytest": "1 failed in 0.39s"
   },
   {
    "mutation": "e: one seen cell dropped from the unseen mask",
    "caught": true,
-   "pytest": "1 failed in 1.88s"
+   "pytest": "1 failed in 1.39s"
   },
   {
    "mutation": "f: the ray step changed by half a cell",
    "caught": true,
-   "pytest": "1 failed, 1 passed in 4.85s"
+   "pytest": "1 failed, 1 passed in 3.35s"
   },
   {
    "mutation": "g: a tie in _ranked broken the other way",
    "caught": true,
-   "pytest": "1 failed in 0.54s"
+   "pytest": "1 failed in 0.36s"
   },
   {
    "mutation": "c: clusters' order reversed",
    "caught": true,
-   "pytest": "1 failed in 0.52s"
+   "pytest": "1 failed in 0.36s"
   },
   {
    "mutation": "h: components joined 4-connected only",
    "caught": true,
-   "pytest": "1 failed in 0.45s"
+   "pytest": "1 failed in 0.35s"
+  },
+  {
+   "mutation": "h2: (with h) ... and the down-right diagonal too",
+   "caught": true,
+   "pytest": "1 failed in 0.35s"
   },
   {
    "mutation": "i: a blocked ray walks on into the next stretch",
    "caught": true,
-   "pytest": "1 failed in 0.66s"
+   "pytest": "1 failed in 0.53s"
   },
   {
    "mutation": "j: _Occupied.at one cell short",
    "caught": true,
-   "pytest": "1 failed in 1.26s"
+   "pytest": "1 failed in 1.11s"
   },
   {
    "mutation": "k2: _shortlist drops the cells at its least",
    "caught": true,
-   "pytest": "1 failed in 0.40s"
+   "pytest": "1 failed in 0.38s"
   },
   {
    "mutation": "k: _shortlist's least taken as the most (equivalent: Python's min decides)",
    "caught": false,
-   "pytest": "29 passed in 23.66s"
+   "pytest": "30 passed in 17.13s"
   },
   {
    "mutation": "m: _split's walk visits neighbours row first",
    "caught": true,
-   "pytest": "1 failed in 0.39s"
+   "pytest": "1 failed in 0.48s"
   },
   {
    "mutation": "o: the box's second block dropped",
    "caught": true,
-   "pytest": "1 failed in 0.41s"
+   "pytest": "1 failed in 0.52s"
   },
   {
    "mutation": "p: components' union keeps the higher root",
    "caught": true,
-   "pytest": "1 failed, 8 passed in 11.11s"
+   "pytest": "1 failed, 8 passed in 11.76s"
   }
  ],
  "equivalent": [

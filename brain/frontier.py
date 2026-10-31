@@ -26,7 +26,6 @@ apart, so the rule spends time, not a verdict.
 import math
 from collections import deque
 from dataclasses import dataclass, field
-from itertools import chain
 from typing import Callable, Optional
 
 import numpy as np
@@ -285,7 +284,7 @@ def reach(m: dict, x_m: float, y_m: float,
     level, ld = np.array([s], dtype=np.int64), np.zeros(1)
     orders, dists = [level], [ld]
     # 3.130: each new cell's first occurrence in the level's neighbour list
-    # (its position `i`: parent i // 8, offset i % 8) found by a running
+    # (its position `i`: parent i // k, offset i % k) found by a running
     # minimum per cell, not a sort; `stamp` is reset after each level.
     none = np.iinfo(np.int64).max
     stamp = np.full(open_.size, none, dtype=np.int64)
@@ -299,7 +298,7 @@ def reach(m: dict, x_m: float, y_m: float,
         first = stamp[cand] == at
         stamp[cand] = none
         level, at = cand[first], at[first]
-        ld = ld[at // 8] + cost[at % 8]
+        ld = ld[at // offs.size] + cost[at % offs.size]
         open_[level] = False
         orders.append(level)
         dists.append(ld)
@@ -384,9 +383,11 @@ def _window_any(a: np.ndarray, n: int) -> np.ndarray:
 
 def _box_any_stack(mark: np.ndarray, r: int) -> np.ndarray:
     """For a stack of masks (P, H, W): True where some set cell lies within
-    Chebyshev distance `r` in the same mask."""
+    Chebyshev distance `r` in the same mask. (3.77's running sums kept int16
+    counts, which wrap for r >= 91; callers use about the clearance in cells,
+    ~7, where the two agree exactly.)"""
     if r <= 0:
-        return mark.copy()
+        return mark != 0
     rows = _window_any(np.pad(mark, ((0, 0), (0, 0), (r, r))), 2 * r + 1)
     cols = np.swapaxes(np.pad(rows, ((0, 0), (r, r), (0, 0))), 1, 2)
     return np.swapaxes(_window_any(cols, 2 * r + 1), 1, 2)
@@ -644,7 +645,9 @@ def _ray_steps(res: float, range_m: float) -> np.ndarray:
         while d <= range_m:
             ds.append(d)
             d += res * 0.5
-        _STEPS[key] = np.array(ds)
+        ds = np.array(ds)
+        ds.flags.writeable = False              # shared by every caller
+        _STEPS[key] = ds
     return _STEPS[key]
 
 
@@ -825,8 +828,9 @@ def find_view_gaps(m: dict, x_m: float, y_m: float, seen: set,
     res, w, h = m["resolution_m"], m["width"], m["height"]
     unseen_mask = r.grid == CELL_FREE
     if seen:
-        xy = np.fromiter(chain.from_iterable(seen), dtype=np.int64,
-                         count=2 * len(seen)).reshape(-1, 2)
+        xy = np.asarray(list(seen), dtype=np.int64)
+        if xy.ndim != 2 or xy.shape[1] != 2:
+            raise ValueError("seen must hold (x, y) cell pairs")
         on = (xy[:, 0] >= 0) & (xy[:, 0] < w) & (xy[:, 1] >= 0) & (xy[:, 1] < h)
         unseen_mask[xy[on, 1], xy[on, 0]] = False
     labels, count = _components(unseen_mask)

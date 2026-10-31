@@ -1,17 +1,21 @@
 """
 evaluations/fast-map-3130/mutations.py -- 3.130 criterion 2: each planted
 bug in `brain/frontier.py`, one at a time, must fail at least one fast-tier
-test (`FILES`). The file is restored after each run, whatever happens.
+test (`FILES`). The bugs are planted in a scratch copy of the tracked files
+(as they stand in the working tree), never in this checkout, so a killed run
+leaves nothing behind. Heavy work (CLAUDE.md 3c):
 
-    python evaluations/fast-map-3130/mutations.py <out.json>
+    python tools/desktop_lock.py shared --why "3.130 mutations" -- \
+        python evaluations/fast-map-3130/mutations.py <out.json>
 """
 import json
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-TARGET = os.path.join(ROOT, "brain", "frontier.py")
 FILES = ["tests/test_frontier_3130.py", "tests/test_frontier_fast.py", "tests/test_frontier.py"]
 
 # (name, the text in brain/frontier.py, its replacement): the criterion's
@@ -46,6 +50,9 @@ MUTATIONS = [
     ("h: components joined 4-connected only",
      "    lo = np.searchsorted(sy * key + ex, (sy + 1) * key + sx, side=\"left\")\n",
      "    lo = np.searchsorted(sy * key + ex, (sy + 1) * key + sx, side=\"right\")\n"),
+    ("h2: (with h) ... and the down-right diagonal too",
+     "    hi = np.searchsorted(sy * key + sx, (sy + 1) * key + ex, side=\"right\")\n",
+     "    hi = np.searchsorted(sy * key + sx, (sy + 1) * key + ex, side=\"left\")\n"),
     ("i: a blocked ray walks on into the next stretch",
      "            live = live[kept[:, -1] & ~hit[pair[live]]]\n",
      "            live = live[~hit[pair[live]]]\n"),
@@ -75,13 +82,28 @@ MUTATIONS = [
 EQUIVALENT = {"k: _shortlist's least taken as the most (equivalent: Python's min decides)"}
 # b alone is a bug (a stamp reset to -1 never wins a minimum); b2 needs b's
 # reset to keep the latest occurrence, so it runs with b applied.
-TOGETHER = {"b2: (with b) the running maximum": "b: a later occurrence kept in reach's level step"}
+TOGETHER = {"b2: (with b) the running maximum": "b: a later occurrence kept in reach's level step",
+            "h2: (with h) ... and the down-right diagonal too": "h: components joined 4-connected only"}
+
+
+def copy_tree(dest: str) -> None:
+    """The tracked files, as they stand in the working tree, into `dest`."""
+    names = subprocess.run(["git", "ls-files", "-z"], cwd=ROOT, check=True,
+                           capture_output=True).stdout.decode().split("\0")
+    for name in filter(None, names):
+        src = os.path.join(ROOT, name)
+        if os.path.isfile(src):
+            os.makedirs(os.path.dirname(os.path.join(dest, name)) or dest, exist_ok=True)
+            shutil.copy2(src, os.path.join(dest, name))
 
 
 def main(out_path: str) -> None:
-    original = open(TARGET).read()
     rows = []
-    try:
+    with tempfile.TemporaryDirectory(prefix="mutations-3130-") as tree:
+        copy_tree(tree)
+        target = os.path.join(tree, "brain", "frontier.py")
+        original = open(target).read()
+        env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
         for name, old, new in MUTATIONS:
             text = original
             for n, o, nw in MUTATIONS:
@@ -89,16 +111,14 @@ def main(out_path: str) -> None:
                     if text.count(o) != 1:
                         raise SystemExit(f"{n}: its text is not in the file exactly once")
                     text = text.replace(o, nw)
-            with open(TARGET, "w") as f:
+            with open(target, "w") as f:
                 f.write(text)
             p = subprocess.run([sys.executable, "-m", "pytest", "-x", "-q", "-p", "no:cacheprovider",
-                                *FILES], cwd=ROOT, capture_output=True, text=True, timeout=1800)
+                                *FILES], cwd=tree, env=env, capture_output=True, text=True,
+                               timeout=1800)
             tail = p.stdout.strip().splitlines()[-1] if p.stdout.strip() else p.stderr[-200:]
             rows.append({"mutation": name, "caught": p.returncode != 0, "pytest": tail})
             print(f"{'caught ' if p.returncode else 'MISSED '} {name}: {tail}", flush=True)
-    finally:
-        with open(TARGET, "w") as f:
-            f.write(original)
     with open(out_path, "w") as f:
         f.write(json.dumps({"files": FILES, "mutations": rows,
                             "equivalent": sorted(EQUIVALENT),

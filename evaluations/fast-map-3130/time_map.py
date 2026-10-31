@@ -11,7 +11,10 @@ as 3.103 and 3.109 recorded it) and `seen` (the camera's seen cells from 30
 poses per map, drawn from `random.Random(3130)`, as explore passes them).
 One untimed pass first; the two answers are checked equal at every pose.
 
-    python evaluations/fast-map-3130/time_map.py <label> <out.json>
+A board bench: run it only under the board lock (CLAUDE.md 3c), e.g.
+
+    python tools/jetson/board_lock.py run --why "3.130 timing" -- \
+        ssh picar-jetson "cd <copy> && python evaluations/fast-map-3130/time_map.py <label> <out.json>"
 """
 import json
 import os

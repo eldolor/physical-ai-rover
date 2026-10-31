@@ -1,6 +1,7 @@
 """3.130: brain/frontier.py frozen at dev 67c5cbd (this section's fork), timed
-beside the new code by evaluations/fast-map-3130/time_map.py and compared with it call for call by
-tests/test_frontier_dev_calls.py. Do not edit."""
+beside the new code by evaluations/fast-map-3130/time_map.py and compared
+with it by tests/test_frontier_3130.py and, call for call, by
+tests/test_frontier_3130_sweep.py. Do not edit."""
 """
 frontier.py -- where to look next on a map the robot is still drawing
 (PLAN-ros-alignment.md 3.31). Pure functions over `WorldInterface.get_map()`'s

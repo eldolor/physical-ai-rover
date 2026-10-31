@@ -148,3 +148,11 @@ def test_a_map_with_no_frontier_or_no_free_floor_answers_as_before():
         for _ in range(3):
             x, y = rng.uniform(0, 0.6), rng.uniform(0, 0.45)
             assert answers(new, m, x, y, 0.05, set()) == answers(dev, m, x, y, 0.05, set())
+
+
+def test_a_seen_set_that_is_not_cell_pairs_is_refused_as_before():
+    m = fc.load(fc.MAPS[0])
+    x, y = fc.poses(m, 1, random.Random(4))[0]
+    for fr in (new, dev):
+        with pytest.raises(ValueError):
+            fr.find_view_gaps(m, x, y, {(1, 2, 3)}, clearance_m=fc.LEAVE)
