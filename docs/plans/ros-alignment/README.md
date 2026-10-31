@@ -132,8 +132,7 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.124](3.124-bridge-map-version.md) | The bridge's map_version moves only when the grid changes |
 | [3.125](3.125-rooms-no-label-test.md) | The rooms policy without room labels, on the 588 test houses |
 | [3.126](3.126-bridge-map-304.md) | The bridge answers 304 for an unchanged map |
+| [3.127](3.127-twin-survey-error-nav2-hold.md) | The twin names a stopped room labeller and a nav2 still starting |
 | [3.128](3.128-desktop-lock.md) | A shared/exclusive desktop lock: timing-sensitive runs alone, other heavy jobs together |
 | [3.129](3.129-desktop-lock-followups.md) | The desktop lock's open items: pushes skip the queue, long jobs step aside, the nightly takes it |
-| [3.125](3.125-rooms-no-label-test.md) | The rooms policy without room labels, on the 588 test houses |
-| [3.127](3.127-twin-survey-error-nav2-hold.md) | The twin names a stopped room labeller and a nav2 still starting |
 <!-- /sections -->
