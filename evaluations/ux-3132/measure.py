@@ -146,6 +146,18 @@ JS_SMALL_TARGETS = r"""() => {
   return out;
 }"""
 
+# M7 (amendment 6): what still moves under prefers-reduced-motion: reduce.
+JS_MOVING = r"""() => document.getAnimations().filter(a => {
+    if (a.playState !== "running") return false;
+    const t = a.effect && a.effect.getComputedTiming ? a.effect.getComputedTiming() : {};
+    const d = typeof t.duration === "number" ? t.duration : 0;
+    return d > 10 || t.iterations === Infinity;
+  }).map(a => {
+    const el = a.effect && a.effect.target;
+    return {name: a.animationName || a.transitionProperty || a.constructor.name,
+            target: el ? (el.id ? "#" + el.id : el.tagName.toLowerCase() + "." + [...el.classList].join(".")) : null};
+  })"""
+
 JS_SCROLL = r"""() => { const s = document.scrollingElement;
   return {scrollWidth: s.scrollWidth, clientWidth: s.clientWidth}; }"""
 
@@ -386,6 +398,21 @@ def measure_state(page, name, axe, shots: Path, light_too=True) -> dict:
       return r.violations.filter(v => v.impact === 'serious' || v.impact === 'critical')
         .map(v => ({id: v.id, impact: v.impact, nodes: v.nodes.map(n => n.target.join(' '))}));
     }""", AXE_TAGS)
+    # M2L (amendment 6): axe's contrast rule under the light scheme.
+    page.emulate_media(color_scheme="light")
+    page.wait_for_timeout(300)
+    light = page.evaluate("""async () => {
+      const r = await axe.run(document, {runOnly: {type: 'rule', values: ['color-contrast']},
+                                         resultTypes: ['violations']});
+      return r.violations.filter(v => v.impact === 'serious' || v.impact === 'critical')
+        .flatMap(v => v.nodes.map(n => n.target.join(' ')));
+    }""")
+    page.emulate_media(color_scheme="dark")
+    # M7: under reduced motion, after the page has had time to react.
+    page.emulate_media(reduced_motion="reduce")
+    page.wait_for_timeout(400)
+    moving = page.evaluate(JS_MOVING)
+    page.emulate_media(reduced_motion="no-preference")
     texts = page.evaluate(JS_VISIBLE_TEXT)
     hits = set()
     for t in texts:
@@ -397,6 +424,8 @@ def measure_state(page, name, axe, shots: Path, light_too=True) -> dict:
     return {
         "settled": settled,
         "M2_axe": {"rules": len(res), "nodes": sum(len(v["nodes"]) for v in res), "violations": res},
+        "M2L_light_contrast": {"nodes": len(light), "targets": light},
+        "M7_reduced_motion": {"count": len(moving), "moving": moving},
         "M3_small_targets": {"count": len(small), "elements": small},
         "M4_sideways_scroll": sc["scrollWidth"] > sc["clientWidth"] + 1, "scroll": sc,
         "M5_jargon": {"count": len(hits), "hits": sorted([list(h) for h in hits])},
@@ -854,7 +883,9 @@ def summary(r):
         if "error" in v:
             return {"error": v["error"]}
         return {"settled": v.get("settled"), "axe": v["M2_axe"]["rules"], "axe_nodes": v["M2_axe"]["nodes"],
-                "small": v["M3_small_targets"]["count"], "scroll": v["M4_sideways_scroll"],
+                "small": v["M3_small_targets"]["count"],
+                "light_contrast": v.get("M2L_light_contrast", {}).get("nodes"),
+                "reduced_motion": v.get("M7_reduced_motion", {}).get("count"), "scroll": v["M4_sideways_scroll"],
                 "jargon": v["M5_jargon"]["count"]}
     return {
         "commit": r["commit"],
