@@ -14,11 +14,12 @@ set -uo pipefail
 cd ~/bench-3131
 # headroom_identity.sh activates the checkout's .venv; an archive has none.
 [ -e .venv ] || ln -s ~/vision-picar-service/.venv .venv
-# It runs perception from here too: the service checkout's untracked weights
-# and the recorded frames it perceives.
-for f in yoloe-11s-seg.pt mobileclip_blt.ts recordings; do
+# It runs perception from here too: the service checkout's untracked weights,
+# and the recorded frames it perceives (rsynced to ~/vision-picar, README).
+for f in yoloe-11s-seg.pt mobileclip_blt.ts; do
   [ -e "$f" ] || ln -s ~/vision-picar-service/"$f" "$f"
 done
+[ -e recordings ] || ln -s ~/vision-picar/recordings recordings
 OUT=out; mkdir -p "$OUT"
 PY=~/vision-picar-service/.venv/bin/python
 log() { echo "$(date +%T) $*" | tee -a "$OUT/driver.log"; }
