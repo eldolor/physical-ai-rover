@@ -165,6 +165,12 @@ STATIC = f"http://127.0.0.1:{STATIC_PORT}"
 
 
 class _Quiet(http.server.SimpleHTTPRequestHandler):
+    # The content types S3 serves (service/static/assets.json): without the
+    # charset a page with no <meta charset> (admin.html) decodes as cp1252.
+    extensions_map = {**http.server.SimpleHTTPRequestHandler.extensions_map,
+                      ".html": "text/html; charset=utf-8", ".js": "application/javascript",
+                      ".json": "application/json", ".png": "image/png"}
+
     def log_message(self, *a):
         pass
 
