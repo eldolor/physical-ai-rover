@@ -332,7 +332,7 @@ def test_without_a_saved_frame_nothing_is_read_or_carried(tmp_path):
 
 from control import inventory_store as store_mod  # noqa: E402
 from control import mission_runner as runner_mod  # noqa: E402
-from brain.inventory import carry_seq_of  # noqa: E402
+from brain.inventory import CARRY_WEIGHT, carry_seq_of  # noqa: E402
 
 
 def test_the_head_is_chosen_by_lineage_not_by_the_clock(tmp_path):
@@ -405,25 +405,44 @@ def test_a_landmark_with_more_evidence_of_absence_is_not_carried():
     assert "sock" not in [lm.label for lm in inv.landmarks]
 
 
-def test_carried_votes_are_exact_and_a_tie_keeps_the_saved_name():
-    """Review 3: counts kept beside the looks -- no cap, no rounding, so
-    shares and `disputed` hold exactly, and a corrupt count costs nothing."""
+def test_carried_votes_keep_their_shares_bounded_and_a_tie_keeps_the_name():
+    """Review 4: weights scaled to CARRY_WEIGHT, never rounded -- shares and
+    `disputed` hold exactly, a corrupt count costs nothing, names normalised."""
     saved = _session_one()
     saved["candidates"] = saved["candidates"] + [
         {"label": "shoe", "x_m": 1.0, "y_m": 1.0, "belief": 0.9,
          "votes": {"boot": 2, "shoe": 2}},
         {"label": "chair", "x_m": 3.0, "y_m": 3.0, "belief": 0.9,
-         "votes": {"chair": 10**9, "stool": 1, "bad": "x", "neg": -3, "half": 2.5}},
+         "votes": {"chair": 10**9, "stool": 1, "bad": "x", "neg": -3}},
         {"label": "table", "x_m": 5.0, "y_m": 5.0, "belief": 0.9,
-         "votes": {"table": 21, "desk": 10}}]
+         "votes": {"table": 41, "Desk ": 20}}]
     inv = Inventory()
     inv.seed(SAVED, saved)
     shoe = next(lm for lm in inv.landmarks if lm.points[0][2] == "shoe")
     assert shoe.label == "shoe" and shoe.disputed
     chair = next(lm for lm in inv.landmarks if lm.label == "chair")
-    assert chair.votes == {"chair": 10**9, "stool": 1} and chair.hits == 10**9 + 1
+    assert sum(chair.votes.values()) == pytest.approx(CARRY_WEIGHT) and chair.hits == 20
     table = next(lm for lm in inv.landmarks if lm.label == "table")
-    assert not table.disputed                       # 10/31 < 1/3, exactly as saved
+    assert set(table.votes) == {"table", "desk"}
+    assert table.votes["desk"] / sum(table.votes.values()) == pytest.approx(20 / 61)
+    assert not table.disputed                       # 20/61 < 1/3, exactly as saved
+
+
+def test_two_carried_parts_merged_weigh_no_more_than_the_heavier():
+    saved = _session_one()
+    saved["candidates"] = [
+        {"label": "sofa", "x_m": 2.0, "y_m": 2.0, "belief": 0.9, "votes": {"sofa": 5}},
+        {"label": "sofa", "x_m": 2.0 + 2 * MERGE_M * 0.9, "y_m": 2.0, "belief": 0.9,
+         "votes": {"sofa": 5}}]
+    saved["reported"] = []
+    inv = Inventory()
+    inv.seed(SAVED, saved)
+    # A point between them bridges the two (each within MERGE_M of it).
+    inv.observe([{"label": "sofa", "bearing_deg": 0.0}], _pose(x=2.0 + MERGE_M * 0.9, y=3.0,
+                h=0.0), _scan({0: 1.0}))
+    sofas = [lm for lm in inv.landmarks if lm.label == "sofa"]
+    assert len(sofas) == 1
+    assert sum(sofas[0]._carried_votes.values()) == pytest.approx(5)
 
 
 def test_a_carried_landmark_seen_again_counts_both():
@@ -529,8 +548,10 @@ def test_a_stray_file_is_skipped_not_fatal(tmp_path):
     assert InventoryStore(str(tmp_path)).latest_for(SAVED)["mission"] == "good"
 
 
-def test_a_report_that_cannot_be_read_fails_the_lookup(tmp_path, monkeypatch):
-    """Review 3: it may be the head; reading around it forks the chain."""
+def test_a_report_that_cannot_be_read_is_skipped_and_named(tmp_path, monkeypatch, caplog):
+    """Review 4: the lesser harm -- skipping it can fork the chain (losing that
+    mission's own sightings); failing would stop all carrying until someone
+    removed the file."""
     _write(tmp_path, "good.json", {"frame_id": SAVED, "mission": "good"}, age_s=10)
     _write(tmp_path, "head.json", {"frame_id": SAVED, "mission": "head", "carry_seq": 9})
     real = type(tmp_path).read_text
@@ -540,8 +561,8 @@ def test_a_report_that_cannot_be_read_fails_the_lookup(tmp_path, monkeypatch):
             raise PermissionError("denied")
         return real(self, *a, **kw)
     monkeypatch.setattr(type(tmp_path), "read_text", read_text)
-    with pytest.raises(OSError, match="head.json"):
-        InventoryStore(str(tmp_path)).latest_for(SAVED)
+    assert InventoryStore(str(tmp_path)).latest_for(SAVED)["mission"] == "good"
+    assert "head.json" in caplog.text
 
 
 def test_a_held_pose_with_no_detections_still_seeds_when_it_comes(tmp_path, monkeypatch):
@@ -573,3 +594,32 @@ def test_detach_clears_a_frame_already_taken():
     assert inv.frame_id == SAVED
     inv.detach()
     assert inv.report()["frame_id"] is None
+
+
+def _throttled_runner(world, wall, mission):
+    grid = build_world("complex_house")
+    robot = MockRobot(grid, render=False)
+    runner = MissionRunner(robot, target_object="unicorn", max_steps=5, policy="frontier",
+                           world=world, detections_fn=lambda frame: None)
+    runner.inventory_prior = lambda f: None
+    runner.seed_wall_clock = lambda: wall[0]
+    runner.clock = lambda: mission[0]
+    return runner
+
+
+@pytest.mark.parametrize("moving", ["wall", "mission"])
+def test_the_read_limit_is_two_seconds_on_either_clock(moving):
+    """Review 4: a pose read for seeding once either clock has moved
+    SEED_EVERY_S -- a simulated clock can stand still, or run fast."""
+    world = _HeldPose(None)
+    wall, mission = [0.0], [0.0]
+    runner = _throttled_runner(world, wall, mission)
+    clock = wall if moving == "wall" else mission
+    reads = []
+    for step in range(41):                      # 0.0 .. 4.0 s in 0.1 s steps
+        clock[0] = step * 0.1
+        before = world.reads
+        runner._observe({})
+        reads.append(world.reads - before)
+    assert sum(reads) == 3                      # at 0, 2 and 4 s
+    assert [i for i, r in enumerate(reads) if r] == [0, 20, 40]

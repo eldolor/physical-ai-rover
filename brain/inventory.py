@@ -36,8 +36,10 @@ that counted for that landmark. Ten frames from one pose are one look: a
 detector that errs on an image errs the same way on the next, so counting
 frames would make a stationary robot certain of its own mistake. Time alone
 never makes a new look. Looks are kept by the frame that made them (3.60), so
-a landmark never holds more hits than frames that saw it, however its parts
-were merged.
+a landmark never holds more of this mission's hits than frames that saw it,
+however its parts were merged. (A landmark carried from an earlier mission
+on the same saved map, 3.50.D5, also holds that mission's votes, as weights
+whose total is at most `CARRY_WEIGHT`; `hits` adds them.)
 
 A MISS is the landmark inside the camera's field, within `MISS_RANGE_M`,
 not occluded (the scan at its bearing reaches at least its range minus
@@ -102,6 +104,10 @@ L_MISS = -0.4
 SCORE_CLAMP = 4.0
 # 3.50.D5: what a mission carries from the last one on the same saved map.
 CARRY_MIN_BELIEF = 0.5    # no more evidence it is gone than that it is there
+# The most a carried landmark's saved votes weigh together: scaled down, never
+# rounded, so shares (and `disputed`) hold exactly, and about this many new
+# looks can outvote a name carried for any number of missions (review 4).
+CARRY_WEIGHT = 20.0
 REPORT_BELIEF = 0.8     # two independent hits, no misses
 NEW_VIEW_M = 0.5
 NEW_VIEW_DEG = 30.0
@@ -202,6 +208,15 @@ def _new_view(a: Optional[dict], b: dict) -> bool:
     return moved >= NEW_VIEW_M or turned >= NEW_VIEW_DEG
 
 
+def _bounded(votes: Counter, total: float = None) -> Counter:
+    """`votes` scaled so they sum to at most `total` (`CARRY_WEIGHT`)."""
+    total = CARRY_WEIGHT if total is None else total
+    have = sum(votes.values())
+    if have <= total:
+        return Counter(votes)
+    return Counter({k: v * total / have for k, v in votes.items()})
+
+
 def carry_seq_of(report) -> int:
     """3.50.D5: a saved report's place in the chain -- an integral number at
     least 0, else 0. One rule for the store's head choice and the next seq."""
@@ -237,7 +252,7 @@ class Landmark:
 
     @property
     def hits(self) -> int:
-        return len(self._looks) + sum(self._carried_votes.values())
+        return len(self._looks) + round(sum(self._carried_votes.values()))
 
     @property
     def misses(self) -> int:
@@ -281,7 +296,9 @@ class Landmark:
         return {"id": self.id, "label": self.label, "x_m": round(self.x, 3),
                 "y_m": round(self.y, 3), "belief": round(self.belief, 3),
                 "reported": self.belief >= REPORT_BELIEF, "disputed": self.disputed,
-                "hits": self.hits, "misses": self.misses, "votes": dict(self.votes),
+                "hits": self.hits, "misses": self.misses,
+                "votes": {k: round(v, 3) if isinstance(v, float) else v
+                          for k, v in self.votes.items()},
                 "room": self.room, "first_step": self.first_step,
                 "last_step": self.last_step, "points": len(self.points),
                 "carried": self.carried}
@@ -425,16 +442,17 @@ class Inventory:
                           first_step=None, points=[(x, y, label)],
                           score=min(hi, max(lo, math.log(b / (1 - b)))), carried=True)
             raw = d.get("votes") if isinstance(d.get("votes"), dict) else {}
-            # The saved label's count first: a tie keeps the name it had (the
-            # store writes votes in key order). Exact counts (review 3).
+            # Names as labels are (lower case, stripped); the saved label's
+            # weight first, so a tie keeps the name it had (the store writes
+            # votes in key order); bounded by CARRY_WEIGHT (review 4).
+            votes = Counter()
             for voted in sorted(raw, key=lambda v: str(v).strip().lower() != label):
-                n = raw[voted]
+                n, name = raw[voted], str(voted).strip().lower()
                 if isinstance(n, bool) or not isinstance(n, (int, float)):
                     continue
-                if isinstance(n, float) and not (math.isfinite(n) and n.is_integer()):
-                    continue
-                if n > 0:
-                    lm._carried_votes[str(voted)] = int(n)
+                if name and math.isfinite(n) and n > 0:
+                    votes[name] += n
+            lm._carried_votes = _bounded(votes)
             self._next_id += 1
             self.landmarks.append(lm)
             carried += 1
@@ -493,7 +511,11 @@ class Inventory:
                 keep._hit_pose = other._hit_pose
             for frame, voted in other._looks.items():
                 keep._looks.setdefault(frame, voted)
-            keep._carried_votes += other._carried_votes   # two carried objects: both counts
+            if other._carried_votes:
+                # Two carried parts may hold the same saved frames' votes: the
+                # merge weighs no more than the heavier part (review 4).
+                cap = max(sum(keep._carried_votes.values()), sum(other._carried_votes.values()))
+                keep._carried_votes = _bounded(keep._carried_votes + other._carried_votes, cap)
             keep.carried = keep.carried or other.carried
             keep._missed |= other._missed
             keep._missed -= keep._looks.keys()   # a frame that saw a part did not miss it
