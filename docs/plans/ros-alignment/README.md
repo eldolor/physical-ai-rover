@@ -136,4 +136,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.128](3.128-desktop-lock.md) | A shared/exclusive desktop lock: timing-sensitive runs alone, other heavy jobs together |
 | [3.129](3.129-desktop-lock-followups.md) | The desktop lock's open items: pushes skip the queue, long jobs step aside, the nightly takes it |
 | [3.130](3.130-fast-map-work.md) | Explore's map work in numpy: reach, frontiers and view gaps with exactly the old answers |
+| [3.130](3.130-ux-redesign.md) | A staged UX redesign of the twin and consoles |
 <!-- /sections -->
