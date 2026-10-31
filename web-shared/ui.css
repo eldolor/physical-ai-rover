@@ -10,7 +10,15 @@
    * readouts with their own palette (the map's --map-*, the sim floors) keep
      it in both themes -- a measurement's colours carry meaning (N1). */
 
-:root {
+/* The dark theme, and every token. Also declared on .ui-dark: inside
+   something drawn over the camera feed or permanently dark (the Guide tab's
+   viewfinder, its fullscreen view) the chrome stays dark in either theme --
+   a light theme's deep accents would vanish into the video. One block for
+   both, so the two cannot drift; derived tokens (--focus-ring) are
+   recomputed inside .ui-dark from its own values. The light block below
+   overrides the root only. */
+:root,
+.ui-dark {
   --bg: #12151A;
   --surface: #1C2129;
   --surface-raised: #232A33;
@@ -133,36 +141,6 @@
   --preview-b: #10201A;
 }
 
-/* Inside something drawn over the camera feed, or permanently dark (the
-   Guide tab's viewfinder, its fullscreen view), the chrome stays dark in
-   either theme: a light theme's deep accents would vanish into the video.
-   The dark values again, on purpose -- this block must match :root's. */
-.ui-dark {
-  color-scheme: dark;
-  --bg: #12151A;
-  --surface: #1C2129;
-  --surface-raised: #232A33;
-  --surface-hover: #2A323D;
-  --surface-shimmer: #2C343F;
-  --field-bg: #0E1116;
-  --text: #E8ECEF;
-  --text-dim: #8A93A0;
-  --border: #262C35;
-  --border-strong: #333B47;
-  --accent-primary: #5B9DF5;
-  --accent-primary-ink: #071223;
-  --accent-primary-hover: #6FA9F6;
-  --accent-safe: #3ECF8E;
-  --accent-safe-ink: #06231A;
-  --accent-alert: #FF6B35;
-  --accent-alert-ink: #2A0D02;
-  --accent-warn: #F2C94C;
-  --shadow-1: 0 1px 2px rgba(0,0,0,0.25), 0 4px 14px rgba(0,0,0,0.22);
-  --shadow-2: 0 4px 14px rgba(0,0,0,0.42), 0 18px 44px rgba(0,0,0,0.38);
-  --glass-bg: rgba(28,33,41,0.72);
-  --glass-border: rgba(255,255,255,0.07);
-}
-
 /* The light theme: the chrome only. Every value meets WCAG AA (4.5:1) for
    the text it is used for (computed): --text-dim 7.8:1 on --surface, 7.1 on
    --bg, 6.8 on --surface-raised; the accents as text 5.0-6.5:1 on all three;
@@ -218,8 +196,9 @@ body {
 }
 
 /* Someone who has asked the OS to stop moving things gets a still page:
-   every animation and transition ends at once (3.132 Stage 1; before it,
-   2 of the twin's 17 animations honoured the setting). */
+   every animation and transition ends at once. Moved here from the twin's
+   sheet (3.132 Stage 1), which keeps only its own overrides (Guide's
+   proximity cue encoded statically, and the like). */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

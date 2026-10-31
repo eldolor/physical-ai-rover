@@ -16,6 +16,7 @@ COPY robot/ /app/robot/
 COPY sim/ /app/sim/
 COPY config/ /app/config/
 COPY web-twin/ /app/web-twin/
+COPY web-shared/ /app/web-shared/
 
 EXPOSE 8000
 

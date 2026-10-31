@@ -153,7 +153,10 @@ def test_each_keyframes_name_is_defined_once():
     """A second `@keyframes conn-pulse` replaced the first, so the Settings
     card's halo never ran (both reviewers)."""
     import re
-    names = re.findall(r"@keyframes\s+([\w-]+)", INDEX.read_text())
+    # 3.132 Stage 1: the style left index.html for two sheets, loaded together.
+    css = "".join(p.read_text() for p in (INDEX.parent.parent / "web-shared" / "ui.css",
+                                          INDEX.parent / "twin.css", INDEX))
+    names = re.findall(r"@keyframes\s+([\w-]+)", css)
     assert len(names) == len(set(names)), sorted(n for n in names if names.count(n) > 1)
 
 

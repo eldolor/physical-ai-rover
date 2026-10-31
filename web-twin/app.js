@@ -5815,7 +5815,9 @@
   // state.lastFrame exists (set once the user taps Connect), and the map
   // comes from GET /world/map rather than from anything this page knows.
 
+  var fpvPlaceholderMessage = "";   // var: painted before this line runs is fine
   function renderFpvPlaceholder(message) {
+    fpvPlaceholderMessage = message || "";
     fpvCtx.fillStyle = getCss("--surface");
     fpvCtx.fillRect(0, 0, FPV_W, FPV_H);
     fpvCtx.fillStyle = getCss("--text-dim");
@@ -5836,6 +5838,13 @@
 
   sizeFpvCanvas();
   renderFpvPlaceholder();
+  // 3.132: the placeholder is painted from the theme's tokens, so a change
+  // of OS theme repaints it (a real frame is pixels, not theme).
+  try {
+    window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", function () {
+      if (!state.lastFrame) renderFpvPlaceholder(fpvPlaceholderMessage);
+    });
+  } catch (e) { /* an old browser without addEventListener on MediaQueryList */ }
   setEmptyState(document.getElementById("brain-log"), BRAIN_EMPTY[0], BRAIN_EMPTY[1]);
   setEmptyState(document.getElementById("log"), LOG_EMPTY[0], LOG_EMPTY[1]);
 
