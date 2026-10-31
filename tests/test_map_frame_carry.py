@@ -636,3 +636,36 @@ def test_carried_hits_round_half_up(weight, hits):
     inv = Inventory()
     inv.seed(SAVED, saved)
     assert inv.landmarks[0].hits == hits
+
+
+# ---------- the S3 copy (the user, 2026-10-31: strip the new fields) ----------
+
+def test_the_s3_copy_holds_only_this_missions_own_landmarks(tmp_path):
+    """G12/G13, the user's call: S3 gets what it got before D5 -- no map id,
+    mission id or chain fields, and no landmark this mission did not see
+    itself. The local file keeps everything."""
+    class _S3:
+        def __init__(self):
+            self.puts = []
+
+        def put_object(self, **kw):
+            self.puts.append(kw)
+
+    inv = Inventory()
+    inv.seed(SAVED, _session_one())                      # carried, never seen here
+    inv.observe([{"label": "lamp", "bearing_deg": 0.0}], _pose(h=180.0), _scan({0: 1.5}),
+                step=3)                                  # this mission's own
+    report = dict(inv.report(), mission="Find the lamp.", mission_id="m2", outcome="found")
+    s3 = _S3()
+    store = InventoryStore(str(tmp_path), bucket="b", client=s3)
+    store.save("m2", report)
+    up = json.loads(s3.puts[0]["Body"])
+    for key in ("frame_id", "carried_from", "carry_seq", "mission_id"):
+        assert key not in up, key
+    seen = up["reported"] + up["candidates"]
+    assert [d["label"] for d in seen] == ["lamp"]
+    assert all("carried" not in d for d in seen) and "carried" not in up["counts"]
+    assert up["counts"]["landmarks"] == len(seen)
+    local = json.loads((tmp_path / "m2.json").read_text())
+    assert local["frame_id"] == SAVED and local["carry_seq"] == 1
+    assert {"stool", "box", "lamp"} <= {d["label"] for d in local["reported"] + local["candidates"]}

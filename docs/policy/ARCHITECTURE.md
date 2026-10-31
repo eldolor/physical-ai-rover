@@ -151,7 +151,7 @@ What leaves the house today, traced to the code:
 | A camera frame, the target string, searched rooms | the cloud `/navigate` route (Bedrock), from `brain/navigate.py` | tiered: only on a trigger (mission start, candidate sighting, cold search, staleness, arrival confirmation); the `vision` policy: every step |
 | A phone frame | `/navigate` or `/guidance`, straight from the twin's Guide tab | every guidance step |
 | Recorded walk frames and answers | the brain's walk store: local disk, or the private recordings bucket when `recording_backend` is `s3` | only while a walk is being recorded |
-| The object inventory (3.46): labels and positions, no pixels | the recordings bucket under `inventory/`, when `INVENTORY_BUCKET` is set | at mission end |
+| The object inventory (3.46): labels and positions of what that mission saw itself, no pixels (since 3.50.D5 a mission also carries landmarks from earlier missions on the same saved map, with the map's and the mission's ids; those stay in the robot's local file, the user's call 2026-10-31) | the recordings bucket under `inventory/`, when `INVENTORY_BUCKET` is set | at mission end |
 | A metrics row: outcome, counts, timings, config; no pixels | the metrics route, when `metrics_url` is set | at mission end |
 
 Nothing else sends pixels. `brain/vision.py`'s direct Anthropic call is

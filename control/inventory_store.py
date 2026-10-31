@@ -92,6 +92,36 @@ def _sweep_stale_tmp(directory: Path) -> None:
                     tmp.unlink()
 
 
+# 3.50.D5, the user's call (2026-10-31, G12/G13): the S3 copy holds what it
+# held before D5 -- this mission's own landmarks, none of the chain's fields.
+# The local file keeps everything; the chain reads only that.
+_LOCAL_ONLY_KEYS = ("frame_id", "carried_from", "carry_seq", "mission_id")
+
+
+def _for_s3(report: dict) -> dict:
+    """The report as uploaded: without the chain's fields, and without the
+    landmarks this mission did not see itself (carried, never seen again:
+    `last_step` unset). A carried landmark seen again is this mission's
+    sighting; its belief and votes still include the carried evidence."""
+    if not isinstance(report, dict):
+        return report
+    out = {k: v for k, v in report.items() if k not in _LOCAL_ONLY_KEYS}
+
+    def own(rows):
+        return [{k: v for k, v in d.items() if k != "carried"} for d in rows or []
+                if not (isinstance(d, dict) and d.get("carried") and d.get("last_step") is None)]
+    for key in ("reported", "candidates"):
+        if key in out:
+            out[key] = own(out[key])
+    if isinstance(out.get("counts"), dict):
+        counts = {k: v for k, v in out["counts"].items() if k != "carried"}
+        # As the uploaded lists hold them, not the local file's.
+        counts["reported"] = len(out.get("reported") or [])
+        counts["landmarks"] = counts["reported"] + len(out.get("candidates") or [])
+        out["counts"] = counts
+    return out
+
+
 def _slug(text: str) -> str:
     return _SAFE.sub("-", str(text).lower()).strip("-")[:60] or "x"
 
@@ -188,7 +218,8 @@ class InventoryStore:
         if self.bucket:
             key = f"{self.prefix}/{self.robot}/{name}"
             try:
-                self._s3().put_object(Bucket=self.bucket, Key=key, Body=body.encode(),
+                upload = json.dumps(_for_s3(report), indent=1, sort_keys=True)
+                self._s3().put_object(Bucket=self.bucket, Key=key, Body=upload.encode(),
                                       ContentType="application/json",
                                       ServerSideEncryption="AES256")
                 out["s3"] = f"s3://{self.bucket}/{key}"
