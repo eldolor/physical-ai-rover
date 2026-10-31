@@ -359,6 +359,7 @@ SLOW_FILES = [
     "test_walk_dist_sweep.py",         # 3.120: the frozen walk on the same maps and surveys (~8 min)
     "test_review_376j_nightly.py",     # 3.76 J: the nightly script's stops and limits (~35 s)
     "test_board_lock.py",              # 3.93: real waits for the silence limit and the maximum (~70 s)
+    "test_room_features_ctx_sweep.py", # 3.131: every room_features call in 24 missions vs the frozen copy
 ]
 SLOW_TESTS = [
     "--ignore-glob=tests/test_ui*.py",
