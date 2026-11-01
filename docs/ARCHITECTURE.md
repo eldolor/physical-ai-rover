@@ -4,15 +4,15 @@ The Physical AI Autonomous Rover (code name vision-picar) is an indoor
 robot that finds things in a house. It is five cooperating processes: a
 phone UI, a brain, a robot server, a ROS 2 container and a body. On the
 Jetson a sixth, a small local vision-language model, answers the brain's
-identity questions before the cloud is asked. The code
-that drives the simulator today is the code that will drive the car, so
-moving onto hardware is a config change.
+identity questions before the cloud is asked. The code that drives the
+simulator is the code that drives the car; which body it drives is a
+config choice.
 
 This page is the map. Each component's own specification sits under
 `docs/<domain>/` and is listed in the [index](README.md). The
-`PLAN-*.md` documents in [plans/](plans/) hold the dated history and every
-measured number. This overview is adapted from the "ROS 2 for vision-picar"
-explainer and was last checked against the repo on 2026-11-01.
+`PLAN-*.md` documents in [plans/](plans/) hold the history of how each part
+was chosen and every measured number; this page describes the system, not
+how it got here.
 
 ## The system on one page
 
@@ -67,23 +67,22 @@ flowchart LR
 | Process | Owns | Never does |
 |---|---|---|
 | **Phone (the twin)** | Drawing what the servers report; the D-pad; starting missions | Decide anything |
-| **Brain** | What to do next: a mission, its policy, its failsafes | Touch the body except through HTTP, so it can run on a laptop today and on the car later |
+| **Brain** | What to do next: a mission, its policy, its failsafes | Touch the body except through HTTP, so it runs on a laptop or on the car unchanged |
 | **Robot server** | Safety, who is driving, the watchdog; the only process that touches the body | Plan routes or build maps |
 | **ROS 2 container** | Velocity arbitration, wheel kinematics, map-building (SLAM), path planning (nav2) | Touch the body directly |
 | **The body** | Wheels, encoders, camera, lidar: anything that implements `RobotInterface` | Know who is driving it |
-| **Local VLM** (Jetson) | Does this frame show the target? Asked first, for a frame's question and at arrival; the cloud only when it cannot say (`service/local_vlm/`, Qwen2.5-VL-3B, 3.80) | Drive, steer, or keep anything safe: it is the first process the kernel kills when memory runs out, and when it is gone the question goes to the cloud |
+| **Local VLM** (Jetson) | Does this frame show the target? Asked first, for a frame's question and at arrival; the cloud only when it cannot say (`service/local_vlm/`, Qwen2.5-VL-3B) | Drive, steer, or keep anything safe: it is the first process the kernel kills when memory runs out, and when it is gone the question goes to the cloud |
 
-ROS is **off by default in the simulator**: the twin works without Docker,
-and the robot server then runs verbs straight through `robot/safety.py` to
-the body ("direct" drive). On the car, ROS drive is to become the default
-once its four gates pass (`PLAN-ros-alignment.md` 3.24; all four are met,
-the fourth on the Jetson against the fake motor board, 2026-10-05). Direct drive stays as the car's fallback if ROS
-dies, and on the fallback only a person may drive.
+On the car, every move runs through ROS ("ROS drive"). **Direct drive** is
+the fallback: the robot server runs verbs straight through
+`robot/safety.py` to the body, so the car stays drivable if ROS dies, and
+on the fallback only a person may drive. In the simulator ROS is optional,
+so the twin works without Docker.
 
 ## The four walls
 
-Four rules have held throughout, and each is enforced by a test rather than
-by memory. Together they are why hardware day is a config change.
+Four rules, each enforced by a test rather than by memory. Together they
+are why the simulator and the car are one code base.
 
 1. **One abstraction for the body: `RobotInterface`** (`robot/interface.py`).
    The brain, the robot server and ROS never know whether they drive the
@@ -106,21 +105,22 @@ by memory. Together they are why hardware day is a config change.
    Each can only slow or stop, never speed up, so they cannot disagree about
    what is allowed. Inside `robot/safety.py` the checks are also in series:
    the camera's path cone, the chassis' swept corridor against the scan,
-   a pivot guard for turns that close on a return, and, since 3.74, the
-   depth camera's floor band for what lies under the lidar's plane. No
-   wheel moves without fresh wheel feedback, and a stalled wheel stops. The stopping distance follows the speed a move was asked
-   at (3.44). A detector may steer but never vetoes: measurement vetoes.
+   a pivot guard for turns that close on a return, and the depth camera's
+   floor band for what lies under the lidar's plane. No wheel moves
+   without fresh wheel feedback, and a stalled wheel stops. The stopping
+   distance follows the speed a move was asked at. A detector may steer
+   but never vetoes: measurement vetoes.
    Who drives is arbitrated by rank (a Stop, then a person, then the brain
    and nav2), and a person's Stop latches autonomy out -- the brain's
-   moves and goals are refused until a person starts a new mission (3.84).
+   moves and goals are refused until a person starts a new mission.
    Spec: [safety](safety/ARCHITECTURE.md).
 
-**Rule 4 changed the hardware plan.** The original plan had a ROS plugin
-talking to the motor board directly. That would have taken `robot/safety.py`
-out of the navigation path and given one serial port two owners. Instead
-the serial port belongs to `robot/hardware_robot.py`, a `RobotInterface`
-backend like the simulator, and ROS keeps talking HTTP to the robot server
-exactly as it does in the simulator (`PLAN-ros-alignment.md` 3.16).
+**Rule 4 decides who owns the motor board.** A ROS plugin talking to the
+board directly would take `robot/safety.py` out of the navigation path and
+give one serial port two owners. So the serial port belongs to
+`robot/hardware_robot.py`, a `RobotInterface` backend like the simulator,
+and ROS talks HTTP to the robot server exactly as it does in the
+simulator.
 
 ## Where the line is
 
@@ -187,9 +187,9 @@ flowchart TB
   agree.
 - **`collision_monitor`** runs in approach mode: it slides the robot's
   footprint along the commanded motion and slows anything that would hit
-  something, while still allowing turns away from a wall. A stop zone was
-  tried first and froze the robot against a door jamb, because "stop"
-  blocks turning away too.
+  something, while still allowing turns away from a wall. A stop zone
+  would freeze the robot against a door jamb, because "stop" blocks
+  turning away too.
 - **`diff_drive_controller`** does the two-wheel maths in both
   directions: a twist in, two wheel speeds out; wheel angles in, odometry
   out.
@@ -217,7 +217,7 @@ the move is done.
    chassis' swept corridor against the 360-degree scan and, going forward,
    the depth camera's floor band are checked in series. Anything inside the
    stopping distance refuses the move, with a reason. If a nav2 goal is
-   live, a person's move also ends it, under either drive (3.97).
+   live, a person's move also ends it, under either drive.
 4. **`robot/ros_drive.py`** reads the encoders, works out how far is left,
    and sends a velocity to the bridge, ramping down as the target nears
    because the chain has 40-150 ms of variable delay.
@@ -253,23 +253,22 @@ asks a policy for one move:
   question goes to the local VLM on the Jetson (Qwen2.5-VL-3B, 4-bit,
   compiled with TensorRT Edge-LLM); the cloud VLM is asked only when the
   local one cannot say or is absent. A lower tier never undoes a higher
-  one's answer. Its choices are
-  small behavior trees (`brain/tree.py`); the hard rules (safety, a
-  person's Stop, arrival, the failsafes) sit outside them, where no
-  setting reaches.
+  one's answer. Its choices are small behavior trees (`brain/tree.py`);
+  the hard rules (safety, a person's Stop, arrival, the failsafes) sit
+  outside them, where no setting reaches.
 - **explore**: a search over SLAM's map (`brain/explore.py`) that sends
   goals to nav2, only to places the robot can drive away from again. A
-  learned ranker (cloned from an oracle, then refined with PPO; the
-  default since 3.125) chooses which goal goes next, but only among places
+  learned ranker (cloned from an oracle, then refined with PPO) chooses
+  which goal goes next, but only among places
   the rules already allow, so a bad weight makes a search slower, never a
   move unsafe.
 - **vision**: every move is one call to the cloud `/navigate` route
   (`brain/navigate.py`), served by the vision service on Amazon Bedrock.
-- **frontier**: the free rule-based policy (`brain/agent.py`), kept for
-  testing safety and mission memory.
+- **frontier**: the free rule-based policy (`brain/agent.py`), for testing
+  safety and mission memory.
 
 **Where to look comes from the map; what is seen comes from a model.**
-With the target out of view, no model tested, local or cloud, picked a
+With the target out of view, no vision model, local or cloud, picks a
 search direction better than chance, so out-of-view search runs on the
 map. Once the target is in view, models steer well.
 
@@ -291,7 +290,8 @@ A mission ends `found`, `exhausted` (nowhere reachable left to look),
 or in a fault beside them; the first outcome wins. A **survey** is a
 mission with no target that maps the house and names its rooms. Every
 mission also records an object inventory (labels and positions, never
-images) and any person's intervention; nothing acts on either yet.
+images), carried to the next mission on the same saved map, and logs any
+person's intervention.
 
 Three failsafes are kept apart on purpose: the robot server's watchdog, the
 mission runner's vision timeout and failure budget, and the brain server's
@@ -315,24 +315,23 @@ same map exists in three forms, and only the last crosses the wall.
 The occupancy grid is tri-state on purpose: unmapped must never look like
 empty floor. In the simulator the world is **discovered**, not copied
 (`sim/mock_world.py`), and SLAM's error can be graded against the truth,
-which a real house can never offer. With one encoder made to read 3% long,
-odometry alone ended up to 99 cm off over a lap, and SLAM ended 1-4.5 cm
-off (`PLAN-ros-alignment.md` 3.14).
+which a real house can never offer: with one encoder reading 3% long,
+odometry alone drifts up to 99 cm over a lap, while SLAM stays within
+1-4.5 cm.
 
-**The map survives a restart** (3.50.D, option D, chosen by the user):
+**The map survives a restart:**
 - The bridge saves slam_toolbox's pose graph at every mission end into a
   private volume, keeping three versions.
 - A container start with a saved map localises on it from the dock, checks
   the scans against it, and falls back to a fresh map if they disagree.
 - A reloaded map is mapped again when the robot enters space the saved map
   calls unknown, or when a person asks ("Re-map now" on the twin).
-- A trigger for scans that contradict the saved map is built but ships off,
-  because live it also fired on a fixed wall.
-- Goals wait until nav2 is active (3.105).
+- Scans that merely contradict the saved map do not trigger a re-map,
+  because a fixed wall can read as a change.
+- Goals wait until SLAM is ready and nav2 is active, and the bridge names
+  which one it is waiting for.
 
-Maps are a home's floor plan, so they are never uploaded unasked. In large
-furnished rooms SLAM can still drift 0.45-0.86 m while odometry stays
-right (3.39, open).
+Maps are a home's floor plan, so they are never uploaded unasked.
 
 ## What the wall costs
 
@@ -351,12 +350,11 @@ The wall has two costs that can grow unnoticed, and
   every route has a caller outside the container, and every route is
   documented.
 
-The wall's runtime cost is small. A bare HTTP app over the same Docker hop
-holds 200 Hz with a p99 of a few milliseconds; the robot server's slower
-tail comes from the simulator sharing its process (under `mode: sim`;
-since `PLAN-ros-alignment.md` 3.36 the fake-board configuration runs the
-simulator as separate programs), and must be re-measured on the Jetson
-(`tests/test_http_rate_live.py`).
+The wall's runtime cost is small: an HTTP app over the same Docker hop
+holds 200 Hz with a p99 of a few milliseconds
+(`tests/test_http_rate_live.py`). Large replies are built off the event
+loop's critical path, and the map crosses only when it has changed, so the
+20 Hz wheel loop is never kept waiting.
 
 ROS tools can still see the brain. The bridge **pulls** the brain's mission
 status over HTTP and republishes it on ROS topics for recording and
@@ -364,29 +362,27 @@ visualisation, so the brain needs no ROS libraries. Foxglove connects
 read-only, because a writable connection would be a second door to the
 wheels that skips the robot server's driver rule.
 
-## Hardware day
+## On the car
 
-The robot server, the brain, ROS and every test stay as they are. What
-changes:
+The robot server, the brain, ROS and every test are the same as in the
+simulator. What differs:
 
 - the body backend: `HardwareRobot` over the motor board's serial line
-  instead of `MockRobot` (built and tested against a fake board,
-  `sim/fake_esp32.py`);
-- camera and lidar drivers in place of the simulated body's;
-- the measurements the URDF marks as placeholders, and the calibration
-  items no simulator can answer (lidar against glass, mirrors and dark
-  surfaces).
+  instead of `MockRobot`;
+- the lidar driver (`robot/lidar_ld19.py`) and the camera stream in place
+  of the simulated sensors;
+- the URDF's measured dimensions, and the calibration no simulator can
+  give (lidar against glass, mirrors and dark surfaces).
 
-The Jetson half is already running (3.71, 3.108). systemd units in
-`tools/jetson/systemd/`, installed by `tools/jetson/install_services.sh`,
-start everything at boot:
-- `picar-stack`: the robot server and brain, in sim mode until the Rover is
-  attached, kept away from the kernel's out-of-memory killer;
-- `picar-ngrok`: the tunnel;
+systemd units in `tools/jetson/systemd/`, installed by
+`tools/jetson/install_services.sh`, start everything at boot:
+- `picar-stack`: the robot server and brain, kept away from the kernel's
+  out-of-memory killer;
+- `picar-ngrok`: the tunnel the phone reaches them through;
 - `picar-local-vlm`: the local VLM, the first process killed when memory
   runs out.
 
-Only one session uses the board at a time, enforced by a lock (3.93).
+Only one session uses the board at a time, enforced by a lock.
 
 The Jetson's 8 GB is shared by the CPU and GPU, and everything on the
 board lives inside it: perception, the local VLM, ROS and the robot stack.
@@ -405,8 +401,8 @@ OAK-D Lite depth camera, pan-tilt camera, ESP32 motor board). Specs:
   sensor noise, and it emulates the Rover's motor-board firmware and the
   D500's serial protocol on ptys so the car's own drivers run. Beyond
   the hand-drawn houses it loads 1,000 ProcTHOR floor plans as houses no
-  policy was tuned to (3.66), and objects may sit below the lidar's plane
-  so the floor band can be tested (3.74).
+  policy was tuned to, and objects may sit below the lidar's plane so the
+  floor band can be tested.
 - **[twin](twin/ARCHITECTURE.md)**: the phone UI over both servers.
 - **[control-api](control-api/ARCHITECTURE.md)**: the robot server's HTTP
   API.
