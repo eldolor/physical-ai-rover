@@ -87,3 +87,29 @@ def test_every_module_imports_without_a_page(browser, twin_server):
         "URL.createObjectURL(new Blob(['export function f() { return document; }'],"
         " {type: 'text/javascript'}))")) == "ok"
     page.close()
+
+
+DARK_MODULES = """() => {
+  const c = document.getElementById("qr-canvas");
+  if (!c.width) return 0;
+  const d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data;
+  let dark = 0;
+  for (let i = 0; i < d.length; i += 4) if (d[i] < 64) dark++;
+  return dark;
+}"""
+
+
+def test_the_setup_code_still_draws(browser, twin_server):
+    """qr.js (the first move) is called only from "Show setup code", which no
+    other test presses. A moved function broken at call time would surface
+    here: qrEncode's failure reads as the "too long" toast, so the drawn
+    modules are what is checked, not only page errors. Seen to fail with
+    qrEncode reading a name only app.js declares."""
+    page, errors = open_twin(browser, twin_server)
+    page.click("#btn-settings")
+    page.click("#btn-show-qr")
+    page.wait_for_selector("#qr-reveal:not([hidden])", timeout=10_000)
+    assert page.evaluate(DARK_MODULES) > 500
+    assert page.locator(".toast.err").count() == 0
+    assert errors == [], errors
+    page.close()
