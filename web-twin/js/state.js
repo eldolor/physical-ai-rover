@@ -3,10 +3,10 @@
 // follows is in app.js's banner.
 
 // Fallback only, used until the connected server's /health reply has
-// actually been read into state.minDistanceCm (renderWatchdog(), below)
+// actually been read into state.minDistanceCm (renderWatchdog(), in app.js)
 // -- e.g. before a connection exists at all, or against an older
 // deployment that hasn't been redeployed to include the field yet.
-// Every actual usage in this file reads state.minDistanceCm, not this
+// Every actual usage in the twin reads state.minDistanceCm, not this
 // constant, so a running page stays in sync with whatever
 // config/robot.yaml's safety.min_distance_cm really is on the server
 // it's talking to (PLAN-sim-hardening.md definition of done, item 10 --

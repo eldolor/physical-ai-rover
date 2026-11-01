@@ -14,9 +14,9 @@
 export const PREF = {
   serverUrl: "vp_server_url",
   brainUrl: "vp_brain_url",
-  serverSecret: "vp_cfg_server_secret",   // shared with prefillTesterSecrets below
+  serverSecret: "vp_cfg_server_secret",   // shared with prefillTesterSecrets (app.js)
   visionUrl: "vp_vision_url",
-  visionSecret: "vp_cfg_secret",          // shared with prefillTesterSecrets below
+  visionSecret: "vp_cfg_secret",          // shared with prefillTesterSecrets (app.js)
   tab: "vp_active_tab",
   muted: "vp_guide_muted",
   onboarded: "vp_guide_onboarded",

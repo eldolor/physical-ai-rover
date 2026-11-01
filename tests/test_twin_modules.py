@@ -116,8 +116,11 @@ def destructuring_targets(code: str) -> list:
     return spans
 
 ASSIGN = r"(?<![\w$.])%s\s*(?:\*\*|<<|>>>|>>|&&|\|\||\?\?|[-+*/%%&|^])?=(?![=>])"
-# `x++`, `--x`; not `++x.count` (a property) nor prose's "x -- y".
-STEP = r"(?<![\w$.])%s(?:\+\+|--)|(?:\+\+|--)%s(?![\w$.\[])"
+# `x++`, `x ++;`, `--x`, `-- x`; not `++x.count` (a property), and not
+# prose's "found -- x" or "x -- don't": a postfix step must end its
+# expression, and a prefix one must not follow a word.
+STEP = (r"(?<![\w$.])%s\s*(?:\+\+|--)(?=\s*(?:[;,)\]}]|$))"
+        r"|(?<![\w$)\]])(?<![\w$)\]] )(?:\+\+|--)\s*%s(?![\w$.\[])")
 
 
 def writes_to_imports(text: str) -> list:
@@ -127,7 +130,7 @@ def writes_to_imports(text: str) -> list:
     for clause, _spec in imports(text):
         for name in imported_names(clause):
             n = re.escape(name)
-            if (re.search(ASSIGN % n, text) or re.search(STEP % (n, n), text)
+            if (re.search(ASSIGN % n, text) or re.search(STEP % (n, n), text, re.M)
                     or re.search(LOOP_HEAD % n, text)
                     or any(re.search(r"(?<![\w$.])%s(?![\w$])(?!\s*:)" % n, t) for t in targets)):
                 hits.append(name)
@@ -161,7 +164,8 @@ def test_the_checks_catch_what_they_are_for(tmp_path):
     assert any((mod.parent / s).resolve() == (tmp_path / "app.js").resolve()
                for _c, s in imports(mod.read_text()))
     # Writes to an import, and the reads and look-alikes that are not.
-    for bad in ("x = 1", "x += 1", "x++", "--x", "x ??= y", "[x] = y", "[a, x] = y",
+    for bad in ("x = 1", "x += 1", "x++", "--x", "x ??= y", "x ++;", "x --)", "-- x;",
+                "f(++ x)", "x++\n", "[x] = y", "[a, x] = y",
                 "({ x } = o)", "for (x of list) {}", "for (x in o) {}", "[x = 1] = arr",
                 "({ x = 0 } = o)", "({ a: { x } } = o)", "[a, [x]] = y", "for ([x, y] of p) {}",
                 "for ({ x } of list) {}", "({ a: x } = o)", "({a:x} = o)"):
@@ -169,7 +173,7 @@ def test_the_checks_catch_what_they_are_for(tmp_path):
     for fine in ("x === 1", "y = x", "o.x = 1", "f(x)", "xy = 1", "{ x: 1 }", "x => 1",
                  "[x].map(f)", "const o = { x };", "f([x])", "[x] === y", "for (const y of x) {}",
                  "({ x: 1 } = o)", "const o = { a: x }; o.b = 1", "arr[x] = 1",
-                 "if (map[x] in seen) {}", "f()[x] = 2", "++x.count", "// found x -- done"):
+                 "if (map[x] in seen) {}", "f()[x] = 2", "++x.count", "// found x -- done", "// x -- don't", "a - -x"):
         assert writes_to_imports('import { x } from "./js/a.js";\n' + fine) == [], fine
 
 

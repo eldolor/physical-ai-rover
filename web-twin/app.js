@@ -2101,7 +2101,7 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
       const fired = age > timeout;
       // Keep the local-brain's own clearance checks and the map's safety
       // collar (below) in sync with whatever this server actually
-      // enforces -- see MIN_DISTANCE_CM_FALLBACK's own comment. Guarded
+      // enforces -- see MIN_DISTANCE_CM_FALLBACK's own comment (js/state.js). Guarded
       // so an older deployment with no min_distance_cm field just keeps
       // the fallback rather than setting state.minDistanceCm to
       // undefined.
