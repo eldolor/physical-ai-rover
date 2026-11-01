@@ -235,6 +235,9 @@ def test_the_bridges_hold_names_are_the_robot_servers(bridge_mod):
     every = re.findall(r'["\']hold["\']', src)
     read = re.findall(r'"hold":\s*(?:[A-Z0-9_]+\b|"[a-z_]+"|None\b)', src)
     assert len(every) == len(read), (every, read)
+    # Thermos round 3: a conditional's other arm is never a name of its own.
+    arms = re.findall(r'"hold":[^\n]*?\belse\s+([^\s,})]+)', src)
+    assert arms and set(arms) == {"None"}, arms
 
 
 def test_the_no_server_503_says_no_hold(bridge_mod):
