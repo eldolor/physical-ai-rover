@@ -18,11 +18,12 @@ the page.
 | `index.html` | markup |
 | `twin.css` | the twin's styles, on `../web-shared/ui.css`'s tokens (3.132) |
 | `../web-shared/ui.css` | the project's design tokens (dark and light) and shared components |
-| `app.js` | all behaviour |
+| `app.js` | the entry module: what has not moved into `js/` yet |
+| `js/*.js` | ES modules moved out of `app.js` (3.132 Stage 2B) |
 | `manifest.json`, `icons/` | PWA manifest and home-screen icons |
 
-Locally `robot/server.py` serves all of them (`/`, `/app.js`, `/ui.css`,
-`/twin.css`, `/manifest.json`, the icons). Deployed, CloudFront serves them from the
+Locally `robot/server.py` serves all of them (`/`, `/app.js`, `/js/<name>`,
+`/ui.css`, `/twin.css`, `/manifest.json`, the icons). Deployed, CloudFront serves them from the
 serverless stack's static bucket.
 
 ## The page
@@ -126,8 +127,8 @@ Settings -> **Show setup code** shows a QR of the `?secret=`/
 what the receiving page would derive; scanning it opens the app fully
 configured. The QR *is* the secrets, so it appears only on a tap, hides
 itself after 60 seconds or when you leave the tab, and anyone who
-photographs it has your access. The encoder is inline in `app.js`
-(`qrEncode()`) rather than a library or a QR web service, because handing
+photographs it has your access. The encoder is the page's own
+(`js/qr.js`, `qrEncode()`) rather than a library or a QR web service, because handing
 these secrets to a third-party image API would be a leak; it was verified
 module-for-module against a reference implementation and decoded with
 zxing-cpp.
