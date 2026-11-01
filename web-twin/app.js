@@ -19,7 +19,8 @@
 // type="module"). Code moves out into web-twin/js/, one behaviour-identical
 // move at a time; the rule a move follows is in
 // docs/plans/ros-alignment/3.132-ux-redesign.md, Stage 2B. In short: a
-// module's top level only declares, every statement that does something
+// module's top level only declares (or, amendment 10, computes on its own
+// values, as qr.js fills its tables), every statement that does something
 // stays here in its original order, and no module imports this file. The
 // IIFE and its indentation stay, so the move is small to review; the
 // imports above it are visible inside it, and this file exports nothing.

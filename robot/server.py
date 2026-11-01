@@ -135,8 +135,10 @@ _TWIN_APP_JS = Path(__file__).resolve().parent.parent / "web-twin" / "app.js"
 _SHARED_UI_CSS = Path(__file__).resolve().parent.parent / "web-shared" / "ui.css"
 _TWIN_STRINGS_JS = Path(__file__).resolve().parent.parent / "web-twin" / "strings.js"
 _TWIN_CSS = Path(__file__).resolve().parent.parent / "web-twin" / "twin.css"
-# 3.132 Stage 2B: the modules app.js imports, one ES module a file.
+# 3.132 Stage 2B: the modules app.js imports, one ES module a file, and the
+# only names /js/{name} answers: a plain file name ending .js.
 _TWIN_JS_DIR = Path(__file__).resolve().parent.parent / "web-twin" / "js"
+_TWIN_MODULE_NAME = re.compile(r"[A-Za-z0-9_-]+\.js")
 _TWIN_MANIFEST_JSON = Path(__file__).resolve().parent.parent / "web-twin" / "manifest.json"
 _TWIN_ICONS_DIR = Path(__file__).resolve().parent.parent / "web-twin" / "icons"
 
@@ -1048,17 +1050,16 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                             headers={"Cache-Control": "no-cache"})
 
     # 3.132 Stage 2B: the twin's ES modules (web-twin/js/), imported by
-    # app.js. One route for the folder, answered from a name map built here
-    # at start-up: a name that is not a .js file in web-twin/js/ is a 404,
-    # so there is no path to traverse. Revalidated like app.js, and a module
-    # must be served as JavaScript or the browser refuses to run it.
-    twin_modules = ({p.name: p for p in sorted(_TWIN_JS_DIR.glob("*.js")) if p.is_file()}
-                    if _TWIN_JS_DIR.is_dir() else {})
-
+    # app.js. One route for the folder: a name that is not a plain file name
+    # ending .js, or not a file there, is a 404, so there is no path to
+    # traverse. Looked up per request, like the other assets, so a module
+    # added while the server runs is served without a restart (review).
+    # Revalidated like app.js; a module must be served as JavaScript or the
+    # browser refuses to run it.
     @app.get(prefix + "/js/{name}")
     def twin_module(name: str):
-        path = twin_modules.get(name)
-        if path is None:
+        path = _TWIN_JS_DIR / name
+        if not _TWIN_MODULE_NAME.fullmatch(name) or not path.is_file():
             raise HTTPException(status_code=404, detail="no such twin module")
         return FileResponse(path, media_type="application/javascript",
                             headers={"Cache-Control": "no-cache"})

@@ -21,6 +21,13 @@ MODULE_DIR = TWIN / "js"
 IMPORT = re.compile(r"""^[ \t]*import\s+(?:([^'";]*?)\s+from\s+)?["']([^"']+)["']""", re.M)
 
 
+# A re-export binds nothing here but still loads its file:
+# `export { a } from "./x.js";`, `export * from "./x.js";`.
+REEXPORT = re.compile(r"""^[ \t]*export\s+(?:\*|\{[^}]*\})(?:\s+as\s+[\w$]+)?\s+from\s+["']([^"']+)["']""", re.M)
+# import("./x.js"): loaded at run time, so no static walk can follow it.
+DYNAMIC = re.compile(r"(?<![\w$.])import\s*\(")
+
+
 def imports(text: str) -> list:
     """(binding clause or "", specifier) for each static import in `text`."""
     return [(m.group(1) or "", m.group(2)) for m in IMPORT.finditer(text)]
@@ -54,7 +61,9 @@ def module_graph() -> list:
     seen, todo = [APP_JS], [APP_JS]
     while todo:
         path = todo.pop(0)
-        for _clause, spec in imports(path.read_text()):
+        text = path.read_text()
+        specs = [s for _c, s in imports(text)] + REEXPORT.findall(text)
+        for spec in specs:
             target = (path.parent / spec).resolve()
             if target not in seen:
                 seen.append(target)
