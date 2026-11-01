@@ -219,6 +219,7 @@ omission below forces a skip or a failure, which is why none is optional:
 | Requirement | Without it |
 |---|---|
 | A brain on :8001 under `ROUTE_PREFIX=/brain` (`service/tunnel/run.sh` starts one) | `test_a_dpad_tap_still_preempts_a_mission_under_drive_ros` skips "no brain server" (`tests/test_ros_chain_live.py` reads `PICAR_BRAIN_URL`, default `:8001/brain`) |
+| `SIM_BOARD_FIRMWARE=fork` for the robot server | The fake board speaks the stock firmware, whose odometers are whole centimetres: a ROS turn closes on encoders up to ~4-6 deg from the truth and `test_a_verb_through_ros_means_what_it_meant` fails about one run in three (3.33; re-measured 2026-11-01: 11 of 48 turns off by more than 2 deg on stock, 0 of 48 on the fork, max 0.55 deg). G4 is judged on the fork, the firmware the Rover will be flashed with |
 | `SIM_MAP=scaled_house` for the robot server **and** in pytest's own environment | The server's `/health` `sim_map` gates both suites; `tests/test_nav_live.py` also checks `tests/demo_nav_goals.py`'s `HOUSE`, which that module reads from pytest's `SIM_MAP` |
 | The container started after the robot server (waiting for `GET /wheels` to report `usable: true` is optional since handoff 2a) | Before 2a, a container that activated before the fake board's first frame lost its wheel plugin for good; now the plugin waits (`service/slam/README.md` section 3) |
 | The container named `picar-ros` | `test_killing_the_container_stops_the_wheels_on_the_robots_own_watchdog` runs `docker kill picar-ros` with `check=True` and FAILS (`PICAR_ROS_CONTAINER` overrides the name). The user running pytest must be able to run `docker` without sudo |
@@ -233,7 +234,7 @@ export APP_SHARED_SECRET="$LOCAL_SECRET"
 
 # one run; repeat this block five times
 docker rm -f picar-ros 2>/dev/null
-SIM_MAP=scaled_house ROBOT_DRIVE=ros WORLD_MODE=ros ROBOT_MODE=hardware SIM_MOTOR_BOARD=fake \
+SIM_BOARD_FIRMWARE=fork SIM_MAP=scaled_house ROBOT_DRIVE=ros WORLD_MODE=ros ROBOT_MODE=hardware SIM_MOTOR_BOARD=fake \
   bash service/tunnel/restart.sh                               # sim body :8002, sensors :8003/:8004, robot :8000, brain :8001/brain, all on 127.0.0.1
 curl -s localhost:8000/health | grep -o '"sim_map": *"[a-z_]*"'   # expect "sim_map": "scaled_house"
 until curl -s -H "x-app-secret: $LOCAL_SECRET" localhost:8000/wheels | grep -q '"usable": *true'; do sleep 0.5; done
