@@ -1,0 +1,123 @@
+{
+ "started": "2026-11-01T17:35:16-0600",
+ "rev": "3c04387d6e7e640ffef5b08f307388ae58872f23",
+ "delay_ms": 100.0,
+ "tolerance": 0.1,
+ "rows": {
+  "P1/P2/P10 perception": {
+   "statistic": "p90 ms",
+   "runs": {
+    "base": {
+     "frames": 240,
+     "p50": 31,
+     "p90": 31,
+     "exit": 0
+    },
+    "planted": {
+     "frames": 240,
+     "p50": 131,
+     "p90": 131,
+     "exit": 0
+    }
+   },
+   "base": 31,
+   "planted": 131,
+   "delay_ms": 100,
+   "error_pct": 0.0,
+   "met": true
+  },
+  "P4 wheel loop": {
+   "statistic": "max_dt_s (ms)",
+   "base_window": {
+    "moving": 187,
+    "late": 0,
+    "max_dt_s": 0.0573,
+    "max_dt_s_before": 0.0555
+   },
+   "planted_window": {
+    "moving": 18,
+    "late": 1,
+    "max_dt_s": 0.1542,
+    "max_dt_s_before": 0.0573
+   },
+   "planted_late_ticks": 1,
+   "base_late_ticks": 0,
+   "validity_flags_planted": true,
+   "validity_reasons": [
+    "1 late wheel ticks"
+   ],
+   "base": 50.0,
+   "planted": 154.2,
+   "delay_ms": 104.2,
+   "error_pct": 4.2,
+   "met": true
+  },
+  "P12 map reply": {
+   "statistic": "p90 ms",
+   "runs": {
+    "base": {
+     "n": 173,
+     "ok": 173,
+     "p50_ms": 51.073162991087884,
+     "p90_ms": 54.50229998677969,
+     "full_replies": 1,
+     "bytes_max": 1119
+    },
+    "planted": {
+     "n": 103,
+     "ok": 103,
+     "p50_ms": 151.2912170146592,
+     "p90_ms": 155.54352302569896,
+     "full_replies": 1,
+     "bytes_max": 1119
+    }
+   },
+   "base": 54.5,
+   "planted": 155.54,
+   "delay_ms": 101.04,
+   "error_pct": 1.0,
+   "met": true
+  },
+  "P8 local VLM": {
+   "statistic": "p90 ms",
+   "runs": {
+    "base": {
+     "n": 220,
+     "p50": 0.37074548890814185,
+     "p90": 0.4214999498799443,
+     "max": 1.0561399976722896,
+     "statuses": {
+      "answered": 220
+     }
+    },
+    "planted": {
+     "n": 220,
+     "p50": 102.37905103713274,
+     "p90": 102.72119502769783,
+     "max": 102.97076002461836,
+     "statuses": {
+      "answered": 220
+     }
+    }
+   },
+   "base": 0.42,
+   "planted": 102.72,
+   "delay_ms": 102.3,
+   "error_pct": 2.3,
+   "met": true
+  }
+ },
+ "desktop_load": {
+  "start": [
+   1.384765625,
+   1.962890625,
+   2.09033203125
+  ],
+  "end": [
+   1.4794921875,
+   1.7412109375,
+   1.97412109375
+  ]
+ },
+ "met": true
+}
