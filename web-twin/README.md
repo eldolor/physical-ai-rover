@@ -105,7 +105,13 @@ than assuming it:
 curl -s https://<distribution>/app.js | diff - <(git show HEAD:web-twin/app.js)
 curl -s https://<distribution>/ui.css | diff - <(git show HEAD:web-shared/ui.css)
 curl -s https://<distribution>/twin.css | diff - <(git show HEAD:web-twin/twin.css)
+for m in web-twin/js/*.js; do
+  curl -s https://<distribution>/js/$(basename $m) | diff -q - <(git show HEAD:$m) || echo "DIFF $m"
+done
 ```
+
+Every module must match: `app.js` imports them, and one that fails to load
+(a 404, a stale export) stops the whole module graph, so the page is dead.
 
 ## Test
 

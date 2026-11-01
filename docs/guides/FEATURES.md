@@ -76,7 +76,8 @@ behind `x-app-secret`:
 | **vision-analyze service** | (cloud only) | Calls Amazon Bedrock for every vision question -- scene description, navigation, AR guidance | `service/vision_analyze/app.py`, run in AWS Lambda by `service/lambda/vision_handler.py` |
 | **walks service** | (cloud only) | Lists/views/scores/deletes recorded walks in the S3 bucket; serves the `/admin` console's API | `control/admin_server.py` + `control/walk_store.py`, run in Lambda by `service/lambda/walks_handler.py`; not reachable from the twin UI |
 
-The twin (`web-twin/index.html` + `app.js`) is a browser client of the
+The twin (`web-twin/index.html` + `app.js` and its ES modules in
+`web-twin/js/`) is a browser client of the
 first three. It never talks to a simulator or a robot backend directly --
 everything it does goes over HTTP to `robot/server.py` and/or
 `control/brain_server.py`, the same way a Pi's own client eventually will.
@@ -1028,7 +1029,9 @@ free tier answers `fetch()` with an HTML interstitial.
 
 **Parity check.** A `web-twin/` change is not shipped until it is synced.
 Wait for `sync.sh`'s invalidation to complete, then
-`curl -s https://<dist>/app.js | diff - <(git show HEAD:web-twin/app.js)`.
+`curl -s https://<dist>/app.js | diff - <(git show HEAD:web-twin/app.js)`,
+and the same for every `js/<name>.js` (a module that fails to load stops
+the whole page).
 
 **Secrets:** three, never assumed to match. `VisionSharedSecret` and
 `WalksSharedSecret` are `serverless` stack parameters (deliberately

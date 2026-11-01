@@ -200,7 +200,7 @@ parity check). They are not repeated here. What is the twin's own:
   only to hosts matching `NGROK_HOST`; a tunnel on any other provider's
   domain gets the interstitial HTML and fails with a JSON parse error.
 - **Publishing a page change:** the change is not shipped until the
-  deployed `app.js` matches `HEAD`. The stack's `SiteUrl` output already
+  deployed `app.js`, and every `js/<name>.js`, matches `HEAD`. The stack's `SiteUrl` output already
   carries the scheme and the trailing slash, so the deployed script is
   `<SiteUrl>app.js`. A diff after the invalidation reports `Completed`
   means the wrong commit was synced.
