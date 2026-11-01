@@ -249,6 +249,10 @@ The full table, with ASINs and the retailers swept, is in the archive copy.
 
 **Checks within the 30-day return window:**
 - [ ] The 15 W stress test above.
+- [ ] **On the charger** (`PLAN-ros-alignment.md` 3.137.D): the UPS runs
+      the full stack from the charger with the Jetson's input never under
+      10.5 V across 10 plugs and 10 unplugs (0 reboots), and the pack's net
+      current over 30 min says whether it charges while running.
 - [ ] `T:1001` carries `odl`/`odr`, and odometry is checked over a measured
       metre.
 - [ ] The safety sweep against the real lidar.

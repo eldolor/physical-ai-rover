@@ -1259,6 +1259,11 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
     protocol and baud, the 10 Hz rate, a taped wall, and the mounting yaw.
   * Run a 15 W stress test with motors. It decides the separate Jetson
     battery (`JETSON-BOM.md` 9.5).
+  * On the charger (3.137.D): the UPS runs the full stack with no dip at
+    plug and unplug, and the pack's net current says whether it charges
+    while running. The battery ladder (3.137: low 10.5 V, reserve, a clean
+    power-off at ~10.0 V) is not built yet; build it before running on
+    battery unattended.
   * Measure every `[PLACEHOLDER]` in the xacro, including `track_scrub`.
   * B5: systemd units so everything starts at boot.
   * 3.81.F: `MemAvailable` over a full tiered mission with VE resident and

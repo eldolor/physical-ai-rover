@@ -463,11 +463,13 @@ board, section 6 for power) and `PLAN-ros-alignment.md` 3.16.
   `camera_pitch`, `pan_limit`. `tests/test_urdf.py` pins that the xacro,
   `controllers.yaml` and `sim/mock_robot.py` agree; change all copies
   together.
-- **Battery voltage cutoff -- specified, not implemented.** `HARDWARE-BOM.md`
-  section 6 asks for a filtered warning near 10.5 V and a motor stop plus
-  clean shutdown near 10.0 V under load. Nothing in `robot/` reads the pack
-  voltage today (`HardwareRobot` ignores the `1001` frame's `v` field).
-  Build it before running on battery unattended.
+- **Battery voltage cutoff -- half built.** `HARDWARE-BOM.md` section 6
+  asks for a filtered warning near 10.5 V and a motor stop plus clean
+  shutdown near 10.0 V under load. Since 3.70 E4 `HardwareRobot` reads the
+  `1001` frame's `v`, and the brain ends a mission `out_of_budget` under
+  `battery_floor_v` (10.5 V). The motor stop and clean power-off are
+  `PLAN-ros-alignment.md` 3.137 (the battery ladder), not built; so is its
+  charger check (3.137.D). Build it before running on battery unattended.
 
 ---
 
