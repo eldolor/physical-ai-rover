@@ -227,6 +227,13 @@ def test_the_bridges_hold_names_are_the_robot_servers(bridge_mod):
     sent |= set(re.findall(r'"hold":\s*"([a-z_]+)"', BRIDGE_SRC.read_text()))
     sent.discard(None)
     assert sent == set(bridge_faults.HOLDS), sent
+    # Thermos round 2: every `hold` key in the source is one of the two
+    # dict-literal forms read above, so a name set another way
+    # (body["hold"] = ..., dict(hold=...)) fails here, not quietly.
+    src = BRIDGE_SRC.read_text()
+    every = re.findall(r'["\']hold["\']|\bhold\s*=(?!=)', src)
+    read = re.findall(r'"hold":\s*(?:[A-Z0-9_]+\b|"[a-z_]+")', src)
+    assert len(every) == len(read), (every, read)
     assert {bridge_mod.HOLD_NAV2, bridge_mod.HOLD_SLAM} == set(bridge_faults.HOLDS)
 
 
