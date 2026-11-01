@@ -185,6 +185,8 @@ curl -X POST localhost:8001/mission/start -H 'content-type: application/json' \
      -d '{"target_object": "red backpack"}'
 curl localhost:8001/mission/status
 curl -X POST localhost:8001/mission/stop        # stops the loop AND the car
+curl -X POST localhost:8001/mission/start -H 'content-type: application/json' \
+     -d '{"job": "survey"}'                     # no target: map the house, name its rooms
 ```
 
 **Other entry points:**
@@ -198,7 +200,7 @@ curl -X POST localhost:8001/mission/stop        # stops the loop AND the car
 | Replay a recorded phone walk through a policy | `python -m tests.demo_replay_mission recordings/<walk> "<target>" --policy tiered` |
 | Check both servers' health | `python -m control.health` |
 | Reach the local stack from a phone anywhere | `service/tunnel/` (an ngrok domain split by path) |
-| Set up and benchmark the Jetson | `tools/jetson/README.md` |
+| Set up the Jetson, run the stack there as systemd services, benchmark it | `tools/jetson/README.md` |
 
 ## What is in the repo
 
@@ -212,6 +214,8 @@ curl -X POST localhost:8001/mission/stop        # stops the loop AND the car
 | `service/` | The ROS 2 container, the local VLM service, the cloud vision service, deployment and tunnel scripts |
 | `firmware/` | Our patch to the Rover's ESP32 firmware (GPL-3.0) |
 | `web-twin/` | The phone UI |
+| `tools/` | The Jetson's setup and benches, the spec linter, the parallel-session and lock tools |
+| `evaluations/` | Measurement harnesses and their recorded results, by plan section |
 | `docs/` | Specs (architecture and engineering per component), plans, guides, hardware, evaluations |
 
 ## Reading list
