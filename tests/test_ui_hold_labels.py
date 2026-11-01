@@ -86,7 +86,7 @@ def test_a_map_tap_during_a_start_up_hold_is_information_not_an_error(
     assert "restart" not in toast.text_content().lower(), toast.text_content()
     if reply is NAV2_REPLY and os.environ.get("UI_SHOTS"):
         page.wait_for_timeout(400)         # past the toast's entrance
-        _shot(page, "3127-nav2-toast.png")
+        _shot(page, "nav2-hold-toast.png")   # 3.134: one name for every section
     assert not errors, errors
     page.context.close()
 

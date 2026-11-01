@@ -169,7 +169,7 @@
     "explore.pickRefused": "Pick not taken: {why}",
     "explore.pickLost": "Pick may not have arrived: {why}",
     "explore.tapNumbered": "Tap one of the numbered goals -- explore picks only among those",
-    "goal.hold.nav2_starting": "nav2 is not active yet (the ROS container is starting) — try again in a few seconds",
+    "goal.hold.nav2_starting": "nav2 is not active yet (still starting up) — try again in a few seconds",
     "goal.hold.slam_not_ready": "SLAM is not ready yet (starting, checking a saved map, or re-mapping) — try again in a few seconds",
     "goal.refused": "Could not send the goal: {why}",
     "goal.refusedBare": "Could not send the goal: refused",
