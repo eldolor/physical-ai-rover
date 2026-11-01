@@ -84,7 +84,10 @@ detail.
 - **Label proposer.** Ranks frames by a different detector's confidence,
   so a person can adjudicate the uncertain band. It never writes ground
   truth.
-- **Review console.** A static page served from the same CDN as the twin.
+- **Review console.** A static page served from the same CDN as the twin:
+  the Lab console (3.132 Stage 4), with the walks and the metrics as two
+  tabs behind one secret. It spends nothing until a person confirms an
+  action whose paid calls and estimated cost it names.
 
 **What a walk holds, by kind of judgement.** These four are kept in
 separate files on purpose:
@@ -239,11 +242,13 @@ which would pass every test and fail on the walks that matter.
 
 **Decision.** Frames are saved fire-and-forget, and failures are counted
 and shown. The "finished" marker is best-effort. It records what produced
-the walk, and it is also what makes the console score a walk on its own:
-the console scores finished, unscored walks when it loads, and leaves a
-walk without the marker (still recording, or cut off) to a person's
-explicit Evaluate, so a fragment is never judged as a whole walk. Every
-saved frame stays scorable either way.
+the walk, and it is also what puts a walk in the console's "not scored
+yet" list: the console offers to score finished, unscored walks together
+(Score them, after a confirm with the cost), and leaves a walk without the
+marker (still recording, or cut off) to a person's explicit Evaluate, so a
+fragment is never judged as a whole walk. Every saved frame stays scorable
+either way. Until 3.132 Stage 4 the console scored the finished walks by
+itself when it loaded; that was a paid judge run for opening a page.
 
 **Rejected.** Blocking capture on a save. A dropped connection would stop
 a walk that cannot be repeated cheaply.
