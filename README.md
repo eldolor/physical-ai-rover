@@ -70,7 +70,7 @@ mode on the next start.
 **Where to look next is learned.** Candidates are the map's frontiers and
 unseen patches that the chassis can actually leave; a small network ranks
 them on room structure (unentered rooms, doorways, a per-object room
-prior), travel cost and expected lidar gain. It is behaviour-cloned from an
+prior), travel distance and the robot's own trail. It is behaviour-cloned from an
 oracle with the target's true position, then fine-tuned with **PPO** over
 ProcTHOR-10K floor plans. On 588 held-out houses: 14-22% fewer goals than
 the hand-written rule, finds within 1%. The full choice is 95 ms p90 on the
