@@ -128,8 +128,13 @@ class Server:
         try:
             os.killpg(self.proc.pid, signal.SIGTERM)
             self.proc.wait(timeout=10)
-        except (ProcessLookupError, subprocess.TimeoutExpired):
-            os.killpg(self.proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        except subprocess.TimeoutExpired:
+            try:
+                os.killpg(self.proc.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
 
 
 def _turning(srv: Server, stop: threading.Event) -> None:
@@ -172,15 +177,15 @@ def check_wheel(srv: Server, settle_s: float = 10.0) -> dict:
                               "wheel": planted, "oom_kills": 0, "nav": {"ok": 1, "n": 1},
                               "power_mode": "NV Power Mode: 15W", "desktop_load": [1],
                               "temps": 1, "clocks": 1})
-    # max_dt_s is a running maximum: the base window's max is the floor the
-    # planted tick must rise above by the delay.
-    v = verdict(base["max_dt_s"] * 1000, planted["max_dt_s"] * 1000)
+    # max_dt_s is a running maximum since the server started, so the delay
+    # is read against the loop's nominal period: the planted tick's gap is
+    # the period plus the block. It must also be the tick that set the max.
+    v = verdict(WHEEL_PERIOD_S * 1000, planted["max_dt_s"] * 1000)
     return {"statistic": "max_dt_s (ms)", "base_window": base, "planted_window": planted,
-            "excess_over_period_ms": round(planted["max_dt_s"] * 1000 - WHEEL_PERIOD_S * 1000, 2),
             "planted_late_ticks": planted["late"], "base_late_ticks": base["late"],
             "validity_flags_planted": not flagged["valid"], "validity_reasons": flagged["reasons"],
             **v, "met": v["met"] and planted["late"] >= 1 and base["late"] == 0
-            and not flagged["valid"]}
+            and planted["max_dt_s"] > base["max_dt_s"] and not flagged["valid"]}
 
 
 def check_map(srv: Server, seconds: float) -> dict:

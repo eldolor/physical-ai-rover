@@ -88,12 +88,23 @@ def telemetry_counts(sysfs_rows: list, t0: Optional[float] = None, t1: Optional[
     and how often a CPU or the GPU sat below its maximum clock."""
     rows = [r for r in sysfs_rows
             if (t0 is None or r.get("t", 0) >= t0) and (t1 is None or r.get("t", 0) <= t1)]
-    temps = [max(r["temps"].values()) / 1000 for r in rows if r.get("temps")]
-    clocks = [r for r in rows if r.get("cpu_khz") and r.get("gpu_hz")]
+    def zone_max(r):
+        # A PMIC die zone reads a fixed 100 C on some Orin boards: not heat.
+        v = [t for z, t in (r.get("temps") or {}).items() if "pmic" not in z.lower()
+             and isinstance(t, (int, float))]
+        return max(v) / 1000 if v else None
+
+    def known(pairs):
+        return [p for p in pairs or [] if p and None not in p]
+
+    temps = [t for t in map(zone_max, rows) if t is not None]
+    clocks = [r for r in rows if known(r.get("cpu_khz")) and known([r.get("gpu_hz")])]
     ooms = [r["oom_kill"] for r in rows if isinstance(r.get("oom_kill"), int)]
-    below_cpu = sum(any(c < m for c, m in r["cpu_khz"]) for r in clocks)
+    below_cpu = sum(any(c < m for c, m in known(r["cpu_khz"])) for r in clocks)
+    below_gpu = sum(r["gpu_hz"][0] < r["gpu_hz"][1] for r in clocks)
     return {"samples": len(rows), "temps": len(temps), "clocks": len(clocks),
             "max_temp_c": max(temps) if temps else None,
             "oom_kills": (ooms[-1] - ooms[0]) if ooms else None,
-            "mem_available_min_mb": min((r["mem_mb"] for r in rows if "mem_mb" in r), default=None),
-            "cpu_below_max_samples": below_cpu}
+            "mem_available_min_mb": min((r["mem_mb"] for r in rows
+                                         if isinstance(r.get("mem_mb"), int)), default=None),
+            "cpu_below_max_samples": below_cpu, "gpu_below_max_samples": below_gpu}

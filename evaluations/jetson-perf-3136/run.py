@@ -66,18 +66,29 @@ def board_run(label: str, board_cmd: str, out: Path, *, sha: str = "HEAD",
         rec["cmd_exit"] = int(r.strip().splitlines()[-1]) if r.strip() else None
         rec["cmd_s"] = round(time.time() - t0, 1)
     finally:
+        # Each step on its own: a failure in one (an ssh drop) never skips
+        # the restore or the record, and never masks the run's own error.
         if sampler is not None:
-            sampler.stop()
+            try:
+                sampler.stop()
+            except Exception as e:  # noqa: BLE001
+                rec["sampler_error"] = str(e)
             rec["desktop_load"] = sampler.desktop_load
         try:
             fetch(f"~/{board_out}", out / "board")
-        except Exception as e:  # noqa: BLE001 -- the restore below must still run
+        except Exception as e:  # noqa: BLE001
             rec["fetch_error"] = str(e)
-        rec["restore_actions"] = br.restore(before, run, allow_sudo=allow_sudo)
-        after, diffs = br.settle_and_check(before, run, wait_s=120 if rec["restore_actions"] else 5)
-        rec["after"] = after
-        rec["as_found_differences"] = diffs
-        rec["left_as_found"] = not diffs
+        rec["left_as_found"] = False
+        try:
+            acts = br.restore(before, run, allow_sudo=allow_sudo)
+            rec["restore_actions"] = acts
+            acted = any(not x.startswith(("NOT RESTORED", "hold flag kept")) for x in acts)
+            after, diffs = br.settle_and_check(before, run, wait_s=120 if acted else 5)
+            rec["after"] = after
+            rec["as_found_differences"] = diffs
+            rec["left_as_found"] = not diffs
+        except Exception as e:  # noqa: BLE001
+            rec["restore_error"] = f"{type(e).__name__}: {e}"
         (out / "record.json").write_text(json.dumps(rec, indent=1))
     return rec
 
@@ -87,7 +98,7 @@ def board_run(label: str, board_cmd: str, out: Path, *, sha: str = "HEAD",
 SMOKE_WALKS = ("blue-shoes-20260907-152528", "red-backpack-20260907-144856")
 SMOKE_CMD = (
     "set -a; source ~/.vision-picar-local-secrets; set +a; export APP_SHARED_SECRET=\"$LOCAL_SECRET\"; "
-    "nvpmodel -q > $OUT/nvpmodel.txt 2>&1; "
+    "nvpmodel -q 2>&1 | grep -m1 'NV Power Mode' > $OUT/nvpmodel.txt; "
     "curl -s -H \"x-app-secret: $LOCAL_SECRET\" localhost:8000/health > $OUT/health0.json; "
     "date +%s.%N > $OUT/bench_start; "
     ".venv/bin/python -m tools.jetson.bench_local_vlm frames --recordings recordings "
@@ -122,8 +133,8 @@ def smoke_inner(a) -> int:
                "tegrastats_lines": len((b / "telemetry/tegrastats.log").read_text().splitlines())
                if (b / "telemetry/tegrastats.log").exists() else 0,
                "desktop_load_samples": len(rec.get("desktop_load") or []),
-               "restore_actions": rec["restore_actions"],
-               "as_found_differences": rec["as_found_differences"],
+               "restore_actions": rec.get("restore_actions"), "restore_error": rec.get("restore_error"),
+               "as_found_differences": rec.get("as_found_differences"),
                "left_as_found": rec["left_as_found"]}
     (out / "summary.json").write_text(json.dumps(summary, indent=1))
     print(json.dumps(summary, indent=1))

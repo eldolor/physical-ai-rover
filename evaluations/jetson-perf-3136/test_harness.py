@@ -60,7 +60,11 @@ def test_telemetry_counts_inside_the_window():
     c = validity.telemetry_counts(rows, 2, 7)
     assert c["samples"] == 6 and c["temps"] == 6 and c["clocks"] == 6
     assert c["max_temp_c"] == 51.0 and c["oom_kills"] == 1 and c["mem_available_min_mb"] == 893
-    assert c["cpu_below_max_samples"] == 6
+    assert c["cpu_below_max_samples"] == 6 and c["gpu_below_max_samples"] == 6
+    rows[3]["temps"]["PMIC-Die"] = 100000
+    rows[4]["gpu_hz"] = [None, None]
+    c = validity.telemetry_counts(rows, 2, 7)
+    assert c["max_temp_c"] == 51.0 and c["clocks"] == 5
 
 
 def test_perception_scorer_reads_frame_lines_inside_the_window_only():

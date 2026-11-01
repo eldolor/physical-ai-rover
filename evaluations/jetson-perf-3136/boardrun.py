@@ -126,7 +126,7 @@ if [ -e "$f" ]; then
 else echo '"vlm_env": null,'; fi
 printf '"containers": "%%s",\n' "$(docker ps --format '{{.Names}}' 2>/dev/null | sort | tr '\n' ' ')"
 printf '"listening": "%%s",\n' "$(for p in %(ports)s; do ss -ltnH "sport = :$p" 2>/dev/null | grep -q . && printf '%%s ' $p; done)"
-printf '"power_mode": "%%s",\n' "$(nvpmodel -q 2>/dev/null | head -1)"
+printf '"power_mode": "%%s",\n' "$(nvpmodel -q 2>/dev/null | grep -m1 'NV Power Mode')"
 printf '"mem_available_mb": %%s,\n' "$(awk '/MemAvailable/{print int($2/1024)}' /proc/meminfo)"
 printf '"oom_kill": %%s,\n' "$(awk '/^oom_kill /{print $2}' /proc/vmstat)"
 printf '"uptime_s": %%s,\n' "$(cut -d' ' -f1 /proc/uptime)"
@@ -188,6 +188,10 @@ def restore(before: dict, run: Callable[..., str] = ssh, *, allow_sudo: bool) ->
             run(f"sudo -n rm -f {HOLD_FLAG}")
             acts.append(f"removed a stale hold flag ({now['hold_flag']})")
     for u in UNITS:
+        want_en, have_en = before["units"][u]["enabled"], now["units"][u]["enabled"]
+        if want_en != have_en and want_en in ("enabled", "disabled"):
+            run(f"sudo -n systemctl {want_en[:-1]} {u}", check=False)
+            acts.append(f"{want_en[:-1]}d {u} (was {have_en})")
         want = before["units"][u]["active"]
         have = now["units"][u]["active"]
         if want == have:
@@ -251,22 +255,25 @@ def fetch(board_dir: str, local_dir: Path) -> None:
 
 SAMPLER_SH = r"""
 out=%(out)s; mkdir -p "$out"
+num() { case "$1" in ''|*[!0-9]*) return 1;; esac; }
+n() { if num "$1"; then printf '%%s' "$1"; else printf null; fi; }
 tegrastats --interval 1000 --logfile "$out/tegrastats.log" & echo $! > "$out/sampler.pids"
 (
   while true; do
+    # Every value through n(): an unreadable file is null, never a broken line.
     printf '{"t": %%s, "mem_mb": %%s, "oom_kill": %%s, "temps": {' "$(date +%%s.%%N)" \
-      "$(awk '/MemAvailable/{print int($2/1024)}' /proc/meminfo)" "$(awk '/^oom_kill /{print $2}' /proc/vmstat)"
+      "$(n "$(awk '/MemAvailable/{print int($2/1024)}' /proc/meminfo)")" "$(n "$(awk '/^oom_kill /{print $2}' /proc/vmstat)")"
     sep=
     for z in /sys/class/thermal/thermal_zone*; do
-      v=$(cat $z/temp 2>/dev/null) || continue; [ -n "$v" ] || continue
-      printf '%%s"%%s": %%s' "$sep" "$(cat $z/type)" "$v"; sep=", "
+      v=$(cat $z/temp 2>/dev/null) || continue; num "$v" || continue
+      printf '%%s"%%s": %%s' "$sep" "$(tr -dc 'A-Za-z0-9_-' < $z/type)" "$v"; sep=", "
     done
     printf '}, "cpu_khz": ['; sep=
     for c in /sys/devices/system/cpu/cpu[0-9]*/cpufreq; do
-      printf '%%s[%%s, %%s]' "$sep" "$(cat $c/scaling_cur_freq)" "$(cat $c/scaling_max_freq)"; sep=", "
+      printf '%%s[%%s, %%s]' "$sep" "$(n "$(cat $c/scaling_cur_freq 2>/dev/null)")" "$(n "$(cat $c/scaling_max_freq 2>/dev/null)")"; sep=", "
     done
-    g=/sys/class/devfreq/17000000.gpu
-    printf '], "gpu_hz": [%%s, %%s]}\n' "$(cat $g/cur_freq)" "$(cat $g/max_freq)"
+    g=$(ls -d /sys/class/devfreq/*.gpu /sys/class/devfreq/*.ga10b 2>/dev/null | head -1)
+    printf '], "gpu_hz": [%%s, %%s]}\n' "$(n "$(cat $g/cur_freq 2>/dev/null)")" "$(n "$(cat $g/max_freq 2>/dev/null)")"
     sleep 1
   done
 ) > "$out/sysfs.jsonl" 2>/dev/null &

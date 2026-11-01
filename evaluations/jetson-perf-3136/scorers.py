@@ -62,8 +62,8 @@ def perception_ms(log_text: str, t0: Optional[float] = None, t1: Optional[float]
     """Frame times (ms) from perception_loop.py's log. With a window, only
     frames stamped inside it; `day` (YYYY-MM-DD, the board's) dates the
     HH:MM:SS stamps (default: t0's local day)."""
-    if t0 is not None and day is None:
-        day = time.strftime("%Y-%m-%d", time.localtime(t0))
+    if day is None and (t0 is not None or t1 is not None):
+        day = time.strftime("%Y-%m-%d", time.localtime(t0 if t0 is not None else t1))
     out = []
     for line in log_text.splitlines():
         m = FRAME_RE.fullmatch(line.strip())
