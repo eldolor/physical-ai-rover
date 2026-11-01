@@ -1,0 +1,708 @@
+{
+ "M6": {
+  "admin": [],
+  "metrics": [],
+  "twin": []
+ },
+ "M6_count": {
+  "admin": 0,
+  "metrics": 0,
+  "twin": 0
+ },
+ "axe": "4.10.3",
+ "commit": "d00d44f77",
+ "states": {
+  "admin.not_connected": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 0,
+    "hits": []
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": "stop",
+    "last_action": "RIGHT",
+    "outcome": "cancelled",
+    "running": false,
+    "step": 17
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "admin.walk_expanded": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 3,
+    "hits": [
+     [
+      "snake_case",
+      "frame_0000"
+     ],
+     [
+      "snake_case",
+      "frame_0001"
+     ],
+     [
+      "snake_case",
+      "frame_0002"
+     ]
+    ]
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": "stop",
+    "last_action": "RIGHT",
+    "outcome": "cancelled",
+    "running": false,
+    "step": 17
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "admin.walks": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 0,
+    "hits": []
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": "stop",
+    "last_action": "RIGHT",
+    "outcome": "cancelled",
+    "running": false,
+    "step": 17
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "metrics.first_open": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 4,
+    "hits": [
+     [
+      "term",
+      "Tier"
+     ],
+     [
+      "term",
+      "p50"
+     ],
+     [
+      "term",
+      "p90"
+     ],
+     [
+      "term",
+      "p99"
+     ]
+    ]
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": "stop",
+    "last_action": "RIGHT",
+    "outcome": "cancelled",
+    "running": false,
+    "step": 17
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "metrics.loaded": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 6,
+    "hits": [
+     [
+      "snake_case",
+      "cold_search_after"
+     ],
+     [
+      "term",
+      "Tier"
+     ],
+     [
+      "term",
+      "p50"
+     ],
+     [
+      "term",
+      "p90"
+     ],
+     [
+      "term",
+      "p99"
+     ],
+     [
+      "term",
+      "tier"
+     ]
+    ]
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": "stop",
+    "last_action": "RIGHT",
+    "outcome": "cancelled",
+    "running": false,
+    "step": 17
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "twin.engineer_sim_idle": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 19,
+    "hits": [
+     [
+      "ENV_VAR",
+      "LOOK_CENTER"
+     ],
+     [
+      "ENV_VAR",
+      "LOOK_LEFT"
+     ],
+     [
+      "ENV_VAR",
+      "LOOK_RIGHT"
+     ],
+     [
+      "file name",
+      "control/brain_server.py"
+     ],
+     [
+      "file name",
+      "sim/renderer.py"
+     ],
+     [
+      "plan code",
+      "B3.2"
+     ],
+     [
+      "plan code",
+      "B3.3"
+     ],
+     [
+      "plan code",
+      "R5"
+     ],
+     [
+      "snake_case",
+      "brain_server"
+     ],
+     [
+      "snake_case",
+      "starter_house"
+     ],
+     [
+      "term",
+      "Drill"
+     ],
+     [
+      "term",
+      "SLAM"
+     ],
+     [
+      "term",
+      "Tiered"
+     ],
+     [
+      "term",
+      "WATCHDOG"
+     ],
+     [
+      "term",
+      "drills"
+     ],
+     [
+      "term",
+      "frontier"
+     ],
+     [
+      "term",
+      "nav2"
+     ],
+     [
+      "term",
+      "odometry"
+     ],
+     [
+      "term",
+      "watchdog"
+     ]
+    ]
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": "stop",
+    "last_action": "RIGHT",
+    "outcome": "cancelled",
+    "running": false,
+    "step": 17
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "twin.first_run": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 0,
+    "hits": []
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": null,
+    "last_action": null,
+    "outcome": "idle",
+    "running": false,
+    "step": 0
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "twin.guide": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 0,
+    "hits": []
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": null,
+    "last_action": null,
+    "outcome": "idle",
+    "running": false,
+    "step": 0
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "twin.guide_robot_view": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 0,
+    "hits": []
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": null,
+    "last_action": null,
+    "outcome": "idle",
+    "running": false,
+    "step": 0
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "twin.settings": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 0,
+    "hits": []
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": "stop",
+    "last_action": "RIGHT",
+    "outcome": "cancelled",
+    "running": false,
+    "step": 17
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "twin.sim_idle": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 0,
+    "hits": []
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": null,
+    "last_action": null,
+    "outcome": "idle",
+    "running": false,
+    "step": 0
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "twin.sim_mission": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 0,
+    "hits": []
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": null,
+    "last_action": "RIGHT",
+    "outcome": "running",
+    "running": true,
+    "step": 17
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  }
+ },
+ "tasks": {
+  "A1": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "the walk's name"
+   ],
+   "taps": 1
+  },
+  "A2": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "Replay with\u2026 nova-lite",
+    "Confirm the replay"
+   ],
+   "taps": 2
+  },
+  "A3": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "Delete walk",
+    "confirm the delete"
+   ],
+   "taps": 2
+  },
+  "A4": {
+   "fields": 0,
+   "linked": true,
+   "ok": true,
+   "path": [
+    "Metrics link"
+   ],
+   "taps": 1
+  },
+  "T1": {
+   "fields": 1,
+   "ok": true,
+   "path": [
+    "Settings (gear)",
+    "type the robot server's URL",
+    "Connect"
+   ],
+   "taps": 2
+  },
+  "T2": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "Sim tab",
+    "Start"
+   ],
+   "request": {
+    "fault": "none",
+    "policy": "frontier",
+    "target_object": "red backpack"
+   },
+   "status": 200,
+   "taps": 2
+  },
+  "T3": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "Sim tab",
+    "Job: Survey the house",
+    "Start"
+   ],
+   "request": {
+    "job": "survey",
+    "policy": "explore"
+   },
+   "status": 400,
+   "taps": 3
+  },
+  "T4": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "Sim tab",
+    "Stop"
+   ],
+   "request": "http://127.0.0.1:10321/mission/stop",
+   "taps": 2
+  },
+  "T5": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "Sim tab",
+    "D-pad up"
+   ],
+   "taps": 2
+  },
+  "T6": {
+   "brain": {
+    "cancelled_by": null,
+    "last_action": "FORWARD",
+    "outcome": "running",
+    "running": true,
+    "step": 8
+   },
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "Sim tab"
+   ],
+   "scroll_px": 0,
+   "taps": 1,
+   "text": "Searching"
+  },
+  "T7": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "Robot view",
+    "Record this walk",
+    "Start",
+    "Got it, start"
+   ],
+   "taps": 4
+  }
+ },
+ "viewport": {
+  "height": 844,
+  "width": 390
+ }
+}

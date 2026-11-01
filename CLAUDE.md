@@ -1016,9 +1016,9 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   `desktop_lock.step_aside()` between steps (the goal-learn PPO loops do);
   the nightly waits in the queue for the exclusive lock, SKIPPED (exit 0, no
   email) after 2 h of a busy desktop. The nightly runs on the Mac only.
-* **A staged UX redesign (3.132), Stages 0-1 and 2A merged 2026-10-31/11-01;
-  2B-5 open; the twin deployed with Stages 1-2A from `dev` `4ee9f4bd`
-  on 2026-11-01** (the user, 2026-10-31: twin first, the two consoles merged into
+* **A staged UX redesign (3.132), Stages 0-1, 2A and 4 merged 2026-10-31/11-01;
+  2B, 3 and 5 open; the twin deployed with Stages 1-2A from `dev` `4ee9f4bd`
+  on 2026-11-01; Stage 4 (the Lab console) NOT deployed** (the user, 2026-10-31: twin first, the two consoles merged into
   one, vanilla JS, no build step). Audiences:
   * A, primary: anyone at home with the Rover, using the twin's operator
     mode;
@@ -1076,6 +1076,21 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
     `docs/handoffs/HANDOFF-2026-11-01-3.132-2B.md`.
 
   Run as 3.130 until a numbering collision (3.130 is fast-map-work).
+  **Stage 4 (one Lab console):**
+  * The walks and metrics consoles are one page, `control/lab.html`,
+    with Walks and Metrics tabs. It is published at `/admin`, `/metrics`
+    and `/lab`, and each opens its own tab. There is one secret for both.
+    The logic is in `lab.js`, `admin.js` and `metrics.js`, and `lab.css`
+    uses tokens only.
+  * Nothing is scored on opening (M6 0, was 1). Score, Re-score,
+    "Score them" and Replay each confirm first, naming the paid calls and
+    an estimated cost. The cost comes from the free
+    `GET /recording/walks/{walk}/estimate`, priced by
+    `control/admin_prices.py` at this account's billed Bedrock rates. A
+    model with no listed price shows calls only.
+  * M2, M2L and M3 are 0 on all five console states. Taps: A1 1, A2 2
+    (the confirm), A3 2, A4 1.
+  * **Deploy the walks Lambda before syncing the page.**
 * **The map is sent only when it changed (3.123), merged 2026-10-30 with
   criteria 2-3 failed (the user's call).** `/world/map` carries an ETag
   (the server's start token, `map_id`, `map_version`); `RemoteWorld`
