@@ -418,3 +418,34 @@ def test_the_runs_are_cards_on_a_phone(browser, admin_server):
     label = cell.evaluate("el => getComputedStyle(el, '::before').content")
     assert "Config" in label, label
     page.context.close()
+
+
+def _contrast(rgb_a, rgb_b):
+    def lum(rgb):
+        c = [x / 255 for x in rgb]
+        c = [x / 12.92 if x <= 0.03928 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
+        return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]
+    lo, hi = sorted([lum(rgb_a), lum(rgb_b)])
+    return (hi + 0.05) / (lo + 0.05)
+
+
+@pytest.mark.parametrize("scheme", ["dark", "light"])
+def test_a_walks_details_stay_readable_under_the_pointer(browser, admin_server, scheme):
+    """Red before the fix: the Stage 4 harness found the grey details line
+    at 4.2:1 on the hover background of a walk just opened (a phone keeps
+    the hover after a tap). AA asks 4.5:1 for text this size."""
+    name = WALKS["walks"][0]["walk"]
+    page, _, _ = _lab(browser, admin_server, routes=[_frames_route(name)])
+    page.emulate_media(color_scheme=scheme)
+    head = page.locator(".walk", has_text=name).locator(".walk-head-main")
+    head.click()
+    sync_api.expect(page.locator(".frame")).to_have_count(2)
+    head.hover()
+    page.wait_for_timeout(300)  # any background transition
+    fg, bg = head.evaluate("""el => {
+        const rgb = s => s.match(/\\d+(\\.\\d+)?/g).slice(0, 3).map(Number);
+        return [rgb(getComputedStyle(el.querySelector('.walk-meta')).color),
+                rgb(getComputedStyle(el).backgroundColor)];
+    }""")
+    assert _contrast(fg, bg) >= 4.5, (scheme, fg, bg)
+    page.context.close()

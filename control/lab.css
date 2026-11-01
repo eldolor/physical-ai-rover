@@ -86,7 +86,10 @@ h2.section-label { margin: 0 0 var(--space-2); font-weight: 600; }
   color: var(--text); font-weight: 400; padding: 6px var(--space-2); min-width: 0;
 }
 .lab .walk-head-main { flex: 1 1 auto; padding: 6px var(--space-2); }
-.walk-head-main:hover { background: var(--surface-hover); }
+/* --surface-raised, not --surface-hover: --text-dim on --surface-hover is
+   4.2:1 in the dark theme, under AA, and a phone keeps the hover after a tap
+   (the Stage 4 harness, an opened walk). 4.7:1 here, 6.8:1 in light. */
+.walk-head-main:hover { background: var(--surface-raised); }
 .walk-head-main:active { transform: none; }
 /* Walk names carry the model and a timestamp, so they are long and have
    no spaces to break at. Without this they either force the page wide or
