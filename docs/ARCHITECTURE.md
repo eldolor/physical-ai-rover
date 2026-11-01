@@ -1,9 +1,10 @@
 # Architecture overview
 
-vision-picar is an indoor robot that finds things in a house. It is five
-cooperating processes: a phone UI, a brain, a robot server, a ROS 2
-container and a body. On the Jetson a sixth, a small local vision model,
-answers the brain's identity question before the cloud is asked. The code
+The Physical AI Autonomous Rover (code name vision-picar) is an indoor
+robot that finds things in a house. It is five cooperating processes: a
+phone UI, a brain, a robot server, a ROS 2 container and a body. On the
+Jetson a sixth, a small local vision-language model, answers the brain's
+identity questions before the cloud is asked. The code
 that drives the simulator today is the code that will drive the car, so
 moving onto hardware is a config change.
 
@@ -11,7 +12,7 @@ This page is the map. Each component's own specification sits under
 `docs/<domain>/` and is listed in the [index](README.md). The
 `PLAN-*.md` documents in [plans/](plans/) hold the dated history and every
 measured number. This overview is adapted from the "ROS 2 for vision-picar"
-explainer and was last checked against the repo on 2026-10-30.
+explainer and was last checked against the repo on 2026-11-01.
 
 ## The system on one page
 
@@ -27,7 +28,7 @@ time before the body moves.
 flowchart LR
     phone["Phone: the twin<br/>web-twin/<br/>D-pad, map view, missions"]
     brain["Brain<br/>control/brain_server.py<br/>policies: tiered, explore, vision, frontier<br/>arrival check"]
-    vlm["Local VLM (Jetson only)<br/>service/local_vlm/<br/>is this the target?"]
+    vlm["Local VLM (Jetson only)<br/>service/local_vlm/<br/>is this the target? (every question, first)"]
     cloud["Cloud vision service<br/>Amazon Bedrock<br/>/navigate, /room"]
 
     subgraph rs["Robot server: robot/server.py"]
@@ -52,7 +53,7 @@ flowchart LR
     phone -->|HTTP| action
     phone -->|HTTP| brain
     brain -->|"RemoteRobot (HTTP)"| action
-    brain -->|"identity at arrival (HTTP)"| vlm
+    brain -->|"identity questions (HTTP)"| vlm
     brain -->|"HTTPS, on triggers"| cloud
     action --> rosdrive
     rosdrive -->|/cmd_vel| bridge
@@ -70,7 +71,7 @@ flowchart LR
 | **Robot server** | Safety, who is driving, the watchdog; the only process that touches the body | Plan routes or build maps |
 | **ROS 2 container** | Velocity arbitration, wheel kinematics, map-building (SLAM), path planning (nav2) | Touch the body directly |
 | **The body** | Wheels, encoders, camera, lidar: anything that implements `RobotInterface` | Know who is driving it |
-| **Local VLM** (Jetson) | One question at arrival: does this frame show the target? (`service/local_vlm/`, Qwen2.5-VL-3B, 3.80) | Drive, steer, or keep anything safe: it is the first process the kernel kills when memory runs out, and when it is gone the question goes to the cloud |
+| **Local VLM** (Jetson) | Does this frame show the target? Asked first, for a frame's question and at arrival; the cloud only when it cannot say (`service/local_vlm/`, Qwen2.5-VL-3B, 3.80) | Drive, steer, or keep anything safe: it is the first process the kernel kills when memory runs out, and when it is gone the question goes to the cloud |
 
 ROS is **off by default in the simulator**: the twin works without Docker,
 and the robot server then runs verbs straight through `robot/safety.py` to
@@ -250,7 +251,8 @@ asks a policy for one move:
   setting reaches.
 - **explore**: a search over SLAM's map (`brain/explore.py`) that sends
   goals to nav2, only to places the robot can drive away from again. A
-  learned ranker may choose which goal goes next, but only among places
+  learned ranker (cloned from an oracle, then refined with PPO; the
+  default since 3.125) chooses which goal goes next, but only among places
   the rules already allow, so a bad weight makes a search slower, never a
   move unsafe.
 - **vision**: every move is one call to the cloud `/navigate` route
