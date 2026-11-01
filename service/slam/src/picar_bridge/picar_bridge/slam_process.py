@@ -21,20 +21,28 @@ EXECUTABLES = {
     "mapping": "async_slam_toolbox_node",
     "localisation": "localization_slam_toolbox_node",
 }
+# 3.50.D5 (the user, 2026-11-01): a trial of slam_toolbox's lifelong node for
+# mapping, behind PICAR_SLAM_LIFELONG (off): it removes graph nodes that newer
+# scans overlap, so a re-map need not grow the saved graph without bound.
+# Upstream keeps it under src/experimental/ and does not install it; the
+# Dockerfile does.
+LIFELONG_EXECUTABLE = "lifelong_slam_toolbox_node"
 NODE_NAME = "slam_toolbox"
 STOP_TIMEOUT_S = 5.0
 
 
 def command(exe_dir: str, params_file: str, mode: str, map_prefix: Optional[str] = None,
-            start_pose: Optional[Sequence[float]] = None) -> list:
+            start_pose: Optional[Sequence[float]] = None, lifelong: bool = False) -> list:
     """The argv for one slam_toolbox. `map_prefix` (a store version's
     `graph`, without extension) and `start_pose` load a saved graph: the
-    localisation node turns them into LOCALIZE_AT_POSE (3.50.D1)."""
+    localisation node turns them into LOCALIZE_AT_POSE (3.50.D1). `lifelong`
+    maps with the lifelong node; localisation is unchanged."""
     if mode not in EXECUTABLES:
         raise ValueError(f"unknown slam mode {mode!r}")
     if (map_prefix is None) != (start_pose is None):
         raise ValueError("a saved map needs both map_prefix and start_pose")
-    argv = [os.path.join(exe_dir, EXECUTABLES[mode]), "--ros-args",
+    exe = LIFELONG_EXECUTABLE if (lifelong and mode == "mapping") else EXECUTABLES[mode]
+    argv = [os.path.join(exe_dir, exe), "--ros-args",
             "-r", f"__node:={NODE_NAME}", "--params-file", params_file,
             # slam.yaml says `mode: mapping`; the node in use decides, and the
             # parameter is made to agree with it.
@@ -50,8 +58,9 @@ class SlamProcess:
     """One slam_toolbox at a time. `start` stops any running one first."""
 
     def __init__(self, exe_dir: str, params_file: str,
-                 spawn: Callable[..., subprocess.Popen] = subprocess.Popen):
+                 spawn: Callable[..., subprocess.Popen] = subprocess.Popen, lifelong: bool = False):
         self.exe_dir = exe_dir
+        self.lifelong = lifelong
         self.params_file = params_file
         self._spawn = spawn
         self._lock = threading.Lock()
@@ -61,7 +70,8 @@ class SlamProcess:
 
     def start(self, mode: str, map_prefix: Optional[str] = None,
               start_pose: Optional[Sequence[float]] = None) -> None:
-        argv = command(self.exe_dir, self.params_file, mode, map_prefix, start_pose)
+        argv = command(self.exe_dir, self.params_file, mode, map_prefix, start_pose,
+                       lifelong=self.lifelong)
         with self._lock:
             self._stop_locked()
             # No PR_SET_PDEATHSIG (Thermos, 3.50.D3): it fires when the

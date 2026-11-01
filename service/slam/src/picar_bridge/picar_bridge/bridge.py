@@ -172,6 +172,24 @@ MAP_RELOAD = os.environ.get("PICAR_MAP_RELOAD", "1") != "0"
 # on a fixed wall in D4-d). Off, the watch judges no scans; entering the
 # saved unknown and a person's request still re-map.
 REMAP_CONTRADICTION = os.environ.get("PICAR_REMAP_CONTRADICTION", "0") == "1"
+# 3.50.D5 (the user, 2026-11-01), both off unless set; a trial, not a default:
+# PICAR_SLAM_LIFELONG=1 maps with slam_toolbox's lifelong node (it prunes
+# nodes newer scans overlap); PICAR_MAP_CAP=<ratio> maps afresh from the dock
+# instead of reloading a saved map grown past that many times its first
+# version (a fresh map's origin is where it starts, so only a start on the
+# dock can begin one in the dock's frame).
+SLAM_LIFELONG = os.environ.get("PICAR_SLAM_LIFELONG", "0") == "1"
+
+
+def _map_cap(raw: str) -> float:
+    try:
+        v = float(raw)
+    except ValueError:
+        return 0.0
+    return v if math.isfinite(v) and v > 0 else 0.0
+
+
+MAP_CAP = _map_cap(os.environ.get("PICAR_MAP_CAP", "0"))
 # A stopped node's last map -> odom is stamped up to slam.yaml's
 # transform_timeout (0.2 s) ahead: a fresh node's frame starts after it.
 SLAM_TF_LEAD_S = 0.25
@@ -1154,10 +1172,18 @@ class Bridge(Node):
         from ament_index_python.packages import get_package_prefix, get_package_share_directory
         self.slam = slam_process.SlamProcess(
             os.path.join(get_package_prefix("slam_toolbox"), "lib", "slam_toolbox"),
-            os.path.join(get_package_share_directory("picar_bringup"), "config", "slam.yaml"))
+            os.path.join(get_package_share_directory("picar_bringup"), "config", "slam.yaml"),
+            lifelong=SLAM_LIFELONG)
         saved = self.map_store.current() if (self.map_store is not None and MAP_RELOAD) else None
         if saved is None:
             self._start_fresh({"result": "none" if MAP_RELOAD else "off"})
+            return
+        if mapstore.over_cap(saved.meta, MAP_CAP):
+            g = mapstore.growth(saved.meta)
+            self.get_logger().warning(f"saved map {saved.map_id} v{saved.version} is {g:.2f}x its "
+                                      f"first version (cap {MAP_CAP}): starting a fresh map")
+            self._start_fresh({"result": "capped", "map_id": saved.map_id,
+                               "version": saved.version, "growth": round(g, 3), "cap": MAP_CAP})
             return
         d = saved.meta.get("dock_pose")
         try:
@@ -1759,6 +1785,8 @@ class Bridge(Node):
                                    **self._remap_dropped},
                                   # PICAR_REMAP_CONTRADICTION: off, no scan is judged
                                   "remap_contradiction": REMAP_CONTRADICTION,
+                                  # 3.50.D5's trial settings
+                                  "lifelong": SLAM_LIFELONG, "map_cap": MAP_CAP,
                                   "remap_latched": self._remap_latched,
                                   "remap_stale_refused": self._remap_stale_refused,
                                   "remap_deferrals": self._remap_deferrals}}

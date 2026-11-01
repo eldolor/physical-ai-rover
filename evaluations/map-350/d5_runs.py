@@ -45,6 +45,19 @@ MEM_EVERY_S = 5.0
 GROWTH = 1.5
 GRAPH_MB = 50.0
 HOUSES = ("scaled_house", "home_first_floor")
+# 3.50.D5's trial (the user, 2026-11-01): which arm, passed to the bridge.
+ARMS = {"base": {}, "lifelong": {"PICAR_SLAM_LIFELONG": "1"}, "cap": {"PICAR_MAP_CAP": "1.5"},
+        "both": {"PICAR_SLAM_LIFELONG": "1", "PICAR_MAP_CAP": "1.5"}}
+ARM = os.environ.get("D5_ARM", "base")
+_network = d3._network
+
+
+def _armed_network():
+    """d3.container's docker flags, plus this arm's bridge settings."""
+    return _network() + [a for k, v in ARMS[ARM].items() for a in ("-e", f"{k}={v}")]
+
+
+d3._network = _armed_network
 # A smoke run of the harness only (shorter missions; never a result).
 SMOKE_S = int(os.environ.get("D5_SMOKE_S", "0"))
 
@@ -232,6 +245,13 @@ def chain(house, n_sessions):
           "mission": mission, "saved": d4.health(bridge)["map"], "probe": p.summary(),
           "sampler": s.summary()}
     s1["graph"] = graph_mb(maps)
+    sl = d4.health(bridge)["slam"]
+    out["bridge_settings"] = {"lifelong": sl.get("lifelong"), "map_cap": sl.get("map_cap"),
+                              "mode_node": sl.get("mode"),
+                              # which executable really maps (the arm's check)
+                              "lifelong_running": subprocess.run(
+                                  ["docker", "exec", de.CONTAINER, "pgrep", "-f",
+                                   "lifelong_slam_toolbox_node"], capture_output=True).returncode == 0}
     saved = saved_inventory(inv_dir)
     s1["inventory"] = {"frame_id": (saved or {}).get("frame_id"),
                        "reported": len((saved or {}).get("reported", [])),
@@ -257,19 +277,23 @@ def chain(house, n_sessions):
     for i in range(2, n_sessions + 1):
         robot, brain, bridge, sess = d4.reload(house, maps)
         sess["n"], sess["reload_s"] = i, reload_s(sess["watch"])
-        if sess["reload"].get("result") != "matched":
+        capped = sess["reload"].get("result") == "capped"
+        if sess["reload"].get("result") != "matched" and not capped:
             sess["error"] = "reload did not match"
             out["sessions"].append(sess)
             print(f"    session {i}: reload {sess['reload'].get('result')}", flush=True)
             continue
         with Probe(secs + 40) as p, d4.Sampler(robot, bridge, house) as s:
-            r = robot.post("/world/remap", headers={"x-driver": "twin-dpad"})
-            sess["remap_request"] = {"code": r.status_code, "body": r.json()}
-            t = time.time()
-            while time.time() - t < 20 and d4.remap_rec(bridge).get("result") not in (
-                    "mapping", "failed", "failed_localising", "deferred"):
-                time.sleep(0.3)
-            sess["remap"] = d4.remap_rec(bridge)
+            if capped:                           # a fresh map from the dock: nothing to re-map
+                sess["remap"] = {"result": "capped"}
+            else:
+                r = robot.post("/world/remap", headers={"x-driver": "twin-dpad"})
+                sess["remap_request"] = {"code": r.status_code, "body": r.json()}
+                t = time.time()
+                while time.time() - t < 20 and d4.remap_rec(bridge).get("result") not in (
+                        "mapping", "failed", "failed_localising", "deferred"):
+                    time.sleep(0.3)
+                sess["remap"] = d4.remap_rec(bridge)
             m0 = d4.health(bridge)["map"]
             ends_before = m0["saved"] + m0["skipped"] + m0["failed"]
             de.MISSION_LIMIT_S = secs
@@ -314,7 +338,11 @@ def verdicts(out, saved_id):
     first, last = ss[0], ss[-1]
     c = {}
     c["ten_sessions"] = len(ss) == SESSIONS and all(
-        (s.get("remap") or {}).get("result") == "mapping" for s in ss[1:])
+        (s.get("remap") or {}).get("result") in ("mapping", "capped") for s in ss[1:])
+    c["capped_sessions"] = [s["n"] for s in ss if (s.get("remap") or {}).get("result") == "capped"]
+    c["graph_mb_max"] = max(s["graph"]["mb"] for s in ss)
+    c["lag_p90_ms_max"] = max((s["probe"]["lag_p90_ms"] or 0) for s in ss)
+    c["mem_peak_mib_max"] = max((s["probe"]["mem_peak_mib"] or 0) for s in ss)
     lag1, lagN = first["probe"]["lag_p90_ms"], last["probe"]["lag_p90_ms"]
     mem1, memN = first["probe"]["mem_peak_mib"], last["probe"]["mem_peak_mib"]
     c["lag_ratio"] = round(lagN / lag1, 3) if lag1 and lagN else None
@@ -365,8 +393,15 @@ def main(argv):
             import traceback
             res = {"house": house, "error": f"{type(e).__name__}: {e}",
                    "trace": traceback.format_exc()[-2000:]}
-        res["sessions_asked"] = SESSIONS
-        name = f"{house}{'' if SESSIONS == 10 else f'-n{SESSIONS}'}.json"
+        res["sessions_asked"], res["arm"] = SESSIONS, ARM
+        want = ARMS[ARM]
+        got = res.get("bridge_settings") or {}
+        # The bridge's own reading, not the shell's: an arm it did not run is no result.
+        if res.get("verdict") and (got.get("lifelong") != ("PICAR_SLAM_LIFELONG" in want)
+                                   or got.get("lifelong_running") != ("PICAR_SLAM_LIFELONG" in want)
+                                   or got.get("map_cap") != float(want.get("PICAR_MAP_CAP", 0))):
+            res["verdict"] = {k: f"INVALID (bridge read {got}; arm {ARM})" for k in res["verdict"]}
+        name = f"{house}{'' if ARM == 'base' else f'-{ARM}'}{'' if SESSIONS == 10 else f'-n{SESSIONS}'}.json"
         out_dir = os.path.join(OUT, "smoke") if SMOKE_S else OUT
         os.makedirs(out_dir, exist_ok=True)
         with open(os.path.join(out_dir, name), "w") as f:

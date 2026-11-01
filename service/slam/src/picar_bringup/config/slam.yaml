@@ -86,3 +86,14 @@ slam_toolbox:
     minimum_angle_penalty: 0.9
     minimum_distance_penalty: 0.5
     use_response_expansion: true
+    # 3.50.D5 (trial, PICAR_SLAM_LIFELONG=1): read only by the lifelong node.
+    # Upstream's documented values (config/mapper_params_lifelong.yaml at the
+    # pinned SHA), not the node's code defaults, which differ.
+    lifelong_search_use_tree: false
+    lifelong_minimum_score: 0.1
+    lifelong_iou_match: 0.85
+    lifelong_node_removal_score: 0.04
+    lifelong_overlap_score_scale: 0.06
+    lifelong_constraint_multiplier: 0.08
+    lifelong_nearby_penalty: 0.001
+    lifelong_candidates_scale: 0.03

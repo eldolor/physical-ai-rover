@@ -55,11 +55,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/* \
     && mkdir -p /underlay/src && cd /underlay/src \
     && git clone https://github.com/SteveMacenski/slam_toolbox.git \
-    && cd slam_toolbox && git checkout ${SLAM_TOOLBOX_SHA} && cd .. \
+    && cd slam_toolbox && git checkout ${SLAM_TOOLBOX_SHA} \
+    # 3.50.D5: upstream builds lifelong_slam_toolbox_node but does not install
+    # it (src/experimental/); the bridge starts it under PICAR_SLAM_LIFELONG=1.
+    && sed -i 's/^install(TARGETS async_slam_toolbox_node$/install(TARGETS async_slam_toolbox_node lifelong_slam_toolbox_node/' CMakeLists.txt \
+    && grep -q '^install(TARGETS async_slam_toolbox_node lifelong_slam_toolbox_node$' CMakeLists.txt \
+    && cd .. \
     && git clone https://github.com/ros2/geometry2.git \
     && cd geometry2 && git checkout ${GEOMETRY2_SHA} && cd .. \
     && cd /underlay && . /opt/ros/humble/setup.sh \
     && colcon build --packages-select tf2 tf2_ros slam_toolbox --cmake-args -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF \
+    && test -x /underlay/install/slam_toolbox/lib/slam_toolbox/lifelong_slam_toolbox_node \
     && rm -rf /underlay/build /underlay/log
 
 WORKDIR /ws

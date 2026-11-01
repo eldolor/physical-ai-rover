@@ -1781,3 +1781,92 @@ def test_a_re_map_keeps_the_saved_map_s_id(bridge_mod, monkeypatch, tmp_path):
     assert b.remap("request", "twin")[0] == 200
     _settle(b)
     assert b.slam_state == "ready" and b.slam_pose()[1]["map_id"] == "map-0a1b2c3d"
+
+
+# ---------- 3.50.D5: the lifelong node and the size cap (trial, both off) ----------
+
+def _save_sized(store, map_id, size, session="s1"):
+    pending = store.begin(map_id)
+    _fake_serialise(pending.prefix, size)
+    return store.commit(pending, session=session, start_truth=None)
+
+
+def test_lifelong_maps_with_the_lifelong_node_and_localises_as_before():
+    argv = slam_process.command("/x/lib", "/p/slam.yaml", "mapping", lifelong=True)
+    assert argv[0] == "/x/lib/lifelong_slam_toolbox_node" and "mode:=mapping" in argv
+    argv = slam_process.command("/x/lib", "/p/slam.yaml", "mapping", "/maps/m/v1/graph",
+                                (0.0, 0.0, 0.0), lifelong=True)
+    assert argv[0] == "/x/lib/lifelong_slam_toolbox_node"      # a re-map on the saved graph
+    assert "map_file_name:=/maps/m/v1/graph" in argv
+    argv = slam_process.command("/x/lib", "/p/slam.yaml", "localisation", "/maps/m/v1/graph",
+                                (0.0, 0.0, 0.0), lifelong=True)
+    assert argv[0] == "/x/lib/localization_slam_toolbox_node"
+    assert slam_process.command("/x/lib", "/p/slam.yaml", "mapping")[0] == \
+        "/x/lib/async_slam_toolbox_node"                         # off: unchanged
+
+
+def test_slam_process_passes_lifelong_to_its_spawn():
+    spawned = []
+    sp = slam_process.SlamProcess("/x/lib", "/p/slam.yaml",
+                                  spawn=lambda argv, **kw: spawned.append(argv) or _Proc(argv),
+                                  lifelong=True)
+    sp.start("mapping")
+    assert spawned[0][0] == "/x/lib/lifelong_slam_toolbox_node"
+
+
+def test_the_first_versions_size_is_carried_and_growth_read_from_it(tmp_path):
+    store = MapStore(str(tmp_path))
+    m1 = _save_sized(store, "map-0a1b2c3d", 10)
+    assert m1["first_bytes"] == 20 and mapstore.growth(m1) == 1.0
+    m2 = _save_sized(store, "map-0a1b2c3d", 25, session="s2")
+    assert m2["first_bytes"] == 20 and mapstore.growth(m2) == 2.5
+    for _ in range(3):                             # v1 pruned (3 kept): still carried
+        m = _save_sized(store, "map-0a1b2c3d", 40, session="s3")
+    assert 1 not in store.versions("map-0a1b2c3d")
+    assert m["first_bytes"] == 20 and mapstore.growth(m) == 4.0
+    assert mapstore.over_cap(m, 1.5) and not mapstore.over_cap(m, 0)
+    assert not mapstore.over_cap(m, 4.0)           # at the cap is not past it
+
+
+def test_growth_of_a_meta_written_before_d5_or_unreadable():
+    old = {"files": {"graph.posegraph": 30, "graph.data": 10}}     # no first_bytes
+    assert mapstore.first_bytes_of(old) == 40 and mapstore.growth(old) == 1.0
+    for bad in (None, {}, {"files": {}}, {"files": {"graph.data": 0}},
+                {"files": {"graph.data": True}}, {"first_bytes": 10, "files": "x"}):
+        assert mapstore.growth(bad) is None and not mapstore.over_cap(bad, 1.5)
+
+
+@pytest.mark.parametrize("raw,want", [("0", 0.0), ("", 0.0), ("abc", 0.0), ("-1", 0.0),
+                                      ("nan", 0.0), ("inf", 0.0), ("1.5", 1.5)])
+def test_the_cap_setting_reads_only_a_positive_finite_ratio(bridge_mod, raw, want):
+    assert bridge_mod._map_cap(raw) == want
+
+
+def _capped_bridge(bridge_mod, monkeypatch, tmp_path, cap, grown):
+    b, fake, store = _reload_bridge(bridge_mod, monkeypatch, tmp_path,
+                                    relocalise.judge([0.9] * 5, (0.0, 0.0, 0.0)))
+    _save_sized(store, "map-0a1b2c3d", grown, session="s2")       # _reload_bridge's v1: 10
+    monkeypatch.setattr(bridge_mod, "MAP_CAP", cap)
+    return b, fake, store
+
+
+def test_a_map_grown_past_the_cap_is_not_reloaded(bridge_mod, monkeypatch, tmp_path):
+    b, fake, store = _capped_bridge(bridge_mod, monkeypatch, tmp_path, 1.5, 16)   # 1.6x
+    b.start_slam()
+    assert fake.calls == [("mapping", None, None)]                  # never localised
+    assert b.reload["result"] == "capped" and b.reload["growth"] == 1.6
+    assert b.map_id != "map-0a1b2c3d" and b.reload_matched is False
+    assert b.health()[1]["slam"]["map_cap"] == 1.5
+
+
+@pytest.mark.parametrize("cap,grown", [(1.5, 15), (0.0, 50)])
+def test_a_map_within_the_cap_or_with_no_cap_reloads(bridge_mod, monkeypatch, tmp_path, cap, grown):
+    b, fake, store = _capped_bridge(bridge_mod, monkeypatch, tmp_path, cap, grown)
+    b.start_slam()
+    assert fake.calls[0][0] == "localisation" and b.reload["result"] == "matched"
+
+
+def test_health_names_the_trial_settings_off_by_default(bridge_mod):
+    assert bridge_mod.SLAM_LIFELONG is False and bridge_mod.MAP_CAP == 0.0
+    slam = bridge_mod.Bridge().health()[1]["slam"]
+    assert slam["lifelong"] is False and slam["map_cap"] == 0.0

@@ -45,6 +45,43 @@ MAP_ID_RE = re.compile(r"map-[0-9a-f]{8}")
 DOCK_POSE = {"x": 0.0, "y": 0.0, "theta": 0.0}
 
 
+def _bytes(v) -> Optional[int]:
+    return v if isinstance(v, int) and not isinstance(v, bool) and v > 0 else None
+
+
+def first_bytes_of(meta: Optional[dict]) -> Optional[int]:
+    """The map's first version's graph size, from a version's meta: its
+    `first_bytes`, else (written before 3.50.D5) its own files."""
+    if not isinstance(meta, dict):
+        return None
+    got = _bytes(meta.get("first_bytes"))
+    if got:
+        return got
+    files = meta.get("files")
+    if isinstance(files, dict) and files and all(_bytes(v) for v in files.values()):
+        return sum(files.values())
+    return None
+
+
+def growth(meta: Optional[dict]) -> Optional[float]:
+    """3.50.D5: a version's graph size over its map's first version's, or
+    None when either is unknown."""
+    first = first_bytes_of(meta)
+    files = meta.get("files") if isinstance(meta, dict) else None
+    if not first or not isinstance(files, dict) or not files \
+            or not all(_bytes(v) for v in files.values()):
+        return None
+    return sum(files.values()) / first
+
+
+def over_cap(meta: Optional[dict], cap: float) -> bool:
+    """The size cap (PICAR_MAP_CAP, a growth ratio; 0 is off): a saved map
+    grown past `cap` times its first version is not reloaded -- the session
+    maps afresh from the dock. Unknown growth is never over the cap."""
+    g = growth(meta)
+    return cap > 0 and g is not None and g > cap
+
+
 class SaveFailed(Exception):
     pass
 
@@ -143,6 +180,9 @@ class MapStore:
             earlier = self._meta_of(pending.map_id, self.versions(pending.map_id))
             first_session = earlier["first_session"] if earlier else session
             kept_start = earlier["start_truth"] if earlier else start_truth
+            # 3.50.D5: the map's first version's size, carried, for the cap
+            # (an older meta without it: its own files, the nearest known).
+            first_bytes = (first_bytes_of(earlier) if earlier else None) or sum(sizes.values())
             if kept_start is None and session == first_session:
                 # A first save before the start truth arrived: the same
                 # session's start is the map frame's, so it fills it in. A
@@ -157,6 +197,7 @@ class MapStore:
                 # /world/error's anchor, never by the estimate (criterion 12).
                 "start_truth": kept_start,
                 "files": sizes,
+                "first_bytes": first_bytes,
             }
             _fsync_write(os.path.join(pending.staging, META), json.dumps(meta, indent=1))
             for ext in GRAPH_FILES:
