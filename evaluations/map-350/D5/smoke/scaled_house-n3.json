@@ -1,0 +1,623 @@
+{
+ "house": "scaled_house",
+ "image": "vision-picar-ros:plan-3.50",
+ "mission_s": 90,
+ "sessions": [
+  {
+   "n": 1,
+   "reload_s": 0.65,
+   "reload": {
+    "result": "none"
+   },
+   "mission": {
+    "outcome": "running",
+    "seconds": 90,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1793491732.json",
+    "steps": 4,
+    "explore": {
+     "goals_sent": 4,
+     "goals_failed": 1,
+     "last_event": "frontier goal stalled (0.0 m from its start); backing out",
+     "camera_seen_m2": 11.69,
+     "choice_ms": {
+      "n": 12,
+      "p50_ms": 14.7,
+      "p90_ms": 26.4,
+      "max_ms": 46.4
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 6.8,
+    "min_gap_cm": 1.2,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 176,
+    "room_labels": null,
+    "last_log": [
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space some, sees nothing of note",
+     "waiting -- REVERSE waits: the mission's own goal still holds the robot -- kitchen, facing ?, free space some, sees nothing of note",
+     "step 4: REVERSE (ok) -- {'action': 'reverse', 'speed': 50, 'duration': 0.5, 'via': 'ros', 'requested': -1, 'moved': -0.4874, 'moved_m': -0.1462} -- kitchen, facing ?, free space some, sees nothing of note"
+    ]
+   },
+   "saved": {
+    "map_id": "map-cfe5d416",
+    "saving": false,
+    "store": true,
+    "saved": 1,
+    "failed": 0,
+    "skipped": 0,
+    "last_version": 1,
+    "last_at": 1793491822.4853086,
+    "last_error": null
+   },
+   "probe": {
+    "poses": 107,
+    "lag_p50_ms": 27.7,
+    "lag_p90_ms": 43.1,
+    "lag_max_ms": 71.5,
+    "mem_peak_mib": 195.8,
+    "mem_samples": 15,
+    "errors": []
+   },
+   "sampler": {
+    "contacts": 0,
+    "min_gap_cm": 1.2,
+    "jumps": [],
+    "error_samples": 89,
+    "max_error_m": 0.022,
+    "remaps": [],
+    "states": [
+     [
+      [
+       "ready",
+       "mapping"
+      ],
+      1793491732.11
+     ]
+    ]
+   },
+   "graph": {
+    "map_id": "map-cfe5d416",
+    "version": 1,
+    "mb": 9.65,
+    "parts_mb": {
+     ".posegraph": 8.07,
+     ".data": 1.59
+    }
+   },
+   "inventory": {
+    "frame_id": "map-cfe5d416",
+    "reported": 2,
+    "candidates": 1
+   }
+  },
+  {
+   "reload": {
+    "map_id": "map-cfe5d416",
+    "version": 1,
+    "took_s": 1.83,
+    "agreement": 0.992,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "watch": {
+    "leaked_pose": 0,
+    "leaked_map": 0,
+    "goal_during_check": 503,
+    "states": [
+     [
+      "checking",
+      1.41
+     ],
+     [
+      "ready",
+      3.27
+     ]
+    ],
+    "ready_at": 1793491879.8459935
+   },
+   "n": 2,
+   "reload_s": null,
+   "remap_request": {
+    "code": 200,
+    "body": {
+     "remapping": true,
+     "trigger": "request",
+     "at": 1793491879.886508,
+     "map_id": "map-cfe5d416",
+     "version": 1,
+     "detail": "twin-dpad"
+    }
+   },
+   "remap": {
+    "trigger": "request",
+    "at": 1793491879.886508,
+    "map_id": "map-cfe5d416",
+    "version": 1,
+    "detail": "twin-dpad",
+    "waited_s": 0.0,
+    "cancelled_goal": false,
+    "at_rest": true,
+    "from_pose": [
+     -0.0,
+     -0.0,
+     0.0
+    ],
+    "result": "mapping",
+    "mapping_at": 1793491880.2971854,
+    "took_s": 0.41
+   },
+   "mission": {
+    "outcome": "running",
+    "seconds": 90,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1793491880.json",
+    "steps": 6,
+    "explore": {
+     "goals_sent": 6,
+     "goals_failed": 0,
+     "last_event": "goal sent (frontier) to (1.24, 3.31)",
+     "camera_seen_m2": 15.15,
+     "choice_ms": {
+      "n": 17,
+      "p50_ms": 16.3,
+      "p90_ms": 35.6,
+      "max_ms": 38.9
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 9.6,
+    "min_gap_cm": 22.1,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 174,
+    "room_labels": null,
+    "last_log": [
+     "step 5: GOAL (ok) -- goal sent (frontier) to (1.24, 3.31) -- study, facing ?, free space clear, sees nothing of note",
+     "waiting -- nav2 active: frontier -- study, facing ?, free space clear, sees nothing of note",
+     "waiting -- nav2 active: frontier -- study, facing ?, free space some, sees nothing of note"
+    ]
+   },
+   "saved": {
+    "map_id": "map-cfe5d416",
+    "saving": false,
+    "store": true,
+    "saved": 1,
+    "failed": 0,
+    "skipped": 0,
+    "last_version": 2,
+    "last_at": 1793491971.1687381,
+    "last_error": null
+   },
+   "probe": {
+    "poses": 154,
+    "lag_p50_ms": 35.5,
+    "lag_p90_ms": 59.2,
+    "lag_max_ms": 112.1,
+    "mem_peak_mib": 218.5,
+    "mem_samples": 16,
+    "errors": []
+   },
+   "sampler": {
+    "contacts": 0,
+    "min_gap_cm": 22.1,
+    "jumps": [],
+    "error_samples": 88,
+    "max_error_m": 0.048,
+    "remaps": [
+     {
+      "trigger": "request",
+      "at": 1793491879.886508,
+      "map_id": "map-cfe5d416",
+      "version": 1,
+      "detail": "twin-dpad",
+      "result": "waiting"
+     },
+     {
+      "trigger": "request",
+      "at": 1793491879.886508,
+      "map_id": "map-cfe5d416",
+      "version": 1,
+      "detail": "twin-dpad",
+      "waited_s": 0.0,
+      "cancelled_goal": false,
+      "at_rest": true,
+      "from_pose": [
+       -0.0,
+       -0.0,
+       0.0
+      ],
+      "result": "mapping",
+      "mapping_at": 1793491880.2971854,
+      "took_s": 0.41
+     }
+    ],
+    "states": [
+     [
+      [
+       "remapping",
+       null
+      ],
+      1793491879.89
+     ],
+     [
+      [
+       "ready",
+       "mapping"
+      ],
+      1793491880.92
+     ]
+    ]
+   },
+   "graph": {
+    "map_id": "map-cfe5d416",
+    "version": 2,
+    "mb": 14.28,
+    "parts_mb": {
+     ".posegraph": 10.42,
+     ".data": 3.86
+    }
+   }
+  },
+  {
+   "reload": {
+    "map_id": "map-cfe5d416",
+    "version": 2,
+    "took_s": 1.7,
+    "agreement": 0.975,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "watch": {
+    "leaked_pose": 0,
+    "leaked_map": 0,
+    "goal_during_check": 503,
+    "states": [
+     [
+      "checking",
+      1.52
+     ],
+     [
+      "ready",
+      3.22
+     ]
+    ],
+    "ready_at": 1793492021.741992
+   },
+   "n": 3,
+   "reload_s": null,
+   "remap_request": {
+    "code": 200,
+    "body": {
+     "remapping": true,
+     "trigger": "request",
+     "at": 1793492021.7533784,
+     "map_id": "map-cfe5d416",
+     "version": 2,
+     "detail": "twin-dpad"
+    }
+   },
+   "remap": {
+    "trigger": "request",
+    "at": 1793492021.7533784,
+    "map_id": "map-cfe5d416",
+    "version": 2,
+    "detail": "twin-dpad",
+    "waited_s": 0.0,
+    "cancelled_goal": false,
+    "at_rest": true,
+    "from_pose": [
+     -0.0,
+     -0.0,
+     0.0
+    ],
+    "result": "mapping",
+    "mapping_at": 1793492022.1630354,
+    "took_s": 0.41
+   },
+   "mission": {
+    "outcome": "running",
+    "seconds": 90,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1793492022.json",
+    "steps": 5,
+    "explore": {
+     "goals_sent": 5,
+     "goals_failed": 0,
+     "last_event": "goal refused: preempted",
+     "camera_seen_m2": 16.02,
+     "choice_ms": {
+      "n": 16,
+      "p50_ms": 17.5,
+      "p90_ms": 36.2,
+      "max_ms": 40.6
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 9.3,
+    "min_gap_cm": 20.8,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 174,
+    "room_labels": null,
+    "last_log": [
+     "step 5: LOOK_RIGHT (ok) -- {'action': 'look_right', 'pan': 1} -- bedroom, facing ?, free space some, sees nothing of note",
+     "step 5: LOOK_CENTER (ok) -- {'action': 'look_center', 'pan': 0} -- bedroom, facing ?, free space some, sees nothing of note",
+     "waiting -- goal refused: preempted -- bedroom, facing ?, free space some, sees nothing of note"
+    ]
+   },
+   "saved": {
+    "map_id": "map-cfe5d416",
+    "saving": false,
+    "store": true,
+    "saved": 1,
+    "failed": 0,
+    "skipped": 0,
+    "last_version": 3,
+    "last_at": 1793492112.636732,
+    "last_error": null
+   },
+   "probe": {
+    "poses": 155,
+    "lag_p50_ms": 62.4,
+    "lag_p90_ms": 87.0,
+    "lag_max_ms": 118.7,
+    "mem_peak_mib": 229.3,
+    "mem_samples": 16,
+    "errors": []
+   },
+   "sampler": {
+    "contacts": 0,
+    "min_gap_cm": 20.8,
+    "jumps": [],
+    "error_samples": 88,
+    "max_error_m": 0.027,
+    "remaps": [
+     {
+      "trigger": "request",
+      "at": 1793492021.7533784,
+      "map_id": "map-cfe5d416",
+      "version": 2,
+      "detail": "twin-dpad",
+      "waited_s": 0.0,
+      "cancelled_goal": false,
+      "at_rest": true,
+      "from_pose": [
+       -0.0,
+       -0.0,
+       0.0
+      ],
+      "result": "starting"
+     },
+     {
+      "trigger": "request",
+      "at": 1793492021.7533784,
+      "map_id": "map-cfe5d416",
+      "version": 2,
+      "detail": "twin-dpad",
+      "waited_s": 0.0,
+      "cancelled_goal": false,
+      "at_rest": true,
+      "from_pose": [
+       -0.0,
+       -0.0,
+       0.0
+      ],
+      "result": "mapping",
+      "mapping_at": 1793492022.1630354,
+      "took_s": 0.41
+     }
+    ],
+    "states": [
+     [
+      [
+       "remapping",
+       "mapping"
+      ],
+      1793492021.76
+     ],
+     [
+      [
+       "ready",
+       "mapping"
+      ],
+      1793492022.77
+     ]
+    ]
+   },
+   "graph": {
+    "map_id": "map-cfe5d416",
+    "version": 3,
+    "mb": 18.98,
+    "parts_mb": {
+     ".posegraph": 12.82,
+     ".data": 6.15
+    }
+   }
+  }
+ ],
+ "session1_placement": [
+  {
+   "label": "red backpack",
+   "x_m": 6.903,
+   "y_m": 1.669,
+   "reported": true,
+   "belief": 0.982,
+   "truth_m": 0.0
+  },
+  {
+   "label": "refrigerator",
+   "x_m": 7.317,
+   "y_m": 0.88,
+   "reported": true,
+   "belief": 0.982,
+   "truth_m": 0.0
+  },
+  {
+   "label": "sofa",
+   "x_m": 0.918,
+   "y_m": 0.652,
+   "reported": false,
+   "belief": 0.701,
+   "truth_m": 0.018
+  }
+ ],
+ "readback": {
+  "reload": {
+   "map_id": "map-cfe5d416",
+   "version": 1,
+   "took_s": 1.79,
+   "agreement": 0.992,
+   "dock_error_m": 0.0,
+   "dock_error_deg": 0.0,
+   "ok": true,
+   "reason": "matched",
+   "result": "matched"
+  },
+  "watch": {
+   "leaked_pose": 0,
+   "leaked_map": 0,
+   "goal_during_check": 503,
+   "states": [
+    [
+     "checking",
+     1.53
+    ],
+    [
+     "ready",
+     3.4
+    ]
+   ],
+   "ready_at": 1793491866.5504105
+  },
+  "reload_s": null,
+  "readback": {
+   "waited_s": 1.0,
+   "carried_from": "20261101T000852.133399Z-purple unicorn",
+   "frame_id": "map-cfe5d416",
+   "carried": [
+    {
+     "label": "red backpack",
+     "x_m": 6.903,
+     "y_m": 1.669,
+     "reported": true,
+     "belief": 0.982,
+     "truth_m": 0.0
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.317,
+     "y_m": 0.88,
+     "reported": true,
+     "belief": 0.982,
+     "truth_m": 0.0
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.918,
+     "y_m": 0.652,
+     "reported": false,
+     "belief": 0.701,
+     "truth_m": 0.018
+    }
+   ],
+   "own": 0
+  }
+ },
+ "fall_back": {
+  "reload": {
+   "map_id": "map-cfe5d416",
+   "version": 3,
+   "took_s": 1.68,
+   "agreement": 0.975,
+   "dock_error_m": 0.0,
+   "dock_error_deg": 0.0,
+   "ok": true,
+   "reason": "matched",
+   "result": "matched"
+  },
+  "watch": {
+   "leaked_pose": 0,
+   "leaked_map": 0,
+   "goal_during_check": 503,
+   "states": [
+    [
+     "starting",
+     1.41
+    ],
+    [
+     "checking",
+     1.52
+    ],
+    [
+     "ready",
+     3.14
+    ]
+   ],
+   "ready_at": 1793492163.3958368
+  },
+  "off_dock": {
+   "from_dock_m": 1.19,
+   "from_dock_deg": 59.9
+  },
+  "after": {
+   "reload": {
+    "map_id": "map-cfe5d416",
+    "version": 3,
+    "took_s": 1.68,
+    "agreement": 0.4,
+    "dock_error_m": 0.329,
+    "dock_error_deg": 6.6,
+    "ok": false,
+    "reason": "scans agree with the saved map 40% (< 60%)",
+    "result": "fell_back"
+   },
+   "map_id": "map-32bdfd58"
+  },
+  "readback": {
+   "waited_s": 60.2,
+   "carried_from": null,
+   "frame_id": "map-32bdfd58",
+   "carried": [],
+   "own": 3
+  }
+ },
+ "criteria": {
+  "ten_sessions": true,
+  "lag_ratio": 2.019,
+  "mem_ratio": 1.171,
+  "graph_ratio": 1.967,
+  "graph_mb": 18.98,
+  "reload_s_max_laptop": null,
+  "contacts": 0,
+  "jumps": 0,
+  "carried": 3,
+  "carried_reported": 2,
+  "carried_reported_within": 2,
+  "carried_same_frame": true,
+  "fell_back": true,
+  "fall_back_carried": 0
+ },
+ "verdict": {
+  "6 (laptop part; reload's bar on the Jetson)": "FAILED",
+  "7": "MET"
+ },
+ "sessions_asked": 3,
+ "smoke_s": 90
+}
