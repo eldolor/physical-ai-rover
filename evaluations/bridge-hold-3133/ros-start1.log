@@ -1,0 +1,306 @@
+[INFO] [launch]: All log files can be found below /root/.ros/log/2026-11-01-04-25-08-023723-anshu-Legion-T5-28IMB05-1
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [robot_state_publisher-1]: process started with pid [32]
+[INFO] [ros2_control_node-2]: process started with pid [34]
+[INFO] [spawner-3]: process started with pid [36]
+[INFO] [spawner-4]: process started with pid [38]
+[INFO] [twist_mux-5]: process started with pid [40]
+[INFO] [bridge-6]: process started with pid [42]
+[INFO] [controller_server-7]: process started with pid [44]
+[INFO] [planner_server-8]: process started with pid [46]
+[INFO] [behavior_server-9]: process started with pid [48]
+[INFO] [bt_navigator-10]: process started with pid [50]
+[INFO] [lifecycle_manager-11]: process started with pid [52]
+[INFO] [collision_monitor-12]: process started with pid [54]
+[INFO] [lifecycle_manager-13]: process started with pid [56]
+[twist_mux-5] [INFO] [1793507108.184906780] [twist_mux]: Topic handler 'topics.brain' subscribed to topic 'cmd_vel/brain': timeout = 0.250000s , priority = 50.
+[twist_mux-5] [INFO] [1793507108.185987847] [twist_mux]: Topic handler 'topics.nav' subscribed to topic 'cmd_vel/nav': timeout = 0.250000s , priority = 50.
+[twist_mux-5] [INFO] [1793507108.186132052] [twist_mux]: Topic handler 'topics.teleop' subscribed to topic 'cmd_vel/teleop': timeout = 0.250000s , priority = 100.
+[lifecycle_manager-11] [INFO] [1793507108.188393120] [lifecycle_manager_navigation]: Creating
+[lifecycle_manager-13] [INFO] [1793507108.189432310] [lifecycle_manager_collision]: Creating
+[lifecycle_manager-13] [INFO] [1793507108.191304985] [lifecycle_manager_collision]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[lifecycle_manager-11] [INFO] [1793507108.192617958] [lifecycle_manager_navigation]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[planner_server-8] [INFO] [1793507108.197083679] [planner_server]: 
+[planner_server-8] 	planner_server lifecycle node launched. 
+[planner_server-8] 	Waiting on external lifecycle transitions to activate
+[planner_server-8] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-8] [INFO] [1793507108.199528225] [planner_server]: Creating
+[controller_server-7] [INFO] [1793507108.200608212] [controller_server]: 
+[controller_server-7] 	controller_server lifecycle node launched. 
+[controller_server-7] 	Waiting on external lifecycle transitions to activate
+[controller_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[robot_state_publisher-1] [INFO] [1793507108.202459183] [robot_state_publisher]: got segment base_footprint
+[robot_state_publisher-1] [INFO] [1793507108.202531759] [robot_state_publisher]: got segment base_link
+[robot_state_publisher-1] [INFO] [1793507108.202549936] [robot_state_publisher]: got segment camera_link
+[robot_state_publisher-1] [INFO] [1793507108.202560612] [robot_state_publisher]: got segment camera_optical_frame
+[robot_state_publisher-1] [INFO] [1793507108.202570759] [robot_state_publisher]: got segment front_bumper
+[robot_state_publisher-1] [INFO] [1793507108.202580106] [robot_state_publisher]: got segment laser
+[robot_state_publisher-1] [INFO] [1793507108.202589206] [robot_state_publisher]: got segment left_wheel
+[robot_state_publisher-1] [INFO] [1793507108.202598781] [robot_state_publisher]: got segment pan_link
+[robot_state_publisher-1] [INFO] [1793507108.202607889] [robot_state_publisher]: got segment rear_bumper
+[robot_state_publisher-1] [INFO] [1793507108.202616684] [robot_state_publisher]: got segment right_wheel
+[ros2_control_node-2] [WARN] [1793507108.203015592] [controller_manager]: [Deprecated] Passing the robot description parameter directly to the control_manager node is deprecated. Use '~/robot_description' topic from 'robot_state_publisher' instead.
+[ros2_control_node-2] [INFO] [1793507108.203164545] [resource_manager]: Loading hardware 'picar' 
+[collision_monitor-12] [INFO] [1793507108.204536866] [collision_monitor]: 
+[collision_monitor-12] 	collision_monitor lifecycle node launched. 
+[collision_monitor-12] 	Waiting on external lifecycle transitions to activate
+[collision_monitor-12] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-8] [INFO] [1793507108.206760812] [global_costmap.global_costmap]: 
+[planner_server-8] 	global_costmap lifecycle node launched. 
+[planner_server-8] 	Waiting on external lifecycle transitions to activate
+[planner_server-8] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-8] [INFO] [1793507108.207462508] [global_costmap.global_costmap]: Creating Costmap
+[bt_navigator-10] [INFO] [1793507108.207460330] [bt_navigator]: 
+[bt_navigator-10] 	bt_navigator lifecycle node launched. 
+[bt_navigator-10] 	Waiting on external lifecycle transitions to activate
+[bt_navigator-10] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[bt_navigator-10] [INFO] [1793507108.207768679] [bt_navigator]: Creating
+[lifecycle_manager-13] [INFO] [1793507108.209664646] [lifecycle_manager_collision]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-13] [INFO] [1793507108.210127309] [lifecycle_manager_collision]: [34m[1mConfiguring collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1793507108.210513947] [collision_monitor]: Configuring
+[behavior_server-9] [INFO] [1793507108.213786434] [behavior_server]: 
+[behavior_server-9] 	behavior_server lifecycle node launched. 
+[behavior_server-9] 	Waiting on external lifecycle transitions to activate
+[behavior_server-9] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-7] [INFO] [1793507108.215777719] [controller_server]: Creating controller server
+[collision_monitor-12] [INFO] [1793507108.217869911] [collision_monitor]: [FootprintApproach]: Creating Polygon
+[collision_monitor-12] [INFO] [1793507108.219693607] [collision_monitor]: [PolygonSlow]: Creating Polygon
+[ros2_control_node-2] [INFO] [1793507108.218679452] [resource_manager]: Initialize hardware 'picar' 
+[ros2_control_node-2] [INFO] [1793507108.219960462] [PicarSimHardware]: robot server at http://127.0.0.1:10330
+[ros2_control_node-2] [INFO] [1793507108.219981755] [resource_manager]: Successful initialization of hardware 'picar'
+[ros2_control_node-2] [INFO] [1793507108.220056664] [resource_manager]: 'configure' hardware 'picar' 
+[ros2_control_node-2] [INFO] [1793507108.220069457] [resource_manager]: Successful 'configure' of hardware 'picar'
+[ros2_control_node-2] [INFO] [1793507108.220077205] [resource_manager]: 'activate' hardware 'picar' 
+[collision_monitor-12] [INFO] [1793507108.220439656] [collision_monitor]: [scan]: Creating Scan
+[ros2_control_node-2] [INFO] [1793507108.223336039] [resource_manager]: Successful 'activate' of hardware 'picar'
+[lifecycle_manager-13] [INFO] [1793507108.224118484] [lifecycle_manager_collision]: [34m[1mActivating collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1793507108.224222492] [collision_monitor]: Activating
+[collision_monitor-12] [INFO] [1793507108.224253597] [collision_monitor]: Creating bond (collision_monitor) to lifecycle manager.
+[controller_server-7] [INFO] [1793507108.227485846] [local_costmap.local_costmap]: 
+[controller_server-7] 	local_costmap lifecycle node launched. 
+[controller_server-7] 	Waiting on external lifecycle transitions to activate
+[controller_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[ros2_control_node-2] [INFO] [1793507108.228612772] [controller_manager]: update rate is 20 Hz
+[ros2_control_node-2] [INFO] [1793507108.228636642] [controller_manager]: Spawning controller_manager RT thread with scheduler priority: 50
+[ros2_control_node-2] [WARN] [1793507108.228718353] [controller_manager]: Could not enable FIFO RT scheduling policy: with error number <1>(Operation not permitted). See [https://control.ros.org/master/doc/ros2_control/controller_manager/doc/userdoc.html] for details on how to enable realtime scheduling.
+[controller_server-7] [INFO] [1793507108.230027641] [local_costmap.local_costmap]: Creating Costmap
+[lifecycle_manager-11] [INFO] [1793507108.307619980] [lifecycle_manager_navigation]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-11] [INFO] [1793507108.307670557] [lifecycle_manager_navigation]: [34m[1mConfiguring controller_server[0m[0m
+[controller_server-7] [INFO] [1793507108.307830370] [controller_server]: Configuring controller interface
+[controller_server-7] [INFO] [1793507108.307972377] [controller_server]: getting goal checker plugins..
+[controller_server-7] [INFO] [1793507108.308089418] [controller_server]: Controller frequency set to 20.0000Hz
+[controller_server-7] [INFO] [1793507108.308125808] [local_costmap.local_costmap]: Configuring
+[controller_server-7] [INFO] [1793507108.311010971] [local_costmap.local_costmap]: Using plugin "obstacle_layer"
+[controller_server-7] [INFO] [1793507108.315290616] [local_costmap.local_costmap]: Subscribed to Topics: scan
+[controller_server-7] [INFO] [1793507108.317486826] [local_costmap.local_costmap]: Initialized plugin "obstacle_layer"
+[controller_server-7] [INFO] [1793507108.317521238] [local_costmap.local_costmap]: Using plugin "inflation_layer"
+[controller_server-7] [INFO] [1793507108.318217171] [local_costmap.local_costmap]: Initialized plugin "inflation_layer"
+[controller_server-7] [INFO] [1793507108.322868419] [controller_server]: Created progress_checker : progress_checker of type nav2_controller::SimpleProgressChecker
+[controller_server-7] [INFO] [1793507108.323651625] [controller_server]: Created goal checker : general_goal_checker of type nav2_controller::SimpleGoalChecker
+[controller_server-7] [INFO] [1793507108.323962213] [controller_server]: Controller Server has general_goal_checker  goal checkers available.
+[controller_server-7] [INFO] [1793507108.324702252] [controller_server]: Created controller : FollowPath of type nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-7] [INFO] [1793507108.327726424] [controller_server]: Controller Server has FollowPath  controllers available.
+[lifecycle_manager-13] [INFO] [1793507108.327965890] [lifecycle_manager_collision]: Server collision_monitor connected with bond.
+[lifecycle_manager-13] [INFO] [1793507108.327993927] [lifecycle_manager_collision]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-13] [INFO] [1793507108.328009546] [lifecycle_manager_collision]: [34m[1mCreating bond timer...[0m[0m
+[lifecycle_manager-11] [INFO] [1793507108.330926102] [lifecycle_manager_navigation]: [34m[1mConfiguring planner_server[0m[0m
+[planner_server-8] [INFO] [1793507108.331081019] [planner_server]: Configuring
+[planner_server-8] [INFO] [1793507108.331110925] [global_costmap.global_costmap]: Configuring
+[planner_server-8] [INFO] [1793507108.333671565] [global_costmap.global_costmap]: Using plugin "static_layer"
+[planner_server-8] [INFO] [1793507108.336161804] [global_costmap.global_costmap]: Subscribing to the map topic (/map) with transient local durability
+[planner_server-8] [INFO] [1793507108.337115048] [global_costmap.global_costmap]: Initialized plugin "static_layer"
+[planner_server-8] [INFO] [1793507108.337140522] [global_costmap.global_costmap]: Using plugin "obstacle_layer"
+[planner_server-8] [INFO] [1793507108.337614724] [global_costmap.global_costmap]: Subscribed to Topics: scan
+[planner_server-8] [INFO] [1793507108.339318966] [global_costmap.global_costmap]: Initialized plugin "obstacle_layer"
+[planner_server-8] [INFO] [1793507108.339341411] [global_costmap.global_costmap]: Using plugin "inflation_layer"
+[planner_server-8] [INFO] [1793507108.339899710] [global_costmap.global_costmap]: Initialized plugin "inflation_layer"
+[planner_server-8] [INFO] [1793507108.339918892] [global_costmap.global_costmap]: Using costmap filter "keepout_filter"
+[planner_server-8] [INFO] [1793507108.341948761] [global_costmap.global_costmap]: Initialized costmap filter "keepout_filter"
+[planner_server-8] [INFO] [1793507108.345753773] [planner_server]: Created global planner plugin GridBased of type nav2_navfn_planner/NavfnPlanner
+[planner_server-8] [INFO] [1793507108.345782881] [planner_server]: Configuring plugin GridBased of type NavfnPlanner
+[planner_server-8] [INFO] [1793507108.346325891] [planner_server]: Planner Server has GridBased  planners available.
+[lifecycle_manager-11] [INFO] [1793507108.349436699] [lifecycle_manager_navigation]: [34m[1mConfiguring behavior_server[0m[0m
+[behavior_server-9] [INFO] [1793507108.349612309] [behavior_server]: Configuring
+[behavior_server-9] [INFO] [1793507108.353996033] [behavior_server]: Creating behavior plugin spin of type nav2_behaviors/Spin
+[behavior_server-9] [INFO] [1793507108.355011761] [behavior_server]: Configuring spin
+[behavior_server-9] [INFO] [1793507108.357167949] [behavior_server]: Creating behavior plugin backup of type nav2_behaviors/BackUp
+[behavior_server-9] [INFO] [1793507108.358147903] [behavior_server]: Configuring backup
+[behavior_server-9] [INFO] [1793507108.360069833] [behavior_server]: Creating behavior plugin wait of type nav2_behaviors/Wait
+[behavior_server-9] [INFO] [1793507108.361003693] [behavior_server]: Configuring wait
+[lifecycle_manager-11] [INFO] [1793507108.362698606] [lifecycle_manager_navigation]: [34m[1mConfiguring bt_navigator[0m[0m
+[bt_navigator-10] [INFO] [1793507108.362857926] [bt_navigator]: Configuring
+[lifecycle_manager-11] [INFO] [1793507108.415642495] [lifecycle_manager_navigation]: [34m[1mActivating controller_server[0m[0m
+[controller_server-7] [INFO] [1793507108.415817273] [controller_server]: Activating
+[controller_server-7] [INFO] [1793507108.415858044] [local_costmap.local_costmap]: Activating
+[controller_server-7] [INFO] [1793507108.415877544] [local_costmap.local_costmap]: Checking transform
+[controller_server-7] [INFO] [1793507108.415904697] [local_costmap.local_costmap]: Timed out waiting for transform from base_footprint to odom to become available, tf error: Invalid frame ID "odom" passed to canTransform argument target_frame - frame does not exist
+[ros2_control_node-2] [INFO] [1793507108.423938986] [controller_manager]: Loading controller 'joint_state_broadcaster'
+[ros2_control_node-2] [INFO] [1793507108.430162623] [controller_manager]: Loading controller 'diff_drive_controller'
+[spawner-3] [INFO] [1793507108.448293830] [spawner_joint_state_broadcaster]: [94mLoaded [1mjoint_state_broadcaster[0m
+[ros2_control_node-2] [INFO] [1793507108.480017869] [controller_manager]: Configuring controller 'joint_state_broadcaster'
+[ros2_control_node-2] [INFO] [1793507108.480125246] [joint_state_broadcaster]: 'joints' or 'interfaces' parameter is empty. All available state interfaces will be published
+[spawner-4] [INFO] [1793507108.496319424] [spawner_diff_drive_controller]: [94mLoaded [1mdiff_drive_controller[0m
+[ros2_control_node-2] [INFO] [1793507108.531678034] [controller_manager]: Configuring controller 'diff_drive_controller'
+[spawner-3] [INFO] [1793507108.680752425] [spawner_joint_state_broadcaster]: [92mConfigured and activated [1mjoint_state_broadcaster[0m
+[bridge-6] [WARN] [1793507108.739602778] [picar_bridge]: no /maps: maps are not saved this session
+[bridge-6] [INFO] [1793507108.741618705] [picar_bridge]: bridge on :10335, robot at http://127.0.0.1:10330
+[bridge-6] [INFO] [1793507108.765531368] [slam_toolbox]: Node using stack size 40000000
+[spawner-4] [INFO] [1793507108.780490198] [spawner_diff_drive_controller]: [92mConfigured and activated [1mdiff_drive_controller[0m
+[INFO] [spawner-3]: process has finished cleanly [pid 36]
+[controller_server-7] [INFO] [1793507108.916019615] [local_costmap.local_costmap]: start
+[INFO] [spawner-4]: process has finished cleanly [pid 38]
+[controller_server-7] [INFO] [1793507109.066554079] [controller_server]: Activating controller: FollowPath of type regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-7] [INFO] [1793507109.066618600] [controller_server]: Creating bond (controller_server) to lifecycle manager.
+[bridge-6] [INFO] [1793507109.113714117] [slam_toolbox]: Using solver plugin solver_plugins::CeresSolver
+[bridge-6] [INFO] [1793507109.114361183] [slam_toolbox]: CeresSolver: Using SCHUR_JACOBI preconditioner.
+[lifecycle_manager-11] [INFO] [1793507109.170202198] [lifecycle_manager_navigation]: Server controller_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793507109.170259097] [lifecycle_manager_navigation]: [34m[1mActivating planner_server[0m[0m
+[planner_server-8] [INFO] [1793507109.170585734] [planner_server]: Activating
+[planner_server-8] [INFO] [1793507109.170640265] [global_costmap.global_costmap]: Activating
+[planner_server-8] [INFO] [1793507109.170658992] [global_costmap.global_costmap]: Checking transform
+[planner_server-8] [INFO] [1793507109.170690638] [global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[bridge-6] [INFO] [1793507109.222376960] [slam_toolbox]: Message Filter dropping message: frame 'laser' at time 1793507109.111 for reason 'discarding message because the queue is full'
+[bridge-6] Registering sensor: [Custom Described Lidar]
+[planner_server-8] [INFO] [1793507109.670934091] [global_costmap.global_costmap]: start
+[planner_server-8] [INFO] [1793507109.671938043] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793507109.674338203] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793507109.674429782] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [INFO] [1793507109.677087360] [global_costmap.global_costmap]: KeepoutFilter: Received filter mask from /keepout_mask topic.
+[planner_server-8] [INFO] [1793507110.119454560] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 43 at 0.050000 m/pix
+[planner_server-8] [INFO] [1793507110.173146845] [planner_server]: Activating plugin GridBased of type NavfnPlanner
+[planner_server-8] [INFO] [1793507110.173755581] [planner_server]: Creating bond (planner_server) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793507110.276056010] [lifecycle_manager_navigation]: Server planner_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793507110.276167224] [lifecycle_manager_navigation]: [34m[1mActivating behavior_server[0m[0m
+[behavior_server-9] [INFO] [1793507110.276663360] [behavior_server]: Activating
+[behavior_server-9] [INFO] [1793507110.276729223] [behavior_server]: Activating spin
+[behavior_server-9] [INFO] [1793507110.276764007] [behavior_server]: Activating backup
+[behavior_server-9] [INFO] [1793507110.276791331] [behavior_server]: Activating wait
+[behavior_server-9] [INFO] [1793507110.276859743] [behavior_server]: Creating bond (behavior_server) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793507110.382129582] [lifecycle_manager_navigation]: Server behavior_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793507110.382186504] [lifecycle_manager_navigation]: [34m[1mActivating bt_navigator[0m[0m
+[bt_navigator-10] [INFO] [1793507110.382404077] [bt_navigator]: Activating
+[bt_navigator-10] [INFO] [1793507110.397933772] [bt_navigator]: Creating bond (bt_navigator) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793507110.499324233] [lifecycle_manager_navigation]: Server bt_navigator connected with bond.
+[lifecycle_manager-11] [INFO] [1793507110.499357362] [lifecycle_manager_navigation]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-11] [INFO] [1793507110.499371776] [lifecycle_manager_navigation]: [34m[1mCreating bond timer...[0m[0m
+[bridge-6] [INFO] [1793507110.500917980] [picar_bridge]: nav2 active: goals taken
+[bt_navigator-10] [INFO] [1793507110.624154453] [bt_navigator]: Begin navigating from current location (0.00, 0.00) to (2.40, -1.80)
+[planner_server-8] [WARN] [1793507110.624554838] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793507110.624590157] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793507110.624606971] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.40, -1.80)
+[planner_server-8] [WARN] [1793507110.624627622] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793507110.644478954] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793507110.645992465] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793507110.647330830] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793507110.647349466] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793507110.648746214] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1793507110.676761115] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793507110.676814785] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793507110.676829943] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.40, -1.80)
+[planner_server-8] [WARN] [1793507110.676842931] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[controller_server-7] [INFO] [1793507110.694616721] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[planner_server-8] [INFO] [1793507110.695328923] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793507110.696911566] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793507110.707694500] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793507110.707767694] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793507110.718574448] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1793507111.178485656] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793507111.178567291] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793507111.178592810] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.40, -1.80)
+[planner_server-8] [WARN] [1793507111.178615221] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793507111.194328985] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793507111.195663503] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793507111.196977675] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793507111.196995168] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793507111.198278894] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1793507111.676203428] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793507111.676238538] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793507111.676248507] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.40, -1.80)
+[planner_server-8] [WARN] [1793507111.676257834] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793507111.694741717] [behavior_server]: Running spin
+[behavior_server-9] [INFO] [1793507111.694860094] [behavior_server]: Turning 1.57 for spin behavior.
+[behavior_server-9] [INFO] [1793507113.395193722] [behavior_server]: spin completed successfully
+[planner_server-8] [WARN] [1793507113.425156168] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793507113.425271406] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793507113.425313815] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.40, -1.80)
+[planner_server-8] [WARN] [1793507113.425348358] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793507113.444496267] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793507113.446504660] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793507113.448354246] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793507113.448399827] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793507113.450245621] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1793507113.678041100] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793507113.678150576] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793507113.678189373] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.40, -1.80)
+[planner_server-8] [WARN] [1793507113.678223205] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793507113.694672778] [behavior_server]: Running wait
+[behavior_server-9] [INFO] [1793507118.694826846] [behavior_server]: wait completed successfully
+[planner_server-8] [WARN] [1793507118.724557754] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793507118.724593093] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793507118.724602708] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.40, -1.80)
+[planner_server-8] [WARN] [1793507118.724610815] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793507118.744447524] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793507118.745963350] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793507118.747322520] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793507118.747340990] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793507118.748684870] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1793507119.176666017] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793507119.176741387] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793507119.176767161] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.40, -1.80)
+[planner_server-8] [WARN] [1793507119.176789346] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793507119.194652567] [behavior_server]: Running backup
+[behavior_server-9] [INFO] [1793507119.194783720] [behavior_server]: DriveOnHeading: no acceleration or deceleration limits set
+[ros2_control_node-2] [WARN] [1793507119.369305192] [PicarSimHardware]: GET /wheels to http://127.0.0.1:10330 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793507119.380140440] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[planner_server-8] [INFO] [1793507121.171103623] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 43 at 0.050000 m/pix
+[behavior_server-9] [INFO] [1793507125.395006664] [behavior_server]: backup completed successfully
+[planner_server-8] [WARN] [1793507125.424883192] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793507125.424953160] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793507125.424974931] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.40, -1.80)
+[planner_server-8] [WARN] [1793507125.424993331] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793507125.444552733] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793507125.446379572] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793507125.448180528] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793507125.448219973] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793507125.449856771] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1793507125.677868358] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793507125.677919195] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793507125.677929807] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.40, -1.80)
+[planner_server-8] [WARN] [1793507125.677940372] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[controller_server-7] [INFO] [1793507125.694466907] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[planner_server-8] [INFO] [1793507125.694710232] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793507125.696110349] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793507125.697427061] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793507125.697443736] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793507125.698882963] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1793507126.176768674] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793507126.176827611] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793507126.176843973] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.40, -1.80)
+[planner_server-8] [WARN] [1793507126.176856957] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793507126.194504331] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793507126.195949921] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793507126.197267214] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793507126.197284667] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793507126.198671660] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1793507126.676534088] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793507126.676570651] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793507126.676580764] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.40, -1.80)
+[planner_server-8] [WARN] [1793507126.676589948] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793507126.694926946] [behavior_server]: Running spin
+[behavior_server-9] [INFO] [1793507126.694989385] [behavior_server]: Turning 1.57 for spin behavior.
+[behavior_server-9] [INFO] [1793507128.495541831] [behavior_server]: spin completed successfully
+[planner_server-8] [WARN] [1793507128.525004120] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793507128.525040774] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793507128.525050308] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.40, -1.80)
+[planner_server-8] [WARN] [1793507128.525059073] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793507128.544785405] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793507128.546355803] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793507128.548092742] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793507128.548128303] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793507128.549708777] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1793507128.677832217] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793507128.677917072] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793507128.677937545] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.40, -1.80)
+[planner_server-8] [WARN] [1793507128.677957620] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [WARN] [1793507128.704349289] [bt_navigator]: [navigate_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [ERROR] [1793507128.704516347] [bt_navigator]: Goal failed
