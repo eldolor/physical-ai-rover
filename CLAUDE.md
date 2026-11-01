@@ -786,14 +786,28 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   rejected and explore failed that place (3.50.D4-b). `/health` `nav2`.
   Live: 0 of 5 starts rejected (`dev` 1 of 5), an explore mission `found`.
   Open: a nav2 that never comes up holds explore to its time limit.
-  **3.127 (merged 2026-10-31):** the robot server refuses a held goal
-  `nav2_starting` (nav2 inactive at most 60 s) or `slam_not_ready`
-  (`starting`/`checking`/`remapping`), still retryable; a map tap shows it
-  as information, not an error. The 60 s is a guess from the bridge's
-  body (a crash reads as "starting, or restarting" for a minute); an
-  explicit `hold` field from the bridge is the fix (the user's call). Also
-  the survey row shows `source_error`. Twin not deployed yet;
-  `vision-picar-ros:latest` predates 3.105.
+  **3.127 (merged 2026-10-31, deployed):** the robot server refuses a held
+  goal `nav2_starting` or `slam_not_ready`, still retryable; a map tap
+  shows it as information, not an error. Also the survey row shows
+  `source_error`. **3.133 (merged 2026-11-01): the bridge names the hold
+  itself** -- every 503 goal refusal carries `hold` (`nav2_starting`,
+  `slam_not_ready` or null), and `bridge_faults.hold_reason()` reads it
+  instead of 3.127's guess from the body (60 s of `inactive_s`):
+  * `nav2_starting` only until the lifecycle manager's first reply (a raised
+    call is not one);
+  * `slam_not_ready` for `checking`/`remapping`, and for `starting`;
+  * a start's one ceiling is `START_HOLD_MAX_S` (300 s from the bridge's
+    start), applied to nav2 and to SLAM `starting`;
+  * so a crash, a reset, a failed bring-up or SLAM `failed` is
+    `ros_unavailable`;
+  * a bridge with no `hold` (an image from before 3.133) reads
+    `ros_unavailable` (the deliberate fallback, wording only);
+  * names pinned across the wall by `tests/test_bridge_hold.py`.
+
+  **Owed:** rebuild `vision-picar-ros:latest` from `dev` on the desktop,
+  then the live check (3.133.C, the user's): a goal during a container
+  start is refused `nav2_starting` and explore waits. Follow-up: the twin's
+  text still says "(starting, or restarting)".
 * **Older review bugs (3.64), merged 2026-10-09, deployed 2026-10-10.** Ten bugs
   from the reviewer comparison still live on `dev`, fixed red-first: the
   twin's guidance loop after Stop, a hidden page and an outage (A2, A4,
