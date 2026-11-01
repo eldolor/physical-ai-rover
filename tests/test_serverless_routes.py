@@ -169,9 +169,17 @@ NOT_PUBLIC = {
     # The console's own page and script are static assets now: they are
     # synced to the S3 bucket and served by the default behaviour, not by
     # the function. The FastAPI routes remain so `uvicorn control.admin_server:app`
-    # still works locally with no S3 at all.
+    # still works locally with no S3 at all. Since 3.132 Stage 4 the page is
+    # the Lab console, published at /admin, /metrics and /lab, with its
+    # scripts and stylesheets beside it (service/static/assets.json).
     ("walks", "GET", "/admin"),
+    ("walks", "GET", "/metrics"),
+    ("walks", "GET", "/lab"),
     ("walks", "GET", "/admin.js"),
+    ("walks", "GET", "/metrics.js"),
+    ("walks", "GET", "/lab.js"),
+    ("walks", "GET", "/lab.css"),
+    ("walks", "GET", "/ui.css"),
 }
 
 

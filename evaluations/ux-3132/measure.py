@@ -309,6 +309,10 @@ DETAIL = {"frames": [{"file": f"frame_{i:04d}.jpg", "bytes": 70_000} for i in ra
 JPEG = base64.b64decode(
     "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/"
     "wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q==")
+ESTIMATE = {"walk": WALK_B, "action": "replay", "calls": 6, "navigate_calls": 3, "judge_calls": 3,
+            "judge_enabled": True, "upper_bound": True, "model_id": "amazon.nova-lite-v1:0",
+            "judge_model_id": MODELS["default"],
+            "tokens_per_call": {"input": 1500, "output": 80, "recorded": True}, "usd": None}
 NOW = time.time()
 RUNS = {"days": 14, "count": 3, "runs": [
     {"run_id": f"run-{i}", "started_at": NOW - 3600 * (i + 1), "finished_at": NOW - 3600 * i - 600,
@@ -348,6 +352,9 @@ def stub_consoles(page):
     page.route("**/evaluate", j({"score": 61, "verdict": "mixed", "basis": "judge+metrics"}))
     page.route("**/replay", j({"started": True}))
     page.route(re.compile(r".*/metrics/summary.*"), j(RUNS))
+    # 3.132 Stage 4: the Lab console's free cost estimate, asked before a
+    # score or a replay (amendment 4: the paths follow the UI).
+    page.route(re.compile(r".*/recording/walks/[^/]+/estimate(\?.*)?$"), j(ESTIMATE))
 
 
 CORS = {"access-control-allow-origin": "*", "access-control-allow-headers": "*",
@@ -832,6 +839,10 @@ def a2_replay(page, reqs, t):
     value = page.locator(".replay-select").first.evaluate(
         "s => [...s.options].map(o => o.value).find(v => v.startsWith('amazon.nova-lite'))")
     t.select(".replay-select", value, "Replay with… nova-lite")
+    # The Lab console asks first, with the cost (3.132 Stage 4).
+    if page.locator("#confirm-ok").count():
+        page.wait_for_selector("#confirm-ok", state="visible", timeout=5000)
+        t.tap("#confirm-ok", "Confirm the replay")
     page.wait_for_timeout(1500)
     return t.result(any(PAID.search(r) and "/replay" in r for r in reqs))
 

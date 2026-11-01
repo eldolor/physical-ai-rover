@@ -1,25 +1,26 @@
-// control/admin.js -- the recorded-walk admin console's client.
+// control/admin.js -- the Lab console's Walks tab (3.132 Stage 4; was the
+// walks console, control/admin.html).
 //
-// Extracted verbatim from admin.html; served by control/admin_server.py
-// (GET /admin.js). Same reasoning as web-twin/app.js -- see its banner.
+// Served by control/admin_server.py (GET /admin.js) and published beside
+// control/lab.html. Same reasoning as web-twin/app.js -- see its banner.
+// The secret, Connect, the tabs and the confirm dialog are control/lab.js's
+// (window.Lab), shared with the Metrics tab.
 
 (function () {
-  const SECRET_KEY = "vp_admin_secret";
-  const secretEl = document.getElementById("secret");
-  const connStatusEl = document.getElementById("conn-status");
+  const Lab = window.Lab;
   const statsEl = document.getElementById("stats-line");
   const walksEl = document.getElementById("walks");
   const searchEl = document.getElementById("search");
   const sortEl = document.getElementById("sort");
+  const filterLabelEl = document.getElementById("filter-label");
+  const filterScoreEl = document.getElementById("filter-score");
   const bulkBarEl = document.getElementById("bulk-bar");
   const bulkCountEl = document.getElementById("bulk-count");
   const btnBulkDelete = document.getElementById("btn-bulk-delete");
-  const btnConnect = document.getElementById("btn-connect");
+  const pendingBarEl = document.getElementById("pending-bar");
+  const pendingCountEl = document.getElementById("pending-count");
+  const btnScorePending = document.getElementById("btn-score-pending");
   const btnRefresh = document.getElementById("btn-refresh");
-
-  let secret = "";
-  try { secret = localStorage.getItem(SECRET_KEY) || ""; } catch (e) { /* private mode */ }
-  secretEl.value = secret;
 
   // All walks currently known (from the last /recording/walks fetch), plus
   // UI state layered on top -- selection for bulk delete, cached per-walk
@@ -33,6 +34,10 @@
   // renderWalksList on every render, so it never outlives the DOM it points at.
   let walkRenderers = {};
   const selected = new Set();
+  // Walks whose frames are open. A row is rebuilt on every search keystroke,
+  // filter, sort and Refresh; kept here, an open walk stays open (3.132
+  // Stage 0: typing in the search collapsed it).
+  const expanded = new Set();
   const detailCache = new Map(); // walk name -> {frames, entries, label}
   // walk name -> what is still out for it (3.76 N2). A row is rebuilt on
   // every search keystroke, sort and Refresh, and a rebuilt row started with
@@ -55,16 +60,12 @@
     if (r) r.repaint();
   }
 
-  function headers(extra, trying) {
-    const h = Object.assign({}, extra);
-    const s = trying === undefined ? secret : trying;
-    if (s) h["x-app-secret"] = s;
-    return h;
-  }
+  const headers = Lab.headers;
+  const escapeHtml = Lab.escapeHtml;
+  const shortModel = Lab.shortModel;
 
-  // `trying`: a secret being tried by Connect, sent on this request only.
-  async function api(method, path, body, trying) {
-    const opts = { method: method, headers: headers(body ? { "content-type": "application/json" } : {}, trying) };
+  async function api(method, path, body) {
+    const opts = { method: method, headers: headers(body ? { "content-type": "application/json" } : {}) };
     if (body !== undefined) opts.body = JSON.stringify(body);
     const res = await fetch(path, opts);
     if (res.status === 204) return null;
@@ -104,9 +105,25 @@
     }
   }
 
-  function setStatus(el, text, cls) {
-    el.textContent = text;
-    el.className = "status" + (cls ? " " + cls : "");
+  // A card's picture, fetched once per Refresh: an open walk's row is
+  // rebuilt on every search keystroke, and would otherwise fetch every frame
+  // again each time.
+  const cardImages = new Map();          // "walk/file" -> Promise of a blob URL
+  function cardImage(walk, file) {
+    const key = walk + "/" + file;
+    let p = cardImages.get(key);
+    if (!p) {
+      p = frameBlobUrl(walk, file);
+      p.catch(function () { cardImages.delete(key); });   // a failure is tried again
+      cardImages.set(key, p);
+    }
+    return p;
+  }
+  function forgetCardImages() {
+    cardImages.forEach(function (p) {
+      p.then(function (url) { URL.revokeObjectURL(url); }).catch(function () {});
+    });
+    cardImages.clear();
   }
 
   // Same reasoning against alert(): an inline, self-clearing message next
@@ -152,12 +169,6 @@
     };
   }
 
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-    });
-  }
-
   function fmtBytes(n) {
     if (n >= 1024 * 1024) return (n / (1024 * 1024)).toFixed(1) + " MB";
     if (n >= 1024) return (n / 1024).toFixed(0) + " KB";
@@ -175,7 +186,7 @@
       const data = await api("GET", "/recording/summary");
       if (seq !== summarySeq) return;
       const rows = data.rows || [];
-      if (!rows.length) { panel.style.display = "none"; return; }
+      if (!rows.length) { panel.hidden = true; return; }
       el.innerHTML = rows.map(function (r) {
         const variant = r.prompt_variant && r.prompt_variant !== "default"
           ? " · " + escapeHtml(r.prompt_variant) : "";
@@ -199,9 +210,9 @@
             (flags ? " · " + escapeHtml(flags) : "") + hit + "</span>" +
           "</div>";
       }).join("");
-      panel.style.display = "";
+      panel.hidden = false;
     } catch (e) {
-      if (seq === summarySeq) panel.style.display = "none";
+      if (seq === summarySeq) panel.hidden = true;
     }
   }
 
@@ -285,9 +296,22 @@
     return null;
   }
 
+  // A walk counts as scored once it has a card, current or not; "not
+  // scored" is what Score them would pick up.
+  function isScored(w) { return !!(w.eval && w.eval.score != null); }
+
   function applyFilterSort() {
     const q = searchEl.value.trim().toLowerCase();
-    let list = allWalks.filter(function (w) { return !q || w.walk.toLowerCase().includes(q); });
+    const label = filterLabelEl.value;
+    const scored = filterScoreEl.value;
+    let list = allWalks.filter(function (w) {
+      if (q && !w.walk.toLowerCase().includes(q)) return false;
+      if (label === "none" && w.label) return false;
+      if (label && label !== "none" && w.label !== label) return false;
+      if (scored === "scored" && !isScored(w)) return false;
+      if (scored === "unscored" && isScored(w)) return false;
+      return true;
+    });
     const [key, dir] = sortEl.value.split("-");
     list = list.slice().sort(function (a, b) {
       let cmp;
@@ -312,13 +336,14 @@
   }
 
   function renderWalksList(list) {
+    updatePendingBar();
     if (!allWalks.length) {
-      walksEl.innerHTML = '<div class="empty">No recorded walks yet.</div>';
+      walksEl.innerHTML = '<p class="empty">No recorded walks yet.</p>';
       updateBulkBar();
       return;
     }
     if (!list.length) {
-      walksEl.innerHTML = '<div class="empty">No walks match "' + escapeHtml(searchEl.value) + '".</div>';
+      walksEl.innerHTML = '<p class="empty">No walk matches the search and filters.</p>';
       return;
     }
     walksEl.innerHTML = "";
@@ -334,6 +359,7 @@
   function onWalksLoaded(data) {
     allWalks = data.walks;
     detailCache.clear();                  // a walk still recording has grown (3.76 N2)
+    forgetCardImages();
     applyFilterSort();
     loadStats();
     loadSummary();
@@ -345,27 +371,27 @@
     loadReplayModels().then(function () {
       if (replayModels.length) applyFilterSort();
     });
-    scorePendingWalks();
   }
 
   async function loadWalks() {
-    walksEl.innerHTML = '<div class="empty">Loading…</div>';
+    walksEl.innerHTML = '<p class="empty">Loading…</p>';
     try {
       onWalksLoaded(await api("GET", "/recording/walks"));
     } catch (e) {
-      walksEl.innerHTML = '<div class="empty">Failed to load: ' + escapeHtml(e.message) + "</div>";
+      walksEl.innerHTML = '<p class="empty">Failed to load: ' + escapeHtml(e.message) + "</p>";
     }
   }
 
-  // Score whatever hasn't been scored yet, without being asked.
+  // Score the finished walks that have no score yet -- when a person asks.
   //
-  // This is the half of the trigger design that makes the feature feel
-  // automatic: the twin marks a walk finished (POST /recording/finish, which
-  // writes meta.json but deliberately scores nothing), and opening this page
-  // is what actually turns that marker into a score. GET .../evaluation is
+  // The twin marks a walk finished (POST /recording/finish, which writes
+  // meta.json but deliberately scores nothing). Opening this page used to
+  // score every such walk by itself; on a deployment with the judge on that
+  // is several paid Bedrock calls a walk, spent by opening a page (3.132
+  // Stage 0's M6). Now the pending bar says how many are waiting, and Score
+  // them asks first with the cost (askScorePending). GET .../evaluation is
   // the lazy route -- it returns a stored scorecard if there is one and
-  // computes it if there isn't -- so this is safe to call for every pending
-  // walk and costs nothing for walks already done.
+  // computes it if there isn't -- so a walk scored meanwhile costs nothing.
   //
   // Only *finished* walks qualify. A walk with no meta.json is either still
   // being recorded (scoring it would judge a fragment) or predates the finish
@@ -375,18 +401,47 @@
   // Bedrock requests, and a page load that kicked off eight walks at once
   // would throttle itself and land the user in retry storms.
   let scoringPending = false;
-  let scoreAgain = false;
 
-  async function scorePendingWalks() {
-    // A list that arrives while the queue runs is looked at once it ends
-    // (3.76 N2: a Refresh mid-queue left its new walks unscored).
-    if (scoringPending) { scoreAgain = true; return; }
-    const pending = allWalks.filter(function (w) {
+  function pendingWalks() {
+    return allWalks.filter(function (w) {
       const f = flight(w.walk);
       return w.finished && !w.eval && !w.evalFailed && !f.scoring && !f.queued;
     });
+  }
+
+  function updatePendingBar() {
+    const n = pendingWalks().length;
+    pendingBarEl.hidden = !n || scoringPending;
+    pendingCountEl.textContent = n + (n === 1 ? " finished walk is" : " finished walks are") +
+      " not scored yet.";
+    btnScorePending.textContent = n === 1 ? "Score it…" : "Score them…";
+  }
+
+  async function askScorePending() {
+    const pending = pendingWalks();
+    if (!pending.length || scoringPending) return;
+    const estimates = await Promise.all(pending.map(function (w) {
+      return Lab.estimate(w.walk, "score");
+    }));
+    const ok = await Lab.confirm(
+      pending.length === 1 ? "Score this walk?" : "Score " + pending.length + " walks?",
+      [pending.length === 1 ? pending[0].walk : pending.length + " finished walks with no score."]
+        .concat(Lab.costLines(estimates)),
+      "Score");
+    if (ok) scorePendingWalks(pending);
+  }
+
+  // Runs the walks a person confirmed, one at a time. Walks that arrive
+  // meanwhile wait for their own confirm.
+  async function scorePendingWalks(chosen) {
+    if (scoringPending) return;
+    const pending = chosen.filter(function (w) {
+      const f = flight(w.walk);
+      return !f.scoring && !f.queued;
+    });
     if (!pending.length) return;
     scoringPending = true;
+    updatePendingBar();
     pending.forEach(function (w) { flight(w.walk).queued = true; repaint(w.walk); });
     try {
       for (const w of pending) {
@@ -418,13 +473,13 @@
     } finally {
       scoringPending = false;
       pending.forEach(function (w) { flight(w.walk).queued = false; });
-      if (scoreAgain) { scoreAgain = false; scorePendingWalks(); }
+      updatePendingBar();
     }
   }
 
   function updateBulkBar() {
     const n = selected.size;
-    bulkBarEl.classList.toggle("show", n > 0);
+    bulkBarEl.hidden = n === 0;
     bulkCountEl.textContent = n + " selected";
     if (!n) btnBulkDelete.textContent = "Delete selected";
   }
@@ -438,7 +493,9 @@
   // the operator's label rather than merged into it -- the score is
   // advisory (control/walk_eval.py's thresholds are calibrated against six
   // walks) and must never be mistaken for a human judgement.
-  function scoreBadge(ev) {
+  function scoreBadge(ev, w) {
+    // A finished walk waiting for its score says so, where the score will go.
+    if (!ev && w && w.finished) return '<span class="score-badge none">not scored</span>';
     if (!ev || ev.score == null) return "";
     if (ev.stale) {
       // 3.64 E2: an older scorer's number, not comparable with today's;
@@ -457,12 +514,6 @@
       escapeHtml((ev.basis || "") + flags) + '">' + ev.score + flags + "</span>";
   }
 
-  function shortModel(modelId) {
-    if (!modelId) return "";
-    return modelId.replace(/^(us|global)\./, "").replace(/^anthropic\.claude-/, "")
-      .replace(/-\d{8}-v\d+:\d+$/, "").replace(/^amazon\./, "").replace(/-v\d+:\d+$/, "");
-  }
-
   function renderWalk(w) {
     const el = document.createElement("div");
     el.className = "walk";
@@ -472,6 +523,8 @@
 
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
+    checkbox.className = "walk-check";
+    checkbox.setAttribute("aria-label", "Select " + w.walk);
     checkbox.checked = selected.has(w.walk);
     checkbox.onchange = function () {
       if (checkbox.checked) selected.add(w.walk); else selected.delete(w.walk);
@@ -479,21 +532,27 @@
     };
     head.appendChild(checkbox);
 
-    const main = document.createElement("div");
+    // The walk's name opens and closes its frames: a button, so the
+    // keyboard reaches it and a screen reader hears whether it is open
+    // (3.132 Stage 0: it was a div only a mouse could use).
+    const main = document.createElement("button");
+    main.type = "button";
     main.className = "walk-head-main";
+    main.setAttribute("aria-expanded", "false");
     function renderHead() {
       main.innerHTML =
-        '<div class="walk-name">' + escapeHtml(w.walk) + labelBadge(w.label) +
-        scoreBadge(w.eval) + "</div>" +
-        '<div class="walk-meta">' + w.frames + " frame" + (w.frames === 1 ? "" : "s") +
+        '<span class="walk-name">' + escapeHtml(w.walk) + labelBadge(w.label) +
+        scoreBadge(w.eval, w) + "</span>" +
+        '<span class="walk-meta">' + w.frames + " frame" + (w.frames === 1 ? "" : "s") +
         (w.bytes ? " · " + fmtBytes(w.bytes) : "") +
-        (w.model_id ? " · " + escapeHtml(shortModel(w.model_id)) : "") + "</div>";
+        (w.model_id ? " · " + escapeHtml(shortModel(w.model_id)) : "") + "</span>";
     }
     renderHead();
     head.appendChild(main);
 
     const labelSelect = document.createElement("select");
-    labelSelect.className = "label-select";
+    labelSelect.className = "select-input label-select";
+    labelSelect.setAttribute("aria-label", "Label for " + w.walk);
     labelSelect.innerHTML =
       '<option value="">No label</option>' +
       '<option value="good">good</option>' +
@@ -518,7 +577,9 @@
     const actions = document.createElement("div");
     actions.className = "walk-actions";
     const viewBtn = document.createElement("button");
+    viewBtn.type = "button";
     viewBtn.textContent = "View";
+    viewBtn.setAttribute("aria-expanded", "false");
     const dlLink = document.createElement("a");
     dlLink.className = "dl-link";
     dlLink.textContent = "Download";
@@ -528,6 +589,7 @@
       downloadWalk(w.walk, dlLink);
     };
     const delBtn = document.createElement("button");
+    delBtn.type = "button";
     delBtn.className = "danger";
     armConfirm(delBtn, "Delete walk", async function () {
       const f = flight(w.walk);
@@ -550,17 +612,23 @@
       }
     });
     const evalBtn = document.createElement("button");
-    // A finished walk with no score yet is already queued by
-    // scorePendingWalks() -- say so, rather than inviting a click that would
-    // duplicate the work already in flight.
+    evalBtn.type = "button";
     // Its label and state come from syncControls() below: "Scoring…" and
     // disabled while the queue or a click has a score out for this walk
     // (3.76 N2: it looked busy and was not, so a click paid a second judge
     // run), "Re-score" once there is one, else "Evaluate".
+    // The judge tier is several Bedrock calls, so a click asks first with
+    // the cost (3.132 Stage 4).
     evalBtn.onclick = async function () {
       const f = flight(w.walk);
       if (f.scoring || f.queued) return;
-      f.scoring = true;                    // the judge tier is several Bedrock calls
+      const est = await Lab.estimate(w.walk, "score");
+      const ok = await Lab.confirm(live(w).eval ? "Score this walk again?" : "Score this walk?",
+        [w.walk].concat(Lab.costLines(est)), "Score");
+      // Asked while the dialog was up: the queue or another click may have
+      // taken it meanwhile.
+      if (!ok || f.scoring || f.queued || !allWalks.includes(live(w))) return;
+      f.scoring = true;
       syncControls();
       try {
         live(w).eval = await api("POST", "/recording/walks/" + encodeURIComponent(w.walk) + "/evaluate");
@@ -580,7 +648,8 @@
     // are two different physical paths, so their score gap mixes model
     // quality with where the phone was pointed; this holds the frames fixed.
     const replaySelect = document.createElement("select");
-    replaySelect.className = "replay-select";
+    replaySelect.className = "select-input replay-select";
+    replaySelect.setAttribute("aria-label", "Replay " + w.walk + " with another model");
     replaySelect.innerHTML = '<option value="">Replay with…</option>';
     // Values are "<model>|<prompt>" so one control covers both axes without
     // a second dropdown crowding the row on a phone.
@@ -611,6 +680,15 @@
       const f = flight(w.walk);
       replaySelect.selectedIndex = 0;
       if (f.replays) return;               // one out already (a rebuilt row)
+      // Every frame of the walk goes to the model again, so the pick asks
+      // first with the cost; it used to start the moment the pick changed
+      // (3.132 Stage 0).
+      const est = await Lab.estimate(w.walk, "replay", modelId);
+      const ok = await Lab.confirm("Replay this walk?",
+        [w.walk, "Every frame asked again under " + shortModel(modelId) +
+          (promptVariant === "default" ? "" : " (" + promptVariant + " wording)") + "."]
+          .concat(Lab.costLines(est)), "Replay");
+      if (!ok || f.replays || !allWalks.includes(live(w))) return;
       f.replays += 1;
       syncControls();
       // The row on screen when an answer lands -- a search or Refresh may
@@ -783,7 +861,7 @@
 
     const framesEl = document.createElement("div");
     framesEl.className = "frames";
-    framesEl.style.display = "none";
+    framesEl.hidden = true;
     el.appendChild(framesEl);
 
     async function ensureDetail() {
@@ -797,23 +875,35 @@
       return detail;
     }
 
-    async function toggle() {
-      const showing = framesEl.style.display !== "none";
-      if (showing) { framesEl.style.display = "none"; return; }
-      framesEl.style.display = "grid";
-      framesEl.innerHTML = '<div class="empty">Loading frames…</div>';
+    function setOpen(open) {
+      framesEl.hidden = !open;
+      main.setAttribute("aria-expanded", open ? "true" : "false");
+      viewBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      if (open) expanded.add(w.walk); else expanded.delete(w.walk);
+    }
+
+    async function open() {
+      setOpen(true);
+      framesEl.innerHTML = '<p class="empty">Loading frames…</p>';
       try {
         const detail = await ensureDetail();
+        if (framesEl.hidden) return;         // closed while it loaded
         framesEl.innerHTML = "";
         detail.frames.forEach(function (f) {
           framesEl.appendChild(renderFrame(w, detail, f, el));
         });
       } catch (e) {
-        framesEl.innerHTML = '<div class="empty">Failed to load frames: ' + escapeHtml(e.message) + "</div>";
+        framesEl.innerHTML = '<p class="empty">Failed to load frames: ' + escapeHtml(e.message) + "</p>";
       }
+    }
+
+    function toggle() {
+      if (!framesEl.hidden) { setOpen(false); return; }
+      open();
     }
     main.onclick = toggle;
     viewBtn.onclick = toggle;
+    if (expanded.has(w.walk)) open();      // a rebuilt row opens as it was
 
     return el;
   }
@@ -823,20 +913,26 @@
     const card = document.createElement("div");
     card.className = "frame";
 
+    // The picture opens the slideshow: inside a button, so the keyboard
+    // reaches it and focus can come back to it when the slideshow closes.
+    const opener = document.createElement("button");
+    opener.type = "button";
+    opener.className = "frame-open";
+    opener.setAttribute("aria-label", "Open " + f.file + " in the frame viewer");
     const img = document.createElement("img");
-    img.alt = f.file;
-    frameBlobUrl(w.walk, f.file).then(function (url) {
+    img.alt = "";
+    cardImage(w.walk, f.file).then(function (url) {
       img.src = url;
-      img._blobUrl = url;
     }).catch(function () {});
     // Its place looked up at the tap, not kept from when it was drawn (3.76
     // N2: after a frame delete every later card opened the next frame, and
     // the last one threw).
-    img.onclick = function () {
+    opener.onclick = function () {
       const index = detail.frames.findIndex(function (x) { return x.file === f.file; });
-      if (index >= 0) openSlideshow(w, detail, index);
+      if (index >= 0) openSlideshow(w, detail, index, opener);
     };
-    card.appendChild(img);
+    opener.appendChild(img);
+    card.appendChild(opener);
 
     const body = document.createElement("div");
     body.className = "frame-body";
@@ -857,6 +953,7 @@
     body.innerHTML = html;
 
     const delBtn = document.createElement("button");
+    delBtn.type = "button";
     delBtn.className = "danger small";
     armConfirm(delBtn, "Delete frame", async function () {
       delBtn.disabled = true;
@@ -990,10 +1087,21 @@
     slideshowPos.textContent = (s.index + 1) + " / " + s.detail.frames.length + " — " + f.file;
   }
 
-  function openSlideshow(w, detail, index) {
+  // A modal dialog (3.132 Stage 4): focus goes into it, Tab stays inside,
+  // and closing gives focus back to the frame that opened it.
+  let releaseFocus = null;
+  let slideshowOpener = null;
+
+  function openSlideshow(w, detail, index, opener) {
+    const wasOpen = !!slideshowState;
     slideshowState = { walk: w, detail: detail, index: index, timer: null, playing: false };
     slideshowEl.classList.add("show");
     renderSlide();
+    if (!wasOpen) {
+      slideshowOpener = opener || document.activeElement;
+      releaseFocus = Lab.trapFocus(slideshowEl);
+      document.getElementById("slideshow-next").focus();
+    }
   }
 
   function closeSlideshow() {
@@ -1003,6 +1111,10 @@
     showSlideImage(null);
     slideshowEl.classList.remove("show");
     slideshowPlayBtn.textContent = "Play";
+    if (releaseFocus) { releaseFocus(); releaseFocus = null; }
+    const back = slideshowOpener;
+    slideshowOpener = null;
+    if (back && back.isConnected) back.focus();
   }
 
   function slideshowStep(delta) {
@@ -1097,27 +1209,17 @@
   searchEl.oninput = applyFilterSort;
   sortEl.onchange = applyFilterSort;
 
-  btnConnect.onclick = function () {
-    const tried = secretEl.value.trim();
-    setStatus(connStatusEl, "Connecting…");
-    // /recording/walks, not /health -- /health is deliberately unauthenticated
-    // (same reasoning as robot/server.py's), so it can't tell a right secret
-    // from a wrong one. This is also the first real data load, not just a check.
-    // Tried on this request alone, and kept only once it worked (3.76 N2),
-    // as metrics.js does: a mistyped secret replaced the saved one, and the
-    // scoring queue's requests went out under it meanwhile.
-    api("GET", "/recording/walks", undefined, tried).then(function (data) {
-      secret = tried;
-      try { localStorage.setItem(SECRET_KEY, tried); } catch (e) { /* private mode */ }
-      setStatus(connStatusEl, "Connected.", "ok");
-      btnRefresh.disabled = false;
-      searchEl.disabled = false;
-      sortEl.disabled = false;
-      onWalksLoaded(data);
-    }).catch(function (e) {
-      setStatus(connStatusEl, "Failed: " + e.message, "err");
-    });
-  };
+  filterLabelEl.onchange = applyFilterSort;
+  filterScoreEl.onchange = applyFilterSort;
+  btnScorePending.onclick = askScorePending;
+
+  // Connect is lab.js's: it tries the secret and hands over the walk list
+  // only once one has worked (3.76 N2: never sent under a secret being tried).
+  Lab.onConnect(function (data) {
+    btnRefresh.disabled = false;
+    [searchEl, sortEl, filterLabelEl, filterScoreEl].forEach(function (el) { el.disabled = false; });
+    onWalksLoaded(data);
+  });
   btnRefresh.onclick = loadWalks;
 
   // Which deployment is this? Asked of the server that served the page,
@@ -1138,5 +1240,4 @@
     })
     .catch(function () { /* no banner -- see above */ });
 
-  if (secret) btnConnect.onclick();
 })();

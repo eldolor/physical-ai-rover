@@ -69,7 +69,8 @@ echo "==> walks"
 deps "$BUILD/walks" "$ROOT/service/lambda/requirements-walks.txt"
 mkdir -p "$BUILD/walks/control" "$BUILD/walks/config"
 cp "$ROOT/control/"*.py                            "$BUILD/walks/control/"
-cp "$ROOT/control/admin.html" "$ROOT/control/admin.js" "$BUILD/walks/control/" 2>/dev/null || true
+cp "$ROOT/control/lab.html" "$ROOT/control/lab.css" "$ROOT/control/lab.js" \
+   "$ROOT/control/admin.js" "$ROOT/control/metrics.js" "$BUILD/walks/control/" 2>/dev/null || true
 cp "$ROOT/config/robot.yaml"                       "$BUILD/walks/config/"
 cp "$ROOT/service/lambda/walks_handler.py"         "$BUILD/walks/"
 

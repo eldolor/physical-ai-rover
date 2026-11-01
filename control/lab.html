@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<title>vision-picar Lab</title>
+<!-- 3.132 Stage 4: the walks console and the metrics console as one page.
+     Published at /admin, /metrics and /lab (service/static/assets.json);
+     lab.js opens the tab the path names. ui.css is the project's tokens and
+     shared components, lab.css this page's own rules (tokens only). -->
+<link rel="stylesheet" href="ui.css">
+<link rel="stylesheet" href="lab.css">
+</head>
+<body>
+<div class="env-banner" id="env-banner" role="status"></div>
+
+<main class="lab">
+  <header class="lab-head">
+    <h1>Lab</h1>
+    <p class="lab-sub">Recorded walks, their scores and replays, and every mission's metrics.</p>
+  </header>
+
+  <section class="panel" aria-labelledby="conn-title">
+    <h2 class="section-label" id="conn-title">Connection</h2>
+    <label class="field-label" for="secret">Secret</label>
+    <div class="row">
+      <input class="text-input" type="password" id="secret" autocomplete="off"
+             autocapitalize="off" autocorrect="off" spellcheck="false"
+             aria-describedby="conn-status">
+      <!-- The two secrets on this account are both 43 characters, so in a
+           masked field they are indistinguishable and a refusal gives you
+           nothing to act on. Showing it is how you tell which one you pasted. -->
+      <button type="button" class="ghost" id="reveal" aria-pressed="false">Show</button>
+      <button type="button" class="primary" id="btn-connect">Connect</button>
+    </div>
+    <p class="status" id="conn-status" role="status">Not connected.</p>
+  </section>
+
+  <nav class="tabs" role="tablist" aria-label="Lab sections">
+    <a class="tab" role="tab" id="tab-walks" href="#walks" aria-controls="panel-walks"
+       aria-selected="true">Walks</a>
+    <a class="tab" role="tab" id="tab-metrics" href="#metrics" aria-controls="panel-metrics"
+       aria-selected="false" tabindex="-1">Metrics</a>
+  </nav>
+
+  <!-- ---------------- Walks ---------------- -->
+  <div class="tab-panel" role="tabpanel" id="panel-walks" aria-labelledby="tab-walks">
+    <section class="panel" id="summary-panel" hidden aria-labelledby="summary-title">
+      <h2 class="section-label" id="summary-title">By model</h2>
+      <p class="hint">Every scored walk and replay, grouped by model. A replay asks the
+        same frames again under another model, so its comparison is fair.</p>
+      <div id="summary"></div>
+    </section>
+
+    <section class="panel" aria-labelledby="walks-title">
+      <div class="row toolbar">
+        <h2 class="section-label" id="walks-title">Recordings</h2>
+        <span class="stats" id="stats-line"></span>
+        <button type="button" id="btn-refresh" disabled>Refresh</button>
+      </div>
+      <div class="filters">
+        <label class="filter filter-search">
+          <span class="field-label">Search</span>
+          <input class="text-input" type="search" id="search" placeholder="Walk name" disabled>
+        </label>
+        <label class="filter">
+          <span class="field-label">Label</span>
+          <select class="select-input" id="filter-label" disabled>
+            <option value="">Any</option>
+            <option value="none">No label</option>
+            <option value="good">good</option>
+            <option value="bad">bad</option>
+            <option value="training-ready">training-ready</option>
+          </select>
+        </label>
+        <label class="filter">
+          <span class="field-label">Score</span>
+          <select class="select-input" id="filter-score" disabled>
+            <option value="">Any</option>
+            <option value="scored">Scored</option>
+            <option value="unscored">Not scored</option>
+          </select>
+        </label>
+        <label class="filter">
+          <span class="field-label">Order</span>
+          <select class="select-input" id="sort" disabled>
+            <option value="name-desc">Newest first</option>
+            <option value="name-asc">Oldest first</option>
+            <option value="frames-desc">Most frames</option>
+            <option value="frames-asc">Fewest frames</option>
+          </select>
+        </label>
+      </div>
+      <!-- Scoring is a paid judge run on most deployments, so nothing scores
+           until a person asks (3.132 Stage 4); this button says how many are
+           waiting and asks with a cost first. -->
+      <div class="row pending-bar" id="pending-bar" hidden>
+        <span id="pending-count"></span>
+        <button type="button" id="btn-score-pending">Score them…</button>
+      </div>
+      <div class="row bulk-bar" id="bulk-bar" hidden>
+        <span id="bulk-count"></span>
+        <button type="button" class="danger" id="btn-bulk-delete">Delete selected</button>
+      </div>
+      <div id="walks"><p class="empty">Connect above to load recordings.</p></div>
+    </section>
+  </div>
+
+  <!-- ---------------- Metrics ---------------- -->
+  <div class="tab-panel" role="tabpanel" id="panel-metrics" aria-labelledby="tab-metrics" hidden>
+    <section class="panel">
+      <div class="row toolbar">
+        <h2 class="section-label">Tier metrics</h2>
+        <label class="filter filter-inline">
+          <span class="field-label">Window</span>
+          <select class="select-input" id="days">
+            <option value="7">7 days</option>
+            <option value="14" selected>14 days</option>
+            <option value="30">30 days</option>
+            <option value="90">90 days</option>
+          </select>
+        </label>
+        <button type="button" id="reload">Refresh</button>
+      </div>
+      <p class="hint">One row per mission: the robot's own perception against the
+        cloud's answers.</p>
+      <p class="prompt" id="metrics-prompt">Connect above to see the metrics.</p>
+      <div id="error" class="err" role="alert" hidden></div>
+    </section>
+
+    <div class="kpis" id="kpis"></div>
+
+    <section class="panel">
+      <h2 class="section-label">Cloud answer time</h2>
+      <p class="hint">Per mission, newest on the right. Each point is that run's own
+        percentile; percentiles of different runs are never averaged.</p>
+      <div class="legend">
+        <span><i class="dot dot-p50"></i>p50</span>
+        <span><i class="dot dot-p90"></i>p90</span>
+        <span><i class="dot dot-p99"></i>p99</span>
+      </div>
+      <div id="chart-cloud"></div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-label">On the robot</h2>
+      <p class="hint">Perception time per frame, and how often it saw the target.</p>
+      <div class="legend">
+        <span><i class="dot dot-local"></i>perception p50 (ms)</span>
+        <span><i class="dot dot-p90"></i>detected %</span>
+      </div>
+      <div id="chart-local"></div>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-label">Runs</h2>
+      <p class="hint">Newest first, each with the settings that produced it.</p>
+      <div class="runs-wrap" id="runs-wrap" tabindex="0" role="region" aria-label="Runs table">
+        <table id="runs"></table>
+      </div>
+      <p class="note" id="footnote"></p>
+    </section>
+  </div>
+</main>
+
+<!-- The slideshow: a modal dialog over the walk's frames. lab.js keeps the
+     keyboard inside it and gives focus back to the frame that opened it. -->
+<div class="slideshow" id="slideshow" role="dialog" aria-modal="true"
+     aria-label="Frame viewer">
+  <button type="button" class="slideshow-close" id="slideshow-close">Close</button>
+  <img id="slideshow-img" alt="">
+  <div class="slideshow-info">
+    <div class="frame-action" id="slideshow-action"></div>
+    <div class="frame-model" id="slideshow-model"></div>
+    <div id="slideshow-reasoning"></div>
+    <div class="status" id="slideshow-pos"></div>
+  </div>
+  <div class="slideshow-controls">
+    <button type="button" id="slideshow-prev">&larr; Prev</button>
+    <button type="button" id="slideshow-play">Play</button>
+    <button type="button" id="slideshow-next">Next &rarr;</button>
+  </div>
+</div>
+
+<!-- Every paid action asks here first, with what it will cost. -->
+<dialog class="confirm" id="confirm" aria-labelledby="confirm-title" aria-describedby="confirm-body">
+  <h2 id="confirm-title"></h2>
+  <div id="confirm-body"></div>
+  <div class="row confirm-actions">
+    <button type="button" class="ghost" id="confirm-cancel">Cancel</button>
+    <button type="button" class="primary" id="confirm-ok">Confirm</button>
+  </div>
+</dialog>
+
+<script src="lab.js"></script>
+<script src="admin.js"></script>
+<script src="metrics.js"></script>
+</body>
+</html>

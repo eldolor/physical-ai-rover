@@ -14,8 +14,8 @@ from pathlib import Path
 
 import pytest
 
-from tests.conftest import REPO_ROOT
-from tests.test_ui_admin import PHONE, WALKS, admin_server, browser, open_console  # noqa: F401
+from tests.test_ui_admin import (  # noqa: F401
+    PHONE, WALKS, admin_server, browser, open_console, open_metrics)
 
 sync_api = pytest.importorskip("playwright.sync_api")
 
@@ -27,22 +27,12 @@ def _shot(page, name):
         page.screenshot(path=str(Path(out) / f"376f-{name}.png"), full_page=True)
 
 
-def _metrics_page(browser, runs):
-    page = browser.new_context(viewport=PHONE).new_page()
-    root = Path(REPO_ROOT) / "control"
-
-    def serve(name):
-        kind = "text/html" if name.endswith(".html") else "application/javascript"
-        return lambda route: route.fulfill(status=200, body=(root / name).read_text(),
-                                           content_type=kind)
-    for name in ("metrics.html", "metrics.js"):
-        page.route(f"http://metrics.test/{name}", serve(name))
-    page.route("http://metrics.test/metrics/summary*", lambda route: route.fulfill(
+def _metrics_page(browser, admin_server, runs):  # noqa: F811
+    return open_metrics(browser, admin_server, lambda route: route.fulfill(
         status=200, content_type="application/json", body=json.dumps({"runs": runs, "days": 14})))
-    return page
 
 
-def test_f14_a_stored_target_is_text_not_markup(browser):
+def test_f14_a_stored_target_is_text_not_markup(browser, admin_server):  # noqa: F811
     """Red on dev: a target typed in the twin went into innerHTML, so it ran
     script in the page that holds the walks secret."""
     attack = '<img src=x onerror="window.__pwned=1">'
@@ -52,8 +42,7 @@ def test_f14_a_stored_target_is_text_not_markup(browser):
              # The fixes' review: a string count reaches the KPI cards too.
              "stats": {"cloud_ms": {"n": 1, "p50": attack, "p90": 1, "p99": 1},
                        "cloud_calls": attack, "frames": 2}}]
-    page = _metrics_page(browser, runs)
-    page.goto("http://metrics.test/metrics.html")
+    page = _metrics_page(browser, admin_server, runs)
     sync_api.expect(page.locator("td .pill")).to_have_count(1, timeout=5000)
     assert page.locator("#runs img, #kpis img").count() == 0
     assert page.evaluate("() => window.__pwned") is None

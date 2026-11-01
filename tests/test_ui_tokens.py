@@ -14,6 +14,8 @@ from tests.conftest import REPO_ROOT
 
 TWIN_CSS = REPO_ROOT / "web-twin" / "twin.css"
 UI_CSS = REPO_ROOT / "web-shared" / "ui.css"
+LAB_CSS = REPO_ROOT / "control" / "lab.css"
+METRICS_JS = REPO_ROOT / "control" / "metrics.js"
 
 # ---------- criterion 3: tokens only ----------
 
@@ -65,6 +67,22 @@ def test_the_twin_sheet_has_no_colour_literals():
     assert not bad, f"web-twin/twin.css must use ui.css tokens, found literals: {bad[:8]}"
 
 
+def test_the_lab_sheet_has_no_colour_literals():
+    """3.132 Stage 4, criterion 2: the Lab console's own sheet uses ui.css's
+    tokens, as the twin's does."""
+    bad = [(p, v) for p, v in declarations(LAB_CSS.read_text())
+           if colour_literals(v)]
+    assert not bad, f"control/lab.css must use ui.css tokens, found literals: {bad[:8]}"
+
+
+def test_the_metrics_charts_draw_in_tokens():
+    """The charts' series colours were hex literals in metrics.js; they are
+    read from the theme's tokens now, so they follow light and dark."""
+    code = re.sub(r"/\*.*?\*/|//[^\n]*", "", METRICS_JS.read_text(), flags=re.S)
+    assert not LITERAL.findall(code), LITERAL.findall(code)
+    assert 'token("--accent-primary")' in code
+
+
 def test_ui_css_keeps_literals_in_custom_properties_only():
     bad = [(p, v) for p, v in declarations(UI_CSS.read_text())
            if not p.startswith("--") and colour_literals(v)]
@@ -88,6 +106,6 @@ def test_no_color_mix_in_the_sheets():
     declaration whole -- the Guide edge glow, the found outline and the
     Robot-view zone tints vanished on an iOS 15 phone (3.132 Stage 1's bug
     pass). Tints are rgba tokens in ui.css instead."""
-    for sheet in (TWIN_CSS, UI_CSS):
+    for sheet in (TWIN_CSS, UI_CSS, LAB_CSS):
         css = re.sub(r"/\*.*?\*/", "", sheet.read_text(), flags=re.S)
         assert "color-mix(" not in css, sheet.name

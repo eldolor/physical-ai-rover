@@ -6,19 +6,22 @@ tests/test_review_376n2.py
 confirmed. Each test was written before its fix and seen to fail on `dev`
 for the reason it names. The page tests drive the real console in a real
 browser, its routes stubbed, as `tests/test_ui_admin.py` does.
+
+Since 3.132 Stage 4 the two consoles are tabs of one page (control/lab.html)
+and nothing paid starts without a confirm: the tests here that start a
+replay or a score answer it (`confirm`), and the scoring queue starts from
+"Score them" (`start_scoring`) where it used to start on its own.
 """
 
 import io
 import json
 import struct
 import zlib
-from pathlib import Path
 
 import pytest
 
-from tests.conftest import REPO_ROOT
 from tests.test_ui_admin import (  # noqa: F401  (fixtures)
-    DESKTOP, MODELS, PHONE, WALKS, admin_server, browser, sync_api)
+    DESKTOP, MODELS, PHONE, WALKS, admin_server, browser, confirm, open_metrics, sync_api)
 
 WALK = "red-backpack-opus-4-5-20260830-104705"
 
@@ -61,6 +64,12 @@ def _console(browser, admin_server, walks=None, *, evaluation=None, viewport=DES
     page.goto(admin_server + "/admin", wait_until="load")
     page.wait_for_selector(".walk", timeout=10_000)
     return page, errors
+
+
+def start_scoring(page):
+    """The queue the console used to start by itself on every page load."""
+    page.click("#btn-score-pending")
+    confirm(page)
 
 
 def _one_walk(**extra):
@@ -141,6 +150,7 @@ def test_a_replay_out_survives_a_search_and_lands_in_the_new_row(browser, admin_
     ])
     sel = page.locator(".replay-select").first
     sel.select_option(index=1)
+    confirm(page)
     page.wait_for_timeout(300)
     assert len(held) == 1
     page.fill("#search", "red")                          # rebuilds the rows
@@ -166,6 +176,7 @@ def test_a_queued_score_cannot_be_clicked_into_a_second_run(browser, admin_serve
 
     page, _ = _console(browser, admin_server, walks, evaluation=lambda r: held.append(r),
                        routes=[("**/evaluate", evaluate)])
+    start_scoring(page)
     btn = page.locator(".walk-actions button", has_text="Scoring")
     sync_api.expect(btn).to_be_disabled()
     btn.click(force=True)
@@ -183,6 +194,7 @@ def test_a_refresh_during_auto_scoring_keeps_the_scores(browser, admin_server):
     held = []
     walks = _one_walk(eval=None, finished=True)
     page, _ = _console(browser, admin_server, walks, evaluation=lambda r: held.append(r))
+    start_scoring(page)
     page.wait_for_timeout(200)
     page.click("#btn-refresh")
     page.wait_for_timeout(300)
@@ -367,18 +379,10 @@ def test_a_walk_with_no_time_sorts_last_both_ways(browser, admin_server):
     page.context.close()
 
 
-def test_the_metrics_page_paints_only_its_newest_load(browser):
+def test_the_metrics_page_paints_only_its_newest_load(browser, admin_server):
     """Overlapping loads had no order: 30 -> 90 -> 7 days drew the slow
     90-day answer under a "7" selector; and an error left the last window's
     numbers under it."""
-    page = browser.new_context(viewport=PHONE).new_page()
-    root = Path(REPO_ROOT) / "control"
-    def serve(name):
-        kind = "text/html" if name.endswith(".html") else "application/javascript"
-        return lambda route: route.fulfill(status=200, body=(root / name).read_text(),
-                                           content_type=kind)
-    for name in ("metrics.html", "metrics.js"):
-        page.route(f"http://metrics.test/{name}", serve(name))
     held = []
 
     def runs(n):
@@ -392,8 +396,7 @@ def test_the_metrics_page_paints_only_its_newest_load(browser):
             days = int(route.request.url.split("days=")[1].split("&")[0])
             _json(route, {"runs": runs(1 if days == 7 else 2), "days": days})
 
-    page.route("http://metrics.test/metrics/summary*", summary)
-    page.goto("http://metrics.test/metrics.html")
+    page = open_metrics(browser, admin_server, summary)
     sync_api.expect(page.locator("td .pill")).to_have_count(2, timeout=5000)
     page.select_option("#days", "90")
     page.wait_for_timeout(200)
@@ -404,8 +407,8 @@ def test_the_metrics_page_paints_only_its_newest_load(browser):
     page.wait_for_timeout(400)
     assert page.locator("td .pill").count() == 1
     # An error clears the last window's numbers.
-    page.unroute("http://metrics.test/metrics/summary*")
-    page.route("http://metrics.test/metrics/summary*",
+    page.unroute("**/metrics/summary*")
+    page.route("**/metrics/summary*",
                lambda r: _json(r, {"detail": "down"}, status=500))
     page.click("#reload")
     sync_api.expect(page.locator("#error")).to_be_visible()
@@ -529,9 +532,11 @@ def test_a_failed_manual_score_is_not_retried_by_itself(browser, admin_server):
     page, _ = _console(browser, admin_server, lists[0], evaluation=evaluation,
                        routes=[("**/recording/walks", walks),
                                ("**/evaluate", lambda r: _json(r, {"detail": "judge down"}, status=500))])
+    start_scoring(page)
     page.click("#btn-refresh")                           # brings the second walk mid-queue
     row = page.locator(".walk", has_text="qwen3")
     row.locator("button", has_text="Evaluate").click()
+    confirm(page)
     sync_api.expect(row.locator(".inline-err")).to_contain_text("Evaluate failed")
     for r in held:
         _json(r, {"score": 40})

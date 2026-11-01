@@ -1,6 +1,7 @@
 # Build context is the REPO ROOT -- control/admin_server.py needs
 # control/brain_config.py (just to read recording_dir out of
-# config/robot.yaml's brain: block) and control/admin.html. Copies the
+# config/robot.yaml's brain: block) and the Lab console's page (control/lab.html,
+# with web-shared/ui.css beside it, 3.132 Stage 4). Copies the
 # whole control/ package for simplicity, matching service/brain/'s and
 # service/twin/'s Dockerfiles, but this process never imports
 # brain_server.py, mission_runner.py, remote_robot.py, or drills.py --
@@ -22,6 +23,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY control/ /app/control/
 COPY config/ /app/config/
+COPY web-shared/ /app/web-shared/
 
 EXPOSE 8002
 

@@ -8,7 +8,7 @@ inline <script>, became its own file, and had no path until someone noticed
 the twin was inert.
 
 Moving to S3 changes the mechanism and not the failure. A file referenced by
-index.html or admin.html but absent from service/static/assets.json simply
+index.html or lab.html but absent from service/static/assets.json simply
 never gets uploaded, and CloudFront answers it with whatever the default
 behaviour does -- which for a missing key is a 403 or 404, on a page that
 otherwise rendered fine.
@@ -63,12 +63,12 @@ def test_every_file_the_twin_references_is_published():
         f"{missing}. They will 404 from CloudFront while working locally.")
 
 
-def test_every_file_the_admin_console_references_is_published():
+def test_every_file_the_lab_console_references_is_published():
     keys = {a["key"] for a in manifest()}
-    refs = referenced_paths(REPO_ROOT / "control" / "admin.html")
+    refs = referenced_paths(REPO_ROOT / "control" / "lab.html")
     missing = sorted(r for r in refs if r not in keys)
     assert not missing, (
-        f"control/admin.html references files not in service/static/assets.json: "
+        f"control/lab.html references files not in service/static/assets.json: "
         f"{missing}.")
 
 
@@ -94,19 +94,24 @@ def test_keys_mirror_the_reference_paths_exactly():
         assert ".." not in a["key"]
 
 
-def test_the_admin_page_keeps_its_extensionless_key():
-    """control/admin.html is served at /admin today and the console's own
-    links assume it. An `admin.html` key would move the console."""
-    entry = next(a for a in manifest() if a["src"] == "control/admin.html")
-    assert entry["key"] == "admin"
-    assert entry["type"].startswith("text/html"), (
-        "an extensionless key cannot have its content type guessed -- without "
-        "an explicit text/html the browser downloads the console instead of "
-        "rendering it")
+def test_the_lab_page_keeps_the_consoles_extensionless_keys():
+    """3.132 Stage 4: the walks console (/admin) and the metrics console
+    (/metrics) are one page, control/lab.html, published at both old
+    addresses and at /lab, so every link and bookmark still opens it. An
+    `admin.html` key would move the console."""
+    entries = [a for a in manifest() if a["src"] == "control/lab.html"]
+    assert sorted(a["key"] for a in entries) == ["admin", "lab", "metrics"]
+    for entry in entries:
+        assert entry["type"].startswith("text/html"), (
+            "an extensionless key cannot have its content type guessed -- without "
+            "an explicit text/html the browser downloads the console instead of "
+            "rendering it")
+        assert entry["cache"] == "none"
 
 
 @pytest.mark.parametrize("src", ["web-twin/app.js", "control/admin.js", "web-twin/index.html",
-                                 "web-shared/ui.css", "web-twin/twin.css", "web-twin/strings.js"])
+                                 "web-shared/ui.css", "web-twin/twin.css", "web-twin/strings.js",
+                                 "control/lab.js", "control/lab.css", "control/metrics.js"])
 def test_the_pages_and_scripts_are_served_no_cache(src):
     """This project deliberately does not use content-hashed filenames (see
     web-twin/app.js's banner), so a cached script is a stale UI that nobody
