@@ -221,3 +221,36 @@ def test_the_bridges_hold_names_are_the_robot_servers(bridge_mod):
     sent.discard(None)
     assert sent == set(bridge_faults.HOLDS), sent
     assert {bridge_mod.HOLD_NAV2, bridge_mod.HOLD_SLAM} == set(bridge_faults.HOLDS)
+
+
+# ---------- review round 1: a start that never ends is not a hold for ever ----------
+
+def test_a_nav2_start_past_the_bridges_ceiling_is_no_hold(bridge_mod):
+    """Both reviewers: a manager that dies before its first answer (no
+    respawn) read `nav2_starting` for the bridge's life. Past
+    START_HOLD_MAX_S from the bridge's own start it is an outage."""
+    m = _Manager(up=False)
+    b = _bridge(bridge_mod, m)
+    b._poll_nav2()
+    b._started_mono -= bridge_mod.START_HOLD_MAX_S - 1
+    _expect(b, "nav2_starting")
+    b._started_mono -= 2
+    _expect(b, None)
+
+
+def test_a_slam_start_past_the_bridges_ceiling_is_no_hold(bridge_mod):
+    """Thermos: a fresh start waits for its first pose with no timeout."""
+    b = _bridge(bridge_mod, _Manager())
+    b.slam_state = "starting"
+    b._started_mono -= bridge_mod.START_HOLD_MAX_S + 1
+    _expect(b, None)
+
+
+@pytest.mark.parametrize("state", ["checking", "remapping"])
+def test_bounded_slam_states_hold_whatever_the_bridges_age(bridge_mod, state):
+    """`checking` (the verdict's own timeout) and `remapping` (a re-map hours
+    in, with REMAP_READY_TIMEOUT_S) end by themselves; the ceiling is a start's."""
+    b = _bridge(bridge_mod, _Manager())
+    b.slam_state = state
+    b._started_mono -= bridge_mod.START_HOLD_MAX_S * 10
+    _expect(b, "slam_not_ready")
