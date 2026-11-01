@@ -21,9 +21,8 @@ import re
 import pytest
 
 from tests.conftest import REPO_ROOT
-from tests.twin_sources import (APP_JS, DYNAMIC, MODULE_DIR, REEXPORT, TWIN, code_only,
-                                imported_names, imports, module_graph, modules, specs,
-                                twin_scripts)
+from tests.twin_sources import (APP_JS, DYNAMIC, MODULE_DIR, REEXPORT, TWIN, imported_names,
+                                imports, module_graph, modules, specs, twin_scripts)
 
 
 def manifest() -> dict:
@@ -91,8 +90,11 @@ TARGET_END = re.compile(r"[\]}](?=\s*(?:=(?![=>])|(?:of|in)\b))")
 
 def destructuring_targets(code: str) -> list:
     """The bracketed spans that are written to: `[...] = `, `{...} = `,
-    `for ([...] of`, nested and with defaults. A declaration that shadows
-    (`const [x] = ...`) is included: conservative, and a smell anyway."""
+    `for ([...] of`, nested and with defaults; a subscript (`a[i] = `) is
+    not one. Run on the raw text, as every check here is: a comment or a
+    string can only cause a visible false alarm, never hide a write. A
+    declaration that shadows (`const [x] = ...`) is included: conservative,
+    and a smell anyway."""
     spans = []
     for m in TARGET_END.finditer(code):
         close = m.start()
@@ -107,6 +109,9 @@ def destructuring_targets(code: str) -> list:
                     break
             i -= 1
         if i >= 0 and code[i] == opener:
+            before = code[:i].rstrip()
+            if opener == "[" and before and (before[-1].isalnum() or before[-1] in "_$)]"):
+                continue  # a subscript: a[i] = ..., f()[i] in o
             spans.append(code[i:close + 1])
     return spans
 
@@ -117,7 +122,7 @@ STEP = r"(?<![\w$.])%s\s*(?:\+\+|--)|(?:\+\+|--)\s*%s(?![\w$])"
 def writes_to_imports(text: str) -> list:
     """Names `text` imports and also assigns."""
     hits = []
-    targets = destructuring_targets(code_only(text))
+    targets = destructuring_targets(text)
     for clause, _spec in imports(text):
         for name in imported_names(clause):
             n = re.escape(name)
@@ -162,17 +167,18 @@ def test_the_checks_catch_what_they_are_for(tmp_path):
         assert writes_to_imports('import { x } from "./js/a.js";\n' + bad) == ["x"], bad
     for fine in ("x === 1", "y = x", "o.x = 1", "f(x)", "xy = 1", "{ x: 1 }", "x => 1",
                  "[x].map(f)", "const o = { x };", "f([x])", "[x] === y", "for (const y of x) {}",
-                 "({ x: 1 } = o)", "const o = { a: x }; o.b = 1", "// [x] = y"):
+                 "({ x: 1 } = o)", "const o = { a: x }; o.b = 1", "arr[x] = 1",
+                 "if (map[x] in seen) {}", "f()[x] = 2"):
         assert writes_to_imports('import { x } from "./js/a.js";\n' + fine) == [], fine
 
 
 def test_no_twin_script_imports_at_run_time():
     """A dynamic import() is loaded at run time, so the walk above cannot
     follow it and its file could ship unpublished. The twin has none."""
-    bad = [p.name for p in twin_scripts() if DYNAMIC.search(code_only(p.read_text()))]
+    bad = [p.name for p in twin_scripts() if DYNAMIC.search(p.read_text())]
     assert not bad, f"dynamic imports: {bad}"
-    assert DYNAMIC.search(code_only('const m = await import("./js/x.js");'))
-    assert not DYNAMIC.search(code_only('// we never import ("./x.js") here\nconst s = "import (";'))
+    assert DYNAMIC.search('const re = /"/g; const m = await import("./js/x.js");')
+    assert not DYNAMIC.search("importScripts(a); reimport(b); o.import(c)")
     assert REEXPORT.findall('export { a } from "./b.js";\nexport * from "./c.js";') == ["./b.js", "./c.js"]
 
 
@@ -189,10 +195,14 @@ def upload_order(rows) -> list:
     for path, key in zip(modules(), mods):
         for spec in specs(path.read_text()):
             dep = (path.parent / spec).resolve().relative_to(TWIN.resolve()).as_posix()
-            if dep in keys and keys.index(dep) > keys.index(key):
+            if keys.index(dep) > keys.index(key):
                 bad.append(f"{key} goes up before {dep}, which it loads")
         if keys.index(key) > keys.index("app.js"):
             bad.append(f"{key} goes up after app.js, which imports it")
+        # index.html preloads every module: one not yet uploaded is a 403
+        # that CloudFront caches for seconds.
+        if keys.index(key) > keys.index("index.html"):
+            bad.append(f"{key} goes up after index.html, which preloads it")
     # The module tag must be live before app.js has an import line in it.
     if keys.index("index.html") > keys.index("app.js"):
         bad.append("index.html goes up after app.js, which it must load as a module")
@@ -208,10 +218,22 @@ def test_the_upload_order_puts_what_is_loaded_before_what_loads_it():
     fail on the order this stage first wrote."""
     rows = json.loads((REPO_ROOT / "service" / "static" / "assets.json").read_text())["assets"]
     assert not upload_order(rows)
+
+    def moved(key, to):
+        row = next(r for r in rows if r["key"] == key)
+        out = [r for r in rows if r is not row]
+        out.insert(to(out), row)
+        return out
+
+    index_at = lambda rows_: next(i for i, r in enumerate(rows_) if r["key"] == "index.html")
+    app_at = lambda rows_: next(i for i, r in enumerate(rows_) if r["key"] == "app.js")
+    # Planted: index.html after app.js; and, with modules, one after
+    # index.html, one after app.js, and ui.js before icons.js, which it imports.
+    assert upload_order(moved("index.html", lambda r: app_at(r) + 1))
     if modules():
-        first = next(r for r in rows if r["key"].startswith("js/"))
-        late = [r for r in rows if r is not first] + [first]
-        assert upload_order(late), "the check must catch a module uploaded last"
+        assert upload_order(moved("js/qr.js", lambda r: index_at(r) + 1))
+        assert upload_order(moved("js/qr.js", lambda r: app_at(r) + 1))
+        assert upload_order(moved("js/ui.js", lambda r: 0))
 
 
 PRELOAD = re.compile(r'<link rel="modulepreload" href="([^"]+)">')

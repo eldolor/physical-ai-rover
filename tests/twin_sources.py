@@ -38,33 +38,6 @@ def specs(text: str) -> list:
     return [s for _c, s in imports(text)] + REEXPORT.findall(text)
 
 
-def code_only(text: str) -> str:
-    """`text` with comments and string bodies blanked, for searches that
-    must not match prose (a comment that says "import (" is not one)."""
-    out, i, n = [], 0, len(text)
-    while i < n:
-        if text.startswith("//", i):
-            j = text.find("\n", i)
-            j = n if j < 0 else j
-            out.append(" " * (j - i))
-            i = j
-        elif text.startswith("/*", i):
-            j = text.find("*/", i + 2)
-            j = n if j < 0 else j + 2
-            out.append(re.sub(r"[^\n]", " ", text[i:j]))
-            i = j
-        elif text[i] in "'\"`":
-            q, j = text[i], i + 1
-            while j < n and text[j] != q:
-                j += 2 if text[j] == "\\" else 1
-            out.append(q + re.sub(r"[^\n]", " ", text[i + 1:j]) + q)
-            i = j + 1
-        else:
-            out.append(text[i])
-            i += 1
-    return "".join(out)
-
-
 def imported_names(clause: str) -> list:
     """The local names an import clause binds."""
     names = []
