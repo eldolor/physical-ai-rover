@@ -44,11 +44,11 @@ ENGINEER_WORDS = ["Remote brain", "control/brain_server.py", "What the drills pr
 OPERATOR_WORDS = ["Autopilot", "Autopilot connection", "The robot searches on its own"]
 
 
-def _connect_brain(page, twin_server):
+def _connect_brain(page, twin_server, running=True):
     page.route("**/brain-stub/health", lambda r: r.fulfill(
         status=200, content_type="application/json", body=_json(TIERED_BRAIN_HEALTH)))
     page.route("**/brain-stub/mission/status", lambda r: r.fulfill(
-        status=200, content_type="application/json", body=_json(tiered_status())))
+        status=200, content_type="application/json", body=_json(tiered_status(running=running))))
     page.click("#btn-settings")
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
@@ -110,5 +110,33 @@ def test_engineer_mode_loses_nothing_and_applies_live(browser, twin_server):  # 
     for words in OPERATOR_WORDS[::2]:
         assert words.lower() in sim_text, words
     assert page.evaluate("localStorage.getItem('vp_debug_readouts')") == "0"
+    assert not errors, errors
+    page.close()
+
+
+def test_a_saved_paid_policy_is_said_and_a_drill_never_starts_in_operator_mode(browser, twin_server):  # noqa: F811
+    """Both reviewers (3.132 Stage 2A): the policy and drill pickers are
+    Engineer mode's, so a vision policy saved there ran paid calls with
+    nothing on screen, and a drill picked there started from a person's
+    Start. Operator mode says what a paid policy costs beside Start, and
+    always starts a plain search."""
+    page, errors = open_twin(browser, twin_server, engineer=False)
+    page.evaluate("localStorage.setItem('vp_brain_policy', 'vision')")
+    page.reload(wait_until="networkidle")
+    starts = []
+    page.route("**/brain-stub/mission/start", lambda r: (starts.append(r.request.post_data_json),
+                                                         r.fulfill(status=200, content_type="application/json",
+                                                                   body=_json({"started": True}))))
+    _connect_brain(page, twin_server, running=False)
+    page.click('.tab-btn[data-tab="sim"]')
+    cost = page.locator("#brain-cost-hint")
+    sync_api.expect(cost).to_be_visible()
+    sync_api.expect(cost).to_contain_text("paid vision service at every step")
+    # A drill left selected in Engineer mode (hidden here) is not sent.
+    page.evaluate("document.getElementById('brain-fault').value = 'vision_error'")
+    page.click("#btn-brain-mission")
+    page.wait_for_timeout(500)
+    assert starts and starts[0].get("fault") == "none", starts
+    assert starts[0].get("policy") == "vision", starts      # the saved policy still runs -- and is said
     assert not errors, errors
     page.close()

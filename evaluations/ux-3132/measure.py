@@ -659,7 +659,9 @@ def t6_status(page, reqs, t):
     text = el.inner_text().strip()
     # The state shown must be the running mission's, not the idle default --
     # in either voice (amendment 9: operator mode says "Searching").
-    ok = bool(brain.get("running")) and ("running" in text.lower() or "searching" in text.lower())
+    # Exactly a running word at the start -- "Not running" (operator idle)
+    # must not pass (review).
+    ok = bool(brain.get("running")) and re.match(r"(running|searching)\b", text.strip().lower()) is not None
     return t.result(ok, scroll_px=scroll, text=text[:60], brain=brain)
 
 

@@ -23,36 +23,6 @@
 (function () {
   "use strict";
 
-  // 3.132 Stage 2A: the page's words, in two voices (web-twin/strings.js,
-  // loaded first). t(key, vars) answers in the operator voice, or Engineer
-  // mode's (today's wording) while that switch is on.
-  const t = window.twinStrings.t;
-  const engineerMode = window.twinStrings.engineer;
-  // A verb in words: "turn left" for a person, LEFT in Engineer mode.
-  function actionWords(action) {
-    return window.twinStrings.has("action." + action) ? t("action." + action) : action;
-  }
-  // An outcome the page has no end-state sentence for (running, failed...):
-  // the raw id in Engineer mode, as before, and a plain state otherwise.
-  const OUTCOME_KEYS = {
-    idle: "state.idle", running: "state.running", arrived_unconfirmed: "state.arrivedUnconfirmed",
-    room_reached: "state.roomReached", failed: "state.failed", blocked: "state.blocked",
-  };
-  // Who drives, for a person: "the autopilot", not `brain`. Engineer mode
-  // keeps the arbitration's own names.
-  const DRIVER_KEYS = {
-    brain: "driver.brain", "twin-dpad": "driver.dpad", "twin-local-brain": "driver.localBrain",
-    ros: "driver.ros", "teleop-operator": "driver.operator",
-  };
-  function driverWords(driver) {
-    if (engineerMode()) return driver;
-    return DRIVER_KEYS[driver] ? t(DRIVER_KEYS[driver]) : t("driver.someone");
-  }
-  function outcomeWords(outcome) {
-    if (engineerMode()) return outcome;
-    return OUTCOME_KEYS[outcome] ? t(OUTCOME_KEYS[outcome]) : t("state.other");
-  }
-
   // ---------- tester error capture ----------
   // Registered first, before any other statement in this file, so that a
   // failure during init is recorded too. These listeners used to sit near
@@ -85,6 +55,46 @@
       stack: reason && reason.stack,
     });
   });
+
+  // 3.132 Stage 2A: the page's words, in two voices (web-twin/strings.js,
+  // loaded first). t(key, vars) answers in the operator voice, or Engineer
+  // mode's (today's wording) while that switch is on.
+  // After the error capture, and with a stand-in: a strings.js that failed
+  // to load (a deploy that missed it, a stale cache) must cost the words,
+  // never the page -- the D-pad and STOP have to keep working (review).
+  const strings = window.twinStrings || {
+    t: function (key) { return key; }, has: function () { return false; },
+    engineer: function () { return document.body.classList.contains("debug-readouts"); },
+  };
+  if (!window.twinStrings) {
+    pushDebugLog({type: "error", message: "strings.js did not load; the page shows its keys"});
+  }
+  const t = strings.t;
+  const engineerMode = strings.engineer;
+  // A verb in words: "turn left" for a person, LEFT in Engineer mode.
+  function actionWords(action) {
+    return strings.has("action." + action) ? t("action." + action) : action;
+  }
+  // An outcome the page has no end-state sentence for (running, failed...):
+  // the raw id in Engineer mode, as before, and a plain state otherwise.
+  const OUTCOME_KEYS = {
+    idle: "state.idle", running: "state.running", arrived_unconfirmed: "state.arrivedUnconfirmed",
+    room_reached: "state.roomReached", failed: "state.failed", blocked: "state.blocked",
+  };
+  // Who drives, for a person: "the autopilot", not `brain`. Engineer mode
+  // keeps the arbitration's own names.
+  const DRIVER_KEYS = {
+    brain: "driver.brain", "twin-dpad": "driver.dpad", "twin-local-brain": "driver.localBrain",
+    ros: "driver.ros", "teleop-operator": "driver.operator",
+  };
+  function driverWords(driver) {
+    if (engineerMode()) return driver;
+    return DRIVER_KEYS[driver] ? t(DRIVER_KEYS[driver]) : t("driver.someone");
+  }
+  function outcomeWords(outcome) {
+    if (engineerMode()) return outcome;
+    return OUTCOME_KEYS[outcome] ? t(OUTCOME_KEYS[outcome]) : t("state.other");
+  }
 
   // ---------- icon system ----------
   // One inline-SVG icon set (stroke-based, currentColor, 24x24 viewBox)
@@ -1569,7 +1579,10 @@
       state.connected = false;
       setControlsEnabled(false);
       const failure = connectFailure(url, e, silent);
-      setConnStatus(statusEl, failure.state, failure.label, failure.detail);
+      setVoicedConnStatus(statusEl, function () {
+        const f = connectFailure(url, e, silent);
+        setConnStatus(statusEl, f.state, f.label, f.detail);
+      });
       if (!silent && failure.toast) showToast(failure.toast, "err");
     } finally {
       state.connecting = false;
@@ -1590,8 +1603,17 @@
   // textContent, which would blow away the dot and the structure.
   const CONN_STATE_CLASS = {ok: "is-ok", err: "is-err", busy: "is-busy", idle: ""};
 
+  // 3.132 Stage 2A: a status whose words depend on the voice is kept as the
+  // function that draws it, and drawn again when Engineer mode is switched
+  // (revoice()). Any plain setConnStatus() on the same element replaces it.
+  const voicedStatus = new Map();
+  function setVoicedConnStatus(el, draw) {
+    draw();
+    if (el) voicedStatus.set(el, draw);
+  }
   function setConnStatus(el, stateName, label, detail) {
     if (!el) return;
+    voicedStatus.delete(el);
     el.classList.remove("is-ok", "is-err", "is-busy");
     const cls = CONN_STATE_CLASS[stateName];
     if (cls) el.classList.add(cls);
@@ -2002,9 +2024,9 @@
   function lateWords(status) {
     const late = status && status.late_confirmation;
     if (!late) return "";
-    return window.twinStrings.has("late." + late.state)
+    return strings.has("late." + late.state)
       ? t("late." + late.state, {target: status.target_object || t("word.target")})
-      : (engineerMode() ? late.state : "");
+      : (engineerMode() ? late.state : t("late.unknown"));
   }
 
   // The sentence for an `arrived_unconfirmed` ending: what was checked
@@ -2061,7 +2083,7 @@
     setBrainText("brain-tel-outcome",
       (surveyStateText(status) || endStateText(status) || outcomeWords(outcome))
         + (status.fault && status.fault !== "none" && engineerMode() ? " (" + status.fault + " drill)" : "")
-        + (late ? " — " + late : ""),
+        + (late ? " — " + late.charAt(0).toLowerCase() + late.slice(1) : ""),
       surveyDone(status) ? "safe" : BRAIN_OUTCOME_CLASS[outcome]);
     // 3.70 E6: where an Out of budget or Cancelled mission looked.
     setBrainText("brain-tel-report",
@@ -2072,17 +2094,17 @@
     // R1: a turn names its size. "LEFT 23°" is a bearing-sized correction;
     // a bare "LEFT" is the executor's default quarter turn (a scan, or a
     // cloud answer with nothing local to size it by).
-    const t = status.turns || null;
-    const sized = t && t.last_turn_deg && (status.last_action === "LEFT" || status.last_action === "RIGHT");
+    const turns = status.turns || null;   // not `t`: that is the page's words (strings.js)
+    const sized = turns && turns.last_turn_deg && (status.last_action === "LEFT" || status.last_action === "RIGHT");
     setBrainText("brain-tel-action", sized
-      ? status.last_action + " " + t.last_turn_deg + "\u00B0" : status.last_action);
+      ? status.last_action + " " + turns.last_turn_deg + "\u00B0" : status.last_action);
     // Reversals alone reward a spin (the first watched run: 98 turns in 120
     // steps, all one way, "0 reversed"), so the share of steps spent
     // turning rides beside it and the runner's own spin verdict is shown.
-    setBrainText("brain-tel-turns", t
-      ? t.count + " of " + status.step + " steps, " + t.reversals
-        + " reversed the one before" + (t.spinning ? " \u2014 SPINNING IN PLACE" : "")
-      : null, t && t.spinning ? "alert" : null);
+    setBrainText("brain-tel-turns", turns
+      ? turns.count + " of " + status.step + " steps, " + turns.reversals
+        + " reversed the one before" + (turns.spinning ? " \u2014 SPINNING IN PLACE" : "")
+      : null, turns && turns.spinning ? "alert" : null);
     setBrainText("brain-tel-vision", status.vision_failures || 0,
       status.vision_failures ? "alert" : null);
     setBrainText("brain-tel-rooms",
@@ -2504,6 +2526,7 @@
     // null as "no such server field" would blank the readout on exactly
     // the server that supports it.
     if (!health || !("driver" in health)) {
+      state.lastAuthorityHealth = null;
       setBrainText("brain-tel-driver", null);
       setBrainText("brain-tel-refusal", null);
       return;
@@ -2538,6 +2561,7 @@
     if (!state.brainConnected) return;
     state.brainConnected = false;
     state.brainLost = true;
+    state.lastBrainStatus = null;     // 3.132: revoice() must not redraw it
     stopBrainPolling();
     setBrainText("brain-tel-outcome", t("state.brainLost"), "alert");
     setConnStatus(document.getElementById("brain-connection-status"), "err",
@@ -2834,6 +2858,14 @@
   // watchable (PLAN-onboard-perception.md 6.3) -- change the weights the
   // brain loads and this line changes with it.
   function renderBrainPolicyHint() {
+    // 3.132: operator mode hides the picker, so a saved paid policy says so
+    // beside Start (both reviewers: it ran with nothing on screen).
+    const cost = document.getElementById("brain-cost-hint");
+    if (cost) {
+      const paid = state.brainJob !== "survey" && isCloudPolicy(state.brainPolicy);
+      cost.style.display = paid ? "" : "none";
+      if (paid) cost.textContent = t(state.brainPolicy === "vision" ? "cost.vision" : "cost.tiered");
+    }
     const hint = document.getElementById("brain-policy-hint");
     if (!hint) return;
     if (state.brainJob === "survey" || !isCloudPolicy(state.brainPolicy)) {
@@ -2946,14 +2978,15 @@
     const target = document.getElementById("brain-target").value.trim() || "red backpack";
     const survey = state.brainJob === "survey";
     // A survey sends no drill: its picker is hidden, and may still hold one.
-    const fault = survey ? "none" : document.getElementById("brain-fault").value;
+    // 3.132: drills are Engineer mode's; a person's Start is never one (review).
+    const fault = survey || !engineerMode() ? "none" : document.getElementById("brain-fault").value;
     if (!survey) saveTargetToHistory(target);
     const btn = document.getElementById("btn-brain-mission");
     setButtonBusy(btn, true, "Starting\u2026");
     const body = survey ? { job: "survey", policy: "explore" }
       : { target_object: target, fault: fault, policy: state.brainPolicy };
     // 3.88 A: sent only when switched on, and only for explore's search.
-    if (state.brainAsk && (survey || state.brainPolicy === "explore")) body.explore_ask = true;
+    if (state.brainAsk && engineerMode() && (survey || state.brainPolicy === "explore")) body.explore_ask = true;
     // Sent only on the policy that reads them, and only when actually
     // picked: an absent field means "whatever the brain, and then the vision
     // service, defaults to". Sending null instead would be the same value
@@ -3069,8 +3102,10 @@
         clip: health.perception_clip_model || "unnamed encoder",
       } : null;
       prefSet(PREF.brainUrl, url);
-      setConnStatus(statusEl, "ok", "Connected" + (health.drills_allowed ? "" : " (drills disabled)"),
-        url + " \u2014 driving the robot at " + health.robot_url);
+      setVoicedConnStatus(statusEl, function () {
+        setConnStatus(statusEl, "ok", t(health.drills_allowed ? "brain.connectedLabel" : "brain.connectedNoDrills"),
+          t("brain.connectedDetail", {url: url, robot: health.robot_url}));
+      });
       if (!silent) showToast(t("brain.connected"), "ok");
       if (state.brainLost) {
         state.brainLost = false;
@@ -3094,22 +3129,26 @@
       if (e.status === 404 || e.status === 405) {
         // 3.64 D7r: no /health here -- most often a wrong tunnel prefix or
         // path in the URL -- so "is it running?" points the wrong way.
-        setConnStatus(statusEl, "err", "Not connected",
-          url + " answered HTTP " + e.status + said + ", but has no brain service "
-          + "there. Check the address and any tunnel path prefix.");
+        setVoicedConnStatus(statusEl, function () {
+          setConnStatus(statusEl, "err", "Not connected",
+            t("brain.notThereDetail", {url: url, status: e.status, said: said}));
+        });
         if (!silent) showToast(t("brain.notThere"), "err");
       } else if (!brainGone(e)) {
         // Something answered, and which thing cannot be told from here: the
         // brain itself, or a proxy or tunnel in front of it (two review
         // rounds tried to guess). Say what came back and where to look.
-        setConnStatus(statusEl, "err", "Not connected",
-          url + " answered HTTP " + e.status + said + ". Check the brain's log, and "
-          + "any proxy or tunnel in front of it.");
+        setVoicedConnStatus(statusEl, function () {
+          setConnStatus(statusEl, "err", "Not connected",
+            t("brain.errorDetail", {url: url, status: e.status, said: said}));
+        });
         if (!silent) showToast(t("brain.addressError"), "err");
       } else {
-        setConnStatus(statusEl, "err", "Not connected", silent
-          ? url + " didn't respond. Tap Connect to retry."
-          : "Could not reach " + url + " (" + e.message + "). Is control/brain_server.py running?");
+        setVoicedConnStatus(statusEl, function () {
+          setConnStatus(statusEl, "err", "Not connected", silent
+            ? t("brain.unreachableQuiet", {url: url})
+            : t("brain.unreachableDetail", {url: url, why: e.message}));
+        });
         if (!silent) showToast(t("brain.unreachable"), "err");
       }
     } finally {
@@ -3174,22 +3213,23 @@
       if (cross) {
         // Healthy and unusable. The distinction matters: retrying, changing
         // the secret, or restarting the service all do nothing here.
-        setConnStatus(statusEl, "err", "Reachable, but blocked by the browser",
-          url + " answered (" + (body.status || "ok") + "), but it is a "
-          + "different origin from this page (" + window.location.origin
-          + ") and publishes no CORS headers, so vision calls will fail as "
-          + "\u201cLoad failed\u201d. Open the twin from " + url + " instead.");
+        setVoicedConnStatus(statusEl, function () {
+          setConnStatus(statusEl, "err", "Reachable, but blocked by the browser",
+            t("vision.blockedDetail", {url: url, status: body.status || "ok", origin: window.location.origin}));
+        });
         if (!silent) showToast(t("vision.mustServe"), "err");
       } else {
-        setConnStatus(statusEl, "ok", "Connected",
-          url + " \u2014 same origin as this page, so vision calls are not preflighted.");
+        setVoicedConnStatus(statusEl, function () {
+          setConnStatus(statusEl, "ok", "Connected", t("vision.okDetail", {url: url}));
+        });
         if (!silent) showToast(t("vision.ok"), "ok");
       }
     } catch (e) {
-      setConnStatus(statusEl, "err", "Not reachable",
-        "Could not reach " + url + " (" + e.message + ")."
-        + (cross ? " It is also a different origin from this page, which "
-                 + "blocks vision calls even when the service is healthy." : ""));
+      setVoicedConnStatus(statusEl, function () {
+        setConnStatus(statusEl, "err", "Not reachable",
+          t("vision.unreachableDetail", {url: url, why: e.message,
+                                         cross: cross ? t("vision.crossNote") : ""}));
+      });
       if (!silent) showToast(t("vision.unreachable"), "err");
     } finally {
       setButtonBusy(btn, false);
@@ -3661,7 +3701,8 @@
       sub.textContent = t("drive.needsBrain");
       return;
     }
-    let text = t("drive.sub", {model: brainModelLabel()});
+    let text = t("drive.sub", {model: brainModelLabel()})
+      + t(state.drivePolicy === "tiered" ? "drive.costTiered" : "drive.costVision");
     if (state.drivePolicy === "tiered") {
       const p = state.brainPerception;
       text += p ? t("drive.perception", {detector: p.detector, clip: p.clip})
@@ -5974,8 +6015,14 @@
     renderRecordStatus();
     renderDriveViaBrainStatus();
     updateBrainControls();
-    if (state.lastBrainStatus) renderBrainStatus(state.lastBrainStatus);
-    if (state.lastAuthorityHealth) renderAuthority(state.lastAuthorityHealth);
+    renderBrainPolicyHint();
+    voicedStatus.forEach(function (draw) { draw(); });
+    // Only what is still current: a brain that stopped answering keeps its
+    // "unreachable" line, never its last good status (review).
+    if (state.brainConnected && !state.brainLost && state.lastBrainStatus) {
+      renderBrainStatus(state.lastBrainStatus);
+    }
+    if (state.connected && state.lastAuthorityHealth) renderAuthority(state.lastAuthorityHealth);
   }
   applyDebugReadouts(prefGet(PREF.debugReadouts) === "1");
   debugToggleEl.addEventListener("change", function () {
