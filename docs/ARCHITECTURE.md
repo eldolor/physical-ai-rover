@@ -106,9 +106,13 @@ by memory. Together they are why hardware day is a config change.
    Each can only slow or stop, never speed up, so they cannot disagree about
    what is allowed. Inside `robot/safety.py` the checks are also in series:
    the camera's path cone, the chassis' swept corridor against the scan,
-   and, since 3.74, the depth camera's floor band for what lies under the
-   lidar's plane. The stopping distance follows the speed a move was asked
+   a pivot guard for turns that close on a return, and, since 3.74, the
+   depth camera's floor band for what lies under the lidar's plane. No
+   wheel moves without fresh wheel feedback, and a stalled wheel stops. The stopping distance follows the speed a move was asked
    at (3.44). A detector may steer but never vetoes: measurement vetoes.
+   Who drives is arbitrated by rank (a Stop, then a person, then the brain
+   and nav2), and a person's Stop latches autonomy out -- the brain's
+   moves and goals are refused until a person starts a new mission (3.84).
    Spec: [safety](safety/ARCHITECTURE.md).
 
 **Rule 4 changed the hardware plan.** The original plan had a ROS plugin
@@ -243,9 +247,13 @@ inspected over HTTP, and the robot is only ever an HTTP client target
 (`control/remote_robot.py`, `control/remote_world.py`). Each mission tick
 asks a policy for one move:
 
-- **tiered** (the hardware path): local perception, a detector then CLIP
-  (`brain/perceive.py`), runs on every frame for free, and the cloud vision
-  model is called only on triggers (`brain/tiered.py`). Its choices are
+- **tiered** (the hardware path): identity in three tiers, cheapest
+  first (`brain/tiered.py`). An open-vocabulary detector (YOLOE) then CLIP
+  (`brain/perceive.py`) runs on every frame for free; a candidate's
+  question goes to the local VLM on the Jetson (Qwen2.5-VL-3B, 4-bit,
+  compiled with TensorRT Edge-LLM); the cloud VLM is asked only when the
+  local one cannot say or is absent. A lower tier never undoes a higher
+  one's answer. Its choices are
   small behavior trees (`brain/tree.py`); the hard rules (safety, a
   person's Stop, arrival, the failsafes) sit outside them, where no
   setting reaches.
@@ -380,14 +388,22 @@ start everything at boot:
 
 Only one session uses the board at a time, enforced by a lock (3.93).
 
-Platform: a Jetson Orin Nano Super on a Waveshare UGV Rover. Specs:
+The Jetson's 8 GB is shared by the CPU and GPU, and everything on the
+board lives inside it: perception, the local VLM, ROS and the robot stack.
+That budget is why the local VLM is the one process the kernel may kill:
+the robot loses a free answer, never its safety.
+
+Platform: a Jetson Orin Nano Super on a Waveshare UGV Rover (D500 lidar,
+OAK-D Lite depth camera, pan-tilt camera, ESP32 motor board). Specs:
 [platform](platform/ARCHITECTURE.md),
 [motor-board](motor-board/ARCHITECTURE.md).
 
 ## Around the robot
 
 - **[simulator](simulator/ARCHITECTURE.md)**: the grid-world sim, its
-  renderer, maps and movers; it drives the same API the car will. Beyond
+  renderer, maps and movers; it drives the same API the car will, with
+  sensor noise, and it emulates the Rover's motor-board firmware and the
+  D500's serial protocol on ptys so the car's own drivers run. Beyond
   the hand-drawn houses it loads 1,000 ProcTHOR floor plans as houses no
   policy was tuned to (3.66), and objects may sit below the lidar's plane
   so the floor band can be tested (3.74).
