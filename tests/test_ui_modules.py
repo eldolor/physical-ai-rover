@@ -132,3 +132,18 @@ def test_an_uncaught_error_reaches_the_debug_buffer(browser, twin_server):
         timeout=10_000)
     assert [e for e in errors if "planted for the buffer" not in e] == [], errors
     page.close()
+
+
+def test_saved_search_targets_are_offered_at_load(browser, twin_server):
+    """history.js (the recent search targets): init draws the saved list into
+    the shared <datalist>, which no other test reads. (Saving runs on every
+    Find start, which tests/test_ui_survey.py makes with no page error.)
+    Seen to fail with renderTargetHistory reading a name only app.js
+    declares."""
+    page, errors = open_twin(browser, twin_server)
+    page.evaluate("localStorage.setItem('vp_target_history', JSON.stringify(['blue mug', 'red backpack']))")
+    page.reload(wait_until="networkidle")
+    values = page.eval_on_selector_all("#target-history-list option", "os => os.map(o => o.value)")
+    assert values == ["blue mug", "red backpack"], values
+    assert errors == [], errors
+    page.close()
