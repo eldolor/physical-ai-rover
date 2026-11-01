@@ -81,8 +81,9 @@ def test_asks_in_flight_or_given_up_unanswered_are_starting(bridge_mod):
     _expect(b, "nav2_starting")
 
 
-def test_a_cold_start_holds_with_no_time_bar(bridge_mod):
-    """3.127 read a start past 60 s as ROS DOWN; the bridge has no bar."""
+def test_a_cold_start_holds_past_3127s_60_s(bridge_mod):
+    """3.127 read a start past 60 s as ROS DOWN; the bridge's own bar is
+    START_HOLD_MAX_S (300 s) from its start (review round 1)."""
     m = _Manager()
     b = _bridge(bridge_mod, m)
     b._poll_nav2()
@@ -150,14 +151,20 @@ def test_answered_not_active_before_active_is_no_hold_for_good(bridge_mod):
     _expect(b, None)
 
 
-def test_a_raised_call_before_active_is_no_hold_for_good(bridge_mod):
+def test_a_raised_call_during_a_start_is_not_an_answer(bridge_mod):
+    """Review round 2: a call that raises is the transport failing (a
+    respawn, a cancelled future), not the manager answering -- the start
+    goes on (within START_HOLD_MAX_S), and active still ends it."""
     m = _Manager()
     b = _bridge(bridge_mod, m)
     b._poll_nav2()
     _raise_on_answer(m)
-    _expect(b, None)
+    body = _expect(b, "nav2_starting")
+    assert "failed" in body["nav2"]["why"], body
     b._poll_nav2()
-    _give_up(b, bridge_mod)
+    m.answer(True)
+    b._poll_nav2()
+    _raise_on_answer(m)
     _expect(b, None)
 
 

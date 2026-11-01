@@ -130,6 +130,9 @@ HOLD_SLAM = "slam_not_ready"
 # The slam_state values that pass on their own (`failed` does not; `ready`
 # takes goals). tests/test_bridge_hold.py pins it to every state set below.
 SLAM_PASSING = ("starting", "checking", "remapping")
+# Of those, the ones only a start enters and whose wait has no timeout of its
+# own: bounded by START_HOLD_MAX_S below (review round 1).
+SLAM_BOUNDED_BY_START = ("starting",)
 # Review round 1 (both): a start that never ends -- a lifecycle manager that
 # dies before its first answer (nothing respawns it), a fresh slam_toolbox
 # that never places the robot (its wait has no timeout) -- is not a hold
@@ -286,6 +289,9 @@ class Bridge(Node):
         self._nav2_inactive_since = time.monotonic()
         # 3.133: when this bridge started, for START_HOLD_MAX_S.
         self._started_mono = time.monotonic()
+        # 3.133: the manager has replied (success true or false) at least
+        # once; a call that raised is not a reply (review round 2).
+        self._nav2_replied = False
         self._nav2_ask = None            # the ask in flight, under self.lock
         self._nav2_ask_since = 0.0       # monotonic
         self.create_timer(NAV2_ASK_S, self._poll_nav2)
@@ -726,15 +732,17 @@ class Bridge(Node):
         future.add_done_callback(self._on_nav2_answer)
 
     def _on_nav2_answer(self, future):
+        replied = True
         try:
             active = bool(future.result().success)
             why = None if active else "nav2's nodes are not active"
         except Exception as e:  # noqa: BLE001 -- a failed ask holds goals
-            active, why = False, f"{NAV2_MANAGER} failed: {e}"
+            active, why, replied = False, f"{NAV2_MANAGER} failed: {e}", False
         with self.lock:
             if future is not self._nav2_ask:
                 return                   # given up on, and asked again since
             self._nav2_ask = None
+            self._nav2_replied = self._nav2_replied or replied        # 3.133
             self._set_nav2(active, why, answered=True)
 
     def _set_nav2(self, active, why, answered=False):
@@ -752,20 +760,19 @@ class Bridge(Node):
 
     def _nav2_starting(self):
         """Under self.lock (3.133): nav2 is still in its start -- the manager
-        has never answered (a start reads as no manager, then unanswered
-        asks: Humble serves is_active in the group running its start-up),
-        inside the ceiling. The first answer of any kind ends it for good:
-        active (a later inactive is a crash or reset), not active (the
-        start-up returned and failed), or a call that raised."""
-        return self._nav2["answered_at"] is None and self._in_start()
+        has never replied (a start reads as no manager, then unanswered
+        asks: Humble serves is_active in the group running its start-up;
+        a call that raised is no reply), inside the ceiling. The first reply
+        ends it for good: active (a later inactive is a crash or reset), or
+        not active (the start-up returned and failed)."""
+        return not self._nav2_replied and self._in_start()
 
     def _slam_passing(self):
         """Under self.lock (3.133): a SLAM state that ends on its own --
         `checking` and `remapping` by their own timeouts, `starting` (whose
         first-pose wait has none) inside the start's ceiling."""
-        if self.slam_state == "starting":
-            return self._in_start()
-        return self.slam_state in SLAM_PASSING
+        return self.slam_state in SLAM_PASSING and (
+            self.slam_state not in SLAM_BOUNDED_BY_START or self._in_start())
 
     def _nav2_view(self):
         """Under self.lock: /health's `nav2`, ages not clock times (review)."""
