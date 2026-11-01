@@ -49,42 +49,35 @@ def classify(exc: Exception) -> dict:
     return {"bridge_status": None, "retryable": False}
 
 
-# 3.127: a goal the bridge HOLDS rather than fails -- its 503 body names the
-# hold (picar_bridge `_goal_refusal`): `nav2` (3.105, the lifecycle manager
-# not yet active) or `slam` (3.50.D3, slam_toolbox not `ready`). The robot
-# server refuses such a goal by this name instead of `ros_unavailable`; it
-# is retryable all the same (a 503). Only while the hold is a start's: the
-# bridge sends the same `nav2` body for a nav2 that never comes up, and the
-# same `slam` body for a SLAM that `failed` for good -- those stay outages.
+# 3.127: a goal the bridge HOLDS rather than fails is refused by the hold's
+# name instead of `ros_unavailable`; it is retryable all the same (a 503).
+# 3.133: the bridge names the hold itself -- its 503 body's `hold`
+# (picar_bridge `_goal_refusal`), set only for a state it knows will pass:
+# nav2 still in its start (never yet active, the manager never answered), or
+# slam_toolbox `starting`, `checking` or `remapping`. A crash, a reset, a
+# failed bring-up or SLAM `failed` is `null`: an outage. The same two names
+# as picar_bridge's HOLD_NAV2 / HOLD_SLAM (tests/test_bridge_hold.py).
 HOLD_NAV2 = "nav2_starting"
 HOLD_SLAM = "slam_not_ready"
-# nav2 inactive this long reads as down, not starting: 3.105 measured ~13 s
-# from a container start to active; 60 s is over four of those.
-NAV2_START_MAX_S = 60.0
-# The bridge's slam states that pass on their own (`failed` does not).
-SLAM_PASSING = ("starting", "checking", "remapping")
+HOLDS = (HOLD_NAV2, HOLD_SLAM)
 
 
 def hold_reason(exc: Exception) -> Optional[str]:
-    """`nav2_starting` / `slam_not_ready` for a bridge 503 whose JSON body
-    names a hold that will pass, else None (an outage or a setup fault)."""
+    """`nav2_starting` / `slam_not_ready` for a bridge 503 whose JSON body's
+    `hold` names one, else None (an outage or a setup fault).
+
+    A body with no `hold` -- a bridge image built before 3.133 -- is None,
+    as before 3.127, never 3.127's guess from the body's shape: that guess
+    is what read a crash as a start and a slow start as an outage, and the
+    only cost is the wording (a 503 is retryable either way)."""
     if not isinstance(exc, httpx.HTTPStatusError) or exc.response.status_code != 503:
         return None
     try:
         body = exc.response.json()
     except ValueError:
         return None
-    if not isinstance(body, dict):
-        return None
-    nav2 = body.get("nav2")
-    if isinstance(nav2, dict):
-        since = nav2.get("inactive_s")
-        starting = (isinstance(since, (int, float)) and not isinstance(since, bool)
-                    and 0 <= since <= NAV2_START_MAX_S)
-        return HOLD_NAV2 if starting else None
-    if body.get("slam") in SLAM_PASSING:
-        return HOLD_SLAM
-    return None
+    hold = body.get("hold") if isinstance(body, dict) else None
+    return hold if isinstance(hold, str) and hold in HOLDS else None
 
 
 def headers_for(fault: dict) -> dict:

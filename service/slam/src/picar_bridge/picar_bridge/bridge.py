@@ -121,6 +121,15 @@ NAV2_WAIT_S = 1.0
 NAV2_MANAGER = "/lifecycle_manager_navigation/is_active"
 NAV2_ASK_S = 0.5
 NAV2_ASK_TIMEOUT_S = 2.0
+# 3.133: a refused goal's 503 body names the hold (`hold`) when the bridge
+# knows it will pass on its own; the robot server reads it as the refusal's
+# reason (world/bridge_faults.py `hold_reason()`, which keeps the same two
+# names: tests/test_bridge_hold.py pins them equal). `null` is anything else.
+HOLD_NAV2 = "nav2_starting"
+HOLD_SLAM = "slam_not_ready"
+# The slam_state values that pass on their own (`failed` does not; `ready`
+# takes goals). tests/test_bridge_hold.py pins it to every state set below.
+SLAM_PASSING = ("starting", "checking", "remapping")
 # A goal nav2 has not accepted or rejected in this long never will be (its
 # navigator died after wait_for_server): it ends `aborted` (3.76 H1-2). While
 # pending, the robot server refuses every other autonomous driver and a
@@ -266,6 +275,12 @@ class Bridge(Node):
                                            callback_group=ReentrantCallbackGroup())
         self._nav2 = {"active": False, "why": "not asked yet", "answered_at": None}  # monotonic
         self._nav2_inactive_since = time.monotonic()
+        # 3.133: nav2 is still in its start -- never seen active, and the
+        # manager never answered (a start reads as no manager, then asks
+        # unanswered: Humble serves is_active in the group running its
+        # start-up). Cleared for good by the first answer of any kind; never
+        # set again in this bridge's life.
+        self._nav2_starting = True
         self._nav2_ask = None            # the ask in flight, under self.lock
         self._nav2_ask_since = 0.0       # monotonic
         self.create_timer(NAV2_ASK_S, self._poll_nav2)
@@ -571,7 +586,8 @@ class Bridge(Node):
             # judged -- a bad match swaps the whole frame.
             why = self.reload.get("error")
             return {"error": f"SLAM is not ready ({self.slam_state})" + (f": {why}" if why else ""),
-                    "slam": self.slam_state}
+                    "slam": self.slam_state,
+                    "hold": HOLD_SLAM if self.slam_state in SLAM_PASSING else None}   # 3.133
         if not self._nav2["active"]:
             return self._nav2_refusal()          # 3.105
         return None
@@ -718,6 +734,11 @@ class Bridge(Node):
 
     def _set_nav2(self, active, why, answered=False):
         """Under self.lock. Logs a change of state."""
+        if active or answered:
+            # 3.133: active ends the start; an answer of not active or a
+            # failed call means the start-up returned and failed. Either
+            # way a later inactive is no longer a start.
+            self._nav2_starting = False
         if active != self._nav2["active"]:
             self.get_logger().info("nav2 active: goals taken" if active
                                    else f"nav2 not active, goals held: {why}")
@@ -737,7 +758,8 @@ class Bridge(Node):
         """Under self.lock: the 503 body while goals are held."""
         nav2 = self._nav2_view()
         return {"error": "nav2 is not active" + (f": {nav2['why']}" if nav2["why"] else ""),
-                "nav2": nav2}
+                "nav2": nav2,
+                "hold": HOLD_NAV2 if self._nav2_starting else None}            # 3.133
 
     def _resend_cancels(self):
         """The bridge's own re-send of every cancel not yet answered by a
