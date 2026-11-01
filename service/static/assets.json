@@ -32,6 +32,7 @@
     {"src": "web-twin/js/icons.js",       "key": "js/icons.js",           "type": "application/javascript",         "cache": "none"},
     {"src": "web-twin/js/prefs.js",       "key": "js/prefs.js",           "type": "application/javascript",         "cache": "none"},
     {"src": "web-twin/js/ui.js",          "key": "js/ui.js",              "type": "application/javascript",         "cache": "none"},
+    {"src": "web-twin/js/debuglog.js",    "key": "js/debuglog.js",        "type": "application/javascript",         "cache": "none"},
     {"src": "web-shared/ui.css",                "key": "ui.css",                  "type": "text/css; charset=utf-8",        "cache": "none"},
     {"src": "web-twin/twin.css",                "key": "twin.css",                "type": "text/css; charset=utf-8",        "cache": "none"},
     {"src": "web-twin/manifest.json",           "key": "manifest.json",           "type": "application/manifest+json",      "cache": "day"},

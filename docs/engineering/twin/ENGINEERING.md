@@ -49,7 +49,8 @@ history · magic-link prefill.
 inline SVG set: `ICON`, `applyStaticIcons()`; the call stays in `app.js`) · `prefs.js` (the persisted
 preferences: `PREF`, `prefGet`, `prefSet`) · `ui.js` (the shared UI helpers:
 `escapeHtml`, `setEmptyState`, `clearEmptyState`, `LOG_EMPTY`, `showToast`,
-`setButtonBusy`).
+`setButtonBusy`) · `debuglog.js` (the error-capture buffer: `DEBUG_LOG_KEY`,
+`pushDebugLog`; its two listeners stay first in `app.js`).
 
 ## Interfaces
 
@@ -156,7 +157,7 @@ shared with the tunnel proxy").
 | `TURN_STEPS_DEG` | 15, 45, 90 (default 90) | deg | D-pad turn step | 90 is what every tap sent before R0 |
 | `MIN_DISTANCE_CM_FALLBACK` | 20 | cm | depth readout | Used only until `/health` supplies the server's value |
 | `QR_REVEAL_MS` | 60000 | ms | setup code | The QR is the secrets |
-| `DEBUG_LOG_MAX` | 20 | entries | debug capture | "Copy debug info" |
+| `DEBUG_LOG_MAX` | 20 | entries | `web-twin/js/debuglog.js` | "Copy debug info" |
 | `NGROK_HOST` | `(^\|\.)ngrok(-free)?\.(app\|dev\|io)$` | regex | `tunnelHeaders()` | Header only for tunnel hosts |
 | `DRIVER_DPAD` | `twin-dpad` | | `sendAction()` | M4 priority |
 
@@ -234,7 +235,7 @@ neighbours.
 | `tests/test_ui_tokens.py` | 5 | 3.132 Stage 1: `twin.css` holds no colour literal and `ui.css` holds them only in tokens (named colours included; the check is re-run on planted literals); the active Guide-me and Robot-view buttons reach 4.5:1 in both themes (red first: 1.39:1 dark, 1.02:1 light before). |
 | `tests/test_twin_strings.py` | 4 | 3.132 Stage 2A: every toast's words come from `strings.js`; the operator voice is plain; every key exists in both voices. Reads every twin script (`tests/twin_sources.py`). No browser. |
 | `tests/test_twin_modules.py` | 8+ | 3.132 Stage 2B: every module `app.js` reaches is published as JavaScript with cache `none`, lives in `web-twin/js/` and is reached; imports are relative; no module imports `app.js`; no file assigns a name it imports; the robot server serves each module, and only the folder, at the root and under the teleop prefix. Each check is re-run on a planted violation. |
-| `tests/test_ui_modules.py` | 4 | 3.132 Stage 2B: the page's own `window` properties are exactly `twinStrings` in both voices (and a planted global shows); every module imports in a module Web Worker, with no page (and planted page, storage and TDZ reads fail there); "Show setup code" draws the QR (qr.js, called nowhere else in the suite). |
+| `tests/test_ui_modules.py` | 5 | 3.132 Stage 2B: the page's own `window` properties are exactly `twinStrings` in both voices (and a planted global shows); every module imports in a module Web Worker, with no page (and planted page, storage and TDZ reads fail there); "Show setup code" draws the QR (qr.js, called nowhere else in the suite); an uncaught error reaches the debug buffer and Copy debug info reads it (debuglog.js). |
 | `tests/test_ui_operator_words.py` | 7 | Each ending's toast and Mission row in operator mode carry no jargon (red first: `arrived_unconfirmed` raw, a failure echoing "(B3.2)"). |
 | `tests/test_ui_engineer_mode.py` | 1 | Operator mode hides every `.eng-only` element and shows the `.op-only` wording; Engineer mode, flipped live, shows them all in the old words and back again; the setting keeps `vp_debug_readouts`. |
 | `tests/test_frame_source.py` | 3 | The readout says `server` for a real frame, and `none` (with nothing drawn) for a frame with no pixels |

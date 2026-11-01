@@ -28,6 +28,7 @@ import { qrEncode, qrRenderToCanvas } from "./js/qr.js";
 import { ICON, applyStaticIcons } from "./js/icons.js";
 import { PREF, prefGet, prefSet } from "./js/prefs.js";
 import { escapeHtml, setEmptyState, clearEmptyState, LOG_EMPTY, showToast, setButtonBusy } from "./js/ui.js";
+import { DEBUG_LOG_KEY, pushDebugLog } from "./js/debuglog.js";
 
 (function () {
   "use strict";
@@ -39,15 +40,6 @@ import { escapeHtml, setEmptyState, clearEmptyState, LOG_EMPTY, showToast, setBu
   // nowhere -- and an init failure is precisely the kind of "it just looked
   // broken" report this buffer exists to explain. "Copy debug info" in
   // Settings reads it back.
-  const DEBUG_LOG_KEY = "vp_debug_log";
-  const DEBUG_LOG_MAX = 20;
-  function pushDebugLog(entry) {
-    try {
-      const log = JSON.parse(localStorage.getItem(DEBUG_LOG_KEY) || "[]");
-      log.push(Object.assign({ t: new Date().toISOString() }, entry));
-      localStorage.setItem(DEBUG_LOG_KEY, JSON.stringify(log.slice(-DEBUG_LOG_MAX)));
-    } catch (e) { /* best-effort -- never let logging itself throw */ }
-  }
   window.addEventListener("error", function (e) {
     pushDebugLog({
       type: "error",

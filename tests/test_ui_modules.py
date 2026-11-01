@@ -113,3 +113,22 @@ def test_the_setup_code_still_draws(browser, twin_server):
     assert page.locator(".toast.err").count() == 0
     assert errors == [], errors
     page.close()
+
+
+def test_an_uncaught_error_reaches_the_debug_buffer(browser, twin_server):
+    """debuglog.js (the error-capture buffer) is written only by app.js's
+    listeners and read only by "Copy debug info"; no other test touches
+    either. Seen to fail with pushDebugLog reading a name only app.js
+    declares (its own try swallows the error, so nothing is recorded)."""
+    page, errors = open_twin(browser, twin_server)
+    page.evaluate("setTimeout(() => { throw new Error('planted for the buffer'); }, 0)")
+    page.wait_for_function(
+        "() => (localStorage.getItem('vp_debug_log') || '').includes('planted for the buffer')",
+        timeout=10_000)
+    page.click("#btn-settings")
+    page.click("#btn-copy-debug")
+    page.wait_for_function(
+        "() => document.getElementById('copy-debug-status').textContent.length > 0",
+        timeout=10_000)
+    assert [e for e in errors if "planted for the buffer" not in e] == [], errors
+    page.close()
