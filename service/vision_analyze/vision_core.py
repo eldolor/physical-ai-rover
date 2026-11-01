@@ -455,9 +455,9 @@ def _needs_shrinking(image_bytes: bytes) -> bool:
 
 
 def describe_image_bytes(image_bytes: bytes, media_type: str = "image/jpeg") -> dict:
-    client = _get_client(ANALYZE_MODEL_ID)
-
     image_bytes, fmt = _prepare_image(image_bytes, media_type)
+
+    client = _get_client(ANALYZE_MODEL_ID)
 
     response = _converse(client,
         modelId=ANALYZE_MODEL_ID,
@@ -1012,9 +1012,9 @@ def describe_image_bytes_navigate(
     prompt_variant: str | None = None,
 ) -> dict:
     model_id = model_id or NAVIGATE_MODEL_ID
-    client = _get_client(model_id)
-
     image_bytes, fmt = _prepare_image(image_bytes, media_type)
+
+    client = _get_client(model_id)
 
     note = ""
     if searched_rooms:
@@ -1186,9 +1186,9 @@ _GUIDANCE_PROXIMITIES = ("near", "medium", "far", "unknown")
 
 
 def describe_image_bytes_guidance(image_bytes: bytes, target_object: str, media_type: str = "image/jpeg") -> dict:
-    client = _get_client(GUIDANCE_MODEL_ID)
-
     image_bytes, fmt = _prepare_image(image_bytes, media_type)
+
+    client = _get_client(GUIDANCE_MODEL_ID)
 
     response = _converse(client,
         modelId=GUIDANCE_MODEL_ID,
@@ -1262,9 +1262,9 @@ def describe_image_bytes_person(image_bytes: bytes, media_type: str = "image/jpe
     describe_image_bytes_navigate()/_guidance() were added -- the robot's
     schema is consumed elsewhere and must not shift underneath it.
     """
-    client = _get_client(MODEL_ID)
-
     image_bytes, fmt = _prepare_image(image_bytes, media_type)
+
+    client = _get_client(MODEL_ID)
 
     response = _converse(client,
         modelId=MODEL_ID,
@@ -1351,9 +1351,9 @@ _ROOM_UNCLEAR = ("unclear", "unknown", "none", "n/a")
 
 
 def describe_image_bytes_room(image_bytes: bytes, media_type: str = "image/jpeg") -> dict:
-    client = _get_client(ROOM_MODEL_ID)
-
     image_bytes, fmt = _prepare_image(image_bytes, media_type)
+
+    client = _get_client(ROOM_MODEL_ID)
 
     extra = {}
     if ROOM_MODEL_ID in ROOM_EFFORT_MODELS:

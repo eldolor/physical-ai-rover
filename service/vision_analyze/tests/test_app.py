@@ -117,10 +117,36 @@ def test_analyze_bad_base64_is_a_400(client):
     assert resp.status_code == 400
 
 
+def _no_client(*a, **kw):
+    # boto3 on a host with no AWS region (the Jetson): creating the client
+    # raises before any call is made.
+    raise RuntimeError("You must specify a region.")
+
+
 def test_analyze_oversized_image_is_a_413(client, monkeypatch):
     monkeypatch.setattr(app_module.vision_core, "MAX_IMAGE_BYTES", 4)
+    monkeypatch.setattr(app_module.vision_core, "_get_client", _no_client)
     resp = client.post("/analyze", json={"image_base64": IMAGE_B64})
     assert resp.status_code == 413
+
+
+@pytest.mark.parametrize("call", [
+    lambda vc, b: vc.describe_image_bytes(b),
+    lambda vc, b: vc.describe_image_bytes_navigate(b, "red backpack"),
+    lambda vc, b: vc.describe_image_bytes_guidance(b, "red backpack"),
+    lambda vc, b: vc.describe_image_bytes_person(b),
+    lambda vc, b: vc.describe_image_bytes_room(b),
+], ids=["analyze", "navigate", "guidance", "person", "room"])
+def test_the_image_is_checked_before_a_client_is_made(monkeypatch, call):
+    """The caller's image is judged before Bedrock's client exists, so a
+    too-large image is the caller's 413 even where no client can be made
+    (found on the Jetson, 2026-11-01: a 502 from a host with no region)."""
+    vc = app_module.vision_core
+    monkeypatch.setattr(vc, "MAX_IMAGE_BYTES", 4)
+    monkeypatch.setattr(vc, "_get_client", _no_client)
+    with pytest.raises(vc.ImageRejected) as e:
+        call(vc, base64.b64decode(IMAGE_B64))
+    assert e.value.status == 413
 
 
 def test_analyze_a_vision_failure_is_a_502_not_a_crash(client, monkeypatch):

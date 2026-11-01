@@ -61,3 +61,15 @@ def test_frames_report_the_partly_visible_object_and_not_the_hidden_one():
     world.x, world.y, world.theta = PX, PY, VIEW
     labels = {d["label"] for d in world.frame_description()["detections"]}
     assert labels == {"red backpack"}, labels
+
+
+def test_a_bearing_that_rounds_to_zero_is_positive_zero(monkeypatch):
+    """ARM's libm puts a dead-ahead object a hair below zero where x86 puts
+    it above; rounded, that was -0.0 on the Jetson, which moved the sim's
+    fingerprint (tests/test_sim_fingerprint.py) on that board only."""
+    monkeypatch.setattr(renderer, "visible_bearing", lambda *a, **kw: -1e-12)
+    world = GridWorld(layout=LAYOUT, rooms={}, objects={(5, 3): "red backpack"},
+                      robot_x=1, robot_y=2)
+    world.x, world.y, world.theta = PX, PY, VIEW
+    [det] = world.frame_description()["detections"]
+    assert math.copysign(1.0, det["bearing_deg"]) == 1.0, det

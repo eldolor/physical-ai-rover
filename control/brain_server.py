@@ -262,6 +262,25 @@ def _validate_navigate_choices(model_id: Optional[str], prompt_variant: Optional
 CLOUD_POLICIES = ("vision", "tiered")
 
 
+async def _tick_within(work, timeout_s: float):
+    """`await asyncio.wait_for(work, timeout_s)`, except that a cancel is
+    never lost. Python 3.10's wait_for (the Jetson's) returns the result when
+    the work finished in the same loop turn as the cancel, swallowing it:
+    a Stop that landed as a tick ended left the mission running (found on
+    the board, 2026-11-01). asyncio.wait raises the cancel on every version.
+    The tick's thread runs on either way, as it did under wait_for."""
+    fut = asyncio.ensure_future(work)
+    try:
+        done, _ = await asyncio.wait({fut}, timeout=timeout_s)
+    except asyncio.CancelledError:
+        fut.cancel()
+        raise
+    if not done:
+        fut.cancel()
+        raise asyncio.TimeoutError
+    return fut.result()
+
+
 def _perception_available() -> bool:
     """Whether this process COULD build a tiered mission's pipeline.
 
@@ -988,9 +1007,7 @@ def create_app(
         try:
             while runner.is_running():
                 try:
-                    await asyncio.wait_for(
-                        asyncio.to_thread(runner.tick), timeout=state["tick_timeout_s"]
-                    )
+                    await _tick_within(asyncio.to_thread(runner.tick), state["tick_timeout_s"])
                 except asyncio.TimeoutError:
                     # The tick thread is abandoned, still running, possibly
                     # forever. abort() stops the car on this thread rather

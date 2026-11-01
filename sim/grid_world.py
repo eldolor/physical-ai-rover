@@ -851,7 +851,10 @@ class GridWorld:
             b = renderer.visible_bearing(self.layout, self.x, self.y, view, cell, solid=others)
             if b is not None and (self.low_detector is None or cell not in low
                                   or self.low_detector.keep()):
-                out.append((dist, {"label": name, "bearing_deg": round(math.degrees(b), 2),
+                # `+ 0.0`: a bearing that rounds to zero is 0.0, never -0.0.
+                # ARM's libm lands a hair below zero where x86 lands above,
+                # and -0.0 changed the sim's fingerprint on the Jetson.
+                out.append((dist, {"label": name, "bearing_deg": round(math.degrees(b), 2) + 0.0,
                                    "distance_m": round(dist * 0.30, 3)}))
         if self.low_detector is not None:
             extra = self.low_detector.spurious_detection(renderer.FPV_FOV)
