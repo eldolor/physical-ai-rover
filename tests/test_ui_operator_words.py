@@ -75,7 +75,7 @@ def ended(case):
 @pytest.mark.parametrize("case", list(ENDINGS))
 def test_each_ending_is_told_in_plain_words(browser, twin_server, case):  # noqa: F811
     current = {"body": tiered_status()}     # running, so the panel polls
-    page, errors = open_twin(browser, twin_server)
+    page, errors = open_twin(browser, twin_server, engineer=False)
     page.route("**/brain-stub/health", lambda route: route.fulfill(
         status=200, content_type="application/json", body=_json(TIERED_BRAIN_HEALTH)))
     page.route("**/brain-stub/mission/status", lambda route: route.fulfill(

@@ -53,7 +53,7 @@ CONTRAST = r"""(sel) => {
 
 @pytest.mark.parametrize("scheme", ["dark", "light"])
 def test_the_active_mode_button_is_readable(browser, twin_server, scheme):  # noqa: F811
-    page, errors = open_twin(browser, twin_server)
+    page, errors = open_twin(browser, twin_server, engineer=False)
     page.emulate_media(color_scheme=scheme, reduced_motion="reduce")
     for active in ("#btn-mode-robot", "#btn-mode-guide"):
         page.click(active)
