@@ -32,8 +32,7 @@ in the same commit as the code. For a button-by-button walkthrough, see
 | `robot/server.py` | Serves the page locally: `GET /`, `/app.js`, `/strings.js`, `/ui.css`, `/twin.css`, `/js/{name}`, `/manifest.json`, `/icons/*.png`. The scripts and stylesheets send `Cache-Control: no-cache`; `GET /` is a plain `FileResponse` with no `Cache-Control`, so locally the HTML may be reused from cache (heuristically) against a fresh script. |
 
 **`app.js` sections, in file order:** tester error capture (registered
-first) · `applyStaticIcons()`'s call · twin state · persisted
-preferences · shared UI helpers · robot server client (`apiGet`, `apiPost`,
+first) · `applyStaticIcons()`'s call · twin state · shared UI helpers · robot server client (`apiGet`, `apiPost`,
 `sendAction`, `tunnelHeaders`) · vision URL helper (`deriveServiceUrl`,
 endpoint mismatch notes) · M2 depth grid · odometry · N1 world model (map,
 pose, SLAM error, tap-to-goal) · action execution · R0 turn step ·
@@ -47,7 +46,8 @@ history · magic-link prefill.
 
 **Moved into `web-twin/js/` (3.132 Stage 2B), in the order moved:**
 `qr.js` (the QR encoder: `qrEncode`, `qrRenderToCanvas`) · `icons.js` (the
-inline SVG set: `ICON`, `applyStaticIcons()`; the call stays in `app.js`).
+inline SVG set: `ICON`, `applyStaticIcons()`; the call stays in `app.js`) · `prefs.js` (the persisted
+preferences: `PREF`, `prefGet`, `prefSet`).
 
 ## Interfaces
 
@@ -108,7 +108,7 @@ origin without that service's own secret drops the secret saved for it**
 Before 3.76 the saved secret stayed and the load-time auto-connect sent
 it to whatever host the link named.
 
-**Persisted preferences** (in `localStorage`): through `PREF`,
+**Persisted preferences** (in `localStorage`): through `PREF` (`web-twin/js/prefs.js`),
 `vp_server_url`, `vp_brain_url`, `vp_cfg_server_secret` (robot secret),
 `vp_vision_url`, `vp_cfg_secret` (vision secret), `vp_active_tab`,
 `vp_guide_muted`, `vp_guide_onboarded`, `vp_guide_rotate_dismissed`,
