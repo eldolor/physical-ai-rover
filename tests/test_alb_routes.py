@@ -111,6 +111,15 @@ INTENTIONALLY_UNROUTED = {
     # group whose health check hits the task directly, so this alias has no
     # job here -- same reasoning as ("admin.yaml", "/health") above.
     ("admin.yaml", "/recording/health"),
+    # 3.132 Stage 4: the Lab console's page, scripts and stylesheets. Served
+    # from S3 by CloudFront since these stacks were deleted 2026-09-05; the
+    # FastAPI routes are for local `uvicorn control.admin_server:app` only.
+    ("admin.yaml", "/lab"),
+    ("admin.yaml", "/lab.js"),
+    ("admin.yaml", "/lab.css"),
+    ("admin.yaml", "/ui.css"),
+    ("admin.yaml", "/metrics"),
+    ("admin.yaml", "/metrics.js"),
 }
 
 
