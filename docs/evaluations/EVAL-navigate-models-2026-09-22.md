@@ -38,7 +38,8 @@ robot-camera frames.**
 
 ### The system
 
-`vision-picar` is an indoor autonomous robot project. A camera frame goes to
+The Physical AI Autonomous Rover (code name `vision-picar`) is an indoor
+autonomous robot project. A camera frame goes to
 a cloud vision-language model, which answers a fixed set of questions about
 the scene — *is the target visible? which way? is the path clear? what should
 the robot do next?* — and returns a single action (`FORWARD`, `LEFT`,

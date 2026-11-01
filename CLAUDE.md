@@ -1,4 +1,4 @@
-# vision-picar
+# Physical AI Autonomous Rover (code name vision-picar)
 
 Orientation for a Claude Code session; Claude Code loads this file
 automatically. It states what is true now. Every per-phase record lives in

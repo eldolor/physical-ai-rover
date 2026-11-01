@@ -845,7 +845,7 @@ discrete driving that text was aspirational, because nothing was moving to hold
 a goal *for*. **It is operational now.** The reactive tier stops being the
 interesting future half of this plan and becomes the thing that drives the car.
 
-2.1's diagnosis -- *"vision-picar collapses all three rates into one"* -- was a
+2.1's diagnosis -- *"the rover collapses all three rates into one"* -- was a
 description of a design smell. It is now a blocker.
 
 #### 2. The accelerator stops being deferrable
@@ -1547,7 +1547,7 @@ Microduck separates three, and the separation is the point:
                            sends intents; never trusted to execute them
 ```
 
-**vision-picar collapses all three into one.** A single cloud `/navigate` call
+**The rover collapses all three into one.** A single cloud `/navigate` call
 is asked for bearing *and* distance *and* the next action, at 1-3s, and its
 answer drives the robot.
 
@@ -1700,7 +1700,7 @@ and 4.2's two CLIP paths, walked through once.
 | **CLIP** | robot, Hailo | ms per crop | *is this crop the thing we want?* -- against arbitrary text |
 | **the VLM** (Opus 4.5) | AWS, `service/vision_analyze/` | ~3.6 s/step, paid | *what should we do about it?* -- reasoning, in sentences |
 
-**The failure this prevents is the one vision-picar has today**: 2.1's
+**The failure this prevents is the one the rover has today**: 2.1's
 *"collapses all three into one"* -- a single cloud call asked for bearing and
 distance and the next action at 1-3s, with its answer driving the robot.
 

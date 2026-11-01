@@ -8,7 +8,7 @@ eight comparison images, is the artifact "Qwen vs Gemma on the Jetson"
 
 ## Why this experiment
 
-vision-picar is an indoor robot that searches a house for a named object.
+The Physical AI Autonomous Rover is an indoor robot that searches a house for a named object.
 Small models on its Jetson look at every frame for free and steer; a
 cloud model is asked only at key moments. A search drives past most of the
 house and then forgets everything but the target. The object inventory

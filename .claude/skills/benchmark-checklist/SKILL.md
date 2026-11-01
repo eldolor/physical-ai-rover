@@ -4,7 +4,7 @@ description: "Vet a measured number from this project (a replay matrix cell, a w
 disable-model-invocation: true
 ---
 
-# Benchmark checklist (vision-picar)
+# Benchmark checklist (Physical AI Autonomous Rover)
 
 Adapted from the `benchmark-checklist` skill in Cursor's pStack pack
 (github.com/cursor/plugins, `pstack/skills/benchmark-checklist`, MIT,

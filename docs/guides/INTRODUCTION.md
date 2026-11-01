@@ -1,6 +1,6 @@
 # Teaching a Car to Look
 
-**vision-picar: an introduction**
+**The Physical AI Autonomous Rover: an introduction**
 
 A small robot you can ask to find something in your house. It looks around,
 works out where the thing might be, and drives there without bumping into
