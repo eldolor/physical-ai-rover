@@ -82,6 +82,8 @@ def test_a_map_tap_during_a_start_up_hold_is_information_not_an_error(
     sync_api.expect(toast).to_have_count(1, timeout=3000)
     assert page.locator(".toast.err").count() == 0, page.locator(".toast.err").all_text_contents()
     assert "503" not in toast.text_content()
+    # 3.134: only a start is this hold since 3.133 (red on dev d46c5173).
+    assert "restart" not in toast.text_content().lower(), toast.text_content()
     if reply is NAV2_REPLY and os.environ.get("UI_SHOTS"):
         page.wait_for_timeout(400)         # past the toast's entrance
         _shot(page, "3127-nav2-toast.png")

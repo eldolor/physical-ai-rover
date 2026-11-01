@@ -157,3 +157,12 @@ def test_the_checks_catch_what_they_are_for():
     assert jargon_hits("Mission arrived_unconfirmed")
     assert jargon_hits("vision service hung (B3.2)")
     assert not jargon_hits("Reached it, but could not double-check it.")
+
+
+def test_the_nav2_hold_says_only_a_start():
+    """3.134: since 3.133 the bridge refuses `nav2_starting` only during a
+    start; a nav2 that restarts after being active is `ros_unavailable`. No
+    voice may call the hold a restart. Red on dev d46c5173 (Engineer)."""
+    for voice, words in table().items():
+        text = words.get("goal.hold.nav2_starting", "")
+        assert text and "restart" not in text.lower(), (voice, text)
