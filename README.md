@@ -1,6 +1,9 @@
-# vision-picar
+# Physical AI Autonomous Rover
 
-**A robot car that finds things by looking.**
+**Vision-language perception, SLAM and reinforcement learning for
+autonomous object search.**
+
+A robot car that finds things by looking.
 
 Say "find my red backpack". The robot drives off, searches the house room
 by room, recognises the backpack when it sees it, and stops in front of it.
