@@ -227,13 +227,30 @@ def test_the_bridges_hold_names_are_the_robot_servers(bridge_mod):
     sent |= set(re.findall(r'"hold":\s*"([a-z_]+)"', BRIDGE_SRC.read_text()))
     sent.discard(None)
     assert sent == set(bridge_faults.HOLDS), sent
-    # Thermos round 2: every `hold` key in the source is one of the two
+    # Thermos round 2: every quoted `hold` key in the source is one of the
     # dict-literal forms read above, so a name set another way
-    # (body["hold"] = ..., dict(hold=...)) fails here, not quietly.
+    # (body["hold"] = ...) fails here, not quietly. A local variable named
+    # `hold` is not a key and is not counted (review round 3).
     src = BRIDGE_SRC.read_text()
-    every = re.findall(r'["\']hold["\']|\bhold\s*=(?!=)', src)
-    read = re.findall(r'"hold":\s*(?:[A-Z0-9_]+\b|"[a-z_]+")', src)
+    every = re.findall(r'["\']hold["\']', src)
+    read = re.findall(r'"hold":\s*(?:[A-Z0-9_]+\b|"[a-z_]+"|None\b)', src)
     assert len(every) == len(read), (every, read)
+
+
+def test_the_no_server_503_says_no_hold(bridge_mod):
+    """Review round 3: every 503 body carries `hold`; this one is a crash."""
+    m = _Manager()
+    b = _bridge(bridge_mod, m)
+    b._poll_nav2()
+    m.answer(True)
+    b.nav.wait_for_server = lambda timeout_sec: False
+    code, body = b.send_goal({"x_m": 1.0, "y_m": 0.0})
+    assert code == 503 and "hold" in body and body["hold"] is None, body
+    assert _reason(body) is None
+
+
+def test_slam_bounded_by_start_is_within_slam_passing(bridge_mod):
+    assert set(bridge_mod.SLAM_BOUNDED_BY_START) <= set(bridge_mod.SLAM_PASSING)
     assert {bridge_mod.HOLD_NAV2, bridge_mod.HOLD_SLAM} == set(bridge_faults.HOLDS)
 
 

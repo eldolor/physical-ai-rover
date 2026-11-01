@@ -89,7 +89,7 @@ def test_every_other_bridge_error_stays_ros_unavailable(monkeypatch, reply, retr
     assert body["retryable"] is retryable and body["bridge_status"] == status, body
 
 
-def test_hold_reason_finds_no_hold_in_a_body_without_one():
+def test_hold_reason_reads_the_hold_field_and_nothing_else():
     req = httpx.Request("POST", "http://bridge/goal")
     assert bridge_faults.hold_reason(_err(*NAV2_HELD)) == "nav2_starting"
     assert bridge_faults.hold_reason(_err(*SLAM_HELD)) == "slam_not_ready"

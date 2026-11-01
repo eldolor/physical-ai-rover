@@ -550,7 +550,8 @@ class Bridge(Node):
         if refusal is not None:
             return 503, refusal
         if not self.nav.wait_for_server(timeout_sec=NAV2_WAIT_S):
-            return 503, {"error": "nav2 is not up (navigate_to_pose has no server)"}
+            # Reached only once nav2 answered active, so a crash, no hold (3.133).
+            return 503, {"error": "nav2 is not up (navigate_to_pose has no server)", "hold": None}
         with self.lock:
             # 3.105 (review): read again after the wait (up to 1 s) and before
             # the cancel, so a re-map or a nav2 reset meanwhile leaves the
