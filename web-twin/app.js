@@ -2422,6 +2422,7 @@
       setBrainText("brain-tel-watchdog", /^HTTP \d/.test(e.message || "") ? e.message : "unreachable", "alert");
       setBrainText("brain-tel-driver", null);
       setBrainText("brain-tel-refusal", null);
+      state.lastAuthorityHealth = null;   // 3.132: revoice() must not redraw a robot gone quiet
     } finally {
       watchdogInFlight = false;
     }
@@ -2564,9 +2565,10 @@
     state.lastBrainStatus = null;     // 3.132: revoice() must not redraw it
     stopBrainPolling();
     setBrainText("brain-tel-outcome", t("state.brainLost"), "alert");
-    setConnStatus(document.getElementById("brain-connection-status"), "err",
-      "Not connected", state.brainUrl + " stopped answering (" + e.message
-        + ") \u2014 retrying every few seconds.");
+    const lostEl = document.getElementById("brain-connection-status"), lostUrl = state.brainUrl;
+    setVoicedConnStatus(lostEl, function () {
+      setConnStatus(lostEl, "err", "Not connected", t("brain.lostDetail", {url: lostUrl, why: e.message}));
+    });
     updateBrainControls();
     showToast(t("brain.lost"), "err");
   }
@@ -6016,7 +6018,11 @@
     renderDriveViaBrainStatus();
     updateBrainControls();
     renderBrainPolicyHint();
-    voicedStatus.forEach(function (draw) { draw(); });
+    // Each draw goes through setConnStatus(), which drops its element's
+    // entry; re-registering keeps it for the next switch (Thermos: only the
+    // first switch changed the voice). A snapshot, so the loop is not
+    // walking a map it is rewriting.
+    Array.from(voicedStatus).forEach(function (entry) { setVoicedConnStatus(entry[0], entry[1]); });
     // Only what is still current: a brain that stopped answering keeps its
     // "unreachable" line, never its last good status (review).
     if (state.brainConnected && !state.brainLost && state.lastBrainStatus) {

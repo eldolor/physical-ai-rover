@@ -140,3 +140,24 @@ def test_a_saved_paid_policy_is_said_and_a_drill_never_starts_in_operator_mode(b
     assert starts[0].get("policy") == "vision", starts      # the saved policy still runs -- and is said
     assert not errors, errors
     page.close()
+
+
+def test_a_connection_detail_follows_every_switch(browser, twin_server):  # noqa: F811
+    """Thermos on the review fixes: revoice() replayed each voiced status
+    through setConnStatus(), which dropped it from the registry, so only the
+    FIRST switch changed its voice -- switched back, Engineer mode's wording
+    stayed in operator mode."""
+    page, errors = open_twin(browser, twin_server, engineer=False)
+    page.route("**/brain-dead/**", lambda r: r.abort())
+    page.click("#btn-settings")
+    page.fill("#cfg-brain-url", twin_server + "/brain-dead")
+    page.click("#btn-brain-connect")
+    detail = page.locator("#brain-connection-status .conn-status-detail")
+    sync_api.expect(detail).to_contain_text("Check that the autopilot is running", timeout=5000)
+    toggle = page.locator("label[for=cfg-debug-readouts]")
+    for want in ("control/brain_server.py", "Check that the autopilot is running",
+                 "control/brain_server.py", "Check that the autopilot is running"):
+        toggle.click()
+        sync_api.expect(detail).to_contain_text(want, timeout=2000)
+    assert not errors, errors
+    page.close()

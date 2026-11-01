@@ -110,6 +110,7 @@
     "vision.okDetail": "{url} \u2014 ready.",
     "vision.unreachableDetail": "Couldn't reach {url} ({why}).{cross}",
     "vision.crossNote": " It also lives at a different address from this page, which blocks it even when it's up.",
+    "brain.lostDetail": "{url} stopped answering ({why}) \u2014 trying again every few seconds.",
     "cost.vision": "This search asks the paid vision service at every step (chosen in Engineer mode).",
     "cost.tiered": "This search looks for itself and asks the paid vision service only now and then (chosen in Engineer mode).",
     "drive.costVision": " It asks the paid vision service about every picture.",
@@ -271,6 +272,7 @@
     "vision.okDetail": "{url} \u2014 same origin as this page, so vision calls are not preflighted.",
     "vision.unreachableDetail": "Could not reach {url} ({why}).{cross}",
     "vision.crossNote": " It is also a different origin from this page, which blocks vision calls even when the service is healthy.",
+    "brain.lostDetail": "{url} stopped answering ({why}) \u2014 retrying every few seconds.",
     "drive.costTiered": "",
     "drive.noModels": " This brain has no perception models installed, so the walk will refuse to start — run pip install -r requirements-perception.txt where the brain runs.",
     "driver.lapsed": "{driver} (lapsed)"
