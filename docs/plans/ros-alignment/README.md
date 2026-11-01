@@ -141,4 +141,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.133](3.133-bridge-names-hold.md) | The ROS bridge names its own goal hold |
 | [3.134](3.134-twin-start-hold-text.md) | The twin's nav2 hold says only a start |
 | [3.135](3.135-jetson-fmea.md) | FMEA and resiliency tests on the Jetson, run from the desktop |
+| [3.136](3.136-jetson-perf.md) | Performance tests on the Jetson, run from the desktop |
 <!-- /sections -->
