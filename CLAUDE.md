@@ -813,7 +813,10 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   ended `found` with 0 contacts both times. The first run's goals (3.105's
   point, outside a cold start's first map) succeeded 0 of 3; under
   amendment 1 (a point 0.9 m east of the dock, known free on the first map)
-  3 of 3 succeeded. Follow-up: the twin's text still says "(starting, or restarting)".
+  3 of 3 succeeded. **3.134 (merged 2026-11-01):** the twin's Engineer
+  toast for `nav2_starting` reads "(still starting up)", no longer "(starting,
+  or restarting)"; pinned by `tests/test_twin_strings.py`. The twin is NOT
+  deployed with it yet (the user's go).
 * **Older review bugs (3.64), merged 2026-10-09, deployed 2026-10-10.** Ten bugs
   from the reviewer comparison still live on `dev`, fixed red-first: the
   twin's guidance loop after Stop, a hidden page and an outage (A2, A4,
