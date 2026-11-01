@@ -1012,7 +1012,8 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   the nightly waits in the queue for the exclusive lock, SKIPPED (exit 0, no
   email) after 2 h of a busy desktop. The nightly runs on the Mac only.
 * **A staged UX redesign (3.132), Stages 0-1 and 2A merged 2026-10-31/11-01;
-  2B-5 open; the twin NOT yet deployed with Stages 1-2A** (the user, 2026-10-31: twin first, the two consoles merged into
+  2B-5 open; the twin deployed with Stages 1-2A from `dev` `4ee9f4bd`
+  on 2026-11-01** (the user, 2026-10-31: twin first, the two consoles merged into
   one, vanilla JS, no build step). Audiences:
   * A, primary: anyone at home with the Rover, using the twin's operator
     mode;

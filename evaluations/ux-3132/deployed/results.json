@@ -1,0 +1,44 @@
+{
+  "dark": {
+    "all_responses": {
+      "": 200,
+      "app.js": 200,
+      "frame": 403,
+      "health": 200,
+      "strings.js": 200,
+      "twin.css": 200,
+      "ui.css": 200
+    },
+    "assets": {
+      "": 200,
+      "app.js": 200,
+      "strings.js": 200,
+      "twin.css": 200,
+      "ui.css": 200
+    },
+    "engineer_checked": true,
+    "failed_requests": [],
+    "page_errors": []
+  },
+  "light": {
+    "all_responses": {
+      "": 200,
+      "app.js": 200,
+      "frame": 403,
+      "health": 200,
+      "strings.js": 200,
+      "twin.css": 200,
+      "ui.css": 200
+    },
+    "assets": {
+      "": 200,
+      "app.js": 200,
+      "strings.js": 200,
+      "twin.css": 200,
+      "ui.css": 200
+    },
+    "engineer_checked": true,
+    "failed_requests": [],
+    "page_errors": []
+  }
+}
