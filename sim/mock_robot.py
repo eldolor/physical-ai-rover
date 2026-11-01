@@ -744,7 +744,7 @@ class MockRobot(RobotInterface):
                 zones.append({"status": interface.ZONE_UNUSABLE, "distance_cm": None})
             else:
                 zones.append({"status": interface.ZONE_RANGE, "distance_cm": round(reading, 1),
-                              "bearing_deg": round(math.degrees(rel), 3)})
+                              "bearing_deg": round(math.degrees(rel), 3) + 0.0})   # never -0.0 (ARM)
         return {"cols": cols, "fov_deg": FLOOR_BAND_FOV_DEG, "pan_deg": 0.0,
                 "origin_x_cm": FLOOR_BAND_ORIGIN_X_CM, "min_range_cm": FLOOR_BAND_MIN_CM, "max_range_cm": FLOOR_BAND_MAX_CM,
                 "zones": zones}

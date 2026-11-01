@@ -273,6 +273,10 @@ async def _tick_within(work, timeout_s: float):
     try:
         done, _ = await asyncio.wait({fut}, timeout=timeout_s)
     except asyncio.CancelledError:
+        if fut.done() and not fut.cancelled() and fut.exception() is not None:
+            # The tick failed in the same turn as the Stop: logged, not lost.
+            logger.error("tick failed as the mission loop was cancelled",
+                         exc_info=fut.exception())
         fut.cancel()
         raise
     if not done:

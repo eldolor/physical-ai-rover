@@ -75,3 +75,17 @@ def test_the_brain_server_never_awaits_through_wait_for():
              if isinstance(n, ast.Attribute) and n.attr == "wait_for"
              and isinstance(n.value, ast.Name) and n.value.id == "asyncio"]
     assert not calls, "asyncio.wait_for swallows a cancel on Python 3.10: use _tick_within"
+
+
+def test_a_tick_that_fails_as_the_stop_lands_is_logged(caplog):
+    async def scenario():
+        work = asyncio.get_running_loop().create_future()
+        loop_task = asyncio.ensure_future(_tick_within(work, 5.0))
+        await asyncio.sleep(0)
+        work.set_exception(RuntimeError("robot unreachable"))
+        loop_task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await loop_task
+    with caplog.at_level("ERROR", logger="brain_server"):
+        _run(scenario())
+    assert "robot unreachable" in caplog.text

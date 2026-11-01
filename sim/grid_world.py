@@ -225,7 +225,7 @@ class LowObjectDetector:
         self.spurious += 1
         half = math.degrees(fov_rad) / 2
         return {"label": self._rng.choice(self.labels),
-                "bearing_deg": round(self._rng.uniform(-half, half), 2),
+                "bearing_deg": round(self._rng.uniform(-half, half), 2) + 0.0,   # never -0.0
                 "distance_m": round(self._rng.uniform(0.5, 1.5), 3)}
 
 
