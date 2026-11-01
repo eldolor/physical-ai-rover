@@ -142,4 +142,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.134](3.134-twin-start-hold-text.md) | The twin's nav2 hold says only a start |
 | [3.135](3.135-jetson-fmea.md) | FMEA and resiliency tests on the Jetson, run from the desktop |
 | [3.136](3.136-jetson-perf.md) | Performance tests on the Jetson, run from the desktop |
+| [3.137](3.137-battery-ladder.md) | The battery ladder: low, reserve, a clean power-off; and running on the charger |
 <!-- /sections -->
