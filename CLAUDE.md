@@ -1018,7 +1018,8 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   email) after 2 h of a busy desktop. The nightly runs on the Mac only.
 * **A staged UX redesign (3.132), Stages 0-1, 2A and 4 merged 2026-10-31/11-01;
   2B, 3 and 5 open; the twin deployed with Stages 1-2A from `dev` `4ee9f4bd`
-  on 2026-11-01; Stage 4 (the Lab console) NOT deployed** (the user, 2026-10-31: twin first, the two consoles merged into
+  on 2026-11-01; Stage 4 (the Lab console) deployed from `dev` `74c58cc7`
+  on 2026-11-01, walks Lambda first** (the user, 2026-10-31: twin first, the two consoles merged into
   one, vanilla JS, no build step). Audiences:
   * A, primary: anyone at home with the Rover, using the twin's operator
     mode;
@@ -1090,7 +1091,8 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
     model with no listed price shows calls only.
   * M2, M2L and M3 are 0 on all five console states. Taps: A1 1, A2 2
     (the confirm), A3 2, A4 1.
-  * **Deploy the walks Lambda before syncing the page.**
+  * Deployed 2026-11-01. In a later deploy, still put the walks Lambda
+    before the page.
 * **The map is sent only when it changed (3.123), merged 2026-10-30 with
   criteria 2-3 failed (the user's call).** `/world/map` carries an ETag
   (the server's start token, `map_id`, `map_version`); `RemoteWorld`
