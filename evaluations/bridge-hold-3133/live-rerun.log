@@ -1,0 +1,5 @@
+start 1: refusals 13 accepted at 3.45 s -> succeeded
+start 2: refusals 13 accepted at 3.44 s -> succeeded
+start 3: refusals 14 accepted at 3.88 s -> succeeded
+mission: found contacts 0
+{"a_no_ros_unavailable": true, "a_holds_retryable": true, "a_held_seen": [4, 3, 4], "a_all_succeeded": true, "goal_free_at_accept": [true, true, true], "a_other_reasons": [], "a_met": true, "c_not_active_before_active": 0, "b_refused_hold": 1, "b_refused_unavailable": 0, "b_goals_failed": 1, "b_met": false}

@@ -804,15 +804,16 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
     `ros_unavailable` (the deliberate fallback, wording only);
   * names pinned across the wall by `tests/test_bridge_hold.py`.
 
-  **Live check (3.133.C, 2026-10-31): criterion 8 FAILED as written.**
-  `vision-picar-ros:latest` was rebuilt from `dev` `c40979ee`. In 3 cold
+  **Live check (3.133.C, 2026-10-31): criterion 8 FAILED as written;
+  its re-run (3.133.D, 2026-11-01) MET it.** `vision-picar-ros:latest` was
+  rebuilt from `dev` `c40979ee` (its bridge still `dev`'s). In 3 + 3 cold
   starts every refusal between SLAM ready and nav2 active (~1 s) read
   `nav2_starting`, retryable, with 0 `ros_unavailable`, and nav2 never
-  answered not-active before active. Explore waited on `nav2_starting` and
-  ended `found` with 0 contacts. But 0 of 3 goals succeeded: nav2 aborted
-  them as "off the global costmap", because the harness reused 3.105's
-  point, which is outside a cold start's first map. A re-run is the user's
-  call. Follow-up: the twin's text still says "(starting, or restarting)".
+  answered not-active before active; explore waited on `nav2_starting` and
+  ended `found` with 0 contacts both times. The first run's goals (3.105's
+  point, outside a cold start's first map) succeeded 0 of 3; under
+  amendment 1 (a point 0.9 m east of the dock, known free on the first map)
+  3 of 3 succeeded. Follow-up: the twin's text still says "(starting, or restarting)".
 * **Older review bugs (3.64), merged 2026-10-09, deployed 2026-10-10.** Ten bugs
   from the reviewer comparison still live on `dev`, fixed red-first: the
   twin's guidance loop after Stop, a hidden page and an outage (A2, A4,
