@@ -53,7 +53,8 @@ preferences: `PREF`, `prefGet`, `prefSet`) · `ui.js` (the shared UI helpers:
 `pushDebugLog`; its two listeners stay first in `app.js`) · `history.js` (the
 recent search targets: `renderTargetHistory`, `saveTargetToHistory`; init's
 call stays in `app.js`) · `state.js` (the twin state: `state`, with
-`MIN_DISTANCE_CM_FALLBACK`; a `const` object the rest changes by property).
+`MIN_DISTANCE_CM_FALLBACK`; a `const` object the rest changes by property) · `connstatus.js` (the
+connection readouts: `setConnStatus`, `setVoicedConnStatus`, `voicedStatus`).
 
 ## Interfaces
 
