@@ -1011,8 +1011,8 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   `desktop_lock.step_aside()` between steps (the goal-learn PPO loops do);
   the nightly waits in the queue for the exclusive lock, SKIPPED (exit 0, no
   email) after 2 h of a busy desktop. The nightly runs on the Mac only.
-* **A staged UX redesign (3.132), Stages 0-1 merged 2026-10-31; Stages 2-5
-  open; the twin NOT yet deployed with Stage 1** (the user, 2026-10-31: twin first, the two consoles merged into
+* **A staged UX redesign (3.132), Stages 0-1 and 2A merged 2026-10-31/11-01;
+  2B-5 open; the twin NOT yet deployed with Stages 1-2A** (the user, 2026-10-31: twin first, the two consoles merged into
   one, vanilla JS, no build step). Audiences:
   * A, primary: anyone at home with the Rover, using the twin's operator
     mode;
@@ -1049,6 +1049,25 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
     jargon are unchanged.
   * A new colour goes in `ui.css` as a token. `sync.sh` must also publish
     `ui.css` and `twin.css` (both are in `assets.json`).
+
+  **Stage 2A (the words and Engineer mode):**
+  * Settings' "Show developer readouts" is now **Engineer mode** (same
+    `vp_debug_readouts` setting). Off, the default, the twin speaks to a
+    person at home: the brain is "the Autopilot", and endings, outcomes,
+    drivers and connection states are in plain words. `.eng-only` material
+    (policies, drills, tier rows, logs, raw readouts, setup recipes) is
+    hidden; `.op-only` wording sits beside it.
+  * Every toast's words are in `web-twin/strings.js`, in two voices; the
+    engineer voice is the old wording. `t(key, vars)` fills placeholders,
+    and server text enters only through one.
+  * M5 jargon is 0 on all six operator states (was up to 19), with nothing
+    else moved.
+  * `tests/test_ui.py` `open_twin()` opens in Engineer mode, the view the
+    legacy suite pins. Operator tests pass `engineer=False`.
+  * Operator mode never starts a drill, and it says a saved paid policy's
+    cost beside Start.
+  * Next, 2B (the `app.js` module split):
+    `docs/handoffs/HANDOFF-2026-11-01-3.132-2B.md`.
 
   Run as 3.130 until a numbering collision (3.130 is fast-map-work).
 * **The map is sent only when it changed (3.123), merged 2026-10-30 with
