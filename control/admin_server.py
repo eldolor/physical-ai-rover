@@ -764,22 +764,33 @@ def create_app(config_path=None, store=None) -> FastAPI:
         if action not in ("score", "replay"):
             raise HTTPException(status_code=422, detail="action must be score or replay")
         entries = walk_eval.decided_entries(_walk_entries(store, walk))
-        with_image = [e for e in entries if FRAME_FILENAME.match(e.get("file") or "")]
+
+        def has_image(e):
+            return bool(FRAME_FILENAME.match(e.get("file") or ""))
+
+        with_image = [e for e in entries if has_image(e)]
         tokens = admin_prices.tokens_per_call(entries)
-        navigate_calls, judge_calls = 0, 0
+        navigate_calls, judge_frames, collision_checks = 0, 0, 0
         if action == "score":
             if JUDGE_ENABLED and entries:
                 sampled = walk_eval._sample_indices(len(entries), JUDGE_SAMPLE_FRAMES)
-                judge_calls = sum(1 for i in sampled
-                                  if FRAME_FILENAME.match(entries[i].get("file") or ""))
-                judge_calls += min(len(walk_eval.collision_candidates(entries)),
-                                   COLLISION_MAX_CHECKS)
+                judge_frames = sum(1 for i in sampled if has_image(entries[i]))
+                # check_collisions asks nothing for a FORWARD with no image.
+                forwards = [i for i in walk_eval.collision_candidates(entries)
+                            if has_image(entries[i])]
+                collision_checks = min(len(forwards), COLLISION_MAX_CHECKS)
         else:
             navigate_calls = len(with_image)
             if JUDGE_ENABLED and navigate_calls:
-                judge_calls = min(navigate_calls, COLLISION_MAX_CHECKS)
-        parts = [admin_prices.cost_usd(navigate_calls, model_id, tokens),
-                 admin_prices.cost_usd(judge_calls, JUDGE_MODEL_ID, tokens)]
+                collision_checks = min(navigate_calls, COLLISION_MAX_CHECKS)
+        judge_calls = judge_frames + collision_checks
+        parts = [
+            admin_prices.cost_usd(navigate_calls, model_id, tokens),
+            admin_prices.cost_usd(judge_frames, JUDGE_MODEL_ID,
+                                  {**tokens, "output": admin_prices.JUDGE_OUT_TOKENS}),
+            admin_prices.cost_usd(collision_checks, JUDGE_MODEL_ID,
+                                  {**tokens, "output": admin_prices.COLLISION_OUT_TOKENS}),
+        ]
         return {
             "walk": walk,
             "action": action,

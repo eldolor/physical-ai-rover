@@ -103,7 +103,12 @@
         if (seq !== connectSeq) return;
         Lab.secret = tried;
         Lab.connected = true;
-        try { if (tried) localStorage.setItem(SECRET_KEY, tried); } catch (e) { /* private mode */ }
+        // Saved even when empty: an empty field that works is the answer,
+        // and a stale secret left saved would come back on the next load.
+        try {
+          localStorage.setItem(SECRET_KEY, tried);
+          OLD_SECRET_KEYS.forEach(function (k) { localStorage.removeItem(k); });
+        } catch (e) { /* private mode */ }
         setStatus("Connected.", "ok");
         connectListeners.forEach(function (fn) { fn(data); });
       })
@@ -221,11 +226,14 @@
   $("confirm-ok").onclick = function () { answer(true); };
   $("confirm-cancel").onclick = function () { answer(false); };
   dialog.addEventListener("cancel", function (e) { e.preventDefault(); answer(false); });
-  dialog.addEventListener("close", function () { if (pending) answer(false); });
 
   // Resolves true only on Confirm. `lines` are plain text, one paragraph each.
   Lab.confirm = function (title, lines, okLabel) {
-    if (pending) answer(false);          // a newer question replaces an older one
+    // A newer question replaces an older one in the same open dialog: the
+    // older resolves false, and the dialog is not closed, because a close
+    // event fires later and would land on the newer question (both reviews
+    // of Stage 4).
+    if (pending) { var older = pending; pending = null; older(false); }
     $("confirm-title").textContent = title;
     $("confirm-body").innerHTML = lines.map(function (l) {
       return "<p>" + escapeHtml(l) + "</p>";
@@ -233,12 +241,27 @@
     $("confirm-ok").textContent = okLabel || "Confirm";
     return new Promise(function (resolve) {
       pending = resolve;
-      dialog.showModal();
+      if (!dialog.open) dialog.showModal();
       $("confirm-cancel").focus();       // the safe answer is the default one
     });
   };
 
   // ---------- what an action will cost ----------
+
+  // The server's estimate for each walk, or null where one could not be
+  // had; at most four asked at once, so Score them on fifty walks does not
+  // fire fifty reads together.
+  Lab.estimates = function (walks, action) {
+    var out = new Array(walks.length), next = 0;
+    function worker() {
+      if (next >= walks.length) return Promise.resolve();
+      var i = next++;
+      return Lab.estimate(walks[i], action).then(function (e) { out[i] = e; return worker(); });
+    }
+    var workers = [];
+    for (var k = 0; k < Math.min(4, walks.length); k++) workers.push(worker());
+    return Promise.all(workers).then(function () { return out; });
+  };
 
   // The server's estimate for one walk, or null if it could not be had.
   Lab.estimate = function (walk, action, modelId) {
@@ -272,9 +295,10 @@
       if (e.usd == null) unknown = true;
     });
     if (!total) {
-      return [list[0].action === "score"
-        ? "Free: the judge is off here, so only the free measurements run."
-        : "Free: no frame to send."];
+      if (list[0].action !== "score") return ["Free: no frame to send."];
+      return [list[0].judge_enabled
+        ? "Free: no frame here for the judge to look at."
+        : "Free: the judge is off here, so only the free measurements run."];
     }
     var parts = [];
     if (nav) parts.push(nav + " to " + (shortModel(list[0].model_id) || "the default model"));

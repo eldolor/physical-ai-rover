@@ -29,11 +29,9 @@
   var Lab = window.Lab;
   var $ = function (id) { return document.getElementById(id); };
 
-  // The charts draw in the page's own tokens (ui.css), so they follow the
-  // theme like everything else.
-  function token(name) {
-    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  }
+  // The charts draw in the page's own tokens (ui.css), as CSS on each mark,
+  // so they follow a theme change without a redraw.
+  function token(name) { return "var(" + name + ")"; }
 
   function fmtMs(v) { return v == null ? "–" : Math.round(v) + "ms"; }
   function pct(v) { return v == null ? "–" : Math.round(v * 100) + "%"; }
@@ -134,9 +132,9 @@
       segs.forEach(function (pts) {
         if (pts.length === 1) {
           var c = pts[0].split(",");
-          parts.push('<circle cx="' + c[0] + '" cy="' + c[1] + '" r="2.6" fill="' + s.color + '"/>');
+          parts.push('<circle cx="' + c[0] + '" cy="' + c[1] + '" r="2.6" style="fill:' + s.color + '"/>');
         } else {
-          parts.push('<polyline fill="none" stroke="' + s.color + '" stroke-width="2"'
+          parts.push('<polyline fill="none" style="stroke:' + s.color + '" stroke-width="2"'
             + ' stroke-linejoin="round" stroke-linecap="round" points="' + pts.join(" ") + '"/>');
         }
       });

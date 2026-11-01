@@ -46,7 +46,8 @@
   const inFlight = new Map();
   function flight(name) {
     let f = inFlight.get(name);
-    if (!f) { f = { replays: 0, scoring: false, queued: false, deleting: false }; inFlight.set(name, f); }
+    // `asking`: a score or replay waiting on its estimate or its confirm.
+    if (!f) { f = { replays: 0, scoring: false, queued: false, deleting: false, asking: false }; inFlight.set(name, f); }
     return f;
   }
   // The walk as the page knows it NOW: a request started before a Refresh
@@ -401,6 +402,7 @@
   // Bedrock requests, and a page load that kicked off eight walks at once
   // would throttle itself and land the user in retry storms.
   let scoringPending = false;
+  let askingPending = false;               // Score them's estimate or confirm is out
 
   function pendingWalks() {
     return allWalks.filter(function (w) {
@@ -412,6 +414,7 @@
   function updatePendingBar() {
     const n = pendingWalks().length;
     pendingBarEl.hidden = !n || scoringPending;
+    btnScorePending.disabled = askingPending;
     pendingCountEl.textContent = n + (n === 1 ? " finished walk is" : " finished walks are") +
       " not scored yet.";
     btnScorePending.textContent = n === 1 ? "Score it…" : "Score them…";
@@ -419,15 +422,21 @@
 
   async function askScorePending() {
     const pending = pendingWalks();
-    if (!pending.length || scoringPending) return;
-    const estimates = await Promise.all(pending.map(function (w) {
-      return Lab.estimate(w.walk, "score");
-    }));
-    const ok = await Lab.confirm(
-      pending.length === 1 ? "Score this walk?" : "Score " + pending.length + " walks?",
-      [pending.length === 1 ? pending[0].walk : pending.length + " finished walks with no score."]
-        .concat(Lab.costLines(estimates)),
-      "Score");
+    if (!pending.length || scoringPending || askingPending) return;
+    askingPending = true;
+    updatePendingBar();
+    let ok = false;
+    try {
+      const estimates = await Lab.estimates(pending.map(function (w) { return w.walk; }), "score");
+      ok = await Lab.confirm(
+        pending.length === 1 ? "Score this walk?" : "Score " + pending.length + " walks?",
+        [pending.length === 1 ? pending[0].walk : pending.length + " finished walks with no score."]
+          .concat(Lab.costLines(estimates)),
+        "Score");
+    } finally {
+      askingPending = false;
+      updatePendingBar();
+    }
     if (ok) scorePendingWalks(pending);
   }
 
@@ -621,10 +630,18 @@
     // the cost (3.132 Stage 4).
     evalBtn.onclick = async function () {
       const f = flight(w.walk);
-      if (f.scoring || f.queued) return;
-      const est = await Lab.estimate(w.walk, "score");
-      const ok = await Lab.confirm(live(w).eval ? "Score this walk again?" : "Score this walk?",
-        [w.walk].concat(Lab.costLines(est)), "Score");
+      if (f.scoring || f.queued || f.asking) return;
+      f.asking = true;
+      syncControls();
+      let ok = false;
+      try {
+        const est = await Lab.estimate(w.walk, "score");
+        ok = await Lab.confirm(live(w).eval ? "Score this walk again?" : "Score this walk?",
+          [w.walk].concat(Lab.costLines(est)), "Score");
+      } finally {
+        f.asking = false;
+        repaint(w.walk);
+      }
       // Asked while the dialog was up: the queue or another click may have
       // taken it meanwhile.
       if (!ok || f.scoring || f.queued || !allWalks.includes(live(w))) return;
@@ -679,15 +696,23 @@
       const promptVariant = parts[1] || "default";
       const f = flight(w.walk);
       replaySelect.selectedIndex = 0;
-      if (f.replays) return;               // one out already (a rebuilt row)
+      if (f.replays || f.asking) return;   // one out already (a rebuilt row)
       // Every frame of the walk goes to the model again, so the pick asks
       // first with the cost; it used to start the moment the pick changed
       // (3.132 Stage 0).
-      const est = await Lab.estimate(w.walk, "replay", modelId);
-      const ok = await Lab.confirm("Replay this walk?",
-        [w.walk, "Every frame asked again under " + shortModel(modelId) +
-          (promptVariant === "default" ? "" : " (" + promptVariant + " wording)") + "."]
-          .concat(Lab.costLines(est)), "Replay");
+      f.asking = true;
+      syncControls();
+      let ok = false;
+      try {
+        const est = await Lab.estimate(w.walk, "replay", modelId);
+        ok = await Lab.confirm("Replay this walk?",
+          [w.walk, "Every frame asked again under " + shortModel(modelId) +
+            (promptVariant === "default" ? "" : " (" + promptVariant + " wording)") + "."]
+            .concat(Lab.costLines(est)), "Replay");
+      } finally {
+        f.asking = false;
+        repaint(w.walk);
+      }
       if (!ok || f.replays || !allWalks.includes(live(w))) return;
       f.replays += 1;
       syncControls();
@@ -843,9 +868,9 @@
     function syncControls() {
       const f = flight(w.walk);
       const busyScoring = f.scoring || f.queued;
-      evalBtn.disabled = busyScoring;
+      evalBtn.disabled = busyScoring || f.asking;
       evalBtn.textContent = busyScoring ? "Scoring…" : (w.eval ? "Re-score" : "Evaluate");
-      replaySelect.disabled = f.replays > 0;
+      replaySelect.disabled = f.replays > 0 || f.asking;
       replaySelect.options[0].textContent = f.replays > 0 ? "Replaying…" : "Replay with…";
       delBtn.disabled = f.deleting;
     }

@@ -167,6 +167,58 @@ def test_an_estimate_that_fails_still_asks(browser, admin_server):
     page.context.close()
 
 
+def test_a_newer_question_replaces_an_older_one_and_stays(browser, admin_server):
+    """Both reviews of Stage 4: replacing an open question closed the dialog,
+    and the close event, firing later, cancelled the newer question too."""
+    page, _, _ = _lab(browser, admin_server)
+    page.wait_for_selector(".walk", timeout=10_000)
+    page.evaluate("""() => {
+      window.__answers = [];
+      Lab.confirm("first", ["a"]).then(a => window.__answers.push(["first", a]));
+      Lab.confirm("second", ["b"]).then(a => window.__answers.push(["second", a]));
+    }""")
+    page.wait_for_timeout(400)
+    sync_api.expect(page.locator("#confirm")).to_be_visible()
+    sync_api.expect(page.locator("#confirm-title")).to_have_text("second")
+    assert page.evaluate("window.__answers") == [["first", False]]
+    page.click("#confirm-ok")
+    assert page.evaluate("window.__answers") == [["first", False], ["second", True]]
+    page.context.close()
+
+
+def test_a_second_click_while_the_estimate_loads_asks_once(browser, admin_server):
+    """Review of Stage 4: nothing marked Evaluate busy while its estimate
+    was out, so a second click raced a second question for the dialog."""
+    held, posted = [], []
+    page, _, _ = _lab(browser, admin_server, routes=[
+        ("**/estimate*", lambda r: held.append(r)),
+        ("**/evaluate", lambda r: (posted.append(1), _json(r, {"score": 5, "verdict": "poor", "flags": []}))),
+    ])
+    btn = page.locator(".walk", has_text=UNSCORED).locator("button", has_text="Evaluate")
+    btn.click()
+    sync_api.expect(btn).to_be_disabled()
+    btn.click(force=True)
+    page.wait_for_timeout(300)
+    assert len(held) == 1
+    _json(held[0], ESTIMATE)
+    sync_api.expect(page.locator("#confirm")).to_be_visible()
+    page.wait_for_timeout(400)
+    sync_api.expect(page.locator("#confirm")).to_be_visible()
+    confirm(page)
+    sync_api.expect(page.locator(".walk", has_text=UNSCORED).locator(".score-badge")).to_contain_text("5")
+    assert posted == [1]
+    page.context.close()
+
+
+def test_a_free_score_says_why(browser, admin_server):
+    """Review of Stage 4: 0 calls read "the judge is off" even with it on."""
+    est = dict(ESTIMATE, calls=0, judge_calls=0, usd=0.0)
+    page, _, _ = _lab(browser, admin_server, estimate=est)
+    page.locator(".walk", has_text=UNSCORED).locator("button", has_text="Evaluate").click()
+    sync_api.expect(page.locator("#confirm-body")).to_contain_text("no frame here for the judge")
+    page.context.close()
+
+
 # ---------- criterion 3: one secret ----------
 
 

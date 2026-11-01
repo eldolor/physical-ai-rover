@@ -69,8 +69,13 @@ echo "==> walks"
 deps "$BUILD/walks" "$ROOT/service/lambda/requirements-walks.txt"
 mkdir -p "$BUILD/walks/control" "$BUILD/walks/config"
 cp "$ROOT/control/"*.py                            "$BUILD/walks/control/"
+# The Lab console's page and files, for the FastAPI routes that serve them
+# locally (CloudFront serves them from S3); ui.css where admin_server.py
+# looks for it, beside control/.
+mkdir -p "$BUILD/walks/web-shared"
 cp "$ROOT/control/lab.html" "$ROOT/control/lab.css" "$ROOT/control/lab.js" \
-   "$ROOT/control/admin.js" "$ROOT/control/metrics.js" "$BUILD/walks/control/" 2>/dev/null || true
+   "$ROOT/control/admin.js" "$ROOT/control/metrics.js" "$BUILD/walks/control/"
+cp "$ROOT/web-shared/ui.css"                       "$BUILD/walks/web-shared/"
 cp "$ROOT/config/robot.yaml"                       "$BUILD/walks/config/"
 cp "$ROOT/service/lambda/walks_handler.py"         "$BUILD/walks/"
 

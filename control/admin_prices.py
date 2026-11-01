@@ -36,6 +36,12 @@ PRICES_PER_MTOK = {
 DEFAULT_TOKENS_IN = 1700
 DEFAULT_TOKENS_OUT = 100
 
+# What a judge call and a collision check can reply with at most: the caps
+# control/walk_eval.py sends (judge_frame's maxTokens 200, check_collisions'
+# 150). Priced at the cap, since a judge reply is not a /navigate reply.
+JUDGE_OUT_TOKENS = 200
+COLLISION_OUT_TOKENS = 150
+
 
 def price_of(model_id: Optional[str]) -> Optional[tuple]:
     return PRICES_PER_MTOK.get(model_id or "")
@@ -44,7 +50,12 @@ def price_of(model_id: Optional[str]) -> Optional[tuple]:
 def tokens_per_call(entries: list) -> dict:
     """The walk's median recorded /navigate usage, or the defaults. The same
     pictures go to the judge and to a replay, so the recording's own counts
-    are the best basis there is before the calls are made."""
+    are the best basis there is before the calls are made.
+
+    Input never below the default: GPT-6 Astra's Bedrock usage leaves out
+    its image tokens (3.80.Q), so a walk recorded under it reports a
+    text-only count that would price every other model's call at a fraction
+    of what it bills."""
     ins, outs = [], []
     for e in entries:
         usage = (e.get("navigate") or {}).get("usage") or {}
@@ -54,7 +65,7 @@ def tokens_per_call(entries: list) -> dict:
             outs.append(usage["output_tokens"])
     recorded = bool(ins and outs)
     return {
-        "input": round(median(ins)) if recorded else DEFAULT_TOKENS_IN,
+        "input": max(round(median(ins)), DEFAULT_TOKENS_IN) if recorded else DEFAULT_TOKENS_IN,
         "output": round(median(outs)) if recorded else DEFAULT_TOKENS_OUT,
         "recorded": recorded,
     }
