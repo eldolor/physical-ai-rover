@@ -132,10 +132,55 @@ flowchart TB
   running. A lower tier never undoes a higher tier's answer, and a "no" is
   remembered until the rover has moved or turned enough to see anew.
 
+How one question climbs the ladder:
+
+```mermaid
+sequenceDiagram
+    participant P as Tier 1: YOLOE + CLIP
+    participant B as Brain
+    participant L as Tier 2: local VLM
+    participant C as Tier 3: cloud VLM
+    P->>B: candidate in frame (CLIP gate passed)
+    B->>L: is this the target?
+    alt a confident answer
+        L-->>B: yes / no
+        Note over B: a "no" masks the candidate<br/>until the rover moves or turns
+    else unable (twice), or the VLM is down
+        L-->>B: cannot say
+        B->>C: is this the target?
+        alt the cloud answers
+            C-->>B: yes / no (final over the tiers below)
+        else the cloud is unreachable
+            C--xB: no answer
+            Note over B: search continues, and an arrival only the<br/>cloud could settle is arrived_unconfirmed
+        end
+    end
+```
+
 **Arrival** is geometric before it is visual: the target centred and the
 lidar, never the detector, reading it within 0.40 m on consecutive frames.
 Only then is identity asked, and only a trusted "yes" ends a mission
 `found`.
+
+A mission's life, end to end:
+
+```mermaid
+stateDiagram-v2
+    direction TB
+    [*] --> Active: a person starts a mission
+    state Active {
+        direction LR
+        Searching --> Approaching: target in view
+        Approaching --> Searching: lost from view
+        Approaching --> Checking: centred, lidar < 0.40 m
+        Checking --> Searching: no (remembered)
+    }
+    Active --> Found: trusted yes
+    Active --> ArrivedUnconfirmed: only the cloud could say,<br/>and it is unreachable
+    Active --> Exhausted: nowhere reachable left
+    Active --> OutOfBudget: time limit or battery floor
+    Active --> Cancelled: a person's Stop or D-pad
+```
 
 ## Search: the map decides where to look
 
@@ -153,6 +198,28 @@ reinforcement learning (PPO) over a thousand floor plans, rewarded for
 finding the target in fewer goals and metres. It ranks; the rules decide
 what is allowed.
 
+```mermaid
+flowchart TB
+    subgraph train["Offline, in simulation"]
+        direction LR
+        houses["~1,000 ProcTHOR<br/>floor plans"] --> oracle["Oracle<br/>knows the target"]
+        oracle --> clone["Behaviour<br/>cloning"]
+        clone --> ppo["PPO<br/>+1 found, -0.02 a goal,<br/>-0.01 a metre"]
+        ppo --> weights["Weights"]
+    end
+    subgraph run["On the rover, every goal choice"]
+        direction LR
+        map["SLAM map"] --> cand["Candidates"]
+        cand --> rules["The rules<br/>filter"]
+        rules --> net["Network<br/>scores"]
+        net --> goal["Goal<br/>to nav2"]
+    end
+    train -->|"the weights ship to the rover"| run
+```
+
+The rules filter before the network scores, so no weight can choose a
+place the rules refuse.
+
 When the target is in view, explore closes in on it, and the identity
 ladder decides whether it is the target.
 
@@ -165,6 +232,28 @@ the tiers and each node's parameters are configuration, validated at load.
 The rules that must never bend sit outside the trees, where no setting
 reaches: safety, a person's Stop, the arrival rule, who may declare
 `found`, and the failsafes.
+
+The "whom to ask" tree, as the code prints it (`?` a fallback: the first
+child that succeeds wins; `->` a sequence: every child in order):
+
+```mermaid
+flowchart TB
+    root["? who to ask"] --> none["no trigger, no question"]
+    root --> q["-> a question"]
+    q --> rearm["re-arm an edge held back<br/>by a call in flight"]
+    q --> localfirst["the local tier first<br/>(up to 2 unable answers)"]
+    q --> first["? the first that answers"]
+    first --> cap["the call cap"]
+    first --> one["one call at a time"]
+    first --> ended["the mission ended"]
+    first --> asklocal["ask the local tier"]
+    first --> askcloud["ask the cloud"]
+```
+
+The "what to do this frame" tree is a fallback over rungs, best evidence
+first: steer on this frame's bearing, turn to the local VLM's located yes,
+dead-reckon to a sighting, hold the last goal, scan. A spin guard wraps it
+so a search cannot turn in place for ever.
 
 ## Safety
 
@@ -195,6 +284,17 @@ flowchart LR
   that never returns. Each sees a failure the others cannot. Below them,
   the motor board's own heartbeat stops the wheels if the Jetson goes
   silent.
+
+A person's Stop, as a latch:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Autonomous
+    Autonomous --> Latched: a person's Stop
+    Latched --> Latched: brain moves, wheels and goals<br/>refused person_stop
+    Latched --> Autonomous: a person starts a new mission
+    note right of Latched: a person may still drive<br/>from the D-pad
+```
 
 ## One move, end to end
 
@@ -293,9 +393,37 @@ which it is waiting for. Each mission's object inventory (labels and
 positions, never images) carries to the next mission on the same map. A
 map is a home's floor plan, so it never leaves the rover unasked.
 
+```mermaid
+stateDiagram-v2
+    [*] --> Starting: container start
+    Starting --> Mapping: no saved map
+    Starting --> Checking: saved map, localise from the dock
+    Checking --> Ready: >= 60% of returns on the map,<br/>within 0.5 m and 15 deg of the dock
+    Checking --> Mapping: the scans disagree,<br/>so a fresh map
+    Ready --> Remapping: enters the saved map's unknown,<br/>or a person asks
+    Remapping --> Ready: re-mapped on the saved graph
+    Mapping --> Saved: mission end
+    Ready --> Saved: mission end
+    Saved --> [*]: a new version,<br/>three kept
+    note right of Remapping: goals are held<br/>while it re-maps
+```
+
 ## Budgets
 
 The Jetson's 8 GB is shared by CPU and GPU, and everything lives inside it.
+
+```mermaid
+pie showData
+    title Where the 8 GB goes (approximate, GB)
+    "Local VLM (engines + visual encoder)" : 4.0
+    "Perception (YOLOE + CLIP on the GPU)" : 1.7
+    "ROS 2 (SLAM, nav2)" : 0.3
+    "Robot server and brain" : 0.2
+    "OS, buffers and the 0.5 GB floor" : 1.8
+```
+
+Under memory pressure the kill order is fixed: the local VLM first (its
+questions fall to the cloud), the robot stack never.
 
 | Resource | Budget | Why |
 |---|---|---|
