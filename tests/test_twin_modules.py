@@ -21,8 +21,9 @@ import re
 import pytest
 
 from tests.conftest import REPO_ROOT
-from tests.twin_sources import (APP_JS, DYNAMIC, MODULE_DIR, REEXPORT, TWIN, imported_names,
-                                imports, module_graph, modules, twin_scripts)
+from tests.twin_sources import (APP_JS, DYNAMIC, MODULE_DIR, REEXPORT, TWIN, code_only,
+                                imported_names, imports, module_graph, modules, specs,
+                                twin_scripts)
 
 
 def manifest() -> dict:
@@ -67,14 +68,14 @@ def test_every_import_is_relative():
     (tests/test_static_assets.py); a bare or rooted specifier breaks under
     the teleop prefix or does not resolve at all without a bundler."""
     for path in twin_scripts():
-        for _clause, spec in imports(path.read_text()):
+        for spec in specs(path.read_text()):
             assert spec.startswith("./") and ".." not in spec and spec.endswith(".js"), \
                 f"{path.name}: import {spec!r}"
 
 
 def imports_app_js(path) -> bool:
     return any((path.parent / spec).resolve() == APP_JS.resolve()
-               for _clause, spec in imports(path.read_text()))
+               for spec in specs(path.read_text()))
 
 
 def test_no_module_imports_app_js():
@@ -84,9 +85,31 @@ def test_no_module_imports_app_js():
     assert not bad, f"modules that import app.js: {bad}"
 
 
-# Assignments a `name = ` pattern misses: destructuring and loop heads.
-DESTRUCTURE = r"[\[{][^\]}=;]*(?<![\w$.])%s(?![\w$])[^\]}=;]*[\]}]\s*=(?![=>])"
 LOOP_HEAD = r"\bfor\s*\(\s*%s\s+(?:of|in)\b"
+TARGET_END = re.compile(r"[\]}](?=\s*(?:=(?![=>])|(?:of|in)\b))")
+
+
+def destructuring_targets(code: str) -> list:
+    """The bracketed spans that are written to: `[...] = `, `{...} = `,
+    `for ([...] of`, nested and with defaults. A declaration that shadows
+    (`const [x] = ...`) is included: conservative, and a smell anyway."""
+    spans = []
+    for m in TARGET_END.finditer(code):
+        close = m.start()
+        opener = "[" if code[close] == "]" else "{"
+        depth, i = 0, close
+        while i >= 0:
+            if code[i] in "]}":
+                depth += 1
+            elif code[i] in "[{":
+                depth -= 1
+                if depth == 0:
+                    break
+            i -= 1
+        if i >= 0 and code[i] == opener:
+            spans.append(code[i:close + 1])
+    return spans
+
 ASSIGN = r"(?<![\w$.])%s\s*(?:\*\*|<<|>>>|>>|&&|\|\||\?\?|[-+*/%%&|^])?=(?![=>])"
 STEP = r"(?<![\w$.])%s\s*(?:\+\+|--)|(?:\+\+|--)\s*%s(?![\w$])"
 
@@ -94,11 +117,13 @@ STEP = r"(?<![\w$.])%s\s*(?:\+\+|--)|(?:\+\+|--)\s*%s(?![\w$])"
 def writes_to_imports(text: str) -> list:
     """Names `text` imports and also assigns."""
     hits = []
+    targets = destructuring_targets(code_only(text))
     for clause, _spec in imports(text):
         for name in imported_names(clause):
             n = re.escape(name)
             if (re.search(ASSIGN % n, text) or re.search(STEP % (n, n), text)
-                    or re.search(DESTRUCTURE % n, text) or re.search(LOOP_HEAD % n, text)):
+                    or re.search(LOOP_HEAD % n, text)
+                    or any(re.search(r"(?<![\w$.])%s(?![\w$])(?!\s*:)" % n, t) for t in targets)):
                 hits.append(name)
     return hits
 
@@ -131,19 +156,23 @@ def test_the_checks_catch_what_they_are_for(tmp_path):
                for _c, s in imports(mod.read_text()))
     # Writes to an import, and the reads and look-alikes that are not.
     for bad in ("x = 1", "x += 1", "x++", "--x", "x ??= y", "[x] = y", "[a, x] = y",
-                "({ x } = o)", "for (x of list) {}", "for (x in o) {}"):
+                "({ x } = o)", "for (x of list) {}", "for (x in o) {}", "[x = 1] = arr",
+                "({ x = 0 } = o)", "({ a: { x } } = o)", "[a, [x]] = y", "for ([x, y] of p) {}",
+                "for ({ x } of list) {}", "({ a: x } = o)", "({a:x} = o)"):
         assert writes_to_imports('import { x } from "./js/a.js";\n' + bad) == ["x"], bad
     for fine in ("x === 1", "y = x", "o.x = 1", "f(x)", "xy = 1", "{ x: 1 }", "x => 1",
-                 "[x].map(f)", "const o = { x };", "f([x])", "[x] === y", "for (const y of x) {}"):
+                 "[x].map(f)", "const o = { x };", "f([x])", "[x] === y", "for (const y of x) {}",
+                 "({ x: 1 } = o)", "const o = { a: x }; o.b = 1", "// [x] = y"):
         assert writes_to_imports('import { x } from "./js/a.js";\n' + fine) == [], fine
 
 
 def test_no_twin_script_imports_at_run_time():
     """A dynamic import() is loaded at run time, so the walk above cannot
     follow it and its file could ship unpublished. The twin has none."""
-    bad = [p.name for p in twin_scripts() if DYNAMIC.search(p.read_text())]
+    bad = [p.name for p in twin_scripts() if DYNAMIC.search(code_only(p.read_text()))]
     assert not bad, f"dynamic imports: {bad}"
-    assert DYNAMIC.search('const m = await import("./js/x.js");')
+    assert DYNAMIC.search(code_only('const m = await import("./js/x.js");'))
+    assert not DYNAMIC.search(code_only('// we never import ("./x.js") here\nconst s = "import (";'))
     assert REEXPORT.findall('export { a } from "./b.js";\nexport * from "./c.js";') == ["./b.js", "./c.js"]
 
 
@@ -153,18 +182,20 @@ def upload_order(rows) -> list:
     a twin script or sheet."""
     keys = [r["key"] for r in rows]
     bad = []
-    for path in modules():
-        key = path.relative_to(TWIN).as_posix()
-        for _c, spec in imports(path.read_text()):
+    mods = [p.relative_to(TWIN).as_posix() for p in modules()]
+    missing = [k for k in mods + ["app.js", "index.html"] if k not in keys]
+    if missing:
+        return [f"{k}: not in assets.json" for k in missing]
+    for path, key in zip(modules(), mods):
+        for spec in specs(path.read_text()):
             dep = (path.parent / spec).resolve().relative_to(TWIN.resolve()).as_posix()
-            if keys.index(dep) > keys.index(key):
-                bad.append(f"{key} goes up before {dep}, which it imports")
+            if dep in keys and keys.index(dep) > keys.index(key):
+                bad.append(f"{key} goes up before {dep}, which it loads")
         if keys.index(key) > keys.index("app.js"):
             bad.append(f"{key} goes up after app.js, which imports it")
-    for key in ("app.js", "strings.js", "ui.css", "twin.css") + tuple(
-            p.relative_to(TWIN).as_posix() for p in modules()):
-        if keys.index(key) > keys.index("index.html"):
-            bad.append(f"index.html goes up before {key}, which it loads")
+    # The module tag must be live before app.js has an import line in it.
+    if keys.index("index.html") > keys.index("app.js"):
+        bad.append("index.html goes up after app.js, which it must load as a module")
     return bad
 
 
@@ -172,7 +203,9 @@ def test_the_upload_order_puts_what_is_loaded_before_what_loads_it():
     """Both reviewers: sync.sh puts objects in manifest order, so a new
     app.js uploaded before a new module imports a key not yet there; one
     failed import stops the whole graph and the page is dead until a
-    reload. Seen to fail on the order this stage first wrote."""
+    reload. And index.html first (review round 2): an old page loads app.js
+    as a classic script, where an import line is a SyntaxError. Seen to
+    fail on the order this stage first wrote."""
     rows = json.loads((REPO_ROOT / "service" / "static" / "assets.json").read_text())["assets"]
     assert not upload_order(rows)
     if modules():
@@ -217,6 +250,7 @@ def test_the_module_route_serves_only_the_module_folder(tmp_path, monkeypatch):
     folder = tmp_path / "js"
     folder.mkdir()
     (folder / "planted.js").write_text("export const x = 1;\n")
+    (folder / "link.js").symlink_to(tmp_path / "secret.js")
     (folder / "sub").mkdir()
     (folder / "sub" / "deep.js").write_text("export const z = 3;\n")
     (folder / "notes.txt").write_text("not a module\n")
@@ -230,7 +264,7 @@ def test_the_module_route_serves_only_the_module_folder(tmp_path, monkeypatch):
             assert "application/javascript" in resp.headers["content-type"]
             assert "no-cache" in resp.headers.get("cache-control", "")
             for name in ("missing.js", "notes.txt", "..%2Fsecret.js", "%2E%2E%2Fsecret.js",
-                         "sub%2Fdeep.js", "sub", ".js", "planted.js%00.txt"):
+                         "sub%2Fdeep.js", "sub", ".js", "planted.js%00.txt", "link.js"):
                 assert client.get(prefix + "/js/" + name).status_code == 404, (prefix, name)
             assert client.get(prefix + "/js/../secret.js").status_code == 404, prefix
             # Looked up per request: a module added while the server runs.

@@ -1059,7 +1059,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
     @app.get(prefix + "/js/{name}")
     def twin_module(name: str):
         path = _TWIN_JS_DIR / name
-        if not _TWIN_MODULE_NAME.fullmatch(name) or not path.is_file():
+        # resolve(): a symlink in the folder must not serve a file outside it.
+        if (not _TWIN_MODULE_NAME.fullmatch(name) or not path.is_file()
+                or path.resolve().parent != _TWIN_JS_DIR.resolve()):
             raise HTTPException(status_code=404, detail="no such twin module")
         return FileResponse(path, media_type="application/javascript",
                             headers={"Cache-Control": "no-cache"})

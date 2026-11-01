@@ -25,12 +25,15 @@
     "are immutable in practice and cache for a day.",
     "",
     "ORDER IS UPLOAD ORDER (sync.sh puts them one by one). The twin's modules",
-    "(js/) go before app.js, which imports them, and index.html goes after",
-    "every file it loads: during a sync a phone must never get a new file",
-    "that imports or preloads one not yet in the bucket -- one failed import",
-    "stops the whole module graph, and the page is dead (3.132 Stage 2B)."
+    "(js/) go before app.js, which imports them, and each before any module",
+    "that imports it: during a sync a phone must never get an app.js that",
+    "imports a key not yet in the bucket -- one failed import stops the whole",
+    "module graph and the page is dead (3.132 Stage 2B). index.html stays",
+    "first: an old index.html loads app.js as a classic script, where an",
+    "import line is a SyntaxError, so the module tag must be live first."
   ],
   "assets": [
+    {"src": "web-twin/index.html",              "key": "index.html",              "type": "text/html; charset=utf-8",       "cache": "none"},
     {"src": "web-twin/js/qr.js",          "key": "js/qr.js",              "type": "application/javascript",         "cache": "none"},
     {"src": "web-twin/js/icons.js",       "key": "js/icons.js",           "type": "application/javascript",         "cache": "none"},
     {"src": "web-twin/js/prefs.js",       "key": "js/prefs.js",           "type": "application/javascript",         "cache": "none"},
@@ -41,7 +44,6 @@
     {"src": "web-twin/app.js",                  "key": "app.js",                  "type": "application/javascript",         "cache": "none"},
     {"src": "web-shared/ui.css",                "key": "ui.css",                  "type": "text/css; charset=utf-8",        "cache": "none"},
     {"src": "web-twin/twin.css",                "key": "twin.css",                "type": "text/css; charset=utf-8",        "cache": "none"},
-    {"src": "web-twin/index.html",              "key": "index.html",              "type": "text/html; charset=utf-8",       "cache": "none"},
     {"src": "web-twin/manifest.json",           "key": "manifest.json",           "type": "application/manifest+json",      "cache": "day"},
     {"src": "web-twin/icons/icon-192.png",      "key": "icons/icon-192.png",      "type": "image/png",                      "cache": "day"},
     {"src": "web-twin/icons/icon-512.png",      "key": "icons/icon-512.png",      "type": "image/png",                      "cache": "day"},
