@@ -32,7 +32,7 @@ in the same commit as the code. For a button-by-button walkthrough, see
 | `robot/server.py` | Serves the page locally: `GET /`, `/app.js`, `/strings.js`, `/ui.css`, `/twin.css`, `/js/{name}`, `/manifest.json`, `/icons/*.png`. The scripts and stylesheets send `Cache-Control: no-cache`; `GET /` is a plain `FileResponse` with no `Cache-Control`, so locally the HTML may be reused from cache (heuristically) against a fresh script. |
 
 **`app.js` sections, in file order:** tester error capture (registered
-first) · `applyStaticIcons()`'s call · twin state · robot server client (`apiGet`, `apiPost`,
+first) · `applyStaticIcons()`'s call · robot server client (`apiGet`, `apiPost`,
 `sendAction`, `tunnelHeaders`) · vision URL helper (`deriveServiceUrl`,
 endpoint mismatch notes) · M2 depth grid · odometry · N1 world model (map,
 pose, SLAM error, tap-to-goal) · action execution · R0 turn step ·
@@ -52,7 +52,8 @@ preferences: `PREF`, `prefGet`, `prefSet`) · `ui.js` (the shared UI helpers:
 `setButtonBusy`) · `debuglog.js` (the error-capture buffer: `DEBUG_LOG_KEY`,
 `pushDebugLog`; its two listeners stay first in `app.js`) · `history.js` (the
 recent search targets: `renderTargetHistory`, `saveTargetToHistory`; init's
-call stays in `app.js`).
+call stays in `app.js`) · `state.js` (the twin state: `state`, with
+`MIN_DISTANCE_CM_FALLBACK`; a `const` object the rest changes by property).
 
 ## Interfaces
 

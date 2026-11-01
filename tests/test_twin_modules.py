@@ -116,7 +116,8 @@ def destructuring_targets(code: str) -> list:
     return spans
 
 ASSIGN = r"(?<![\w$.])%s\s*(?:\*\*|<<|>>>|>>|&&|\|\||\?\?|[-+*/%%&|^])?=(?![=>])"
-STEP = r"(?<![\w$.])%s\s*(?:\+\+|--)|(?:\+\+|--)\s*%s(?![\w$])"
+# `x++`, `--x`; not `++x.count` (a property) nor prose's "x -- y".
+STEP = r"(?<![\w$.])%s(?:\+\+|--)|(?:\+\+|--)%s(?![\w$.\[])"
 
 
 def writes_to_imports(text: str) -> list:
@@ -168,7 +169,7 @@ def test_the_checks_catch_what_they_are_for(tmp_path):
     for fine in ("x === 1", "y = x", "o.x = 1", "f(x)", "xy = 1", "{ x: 1 }", "x => 1",
                  "[x].map(f)", "const o = { x };", "f([x])", "[x] === y", "for (const y of x) {}",
                  "({ x: 1 } = o)", "const o = { a: x }; o.b = 1", "arr[x] = 1",
-                 "if (map[x] in seen) {}", "f()[x] = 2"):
+                 "if (map[x] in seen) {}", "f()[x] = 2", "++x.count", "// found x -- done"):
         assert writes_to_imports('import { x } from "./js/a.js";\n' + fine) == [], fine
 
 

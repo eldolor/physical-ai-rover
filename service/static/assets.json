@@ -41,6 +41,7 @@
     {"src": "web-twin/js/ui.js",          "key": "js/ui.js",              "type": "application/javascript",         "cache": "none"},
     {"src": "web-twin/js/debuglog.js",    "key": "js/debuglog.js",        "type": "application/javascript",         "cache": "none"},
     {"src": "web-twin/js/history.js",     "key": "js/history.js",         "type": "application/javascript",         "cache": "none"},
+    {"src": "web-twin/js/state.js",       "key": "js/state.js",           "type": "application/javascript",         "cache": "none"},
     {"src": "web-twin/index.html",              "key": "index.html",              "type": "text/html; charset=utf-8",       "cache": "none"},
     {"src": "web-twin/strings.js",              "key": "strings.js",              "type": "application/javascript",         "cache": "none"},
     {"src": "web-twin/app.js",                  "key": "app.js",                  "type": "application/javascript",         "cache": "none"},
