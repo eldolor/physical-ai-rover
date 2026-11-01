@@ -97,6 +97,11 @@ INTENTIONALLY_UNROUTED = {
     # service/tunnel/, as every live route has since these stacks went.
     ("twin.yaml", "/world/remap"),
     ("teleop-robot.yaml", "/teleop-robot/world/remap"),
+    # 3.132 Stage 2B: the twin's ES modules (/js/{name}; app_routes() samples
+    # the name). Served from S3 by CloudFront since these stacks were
+    # deleted 2026-09-05, like the rest of the page.
+    ("twin.yaml", "/js/sample"),
+    ("teleop-robot.yaml", "/teleop-robot/js/sample"),
     # admin_server mounts control/recording_routes.py so the recordings
     # Lambda has the write path (the walks left EFS, and the brain is going
     # back to the Pi where it should not hold AWS credentials). In THIS

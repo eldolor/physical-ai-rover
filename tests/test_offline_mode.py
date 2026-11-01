@@ -323,7 +323,10 @@ def test_5_the_twin_loads_nothing_from_the_internet():
     from robot.server import create_app
 
     client = TestClient(create_app())
-    for route in ("/", "/app.js", "/strings.js", "/ui.css", "/twin.css"):
+    from tests.twin_sources import TWIN, modules
+
+    module_routes = tuple("/" + p.relative_to(TWIN).as_posix() for p in modules())
+    for route in ("/", "/app.js", "/strings.js", "/ui.css", "/twin.css") + module_routes:
         resp = client.get(route)
         assert resp.status_code == 200, route
         hits = [m.group(0) for m in EXTERNAL.finditer(resp.text)]

@@ -21,7 +21,8 @@ import re
 
 from tests.conftest import REPO_ROOT
 
-APP_JS = REPO_ROOT / "web-twin" / "app.js"
+# Every twin script, not only app.js: code moves into web-twin/js/ (3.132 Stage 2B).
+from tests.twin_sources import twin_source  # noqa: E402
 STRINGS_JS = REPO_ROOT / "web-twin" / "strings.js"
 BEGIN, END = "/* BEGIN STRINGS (strict JSON) */", "/* END STRINGS */"
 
@@ -120,7 +121,7 @@ def message_literals(arg):
 
 
 def test_no_toast_message_is_a_literal():
-    src = APP_JS.read_text()
+    src = twin_source()
     found = calls(src, "showToast")
     assert len(found) >= 40, f"the parser found only {len(found)} showToast calls"
     bad = [first_arg(a).strip()[:90] for a in found if message_literals(first_arg(a))]
@@ -140,7 +141,7 @@ def test_the_operator_voice_is_plain():
 def test_every_key_is_in_both_voices_and_every_asked_key_exists():
     t = table()
     assert set(t["eng"]) <= set(t["op"]), sorted(set(t["eng"]) - set(t["op"]))
-    asked = set(re.findall(r"\bt\(\s*[\"']([\w.]+)[\"']", APP_JS.read_text()))
+    asked = set(re.findall(r"\bt\(\s*[\"']([\w.]+)[\"']", twin_source()))
     # "action." + verb: a prefix, so some key must sit under it.
     missing = sorted(k for k in asked if (k not in t["op"]) if not
                      (k.endswith(".") and any(o.startswith(k) for o in t["op"])))

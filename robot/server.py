@@ -12,6 +12,7 @@ Endpoints:
     GET  /app.js                  the twin's client script (was inline)
     GET  /ui.css, /twin.css      the twin's stylesheets (3.132; were inline)
     GET  /strings.js              the twin's words, operator and Engineer voices (3.132)
+    GET  /js/{name}               the twin's ES modules, web-twin/js/ (3.132 Stage 2B)
     GET  /manifest.json           PWA manifest, for "Add to Home Screen"
     GET  /icons/icon-192.png      referenced by manifest.json and
     GET  /icons/icon-512.png      index.html's <link rel="icon">
@@ -134,6 +135,8 @@ _TWIN_APP_JS = Path(__file__).resolve().parent.parent / "web-twin" / "app.js"
 _SHARED_UI_CSS = Path(__file__).resolve().parent.parent / "web-shared" / "ui.css"
 _TWIN_STRINGS_JS = Path(__file__).resolve().parent.parent / "web-twin" / "strings.js"
 _TWIN_CSS = Path(__file__).resolve().parent.parent / "web-twin" / "twin.css"
+# 3.132 Stage 2B: the modules app.js imports, one ES module a file.
+_TWIN_JS_DIR = Path(__file__).resolve().parent.parent / "web-twin" / "js"
 _TWIN_MANIFEST_JSON = Path(__file__).resolve().parent.parent / "web-twin" / "manifest.json"
 _TWIN_ICONS_DIR = Path(__file__).resolve().parent.parent / "web-twin" / "icons"
 
@@ -1042,6 +1045,22 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
     @app.get(prefix + "/strings.js")
     def twin_strings_js():
         return FileResponse(_TWIN_STRINGS_JS, media_type="application/javascript",
+                            headers={"Cache-Control": "no-cache"})
+
+    # 3.132 Stage 2B: the twin's ES modules (web-twin/js/), imported by
+    # app.js. One route for the folder, answered from a name map built here
+    # at start-up: a name that is not a .js file in web-twin/js/ is a 404,
+    # so there is no path to traverse. Revalidated like app.js, and a module
+    # must be served as JavaScript or the browser refuses to run it.
+    twin_modules = ({p.name: p for p in sorted(_TWIN_JS_DIR.glob("*.js")) if p.is_file()}
+                    if _TWIN_JS_DIR.is_dir() else {})
+
+    @app.get(prefix + "/js/{name}")
+    def twin_module(name: str):
+        path = twin_modules.get(name)
+        if path is None:
+            raise HTTPException(status_code=404, detail="no such twin module")
+        return FileResponse(path, media_type="application/javascript",
                             headers={"Cache-Control": "no-cache"})
 
     # Explicit routes rather than a generic /icons/{filename} + StaticFiles

@@ -15,7 +15,8 @@ from tests.test_ui import (  # noqa: F401  (fixtures)
     PHONE, _open_with_health, browser, open_twin, twin_server)
 
 INDEX = Path(REPO_ROOT) / "web-twin" / "index.html"
-APP = Path(REPO_ROOT) / "web-twin" / "app.js"
+# Every twin script: the line may move into web-twin/js/ (3.132 Stage 2B).
+from tests.twin_sources import twin_source  # noqa: E402
 
 
 def _fullscreen(page):
@@ -94,7 +95,7 @@ def test_the_robot_countdown_runs_its_time_under_reduced_motion(browser, twin_se
     page = context.new_page()
     page.goto(twin_server, wait_until="load")
     # The line app.js runs, on the element it runs it on.
-    line = next(l.strip() for l in APP.read_text().splitlines()
+    line = next(l.strip() for l in twin_source().splitlines()
                 if "robotCountdown.firstElementChild.style" in l)
     page.evaluate("(line) => { const ms = 5000;"
                   " const robotCountdown = document.querySelector('.robot-countdown');"

@@ -15,10 +15,14 @@
 // conditional request and would need HTML templating to emit; this page is
 // one file served to one household.
 //
-// Still one IIFE, deliberately: splitting it into modules is a separate
-// change with its own risk, and this one is meant to be byte-identical
-// behaviour. What it buys immediately is a file that an editor, a linter and
-// `node --check` can all read.
+// The entry module since 3.132 Stage 2B (index.html loads it with
+// type="module"). Code moves out into web-twin/js/, one behaviour-identical
+// move at a time; the rule a move follows is in
+// docs/plans/ros-alignment/3.132-ux-redesign.md, Stage 2B. In short: a
+// module's top level only declares, every statement that does something
+// stays here in its original order, and no module imports this file. The
+// IIFE and its indentation stay, so the move is small to review; the
+// imports above it are visible inside it, and this file exports nothing.
 
 (function () {
   "use strict";
