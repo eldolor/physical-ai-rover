@@ -817,6 +817,18 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   toast for `nav2_starting` reads "(still starting up)", no longer "(starting,
   or restarting)"; pinned by `tests/test_twin_strings.py`. The twin is NOT
   deployed with it yet (the user's go).
+* **The battery ladder (3.137.A), merged 2026-11-01** (B, C, E open; D waits
+  on the Rover). The robot server decides on the board's `v`
+  (`robot/battery_ladder.py`, `battery:` in `config/robot.yaml`; levels
+  placeholders until E): Low 10.5 V (no mission starts), Reserve 10.2 V
+  (latched; autonomy refused `battery_reserve`, a person's D-pad at speed 30,
+  goals ended and refused), Power-off 10.0 V or 120 s at Reserve (everyone
+  refused `battery_poweroff`; `shutdown_steps` in order, then `poweroff_cmd`
+  once -- a logged stub except `mode: hardware` with a real board). Two
+  distinct samples per level; one read while driving is read again at rest
+  (`battery_check`). Criterion 1a FAILED as written (Reserve 2-3 s after the
+  crossing, the re-read included; kept by the user), 1b-1d and 2 met, live
+  run met. Sim pack: `sim/battery.py` (`SIM_BATTERY_*`).
 * **Older review bugs (3.64), merged 2026-10-09, deployed 2026-10-10.** Ten bugs
   from the reviewer comparison still live on `dev`, fixed red-first: the
   twin's guidance loop after Stop, a hidden page and an outage (A2, A4,
