@@ -155,15 +155,21 @@ def browser():
         b.close()
 
 
-def open_twin(browser, twin_server, *, saved_vision_url=True, mode="robot", models=None):
+def open_twin(browser, twin_server, *, saved_vision_url=True, mode="robot", models=None,
+              engineer=True):
     """A phone-sized page with the twin loaded.
 
     `saved_vision_url` seeds localStorage the way a returning user's browser
     would -- which is the state bug (1) needed: the URL exists in storage
     but is not yet in the DOM when init runs.
+
+    `engineer` (3.132 Stage 2A): Engineer mode on, the view -- and the
+    wording -- every test here was written against: the policies, tier rows,
+    logs and raw readouts live there now, in their old words. A test of what
+    a person sees by default passes `engineer=False` (tests/test_ui_operator_words.py).
     """
     context = browser.new_context(viewport=PHONE)
-    seed = {"guidanceMode": mode}
+    seed = {"guidanceMode": mode, "vp_debug_readouts": "1" if engineer else "0"}
     if saved_vision_url:
         seed["vp_vision_url"] = twin_server
     context.add_init_script(
@@ -642,6 +648,7 @@ def test_recording_says_so_when_it_cannot_start(browser, twin_server):
     context.add_init_script(
         "(() => { try {"
         " localStorage.setItem('guidanceMode','robot');"
+        " localStorage.setItem('vp_debug_readouts','1');"  # 3.132: Engineer mode, as written
         " localStorage.setItem('vp_guide_onboarded','1');"
         " localStorage.setItem('vp_record_walk','1');"
         " } catch (e) {} })();")
@@ -685,6 +692,7 @@ def test_double_tapping_start_does_not_begin_two_walks(browser, twin_server):
     context.add_init_script(
         "(() => { try {"
         " localStorage.setItem('guidanceMode','robot');"
+        " localStorage.setItem('vp_debug_readouts','1');"  # 3.132: Engineer mode, as written
         " localStorage.setItem('vp_guide_onboarded','1');"
         " localStorage.setItem('vp_record_walk','1');"
         " } catch (e) {} })();")
@@ -2111,6 +2119,7 @@ def test_the_walk_sends_the_policy_it_was_set_to(browser, twin_server):
     context.add_init_script(
         "(() => { try {"
         " localStorage.setItem('guidanceMode','robot');"
+        " localStorage.setItem('vp_debug_readouts','1');"  # 3.132: Engineer mode, as written
         " localStorage.setItem('vp_guide_onboarded','1');"
         " localStorage.setItem('vp_drive_via_brain','1');"
         " localStorage.setItem('vp_drive_policy','tiered');"
@@ -2184,6 +2193,7 @@ def test_a_mission_that_ENDS_says_so_instead_of_sitting_on_deciding(browser, twi
     context.add_init_script(
         "(() => { try {"
         " localStorage.setItem('guidanceMode','robot');"
+        " localStorage.setItem('vp_debug_readouts','1');"  # 3.132: Engineer mode, as written
         " localStorage.setItem('vp_guide_onboarded','1');"
         " localStorage.setItem('vp_drive_via_brain','1');"
         " localStorage.setItem('vp_drive_policy','tiered');"
@@ -2320,6 +2330,7 @@ def test_the_late_watch_stops_on_a_guide_start(browser, twin_server):
     context.add_init_script(
         "(() => { try {"
         " localStorage.setItem('guidanceMode','robot');"
+        " localStorage.setItem('vp_debug_readouts','1');"  # 3.132: Engineer mode, as written
         " localStorage.setItem('vp_guide_onboarded','1');"
         " localStorage.setItem('vp_drive_via_brain','1');"
         " localStorage.setItem('vp_drive_policy','tiered');"
@@ -2390,6 +2401,7 @@ def test_a_refused_guide_start_keeps_watching_the_old_check(browser, twin_server
     context.add_init_script(
         "(() => { try {"
         " localStorage.setItem('guidanceMode','robot');"
+        " localStorage.setItem('vp_debug_readouts','1');"  # 3.132: Engineer mode, as written
         " localStorage.setItem('vp_guide_onboarded','1');"
         " localStorage.setItem('vp_drive_via_brain','1');"
         " localStorage.setItem('vp_drive_policy','tiered');"
@@ -2442,6 +2454,7 @@ def test_a_verdict_that_lands_during_a_refused_guide_start_is_shown(browser, twi
     context.add_init_script(
         "(() => { try {"
         " localStorage.setItem('guidanceMode','robot');"
+        " localStorage.setItem('vp_debug_readouts','1');"  # 3.132: Engineer mode, as written
         " localStorage.setItem('vp_guide_onboarded','1');"
         " localStorage.setItem('vp_drive_via_brain','1');"
         " localStorage.setItem('vp_drive_policy','tiered');"
@@ -2496,6 +2509,7 @@ def test_a_refused_start_never_toasts_a_verdict_this_page_was_not_waiting_on(
     context.add_init_script(
         "(() => { try {"
         " localStorage.setItem('guidanceMode','robot');"
+        " localStorage.setItem('vp_debug_readouts','1');"  # 3.132: Engineer mode, as written
         " localStorage.setItem('vp_guide_onboarded','1');"
         " localStorage.setItem('vp_drive_via_brain','1');"
         " localStorage.setItem('vp_drive_policy','tiered');"
@@ -2542,6 +2556,7 @@ def test_a_stale_resume_never_draws_over_a_newer_guide_start(browser, twin_serve
     context.add_init_script(
         "(() => { try {"
         " localStorage.setItem('guidanceMode','robot');"
+        " localStorage.setItem('vp_debug_readouts','1');"  # 3.132: Engineer mode, as written
         " localStorage.setItem('vp_guide_onboarded','1');"
         " localStorage.setItem('vp_drive_via_brain','1');"
         " localStorage.setItem('vp_drive_policy','tiered');"
@@ -2618,6 +2633,7 @@ def test_two_refused_starts_in_a_row_still_watch_the_old_check(browser, twin_ser
     context.add_init_script(
         "(() => { try {"
         " localStorage.setItem('guidanceMode','robot');"
+        " localStorage.setItem('vp_debug_readouts','1');"  # 3.132: Engineer mode, as written
         " localStorage.setItem('vp_guide_onboarded','1');"
         " localStorage.setItem('vp_drive_via_brain','1');"
         " localStorage.setItem('vp_drive_policy','tiered');"
@@ -2692,6 +2708,7 @@ def test_a_resume_made_stale_by_a_reconnect_owes_nothing_later(browser, twin_ser
     context.add_init_script(
         "(() => { try {"
         " localStorage.setItem('guidanceMode','robot');"
+        " localStorage.setItem('vp_debug_readouts','1');"  # 3.132: Engineer mode, as written
         " localStorage.setItem('vp_guide_onboarded','1');"
         " localStorage.setItem('vp_drive_via_brain','1');"
         " localStorage.setItem('vp_drive_policy','tiered');"
@@ -2807,6 +2824,7 @@ def test_on_the_guide_tab_an_unconfirmed_arrival_is_an_outcome_not_a_lost_link(
     context.add_init_script(
         "(() => { try {"
         " localStorage.setItem('guidanceMode','robot');"
+        " localStorage.setItem('vp_debug_readouts','1');"  # 3.132: Engineer mode, as written
         " localStorage.setItem('vp_guide_onboarded','1');"
         " localStorage.setItem('vp_drive_via_brain','1');"
         " localStorage.setItem('vp_drive_policy','tiered');"
@@ -3826,6 +3844,7 @@ def test_the_guide_tab_shows_the_cloud_row_too(browser, twin_server):
     context.add_init_script(
         "(() => { try {"
         " localStorage.setItem('guidanceMode','robot');"
+        " localStorage.setItem('vp_debug_readouts','1');"  # 3.132: Engineer mode, as written
         " localStorage.setItem('vp_guide_onboarded','1');"
         " localStorage.setItem('vp_drive_via_brain','1');"
         " localStorage.setItem('vp_drive_policy','tiered');"
@@ -4066,6 +4085,7 @@ def test_on_the_guide_tab_a_late_report_still_lands(browser, twin_server):
     context.add_init_script(
         "(() => { try {"
         " localStorage.setItem('guidanceMode','robot');"
+        " localStorage.setItem('vp_debug_readouts','1');"  # 3.132: Engineer mode, as written
         " localStorage.setItem('vp_guide_onboarded','1');"
         " localStorage.setItem('vp_drive_via_brain','1');"
         " localStorage.setItem('vp_drive_policy','tiered');"
@@ -4148,6 +4168,7 @@ def test_on_the_guide_tab_an_end_state_is_an_outcome_not_a_lost_link(
     context.add_init_script(
         "(() => { try {"
         " localStorage.setItem('guidanceMode','robot');"
+        " localStorage.setItem('vp_debug_readouts','1');"  # 3.132: Engineer mode, as written
         " localStorage.setItem('vp_guide_onboarded','1');"
         " localStorage.setItem('vp_drive_via_brain','1');"
         " localStorage.setItem('vp_drive_policy','tiered');"

@@ -282,6 +282,9 @@ Resources:
             # A page whose CSS 404s still loads -- unstyled and unusable.
             - /ui.css
             - /twin.css
+            # 3.132 Stage 2A: the page's words, loaded before app.js. The
+            # fifth and last value this rule can hold.
+            - /strings.js
       Actions:
         - Type: forward
           TargetGroupArn: !Ref AlbTargetGroup

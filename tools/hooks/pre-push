@@ -4,6 +4,8 @@
 # anything else runs the FAST tier (no real-browser or live-stack tests)
 # unless `plan_section.py ready` already recorded a pass for that commit.
 # The full suite is not run on push (user, 2026-10-09) -- `ready --full`.
+# Since 3.139 the gate first refuses a push that changes a plan section's
+# file or an open step's Touches without the pusher's claim in that section.
 # Installed for every worktree by `git config core.hooksPath tools/hooks`.
 # Override (the user's call, never a session's): PICAR_SKIP_GATE=1 git push ...
 root="$(git rev-parse --show-toplevel)"
@@ -11,6 +13,9 @@ py="$(dirname "$(git rev-parse --git-common-dir)")/.venv/bin/python"
 [ -x "$py" ] || py=python3
 zero=0000000000000000000000000000000000000000
 while read -r local_ref local_sha remote_ref remote_sha; do
+  # A plan claim (3.139): `claim/<step>` created or deleted by plan_claims.py
+  # passes untouched -- no gate, no suite. Only those refs.
+  case "$remote_ref" in refs/heads/claim/*) continue ;; esac
   [ "$remote_ref" = "refs/heads/dev" ] || continue
   if [ "${PICAR_SKIP_GATE:-}" = "1" ]; then
     echo "pre-push: merge gate SKIPPED for $local_sha (PICAR_SKIP_GATE=1)" >&2

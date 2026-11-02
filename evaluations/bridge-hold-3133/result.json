@@ -1,0 +1,3548 @@
+{
+ "image": "vision-picar-ros:latest",
+ "image_id": "sha256:de51315a50cc8b1bdc9c5628dc289e9102f78a6b7c7e052a8c730886cf3d210f",
+ "house": "scaled_house",
+ "goal": [
+  4.35,
+  3.15
+ ],
+ "starts": [
+  {
+   "run_dir": "/tmp/vision-picar-3.133/run-20261031-232502",
+   "refusals": [
+    {
+     "t": 0.08,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 0.33,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 0.59,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 0.84,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 1.09,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 1.35,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 1.6,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 0.1
+      },
+      "slam": {
+       "state": "starting",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    },
+    {
+     "t": 1.85,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 0.3
+      },
+      "slam": {
+       "state": "starting",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    },
+    {
+     "t": 2.13,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 0.6
+      },
+      "slam": {
+       "state": "starting",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    },
+    {
+     "t": 2.38,
+     "status": 200,
+     "reason": "nav2_starting",
+     "retryable": true,
+     "bridge_status": 503,
+     "detail": "the ROS bridge did not take the goal: the ROS bridge answered 503 to POST /goal: nav2 is not active: not asked yet",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 0.8
+      },
+      "slam": {
+       "state": "ready",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    },
+    {
+     "t": 2.67,
+     "status": 200,
+     "reason": "nav2_starting",
+     "retryable": true,
+     "bridge_status": 503,
+     "detail": "the ROS bridge did not take the goal: the ROS bridge answered 503 to POST /goal: nav2 is not active: not asked yet",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 1.1
+      },
+      "slam": {
+       "state": "ready",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    },
+    {
+     "t": 2.93,
+     "status": 200,
+     "reason": "nav2_starting",
+     "retryable": true,
+     "bridge_status": 503,
+     "detail": "the ROS bridge did not take the goal: the ROS bridge answered 503 to POST /goal: nav2 is not active: not asked yet",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 1.4
+      },
+      "slam": {
+       "state": "ready",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    },
+    {
+     "t": 3.19,
+     "status": 200,
+     "reason": "nav2_starting",
+     "retryable": true,
+     "bridge_status": 503,
+     "detail": "the ROS bridge did not take the goal: the ROS bridge answered 503 to POST /goal: nav2 is not active: not asked yet",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 1.6
+      },
+      "slam": {
+       "state": "ready",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    }
+   ],
+   "health_log": [
+    {
+     "t": 0.07,
+     "error": "ConnectError"
+    },
+    {
+     "t": 1.6,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 0.1
+     },
+     "slam": {
+      "state": "starting",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 1.85,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 0.3
+     },
+     "slam": {
+      "state": "starting",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 2.11,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 0.6
+     },
+     "slam": {
+      "state": "starting",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 2.38,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 0.8
+     },
+     "slam": {
+      "state": "ready",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 2.64,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 1.1
+     },
+     "slam": {
+      "state": "ready",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 2.92,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 1.4
+     },
+     "slam": {
+      "state": "ready",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 3.18,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 1.6
+     },
+     "slam": {
+      "state": "ready",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 3.44,
+     "nav2": {
+      "active": true,
+      "why": null,
+      "answer_age_s": 0.1,
+      "inactive_s": null
+     },
+     "slam": {
+      "state": "ready",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    }
+   ],
+   "accepted_s": 3.45,
+   "health_at_accept": {
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   "state": "aborted",
+   "goal_s": 18.3,
+   "health_at_end": {
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   "stack_error": null,
+   "no_session": 9,
+   "held": {
+    "nav2_starting": 4,
+    "slam_not_ready": 0
+   },
+   "ros_unavailable": 0,
+   "other": [],
+   "holds_retryable": true
+  },
+  {
+   "run_dir": "/tmp/vision-picar-3.133/run-20261031-232532",
+   "refusals": [
+    {
+     "t": 0.08,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 0.34,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 0.59,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 0.84,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 1.1,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 1.35,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 1.6,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 0.1
+      },
+      "slam": {
+       "state": "starting",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    },
+    {
+     "t": 1.86,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 0.4
+      },
+      "slam": {
+       "state": "starting",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    },
+    {
+     "t": 2.12,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 0.6
+      },
+      "slam": {
+       "state": "starting",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    },
+    {
+     "t": 2.4,
+     "status": 200,
+     "reason": "nav2_starting",
+     "retryable": true,
+     "bridge_status": 503,
+     "detail": "the ROS bridge did not take the goal: the ROS bridge answered 503 to POST /goal: nav2 is not active: not asked yet",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 0.9
+      },
+      "slam": {
+       "state": "ready",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    },
+    {
+     "t": 2.66,
+     "status": 200,
+     "reason": "nav2_starting",
+     "retryable": true,
+     "bridge_status": 503,
+     "detail": "the ROS bridge did not take the goal: the ROS bridge answered 503 to POST /goal: nav2 is not active: not asked yet",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 1.2
+      },
+      "slam": {
+       "state": "ready",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    },
+    {
+     "t": 2.94,
+     "status": 200,
+     "reason": "nav2_starting",
+     "retryable": true,
+     "bridge_status": 503,
+     "detail": "the ROS bridge did not take the goal: the ROS bridge answered 503 to POST /goal: nav2 is not active: not asked yet",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 1.4
+      },
+      "slam": {
+       "state": "ready",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    }
+   ],
+   "health_log": [
+    {
+     "t": 0.07,
+     "error": "ConnectError"
+    },
+    {
+     "t": 1.6,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 0.1
+     },
+     "slam": {
+      "state": "starting",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 1.86,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 0.4
+     },
+     "slam": {
+      "state": "starting",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 2.11,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 0.6
+     },
+     "slam": {
+      "state": "starting",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 2.38,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 0.9
+     },
+     "slam": {
+      "state": "ready",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 2.65,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 1.2
+     },
+     "slam": {
+      "state": "ready",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 2.91,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 1.4
+     },
+     "slam": {
+      "state": "ready",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 3.19,
+     "nav2": {
+      "active": true,
+      "why": null,
+      "answer_age_s": 0.0,
+      "inactive_s": null
+     },
+     "slam": {
+      "state": "ready",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    }
+   ],
+   "accepted_s": 3.19,
+   "health_at_accept": {
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   "state": "aborted",
+   "goal_s": 18.3,
+   "health_at_end": {
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   "stack_error": null,
+   "no_session": 9,
+   "held": {
+    "nav2_starting": 3,
+    "slam_not_ready": 0
+   },
+   "ros_unavailable": 0,
+   "other": [],
+   "holds_retryable": true
+  },
+  {
+   "run_dir": "/tmp/vision-picar-3.133/run-20261031-232600",
+   "refusals": [
+    {
+     "t": 0.08,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 0.34,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 0.59,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 0.84,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 1.09,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 1.35,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "error": "ConnectError"
+     }
+    },
+    {
+     "t": 1.6,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 0.1
+      },
+      "slam": {
+       "state": "starting",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    },
+    {
+     "t": 1.85,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 0.4
+      },
+      "slam": {
+       "state": "starting",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    },
+    {
+     "t": 2.11,
+     "status": 200,
+     "reason": "no SLAM session yet",
+     "retryable": null,
+     "bridge_status": null,
+     "detail": "",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 0.6
+      },
+      "slam": {
+       "state": "starting",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    },
+    {
+     "t": 2.44,
+     "status": 200,
+     "reason": "nav2_starting",
+     "retryable": true,
+     "bridge_status": 503,
+     "detail": "the ROS bridge did not take the goal: the ROS bridge answered 503 to POST /goal: nav2 is not active: not asked yet",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 0.9
+      },
+      "slam": {
+       "state": "ready",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    },
+    {
+     "t": 2.72,
+     "status": 200,
+     "reason": "nav2_starting",
+     "retryable": true,
+     "bridge_status": 503,
+     "detail": "the ROS bridge did not take the goal: the ROS bridge answered 503 to POST /goal: nav2 is not active: not asked yet",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 1.2
+      },
+      "slam": {
+       "state": "ready",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    },
+    {
+     "t": 3.0,
+     "status": 200,
+     "reason": "nav2_starting",
+     "retryable": true,
+     "bridge_status": 503,
+     "detail": "the ROS bridge did not take the goal: the ROS bridge answered 503 to POST /goal: nav2 is not active: not asked yet",
+     "health": {
+      "nav2": {
+       "active": false,
+       "why": "not asked yet",
+       "answer_age_s": null,
+       "inactive_s": 1.5
+      },
+      "slam": {
+       "state": "ready",
+       "reload": {
+        "result": "none"
+       },
+       "why": null
+      }
+     }
+    }
+   ],
+   "health_log": [
+    {
+     "t": 0.07,
+     "error": "ConnectError"
+    },
+    {
+     "t": 1.6,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 0.1
+     },
+     "slam": {
+      "state": "starting",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 1.85,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 0.4
+     },
+     "slam": {
+      "state": "starting",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 2.1,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 0.6
+     },
+     "slam": {
+      "state": "starting",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 2.37,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 0.9
+     },
+     "slam": {
+      "state": "ready",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 2.69,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 1.2
+     },
+     "slam": {
+      "state": "ready",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 2.97,
+     "nav2": {
+      "active": false,
+      "why": "not asked yet",
+      "answer_age_s": null,
+      "inactive_s": 1.5
+     },
+     "slam": {
+      "state": "ready",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    },
+    {
+     "t": 3.25,
+     "nav2": {
+      "active": true,
+      "why": null,
+      "answer_age_s": 0.0,
+      "inactive_s": null
+     },
+     "slam": {
+      "state": "ready",
+      "reload": {
+       "result": "none"
+      },
+      "why": null
+     }
+    }
+   ],
+   "accepted_s": 3.26,
+   "health_at_accept": {
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   "state": "aborted",
+   "goal_s": 18.2,
+   "health_at_end": {
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.5,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   "stack_error": null,
+   "no_session": 9,
+   "held": {
+    "nav2_starting": 3,
+    "slam_not_ready": 0
+   },
+   "ros_unavailable": 0,
+   "other": [],
+   "holds_retryable": true
+  }
+ ],
+ "mission": {
+  "outcome": "found",
+  "seconds": 37,
+  "target_at": [
+   [
+    23,
+    5
+   ]
+  ],
+  "status_file": "explore_status_explore-red_backpack-1793507194.json",
+  "steps": 3,
+  "explore": {
+   "goals_sent": 3,
+   "goals_failed": 0,
+   "last_event": "goal sent (approach) to (6.30, 1.56)",
+   "camera_seen_m2": 11.24,
+   "choice_ms": {
+    "n": 7,
+    "p50_ms": 10.9,
+    "p90_ms": 28.3,
+    "max_ms": 28.3
+   },
+   "asks": false,
+   "ask": null,
+   "choices": 0
+  },
+  "stuck_episodes": 0,
+  "travel_m": 4.8,
+  "min_gap_cm": Infinity,
+  "contact_samples": 0,
+  "inside_samples": 0,
+  "samples": 71,
+  "room_labels": null,
+  "last_log": [
+   "waiting -- nav2 active: approach -- kitchen, facing ?, free space some, sees red backpack",
+   "inventory: 2 reported, 1 candidates from 61 frames -- red backpack, refrigerator",
+   "mission ended (found): Hallway, kitchen, living room searched. Found."
+  ],
+  "start_refusals": [
+   {
+    "t": 0.11,
+    "status": 400,
+    "detail": "{\"detail\":\"The explore policy needs nav2: this robot server's world cannot take goals (run it with WORLD_MODE=ros and the ROS container up -- service/slam/README.md).\"}"
+   },
+   {
+    "t": 0.63,
+    "status": 400,
+    "detail": "{\"detail\":\"The explore policy needs nav2: this robot server's world cannot take goals (run it with WORLD_MODE=ros and the ROS container up -- service/slam/README.md).\"}"
+   },
+   {
+    "t": 1.15,
+    "status": 400,
+    "detail": "{\"detail\":\"The explore policy needs nav2: this robot server's world cannot take goals (run it with WORLD_MODE=ros and the ROS container up -- service/slam/README.md).\"}"
+   }
+  ],
+  "health_log": [
+   {
+    "t": 0.07,
+    "error": "ConnectError"
+   },
+   {
+    "t": 1.58,
+    "nav2": {
+     "active": false,
+     "why": "not asked yet",
+     "answer_age_s": null,
+     "inactive_s": 0.1
+    },
+    "slam": {
+     "state": "starting",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 1.83,
+    "nav2": {
+     "active": false,
+     "why": "not asked yet",
+     "answer_age_s": null,
+     "inactive_s": 0.4
+    },
+    "slam": {
+     "state": "starting",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 2.08,
+    "nav2": {
+     "active": false,
+     "why": "not asked yet",
+     "answer_age_s": null,
+     "inactive_s": 0.6
+    },
+    "slam": {
+     "state": "starting",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 2.33,
+    "nav2": {
+     "active": false,
+     "why": "not asked yet",
+     "answer_age_s": null,
+     "inactive_s": 0.9
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 2.58,
+    "nav2": {
+     "active": false,
+     "why": "not asked yet",
+     "answer_age_s": null,
+     "inactive_s": 1.1
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 2.84,
+    "nav2": {
+     "active": false,
+     "why": "not asked yet",
+     "answer_age_s": null,
+     "inactive_s": 1.4
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 3.09,
+    "nav2": {
+     "active": false,
+     "why": "not asked yet",
+     "answer_age_s": null,
+     "inactive_s": 1.6
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 3.35,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 3.85,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 4.11,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 4.36,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 4.62,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 4.87,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 5.12,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 5.38,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 5.63,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 5.89,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 6.15,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 6.4,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 6.65,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 6.9,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 7.16,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 7.41,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 7.66,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 7.91,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 8.17,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 8.42,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.5,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 8.68,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 8.93,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.5,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 9.18,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 9.44,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.5,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 9.69,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 9.94,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.5,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 10.2,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 10.45,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.5,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 10.7,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 10.96,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.5,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 11.21,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 11.46,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.5,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 11.71,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 11.97,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.5,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 12.23,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 12.48,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 12.73,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 12.98,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 13.24,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 13.49,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 13.74,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 14.0,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 14.25,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 14.5,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 14.76,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 15.01,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 15.27,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 15.52,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 15.77,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 16.02,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 16.28,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 16.53,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 16.79,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 17.04,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 17.29,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 17.54,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 17.8,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 18.06,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 18.31,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 18.56,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 18.81,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 19.07,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 19.32,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 19.57,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 19.83,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 20.08,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 20.34,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 20.59,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 20.85,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 21.1,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 21.36,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 21.61,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 21.87,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 22.12,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 22.38,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 22.63,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 22.88,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 23.14,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 23.39,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 23.64,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 23.89,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 24.15,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 24.41,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 24.66,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 24.91,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 25.17,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 25.42,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.5,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 25.68,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 25.93,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.5,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 26.18,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 26.44,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.5,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 26.69,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 26.95,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.5,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 27.2,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 27.46,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.5,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 27.71,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.2,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 27.97,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.5,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 28.22,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 28.47,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 28.73,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 28.98,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 29.23,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 29.48,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 29.74,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 29.99,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 30.24,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 30.49,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 30.74,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 30.99,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 31.25,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 31.5,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 31.75,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 32.01,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 32.26,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 32.51,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 32.76,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 33.02,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.0,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 33.28,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 33.53,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 33.78,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 34.04,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 34.29,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 34.55,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 34.8,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 35.05,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 35.3,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 35.56,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 35.81,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.3,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 36.07,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 36.32,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 36.57,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 36.82,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 37.08,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 37.33,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 37.58,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 37.84,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.4,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   },
+   {
+    "t": 38.09,
+    "nav2": {
+     "active": true,
+     "why": null,
+     "answer_age_s": 0.1,
+     "inactive_s": null
+    },
+    "slam": {
+     "state": "ready",
+     "reload": {
+      "result": "none"
+     },
+     "why": null
+    }
+   }
+  ],
+  "started_s": 1.15,
+  "refused_lines": [
+   "waiting -- goal refused: nav2_starting -- living room, facing ?, free space clear, sees nothing of note",
+   "waiting -- goal refused: preempted -- living room, facing ?, free space clear, sees nothing of note"
+  ],
+  "refused_events": [],
+  "run_dir": "/tmp/vision-picar-3.133/run-20261031-232628",
+  "stack_error": null
+ },
+ "criteria": {
+  "a_no_ros_unavailable": true,
+  "a_holds_retryable": true,
+  "a_held_seen": [
+   4,
+   3,
+   3
+  ],
+  "a_all_succeeded": false,
+  "a_other_reasons": [],
+  "a_met": false,
+  "c_not_active_before_active": 0,
+  "b_refused_hold": 1,
+  "b_refused_unavailable": 0,
+  "b_goals_failed": 0,
+  "b_met": true
+ }
+}

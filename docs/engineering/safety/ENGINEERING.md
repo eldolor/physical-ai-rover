@@ -2,7 +2,7 @@
 kind: engineering
 domain: safety
 status: current
-verified: 2026-10-04
+verified: 2026-11-01
 parent: docs/safety/ARCHITECTURE.md
 ---
 
@@ -21,7 +21,9 @@ changes it.
 | `robot/safety.py` | `SafetyController`: every clearance judgement, the wheel-command vet, the guarded-verb runner and the settle pass. `path_zone_indices()` and `scan_points_cm()` are module functions. `SafetyViolation` is the veto exception |
 | `robot/interface.py` | The rank table `DRIVER_PRIORITY`, `driver_priority()` (unknown names rank as manual), `Preempted`, and `carry_out_verb()`, the loop `run_verb()` supplies a limit to |
 | `robot/server.py`, inside `create_app()` | `authority_holder()`, `arbitrate()`, `refuse()`, `goal_in_progress()`, `ros_up()`, `watchdog_loop()`, `wheel_loop()`, and the `motion_lock` that serialises everything that moves the robot. Under ROS drive, a second `SafetyController` (`fallback_safety`) runs over the wrapped body |
-| `control/remote_robot.py` | Maps refusal reasons to `Preempted` / `RobotTransportError` / `SafetyViolation` |
+| `robot/battery_ladder.py` | 3.137: `BatteryLadder`, the battery ladder's rules (pure, no I/O): two distinct samples per level, the read at rest, Reserve's timer |
+| `robot/server.py`, inside `create_app()`, 3.137 | `battery_poll()`, `enter_reserve()`, `battery_refusal()`, `power_off()`, `battery_loop()`; `battery_settings()` at module level |
+| `control/remote_robot.py` | Maps refusal reasons to `Preempted` / `StoppedByPerson` / `BatteryReserve` / `RobotTransportError` / `SafetyViolation` |
 | `brain/agent.py` | The brain's own `SafetyController` (an early out; the server's is authoritative). Its `min_distance_cm` comes from the `brain:` block |
 | `tests/footprint_sweep.py`, `tests/verb_sweep.py`, `tests/ros_verb_sweep.py` | Ground-truth instruments: the URDF rectangle against the house's occupied cells, sharing no geometry code with `robot/safety.py` |
 
@@ -89,6 +91,38 @@ vetted at the creep bar while it runs; nav2's twists, which no verb asked,
 never are. The wheel vet computes `need` from the COMMANDED `v` before
 slowing it, and `run_verb()` from the asked speed, so the vet's own slowing
 never earns the creep margin.
+
+### The battery ladder (3.137)
+
+The robot server reads the pack (`robot.get_battery()`, the board's `v`) every
+`BATTERY_POLL_S` of the robot's clock -- the simulator's in process, the
+monotonic clock otherwise, wrapped so it never runs backwards across a house
+swap -- from `battery_loop()` (off the event loop), and, only when that loop
+is not running (in process: tests, evaluations), at the top of `/action`,
+`/wheels` and `/world/goal`; `/battery` polls (rate-limited, forced only
+before the first reading) and returns that poll's reading. Each
+read goes to `BatteryLadder.observe(v, now, at_rest)`; `at_rest` is nothing
+having turned the wheels for `BATTERY_REST_S`, stamped where motion happens
+(a verb's start and end, a non-zero wheel command, a moving wheel-loop tick)
+and sampled at the poll; unusable wheel state counts as turning.
+"Autonomy" below is every rank under a person's (`!= DRIVER_MANUAL`).
+
+| Level (`battery:`) | Crossed by | What the server does | Refusal |
+|---|---|---|---|
+| Low, `low_v` 10.5 | Two distinct samples under it; not latched | Reports it (`/battery` `level`); the brain refuses a start (`battery_low`) and its own `battery_floor_v` ends a mission | none here |
+| Reserve, `reserve_v` 10.2 | Two distinct samples under it, at rest (else CHECK); latched | `enter_reserve()`: lapses an autonomous claim, counts a goal end (the Stop's goal-ending loop and hold, no person's latch), `robot.stop()`. Autonomy refused; a person's verb has its `speed` capped at `reserve_speed` (30), a person's `/wheels` scaled by it; no goal from anyone; `ros` wheel posts zeroed under `drive: direct` (under `drive: ros` they carry the person's verbs) | `battery_reserve` (autonomy only) |
+| Power-off, `poweroff_v` 10.0, or Reserve held `reserve_max_s` (120 s) | As Reserve; latched | Everything Reserve does, then `power_off()` on its own thread, once: the wheels at rest (up to 2 s), each `shutdown_steps` command in order (60 s each), `os.sync()`, `poweroff_cmd`. Every step is recorded (`/battery` `ladder.shutdown`) | `battery_poweroff` (everyone; `/stop` still answers) |
+| CHECK (a crossing read with the wheels turning) | -- | `robot.stop()`; autonomy held, and under `drive: ros` every `ros` wheel post zeroed (nav2's goal held still, not ended), until the next distinct sample: over every level clears it (a sag), under one and at rest fires the highest level the last two distinct samples are both under (one glitch at rest is not two); `check_max_s` (15 s) without a sample at rest fires if the last two are still under | `battery_check` (autonomy only, and never a camera pan; the brain reads it as a veto it does not count toward `stuck_after`) |
+
+`battery_refusal()` is checked where `person_stop_refusal()` is: before
+arbitration, and again at execution after the verb's stop baseline is set,
+so a level latched in between stops the robot and ends the verb. The brain
+ends a mission `out_of_budget` on `battery_reserve` / `battery_poweroff`
+(`BatteryReserve`, a `Preempted`), and also on reading `level` reserve or
+power-off from `GET /battery` with its floor set. `poweroff_cmd` defaults to
+`systemctl poweroff` only in `mode: hardware` with a real board; the
+simulator and `SIM_MOTOR_BOARD=fake` get the logged stub, so a desktop drain
+test cannot power off the desktop.
 
 ### Driving without a lidar
 
@@ -331,6 +365,12 @@ unlogged, as `ros_unavailable` is), and `watchdog` (recorded in
 | `WATCHDOG_POLL_INTERVAL_S` | 0.1 | s | `robot/server.py` | Watchdog wake rate; published in `/health` for `control/health.py` |
 | `WHEEL_LOOP_INTERVAL_S` / `VERB_PERIOD_S` / `PIVOT_LOOKAHEAD_S` | 0.05 | s | `robot/server.py`, `robot/interface.py`, `robot/safety.py` | nav2's controller rate. A tick over 0.1 s counts as late |
 | `ROS_SILENCE_S` | 0.5 | s | `robot/server.py` | Ten missed 20 Hz actuator posts = ROS down (3.24 G3) |
+| `battery.low_v` / `reserve_v` / `poweroff_v` | 10.5 / 10.2 / 10.0 | V | `robot/server.py` | 3.137's ladder; placeholders until 3.137.E measures the Rover's discharge curve (the user, 2026-11-01). 10.0 is `HARDWARE-BOM.md` 6's clean-shutdown level, above the Jetson's 9 V input floor |
+| `battery.reserve_max_s` | 120 | s | `robot/server.py` | Reserve held this long powers off, whatever the voltage |
+| `battery.reserve_speed` | 30 | 0-100 | `robot/server.py` | A person's speed cap at Reserve (the user's call: drive slowly to the charger) |
+| `battery.shutdown_steps` / `poweroff_cmd` | `[]` / null | | `robot/server.py` | The power-off's order; env `BATTERY_SHUTDOWN_CMDS` (JSON pairs) and `BATTERY_POWEROFF_CMD` ("" = stub) override. Set on the board by 3.137.C |
+| `BATTERY_POLL_S` / `BATTERY_REST_S` | 0.5 / 0.5 | s | `robot/server.py` | Read rate; how long the wheels must be still for a read to count as at rest |
+| `READINGS` / `SAMPLE_S` | 2 / 12 | count / s | `robot/battery_ladder.py` | M2.7's two distinct samples: a repeat counts again after the board's 10 s refresh plus slack |
 | `GOAL_STOP_POLL_S`, `GOAL_STOP_SETTLE_S` | 0.25, 0.6 | s | `robot/server.py` | How often a stop re-reads and re-cancels a goal until nav2 reports it over, and how long `ros` wheel commands stay held after that. The settle is `STOP_HOLD_S`'s derivation: twist_mux's input timeout plus the controller's `cmd_vel_timeout` (they add) plus one plugin period |
 | `FOOTPRINT_LENGTH_M`, `FOOTPRINT_WIDTH_M`, `LIDAR_X_M`, `LIDAR_TO_REAR_BUMPER_CM`, `LIDAR_TO_FRONT_BUMPER_CM` | see platform | m / cm | `robot/safety.py` (defined here; the footprint is imported by `sim/grid_world.py`, `LIDAR_X_M` is the sim's scan origin) | The chassis geometry every check places returns against. `LIDAR_TO_REAR_BUMPER_CM` is derived: half the length plus `LIDAR_X_M`; `LIDAR_TO_FRONT_BUMPER_CM` half the length minus it (3.42). Values and sources: [platform engineering](../platform/ENGINEERING.md), the canonical table. Held equal to the xacro and nav2 by `tests/test_wall_linters.py` |
 | `FOOTPRINT_SIDE_MARGIN_CM` | 3.0 | cm | `robot/safety.py` | Starter-house doors are 30 cm against a 23.1 cm chassis. 3 cm less the march's 1.5 cm over-read; larger refuses every door (`tests/chassis_fit.py`) |
@@ -430,6 +470,7 @@ recorded as such (3.27 did this for `PIVOT_MARGIN_CM`).
 | `tests/test_review_376k1.py` | 3.76 K1: a person's `/action STOP` latches and ends the goal, the brain's is never refused; a brain goal or a person's tap landing inside a Stop is not accepted; a Stop whose `robot.stop()` raises still ends the goal; a brain refused on arrival lets go; the floor band never raises (bad fields, non-dict, NaN, `cols` mismatch or Infinity are `floor_band_unusable`), a blind band says so, an open-floor band reads clear; battery outside 6-30 V is no reading and one glitch frame keeps the last pack reading |
 | `tests/test_person_stop.py` | 3.84: a person's Stop (`twin-dpad`, unnamed, `teleop-operator`) during explore: nav2 at 0.0 rad/s for 3 s, explore's next goal never reaches the bridge, the mission ends `cancelled`/`stop`; under `drive: ros` a verb arbitrated before a Stop (held between arbitration and the hold lift) leaves its hold set, and a person's verb during the Stop's loop turns > 30 deg, then nav2 is held at 0.0 until the loop ends the goal and lifts it; a brain verb or `brain`-named goal after it is refused `person_stop`; a mission over `RemoteRobot` ends `cancelled`/`stop`; a `brain` or `ros` stop latches nothing; a person's verb and goal, and an unnamed goal, still drive; `/autonomy/resume` and a new mission lift it |
 | `tests/test_goal_arbitration.py` (9) | 3.23: a goal is an autonomous driver |
+| `tests/test_battery_ladder.py` | 3.137: the ladder's rules on planted samples (one sample never fires; a repeat inside 12 s is one sample; a sag read while driving clears at rest or on recovery; a flat pack read at rest fires; a check that times out never fires on a recovered pack; Reserve's timer; latched levels); the sim pack's sag and refresh; in process, Reserve refuses the brain by name on `/action` and `/wheels`, caps a person's speed, lets go of the brain's claim and stops the wheels; a nav2 goal ends at Reserve and no goal is taken; Power-off refuses everyone, runs its steps in order and the power-off once; Reserve's timer powers off; the stub off the car; the brain ends `out_of_budget` and refuses a start at Low |
 | `tests/test_stop_cancels_goal.py` (13) | Handoff 2026-10-02 1b: with an active goal and a fake nav2 that drives while it holds one, the wheels are still at zero `STOP_HOLD_S` + 0.1 s after `/stop`; a new goal can be set afterwards; a hung cancel costs the stop nothing. Spec review 3 V1: the brain's `/stop` spares the goal, and a mission preempted by a goal (`MissionRunner` over `RemoteRobot`) ends `preempted` with the goal still active; a person's stop still ends it. V2, nav2 ticking at 20 Hz from the moment of the stop: zero wheels while a 0.3 s cancel is in flight, through a failing cancel (retried once the bridge returns), and for a goal accepted after the stop; a new goal drives again |
 | `tests/test_ros_fallback.py` (10) | 3.24 G3, all four criteria; handoff 1d: a dead bridge behind a live plugin reads `drive.ros_up` false, a person's verb runs direct, an autonomous one is refused `ros_unavailable`, and ROS is back once the bridge answers. Spec review 3 V8-V9: with the bridge down and the plugin alive, the plugin's non-zero `/wheels` post is answered `ros_unavailable` and moves nothing, and `/health` names which half is down |
 | `tests/test_watchdog_integration.py` (6) | The watchdog against a live `uvicorn` subprocess with a 0.3 s timeout |
@@ -458,6 +499,15 @@ first; run the sweeps, not just the pinned samples; run the suite in module
 order; record the table in the plan entry.
 
 ## Known gaps
+
+- **The battery ladder (3.137).** With the robot server dead nothing reads
+  the pack, and the pack's own cutoff is the backstop (3.135 F14's atomic
+  saves). A repeated reading counted after 12 s may have been measured by the
+  board before the wheels stopped (its refresh instant is not reported). The
+  simulator's pack restarts its drain on a house swap (3.72). Levels are
+  placeholders until 3.137.E. A check holds nav2 still (its `ros` wheel
+  posts zeroed, the goal not ended) for up to 15 s; nav2's progress checker
+  may abort the goal meanwhile, and explore then counts that place failed.
 
 - **The floor band's blind range (3.74).** Inside the depth camera's
   minimum range (about 14 cm past the bumper) the band sees nothing, and

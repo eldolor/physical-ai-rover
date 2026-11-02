@@ -11,7 +11,7 @@ It continues section 8 of the learning document "ROS 2 for vision-picar"
 
 ## Why this question
 
-vision-picar is an indoor robot that searches a house for a named object.
+The Physical AI Autonomous Rover is an indoor robot that searches a house for a named object.
 It is built simulation-first: every phase is judged on numbers from the
 simulator, then on the car. The user asked (2026-10-10) whether the
 simulator is custom, whether a product like Gazebo would do better, and

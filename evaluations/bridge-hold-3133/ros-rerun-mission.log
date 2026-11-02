@@ -1,0 +1,291 @@
+[INFO] [launch]: All log files can be found below /root/.ros/log/2026-11-01-15-07-30-652781-anshu-Legion-T5-28IMB05-1
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [robot_state_publisher-1]: process started with pid [32]
+[INFO] [ros2_control_node-2]: process started with pid [34]
+[INFO] [spawner-3]: process started with pid [36]
+[INFO] [spawner-4]: process started with pid [38]
+[INFO] [twist_mux-5]: process started with pid [40]
+[INFO] [bridge-6]: process started with pid [42]
+[INFO] [controller_server-7]: process started with pid [44]
+[INFO] [planner_server-8]: process started with pid [46]
+[INFO] [behavior_server-9]: process started with pid [48]
+[INFO] [bt_navigator-10]: process started with pid [50]
+[INFO] [lifecycle_manager-11]: process started with pid [52]
+[INFO] [collision_monitor-12]: process started with pid [54]
+[INFO] [lifecycle_manager-13]: process started with pid [65]
+[twist_mux-5] [INFO] [1793545650.802261351] [twist_mux]: Topic handler 'topics.brain' subscribed to topic 'cmd_vel/brain': timeout = 0.250000s , priority = 50.
+[twist_mux-5] [INFO] [1793545650.802934720] [twist_mux]: Topic handler 'topics.nav' subscribed to topic 'cmd_vel/nav': timeout = 0.250000s , priority = 50.
+[twist_mux-5] [INFO] [1793545650.803308998] [twist_mux]: Topic handler 'topics.teleop' subscribed to topic 'cmd_vel/teleop': timeout = 0.250000s , priority = 100.
+[robot_state_publisher-1] [INFO] [1793545650.809866759] [robot_state_publisher]: got segment base_footprint
+[robot_state_publisher-1] [INFO] [1793545650.809941488] [robot_state_publisher]: got segment base_link
+[robot_state_publisher-1] [INFO] [1793545650.809956455] [robot_state_publisher]: got segment camera_link
+[robot_state_publisher-1] [INFO] [1793545650.809966424] [robot_state_publisher]: got segment camera_optical_frame
+[robot_state_publisher-1] [INFO] [1793545650.809976088] [robot_state_publisher]: got segment front_bumper
+[robot_state_publisher-1] [INFO] [1793545650.809985534] [robot_state_publisher]: got segment laser
+[robot_state_publisher-1] [INFO] [1793545650.809994642] [robot_state_publisher]: got segment left_wheel
+[robot_state_publisher-1] [INFO] [1793545650.810003477] [robot_state_publisher]: got segment pan_link
+[robot_state_publisher-1] [INFO] [1793545650.810013102] [robot_state_publisher]: got segment rear_bumper
+[robot_state_publisher-1] [INFO] [1793545650.810022266] [robot_state_publisher]: got segment right_wheel
+[ros2_control_node-2] [WARN] [1793545650.810166580] [controller_manager]: [Deprecated] Passing the robot description parameter directly to the control_manager node is deprecated. Use '~/robot_description' topic from 'robot_state_publisher' instead.
+[ros2_control_node-2] [INFO] [1793545650.810276865] [resource_manager]: Loading hardware 'picar' 
+[lifecycle_manager-11] [INFO] [1793545650.816729555] [lifecycle_manager_navigation]: Creating
+[planner_server-8] [INFO] [1793545650.817882974] [planner_server]: 
+[planner_server-8] 	planner_server lifecycle node launched. 
+[planner_server-8] 	Waiting on external lifecycle transitions to activate
+[planner_server-8] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[lifecycle_manager-11] [INFO] [1793545650.820080866] [lifecycle_manager_navigation]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[planner_server-8] [INFO] [1793545650.820307640] [planner_server]: Creating
+[lifecycle_manager-13] [INFO] [1793545650.820678047] [lifecycle_manager_collision]: Creating
+[ros2_control_node-2] [INFO] [1793545650.821109164] [resource_manager]: Initialize hardware 'picar' 
+[ros2_control_node-2] [INFO] [1793545650.822013212] [PicarSimHardware]: robot server at http://127.0.0.1:10330
+[ros2_control_node-2] [INFO] [1793545650.822036413] [resource_manager]: Successful initialization of hardware 'picar'
+[ros2_control_node-2] [INFO] [1793545650.822087853] [resource_manager]: 'configure' hardware 'picar' 
+[ros2_control_node-2] [INFO] [1793545650.822099806] [resource_manager]: Successful 'configure' of hardware 'picar'
+[ros2_control_node-2] [INFO] [1793545650.822107142] [resource_manager]: 'activate' hardware 'picar' 
+[collision_monitor-12] [INFO] [1793545650.822425365] [collision_monitor]: 
+[collision_monitor-12] 	collision_monitor lifecycle node launched. 
+[collision_monitor-12] 	Waiting on external lifecycle transitions to activate
+[collision_monitor-12] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[behavior_server-9] [INFO] [1793545650.822898154] [behavior_server]: 
+[behavior_server-9] 	behavior_server lifecycle node launched. 
+[behavior_server-9] 	Waiting on external lifecycle transitions to activate
+[behavior_server-9] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[lifecycle_manager-13] [INFO] [1793545650.823184726] [lifecycle_manager_collision]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[controller_server-7] [INFO] [1793545650.824460155] [controller_server]: 
+[controller_server-7] 	controller_server lifecycle node launched. 
+[controller_server-7] 	Waiting on external lifecycle transitions to activate
+[controller_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[lifecycle_manager-13] [INFO] [1793545650.824646910] [lifecycle_manager_collision]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-13] [INFO] [1793545650.824684809] [lifecycle_manager_collision]: [34m[1mConfiguring collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1793545650.824906719] [collision_monitor]: Configuring
+[planner_server-8] [INFO] [1793545650.824908072] [global_costmap.global_costmap]: 
+[planner_server-8] 	global_costmap lifecycle node launched. 
+[planner_server-8] 	Waiting on external lifecycle transitions to activate
+[planner_server-8] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-8] [INFO] [1793545650.825419003] [global_costmap.global_costmap]: Creating Costmap
+[ros2_control_node-2] [INFO] [1793545650.825376460] [resource_manager]: Successful 'activate' of hardware 'picar'
+[bt_navigator-10] [INFO] [1793545650.826536450] [bt_navigator]: 
+[bt_navigator-10] 	bt_navigator lifecycle node launched. 
+[bt_navigator-10] 	Waiting on external lifecycle transitions to activate
+[bt_navigator-10] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[bt_navigator-10] [INFO] [1793545650.826640258] [bt_navigator]: Creating
+[collision_monitor-12] [INFO] [1793545650.827637453] [collision_monitor]: [FootprintApproach]: Creating Polygon
+[collision_monitor-12] [INFO] [1793545650.828230838] [collision_monitor]: [PolygonSlow]: Creating Polygon
+[collision_monitor-12] [INFO] [1793545650.828532343] [collision_monitor]: [scan]: Creating Scan
+[ros2_control_node-2] [INFO] [1793545650.831590943] [controller_manager]: update rate is 20 Hz
+[ros2_control_node-2] [INFO] [1793545650.831954859] [controller_manager]: Spawning controller_manager RT thread with scheduler priority: 50
+[controller_server-7] [INFO] [1793545650.832598188] [controller_server]: Creating controller server
+[ros2_control_node-2] [WARN] [1793545650.832822683] [controller_manager]: Could not enable FIFO RT scheduling policy: with error number <1>(Operation not permitted). See [https://control.ros.org/master/doc/ros2_control/controller_manager/doc/userdoc.html] for details on how to enable realtime scheduling.
+[lifecycle_manager-13] [INFO] [1793545650.832951283] [lifecycle_manager_collision]: [34m[1mActivating collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1793545650.833252391] [collision_monitor]: Activating
+[collision_monitor-12] [INFO] [1793545650.833287553] [collision_monitor]: Creating bond (collision_monitor) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793545650.836260355] [lifecycle_manager_navigation]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-11] [INFO] [1793545650.836312387] [lifecycle_manager_navigation]: [34m[1mConfiguring controller_server[0m[0m
+[controller_server-7] [INFO] [1793545650.843652021] [local_costmap.local_costmap]: 
+[controller_server-7] 	local_costmap lifecycle node launched. 
+[controller_server-7] 	Waiting on external lifecycle transitions to activate
+[controller_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-7] [INFO] [1793545650.844294601] [local_costmap.local_costmap]: Creating Costmap
+[controller_server-7] [INFO] [1793545650.846592468] [controller_server]: Configuring controller interface
+[controller_server-7] [INFO] [1793545650.847357439] [controller_server]: getting goal checker plugins..
+[controller_server-7] [INFO] [1793545650.847651413] [controller_server]: Controller frequency set to 20.0000Hz
+[controller_server-7] [INFO] [1793545650.847732552] [local_costmap.local_costmap]: Configuring
+[controller_server-7] [INFO] [1793545650.851454240] [local_costmap.local_costmap]: Using plugin "obstacle_layer"
+[controller_server-7] [INFO] [1793545650.855762344] [local_costmap.local_costmap]: Subscribed to Topics: scan
+[controller_server-7] [INFO] [1793545650.860284712] [local_costmap.local_costmap]: Initialized plugin "obstacle_layer"
+[controller_server-7] [INFO] [1793545650.860910737] [local_costmap.local_costmap]: Using plugin "inflation_layer"
+[controller_server-7] [INFO] [1793545650.862141130] [local_costmap.local_costmap]: Initialized plugin "inflation_layer"
+[controller_server-7] [INFO] [1793545650.866236207] [controller_server]: Created progress_checker : progress_checker of type nav2_controller::SimpleProgressChecker
+[controller_server-7] [INFO] [1793545650.866770790] [controller_server]: Created goal checker : general_goal_checker of type nav2_controller::SimpleGoalChecker
+[controller_server-7] [INFO] [1793545650.867042084] [controller_server]: Controller Server has general_goal_checker  goal checkers available.
+[controller_server-7] [INFO] [1793545650.867449117] [controller_server]: Created controller : FollowPath of type nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-7] [INFO] [1793545650.870116835] [controller_server]: Controller Server has FollowPath  controllers available.
+[lifecycle_manager-11] [INFO] [1793545650.872965297] [lifecycle_manager_navigation]: [34m[1mConfiguring planner_server[0m[0m
+[planner_server-8] [INFO] [1793545650.873118013] [planner_server]: Configuring
+[planner_server-8] [INFO] [1793545650.873147116] [global_costmap.global_costmap]: Configuring
+[planner_server-8] [INFO] [1793545650.875471062] [global_costmap.global_costmap]: Using plugin "static_layer"
+[planner_server-8] [INFO] [1793545650.877958869] [global_costmap.global_costmap]: Subscribing to the map topic (/map) with transient local durability
+[planner_server-8] [INFO] [1793545650.878350036] [global_costmap.global_costmap]: Initialized plugin "static_layer"
+[planner_server-8] [INFO] [1793545650.878370272] [global_costmap.global_costmap]: Using plugin "obstacle_layer"
+[planner_server-8] [INFO] [1793545650.878662453] [global_costmap.global_costmap]: Subscribed to Topics: scan
+[planner_server-8] [INFO] [1793545650.880127004] [global_costmap.global_costmap]: Initialized plugin "obstacle_layer"
+[planner_server-8] [INFO] [1793545650.880154300] [global_costmap.global_costmap]: Using plugin "inflation_layer"
+[planner_server-8] [INFO] [1793545650.880626060] [global_costmap.global_costmap]: Initialized plugin "inflation_layer"
+[planner_server-8] [INFO] [1793545650.880642166] [global_costmap.global_costmap]: Using costmap filter "keepout_filter"
+[planner_server-8] [INFO] [1793545650.882218241] [global_costmap.global_costmap]: Initialized costmap filter "keepout_filter"
+[planner_server-8] [INFO] [1793545650.885674083] [planner_server]: Created global planner plugin GridBased of type nav2_navfn_planner/NavfnPlanner
+[planner_server-8] [INFO] [1793545650.885705216] [planner_server]: Configuring plugin GridBased of type NavfnPlanner
+[planner_server-8] [INFO] [1793545650.885978217] [planner_server]: Planner Server has GridBased  planners available.
+[lifecycle_manager-11] [INFO] [1793545650.889249124] [lifecycle_manager_navigation]: [34m[1mConfiguring behavior_server[0m[0m
+[behavior_server-9] [INFO] [1793545650.889410657] [behavior_server]: Configuring
+[behavior_server-9] [INFO] [1793545650.893518765] [behavior_server]: Creating behavior plugin spin of type nav2_behaviors/Spin
+[behavior_server-9] [INFO] [1793545650.894273939] [behavior_server]: Configuring spin
+[behavior_server-9] [INFO] [1793545650.896273746] [behavior_server]: Creating behavior plugin backup of type nav2_behaviors/BackUp
+[behavior_server-9] [INFO] [1793545650.897020614] [behavior_server]: Configuring backup
+[behavior_server-9] [INFO] [1793545650.898482776] [behavior_server]: Creating behavior plugin wait of type nav2_behaviors/Wait
+[behavior_server-9] [INFO] [1793545650.899241805] [behavior_server]: Configuring wait
+[lifecycle_manager-11] [INFO] [1793545650.901035720] [lifecycle_manager_navigation]: [34m[1mConfiguring bt_navigator[0m[0m
+[bt_navigator-10] [INFO] [1793545650.901218926] [bt_navigator]: Configuring
+[lifecycle_manager-13] [INFO] [1793545650.940440651] [lifecycle_manager_collision]: Server collision_monitor connected with bond.
+[lifecycle_manager-13] [INFO] [1793545650.940497584] [lifecycle_manager_collision]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-13] [INFO] [1793545650.940518398] [lifecycle_manager_collision]: [34m[1mCreating bond timer...[0m[0m
+[lifecycle_manager-11] [INFO] [1793545650.947659665] [lifecycle_manager_navigation]: [34m[1mActivating controller_server[0m[0m
+[controller_server-7] [INFO] [1793545650.947777884] [controller_server]: Activating
+[controller_server-7] [INFO] [1793545650.947814271] [local_costmap.local_costmap]: Activating
+[controller_server-7] [INFO] [1793545650.947826726] [local_costmap.local_costmap]: Checking transform
+[controller_server-7] [INFO] [1793545650.947845839] [local_costmap.local_costmap]: Timed out waiting for transform from base_footprint to odom to become available, tf error: Invalid frame ID "odom" passed to canTransform argument target_frame - frame does not exist
+[ros2_control_node-2] [INFO] [1793545651.119862936] [controller_manager]: Loading controller 'diff_drive_controller'
+[ros2_control_node-2] [INFO] [1793545651.134098835] [controller_manager]: Loading controller 'joint_state_broadcaster'
+[spawner-4] [INFO] [1793545651.150809306] [spawner_diff_drive_controller]: [94mLoaded [1mdiff_drive_controller[0m
+[ros2_control_node-2] [INFO] [1793545651.184488375] [controller_manager]: Configuring controller 'diff_drive_controller'
+[spawner-3] [INFO] [1793545651.200327305] [spawner_joint_state_broadcaster]: [94mLoaded [1mjoint_state_broadcaster[0m
+[ros2_control_node-2] [INFO] [1793545651.234433964] [controller_manager]: Configuring controller 'joint_state_broadcaster'
+[ros2_control_node-2] [INFO] [1793545651.234506522] [joint_state_broadcaster]: 'joints' or 'interfaces' parameter is empty. All available state interfaces will be published
+[bridge-6] [WARN] [1793545651.381768489] [picar_bridge]: no /maps: maps are not saved this session
+[bridge-6] [INFO] [1793545651.384224536] [picar_bridge]: bridge on :10335, robot at http://127.0.0.1:10330
+[spawner-4] [INFO] [1793545651.385063310] [spawner_diff_drive_controller]: [92mConfigured and activated [1mdiff_drive_controller[0m
+[bridge-6] [INFO] [1793545651.408341395] [slam_toolbox]: Node using stack size 40000000
+[controller_server-7] [INFO] [1793545651.447975040] [local_costmap.local_costmap]: start
+[spawner-3] [INFO] [1793545651.484516838] [spawner_joint_state_broadcaster]: [92mConfigured and activated [1mjoint_state_broadcaster[0m
+[INFO] [spawner-4]: process has finished cleanly [pid 38]
+[controller_server-7] [INFO] [1793545651.598436761] [controller_server]: Activating controller: FollowPath of type regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-7] [INFO] [1793545651.598510511] [controller_server]: Creating bond (controller_server) to lifecycle manager.
+[bridge-6] [INFO] [1793545651.646900875] [slam_toolbox]: Using solver plugin solver_plugins::CeresSolver
+[bridge-6] [INFO] [1793545651.647524916] [slam_toolbox]: CeresSolver: Using SCHUR_JACOBI preconditioner.
+[INFO] [spawner-3]: process has finished cleanly [pid 36]
+[bridge-6] Registering sensor: [Custom Described Lidar]
+[lifecycle_manager-11] [INFO] [1793545651.702783161] [lifecycle_manager_navigation]: Server controller_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793545651.702923705] [lifecycle_manager_navigation]: [34m[1mActivating planner_server[0m[0m
+[planner_server-8] [INFO] [1793545651.703423813] [planner_server]: Activating
+[planner_server-8] [INFO] [1793545651.703534880] [global_costmap.global_costmap]: Activating
+[planner_server-8] [INFO] [1793545651.703576888] [global_costmap.global_costmap]: Checking transform
+[planner_server-8] [INFO] [1793545651.703705735] [global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Lookup would require extrapolation at time 1793545651.684204, but only time 1793545651.901991 is in the buffer, when looking up transform from frame [base_footprint] to frame [map]
+[planner_server-8] [INFO] [1793545652.203761714] [global_costmap.global_costmap]: start
+[planner_server-8] [INFO] [1793545652.204117273] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793545652.205827890] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793545652.205870935] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [INFO] [1793545652.207527537] [global_costmap.global_costmap]: KeepoutFilter: Received filter mask from /keepout_mask topic.
+[planner_server-8] [INFO] [1793545652.653927784] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 43 at 0.050000 m/pix
+[planner_server-8] [INFO] [1793545652.754682001] [planner_server]: Activating plugin GridBased of type NavfnPlanner
+[planner_server-8] [INFO] [1793545652.756300155] [planner_server]: Creating bond (planner_server) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793545652.862456446] [lifecycle_manager_navigation]: Server planner_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793545652.862498859] [lifecycle_manager_navigation]: [34m[1mActivating behavior_server[0m[0m
+[behavior_server-9] [INFO] [1793545652.862646617] [behavior_server]: Activating
+[behavior_server-9] [INFO] [1793545652.862667881] [behavior_server]: Activating spin
+[behavior_server-9] [INFO] [1793545652.862678174] [behavior_server]: Activating backup
+[behavior_server-9] [INFO] [1793545652.862686611] [behavior_server]: Activating wait
+[behavior_server-9] [INFO] [1793545652.862696914] [behavior_server]: Creating bond (behavior_server) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793545652.964248899] [lifecycle_manager_navigation]: Server behavior_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793545652.964290834] [lifecycle_manager_navigation]: [34m[1mActivating bt_navigator[0m[0m
+[bt_navigator-10] [INFO] [1793545652.964455736] [bt_navigator]: Activating
+[bt_navigator-10] [INFO] [1793545652.994802281] [bt_navigator]: Creating bond (bt_navigator) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793545653.098023723] [lifecycle_manager_navigation]: Server bt_navigator connected with bond.
+[lifecycle_manager-11] [INFO] [1793545653.098063616] [lifecycle_manager_navigation]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-11] [INFO] [1793545653.098079252] [lifecycle_manager_navigation]: [34m[1mCreating bond timer...[0m[0m
+[bridge-6] [INFO] [1793545653.101291537] [picar_bridge]: nav2 active: goals taken
+[bt_navigator-10] [INFO] [1793545653.456521551] [bt_navigator]: Begin navigating from current location (0.00, 0.00) to (-0.34, -0.14)
+[controller_server-7] [INFO] [1793545653.477035498] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [WARN] [1793545653.477086182] [controller_server]: No goal checker was specified in parameter 'current_goal_checker'. Server will use only plugin loaded general_goal_checker . This warning will appear once.
+[controller_server-7] [INFO] [1793545654.527213350] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545655.527184664] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545656.577212595] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545657.627182614] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793545657.703936400] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 43 at 0.050000 m/pix
+[ros2_control_node-2] [WARN] [1793545657.923508532] [PicarSimHardware]: GET /wheels to http://127.0.0.1:10330 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793545657.938638534] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793545658.627235047] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793545658.673521975] [PicarSimHardware]: GET /wheels to http://127.0.0.1:10330 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[planner_server-8] [INFO] [1793545658.703996078] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 43 at 0.050000 m/pix
+[ros2_control_node-2] [INFO] [1793545658.750058420] [PicarSimHardware]: robot server reachable again after 2 failed cycles
+[controller_server-7] [INFO] [1793545659.677219475] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545659.777672213] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793545659.816874694] [bt_navigator]: Goal succeeded
+[ros2_control_node-2] [WARN] [1793545661.623578237] [PicarSimHardware]: GET /wheels to http://127.0.0.1:10330 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793545661.638284568] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[bt_navigator-10] [INFO] [1793545661.682415143] [bt_navigator]: Begin navigating from current location (-0.25, -0.13) to (3.65, 0.46)
+[controller_server-7] [INFO] [1793545661.702980860] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793545662.753134957] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545663.803141524] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793545664.323489610] [PicarSimHardware]: GET /wheels to http://127.0.0.1:10330 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793545664.345979348] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793545664.803102527] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545665.853145668] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793545666.703913635] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 43 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793545666.903108355] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793545667.704090088] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 43 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793545667.903100428] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545668.953277947] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545669.953147061] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793545670.223573533] [PicarSimHardware]: GET /wheels to http://127.0.0.1:10330 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793545670.317806213] [PicarSimHardware]: robot server reachable again after 3 failed cycles
+[planner_server-8] [INFO] [1793545670.703892906] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 43 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793545671.003100718] [controller_server]: Passing new path to controller.
+[bt_navigator-10] [ERROR] [1793545671.592977672] [bt_navigator_navigate_to_pose_rclcpp_node]: Failed to get result for follow_path in node halt!
+[bt_navigator-10] [INFO] [1793545671.593058154] [bt_navigator]: [navigate_to_pose] [ActionServer] Client requested to cancel the goal. Cancelling.
+[bt_navigator-10] [WARN] [1793545671.593166506] [bt_navigator]: [navigate_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1793545671.593242450] [bt_navigator]: Goal canceled
+[controller_server-7] [INFO] [1793545671.603099739] [controller_server]: Goal was canceled. Stopping the robot.
+[controller_server-7] [INFO] [1793545671.603131628] [controller_server]: [follow_path] [ActionServer] Client requested to cancel the goal. Cancelling.
+[planner_server-8] [INFO] [1793545671.703898357] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 43 at 0.050000 m/pix
+[ros2_control_node-2] [WARN] [1793545671.923401190] [PicarSimHardware]: GET /wheels to http://127.0.0.1:10330 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793545671.939638228] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[planner_server-8] [INFO] [1793545673.704161639] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 43 at 0.050000 m/pix
+[ros2_control_node-2] [WARN] [1793545674.423535506] [PicarSimHardware]: GET /wheels to http://127.0.0.1:10330 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793545674.462840682] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[bt_navigator-10] [INFO] [1793545678.638167442] [bt_navigator]: Begin navigating from current location (0.68, -0.18) to (2.25, -0.70)
+[controller_server-7] [INFO] [1793545678.658627510] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793545679.708765204] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545680.708735430] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793545681.703905114] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 43 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793545681.758761103] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793545682.423488421] [PicarSimHardware]: GET /wheels to http://127.0.0.1:10330 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793545682.497910339] [PicarSimHardware]: robot server reachable again after 2 failed cycles
+[planner_server-8] [INFO] [1793545682.703932370] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 46 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793545682.808742774] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793545683.703897290] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 74 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793545683.808765146] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793545684.703892388] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 74 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793545684.858787949] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545685.908741414] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793545686.703896819] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 74 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793545686.908840858] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545687.908739685] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545688.958739847] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545689.958738783] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793545690.823241709] [PicarSimHardware]: GET /wheels to http://127.0.0.1:10330 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793545690.834992196] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793545691.008745377] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545691.458855466] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793545691.498358887] [bt_navigator]: Goal succeeded
+[ros2_control_node-2] [WARN] [1793545692.423547533] [PicarSimHardware]: GET /wheels to http://127.0.0.1:10330 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793545692.496469882] [PicarSimHardware]: robot server reachable again after 2 failed cycles
+[bt_navigator-10] [INFO] [1793545693.981969180] [bt_navigator]: Begin navigating from current location (2.21, -0.62) to (3.89, -0.62)
+[controller_server-7] [INFO] [1793545694.002884516] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793545695.053043216] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545696.103396047] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545697.102974767] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545698.153009887] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545699.203010424] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545700.203041902] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793545700.703894357] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 75 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793545701.253004609] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793545701.423486377] [PicarSimHardware]: GET /wheels to http://127.0.0.1:10330 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793545701.438269919] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[planner_server-8] [INFO] [1793545701.703923945] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 75 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793545702.253032302] [controller_server]: Passing new path to controller.
+[bt_navigator-10] [INFO] [1793545702.622093516] [bt_navigator]: Received goal preemption request
+[bt_navigator-10] [INFO] [1793545702.622208324] [bt_navigator]: Begin navigating from current location (3.10, -0.06) to (4.39, -0.22)
+[planner_server-8] [INFO] [1793545702.703901758] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 75 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793545703.303005287] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793545703.623564244] [PicarSimHardware]: GET /wheels to http://127.0.0.1:10330 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793545703.719408521] [PicarSimHardware]: robot server reachable again after 3 failed cycles
+[controller_server-7] [INFO] [1793545704.303004170] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545705.353007546] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545706.403009305] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545707.403003962] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793545708.453035810] [controller_server]: Passing new path to controller.
+[bt_navigator-10] [ERROR] [1793545709.202383586] [bt_navigator_navigate_to_pose_rclcpp_node]: Failed to get result for follow_path in node halt!
+[bt_navigator-10] [INFO] [1793545709.202453032] [bt_navigator]: [navigate_to_pose] [ActionServer] Client requested to cancel the goal. Cancelling.
+[bt_navigator-10] [INFO] [1793545709.202537343] [bt_navigator]: Goal canceled
+[controller_server-7] [INFO] [1793545709.203003713] [controller_server]: Goal was canceled. Stopping the robot.
+[controller_server-7] [INFO] [1793545709.203032218] [controller_server]: [follow_path] [ActionServer] Client requested to cancel the goal. Cancelling.

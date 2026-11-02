@@ -1,4 +1,4 @@
-# Pi 5 vs Jetson for vision-picar
+# Pi 5 vs Jetson for the Physical AI Autonomous Rover
 
 As of **2026-09-30**. A walkthrough of the two compute paths, drawn from the
 repo's own records (sources at the end). Shareable copy:

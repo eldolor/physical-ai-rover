@@ -11,8 +11,8 @@
 #     --query 'Stacks[0].Outputs' --output table
 #
 # `aws s3 sync` is deliberately NOT used. It guesses content types from file
-# extensions, and one of these files has none on purpose: control/admin.html
-# is served at /admin, so its key is extensionless and a guessed type makes
+# extensions, and three keys have none on purpose: control/lab.html is served
+# at /admin, /metrics and /lab, so those keys are extensionless and a guessed type makes
 # the browser download the console instead of rendering it. Each object is
 # put individually with the type and cache policy from assets.json.
 #

@@ -7,16 +7,18 @@ collision this project has already had.
 ## The workflow
 
 ```bash
-# 1. Reserve a section: the next free number, its own branch and worktree.
+# 1. Reserve a section: the next free number, its own branch and worktree,
+#    and its claim on origin (rule 12).
 python tools/plan_section.py new <slug> "<title>"
 #    -> branch plan/3.N-<slug>, worktree .claude/worktrees/plan-3.N,
-#       docs/plans/ros-alignment/3.N-<slug>.md, committed.
+#       claim/3.N on origin, docs/plans/ros-alignment/3.N-<slug>.md, committed.
 cd .claude/worktrees/plan-3.N
 
 #    Or continue one: `board` shows every open step and who holds it; `next`
-#    names the first step you may take. Then claim it (rule 8):
+#    names the first step you may take. Then claim it (rules 8 and 12) --
+#    FIRST, before reading further or editing; if refused, stop and report:
 python tools/plan_section.py board
-python tools/plan_section.py claim 3.N.X     # refused if it would collide
+python tools/plan_section.py claim 3.N.X     # pushes claim/3.N.X to origin; refused if taken
 
 # 2. Your own ports, ROS domain, container, image tag and log directory.
 eval "$(python tools/plan_section.py env)"
@@ -35,6 +37,9 @@ python tools/plan_section.py ready           # fast tier; records a pass (option
                                              # the push runs the same check itself)
 # 6. Push when your judgement says the work is ready (the user, 2026-10-15):
 git push origin HEAD:dev
+
+# 7. Give the claims back once the work is on dev (rule 12), then rule 11:
+python tools/plan_section.py release
 ```
 
 Continuing an existing section: work in its worktree
@@ -212,12 +217,12 @@ Continuing an existing section: work in its worktree
    Touches cell, tick every path, one per comma: other text makes the step
    `unknown` until it is fixed. `Waits` reads `user`, `rover` or `--` by
    the same first-word rule as `State`.
-   * `claim <step>` writes a claim into the shared `.git`
-     (`plan-claims/`), which every worktree on this machine sees. It is
-     owned by your Claude Code process and **frees itself when that process
-     exits**. `release` gives it back sooner. `/clear` keeps the process, so
-     the new conversation inherits the claim; the session-start board says
-     so first.
+   * `claim <step>` pushes `claim/<step>` to origin first (rule 12), then
+     writes a claim into the shared `.git` (`plan-claims/`), which the
+     hooks read. It is owned by your Claude Code session (by its process
+     when no session id is set). `release` gives it back. After `/clear`
+     the new conversation is another session: the session-start board names
+     the earlier conversation's claim, and `claim <step>` takes it over.
    * A claim is refused when its `Needs` are not done, when it waits on the
      user or the Rover, when another live session holds a step of the same
      section (one session per section: its worktree, ports and ROS domain),
@@ -229,19 +234,16 @@ Continuing an existing section: work in its worktree
    * Guards: before editing a path inside another session's claim, Claude
      Code asks the user (a `PreToolUse` hook on Edit/Write). In auto or
      bypass mode no one would see that question, so the edit is denied with
-     the reason. Only if the user agrees, `python3 tools/plan_claims.py
+     the reason. Since 3.139 the hooks also refuse unclaimed work (rule 12). Only if the user agrees, `python3 tools/plan_claims.py
      allow <step>` lets this session edit inside that claim; the claim
      records it. **This is on trust:** nothing can check that the user was
      asked, so a session that runs `allow` without asking breaks this rule. A commit
      touching one prints a warning from `tools/hooks/pre-commit`, which
-     catches edits made through Bash; it never blocks. Every local session
+     catches edits made through Bash. Every local session
      starts with the board in its context (`.claude/hooks/plan-board.sh`).
-   * Limit: a claim's owner is the nearest process named `claude`. One
-     such process hosting several conversations (`/clear`, or perhaps the
-     desktop app) makes them one owner; a CLI installed through npm shows
-     as `node` and cannot claim (`PICAR_CLAIM_PID` names an owner by hand).
-   * Limit: claims are per machine. A Jetson or cloud session still meets
-     the others only at push.
+   * Limit: with no `CLAUDE_CODE_SESSION_ID` the owner is the nearest
+     process named `claude`; a CLI installed through npm shows as `node`
+     and cannot claim (`PICAR_CLAIM_PID` names an owner by hand).
 
    *Why:* asked "what can you pick up next?" on 2026-10-12, a session had to
    guess who was working from commit times. The tool's first run found two
@@ -280,6 +282,59 @@ Continuing an existing section: work in its worktree
    files on `origin/dev`. *Why:* nine branches besides `dev` had piled up
    on `origin` by 2026-10-15, six of them already in `dev`, and `overlap`
    and `board` read every `plan/*` branch.
+
+12. **Claim first, on origin; if refused, stop and report** (3.139, the
+   user 2026-11-01). Every session, every brief and every subagent that
+   works on the plan starts with `python tools/plan_section.py claim
+   <step>` (a whole section: `claim 3.N`; `new` does it for its section).
+   If the claim is refused, the work stops there and the refusal is
+   reported -- never worked around.
+   * A claim is the branch `claim/<step>` on origin: an orphan commit whose
+     message names the holder (session id, worktree, branch, host, Claude
+     pid and start, UTC time), pushed create-only (`git push
+     --force-with-lease=refs/heads/claim/<step>: ...`, an empty lease), so
+     origin takes exactly one and every machine -- the Jetson, a cloud
+     session -- sees it. The local claim file is written only after that
+     push succeeds. Origin unreachable: `claim` fails; there is no
+     local-only claim. A `claim/*` push passes the pre-push hook without
+     the gate.
+   * `board`, `next` and `claim` read origin's claims with one `git
+     ls-remote` (offline, `board` says so). The dev State cell is not
+     touched: the board is the view.
+   * `release [<step>]` deletes this session's claim branches (with a lease
+     on the sha it pushed, so never one someone made since) and local
+     files. Without a step it gives back this session's claims only.
+     Release once your work is on dev.
+   * Stale claims. On the same machine, a holder whose process has exited
+     may be taken over: `claim <step>` deletes the old branch (with a lease)
+     and makes its own. **A claim from another machine is never freed
+     automatically**: once its claim branch and its section's plan
+     branches have had no commit for 24 h, `board` shows `claimed
+     (stale?)`; only the user may free it, with `release --force <step>`.
+     A session never runs `--force` without the user's word.
+   * The hooks block unclaimed work (each refusal names the claim command):
+     * `pre-commit` refuses a commit on a `plan/3.N-*` branch unless this
+       session holds a claim in 3.N; a merge (from dev) passes.
+     * The edit hook refuses an edit to a section's file, or to a path in
+       an open step's Touches, without a claim in that section (a step of a
+       section you hold that lists the path too is enough). The shared
+       status files (`CLAUDE.md`, `docs/ARCHITECTURE.md`, the index,
+       `PLAN-ros-alignment.md`; rule 3) are never fenced by Touches. Keep
+       Touches narrow: a broad entry (`tests/`) fences it for every session
+       until the step is done.
+     * The pre-push gate refuses a push to dev that changes a section's
+       file, or a path in an open step's Touches (as on dev before the
+       push), of a section the pusher holds no claim in -- before any tier
+       runs.
+   * **The person's escape:** `PICAR_CLAIM_BYPASS=1` passes all three
+     hooks. Only the user sets it, by hand; **an agent never sets it**, nor
+     `PICAR_CLAIM_PID`/`PICAR_CLAIM_SESSION` to pose as another owner.
+
+   *Why:* on 2026-11-01 two sessions worked the same step (3.137.A): one held
+   a claim that only its own machine could see, the other worked from an old
+   plan, and nothing on origin showed the step was taken. The same day a
+   no-step `release` in one Desktop session dropped four other sessions'
+   claims (ownership was the `claude` process; now it is the session).
 
 ## Setting up a machine (once)
 

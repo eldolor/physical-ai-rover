@@ -1,0 +1,62 @@
+{
+ "row": "F7",
+ "title": "Brain hung (alive, silent)",
+ "reading": "as F6 from the SIGSTOP; and after SIGCONT the stale mission does not drive: no non-zero wheel setpoint in the 10 s after SIGCONT; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-01T22:17:05-0600",
+ "recovery_s": 2.56,
+ "measures": {
+  "fault_at": 366181.08645111,
+  "cont_at": 366211.08652401,
+  "outcome": "failed",
+  "end_state": null,
+  "end_reason": "brain loop hung: tick exceeded 30.0s",
+  "status": {
+   "running": false,
+   "outcome": "failed",
+   "end_state": null,
+   "end_reason": "brain loop hung: tick exceeded 30.0s",
+   "cancelled_by": null,
+   "step": 5,
+   "last_action": "RIGHT",
+   "error": "brain loop hung: tick exceeded 30.0s"
+  },
+  "refusals": {},
+  "no_feedback_refusals": 0,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 0,
+   "max_dt_s": 0.0
+  },
+  "last_refusal": {
+   "reason": "watchdog",
+   "detail": "no command for over 1.0s -- motors stopped",
+   "driver": "brain",
+   "at": 366212.167966587,
+   "seconds_ago": 10.42
+  },
+  "forward_at_fault": true,
+  "wheels_zero_s": 0.825,
+  "travel_cm": 24.01,
+  "drive_after_cont": 0,
+  "truth_hole_s": 0.023,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   366176.5713,
+   366226.7314
+  ],
+  "mem_available_min_mb": 5703,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "moved 24.01 cm after the fault (bar 15)"
+  ]
+ },
+ "ended": "2026-11-01T22:17:56-0600"
+}

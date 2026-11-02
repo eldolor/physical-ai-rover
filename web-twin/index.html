@@ -68,7 +68,7 @@
       <div class="hint" id="guide-mode-hint" style="margin-top:6px;">
         <b>Guide me</b> steers <i>you</i> to the object with an arrow.
       </div>
-      <div class="switch-row" id="navigate-model-row" style="display:none;">
+      <div class="switch-row eng-only" id="navigate-model-row" style="display:none;">
         <span class="switch-copy">
           <span class="switch-title">Model</span>
           <span class="switch-sub" id="navigate-model-sub">
@@ -82,7 +82,7 @@
           <option value="">Service default</option>
         </select>
       </div>
-      <div class="switch-row" id="navigate-prompt-row" style="display:none;">
+      <div class="switch-row eng-only" id="navigate-prompt-row" style="display:none;">
         <span class="switch-copy">
           <span class="switch-title">Prompt</span>
           <span class="switch-sub">
@@ -109,7 +109,7 @@
       </label>
       <label class="switch-row" for="cfg-drive-via-brain" id="drive-via-brain-row" style="display:none;">
         <span class="switch-copy">
-          <span class="switch-title">Drive via brain</span>
+          <span class="switch-title"><span class="op-only">Let the autopilot drive</span><span class="eng-only">Drive via brain</span></span>
           <span class="switch-sub" id="drive-via-brain-sub">
             Runs a real mission on the brain service (PLAN-teleop-robot.md)
             instead of a one-off /navigate call -- mission memory, the step
@@ -128,7 +128,7 @@
            offered: a photograph carries no grid coordinates and
            TeleopRobot has no distance sensor, so the rule-based policy
            degenerates to a blind wall-follower here. -->
-      <div class="btn-row" id="drive-policy-row" style="display:none;">
+      <div class="btn-row eng-only" id="drive-policy-row" style="display:none;">
         <select id="cfg-drive-policy" class="select-input" style="flex:1;">
           <option value="vision">Vision policy &middot; a model call per frame</option>
           <option value="tiered">Tiered policy &middot; YOLO + CLIP local, model on a trigger</option>
@@ -137,7 +137,7 @@
       <!-- 3.90 E: under Drive via brain the phone streams its camera on its
            own timer (newest wins: a slow upload skips frames, never queues
            them), and the tiered policy can combine frames. -->
-      <div class="btn-row" id="drive-stream-row" style="display:none;">
+      <div class="btn-row eng-only" id="drive-stream-row" style="display:none;">
         <select id="cfg-stream-fps" class="select-input" style="flex:0 0 33%;" aria-label="Frames a second">
           <option value="2">2 fps</option>
           <option value="4" selected>4 fps</option>
@@ -202,12 +202,16 @@
            buttons that cause it rather than under a brain that no longer
            runs in this tab. -->
       <div id="log" role="log" aria-live="polite" tabindex="0" aria-label="Robot log"></div>
-      <div class="hint" id="drive-connect-hint">Not connected &mdash; open Settings from the header to connect to the robot server.</div>
+      <div class="hint" id="drive-connect-hint">Not connected &mdash; open Settings from the header to connect to the <span class="op-only">robot</span><span class="eng-only">robot server</span>.</div>
     </div>
 
     <div class="panel">
-      <div class="section-label">Remote brain &middot; runs on the robot</div>
-      <div class="lede">
+      <div class="section-label"><span class="op-only">Autopilot</span><span class="eng-only">Remote brain &middot; runs on the robot</span></div>
+      <div class="lede op-only">
+        The robot searches on its own. Once it starts you can close this page
+        or open it on another phone &mdash; the robot keeps going.
+      </div>
+      <div class="lede eng-only">
         The mission runs in <code>control/brain_server.py</code>, not in this
         tab. Start it and this page becomes an observer &mdash; close it,
         background it, or open it on another phone, and the robot keeps going.
@@ -229,7 +233,10 @@
              "there is no start button". -->
         <button id="btn-brain-mission" class="primary" style="flex:1;" disabled>Start</button>
       </div>
-      <div class="btn-row" id="brain-policy-row">
+      <!-- 3.132 Stage 2A (both reviewers): the policy picker is Engineer
+           mode's, so what a saved policy costs is said here, in plain words. -->
+      <div class="hint op-only" id="brain-cost-hint" style="display:none;"></div>
+      <div class="btn-row eng-only" id="brain-policy-row">
         <select aria-label="Policy" id="brain-policy" class="select-input" style="flex:1;">
           <option value="frontier">Rule-based policy &middot; free</option>
           <option value="vision">Vision policy &middot; paid, one model call per step</option>
@@ -237,11 +244,11 @@
           <option value="explore">Explore policy &middot; free, nav2 frontier search</option>
         </select>
       </div>
-      <div class="hint" id="brain-policy-hint" style="display:none;"></div>
+      <div class="hint eng-only" id="brain-policy-hint" style="display:none;"></div>
       <!-- 3.88 A: explore pauses at each goal choice and this phone picks one
            by tapping the map. A pick, never a takeover: Stop and the D-pad
            still end the mission. -->
-      <label class="switch-row" for="brain-ask" id="brain-ask-row" style="display:none;">
+      <label class="switch-row eng-only" for="brain-ask" id="brain-ask-row" style="display:none;">
         <span class="switch-copy">
           <span class="switch-title">Ask me at each goal</span>
           <span class="switch-sub">
@@ -251,12 +258,12 @@
         </span>
         <input type="checkbox" id="brain-ask" class="switch">
       </label>
-      <div class="btn-row" id="brain-policy-pickers-row" style="display:none;">
+      <div class="btn-row eng-only" id="brain-policy-pickers-row" style="display:none;">
         <button id="btn-brain-pickers" class="ghost" style="flex:1;">
           Pick the model &amp; wording
         </button>
       </div>
-      <div class="btn-row" id="brain-fault-row">
+      <div class="btn-row eng-only" id="brain-fault-row">
         <select aria-label="Fault drill" id="brain-fault" class="select-input" style="flex:1;">
           <option value="none">Normal mission</option>
           <option value="vision_error">Drill: vision service errors (B3.2)</option>
@@ -266,31 +273,31 @@
       </div>
       <div class="telemetry" id="brain-telemetry">
         <div>Mission: <span class="val" id="brain-tel-outcome">idle</span></div>
-        <div>Step: <span class="val" id="brain-tel-step">&ndash;</span></div>
-        <div>Last action: <span class="val" id="brain-tel-action">&ndash;</span></div>
-        <div>Vision fails: <span class="val" id="brain-tel-vision">0</span></div>
+        <div class="eng-only">Step: <span class="val" id="brain-tel-step">&ndash;</span></div>
+        <div class="eng-only">Last action: <span class="val" id="brain-tel-action">&ndash;</span></div>
+        <div class="eng-only">Vision fails: <span class="val" id="brain-tel-vision">0</span></div>
         <!-- R1 (PLAN-ros-alignment.md). The flicker P25 measured by hand,
              counted live: how many turns reversed the one before. A robot
              correcting onto a target turns a few times the same way; one
              that cannot aim goes LEFT, RIGHT, LEFT. -->
-        <div class="full">Turns: <span class="val" id="brain-tel-turns">&ndash;</span></div>
+        <div class="full eng-only">Turns: <span class="val" id="brain-tel-turns">&ndash;</span></div>
         <div class="full">Rooms searched: <span class="val" id="brain-tel-rooms">&ndash;</span></div>
         <div class="full" id="brain-survey-row" style="display:none;">Rooms named: <span class="val" id="brain-tel-survey">&ndash;</span></div>
-        <div class="full">Why: <span class="val" id="brain-tel-why">&ndash;</span></div>
+        <div class="full eng-only">Why: <span class="val" id="brain-tel-why">&ndash;</span></div>
         <div class="full">Where it looked: <span class="val" id="brain-tel-report">&ndash;</span></div>
         <!-- 3.56. Whether the vision service answers its free /health, looked
              at while a cloud-policy mission runs (and by 3.53's late check
              after one parks). "Reachable" says /health answered; Bedrock
              behind it can still fail. -->
-        <div class="full">Cloud: <span class="val" id="brain-tel-cloud">&ndash;</span></div>
-        <div class="full">Robot watchdog: <span class="val" id="brain-tel-watchdog">&ndash;</span></div>
+        <div class="full eng-only">Cloud: <span class="val" id="brain-tel-cloud">&ndash;</span></div>
+        <div class="full eng-only">Robot watchdog: <span class="val" id="brain-tel-watchdog">&ndash;</span></div>
         <!-- Phase M4. Who holds the robot, and why the last command was
              refused. Both sit beside the watchdog because they answer the
              same question a person actually asks: the robot is not moving,
              what stopped it? Before this, a preemption and a wall looked
              identical from here. -->
         <div class="full">Driving: <span class="val" id="brain-tel-driver">&ndash;</span></div>
-        <div class="full">Last refusal: <span class="val" id="brain-tel-refusal">&ndash;</span></div>
+        <div class="full eng-only">Last refusal: <span class="val" id="brain-tel-refusal">&ndash;</span></div>
       </div>
       <!-- Phase P2 / PLAN-onboard-perception.md 6.3. Its own block rather
            than four more rows in the telemetry grid above, because the
@@ -306,7 +313,7 @@
            watchable." It shows calls AND frames because a call count
            climbing by one is indistinguishable from a call on every
            step, which is the thing this policy claims not to do. -->
-      <div class="telemetry" id="brain-tier-rows" style="display:none;">
+      <div class="telemetry eng-only" id="brain-tier-rows" style="display:none;">
         <div class="full" style="opacity:0.75;">On-board perception &middot; free, every frame</div>
         <div class="full">Perception: <span class="val" id="brain-tel-perception">&ndash;</span></div>
         <div class="full">CLIP margin: <span class="val" id="brain-tel-margin">&ndash;</span></div>
@@ -335,8 +342,8 @@
              answer, so it says which it is. -->
         <div class="full">Deliberation: <span class="val" id="brain-tel-inflight">&ndash;</span></div>
       </div>
-      <div id="brain-log" role="log" aria-live="polite" tabindex="0" aria-label="Brain log"></div>
-      <details class="disclosure">
+      <div id="brain-log" class="eng-only" role="log" aria-live="polite" tabindex="0" aria-label="Brain log"></div>
+      <details class="disclosure eng-only">
         <summary><span class="disclosure-caret" data-icon="chevronRight"></span>What the drills prove</summary>
         <div class="hint">
           The two failsafes that matter most on hardware cannot be provoked
@@ -351,13 +358,17 @@
         </div>
       </details>
       <div class="hint" id="brain-connect-hint">
-        No brain service configured &mdash; open Settings to point this at one.
+        No autopilot connected &mdash; open Settings to connect one.
       </div>
     </div>
 
     <div class="panel">
       <div class="section-label">What the robot senses</div>
-      <div class="lede">
+      <div class="lede op-only">
+        What the robot's camera sees, how close things are, and the map it
+        has drawn of the house so far.
+      </div>
+      <div class="lede eng-only">
         Every readout below comes off a route the robot serves, not from
         anything this page knows about the house &mdash; which is what lets
         the same panel show a simulated room today and a SLAM map of your
@@ -373,13 +384,13 @@
       <div class="depth-wrap">
         <div class="depth-strip" id="depth-strip" role="img"
              aria-label="Depth zones across the camera's field of view"></div>
-        <div class="depth-readout" id="depth-readout">depth: not connected</div>
+        <div class="depth-readout eng-only" id="depth-readout">depth: not connected</div>
         <!-- Phase B. Its own line beside the depth strip, and its own
              route, because it is a third sensor: wheel encoders and an
              IMU, not a ToF and not a camera. A backend with none says so
              rather than reading 0.0m, which would be indistinguishable
              from a robot that has not moved. -->
-        <div class="depth-readout" id="odometry-readout">odometry: not connected</div>
+        <div class="depth-readout eng-only" id="odometry-readout">odometry: not connected</div>
       </div>
       <!-- N1's UI proof (PLAN-mapping.md): the WORLD model, as opposed to
            everything above it, which is the body. The house is DISCOVERED
@@ -398,7 +409,7 @@
         <div class="depth-readout" id="map-readout">map: not connected</div>
         <!-- 3.72: a random one of the 100 ProcTHOR houses, swapped in on the
              robot server in place -- no restart. Off while a mission runs. -->
-        <div class="house-row" style="display: none">
+        <div class="house-row eng-only" style="display: none">
           <button id="btn-random-house" type="button" disabled>Random house</button>
           <span class="depth-readout" id="house-readout">house: not connected</span>
         </div>
@@ -410,7 +421,7 @@
           <button id="btn-remap" type="button">Re-map now</button>
         </div>
       </div>
-      <div class="fpv-source" id="fpv-source">frame source: <span class="local">not connected</span></div>
+      <div class="fpv-source eng-only" id="fpv-source">frame source: <span class="local">not connected</span></div>
     </div>
   </div>
 
@@ -519,12 +530,12 @@
 
   <div class="tab-page" role="tabpanel" data-tab="settings">
     <div class="panel">
-      <div class="section-label">Robot server connection</div>
+      <div class="section-label"><span class="op-only">Robot connection</span><span class="eng-only">Robot server connection</span></div>
       <div class="btn-row">
         <input type="text" id="cfg-server-url" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" class="text-input" placeholder="http://192.168.1.x:8000" style="flex:2;">
         <button id="btn-connect" class="primary" style="flex:1;">Connect</button>
       </div>
-      <input type="text" id="cfg-server-secret" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" class="text-input settings-input" placeholder="x-app-secret value (if this deployment requires one)">
+      <input type="text" id="cfg-server-secret" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" class="text-input settings-input" placeholder="Access code (if this robot needs one)">
       <div class="endpoint-note" id="cfg-server-url-mismatch" hidden></div>
       <div class="conn-status" id="connection-status" role="status" aria-live="polite">
         <span class="conn-status-dot"></span>
@@ -533,7 +544,7 @@
           <span class="conn-status-detail"></span>
         </span>
       </div>
-      <details class="disclosure">
+      <details class="disclosure eng-only">
         <summary><span class="disclosure-caret" data-icon="chevronRight"></span>Setting this up</summary>
         <div class="hint">
           When this page is served by the robot server itself, the URL above
@@ -549,8 +560,9 @@
     </div>
 
     <div class="panel">
-      <div class="section-label">Brain service connection</div>
-      <div class="lede">
+      <div class="section-label"><span class="op-only">Autopilot connection</span><span class="eng-only">Brain service connection</span></div>
+      <div class="lede op-only">Optional. Lets the robot search on its own.</div>
+      <div class="lede eng-only">
         Optional. The autonomy loop that runs on the robot rather than in
         this browser.
       </div>
@@ -558,7 +570,7 @@
         <input type="text" id="cfg-brain-url" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" class="text-input" placeholder="http://192.168.1.x:8001" style="flex:2;">
         <button id="btn-brain-connect" class="primary" style="flex:1;">Connect</button>
       </div>
-      <input type="text" id="cfg-brain-secret" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" class="text-input settings-input" placeholder="x-app-secret value (if this deployment requires one)">
+      <input type="text" id="cfg-brain-secret" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" class="text-input settings-input" placeholder="Access code (if this robot needs one)">
       <div class="endpoint-note" id="cfg-brain-url-mismatch" hidden></div>
       <div class="conn-status" id="brain-connection-status" role="status" aria-live="polite">
         <span class="conn-status-dot"></span>
@@ -580,7 +592,7 @@
       <div class="btn-row" style="margin-top:8px;">
         <button id="btn-health-check" style="flex:1;">Check health</button>
       </div>
-      <details class="disclosure">
+      <details class="disclosure eng-only">
         <summary><span class="disclosure-caret" data-icon="chevronRight"></span>Setting this up</summary>
         <div class="hint">
           Run <code>uvicorn control.brain_server:app --host 0.0.0.0 --port
@@ -600,13 +612,13 @@
     </div>
 
     <div class="panel">
-      <div class="section-label">Cloud endpoint settings</div>
-      <div class="lede">Powers Guide and the vision policies.</div>
+      <div class="section-label"><span class="op-only">Vision service</span><span class="eng-only">Cloud endpoint settings</span></div>
+      <div class="lede"><span class="op-only">Powers Guide me and Robot view.</span><span class="eng-only">Powers Guide and the vision policies.</span></div>
       <div class="btn-row" style="margin-top:8px;">
         <input type="text" id="cfg-url" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" class="text-input" placeholder="Vision service base URL (https://...)" style="flex:2;">
         <button id="btn-vision-connect" class="primary" style="flex:1;">Connect</button>
       </div>
-      <input type="text" id="cfg-secret" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" class="text-input settings-input" placeholder="x-app-secret value">
+      <input type="text" id="cfg-secret" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" class="text-input settings-input" placeholder="Access code (if needed)">
       <div class="endpoint-note" id="cfg-url-mismatch" hidden></div>
       <!-- The same shape the brain connection has, and it exists because the
            failure it diagnoses is invisible without it. The vision service
@@ -623,7 +635,7 @@
           <span class="conn-status-detail"></span>
         </span>
       </div>
-      <details class="disclosure">
+      <details class="disclosure eng-only">
         <summary><span class="disclosure-caret" data-icon="chevronRight"></span>What goes in these fields</summary>
         <div class="hint">
           Enter the <b>base</b> URL only &mdash; e.g.
@@ -662,11 +674,11 @@
     </div>
 
     <div class="panel">
-      <div class="section-label">Developer</div>
+      <div class="section-label">Engineering</div>
       <label class="switch-row" for="cfg-debug-readouts">
         <span class="switch-copy">
-          <span class="switch-title">Show developer readouts</span>
-          <span class="switch-sub">Exact API call counts and the pan-speed meter in the Guide overlay.</span>
+          <span class="switch-title">Engineer mode</span>
+          <span class="switch-sub">Shows how the robot works inside: its policies, logs, raw readouts and failure tests, in its engineers' words. Off is the everyday view.</span>
         </span>
         <input type="checkbox" id="cfg-debug-readouts" class="switch">
       </label>
@@ -703,6 +715,7 @@
   </div>
 </nav>
 
+<script src="strings.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -68,8 +68,10 @@ from brain.mission_report import map_coverage
 from brain.navigate import CloudUnavailable
 from brain.room_labels import RoomLabeller, frame_room
 from brain.vision_agent import VisionAgent
-from robot.interface import (DRIVER_MANUAL, PERSON_STOP, Preempted, RobotInterface,
-                             StoppedByPerson, driver_priority)
+from robot.interface import (BATTERY_CHECK, BATTERY_POWEROFF, BATTERY_RESERVE, DRIVER_MANUAL,
+                             PERSON_STOP,
+                             BatteryReserve, Preempted, RobotInterface, StoppedByPerson,
+                             driver_priority)
 from robot.safety import SafetyViolation
 from world.interface import NullWorld, WorldInterface
 
@@ -126,6 +128,10 @@ BATTERY_LOW_READINGS = 2
 # pack that reads, say, 10.40 V twice running). 12 s: the 10 s refresh plus
 # the firmware loop's slack, so a repeat is always a later sample.
 BATTERY_SAMPLE_S = 12.0
+# 3.137: the robot server's ladder levels, as `GET /battery` names them
+# (robot/battery_ladder.py; control/ may not import that module's server side).
+BATTERY_LEVEL_RESERVE = "reserve"
+BATTERY_LEVEL_POWEROFF = "poweroff"
 DEFAULT_VISION_TIMEOUT_S = 20.0
 # 3.56. The arrival confirmation's own deadline (the user's choice, "~8 s"):
 # above the slowest cloud call ever recorded (6.78 s of 98), so a hanging
@@ -348,6 +354,9 @@ class _GatedNavigator:
         if reply.get("reason") == PERSON_STOP and not reply.get("accepted"):
             # 3.84: a person's Stop latched autonomy off; the mission ends.
             raise StoppedByPerson(reply.get("detail") or "a person pressed Stop")
+        if reply.get("reason") in (BATTERY_RESERVE, BATTERY_POWEROFF) and not reply.get("accepted"):
+            # 3.137: the battery ladder took autonomy away; the mission ends.
+            raise BatteryReserve(f"{reply['reason']}: {reply.get('detail') or ''}")
         if reply.get("reason") == "preempted" and not reply.get("accepted"):
             holder = _PREEMPTED_BY.match(reply.get("detail") or "")
             if holder and driver_priority(holder.group(1)) == DRIVER_MANUAL:
@@ -773,6 +782,7 @@ class MissionRunner:
         self._ended_clock: Optional[float] = None    # elapsed stops at the end
         self._battery_checked_at: Optional[float] = None
         self._battery_v: Optional[float] = None
+        self._battery_level: Optional[str] = None
         self._battery_low = 0
         self._battery_low_v: Optional[float] = None     # the last low reading counted
         self._battery_low_at: Optional[float] = None    # ... and when
@@ -1108,7 +1118,10 @@ class MissionRunner:
             # went through resets it, so a robot that turns away and makes
             # progress is never called stuck.
             if result.action == "FORWARD" and not result.executed:
-                self._refused_forwards += 1
+                # 3.137: a refusal while the robot server reads the battery
+                # again at rest says nothing about the way ahead.
+                if not str(result.detail).startswith(BATTERY_CHECK):
+                    self._refused_forwards += 1
             elif result.executed:
                 self._refused_forwards = 0
 
@@ -1208,6 +1221,10 @@ class MissionRunner:
                          f"reached ({self._cloud_calls} calls)")
             return True
         if self.battery_floor_v and self._battery_spent():
+            if self._battery_level in (BATTERY_LEVEL_RESERVE, BATTERY_LEVEL_POWEROFF):
+                self._finish(OUT_OF_BUDGET, f"battery at {self._battery_level} "
+                             f"({self._battery_v:.2f} V), as the robot server reads it")
+                return True
             self._finish(OUT_OF_BUDGET, f"battery at {self._battery_v:.2f} V, under the "
                          f"{self.battery_floor_v:g} V floor "
                          f"{BATTERY_LOW_READINGS} readings in a row")
@@ -1270,6 +1287,11 @@ class MissionRunner:
             self._battery_low = 0
             return False
         self._battery_v = float(v)
+        # 3.137: the robot server's ladder has already applied its own
+        # distinct-samples rule; at Reserve or Power-off the mission ends now.
+        self._battery_level = reading.get("level")
+        if self._battery_level in (BATTERY_LEVEL_RESERVE, BATTERY_LEVEL_POWEROFF):
+            return True
         if v >= self.battery_floor_v:
             self._battery_low = 0
             return False
@@ -1318,6 +1340,8 @@ class MissionRunner:
             call_with_timeout(self._gated.look_center, timeout_s=PERSON_PROBE_S)
         except (SafetyViolation, MissionHalted):
             pass
+        except BatteryReserve:
+            pass                                # 3.137: a flat pack is no person's Stop
         except StoppedByPerson:
             raise                               # the latch, whatever its wording
         except Preempted as e:
@@ -1343,6 +1367,11 @@ class MissionRunner:
         `failed`. A refusal that names no holder reads as a person, as every
         preemption did before 3.70."""
         detail = str(error)
+        if isinstance(error, BatteryReserve):
+            # 3.137: the robot server's battery ladder refused autonomy
+            # (Reserve, or a power-off under way): the battery is the budget.
+            self._finish(OUT_OF_BUDGET, f"battery: the robot server refused autonomy ({detail})")
+            return
         if isinstance(error, StoppedByPerson):
             # 3.84: the brain was refused because a person pressed Stop (the
             # D-pad's, not only the brain panel's): ended by that Stop.

@@ -262,6 +262,29 @@ def _validate_navigate_choices(model_id: Optional[str], prompt_variant: Optional
 CLOUD_POLICIES = ("vision", "tiered")
 
 
+async def _tick_within(work, timeout_s: float):
+    """`await asyncio.wait_for(work, timeout_s)`, except that a cancel is
+    never lost. Python 3.10's wait_for (the Jetson's) returns the result when
+    the work finished in the same loop turn as the cancel, swallowing it:
+    a Stop that landed as a tick ended left the mission running (found on
+    the board, 2026-11-01). asyncio.wait raises the cancel on every version.
+    The tick's thread runs on either way, as it did under wait_for."""
+    fut = asyncio.ensure_future(work)
+    try:
+        done, _ = await asyncio.wait({fut}, timeout=timeout_s)
+    except asyncio.CancelledError:
+        if fut.done() and not fut.cancelled() and fut.exception() is not None:
+            # The tick failed in the same turn as the Stop: logged, not lost.
+            logger.error("tick failed as the mission loop was cancelled",
+                         exc_info=fut.exception())
+        fut.cancel()
+        raise
+    if not done:
+        fut.cancel()
+        raise asyncio.TimeoutError
+    return fut.result()
+
+
 def _perception_available() -> bool:
     """Whether this process COULD build a tiered mission's pipeline.
 
@@ -936,6 +959,38 @@ def create_app(
             state["robot"] = make_robot()
         return state["robot"]
 
+    def battery_too_low(r: RobotInterface) -> Optional[str]:
+        """3.137: why a mission may not start on this battery, or None."""
+        try:
+            reading = r.get_battery() or {}
+        except Exception as e:  # noqa: BLE001 -- see start_mission
+            logger.warning("battery unreadable at mission start: %s", e)
+            return None
+        level = reading.get("level")
+        if level in ("low", "reserve", "poweroff"):
+            return (f"battery_low: the robot server reads the battery at {level} "
+                    f"({reading.get('v')} V) -- charge it before a mission")
+        v = reading.get("v") if reading.get("usable") else None
+        floor = config["battery_floor_v"]
+        low_v = ((reading.get("ladder") or {}).get("levels_v") or {}).get("low")
+        ladder = reading.get("ladder") or {}
+        if ladder.get("checking"):
+            return ("battery_low: the robot server is reading a low battery again at rest "
+                    "-- try again in a moment")
+        settled = ladder.get("samples", 2) >= 2
+        if level is not None and settled and (not floor or not isinstance(low_v, (int, float))
+                                              or floor <= low_v):
+            # The ladder's level is two distinct samples (M2.7); one reading
+            # under the floor is no reason to refuse while this brain's floor
+            # is the ladder's Low or under it.
+            return None
+        # A robot server older than 3.137 (no level), or this brain's floor set
+        # above the ladder's Low: its one reading, at rest, against the floor.
+        if floor and isinstance(v, (int, float)) and v < floor:
+            return (f"battery_low: {v} V, under the {floor:g} V floor -- "
+                    "charge it before a mission")
+        return None
+
     def world() -> WorldInterface:
         """The world client, built once, and never able to stop a mission.
 
@@ -988,9 +1043,7 @@ def create_app(
         try:
             while runner.is_running():
                 try:
-                    await asyncio.wait_for(
-                        asyncio.to_thread(runner.tick), timeout=state["tick_timeout_s"]
-                    )
+                    await _tick_within(asyncio.to_thread(runner.tick), state["tick_timeout_s"])
                 except asyncio.TimeoutError:
                     # The tick thread is abandoned, still running, possibly
                     # forever. abort() stops the car on this thread rather
@@ -1051,6 +1104,14 @@ def create_app(
         build = state["building"] = {"stopped": False}
         lifted = None
         try:
+            # 3.137: no autonomous mission starts on a low battery -- the
+            # robot server's ladder at Low or worse, or a reading under this
+            # brain's own floor. Before a person's Stop is lifted, so a
+            # refused start leaves it as it was. An unreadable battery is no
+            # refusal: the floor guards a battery the brain can see (E4).
+            why = await asyncio.to_thread(battery_too_low, robot())
+            if why:
+                raise HTTPException(status_code=409, detail=why)
             # 3.84: a person pressed Start, so a person's earlier Stop no
             # longer latches the brain out. Lifted FIRST, before the build: a
             # D-pad Stop pressed while the mission is set up latches it again,

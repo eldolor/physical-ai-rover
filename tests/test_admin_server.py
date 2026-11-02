@@ -285,6 +285,146 @@ def test_the_console_serves_its_script_and_links_to_it(client):
     assert "scorePendingWalks" in script.text
 
 
+# ---------- 3.132 Stage 4: the Lab console, and what an action costs ----------
+
+
+def test_the_lab_page_is_served_at_each_console_address(client):
+    """One page for both consoles, at both old addresses and at /lab, with
+    the shared stylesheet before its own and lab.js before the scripts that
+    use it. Every file no-cache, as service/static/assets.json publishes it."""
+    c, _root = client
+    for path in ("/admin", "/metrics", "/lab"):
+        page = c.get(path)
+        assert page.status_code == 200, path
+        assert page.headers["content-type"].startswith("text/html")
+        assert "no-cache" in page.headers.get("cache-control", "")
+        text = page.text
+        assert text.index('href="ui.css"') < text.index('href="lab.css"')
+        assert (text.index('src="lab.js"') < text.index('src="admin.js"')
+                < text.index('src="metrics.js"'))
+        assert "<style" not in text
+    for name, kind in (("lab.js", "javascript"), ("admin.js", "javascript"),
+                       ("metrics.js", "javascript"), ("lab.css", "text/css"),
+                       ("ui.css", "text/css")):
+        r = c.get("/" + name)
+        assert r.status_code == 200, name
+        assert kind in r.headers["content-type"], name
+        assert "no-cache" in r.headers.get("cache-control", ""), name
+
+
+def _estimate(c, walk, action, model=None):
+    url = f"/recording/walks/{walk}/estimate?action={action}"
+    if model:
+        url += f"&model_id={model}"
+    r = c.get(url)
+    assert r.status_code == 200, r.text
+    return r.json()
+
+
+OPUS_45 = "us.anthropic.claude-opus-4-5-20251101-v1:0"
+
+
+def test_with_the_judge_off_a_score_is_free_and_a_replay_is_its_frames(client, monkeypatch):
+    monkeypatch.setattr(admin_server, "JUDGE_ENABLED", False)
+    c, root = client
+    make_walk(root, "walk-est1", ["FORWARD", "LEFT", "FORWARD"])
+    score = _estimate(c, "walk-est1", "score")
+    assert (score["calls"], score["usd"], score["judge_enabled"]) == (0, 0.0, False)
+    replay = _estimate(c, "walk-est1", "replay", OPUS_45)
+    assert (replay["navigate_calls"], replay["judge_calls"]) == (3, 0)
+    assert replay["upper_bound"] is False
+    # No usage recorded: the stated default per call, at the table's price.
+    assert replay["tokens_per_call"] == {"input": 1700, "output": 100, "recorded": False}
+    assert replay["usd"] == pytest.approx(3 * (1700 * 5.5 + 100 * 27.5) / 1e6)
+
+
+def test_with_the_judge_on_the_calls_follow_the_servers_own_rules(client, monkeypatch):
+    """A score: the frames judge_walk samples (8 of 10) plus one collision
+    check per FORWARD (4, under the cap). A replay: every frame, plus at
+    most the collision cap -- an upper bound, said so."""
+    monkeypatch.setattr(admin_server, "JUDGE_ENABLED", True)
+    monkeypatch.setattr(admin_server, "JUDGE_SAMPLE_FRAMES", 8)
+    monkeypatch.setattr(admin_server, "COLLISION_MAX_CHECKS", 12)
+    c, root = client
+    make_walk(root, "walk-est2", ["FORWARD", "LEFT"] * 4 + ["RIGHT", "RIGHT"])
+    score = _estimate(c, "walk-est2", "score")
+    assert (score["judge_calls"], score["navigate_calls"], score["calls"]) == (12, 0, 12)
+    replay = _estimate(c, "walk-est2", "replay", OPUS_45)
+    assert (replay["navigate_calls"], replay["judge_calls"]) == (10, 10)
+    assert replay["upper_bound"] is True
+    monkeypatch.setattr(admin_server, "COLLISION_MAX_CHECKS", 2)
+    assert _estimate(c, "walk-est2", "score")["judge_calls"] == 10
+
+
+def _set_usage(walk_dir, usage_for):
+    lines = []
+    for i, line in enumerate((walk_dir / "walk.jsonl").read_text().splitlines()):
+        e = json.loads(line)
+        e["navigate"]["usage"] = usage_for(i)
+        lines.append(json.dumps(e))
+    (walk_dir / "walk.jsonl").write_text("\n".join(lines) + "\n")
+
+
+def test_an_estimate_uses_the_walks_own_recorded_usage(client):
+    c, root = client
+    walk_dir = make_walk(root, "walk-est3", ["FORWARD", "LEFT", "RIGHT"])
+    _set_usage(walk_dir, lambda i: {"input_tokens": 2000 + 100 * i, "output_tokens": 80 + i})
+    est = _estimate(c, "walk-est3", "replay", OPUS_45)
+    assert est["tokens_per_call"] == {"input": 2100, "output": 81, "recorded": True}
+
+
+def test_a_text_only_usage_count_is_not_believed(client):
+    """Review of Stage 4: GPT-6 Astra's Bedrock usage omits image tokens, so
+    a walk recorded under it reports ~450 in; priced as that, a replay under
+    another model read "under $0.01"."""
+    c, root = client
+    walk_dir = make_walk(root, "walk-est6", ["FORWARD", "LEFT"])
+    _set_usage(walk_dir, lambda i: {"input_tokens": 452, "output_tokens": 90})
+    est = _estimate(c, "walk-est6", "replay", OPUS_45)
+    assert est["tokens_per_call"]["input"] == 1700
+
+
+def test_a_score_counts_only_checks_the_judge_can_make(client, monkeypatch):
+    """Review of Stage 4: check_collisions asks nothing for a FORWARD with no
+    image, so the estimate must not count one; judge calls are priced at
+    walk_eval's reply caps (200 out a judged frame, 150 a check)."""
+    monkeypatch.setattr(admin_server, "JUDGE_ENABLED", True)
+    monkeypatch.setattr(admin_server, "JUDGE_SAMPLE_FRAMES", 8)
+    c, root = client
+    walk_dir = make_walk(root, "walk-est7", ["FORWARD", "FORWARD", "LEFT"])
+    lines = [json.loads(x) for x in (walk_dir / "walk.jsonl").read_text().splitlines()]
+    lines[0]["file"] = "missing.txt"
+    (walk_dir / "walk.jsonl").write_text("".join(json.dumps(x) + "\n" for x in lines))
+    est = _estimate(c, "walk-est7", "score")
+    assert est["judge_calls"] == 2 + 1        # two judged frames, one check
+    per_judge = (1700 * 5.5 + 200 * 27.5) / 1e6
+    per_check = (1700 * 5.5 + 150 * 27.5) / 1e6
+    assert est["usd"] == pytest.approx(2 * per_judge + per_check)
+
+
+def test_a_model_with_no_price_gives_calls_but_no_dollars(client):
+    c, root = client
+    make_walk(root, "walk-est4", ["FORWARD", "FORWARD"])
+    est = _estimate(c, "walk-est4", "replay", "amazon.nova-lite-v1:0")
+    assert est["calls"] == 2 and est["usd"] is None
+
+
+def test_an_estimate_refuses_an_unknown_action_and_walk(client):
+    c, root = client
+    make_walk(root, "walk-est5", ["FORWARD"])
+    assert c.get("/recording/walks/walk-est5/estimate?action=delete").status_code == 422
+    assert c.get("/recording/walks/no-such-walk/estimate?action=score").status_code == 404
+
+
+def test_zero_calls_cost_nothing_even_without_a_price():
+    from control import admin_prices
+    tokens = {"input": 1700, "output": 100}
+    assert admin_prices.cost_usd(0, "unknown-model", tokens) == 0.0
+    assert admin_prices.cost_usd(1, "unknown-model", tokens) is None
+    assert admin_prices.cost_usd(2, "us.anthropic.claude-opus-5-5", tokens) == pytest.approx(
+        2 * (1700 * 4.40 + 100 * 22.0) / 1e6)
+
+
 def test_walks_carry_a_recording_time_for_sorting(client):
     """The console's "Newest first" sorted on the walk NAME, which meant
     time order only while every name was "<target>-<timestamp>". Adding the

@@ -318,6 +318,8 @@ Resources:
           Values:
             - /teleop-robot/ui.css
             - /teleop-robot/twin.css
+            # 3.132 Stage 2A: the page's words, loaded before app.js.
+            - /teleop-robot/strings.js
       Actions:
         - Type: forward
           TargetGroupArn: !Ref AlbTargetGroup

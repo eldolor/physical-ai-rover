@@ -1,0 +1,47 @@
+{
+ "sha": "3c04387d6e7e640ffef5b08f307388ae58872f23",
+ "cmd_exit": 0,
+ "cmd_s": 66.1,
+ "bench_exit": "0",
+ "vlm_latency_ms": {
+  "n": 57,
+  "p50": 1155.9717089985497,
+  "p90": 1165.660169965122,
+  "max": 1166.4490499533713,
+  "statuses": {
+   "answered": 57
+  }
+ },
+ "telemetry": {
+  "samples": 60,
+  "temps": 60,
+  "clocks": 60,
+  "max_temp_c": 56.312,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2492,
+  "cpu_below_max_samples": 59,
+  "gpu_below_max_samples": 1
+ },
+ "wheel": {
+  "moving": 0,
+  "late": 0,
+  "max_dt_s": 0.0,
+  "max_dt_s_before": 0.0
+ },
+ "validity": {
+  "valid": false,
+  "reasons": [
+   "not a full-stack run (smoke): reported with no bar",
+   "no full-stack window",
+   "no moving wheel ticks in the window",
+   "nav2 goals not counted"
+  ]
+ },
+ "scored_value": null,
+ "tegrastats_lines": 67,
+ "desktop_load_samples": 67,
+ "restore_actions": [],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true
+}

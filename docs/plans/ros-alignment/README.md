@@ -138,4 +138,12 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.130](3.130-fast-map-work.md) | Explore's map work in numpy: reach, frontiers and view gaps with exactly the old answers |
 | [3.131](3.131-choice-under-100.md) | F-large's whole goal choice <= 100 ms p90 on the Jetson under the full stack (after 3.130) |
 | [3.132](3.132-ux-redesign.md) | A staged UX redesign of the twin and consoles |
+| [3.133](3.133-bridge-names-hold.md) | The ROS bridge names its own goal hold |
+| [3.134](3.134-twin-start-hold-text.md) | The twin's nav2 hold says only a start |
+| [3.135](3.135-jetson-fmea.md) | FMEA and resiliency tests on the Jetson, run from the desktop |
+| [3.136](3.136-jetson-perf.md) | Performance tests on the Jetson, run from the desktop |
+| [3.137](3.137-battery-ladder.md) | The battery ladder: low, reserve, a clean power-off; and running on the charger |
+| [3.138](3.138-identifier-rename.md) | Rename the code's own identifiers from vision-picar to the new name |
+| [3.139](3.139-claim-on-dev.md) | Claims published on origin/dev |
+| [3.140](3.140-rover-live-checks.md) | Live checks on the Rover and Jetson: everything built, tested on the car |
 <!-- /sections -->

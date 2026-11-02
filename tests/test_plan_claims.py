@@ -54,9 +54,15 @@ def _git(cwd, *args):
 
 
 @pytest.fixture
-def repo(tmp_path):
+def repo(tmp_path, monkeypatch):
+    """A scratch checkout whose `origin` is a local bare repo (3.139: a
+    claim is a `claim/<step>` branch there; no test reaches the real
+    origin). The session's own identity is cleared: owners are named."""
     for k in ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE"):
         os.environ.pop(k, None)
+    for k in ("CLAUDE_CODE_SESSION_ID", "CLAUDE_SESSION_ID", "PICAR_CLAIM_BYPASS",
+              "PICAR_CLAIM_HOST", "PICAR_CLAIM_SESSION", "PICAR_CLAIM_PID"):
+        monkeypatch.delenv(k, raising=False)
     r = tmp_path / "repo"
     (r / pc.DIR).mkdir(parents=True)
     (r / pc.DIR / "3.90-test.md").write_text(SECTION)
@@ -64,7 +70,11 @@ def repo(tmp_path):
     _git(r, "init", "-q", "-b", "dev")
     _git(r, "add", "-A")
     _git(r, "commit", "-q", "-m", "base")
-    _git(r, "update-ref", "refs/remotes/origin/dev", "HEAD")
+    bare = tmp_path / "origin.git"
+    _git(tmp_path, "init", "-q", "--bare", "-b", "dev", str(bare))
+    _git(r, "remote", "add", "origin", str(bare))
+    _git(r, "push", "-q", "origin", "dev")
+    _git(r, "fetch", "-q", "origin")
     return str(r)
 
 
@@ -180,6 +190,9 @@ def test_criterion_2_a_reused_pid_does_not_keep_the_claim(repo, owners):
     path = os.path.join(pc.repo(repo)[1], "plan-claims", "3.90.A.json")
     c["start"] = "Thu Jan  1 00:00:00 1970"          # same PID, another process
     json.dump(c, open(path, "w"))
+    # 3.139: origin's copy names the holder too; the same process, reused.
+    sha = pc._claim_commit(repo, c)
+    _git(repo, "push", "-q", "--force", "origin", f"{sha}:refs/heads/claim/3.90.A")
     assert pc.claim("3.90.A", cwd=repo, me=b)["pid"] == b["pid"]
 
 
@@ -270,7 +283,9 @@ def test_criterion_4_the_edit_guard(repo, owners):
     d = json.loads(out)["hookSpecificOutput"]
     assert d["permissionDecision"] == "ask" and "3.90.A" in d["permissionDecisionReason"]
     assert _hook(repo, os.path.join(repo, "sim", "new.py"), a["pid"]) == ""     # its own claim
-    assert _hook(repo, os.path.join(repo, "control", "x.py"), b["pid"]) == ""   # unclaimed
+    # Unclaimed and in no open step (3.139: a path in an open step's Touches
+    # -- control/x.py is 3.91.A's -- now needs a claim in that section).
+    assert _hook(repo, os.path.join(repo, "elsewhere", "x.py"), b["pid"]) == ""
     assert _hook("/", "/etc/hosts", b["pid"]) == ""                            # not a repo
     for mode in ("auto", "bypassPermissions", ""):     # no one would see an "ask"
         d = json.loads(_hook(repo, os.path.join(repo, "sim", "new.py"), b["pid"], mode))

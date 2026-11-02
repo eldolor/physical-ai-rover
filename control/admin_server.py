@@ -49,8 +49,10 @@ through service/vision_analyze instead would have broken it: admin would
 gain a hard dependency on another service's uptime, and would have to ship
 frames it already holds on local disk over HTTP to have them read back.
 
-    GET    /admin                                  the viewer/deleter page
-    GET    /admin.js                               its client script
+    GET    /admin, /metrics, /lab                  the Lab console (control/lab.html,
+                                                   3.132 Stage 4), on its Walks or Metrics tab
+    GET    /admin.js, /metrics.js, /lab.js         its scripts
+    GET    /ui.css, /lab.css                       its stylesheets
     GET    /recording/walks                        list saved walks (label, model, score)
     GET    /recording/walks/{walk}                  one walk's frames + navigate log
     GET    /recording/walks/{walk}/frames/{file}    one frame's image bytes
@@ -59,6 +61,7 @@ frames it already holds on local disk over HTTP to have them read back.
     PUT    /recording/walks/{walk}/meta             set walk-level metadata (model_id)
     POST   /recording/walks/{walk}/evaluate         (re)score a walk
     GET    /recording/walks/{walk}/evaluation       the scorecard, computed lazily
+    GET    /recording/walks/{walk}/estimate         what a score or replay would spend (free)
     POST   /recording/walks/{walk}/replay           re-ask its frames under another model
     GET    /recording/walks/{walk}/replays          every stored replay of it
     DELETE /recording/walks/{walk}                  delete a whole walk
@@ -86,7 +89,7 @@ from pydantic import BaseModel
 from control.brain_config import load_brain_config
 from control.metrics_routes import register_metrics_routes
 from control.recording_routes import mount_recording_routes
-from control import walk_eval, walk_replay
+from control import admin_prices, walk_eval, walk_replay
 from control.walk_store import METRICS_PREFIX, WalkStoreError, walk_store_from_config
 
 logger = logging.getLogger("admin_server")
@@ -243,8 +246,19 @@ def post_navigate(vision_url: str, timeout_s: float, image_bytes: bytes,
     raise RuntimeError(last)
 
 
-_ADMIN_HTML = Path(__file__).resolve().parent / "admin.html"
-_ADMIN_JS = Path(__file__).resolve().parent / "admin.js"
+# 3.132 Stage 4: one page for both consoles, served at /admin, /metrics and
+# /lab (the tab is chosen from the path), with the shared stylesheet the twin
+# uses. The same files, under the same names, as service/static/assets.json
+# publishes them.
+_CONTROL_DIR = Path(__file__).resolve().parent
+_LAB_HTML = _CONTROL_DIR / "lab.html"
+_LAB_FILES = {
+    "admin.js": (_CONTROL_DIR / "admin.js", "application/javascript"),
+    "metrics.js": (_CONTROL_DIR / "metrics.js", "application/javascript"),
+    "lab.js": (_CONTROL_DIR / "lab.js", "application/javascript"),
+    "lab.css": (_CONTROL_DIR / "lab.css", "text/css"),
+    "ui.css": (_CONTROL_DIR.parent / "web-shared" / "ui.css", "text/css"),
+}
 
 # Same patterns control/brain_server.py's record_frame() validates against
 # (it owns the write path and therefore the naming contract) -- duplicated
@@ -735,6 +749,63 @@ def create_app(config_path=None, store=None) -> FastAPI:
             return existing
         return await asyncio.to_thread(_evaluate, walk, True)
 
+    @app.get("/recording/walks/{walk}/estimate", dependencies=[Depends(require_secret)])
+    async def estimate(walk: str, action: str, model_id: Optional[str] = None):
+        """What Score (`action=score`) or a replay (`action=replay`) would
+        spend, before the console asks the person (3.132 Stage 4). Free: it
+        reads the walk's log and nothing else.
+
+        A score's calls are exact by _evaluate's own rules: the frames
+        judge_walk samples, plus the collision checks (FORWARD frames, capped).
+        A replay's are its frames plus at most the collision cap -- an upper
+        bound, since its own FORWARDs are not known before it runs. Retries
+        of a failed call are not counted."""
+        _require_walk(walk)
+        if action not in ("score", "replay"):
+            raise HTTPException(status_code=422, detail="action must be score or replay")
+        entries = walk_eval.decided_entries(_walk_entries(store, walk))
+
+        def has_image(e):
+            return bool(FRAME_FILENAME.match(e.get("file") or ""))
+
+        with_image = [e for e in entries if has_image(e)]
+        tokens = admin_prices.tokens_per_call(entries)
+        navigate_calls, judge_frames, collision_checks = 0, 0, 0
+        if action == "score":
+            if JUDGE_ENABLED and entries:
+                sampled = walk_eval._sample_indices(len(entries), JUDGE_SAMPLE_FRAMES)
+                judge_frames = sum(1 for i in sampled if has_image(entries[i]))
+                # check_collisions asks nothing for a FORWARD with no image.
+                forwards = [i for i in walk_eval.collision_candidates(entries)
+                            if has_image(entries[i])]
+                collision_checks = min(len(forwards), COLLISION_MAX_CHECKS)
+        else:
+            navigate_calls = len(with_image)
+            if JUDGE_ENABLED and navigate_calls:
+                collision_checks = min(navigate_calls, COLLISION_MAX_CHECKS)
+        judge_calls = judge_frames + collision_checks
+        parts = [
+            admin_prices.cost_usd(navigate_calls, model_id, tokens),
+            admin_prices.cost_usd(judge_frames, JUDGE_MODEL_ID,
+                                  {**tokens, "output": admin_prices.JUDGE_OUT_TOKENS}),
+            admin_prices.cost_usd(collision_checks, JUDGE_MODEL_ID,
+                                  {**tokens, "output": admin_prices.COLLISION_OUT_TOKENS}),
+        ]
+        return {
+            "walk": walk,
+            "action": action,
+            "calls": navigate_calls + judge_calls,
+            "navigate_calls": navigate_calls,
+            "judge_calls": judge_calls,
+            "judge_enabled": JUDGE_ENABLED,
+            "upper_bound": action == "replay" and judge_calls > 0,
+            "model_id": model_id if action == "replay" else None,
+            "judge_model_id": JUDGE_MODEL_ID,
+            "tokens_per_call": tokens,
+            # None when any part that makes calls has no price here.
+            "usd": None if None in parts else round(sum(parts), 6),
+        }
+
     # ---- replay: the same pixels, a different model ----
 
     def _replay(walk_name: str, model_id, prompt_variant=None) -> dict:
@@ -974,20 +1045,25 @@ def create_app(config_path=None, store=None) -> FastAPI:
         store.delete_file(walk, filename)
         return {"deleted": filename, "walk": walk, "marked": marked}
 
-    @app.get("/admin")
-    async def admin_page():
-        return FileResponse(_ADMIN_HTML)
+    # The page and its files, no-cache -- see web-twin/app.js's banner for
+    # why they are not under content-hashed filenames.
+    def _lab_page():
+        return FileResponse(_LAB_HTML, media_type="text/html",
+                            headers={"Cache-Control": "no-cache"})
 
-    @app.get("/admin.js")
-    async def admin_script():
-        """Extracted out of admin.html -- see web-twin/app.js's banner for
-        why these are external now and why they're served no-cache rather
-        than under a content-hashed filename."""
-        return FileResponse(
-            _ADMIN_JS,
-            media_type="application/javascript",
-            headers={"Cache-Control": "no-cache"},
-        )
+    for page_path in ("/admin", "/metrics", "/lab"):
+        app.add_api_route(page_path, _lab_page, methods=["GET"])
+
+    def _lab_file(name):
+        path, media_type = _LAB_FILES[name]
+
+        def serve():
+            return FileResponse(path, media_type=media_type,
+                                headers={"Cache-Control": "no-cache"})
+        return serve
+
+    for file_name in _LAB_FILES:
+        app.add_api_route("/" + file_name, _lab_file(file_name), methods=["GET"])
 
     @app.get("/recording/summary", dependencies=[Depends(require_secret)])
     async def summary():

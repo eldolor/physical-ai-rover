@@ -25,6 +25,10 @@ def _with_origin(tmp_path, monkeypatch):
     """A scratch checkout with an `origin` holding `dev`, and the section
     directory and its index committed -- what `ready` and `new` expect."""
     repo, g = _scratch_repo(tmp_path, monkeypatch)
+    # 3.139: `new` claims its section on this origin, as this process.
+    monkeypatch.setenv("PICAR_CLAIM_PID", str(os.getpid()))
+    for k in ("CLAUDE_CODE_SESSION_ID", "CLAUDE_SESSION_ID", "PICAR_CLAIM_SESSION"):
+        monkeypatch.delenv(k, raising=False)
     os.makedirs(repo / ps.DIR)
     ps.write_index(str(repo))
     g("add", "."); g("commit", "-qm", "index")

@@ -317,7 +317,9 @@ def test_a_stop_that_never_reached_the_robot_says_so(browser, twin_server):
     page.route(f"{twin_server}/stop", lambda route: route.abort())
     page.click('button.tab-btn[data-tab="sim"]')
     page.evaluate("document.getElementById('btn-stop').click()")
-    toast = page.locator(".toast", has_text="STOP did not reach the robot")
+    # 3.132 Stage 2A: in the operator voice (Engineer mode says "STOP did
+    # not reach the robot"); the point is that a lost STOP is said at all.
+    toast = page.locator(".toast", has_text="Stop didn't reach the robot")
     toast.first.wait_for(timeout=3000)
     log = page.inner_text("#log")
     assert "NOT SENT" in log and "VETOED" not in log, log

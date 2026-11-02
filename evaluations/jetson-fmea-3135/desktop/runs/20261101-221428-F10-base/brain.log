@@ -1,0 +1,35 @@
+1793592930.040 WARNING identity vision-picar brain server starting -- git=1bab91b3 executable=/home/anshu/vision-picar/.venv/bin/python config=(default)
+1793592933.276 ERROR mission_runner mission step failed
+Traceback (most recent call last):
+  File "/home/anshu/vision-picar/.claude/worktrees/modest-wu-f2d2b6/control/mission_runner.py", line 1004, in tick
+    result = self.agent.step()
+  File "/home/anshu/vision-picar/.claude/worktrees/modest-wu-f2d2b6/brain/agent.py", line 687, in step
+    result = super().step()
+  File "/home/anshu/vision-picar/.claude/worktrees/modest-wu-f2d2b6/brain/agent.py", line 226, in step
+    result = self.safety.check_and_execute(action, **kwargs)
+  File "/home/anshu/vision-picar/.claude/worktrees/modest-wu-f2d2b6/robot/safety.py", line 982, in check_and_execute
+    return self._check_and_execute(action, self.required_clearance_cm(v, v <= CREEP_M_S),
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                   **kwargs)
+                                   ^^^^^^^^^
+  File "/home/anshu/vision-picar/.claude/worktrees/modest-wu-f2d2b6/robot/safety.py", line 1025, in _check_and_execute
+    result = self._dispatch(action, **kwargs)
+  File "/home/anshu/vision-picar/.claude/worktrees/modest-wu-f2d2b6/robot/safety.py", line 1197, in _dispatch
+    return dispatch_table[action]()
+           ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/anshu/vision-picar/.claude/worktrees/modest-wu-f2d2b6/robot/safety.py", line 1182, in <lambda>
+    "FORWARD": lambda: self.robot.drive_forward(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~^
+        kwargs.get("speed", 50), kwargs.get("duration", 0.5)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ),
+    ^
+  File "/home/anshu/vision-picar/.claude/worktrees/modest-wu-f2d2b6/control/mission_runner.py", line 447, in drive_forward
+    return self._robot.drive_forward(speed, duration)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/anshu/vision-picar/.claude/worktrees/modest-wu-f2d2b6/control/remote_robot.py", line 95, in drive_forward
+    return self._action("FORWARD", speed=speed, duration=duration)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/anshu/vision-picar/.claude/worktrees/modest-wu-f2d2b6/control/remote_robot.py", line 280, in _action
+    raise RobotTransportError(f"no_feedback: {detail}")
+control.remote_robot.RobotTransportError: no_feedback: FORWARD ended: no feedback from the motor board for 0.25s (> 0.25s) -- the wheels are not measured

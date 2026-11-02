@@ -56,6 +56,46 @@
     });
   });
 
+  // 3.132 Stage 2A: the page's words, in two voices (web-twin/strings.js,
+  // loaded first). t(key, vars) answers in the operator voice, or Engineer
+  // mode's (today's wording) while that switch is on.
+  // After the error capture, and with a stand-in: a strings.js that failed
+  // to load (a deploy that missed it, a stale cache) must cost the words,
+  // never the page -- the D-pad and STOP have to keep working (review).
+  const strings = window.twinStrings || {
+    t: function (key) { return key; }, has: function () { return false; },
+    engineer: function () { return document.body.classList.contains("debug-readouts"); },
+  };
+  if (!window.twinStrings) {
+    pushDebugLog({type: "error", message: "strings.js did not load; the page shows its keys"});
+  }
+  const t = strings.t;
+  const engineerMode = strings.engineer;
+  // A verb in words: "turn left" for a person, LEFT in Engineer mode.
+  function actionWords(action) {
+    return strings.has("action." + action) ? t("action." + action) : action;
+  }
+  // An outcome the page has no end-state sentence for (running, failed...):
+  // the raw id in Engineer mode, as before, and a plain state otherwise.
+  const OUTCOME_KEYS = {
+    idle: "state.idle", running: "state.running", arrived_unconfirmed: "state.arrivedUnconfirmed",
+    room_reached: "state.roomReached", failed: "state.failed", blocked: "state.blocked",
+  };
+  // Who drives, for a person: "the autopilot", not `brain`. Engineer mode
+  // keeps the arbitration's own names.
+  const DRIVER_KEYS = {
+    brain: "driver.brain", "twin-dpad": "driver.dpad", "twin-local-brain": "driver.localBrain",
+    ros: "driver.ros", "teleop-operator": "driver.operator",
+  };
+  function driverWords(driver) {
+    if (engineerMode()) return driver;
+    return DRIVER_KEYS[driver] ? t(DRIVER_KEYS[driver]) : t("driver.someone");
+  }
+  function outcomeWords(outcome) {
+    if (engineerMode()) return outcome;
+    return OUTCOME_KEYS[outcome] ? t(OUTCOME_KEYS[outcome]) : t("state.other");
+  }
+
   // ---------- icon system ----------
   // One inline-SVG icon set (stroke-based, currentColor, 24x24 viewBox)
   // replaces every OS emoji glyph that used to render inconsistently
@@ -842,7 +882,7 @@
     // Held by choice number, not on the ask object: every poll replaces that
     // with the brain's snapshot (review).
     if (ask.picked || state.askPickChoice === ask.choice) {
-      showToast("Already picked -- explore is on its way", "info");
+      showToast(t("explore.alreadyPicked"), "info");
       return;
     }
     state.askPickChoice = ask.choice;
@@ -852,12 +892,12 @@
         state.brainAskOpen.picked = c.id;
       }
       renderMap();
-      showToast("Explore will go there next", "ok");
+      showToast(t("explore.pickTaken"), "ok");
     } catch (e) {
       // 409: that choice is over (timed out, superseded, mission ended).
       // No answer at all (a dropped tunnel) may still have been taken: the
       // next poll's `picked` says. Only a refusal frees the choice.
-      showToast((e.status ? "Pick not taken: " : "Pick may not have arrived: ") + e.message,
+      showToast(t(e.status ? "explore.pickRefused" : "explore.pickLost", {why: e.message}),
         e.status === 409 || !e.status ? "warn" : "err");
       if (e.status && state.askPickChoice === ask.choice) state.askPickChoice = null;
     }
@@ -866,10 +906,8 @@
   // 3.127: a goal the bridge holds while ROS starts is refused by the hold's
   // name; told as a wait, not as the bridge's 503. (Only POST /world/goal
   // answers these; they never reach /health's last_refusal.)
-  var GOAL_HOLD_TEXT = {
-    nav2_starting: "nav2 is not active yet (starting, or restarting) \u2014 try again in a few seconds",
-    slam_not_ready: "SLAM is not ready yet (starting, checking a saved map, or re-mapping) \u2014 try again in a few seconds",
-  };
+  // Its words are strings.js's `goal.hold.<reason>`.
+  var GOAL_HOLDS = { nav2_starting: true, slam_not_ready: true };
 
   // Tap the SLAM map: send the robot there (nav2, through the robot server).
   function onMapTap(ev) {
@@ -883,7 +921,7 @@
       // 3.88 A: while explore asks, a tap is a pick or nothing -- never a goal.
       var c = askCandidateAt(grid, px, py, scale);
       if (c) pickAskCandidate(c);
-      else showToast("Tap one of the numbered goals -- explore picks only among those", "info");
+      else showToast(t("explore.tapNumbered"), "info");
       return;
     }
     if (!isSlamMap(grid) || state.goalsUnsupported || !state.connected) return;
@@ -893,15 +931,16 @@
     // running brain mission the way a D-pad press does.
     apiPost("/world/goal", {x_m: x, y_m: y}, {"x-driver": "twin-dpad"}).then(function (r) {
       if (r && r.accepted === false
-          && Object.prototype.hasOwnProperty.call(GOAL_HOLD_TEXT, r.reason)) {
-        showToast(GOAL_HOLD_TEXT[r.reason], "info");
+          && Object.prototype.hasOwnProperty.call(GOAL_HOLDS, r.reason)) {
+        showToast(t("goal.hold." + r.reason), "info");
       } else if (r && r.accepted === false) {
-        showToast("Could not send the goal: " + (r.detail || r.reason || r.error || "refused"), "err");
+        var why = r.detail || r.reason || r.error;
+        showToast(why ? t("goal.refused", {why: why}) : t("goal.refusedBare"), "err");
       } else {
-        showToast("Sending the robot there", "info");
+        showToast(t("goal.sending"), "info");
       }
     }).catch(function (e) {
-      showToast("Could not send the goal (" + (e.message || e) + ")", "err");
+      showToast(t("goal.failed", {why: e.message || e}), "err");
     });
   }
 
@@ -961,31 +1000,28 @@
     state.remapAsk = ask;
     updateRemapButton();
     var slow = setTimeout(function () {
-      if (mine()) showToast("Re-map: no answer in " + REMAP_SLOW_MS / 1000 + " s -- it may have " +
-                            "started; watch the map", "warn");
+      if (mine()) showToast(t("remap.slow", {s: REMAP_SLOW_MS / 1000}), "warn");
     }, REMAP_SLOW_MS);
     var giveUp = setTimeout(function () { ctl.abort(); }, REMAP_GIVE_UP_MS);
     try {
       // A person's request, named as the map tap is.
       await apiPost("/world/remap", {}, {"x-driver": DRIVER_DPAD}, ctl.signal);
       if (!mine()) return;
-      showToast("Re-mapping from here: goals wait until the map is ready again, " +
-                "and a goal still driving may be cancelled", "ok");
+      showToast(t("remap.started"), "ok");
     } catch (e) {
       if (!mine()) return;
       // Aborted with no status: no answer, or a 2xx whose body was cut off
       // (an error answer keeps its status and goes to its own branch). Either
       // way the re-map may have started, which is what this says.
       if (ctl.signal.aborted && !e.status) {
-        showToast("Re-map: no answer in " + REMAP_GIVE_UP_MS / 1000 + " s, stopped waiting -- " +
-                  "it may have started; check the map before asking again", "warn");
+        showToast(t("remap.gaveUp", {s: REMAP_GIVE_UP_MS / 1000}), "warn");
       } else if (e.status === 404 || e.status === 501) {
         state.remapUnsupported = true;
-        showToast("Not re-mapped: " + (e.message || "this robot keeps no saved map"), "err");
+        showToast(e.message ? t("remap.refused", {why: e.message}) : t("remap.noSavedMap"), "err");
       } else if (e.status === 409) {
-        showToast("Not re-mapped: " + (e.message || "refused"), "warn");
+        showToast(e.message ? t("remap.refused", {why: e.message}) : t("remap.refusedBare"), "warn");
       } else {
-        showToast("Not re-mapped (" + (e.message || e) + ")", "err");
+        showToast(t("remap.failed", {why: e.message || e}), "err");
       }
     } finally {
       clearTimeout(slow);
@@ -1332,10 +1368,9 @@
       const answered = typeof e.status === "number";
       logEntry(action, false, (answered ? "refused: " : "not delivered: ") + (e.message || e),
                answered ? "rejected" : "unreachable");
-      showToast((answered
-        ? action + " was refused by the robot server (HTTP " + e.status + ")"
-        : (action === "STOP" ? "STOP did not reach the robot" : action + " was not sent"))
-        + ": " + (e.message || e), "err");
+      const lostStop = !answered && action === "STOP";
+      const key = answered ? "drive.refused" : lostStop ? "drive.stopLost" : "drive.notSent";
+      showToast(t(key, {action: actionWords(action), status: e.status, why: e.message || e}), "err");
     }
   }
 
@@ -1424,12 +1459,12 @@
       // 3.76: the house HAS changed by now; a frame that fails to come
       // back is not "House not changed" (a retry would swap again).
       try { render(await fetchFrame()); } catch (frameErr) { /* the next poll redraws */ }
-      showToast("Now in " + r.sim_map + ".", "ok");
+      showToast(t("house.now", {house: r.sim_map}), "ok");
     } catch (e) {
       // A refusal's detail is {reason, detail}: show the sentence.
       var msg = e.message || String(e);
       try { var d = JSON.parse(msg); if (d && d.detail) msg = d.detail; } catch (_) { /* prose */ }
-      showToast("House not changed: " + msg, "err");
+      showToast(t("house.notChanged", {why: msg}), "err");
     } finally {
       state.houseBusy = false;
       updateHouseButton();
@@ -1520,8 +1555,7 @@
       // re-map there can cancel a goal, so the person is told.
       state.remapAsk.ctl.abort();
       state.remapAsk = null;
-      showToast("A re-map asked of the last server was not answered -- it may have started " +
-                "there", "warn");
+      showToast(t("remap.lastServer"), "warn");
     }
     state.lastWorldError = null;
     state.lastGoal = null;
@@ -1540,12 +1574,15 @@
       prefSet(PREF.serverUrl, url);
       recordObservation(frame);
       render(frame);
-      if (!silent) showToast("Connected to the robot server.", "ok");
+      if (!silent) showToast(t("robot.connected"), "ok");
     } catch (e) {
       state.connected = false;
       setControlsEnabled(false);
       const failure = connectFailure(url, e, silent);
-      setConnStatus(statusEl, failure.state, failure.label, failure.detail);
+      setVoicedConnStatus(statusEl, function () {
+        const f = connectFailure(url, e, silent);
+        setConnStatus(statusEl, f.state, f.label, f.detail);
+      });
       if (!silent && failure.toast) showToast(failure.toast, "err");
     } finally {
       state.connecting = false;
@@ -1566,8 +1603,17 @@
   // textContent, which would blow away the dot and the structure.
   const CONN_STATE_CLASS = {ok: "is-ok", err: "is-err", busy: "is-busy", idle: ""};
 
+  // 3.132 Stage 2A: a status whose words depend on the voice is kept as the
+  // function that draws it, and drawn again when Engineer mode is switched
+  // (revoice()). Any plain setConnStatus() on the same element replaces it.
+  const voicedStatus = new Map();
+  function setVoicedConnStatus(el, draw) {
+    draw();
+    if (el) voicedStatus.set(el, draw);
+  }
   function setConnStatus(el, stateName, label, detail) {
     if (!el) return;
+    voicedStatus.delete(el);
     el.classList.remove("is-ok", "is-err", "is-busy");
     const cls = CONN_STATE_CLASS[stateName];
     if (cls) el.classList.add(cls);
@@ -1897,16 +1943,19 @@
       : { outcome: raw, cancelledBy: (status && status.cancelled_by) || null };
   }
 
-  const CANCELLED_BY_WORDS = { stop: "Stop pressed", dpad: "D-pad took over" };
-  // 3.70 E6: the end states in words. Other outcomes keep their own names.
+  const CANCELLED_BY_KEYS = { stop: "state.cancelledStop", dpad: "state.cancelledDpad" };
+  // 3.70 E6: the end states in words (3.132: strings.js, in either voice).
+  // Other outcomes have no end-state sentence (outcomeWords()).
   function endStateText(status) {
     const r = readOutcome(status);
-    const why = status.end_reason ? " \u2014 " + status.end_reason : "";
-    if (r.outcome === "found") return "Found";
-    if (r.outcome === "exhausted") return "Exhausted \u2014 nowhere reachable left to look";
-    if (r.outcome === "out_of_budget") return "Out of budget" + why;
+    if (r.outcome === "found") return t("state.found");
+    if (r.outcome === "exhausted") return t("state.exhausted");
+    if (r.outcome === "out_of_budget") {
+      return status.end_reason ? t("state.outOfBudgetWhy", {why: status.end_reason}) : t("state.outOfBudget");
+    }
     if (r.outcome === "cancelled") {
-      return "Cancelled" + (r.cancelledBy ? " \u2014 " + (CANCELLED_BY_WORDS[r.cancelledBy] || r.cancelledBy) : "");
+      if (CANCELLED_BY_KEYS[r.cancelledBy]) return t(CANCELLED_BY_KEYS[r.cancelledBy]);
+      return t("state.cancelled") + (r.cancelledBy && engineerMode() ? " \u2014 " + r.cancelledBy : "");
     }
     return null;
   }
@@ -1971,18 +2020,13 @@
 
   // 3.53: what the late identity check (asked once the cloud is back) has
   // said so far, in words. "" when there is none.
-  const LATE_WORDS = {
-    waiting: "will ask again when the cloud is back",
-    confirmed: "asked later: the cloud sees it",
-    refused: "asked later: the cloud says it is not the target",
-    failed: "asked later: the cloud did not answer",
-    not_asked: "not asked later: the call budget was spent",
-    expired: "the cloud did not come back in time",
-    dropped: "not asked later: a new mission or Stop came first",
-  };
+  // The late check's state in words (strings.js `late.<state>`).
   function lateWords(status) {
     const late = status && status.late_confirmation;
-    return late ? (LATE_WORDS[late.state] || late.state) : "";
+    if (!late) return "";
+    return strings.has("late." + late.state)
+      ? t("late." + late.state, {target: status.target_object || t("word.target")})
+      : (engineerMode() ? late.state : t("late.unknown"));
   }
 
   // The sentence for an `arrived_unconfirmed` ending: what was checked
@@ -2025,6 +2069,7 @@
   }
 
   function renderBrainStatus(status) {
+    state.lastBrainStatus = status;      // 3.132: redrawn in the other voice
     const outcome = readOutcome(status).outcome;
     const late = outcome === "arrived_unconfirmed" ? lateWords(status) : "";
     const survey = status.job === "survey";
@@ -2036,9 +2081,9 @@
     document.getElementById("brain-job").value = job;
     renderBrainJob();   // every caller, not only those that also update controls
     setBrainText("brain-tel-outcome",
-      (surveyStateText(status) || endStateText(status) || outcome)
-        + (status.fault && status.fault !== "none" ? " (" + status.fault + " drill)" : "")
-        + (late ? " — " + late : ""),
+      (surveyStateText(status) || endStateText(status) || outcomeWords(outcome))
+        + (status.fault && status.fault !== "none" && engineerMode() ? " (" + status.fault + " drill)" : "")
+        + (late ? " — " + late.charAt(0).toLowerCase() + late.slice(1) : ""),
       surveyDone(status) ? "safe" : BRAIN_OUTCOME_CLASS[outcome]);
     // 3.70 E6: where an Out of budget or Cancelled mission looked.
     setBrainText("brain-tel-report",
@@ -2049,17 +2094,17 @@
     // R1: a turn names its size. "LEFT 23°" is a bearing-sized correction;
     // a bare "LEFT" is the executor's default quarter turn (a scan, or a
     // cloud answer with nothing local to size it by).
-    const t = status.turns || null;
-    const sized = t && t.last_turn_deg && (status.last_action === "LEFT" || status.last_action === "RIGHT");
+    const turns = status.turns || null;   // not `t`: that is the page's words (strings.js)
+    const sized = turns && turns.last_turn_deg && (status.last_action === "LEFT" || status.last_action === "RIGHT");
     setBrainText("brain-tel-action", sized
-      ? status.last_action + " " + t.last_turn_deg + "\u00B0" : status.last_action);
+      ? status.last_action + " " + turns.last_turn_deg + "\u00B0" : status.last_action);
     // Reversals alone reward a spin (the first watched run: 98 turns in 120
     // steps, all one way, "0 reversed"), so the share of steps spent
     // turning rides beside it and the runner's own spin verdict is shown.
-    setBrainText("brain-tel-turns", t
-      ? t.count + " of " + status.step + " steps, " + t.reversals
-        + " reversed the one before" + (t.spinning ? " \u2014 SPINNING IN PLACE" : "")
-      : null, t && t.spinning ? "alert" : null);
+    setBrainText("brain-tel-turns", turns
+      ? turns.count + " of " + status.step + " steps, " + turns.reversals
+        + " reversed the one before" + (turns.spinning ? " \u2014 SPINNING IN PLACE" : "")
+      : null, turns && turns.spinning ? "alert" : null);
     setBrainText("brain-tel-vision", status.vision_failures || 0,
       status.vision_failures ? "alert" : null);
     setBrainText("brain-tel-rooms",
@@ -2377,6 +2422,7 @@
       setBrainText("brain-tel-watchdog", /^HTTP \d/.test(e.message || "") ? e.message : "unreachable", "alert");
       setBrainText("brain-tel-driver", null);
       setBrainText("brain-tel-refusal", null);
+      state.lastAuthorityHealth = null;   // 3.132: revoice() must not redraw a robot gone quiet
     } finally {
       watchdogInFlight = false;
     }
@@ -2481,13 +2527,16 @@
     // null as "no such server field" would blank the readout on exactly
     // the server that supports it.
     if (!health || !("driver" in health)) {
+      state.lastAuthorityHealth = null;
       setBrainText("brain-tel-driver", null);
       setBrainText("brain-tel-refusal", null);
       return;
     }
+    state.lastAuthorityHealth = health;   // 3.132: redrawn in the other voice
     const holder = health.authority_holder;
     setBrainText("brain-tel-driver",
-      holder ? holder : (health.driver ? health.driver + " (lapsed)" : "nobody yet"),
+      holder ? driverWords(holder)
+        : (health.driver ? t("driver.lapsed", {driver: driverWords(health.driver)}) : t("driver.nobody")),
       holder ? "safe" : null);
 
     const refusal = health.last_refusal;
@@ -2513,13 +2562,15 @@
     if (!state.brainConnected) return;
     state.brainConnected = false;
     state.brainLost = true;
+    state.lastBrainStatus = null;     // 3.132: revoice() must not redraw it
     stopBrainPolling();
-    setBrainText("brain-tel-outcome", "brain unreachable \u2014 retrying", "alert");
-    setConnStatus(document.getElementById("brain-connection-status"), "err",
-      "Not connected", state.brainUrl + " stopped answering (" + e.message
-        + ") \u2014 retrying every few seconds.");
+    setBrainText("brain-tel-outcome", t("state.brainLost"), "alert");
+    const lostEl = document.getElementById("brain-connection-status"), lostUrl = state.brainUrl;
+    setVoicedConnStatus(lostEl, function () {
+      setConnStatus(lostEl, "err", "Not connected", t("brain.lostDetail", {url: lostUrl, why: e.message}));
+    });
     updateBrainControls();
-    showToast("Lost the brain service \u2014 retrying.", "err");
+    showToast(t("brain.lost"), "err");
   }
 
   function startBrainLiveness() {
@@ -2553,14 +2604,14 @@
       brainPollInFlight = false;
       if (gen !== brainPollGen) return;
       if (brainGone(e)) { markBrainLost(e); return; }
-      setBrainText("brain-tel-outcome", "brain error: " + e.message, "alert");
+      setBrainText("brain-tel-outcome", t("state.brainError", {why: e.message}), "alert");
       // 3.76: keep polling. Stopping here froze the panel for good over a
       // mission that kept running -- nothing restarts the poll, and the
       // liveness ping only runs while no poll does. Said once per run of
       // errors, not every 700 ms.
       if (!state.brainPollErrored) {
         state.brainPollErrored = true;
-        showToast("The brain service answered with an error: " + e.message + " -- still watching.", "err");
+        showToast(t("brain.errorWatching", {why: e.message}), "err");
       }
       return;
     }
@@ -2597,18 +2648,24 @@
       if (outcome === "idle") {
         // 3.76: "idle" after a running mission is a brain that restarted
         // (or another brain) -- the mission was lost with it, not ended.
-        showToast("The brain no longer has the mission -- it restarted, or this is "
-          + "another brain. A brain that restarted stopped the robot; if another one "
-          + "is still running it, stop it there.", "warn");
+        showToast(t("brain.missionLost"), "warn");
       } else if (outcome === "arrived_unconfirmed") {
-        showToast("Mission arrived_unconfirmed: " + unconfirmedText(status), "warn");
+        const late = lateWords(status);
+        const what = status.target_object || t("word.target");
+        showToast(t("end.unconfirmed", {detail: unconfirmedText(status), target: what,
+                                        late: late ? " " + late + "." : ""}), "warn");
       } else if (done) {
-        showToast(surveyStateText(status) + ".", "ok");
+        showToast(t("end.surveyDone"), "ok");
       } else if (ended) {
         // 3.70 E6: an end state is never an error toast.
-        showToast("Mission " + ended, ok ? "ok" : BRAIN_OUTCOME_CLASS[outcome] === "warn" ? "warn" : "info");
+        showToast(t("end.toast", {text: ended}), ok ? "ok" : BRAIN_OUTCOME_CLASS[outcome] === "warn" ? "warn" : "info");
       } else {
-        showToast("Mission " + outcome + (status.error ? ": " + status.error : ""),
+        // 3.132: a person is not shown the brain's error text (it is often
+        // a plan code); Engineer mode is.
+        const vars = {outcome: outcome, error: status.error ? ": " + status.error : "",
+                      state: outcomeWords(outcome)};
+        const key = outcome === "failed" ? "end.failed" : "end.other";
+        showToast(t(key, vars),
           ok ? "ok" : BRAIN_OUTCOME_CLASS[outcome] === "warn" ? "warn" : "err");
       }
       stopBrainPolling();
@@ -2727,7 +2784,7 @@
       renderRobotTelemetry(result);
       announceRobot(result);
     }
-    showToast("Late identity check: " + lateWords(s) + ".",
+    showToast(t("late.toast", {words: lateWords(s)}),
       s.late_confirmation.state === "confirmed" ? "ok" : "warn");
   }
 
@@ -2777,9 +2834,8 @@
       // is a different state from no brain at all, and the page now retries
       // the first on its own -- see startBrainLiveness().
       hint.textContent = state.brainUrl
-        ? "Brain unreachable at " + fieldHost("cfg-brain-url")
-          + " \u2014 retrying every few seconds. Start comes back on its own."
-        : "No brain service configured \u2014 open Settings to point this at one.";
+        ? t("hint.brainUnreachable", {host: fieldHost("cfg-brain-url")})
+        : t("hint.brainNone");
     }
     renderBrainPolicyHint();
     updateBrainPickersRow();
@@ -2804,6 +2860,14 @@
   // watchable (PLAN-onboard-perception.md 6.3) -- change the weights the
   // brain loads and this line changes with it.
   function renderBrainPolicyHint() {
+    // 3.132: operator mode hides the picker, so a saved paid policy says so
+    // beside Start (both reviewers: it ran with nothing on screen).
+    const cost = document.getElementById("brain-cost-hint");
+    if (cost) {
+      const paid = state.brainJob !== "survey" && isCloudPolicy(state.brainPolicy);
+      cost.style.display = paid ? "" : "none";
+      if (paid) cost.textContent = t(state.brainPolicy === "vision" ? "cost.vision" : "cost.tiered");
+    }
     const hint = document.getElementById("brain-policy-hint");
     if (!hint) return;
     if (state.brainJob === "survey" || !isCloudPolicy(state.brainPolicy)) {
@@ -2882,10 +2946,9 @@
     const cap = state.brainLabelCap ? "at most <b>" + state.brainLabelCap + "</b> a survey"
       : state.brainLabelCap === null ? "with no cap set on this brain"
       : "up to the brain's own cap";
-    hint.innerHTML = "Drives to every reachable frontier with nav2 "
-      + "(<code>WORLD_MODE=ros</code>) and names rooms as it goes, then ends. "
-      + "In the simulator its floor plan names them, free. On the car each "
-      + "name will be a paid cloud call, " + cap + ".";
+    // innerHTML: Engineer mode's wording carries <code> and the cap's <b>;
+    // every part is this page's own text or a number.
+    hint.innerHTML = t("hint.survey", {cap: cap});
   }
 
   document.getElementById("brain-job").addEventListener("change", function () {
@@ -2917,14 +2980,15 @@
     const target = document.getElementById("brain-target").value.trim() || "red backpack";
     const survey = state.brainJob === "survey";
     // A survey sends no drill: its picker is hidden, and may still hold one.
-    const fault = survey ? "none" : document.getElementById("brain-fault").value;
+    // 3.132: drills are Engineer mode's; a person's Start is never one (review).
+    const fault = survey || !engineerMode() ? "none" : document.getElementById("brain-fault").value;
     if (!survey) saveTargetToHistory(target);
     const btn = document.getElementById("btn-brain-mission");
     setButtonBusy(btn, true, "Starting\u2026");
     const body = survey ? { job: "survey", policy: "explore" }
       : { target_object: target, fault: fault, policy: state.brainPolicy };
     // 3.88 A: sent only when switched on, and only for explore's search.
-    if (state.brainAsk && (survey || state.brainPolicy === "explore")) body.explore_ask = true;
+    if (state.brainAsk && engineerMode() && (survey || state.brainPolicy === "explore")) body.explore_ask = true;
     // Sent only on the policy that reads them, and only when actually
     // picked: an absent field means "whatever the brain, and then the vision
     // service, defaults to". Sending null instead would be the same value
@@ -2940,12 +3004,12 @@
       state.brainMissionRunning = true;
       state.brainTarget = survey ? null : target.toLowerCase();
       state.brainLogSignature = "";
-      showToast(survey ? "Survey started on the robot."
-        : fault === "none" ? "Mission started on the robot."
-        : "Failsafe drill started: " + fault, fault === "none" ? "ok" : "info");
+      const drill = fault !== "none";
+      const key = survey ? "mission.surveyStarted" : drill ? "mission.drillStarted" : "mission.started";
+      showToast(t(key, {fault: fault}), drill ? "info" : "ok");
       startBrainPolling();
     } catch (e) {
-      showToast("Could not start: " + e.message, "err");
+      showToast(t("mission.startFailed", {why: e.message}), "err");
     } finally {
       setButtonBusy(btn, false);
       updateBrainControls();
@@ -2967,9 +3031,9 @@
         renderBrainStatus(res.status);
         fetchReportOnce(res.status);   // 3.76: a report later than the Stop's 2 s wait
       }
-      showToast("Mission stopped \u2014 and so is the robot.", "ok");
+      showToast(t("mission.stopped"), "ok");
     } catch (e) {
-      showToast("Could not stop: " + e.message + " -- the mission may still be running.", "err");
+      showToast(t("mission.stopFailed", {why: e.message}), "err");
       if (state.brainConnected) startBrainPolling();
     } finally {
       setButtonBusy(btn, false);
@@ -3040,12 +3104,14 @@
         clip: health.perception_clip_model || "unnamed encoder",
       } : null;
       prefSet(PREF.brainUrl, url);
-      setConnStatus(statusEl, "ok", "Connected" + (health.drills_allowed ? "" : " (drills disabled)"),
-        url + " \u2014 driving the robot at " + health.robot_url);
-      if (!silent) showToast("Connected to the brain service.", "ok");
+      setVoicedConnStatus(statusEl, function () {
+        setConnStatus(statusEl, "ok", t(health.drills_allowed ? "brain.connectedLabel" : "brain.connectedNoDrills"),
+          t("brain.connectedDetail", {url: url, robot: health.robot_url}));
+      });
+      if (!silent) showToast(t("brain.connected"), "ok");
       if (state.brainLost) {
         state.brainLost = false;
-        showToast("The brain service is back.", "ok");
+        showToast(t("brain.back"), "ok");
       }
       updateBrainControls();
       renderRecordStatus();
@@ -3065,23 +3131,27 @@
       if (e.status === 404 || e.status === 405) {
         // 3.64 D7r: no /health here -- most often a wrong tunnel prefix or
         // path in the URL -- so "is it running?" points the wrong way.
-        setConnStatus(statusEl, "err", "Not connected",
-          url + " answered HTTP " + e.status + said + ", but has no brain service "
-          + "there. Check the address and any tunnel path prefix.");
-        if (!silent) showToast("The brain address answered, but no brain service is there.", "err");
+        setVoicedConnStatus(statusEl, function () {
+          setConnStatus(statusEl, "err", "Not connected",
+            t("brain.notThereDetail", {url: url, status: e.status, said: said}));
+        });
+        if (!silent) showToast(t("brain.notThere"), "err");
       } else if (!brainGone(e)) {
         // Something answered, and which thing cannot be told from here: the
         // brain itself, or a proxy or tunnel in front of it (two review
         // rounds tried to guess). Say what came back and where to look.
-        setConnStatus(statusEl, "err", "Not connected",
-          url + " answered HTTP " + e.status + said + ". Check the brain's log, and "
-          + "any proxy or tunnel in front of it.");
-        if (!silent) showToast("The brain address answered with an error.", "err");
+        setVoicedConnStatus(statusEl, function () {
+          setConnStatus(statusEl, "err", "Not connected",
+            t("brain.errorDetail", {url: url, status: e.status, said: said}));
+        });
+        if (!silent) showToast(t("brain.addressError"), "err");
       } else {
-        setConnStatus(statusEl, "err", "Not connected", silent
-          ? url + " didn't respond. Tap Connect to retry."
-          : "Could not reach " + url + " (" + e.message + "). Is control/brain_server.py running?");
-        if (!silent) showToast("Couldn't reach the brain service.", "err");
+        setVoicedConnStatus(statusEl, function () {
+          setConnStatus(statusEl, "err", "Not connected", silent
+            ? t("brain.unreachableQuiet", {url: url})
+            : t("brain.unreachableDetail", {url: url, why: e.message}));
+        });
+        if (!silent) showToast(t("brain.unreachable"), "err");
       }
     } finally {
       state.brainConnecting = false;
@@ -3145,23 +3215,24 @@
       if (cross) {
         // Healthy and unusable. The distinction matters: retrying, changing
         // the secret, or restarting the service all do nothing here.
-        setConnStatus(statusEl, "err", "Reachable, but blocked by the browser",
-          url + " answered (" + (body.status || "ok") + "), but it is a "
-          + "different origin from this page (" + window.location.origin
-          + ") and publishes no CORS headers, so vision calls will fail as "
-          + "\u201cLoad failed\u201d. Open the twin from " + url + " instead.");
-        if (!silent) showToast("Vision service is up, but this page must be served from it.", "err");
+        setVoicedConnStatus(statusEl, function () {
+          setConnStatus(statusEl, "err", "Reachable, but blocked by the browser",
+            t("vision.blockedDetail", {url: url, status: body.status || "ok", origin: window.location.origin}));
+        });
+        if (!silent) showToast(t("vision.mustServe"), "err");
       } else {
-        setConnStatus(statusEl, "ok", "Connected",
-          url + " \u2014 same origin as this page, so vision calls are not preflighted.");
-        if (!silent) showToast("Vision service reachable.", "ok");
+        setVoicedConnStatus(statusEl, function () {
+          setConnStatus(statusEl, "ok", "Connected", t("vision.okDetail", {url: url}));
+        });
+        if (!silent) showToast(t("vision.ok"), "ok");
       }
     } catch (e) {
-      setConnStatus(statusEl, "err", "Not reachable",
-        "Could not reach " + url + " (" + e.message + ")."
-        + (cross ? " It is also a different origin from this page, which "
-                 + "blocks vision calls even when the service is healthy." : ""));
-      if (!silent) showToast("Couldn't reach the vision service.", "err");
+      setVoicedConnStatus(statusEl, function () {
+        setConnStatus(statusEl, "err", "Not reachable",
+          t("vision.unreachableDetail", {url: url, why: e.message,
+                                         cross: cross ? t("vision.crossNote") : ""}));
+      });
+      if (!silent) showToast(t("vision.unreachable"), "err");
     } finally {
       setButtonBusy(btn, false);
     }
@@ -3264,7 +3335,7 @@
       // point the walk is gone. The Settings row explains the requirement,
       // but nobody is looking at Settings at the moment they press Start.
       if (state.recordWalk && state.guidanceMode === "robot" && !state.brainConnected) {
-        showToast("Not recording: the brain service isn't connected.", "err");
+        showToast(t("record.noBrain"), "err");
       }
       return;
     }
@@ -3279,8 +3350,8 @@
     state.recordLost = 0;
     state.recordOrphaned = 0;
     state.recordSeq = 0;
-    showToast("Recording this walk as " + state.recordWalkName +
-      (state.recordByBrain ? " (every frame, saved by the brain)" : ""), "info");
+    showToast(t(state.recordByBrain ? "record.startedByBrain" : "record.started",
+      {name: state.recordWalkName}), "info");
     renderRecordStatus();
   }
 
@@ -3343,7 +3414,7 @@
     }).catch(function (e) {
       if (walkEpoch === state.recordEpoch) {
         state.recordFailed += 1;
-        if (state.recordFailed === 1) showToast("Frame not saved: " + e.message, "err");
+        if (state.recordFailed === 1) showToast(t("record.frameFailed", {why: e.message}), "err");
         renderRecordStatus();
       }
       return false;
@@ -3361,8 +3432,7 @@
       state.recordByBrain = false;
       state.recordEpoch++;
       renderRecordStatus();
-      showToast(saved + "+ frames recorded as " + name + " by the brain " +
-        "(it saves the rest as the mission ends)", "ok");
+      showToast(t("record.savedByBrain", {n: saved, name: name}), "ok");
       return;
     }
     const name = state.recordWalkName, pending = state.recordPending || [];
@@ -3406,28 +3476,26 @@
       capture_height: captureHeight,
     }).catch(function () { /* admin's lazy path covers this */ });
 
-    showToast(saved + " frames saved as " + name + " -- replay it with " +
-      "python -m tests.demo_replay_mission", "ok");
+    showToast(t("record.saved", {n: saved, name: name}), "ok");
   }
 
   function renderRecordStatus() {
     const sub = document.getElementById("record-walk-sub");
     if (!sub) return;
     if (!state.brainConnected) {
-      sub.textContent = "Needs the brain service connected \u2014 set it up in Settings.";
+      sub.textContent = t("rec.needsBrain");
       return;
     }
     if (state.recordWalkName) {
-      sub.textContent = "Recording " + state.recordWalkName + " \u2014 " +
-        state.recordSaved + " frames saved" +
-        (state.recordByBrain ? " by the brain" : "") +
-        (state.recordFailed ? ", " + state.recordFailed + " failed" : "") +
-        (state.recordLost ? ", " + state.recordLost + " lost (the brain fell behind)" : "") +
-        (state.recordOrphaned ? ", " + state.recordOrphaned + " from a previous walk dropped" : "") + ".";
+      sub.textContent = t("rec.recording", {
+        name: state.recordWalkName, n: state.recordSaved,
+        by: state.recordByBrain ? t("rec.by") : "",
+        failed: state.recordFailed ? t("rec.failed", {n: state.recordFailed}) : "",
+        lost: state.recordLost ? t("rec.lost", {n: state.recordLost}) : "",
+        orphaned: state.recordOrphaned ? t("rec.orphaned", {n: state.recordOrphaned}) : ""});
       return;
     }
-    sub.textContent = "Saves each frame to the brain service, so the same walk " +
-      "can be replayed through the Python agent as many times as you like.";
+    sub.textContent = t("rec.idle");
   }
 
   function updateRecordRow() {
@@ -3632,24 +3700,16 @@
     const sub = document.getElementById("drive-via-brain-sub");
     if (!sub) return;
     if (!state.brainConnected) {
-      sub.textContent = "Needs the brain service connected — set it up in Settings.";
+      sub.textContent = t("drive.needsBrain");
       return;
     }
-    let text = "Runs a real mission on the brain service (PLAN-teleop-robot.md) "
-      + "instead of a one-off /navigate call -- mission memory, the step "
-      + "budget and the failsafes all apply to your walk. "
-      + "Would run: " + brainModelLabel() + ".";
+    let text = t("drive.sub", {model: brainModelLabel()})
+      + t(state.drivePolicy === "tiered" ? "drive.costTiered" : "drive.costVision");
     if (state.drivePolicy === "tiered") {
       const p = state.brainPerception;
-      text += p
-        ? " Perception runs in the brain process on your frames: "
-          + p.detector + " + " + p.clip + "."
-        : " Perception runs in the brain process on your frames.";
-      if (p && p.available === false) {
-        text += " This brain has no perception models installed, so the walk "
-          + "will refuse to start — run pip install -r "
-          + "requirements-perception.txt where the brain runs.";
-      }
+      text += p ? t("drive.perception", {detector: p.detector, clip: p.clip})
+        : t("drive.perceptionBare");
+      if (p && p.available === false) text += t("drive.noModels");
     }
     sub.textContent = text;
   }
@@ -5565,7 +5625,7 @@
       // always stops the robot too, so the mission ending cleanly matters
       // more than this page's confirmation of it.
       brainApi("POST", "/mission/stop").catch(function (e) {
-        showToast("Could not stop the brain mission: " + e.message, "err");
+        showToast(t("mission.guideStopFailed", {why: e.message}), "err");
       });
       state.guidanceViaBrain = false;
     }
@@ -5950,10 +6010,31 @@
     document.body.classList.toggle("debug-readouts", on);
     debugToggleEl.checked = on;
   }
+  // 3.132 Stage 2A: Engineer mode changes the page's voice, so whatever the
+  // script wrote is written again in the new one (the markup's op-only and
+  // eng-only copies follow the body class on their own).
+  function revoice() {
+    renderRecordStatus();
+    renderDriveViaBrainStatus();
+    updateBrainControls();
+    renderBrainPolicyHint();
+    // Each draw goes through setConnStatus(), which drops its element's
+    // entry; re-registering keeps it for the next switch (Thermos: only the
+    // first switch changed the voice). A snapshot, so the loop is not
+    // walking a map it is rewriting.
+    Array.from(voicedStatus).forEach(function (entry) { setVoicedConnStatus(entry[0], entry[1]); });
+    // Only what is still current: a brain that stopped answering keeps its
+    // "unreachable" line, never its last good status (review).
+    if (state.brainConnected && !state.brainLost && state.lastBrainStatus) {
+      renderBrainStatus(state.lastBrainStatus);
+    }
+    if (state.connected && state.lastAuthorityHealth) renderAuthority(state.lastAuthorityHealth);
+  }
   applyDebugReadouts(prefGet(PREF.debugReadouts) === "1");
   debugToggleEl.addEventListener("change", function () {
     prefSet(PREF.debugReadouts, this.checked ? "1" : "0");
     applyDebugReadouts(this.checked);
+    revoice();
   });
 
 
@@ -6337,12 +6418,9 @@
     if (!e.status) {
       return {
         state: "err", label: "Not connected",
-        detail: silent
-          ? url + " didn't respond. Tap Connect to retry."
-          : "Could not reach " + url + " (" + e.message + "). Check the server is "
-            + "running, on the same network, and that CORS/allowed_origins in "
-            + "config/robot.yaml permits this page's origin.",
-        toast: "Couldn't reach the robot server.",
+        detail: silent ? t("robot.unreachableQuiet", {url: url})
+          : t("robot.unreachableDetail", {url: url, why: e.message}),
+        toast: t("robot.unreachable"),
       };
     }
 
@@ -6355,9 +6433,7 @@
     if (e.status === 503 && /frame/i.test(e.message)) {
       return {
         state: "idle", label: "Waiting for a walk",
-        detail: host + " is running and simply has no camera frame yet, which "
-          + "is normal before a walk. Nothing to do here \u2014 start Robot "
-          + "view with \u201cDrive via brain\u201d and this connects itself.",
+        detail: t("robot.waitingDetail", {host: host}),
         toast: null,
       };
     }
@@ -6365,17 +6441,15 @@
     if (e.status === 401 || e.status === 403) {
       return {
         state: "err", label: "Secret rejected",
-        detail: host + " is reachable, so this is the wrong secret for THIS "
-          + "deployment rather than a network problem. Check it is the one "
-          + host + " expects.",
-        toast: "The robot server rejected that secret.",
+        detail: t("robot.secretRejectedDetail", {host: host}),
+        toast: t("robot.secretRejected"),
       };
     }
 
     return {
       state: "err", label: "Not connected",
-      detail: host + " answered with an error (HTTP " + e.status + "): " + e.message,
-      toast: "The robot server returned an error.",
+      detail: t("robot.errorDetail", {host: host, status: e.status, why: e.message}),
+      toast: t("robot.error"),
     };
   }
 
@@ -6431,7 +6505,7 @@
 
   function showSetupQr() {
     if (location.protocol === "file:") {
-      showToast("Open this page from a server first \u2014 a file:// path can't be shared.", "err");
+      showToast(t("share.fileUrl"), "err");
       return;
     }
     const url = buildSetupUrl();
@@ -6439,7 +6513,7 @@
     try {
       code = qrEncode(url);
     } catch (e) {
-      showToast("Setup link is too long to fit in a QR code.", "err");
+      showToast(t("share.tooLong"), "err");
       return;
     }
     const reveal = document.getElementById("qr-reveal");
@@ -6498,7 +6572,7 @@
       statusEl.textContent = errors.length
         ? "Copied (" + errors.length + " recent error(s) included)."
         : "Copied -- no errors logged since this browser last cleared its storage.";
-      showToast(errors.length ? "Debug info copied (" + errors.length + " errors)." : "Debug info copied.", "ok");
+      showToast(errors.length ? t("debug.copiedErrors", {n: errors.length}) : t("debug.copied"), "ok");
     }
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(reportCopied).catch(function () {
@@ -6577,9 +6651,9 @@
         try { return new URL(u, location.href).origin; } catch (e) { return null; }
       };
       const moved = [];
-      [[urlVisionUrl, urlSecret, "cfg-url", "vp_cfg_secret", "vision service"],
-       [urlServerUrl, urlRobotSecret, "cfg-server-url", "vp_cfg_server_secret", "robot"],
-       [urlBrainUrl, urlBrainSecret, "cfg-brain-url", "vp_cfg_brain_secret", "brain"]]
+      [[urlVisionUrl, urlSecret, "cfg-url", "vp_cfg_secret", "svc.vision"],
+       [urlServerUrl, urlRobotSecret, "cfg-server-url", "vp_cfg_server_secret", "svc.robot"],
+       [urlBrainUrl, urlBrainSecret, "cfg-brain-url", "vp_cfg_brain_secret", "svc.brain"]]
         .forEach(function (row) {
           const linkUrl = row[0], linkSecret = row[1], field = document.getElementById(row[2]);
           if (!linkUrl || linkSecret) return;
@@ -6590,9 +6664,7 @@
         });
       if (moved.length) {
         setTimeout(function () {
-          showToast("The link moved the " + moved.join(" and ") + " to a new address. "
-            + "Enter its secret in Settings -- the one saved here was cleared, "
-            + "so it is not sent to the new address.", "warn");
+          showToast(t("setup.moved", {what: moved.map(function (k) { return t(k); }).join(t("svc.and"))}), "warn");
         }, 0);
       }
       if (urlSecret) localStorage.setItem("vp_cfg_secret", urlSecret);

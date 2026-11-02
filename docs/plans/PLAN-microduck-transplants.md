@@ -38,7 +38,7 @@ how this document was made, because two of its corrections came out of that.
 
 ## 1. Where Microduck is ahead of us
 
-| Microduck | vision-picar today | Gap |
+| Microduck | The rover today | Gap |
 |---|---|---|
 | Camera gives direction, ToF gives distance (`autonomous_behavior.md`) | The prompt is asked for both. Stage 0 shows it cannot answer the second | The Stage 0 gate failure, restated as a sensor split |
 | An 8x8 depth matrix at 15Hz, with floor returns and short-range noise filtered out (`kinematics/tof.rs`) | One ultrasonic beam, and a prompt asked what is in the centre third | No metric answer to "is my next step clear" |

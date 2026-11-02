@@ -6,6 +6,10 @@ active; 3.50.D3: slam_toolbox not `ready`) is refused by its own name --
 `nav2_starting` / `slam_not_ready` -- not as the outage `ros_unavailable`,
 and stays retryable, so explore still waits on it. Every other bridge error
 keeps `ros_unavailable` and its old verdict.
+
+3.133 criteria 2-3: the hold is the bridge's own `hold` field, never guessed
+from the body's shape; a body with no `hold` (an older image) is
+`ros_unavailable`. The bridge's side is tests/test_bridge_hold.py.
 """
 
 import httpx
@@ -18,9 +22,11 @@ from tests.test_ros_world import FakeTruth
 from world import bridge_faults
 
 NAV2_HELD = (503, {"error": "nav2 is not active: busy starting nav2, or hung",
+                   "hold": "nav2_starting",
                    "nav2": {"active": False, "why": "busy starting nav2, or hung",
                             "inactive_s": 4.2}})
-SLAM_HELD = (503, {"error": "SLAM is not ready (starting)", "slam": "starting"})
+SLAM_HELD = (503, {"error": "SLAM is not ready (starting)", "hold": "slam_not_ready",
+                   "slam": "starting"})
 
 
 class _AnsweringBridge(GoalBridge):
@@ -83,7 +89,7 @@ def test_every_other_bridge_error_stays_ros_unavailable(monkeypatch, reply, retr
     assert body["retryable"] is retryable and body["bridge_status"] == status, body
 
 
-def test_hold_reason_reads_only_a_503_with_the_bridges_hold_keys():
+def test_hold_reason_reads_the_hold_field_and_nothing_else():
     req = httpx.Request("POST", "http://bridge/goal")
     assert bridge_faults.hold_reason(_err(*NAV2_HELD)) == "nav2_starting"
     assert bridge_faults.hold_reason(_err(*SLAM_HELD)) == "slam_not_ready"
@@ -95,30 +101,6 @@ def test_hold_reason_reads_only_a_503_with_the_bridges_hold_keys():
     assert bridge_faults.hold_reason(ValueError("not httpx")) is None
 
 
-@pytest.mark.parametrize("state", ["starting", "checking", "remapping"])
-def test_every_passing_slam_state_is_a_hold(state):
-    assert bridge_faults.hold_reason(_err(503, {"error": "x", "slam": state})) == "slam_not_ready"
-
-
-def test_a_failed_slam_is_not_a_hold():
-    """Review round 1: `failed` is for good (slam_toolbox did not start, a
-    re-map's relocalisation failed) -- an outage, not a wait."""
-    assert bridge_faults.hold_reason(_err(503, {"error": "SLAM is not ready (failed): x",
-                                                "slam": "failed"})) is None
-
-
-@pytest.mark.parametrize("inactive_s, held", [
-    (0.0, True), (12.5, True), (bridge_faults.NAV2_START_MAX_S, True),
-    (bridge_faults.NAV2_START_MAX_S + 0.1, False), (600.0, False),
-    (None, False), ("12", False), (True, False), (-1.0, False),
-])
-def test_nav2_reads_as_starting_only_inside_a_start(inactive_s, held):
-    """Review round 1: the bridge sends the same body for a nav2 that never
-    comes up (3.105's open case) -- past a start's length it is down."""
-    body = {"error": "nav2 is not active", "nav2": {"active": False, "inactive_s": inactive_s}}
-    assert (bridge_faults.hold_reason(_err(503, body)) == "nav2_starting") is held
-
-
 def _err(status, body=None, content=None):
     req = httpx.Request("POST", "http://bridge/goal")
     resp = (httpx.Response(status, json=body, request=req) if content is None
@@ -126,16 +108,56 @@ def _err(status, body=None, content=None):
     return httpx.HTTPStatusError("x", request=req, response=resp)
 
 
-def test_slam_passing_is_every_state_the_bridge_sets_but_ready_and_failed():
-    """Review round 2: SLAM_PASSING is copied from the bridge; a state the
-    bridge adds or renames must be sorted into it (or out) here, never fall
-    silently to ROS DOWN."""
-    import pathlib
-    import re
-    src = (pathlib.Path(__file__).resolve().parents[1] / "service/slam/src/picar_bridge"
-           / "picar_bridge/bridge.py").read_text()
-    states = set(re.findall(r'slam_state = "([a-z_]+)"', src))
-    assert states - {"ready", "failed"} == set(bridge_faults.SLAM_PASSING), states
+# ---------- 3.133: the bridge names the hold; the robot server reads it ----------
+
+def test_a_slow_cold_start_the_bridge_holds_is_nav2_starting(monkeypatch):
+    """3.133 criterion 2. Red on dev 0aeba203 (past 60 s read as ROS DOWN)."""
+    body = _post_goal(monkeypatch, (503, {
+        "error": "nav2 is not active: busy starting nav2, or hung", "hold": "nav2_starting",
+        "nav2": {"active": False, "why": "busy starting nav2, or hung", "inactive_s": 300.0}}))
+    assert body["reason"] == "nav2_starting", body
+    assert body["retryable"] is True and body["bridge_status"] == 503, body
+
+
+@pytest.mark.parametrize("reply", [
+    # a nav2 that crashed 4 s ago: 3.127 guessed "starting" for 60 s
+    (503, {"error": "nav2 is not active: nav2's nodes are not active", "hold": None,
+           "nav2": {"active": False, "why": "nav2's nodes are not active", "inactive_s": 4.2}}),
+    # a SLAM state the bridge does not call passing
+    (503, {"error": "SLAM is not ready (starting)", "hold": None, "slam": "starting"}),
+])
+def test_what_the_bridge_does_not_call_a_hold_is_ros_unavailable(monkeypatch, reply):
+    """3.133 criterion 2. Red on dev 0aeba203 (the body's shape read as a hold)."""
+    body = _post_goal(monkeypatch, reply)
+    assert body["reason"] == "ros_unavailable", body
+    assert body["retryable"] is True and body["bridge_status"] == 503, body
+
+
+@pytest.mark.parametrize("body", [
+    {"error": "nav2 is not active", "nav2": {"active": False, "inactive_s": 4.2}},
+    {"error": "SLAM is not ready (starting)", "slam": "starting"},
+])
+def test_an_older_bridge_without_hold_is_ros_unavailable(monkeypatch, body):
+    """3.133 criterion 3, the deliberate fallback: an image built before 3.133
+    sends no `hold`; it reads as before 3.127, never 3.127's guess. Still
+    retryable (a 503), so explore waits exactly as before."""
+    out = _post_goal(monkeypatch, (503, body))
+    assert out["reason"] == "ros_unavailable", out
+    assert out["retryable"] is True and out["bridge_status"] == 503, out
+
+
+@pytest.mark.parametrize("err, reason", [
+    (_err(503, {"error": "x", "hold": "slam_not_ready", "slam": "checking"}), "slam_not_ready"),
+    (_err(503, {"error": "x", "hold": "nav2_starting"}), "nav2_starting"),
+    (_err(503, {"error": "x", "hold": "nav2_restarting"}), None),    # unknown name
+    (_err(503, {"error": "x", "hold": ["nav2_starting"]}), None),     # not a string
+    (_err(503, {"error": "x", "hold": True}), None),
+    (_err(502, {"error": "x", "hold": "nav2_starting"}), None),       # not a 503
+    (_err(500, {"error": "x", "hold": "slam_not_ready"}), None),
+])
+def test_hold_reason_reads_only_a_known_hold_on_a_503(err, reason):
+    assert bridge_faults.hold_reason(err) == reason
+    assert set(bridge_faults.HOLDS) == {"nav2_starting", "slam_not_ready"}
 
 
 # ---------- criterion 2: explore still waits on it ----------

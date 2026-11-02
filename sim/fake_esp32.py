@@ -29,7 +29,9 @@ speeds and the `odl`/`odr` odometers; integer encoder counts; a reboot
 dynamics (it is ideal: the wheel reaches its setpoint within one board loop)
 including its `THRESHOLD_PWM` deadband, the IMU (zeros), the OLED, servos.
 Its battery (3.70 E4) holds 12.00 V unless given a drain: a straight line
-in time, not a discharge curve -- enough to cross a mission's floor.
+in time, not a discharge curve -- enough to cross a mission's floor -- and,
+since 3.137, optionally the board's 10 s refresh and a sag under motor
+start (`sim/battery.py`).
 
 The wheels it turns are a `MockRobot`'s: the body the rest of the sim sees.
 """
@@ -43,6 +45,8 @@ import threading
 import time
 import tty
 from typing import Optional
+
+from sim.battery import SimBattery
 
 BOARD_LOOP_S = 0.01            # the firmware's loop() runs at ~100 Hz and above
 # Motor model for T:11 (raw PWM, the one open-loop command left): the UGV
@@ -107,11 +111,11 @@ class FakeEsp32:
         # in volts per second of wall time. SIM_BATTERY_V and
         # SIM_BATTERY_DRAIN_V_PER_S set them for a server run (the board
         # lives in sim/body_server.py's process there).
-        self._battery_v0 = float(battery_v if battery_v is not None else
-                                 os.environ.get("SIM_BATTERY_V") or 12.0)
-        self._drain_v_per_s = float(drain_v_per_s if drain_v_per_s is not None else
-                                    os.environ.get("SIM_BATTERY_DRAIN_V_PER_S") or 0.0)
-        self._battery_since = time.monotonic()
+        # 3.137: plus SIM_BATTERY_REFRESH_S (the board's 10 s refresh; 0, the
+        # default, measures every frame) and a sag under motor start
+        # (SIM_BATTERY_SAG_V, SIM_BATTERY_SAG_S): `sim/battery.py`.
+        self.battery = SimBattery.from_env(v0=battery_v, drain_v_per_s=drain_v_per_s)
+        self._battery_since = self.battery.since
         self._millis_start = int(millis_at_boot)
         self.drop_rate = drop_rate
         self._rng = random.Random(seed)
@@ -165,6 +169,7 @@ class FakeEsp32:
         self.feedback_interval_ms = DEFAULT_FEEDBACK_INTERVAL_MS
         self._last_feedback_at = -math.inf
         self.setpoint = [0.0, 0.0]                # m/s, the PID's targets
+        self.battery.driving(False)
         self.pwm = [0, 0]
         self.use_pid = True                       # bool usePIDCompute = true;
         self.measured = [0.0, 0.0]                # speedGetA / speedGetB
@@ -174,9 +179,9 @@ class FakeEsp32:
         self._booted_at = time.monotonic()
 
     def battery_v(self) -> float:
-        """The pack's voltage now. A reboot does not recharge it."""
-        drained = self._drain_v_per_s * (time.monotonic() - self._battery_since)
-        return max(0.0, self._battery_v0 - drained)
+        """The pack's voltage as the board measures it now (its refresh and a
+        motor-start sag included). A reboot does not recharge it."""
+        return self.battery.read()
 
     def millis(self) -> int:
         """millis(): ms since boot, an unsigned long -- it wraps at 2^32."""
@@ -328,6 +333,7 @@ class FakeEsp32:
         if not (-2.0 <= left <= 2.0) or not (-2.0 <= right <= 2.0):
             return
         self.setpoint = [left, right]
+        self.battery.driving(left != 0 or right != 0)
 
     def _heartbeat(self):
         """movtion_module.h heartBeatCtrl()."""

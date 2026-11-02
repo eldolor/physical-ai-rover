@@ -1,4 +1,4 @@
-# Documentation review — vision-picar
+# Documentation review — Physical AI Autonomous Rover
 
 Reviewed 2026-09-27 against the **working tree** on `dev`. That includes uncommitted edits to `robot/safety.py`, `sim/grid_world.py`, `PLAN-ros-alignment.md` 3.18 and the untracked `tests/test_footprint_safety.py`. The review was read-only: no doc was edited, and nothing was built, launched or moved. Claims were checked with `grep`, `pytest --collect-only`, one targeted test run and arithmetic. Each finding carries a file:line reference on both sides. Anything established only by reading code is marked **UNCONFIRMED**.
 

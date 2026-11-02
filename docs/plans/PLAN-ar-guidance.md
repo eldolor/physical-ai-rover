@@ -319,7 +319,7 @@ Reasonable options, roughly cheapest/fastest first *(resolved otherwise:
 the twin is served over HTTPS from an S3 bucket through CloudFront,
 `service/static/sync.sh`, and the local robot and brain are reached through
 `service/tunnel/run.sh` + ngrok -- `CLAUDE.md` section 6)*:
-- **GitHub Pages**, since the repo is already on GitHub (`eldolor/vision-picar`)
+- **GitHub Pages**, since the repo is already on GitHub (`eldolor/physical-ai-rover`, renamed from `eldolor/vision-picar` on 2026-11-01)
   -- push `web-twin/index.html` to a `gh-pages` branch or enable Pages
   from a `/docs` or `/web-twin` folder, free, automatic HTTPS, works
   from any network (cellular included), no local-network dependency at

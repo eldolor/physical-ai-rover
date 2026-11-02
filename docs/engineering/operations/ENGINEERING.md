@@ -34,9 +34,9 @@ file that holds it.
 
 | File | What it does |
 |---|---|
-| `service/lambda/build.sh` | Builds two zips with `pip --platform manylinux2014_aarch64 --only-binary=:all:` for cp3.12. The vision zip is flat: `service/vision_analyze/` app files plus `service/lambda/vision_handler.py`. The walks zip carries all of `control/*.py`, `control/admin.html`/`.js`, `config/robot.yaml` and `service/lambda/walks_handler.py`. Uploads to `s3://<bucket>/lambda/<name>-<UTC stamp>.zip` and prints the deploy command |
+| `service/lambda/build.sh` | Builds two zips with `pip --platform manylinux2014_aarch64 --only-binary=:all:` for cp3.12. The vision zip is flat: `service/vision_analyze/` app files plus `service/lambda/vision_handler.py`. The walks zip carries all of `control/*.py`, the Lab console's page and files (`control/lab.html`, `lab.css`, `lab.js`, `admin.js`, `metrics.js`, and `web-shared/ui.css`), `config/robot.yaml` and `service/lambda/walks_handler.py`. Uploads to `s3://<bucket>/lambda/<name>-<UTC stamp>.zip` and prints the deploy command |
 | `service/static/sync.sh` | Uploads each file in `service/static/assets.json` with `put-object` and an explicit content type and cache policy, then invalidates `/*`. It does not use `aws s3 sync`, which would guess a type for the extensionless `admin` and `metrics` keys |
-| `service/static/assets.json` | The site: `index.html`, `app.js`, `manifest.json`, icons, `admin`, `admin.js`, `metrics`, `metrics.js`. Cache `none` = `no-cache, must-revalidate`; `day` = `public, max-age=86400` |
+| `service/static/assets.json` | The site: the twin's files, `manifest.json`, icons, and the Lab console: `control/lab.html` at the keys `admin`, `metrics` and `lab` (3.132 Stage 4), `lab.css`, `lab.js`, `admin.js`, `metrics.js`. Deploy the walks function before the page: without `GET .../estimate` every confirm reads "the cost could not be worked out" (it still asks). Cache `none` = `no-cache, must-revalidate`; `day` = `public, max-age=86400` |
 
 **The tunnel** (`service/tunnel/`):
 
@@ -70,7 +70,7 @@ explore's decisions were missing from every live run before 3.45.
 |---|---|
 | `control/metrics_client.py` | `row_for(status, git_revision=, config=, walk=)` builds a row from `MissionRunner.status()`; `started_at` is `finished_at` less the status's `budget.elapsed_s` (it was always null before 3.76 F13). `ship_run()` POSTs it and never raises. `ship_run_async()` does it on a daemon thread, which is how "off the mission's path" is met |
 | `control/metrics_routes.py` | `register_metrics_routes(app, store, require_secret)`, mounted by `control/admin_server.py` and so by the walks Lambda |
-| `control/metrics.html`, `control/metrics.js` | The dashboard, served at `/metrics` from the static bucket. Every stored value is escaped before it reaches the page (3.76 F14: a mission's target, typed by a person, ran as script in the page that holds the walks secret). Only the newest load paints, and an error clears the last window's numbers (3.76 N2) |
+| `control/metrics.js` | The Lab console's Metrics tab (was its own page until 3.132 Stage 4), served at `/metrics` from the static bucket. It loads once connected and while its tab is shown; with no secret it asks the person to connect and shows no error. Chart strokes are `var(--accent-*)`, so they follow the theme. Every stored value is escaped before it reaches the page (3.76 F14: a mission's target, typed by a person, ran as script in the page that holds the walks secret). Only the newest load paints, and an error clears the last window's numbers (3.76 N2) |
 
 `MissionRunner._ship_metrics()` (`control/mission_runner.py`) calls the
 shipper last, after the mission has ended.
@@ -349,7 +349,7 @@ bring-up that precedes it is the platform domain's procedure
 | Test | What it proves |
 |---|---|
 | `tests/test_serverless_routes.py` | Every public route crosses both the CloudFront behaviour and the API Gateway route to the right function; the vision zip's flat layout imports (6 tests) |
-| `tests/test_static_assets.py` | Every file `web-twin/index.html` and `control/admin.html` reference is in `service/static/assets.json`, plus the PWA manifest's icons, the manifest's keys and cache policies, and that `sync.sh` reads the same manifest (10 tests). `control/metrics.html` is not checked |
+| `tests/test_static_assets.py` | Every file `web-twin/index.html` and `control/lab.html` reference is in `service/static/assets.json` (the Lab page is both consoles since 3.132 Stage 4), plus the PWA manifest's icons, the manifest's keys and cache policies, and that `sync.sh` reads the same manifest |
 | `tests/test_board_lock.py` | 3.93: a second hold is refused with the owner's line, by hand or by the tool; the lock frees on SIGKILL, on a silent heartbeat and at `--max`; the board-side check refuses a missing, wrong or expired token; review fixes: unreachable is not busy, SIGTERM ends the command first, a waiting or abandoned `hold` never takes the board later, a reused pid is not a hold, a bench keeps the board on its own, after its session's hold ends and against a waiting session, an orphan of the bench holds nothing, a Ctrl-C or SIGTERM reaches the command once and the hold outlasts its teardown, `run` never leaves its group, `release` reports a keeper that did not stop (30 tests, ~70 s, a local shell for ssh; on `SLOW_FILES`) |
 | `tests/test_alb_routes.py` | The same check against the deleted ECS templates. History, still green |
 | `tests/test_tunnel_proxy.py` | The proxy's prefix routing and header handling, no network (8 tests) |
@@ -384,10 +384,6 @@ and are not repeated here. These are the implementation gaps:
   (docs/engineering/recordings/ENGINEERING.md), the canonical home. The
   fix touches `WalksFunction` in `cloudformation/serverless.yaml`, which
   this domain deploys.
-- **`control/metrics.html` is not asset-checked.** `tests/test_static_assets.py`
-  walks the twin and the walk console only, so a file the metrics
-  dashboard references could be missing from `service/static/assets.json`
-  without a test failing.
 - **Hostnames are hard-coded as defaults** in `service/tunnel/run.sh`
   (`VISION_URL`) and `service/tunnel/proxy.py` (`PROXY_VISION_URL`). They
   should come from the `SiteUrl` output; a new distribution would leave both

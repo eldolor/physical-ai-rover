@@ -1,6 +1,8 @@
-/* control/metrics.js -- the tier-metrics dashboard.
+/* control/metrics.js -- the Lab console's Metrics tab (3.132 Stage 4; was
+ * the tier-metrics page, control/metrics.html).
  *
- * Reads GET /metrics/summary and draws it. Deliberately dependency-free
+ * Reads GET /metrics/summary and draws it. The secret is control/lab.js's
+ * (window.Lab), shared with the Walks tab. Deliberately dependency-free
  * and inline-SVG: the page is served from the same CloudFront origin as
  * the twin, and a chart library would be the only third-party script in
  * the whole deployment for a job that is two polylines.
@@ -24,16 +26,12 @@
   var LEGACY_CANCELLED_BY = { stopped: "stop", preempted: "dpad" };
   function cancelledBy(r) { return r.cancelled_by || LEGACY_CANCELLED_BY[r.outcome] || null; }
 
-  var SECRET_KEY = "vp_metrics_secret";
-  // The admin console is the SAME service behind the SAME secret
-  // (WALKS_SECRET guards /recording/*, /stats and /metrics/*), served from
-  // the same CloudFront origin -- so its stored value is this page's
-  // value, and localStorage is shared between them. Falling back to it
-  // means anyone already using /admin never types a 43-character secret
-  // on a phone. It is a convenience, not a second source of truth: a
-  // secret typed here still wins and is still only kept once it works.
-  var ADMIN_SECRET_KEY = "vp_admin_secret";
+  var Lab = window.Lab;
   var $ = function (id) { return document.getElementById(id); };
+
+  // The charts draw in the page's own tokens (ui.css), as CSS on each mark,
+  // so they follow a theme change without a redraw.
+  function token(name) { return "var(" + name + ")"; }
 
   function fmtMs(v) { return v == null ? "–" : Math.round(v) + "ms"; }
   function pct(v) { return v == null ? "–" : Math.round(v * 100) + "%"; }
@@ -50,11 +48,7 @@
   // 3.76 F14: every stored value is text from whoever POSTed the row (a
   // mission's target is typed by a person), and this page holds the walks
   // secret in localStorage. Escaped on the way into innerHTML, all of it.
-  function esc(v) {
-    return String(v).replace(/[&<>"']/g, function (ch) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
-    });
-  }
+  var esc = Lab.escapeHtml;
 
   function card(label, dotClass, value, unit, foot) {
     return '<div class="card"><div class="label">'
@@ -138,9 +132,9 @@
       segs.forEach(function (pts) {
         if (pts.length === 1) {
           var c = pts[0].split(",");
-          parts.push('<circle cx="' + c[0] + '" cy="' + c[1] + '" r="2.6" fill="' + s.color + '"/>');
+          parts.push('<circle cx="' + c[0] + '" cy="' + c[1] + '" r="2.6" style="fill:' + s.color + '"/>');
         } else {
-          parts.push('<polyline fill="none" stroke="' + s.color + '" stroke-width="2"'
+          parts.push('<polyline fill="none" style="stroke:' + s.color + '" stroke-width="2"'
             + ' stroke-linejoin="round" stroke-linecap="round" points="' + pts.join(" ") + '"/>');
         }
       });
@@ -155,14 +149,14 @@
     var old = runs.slice().reverse();   // oldest -> newest, which is how a trend reads
     var get = function (k, f) { return old.map(function (r) { var s = (r.stats || {})[k]; return s ? s[f] : null; }); };
     lineChart($("chart-cloud"), [
-      { color: "#60a5fa", values: get("cloud_ms", "p50") },
-      { color: "#fbbf24", values: get("cloud_ms", "p90") },
-      { color: "#f87171", values: get("cloud_ms", "p99") }
+      { color: token("--accent-primary"), values: get("cloud_ms", "p50") },
+      { color: token("--accent-warn"), values: get("cloud_ms", "p90") },
+      { color: token("--accent-alert"), values: get("cloud_ms", "p99") }
     ], { unit: "ms" });
 
     lineChart($("chart-local"), [
-      { color: "#4ade80", values: get("perception_ms", "p50") },
-      { color: "#fbbf24", values: old.map(function (r) {
+      { color: token("--accent-safe"), values: get("perception_ms", "p50") },
+      { color: token("--accent-warn"), values: old.map(function (r) {
           var p = (r.stats || {}).perception || {};
           var tot = Object.keys(p).reduce(function (a, k) { return a + p[k]; }, 0);
           return tot ? Math.round((p.detected || 0) / tot * 100) : null;
@@ -172,10 +166,10 @@
 
   function renderRuns(runs) {
     if (!runs.length) {
-      $("runs").innerHTML = '<tr><td class="empty">No runs stored yet.</td></tr>';
+      $("runs").innerHTML = '<tr><td class="empty">No runs in this window.</td></tr>';
       return;
     }
-    var head = "<tr><th>When</th><th>Outcome</th><th>Steps</th><th>Target</th>"
+    var head = '<tr class="runs-head"><th>When</th><th>Outcome</th><th>Steps</th><th>Target</th>'
       + "<th>Cloud p50/p90/p99</th><th>n</th><th>Perc p50</th><th>Detected</th>"
       + "<th>Calls</th><th>Build</th><th>Config</th></tr>";
     var rows = runs.map(function (r) {
@@ -194,41 +188,29 @@
       }).map(function (k) {
         return k.replace(/^tier_|^perception_|^navigate_/, "") + "=" + r.config[k];
       }).join(" · ");
-      return "<tr><td>" + esc(when) + "</td>"
-        + '<td><span class="pill ' + cls + '">' + esc(outcome || "–")
-        + (by ? " · " + esc(by) : "") + "</span></td>"
-        + "<td>" + esc(r.steps == null ? "–" : r.steps) + "</td>"
-        + "<td>" + esc(r.target_object || "–") + "</td>"
-        + "<td>" + esc(c ? c.p50 + " / " + c.p90 + " / " + c.p99 : "–") + "</td>"
+      // Each cell names its column (data-label): at phone width the table
+      // is drawn as one card per run, the labels beside the values, rather
+      // than a table scrolling sideways (3.132 Stage 4).
+      function td(label, html, cls) {
+        return '<td data-label="' + esc(label) + '"' + (cls ? ' class="' + cls + '"' : "") + ">"
+          + html + "</td>";
+      }
+      return "<tr>" + td("When", esc(when))
+        + td("Outcome", '<span class="pill ' + cls + '">' + esc(outcome || "–")
+          + (by ? " · " + esc(by) : "") + "</span>")
+        + td("Steps", esc(r.steps == null ? "–" : r.steps))
+        + td("Target", esc(r.target_object || "–"))
+        + td("Cloud p50/p90/p99", esc(c ? c.p50 + " / " + c.p90 + " / " + c.p99 : "–"))
         // n beside every percentile, always: a percentile over a handful
         // of samples is one sample with a fancy name.
-        + '<td class="mono">' + esc(c ? c.n : "0") + "</td>"
-        + "<td>" + esc(l ? l.p50 + "ms" : "–") + "</td>"
-        + "<td>" + (tot ? Math.round((p.detected || 0) / tot * 100) + "%" : "–") + "</td>"
-        + "<td>" + esc(s.cloud_calls == null ? "–" : s.cloud_calls) + "</td>"
-        + '<td class="mono">' + esc(String(r.git_revision || "–").slice(0, 7)) + "</td>"
-        + '<td class="mono">' + esc(cfg || "–") + "</td></tr>";
+        + td("n", esc(c ? c.n : "0"), "mono")
+        + td("Perc p50", esc(l ? l.p50 + "ms" : "–"))
+        + td("Detected", tot ? Math.round((p.detected || 0) / tot * 100) + "%" : "–")
+        + td("Calls", esc(s.cloud_calls == null ? "–" : s.cloud_calls))
+        + td("Build", esc(String(r.git_revision || "–").slice(0, 7)), "mono")
+        + td("Config", esc(cfg || "–"), "mono") + "</tr>";
     });
     $("runs").innerHTML = head + rows.join("");
-  }
-
-  /* Tolerate what a phone paste actually contains.
-   *
-   * The documented way to find this value is `grep WALKS_SECRET
-   * ~/.vision-picar-serverless-secrets`, whose output is the whole LINE.
-   * Pasting that sends "WALKS_SECRET=abc..." as the header and 401s, with
-   * nothing on screen to suggest why -- observed on an iPhone, 2026-09-13.
-   * Shell quoting and a trailing newline arrive the same way.
-   *
-   * Stripping them is safe: none of `KEY=`, quotes or whitespace can be
-   * part of a real secret here, because the value has to survive being an
-   * HTTP header and a shell variable.
-   */
-  function cleanSecret(raw) {
-    var v = (raw || "").trim().replace(/[\r\n]+$/, "");
-    v = v.replace(/^[A-Z_][A-Z0-9_]*\s*=\s*/, "");   // WALKS_SECRET=...
-    v = v.replace(/^["']|["']$/g, "");                // "..." or '...'
-    return v.trim();
   }
 
   // Only the newest load paints (3.76 N2): switching 7 -> 90 -> 7 days drew
@@ -240,32 +222,28 @@
     $("footnote").textContent = "";
   }
 
+  // Loaded once the page is connected, and only while the tab is shown;
+  // `stale` asks for a fresh load the next time it is.
+  var stale = true;
+
   function load() {
     var seq = ++loadSeq;
-    var secret = cleanSecret($("secret").value);
-    if (secret !== $("secret").value) $("secret").value = secret;
+    stale = false;
     $("error").hidden = true;
-    fetch("metrics/summary?days=" + $("days").value,
-          { headers: secret ? { "x-app-secret": secret } : {} })
+    // Not connected: nothing to show yet, and nothing has gone wrong (3.132
+    // Stage 0: a first open showed an error naming WALKS_SECRET).
+    $("metrics-prompt").hidden = Lab.connected;
+    if (!Lab.connected) { clearView(); return; }
+    fetch("metrics/summary?days=" + $("days").value, { headers: Lab.headers() })
       .then(function (r) {
         if (!r.ok) {
-          // 401 and 403 both mean the secret, and saying so beats a bare
-          // status code on a phone where the fix is "check what you
-          // pasted".
           throw new Error("HTTP " + r.status
-            + (r.status === 401 || r.status === 403
-               ? " -- the secret was rejected. Paste only the VALUE of "
-                 + "WALKS_SECRET, not the whole WALKS_SECRET=... line."
-               : ""));
+            + (r.status === 401 || r.status === 403 ? " -- the secret was refused." : ""));
         }
         return r.json();
       })
       .then(function (d) {
         if (seq !== loadSeq) return;
-        // Remembered only once it has WORKED. Saving on every attempt
-        // means a wrong secret is what comes back next time, which is how
-        // a one-off paste error becomes a permanent one.
-        try { localStorage.setItem(SECRET_KEY, secret); } catch (e) {}
         var runs = d.runs || [];
         renderKpis(runs);
         renderCharts(runs);
@@ -284,18 +262,13 @@
       });
   }
 
-  try {
-    $("secret").value = localStorage.getItem(SECRET_KEY)
-      || localStorage.getItem(ADMIN_SECRET_KEY) || "";
-  } catch (e) {}
-  $("reveal").onclick = function () {
-    var f = $("secret");
-    var hidden = f.type === "password";
-    f.type = hidden ? "text" : "password";
-    this.textContent = hidden ? "hide" : "show";
-  };
   $("reload").onclick = load;
   $("days").onchange = load;
-  $("secret").addEventListener("keydown", function (e) { if (e.key === "Enter") load(); });
-  load();
+  Lab.onConnect(function () {
+    stale = true;
+    if (Lab.tab === "metrics") load();
+  });
+  Lab.onTab(function (name) {
+    if (name === "metrics" && stale) load();
+  });
 })();

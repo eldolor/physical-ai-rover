@@ -126,6 +126,7 @@ failure:
 | Requirement | Without it |
 |---|---|
 | A brain on :8001 under `ROUTE_PREFIX=/brain` (`run.sh` starts one) | the D-pad preemption test skips "no brain server" |
+| `SIM_BOARD_FIRMWARE=fork` for the robot server | The fake board speaks the stock firmware, whose odometers are whole centimetres: a ROS turn closes on encoders up to ~4-6 deg from the truth and `test_a_verb_through_ros_means_what_it_meant` fails about one run in three (3.33; re-measured 2026-11-01: 11 of 48 turns off by more than 2 deg on stock, 0 of 48 on the fork, max 0.55 deg). G4 is judged on the fork, the firmware the Rover will be flashed with |
 | `SIM_MAP=scaled_house` for the robot server **and** in pytest's own environment | the suites gate on `/health`'s `sim_map`; the nav suite also reads pytest's `SIM_MAP` |
 | The container started only after `GET /wheels` reports `usable: true` | the fake board answers `usable: false` until its first frame, and a container that activates then loses its wheel plugin for good (`service/slam/README.md` section 3) |
 | The container named `picar-ros`, and `docker` usable without sudo | the kill test runs `docker kill picar-ros` and FAILS (`PICAR_ROS_CONTAINER` overrides the name) |
@@ -140,7 +141,7 @@ export APP_SHARED_SECRET="$LOCAL_SECRET"
 
 # one run -- repeat this block five times
 docker rm -f picar-ros 2>/dev/null
-SIM_MAP=scaled_house ROBOT_DRIVE=ros WORLD_MODE=ros ROBOT_MODE=hardware SIM_MOTOR_BOARD=fake \
+SIM_BOARD_FIRMWARE=fork SIM_MAP=scaled_house ROBOT_DRIVE=ros WORLD_MODE=ros ROBOT_MODE=hardware SIM_MOTOR_BOARD=fake \
   bash service/tunnel/restart.sh                               # sim body :8002, sensors :8003/:8004, robot :8000, brain :8001/brain, all on 127.0.0.1
 curl -s localhost:8000/health | grep -o '"sim_map": *"[a-z_]*"'   # expect "sim_map": "scaled_house"
 until curl -s -H "x-app-secret: $LOCAL_SECRET" localhost:8000/wheels | grep -q '"usable": *true'; do sleep 0.5; done

@@ -142,6 +142,9 @@ def check_robot(url: str, secret=None, timeout=DEFAULT_TIMEOUT_S) -> dict:
             "motor_board": body.get("motor_board"),
             # 3.90 A: the camera stream. Description, for the board's reason.
             "camera": body.get("camera"),
+            # 3.137: the battery ladder's level and power-off steps.
+            # Description, for the board's reason: a flat pack is the car's.
+            "battery": body.get("battery"),
             # Drive mode and ROS liveness; ros_up false under drive: ros is
             # also a verdict input above.
             "drive": body.get("drive"),

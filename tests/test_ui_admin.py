@@ -20,7 +20,6 @@ import os
 import subprocess
 import sys
 import time
-from pathlib import Path
 
 import httpx
 import pytest
@@ -143,6 +142,31 @@ def open_console(browser, admin_server, *, models=MODELS, walks=WALKS,
 
 def replay_options(page, index=0):
     return page.locator(".replay-select").nth(index).locator("option")
+
+
+def open_metrics(browser, admin_server, summary, *, viewport=PHONE):
+    """The Lab console's Metrics tab (3.132 Stage 4: the metrics console is a
+    tab of the one page, published at /metrics). `summary` answers
+    /metrics/summary; the walks routes Connect reads are stubbed."""
+    page = browser.new_context(viewport=viewport).new_page()
+    page.route("**/recording/walks", lambda r: r.fulfill(
+        status=200, content_type="application/json", body=json.dumps({"walks": []})))
+    page.route("**/recording/models", lambda r: r.fulfill(
+        status=200, content_type="application/json", body=json.dumps({"models": []})))
+    page.route("**/recording/summary", lambda r: r.fulfill(
+        status=200, content_type="application/json", body=json.dumps({"rows": []})))
+    page.route("**/stats", lambda r: r.fulfill(
+        status=200, content_type="application/json", body=json.dumps({"walks": 0})))
+    page.route("**/metrics/summary*", summary)
+    page.goto(admin_server + "/metrics")
+    return page
+
+
+def confirm(page):
+    """3.132 Stage 4: Score, Re-score and Replay each ask first, with the
+    cost; this answers Confirm, as a person would."""
+    sync_api.expect(page.locator("#confirm")).to_be_visible()
+    page.click("#confirm-ok")
 
 
 # ---------- the bug that shipped ----------
@@ -372,6 +396,7 @@ def test_a_timed_out_replay_waits_for_the_new_result_not_the_old_one(browser, ad
     page.wait_for_selector(".walk", timeout=10_000)
 
     page.locator(".replay-select").first.select_option(model + "|default")
+    confirm(page)
     replay_text = page.locator(".walk").first.locator(".walk-eval").nth(1)
     sync_api.expect(replay_text).to_contain_text("score 34", timeout=10_000)
     assert lists["n"] > 3
@@ -393,6 +418,7 @@ def test_a_kept_score_note_fits_a_phone(browser, admin_server):
     page.route("**/replay", lambda r: r.fulfill(
         status=200, content_type="application/json", body=json.dumps(kept)))
     page.locator(".replay-select").first.select_option(model + "|default")
+    confirm(page)
     note = page.locator(".inline-err").first
     sync_api.expect(note).to_contain_text("kept the earlier score")
     box = note.bounding_box()
@@ -413,6 +439,7 @@ def test_a_replay_the_server_refused_says_so_at_once(browser, admin_server):
         status=503, content_type="application/json",
         body=json.dumps({"detail": "No vision service configured."})))
     page.locator(".replay-select").first.select_option(model + "|default")
+    confirm(page)
     sync_api.expect(page.locator(".inline-err").first).to_contain_text(
         "No vision service configured", timeout=3000)
     assert not errors, errors
@@ -452,18 +479,10 @@ def test_an_older_scorers_card_is_marked_and_not_rescored_by_itself(browser, adm
     context.close()
 
 
-def test_the_metrics_table_reads_old_outcome_names_as_the_new_ones(browser):
+def test_the_metrics_table_reads_old_outcome_names_as_the_new_ones(browser, admin_server):
     """3.70 E1: a stored metrics row keeps the outcome it was written with;
     the console reads `searched`, `max_steps`, `stopped` and `preempted` as
     today's names and never shows the old ones. Red first: shown raw."""
-    page = browser.new_context(viewport=PHONE).new_page()
-    root = Path(REPO_ROOT) / "control"
-    def serve(name):
-        kind = "text/html" if name.endswith(".html") else "application/javascript"
-        return lambda route: route.fulfill(status=200, body=(root / name).read_text(),
-                                           content_type=kind)
-    for name in ("metrics.html", "metrics.js"):
-        page.route(f"http://metrics.test/{name}", serve(name))
     runs = [{"run_id": f"r{i}", "finished_at": 1760000000 + i, "policy": "explore",
              "outcome": o, "steps": 3, "stats": {}, "config": {}}
             for i, o in enumerate(["searched", "max_steps", "stopped", "preempted", "found"])]
@@ -471,9 +490,8 @@ def test_the_metrics_table_reads_old_outcome_names_as_the_new_ones(browser):
     runs.append({"run_id": "r9", "finished_at": 1760000009, "policy": "explore",
                  "outcome": "cancelled", "cancelled_by": "dpad", "steps": 3,
                  "stats": {}, "config": {}})
-    page.route("http://metrics.test/metrics/summary*", lambda route: route.fulfill(
+    page = open_metrics(browser, admin_server, lambda route: route.fulfill(
         status=200, content_type="application/json", body=json.dumps({"runs": runs})))
-    page.goto("http://metrics.test/metrics.html")
     pills = page.locator("td .pill")
     sync_api.expect(pills).to_have_count(6, timeout=5000)
     shown = sorted(pills.all_inner_texts())

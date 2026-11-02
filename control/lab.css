@@ -1,0 +1,337 @@
+/* control/lab.css -- the Lab console's own rules (3.132 Stage 4).
+   Loaded after web-shared/ui.css, whose rules apply here too: every colour
+   is a var() from there (tests/test_ui_tokens.py), so the page follows the
+   light and dark themes like the twin, and every control is at least
+   --target (44 px) in both directions. Merged from the inline sheets of
+   control/admin.html and control/metrics.html. */
+
+[hidden] { display: none !important; }
+
+body { font-size: var(--fs-md); line-height: var(--lh-body); }
+
+.lab { max-width: 1180px; margin: 0 auto; padding: var(--space-4) var(--space-4) 60px; }
+.lab-head h1 { font-size: var(--fs-title); margin: 0; }
+.lab-sub { margin: 4px 0 var(--space-4); color: var(--text-dim); font-size: var(--fs-body); }
+
+/* ui.css stretches every button to share its row (the twin's button rows);
+   here buttons keep their own width unless a rule says otherwise. */
+.lab button, .slideshow button, .confirm button { flex: 0 0 auto; padding: 10px 14px; }
+
+h2.section-label { margin: 0 0 var(--space-2); font-weight: 600; }
+.row { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
+.field-label {
+  display: block; font-size: var(--fs-body); font-weight: 600; color: var(--text);
+  margin-bottom: 4px;
+}
+#secret { flex: 1 1 200px; width: auto; min-width: 0; }
+
+.status { color: var(--text-dim); margin: var(--space-2) 0 0; font-size: var(--fs-body); }
+.status.ok { color: var(--accent-safe); }
+.status.err { color: var(--accent-alert); }
+.status.busy { color: var(--accent-primary); }
+/* An inline note takes its own line in a wrapping row and wraps inside it,
+   rather than running past a phone's edge at its full width (3.64). */
+.status.inline-err { flex: 1 1 100%; min-width: 0; margin: 0; overflow-wrap: anywhere; }
+.stats { color: var(--text-dim); font-size: var(--fs-body); }
+.hint { margin: 0 0 var(--space-3); }
+.prompt { color: var(--text-dim); margin: 0; }
+.empty { color: var(--text-dim); padding: var(--space-5) 0; text-align: center; margin: 0; }
+
+.toolbar { justify-content: space-between; margin-bottom: var(--space-3); }
+.toolbar h2.section-label { margin: 0; flex: 1 1 auto; }
+
+/* ---------- the tabs ---------- */
+
+.tabs {
+  display: flex; gap: var(--space-1); margin: var(--space-2) 0 var(--space-3);
+  border-bottom: 1px solid var(--border-strong);
+}
+.tab {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: var(--target); min-width: 96px; padding: 0 var(--space-4);
+  color: var(--text-dim); text-decoration: none; font-weight: 600;
+  border-bottom: 3px solid transparent; margin-bottom: -1px;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+.tab:hover { color: var(--text); background: var(--surface-hover); }
+.tab[aria-selected="true"] { color: var(--accent-primary); border-bottom-color: var(--accent-primary); }
+
+/* ---------- filters ---------- */
+
+.filters {
+  display: grid; gap: var(--space-2) var(--space-3); margin-bottom: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+.filter { display: block; min-width: 0; }
+.filter .select-input, .filter .text-input { width: 100%; }
+.filter-search { grid-column: 1 / -1; }
+.filter-inline { display: flex; align-items: center; gap: var(--space-2); }
+.filter-inline .field-label { margin: 0; }
+
+.pending-bar, .bulk-bar {
+  background: var(--surface-raised); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md); padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3); justify-content: space-between;
+}
+
+/* ---------- a walk ---------- */
+
+.walk { border-top: 1px solid var(--border); padding: var(--space-3) 0; }
+.walk:first-child { border-top: none; padding-top: 0; }
+.walk-head { display: flex; align-items: center; gap: var(--space-2); }
+
+/* The walk's name is the button that opens its frames. */
+.walk-head-main {
+  flex: 1 1 auto; display: block; text-align: left; background: transparent;
+  color: var(--text); font-weight: 400; padding: 6px var(--space-2); min-width: 0;
+}
+.lab .walk-head-main { flex: 1 1 auto; padding: 6px var(--space-2); }
+/* --surface-raised, not --surface-hover: --text-dim on --surface-hover is
+   4.2:1 in the dark theme, under AA, and a phone keeps the hover after a tap
+   (the Stage 4 harness, an opened walk). 4.7:1 here, 6.8:1 in light. */
+.walk-head-main:hover { background: var(--surface-raised); }
+.walk-head-main:active { transform: none; }
+/* Walk names carry the model and a timestamp, so they are long and have
+   no spaces to break at. Without this they either force the page wide or
+   squeeze the column they live in down to nothing. */
+.walk-name { display: block; font-weight: 600; overflow-wrap: anywhere; }
+.walk-meta { display: block; color: var(--text-dim); font-size: var(--fs-body); }
+.walk-actions { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; }
+.label-select { width: auto; }
+.replay-select { max-width: 200px; }
+
+/* A walk's checkbox, drawn inside a 44 px hit box (as ui.css's switch is). */
+.walk-check {
+  appearance: none; -webkit-appearance: none; flex: 0 0 auto;
+  width: var(--target); height: var(--target); margin: 0; position: relative;
+  cursor: pointer; background: transparent; border-radius: var(--radius-sm);
+}
+.walk-check::before {
+  content: ""; position: absolute; left: 11px; top: 11px; width: 22px; height: 22px;
+  border: 2px solid var(--border-strong); border-radius: 5px; background: var(--field-bg);
+  box-sizing: border-box;
+}
+.walk-check:checked::before { background: var(--accent-primary); border-color: var(--accent-primary); }
+.walk-check:checked::after {
+  content: ""; position: absolute; left: 19px; top: 14px; width: 6px; height: 11px;
+  border: solid var(--accent-primary-ink); border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+.walk-check:focus-visible { box-shadow: none; }
+.walk-check:focus-visible::before { box-shadow: var(--focus-ring); }
+
+a.dl-link {
+  display: inline-flex; align-items: center; min-height: var(--target); padding: 0 var(--space-3);
+  color: var(--accent-primary); text-decoration: none; font-weight: 600;
+  border-radius: var(--radius-md);
+}
+a.dl-link:hover { text-decoration: underline; }
+
+.label-badge, .score-badge {
+  display: inline-block; margin-left: 6px; padding: 1px 7px; vertical-align: 1px;
+  font-size: var(--fs-small); border-radius: var(--radius-pill);
+  background: var(--surface-raised); border: 1px solid currentColor;
+}
+.label-badge { text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600; }
+.label-badge.good { color: var(--accent-safe); }
+.label-badge.bad { color: var(--accent-alert); }
+.label-badge.training-ready { color: var(--accent-primary); }
+/* The machine score. Deliberately a different shape from .label-badge
+   (monospace, square-cornered) so an advisory number never reads as the
+   operator's own label at a glance. */
+.score-badge { font-family: var(--mono); border-radius: 4px; color: var(--text-dim); }
+.score-badge.good { color: var(--accent-safe); }
+.score-badge.mixed { color: var(--accent-warn); }
+.score-badge.poor { color: var(--accent-alert); }
+.score-badge.stale, .score-badge.none { border-style: dashed; }  /* 3.64: not comparable */
+
+.walk-eval { padding: 2px 0 0 52px; }
+.eval-line { font-size: var(--fs-body); color: var(--text-dim); margin-top: 3px; }
+.eval-line.dim { font-style: italic; }
+.summary-hit { color: var(--accent-alert); }
+
+.summary-row {
+  display: grid; grid-template-columns: 1fr auto auto auto; gap: 6px var(--space-3);
+  padding: var(--space-2) 0; border-top: 1px solid var(--border); align-items: baseline;
+}
+.summary-row:first-child { border-top: none; }
+.summary-model { font-weight: 600; overflow-wrap: anywhere; }
+.summary-num { font-family: var(--mono); font-size: var(--fs-body); }
+.summary-sub { grid-column: 1 / -1; font-size: var(--fs-body); color: var(--text-dim); }
+
+/* ---------- frames ---------- */
+
+.frames {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px; margin-top: var(--space-3);
+}
+.frame { background: var(--field-bg); border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; }
+.lab .frame-open {
+  display: block; width: 100%; height: 110px; padding: 0; border-radius: 0;
+  background: var(--media-bg);
+}
+.frame-open:active { transform: none; }
+.frame-open img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.frame-body { padding: var(--space-2); }
+.frame-file { font-size: var(--fs-small); color: var(--text-dim); }
+.frame-reasoning { font-size: var(--fs-body); margin: 6px 0; overflow-wrap: anywhere; }
+.frame-action {
+  display: inline-block; font-size: var(--fs-small); padding: 1px 6px; border-radius: 4px;
+  background: var(--surface-raised); margin-bottom: 4px;
+}
+.frame-model { font-size: var(--fs-small); color: var(--text-dim); margin-bottom: 4px; overflow-wrap: anywhere; }
+
+/* ---------- the slideshow ---------- */
+
+.slideshow {
+  display: none; position: fixed; inset: 0; background: var(--bg); color: var(--text);
+  z-index: 50; align-items: center; justify-content: center; flex-direction: column;
+  padding: var(--space-4);
+}
+.slideshow.show { display: flex; }
+.slideshow img {
+  max-width: 90vw; max-height: 65vh; object-fit: contain; border-radius: var(--radius-md);
+  background: var(--media-bg);
+}
+.slideshow-info { max-width: 90vw; text-align: center; margin-top: 14px; }
+.slideshow-controls { display: flex; gap: 10px; margin-top: var(--space-4); align-items: center; }
+.slideshow-close { position: absolute; top: 20px; right: 24px; }
+
+/* ---------- the confirm ---------- */
+
+.confirm {
+  background: var(--surface); color: var(--text); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-2);
+  width: calc(100% - 32px); max-width: 440px; padding: var(--space-4) var(--space-4) var(--space-3);
+}
+.confirm::backdrop { background: var(--media-scrim); }
+.confirm h2 { font-size: var(--fs-md); margin: 0 0 var(--space-2); }
+.confirm p { margin: 0 0 var(--space-2); font-size: var(--fs-body); overflow-wrap: anywhere; }
+.confirm-actions { justify-content: flex-end; margin-top: var(--space-3); }
+
+/* ---------- the environment banner ---------- */
+
+/* Two deployments serve this identical page from different hosts, and a
+   walk recorded against the wrong one is invisible until someone goes
+   looking for it on the other. Shown only when the server reports an
+   env_label; production sets none. */
+.env-banner {
+  display: none; padding: var(--space-2) var(--space-4);
+  background: var(--accent-alert); color: var(--env-banner-ink);
+  font-family: var(--mono); font-size: var(--fs-body); font-weight: 700;
+  letter-spacing: 0.10em; text-transform: uppercase; text-align: center;
+}
+.env-banner.visible { display: block; }
+
+/* ---------- metrics ---------- */
+
+.kpis {
+  display: grid; gap: var(--space-3); margin-bottom: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+}
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+}
+.card .label {
+  font-size: var(--fs-small); text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--text-dim); display: flex; align-items: center; gap: 6px;
+}
+.card .value { font-size: 26px; font-weight: 640; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.card .value small { font-size: var(--fs-body); color: var(--text-dim); font-weight: 400; margin-left: 2px; }
+.card .foot { font-size: var(--fs-body); color: var(--text-dim); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot.cloud, .dot-p50 { background: var(--accent-primary); }
+.dot.local, .dot-local { background: var(--accent-safe); }
+.dot-p90 { background: var(--accent-warn); }
+.dot-p99 { background: var(--accent-alert); }
+.legend { display: flex; flex-wrap: wrap; gap: var(--space-4); font-size: var(--fs-body); color: var(--text-dim); margin-bottom: var(--space-2); }
+.legend span { display: flex; align-items: center; gap: 6px; }
+
+svg { display: block; width: 100%; overflow: visible; }
+.gl { stroke: var(--border); stroke-width: 1; }
+.ax { fill: var(--text-dim); font-size: 11px; }
+
+.runs-wrap { overflow-x: auto; border-radius: var(--radius-sm); }
+table { width: 100%; border-collapse: collapse; font-size: var(--fs-body); font-variant-numeric: tabular-nums; }
+th {
+  text-align: left; font-weight: 600; color: var(--text-dim); font-size: var(--fs-small);
+  text-transform: uppercase; letter-spacing: 0.05em; padding: 0 10px var(--space-2) 0;
+  border-bottom: 1px solid var(--border-strong); white-space: nowrap;
+}
+td { padding: 9px 10px 9px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+.pill {
+  display: inline-block; padding: 2px 8px; border-radius: var(--radius-pill); font-size: var(--fs-small);
+  background: var(--surface-raised); border: 1px solid var(--border-strong); color: var(--text-dim);
+}
+.pill.found { color: var(--accent-safe); border-color: currentColor; }
+.pill.bad { color: var(--accent-alert); border-color: currentColor; }
+.mono { font-family: var(--mono); color: var(--text-dim); overflow-wrap: anywhere; }
+.note {
+  font-size: var(--fs-body); color: var(--text-dim); margin: var(--space-3) 0 0;
+  padding-top: var(--space-3); border-top: 1px solid var(--border);
+}
+.err {
+  background: var(--tint-alert-10); border: 1px solid var(--accent-alert); color: var(--text);
+  border-radius: var(--radius-md); padding: 11px 13px; margin-top: var(--space-3); font-size: var(--fs-body);
+}
+
+/* ---------- narrow screens ----------
+   The walks console was built at desktop width and read as one row per
+   walk: name, label, replay, four buttons. On a phone that row cannot fit,
+   so the name column collapsed to about 130px -- wrapping a walk name over
+   six lines -- while the buttons ran off the right edge. Below this width
+   the row becomes a stack: the walk identifies itself on its own line, and
+   its controls wrap underneath. The metrics table becomes one card per run. */
+@media (max-width: 700px) {
+  .lab { padding: var(--space-3) var(--space-4) 48px; }
+  .panel { padding: var(--space-3); }
+  .walk-head {
+    display: grid; grid-template-columns: auto 1fr; gap: var(--space-2);
+    align-items: start;
+  }
+  .walk-head .label-select,
+  .walk-head .walk-actions { grid-column: 1 / -1; }
+  .replay-select { max-width: none; flex: 1 1 auto; }
+  .walk-eval { padding-left: 0; }
+  .summary-row { grid-template-columns: 1fr auto; }
+  /* One frame per row is unreadable; two keeps the thumbnails useful. */
+  .frames { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+
+  /* The slideshow on a phone: an ordinary scrolling column with the
+     controls pinned to the bottom, inside the safe-area insets so iOS's
+     own bars do not sit on top of them. */
+  .slideshow {
+    justify-content: flex-start; overflow-y: auto;
+    padding: calc(10px + env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom));
+  }
+  .slideshow-close { position: static; align-self: flex-end; margin-bottom: var(--space-2); }
+  .slideshow img { max-width: 100%; max-height: 46vh; }
+  .slideshow-info { max-width: 100%; }
+  .slideshow-controls {
+    position: sticky; bottom: 0; width: 100%; margin-top: auto;
+    padding-top: 10px; background: var(--bg);
+  }
+  /* The control pressed once per frame of a 39-frame walk: thumb-sized,
+     each an equal share of the row. */
+  .slideshow-controls button { flex: 1 1 0; padding: 14px 8px; }
+
+  .runs-wrap { overflow: visible; }
+  #runs, #runs tbody, #runs tr, #runs td { display: block; width: 100%; }
+  #runs tr.runs-head { display: none; }
+  #runs tr {
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: var(--space-2) var(--space-3); margin-bottom: var(--space-2);
+  }
+  #runs td {
+    display: flex; gap: var(--space-3); justify-content: space-between;
+    padding: 4px 0; border-bottom: none; text-align: right;
+  }
+  #runs td::before {
+    content: attr(data-label); color: var(--text-dim); text-align: left;
+    font-size: var(--fs-small); text-transform: uppercase; letter-spacing: 0.05em;
+    flex: 0 0 auto;
+  }
+  #runs td.empty { justify-content: center; }
+  #runs td.empty::before { content: none; }
+}

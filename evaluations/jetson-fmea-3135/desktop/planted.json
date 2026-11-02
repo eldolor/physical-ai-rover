@@ -1,0 +1,204 @@
+{
+ "stamp": "20261101-221428",
+ "criterion": 4,
+ "rows": [
+  {
+   "row": "F13",
+   "plant": "watchdog",
+   "reading": "wheels zero <= 1.1 s after the client's SIGKILL; 0 contacts (no mission runs, so 'the brain does not take over mid-press' is not exercised here)",
+   "base": {
+    "pass": true,
+    "reasons": [],
+    "error": null,
+    "recovery_s": 2.55,
+    "wheels_zero_s": 0.97,
+    "travel_cm": 18.9,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": "idle"
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "wheels zero after None s (bar 1.1)"
+    ],
+    "error": null,
+    "wheels_zero_s": null,
+    "travel_cm": 119.61,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": "idle"
+   },
+   "caught": true,
+   "discriminates": true
+  },
+  {
+   "row": "F9",
+   "plant": "lidar_fresh",
+   "reading": "true path from the SIGSTOP + 0.3 s (the scan's freshness bar) to the SIGCONT <= 2 cm; 0 contacts",
+   "base": {
+    "pass": false,
+    "reasons": [
+     "moved 104.54 cm while stale (bar 2)"
+    ],
+    "error": null,
+    "recovery_s": 2.55,
+    "wheels_zero_s": 11.014,
+    "travel_cm": 65.65,
+    "travel_stale_cm": 104.54,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": "running"
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "moved 22.45 cm while stale (bar 2)"
+    ],
+    "error": null,
+    "wheels_zero_s": 11.045,
+    "travel_cm": 28.29,
+    "travel_stale_cm": 22.45,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": "running"
+   },
+   "caught": true,
+   "discriminates": false
+  },
+  {
+   "row": "F10",
+   "plant": "feedback_fresh",
+   "reading": "true path from the silence + 0.25 s (feedback's freshness bar) to its end <= 2 cm; the robot server refused something as no_feedback; 0 contacts",
+   "base": {
+    "pass": true,
+    "reasons": [],
+    "error": null,
+    "recovery_s": 2.54,
+    "wheels_zero_s": 0.256,
+    "travel_cm": 6.77,
+    "travel_stale_cm": 0.0,
+    "contacts": 0,
+    "no_feedback_refusals": 1,
+    "outcome": "failed"
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "moved 53.21 cm while stale (bar 2)",
+     "no refusal named no_feedback"
+    ],
+    "error": null,
+    "wheels_zero_s": 5.819,
+    "travel_cm": 64.32,
+    "travel_stale_cm": 53.21,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": "running"
+   },
+   "caught": true,
+   "discriminates": true
+  },
+  {
+   "row": "F8",
+   "plant": "heartbeat",
+   "reading": "the fake board's setpoints zero <= 1.6 s after the SIGKILL; the brain's mission does not end found; 0 contacts",
+   "base": {
+    "pass": true,
+    "reasons": [],
+    "error": null,
+    "recovery_s": 1.58,
+    "wheels_zero_s": 1.494,
+    "travel_cm": 44.19,
+    "contacts": 0,
+    "outcome": "failed"
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "wheels zero after None s (bar 1.6)"
+    ],
+    "error": null,
+    "wheels_zero_s": null,
+    "travel_cm": 84.45,
+    "contacts": 0,
+    "outcome": "failed"
+   },
+   "caught": true,
+   "discriminates": true
+  },
+  {
+   "row": "F6",
+   "plant": "watchdog",
+   "reading": "wheels zero <= 1.1 s after the SIGKILL; true path from the kill over the next 6 s <= 15 cm; 0 contacts",
+   "base": {
+    "pass": false,
+    "reasons": [
+     "moved 24.04 cm after the fault (bar 15)"
+    ],
+    "error": null,
+    "recovery_s": 3.14,
+    "wheels_zero_s": 0.839,
+    "travel_cm": 24.04,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": null
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "moved 23.97 cm after the fault (bar 15)"
+    ],
+    "error": null,
+    "wheels_zero_s": 0.827,
+    "travel_cm": 23.97,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": null
+   },
+   "caught": true,
+   "discriminates": false
+  },
+  {
+   "row": "F7",
+   "plant": "watchdog",
+   "reading": "as F6 from the SIGSTOP; and after SIGCONT the stale mission does not drive: no non-zero wheel setpoint in the 10 s after SIGCONT; 0 contacts",
+   "base": {
+    "pass": false,
+    "reasons": [
+     "moved 24.01 cm after the fault (bar 15)"
+    ],
+    "error": null,
+    "recovery_s": 2.56,
+    "wheels_zero_s": 0.825,
+    "travel_cm": 24.01,
+    "drive_after_cont": 0,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": "failed"
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "moved 24.31 cm after the fault (bar 15)"
+    ],
+    "error": null,
+    "wheels_zero_s": 0.839,
+    "travel_cm": 24.31,
+    "drive_after_cont": 0,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": "failed"
+   },
+   "caught": true,
+   "discriminates": false
+  }
+ ],
+ "met": true,
+ "not_scored_until_fixed": [],
+ "base_fails_too": [
+  "F9",
+  "F6",
+  "F7"
+ ]
+}

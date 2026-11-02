@@ -1,0 +1,5 @@
+1793592944.769 WARNING identity vision-picar robot server starting -- git=1bab91b3 executable=/home/anshu/vision-picar/.venv/bin/python config=(default)
+1793592953.304 WARNING safety Blocked FORWARD: stopped after 0.0cm -- forward clearance 18.1cm reached min=20.0cm (depth_grid, aged 197 ms)
+1793592953.304 WARNING server refused (safety_distance) for brain: Blocked FORWARD: stopped after 0.0cm -- forward clearance 18.1cm reached min=20.0cm (depth_grid, aged 197 ms)
+1793592954.329 WARNING safety Blocked FORWARD: stopped after 0.0cm -- forward clearance 17.3cm reached min=20.0cm (depth_grid, aged 122 ms)
+1793592954.329 WARNING server refused (safety_distance) for brain: Blocked FORWARD: stopped after 0.0cm -- forward clearance 17.3cm reached min=20.0cm (depth_grid, aged 122 ms)

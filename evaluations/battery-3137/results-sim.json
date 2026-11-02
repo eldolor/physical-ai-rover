@@ -1,0 +1,2118 @@
+{
+ "v0": 11.0,
+ "drain_v_per_s": 0.02,
+ "crossings_sim_s": {
+  "low": 25.0,
+  "reserve": 40.000000000000036,
+  "poweroff": 50.0
+ },
+ "rows": [
+  {
+   "start": [
+    12.5,
+    4.5,
+    -65
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 10.83,
+   "steps": 14,
+   "wall_s": 0.8
+  },
+  {
+   "start": [
+    12.5,
+    4.5,
+    -65
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 10.83,
+   "steps": 14,
+   "low_seen_sim_s": null,
+   "fired": {},
+   "wall_s": 0.81
+  },
+  {
+   "start": [
+    12.5,
+    4.5,
+    -65
+   ],
+   "arm": "R",
+   "v0": 10.3083,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_reserve: the battery is at reserve -- autonomy is refused, so brain was refused; a person may drive slowly to the charger)",
+   "end_sim_s": 7.56,
+   "steps": 14,
+   "low_seen_sim_s": 1.46,
+   "fired": {
+    "reserve": {
+     "sim_s": 7.56,
+     "pose": [
+      5.5426,
+      1.513
+     ],
+     "how": "at rest",
+     "v_true": 10.157
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "brain_at_reserve": "battery_reserve",
+   "person_at_reserve": {
+    "executed": true,
+    "speed": 30,
+    "reason": null
+   },
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.002,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.005,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.006,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.87
+  },
+  {
+   "start": [
+    12.5,
+    4.5,
+    -25
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 10.63,
+   "steps": 13,
+   "wall_s": 0.78
+  },
+  {
+   "start": [
+    12.5,
+    4.5,
+    -25
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 10.63,
+   "steps": 13,
+   "low_seen_sim_s": null,
+   "fired": {},
+   "wall_s": 0.78
+  },
+  {
+   "start": [
+    12.5,
+    4.5,
+    -25
+   ],
+   "arm": "R",
+   "v0": 10.3063,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_reserve: the battery is at reserve -- autonomy is refused, so brain was refused; a person may drive slowly to the charger)",
+   "end_sim_s": 7.36,
+   "steps": 13,
+   "low_seen_sim_s": 1.26,
+   "fired": {
+    "reserve": {
+     "sim_s": 7.36,
+     "pose": [
+      5.5426,
+      1.513
+     ],
+     "how": "at rest",
+     "v_true": 10.159
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "brain_at_reserve": "battery_reserve",
+   "person_at_reserve": {
+    "executed": true,
+    "speed": 30,
+    "reason": null
+   },
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.002,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.014,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.015,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.88
+  },
+  {
+   "start": [
+    12.5,
+    4.5,
+    30
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 10.77,
+   "steps": 14,
+   "wall_s": 0.81
+  },
+  {
+   "start": [
+    12.5,
+    4.5,
+    30
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 10.77,
+   "steps": 14,
+   "low_seen_sim_s": null,
+   "fired": {},
+   "wall_s": 0.83
+  },
+  {
+   "start": [
+    12.5,
+    4.5,
+    30
+   ],
+   "arm": "R",
+   "v0": 10.3077,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_reserve: the battery is at reserve -- autonomy is refused, so brain was refused; a person may drive slowly to the charger)",
+   "end_sim_s": 7.37,
+   "steps": 13,
+   "low_seen_sim_s": 1.27,
+   "fired": {
+    "reserve": {
+     "sim_s": 7.37,
+     "pose": [
+      5.5395,
+      1.5442
+     ],
+     "how": "at rest",
+     "v_true": 10.16
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "brain_at_reserve": "battery_reserve",
+   "person_at_reserve": {
+    "executed": true,
+    "speed": 30,
+    "reason": null
+   },
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.004,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.014,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.015,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.88
+  },
+  {
+   "start": [
+    12.5,
+    4.5,
+    70
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 11.89,
+   "steps": 19,
+   "wall_s": 0.94
+  },
+  {
+   "start": [
+    12.5,
+    4.5,
+    70
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 11.89,
+   "steps": 19,
+   "low_seen_sim_s": null,
+   "fired": {},
+   "wall_s": 0.99
+  },
+  {
+   "start": [
+    12.5,
+    4.5,
+    70
+   ],
+   "arm": "R",
+   "v0": 10.3189,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_reserve: the battery is at reserve -- autonomy is refused, so brain was refused; a person may drive slowly to the charger)",
+   "end_sim_s": 8.63,
+   "steps": 19,
+   "low_seen_sim_s": 0.64,
+   "fired": {
+    "reserve": {
+     "sim_s": 8.63,
+     "pose": [
+      5.5426,
+      1.513
+     ],
+     "how": "at rest",
+     "v_true": 10.146
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "brain_at_reserve": "battery_reserve",
+   "person_at_reserve": {
+    "executed": true,
+    "speed": 30,
+    "reason": null
+   },
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.002,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.004,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.016,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.016,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.99
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -65
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 9.73,
+   "steps": 13,
+   "wall_s": 0.71
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -65
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 9.73,
+   "steps": 13,
+   "low_seen_sim_s": null,
+   "fired": {},
+   "wall_s": 0.77
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -65
+   ],
+   "arm": "R",
+   "v0": 10.2973,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_reserve: the battery is at reserve -- autonomy is refused, so brain was refused; a person may drive slowly to the charger)",
+   "end_sim_s": 7.56,
+   "steps": 14,
+   "low_seen_sim_s": 1.46,
+   "fired": {
+    "reserve": {
+     "sim_s": 7.56,
+     "pose": [
+      5.8411,
+      1.5291
+     ],
+     "how": "at rest",
+     "v_true": 10.146
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "brain_at_reserve": "battery_reserve",
+   "person_at_reserve": {
+    "executed": true,
+    "speed": 30,
+    "reason": null
+   },
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.002,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.004,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.014,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.014,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.88
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -25
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 9.53,
+   "steps": 12,
+   "wall_s": 0.72
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -25
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 9.53,
+   "steps": 12,
+   "low_seen_sim_s": null,
+   "fired": {},
+   "wall_s": 0.73
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -25
+   ],
+   "arm": "R",
+   "v0": 10.2953,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_reserve: the battery is at reserve -- autonomy is refused, so brain was refused; a person may drive slowly to the charger)",
+   "end_sim_s": 7.36,
+   "steps": 13,
+   "low_seen_sim_s": 1.26,
+   "fired": {
+    "reserve": {
+     "sim_s": 7.36,
+     "pose": [
+      5.8411,
+      1.5291
+     ],
+     "how": "at rest",
+     "v_true": 10.148
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "brain_at_reserve": "battery_reserve",
+   "person_at_reserve": {
+    "executed": true,
+    "speed": 30,
+    "reason": null
+   },
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.002,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.004,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.015,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.016,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.86
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    30
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 9.78,
+   "steps": 14,
+   "wall_s": 0.76
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    30
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 9.78,
+   "steps": 14,
+   "low_seen_sim_s": null,
+   "fired": {},
+   "wall_s": 0.82
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    30
+   ],
+   "arm": "R",
+   "v0": 10.2978,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_reserve: the battery is at reserve -- autonomy is refused, so brain was refused; a person may drive slowly to the charger)",
+   "end_sim_s": 7.48,
+   "steps": 14,
+   "low_seen_sim_s": 1.27,
+   "fired": {
+    "reserve": {
+     "sim_s": 7.48,
+     "pose": [
+      5.8361,
+      1.5654
+     ],
+     "how": "at rest",
+     "v_true": 10.148
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "brain_at_reserve": "battery_reserve",
+   "person_at_reserve": {
+    "executed": true,
+    "speed": 30,
+    "reason": null
+   },
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.002,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.004,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.014,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.015,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.88
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    70
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 10.79,
+   "steps": 18,
+   "wall_s": 0.83
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    70
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 10.79,
+   "steps": 18,
+   "low_seen_sim_s": null,
+   "fired": {},
+   "wall_s": 0.9
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    70
+   ],
+   "arm": "R",
+   "v0": 10.3079,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_reserve: the battery is at reserve -- autonomy is refused, so brain was refused; a person may drive slowly to the charger)",
+   "end_sim_s": 7.53,
+   "steps": 18,
+   "low_seen_sim_s": 0.64,
+   "fired": {
+    "reserve": {
+     "sim_s": 7.53,
+     "pose": [
+      5.5426,
+      1.4993
+     ],
+     "how": "at rest",
+     "v_true": 10.157
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "brain_at_reserve": "battery_reserve",
+   "person_at_reserve": {
+    "executed": true,
+    "speed": 30,
+    "reason": null
+   },
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.002,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.014,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.015,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.87
+  },
+  {
+   "start": [
+    14.5,
+    4.5,
+    -65
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 8.63,
+   "steps": 12,
+   "wall_s": 0.67
+  },
+  {
+   "start": [
+    14.5,
+    4.5,
+    -65
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 8.63,
+   "steps": 12,
+   "low_seen_sim_s": null,
+   "fired": {},
+   "wall_s": 0.69
+  },
+  {
+   "start": [
+    14.5,
+    4.5,
+    -65
+   ],
+   "arm": "R",
+   "v0": 10.2863,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_reserve: the battery is at reserve -- autonomy is refused, so brain was refused; a person may drive slowly to the charger)",
+   "end_sim_s": 6.46,
+   "steps": 13,
+   "low_seen_sim_s": 1.46,
+   "fired": {
+    "reserve": {
+     "sim_s": 6.46,
+     "pose": [
+      5.8408,
+      1.5156
+     ],
+     "how": "at rest",
+     "v_true": 10.157
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "brain_at_reserve": "battery_reserve",
+   "person_at_reserve": {
+    "executed": true,
+    "speed": 30,
+    "reason": null
+   },
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.005,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.006,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.007,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.018,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.019,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.79
+  },
+  {
+   "start": [
+    14.5,
+    4.5,
+    -25
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 8.43,
+   "steps": 11,
+   "wall_s": 0.63
+  },
+  {
+   "start": [
+    14.5,
+    4.5,
+    -25
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 8.43,
+   "steps": 11,
+   "low_seen_sim_s": null,
+   "fired": {},
+   "wall_s": 0.67
+  },
+  {
+   "start": [
+    14.5,
+    4.5,
+    -25
+   ],
+   "arm": "R",
+   "v0": 10.2843,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_reserve: the battery is at reserve -- autonomy is refused, so brain was refused; a person may drive slowly to the charger)",
+   "end_sim_s": 6.26,
+   "steps": 12,
+   "low_seen_sim_s": 1.26,
+   "fired": {
+    "reserve": {
+     "sim_s": 6.26,
+     "pose": [
+      5.8408,
+      1.5156
+     ],
+     "how": "at rest",
+     "v_true": 10.159
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "brain_at_reserve": "battery_reserve",
+   "person_at_reserve": {
+    "executed": true,
+    "speed": 30,
+    "reason": null
+   },
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.002,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.014,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.015,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.8
+  },
+  {
+   "start": [
+    14.5,
+    4.5,
+    30
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 8.79,
+   "steps": 14,
+   "wall_s": 0.7
+  },
+  {
+   "start": [
+    14.5,
+    4.5,
+    30
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 8.79,
+   "steps": 14,
+   "low_seen_sim_s": null,
+   "fired": {},
+   "wall_s": 0.74
+  },
+  {
+   "start": [
+    14.5,
+    4.5,
+    30
+   ],
+   "arm": "R",
+   "v0": 10.2879,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_reserve: the battery is at reserve -- autonomy is refused, so brain was refused; a person may drive slowly to the charger)",
+   "end_sim_s": 7.48,
+   "steps": 14,
+   "low_seen_sim_s": 1.27,
+   "fired": {
+    "reserve": {
+     "sim_s": 7.48,
+     "pose": [
+      6.1363,
+      1.559
+     ],
+     "how": "at rest",
+     "v_true": 10.138
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "brain_at_reserve": "battery_reserve",
+   "person_at_reserve": {
+    "executed": true,
+    "speed": 30,
+    "reason": null
+   },
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.002,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.004,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.039,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.041,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.85
+  },
+  {
+   "start": [
+    14.5,
+    4.5,
+    70
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 9.69,
+   "steps": 17,
+   "wall_s": 0.75
+  },
+  {
+   "start": [
+    14.5,
+    4.5,
+    70
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 9.69,
+   "steps": 17,
+   "low_seen_sim_s": null,
+   "fired": {},
+   "wall_s": 0.76
+  },
+  {
+   "start": [
+    14.5,
+    4.5,
+    70
+   ],
+   "arm": "R",
+   "v0": 10.2969,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_reserve: the battery is at reserve -- autonomy is refused, so brain was refused; a person may drive slowly to the charger)",
+   "end_sim_s": 7.53,
+   "steps": 18,
+   "low_seen_sim_s": 0.64,
+   "fired": {
+    "reserve": {
+     "sim_s": 7.53,
+     "pose": [
+      5.8408,
+      1.5156
+     ],
+     "how": "at rest",
+     "v_true": 10.146
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "brain_at_reserve": "battery_reserve",
+   "person_at_reserve": {
+    "executed": true,
+    "speed": 30,
+    "reason": null
+   },
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.002,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.004,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.006,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.006,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.96
+  },
+  {
+   "start": [
+    14.5,
+    2.5,
+    -65
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "blocked",
+   "end_reason": "FORWARD refused 5 times in a row by the safety layer, 3 times over -- the way ahead is obstructed. Going around it is route planning (nav2, PLAN-ros-alignment.md R6)",
+   "end_sim_s": 66.4,
+   "steps": 20,
+   "wall_s": 0.86
+  },
+  {
+   "start": [
+    14.5,
+    2.5,
+    -65
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "out_of_budget",
+   "end_reason": "battery at 10.48 V, under the 10.5 V floor 2 readings in a row",
+   "end_sim_s": 26.1,
+   "steps": 8,
+   "low_seen_sim_s": 26.1,
+   "fired": {},
+   "wall_s": 0.48
+  },
+  {
+   "start": [
+    14.5,
+    2.5,
+    -65
+   ],
+   "arm": "R",
+   "v0": 10.864,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_poweroff: the robot is powering off: the battery is spent -- nothing may drive)",
+   "end_sim_s": 64.9,
+   "steps": 14,
+   "low_seen_sim_s": 19.8,
+   "fired": {
+    "reserve": {
+     "sim_s": 36.2,
+     "pose": [
+      4.1626,
+      0.6802
+     ],
+     "how": "at rest",
+     "v_true": 10.14
+    },
+    "poweroff": {
+     "sim_s": 44.6,
+     "pose": [
+      4.1626,
+      0.6802
+     ],
+     "how": "at rest",
+     "v_true": 9.972
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.002,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.004,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.018,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.022,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.71
+  },
+  {
+   "start": [
+    14.5,
+    2.5,
+    -25
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "blocked",
+   "end_reason": "FORWARD refused 5 times in a row by the safety layer, 3 times over -- the way ahead is obstructed. Going around it is route planning (nav2, PLAN-ros-alignment.md R6)",
+   "end_sim_s": 66.2,
+   "steps": 19,
+   "wall_s": 0.84
+  },
+  {
+   "start": [
+    14.5,
+    2.5,
+    -25
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "out_of_budget",
+   "end_reason": "battery at 10.47 V, under the 10.5 V floor 2 readings in a row",
+   "end_sim_s": 26.6,
+   "steps": 7,
+   "low_seen_sim_s": 26.6,
+   "fired": {},
+   "wall_s": 0.44
+  },
+  {
+   "start": [
+    14.5,
+    2.5,
+    -25
+   ],
+   "arm": "R",
+   "v0": 10.862,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_poweroff: the robot is powering off: the battery is spent -- nothing may drive)",
+   "end_sim_s": 64.7,
+   "steps": 13,
+   "low_seen_sim_s": 19.6,
+   "fired": {
+    "reserve": {
+     "sim_s": 36.0,
+     "pose": [
+      4.1626,
+      0.6802
+     ],
+     "how": "at rest",
+     "v_true": 10.142
+    },
+    "poweroff": {
+     "sim_s": 44.4,
+     "pose": [
+      4.1626,
+      0.6802
+     ],
+     "how": "at rest",
+     "v_true": 9.974
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.001,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.018,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.022,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.69
+  },
+  {
+   "start": [
+    14.5,
+    2.5,
+    30
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "blocked",
+   "end_reason": "FORWARD refused 5 times in a row by the safety layer, 3 times over -- the way ahead is obstructed. Going around it is route planning (nav2, PLAN-ros-alignment.md R6)",
+   "end_sim_s": 66.2,
+   "steps": 19,
+   "wall_s": 0.84
+  },
+  {
+   "start": [
+    14.5,
+    2.5,
+    30
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "out_of_budget",
+   "end_reason": "battery at 10.47 V, under the 10.5 V floor 2 readings in a row",
+   "end_sim_s": 26.6,
+   "steps": 7,
+   "low_seen_sim_s": 26.6,
+   "fired": {},
+   "wall_s": 0.43
+  },
+  {
+   "start": [
+    14.5,
+    2.5,
+    30
+   ],
+   "arm": "R",
+   "v0": 10.862,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_poweroff: the robot is powering off: the battery is spent -- nothing may drive)",
+   "end_sim_s": 64.7,
+   "steps": 13,
+   "low_seen_sim_s": 19.6,
+   "fired": {
+    "reserve": {
+     "sim_s": 36.0,
+     "pose": [
+      4.1626,
+      0.6802
+     ],
+     "how": "at rest",
+     "v_true": 10.142
+    },
+    "poweroff": {
+     "sim_s": 44.4,
+     "pose": [
+      4.1626,
+      0.6802
+     ],
+     "how": "at rest",
+     "v_true": 9.974
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.002,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.004,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.018,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.022,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.67
+  },
+  {
+   "start": [
+    14.5,
+    2.5,
+    70
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "blocked",
+   "end_reason": "FORWARD refused 5 times in a row by the safety layer, 3 times over -- the way ahead is obstructed. Going around it is route planning (nav2, PLAN-ros-alignment.md R6)",
+   "end_sim_s": 67.46,
+   "steps": 25,
+   "wall_s": 0.96
+  },
+  {
+   "start": [
+    14.5,
+    2.5,
+    70
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "out_of_budget",
+   "end_reason": "battery at 10.47 V, under the 10.5 V floor 2 readings in a row",
+   "end_sim_s": 26.46,
+   "steps": 13,
+   "low_seen_sim_s": 26.46,
+   "fired": {},
+   "wall_s": 0.59
+  },
+  {
+   "start": [
+    14.5,
+    2.5,
+    70
+   ],
+   "arm": "R",
+   "v0": 10.8746,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_poweroff: the robot is powering off: the battery is spent -- nothing may drive)",
+   "end_sim_s": 65.96,
+   "steps": 19,
+   "low_seen_sim_s": 20.16,
+   "fired": {
+    "reserve": {
+     "sim_s": 36.56,
+     "pose": [
+      4.1626,
+      0.6802
+     ],
+     "how": "at rest",
+     "v_true": 10.143
+    },
+    "poweroff": {
+     "sim_s": 44.96,
+     "pose": [
+      4.1626,
+      0.6802
+     ],
+     "how": "at rest",
+     "v_true": 9.975
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.001,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.043,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.051,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.85
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -180
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 10.22,
+   "steps": 15,
+   "wall_s": 0.77
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -180
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 10.22,
+   "steps": 15,
+   "low_seen_sim_s": null,
+   "fired": {},
+   "wall_s": 0.75
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -180
+   ],
+   "arm": "R",
+   "v0": 10.3022,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_reserve: the battery is at reserve -- autonomy is refused, so brain was refused; a person may drive slowly to the charger)",
+   "end_sim_s": 8.05,
+   "steps": 16,
+   "low_seen_sim_s": 0.64,
+   "fired": {
+    "reserve": {
+     "sim_s": 8.05,
+     "pose": [
+      5.8411,
+      1.5291
+     ],
+     "how": "at rest",
+     "v_true": 10.141
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "brain_at_reserve": "battery_reserve",
+   "person_at_reserve": {
+    "executed": true,
+    "speed": 30,
+    "reason": null
+   },
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.002,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.004,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.016,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.016,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.92
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -175
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 10.33,
+   "steps": 16,
+   "wall_s": 0.82
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -175
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 10.33,
+   "steps": 16,
+   "low_seen_sim_s": null,
+   "fired": {},
+   "wall_s": 0.82
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -175
+   ],
+   "arm": "R",
+   "v0": 10.3033,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_reserve: the battery is at reserve -- autonomy is refused, so brain was refused; a person may drive slowly to the charger)",
+   "end_sim_s": 8.16,
+   "steps": 17,
+   "low_seen_sim_s": 0.64,
+   "fired": {
+    "reserve": {
+     "sim_s": 8.16,
+     "pose": [
+      5.8411,
+      1.5291
+     ],
+     "how": "at rest",
+     "v_true": 10.14
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "brain_at_reserve": "battery_reserve",
+   "person_at_reserve": {
+    "executed": true,
+    "speed": 30,
+    "reason": null
+   },
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.002,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.004,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.04,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.041,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.96
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -170
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 10.34,
+   "steps": 16,
+   "wall_s": 0.83
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -170
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 10.34,
+   "steps": 16,
+   "low_seen_sim_s": null,
+   "fired": {},
+   "wall_s": 0.77
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -170
+   ],
+   "arm": "R",
+   "v0": 10.3034,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_reserve: the battery is at reserve -- autonomy is refused, so brain was refused; a person may drive slowly to the charger)",
+   "end_sim_s": 8.18,
+   "steps": 17,
+   "low_seen_sim_s": 0.64,
+   "fired": {
+    "reserve": {
+     "sim_s": 8.18,
+     "pose": [
+      5.8411,
+      1.5291
+     ],
+     "how": "at rest",
+     "v_true": 10.14
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "brain_at_reserve": "battery_reserve",
+   "person_at_reserve": {
+    "executed": true,
+    "speed": 30,
+    "reason": null
+   },
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.002,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.004,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.014,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.015,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.93
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -165
+   ],
+   "arm": "N",
+   "v0": null,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 10.42,
+   "steps": 17,
+   "wall_s": 0.85
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -165
+   ],
+   "arm": "L",
+   "v0": 11.0,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen searched. Found.",
+   "end_sim_s": 10.42,
+   "steps": 17,
+   "low_seen_sim_s": null,
+   "fired": {},
+   "wall_s": 0.88
+  },
+  {
+   "start": [
+    13.5,
+    4.5,
+    -165
+   ],
+   "arm": "R",
+   "v0": 10.3042,
+   "outcome": "out_of_budget",
+   "end_reason": "battery: the robot server refused autonomy (battery_reserve: the battery is at reserve -- autonomy is refused, so brain was refused; a person may drive slowly to the charger)",
+   "end_sim_s": 8.01,
+   "steps": 16,
+   "low_seen_sim_s": 0.64,
+   "fired": {
+    "reserve": {
+     "sim_s": 8.01,
+     "pose": [
+      5.8439,
+      1.4978
+     ],
+     "how": "at rest",
+     "v_true": 10.144
+    }
+   },
+   "autonomous_motion_after_reserve_m": 0.0,
+   "brain_at_reserve": "battery_reserve",
+   "person_at_reserve": {
+    "executed": true,
+    "speed": 30,
+    "reason": null
+   },
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 0.002,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 0.003,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 0.004,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 0.014,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 0.015,
+     "rc": 0
+    }
+   ],
+   "steps_log": [
+    "brain",
+    "ros",
+    "vlm",
+    "poweroff"
+   ],
+   "poweroff_calls": 1,
+   "person_at_poweroff": "battery_poweroff",
+   "wall_s": 0.86
+  }
+ ],
+ "sag": [
+  {
+   "refresh_s": 10.0,
+   "drain_v_per_s": 0.0,
+   "sags": 20,
+   "readings_inside_a_sag": 0,
+   "end_v_true": 11.0,
+   "level": "ok",
+   "checks": 0,
+   "cleared": 0,
+   "fired": false
+  },
+  {
+   "refresh_s": 0.0,
+   "drain_v_per_s": 0.0,
+   "sags": 20,
+   "readings_inside_a_sag": 60,
+   "end_v_true": 11.0,
+   "level": "ok",
+   "checks": 0,
+   "cleared": 0,
+   "fired": false
+  },
+  {
+   "refresh_s": 0.0,
+   "drain_v_per_s": 0.002,
+   "sags": 20,
+   "readings_inside_a_sag": 58,
+   "end_v_true": 10.84,
+   "level": "ok",
+   "checks": 4,
+   "cleared": 4,
+   "fired": false
+  }
+ ]
+}

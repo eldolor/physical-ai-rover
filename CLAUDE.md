@@ -1,4 +1,4 @@
-# vision-picar
+# Physical AI Autonomous Rover (code name vision-picar)
 
 Orientation for a Claude Code session; Claude Code loads this file
 automatically. It states what is true now. Every per-phase record lives in
@@ -786,14 +786,49 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   rejected and explore failed that place (3.50.D4-b). `/health` `nav2`.
   Live: 0 of 5 starts rejected (`dev` 1 of 5), an explore mission `found`.
   Open: a nav2 that never comes up holds explore to its time limit.
-  **3.127 (merged 2026-10-31):** the robot server refuses a held goal
-  `nav2_starting` (nav2 inactive at most 60 s) or `slam_not_ready`
-  (`starting`/`checking`/`remapping`), still retryable; a map tap shows it
-  as information, not an error. The 60 s is a guess from the bridge's
-  body (a crash reads as "starting, or restarting" for a minute); an
-  explicit `hold` field from the bridge is the fix (the user's call). Also
-  the survey row shows `source_error`. Twin not deployed yet;
-  `vision-picar-ros:latest` predates 3.105.
+  **3.127 (merged 2026-10-31, deployed):** the robot server refuses a held
+  goal `nav2_starting` or `slam_not_ready`, still retryable; a map tap
+  shows it as information, not an error. Also the survey row shows
+  `source_error`. **3.133 (merged 2026-11-01): the bridge names the hold
+  itself** -- every 503 goal refusal carries `hold` (`nav2_starting`,
+  `slam_not_ready` or null), and `bridge_faults.hold_reason()` reads it
+  instead of 3.127's guess from the body (60 s of `inactive_s`):
+  * `nav2_starting` only until the lifecycle manager's first reply (a raised
+    call is not one);
+  * `slam_not_ready` for `checking`/`remapping`, and for `starting`;
+  * a start's one ceiling is `START_HOLD_MAX_S` (300 s from the bridge's
+    start), applied to nav2 and to SLAM `starting`;
+  * so a crash, a reset, a failed bring-up or SLAM `failed` is
+    `ros_unavailable`;
+  * a bridge with no `hold` (an image from before 3.133) reads
+    `ros_unavailable` (the deliberate fallback, wording only);
+  * names pinned across the wall by `tests/test_bridge_hold.py`.
+
+  **Live check (3.133.C, 2026-10-31): criterion 8 FAILED as written;
+  its re-run (3.133.D, 2026-11-01) MET it.** `vision-picar-ros:latest` was
+  rebuilt from `dev` `c40979ee` (its bridge still `dev`'s). In 3 + 3 cold
+  starts every refusal between SLAM ready and nav2 active (~1 s) read
+  `nav2_starting`, retryable, with 0 `ros_unavailable`, and nav2 never
+  answered not-active before active; explore waited on `nav2_starting` and
+  ended `found` with 0 contacts both times. The first run's goals (3.105's
+  point, outside a cold start's first map) succeeded 0 of 3; under
+  amendment 1 (a point 0.9 m east of the dock, known free on the first map)
+  3 of 3 succeeded. **3.134 (merged 2026-11-01):** the twin's Engineer
+  toast for `nav2_starting` reads "(still starting up)", no longer "(starting,
+  or restarting)"; pinned by `tests/test_twin_strings.py`. The twin is NOT
+  deployed with it yet (the user's go).
+* **The battery ladder (3.137.A), merged 2026-11-01** (B, C, E open; D waits
+  on the Rover). The robot server decides on the board's `v`
+  (`robot/battery_ladder.py`, `battery:` in `config/robot.yaml`; levels
+  placeholders until E): Low 10.5 V (no mission starts), Reserve 10.2 V
+  (latched; autonomy refused `battery_reserve`, a person's D-pad at speed 30,
+  goals ended and refused), Power-off 10.0 V or 120 s at Reserve (everyone
+  refused `battery_poweroff`; `shutdown_steps` in order, then `poweroff_cmd`
+  once -- a logged stub except `mode: hardware` with a real board). Two
+  distinct samples per level; one read while driving is read again at rest
+  (`battery_check`). Criterion 1a FAILED as written (Reserve 2-3 s after the
+  crossing, the re-read included; kept by the user), 1b-1d and 2 met, live
+  run met. Sim pack: `sim/battery.py` (`SIM_BATTERY_*`).
 * **Older review bugs (3.64), merged 2026-10-09, deployed 2026-10-10.** Ten bugs
   from the reviewer comparison still live on `dev`, fixed red-first: the
   twin's guidance loop after Stop, a hidden page and an outage (A2, A4,
@@ -997,8 +1032,10 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   `desktop_lock.step_aside()` between steps (the goal-learn PPO loops do);
   the nightly waits in the queue for the exclusive lock, SKIPPED (exit 0, no
   email) after 2 h of a busy desktop. The nightly runs on the Mac only.
-* **A staged UX redesign (3.132), Stages 0-1 merged 2026-10-31; Stages 2-5
-  open; the twin NOT yet deployed with Stage 1** (the user, 2026-10-31: twin first, the two consoles merged into
+* **A staged UX redesign (3.132), Stages 0-1, 2A and 4 merged 2026-10-31/11-01;
+  2B, 3 and 5 open; the twin deployed with Stages 1-2A from `dev` `4ee9f4bd`
+  on 2026-11-01; Stage 4 (the Lab console) deployed from `dev` `74c58cc7`
+  on 2026-11-01, walks Lambda first** (the user, 2026-10-31: twin first, the two consoles merged into
   one, vanilla JS, no build step). Audiences:
   * A, primary: anyone at home with the Rover, using the twin's operator
     mode;
@@ -1036,7 +1073,42 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   * A new colour goes in `ui.css` as a token. `sync.sh` must also publish
     `ui.css` and `twin.css` (both are in `assets.json`).
 
+  **Stage 2A (the words and Engineer mode):**
+  * Settings' "Show developer readouts" is now **Engineer mode** (same
+    `vp_debug_readouts` setting). Off, the default, the twin speaks to a
+    person at home: the brain is "the Autopilot", and endings, outcomes,
+    drivers and connection states are in plain words. `.eng-only` material
+    (policies, drills, tier rows, logs, raw readouts, setup recipes) is
+    hidden; `.op-only` wording sits beside it.
+  * Every toast's words are in `web-twin/strings.js`, in two voices; the
+    engineer voice is the old wording. `t(key, vars)` fills placeholders,
+    and server text enters only through one.
+  * M5 jargon is 0 on all six operator states (was up to 19), with nothing
+    else moved.
+  * `tests/test_ui.py` `open_twin()` opens in Engineer mode, the view the
+    legacy suite pins. Operator tests pass `engineer=False`.
+  * Operator mode never starts a drill, and it says a saved paid policy's
+    cost beside Start.
+  * Next, 2B (the `app.js` module split):
+    `docs/handoffs/HANDOFF-2026-11-01-3.132-2B.md`.
+
   Run as 3.130 until a numbering collision (3.130 is fast-map-work).
+  **Stage 4 (one Lab console):**
+  * The walks and metrics consoles are one page, `control/lab.html`,
+    with Walks and Metrics tabs. It is published at `/admin`, `/metrics`
+    and `/lab`, and each opens its own tab. There is one secret for both.
+    The logic is in `lab.js`, `admin.js` and `metrics.js`, and `lab.css`
+    uses tokens only.
+  * Nothing is scored on opening (M6 0, was 1). Score, Re-score,
+    "Score them" and Replay each confirm first, naming the paid calls and
+    an estimated cost. The cost comes from the free
+    `GET /recording/walks/{walk}/estimate`, priced by
+    `control/admin_prices.py` at this account's billed Bedrock rates. A
+    model with no listed price shows calls only.
+  * M2, M2L and M3 are 0 on all five console states. Taps: A1 1, A2 2
+    (the confirm), A3 2, A4 1.
+  * Deployed 2026-11-01. In a later deploy, still put the walks Lambda
+    before the page.
 * **The map is sent only when it changed (3.123), merged 2026-10-30 with
   criteria 2-3 failed (the user's call).** `/world/map` carries an ETag
   (the server's start token, `map_id`, `map_version`); `RemoteWorld`
@@ -1199,6 +1271,11 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
     protocol and baud, the 10 Hz rate, a taped wall, and the mounting yaw.
   * Run a 15 W stress test with motors. It decides the separate Jetson
     battery (`JETSON-BOM.md` 9.5).
+  * On the charger (3.137.D): the UPS runs the full stack with no dip at
+    plug and unplug, and the pack's net current says whether it charges
+    while running. The battery ladder (3.137: low 10.5 V, reserve, a clean
+    power-off at ~10.0 V) is not built yet; build it before running on
+    battery unattended.
   * Measure every `[PLACEHOLDER]` in the xacro, including `track_scrub`.
   * B5: systemd units so everything starts at boot.
   * 3.81.F: `MemAvailable` over a full tiered mission with VE resident and
@@ -1250,6 +1327,11 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   (their triggers are written). Decided 2026-10-24: fix 7 (3.98), 3.50.D4's re-map trigger
   (scan contradiction, beside entered-unknown) and fix 11 (3.97); the
   spec-review handoff's 3a-3c were decided 2026-10-05.
+* **Claims on origin (3.139), merged 2026-11-02.** `claim <step>` pushes
+  `claim/<step>` to origin create-only before the local file; ownership is
+  the session; the commit, edit and push hooks refuse unclaimed section
+  work; `new` claims its section. A session holding a claim from before:
+  re-run `claim <step>`. `PARALLEL-SESSIONS.md` rule 12.
 * **Not built:** `brain/planner.py`, room-level planning over
   `MissionMemory`. S7 (chaos and soak). A Stage 1 re-run of a vision
   mission against the lit renderer.
@@ -1294,6 +1376,11 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
     `vision-picar-ros:latest` from a branch. Since 3.107 ports never wrap
     (3.106 -> 10060); ROS domains still do past 3.99, and `env` prints a
     WARNING comment naming an active section on yours.
+  * **Claim first, on origin (3.139):** `python tools/plan_section.py claim
+    <step>` pushes `claim/<step>` to origin before anything else; if it is
+    refused, stop and report. Every brief and subagent starts with it; the
+    hooks refuse unclaimed commits, edits and pushes. `release` when done.
+    `PICAR_CLAIM_BYPASS=1` is the user's alone. `PARALLEL-SESSIONS.md` rule 12.
   * `overlap` before editing a shared file.
   * `ready` (rebase check + full suite) before pushing to `dev`; a
     pre-push hook enforces it. Since 3.121 (merged 2026-10-30) the fast

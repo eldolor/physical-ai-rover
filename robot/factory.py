@@ -169,7 +169,15 @@ def _backend(config: dict) -> RobotInterface:
         if os.environ.get("SIM_ODOM_DRIFT"):
             left, right = os.environ["SIM_ODOM_DRIFT"].split(",")
             scale = (float(left), float(right))
-        return MockRobot(world, realtime=realtime, sensor=sensor, encoder_scale=scale)
+        # 3.137: a simulated pack only when a run asks for one (SIM_BATTERY_V),
+        # on the simulator's own clock, so the battery ladder runs in process.
+        # (Known limit: a house swap, 3.72, restarts the simulator's clock,
+        # and with it the drain.)
+        body = MockRobot(world, realtime=realtime, sensor=sensor, encoder_scale=scale)
+        if os.environ.get("SIM_BATTERY_V"):
+            from sim.battery import SimBattery
+            body.battery = SimBattery.from_env(clock=lambda: body.world.sim_time)
+        return body
 
     if mode == "teleop":
         from sim.teleop_robot import TeleopRobot, DEFAULT_STALL_TIMEOUT_S

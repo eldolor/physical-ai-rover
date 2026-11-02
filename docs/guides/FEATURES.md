@@ -639,6 +639,16 @@ tested** in `service/vision_analyze/`; nothing in the twin calls them.
 
 ## 3. Sim tab -- the simulated robot, and the brain that drives it
 
+**Two views (3.132 Stage 2A).** By default the page speaks to a person at
+home: the brain is "the Autopilot", outcomes and who is driving are said in
+plain words ("Stopped -- you pressed Stop", "the autopilot"), and the
+engineering detail is hidden. Settings' **Engineer mode** shows it all, in
+the words this section uses: the policies, drills, tier rows, step, last
+action, vision fails, turns, why, watchdog and last refusal, the brain log,
+the raw depth, odometry, house and frame-source readouts, Random house,
+and Guide's model, prompt, frame-rate and frame-vote pickers. Every toast's
+words live in `web-twin/strings.js`, in both voices.
+
 Everything here talks to `robot/server.py` or `control/brain_server.py` over
 HTTP. **The page knows nothing about the house**: no copy of the layout, no
 room boundaries, no compass tables, no renderer -- every panel reads a route
@@ -860,9 +870,14 @@ any mission.
 - **Share setup** -- a QR code encoding all of the above (URLs + secrets)
   so a second phone can be configured with no typing. Explicitly flagged
   in the UI: anyone who scans or photographs it gets the same access.
-- **Developer** -- a "show developer readouts" switch (exact API call
-  counts, the pan-speed meter) for anyone debugging the loop rather than
-  just using it.
+- **Engineering** -- the **Engineer mode** switch (3.132 Stage 2A; it was
+  "show developer readouts", and keeps that setting): shows how the robot
+  works inside -- policies, logs, raw readouts, drills, setup recipes,
+  exact API call counts and the pan-speed meter -- in its engineers' words.
+  Off (the default) is the everyday view, in plain words (section 3).
+  Applies at once, no reload. In operator mode the connection labels read
+  "Robot connection", "Autopilot connection" and "Vision service", and the
+  secret fields "Access code".
 - **Debug / support** -- copies the last 20 unexpected browser-side
   errors plus basic context (URL, device) to the clipboard, for pasting
   into a bug report without live-reproducing the issue.
