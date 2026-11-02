@@ -163,7 +163,22 @@
     "driver.operator": "a person",
     "driver.someone": "someone",
     "driver.nobody": "nobody yet",
-    "driver.lapsed": "nobody right now (last: {driver})"
+    "driver.lapsed": "nobody right now (last: {driver})",
+    "battery.lowTitle": "Battery low",
+    "battery.lowBody": "Charge the robot soon. A new search can't start until it's charged.",
+    "battery.reserveTitle": "Battery reserve: shutting down in {s} s",
+    "battery.reserveNow": "Battery reserve: shutting down now",
+    "battery.reserveBare": "Battery reserve: shutting down soon",
+    "battery.reserveBody": "The autopilot has stopped. You can still drive slowly with the arrows to bring the robot to its charger.",
+    "battery.poweroffTitle": "Powered off: unplug the battery",
+    "battery.poweroffBody": "The robot shut itself down to protect its battery. Unplug the battery now — while it's plugged in, the robot keeps draining it.",
+    "battery.announceLow": "Battery low. Charge the robot soon.",
+    "battery.announceReserve": "Battery reserve. The robot will shut down in {s} seconds.",
+    "battery.announcePoweroff": "Powered off. Unplug the battery.",
+    "battery.detail": "",
+    "battery.checking": "",
+    "battery.noReading": "",
+    "mission.batteryLow": "Couldn't start: the battery is low. Charge the robot first."
   },
   "eng": {
     "explore.alreadyPicked": "Already picked -- explore is on its way",
@@ -277,7 +292,14 @@
     "brain.lostDetail": "{url} stopped answering ({why}) \u2014 retrying every few seconds.",
     "drive.costTiered": "",
     "drive.noModels": " This brain has no perception models installed, so the walk will refuse to start — run pip install -r requirements-perception.txt where the brain runs.",
-    "driver.lapsed": "{driver} (lapsed)"
+    "driver.lapsed": "{driver} (lapsed)",
+    "battery.lowBody": "Under the low level: a mission start is refused battery_low, and a running mission ends out_of_budget at the brain's floor.",
+    "battery.reserveBody": "Reserve latched: autonomy is refused battery_reserve (brain verbs, wheels, brain and ros goals); a person's D-pad runs at speed {speed}.",
+    "battery.poweroffBody": "Power-off latched ({why}): every command is refused battery_poweroff. Steps: {steps}.",
+    "battery.detail": "{v} V \u00b7 low {low} V \u00b7 reserve {reserve} V \u00b7 power-off {poweroff} V{checking}",
+    "battery.checking": " \u00b7 checking {level} at rest",
+    "battery.noReading": "no reading",
+    "mission.batteryLow": "Could not start: {why}"
   }
 } /* END STRINGS */;
 

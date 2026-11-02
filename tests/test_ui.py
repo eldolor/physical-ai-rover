@@ -4231,3 +4231,202 @@ def test_on_the_guide_tab_an_end_state_is_an_outcome_not_a_lost_link(
                                       f"end-state-guide-{outcome}-390.png"))
     assert not errors, errors
     context.close()
+
+
+# ---------- 3.137.B: the battery ladder, shown (criterion 4) ----------
+#
+# The robot server's `GET /battery` names the ladder's level
+# (robot/battery_ladder.py). Here its reply is a route stub per level: what
+# the twin shows for each, in operator mode -- a person at home -- at the
+# phone's width. Each was red on 49197352, the page before 3.137.B (no
+# banner at all). The live drain through the levels is
+# evaluations/battery-3137/twin_live.py.
+
+def _battery_reply(level, v, **ladder):
+    lad = {"level": level, "levels_v": {"low": 10.5, "reserve": 10.2, "poweroff": 10.0},
+           "checking": None, "reserve_s": None, "poweroff_in_s": None, "poweroff_why": None,
+           "samples": 2, "checks": 0, "sags": 0, "v": v, "reserve_speed": 30, "shutdown": [],
+           "poweroff_cmd": "stub"}
+    lad.update(ladder)
+    return {"usable": True, "v": v, "level": level, "ladder": lad}
+
+
+def _route_battery(page, reply):
+    """`reply`: a dict, a function of the seconds since this call, or None
+    (no answer: the robot is off). Call again to swap it."""
+    page.unroute("**/battery")
+    t0 = time.monotonic()
+
+    def handle(route):
+        if reply is None:
+            route.abort()
+            return
+        body = reply(time.monotonic() - t0) if callable(reply) else reply
+        route.fulfill(status=200, content_type="application/json", body=_json(body))
+    page.route("**/battery", handle)
+
+
+def _battery_page(browser, twin_server, reply, *, engineer=False):
+    """The twin with its robot's battery at `reply`, opened as a person
+    opens it: the robot connects on load, and the Guide tab shows."""
+    context = browser.new_context(viewport=PHONE)
+    context.add_init_script(
+        "(() => { try { localStorage.setItem('vp_debug_readouts', '%s'); } catch (e) {} })();"
+        % ("1" if engineer else "0"))
+    page = context.new_page()
+    page.route("**/navigate/models", lambda route: route.fulfill(
+        status=200, content_type="application/json", body=_json(MODELS_REPLY)))
+    _route_battery(page, reply)
+    errors = []
+    page.on("pageerror", lambda e: errors.append(str(e)))
+    page.goto(twin_server, wait_until="networkidle")
+    return page, errors
+
+
+def _battery_shot(page, name):
+    where = os.environ.get("UI_SHOTS")
+    if where:
+        os.makedirs(where, exist_ok=True)
+        page.wait_for_timeout(3600)        # the "Connected" toast leaves first
+        page.screenshot(path=os.path.join(where, name), full_page=False)
+
+
+def _jargon(text):
+    """M5's deny-list (evaluations/ux-3132/measure.py), on the banner."""
+    from tests.test_twin_strings import jargon_hits
+    return jargon_hits(text)
+
+
+def test_a_low_battery_is_shown_on_every_tab(browser, twin_server):
+    """3.137.B B1, Low: "Battery low", without a tap, on Guide and on Sim."""
+    page, errors = _battery_page(browser, twin_server, _battery_reply("low", 10.43))
+    banner = page.locator("#battery-banner")
+    sync_api.expect(banner).to_be_visible(timeout=6000)
+    sync_api.expect(page.locator("#battery-title")).to_have_text("Battery low")
+    sync_api.expect(page.locator("#battery-body")).to_contain_text("Charge the robot")
+    assert not _jargon(banner.inner_text()), banner.inner_text()
+    assert "10.43" not in banner.inner_text()      # volts are Engineer mode's
+    _battery_shot(page, "battery-low-390.png")
+    page.click('.tab-btn[data-tab="sim"]')
+    sync_api.expect(banner).to_be_visible()
+    # Charged again: the same server answers ok, and the banner goes.
+    _route_battery(page, _battery_reply("ok", 11.6))
+    sync_api.expect(banner).to_be_hidden(timeout=7000)
+    assert not errors, errors
+    page.context.close()
+
+
+def test_a_reserve_battery_counts_down_to_the_power_off(browser, twin_server):
+    """3.137.B B1, Reserve: "Battery reserve: shutting down in N s", N the
+    server's countdown, falling between reads; the way to the charger said."""
+    page, errors = _battery_page(browser, twin_server, lambda dt: _battery_reply(
+        "reserve", 10.18, reserve_s=round(32.6 + dt, 1), poweroff_in_s=round(87.4 - dt, 1)))
+    title = page.locator("#battery-title")
+    sync_api.expect(title).to_contain_text("Battery reserve: shutting down in", timeout=6000)
+    first = int(re.search(r"in (\d+) s", title.inner_text()).group(1))
+    assert 84 <= first <= 88, first
+    page.wait_for_timeout(2600)
+    later = int(re.search(r"in (\d+) s", title.inner_text()).group(1))
+    assert later <= first - 2, (first, later)
+    banner = page.locator("#battery-banner")
+    assert banner.get_attribute("data-level") == "reserve"
+    sync_api.expect(page.locator("#battery-body")).to_contain_text("charger")
+    assert not _jargon(banner.inner_text()), banner.inner_text()
+    # Announced once a level, never each second.
+    sync_api.expect(page.locator("#battery-announce")).to_contain_text("Battery reserve")
+    _battery_shot(page, "battery-reserve-390.png")
+    assert not errors, errors
+    page.context.close()
+
+
+def test_the_power_off_is_the_last_word_even_when_the_robot_goes_quiet(browser, twin_server):
+    """3.137.B B1 and B2, Power-off: "Powered off: unplug the battery", kept
+    when the robot stops answering and after a reload against it; gone only
+    when the same robot answers another level."""
+    page, errors = _battery_page(browser, twin_server, _battery_reply(
+        "poweroff", 9.98, reserve_s=41.0, poweroff_why="at rest",
+        shutdown=[{"step": "wheels", "t_s": 0.0, "rc": 0}, {"step": "sync", "t_s": 0.1, "rc": 0}]))
+    title = page.locator("#battery-title")
+    sync_api.expect(title).to_have_text("Powered off: unplug the battery", timeout=6000)
+    banner = page.locator("#battery-banner")
+    assert banner.get_attribute("data-level") == "poweroff"
+    assert not _jargon(banner.inner_text()), banner.inner_text()
+    _battery_shot(page, "battery-poweroff-390.png")
+    # The board powers off: nothing answers.
+    _route_battery(page, None)
+    page.wait_for_timeout(2500)
+    sync_api.expect(title).to_have_text("Powered off: unplug the battery")
+    page.reload(wait_until="networkidle")
+    sync_api.expect(title).to_have_text("Powered off: unplug the battery", timeout=3000)
+    page.wait_for_timeout(2000)
+    sync_api.expect(banner).to_be_visible()
+    # Booted again, on its charger.
+    _route_battery(page, _battery_reply("ok", 12.4))
+    sync_api.expect(banner).to_be_hidden(timeout=7000)
+    assert not errors, errors
+    page.context.close()
+
+
+def test_a_level_no_longer_known_is_not_shown(browser, twin_server):
+    """A guard on B2: only Power-off outlives the robot's silence. A Low the
+    robot no longer answers about is not claimed."""
+    page, errors = _battery_page(browser, twin_server, _battery_reply("low", 10.43))
+    banner = page.locator("#battery-banner")
+    sync_api.expect(banner).to_be_visible(timeout=6000)
+    _route_battery(page, None)
+    sync_api.expect(banner).to_be_hidden(timeout=3000)
+    assert not errors, errors
+    page.context.close()
+
+
+def test_engineer_mode_adds_the_volts_and_the_steps(browser, twin_server):
+    """3.137.B B3: the same banner, plus the reading, the levels and (at
+    Power-off) why and the steps run."""
+    page, errors = _battery_page(browser, twin_server, _battery_reply(
+        "reserve", 10.18, reserve_s=10.0, poweroff_in_s=110.0), engineer=True)
+    detail = page.locator("#battery-detail")
+    sync_api.expect(detail).to_contain_text("10.18 V", timeout=6000)
+    sync_api.expect(detail).to_contain_text("reserve 10.20 V")
+    sync_api.expect(page.locator("#battery-body")).to_contain_text("battery_reserve")
+    _route_battery(page, _battery_reply(
+        "poweroff", 9.98, poweroff_why="at rest",
+        shutdown=[{"step": "wheels", "t_s": 0.0, "rc": 0},
+                  {"step": "poweroff", "t_s": 0.1, "rc": None, "stub": True}]))
+    body = page.locator("#battery-body")
+    sync_api.expect(body).to_contain_text("wheels rc 0, poweroff stub", timeout=3000)
+    sync_api.expect(body).to_contain_text("at rest")
+    # Switched to operator mode, the same banner speaks plainly.
+    page.click("#btn-settings")
+    page.locator("label[for=cfg-debug-readouts]").first.click()
+    sync_api.expect(detail).to_be_hidden()
+    assert "battery_poweroff" not in page.locator("#battery-banner").inner_text()
+    assert not errors, errors
+    page.context.close()
+
+
+def test_a_start_refused_at_low_battery_is_said_plainly(browser, twin_server):
+    """3.137.B B4: the brain's 409 `battery_low: ...` was shown as it came
+    ("Couldn't start: battery_low: the robot server reads ...")."""
+    page, errors = _battery_page(browser, twin_server, _battery_reply("low", 10.43))
+    page.route("**/brain-stub/health", lambda route: route.fulfill(
+        status=200, content_type="application/json", body=_json(TIERED_BRAIN_HEALTH)))
+    page.route("**/brain-stub/mission/status", lambda route: route.fulfill(
+        status=200, content_type="application/json",
+        body=_json({"running": False, "outcome": "idle", "step": 0})))
+    page.route("**/brain-stub/mission/start", lambda route: route.fulfill(
+        status=409, content_type="application/json", body=_json({
+            "detail": "battery_low: the robot server reads the battery at low (10.43 V) -- "
+                      "charge it before a mission"})))
+    page.click("#btn-settings")
+    page.fill("#cfg-brain-url", twin_server + "/brain-stub")
+    page.click("#btn-brain-connect")
+    page.wait_for_timeout(600)
+    page.click('.tab-btn[data-tab="sim"]')
+    page.wait_for_selector("#btn-brain-mission:not([disabled])", timeout=8000)
+    page.click("#btn-brain-mission")
+    toast = page.locator(".toast.err", has_text="battery is low")
+    sync_api.expect(toast).to_have_count(1, timeout=3000)
+    assert not _jargon(toast.inner_text()), toast.inner_text()
+    assert "battery_low" not in toast.inner_text()
+    assert not errors, errors
+    page.context.close()

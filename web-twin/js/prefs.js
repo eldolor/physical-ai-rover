@@ -31,6 +31,9 @@ export const PREF = {
   navigateModelId: "vp_navigate_model_id",
   navigatePromptVariant: "vp_navigate_prompt_variant",
   brainPolicy: "vp_brain_policy",
+  // 3.137.B: the robot server whose battery last read Power-off, so its
+  // "unplug the battery" survives a reload against a robot that is off.
+  batteryPoweroff: "vp_battery_poweroff",
 };
 export function prefGet(key) {
   try { return localStorage.getItem(key); } catch (e) { return null; }

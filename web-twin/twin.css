@@ -33,6 +33,39 @@
    the banner has scrolled behind a tab switch, and a coloured rule
    there reads as "this whole app is the other environment". */
 body.env-flagged .tab-bar { border-top: 2px solid var(--accent-alert); }
+/* 3.137.B: the battery ladder (robot/battery_ladder.py), above every tab.
+   Low warns (the warning colour on the card's edge); Reserve is the alarm
+   colour on the edge; Power-off fills the card with it -- the robot's last
+   word, which must read from across a room. Text stays --text on the card
+   (and --accent-alert-ink on the fill) for contrast in both themes. */
+.battery-banner {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-left: 5px solid var(--accent-warn);
+  color: var(--text);
+  box-shadow: var(--shadow-1);
+}
+.battery-banner[hidden] { display: none; }
+.battery-banner[data-level="reserve"] { border-left-color: var(--accent-alert); }
+.battery-banner[data-level="poweroff"] {
+  background: var(--accent-alert); color: var(--accent-alert-ink);
+  border-color: var(--accent-alert);
+}
+.battery-title {
+  font-size: var(--fs-md); font-weight: 700; line-height: var(--lh-tight);
+  font-variant-numeric: tabular-nums;
+}
+.battery-body { font-size: var(--fs-body); line-height: var(--lh-body); margin-top: var(--space-1); }
+.battery-detail {
+  font-family: var(--mono); font-size: var(--fs-small); line-height: var(--lh-body);
+  color: var(--text-dim); margin-top: var(--space-1); overflow-wrap: anywhere;
+}
+.battery-banner[data-level="poweroff"] .battery-detail { color: inherit; }
+.battery-detail:empty { display: none; }
+
 header { margin-bottom: 12px; }
 header .eyebrow {
   font-family: var(--mono); font-size: var(--fs-small); letter-spacing: 0.08em;

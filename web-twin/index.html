@@ -36,6 +36,17 @@
 
   <div class="env-banner" id="env-banner" role="status" aria-live="polite"></div>
 
+  <!-- 3.137.B: the battery ladder, on every tab. Filled by renderBattery();
+       the countdown ticks in the visible copy, and only a change of level
+       is announced (the sr-only line), so a screen reader is not read a
+       number every second. -->
+  <div class="battery-banner" id="battery-banner" data-level="ok" hidden>
+    <div class="battery-title" id="battery-title"></div>
+    <div class="battery-body" id="battery-body"></div>
+    <div class="battery-detail eng-only" id="battery-detail"></div>
+  </div>
+  <div class="sr-only" id="battery-announce" role="status" aria-live="polite" aria-atomic="true"></div>
+
   <header>
     <div class="header-text">
       <div class="eyebrow">Digital twin &middot; sim mode</div>
