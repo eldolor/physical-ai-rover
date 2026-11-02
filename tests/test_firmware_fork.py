@@ -1,5 +1,6 @@
-# SPDX-License-Identifier: AGPL-3.0-only
+# SPDX-License-Identifier: GPL-3.0-only
 # Copyright (C) 2026 Anshu Gaind
+# GPL-3.0-only: it pins sim/fake_esp32.py's reimplementation of Waveshare's GPL-3.0 firmware.
 """
 tests/test_firmware_fork.py
 

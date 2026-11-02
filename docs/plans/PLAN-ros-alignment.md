@@ -272,6 +272,10 @@ job, on a phone.
 - **Licence tidy-up after 3.132 and 3.50 merge** (2026-11-02, the user):
   apply `licence-headers-twin` (79bdb575) and add SPDX headers to the
   `d5_*.py` files and any other new first-party files without one.
+  Then a header lint (point 5 of the 2026-11-02 review): a test or
+  `spec_lint` rule that flags a tracked first-party source file with no
+  `SPDX-License-Identifier`, warning first, then required (an allowlist for
+  the nav2/slam parameter files and the other skips).
 
 ---
 
