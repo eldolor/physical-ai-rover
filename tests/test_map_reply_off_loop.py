@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.87: `/world/map`'s reply is encoded off the event loop.
 
 The wheel loop (20 Hz) and the watchdog run on the robot server's event

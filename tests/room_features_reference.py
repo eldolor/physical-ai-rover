@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.131: `brain/goal_policy.py`'s `coarse()` and `room_features()` frozen as
 they were on `dev` before 3.131 (9edb50e5), with the helpers they call. The
 new functions -- given this choice's `goal_context()` or not -- must give

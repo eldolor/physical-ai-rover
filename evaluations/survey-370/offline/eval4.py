@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Spacing + a penalty for crossing a boundary of the watershed cut."""
 import pickle, sys, statistics as st
 sys.path.insert(0, sys.argv[1])

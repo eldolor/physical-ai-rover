@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.90 E criterion 14: the brain records every frame the robot received,
 marked perceived or not, and counts what it could not record."""
 

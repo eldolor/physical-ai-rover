@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.118 criterion 1 (slow tier, SLOW_FILES): the fast `segment()` gives
 exactly the frozen copy's answers -- the same room ids, the clearance bit for
 bit, at three neck ratios -- on the six live 0.05 m SLAM maps, the

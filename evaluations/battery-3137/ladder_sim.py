@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.137 criterion 1, in process: the battery ladder through the real path.
 
 `MissionRunner` -> `RemoteRobot` (over ASGI) -> one in-process

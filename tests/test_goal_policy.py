@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.65 phase 2: explore's learned goal choice, behind
 `explore_goal_policy` (default "rooms" since 3.125)."""
 import json

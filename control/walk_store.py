@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Where recorded walks live -- one abstraction, two backends.
 
 This is the same shape as `robot/interface.py`'s `RobotInterface`, and it

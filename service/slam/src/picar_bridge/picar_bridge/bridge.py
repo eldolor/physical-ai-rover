@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """picar_bridge -- the HTTP side of the ROS wall (PLAN-ros-alignment.md R4).
 
 `robot/server.py` may not import rclpy (tests/test_ros_containment.py), and

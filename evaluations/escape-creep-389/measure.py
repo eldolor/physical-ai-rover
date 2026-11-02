@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.89 criteria 1-2: how long a creep verb (speed 5) toward a wall takes on
 the live stack, under `drive: ros` and under the sim's own drive
 (docs/plans/ros-alignment/3.89-escape-creep-timeout.md).

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.78 amendment 5: build the reduced vocabulary Edge-LLM exports with.
 
 Edge-LLM's `tensorrt-edgellm-reduce-vocab` picks the most frequent tokens

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.81.A (docs/plans/ros-alignment/3.81-rover-memory-budget.md): where every
 MB of the board's memory is, with the whole stack and the VLM resident.
 

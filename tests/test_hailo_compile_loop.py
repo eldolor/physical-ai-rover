@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """The Hailo compile loop, exercised without a Hailo and without torch.
 
 `tools/hailo/` answers one question -- can OWLv2 compile to a HEF -- on a

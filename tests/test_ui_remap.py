@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.50.D4b: the twin's "Re-map now" control (the user's option 3, 2026-10-23).
 
 A person asks the bridge to map a reloaded map again from where the robot

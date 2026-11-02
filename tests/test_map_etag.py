@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.123 criterion 1: `/world/map` is sent only when it has changed, and is
 never stale -- a 304 only for the same `map_id` and `map_version`, a changed
 or unusable map always in full, the same bytes as before for a client that

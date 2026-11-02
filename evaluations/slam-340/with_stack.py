@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 ROS_IMAGE=<tag> [SLAM_YAML=path] [NAV_YAML=path] python evaluations/slam-340/with_stack.py HOUSE DRIFT -- cmd ...
 

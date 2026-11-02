@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.46 amendment 9: the namer's memory with the 3.33 headroom stack running.
 # usage: bash mem346.sh <tag> <model.litertlm> <gpu|cpu> [window_s=720]
 # Baseline = mean MemAvailable over the 60 s before the namer starts (stack up,

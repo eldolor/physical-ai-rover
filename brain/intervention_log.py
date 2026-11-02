@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 intervention_log.py -- 3.99: did a person step in, and how often per hour?
 

@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.M: fetch each file with curl (resumable) and check its SHA256.
 cd ~/models-380M
 while read repo fn sha; do

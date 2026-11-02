@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.131 criterion 1's sweep (slow tier, SLOW_FILES): every `room_features()`
 call explore makes under `explore_goal_policy: rooms` in in-process missions
 in the four simulator houses and 20 ProcTHOR houses -- each handed the

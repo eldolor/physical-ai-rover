@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-3103/pool_run.py -- 3.103.C: F-pool (`pool.py`) on
 F-lean's 18 facts, by 3.96's own stages (`goal-learn-396/train.py`) with the

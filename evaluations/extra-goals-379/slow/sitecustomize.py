@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.79 arm S: slow explore's goal choice back to its pre-3.77 laptop time.
 
 Loaded by the brain process when this directory is on PYTHONPATH (see

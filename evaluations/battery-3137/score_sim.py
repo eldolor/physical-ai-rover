@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Score results-sim.json against 3.137 criterion 1 (bars in the plan)."""
 import json
 import sys

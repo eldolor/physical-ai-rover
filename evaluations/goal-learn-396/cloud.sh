@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # evaluations/goal-learn-396/cloud.sh -- 3.96 B2-B4 on one spot CPU instance
 # (the user, 2026-10-23: spot, checkpoints, and tear everything down after).
 # Wraps tools/gpu/ec2.sh with its own name, prefix, type and spot flag.

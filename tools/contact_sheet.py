@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Contact sheets for adjudicating a walk's `labels.json`, by eye.
 
 Kept in the repo on purpose. This had been written ad hoc at least once

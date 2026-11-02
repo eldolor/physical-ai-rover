@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.58 (docs/plans/ros-alignment/3.58-local-identity-decision.md), run L:
 # 3.33's headroom conditions (~/headroom20.sh on the board: the split
 # simulator, the robot server's 20 Hz wheel loop on the fake ESP32, the

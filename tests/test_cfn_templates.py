@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Lint the CloudFormation templates the way the app code is linted.
 
 This exists because of one deploy failure that cost a full build-and-push

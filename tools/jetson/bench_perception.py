@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tools/jetson/bench_perception.py -- the perception tier's per-frame time,
 split into GPU and CPU work. `PLAN-ros-alignment.md` 3.33 criterion 3, and

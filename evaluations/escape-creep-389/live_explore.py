@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.89 criteria 3-4 live: explore missions in home_first_floor under
 `drive: ros` through the brain's HTTP API, each on a fresh stack
 (docs/plans/ros-alignment/3.89-escape-creep-timeout.md).

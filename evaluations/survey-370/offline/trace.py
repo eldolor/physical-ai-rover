@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Record every tick's pose + true room and the final map for survey runs."""
 import json, sys, pickle
 from control.mission_runner import MissionRunner

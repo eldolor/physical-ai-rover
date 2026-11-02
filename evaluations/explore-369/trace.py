@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """evaluations/explore-369/trace.py -- one house's mission, step by step:
 action, detail, pose, and the arrival readout. `python ... trace.py HOUSE`"""
 import json, math, sys

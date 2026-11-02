@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/room-prior-3116/llm_prior.py -- 3.116.C: a room prior asked of
 an LLM, one call per target, cached.

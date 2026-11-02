@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-396/a.py -- 3.96 A: can richer features tell the
 oracle's pick from the others? (criterion 1, amendment 1)

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """A sighting that survives the robot turning -- P7c item 2, P25's repair.
 
 The problem this exists for was found by an operator watching a rig walk,

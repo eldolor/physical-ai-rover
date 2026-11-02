@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.132 Stage 1 criterion 10 (red first): the active "Guide me" / "Robot
 view" button must be readable. On `dev` before Stage 1 it was the accent blue
 on the safe green (`button.active-mode` gives the fill,

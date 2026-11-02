@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.90 A criterion 4: the counted rules keep their time.
 
 `candidate_sighting` (`tier_consecutive_frames`) and arrival

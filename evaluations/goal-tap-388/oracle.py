@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-tap-388/oracle.py -- 3.88 B: a privileged oracle for
 explore's goal choice, and one mission run under a chooser.

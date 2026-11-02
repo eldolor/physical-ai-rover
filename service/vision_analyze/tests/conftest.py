@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 Makes app.py/vision_core.py/rooms_core.py importable as the flat modules
 they are (`from vision_core import ...`, matching the Dockerfile's

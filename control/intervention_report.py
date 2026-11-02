@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 intervention_report.py -- 3.99: interventions per hour, from the brain's
 intervention log (`brain/intervention_log.py`).

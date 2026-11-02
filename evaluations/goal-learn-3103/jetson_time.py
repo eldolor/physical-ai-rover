@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-3103/jetson_time.py -- 3.103 criterion 5's Jetson half
 (the user, 2026-10-26: "everything running on the board"): every learned

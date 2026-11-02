@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Export OWLv2's image tower + detection heads to ONNX, for the Hailo DFC.
 
 `PLAN-onboard-perception.md` P5 ends on one unrun test: *can OWLv2 compile

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """brain_view -- what ROS tools are shown of the brain (2026-09-27).
 
 The brain lives outside ROS on purpose (tests/test_ros_containment.py), so

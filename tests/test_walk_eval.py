@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 Tests for control/walk_eval.py -- the recorded-walk scorecard.
 

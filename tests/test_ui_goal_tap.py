@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.88 A, criterion 4: a person picks explore's next goal on the Sim tab.
 
 While the brain's explore asks (`status.explore.ask`), its candidates are

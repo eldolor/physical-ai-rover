@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.K, on the rented export host (g6.2xlarge, DL base AMI, Ubuntu 22.04):
 # RoboBrain2.0-3B -> Edge-LLM v0.9.1 ONNX, as 3.78 made VE. RT: INT4 AWQ LLM,
 # full vocabulary. RVE: the same checkpoint, reduced vocabulary + FP8 embedding.

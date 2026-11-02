@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.46 amendment 11: a vision model searching for one named object.
 
     python -m tools.target_vlm --model gemma-4-E2B-it.litertlm \\

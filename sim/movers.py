@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 movers.py -- people and pets in the simulator (PLAN-ros-alignment.md 3.30).
 

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.126 criterion 2: the wall time of an unchanged RosWorld.get_map()
 against the bridge's real HTTP handler (stubbed ROS), a 400 x 400 grid.
 Run from the checkout under test (dev or the branch):

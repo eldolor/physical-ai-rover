@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.76 K5.3's live tour: 3.85's two 13-room batches and R6, re-run on `dev`
 with a mission's keepout marks cleared at its end
 (docs/plans/ros-alignment/3.76-legacy-review.md, row K5.3).

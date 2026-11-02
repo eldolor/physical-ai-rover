@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.70 M5, live half: 3.31 criterion 1 on an unsurveyed house
 (docs/plans/ros-alignment/3.70-survey-and-mission-ends.md, M5).
 

@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.R: the bench's "server": native_server.py under $NSRV_PY (default the
 # repo's .venv), llama-server's argv passed through (only -m and --port read).
 HERE="$(cd "$(dirname "$0")" && pwd)"

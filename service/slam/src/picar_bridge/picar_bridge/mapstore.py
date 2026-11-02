@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """mapstore -- the robot's saved maps on disk, as plain Python (3.50.D).
 
 slam_toolbox's serialize_map writes `<prefix>.posegraph` and `<prefix>.data`

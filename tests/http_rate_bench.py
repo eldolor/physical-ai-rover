@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """tests/http_rate_bench.py -- runs INSIDE the ROS container (copied in by
 tests/test_http_rate_live.py), not by pytest directly.
 

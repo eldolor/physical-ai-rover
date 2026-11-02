@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.R: one Mac row (amendment 1): identity (arm $3, native $4) then
 # steering, both against native_server.py on this machine. $1 name, $2 spec,
 # NSRV_PY the venv's python.

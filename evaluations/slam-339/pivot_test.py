@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 python -m evaluations.slam-339.pivot_test   (run as a file: python evaluations/slam-339/pivot_test.py [rates] [--slam yaml])
 

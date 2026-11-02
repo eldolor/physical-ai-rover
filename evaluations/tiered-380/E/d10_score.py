@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.80.E, D10's two offline parts, free: on 3.48's pinned 299 frames, does
 asking for the box (`box: true`, the frame question) change VE's score or
 decision, and where perception also detects the target (P >= 0.8), how far

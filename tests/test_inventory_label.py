@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/test_inventory_label.py -- tools/inventory_label.py's logic (3.46
 amendment 3), on fakes: no model, no cloud call, no recordings.

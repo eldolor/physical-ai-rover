@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.41 Part A's verdict, pinned against the recorded Jetson runs
 (`evaluations/trt-341/`). No TensorRT needed: this reads JSON."""
 

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """PLAN-ros-alignment.md 3.44 -- the stop distance follows speed.
 
 A straight move ASKED at `CREEP_M_S` or slower keeps `CREEP_MARGIN_CM`

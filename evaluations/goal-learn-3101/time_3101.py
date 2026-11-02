@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-3101/time_3101.py -- 3.101, reported: one whole
 goal choice under F-large and under F-rich on 3.96's benchmark (3.77's six

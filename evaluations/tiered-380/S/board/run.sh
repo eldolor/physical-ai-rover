@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.S: one resolution on the board. $1 orig|640|320; $2 florence (default),
 # ve (amendment 1), both (amendment 2) or paligemma (3.80.T: PaliGemma 2 at
 # NF4 on :8006 in Florence's place, $PG_SPEC, under ~/bench-380T's venv);

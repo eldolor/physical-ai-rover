@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.50.D4 amendment 4: candidate contradiction rules replayed on the sessions
 d4_record.py kept, against the map as reloaded (the first /map recorded).
 

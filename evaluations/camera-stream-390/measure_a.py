@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.90 A, criteria 1 and 3, measured on the Jetson beside the stack.
 
 Polls the robot server's GET /frame at --poll-hz for --seconds and records

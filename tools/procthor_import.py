@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tools/procthor_import.py -- ProcTHOR-10K houses, reduced to floor plans
 (PLAN-ros-alignment.md 3.66).

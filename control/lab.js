@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// Copyright (C) 2026 Anshu Gaind
 /* control/lab.js -- what the Lab console's two tabs share (3.132 Stage 4).
  *
  * The walks console (admin.js) and the metrics console (metrics.js) were two

@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # P16 phase 2 -- the whole reactive tier, on a Hailo-10H, with a real GPU.
 #
 # Phase 1 proved YOLO-World ALLOCATES on the 10H (11.9 MB HEF, 5 contexts).

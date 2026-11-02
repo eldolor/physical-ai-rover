@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.46 amendment 12: remember what objects look like, then look them up.
 
     python -m tools.inventory_lookup embed    # CLIP RN50 on every stored crop (free, local)

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/floor_band_sweep.py -- the instrument for PLAN-ros-alignment.md 3.74
 criterion B1: a low object stops the robot, judged on ground truth.

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/demo_footprint_sweep.py -- 3.18 part 1's instrument, in full
 (PLAN-ros-alignment.md 3.18).

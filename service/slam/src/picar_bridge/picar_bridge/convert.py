@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """convert -- the bridge's conversions at the wall, as plain Python.
 
 Kept out of bridge.py (which imports rclpy) so they are unit-tested on a

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-3101/test.py -- 3.101: the gate, then the 588 test
 houses once, then the criteria.

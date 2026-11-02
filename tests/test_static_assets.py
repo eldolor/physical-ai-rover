@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Everything the pages reference must actually be published.
 
 The static half of the same failure tests/test_serverless_routes.py covers

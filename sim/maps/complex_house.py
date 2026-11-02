@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 complex_house.py -- a larger, harder house with small things on the floor
 (PLAN-ros-alignment.md 3.46). Selected with SIM_MAP=complex_house.

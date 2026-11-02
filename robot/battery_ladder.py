@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """The battery ladder's decisions -- PLAN-ros-alignment.md 3.137.
 
 Pure logic, no I/O: `robot/server.py` feeds it each battery read and acts on

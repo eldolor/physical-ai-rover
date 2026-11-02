@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """A function that cannot import is a 500 with nothing useful in the log.
 
 This is the dependency version of tests/test_serverless_routes.py, and it

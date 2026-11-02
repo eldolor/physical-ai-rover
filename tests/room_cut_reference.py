@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Frozen copy of `brain/room_labels.py`'s `clearance()` and `segment()` as
 they were before 3.118 (dev at 73a7725), verbatim. 3.118 rewrote both for
 speed with exactly the old answers; `tests/test_room_cut.py` checks the new

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 3.105 criteria 4-5, live: a goal sent the moment a reloaded container reads
 `ready`, and an explore mission from such a start.

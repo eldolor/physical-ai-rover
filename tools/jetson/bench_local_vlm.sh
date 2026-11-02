@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.B acceptance B1-B6 (docs/plans/ros-alignment/3.80-tiered-identity.md)
 # on the board, from a checkout of this branch:
 #

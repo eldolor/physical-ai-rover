@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 #
 # Set the project up on the Jetson -- PLAN-ros-alignment.md 3.33, steps 3 and 5.
 # Run ON the Jetson, from the repo root, after JetPack 6.2.x is installed:

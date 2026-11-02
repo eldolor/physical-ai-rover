@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """control/admin_prices.py -- what a paid console action is expected to cost
 (3.132 Stage 4).
 

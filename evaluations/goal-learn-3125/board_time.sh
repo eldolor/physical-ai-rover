@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.125.B: 3.109's board script (3.103's, its arms trimmed). Runs ON the board
 # from ~/bench-3125-time (a checkout of the branch):
 #   1. quiet: the board as found (picar-stack serving the twin, sim mode), all arms

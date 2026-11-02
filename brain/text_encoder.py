@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Text features for perception's prompts, encoded outside its process (3.81).
 
 Perception needs two text encodings per target: YOLOE's prompt (MobileCLIP's

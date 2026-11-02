@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.79: the speed-only A/B, F S F S F S (docs/plans/ros-alignment/3.79-extra-goals.md).
 
     eval "$(python tools/plan_section.py env)"   # run with the repo .venv python

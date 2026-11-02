@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """tests/test_person_eval.py -- 3.52's person-recall scorer, no models."""
 
 from tools import person_eval as pe

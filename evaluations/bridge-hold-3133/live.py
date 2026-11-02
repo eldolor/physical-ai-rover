@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 3.133.C, criterion 8 live: goals and an explore mission sent from the first
 second of a container start, on `vision-picar-ros:latest` rebuilt from `dev`.

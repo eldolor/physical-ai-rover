@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/explore-365/classify_lost.py -- 3.65 phase 2 criterion 2: why
 each test house the rule finds is missed under the network. Runs the house

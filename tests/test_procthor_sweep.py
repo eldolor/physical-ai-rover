@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/test_procthor_sweep.py -- PLAN-ros-alignment.md 3.66 criterion 5:
 `explore` over the first 100 usable ProcTHOR houses (tests/procthor_sweep.py).

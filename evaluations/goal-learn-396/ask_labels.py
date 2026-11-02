@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-396/ask_labels.py -- 3.116.A: room labels as a find
 mission would get them, in place of 3.96's stand-in.

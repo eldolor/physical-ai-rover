@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/test_complex_house.py -- sim/maps/complex_house.py, 3.46's test
 house. Pins what the inventory sweep and the user's "complex as well"

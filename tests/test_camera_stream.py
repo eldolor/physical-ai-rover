@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.90 A: robot/camera_stream.py -- newest wins, never a stale frame, reopens
 by itself (criteria 1-3 in docs/plans/ros-alignment/3.90-camera-stream.md)."""
 

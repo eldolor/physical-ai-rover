@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """OWLv2's image tower as a TensorRT engine, at fp16 or INT8.
 
 **Why this exists.** Every Orin latency figure in `PLAN-onboard-perception.md`

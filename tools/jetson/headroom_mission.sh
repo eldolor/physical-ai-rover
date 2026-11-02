@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.78 amendment 5, C (docs/plans/ros-alignment/3.78-trt-vs-llamacpp.md):
 # memory through a whole mission with no VLM -- the transients a real
 # mission adds on top of 3.58's window. Built from headroom_identity.sh

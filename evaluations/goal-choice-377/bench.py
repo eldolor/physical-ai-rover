@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-choice-377/bench.py -- 3.77 criterion 2: how long one of
 explore's goal choices takes on a live SLAM map, before and after.

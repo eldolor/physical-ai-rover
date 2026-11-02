@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.R: one server on :8006 for the steering run (driven from the Mac over
 # an ssh tunnel). $1 name; then the same environment as identity.sh.
 pkill -x llama-server 2>/dev/null; pkill -f native_server.py 2>/dev/null; sleep 3

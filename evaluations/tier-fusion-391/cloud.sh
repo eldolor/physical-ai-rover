@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # evaluations/tier-fusion-391/cloud.sh -- 3.91.C criterion 8's sweeps on one
 # spot CPU instance (the user, 2026-10-24: heavy jobs leave the shared
 # workstation). The pattern is 3.96's cloud.sh: code from HEAD via S3, a

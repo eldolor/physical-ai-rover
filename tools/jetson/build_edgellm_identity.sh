@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.78 amendment 3: build TensorRT Edge-LLM v0.9.1 on the Jetson (JetPack 6.2,
 # CUDA 12.6, TensorRT 10.3) with edgellm_identity.cpp added as an example.
 #

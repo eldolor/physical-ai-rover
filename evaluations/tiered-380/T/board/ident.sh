@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.T run 1 on the board: the pinned 299 frames through R/board/identity.sh
 # (arm N, `detect {target}`), PaliGemma 2 at NF4 under ~/bench-380T's venv,
 # with MemAvailable every second from before the server starts to the end,

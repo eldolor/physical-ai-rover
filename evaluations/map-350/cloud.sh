@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # evaluations/map-350/cloud.sh -- 3.50.D4-a, D4-b and D4-d (amendment 4's
 # held-out test) on one spot CPU instance (the user, 2026-10-24: heavy live
 # runs go to AWS). Wraps tools/gpu/ec2.sh with its own name, prefix, type and

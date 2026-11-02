@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-396/wired_ask.py -- 3.116 criterion 5: the wired
 `find_room_labels` is the measured one. On the 100 selection houses, mission

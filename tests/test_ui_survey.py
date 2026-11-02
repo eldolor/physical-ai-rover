@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.70 S5: a survey is started from the phone.
 
 The Sim tab's Remote brain panel picks the job -- find an object, or survey

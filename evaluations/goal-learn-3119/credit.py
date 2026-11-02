@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-3119/credit.py -- 3.119: F-pool-W32's PPO with
 per-choice credit. 3.96's trainer gives every choice in a mission the

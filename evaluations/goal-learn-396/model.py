@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-396/model.py -- 3.96 amendment 2: the map crop and
 the two scoring networks, each in numpy (what runs in the workers, and on

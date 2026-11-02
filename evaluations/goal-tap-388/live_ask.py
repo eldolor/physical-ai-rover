@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 python -m evaluations.goal-tap-388.live_ask [house]   (run as a file: see below)
 

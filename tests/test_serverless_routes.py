@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Every public route must survive BOTH hops to reach its function.
 
 The successor to tests/test_alb_routes.py, and it exists for exactly the

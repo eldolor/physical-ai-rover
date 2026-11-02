@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.96.C: explore's goal choice with room features, behind
 `explore_goal_policy: rooms` (the default since 3.125)."""
 import importlib.util

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-3103/lean.py -- 3.103.B: the networks of four shapes
 on F-lean's 18 facts (3.96's 17 plus 3.101's `lidar_gain`), as drop-ins for

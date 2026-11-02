@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.89 criterion 3's fallback: a scripted wedge in the dining room
 (docs/plans/ros-alignment/3.89-escape-creep-timeout.md), for when no live
 explore mission's escape reaches its creep.

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >
   Build-artifact bucket for the Lambda zips that service/lambda/build.sh

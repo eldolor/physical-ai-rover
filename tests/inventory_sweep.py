@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.46's simulator sweep: does the inventory find, place and not invent?
 
     python -m tests.inventory_sweep            # all 20 missions, both halves

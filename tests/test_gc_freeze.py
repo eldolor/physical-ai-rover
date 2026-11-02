@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """PLAN-ros-alignment.md 3.37: the robot server freezes its start-up
 objects out of the collector while it serves, and releases them after."""
 

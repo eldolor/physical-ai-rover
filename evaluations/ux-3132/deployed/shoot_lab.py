@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 import sys
 from playwright.sync_api import sync_playwright
 out = sys.argv[1]

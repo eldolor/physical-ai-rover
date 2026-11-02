@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.50.D1: does the pinned image save and reload a map, by hand?
 
 Not a criterion run -- the feasibility check D2-D4 are designed on. Three

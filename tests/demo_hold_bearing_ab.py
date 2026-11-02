@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """P25's A/B, answered -- and the answer was about turn SIZE, not memory.
 
     python -m tests.demo_hold_bearing_ab

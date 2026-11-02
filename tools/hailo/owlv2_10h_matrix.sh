@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # P17 -- OWLv2 on a Hailo-10H, thoroughly.
 #
 # OWLv2 is the best model this project has measured: 82% at 3 FP (P7),

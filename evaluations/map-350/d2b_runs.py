@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.50.D2-b: does map_and_localization_slam_toolbox_node map as well as the
 async node did? 3.40's own runs, on this branch's image:
 

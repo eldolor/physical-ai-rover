@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.109 criterion 1 (fast tier): the numpy `features()` gives exactly the
 loop's answers -- on one live SLAM map (both seen sets) and at the edges the
 loop clips: a goal on the map's border, a goal off the map, seen cells off

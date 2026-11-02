@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 python -m tests.demo_explore <rooms|absent|door|rule|one> [house] [room]
 

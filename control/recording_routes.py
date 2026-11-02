@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """The two routes that WRITE a recorded walk, mountable by either server.
 
 `POST /recording/frame` and `POST /recording/finish` began life in

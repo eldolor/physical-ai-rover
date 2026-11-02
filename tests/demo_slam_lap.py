@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/demo_slam_lap.py -- R5's instrument (PLAN-ros-alignment.md 3.14).
 

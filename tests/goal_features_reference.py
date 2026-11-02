@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/goal_features_reference.py -- 3.109: `brain/goal_policy.py`'s
 `features()` frozen as it was before its numpy rewrite (dev at 05d1870), the

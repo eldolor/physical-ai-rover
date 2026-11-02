@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # SessionStart hook: make the test suite and the merge gate runnable in a
 # Claude Code cloud session (CLAUDE.md section 1). Cloud sessions only;
 # synchronous, so nothing runs before the dependencies are in place.

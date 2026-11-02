@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.120 criterion 1 (slow tier): `_walk_dist()` gives exactly the frozen
 `_walk()`'s distances on every live SLAM map, the sim houses at the car's
 0.05 m cells, 100 ProcTHOR houses (20 of them at 0.05 m), 500 random grids,

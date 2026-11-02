@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.109 criterion 1 (slow tier, SLOW_FILES): the numpy `features()` gives
 exactly the loop's answers on 3.96's benchmark -- the six live SLAM maps x
 20 poses x two camera-seen sets, every candidate -- and on every call

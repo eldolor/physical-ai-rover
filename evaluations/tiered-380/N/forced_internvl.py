@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.80.N: forced token ids for InternVL3.5-4B's reduced vocabulary, on the
 export host. 3.80.K's list (3.78's ids -- InternVL's base vocabulary is
 byte-identical to Qwen2.5-VL's -- the direction words, every token in the

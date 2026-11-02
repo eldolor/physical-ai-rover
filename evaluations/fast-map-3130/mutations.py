@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/fast-map-3130/mutations.py -- 3.130 criterion 2: each planted
 bug in `brain/frontier.py`, one at a time, must fail at least one fast-tier

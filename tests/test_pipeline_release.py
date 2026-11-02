@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.81.E: an ended mission frees its perception models, so the next
 mission's build never holds two pipelines at once (3.81 C2: 377 MB free at a
 mission start with VE resident, floor 500)."""

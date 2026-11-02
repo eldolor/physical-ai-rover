@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 python -m tests.demo_slam_home [n] [--slam path/to/slam.yaml] [--drift L,R] [--limit S] [--tour 1]
     [--explore-first S]   # 3.39: explore (an absent target) for up to S s, then tour

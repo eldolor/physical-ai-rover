@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """picar_bridge/keepalive.py -- the bridge's HTTP client to the robot server
 and the brain, over KEPT-OPEN connections (PLAN-ros-alignment.md 3.24, G1).
 

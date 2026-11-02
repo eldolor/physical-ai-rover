@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.90 E: the teleop body keeps its last pushed frames for a recorder
 (criteria 12 and 14), while decisions still take only the newest."""
 

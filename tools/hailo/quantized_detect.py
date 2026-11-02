@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Run the QUANTIZED YOLO-World body in Hailo emulation, and turn its
 activations into detections through the real head.
 

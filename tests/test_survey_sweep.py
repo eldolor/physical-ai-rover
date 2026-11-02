@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/test_survey_sweep.py -- 3.70 S1/S2's sim numbers, pinned (about 80 s
 per mode; in tools/plan_section.py's SLOW_FILES).

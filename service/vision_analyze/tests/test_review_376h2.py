@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.76 batch H2: the cloud vision service's confirmed review bugs, each red
 on `dev` before its fix. No AWS call anywhere: Bedrock is a fake client.
 

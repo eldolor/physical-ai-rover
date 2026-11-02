@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """PLAN-ros-alignment.md 3.42 criterion 4 -- safety under a real lidar's
 timing, on ground truth (3.18's method): the vet reads the D500's scan
 through `robot/lidar_ld19.py`, every point cast at its own instant from a

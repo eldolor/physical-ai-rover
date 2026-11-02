@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.80.K: the forced token ids for RoboBrain's reduced vocabulary, on the
 export host: 3.78's list (forced_ids.json; RoboBrain's vocab.json is
 byte-identical to Qwen2.5-VL-3B's) plus every tokenisation of the direction

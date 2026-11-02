@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.77: the numpy frontier search gives exactly the answers of the
 pure-Python one it replaced. The full criterion-1 sweep is
 `test_frontier_fast_sweep.py` (slow tier); this is its fast-tier sample."""

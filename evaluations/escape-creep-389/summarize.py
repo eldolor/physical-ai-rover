@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Summarise measure.py's lines: the creeps that started at the bar, by
 verb. A creep is every `/action` of it (pieces, since 3.89); its gain is
 their sum."""

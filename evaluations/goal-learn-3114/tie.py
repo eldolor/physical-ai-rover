@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-3114/tie.py -- 3.114: F-pool-W32's clone with the
 oracle's near ties labelled as ties. Desktop only, none on the 588 test

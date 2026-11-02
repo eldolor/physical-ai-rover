@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-396/ask.py -- 3.116.A: how much of F-large's
 labelled saving survives labels asked as a find mission would ask them.

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """The houses the simulator can load, by name -- robot/factory.py reads
 SIM_MAP and builds one of these; the demos that score against ground truth
 read the same variable, so the robot and its judge are in the same house."""

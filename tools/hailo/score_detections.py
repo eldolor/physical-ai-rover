@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Score a detections JSON against the adjudicated corpus labels.
 
 The INT8 question acts on the DETECTOR, which is the only part of the

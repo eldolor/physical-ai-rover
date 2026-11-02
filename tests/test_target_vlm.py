@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """tests/test_target_vlm.py -- 3.46 amendment 11's search runner, on fakes:
 no model, no recordings beyond a temp walk."""
 import json

@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.M: both identity arms for one model. $1 name, $2 model, $3 mmproj.
 pkill -x llama-server; sleep 3
 cd ~/vp-380

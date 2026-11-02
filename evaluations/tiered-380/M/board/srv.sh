@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.J: one llama-server on :8006. $1 name, $2 model gguf, $3 mmproj gguf.
 pkill -x llama-server 2>/dev/null; sleep 2
 echo "$(date +%T) MemAvailable before $1: $(awk '/MemAvailable/{print int($2/1024)}' /proc/meminfo)" >> ~/out-380M/$1.mem

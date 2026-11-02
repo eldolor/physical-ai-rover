@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/explore-365/harness.py -- 3.65 phase 2: one `explore` mission in
 a usable ProcTHOR house, as tests/procthor_sweep.py runs it (FakeNav for

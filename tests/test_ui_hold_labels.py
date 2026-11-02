@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.127 criterion 3: the twin names a nav2 still starting and a stopped
 room labeller.
 

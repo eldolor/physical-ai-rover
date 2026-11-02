@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """tools/plan_claims.py -- discrete plan steps and live claims (PLAN 3.75,
 docs/guides/PARALLEL-SESSIONS.md rule 8). Each test builds a throwaway repo
 with its own `origin/dev`; owners are real `sleep` processes, so liveness is

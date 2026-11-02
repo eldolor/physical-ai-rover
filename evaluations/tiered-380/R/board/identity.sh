@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.R: one identity arm on the pinned 299 frames. $1 name, $2 arm (A|N),
 # $3 native backend:skill (arm N). Environment: NATIVE_SPEC (a native_server
 # model, with NSRV_PY) or MODEL + MMPROJ + LLBIN (+ LLEXTRA) for a GGUF.

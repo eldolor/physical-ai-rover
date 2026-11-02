@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.50.D4 amendment 4's data: recorded reload sessions for testing candidate
 contradiction rules offline (`d4_replay.py`), before any criterion run.
 

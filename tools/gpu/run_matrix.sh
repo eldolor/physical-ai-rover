@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # The sweep the A10G was rented for: every YOLOE variant, WITH and WITHOUT
 # the floor mask, on all 1234 labelled frames.
 #

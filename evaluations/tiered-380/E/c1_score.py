@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.80.E criterion 1: the tiered identity answer at arrival on 3.48's pinned
 299 frames -- the local VLM first, the cloud only after
 `tier_local_max_unable` unable answers (or with the local tier absent).

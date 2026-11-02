@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/test_procthor_houses.py -- sim/maps/procthor.py, ProcTHOR floor plans
 as simulator houses (PLAN-ros-alignment.md 3.66). Pins the conversion's

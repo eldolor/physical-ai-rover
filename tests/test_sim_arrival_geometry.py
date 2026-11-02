@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.98 (the user, 2026-10-24): in the simulator an arrival is confirmed from
 the sim's own geometry -- the nearest object near the frame's centre must be
 the target -- and the paid cloud call is opt-in (`sim_arrival_confirm:

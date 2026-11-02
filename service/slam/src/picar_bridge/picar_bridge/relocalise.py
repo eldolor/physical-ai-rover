@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """relocalise -- does a reloaded map fit where the robot is? (3.50.D3)
 
 A reload assumes the robot stands on the dock: localisation starts at the

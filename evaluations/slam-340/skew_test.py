@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 ROS_IMAGE=vision-picar-ros:skew python evaluations/slam-340/skew_test.py [rate,rate ...]
 

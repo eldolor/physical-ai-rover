@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # evaluations/map-350/remote.sh -- runs ON the spot instance, as root (sent
 # by cloud.sh through `tools/gpu/ec2.sh run`). Setup only, inside the SSM
 # command: Docker, the code, the venv once, and what is already done pulled

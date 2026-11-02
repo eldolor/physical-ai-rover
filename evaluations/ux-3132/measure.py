@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/ux-3132/measure.py -- 3.132's UX harness (Stage 0 and after).
 

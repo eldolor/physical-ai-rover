@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.91.C (amendment 2): criteria 6-7 replayed offline on the records B made.
 
 The policy is the real `TieredVision`, built by the brain's own

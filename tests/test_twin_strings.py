@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.132 Stage 2A criterion 2: every toast's words come from
 web-twin/strings.js, and its operator voice is plain.
 

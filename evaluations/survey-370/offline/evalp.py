@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Offline: ask policies x labelling rules on recorded traces (final map)."""
 import heapq, pickle, sys, statistics as st
 import numpy as np

@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # evaluations/goal-learn-3103/cloud.sh -- 3.103.C amendment 2 on one spot CPU instance:
 # F-pool widths 32 and 128 trained, the widths chosen between, the chosen one tested
 # (3.96's wrapper, the user's rule of 2026-10-23: spot, checkpoints, and tear

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-3110/ladder.py -- 3.110 stage 1: the copying ladder.
 F-large's 17 facts plus 3.101's 25 new ones added one at a time (ORDER),

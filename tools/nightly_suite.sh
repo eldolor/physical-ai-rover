@@ -1,4 +1,6 @@
 #!/bin/sh
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # The full suite, once a night, on the latest origin/dev (user, 2026-10-09:
 # pushes run only the fast tier, so the browser and live-stack tests run
 # here instead). Reports; never blocks a push.

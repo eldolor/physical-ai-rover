@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.U from the Mac: copy the harness, the steering set and its walks to the
 # board, run the top five in turn there (U/board/top5.sh), and copy the outputs
 # back to U/board/out/<tag>/. $1 the tag. Environment: WALKS (identity walks,

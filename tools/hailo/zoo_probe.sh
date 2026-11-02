@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # P15 -- does the DFC 5.x line actually fail on real models, or did WE fail?
 #
 # P14 (2026-09-15) concluded "the 10H is blocked on its COMPILER": DFC 5.2.0

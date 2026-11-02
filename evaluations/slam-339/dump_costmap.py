@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 import json, sys, rclpy
 from rclpy.qos import QoSProfile, DurabilityPolicy, ReliabilityPolicy
 from nav_msgs.msg import OccupancyGrid

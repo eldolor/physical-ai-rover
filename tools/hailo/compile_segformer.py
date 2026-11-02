@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """SegFormer-B0 (ADE20K) -> Hailo, because the floor mask is what the tier
 rests on.
 

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 remote_navigator.py -- nav2's goals, over HTTP (PLAN-ros-alignment.md 3.31).
 

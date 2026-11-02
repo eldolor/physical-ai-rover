@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """PLAN-ros-alignment.md 3.36 -- the simulated body as its own programs.
 
 Under `SIM_MOTOR_BOARD=fake` the robot server used to run the simulator in
