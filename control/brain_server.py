@@ -970,13 +970,17 @@ def create_app(
         if level in ("low", "reserve", "poweroff"):
             return (f"battery_low: the robot server reads the battery at {level} "
                     f"({reading.get('v')} V) -- charge it before a mission")
-        if level is not None:
-            # The ladder's level is two distinct samples (M2.7); one reading
-            # under the floor is not a reason to refuse.
-            return None
-        # A robot server older than 3.137 names no level: its one reading.
         v = reading.get("v") if reading.get("usable") else None
         floor = config["battery_floor_v"]
+        low_v = ((reading.get("ladder") or {}).get("levels_v") or {}).get("low")
+        if level is not None and (not floor or not isinstance(low_v, (int, float))
+                                  or floor <= low_v):
+            # The ladder's level is two distinct samples (M2.7); one reading
+            # under the floor is no reason to refuse while this brain's floor
+            # is the ladder's Low or under it.
+            return None
+        # A robot server older than 3.137 (no level), or this brain's floor set
+        # above the ladder's Low: its one reading, at rest, against the floor.
         if floor and isinstance(v, (int, float)) and v < floor:
             return (f"battery_low: {v} V, under the {floor:g} V floor -- "
                     "charge it before a mission")

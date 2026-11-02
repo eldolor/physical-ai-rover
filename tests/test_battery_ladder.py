@@ -537,23 +537,38 @@ def test_the_ladder_clock_survives_a_house_swap(served):
     assert bat["ladder"].level == RESERVE
 
 
-def test_a_battery_check_is_not_counted_as_the_way_ahead_blocked(served):
-    from control.mission_runner import MissionRunner
-    from control.remote_robot import RemoteRobot
-    from tests.conftest import ASGI_BASE_URL
+def test_a_battery_check_is_not_counted_as_the_way_ahead_blocked(monkeypatch):
+    """A FORWARD refused `battery_check` (the robot server reading a low
+    pack again at rest) says nothing about the way ahead: never counted
+    toward `stuck_after`. A plain veto still is (the control)."""
+    from brain.agent import StepResult
+    from tests.conftest import fresh_mock_runner
+    for detail, counted in ((f"{BATTERY_CHECK}: read again at rest", 0),
+                            ("the way ahead is 12 cm", 3)):
+        runner = fresh_mock_runner(target_object="purple elephant", stuck_after=10)
+        runner.start()
+        monkeypatch.setattr(runner.agent, "step", lambda d=detail: StepResult(
+            step=0, frame={}, scene={}, action="FORWARD", executed=False, detail=d))
+        for _ in range(3):
+            runner.tick()
+        assert runner._refused_forwards == counted, detail
+        runner.stop()
+
+
+def test_a_camera_pan_does_not_keep_a_check_from_reading_at_rest(served):
     client, bat, body, reading, _ = served
-    remote = RemoteRobot(ASGI_BASE_URL, client=client)
-    runner = MissionRunner(remote, target_object="purple elephant",
-                           mission_time_limit_s=600.0, battery_floor_v=None, stuck_after=2)
-    runner.start()
     _check_open(bat, body)
     body.set_wheel_velocity(0.0, 0.0)
-    # Hold the check open while the brain keeps trying (no new sample).
-    for _ in range(6):
-        runner.tick()
-        bat["ladder"].check_at = bat["ladder"].check_at or 0.0
-    assert runner._refused_forwards == 0
-    assert runner.status()["outcome"] in (None, "running"), runner.status()["log_tail"]
+    body.pass_time(0.6)
+    # The brain keeps panning between readings (3.104's probe pans each second).
+    for v in (10.03, 10.02, 10.01):
+        r = client.post("/action", json={"action": "LOOK_LEFT"},
+                        headers={"x-driver": "brain"}).json()
+        assert r.get("reason") != BATTERY_CHECK, r
+        body.pass_time(0.3)
+        body.battery.v = v
+        bat["poll"](force=True)
+    assert bat["ladder"].level == RESERVE, "pans kept the check from reading at rest"
 
 
 def test_a_start_is_not_refused_on_one_low_reading_when_the_ladder_says_ok(served):

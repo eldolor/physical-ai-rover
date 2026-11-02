@@ -664,7 +664,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
     # two polls still keeps the next reading from counting as at rest.
     # `loop`: the background loop runs (a live server); routes then need not
     # poll on the actuator's 20 Hz path.
+    # `body_verbs`: verbs that move the body, running now (a pan does not).
     batt = {"polled_at": None, "moved_at": None, "v": None, "reading": {}, "loop": False,
+            "body_verbs": 0,
             # The power-off's steps as they ran: name, seconds from its
             # start, return code (3.137 criterion 1c's order).
             "shutdown": [], "poweroff_calls": 0, "shutdown_done": threading.Event()}
@@ -673,7 +675,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         """Whether the wheels may be turning now. Unreadable or unusable
         wheel state may be turning: a reading then never counts as at rest,
         and a check fires only on its timeout (the safe side)."""
-        if state["verbs_running"]:
+        if batt["body_verbs"]:
             return True
         try:
             w = robot.get_wheel_state()
@@ -685,6 +687,19 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
 
     def mark_moving() -> None:
         batt["moved_at"] = battery_clock()
+
+    def ros_battery_hold() -> bool:
+        """Under `drive: ros`: whether ROS's wheel posts are held at zero by
+        the ladder. At Power-off, always; during a check, unless the posts
+        are a person's verb in progress (the brain's are refused, and nav2's
+        goal is held still). At Reserve they carry only a person's verbs."""
+        if ladder.level == POWEROFF:
+            return True
+        if ladder.check_level is None:
+            return False
+        holder = state["driver"]
+        return not (state["verbs_running"] and holder is not None
+                    and driver_priority(holder) == DRIVER_MANUAL)
 
     def route_poll() -> None:
         """A moving route's poll: only when no background loop polls (in
@@ -742,7 +757,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         with goal_gen_lock:
             with verbs_lock:
                 holder = state["driver"]
-                if (holder is not None and driver_priority(holder) == DRIVER_AUTONOMOUS
+                if (holder is not None and driver_priority(holder) != DRIVER_MANUAL
                         and not state["verbs_running"]):
                     state["driver_at"] = 0.0
             if ends_goal:
@@ -783,11 +798,21 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         batt["poweroff_calls"] += 1
         t0 = time.monotonic()
         deadline = t0 + BATTERY_WHEELS_WAIT_S
-        while wheels_turning() and time.monotonic() < deadline:
+
+        def commanded():
+            # The wheels' own state only: a board whose feedback goes stale as
+            # the pack collapses is not a wheel that will not stop.
+            try:
+                w = robot.get_wheel_state()
+            except Exception:  # noqa: BLE001
+                return False
+            return bool(w.get("usable")) and (w["left"]["velocity_rad_s"] != 0
+                                              or w["right"]["velocity_rad_s"] != 0)
+        while (commanded() or batt["body_verbs"]) and time.monotonic() < deadline:
             robot.stop()
             time.sleep(0.05)
         batt["shutdown"].append({"step": "wheels", "t_s": round(time.monotonic() - t0, 3),
-                                 "rc": 0 if not wheels_turning() else 1})
+                                 "rc": 0 if not commanded() else 1})
         for name, cmd in battery_cfg["shutdown_steps"]:
             run_step(name, cmd, t0)
         try:
@@ -910,12 +935,18 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         a pack draining while the robot waits). Off the event loop: a body's
         reading may be a request to another process."""
         batt["loop"] = True
-        while True:
-            await asyncio.sleep(BATTERY_POLL_S)
-            try:
-                await asyncio.to_thread(battery_poll)
-            except Exception:  # noqa: BLE001 -- the loop must outlive one bad read
-                logger.exception("battery poll failed")
+        try:
+            while True:
+                await asyncio.sleep(BATTERY_POLL_S)
+                try:
+                    # Forced: the loop's own sleep is the cadence. The robot's
+                    # clock may run a little slow of it (the sim's), and a
+                    # rate limit on it would drop every other poll.
+                    await asyncio.to_thread(battery_poll, True)
+                except Exception:  # noqa: BLE001 -- the loop must outlive one bad read
+                    logger.exception("battery poll failed")
+        finally:
+            batt["loop"] = False
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -1086,8 +1117,22 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         if driver_priority(driver) == DRIVER_AUTONOMOUS:
             state["autonomous_at"] = now
         stamp = {}
-        with verb_running(driver, stamped=stamp):
-            outcome = _carry_out(req, driver, now, stops)
+        # 3.137: a verb that moves the body keeps every battery reading off
+        # "at rest" while it runs, and for BATTERY_REST_S after (a pan never).
+        body = req.action in BODY_MOVES
+        outcome = None
+        if body:
+            with verbs_lock:
+                batt["body_verbs"] += 1
+        try:
+            with verb_running(driver, stamped=stamp):
+                outcome = _carry_out(req, driver, now, stops)
+        finally:
+            if body:
+                with verbs_lock:
+                    batt["body_verbs"] -= 1
+                if isinstance(outcome, dict) and outcome.get("executed"):
+                    mark_moving()
         if is_autonomy(driver) and isinstance(outcome, dict):
             # 3.84: a person's Stop latched by the time the brain's verb
             # ended -- it cut the verb, ended it before its first motion, or
@@ -1119,11 +1164,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         stamp written (3.84: a lapse clears only its own command's claim)."""
         with verbs_lock:     # threadpool threads: a lost update would never lapse
             state["verbs_running"] += 1
-        mark_moving()        # 3.137: a reading during a verb is never at rest
         try:
             yield
         finally:
-            mark_moving()
             with verbs_lock:
                 # Re-stamped before the count drops (3.82), so the claim
                 # never reads as lapsed in between.
@@ -1340,7 +1383,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 return {"executed": False, "reason": "ros_unavailable",
                         "detail": "the bridge is down -- ROS's wheel commands are not "
                                   "applied while a person drives the fallback"}
-            if goal_stop["hold"] or ladder.level == POWEROFF or ladder.check_level is not None:
+            if goal_stop["hold"] or ros_battery_hold():
                 # 3.137: at Power-off nothing drives, and during a check at
                 # rest nav2's goal is held still too (a person's verb with it,
                 # for that moment). (At Reserve these posts carry only a
@@ -1399,7 +1442,8 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                                  or battery_refusal(driver))
             if refused:
                 return lapse_refused_claim(driver, refused, now)
-            if not by_velocity and driver == DRIVER_ROS and battery_refusal(driver, record=False):
+            if driver == DRIVER_ROS and (ros_battery_hold() if by_velocity
+                                         else battery_refusal(driver, record=False)):
                 req = WheelsRequest(left_rad_s=0.0, right_rad_s=0.0)   # 3.137, at execution
             left, right, reason = safety.vet_wheel_velocity(req.left_rad_s, req.right_rad_s)
             if left or right:
