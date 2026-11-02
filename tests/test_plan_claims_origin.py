@@ -419,3 +419,29 @@ def test_new_claims_its_section_on_origin_and_skips_a_number_held_there(tmp_path
         == os.getpid()
     branches = g("branch", "--format=%(refname:short)").splitlines()
     assert "plan/3.2-foo" in branches and "plan/3.1-foo" not in branches
+
+
+def test_shared_status_and_a_pushers_own_touches_are_not_fenced(repo, owners):
+    """CLAUDE.md is edited by whoever merges (rule 3), whatever step lists
+    it; a file another open step lists is the pusher's to change when a
+    step of the section it holds declares it too."""
+    _, a = owners()
+    def _rewrite(name, old, new):
+        path = os.path.join(repo, pc.DIR, name)
+        text = open(path).read()
+        assert old in text
+        open(path, "w").write(text.replace(old, new))
+    _rewrite("3.91-other.md", "`control/x.py`", "`control/x.py`, `CLAUDE.md`")
+    _git(repo, "commit", "-qam", "3.91.A lists CLAUDE.md")
+    _git(repo, "push", "-q", "origin", "dev")
+    _git(repo, "fetch", "-q", "origin")
+    assert _edit_hook(repo, "CLAUDE.md", a["pid"]) is None
+    base = _out(repo, "rev-parse", "HEAD")
+    pc.claim("3.90.A", cwd=repo, me=a)
+    _rewrite("3.90-test.md", "`brain/b.py`", "`brain/b.py`, `control/x.py`")
+    os.makedirs(os.path.join(repo, "control"))
+    open(os.path.join(repo, "control", "x.py"), "w").write("x\n")
+    open(os.path.join(repo, "CLAUDE.md"), "w").write("status\n")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-q", "-m", "work")
+    assert pc.push_refusals(base, _out(repo, "rev-parse", "HEAD"), cwd=repo, me=a) == []

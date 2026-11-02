@@ -1028,19 +1028,32 @@ def quick_steps(top: str, ref: str = "origin/dev", here: bool = True) -> list:
     return steps
 
 
+# Shared status, edited by whoever merges (PARALLEL-SESSIONS.md rule 3):
+# never fenced by a step's Touches (another session's live claim still asks).
+SHARED = ("CLAUDE.md", "docs/ARCHITECTURE.md", INDEX, "docs/plans/PLAN-ros-alignment.md")
+
+
 def tracked(rel: str, steps: list):
     """(sections, step to claim) a path belongs to: a section's own file,
-    or a path in an open step's Touches. ({}, "") for any other path."""
+    or a path in an open step's Touches. ({}, "") for any other path, and
+    for the shared status files (SHARED)."""
     m = FILE_RE.match(os.path.basename(rel))
     if m and os.path.dirname(rel) == DIR:
         return {m.group(1)}, m.group(1)
+    if rel in SHARED:
+        return set(), ""
     hits = [s for s in steps if s["state"] not in CLOSED and any(matches(rel, t) for t in s["touches"])]
     return {s["section"] for s in hits}, (hits[0]["id"] if hits else "")
 
 
-def covered(rel: str, secs: set, mine: list) -> bool:
-    return any(claim_section(c) in secs for c in mine) or any(
-        matches(rel, t) for c in mine for t in c.get("touches", []))
+def covered(rel: str, secs: set, mine: list, steps=()) -> bool:
+    """This session may change rel: it holds a claim in a section rel
+    belongs to, or rel is in the Touches of its own claim or of any step of
+    a section it holds (`steps`: two sections both declare the file)."""
+    held_secs = {claim_section(c) for c in mine}
+    return (bool(held_secs & secs)
+            or any(matches(rel, t) for c in mine for t in c.get("touches", []))
+            or any(matches(rel, t) for s in steps if s["section"] in held_secs for t in s["touches"]))
 
 
 def _refusal(rel: str, secs: set, hint: str) -> str:
@@ -1125,12 +1138,13 @@ def hook_edit(stdin_text: str) -> str:
                              f"`python3 tools/plan_claims.py allow {c['step']}` and retry.")
         if bypassed():
             return ""
-        secs, hint = tracked(rel, quick_steps(rp[0]))
+        steps = quick_steps(rp[0])
+        secs, hint = tracked(rel, steps)
         if not secs:
             return ""
         mine = [c for c in read_claims(rp[1]) if same_owner(c, me)
                 or (held(c, procs, me) and any(same_owner(a, me) for a in c.get("allowed", [])))]
-        if covered(rel, secs, mine):
+        if covered(rel, secs, mine, steps):
             return ""
         return _decision("deny", _refusal(rel, secs, hint))
     except Exception:                                  # a guard must never break editing
@@ -1196,10 +1210,11 @@ def push_refusals(base: str, sha: str, cwd=None, me=None) -> list:
     me = me or owner(procs)
     mine = [c for c in read_claims(common) if same_owner(c, me)]
     steps = quick_steps(top, ref=base, here=False)
+    pushed = quick_steps(top, ref=sha, here=False)      # the pusher's own tables, as pushed
     out = []
     for f in files:
         secs, hint = tracked(f, steps)
-        if secs and not covered(f, secs, mine):
+        if secs and not covered(f, secs, mine, pushed):
             out.append(f"{f}: section {', '.join(sorted(secs))}"
                        + (f" (open step {hint})" if STEP_ID_RE.fullmatch(hint) else " (its file)")
                        + f" -- claim it: {CLAIM_CMD} {hint}")
