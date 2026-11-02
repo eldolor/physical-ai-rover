@@ -1,0 +1,233 @@
+{
+ "house": "home_first_floor",
+ "image": "vision-picar-ros:plan-3.50",
+ "host": "picar-jetson",
+ "stores": {
+  "s10": {
+   "map_id": "map-0ae813a2",
+   "version": 1,
+   "graph_mb": 48.26,
+   "runs": [
+    {
+     "ready_s": 6.18,
+     "reload": {
+      "map_id": "map-0ae813a2",
+      "version": 1,
+      "took_s": 2.06,
+      "agreement": 1.0,
+      "dock_error_m": 0.003,
+      "dock_error_deg": 0.08,
+      "ok": true,
+      "reason": "matched",
+      "result": "matched"
+     },
+     "lifelong": true,
+     "map_cap": 1.5,
+     "states": [
+      [
+       "checking",
+       4.07
+      ],
+      [
+       "ready",
+       6.18
+      ]
+     ],
+     "error": {
+      "usable": true,
+      "position_error_m": 0.0027,
+      "heading_error_deg": -0.083
+     },
+     "matched": true
+    },
+    {
+     "ready_s": 6.04,
+     "reload": {
+      "map_id": "map-0ae813a2",
+      "version": 1,
+      "took_s": 2.04,
+      "agreement": 1.0,
+      "dock_error_m": 0.003,
+      "dock_error_deg": 0.08,
+      "ok": true,
+      "reason": "matched",
+      "result": "matched"
+     },
+     "lifelong": true,
+     "map_cap": 1.5,
+     "states": [
+      [
+       "checking",
+       3.95
+      ],
+      [
+       "ready",
+       6.04
+      ]
+     ],
+     "error": {
+      "usable": true,
+      "position_error_m": 0.0027,
+      "heading_error_deg": -0.083
+     },
+     "matched": true
+    },
+    {
+     "ready_s": 5.86,
+     "reload": {
+      "map_id": "map-0ae813a2",
+      "version": 1,
+      "took_s": 1.93,
+      "agreement": 1.0,
+      "dock_error_m": 0.003,
+      "dock_error_deg": 0.08,
+      "ok": true,
+      "reason": "matched",
+      "result": "matched"
+     },
+     "lifelong": true,
+     "map_cap": 1.5,
+     "states": [
+      [
+       "starting",
+       3.85
+      ],
+      [
+       "checking",
+       3.97
+      ],
+      [
+       "ready",
+       5.86
+      ]
+     ],
+     "error": {
+      "usable": true,
+      "position_error_m": 0.0027,
+      "heading_error_deg": -0.083
+     },
+     "matched": true
+    }
+   ],
+   "all_matched": true,
+   "slowest_s": 6.18
+  },
+  "s8": {
+   "map_id": "map-06cbdae2",
+   "version": 2,
+   "graph_mb": 80.45,
+   "runs": [
+    {
+     "ready_s": 6.06,
+     "reload": {
+      "map_id": "map-06cbdae2",
+      "version": 2,
+      "took_s": 2.04,
+      "agreement": 1.0,
+      "dock_error_m": 0.017,
+      "dock_error_deg": 0.35,
+      "ok": true,
+      "reason": "matched",
+      "result": "matched"
+     },
+     "lifelong": true,
+     "map_cap": 1.5,
+     "states": [
+      [
+       "starting",
+       3.86
+      ],
+      [
+       "checking",
+       3.97
+      ],
+      [
+       "ready",
+       6.06
+      ]
+     ],
+     "error": {
+      "usable": true,
+      "position_error_m": 0.0174,
+      "heading_error_deg": 0.347
+     },
+     "matched": true
+    },
+    {
+     "ready_s": 6.09,
+     "reload": {
+      "map_id": "map-06cbdae2",
+      "version": 2,
+      "took_s": 2.12,
+      "agreement": 1.0,
+      "dock_error_m": 0.017,
+      "dock_error_deg": 0.35,
+      "ok": true,
+      "reason": "matched",
+      "result": "matched"
+     },
+     "lifelong": true,
+     "map_cap": 1.5,
+     "states": [
+      [
+       "starting",
+       3.87
+      ],
+      [
+       "checking",
+       4.0
+      ],
+      [
+       "ready",
+       6.09
+      ]
+     ],
+     "error": {
+      "usable": true,
+      "position_error_m": 0.0174,
+      "heading_error_deg": 0.347
+     },
+     "matched": true
+    },
+    {
+     "ready_s": 5.75,
+     "reload": {
+      "map_id": "map-06cbdae2",
+      "version": 2,
+      "took_s": 1.93,
+      "agreement": 1.0,
+      "dock_error_m": 0.017,
+      "dock_error_deg": 0.35,
+      "ok": true,
+      "reason": "matched",
+      "result": "matched"
+     },
+     "lifelong": true,
+     "map_cap": 1.5,
+     "states": [
+      [
+       "starting",
+       3.76
+      ],
+      [
+       "checking",
+       3.88
+      ],
+      [
+       "ready",
+       5.75
+      ]
+     ],
+     "error": {
+      "usable": true,
+      "position_error_m": 0.0174,
+      "heading_error_deg": 0.347
+     },
+     "matched": true
+    }
+   ],
+   "all_matched": true,
+   "slowest_s": 6.09
+  }
+ }
+}
