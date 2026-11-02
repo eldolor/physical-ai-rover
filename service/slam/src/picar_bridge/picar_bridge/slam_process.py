@@ -31,6 +31,11 @@ NODE_NAME = "slam_toolbox"
 STOP_TIMEOUT_S = 5.0
 
 
+def executable(mode: str, lifelong: bool = False) -> str:
+    """The node a start in `mode` runs: the lifelong node maps when asked."""
+    return LIFELONG_EXECUTABLE if (lifelong and mode == "mapping") else EXECUTABLES[mode]
+
+
 def command(exe_dir: str, params_file: str, mode: str, map_prefix: Optional[str] = None,
             start_pose: Optional[Sequence[float]] = None, lifelong: bool = False) -> list:
     """The argv for one slam_toolbox. `map_prefix` (a store version's
@@ -41,7 +46,7 @@ def command(exe_dir: str, params_file: str, mode: str, map_prefix: Optional[str]
         raise ValueError(f"unknown slam mode {mode!r}")
     if (map_prefix is None) != (start_pose is None):
         raise ValueError("a saved map needs both map_prefix and start_pose")
-    exe = LIFELONG_EXECUTABLE if (lifelong and mode == "mapping") else EXECUTABLES[mode]
+    exe = executable(mode, lifelong)
     argv = [os.path.join(exe_dir, exe), "--ros-args",
             "-r", f"__node:={NODE_NAME}", "--params-file", params_file,
             # slam.yaml says `mode: mapping`; the node in use decides, and the

@@ -179,7 +179,8 @@ REMAP_CONTRADICTION = os.environ.get("PICAR_REMAP_CONTRADICTION", "0") == "1"
 # instead of reloading a saved map grown past that many times its first
 # version (a fresh map's origin is where it starts, so only a start on the
 # dock can begin one in the dock's frame).
-SLAM_LIFELONG = os.environ.get("PICAR_SLAM_LIFELONG", "1") == "1"
+# On unless exactly "0", as PICAR_MAP_RELOAD (review: "true" must not turn it off).
+SLAM_LIFELONG = os.environ.get("PICAR_SLAM_LIFELONG", "1") != "0"
 
 
 def _map_cap(raw: str) -> float:
@@ -187,7 +188,8 @@ def _map_cap(raw: str) -> float:
         v = float(raw)
     except ValueError:
         return 0.0
-    return v if math.isfinite(v) and v > 0 else 0.0
+    # A ratio at or under 1 would cap every saved map (review): read as none.
+    return v if math.isfinite(v) and v > 1 else 0.0
 
 
 MAP_CAP = _map_cap(os.environ.get("PICAR_MAP_CAP", "1.5"))
@@ -1270,9 +1272,9 @@ class Bridge(Node):
         t0 = time.monotonic()
         while rclpy.ok() and self._fresh_pose() is None:
             if not self.slam.alive():
-                raise RuntimeError(f"{slam_process.EXECUTABLES[mode]} exited before its first pose")
+                raise RuntimeError(f"{slam_process.executable(mode, SLAM_LIFELONG)} exited before its first pose")
             if timeout_s is not None and time.monotonic() - t0 > timeout_s:
-                raise RuntimeError(f"no pose from {slam_process.EXECUTABLES[mode]} in "
+                raise RuntimeError(f"no pose from {slam_process.executable(mode, SLAM_LIFELONG)} in "
                                    f"{timeout_s:.0f} s")
             time.sleep(0.1)
 

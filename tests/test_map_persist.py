@@ -1830,16 +1830,55 @@ def test_the_first_versions_size_is_carried_and_growth_read_from_it(tmp_path):
 
 def test_growth_of_a_meta_written_before_d5_or_unreadable():
     old = {"files": {"graph.posegraph": 30, "graph.data": 10}}     # no first_bytes
-    assert mapstore.first_bytes_of(old) == 40 and mapstore.growth(old) == 1.0
+    # No baseline: unknown, never capped (review: its own size read 1.0).
+    assert mapstore.first_bytes_of(old) == 40 and mapstore.growth(old) is None
+    assert not mapstore.over_cap(old, 1.5)
     for bad in (None, {}, {"files": {}}, {"files": {"graph.data": 0}},
                 {"files": {"graph.data": True}}, {"first_bytes": 10, "files": "x"}):
         assert mapstore.growth(bad) is None and not mapstore.over_cap(bad, 1.5)
 
 
+def test_the_cap_baseline_does_not_drift_as_pre_d5_versions_are_pruned(tmp_path):
+    store = MapStore(str(tmp_path))
+    for size in (10, 20, 30):                      # v1-v3 written before D5: no first_bytes
+        meta = _save_sized(store, "map-0a1b2c3d", size)
+        path = os.path.join(str(tmp_path), "map-0a1b2c3d", f"v{meta['version']}", "meta.json")
+        meta.pop("first_bytes")
+        with open(path, "w") as f:
+            json.dump(meta, f)
+    firsts = [_save_sized(store, "map-0a1b2c3d", 40, session="s2")["first_bytes"]
+              for _ in range(4)]                   # v1, v2, v3 pruned in turn
+    assert firsts == [20, 20, 20, 20]              # v1's size (posegraph + data), kept
+
+
 @pytest.mark.parametrize("raw,want", [("0", 0.0), ("", 0.0), ("abc", 0.0), ("-1", 0.0),
-                                      ("nan", 0.0), ("inf", 0.0), ("1.5", 1.5)])
-def test_the_cap_setting_reads_only_a_positive_finite_ratio(bridge_mod, raw, want):
+                                      ("nan", 0.0), ("inf", 0.0), ("0.9", 0.0), ("1", 0.0),
+                                      ("1.5", 1.5)])
+def test_the_cap_setting_reads_only_a_finite_ratio_over_one(bridge_mod, raw, want):
     assert bridge_mod._map_cap(raw) == want
+
+
+@pytest.mark.parametrize("raw,want", [(None, True), ("1", True), ("true", True), ("", True),
+                                      ("0", False)])
+def test_lifelong_is_on_unless_exactly_zero(monkeypatch, request, raw, want):
+    if raw is None:
+        monkeypatch.delenv("PICAR_SLAM_LIFELONG", raising=False)
+    else:
+        monkeypatch.setenv("PICAR_SLAM_LIFELONG", raw)
+    assert request.getfixturevalue("bridge_mod").SLAM_LIFELONG is want
+
+
+def test_a_start_up_failure_names_the_node_that_ran(bridge_mod, monkeypatch):
+    b = bridge_mod.Bridge()
+    b.slam = types.SimpleNamespace(alive=lambda: False)
+    monkeypatch.setattr(b, "_fresh_pose", lambda: None)
+    monkeypatch.setattr(bridge_mod.rclpy, "ok", lambda: True)
+    for lifelong, mode, name in ((True, "mapping", "lifelong_slam_toolbox_node"),
+                                 (False, "mapping", "async_slam_toolbox_node"),
+                                 (True, "localisation", "localization_slam_toolbox_node")):
+        monkeypatch.setattr(bridge_mod, "SLAM_LIFELONG", lifelong)
+        with pytest.raises(RuntimeError, match=f"^{name} exited"):
+            b._wait_first_pose(mode)
 
 
 def _capped_bridge(bridge_mod, monkeypatch, tmp_path, cap, grown):

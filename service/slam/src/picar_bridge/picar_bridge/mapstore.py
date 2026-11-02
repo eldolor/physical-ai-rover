@@ -65,8 +65,11 @@ def first_bytes_of(meta: Optional[dict]) -> Optional[int]:
 
 def growth(meta: Optional[dict]) -> Optional[float]:
     """3.50.D5: a version's graph size over its map's first version's, or
-    None when either is unknown."""
-    first = first_bytes_of(meta)
+    None when either is unknown. Only a recorded `first_bytes` counts: a
+    version saved before 3.50.D5 has no baseline (its own size would read
+    1.0 however far it had grown), so it is never capped; its map's next
+    save records one."""
+    first = _bytes(meta.get("first_bytes")) if isinstance(meta, dict) else None
     files = meta.get("files") if isinstance(meta, dict) else None
     if not first or not isinstance(files, dict) or not files \
             or not all(_bytes(v) for v in files.values()):
@@ -237,7 +240,7 @@ class MapStore:
         Its start_truth may have been None (saved before it arrived) and
         filled by a later version of the same first session, so the first
         non-None start_truth of any kept version is carried."""
-        oldest = None
+        oldest, first_bytes = None, None
         for v in versions:
             try:
                 with open(os.path.join(self._map_dir(map_id), f"v{v}", META)) as f:
@@ -250,9 +253,14 @@ class MapStore:
                     and isinstance(meta.get("first_session"), str) and "start_truth" in meta):
                 if oldest is None:
                     oldest = dict(meta)
+                # 3.50.D5: the first recorded first_bytes of any kept version,
+                # so pruning the oldest never moves the cap's baseline.
+                first_bytes = first_bytes or _bytes(meta.get("first_bytes"))
                 if oldest["start_truth"] is None and meta["start_truth"] is not None \
                         and meta["first_session"] == oldest["first_session"]:
                     oldest["start_truth"] = meta["start_truth"]
+        if oldest is not None and first_bytes:
+            oldest["first_bytes"] = first_bytes
         return oldest
 
     def _point_at(self, map_id: str, version: int) -> None:
