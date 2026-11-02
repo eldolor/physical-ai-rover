@@ -52,7 +52,22 @@ import ledger as lg  # noqa: E402
 import rows as rw  # noqa: E402
 
 PY = sys.executable
-LEDGER = HERE / "ledger.jsonl"
+
+def _common_dir() -> Path:
+    """The repository's shared `.git`: one ledger for every worktree on this
+    machine, so a halt or a FAILED recorded in one session's worktree gates
+    the next session's runs (`plan-claims/` lives there for the same
+    reason)."""
+    out = subprocess.run(["git", "rev-parse", "--git-common-dir"], cwd=HERE,
+                         capture_output=True, text=True, check=True).stdout.strip()
+    return (HERE / out).resolve()
+
+
+# The gates read LEDGER; every append is copied to MIRROR, the committed copy
+# beside the records (criterion 4). A machine with no LEDGER yet starts from
+# the mirror it checked out.
+LEDGER = _common_dir() / "rover-live-3140" / "ledger.jsonl"
+MIRROR = HERE / "ledger.jsonl"
 BENCH_DIR = "bench-3140"
 ROBOT_PORT = 8000            # picar-stack's robot server on the board
 
@@ -91,19 +106,35 @@ def health_cmd(port: int, name: str) -> str:
 
 def wrap(cmd: str, port: int = ROBOT_PORT) -> str:
     """The row's command between two `/health` reads; the run's exit code is
-    the command's own."""
+    the command's own. A subshell, so an `exit` in the command ends only it."""
     return (f"{health_cmd(port, 'health_before.json')}; "
-            f"{{ {cmd} ; }} > $OUT/row.log 2>&1; rc=$?; echo $rc > $OUT/row_exit; "
+            f"( {cmd}\n) > $OUT/row.log 2>&1; rc=$?; echo $rc > $OUT/row_exit; "
             f"{health_cmd(port, 'health_after.json')}; (exit $rc)")
 
 
-def board_mode(run, port: int = ROBOT_PORT) -> tuple:
-    """(mode, raw) from the robot server's /health on the board."""
+def board_health(run, port: int = ROBOT_PORT) -> tuple:
+    """(health dict or None, raw) from the robot server's /health on the board."""
     raw = run(f"curl -s -m 5 localhost:{port}/health", check=False)
     try:
-        return json.loads(raw).get("mode"), raw
-    except (ValueError, AttributeError):
+        h = json.loads(raw)
+        return (h if isinstance(h, dict) else None), raw
+    except ValueError:
         return None, raw
+
+
+def health_refusals(h, sha: str) -> list:
+    """A3 g: the car's robot server, in hardware mode, running the commit
+    under test (criterion 3: the code that moves the car is the scored one)."""
+    if h is None:
+        return ["A3 g: no /health from the board's robot server"]
+    out = []
+    if h.get("mode") != "hardware":
+        out.append(f"A3 g: the board's /health mode is {h.get('mode')!r}, not 'hardware'")
+    rev = str((h.get("identity") or {}).get("git_revision") or "")
+    if len(rev) < 7 or not sha.startswith(rev):
+        out.append(f"A3 g: the robot server runs {rev or 'an unknown revision'!r}, "
+                   f"not the commit under test {sha[:12]}")
+    return out
 
 
 def _json(p: Path):
@@ -114,11 +145,11 @@ def _json(p: Path):
 
 
 def execute(spec: dict, *, ledger_path: Path = LEDGER, rows: dict = None, run=None,
-            board_run=None, on_dev_fn=on_dev, records: Path = HERE) -> int:
+            board_run=None, on_dev_fn=on_dev, records: Path = HERE, mirror: Path = MIRROR) -> int:
     """A run, inside the locks for a board run. Re-reads the gates (the state
-    may have changed while it waited), checks /health's mode, writes the
-    `open` event, runs, writes the record. Returns the command's exit, or 3
-    when refused."""
+    may have changed while it waited) and checks /health under the ledger's
+    lock, writes the `open` event, runs, writes the record. Returns the
+    command's exit, or 3 when refused."""
     rows = rows if rows is not None else rw.load_plan()
     board = bool(spec.get("cmd"))
     if board:
@@ -127,28 +158,33 @@ def execute(spec: dict, *, ledger_path: Path = LEDGER, rows: dict = None, run=No
         if board_run is None:
             board_run = perf_board_run()
         br.require_board_lock()
-    events = lg.read(ledger_path)
-    why = lg.refusals(events, rows, spec["row"], spec["surface"], spec["motion"],
-                      spec["checklist"], on_dev_fn(spec["sha"]), board)
-    if why:
-        print("refused:\n  " + "\n  ".join(why))
-        return 3
     out = records / spec["row"] / spec["run"]
-    out.mkdir(parents=True, exist_ok=True)
     rec = {"row": spec["row"], "run": spec["run"], "sha": spec["sha"], "room": spec["room"],
            "surface": spec["surface"], "motion": spec["motion"], "checklist": spec["checklist"],
            "cmd": spec.get("cmd"), "timed": spec.get("timed", False), "note": spec.get("note"),
            "values": spec.get("values", {}), "bar": rows[spec["row"]].bar,
            "amended_bar": rows[spec["row"]].amended_bar}
-    if board and spec["surface"] != "none":
-        mode, raw = board_mode(run, spec.get("port", ROBOT_PORT))
-        if mode != "hardware":
-            print(f"refused: A3 g: the board's /health mode is {mode!r}, not 'hardware' ({raw[:200]!r})")
+    # The gates' read and the `open` append under one lock: two terminals
+    # never both pass "no open run".
+    with lg.locked(ledger_path, mirror):
+        events = lg.read(ledger_path)
+        why = lg.refusals(events, rows, spec["row"], spec["surface"], spec["motion"],
+                          spec["checklist"], on_dev_fn(spec["sha"]), board)
+        if not why and board:
+            # Every board command, `none` included: a command can move the car
+            # whatever the declared surface, so the car must be the scored one.
+            h, raw = board_health(run, spec.get("port", ROBOT_PORT))
+            why = health_refusals(h, spec["sha"])
+            rec["health_gate"] = h
+        if why:
+            print("refused:\n  " + "\n  ".join(why))
             return 3
-    lg.append(ledger_path, {"kind": "open", "row": spec["row"], "run": spec["run"],
-                            "surface": spec["surface"], "motion": spec["motion"],
-                            "room": spec["room"], "sha": spec["sha"],
-                            "checklist": spec["checklist"], "board": board})
+        lg.append(ledger_path, {"kind": "open", "row": spec["row"], "run": spec["run"],
+                                "surface": spec["surface"], "motion": spec["motion"],
+                                "room": spec["room"], "sha": spec["sha"],
+                                "checklist": spec["checklist"], "board": board},
+                  mirror=mirror)
+    out.mkdir(parents=True, exist_ok=True)
     rc = 0
     try:
         if board:
@@ -156,7 +192,8 @@ def execute(spec: dict, *, ledger_path: Path = LEDGER, rows: dict = None, run=No
                              out, sha=spec["sha"], allow_sudo=False, stop_twin=False, run=run,
                              bench_dir=BENCH_DIR)
             rec.update(brec)
-            rec["sha"] = spec["sha"]        # boardrun's is the board's checkout of it
+            rec["board_sha"] = brec.get("sha")   # the board's checkout of it
+            rec["sha"] = spec["sha"]
             b = out / "board"
             rec["health_before"] = _json(b / "health_before.json")
             rec["health_after"] = _json(b / "health_after.json")
@@ -168,7 +205,20 @@ def execute(spec: dict, *, ledger_path: Path = LEDGER, rows: dict = None, run=No
             dst.parent.mkdir(exist_ok=True)
             dst.write_bytes(Path(src).read_bytes())
             rec.setdefault("logs", []).append(str(dst.relative_to(out)))
+    except BaseException as e:
+        # The run stays open for rule 6's after-check (the car may have
+        # moved before the error); the error is on the ledger, so the run
+        # can never be scored met or count as a stand run.
+        rec["error"] = f"{type(e).__name__}: {e}"
+        lg.append(ledger_path, {"kind": "error", "row": spec["row"], "run": spec["run"],
+                                "error": rec["error"]}, mirror=mirror)
+        raise
     finally:
+        # boardrun writes its own record.json first (as found, restore,
+        # left_as_found); on an error before it returned, keep all of it.
+        base = _json(out / "record.json") if not rec.get("as_found") else None
+        if isinstance(base, dict):
+            rec = {**base, "board_sha": base.get("sha"), **rec}
         (out / "record.json").write_text(json.dumps(rec, indent=1))
     print(f"{spec['row']} run {spec['run']}: record {out / 'record.json'}; exit {rc}")
     print(f"next: run.py close {spec['row']} {spec['run']} --surprise no|yes  (rule 6)")
@@ -188,12 +238,23 @@ def cmd_run(a, *, ledger_path=LEDGER, rows=None, locked=None) -> int:
     fetch_dev()
     sha = resolve(a.sha)
     motion = [m for m in (a.motion or "").split(",") if m]
+    logs = [Path(p).resolve() for p in a.log]
+    missing = [str(p) for p in logs if not p.is_file()]
+    names = [p.name for p in logs]
+    if missing or len(set(names)) != len(names):
+        print(f"refused: --log: missing {missing}" if missing else
+              f"refused: --log: two logs share a name {names}")
+        return 3
+    bad = [v for v in a.value if "=" not in v or not v.split("=", 1)[0].strip()]
+    if bad:
+        print(f"refused: --value is k=v: {bad}")
+        return 3
     values = dict(v.split("=", 1) for v in a.value)
     spec = {"row": a.row, "run": time.strftime("%Y%m%d-%H%M%S"), "sha": sha, "room": a.room,
             "surface": a.surface, "motion": motion, "checklist": _checklist(a), "cmd": a.cmd,
             "timed": a.timed, "note": a.note, "values": values,
-            "logs": [str(Path(p).resolve()) for p in a.log], "port": a.robot_port}
-    why = lg.refusals(lg.read(ledger_path), rows, a.row, a.surface, motion, spec["checklist"],
+            "logs": [str(p) for p in logs], "port": a.robot_port}
+    why = lg.refusals(lg.read(ledger_path, MIRROR), rows, a.row, a.surface, motion, spec["checklist"],
                       on_dev(sha), bool(a.cmd))
     if why:
         print("refused:\n  " + "\n  ".join(why))
@@ -213,7 +274,12 @@ def cmd_run(a, *, ledger_path=LEDGER, rows=None, locked=None) -> int:
         os.unlink(f.name)
 
 
-def cmd_close(a, *, ledger_path=LEDGER) -> int:
+def cmd_close(a, *, ledger_path=LEDGER, mirror=MIRROR) -> int:
+    with lg.locked(ledger_path, mirror):
+        return _close(a, ledger_path, mirror)
+
+
+def _close(a, ledger_path, mirror) -> int:
     events = lg.read(ledger_path)
     if lg.run_event(events, a.row, a.run, "open") is None:
         print(f"refused: {a.row} has no run {a.run}")
@@ -226,18 +292,23 @@ def cmd_close(a, *, ledger_path=LEDGER) -> int:
         print("refused: rule 6: say what happened (--note)")
         return 3
     lg.append(ledger_path, {"kind": "close", "row": a.row, "run": a.run, "surprise": surprise,
-                            "note": a.note})
+                            "note": a.note}, mirror=mirror)
     if surprise:
         # Rule 6: the row is FAILED and the session ends, until the user's resume.
         lg.append(ledger_path, {"kind": "score", "row": a.row, "run": a.run, "verdict": "FAILED",
-                                "evidence": f"rule 6: {a.note}", "by": "rule 6"})
-        lg.append(ledger_path, {"kind": "halt", "row": a.row, "run": a.run, "note": a.note})
+                                "evidence": f"rule 6: {a.note}", "by": "rule 6"}, mirror=mirror)
+        lg.append(ledger_path, {"kind": "halt", "row": a.row, "run": a.run, "note": a.note}, mirror=mirror)
         print(f"{a.row} FAILED (rule 6); the session is halted until `resume` by the user")
     return 0
 
 
-def cmd_score(a, *, ledger_path=LEDGER, rows=None) -> int:
+def cmd_score(a, *, ledger_path=LEDGER, rows=None, mirror=MIRROR) -> int:
     rows = rows if rows is not None else rw.load_plan()
+    with lg.locked(ledger_path, mirror):
+        return _score(a, ledger_path, rows, mirror)
+
+
+def _score(a, ledger_path, rows, mirror) -> int:
     events = lg.read(ledger_path)
     why = lg.score_refusals(events, rows, a.row, a.run, a.verdict)
     if not (a.evidence or "").strip():
@@ -248,30 +319,40 @@ def cmd_score(a, *, ledger_path=LEDGER, rows=None) -> int:
         print("refused:\n  " + "\n  ".join(why))
         return 3
     lg.append(ledger_path, {"kind": "score", "row": a.row, "run": a.run, "verdict": a.verdict,
-                            "evidence": a.evidence, "by": a.by})
+                            "evidence": a.evidence, "by": a.by}, mirror=mirror)
     return 0
 
 
-def cmd_go(a, *, ledger_path=LEDGER, rows=None) -> int:
+def cmd_go(a, *, ledger_path=LEDGER, rows=None, mirror=MIRROR) -> int:
     rows = rows if rows is not None else rw.load_plan()
+    with lg.locked(ledger_path, mirror):
+        return _go(a, ledger_path, rows, mirror)
+
+
+def _go(a, ledger_path, rows, mirror) -> int:
     why = lg.go_refusals(lg.read(ledger_path), rows, a.row)
     if not (a.by or "").strip() or not (a.note or "").strip():
         why.append("the user's go names who gave it and their words (--by, --note)")
     if why:
         print("refused:\n  " + "\n  ".join(why))
         return 3
-    lg.append(ledger_path, {"kind": "go", "row": a.row, "by": a.by, "note": a.note})
+    lg.append(ledger_path, {"kind": "go", "row": a.row, "by": a.by, "note": a.note}, mirror=mirror)
     return 0
 
 
-def cmd_resume(a, *, ledger_path=LEDGER) -> int:
+def cmd_resume(a, *, ledger_path=LEDGER, mirror=MIRROR) -> int:
+    with lg.locked(ledger_path, mirror):
+        return _resume(a, ledger_path, mirror)
+
+
+def _resume(a, ledger_path, mirror) -> int:
     if lg.halted(lg.read(ledger_path)) is None:
         print("refused: the session is not halted")
         return 3
     if not (a.by or "").strip() or not (a.note or "").strip():
         print("refused: a resume names the user and their words (--by, --note)")
         return 3
-    lg.append(ledger_path, {"kind": "resume", "by": a.by, "note": a.note})
+    lg.append(ledger_path, {"kind": "resume", "by": a.by, "note": a.note}, mirror=mirror)
     return 0
 
 

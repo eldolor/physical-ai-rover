@@ -52,8 +52,8 @@ class Row:
 
 
 def _cells(line: str) -> list:
-    # A table row: split on pipes not inside backticks (none of the tables
-    # put a pipe in code, but a check's text may hold one some day).
+    # A table row, split on every pipe: no cell may hold one (the loader's
+    # cell count and the ID pattern catch a row that does).
     return [c.strip() for c in line.strip().strip("|").split("|")]
 
 
@@ -91,7 +91,7 @@ def load(text: str) -> dict:
         expected = 1 + sum(1 for r in rows.values() if r.level == level)
         if n != expected:
             raise RowsError(f"{rid} out of order (expected L{level}.{expected})")
-        if len(cells) < 4:
+        if len(cells) != 4:
             raise RowsError(f"{rid}: {len(cells)} cells, want 4")
         rows[rid] = Row(rid, level, cells[1], cells[2], cells[3], None)
     unknown = sorted(set(amended) - set(rows))
@@ -114,10 +114,6 @@ def missing_bars(rows: dict) -> list:
 SECTION = re.compile(r"3\.(\d+)([a-z]?)")
 
 
-def _num(m) -> tuple:
-    return int(m.group(1)), m.group(2)
-
-
 def _index_sections(index_text: str) -> list:
     out = []
     for line in index_text.splitlines():
@@ -127,9 +123,10 @@ def _index_sections(index_text: str) -> list:
     return out
 
 
-def _named(cell: str) -> set:
+def _named(cell: str, index: tuple = ()) -> set:
     """Sections a coverage cell names: '3.38-3.40 SLAM', '3.51 / 3.54',
-    '3.110-3.111, 3.113-3.115'. A range covers every number between."""
+    '3.110-3.111, 3.113-3.115'. A range covers every number between, and
+    every lettered section of the index inside it (3.50a in 3.49-3.51)."""
     names = set()
     for m in re.finditer(r"3\.(\d+)([a-z]?)(?:\s*-\s*3\.(\d+))?", cell):
         a, suffix, b = int(m.group(1)), m.group(2), m.group(3)
@@ -137,6 +134,10 @@ def _named(cell: str) -> set:
             names.add(f"3.{a}{suffix}")
         else:
             names.update(f"3.{i}" for i in range(a, int(b) + 1))
+            for s in index:
+                m2 = SECTION.fullmatch(s)
+                if m2 and a <= int(m2.group(1)) <= int(b):
+                    names.add(s)
     return names
 
 
@@ -148,6 +149,7 @@ def coverage(text: str, index_text: str, rows: Optional[dict] = None) -> list:
     if len(body) < 2:
         return ["no ## Coverage section"]
     table = body[1].split("\n## ", 1)[0]
+    index = tuple(_index_sections(index_text))
     covered: dict = {}
     for line in table.splitlines():
         if not line.startswith("| 3."):
@@ -157,10 +159,10 @@ def coverage(text: str, index_text: str, rows: Optional[dict] = None) -> list:
         for sec, what in ((cells[0], cells[1]), (cells[3], cells[4]) if len(cells) >= 5 else ("", "")):
             if not sec:
                 continue
-            for name in _named(sec):
+            for name in _named(sec, index):
                 covered.setdefault(name, []).append(what)
     problems = []
-    for name in _index_sections(index_text):
+    for name in index:
         if name == SELF:
             continue
         whats = covered.get(name)

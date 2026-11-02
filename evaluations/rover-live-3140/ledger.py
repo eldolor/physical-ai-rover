@@ -13,8 +13,13 @@ Events, one JSON line each (append-only, fsynced, under an flock):
     close   the run's after-check: surprise (rule 6), note
     score   a verdict: met | FAILED (| decided, L8 only), evidence, by
     go      the user's go to continue past a FAILED L3+ row (criterion 2)
+    error   the run raised before it finished (it stays open for rule 6)
     halt    a surprise ended the session (rule 6)
     resume  the user lifts a halt
+
+The ledger the gates read lives in the repository's shared `.git` (one for
+every worktree on the machine); each append is copied to a mirror beside the
+records, which is committed. A machine with no ledger yet starts from it.
 """
 
 from __future__ import annotations
@@ -22,7 +27,9 @@ from __future__ import annotations
 import fcntl
 import json
 import os
+import shutil
 import time
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterable, Optional
 
@@ -41,8 +48,10 @@ class Refused(RuntimeError):
 
 # ------------------------------------------------------------------ storage
 
-def read(path: Path) -> list:
+def read(path: Path, mirror: Optional[Path] = None) -> list:
     p = Path(path)
+    if not p.exists() and mirror is not None and Path(mirror).exists():
+        p = Path(mirror)
     if not p.exists():
         return []
     out = []
@@ -56,7 +65,21 @@ def read(path: Path) -> list:
     return out
 
 
-def append(path: Path, event: dict) -> dict:
+@contextmanager
+def locked(path: Path, mirror: Optional[Path] = None):
+    """Hold the ledger's lock across a gate read and its append, so two
+    terminals never both pass the same gate. Seeds a missing ledger from the
+    mirror first."""
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with open(f"{p}.lock", "a") as lk:
+        fcntl.flock(lk, fcntl.LOCK_EX)
+        if not p.exists() and mirror is not None and Path(mirror).exists():
+            shutil.copyfile(mirror, p)
+        yield
+
+
+def append(path: Path, event: dict, mirror: Optional[Path] = None) -> dict:
     ev = {"t": time.strftime("%Y-%m-%dT%H:%M:%S%z"), **event}
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
@@ -65,6 +88,10 @@ def append(path: Path, event: dict) -> dict:
         f.write(json.dumps(ev) + "\n")
         f.flush()
         os.fsync(f.fileno())
+        if mirror is not None and Path(mirror).resolve() != p.resolve():
+            tmp = Path(f"{mirror}.tmp")
+            shutil.copyfile(p, tmp)
+            os.replace(tmp, mirror)
     return ev
 
 
@@ -118,8 +145,13 @@ def run_event(events: list, row: str, run: str, kind: str) -> Optional[dict]:
 
 # ------------------------------------------------------------------- gates
 
-def check_checklist(surface: str, c: dict) -> list:
-    """Rules 1-5, signed before the run (criterion 6); rule 6 is `close`."""
+def check_checklist(surface: str, c: dict, board: bool = False) -> list:
+    """Rules 1-5, signed before the run (criterion 6); rule 6 is `close`.
+    A board command off the wheels still signs rule 3: it could move the car.
+
+    The checklist, `go` and `resume` are a signed record, not a lock against
+    the agent that runs the tool: they carry the named person's answers, and
+    an agent never fills them with words the person did not give."""
     out = []
     if not (c.get("signed_by") or "").strip():
         out.append("checklist unsigned (--signed-by: the person at the car)")
@@ -130,30 +162,28 @@ def check_checklist(surface: str, c: dict) -> list:
             out.append("rule 2: a floor run needs a named person on STOP (--stop-person)")
         if not c.get("power_switch"):
             out.append("rule 2: a floor run needs the power switch in reach (--power-switch)")
-    if surface != "none":
+    if surface != "none" or board:
         if not c.get("safety_on"):
             out.append("rule 3: safety, the watchdog and the heartbeat on (--safety-on)")
-        if c.get("truth") not in TRUTH:
+        if surface != "none" and c.get("truth") not in TRUTH:
             out.append("rule 4: say how distances are judged (--truth grid|none)")
-        if not c.get("speed_default"):
+        if surface != "none" and not c.get("speed_default"):
             out.append("rule 5: speeds at today's defaults (--speed-default)")
     return out
 
 
 def stand_done(events: list, path: str) -> bool:
     """Rule 1: an earlier stand run of this motion path, closed with no
-    surprise and not scored FAILED."""
+    surprise, finished without error and judged: scored met."""
     for e in events:
         if e["kind"] != "open" or e["surface"] != "stand" or path not in e.get("motion", ()):
             continue
         c = run_event(events, e["row"], e["run"], "close")
-        if c is None or c.get("surprise"):
+        if c is None or c.get("surprise") or run_event(events, e["row"], e["run"], "error"):
             continue
-        scores = [s for s in events if s["kind"] == "score" and s["row"] == e["row"]
-                  and s.get("run") == e["run"]]
-        if scores and scores[-1]["verdict"] == "FAILED":
-            continue
-        return True
+        s = run_event(events, e["row"], e["run"], "score")
+        if s is not None and s["verdict"] == "met":
+            return True
     return False
 
 
@@ -213,7 +243,7 @@ def refusals(events: list, rows: dict, row_id: str, surface: str, motion: list,
         out.append(f"criterion 3: {row_id} is *reported* and amendment 1 has no bar for it")
     if not on_dev:
         out.append("criterion 3: the commit under test is not on origin/dev")
-    out += check_checklist(surface, checklist)
+    out += check_checklist(surface, checklist, board)
     if surface == "floor":
         for m in motion:
             if m in MOTIONS and not stand_done(events, m):
@@ -239,6 +269,14 @@ def score_refusals(events: list, rows: dict, row_id: str, run: Optional[str], ve
         return [f"{row_id} has no run {run}"]
     if run_event(events, row_id, run, "close") is None:
         return [f"{row_id} run {run} is not closed (rule 6's after-check comes first)"]
+    if run_event(events, row_id, run, "score") is not None:
+        # One verdict a run: never rule 6's FAILED overwritten by a met.
+        return [f"{row_id} run {run} is already scored; a new verdict needs a new run"]
+    runs = [e["run"] for e in events if e["kind"] == "open" and e["row"] == row_id]
+    if runs[-1] != run:
+        return [f"{row_id}: only its latest run ({runs[-1]}) may be scored"]
+    if verdict == "met" and run_event(events, row_id, run, "error"):
+        return [f"{row_id} run {run} raised before it finished; it cannot be met"]
     if verdict == "met" and row.reported and not row.amended_bar:
         return [f"criterion 3: {row_id} has no bar to be met"]
     return []

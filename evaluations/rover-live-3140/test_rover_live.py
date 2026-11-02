@@ -2,7 +2,7 @@
 # Copyright (C) 2026 Anshu Gaind
 """3.140.A's harness against a fake ledger and a fake board (no ssh, no locks):
 
-    .venv/bin/python -m pytest evaluations/rover-live-3140/test_harness.py -q
+    .venv/bin/python -m pytest evaluations/rover-live-3140/test_rover_live.py -q
 """
 
 import json
@@ -47,7 +47,7 @@ def passed(*row_ids):
     return out
 
 
-def stand(path, run="s1", verdict=None, surprise=False):
+def stand(path, run="s1", verdict="met", surprise=False):
     out = [ev("open", "L1.3", run, surface="stand", motion=[path]),
            ev("close", "L1.3", run, surprise=surprise)]
     if verdict:
@@ -146,8 +146,9 @@ def test_a_failed_hard_row_stops_every_floor_run_but_its_own():
     (stand("verb", surprise=True), False),                 # a surprise on the stand
     (stand("verb", verdict="FAILED"), False),
     ([ev("open", "L1.3", "s1", surface="stand", motion=["verb"])], False),   # never closed
+    (stand("verb", verdict=None), False),                  # never judged
+    (stand("verb") + [ev("error", "L1.3", "s1", error="ssh")], False),   # never finished
     (stand("verb"), True),
-    (stand("verb", verdict="met"), True),
 ])
 def test_b_stand_first(stand_events, ok):
     events = passed(*level_ids(0, 1)) + stand_events
@@ -204,16 +205,16 @@ def test_f_a_surprise_halts_until_the_users_resume(tmp_path):
         lg.append(led, e)
     lg.append(led, ev("open", "L2.3", "r1", surface="floor", motion=["verb"]))
     assert runner.cmd_close(SimpleNamespace(row="L2.3", run="r1", surprise="yes", note=""),
-                            ledger_path=led) == 3                       # a surprise is described
+                            ledger_path=led, mirror=led.with_suffix('.m')) == 3                       # a surprise is described
     assert runner.cmd_close(SimpleNamespace(row="L2.3", run="r1", surprise="yes", note="touched the jamb"),
-                            ledger_path=led) == 0
+                            ledger_path=led, mirror=led.with_suffix('.m')) == 0
     events = lg.read(led)
     assert lg.latest_verdict(events, "L2.3") == "FAILED"
     assert any("rule 6: the session halted" in w for w in floor(events, row="L2.3"))
     none = lg.refusals(events, ROWS, "L4.2", "none", [], NONE_OK, True, False)
     assert any("rule 6" in w for w in none)                            # every run, not only floor
-    assert runner.cmd_resume(SimpleNamespace(by="U", note=""), ledger_path=led) == 3
-    assert runner.cmd_resume(SimpleNamespace(by="U", note="jamb taped; go on"), ledger_path=led) == 0
+    assert runner.cmd_resume(SimpleNamespace(by="U", note=""), ledger_path=led, mirror=led.with_suffix('.m')) == 3
+    assert runner.cmd_resume(SimpleNamespace(by="U", note="jamb taped; go on"), ledger_path=led, mirror=led.with_suffix('.m')) == 0
     events = lg.read(led)
     assert lg.halted(events) is None
     assert not any("rule 6" in w for w in floor(events, row="L2.3"))
@@ -252,14 +253,15 @@ def test_a_run_is_scored_only_once_closed():
 # ---------------------------------------------------- execute, A3 g, A4, A5
 
 class FakeBoard:
-    def __init__(self, mode="hardware"):
-        self.mode = mode
+    def __init__(self, mode="hardware", rev=SHA[:7]):
+        self.mode, self.rev = mode, rev
         self.calls = []
 
     def ssh(self, cmd, check=True, timeout=120.0, input=None):
         self.calls.append(cmd)
         if "/health" in cmd:
-            return json.dumps({"status": "ok", "mode": self.mode})
+            return json.dumps({"status": "ok", "mode": self.mode,
+                               "identity": {"git_revision": self.rev}})
         return ""
 
     def board_run(self, label, cmd, out, *, sha, allow_sudo, stop_twin, run, bench_dir):
@@ -290,8 +292,9 @@ def test_a_board_run_is_recorded(tmp_path, monkeypatch):
     monkeypatch.setenv("PICAR_BOARD_TOKEN", "tok")
     led, fb = seeded(tmp_path), FakeBoard()
     rc = runner.execute(spec(), ledger_path=led, rows=ROWS, run=fb.ssh, board_run=fb.board_run,
-                        on_dev_fn=lambda s: True, records=tmp_path)
+                        on_dev_fn=lambda s: True, records=tmp_path, mirror=tmp_path / "m.jsonl")
     assert rc == 0
+    assert (tmp_path / "m.jsonl").read_text() == led.read_text()     # the committed copy
     assert fb.board["bench_dir"] == "bench-3140" and fb.board["sha"] == SHA
     assert fb.board["allow_sudo"] is False and fb.board["stop_twin"] is False
     assert "health_before.json" in fb.board["cmd"] and "health_after.json" in fb.board["cmd"]
@@ -304,13 +307,47 @@ def test_a_board_run_is_recorded(tmp_path, monkeypatch):
     assert [(e["row"], e["run"]) for e in opened] == [("L2.3", "20261102-120000")]
 
 
-def test_g_a_board_not_in_hardware_mode_is_refused(tmp_path, monkeypatch):
+@pytest.mark.parametrize("board, sp", [
+    (FakeBoard(mode="sim"), spec()),
+    (FakeBoard(rev="b" * 7), spec()),                      # the car runs another commit
+    (FakeBoard(rev="unknown"), spec()),
+    (FakeBoard(mode="sim"), spec(surface="none", motion=(), checklist=STAND_OK)),  # a command off the wheels too
+])
+def test_g_the_car_must_be_the_scored_one(tmp_path, monkeypatch, board, sp):
     monkeypatch.setenv("PICAR_BOARD_TOKEN", "tok")
-    led, fb = seeded(tmp_path), FakeBoard(mode="sim")
-    rc = runner.execute(spec(), ledger_path=led, rows=ROWS, run=fb.ssh, board_run=fb.board_run,
-                        on_dev_fn=lambda s: True, records=tmp_path)
-    assert rc == 3 and not hasattr(fb, "board")
+    led = seeded(tmp_path)
+    rc = runner.execute(sp, ledger_path=led, rows=ROWS, run=board.ssh, board_run=board.board_run,
+                        on_dev_fn=lambda s: True, records=tmp_path, mirror=tmp_path / "m.jsonl")
+    assert rc == 3 and not hasattr(board, "board")
     assert lg.open_runs(lg.read(led)) == []
+
+
+def test_a_board_command_off_the_wheels_signs_rule_3():
+    why = lg.refusals([], ROWS, "L4.2", "none", [], NONE_OK, True, True)
+    assert why == ["rule 3: safety, the watchdog and the heartbeat on (--safety-on)"]
+
+
+def test_a_run_that_raises_is_on_the_ledger_and_keeps_boardruns_record(tmp_path, monkeypatch):
+    monkeypatch.setenv("PICAR_BOARD_TOKEN", "tok")
+    led, fb = seeded(tmp_path), FakeBoard()
+
+    def boom(label, cmd, out, **kw):
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "record.json").write_text(json.dumps({"sha": "x", "left_as_found": False,
+                                                     "restore_error": "ssh"}))
+        raise RuntimeError("push refused")
+
+    with pytest.raises(RuntimeError):
+        runner.execute(spec(), ledger_path=led, rows=ROWS, run=fb.ssh, board_run=boom,
+                       on_dev_fn=lambda s: True, records=tmp_path, mirror=tmp_path / "m.jsonl")
+    rec = json.loads((tmp_path / "L2.3" / "20261102-120000" / "record.json").read_text())
+    assert rec["restore_error"] == "ssh" and rec["left_as_found"] is False
+    assert rec["error"] == "RuntimeError: push refused" and rec["sha"] == SHA
+    events = lg.read(led)
+    assert lg.run_event(events, "L2.3", "20261102-120000", "error")
+    assert lg.open_runs(events)                              # rule 6's close still owed
+    events += [ev("close", "L2.3", "20261102-120000", surprise=False)]
+    assert "cannot be met" in lg.score_refusals(events, ROWS, "L2.3", "20261102-120000", "met")[0]
 
 
 def test_the_gates_are_read_again_under_the_locks(tmp_path, monkeypatch):
@@ -318,7 +355,7 @@ def test_the_gates_are_read_again_under_the_locks(tmp_path, monkeypatch):
     led, fb = seeded(tmp_path), FakeBoard()
     lg.append(led, ev("halt", "L2.4", "x", note="contact"))      # landed while the run waited
     assert runner.execute(spec(), ledger_path=led, rows=ROWS, run=fb.ssh, board_run=fb.board_run,
-                          on_dev_fn=lambda s: True, records=tmp_path) == 3
+                          on_dev_fn=lambda s: True, records=tmp_path, mirror=tmp_path / "m.jsonl") == 3
     assert fb.calls == [] and not hasattr(fb, "board")
 
 
@@ -327,7 +364,8 @@ def test_a_board_run_needs_the_board_lock(tmp_path, monkeypatch):
     fb = FakeBoard()
     with pytest.raises(Exception, match="board_lock"):
         runner.execute(spec(), ledger_path=seeded(tmp_path), rows=ROWS, run=fb.ssh,
-                       board_run=fb.board_run, on_dev_fn=lambda s: True, records=tmp_path)
+                       board_run=fb.board_run, on_dev_fn=lambda s: True, records=tmp_path,
+                       mirror=tmp_path / "m.jsonl")
     assert fb.calls == []
 
 
@@ -378,7 +416,8 @@ def test_a5_a_manual_row_takes_no_lock_and_keeps_its_readings(tmp_path, monkeypa
     orig = runner.execute
     monkeypatch.setattr(runner, "execute",
                         lambda s, ledger_path, rows: orig(s, ledger_path=ledger_path, rows=rows,
-                                                          on_dev_fn=lambda x: True, records=tmp_path))
+                                                          on_dev_fn=lambda x: True, records=tmp_path,
+                                                          mirror=tmp_path / "m.jsonl"))
     assert runner.cmd_run(a, ledger_path=led, rows=ROWS, locked=lambda *x, **k: called.append(1)) == 0
     assert called == []
     [d] = list((tmp_path / "L0.1").iterdir())
@@ -391,17 +430,44 @@ def test_score_go_and_close_record_who_and_why(tmp_path):
     led = tmp_path / "ledger.jsonl"
     lg.append(led, ev("open", "L5.1", "r", surface="none", motion=[]))
     assert runner.cmd_score(SimpleNamespace(row="L5.1", run="r", verdict="met", evidence="", by="C"),
-                            ledger_path=led, rows=ROWS) == 3            # not closed, no evidence
+                            ledger_path=led, rows=ROWS, mirror=led.with_suffix('.m')) == 3            # not closed, no evidence
     assert runner.cmd_close(SimpleNamespace(row="L5.1", run="r", surprise="no", note=None),
-                            ledger_path=led) == 0
+                            ledger_path=led, mirror=led.with_suffix('.m')) == 0
     assert runner.cmd_close(SimpleNamespace(row="L5.1", run="r", surprise="no", note=None),
-                            ledger_path=led) == 3                       # once
+                            ledger_path=led, mirror=led.with_suffix('.m')) == 3                       # once
     assert runner.cmd_score(SimpleNamespace(row="L5.1", run="r", verdict="FAILED", evidence="6/10", by="C"),
-                            ledger_path=led, rows=ROWS) == 0
-    assert runner.cmd_go(SimpleNamespace(row="L5.1", by="", note=""), ledger_path=led, rows=ROWS) == 3
+                            ledger_path=led, rows=ROWS, mirror=led.with_suffix('.m')) == 0
+    assert runner.cmd_go(SimpleNamespace(row="L5.1", by="", note=""), ledger_path=led, rows=ROWS, mirror=led.with_suffix('.m')) == 3
     assert runner.cmd_go(SimpleNamespace(row="L5.1", by="user", note="carry on"),
-                         ledger_path=led, rows=ROWS) == 0
+                         ledger_path=led, rows=ROWS, mirror=led.with_suffix('.m')) == 0
     assert lg.has_go(lg.read(led), "L5.1")
+
+
+def test_a_run_is_scored_once_and_only_its_latest(tmp_path):
+    events = [ev("open", "L2.3", "r1"), ev("close", "L2.3", "r1", surprise=True),
+              ev("score", "L2.3", "r1", verdict="FAILED")]
+    assert "already scored" in lg.score_refusals(events, ROWS, "L2.3", "r1", "met")[0]
+    older = [ev("open", "L2.4", "r1"), ev("close", "L2.4", "r1"), ev("open", "L2.4", "r2"),
+             ev("close", "L2.4", "r2")]
+    assert "only its latest run (r2)" in lg.score_refusals(older, ROWS, "L2.4", "r1", "met")[0]
+    assert lg.score_refusals(older, ROWS, "L2.4", "r2", "met") == []
+
+
+def test_a_missing_ledger_starts_from_the_mirror(tmp_path):
+    mirror, led = tmp_path / "mirror.jsonl", tmp_path / "git" / "ledger.jsonl"
+    lg.append(mirror, ev("halt", "L2.3", "r", note="contact"))
+    assert lg.halted(lg.read(led, mirror))
+    with lg.locked(led, mirror):
+        assert lg.halted(lg.read(led))
+
+
+@pytest.mark.parametrize("value, log", [(["86x58"], []), ([], ["/nope/missing.txt"])])
+def test_bad_readings_are_refused_before_anything(tmp_path, monkeypatch, value, log):
+    monkeypatch.setattr(runner, "fetch_dev", lambda: None)
+    monkeypatch.setattr(runner, "on_dev", lambda s: True)
+    a = _args(row="L0.1", surface="none", motion="", cmd=None, value=value, log=log)
+    assert runner.cmd_run(a, ledger_path=tmp_path / "l.jsonl", rows=ROWS) == 3
+    assert not (tmp_path / "l.jsonl").exists()
 
 
 def test_a_cut_ledger_line_is_an_error_not_skipped(tmp_path):
@@ -417,6 +483,7 @@ def test_a_cut_ledger_line_is_an_error_not_skipped(tmp_path):
     ("L4.1/r/board/frame_0001.jpg", True), ("L6.1/r/twin.png", True), ("L1.4/r/grid.mp4", True),
     ("L3.8/r/board/maps/v3/current.json", True), ("L3.8/r/board/house.posegraph", True),
     ("L3.8/r/board/house.data", True), ("L3.8/r/board/map.pgm", True),
+    ("L3.3/r/board/slam_map.json", True), ("L3.3/r/board/map.yaml", True),
     ("L2.3/r/record.json", False), ("L2.3/r/board/row.log", False), ("ledger.jsonl", False),
 ])
 def test_images_and_maps_never_enter_git(name, ignored):

@@ -1,0 +1,4 @@
+{"t": "2026-11-02T16:28:48-0600", "kind": "open", "surface": "none", "motion": [], "row": "L5.1", "run": "r"}
+{"t": "2026-11-02T16:28:48-0600", "kind": "close", "row": "L5.1", "run": "r", "surprise": false, "note": null}
+{"t": "2026-11-02T16:28:48-0600", "kind": "score", "row": "L5.1", "run": "r", "verdict": "FAILED", "evidence": "6/10", "by": "C"}
+{"t": "2026-11-02T16:28:48-0600", "kind": "go", "row": "L5.1", "by": "user", "note": "carry on"}

@@ -14,3 +14,7 @@
 *.data
 *.pbstream
 maps/
+# A map saved as text (a /world/map or /slam/map dump, a map yaml)
+*map*.json
+*map*.yaml
+*map*.yml
