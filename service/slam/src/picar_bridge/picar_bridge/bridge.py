@@ -172,13 +172,14 @@ MAP_RELOAD = os.environ.get("PICAR_MAP_RELOAD", "1") != "0"
 # on a fixed wall in D4-d). Off, the watch judges no scans; entering the
 # saved unknown and a person's request still re-map.
 REMAP_CONTRADICTION = os.environ.get("PICAR_REMAP_CONTRADICTION", "0") == "1"
-# 3.50.D5 (the user, 2026-11-01), both off unless set; a trial, not a default:
+# 3.50.D5 (the user, 2026-11-01, after the trial: both on by default):
 # PICAR_SLAM_LIFELONG=1 maps with slam_toolbox's lifelong node (it prunes
-# nodes newer scans overlap); PICAR_MAP_CAP=<ratio> maps afresh from the dock
+# nodes newer scans overlap; 0 maps with the async node); PICAR_MAP_CAP=<ratio>
+# (0 for none) maps afresh from the dock
 # instead of reloading a saved map grown past that many times its first
 # version (a fresh map's origin is where it starts, so only a start on the
 # dock can begin one in the dock's frame).
-SLAM_LIFELONG = os.environ.get("PICAR_SLAM_LIFELONG", "0") == "1"
+SLAM_LIFELONG = os.environ.get("PICAR_SLAM_LIFELONG", "1") == "1"
 
 
 def _map_cap(raw: str) -> float:
@@ -189,7 +190,7 @@ def _map_cap(raw: str) -> float:
     return v if math.isfinite(v) and v > 0 else 0.0
 
 
-MAP_CAP = _map_cap(os.environ.get("PICAR_MAP_CAP", "0"))
+MAP_CAP = _map_cap(os.environ.get("PICAR_MAP_CAP", "1.5"))
 # A stopped node's last map -> odom is stamped up to slam.yaml's
 # transform_timeout (0.2 s) ahead: a fresh node's frame starts after it.
 SLAM_TF_LEAD_S = 0.25

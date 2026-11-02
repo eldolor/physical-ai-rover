@@ -1783,7 +1783,7 @@ def test_a_re_map_keeps_the_saved_map_s_id(bridge_mod, monkeypatch, tmp_path):
     assert b.slam_state == "ready" and b.slam_pose()[1]["map_id"] == "map-0a1b2c3d"
 
 
-# ---------- 3.50.D5: the lifelong node and the size cap (trial, both off) ----------
+# ---------- 3.50.D5: the lifelong node and the size cap (both on by default since the trial) ----------
 
 def _save_sized(store, map_id, size, session="s1"):
     pending = store.begin(map_id)
@@ -1866,7 +1866,7 @@ def test_a_map_within_the_cap_or_with_no_cap_reloads(bridge_mod, monkeypatch, tm
     assert fake.calls[0][0] == "localisation" and b.reload["result"] == "matched"
 
 
-def test_health_names_the_trial_settings_off_by_default(bridge_mod):
-    assert bridge_mod.SLAM_LIFELONG is False and bridge_mod.MAP_CAP == 0.0
+def test_health_names_the_settings_lifelong_and_cap_on_by_default(bridge_mod):
+    assert bridge_mod.SLAM_LIFELONG is True and bridge_mod.MAP_CAP == 1.5
     slam = bridge_mod.Bridge().health()[1]["slam"]
-    assert slam["lifelong"] is False and slam["map_cap"] == 0.0
+    assert slam["lifelong"] is True and slam["map_cap"] == 1.5

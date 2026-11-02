@@ -46,7 +46,11 @@ GROWTH = 1.5
 GRAPH_MB = 50.0
 HOUSES = ("scaled_house", "home_first_floor")
 # 3.50.D5's trial (the user, 2026-11-01): which arm, passed to the bridge.
-ARMS = {"base": {}, "lifelong": {"PICAR_SLAM_LIFELONG": "1"}, "cap": {"PICAR_MAP_CAP": "1.5"},
+# Every arm names both settings: since the trial the bridge's defaults are
+# "both", so an arm that left one out would run it.
+ARMS = {"base": {"PICAR_SLAM_LIFELONG": "0", "PICAR_MAP_CAP": "0"},
+        "lifelong": {"PICAR_SLAM_LIFELONG": "1", "PICAR_MAP_CAP": "0"},
+        "cap": {"PICAR_SLAM_LIFELONG": "0", "PICAR_MAP_CAP": "1.5"},
         "both": {"PICAR_SLAM_LIFELONG": "1", "PICAR_MAP_CAP": "1.5"}}
 ARM = os.environ.get("D5_ARM", "base")
 _network = d3._network
@@ -397,9 +401,10 @@ def main(argv):
         want = ARMS[ARM]
         got = res.get("bridge_settings") or {}
         # The bridge's own reading, not the shell's: an arm it did not run is no result.
-        if res.get("verdict") and (got.get("lifelong") != ("PICAR_SLAM_LIFELONG" in want)
-                                   or got.get("lifelong_running") != ("PICAR_SLAM_LIFELONG" in want)
-                                   or got.get("map_cap") != float(want.get("PICAR_MAP_CAP", 0))):
+        lifelong = want["PICAR_SLAM_LIFELONG"] == "1"
+        if res.get("verdict") and (got.get("lifelong") != lifelong
+                                   or got.get("lifelong_running") != lifelong
+                                   or got.get("map_cap") != float(want["PICAR_MAP_CAP"])):
             res["verdict"] = {k: f"INVALID (bridge read {got}; arm {ARM})" for k in res["verdict"]}
         name = f"{house}{'' if ARM == 'base' else f'-{ARM}'}{'' if SESSIONS == 10 else f'-n{SESSIONS}'}.json"
         out_dir = os.path.join(OUT, "smoke") if SMOKE_S else OUT

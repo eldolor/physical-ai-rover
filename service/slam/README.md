@@ -162,6 +162,9 @@ Notes on those choices:
   first mapping session began); a robot elsewhere is caught within a few
   seconds and gets a fresh map (`/health` `slam.reload`). Goals are
   refused until then. `-e PICAR_MAP_RELOAD=0` maps from empty instead.
+  Mapping runs slam_toolbox's lifelong node, and a saved map grown past
+  1.5x its first version is mapped afresh from the dock at the next start
+  (3.50.D5; `-e PICAR_SLAM_LIFELONG=0`, `-e PICAR_MAP_CAP=0` turn them off).
   While localising, entering a part of the saved map that is unknown, or a
   person's request, starts a re-map; `-e PICAR_REMAP_CONTRADICTION=1` adds
   re-mapping when scans contradict the saved map (off: 3.50.D4).

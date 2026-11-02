@@ -86,7 +86,7 @@ slam_toolbox:
     minimum_angle_penalty: 0.9
     minimum_distance_penalty: 0.5
     use_response_expansion: true
-    # 3.50.D5 (trial, PICAR_SLAM_LIFELONG=1): read only by the lifelong node.
+    # 3.50.D5 (PICAR_SLAM_LIFELONG, on by default): read only by the lifelong node.
     # Upstream's documented values (config/mapper_params_lifelong.yaml at the
     # pinned SHA), not the node's code defaults, which differ.
     lifelong_search_use_tree: false
