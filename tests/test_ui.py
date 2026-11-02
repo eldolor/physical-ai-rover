@@ -1128,7 +1128,7 @@ def test_a_blind_path_says_it_fell_back_to_the_single_beam(browser, twin_server)
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
     page.click('.tab-btn[data-tab="sim"]')
-    page.wait_for_selector("#depth-strip .depth-zone", state="visible", timeout=5000)
+    wait_for_mocked_strip(page, 4)
     text = page.inner_text("#depth-readout")
     assert "single beam" in text, text
     assert "2 unusable" in text, text
@@ -1154,7 +1154,7 @@ def test_nothing_within_range_is_not_reported_as_a_distance(browser, twin_server
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
     page.click('.tab-btn[data-tab="sim"]')
-    page.wait_for_selector("#depth-strip .depth-zone", state="visible", timeout=5000)
+    wait_for_mocked_strip(page, 2)
     text = page.inner_text("#depth-readout")
     assert "clear beyond range" in text, text
     assert "0cm" not in text, text
@@ -1183,6 +1183,17 @@ def test_a_server_with_no_depth_route_says_so_instead_of_going_blank(browser, tw
     page.close()
 
 
+def wait_for_mocked_strip(page, zones):
+    """Wait until the strip shows the mocked reply's zones. The page may
+    already be polling the real server's depth (8 zones) when a test's
+    route is installed, and the first strip drawn can be that one; a test
+    that counted or read the readout at the first zone raced it (seen on
+    2026-11-02 under four workers: 8 zones counted where 2 were mocked)."""
+    page.wait_for_function(
+        "(n) => document.querySelectorAll('#depth-strip .depth-zone').length === n",
+        arg=zones, timeout=5000)
+
+
 def test_an_unmeasurable_zone_is_not_drawn_as_a_distance(browser, twin_server):
     """The tri-state's whole point, made visible: 'I could not tell' must
     not be paintable as 'clear' or as any range. This is what stops a
@@ -1198,7 +1209,7 @@ def test_an_unmeasurable_zone_is_not_drawn_as_a_distance(browser, twin_server):
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
     page.click('.tab-btn[data-tab="sim"]')
-    page.wait_for_selector("#depth-strip .depth-zone", state="visible", timeout=5000)
+    wait_for_mocked_strip(page, 2)
     zones = page.locator("#depth-strip .depth-zone")
     assert zones.count() == 2
     assert "unusable" in (zones.nth(1).get_attribute("class") or "")
