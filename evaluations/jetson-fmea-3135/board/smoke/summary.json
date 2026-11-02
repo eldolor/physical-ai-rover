@@ -1,0 +1,63 @@
+{
+ "sha": "831ad10d4ec5cee60820c1d927734d26cbdf8d41",
+ "cmd_exit": 0,
+ "cmd_s": 17.9,
+ "fmea_exit": "0",
+ "row": "F13",
+ "host": "picar-jetson",
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "error": null,
+ "recovery_s": 3.27,
+ "measures": {
+  "fault_at": 396018.753455034,
+  "outcome": "idle",
+  "end_state": null,
+  "end_reason": null,
+  "refusals": {},
+  "no_feedback_refusals": 0,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 21,
+   "max_dt_s": 0.0537
+  },
+  "last_refusal": {
+   "reason": "watchdog",
+   "detail": "no command for over 1.0s -- motors stopped",
+   "driver": "twin-dpad",
+   "at": 396019.691051799,
+   "seconds_ago": 5.07
+  },
+  "forward_at_fault": true,
+  "wheels_zero_s": 0.953,
+  "travel_cm": 18.37,
+  "truth_hole_s": 0.029,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   396013.5868,
+   396029.5869
+  ],
+  "mem_available_min_mb": 2279,
+  "oom_kills": 0
+ },
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 16,
+  "temps": 16,
+  "clocks": 16,
+  "max_temp_c": 47.937,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2279,
+  "cpu_below_max_samples": 15,
+  "gpu_below_max_samples": 16
+ },
+ "desktop_load_samples": 18,
+ "restore_actions": [],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true
+}
