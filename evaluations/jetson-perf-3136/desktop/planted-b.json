@@ -1,111 +1,119 @@
 {
- "started": "2026-11-02T13:14:56-0600",
- "rev": "7a2b0a8b10076464499f699e616d239a169078ae",
- "image": "vision-picar-ros:plan-3.136",
+ "started": "2026-11-02T13:17:42-0600",
+ "rev": "35301030ed9f53b171767fed6e9e49f443052c57",
+ "image": "vision-picar-ros:latest",
  "delay_ms": 100.0,
  "tolerance": 0.1,
  "desktop_load_start": [
-  1.06787109375,
-  1.0966796875,
-  1.1064453125
+  0.75927734375,
+  1.05078125,
+  1.09033203125
  ],
  "rows": {
   "P12 segment() per call": {
    "statistic": "p90 ms per call",
    "n_base": 225,
    "n_planted": 225,
-   "base": 3.24,
-   "planted": 114.31,
-   "delay_ms": 111.07,
-   "error_pct": 11.1,
-   "met": false
+   "base": 3.33,
+   "planted": 103.55,
+   "delay_ms": 100.22,
+   "error_pct": 0.2,
+   "met": true
   },
   "P12 walk per call": {
    "statistic": "p90 ms per call",
    "n_base": 200,
    "n_planted": 200,
-   "base": 1.1,
-   "planted": 105.72,
-   "delay_ms": 104.62,
-   "error_pct": 4.6,
+   "base": 1.09,
+   "planted": 101.27,
+   "delay_ms": 100.18,
+   "error_pct": 0.2,
    "met": true
   },
   "P11 controller rate": {
    "statistic": "mean period ms (1000 / pooled rate)",
    "base_rate": {
-    "spans": 0,
-    "intervals": 0,
-    "executing_s": 0.0,
-    "rate_hz": null,
-    "mean_period_ms": null,
-    "period_p50_ms": null,
-    "period_p90_ms": null
+    "spans": 1,
+    "intervals": 799,
+    "executing_s": 40.0,
+    "rate_hz": 20.0,
+    "mean_period_ms": 50.0,
+    "period_p50_ms": 50.00019073486328,
+    "period_p90_ms": 50.41813850402832
    },
    "planted_rate": {
-    "spans": 0,
-    "intervals": 0,
-    "executing_s": 0.0,
-    "rate_hz": null,
-    "mean_period_ms": null,
-    "period_p50_ms": null,
-    "period_p90_ms": null
+    "spans": 1,
+    "intervals": 266,
+    "executing_s": 39.9,
+    "rate_hz": 6.667,
+    "mean_period_ms": 150.0,
+    "period_p50_ms": 149.98888969421387,
+    "period_p90_ms": 150.6969928741455
    },
-   "met": false
+   "base": 50.0,
+   "planted": 150.0,
+   "delay_ms": 100.0,
+   "error_pct": 0.0,
+   "met": true
   },
   "P11 scan lag": {
    "statistic": "lag p90 ms",
    "base_lag": {
-    "n": 0,
-    "p50_ms": null,
-    "p90_ms": null,
-    "max_ms": null
+    "n": 400,
+    "p50_ms": 1.2538433074951172,
+    "p90_ms": 1.322031021118164,
+    "max_ms": 2.0503997802734375
    },
    "planted_lag": {
-    "n": 0,
-    "p50_ms": null,
-    "p90_ms": null,
-    "max_ms": null
+    "n": 398,
+    "p50_ms": 101.4547348022461,
+    "p90_ms": 101.69506072998047,
+    "max_ms": 112.80012130737305
    },
-   "met": false
+   "base": 1.32,
+   "planted": 101.7,
+   "delay_ms": 100.37,
+   "error_pct": 0.4,
+   "met": true
   }
  },
  "room_work_scorer": {
   "room_work_base": {
    "segment": {
     "n": 225,
-    "p50_ms": 2.1789073944091797,
-    "p90_ms": 3.237009048461914,
-    "max_ms": 6.756067276000977
+    "p50_ms": 2.2690296173095703,
+    "p90_ms": 3.3299922943115234,
+    "max_ms": 8.405923843383789
    },
    "walk": {
     "n": 200,
-    "p50_ms": 0.9560585021972656,
-    "p90_ms": 1.1000633239746094,
-    "max_ms": 2.559185028076172
+    "p50_ms": 0.9469985961914062,
+    "p90_ms": 1.0941028594970703,
+    "max_ms": 3.056049346923828
    },
-   "pause_share": 0.0388
+   "pause_share": 0.039
   },
   "room_work_planted": {
    "segment": {
     "n": 225,
-    "p50_ms": 105.56602478027344,
-    "p90_ms": 114.31002616882324,
-    "max_ms": 120.59593200683594
+    "p50_ms": 102.30803489685059,
+    "p90_ms": 103.5470962524414,
+    "max_ms": 108.27398300170898
    },
    "walk": {
     "n": 200,
-    "p50_ms": 102.98013687133789,
-    "p90_ms": 105.72314262390137,
-    "max_ms": 109.29298400878906
+    "p50_ms": 101.01580619812012,
+    "p90_ms": 101.27401351928711,
+    "max_ms": 102.65088081359863
    },
-   "pause_share": 0.6624
+   "pause_share": 0.699
   }
  },
  "desktop_load_end": [
-  1.1953125,
-  1.15283203125,
-  1.12451171875
+  0.5087890625,
+  0.97998046875,
+  1.068359375
  ],
- "work": "/tmp/plant-3136b-gf0tpvn1",
- "met": false
+ "work": "/tmp/plant-3136b-v5ebwa8k",
+ "met": true
 }
