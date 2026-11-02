@@ -521,3 +521,36 @@ def test_review_published_holder_carries_no_path_or_raw_ids(repo, owners, monkey
     msg = _out(repo, "log", "-1", "--format=%B", c["sha"])
     assert "66ecaeb8-raw-session" not in msg and repo not in msg
     assert "session: s-" in msg
+
+
+def test_review2_the_push_gate_fails_closed_and_names_an_unpublished_claim(repo, owners):
+    """Round 2: a base origin moved to (absent here) passed everything; a
+    claim made before 3.139 was dropped without a word."""
+    _, a = owners()
+    open(os.path.join(repo, pc.DIR, "3.90-test.md"), "a").write("\nmore\n")
+    _git(repo, "commit", "-qam", "work")
+    sha = _out(repo, "rev-parse", "HEAD")
+    out = pc.push_refusals("1" * 40, sha, cwd=repo, me=a)
+    assert out and "git fetch origin" in out[0]
+    path = os.path.join(pc.repo(repo)[1], "plan-claims", "3.90.A.json")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    json.dump({"step": "3.90.A", "section": "3.90", "pid": a["pid"], "start": a["start"],
+               "touches": []}, open(path, "w"))                          # a pre-3.139 claim
+    out = pc.push_refusals(_out(repo, "rev-parse", "HEAD~1"), sha, cwd=repo, me=a)
+    assert any("not on origin" in x and "claim 3.90.A" in x for x in out)
+    c = pc.claim("3.90.A", cwd=repo, me=a)                               # re-claim publishes it
+    assert remote_refs(repo) == {"3.90.A": c["sha"]}
+    assert pc.push_refusals(_out(repo, "rev-parse", "HEAD~1"), sha, cwd=repo, me=a) == []
+
+
+def test_review2_a_failed_recheck_keeps_the_claim_it_won(repo, owners, monkeypatch):
+    _, a = owners()
+    real = pc.remote_claims
+    calls = []
+
+    def flaky(top, timeout=None):
+        calls.append(1)
+        return real(top) if len(calls) == 1 else ([], "no answer from origin in 20 s")
+    monkeypatch.setattr(pc, "remote_claims", flaky)
+    c = pc.claim("3.90.A", cwd=repo, me=a)
+    assert remote_refs(repo) == {"3.90.A": c["sha"]} and c["unchecked"]

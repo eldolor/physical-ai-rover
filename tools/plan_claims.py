@@ -316,7 +316,8 @@ def remote_claims(top: str, timeout: float = NET_TIMEOUT_S):
                   "committed": ts})
         c.setdefault("host", "?")        # unreadable: someone else's, held
         claims.append(c)
-    return claims, None
+    unread = [c["step"] for c in claims if c["host"] == "?"]
+    return claims, (f"could not read the holder of {', '.join(unread)}" if unread else None)
 
 
 def _identity_args(top: str) -> list:
@@ -644,7 +645,10 @@ def load_steps(root: str, branches=None) -> list:
 # ---------- claims ----------
 
 class ClaimRefused(SystemExit):
-    """Another session holds it (or would collide): the step is not free."""
+    """Another session holds it (or would collide): the step is not free.
+    `rival`: this claim reached origin, then backed off from one that landed
+    at the same moment (both may back off; a retry after a pause settles it)."""
+    rival = False
 
 
 def claims_dir(common: str) -> str:
@@ -808,8 +812,8 @@ class Board:
 
     def split(self):
         """live: every claim that holds, local and on origin; stale: claims
-        on origin made on this host whose process has exited, or by an
-        earlier conversation of this very process -- `claim` takes them over."""
+        on origin made on this host whose process has exited -- `claim`
+        takes them over."""
         touches = {s["id"]: s["touches"] for s in self.steps}
         for c in self.remote:
             loc = next((x for x in self.claims if x["step"] == c["step"]
@@ -968,12 +972,20 @@ def claim(sid: str, cwd=None, me=None, accept_overlap=False) -> dict:
                   and held(x, procs, b.me)
                   and (claim_section(x) == c["section"]
                        or overlap(c["touches"], (b.find(x["step"]) or {}).get("touches", [])))]
-        if err2 or rivals:
-            _push_delete(b.top, sid, sha)
-            raise ClaimRefused(f"claim refused: {sid} -- " + (
-                f"{rivals[0]['step']} was claimed on origin meanwhile by {who(rivals[0])}" if rivals
-                else f"origin could not be read again to check for a rival ({err2})") +
-                "; this claim was withdrawn")
+        if rivals:
+            done, rejected, e = _push_delete(b.top, sid, sha)
+            if not done and not rejected:
+                raise SystemExit(f"claim: {rivals[0]['step']} was claimed on origin meanwhile by "
+                                 f"{who(rivals[0])}, and withdrawing claim/{sid} failed ({e}): run "
+                                 f"`python tools/plan_section.py release {sid}`")
+            refused = ClaimRefused(f"claim refused: {sid} -- {rivals[0]['step']} was claimed on "
+                                   f"origin meanwhile by {who(rivals[0])}; this claim was withdrawn")
+            refused.rival = True
+            raise refused
+        if err2:                      # the exact ref is ours (origin said so); the cross-ref
+            c["unchecked"] = err2     # check could not run: kept, and said
+            print(f"claim: WARNING origin could not be read again to check for a rival in "
+                  f"{c['section']} ({err2}); see `board`", file=sys.stderr)
         _write_claim(path, c)
     return c
 
@@ -990,8 +1002,8 @@ def release(sid=None, cwd=None, me=None, force=False) -> list:
     """Give back this session's claims (or one), on origin first, then the
     local file. Without a step only this session's own (3.139: no longer
     every claim of the same process, nor every one whose process reads
-    dead). With a step, also one whose holder has exited on this host, or
-    an earlier conversation of this process. force: anyone's -- the user's
+    dead). With a step, also one whose holder has exited on this host.
+    force: anyone's -- the user's
     word only. Origin is deleted with a lease on the sha read, so a claim
     someone made since is never deleted."""
     rp = repo(cwd)
@@ -1171,8 +1183,6 @@ def hook_edit(stdin_text: str) -> str:
             return ""
         procs = processes()
         me = owner(procs)
-        if me and data.get("session_id") and not os.environ.get("PICAR_CLAIM_PID"):
-            me = {**me, "session": _digest("s-", str(data["session_id"]))}   # the hook's own word
         hits = foreign_claims_on(rel, rp[1], procs, me)
         if hits:
             c = hits[0]
@@ -1254,8 +1264,9 @@ def push_refusals(base: str, sha: str, cwd=None, me=None) -> list:
     top, common = rp
     r = subprocess.run(["git", "diff", "--name-only", "--no-renames", base, sha], cwd=top,
                        capture_output=True, text=True)
-    if r.returncode:              # origin's dev is not here (moved since the fetch): the
-        return []                 # server refuses the push as non-fast-forward anyway
+    if r.returncode:              # origin's dev moved since the fetch: fail closed
+        return [f"origin's dev ({base[:9]}) is not in this clone: git fetch origin, merge or "
+                "rebase, and push again"]
     files = r.stdout.splitlines()
     procs = processes()
     me = me or owner(procs)
@@ -1271,9 +1282,14 @@ def push_refusals(base: str, sha: str, cwd=None, me=None) -> list:
         return [f"cannot read the claims on origin ({err}), so this session's claims cannot be "
                 "checked; push again"]
     on_origin = {(c["step"], c["sha"]) for c in remote}
-    mine = [c for c in read_claims(common) if same_owner(c, me) and (c["step"], c.get("sha")) in on_origin]
+    local = [c for c in read_claims(common) if same_owner(c, me)]
+    mine = [c for c in local if (c["step"], c.get("sha")) in on_origin]
     pushed = quick_steps(top, ref=sha, here=False)      # the pusher's own tables, as pushed
     out = []
+    for c in local:
+        if c not in mine:
+            out.append(f"this session's claim of {c['step']} is not on origin (made before 3.139, "
+                       f"or freed there): re-run `{CLAIM_CMD} {c['step']}`")
     for f, secs, hint in fenced:
         if not covered(f, secs, mine, pushed):
             out.append(f"{f}: section {', '.join(sorted(secs))}"

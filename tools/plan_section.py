@@ -228,6 +228,11 @@ def cmd_new(slug: str, title: str) -> None:
                     if isinstance(e, SystemExit):
                         raise SystemExit(f"new: {e}")
                     raise
+                if getattr(e, "rival", False):   # two `new`s backed off from each other:
+                    import random                 # the same number again, after a pause
+                    import time
+                    time.sleep(random.uniform(0.5, 3.0))
+                    continue
                 n += 1             # another machine holds 3.N on origin
                 continue
         git("branch", "-D", branch, check=False, cwd=root)
