@@ -1327,6 +1327,11 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   (their triggers are written). Decided 2026-10-24: fix 7 (3.98), 3.50.D4's re-map trigger
   (scan contradiction, beside entered-unknown) and fix 11 (3.97); the
   spec-review handoff's 3a-3c were decided 2026-10-05.
+* **Claims on origin (3.139), merged 2026-11-02.** `claim <step>` pushes
+  `claim/<step>` to origin create-only before the local file; ownership is
+  the session; the commit, edit and push hooks refuse unclaimed section
+  work; `new` claims its section. A session holding a claim from before:
+  re-run `claim <step>`. `PARALLEL-SESSIONS.md` rule 12.
 * **Not built:** `brain/planner.py`, room-level planning over
   `MissionMemory`. S7 (chaos and soak). A Stage 1 re-run of a vision
   mission against the lit renderer.
