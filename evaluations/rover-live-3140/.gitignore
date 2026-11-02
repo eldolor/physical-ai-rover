@@ -1,0 +1,16 @@
+# 3.140 criterion 4 / A4: no images, video or maps of the house in git
+# unasked (CLAUDE.md, 3.50). They stay on disk beside their record.
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.pgm
+*.posegraph
+*.data
+*.pbstream
+maps/
