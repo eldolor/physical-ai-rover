@@ -47,8 +47,7 @@ def summarise(row: str, base: dict, planted: dict) -> dict:
         return {k: ms.get(k) for k in keys if k in ms}
 
     def clean(r):                          # a run that errored or was invalid proves nothing
-        return r.get("error") is None and not any(
-            x.startswith("invalid") for x in r["verdict"]["reasons"])
+        return r.get("error") is None and r["verdict"].get("valid") is True
 
     caught = (not planted["verdict"]["pass"]) and clean(planted)
     # Caught is criterion 4 as written. It tells the guard apart only if the

@@ -32,13 +32,23 @@ def log(samples):
     return [{"t": t, "x": x, "y": 0.0, "th": 0.0, "sp": sp, "gap_cm": 50.0} for t, x, sp in samples]
 
 
+def dense(*spans):
+    """(t0, t1, sp) spans -> a log sampled every 20 ms, as the recorder writes."""
+    out = []
+    for t0, t1, sp in spans:
+        n = round((t1 - t0) / 0.02)
+        out += [(round(t0 + i * 0.02, 3), 0.0, sp) for i in range(n)]
+    return log(out)
+
+
 def test_wheels_zero_is_the_first_zero_that_holds_half_a_second():
-    rows = log([(0.0, 0.0, [0.3, 0.3]), (0.5, 0.15, [0.3, 0.3]), (1.0, 0.3, [0.0, 0.0]),
-                (1.2, 0.3, [0.3, 0.3]), (1.4, 0.3, [0.0, 0.0]), (1.7, 0.3, [0.0, 0.0]),
-                (1.9, 0.3, [0.0, 0.0]), (2.5, 0.3, [0.1, -0.1])])
+    rows = dense((0.0, 1.0, [0.3, 0.3]), (1.0, 1.2, [0.0, 0.0]), (1.2, 1.4, [0.3, 0.3]),
+                 (1.4, 2.5, [0.0, 0.0]), (2.5, 3.0, [0.1, -0.1]))
     assert m.wheels_zero_s(rows, 0.4) == 1.0           # 1.0 was undone at 1.2; 1.4 holds
-    assert m.wheels_zero_s(rows, 2.0) is None           # a turn later is not zero
-    assert m.wheels_zero_s(rows[:6], 0.4) is None       # the log ends before it held
+    assert m.wheels_zero_s(rows, 2.5) is None           # a turn later is not zero
+    assert m.wheels_zero_s([r for r in rows if r["t"] < 1.8], 0.4) is None   # log ends first
+    holey = dense((0.0, 0.2, [0, 0])) + dense((1.0, 1.1, [0, 0]))
+    assert m.wheels_zero_s(holey, 0.0) is None           # a hold across a 0.8 s hole is no hold
     assert m.is_forward([0.3, 0.3]) and not m.is_forward([0.1032, -0.1032])
     assert m.forward_at(rows, 0.7) is True and m.forward_at(rows, 1.1) is False
     assert m.forward_at(rows, -1) is None
@@ -63,14 +73,14 @@ def test_truth_reader_skips_a_line_cut_by_the_kill(tmp_path):
     assert [r["t"] for r in m.read_truth(p)] == [1, 2]
 
 
-GOOD = {"fault_at": 10.0, "forward_at_fault": True, "truth_hole_s": 0.02, "contacts": 0, "wheels_zero_s": 0.3,
+GOOD = {"fault_at": 10.0, "forward_at_fault": True, "truth_hole_s": 0.02, "gap_unknown": 0, "contacts": 0, "wheels_zero_s": 0.3,
         "travel_cm": 5.0, "travel_stale_cm": 0.5, "drive_after_cont": 0,
         "no_feedback_refusals": 1, "outcome": "failed"}
 
 
 @pytest.mark.parametrize("row", sorted(fmea.ROWS))
 def test_a_run_inside_every_bar_passes(row):
-    assert fmea.judge(row, GOOD) == {"pass": True, "reasons": []}
+    assert fmea.judge(row, GOOD) == {"pass": True, "valid": True, "reasons": []}
 
 
 @pytest.mark.parametrize("row, change, reason", [
@@ -87,6 +97,7 @@ def test_a_run_inside_every_bar_passes(row):
     ("F9", {"truth_hole_s": 0.5}, "hole"),
     ("F6", {"fault_at": None}, "never injected"),
     ("F13", {"forward_at_fault": False}, "invalid"),
+    ("F8", {"gap_unknown": 3}, "contact unjudged"),
 ])
 def test_each_broken_bar_fails_its_row(row, change, reason):
     v = fmea.judge(row, {**GOOD, **change})
@@ -111,15 +122,16 @@ def test_the_stack_environment_carries_nothing_of_the_shell(tmp_path, monkeypatc
 
 
 def test_plant_summary_catches_only_a_planted_run_that_fails_cleanly():
-    ok = {"verdict": {"pass": True, "reasons": []}, "measures": {"wheels_zero_s": 1.0}}
-    bad = {"verdict": {"pass": False, "reasons": ["x"]}, "measures": {"wheels_zero_s": None}}
+    ok = {"verdict": {"pass": True, "valid": True, "reasons": []}, "measures": {"wheels_zero_s": 1.0}}
+    bad = {"verdict": {"pass": False, "valid": True, "reasons": ["x"]},
+           "measures": {"wheels_zero_s": None}}
     s = plant.summarise("F13", ok, bad)
     assert s["caught"] and s["discriminates"] and s["base"]["wheels_zero_s"] == 1.0
     assert not plant.summarise("F13", ok, ok)["caught"]
     assert not plant.summarise("F13", ok, {**bad, "error": "stack died"})["caught"]
     s = plant.summarise("F9", bad, bad)                  # caught, but the base fails too
     assert s["caught"] and not s["discriminates"]
-    invalid = {"verdict": {"pass": False, "reasons": ["invalid: not driving"]}, "measures": {}}
+    invalid = {"verdict": {"pass": False, "valid": False, "reasons": ["anything"]}, "measures": {}}
     assert not plant.summarise("F13", ok, invalid)["caught"]
 
 
@@ -181,6 +193,6 @@ def test_3136s_default_checkout_is_unchanged(monkeypatch, tmp_path):
 
 
 def test_push_checkout_refuses_a_bench_dir_that_is_not_a_plain_name():
-    for bad in ("../x", "a b", "x;rm", "", "-x", "vision-picar-service", "vision-picar", "bench-a/b"):
+    for bad in ("../x", "a b", "x;rm", "", "-x", "vision-picar-service", "vision-picar", "bench-a/b", "bench-378", "bench-3135x"):
         with pytest.raises(br.BoardError):
             br.push_checkout("HEAD", run=lambda *a, **k: "", bench_dir=bad)

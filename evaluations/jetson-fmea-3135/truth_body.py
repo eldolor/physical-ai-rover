@@ -62,9 +62,10 @@ def recorder(path: Path) -> None:
                 t = time.monotonic()
                 x, y, th = grid.x, grid.y, grid.theta
                 sp = [round(v, 4) for v in board.setpoint]
+                solid = grid.solid_cells        # the objects of the same instant
             try:                                # the geometry outside the board's lock
                 gap = fs.truth(SimpleNamespace(x=x, y=y, theta=th, layout=grid.layout,
-                                               solid_cells=grid.solid_cells))[1]
+                                               solid_cells=solid))[1]
             except Exception:                   # noqa: BLE001
                 gap = None
             row = {"t": round(t, 4), "x": round(x * CELL_M, 5), "y": round(y * CELL_M, 5),

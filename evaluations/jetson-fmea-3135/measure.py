@@ -45,6 +45,7 @@ def is_forward(sp) -> bool:
 
 
 HOLD_ZERO_S = 0.5
+MAX_STEP_S = 0.1            # five recorder periods
 
 
 def wheels_zero_s(rows: list, t0: float, hold_s: float = HOLD_ZERO_S) -> Optional[float]:
@@ -52,10 +53,12 @@ def wheels_zero_s(rows: list, t0: float, hold_s: float = HOLD_ZERO_S) -> Optiona
     setpoints stay zero for `hold_s` (a zero that the next command undoes
     is not a stop); the log must reach that far. None if they never did."""
     after = [r for r in rows if r["t"] >= t0]
-    start = None                        # the first sample of the current run of zeros
+    start, prev = None, None            # the first sample of the current run of zeros
     for r in after:
+        if not is_zero(r["sp"]) or (prev is not None and r["t"] - prev > MAX_STEP_S):
+            start = None                # a hole cannot vouch for a hold
+        prev = r["t"]
         if not is_zero(r["sp"]):
-            start = None
             continue
         if start is None:
             start = r["t"]

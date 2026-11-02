@@ -83,9 +83,12 @@ def judge(row: str, ms: dict) -> dict:
             r.append(why)
 
     if ms.get("fault_at") is None:
-        return {"pass": False, "reasons": ["the fault was never injected (the robot never moved)"]}
-    if ms.get("forward_at_fault") is not True:
+        return {"pass": False, "valid": False,
+                "reasons": ["the fault was never injected (the robot never moved)"]}
+    valid = ms.get("forward_at_fault") is True
+    if not valid:
         r.append("invalid: the board was not driving forward when the fault fired")
+    bar(ms.get("gap_unknown", 0) == 0, f"{ms.get('gap_unknown')} truth samples with no gap (contact unjudged)")
     bar(ms.get("truth_hole_s", 9) <= 0.2, f"truth log has a {ms.get('truth_hole_s')} s hole")
     bar(ms.get("contacts") == 0, f"{ms.get('contacts')} contact samples")
     z = ms.get("wheels_zero_s")
@@ -103,7 +106,7 @@ def judge(row: str, ms: dict) -> dict:
         bar(ms["travel_stale_cm"] <= 2.0, f"moved {ms['travel_stale_cm']} cm while stale (bar 2)")
     if row == "F10":
         bar((ms.get("no_feedback_refusals") or 0) >= 1, "no refusal named no_feedback")
-    return {"pass": not r, "reasons": r}
+    return {"pass": not r, "valid": valid, "reasons": r}
 
 
 # ------------------------------------------------------------------ helpers
@@ -178,9 +181,11 @@ def recover(st: Stack, rec: dict) -> None:
                 rec.setdefault("restarted", []).append(role)
         if status(st).get("running"):
             st.brain("POST", "/mission/stop", {})
-            end = time.monotonic() + 20       # a start waits for the ended runner's close
+            end = time.monotonic() + 40       # the brain's own close waits are 10 s + 30 s
             while status(st).get("running") and time.monotonic() < end:
                 time.sleep(0.5)
+            if status(st).get("running"):
+                raise StackError("the old mission was still running 40 s after its Stop")
         st.robot("POST", "/autonomy/resume", {})
         start_mission(st)
         wait_forward(st, 60.0)
@@ -198,8 +203,10 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
            "house": house, "host": os.uname().nodename, "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
     ms: dict = {"fault_at": None}
     dpad = None
-    with MemWatch() as mw, Stack(out, house=house, plant=plant) as st:
+    mw, st = MemWatch(), Stack(out, house=house, plant=plant)
+    with mw:
         try:
+            st.start()                     # a stack that will not start is a recorded error
             h0 = robot_health(st)
             if spec["mover"] == "mission":
                 start_mission(st)
@@ -213,6 +220,8 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 n = st.now()
                 if isinstance(n, dict) and m.is_forward(n.get("sp")):
                     break
+            else:
+                raise StackError("no FORWARD lasted 0.15 s in 10 tries: the fault was not fired")
             t = time.monotonic()
             hold = spec.get("hold_s", 0.0)
             if row == "F6":
@@ -265,6 +274,7 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
         finally:
             if dpad is not None and dpad.poll() is None:
                 os.killpg(dpad.pid, signal.SIGKILL)
+            st.stop()
     rows = m.read_truth(out / "truth.jsonl") if (out / "truth.jsonl").exists() else []
     t = ms["fault_at"]
     if t is not None:
@@ -279,8 +289,11 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
         if row == "F7":
             ms["drive_after_cont"] = m.nonzero_after(rows, ms["cont_at"], ms["cont_at"] + 10.0)
             holes.append(m.gaps_s(rows, ms["cont_at"], ms["cont_at"] + 10.0))
+        sp = m.span(rows)
+        holes.append(m.gaps_s(rows, sp[0], sp[1]))           # contacts read the whole log
         ms["truth_hole_s"] = max(holes)
     ms["contacts"] = m.contacts(rows)
+    ms["gap_unknown"] = sum(1 for r in rows if r.get("gap_cm") is None)
     ms["truth_span"] = m.span(rows)
     if mw.rows:
         ms["mem_available_min_mb"] = min(r[1] for r in mw.rows)
