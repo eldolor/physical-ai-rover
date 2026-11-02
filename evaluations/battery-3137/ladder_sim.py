@@ -52,6 +52,7 @@ BASE = "http://asgi"
 V0, DRAIN = 11.0, 0.02
 STARTS = (CLEAR_STARTS + JAMB_STARTS + [(*SEARCH_START, o) for o in SEARCH_OFFSETS])[:20]
 MAX_STEPS = 400
+TICK_S = 0.1           # amendment 2: sim time passing per tick
 
 
 def served(battery, log: Path):
@@ -113,6 +114,10 @@ def mission(start, arm, tmp, v0=V0):
                            clock=lambda: grid.sim_time, idle=idle)
     runner.start()
     while runner.tick():
+        # Time passes between a live brain's ticks; in process the sim clock
+        # moves only with the robot, so a check holding the brain still would
+        # stop it for good. TICK_S of sim time a tick, and the server's loop.
+        idle(TICK_S)
         if ladder.level == LOW and "low" not in low_at:
             low_at["low"] = round(grid.sim_time, 2)
     s = runner.status()
