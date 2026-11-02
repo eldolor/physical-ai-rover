@@ -16,8 +16,8 @@ or class (so every caller sees the wrapper, `from x import f` included):
 | map     | `control.remote_world.RemoteWorld.get_map()`    | P4  |
 | vlm     | `brain.local_vlm.LocalVLMClient._post()` (a frame question to VE) | P4 |
 
-One JSON line per call: `{"k", "t0", "t1", "tid", "pid"}` (epoch seconds,
-the calling thread). Nothing in brain/ or control/ is edited.
+One JSON line per call: `{"k", "t0", "t1", "tid", "pid", "caller"}` (epoch
+seconds, the calling thread, the calling file's name). Nothing in brain/ or control/ is edited.
 
 Criterion 3: PERF_SHIM_PLANT="segment,walk" (any kinds) busy-waits
 PERF_SHIM_PLANT_S (0.1) inside the wrapped call, before the real one, so
@@ -42,14 +42,15 @@ _lock = threading.Lock()
 _fh = None
 
 
-def _write(kind: str, t0: float, t1: float) -> None:
+def _write(kind: str, t0: float, t1: float, caller: str) -> None:
     global _fh
     try:
         with _lock:
             if _fh is None:
                 _fh = open(_LOG, "a", buffering=1)
             _fh.write(json.dumps({"k": kind, "t0": round(t0, 6), "t1": round(t1, 6),
-                                  "tid": threading.get_ident(), "pid": os.getpid()}) + "\n")
+                                  "tid": threading.get_ident(), "pid": os.getpid(),
+                                  "caller": caller}) + "\n")
     except OSError:
         pass                     # a full disk never breaks the brain
 
@@ -59,6 +60,10 @@ def _timed(kind: str, fn):
         return fn
 
     def wrapper(*a, **k):
+        # The calling module: the room labeller's cut and the rooms policy's
+        # cut of its coarse map are both `segment()` (P12 reports them apart).
+        f = sys._getframe(1)
+        caller = os.path.basename(f.f_code.co_filename)
         t0 = time.time()
         try:
             if kind in _PLANT:
@@ -69,7 +74,7 @@ def _timed(kind: str, fn):
                     pass
             return fn(*a, **k)
         finally:
-            _write(kind, t0, time.time())
+            _write(kind, t0, time.time(), caller)
     wrapper._perf_shim = True
     wrapper.__wrapped__ = fn
     wrapper.__name__ = getattr(fn, "__name__", kind)

@@ -1,0 +1,189 @@
+{
+ "sha": "2311cf5e3107224b0814ccf46c6e4b8d78684f94",
+ "stamps": {
+  "window_start": 1793647446.3567305,
+  "window_end": 1793647746.467995,
+  "p1_start": 1793647446.3758898,
+  "p1_end": 1793647506.3862343,
+  "p8_start": 1793647506.3916574,
+  "p8_end": 1793647547.4770126,
+  "p2_start": 1793647630.3785007,
+  "p2_end": 1793647690.3870785
+ },
+ "window_s": 300.1,
+ "uptime_at_start_s": 1577.23,
+ "wheel": {
+  "moving": 4465,
+  "late": 1,
+  "max_dt_s": 0.1064,
+  "max_dt_s_before": 0.075
+ },
+ "nav2_goals": {
+  "n": 11,
+  "succeeded": 11,
+  "canceled": 0,
+  "aborted": 0
+ },
+ "telemetry": {
+  "samples": 260,
+  "temps": 260,
+  "clocks": 260,
+  "max_temp_c": 61.156,
+  "oom_kills": 0,
+  "mem_available_min_mb": 692,
+  "cpu_below_max_samples": 86,
+  "gpu_below_max_samples": 46
+ },
+ "dmesg_oom_kills": 0,
+ "power_mode": "NV Power Mode: 15W",
+ "validity": {
+  "valid": false,
+  "reasons": [
+   "1 late wheel ticks"
+  ]
+ },
+ "desktop_load_max": 1.14,
+ "missions": {
+  "n": 1,
+  "refused_starts": 0,
+  "outcomes": {
+   "cancelled": 1
+  },
+  "label_calls": 20
+ },
+ "cloud_calls": 0,
+ "rows": {
+  "P1": {
+   "n": 243,
+   "p50_ms": 99,
+   "p90_ms": 178,
+   "mem_available_min_mb": 736,
+   "valid": false,
+   "reasons": [
+    "1 late wheel ticks"
+   ],
+   "met": true
+  },
+  "P2": {
+   "n": 244,
+   "p50_ms": 96,
+   "p90_ms": 137,
+   "mem_available_min_mb": 1002,
+   "valid": false,
+   "reasons": [
+    "1 late wheel ticks"
+   ],
+   "hazard_boxes_per_frame": 1.071,
+   "added_mem_mb": -266,
+   "met": true
+  },
+  "P8": {
+   "n": 19,
+   "p50": 1941.5194690000135,
+   "p90": 2056.577675999961,
+   "max": 2141.1178500000005,
+   "statuses": {
+    "answered": 19
+   },
+   "answers_identical": false,
+   "flips": [],
+   "off": 0,
+   "missing": 0,
+   "valid": false,
+   "reasons": [
+    "1 late wheel ticks"
+   ],
+   "met": false
+  },
+  "P4": {
+   "late_ticks": 1,
+   "moving_ticks": 4465,
+   "max_dt_s_since_start": 0.1064,
+   "window_s": 300.1,
+   "overlap": {
+    "all_spans": 0,
+    "all_s": 0,
+    "all_with_map_update": 0,
+    "per_group": {
+     "map_fetch": 338,
+     "ve_question": 283,
+     "perception": 948,
+     "room_cut": 0
+    }
+   },
+   "valid": false,
+   "reasons": [
+    "1 late wheel ticks"
+   ],
+   "met": false
+  },
+  "P11": {
+   "controller": {
+    "spans": 11,
+    "intervals": 5126,
+    "executing_s": 255.9,
+    "rate_hz": 20.03,
+    "mean_period_ms": 49.93,
+    "period_p50_ms": 50.00185966491699,
+    "period_p90_ms": 51.12910270690918
+   },
+   "ratio": 1.002,
+   "scan_lag": {
+    "n": 3001,
+    "p50_ms": 7.3223114013671875,
+    "p90_ms": 11.837005615234375,
+    "max_ms": 61.803340911865234
+   },
+   "valid": false,
+   "reasons": [
+    "1 late wheel ticks"
+   ],
+   "met": true
+  },
+  "P12": {
+   "segment_by_caller": {
+    "null": {
+     "n": 60,
+     "p50_ms": 6.104230880737305,
+     "p90_ms": 8.391141891479492,
+     "max_ms": 12.319087982177734
+    }
+   },
+   "segment": {
+    "n": 60,
+    "p50_ms": 6.104230880737305,
+    "p90_ms": 8.391141891479492,
+    "max_ms": 12.319087982177734
+   },
+   "walk": {
+    "n": 55,
+    "p50_ms": 4.793882369995117,
+    "p90_ms": 7.782936096191406,
+    "max_ms": 15.53487777709961
+   },
+   "pause_share": 0.0023,
+   "map_reply": {
+    "n": 287,
+    "ok": 287,
+    "p50_ms": 27.639152999881844,
+    "p90_ms": 119.6604860001571,
+    "full_replies": 225,
+    "bytes_max": 247708
+   },
+   "explore_map_fetch": {
+    "n": 338,
+    "p50_ms": 73.75192642211914,
+    "p90_ms": 157.39917755126953
+   },
+   "valid": false,
+   "reasons": [
+    "1 late wheel ticks"
+   ],
+   "met": true
+  }
+ },
+ "cmd_exit": 0,
+ "restore_actions": [],
+ "as_found_differences": [],
+ "left_as_found": true
+}

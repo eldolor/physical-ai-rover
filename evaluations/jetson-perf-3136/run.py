@@ -176,13 +176,14 @@ def score_steady(out: Path, rec: dict) -> dict:
     nav = scorers.nav_goals(pace, ws, we)
     tc = validity.telemetry_counts(tele, ws, we)
     o0, o1 = _f(b / "oom_start"), _f(b / "oom_end")
-    dmesg_ooms = int(o1 - o0) if o0 is not None and o1 is not None else None
+    # Clipped: a ring buffer that wrapped never cancels a kill the counter saw.
+    dmesg_ooms = max(0, int(o1 - o0)) if o0 is not None and o1 is not None else None
     pm = (b / "nvpmodel.txt").read_text().splitlines()[0] if (b / "nvpmodel.txt").exists() else None
 
     def judge(bench):
         doc = {"kind": "full", "window": [ws, we], "bench": bench, "wheel": wheel,
                # Either count of a kill makes the run invalid.
-               "oom_kills": None if tc["oom_kills"] is None else tc["oom_kills"] + (dmesg_ooms or 0),
+               "oom_kills": None if tc["oom_kills"] is None else max(tc["oom_kills"], dmesg_ooms or 0),
                # Amendment 2: explore's goals; a goal its sender cancelled is
                # neither (n counts succeeded + aborted).
                "nav": {"ok": nav["succeeded"], "n": nav["succeeded"] + nav["aborted"]},
@@ -194,15 +195,17 @@ def score_steady(out: Path, rec: dict) -> dict:
     # P1, P2: perception p90 in their own stretches; P2's added memory.
     for row, log, a, z in (("P1", "perception-p1.log", "p1_start", "p1_end"),
                            ("P2", "perception-p2.log", "p2_start", "p2_end")):
-        ms = scorers.perception_ms((b / log).read_text(), st[a], st[z], day) if (b / log).exists() else []
+        ms = (scorers.perception_ms((b / log).read_text(), st[a], st[z], day)
+              if (b / log).exists() and st[a] and st[z] else [])
         doc, j = judge([st[a], st[z]])
-        mem = validity.telemetry_counts(tele, st[a], st[z])["mem_available_min_mb"]
+        mem = (validity.telemetry_counts(tele, st[a], st[z])["mem_available_min_mb"]
+               if st[a] and st[z] else None)
         rows[row] = {"n": len(ms), "p50_ms": scorers.percentile(ms, 50),
                      "p90_ms": scorers.percentile(ms, 90), "mem_available_min_mb": mem,
                      "valid": j["valid"], "reasons": j["reasons"]}
     p1, p2 = rows["P1"], rows["P2"]
     haz = [r.get("hazard_boxes") for r in scorers.jsonl(b / "perc-p2.jsonl")
-           if st["p2_start"] and st["p2_start"] <= r["t0"] <= st["p2_end"]]
+           if st["p2_start"] and st["p2_end"] and st["p2_start"] <= r["t0"] <= st["p2_end"]]
     p2["hazard_boxes_per_frame"] = round(sum(h or 0 for h in haz) / len(haz), 3) if haz else None
     p2["added_mem_mb"] = (p1["mem_available_min_mb"] - p2["mem_available_min_mb"]
                           if p1["mem_available_min_mb"] is not None
@@ -227,24 +230,24 @@ def score_steady(out: Path, rec: dict) -> dict:
     # P4, P11, P12 over the whole window.
     doc, j = judge([ws, we])
     perc = [[r["t0"], r["t1"]] for name in ("perc-p1.jsonl", "perc-p2.jsonl")
-            for r in scorers.jsonl(b / name) if ws and ws <= r["t0"] <= we]
+            for r in scorers.jsonl(b / name) if ws and we and ws <= r["t0"] <= we]
     ov = scorers.overlaps({"map_fetch": scorers.shim_spans(shim, "map", ws, we),
                            "ve_question": scorers.shim_spans(shim, "vlm", ws, we),
                            "perception": perc,
-                           "room_cut": scorers.shim_spans(shim, "segment", ws, we)},
+                           "room_cut": scorers.shim_spans(shim, "segment", ws, we, "room_labels.py")},
                           scorers.map_updates(pace, ws, we))
     rows["P4"] = {"late_ticks": wheel and wheel["late"], "moving_ticks": wheel and wheel["moving"],
                   "max_dt_s_since_start": wheel and wheel["max_dt_s"],
                   "window_s": round(we - ws, 1) if ws and we else None, "overlap": ov,
                   "valid": j["valid"], "reasons": j["reasons"],
-                  "met": bool(wheel) and wheel["late"] == 0 and (we - ws) >= 1800}
+                  "met": bool(wheel) and bool(ws and we) and wheel["late"] == 0 and (we - ws) >= 1800}
     cr, sl = scorers.controller_rate(pace, ws, we), scorers.scan_lag(pace, ws, we)
     rows["P11"] = {"controller": cr, "ratio": round(cr["rate_hz"] / CONTROLLER_HZ, 3) if cr["rate_hz"] else None,
                    "scan_lag": sl, "valid": j["valid"], "reasons": j["reasons"],
                    "met": cr["rate_hz"] is not None and cr["intervals"] >= 200
                    and cr["rate_hz"] >= BARS["P11_ratio"] * CONTROLLER_HZ}
     rw = scorers.room_work(shim, ws, we)
-    mp = [r for r in scorers.jsonl(b / "mappoll.jsonl") if ws and ws <= r["t"] <= we]
+    mp = [r for r in scorers.jsonl(b / "mappoll.jsonl") if ws and we and ws <= r["t"] <= we]
     fetch = scorers.durations_ms(scorers.shim_spans(shim, "map", ws, we))
     rows["P12"] = {**rw, "map_reply": scorers.map_summary(mp),
                    "explore_map_fetch": {"n": len(fetch), "p50_ms": scorers.percentile(fetch, 50),
@@ -252,13 +255,14 @@ def score_steady(out: Path, rec: dict) -> dict:
                    "valid": j["valid"], "reasons": j["reasons"],
                    "met": rw["pause_share"] is not None and rw["segment"]["n"] > 0
                    and rw["pause_share"] <= BARS["P12_pause"]}
-    missions = scorers.jsonl(b / "missions.jsonl")
+    missions = [m for m in scorers.jsonl(b / "missions.jsonl") if "outcome" in m]
+    refused = sum("outcome" not in m for m in scorers.jsonl(b / "missions.jsonl"))
     return {"sha": rec.get("sha"), "stamps": st, "window_s": rows["P4"]["window_s"],
             "uptime_at_start_s": (rec.get("as_found") or {}).get("uptime_s"),
             "wheel": wheel, "nav2_goals": nav, "telemetry": tc, "dmesg_oom_kills": dmesg_ooms,
             "power_mode": pm, "validity": j,
             "desktop_load_max": max((x[1] for x in rec.get("desktop_load") or []), default=None),
-            "missions": {"n": len(missions),
+            "missions": {"n": len(missions), "refused_starts": refused,
                          "outcomes": {o: sum(m.get("outcome") == o for m in missions)
                                       for o in {m.get("outcome") for m in missions}},
                          "label_calls": sum((m.get("room_labels") or {}).get("label_calls") or 0

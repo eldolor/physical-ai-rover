@@ -1,0 +1,711 @@
+[INFO] [launch]: All log files can be found below /root/.ros/log/2026-11-02-19-22-41-007455-picar-jetson-1
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [robot_state_publisher-1]: process started with pid [32]
+[INFO] [ros2_control_node-2]: process started with pid [34]
+[INFO] [spawner-3]: process started with pid [36]
+[INFO] [spawner-4]: process started with pid [38]
+[INFO] [twist_mux-5]: process started with pid [40]
+[INFO] [bridge-6]: process started with pid [42]
+[INFO] [controller_server-7]: process started with pid [44]
+[INFO] [planner_server-8]: process started with pid [55]
+[INFO] [behavior_server-9]: process started with pid [59]
+[INFO] [bt_navigator-10]: process started with pid [68]
+[INFO] [lifecycle_manager-11]: process started with pid [72]
+[INFO] [collision_monitor-12]: process started with pid [99]
+[INFO] [lifecycle_manager-13]: process started with pid [101]
+[robot_state_publisher-1] [INFO] [1793647361.580549945] [robot_state_publisher]: got segment base_footprint
+[robot_state_publisher-1] [INFO] [1793647361.580798312] [robot_state_publisher]: got segment base_link
+[robot_state_publisher-1] [INFO] [1793647361.580829258] [robot_state_publisher]: got segment camera_link
+[robot_state_publisher-1] [INFO] [1793647361.580843659] [robot_state_publisher]: got segment camera_optical_frame
+[robot_state_publisher-1] [INFO] [1793647361.580854924] [robot_state_publisher]: got segment front_bumper
+[robot_state_publisher-1] [INFO] [1793647361.580865357] [robot_state_publisher]: got segment laser
+[robot_state_publisher-1] [INFO] [1793647361.580875469] [robot_state_publisher]: got segment left_wheel
+[robot_state_publisher-1] [INFO] [1793647361.580885966] [robot_state_publisher]: got segment pan_link
+[robot_state_publisher-1] [INFO] [1793647361.580896526] [robot_state_publisher]: got segment rear_bumper
+[robot_state_publisher-1] [INFO] [1793647361.580906799] [robot_state_publisher]: got segment right_wheel
+[twist_mux-5] [INFO] [1793647361.476074435] [twist_mux]: Topic handler 'topics.brain' subscribed to topic 'cmd_vel/brain': timeout = 0.250000s , priority = 50.
+[twist_mux-5] [INFO] [1793647361.479829230] [twist_mux]: Topic handler 'topics.nav' subscribed to topic 'cmd_vel/nav': timeout = 0.250000s , priority = 50.
+[twist_mux-5] [INFO] [1793647361.480250760] [twist_mux]: Topic handler 'topics.teleop' subscribed to topic 'cmd_vel/teleop': timeout = 0.250000s , priority = 100.
+[controller_server-7] [INFO] [1793647361.513090035] [controller_server]: 
+[controller_server-7] 	controller_server lifecycle node launched. 
+[controller_server-7] 	Waiting on external lifecycle transitions to activate
+[controller_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-7] [INFO] [1793647361.559273347] [controller_server]: Creating controller server
+[controller_server-7] [INFO] [1793647361.604861005] [local_costmap.local_costmap]: 
+[controller_server-7] 	local_costmap lifecycle node launched. 
+[controller_server-7] 	Waiting on external lifecycle transitions to activate
+[controller_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-7] [INFO] [1793647361.606527957] [local_costmap.local_costmap]: Creating Costmap
+[planner_server-8] [INFO] [1793647361.532126749] [planner_server]: 
+[planner_server-8] 	planner_server lifecycle node launched. 
+[planner_server-8] 	Waiting on external lifecycle transitions to activate
+[planner_server-8] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-8] [INFO] [1793647361.539002892] [planner_server]: Creating
+[planner_server-8] [INFO] [1793647361.562638038] [global_costmap.global_costmap]: 
+[planner_server-8] 	global_costmap lifecycle node launched. 
+[planner_server-8] 	Waiting on external lifecycle transitions to activate
+[planner_server-8] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-8] [INFO] [1793647361.585390664] [global_costmap.global_costmap]: Creating Costmap
+[behavior_server-9] [INFO] [1793647361.636288735] [behavior_server]: 
+[behavior_server-9] 	behavior_server lifecycle node launched. 
+[behavior_server-9] 	Waiting on external lifecycle transitions to activate
+[behavior_server-9] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[lifecycle_manager-13] [INFO] [1793647361.639366688] [lifecycle_manager_collision]: Creating
+[lifecycle_manager-11] [INFO] [1793647361.655551415] [lifecycle_manager_navigation]: Creating
+[ros2_control_node-2] [WARN] [1793647361.669734544] [controller_manager]: [Deprecated] Passing the robot description parameter directly to the control_manager node is deprecated. Use '~/robot_description' topic from 'robot_state_publisher' instead.
+[ros2_control_node-2] [INFO] [1793647361.670105832] [resource_manager]: Loading hardware 'picar' 
+[lifecycle_manager-11] [INFO] [1793647361.683119735] [lifecycle_manager_navigation]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[bt_navigator-10] [INFO] [1793647361.687997129] [bt_navigator]: 
+[bt_navigator-10] 	bt_navigator lifecycle node launched. 
+[bt_navigator-10] 	Waiting on external lifecycle transitions to activate
+[bt_navigator-10] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[bt_navigator-10] [INFO] [1793647361.688226040] [bt_navigator]: Creating
+[collision_monitor-12] [INFO] [1793647361.735483242] [collision_monitor]: 
+[collision_monitor-12] 	collision_monitor lifecycle node launched. 
+[collision_monitor-12] 	Waiting on external lifecycle transitions to activate
+[collision_monitor-12] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[lifecycle_manager-13] [INFO] [1793647361.746716011] [lifecycle_manager_collision]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[ros2_control_node-2] [INFO] [1793647361.760453768] [resource_manager]: Initialize hardware 'picar' 
+[ros2_control_node-2] [INFO] [1793647361.762052812] [PicarSimHardware]: robot server at http://127.0.0.1:8000
+[ros2_control_node-2] [INFO] [1793647361.762109840] [resource_manager]: Successful initialization of hardware 'picar'
+[ros2_control_node-2] [INFO] [1793647361.762224727] [resource_manager]: 'configure' hardware 'picar' 
+[ros2_control_node-2] [INFO] [1793647361.762245688] [resource_manager]: Successful 'configure' of hardware 'picar'
+[ros2_control_node-2] [INFO] [1793647361.762256153] [resource_manager]: 'activate' hardware 'picar' 
+[lifecycle_manager-13] [INFO] [1793647361.806894408] [lifecycle_manager_collision]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-13] [INFO] [1793647361.808862019] [lifecycle_manager_collision]: [34m[1mConfiguring collision_monitor[0m[0m
+[lifecycle_manager-11] [INFO] [1793647361.810972679] [lifecycle_manager_navigation]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-11] [INFO] [1793647361.812780025] [lifecycle_manager_navigation]: [34m[1mConfiguring controller_server[0m[0m
+[controller_server-7] [INFO] [1793647361.814420063] [controller_server]: Configuring controller interface
+[controller_server-7] [INFO] [1793647361.814815096] [controller_server]: getting goal checker plugins..
+[controller_server-7] [INFO] [1793647361.815054151] [controller_server]: Controller frequency set to 20.0000Hz
+[controller_server-7] [INFO] [1793647361.815128300] [local_costmap.local_costmap]: Configuring
+[ros2_control_node-2] [INFO] [1793647361.817945052] [resource_manager]: Successful 'activate' of hardware 'picar'
+[controller_server-7] [INFO] [1793647361.824561947] [local_costmap.local_costmap]: Using plugin "obstacle_layer"
+[collision_monitor-12] [INFO] [1793647361.842169803] [collision_monitor]: Configuring
+[collision_monitor-12] [INFO] [1793647361.852726433] [collision_monitor]: [FootprintApproach]: Creating Polygon
+[collision_monitor-12] [INFO] [1793647361.855304515] [collision_monitor]: [PolygonSlow]: Creating Polygon
+[collision_monitor-12] [INFO] [1793647361.858815903] [collision_monitor]: [scan]: Creating Scan
+[controller_server-7] [INFO] [1793647361.869694345] [local_costmap.local_costmap]: Subscribed to Topics: scan
+[ros2_control_node-2] [INFO] [1793647361.881181753] [controller_manager]: update rate is 20 Hz
+[ros2_control_node-2] [INFO] [1793647361.881311969] [controller_manager]: Spawning controller_manager RT thread with scheduler priority: 50
+[controller_server-7] [INFO] [1793647361.883596881] [local_costmap.local_costmap]: Initialized plugin "obstacle_layer"
+[controller_server-7] [INFO] [1793647361.883692535] [local_costmap.local_costmap]: Using plugin "inflation_layer"
+[controller_server-7] [INFO] [1793647361.889602313] [local_costmap.local_costmap]: Initialized plugin "inflation_layer"
+[ros2_control_node-2] [WARN] [1793647361.894088066] [controller_manager]: Could not enable FIFO RT scheduling policy: with error number <1>(Operation not permitted). See [https://control.ros.org/master/doc/ros2_control/controller_manager/doc/userdoc.html] for details on how to enable realtime scheduling.
+[controller_server-7] [INFO] [1793647361.914211984] [controller_server]: Created progress_checker : progress_checker of type nav2_controller::SimpleProgressChecker
+[controller_server-7] [INFO] [1793647361.922431443] [controller_server]: Created goal checker : general_goal_checker of type nav2_controller::SimpleGoalChecker
+[controller_server-7] [INFO] [1793647361.924641278] [controller_server]: Controller Server has general_goal_checker  goal checkers available.
+[lifecycle_manager-13] [INFO] [1793647361.926628282] [lifecycle_manager_collision]: [34m[1mActivating collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1793647361.926925357] [collision_monitor]: Activating
+[collision_monitor-12] [INFO] [1793647361.927007474] [collision_monitor]: Creating bond (collision_monitor) to lifecycle manager.
+[controller_server-7] [INFO] [1793647361.928346662] [controller_server]: Created controller : FollowPath of type nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-7] [INFO] [1793647361.951611993] [controller_server]: Controller Server has FollowPath  controllers available.
+[lifecycle_manager-11] [INFO] [1793647361.962537638] [lifecycle_manager_navigation]: [34m[1mConfiguring planner_server[0m[0m
+[planner_server-8] [INFO] [1793647361.963928221] [planner_server]: Configuring
+[planner_server-8] [INFO] [1793647361.964036644] [global_costmap.global_costmap]: Configuring
+[planner_server-8] [INFO] [1793647361.974106811] [global_costmap.global_costmap]: Using plugin "static_layer"
+[planner_server-8] [INFO] [1793647361.990030882] [global_costmap.global_costmap]: Subscribing to the map topic (/map) with transient local durability
+[planner_server-8] [INFO] [1793647361.993395957] [global_costmap.global_costmap]: Initialized plugin "static_layer"
+[planner_server-8] [INFO] [1793647361.994845199] [global_costmap.global_costmap]: Using plugin "obstacle_layer"
+[planner_server-8] [INFO] [1793647362.003128727] [global_costmap.global_costmap]: Subscribed to Topics: scan
+[planner_server-8] [INFO] [1793647362.023176004] [global_costmap.global_costmap]: Initialized plugin "obstacle_layer"
+[planner_server-8] [INFO] [1793647362.024844109] [global_costmap.global_costmap]: Using plugin "inflation_layer"
+[planner_server-8] [INFO] [1793647362.030979791] [global_costmap.global_costmap]: Initialized plugin "inflation_layer"
+[planner_server-8] [INFO] [1793647362.032472621] [global_costmap.global_costmap]: Using costmap filter "keepout_filter"
+[lifecycle_manager-13] [INFO] [1793647362.035276477] [lifecycle_manager_collision]: Server collision_monitor connected with bond.
+[lifecycle_manager-13] [INFO] [1793647362.035399237] [lifecycle_manager_collision]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-13] [INFO] [1793647362.035434599] [lifecycle_manager_collision]: [34m[1mCreating bond timer...[0m[0m
+[planner_server-8] [INFO] [1793647362.049313456] [global_costmap.global_costmap]: Initialized costmap filter "keepout_filter"
+[planner_server-8] [INFO] [1793647362.070489892] [planner_server]: Created global planner plugin GridBased of type nav2_navfn_planner/NavfnPlanner
+[planner_server-8] [INFO] [1793647362.072985729] [planner_server]: Configuring plugin GridBased of type NavfnPlanner
+[planner_server-8] [INFO] [1793647362.077765006] [planner_server]: Planner Server has GridBased  planners available.
+[lifecycle_manager-11] [INFO] [1793647362.101789173] [lifecycle_manager_navigation]: [34m[1mConfiguring behavior_server[0m[0m
+[behavior_server-9] [INFO] [1793647362.104125960] [behavior_server]: Configuring
+[behavior_server-9] [INFO] [1793647362.115206977] [behavior_server]: Creating behavior plugin spin of type nav2_behaviors/Spin
+[behavior_server-9] [INFO] [1793647362.119503951] [behavior_server]: Configuring spin
+[behavior_server-9] [INFO] [1793647362.132221487] [behavior_server]: Creating behavior plugin backup of type nav2_behaviors/BackUp
+[behavior_server-9] [INFO] [1793647362.136186696] [behavior_server]: Configuring backup
+[behavior_server-9] [INFO] [1793647362.153549452] [behavior_server]: Creating behavior plugin wait of type nav2_behaviors/Wait
+[behavior_server-9] [INFO] [1793647362.157560201] [behavior_server]: Configuring wait
+[lifecycle_manager-11] [INFO] [1793647362.172173184] [lifecycle_manager_navigation]: [34m[1mConfiguring bt_navigator[0m[0m
+[bt_navigator-10] [INFO] [1793647362.172638461] [bt_navigator]: Configuring
+[ros2_control_node-2] [INFO] [1793647362.479442879] [controller_manager]: Loading controller 'joint_state_broadcaster'
+[lifecycle_manager-11] [INFO] [1793647362.481770257] [lifecycle_manager_navigation]: [34m[1mActivating controller_server[0m[0m
+[controller_server-7] [INFO] [1793647362.482356118] [controller_server]: Activating
+[controller_server-7] [INFO] [1793647362.482540834] [local_costmap.local_costmap]: Activating
+[controller_server-7] [INFO] [1793647362.482587301] [local_costmap.local_costmap]: Checking transform
+[controller_server-7] [INFO] [1793647362.482650921] [local_costmap.local_costmap]: Timed out waiting for transform from base_footprint to odom to become available, tf error: Invalid frame ID "odom" passed to canTransform argument target_frame - frame does not exist
+[ros2_control_node-2] [INFO] [1793647362.551652317] [controller_manager]: Loading controller 'diff_drive_controller'
+[spawner-3] [INFO] [1793647362.593117645] [spawner_joint_state_broadcaster]: [94mLoaded [1mjoint_state_broadcaster[0m
+[ros2_control_node-2] [INFO] [1793647362.649864575] [controller_manager]: Configuring controller 'joint_state_broadcaster'
+[ros2_control_node-2] [INFO] [1793647362.650141200] [joint_state_broadcaster]: 'joints' or 'interfaces' parameter is empty. All available state interfaces will be published
+[spawner-4] [INFO] [1793647362.692421203] [spawner_diff_drive_controller]: [94mLoaded [1mdiff_drive_controller[0m
+[ros2_control_node-2] [INFO] [1793647362.701497358] [controller_manager]: Configuring controller 'diff_drive_controller'
+[spawner-3] [INFO] [1793647362.854040425] [spawner_joint_state_broadcaster]: [92mConfigured and activated [1mjoint_state_broadcaster[0m
+[spawner-4] [INFO] [1793647362.950604355] [spawner_diff_drive_controller]: [92mConfigured and activated [1mdiff_drive_controller[0m
+[controller_server-7] [INFO] [1793647362.983414131] [local_costmap.local_costmap]: start
+[controller_server-7] [INFO] [1793647363.034485094] [controller_server]: Activating controller: FollowPath of type regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-7] [INFO] [1793647363.034629807] [controller_server]: Creating bond (controller_server) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793647363.139040907] [lifecycle_manager_navigation]: Server controller_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793647363.139181364] [lifecycle_manager_navigation]: [34m[1mActivating planner_server[0m[0m
+[planner_server-8] [INFO] [1793647363.139698229] [planner_server]: Activating
+[planner_server-8] [INFO] [1793647363.139808892] [global_costmap.global_costmap]: Activating
+[planner_server-8] [INFO] [1793647363.139849214] [global_costmap.global_costmap]: Checking transform
+[planner_server-8] [INFO] [1793647363.139910530] [global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[INFO] [spawner-3]: process has finished cleanly [pid 36]
+[bridge-6] [WARN] [1793647363.267950930] [picar_bridge]: no /maps: maps are not saved this session
+[bridge-6] [INFO] [1793647363.274785985] [picar_bridge]: bridge on :8090, robot at http://127.0.0.1:8000
+[INFO] [spawner-4]: process has finished cleanly [pid 38]
+[bridge-6] [INFO] [1793647363.345555987] [slam_toolbox]: Node using stack size 40000000
+[planner_server-8] [INFO] [1793647363.640028361] [global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[bridge-6] [INFO] [1793647363.660357131] [slam_toolbox]: Using solver plugin solver_plugins::CeresSolver
+[bridge-6] [INFO] [1793647363.665748928] [slam_toolbox]: CeresSolver: Using SCHUR_JACOBI preconditioner.
+[bridge-6] [WARN] [1793647363.750771253] [slam_toolbox]: minimum laser range setting (0.0 m) exceeds the capabilities of the used Lidar (0.0 m)
+[bridge-6] Registering sensor: [Custom Described Lidar]
+[planner_server-8] [INFO] [1793647364.140185613] [global_costmap.global_costmap]: start
+[planner_server-8] [INFO] [1793647364.141092263] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793647364.146493469] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793647364.146619461] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [INFO] [1793647364.151595584] [global_costmap.global_costmap]: KeepoutFilter: Received filter mask from /keepout_mask topic.
+[planner_server-8] [INFO] [1793647364.641962945] [planner_server]: Activating plugin GridBased of type NavfnPlanner
+[planner_server-8] [INFO] [1793647364.642976161] [planner_server]: Creating bond (planner_server) to lifecycle manager.
+[planner_server-8] [INFO] [1793647364.692831125] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 157 X 216 at 0.050000 m/pix
+[lifecycle_manager-11] [INFO] [1793647364.752193539] [lifecycle_manager_navigation]: Server planner_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793647364.752336748] [lifecycle_manager_navigation]: [34m[1mActivating behavior_server[0m[0m
+[behavior_server-9] [INFO] [1793647364.753197474] [behavior_server]: Activating
+[behavior_server-9] [INFO] [1793647364.753275175] [behavior_server]: Activating spin
+[behavior_server-9] [INFO] [1793647364.753310954] [behavior_server]: Activating backup
+[behavior_server-9] [INFO] [1793647364.753337995] [behavior_server]: Activating wait
+[behavior_server-9] [INFO] [1793647364.753369773] [behavior_server]: Creating bond (behavior_server) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793647364.861712344] [lifecycle_manager_navigation]: Server behavior_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793647364.861913924] [lifecycle_manager_navigation]: [34m[1mActivating bt_navigator[0m[0m
+[bt_navigator-10] [INFO] [1793647364.862656691] [bt_navigator]: Activating
+[bt_navigator-10] [INFO] [1793647365.051196060] [bt_navigator]: Creating bond (bt_navigator) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793647365.165650912] [lifecycle_manager_navigation]: Server bt_navigator connected with bond.
+[lifecycle_manager-11] [INFO] [1793647365.165795850] [lifecycle_manager_navigation]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-11] [INFO] [1793647365.165863054] [lifecycle_manager_navigation]: [34m[1mCreating bond timer...[0m[0m
+[bridge-6] [INFO] [1793647365.170982419] [picar_bridge]: nav2 active: goals taken
+[bt_navigator-10] [INFO] [1793647418.585908813] [bt_navigator]: Begin navigating from current location (0.00, 0.00) to (-1.38, 0.02)
+[controller_server-7] [INFO] [1793647418.608561455] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [WARN] [1793647418.608723162] [controller_server]: No goal checker was specified in parameter 'current_goal_checker'. Server will use only plugin loaded general_goal_checker . This warning will appear once.
+[controller_server-7] [INFO] [1793647419.658890068] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647420.708884431] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647421.696782563] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[controller_server-7] [INFO] [1793647421.708890608] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [INFO] [1793647421.727245507] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647422.758881087] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647423.758894597] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647424.140663344] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 160 X 217 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647424.808889699] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647425.808889032] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647426.140655825] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 160 X 229 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647426.858883505] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647427.858876562] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647428.908892739] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647429.958906904] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647430.359343857] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793647430.396770196] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793647433.836531935] [bt_navigator]: Begin navigating from current location (-1.30, -0.01) to (1.18, 2.45)
+[controller_server-7] [INFO] [1793647433.858285064] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793647434.908702367] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647435.958694901] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647436.958976731] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647438.008712851] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647438.140680445] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 160 X 229 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647439.058710911] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647439.140660835] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 160 X 229 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647440.058694379] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647441.108704710] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647442.108901988] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647443.158695321] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647443.743204735] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647443.769082518] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647444.208708790] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647445.208710707] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647446.261897284] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647447.258858772] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647448.140659755] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 160 X 229 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647448.308709259] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647449.308738168] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647450.358698037] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647451.408701221] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647452.408696011] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647453.458694419] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647454.508717163] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647455.508711909] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647456.558723471] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647457.558713937] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647457.909252047] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793647457.947628967] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793647461.022134457] [bt_navigator]: Begin navigating from current location (1.14, 2.37) to (4.63, -1.40)
+[controller_server-7] [INFO] [1793647461.045800020] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793647462.096155141] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647463.096138323] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647464.146138608] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647465.196139634] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647466.196152574] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647466.593065667] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647466.618185658] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647467.246134944] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647468.246146947] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647469.296491105] [controller_server]: Passing new path to controller.
+[bt_navigator-10] [WARN] [1793647469.872380433] [BehaviorTreeEngine]: Behavior Tree tick rate 100.00 was exceeded!
+[controller_server-7] [INFO] [1793647470.297415104] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647471.347098791] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647472.396424304] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647473.396774863] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647474.446138131] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647475.446135971] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647476.095210519] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647476.116481783] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647476.496152367] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647477.496152939] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647478.546141766] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647479.596135675] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647480.596147989] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647481.646137944] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647482.646135413] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647483.140678239] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 160 X 289 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647483.696143331] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647484.746325942] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647485.140632815] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 160 X 289 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647485.746142551] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647486.140767016] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 160 X 289 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647486.796143554] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647487.796142960] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647488.846139263] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647489.846132519] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647490.896143096] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647491.896245185] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647492.140672051] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 160 X 289 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647492.946142536] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647493.996151848] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647494.996145291] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647496.046140488] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647497.046181698] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647497.646515558] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793647497.682709998] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793647500.368804575] [bt_navigator]: Begin navigating from current location (4.56, -1.46) to (-0.33, -5.81)
+[controller_server-7] [INFO] [1793647500.390453347] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793647501.440799816] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647502.490800444] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647503.490796560] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647504.540868699] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647505.540789106] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647506.590796646] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647507.640801314] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647508.641812668] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647509.690815155] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647510.740804000] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647510.885036436] [PicarSimHardware]: GET /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647510.917178805] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647511.740797134] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647512.790793988] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647513.790754254] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647514.840791787] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647515.840789370] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647516.890812575] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647517.699202553] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647517.715335322] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647517.940798774] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647518.940795110] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647519.140710336] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 160 X 289 at 0.050000 m/pix
+[ros2_control_node-2] [WARN] [1793647519.448267336] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647519.459141164] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647519.990864372] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647520.990798985] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647522.040805182] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647523.090813150] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647523.140642943] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 160 X 290 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647524.090905769] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647525.141877875] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647526.140795218] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647527.190792756] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647528.240799564] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647529.140630255] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 160 X 290 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647529.242198486] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647530.290802160] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647530.810951268] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647530.843277116] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647531.290798948] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647531.924975930] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647531.932754997] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647532.340800561] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647533.140630016] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 162 X 290 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647533.340789012] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647534.140659220] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 189 X 290 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647534.390793470] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647535.140650304] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 189 X 290 at 0.050000 m/pix
+[ros2_control_node-2] [WARN] [1793647535.201173339] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647535.223884800] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647535.391138900] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647536.140651808] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 255 X 290 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647536.440813765] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647537.140667825] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 255 X 290 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647537.441448137] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647538.091209730] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793647538.129456248] [bt_navigator]: Goal succeeded
+[planner_server-8] [INFO] [1793647539.140654373] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 255 X 290 at 0.050000 m/pix
+[bt_navigator-10] [INFO] [1793647541.238900770] [bt_navigator]: Begin navigating from current location (-0.24, -5.78) to (-0.83, -9.72)
+[controller_server-7] [INFO] [1793647541.261217247] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793647542.311511792] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647543.361496553] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647544.361862204] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647544.519064443] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647544.541796707] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[planner_server-8] [INFO] [1793647545.140644683] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 255 X 290 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647545.411495958] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647545.657142093] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647545.667782188] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647546.411489432] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647547.140652520] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 321 X 290 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647547.461583553] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647547.810570455] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647547.927023896] [PicarSimHardware]: robot server reachable again after 3 failed cycles
+[bridge-6] [INFO] [1793647547.927900492] [slam_toolbox]: Message Filter dropping message: frame 'laser' at time 1793647547.853 for reason 'discarding message because the queue is full'
+[ros2_control_node-2] [WARN] [1793647547.970017383] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647547.986339218] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[planner_server-8] [INFO] [1793647548.141053616] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 321 X 290 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647548.511573052] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647548.898910498] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647548.920078468] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[ros2_control_node-2] [WARN] [1793647548.985056128] [PicarSimHardware]: GET /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647549.028489528] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647549.511502630] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647550.561494107] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647551.561535879] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647552.006458768] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647552.039723126] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647552.611499280] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647553.662649699] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647554.661586219] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647555.713636251] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647556.713440688] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647557.761538901] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647558.761481902] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647559.811498801] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647560.000897665] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647560.018729196] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647560.811545484] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647561.861496675] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647562.861481758] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647563.034977103] [PicarSimHardware]: GET /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647563.069346125] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[bt_navigator-10] [WARN] [1793647563.864880904] [BehaviorTreeEngine]: Behavior Tree tick rate 100.00 was exceeded!
+[ros2_control_node-2] [WARN] [1793647563.888841732] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[controller_server-7] [INFO] [1793647563.911510936] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [INFO] [1793647563.916272236] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647564.262079378] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793647564.299522557] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793647568.075458639] [bt_navigator]: Begin navigating from current location (-0.87, -9.64) to (-3.64, -6.17)
+[controller_server-7] [INFO] [1793647568.098131413] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793647569.148393852] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647570.198415694] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647571.198460687] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647572.248403147] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647573.248398471] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647574.298408289] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647575.140655391] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 321 X 290 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647575.298763936] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647576.348399329] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647576.752706428] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647576.776095989] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[planner_server-8] [INFO] [1793647577.140674641] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 321 X 290 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647577.398410152] [controller_server]: Passing new path to controller.
+[bt_navigator-10] [WARN] [1793647577.618278543] [BehaviorTreeEngine]: Behavior Tree tick rate 100.00 was exceeded!
+[ros2_control_node-2] [WARN] [1793647577.846868854] [PicarSimHardware]: GET /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647577.915260386] [PicarSimHardware]: robot server reachable again after 2 failed cycles
+[controller_server-7] [INFO] [1793647578.398401756] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647578.985707023] [PicarSimHardware]: GET /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647579.055622167] [PicarSimHardware]: robot server reachable again after 2 failed cycles
+[controller_server-7] [INFO] [1793647579.448408625] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647580.159981675] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647580.193928597] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647580.448393189] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647581.112039484] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647581.135166128] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647581.498404352] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647582.548398406] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647583.548396327] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647584.362891696] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647584.394607134] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[ros2_control_node-2] [WARN] [1793647584.435884616] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647584.475512554] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647584.598409961] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647585.598605906] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647586.648409262] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647587.698572705] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647588.596208806] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647588.695080276] [PicarSimHardware]: robot server reachable again after 3 failed cycles
+[controller_server-7] [INFO] [1793647588.699793756] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647589.736192239] [PicarSimHardware]: GET /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[controller_server-7] [INFO] [1793647589.748373356] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [INFO] [1793647589.868104074] [PicarSimHardware]: robot server reachable again after 2 failed cycles
+[controller_server-7] [INFO] [1793647590.798407112] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647591.798603913] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647592.848399245] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647593.140683792] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 322 X 290 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647593.848395720] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647594.041169239] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647594.071278165] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[planner_server-8] [INFO] [1793647594.140648256] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 322 X 290 at 0.050000 m/pix
+[ros2_control_node-2] [WARN] [1793647594.146015488] [PicarSimHardware]: GET /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647594.182762840] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647594.898405469] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647595.045403887] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647595.070496076] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[ros2_control_node-2] [WARN] [1793647595.223087683] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647595.255535912] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647595.898459939] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647596.948393356] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647597.360726071] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647597.454841776] [PicarSimHardware]: robot server reachable again after 2 failed cycles
+[controller_server-7] [INFO] [1793647597.998401187] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647598.455820073] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647598.486300556] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[ros2_control_node-2] [WARN] [1793647598.527057357] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647598.563047253] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647598.998426443] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647599.648838404] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793647599.686124022] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793647603.396223765] [bt_navigator]: Begin navigating from current location (-3.61, -6.09) to (-6.59, -3.23)
+[controller_server-7] [INFO] [1793647603.418722085] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793647604.468989475] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647605.469881748] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647606.518993730] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647607.568999099] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647607.917160258] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647607.934860235] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647608.568987702] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647609.618995863] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647610.618989682] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647610.951866955] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647610.976827036] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647611.669068594] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647612.035176429] [PicarSimHardware]: GET /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647612.066993588] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647612.718990190] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647613.034866832] [PicarSimHardware]: GET /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647613.066324298] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647613.718983207] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647614.769216788] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647615.103133991] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647615.116511427] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647615.769027713] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647616.167698046] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647616.190431158] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647616.818985924] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647617.868977207] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647618.868981380] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647619.096836080] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647619.105610973] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647619.918989023] [controller_server]: Passing new path to controller.
+[bt_navigator-10] [WARN] [1793647620.270083404] [BehaviorTreeEngine]: Behavior Tree tick rate 100.00 was exceeded!
+[controller_server-7] [INFO] [1793647620.918976654] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647620.956593821] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647621.038773020] [PicarSimHardware]: robot server reachable again after 2 failed cycles
+[controller_server-7] [INFO] [1793647621.969152296] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647622.969076947] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647624.019009138] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647625.048398842] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647625.065850971] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647625.068994370] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647626.068985523] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647626.894860472] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647626.926736862] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647627.118985973] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647628.119003475] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647628.519564298] [controller_server]: Reached the goal!
+[ros2_control_node-2] [WARN] [1793647628.543811529] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647628.554735277] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[bt_navigator-10] [INFO] [1793647628.557418719] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793647631.764922084] [bt_navigator]: Begin navigating from current location (-6.50, -3.26) to (-10.59, -3.58)
+[controller_server-7] [INFO] [1793647631.787366393] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793647632.837678438] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647632.866683355] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647632.889572817] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647633.887669712] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647634.887672259] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647635.937677510] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647636.140658839] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 322 X 290 at 0.050000 m/pix
+[ros2_control_node-2] [WARN] [1793647636.843703262] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647636.867681667] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[ros2_control_node-2] [WARN] [1793647636.909974719] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[controller_server-7] [INFO] [1793647636.937685742] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [INFO] [1793647636.987766714] [PicarSimHardware]: robot server reachable again after 2 failed cycles
+[planner_server-8] [INFO] [1793647637.140662692] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 322 X 290 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647637.987786595] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647638.987956984] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647640.037675242] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647641.087681067] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647641.335016429] [PicarSimHardware]: GET /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647641.364104697] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647642.087680774] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647642.391761143] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647642.402270708] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647643.137668140] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647644.137679625] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647645.187670606] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647646.187691367] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647646.247539307] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647646.269499926] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647647.237672582] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647648.287666023] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647649.287666504] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647650.337678138] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647651.337665385] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647651.596309215] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647651.617463125] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647652.387666951] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647653.437675425] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647654.438180607] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647655.204073300] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647655.219095320] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647655.487678017] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647656.487666117] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647656.488879484] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793647656.535651718] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793647662.936157523] [bt_navigator]: Begin navigating from current location (-10.50, -3.63) to (-10.09, -2.99)
+[controller_server-7] [INFO] [1793647662.959989248] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793647664.010250103] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647665.060245514] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647665.271215160] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647665.283727734] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647666.060240735] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647666.195336291] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647666.213747272] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647667.110362070] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647667.511385039] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793647667.548625570] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793647675.201677489] [bt_navigator]: Begin navigating from current location (-10.14, -3.05) to (-9.34, -3.74)
+[controller_server-7] [INFO] [1793647675.227100471] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793647676.277358774] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647677.327387027] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647678.327391731] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647679.377377303] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647680.377375295] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647681.427379397] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647682.477897409] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647683.477354196] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647684.144701706] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647684.152254060] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647684.527372971] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647684.529160235] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793647684.572438518] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793647690.272198958] [bt_navigator]: Begin navigating from current location (-9.39, -3.66) to (-6.04, -7.39)
+[controller_server-7] [INFO] [1793647690.295959995] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793647691.346228427] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647691.859642185] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647691.938808054] [PicarSimHardware]: robot server reachable again after 2 failed cycles
+[controller_server-7] [INFO] [1793647692.396221028] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647693.052281495] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647693.077371132] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647693.397909923] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647694.446217404] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647695.234875885] [PicarSimHardware]: GET /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647695.262703336] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647695.446214845] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647696.334984290] [PicarSimHardware]: GET /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647696.366327568] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[ros2_control_node-2] [WARN] [1793647696.452199487] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647696.475109583] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647696.496240218] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647697.546212539] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647698.395670547] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647698.430303263] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647698.546222580] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647699.546489751] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647700.435327139] [PicarSimHardware]: GET /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647700.471704969] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647700.596227779] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647701.489815324] [PicarSimHardware]: GET /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647701.558313319] [PicarSimHardware]: robot server reachable again after 2 failed cycles
+[controller_server-7] [INFO] [1793647701.646219601] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647702.646253630] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647703.635060914] [PicarSimHardware]: GET /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647703.676390512] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647703.696647452] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647704.697288832] [controller_server]: Passing new path to controller.
+[bridge-6] WARNING: Logging before InitGoogleLogging() is written to STDERR
+[bridge-6] W1102 19:28:24.890574   227 preprocessor.cc:62] Specified options.num_threads: 50 exceeds maximum available from the threading model Ceres was compiled with: 6.  Bounding to maximum number available.
+[controller_server-7] [INFO] [1793647705.746223010] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647706.140687569] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 322 X 290 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793647706.796229443] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647706.865121001] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647706.884353983] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647707.796211774] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647708.035003162] [PicarSimHardware]: GET /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647708.057855058] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647708.846235268] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647709.157473981] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647709.177880137] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647709.896227040] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647710.305088206] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647710.337699671] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647710.896220557] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647711.439336419] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647711.451464380] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647711.946218471] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647712.946221174] [controller_server]: Passing new path to controller.
+[bridge-6] W1102 19:28:33.092314   227 preprocessor.cc:62] Specified options.num_threads: 50 exceeds maximum available from the threading model Ceres was compiled with: 6.  Bounding to maximum number available.
+[ros2_control_node-2] [WARN] [1793647713.102261304] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647713.124620904] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[bridge-6] W1102 19:28:33.377602   227 preprocessor.cc:62] Specified options.num_threads: 50 exceeds maximum available from the threading model Ceres was compiled with: 6.  Bounding to maximum number available.
+[bridge-6] W1102 19:28:33.695657   227 preprocessor.cc:62] Specified options.num_threads: 50 exceeds maximum available from the threading model Ceres was compiled with: 6.  Bounding to maximum number available.
+[bridge-6] W1102 19:28:33.993413   227 preprocessor.cc:62] Specified options.num_threads: 50 exceeds maximum available from the threading model Ceres was compiled with: 6.  Bounding to maximum number available.
+[controller_server-7] [INFO] [1793647713.997908311] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793647714.140669120] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 322 X 290 at 0.050000 m/pix
+[bridge-6] W1102 19:28:34.275473   227 preprocessor.cc:62] Specified options.num_threads: 50 exceeds maximum available from the threading model Ceres was compiled with: 6.  Bounding to maximum number available.
+[bridge-6] W1102 19:28:34.545368   206 preprocessor.cc:62] Specified options.num_threads: 50 exceeds maximum available from the threading model Ceres was compiled with: 6.  Bounding to maximum number available.
+[bridge-6] W1102 19:28:34.883338   227 preprocessor.cc:62] Specified options.num_threads: 50 exceeds maximum available from the threading model Ceres was compiled with: 6.  Bounding to maximum number available.
+[controller_server-7] [INFO] [1793647714.996261111] [controller_server]: Passing new path to controller.
+[bridge-6] W1102 19:28:35.134310   206 preprocessor.cc:62] Specified options.num_threads: 50 exceeds maximum available from the threading model Ceres was compiled with: 6.  Bounding to maximum number available.
+[bridge-6] W1102 19:28:35.481775   227 preprocessor.cc:62] Specified options.num_threads: 50 exceeds maximum available from the threading model Ceres was compiled with: 6.  Bounding to maximum number available.
+[controller_server-7] [INFO] [1793647716.046349578] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647717.096223341] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647718.096226166] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647719.146222920] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647720.050797167] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647720.061995227] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647720.146243525] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647721.196696389] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647722.246210822] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647722.496646951] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793647722.534432868] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793647726.090596558] [bt_navigator]: Begin navigating from current location (-6.11, -7.34) to (-7.14, -9.39)
+[controller_server-7] [INFO] [1793647726.113861583] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793647727.166133535] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647728.166026713] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647729.216044811] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647730.266036413] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647731.267723138] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647732.316057813] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647733.089877707] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647733.108541304] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647733.316044127] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647734.366036566] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647735.366040216] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647735.935208463] [PicarSimHardware]: GET /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647735.993220521] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647736.416035803] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647737.416042224] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647738.145168520] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647738.160683231] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647738.466040699] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647739.466037312] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647740.420022421] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647740.500567090] [PicarSimHardware]: robot server reachable again after 2 failed cycles
+[controller_server-7] [INFO] [1793647740.516047087] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647741.456319102] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647741.479921716] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647741.516210402] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793647741.522373691] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647741.537615832] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793647742.566041007] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647743.566036424] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647744.616037172] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647745.666031826] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793647745.866613983] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793647745.902402725] [bt_navigator]: Goal succeeded
+[ros2_control_node-2] [WARN] [1793647747.250343270] [PicarSimHardware]: POST /wheels to http://127.0.0.1:8000 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793647747.264672136] [PicarSimHardware]: robot server reachable again after 1 failed cycles

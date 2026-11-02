@@ -22,6 +22,7 @@ so a scorer that misreads a delay fails there before any board run.
 
 from __future__ import annotations
 
+import bisect
 import json
 import math
 import re
@@ -227,7 +228,7 @@ def controller_rate(pace_rows: list, t0=None, t1=None, min_msgs: int = 3) -> dic
     cmds = sorted(r["t"] for r in pace_rows if r.get("k") == "cmd")
     n_int, dur, gaps = 0, 0.0, []
     for a, b in spans:
-        ts = [t for t in cmds if a <= t <= b]
+        ts = cmds[bisect.bisect_left(cmds, a):bisect.bisect_right(cmds, b)]
         if len(ts) < min_msgs:
             continue
         n_int += len(ts) - 1
@@ -265,10 +266,12 @@ def map_updates(pace_rows: list, t0=None, t1=None) -> list:
     return sorted(r["t"] for r in _within(pace_rows, t0, t1) if r.get("k") == "map")
 
 
-def shim_spans(shim_rows: list, kind: str, t0=None, t1=None) -> list:
-    """The shim's [t0, t1] spans of one kind that start inside the window."""
+def shim_spans(shim_rows: list, kind: str, t0=None, t1=None, caller=None) -> list:
+    """The shim's [t0, t1] spans of one kind (and calling file, if named)
+    that start inside the window."""
     return sorted([r["t0"], r["t1"]] for r in shim_rows
-                  if r.get("k") == kind and (t0 is None or r["t0"] >= t0)
+                  if r.get("k") == kind and (caller is None or r.get("caller") == caller)
+                  and (t0 is None or r["t0"] >= t0)
                   and (t1 is None or r["t0"] <= t1))
 
 
@@ -279,10 +282,18 @@ def durations_ms(spans: list) -> list:
 def room_work(shim_rows: list, t0: float, t1: float) -> dict:
     """P12: `segment()` and spacing's walk per call, and the pause they make
     on the mission thread: their summed time over the window's length."""
+    def stats(v):
+        return {"n": len(v), "p50_ms": percentile(v, 50), "p90_ms": percentile(v, 90),
+                "max_ms": max(v) if v else None}
+    if t0 is None or t1 is None:
+        return {"segment": stats([]), "walk": stats([]), "pause_share": None}
     seg = durations_ms(shim_spans(shim_rows, "segment", t0, t1))
     walk = durations_ms(shim_spans(shim_rows, "walk", t0, t1))
     pause = (sum(seg) + sum(walk)) / 1000 / (t1 - t0) if t1 > t0 else None
-    return {"segment": {"n": len(seg), "p50_ms": percentile(seg, 50), "p90_ms": percentile(seg, 90),
+    by_caller = {c: stats(durations_ms(shim_spans(shim_rows, "segment", t0, t1, c)))
+                 for c in sorted({r.get("caller") for r in shim_rows if r.get("k") == "segment"}, key=str)}
+    return {"segment_by_caller": by_caller,
+            "segment": {"n": len(seg), "p50_ms": percentile(seg, 50), "p90_ms": percentile(seg, 90),
                         "max_ms": max(seg) if seg else None},
             "walk": {"n": len(walk), "p50_ms": percentile(walk, 50), "p90_ms": percentile(walk, 90),
                      "max_ms": max(walk) if walk else None},
@@ -323,6 +334,7 @@ def overlaps(groups: dict, instants: Sequence[float]) -> dict:
         m = _merge(spans)
         both = m if both is None else _intersect(both, m)
     both = both or []
-    hit = sum(any(a <= t <= b for t in instants) for a, b in both)
+    inst = sorted(instants)
+    hit = sum(bisect.bisect_right(inst, b) > bisect.bisect_left(inst, a) for a, b in both)
     return {"all_spans": len(both), "all_s": round(sum(b - a for a, b in both), 3),
             "all_with_map_update": hit, "per_group": {k: len(v) for k, v in groups.items()}}

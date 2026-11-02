@@ -1,0 +1,20 @@
+blue-shoes-20260907-152528/frame-0000.jpg vis=False answered p=0.0 1757ms
+blue-shoes-20260907-152528/frame-0001.jpg vis=False answered p=0.0 1739ms
+blue-shoes-20260907-152528/frame-0002.jpg vis=False answered p=0.0 1704ms
+blue-shoes-20260907-152528/frame-0003.jpg vis=False answered p=0.0 1704ms
+blue-shoes-20260907-152528/frame-0004.jpg vis=True answered p=0.5263836066106853 1727ms
+blue-shoes-20260907-152528/frame-0005.jpg vis=True answered p=0.998021198335277 1972ms
+blue-shoes-20260907-152528/frame-0006.jpg vis=False answered p=0.0 1791ms
+blue-shoes-20260907-152528/frame-0007.jpg vis=True answered p=0.0 1838ms
+blue-shoes-20260907-152528/frame-0008.jpg vis=True answered p=0.9974601225569757 1998ms
+blue-shoes-20260907-152528/frame-0009.jpg vis=True answered p=0.999455668613179 1993ms
+blue-shoes-20260907-152528/frame-0010.jpg vis=True answered p=0.663728509547794 1828ms
+blue-shoes-20260907-152528/frame-0011.jpg vis=True answered p=0.9994713660412207 1939ms
+blue-shoes-20260907-152528/frame-0012.jpg vis=True answered p=0.9998227262061807 1953ms
+blue-shoes-20260907-152528/frame-0013.jpg vis=True answered p=0.9987543456088481 1979ms
+blue-shoes-20260907-152528/frame-0014.jpg vis=True answered p=0.9996910513097078 1942ms
+blue-shoes-20260907-152528/frame-0015.jpg vis=True answered p=0.9984611559166809 2141ms
+blue-shoes-20260907-152528/frame-0016.jpg vis=True answered p=0.9988114425784715 2057ms
+blue-shoes-20260907-152528/frame-0017.jpg vis=False answered p=0.9987652862691407 2015ms
+blue-shoes-20260907-152528/frame-0018.jpg vis=True answered p=0.9993528308213031 2001ms
+{"statuses": {"answered": 19}, "latency_ms": {"n": 19, "p50": 1941.5194690000135, "p90": 2056.577675999961, "max": 2141.1178500000005}}

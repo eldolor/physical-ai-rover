@@ -54,14 +54,14 @@ waitfor() {  # seconds what cmd...
     sleep 1
   done
 }
-PERC=; VLMP=; CLD=; MIS=; MAPP=
+PERC=; VLMP=; CLD=; MIS=; MAPP=; WHL=
 teardown() {
   rm -f "$OUT/missions.run" "$OUT/mappoll.run"
   [ -n "$MIS" ] && { for _ in $(seq 60); do kill -0 $MIS 2>/dev/null || break; sleep 1; done; }
   docker exec "$NAME" pkill -f ros_pace.py >/dev/null 2>&1; sleep 1
   docker cp "$NAME:/tmp/pace.jsonl" "$OUT/pace.jsonl" >/dev/null 2>&1
   docker logs "$NAME" > "$OUT/ros.log" 2>&1
-  kill $PERC $MIS $MAPP $CLD 2>/dev/null
+  kill $PERC $MIS $MAPP $CLD $WHL 2>/dev/null
   docker rm -f "$NAME" >/dev/null 2>&1
   pids="$(pgrep -f 'bash service/tunnel/run.sh'; for p in 8000 8001 8002 8003 8004 8080; do lsof -nP -tiTCP:$p -sTCP:LISTEN; done)"
   [ -n "$pids" ] && kill $pids 2>/dev/null; sleep 3
@@ -103,6 +103,8 @@ LOCAL_VLM_ENGINES="$ENGINES" LOCAL_VLM_EDGELLM="$EDGELLM" \
 VLMP=$!
 echo 1000 | sudo tee /proc/$VLMP/oom_score_adj >/dev/null
 waitfor 300 "local VLM ready" sh -c "kill -0 $VLMP && curl -s localhost:8005/health | grep -q '\"ready\": *true'"
+# Its driver child too (the unit's OOMScoreAdjust covers the whole service).
+for c in $(pgrep -P $VLMP); do echo 1000 | sudo tee /proc/$c/oom_score_adj >/dev/null; done
 echo "== VE ready $(date +%T); MemAvailable $(awk '/MemAvailable/{print int($2/1024)}' /proc/meminfo) MB" | tee -a "$OUT/run.log"
 
 # The robot server and the brain, with the brain's timing shim (P4, P12).
@@ -140,6 +142,9 @@ MIS=$!
 python "$HERE/board_probe.py" mappoll "$OUT/mappoll.run" "$OUT/mappoll.jsonl" 1.0 > "$OUT/mappoll.log" 2>&1 &
 MAPP=$!
 sleep 30   # the first mission under way
+# When a late tick happened (the window's verdict reads only the two ends).
+( while true; do echo "$(date +%s.%N) $(curl -s "${H[@]}" localhost:8000/health | python3 -c 'import sys,json; w=json.load(sys.stdin)["wheel_loop"]; print(w["moving_ticks"], w["late_ticks"], w["max_dt_s"])' 2>/dev/null)"; sleep 5; done ) > "$OUT/wheel.log" &
+WHL=$!
 
 health health_w0.json; stamp window_start; stamp p1_start
 sleep "$P1_S"

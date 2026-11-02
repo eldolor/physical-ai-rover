@@ -44,7 +44,7 @@ args = [a for a in sys.argv[1:] if a != "--hazards"]
 class HazardYoloE(bp.YoloE):
     """YOLOE with the target plus the five hazard prompts (3.74.C)."""
 
-    last_hazards = 0
+    last_hazards = None
 
     def _prompts(self, text):
         return [text, *HAZARDS]
@@ -53,13 +53,17 @@ class HazardYoloE(bp.YoloE):
         import torch
         from ultralytics.utils.downloads import attempt_download_asset
 
-        from brain.text_encoder import MOBILECLIP, yoloe_features
+        from brain.text_encoder import MOBILECLIP, YOLOE_TEXT_MODEL, yoloe_features
 
         self._classes = None
         if next(self.model.model.parameters()).is_meta:
             from ultralytics import YOLOE as _YE
             self.model = _YE(self.weights)
         net = self.model.model
+        if getattr(net, "text_model", YOLOE_TEXT_MODEL) != YOLOE_TEXT_MODEL:
+            # The shipped path encodes such a checkpoint in process; P2 would
+            # not measure it (refuse rather than prompt with the wrong model).
+            raise SystemExit(f"YOLOE text model {net.text_model!r}: not P2's pipeline")
         source = str(Path(attempt_download_asset(MOBILECLIP)).resolve())
         param = next(net.parameters())
         names = self._prompts(text)
@@ -108,6 +112,7 @@ def pipeline_for(target, *a, **k):
     inner = p.perceive
 
     def perceive(frame):
+        HazardYoloE.last_hazards = None      # a frame the detector skips counts none
         t0 = time.time()
         r = inner(frame)
         if LOG:

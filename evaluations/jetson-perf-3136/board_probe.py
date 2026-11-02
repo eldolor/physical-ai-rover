@@ -42,7 +42,9 @@ def missions(flag: str, out: str, targets: list) -> int:
     import httpx
 
     h = {"x-app-secret": os.environ.get("APP_SHARED_SECRET", "")}
-    b = httpx.Client(base_url=BRAIN, timeout=60, headers=h)
+    # A new target's first build may take a minute or more (3.81 T1); a
+    # client timeout would leave the mission running unrecorded.
+    b = httpx.Client(base_url=BRAIN, timeout=600, headers=h)
     i = 0
     with open(out, "a", buffering=1) as f:
         while os.path.exists(flag):
