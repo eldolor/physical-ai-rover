@@ -576,6 +576,7 @@ def test_a_start_is_not_refused_on_one_low_reading_when_the_ladder_says_ok(serve
     from control.remote_robot import RemoteRobot
     from tests.conftest import ASGI_BASE_URL
     client, bat, body, reading, _ = served
+    reading(12.0)
     reading(10.40)          # one reading under the 10.5 V floor; the ladder: ok
     assert bat["ladder"].level == OK
     remote = RemoteRobot(ASGI_BASE_URL, client=client)
@@ -584,3 +585,18 @@ def test_a_start_is_not_refused_on_one_low_reading_when_the_ladder_says_ok(serve
                                            "policy": "frontier"})
     assert r.status_code == 200, r.text
     brain.post("/mission/stop")
+
+
+def test_a_fresh_robot_server_still_refuses_a_start_under_the_floor(served):
+    """Thermos round 2: the ladder's level is `ok` until it holds two samples,
+    so a fresh robot server reading 10.1 V let a mission start."""
+    from control.brain_server import create_app as brain_app
+    from control.remote_robot import RemoteRobot
+    from tests.conftest import ASGI_BASE_URL
+    client, bat, body, reading, _ = served
+    body.battery.v = 10.10
+    remote = RemoteRobot(ASGI_BASE_URL, client=client)
+    brain = TestClient(brain_app(robot_factory=lambda: remote))
+    r = brain.post("/mission/start", json={"target_object": "purple elephant",
+                                           "policy": "frontier"})
+    assert r.status_code == 409 and r.json()["detail"].startswith("battery_low"), r.text

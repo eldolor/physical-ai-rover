@@ -175,8 +175,10 @@ it too: a read whose `level` is `reserve` or `poweroff` ends it at once
 battery; a goal reply with either reason does the same. A FORWARD refused
 `battery_check` (a low reading read again at rest) is not counted toward
 `stuck_after`. `POST /mission/start` answers 409 `battery_low: ...` before it
-lifts a person's Stop when the robot server's `level` is `low` or worse; a
-server older than 3.137 (no `level`) is judged on one reading under
+lifts a person's Stop when the robot server's `level` is `low` or worse, or
+a check at rest is open; when the ladder holds fewer than two samples (a
+fresh robot server), a server older than 3.137 (no `level`), or this brain's
+floor is set above the ladder's Low, it is judged on one reading under
 `battery_floor_v`; an unreadable battery never refuses a start. `max_steps` defaults to
 `derived_max_steps(mission_time_limit_s)` = limit / 0.5 s x 2 (120 with no
 limit); an explicit `max_steps` overrides it. Under `policy: "vision"` only,

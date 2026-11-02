@@ -973,8 +973,13 @@ def create_app(
         v = reading.get("v") if reading.get("usable") else None
         floor = config["battery_floor_v"]
         low_v = ((reading.get("ladder") or {}).get("levels_v") or {}).get("low")
-        if level is not None and (not floor or not isinstance(low_v, (int, float))
-                                  or floor <= low_v):
+        ladder = reading.get("ladder") or {}
+        if ladder.get("checking"):
+            return ("battery_low: the robot server is reading a low battery again at rest "
+                    "-- try again in a moment")
+        settled = ladder.get("samples", 2) >= 2
+        if level is not None and settled and (not floor or not isinstance(low_v, (int, float))
+                                              or floor <= low_v):
             # The ladder's level is two distinct samples (M2.7); one reading
             # under the floor is no reason to refuse while this brain's floor
             # is the ladder's Low or under it.

@@ -203,6 +203,8 @@ class BatteryLadder:
             # The countdown the twin shows under Reserve (3.137.B).
             "poweroff_in_s": poweroff_in,
             "poweroff_why": self.poweroff_why,
+            # Distinct samples held (0-2): a level needs two.
+            "samples": len(self.samples),
             "checks": self.checks,
             "sags": self.sags,
         }

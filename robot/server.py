@@ -226,6 +226,9 @@ BATTERY_WHEELS_WAIT_S = 2.0
 # The refusals a battery level answers with (3.137): the brain ends its
 # mission on the first two; the third holds it for a reading at rest.
 BATTERY_REASONS = (BATTERY_RESERVE, BATTERY_POWEROFF, BATTERY_CHECK)
+# Refusals a verb gets before it moves at all: no motion to stamp. (A safety
+# veto is a pre-check, or a guarded verb that covered under 1 cm.)
+REFUSED_UNMOVED = (*BATTERY_REASONS, "safety_distance")
 
 
 def battery_settings(config: dict, mode: str) -> dict:
@@ -1122,6 +1125,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         # 3.137: a verb that moves the body keeps every battery reading off
         # "at rest" while it runs, and for BATTERY_REST_S after (a pan never).
         body = req.action in BODY_MOVES
+        outcome = None
         if body:
             with verbs_lock:
                 batt["body_verbs"] += 1
@@ -1129,10 +1133,14 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             with verb_running(driver, stamped=stamp):
                 outcome = _carry_out(req, driver, now, stops)
         finally:
-            if body:
-                # Stamped first, whatever the outcome: a verb cut short may
-                # still have moved.
+            if body and not (isinstance(outcome, dict) and not outcome.get("executed")
+                             and outcome.get("reason") in REFUSED_UNMOVED):
+                # Stamped whatever else the outcome: a verb cut short, or one
+                # that raised, may still have moved. Only a refusal made before
+                # any motion is not stamped (a person pressing into a wall
+                # during a check would hold it off rest for its whole 15 s).
                 mark_moving()
+            if body:
                 with verbs_lock:
                     batt["body_verbs"] -= 1
         if is_autonomy(driver) and isinstance(outcome, dict):

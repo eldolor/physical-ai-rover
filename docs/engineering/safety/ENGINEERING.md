@@ -99,7 +99,8 @@ The robot server reads the pack (`robot.get_battery()`, the board's `v`) every
 monotonic clock otherwise, wrapped so it never runs backwards across a house
 swap -- from `battery_loop()` (off the event loop), and, only when that loop
 is not running (in process: tests, evaluations), at the top of `/action`,
-`/wheels` and `/world/goal`; `/battery` reads the last poll's reading. Each
+`/wheels` and `/world/goal`; `/battery` polls (rate-limited, forced only
+before the first reading) and returns that poll's reading. Each
 read goes to `BatteryLadder.observe(v, now, at_rest)`; `at_rest` is nothing
 having turned the wheels for `BATTERY_REST_S`, stamped where motion happens
 (a verb's start and end, a non-zero wheel command, a moving wheel-loop tick)
