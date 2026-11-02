@@ -171,3 +171,158 @@ def map_summary(rows: list) -> dict:
 
 def load_json(path: Path) -> dict:
     return json.loads(Path(path).read_text())
+
+
+# ------------------------------------------------- 3.136.B: P11, P12, P4
+
+EXECUTING = 2                       # action_msgs/GoalStatus.STATUS_EXECUTING
+TERMINAL = {4: "succeeded", 5: "canceled", 6: "aborted"}
+
+
+def jsonl(path) -> list:
+    """Rows of a JSON-lines file; a line cut by a kill is skipped."""
+    out = []
+    p = Path(path)
+    if not p.exists():
+        return out
+    for line in p.read_text().splitlines():
+        try:
+            out.append(json.loads(line))
+        except ValueError:
+            continue
+    return out
+
+
+def _within(rows, t0, t1, key="t"):
+    return [r for r in rows if (t0 is None or r[key] >= t0) and (t1 is None or r[key] <= t1)]
+
+
+def executing_spans(pace_rows: list, t0=None, t1=None) -> list:
+    """`/follow_path` status rows -> [start, end] spans while some goal is
+    EXECUTING (the controller's loop runs only then); clipped to the window."""
+    spans, start = [], None
+    for r in sorted((r for r in pace_rows if r.get("k") == "fp"), key=lambda r: r["t"]):
+        busy = any(s == EXECUTING for _, s in r.get("goals") or [])
+        if busy and start is None:
+            start = r["t"]
+        elif not busy and start is not None:
+            spans.append([start, r["t"]])
+            start = None
+    if start is not None and t1 is not None:
+        spans.append([start, t1])
+    out = []
+    for a, b in spans:
+        a, b = max(a, t0) if t0 is not None else a, min(b, t1) if t1 is not None else b
+        if b > a:
+            out.append([a, b])
+    return out
+
+
+def controller_rate(pace_rows: list, t0=None, t1=None, min_msgs: int = 3) -> dict:
+    """P11: nav2's controller output (`cmd_vel/nav`) inside the spans where
+    FollowPath is executing. Per span, (messages - 1) / (last - first); the
+    pooled rate is the sum of the intervals over the sum of their time, and
+    `periods_ms` are the gaps between messages in a span (its p50/p90)."""
+    spans = executing_spans(pace_rows, t0, t1)
+    cmds = sorted(r["t"] for r in pace_rows if r.get("k") == "cmd")
+    n_int, dur, gaps = 0, 0.0, []
+    for a, b in spans:
+        ts = [t for t in cmds if a <= t <= b]
+        if len(ts) < min_msgs:
+            continue
+        n_int += len(ts) - 1
+        dur += ts[-1] - ts[0]
+        gaps += [(y - x) * 1000 for x, y in zip(ts, ts[1:])]
+    rate = n_int / dur if dur > 0 else None
+    return {"spans": len(spans), "intervals": n_int, "executing_s": round(dur, 1),
+            "rate_hz": round(rate, 3) if rate else None,
+            "mean_period_ms": round(1000 / rate, 2) if rate else None,
+            "period_p50_ms": percentile(gaps, 50), "period_p90_ms": percentile(gaps, 90)}
+
+
+def scan_lag(pace_rows: list, t0=None, t1=None) -> dict:
+    """P11: a scan's age on arrival at a ROS subscriber (receipt minus its
+    header stamp, which the bridge sets to the capture time since 3.40)."""
+    lags = [(r["t"] - r["stamp"]) * 1000 for r in _within(pace_rows, t0, t1)
+            if r.get("k") == "scan" and r.get("stamp")]
+    return {"n": len(lags), "p50_ms": percentile(lags, 50), "p90_ms": percentile(lags, 90),
+            "max_ms": max(lags) if lags else None}
+
+
+def nav_goals(pace_rows: list, t0=None, t1=None) -> dict:
+    """Each `/navigate_to_pose` goal's end (succeeded / canceled / aborted),
+    for goals that ended inside the window."""
+    ended = {}
+    for r in sorted((r for r in pace_rows if r.get("k") == "nav"), key=lambda r: r["t"]):
+        for gid, s in r.get("goals") or []:
+            if s in TERMINAL and gid not in ended:
+                ended[gid] = (r["t"], TERMINAL[s])
+    inside = [s for t, s in ended.values() if (t0 is None or t >= t0) and (t1 is None or t <= t1)]
+    return {"n": len(inside), **{v: inside.count(v) for v in TERMINAL.values()}}
+
+
+def map_updates(pace_rows: list, t0=None, t1=None) -> list:
+    return sorted(r["t"] for r in _within(pace_rows, t0, t1) if r.get("k") == "map")
+
+
+def shim_spans(shim_rows: list, kind: str, t0=None, t1=None) -> list:
+    """The shim's [t0, t1] spans of one kind that start inside the window."""
+    return sorted([r["t0"], r["t1"]] for r in shim_rows
+                  if r.get("k") == kind and (t0 is None or r["t0"] >= t0)
+                  and (t1 is None or r["t0"] <= t1))
+
+
+def durations_ms(spans: list) -> list:
+    return [(b - a) * 1000 for a, b in spans]
+
+
+def room_work(shim_rows: list, t0: float, t1: float) -> dict:
+    """P12: `segment()` and spacing's walk per call, and the pause they make
+    on the mission thread: their summed time over the window's length."""
+    seg = durations_ms(shim_spans(shim_rows, "segment", t0, t1))
+    walk = durations_ms(shim_spans(shim_rows, "walk", t0, t1))
+    pause = (sum(seg) + sum(walk)) / 1000 / (t1 - t0) if t1 > t0 else None
+    return {"segment": {"n": len(seg), "p50_ms": percentile(seg, 50), "p90_ms": percentile(seg, 90),
+                        "max_ms": max(seg) if seg else None},
+            "walk": {"n": len(walk), "p50_ms": percentile(walk, 50), "p90_ms": percentile(walk, 90),
+                     "max_ms": max(walk) if walk else None},
+            "pause_share": round(pause, 4) if pause is not None else None}
+
+
+def _intersect(a: list, b: list) -> list:
+    """Two sorted span lists -> the spans where both are in progress."""
+    out, i, j = [], 0, 0
+    while i < len(a) and j < len(b):
+        lo, hi = max(a[i][0], b[j][0]), min(a[i][1], b[j][1])
+        if hi > lo:
+            out.append([lo, hi])
+        if a[i][1] < b[j][1]:
+            i += 1
+        else:
+            j += 1
+    return out
+
+
+def _merge(spans: list) -> list:
+    out = []
+    for a, b in sorted(spans):
+        if out and a <= out[-1][1]:
+            out[-1][1] = max(out[-1][1], b)
+        else:
+            out.append([a, b])
+    return out
+
+
+def overlaps(groups: dict, instants: Sequence[float]) -> dict:
+    """P4's count: `groups` maps a name to its spans (explore's map fetch, a
+    VE question, a perception frame, the room cut); the spans where ALL are
+    in progress, how many there are and their time, and how many of them a
+    SLAM map update (`instants`, /map arrivals) lands in."""
+    both = None
+    for spans in groups.values():
+        m = _merge(spans)
+        both = m if both is None else _intersect(both, m)
+    both = both or []
+    hit = sum(any(a <= t <= b for t in instants) for a, b in both)
+    return {"all_spans": len(both), "all_s": round(sum(b - a for a, b in both), 3),
+            "all_with_map_update": hit, "per_group": {k: len(v) for k, v in groups.items()}}

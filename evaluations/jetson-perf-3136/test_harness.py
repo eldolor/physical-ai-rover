@@ -220,3 +220,35 @@ def test_plant_verdict_tolerance():
     import plant
     assert plant.verdict(30, 131)["met"] and plant.verdict(30, 139.9)["met"]
     assert not plant.verdict(30, 141)["met"] and not plant.verdict(30, 119)["met"]
+
+
+# ------------------------------------------------- 3.136.B's scorers
+
+def test_controller_rate_reads_only_executing_spans():
+    rows = [{"k": "fp", "t": 10.0, "goals": [["a", 2]]}, {"k": "fp", "t": 11.0, "goals": [["a", 4]]}]
+    rows += [{"k": "cmd", "t": 10.0 + i * 0.05} for i in range(21)]        # 20 Hz while executing
+    rows += [{"k": "cmd", "t": 12.0 + i * 0.1} for i in range(10)]         # a behaviour, after
+    r = scorers.controller_rate(rows)
+    assert r["intervals"] == 20 and abs(r["rate_hz"] - 20.0) < 0.01
+
+
+def test_scan_lag_and_nav_goals():
+    rows = [{"k": "scan", "t": 5.0 + i, "stamp": 5.0 + i - 0.007} for i in range(10)]
+    assert abs(scorers.scan_lag(rows)["p90_ms"] - 7.0) < 0.01
+    nav = [{"k": "nav", "t": 1.0, "goals": [["a", 2]]}, {"k": "nav", "t": 2.0, "goals": [["a", 4], ["b", 2]]},
+           {"k": "nav", "t": 3.0, "goals": [["a", 4], ["b", 5]]}, {"k": "nav", "t": 9.0, "goals": [["c", 6]]}]
+    assert scorers.nav_goals(nav, 0, 5) == {"n": 2, "succeeded": 1, "canceled": 1, "aborted": 0}
+    assert scorers.nav_goals(nav)["aborted"] == 1
+
+
+def test_room_work_pause_share():
+    rows = [{"k": "segment", "t0": 100.0 + 5 * i, "t1": 100.2 + 5 * i} for i in range(10)]
+    rows += [{"k": "walk", "t0": 100.2 + 5 * i, "t1": 100.25 + 5 * i} for i in range(10)]
+    r = scorers.room_work(rows, 100.0, 150.0)
+    assert r["segment"]["n"] == 10 and abs(r["pause_share"] - 0.05) < 1e-6
+
+
+def test_overlaps_needs_every_group_and_counts_map_updates():
+    g = {"a": [[0, 2], [5, 6]], "b": [[1, 3]], "c": [[1.5, 1.8], [5.2, 5.5]]}
+    o = scorers.overlaps(g, [1.6, 5.3])
+    assert o["all_spans"] == 1 and abs(o["all_s"] - 0.3) < 1e-9 and o["all_with_map_update"] == 1

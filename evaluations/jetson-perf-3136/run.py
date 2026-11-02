@@ -148,6 +148,139 @@ def smoke_inner(a) -> int:
     return 0 if ok else 1
 
 
+# ------------------------------------------------- 3.136.B: the steady window
+
+P8_REFERENCE = ROOT / "evaluations/identity-378/V/TVE-299.json"
+BARS = {"P1": 250.0, "P2_ms": 250.0, "P2_mem_mb": 100.0, "P8": 1500.0, "P11_ratio": 0.90,
+        "P12_pause": 0.10}
+CONTROLLER_HZ = 20.0       # nav2.yaml controller_frequency
+
+
+def _f(p: Path):
+    return float(p.read_text().strip()) if p.exists() and p.read_text().strip() else None
+
+
+def score_steady(out: Path, rec: dict) -> dict:
+    """3.136.B's rows from one steady.sh window (amendment 2)."""
+    b = out / "board"
+    st = {k: _f(b / k) for k in ("window_start", "window_end", "p1_start", "p1_end",
+                                 "p8_start", "p8_end", "p2_start", "p2_end")}
+    ws, we = st["window_start"], st["window_end"]
+    tele = br.read_sysfs(b / "telemetry/sysfs.jsonl") if (b / "telemetry/sysfs.jsonl").exists() else []
+    day = time.strftime("%Y-%m-%d", time.localtime(ws)) if ws else None
+    h0 = json.loads((b / "health_w0.json").read_text() or "{}") if (b / "health_w0.json").exists() else {}
+    h1 = json.loads((b / "health_w1.json").read_text() or "{}") if (b / "health_w1.json").exists() else {}
+    wheel = scorers.wheel_delta(h0, h1) if "wheel_loop" in h0 and "wheel_loop" in h1 else None
+    pace = scorers.jsonl(b / "pace.jsonl")
+    shim = scorers.jsonl(b / "shim.jsonl")
+    nav = scorers.nav_goals(pace, ws, we)
+    tc = validity.telemetry_counts(tele, ws, we)
+    o0, o1 = _f(b / "oom_start"), _f(b / "oom_end")
+    dmesg_ooms = int(o1 - o0) if o0 is not None and o1 is not None else None
+    pm = (b / "nvpmodel.txt").read_text().splitlines()[0] if (b / "nvpmodel.txt").exists() else None
+
+    def judge(bench):
+        doc = {"kind": "full", "window": [ws, we], "bench": bench, "wheel": wheel,
+               # Either count of a kill makes the run invalid.
+               "oom_kills": None if tc["oom_kills"] is None else tc["oom_kills"] + (dmesg_ooms or 0),
+               # Amendment 2: explore's goals; a goal its sender cancelled is
+               # neither (n counts succeeded + aborted).
+               "nav": {"ok": nav["succeeded"], "n": nav["succeeded"] + nav["aborted"]},
+               "power_mode": pm, "desktop_load": rec.get("desktop_load"),
+               "temps": tc["temps"], "clocks": tc["clocks"]}
+        return doc, validity.judge(doc)
+
+    rows = {}
+    # P1, P2: perception p90 in their own stretches; P2's added memory.
+    for row, log, a, z in (("P1", "perception-p1.log", "p1_start", "p1_end"),
+                           ("P2", "perception-p2.log", "p2_start", "p2_end")):
+        ms = scorers.perception_ms((b / log).read_text(), st[a], st[z], day) if (b / log).exists() else []
+        doc, j = judge([st[a], st[z]])
+        mem = validity.telemetry_counts(tele, st[a], st[z])["mem_available_min_mb"]
+        rows[row] = {"n": len(ms), "p50_ms": scorers.percentile(ms, 50),
+                     "p90_ms": scorers.percentile(ms, 90), "mem_available_min_mb": mem,
+                     "valid": j["valid"], "reasons": j["reasons"]}
+    p1, p2 = rows["P1"], rows["P2"]
+    haz = [r.get("hazard_boxes") for r in scorers.jsonl(b / "perc-p2.jsonl")
+           if st["p2_start"] and st["p2_start"] <= r["t0"] <= st["p2_end"]]
+    p2["hazard_boxes_per_frame"] = round(sum(h or 0 for h in haz) / len(haz), 3) if haz else None
+    p2["added_mem_mb"] = (p1["mem_available_min_mb"] - p2["mem_available_min_mb"]
+                          if p1["mem_available_min_mb"] is not None
+                          and p2["mem_available_min_mb"] is not None else None)
+    p1["met"] = p1["n"] >= 200 and p1["p90_ms"] is not None and p1["p90_ms"] <= BARS["P1"]
+    p2["met"] = (p2["n"] >= 200 and p2["p90_ms"] is not None and p2["p90_ms"] <= BARS["P2_ms"]
+                 and p2["added_mem_mb"] is not None and p2["added_mem_mb"] <= BARS["P2_mem_mb"])
+    # P8: VE over HTTP, and its answers against 3.78's.
+    vdoc = json.loads((b / "vlm.json").read_text()) if (b / "vlm.json").exists() else None
+    doc, j = judge([st["p8_start"], st["p8_end"]])
+    if vdoc:
+        sys.path.insert(0, str(ROOT))
+        from tools.jetson.bench_local_vlm import compare
+        cmp = compare(vdoc["records"], json.loads(P8_REFERENCE.read_text())["records"])
+        lat = scorers.vlm_latency(vdoc)
+        rows["P8"] = {**lat, "answers_identical": cmp["met"], "flips": cmp["flips"],
+                      "off": len(cmp["off"]), "missing": len(cmp["missing"]),
+                      "valid": j["valid"], "reasons": j["reasons"],
+                      "met": lat["n"] >= 200 and lat["p90"] <= BARS["P8"] and cmp["met"]}
+    else:
+        rows["P8"] = {"valid": False, "reasons": j["reasons"] + ["no vlm.json"], "met": False}
+    # P4, P11, P12 over the whole window.
+    doc, j = judge([ws, we])
+    perc = [[r["t0"], r["t1"]] for name in ("perc-p1.jsonl", "perc-p2.jsonl")
+            for r in scorers.jsonl(b / name) if ws and ws <= r["t0"] <= we]
+    ov = scorers.overlaps({"map_fetch": scorers.shim_spans(shim, "map", ws, we),
+                           "ve_question": scorers.shim_spans(shim, "vlm", ws, we),
+                           "perception": perc,
+                           "room_cut": scorers.shim_spans(shim, "segment", ws, we)},
+                          scorers.map_updates(pace, ws, we))
+    rows["P4"] = {"late_ticks": wheel and wheel["late"], "moving_ticks": wheel and wheel["moving"],
+                  "max_dt_s_since_start": wheel and wheel["max_dt_s"],
+                  "window_s": round(we - ws, 1) if ws and we else None, "overlap": ov,
+                  "valid": j["valid"], "reasons": j["reasons"],
+                  "met": bool(wheel) and wheel["late"] == 0 and (we - ws) >= 1800}
+    cr, sl = scorers.controller_rate(pace, ws, we), scorers.scan_lag(pace, ws, we)
+    rows["P11"] = {"controller": cr, "ratio": round(cr["rate_hz"] / CONTROLLER_HZ, 3) if cr["rate_hz"] else None,
+                   "scan_lag": sl, "valid": j["valid"], "reasons": j["reasons"],
+                   "met": cr["rate_hz"] is not None and cr["intervals"] >= 200
+                   and cr["rate_hz"] >= BARS["P11_ratio"] * CONTROLLER_HZ}
+    rw = scorers.room_work(shim, ws, we)
+    mp = [r for r in scorers.jsonl(b / "mappoll.jsonl") if ws and ws <= r["t"] <= we]
+    fetch = scorers.durations_ms(scorers.shim_spans(shim, "map", ws, we))
+    rows["P12"] = {**rw, "map_reply": scorers.map_summary(mp),
+                   "explore_map_fetch": {"n": len(fetch), "p50_ms": scorers.percentile(fetch, 50),
+                                         "p90_ms": scorers.percentile(fetch, 90)},
+                   "valid": j["valid"], "reasons": j["reasons"],
+                   "met": rw["pause_share"] is not None and rw["segment"]["n"] > 0
+                   and rw["pause_share"] <= BARS["P12_pause"]}
+    missions = scorers.jsonl(b / "missions.jsonl")
+    return {"sha": rec.get("sha"), "stamps": st, "window_s": rows["P4"]["window_s"],
+            "uptime_at_start_s": (rec.get("as_found") or {}).get("uptime_s"),
+            "wheel": wheel, "nav2_goals": nav, "telemetry": tc, "dmesg_oom_kills": dmesg_ooms,
+            "power_mode": pm, "validity": j,
+            "desktop_load_max": max((x[1] for x in rec.get("desktop_load") or []), default=None),
+            "missions": {"n": len(missions),
+                         "outcomes": {o: sum(m.get("outcome") == o for m in missions)
+                                      for o in {m.get("outcome") for m in missions}},
+                         "label_calls": sum((m.get("room_labels") or {}).get("label_calls") or 0
+                                            for m in missions)},
+            "cloud_calls": len(scorers.jsonl(b / "cloud_calls.jsonl")),
+            "rows": rows, "cmd_exit": rec.get("cmd_exit"),
+            "restore_actions": rec.get("restore_actions"),
+            "as_found_differences": rec.get("as_found_differences"),
+            "left_as_found": rec.get("left_as_found")}
+
+
+def steady_inner(a) -> int:
+    out = Path(a.out)
+    env = " ".join(f"{k}={shlex.quote(v)}" for k, v in (x.split("=", 1) for x in a.env or []))
+    rec = board_run(a.label, f"{env} bash evaluations/jetson-perf-3136/steady.sh $OUT", out,
+                    sha=a.sha, allow_sudo=True, stop_twin=True)
+    summary = score_steady(out, rec)
+    (out / "summary.json").write_text(json.dumps(summary, indent=1))
+    print(json.dumps(summary, indent=1))
+    return 0 if rec.get("cmd_exit") == 0 and rec.get("left_as_found") else 1
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -161,6 +294,15 @@ def main(argv=None) -> int:
     p = sub.add_parser("plant")
     p.add_argument("--wait", action="store_true", help="wait for the desktop lock")
     sub.add_parser("found")
+    for name in ("steady", "_steady"):
+        t = sub.add_parser(name)
+        t.add_argument("--sha", default="HEAD")
+        t.add_argument("--label", default="steady")
+        t.add_argument("--out", default=None)
+        t.add_argument("--env", action="append", help="KEY=VALUE for steady.sh (a smoke's short window)")
+        t.add_argument("--wait", action="store_true", help="wait for the desktop lock")
+    sc = sub.add_parser("score")
+    sc.add_argument("out")
     a = ap.parse_args(argv)
     if a.cmd == "smoke":
         sha = subprocess.run(["git", "rev-parse", a.sha], cwd=ROOT, capture_output=True, text=True,
@@ -174,6 +316,23 @@ def main(argv=None) -> int:
         return subprocess.call([PY, str(ROOT / "tools/desktop_lock.py"), "exclusive",
                                 *([] if a.wait else ["--no-wait"]), "--why", "3.136.A planted delay",
                                 "--", PY, str(HERE / "plant.py")], cwd=ROOT)
+    if a.cmd == "steady":
+        sha = subprocess.run(["git", "rev-parse", a.sha], cwd=ROOT, capture_output=True, text=True,
+                             check=True).stdout.strip()
+        out = a.out or str(HERE / "board" / f"{a.label}-{time.strftime('%Y%m%d-%H%M')}")
+        # Timed: the exclusive desktop lock, then the board lock.
+        return br.locked([PY, str(Path(__file__).resolve()), "_steady", "--sha", sha,
+                          "--label", a.label, "--out", out,
+                          *[x for e in (a.env or []) for x in ("--env", e)]],
+                         f"3.136.B {a.label}", desktop_mode="exclusive", desktop_wait=a.wait)
+    if a.cmd == "_steady":
+        return steady_inner(a)
+    if a.cmd == "score":
+        out = Path(a.out)
+        summary = score_steady(out, json.loads((out / "record.json").read_text()))
+        (out / "summary.json").write_text(json.dumps(summary, indent=1))
+        print(json.dumps(summary, indent=1))
+        return 0
     if a.cmd == "found":
         print(json.dumps(br.snapshot(), indent=1))
         return 0
