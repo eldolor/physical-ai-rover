@@ -29,6 +29,7 @@ import sys
 import threading
 import time
 from pathlib import Path
+from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
@@ -57,14 +58,15 @@ def recorder(path: Path) -> None:
     with open(path, "a", buffering=1) as f:
         nxt = time.monotonic()
         while True:
-            with board.lock:
+            with board.lock:                    # one instant; held only to copy it
                 t = time.monotonic()
                 x, y, th = grid.x, grid.y, grid.theta
                 sp = [round(v, 4) for v in board.setpoint]
-                try:
-                    gap = fs.truth(grid)[1]
-                except Exception:                               # noqa: BLE001
-                    gap = None
+            try:                                # the geometry outside the board's lock
+                gap = fs.truth(SimpleNamespace(x=x, y=y, theta=th, layout=grid.layout,
+                                               solid_cells=grid.solid_cells))[1]
+            except Exception:                   # noqa: BLE001
+                gap = None
             row = {"t": round(t, 4), "x": round(x * CELL_M, 5), "y": round(y * CELL_M, 5),
                    "th": round(th, 5), "sp": sp,
                    "gap_cm": None if gap is None or math.isinf(gap) else round(gap, 2)}
