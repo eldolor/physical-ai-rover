@@ -1,0 +1,62 @@
+{
+ "row": "F10",
+ "title": "Wheel feedback stops",
+ "reading": "true path from the silence + 0.25 s (feedback's freshness bar) to its end <= 2 cm; the robot server refused something as no_feedback; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-01T22:15:28-0600",
+ "recovery_s": 2.54,
+ "measures": {
+  "fault_at": 366083.516375284,
+  "cont_at": 366088.516375284,
+  "outcome": "failed",
+  "end_state": null,
+  "end_reason": "step failed: no_feedback: FORWARD ended: no feedback from the motor board for 0.25s (> 0.25s) -- the wheels are not measured",
+  "status": {
+   "running": false,
+   "outcome": "failed",
+   "end_state": null,
+   "end_reason": "step failed: no_feedback: FORWARD ended: no feedback from the motor board for 0.25s (> 0.25s) -- the wheels are not measured",
+   "cancelled_by": null,
+   "step": 4,
+   "last_action": "RIGHT",
+   "error": "step failed: no_feedback: FORWARD ended: no feedback from the motor board for 0.25s (> 0.25s) -- the wheels are not measured"
+  },
+  "refusals": {
+   "no_feedback": 1
+  },
+  "no_feedback_refusals": 1,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 0,
+   "max_dt_s": 0.0
+  },
+  "last_refusal": {
+   "reason": "watchdog",
+   "detail": "no command for over 1.0s -- motors stopped",
+   "driver": "brain",
+   "at": 366084.844330836,
+   "seconds_ago": 4.87
+  },
+  "forward_at_fault": true,
+  "wheels_zero_s": 0.256,
+  "travel_cm": 6.77,
+  "travel_stale_cm": 0.0,
+  "truth_hole_s": 0.021,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   366078.832,
+   366093.8921
+  ],
+  "mem_available_min_mb": 5695,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-01T22:15:43-0600"
+}

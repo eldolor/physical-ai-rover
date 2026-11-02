@@ -1,0 +1,54 @@
+{
+ "row": "F13",
+ "title": "Twin / tunnel link lost while a person drives",
+ "reading": "wheels zero <= 1.1 s after the client's SIGKILL; 0 contacts (no mission runs, so 'the brain does not take over mid-press' is not exercised here)",
+ "plant": "watchdog",
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-01T22:14:41-0600",
+ "recovery_s": 0.05,
+ "measures": {
+  "fault_at": 366034.13680013,
+  "outcome": "idle",
+  "end_state": null,
+  "end_reason": null,
+  "status": {
+   "running": false,
+   "outcome": "idle",
+   "end_state": null,
+   "end_reason": null,
+   "cancelled_by": null,
+   "step": 0,
+   "last_action": null,
+   "error": null
+  },
+  "refusals": {},
+  "no_feedback_refusals": 0,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 121,
+   "max_dt_s": 0.0519
+  },
+  "last_refusal": null,
+  "forward_at_fault": true,
+  "wheels_zero_s": null,
+  "travel_cm": 119.61,
+  "truth_hole_s": 0.023,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   366032.0039,
+   366041.1241
+  ],
+  "mem_available_min_mb": 5707,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "wheels zero after None s (bar 1.1)"
+  ]
+ },
+ "ended": "2026-11-01T22:14:50-0600"
+}

@@ -1,0 +1,58 @@
+{
+ "row": "F13",
+ "title": "Twin / tunnel link lost while a person drives",
+ "reading": "wheels zero <= 1.1 s after the client's SIGKILL; 0 contacts (no mission runs, so 'the brain does not take over mid-press' is not exercised here)",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-01T22:14:28-0600",
+ "recovery_s": 2.55,
+ "measures": {
+  "fault_at": 366021.428375278,
+  "outcome": "idle",
+  "end_state": null,
+  "end_reason": null,
+  "status": {
+   "running": false,
+   "outcome": "idle",
+   "end_state": null,
+   "end_reason": null,
+   "cancelled_by": null,
+   "step": 0,
+   "last_action": null,
+   "error": null
+  },
+  "refusals": {},
+  "no_feedback_refusals": 0,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 22,
+   "max_dt_s": 0.0526
+  },
+  "last_refusal": {
+   "reason": "watchdog",
+   "detail": "no command for over 1.0s -- motors stopped",
+   "driver": "twin-dpad",
+   "at": 366022.384241258,
+   "seconds_ago": 5.05
+  },
+  "forward_at_fault": true,
+  "wheels_zero_s": 0.97,
+  "travel_cm": 18.9,
+  "truth_hole_s": 0.021,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   366019.2778,
+   366031.618
+  ],
+  "mem_available_min_mb": 5673,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-01T22:14:41-0600"
+}

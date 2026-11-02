@@ -1,0 +1,65 @@
+{
+ "row": "F10",
+ "title": "Wheel feedback stops",
+ "reading": "true path from the silence + 0.25 s (feedback's freshness bar) to its end <= 2 cm; the robot server refused something as no_feedback; 0 contacts",
+ "plant": "feedback_fresh",
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-01T22:15:43-0600",
+ "recovery_s": 3.49,
+ "measures": {
+  "fault_at": 366098.990453893,
+  "cont_at": 366103.990453893,
+  "outcome": "running",
+  "end_state": null,
+  "end_reason": null,
+  "status": {
+   "running": true,
+   "outcome": "running",
+   "end_state": null,
+   "end_reason": null,
+   "cancelled_by": null,
+   "step": 14,
+   "last_action": "STOP",
+   "error": null
+  },
+  "refusals": {
+   "safety_distance": 2
+  },
+  "no_feedback_refusals": 0,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 0,
+   "max_dt_s": 0.0
+  },
+  "last_refusal": {
+   "reason": "safety_distance",
+   "detail": "Blocked FORWARD: stopped after 0.0cm -- forward clearance 17.3cm reached min=20.0cm (depth_grid, aged 122 ms)",
+   "driver": "brain",
+   "at": 366104.807496683,
+   "seconds_ago": 0.39
+  },
+  "forward_at_fault": true,
+  "wheels_zero_s": 5.819,
+  "travel_cm": 64.32,
+  "travel_stale_cm": 53.21,
+  "truth_hole_s": 0.022,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   366094.2889,
+   366110.2692
+  ],
+  "mem_available_min_mb": 5731,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "moved 53.21 cm while stale (bar 2)",
+   "no refusal named no_feedback"
+  ]
+ },
+ "ended": "2026-11-01T22:15:59-0600"
+}
