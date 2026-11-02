@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.130 criterion 1's sweep (slow tier, SLOW_FILES): every `reach`,
 `find_frontiers` and `find_view_gaps` call explore makes in in-process
 missions in the four simulator houses and 20 ProcTHOR houses gives exactly

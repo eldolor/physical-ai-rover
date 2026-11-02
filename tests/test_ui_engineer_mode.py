@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.132 Stage 2A criteria 4-5: Engineer mode loses nothing, and the switch
 applies live.
 

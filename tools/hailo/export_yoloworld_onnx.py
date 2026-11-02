@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """YOLO-World -> ONNX for the Hailo compile loop, and what the export
 settles before a single cent is spent.
 

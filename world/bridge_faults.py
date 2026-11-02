@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 world/bridge_faults.py -- can waiting mend a ROS bridge error? (3.82)
 

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/explore-365/train_net.py -- 3.65 phase 2, amendment 2: train the
 fallback network (`score = w_lin . f + MLP(f)`, MLP 10 -> 32 -> 32 -> 1) by

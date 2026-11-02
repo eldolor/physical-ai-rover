@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.78 amendment 5: the merged reduced vocabulary keeps every forced id."""
 
 import pytest

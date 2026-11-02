@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-3125/run.py -- 3.125: `explore_goal_policy: rooms`
 with no room labels against the rule, on 3.96's 588 test houses, once.

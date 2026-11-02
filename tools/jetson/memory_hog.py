@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.80.E criterion 6's OOM drill: take memory until the kernel's OOM killer
 acts, then let it all go -- so dmesg says whom the kernel picks under real
 pressure (the local VLM, at oom_score_adj 1000, and never the robot server).

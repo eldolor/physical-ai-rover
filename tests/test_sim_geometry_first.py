@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.91.D2: in the simulator a held cloud no neither refuses an arrival free
 nor holds it waiting: the sim's geometry judges it, free (3.98's check ran
 only after the held no). Real frames are untouched."""

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/room-prior-3116/c9.py -- 3.116 criterion 9: F-large with the
 stand-in labeller, mode R, on the 588 test houses, reading the learned prior

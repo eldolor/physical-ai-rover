@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.N, on the board: NT and NVE LLM engines from the export host's ONNX
 # (KV and input 1280, room for 1024 image tokens), and two visual engines each
 # (V512: 256-512 image tokens; V1024: 256-1024). Engine sets are

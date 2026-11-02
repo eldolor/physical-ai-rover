@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """remap -- does a reloaded map need re-mapping? (3.50.D4)
 
 A matched reload localises on the saved map (3.50.D3). In localisation mode

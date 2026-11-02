@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.80.E: pilot.py's stand-in cloud as its own server, $0 -- every /navigate
 answered "not visible, RIGHT" -- logging each /navigate request as one JSON line, so a
 board run (tools/jetson/headroom_mission.sh CLOUD=standin) can count the

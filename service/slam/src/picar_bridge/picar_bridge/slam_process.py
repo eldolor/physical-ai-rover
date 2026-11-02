@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """slam_process -- slam_toolbox, started and stopped by the bridge (3.50.D3).
 
 The launch file used to start slam_toolbox once, as the async (mapping)

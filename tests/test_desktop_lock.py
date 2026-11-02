@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """tools/desktop_lock.py -- 3.128's shared/exclusive desktop lock, on real
 flock(2) between real processes, in a temporary lock directory."""
 

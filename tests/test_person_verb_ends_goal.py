@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.97 (the user, 2026-10-24: "cancel in both modes"): a person's move
 ends a nav2 goal, as a Stop does, under every drive. Under `drive: ros` the
 bridge already cancelled on a person's twist (3.15); under `drive: direct`

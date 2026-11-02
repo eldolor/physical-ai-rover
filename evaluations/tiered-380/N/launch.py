@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.80.N: launch the export host (paid). Uploads the input bundle to the deploy
 bucket, writes presigned links (GET for the bundle, PUT for the results), and
 starts one g6.2xlarge that terminates on shutdown (DONE, error, or 3 h).

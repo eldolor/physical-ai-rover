@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-3117/rungs.py -- 3.117: 3.110's stage 2 on the
 desktop. F-pool-W32 (3.103.C's network) on 3.110's rungs k = 7 (24 facts)

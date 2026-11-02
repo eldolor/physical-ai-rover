@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.137 criterion 1, once through the live local stack.
 
 A real robot server, brain and ROS container (tests/demo_explore.py's

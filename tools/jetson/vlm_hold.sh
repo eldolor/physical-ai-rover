@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.108: sourced by board-side benches. Since 3.108 picar-local-vlm is
 # enabled at boot, so a bench's `systemctl isolate` would start it (a 4 GB
 # load inside the measurement) and its teardown's isolate would start it

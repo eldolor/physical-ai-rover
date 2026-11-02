@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-3115/dagger.py -- 3.115: DAgger for F-pool-W32 on
 its own states. Desktop only, none on the 588 test houses.

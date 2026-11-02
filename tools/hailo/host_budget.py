@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """C6 -- what is left for the Pi's four cores after the accelerator.
 
 `PLAN-onboard-perception.md` 2.9 costs the ACCELERATOR and says so

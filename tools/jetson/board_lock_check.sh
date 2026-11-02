@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.93: sourced by board-side benches. The bench holds the board's lock
 # (tools/jetson/board_lock.py) for as long as it runs, through a small
 # detached keeper that watches the bench's pid ($$) -- not through an

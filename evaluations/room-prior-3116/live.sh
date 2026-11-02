@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # evaluations/room-prior-3116/live.sh -- 3.116 criterion 6: three live find
 # missions on home_first_floor (nav2, the live local stack, through the
 # brain's HTTP API) with find_room_labels: frame and explore_goal_policy:

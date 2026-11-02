@@ -1,4 +1,6 @@
 #!/bin/sh
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # The plan's commit guard (docs/guides/PARALLEL-SESSIONS.md, rules 8 and 12):
 # REFUSES a commit on a plan/3.N-* branch unless this Claude Code session
 # holds a claim in section 3.N (a merge passes), and warns when a staged

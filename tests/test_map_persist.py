@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.50.D: the saved map -- the store's versions, and the decisions the
 launch files pin (criteria 12-13).
 

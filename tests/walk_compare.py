@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.120's helpers: seeds to walk from, and the comparison of `_walk_dist()`
 against the frozen `tests/walk_reference.py` (exact: the same distances,
 `inf` included, bit for bit)."""

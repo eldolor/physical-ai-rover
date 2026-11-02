@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.118's helpers: maps to cut, and the comparison against the frozen
 `tests/room_cut_reference.py` (exact: the same room ids, the clearance bit
 for bit)."""

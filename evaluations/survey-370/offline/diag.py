@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 import pickle, sys
 sys.path.insert(0, sys.argv[1])
 from evalp import *

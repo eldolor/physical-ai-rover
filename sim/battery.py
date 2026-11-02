@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """A simulated pack, as a motor board measures it -- 3.70 E4, 3.137.
 
 A straight-line drain in time (not a discharge curve: enough to cross the

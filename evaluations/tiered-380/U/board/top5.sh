@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.U: one of the shortlist's top five on another frame set (the Rover's),
 # all on the board, so no tunnel. $1 ve|bonsai|minicpm|ivl4b|florence.
 # Environment: WALKS (the identity walks, space-separated), PICAR_380_SETS

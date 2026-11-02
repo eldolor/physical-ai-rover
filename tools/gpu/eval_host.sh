@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # A rented A10G for corpus scoring -- launch, run the matrix, tear down.
 #
 # Why this exists. `control/perception_eval.py` defaults to CPU fp32 because

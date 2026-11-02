@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/test_inventory.py -- brain/inventory.py, the object inventory
 (PLAN-ros-alignment.md 3.46). Geometry, the belief rules and fusion, on

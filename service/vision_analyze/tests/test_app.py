@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 Test suite for service/vision_analyze/app.py -- the real gap named in
 CLAUDE.md section 5 item 1 and section 6: this service has run for a long

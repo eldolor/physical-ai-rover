@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// Copyright (C) 2026 Anshu Gaind
 // control/admin.js -- the Lab console's Walks tab (3.132 Stage 4; was the
 // walks console, control/admin.html).
 //

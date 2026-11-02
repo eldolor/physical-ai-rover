@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
+# Reimplements behaviour of Waveshare's ugv_base_ros firmware (GPL-3.0),
+# read from its source at commit 2e7df97; see THIRD_PARTY_NOTICES.md.
 """
 sim/fake_esp32.py
 

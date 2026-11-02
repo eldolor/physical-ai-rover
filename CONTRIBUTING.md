@@ -2,14 +2,14 @@
 
 Copyright (C) 2026 Anshu Gaind.
 
-This project is licensed under the GNU AGPL-3.0 (`LICENSE`). The firmware
+This project is licensed under the GNU AGPL-3.0-only (`LICENSE`). The firmware
 patch in `firmware/ugv_base_ros/` is GPL-3.0.
 
 ## Contributor licence agreement
 
 Contributions are accepted under a contributor licence agreement:
 
-* you license your contribution under the AGPL-3.0, like the rest of the
+* you license your contribution under the AGPL-3.0-only, like the rest of the
   project (the firmware patch under the GPL-3.0); and
 * you also grant the copyright holder the right to relicense your
   contribution under other terms.

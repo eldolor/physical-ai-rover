@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 goal_policy.py -- 3.65 phase 2: a learned choice of explore's next goal.
 

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.91 B, criterion 3: perception replayed over every frame of a recorded
 walk, with no time pressure, to see where it goes blind.
 

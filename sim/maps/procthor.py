@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 procthor.py -- ProcTHOR-10K houses as simulator houses
 (PLAN-ros-alignment.md 3.66). Selected with SIM_MAP=procthor:val:<index>, or

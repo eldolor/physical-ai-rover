@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # Backend selection for robot/factory.py
 # "sim"      -> sim/mock_robot.py (grid-world), no hardware needed
 # "teleop"   -> sim/teleop_robot.py, a live phone camera + a human motor --

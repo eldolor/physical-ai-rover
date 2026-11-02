@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.76 K5.3 (the user, 2026-10-21: "clear at mission end"): a mission's
 keepout marks are cleared when it ends, whatever the end, so the next
 mission starts on a clean map. The 300 s expiry (`SPOT_TTL_S`) still runs

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.81 T1-T2: perception's text features come from a disk cache or a child
 process, never from a text tower held in perception's process."""
 import json

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.130: `brain/frontier.py`'s map work gives exactly the answers of
 `tests/frontier_dev.py` (dev's copy at the section's fork, itself held to the
 pure-Python `tests/frontier_reference.py` by 3.77's tests) -- on live SLAM

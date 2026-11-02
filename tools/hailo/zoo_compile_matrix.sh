@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # P16 phase 1 -- does YOLO-World ALLOCATE on a Hailo-10H?
 #
 # P15 settled that DFC 5.4.0 parses everything on `hailo10h`. Parse is not

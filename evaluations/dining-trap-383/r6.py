@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.83 criterion 6: R6 on the scaled house, on a fresh stack of this branch,
 with the keepout filter on (docs/plans/ros-alignment/3.83-dining-room-trap.md).
 

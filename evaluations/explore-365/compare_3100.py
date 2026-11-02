@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/explore-365/compare_3100.py -- 3.100: the evolutionary (CEM,
 `learned`) model against the rule and the gradient (PPO, `network`) model

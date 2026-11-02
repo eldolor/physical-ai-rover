@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """YOLO-World as a CROP SOURCE for the shipped CLIP matcher.
 
 `brain/perceive_lab.py`'s `OpenVocabPipeline` deliberately runs YOLO-World

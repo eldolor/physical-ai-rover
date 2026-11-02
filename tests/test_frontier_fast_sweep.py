@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.77 criterion 1: same answers as the pure-Python frontier search, on
 the six live SLAM maps (20 poses each, two camera-seen sets) and on every
 map explore sees during in-process missions in the simulator's houses and

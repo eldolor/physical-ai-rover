@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.132 Stage 1: one design system for the twin.
 
 No browser needed: these run where the UI tests skip. Criterion 10 (the

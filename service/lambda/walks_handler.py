@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """AWS Lambda entry point for the recorded-walk service.
 
 Serves `control/admin_server.py`: the read/score/replay half of the

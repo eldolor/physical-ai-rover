@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.122: /room (Opus 5.5) on the recorded walks' room-labelled frames.
 
     python score.py plan                      # frames chosen, cost estimate; no calls

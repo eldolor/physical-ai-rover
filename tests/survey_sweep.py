@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/survey_sweep.py -- 3.70 S1/S2: surveys in process, with
 `tests/test_explore.py`'s `FakeNav` standing in for nav2 (a goal succeeds

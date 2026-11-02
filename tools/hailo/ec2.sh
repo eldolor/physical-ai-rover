@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # The compile host for tools/hailo -- launch, drive, and tear down.
 #
 # `PLAN-onboard-perception.md` 1.10 item 1: the Hailo Dataflow Compiler is a

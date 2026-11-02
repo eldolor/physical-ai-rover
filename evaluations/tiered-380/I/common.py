@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.80.I shared helpers: the frame sets, mirroring, thirds, scoring."""
 
 import base64

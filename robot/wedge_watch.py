@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """wedge_watch -- when the safety layer keeps refusing nav2, say where.
 
 PLAN-ros-alignment.md 3.68. nav2 plans with the bare chassis; the safety

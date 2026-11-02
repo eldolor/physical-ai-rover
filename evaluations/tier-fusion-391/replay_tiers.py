@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.91 B6 (amendment 1): a recorded walk replayed through the full tier
 ladder, offline -- YOLOE + CLIP on every frame, each question to the local
 VLM first, the cloud only after `tier_local_max_unable` unable answers.

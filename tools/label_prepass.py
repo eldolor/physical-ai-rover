@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Two independent opinions per frame, to bound what has to be eyeballed.
 
 The corpus's labelling method (see any `labels.json`) auto-accepts frames

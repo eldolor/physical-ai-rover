@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.93 criteria 1-5: the board lock, with the board stood in for by a local
 shell (PICAR_BOARD_SSH="sh -c") and the lock in a temporary directory. The
 holder is the same code that runs on the board. On SLOW_FILES: real waits

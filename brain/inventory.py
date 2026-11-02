@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 inventory.py -- every object a mission saw, and where (PLAN-ros-alignment.md
 3.46).

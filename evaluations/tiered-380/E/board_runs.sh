@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.E's board runs (the plan's "3.80.E on the board", amendment 1), one
 # after another, each a fresh tools/jetson/headroom_mission.sh stack. Run on
 # the Jetson from a worktree of this branch, under the board lock:

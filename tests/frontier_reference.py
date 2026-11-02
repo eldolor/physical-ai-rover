@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 frontier.py -- where to look next on a map the robot is still drawing
 (PLAN-ros-alignment.md 3.31). Pure functions over `WorldInterface.get_map()`'s

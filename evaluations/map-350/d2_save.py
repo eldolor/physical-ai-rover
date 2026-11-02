@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.50.D2-a: a map is saved when a mission ends, and survives the container.
 
 A robot server, a brain and this branch's container with a host directory

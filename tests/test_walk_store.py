@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Backend-agnostic conformance suite for control/walk_store.py.
 
 Same idea as tests/test_robot_contract.py, one layer down: every test here

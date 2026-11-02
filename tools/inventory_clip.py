@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.46 amendment 5: CLIP as the second opinion on every object box.
 
     python -m tools.inventory_clip score      # every object box, once (free, local)

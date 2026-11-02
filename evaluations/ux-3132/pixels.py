@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/ux-3132/pixels.py -- 3.132 Stage 1 criterion 2: dark-theme
 screenshots of the twin's static states, for a pixel comparison across a

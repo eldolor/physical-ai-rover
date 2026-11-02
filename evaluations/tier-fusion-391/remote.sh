@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # evaluations/tier-fusion-391/remote.sh -- runs ON the spot instance (sent by
 # cloud.sh through `tools/gpu/ec2.sh run`). Fetches HEAD's code, makes the
 # venv (requirements.txt only: the sweeps load no model), then starts two

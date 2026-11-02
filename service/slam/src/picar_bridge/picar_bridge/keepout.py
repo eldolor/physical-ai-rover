@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """keepout -- the mask behind POST /nav/keepout, as plain Python (3.68).
 
 The robot server decides where nav2 must not plan (robot/wedge_watch.py);

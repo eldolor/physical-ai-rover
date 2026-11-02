@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/explore-365/evaluate.py -- 3.65 phase 2: run the rule or a set of
 weights over usable houses [lo, hi), one JSON row per house.

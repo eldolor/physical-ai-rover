@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.109: compare `brain/goal_policy.py`'s numpy `features()` with the loop
 it replaced (`tests/goal_features_reference.py`). Shared by
 `test_goal_features_numpy.py` (fast tier) and `test_goal_features_sweep.py`."""

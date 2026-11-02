@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 #
 # Restart the local robot + brain + proxy (service/tunnel/run.sh), and
 # REFUSE TO REPORT SUCCESS until the new processes are the ones answering.

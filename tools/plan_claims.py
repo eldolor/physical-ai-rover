@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tools/plan_claims.py -- discrete plan steps and live claims, so parallel
 Claude Code sessions never work on the same thing (PLAN 3.75 and 3.139,

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """One local port in front of the robot and the brain, so a single ngrok
 free-tier domain can reach both.
 

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # twist_mux -- AGENT-HARNESS.md 4.1's order, now inside ROS
 # (stop > twin-dpad > brain > ...). A person outranks every autonomous
 # source; two autonomous sources share a rank, and robot/server.py's M4

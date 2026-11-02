@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.94: the behavior tree, and the tiered policy's decisions drawn with it.
 
 Criterion 2a: on 10,000 seeded random states, the tree gives exactly the

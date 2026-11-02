@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/explore-369/sweep.py -- 3.69's before/after sweeps: `explore`
 over usable ProcTHOR houses [lo, hi) with tests/procthor_sweep.py's harness,

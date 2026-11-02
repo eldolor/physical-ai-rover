@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.J: RoboBrain2.0-3B -> GGUF the way the board's Qwen2.5-VL-3B files are: Q4_K_M LLM, Q8_0 projector.
 pkill -x llama-server; sleep 2
 cd ~/bench-348/llama.cpp || exit 1

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """python evaluations/slam-367/known_path.py <run dir> <goal index> <x_m> <y_m>
 
 3.67 candidate C: on the last map logged before a tour goal started, the

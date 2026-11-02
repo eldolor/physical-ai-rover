@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/demo_verb_sweep.py -- `PLAN-ros-alignment.md` 3.22's full sweep.
 

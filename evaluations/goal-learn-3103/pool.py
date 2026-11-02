@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-3103/pool.py -- 3.103.C: F-pool, a chooser that scores
 the whole pool together, as a drop-in for 3.96's `model.torch_net` /

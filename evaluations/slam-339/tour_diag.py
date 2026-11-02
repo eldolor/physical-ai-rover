@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """The home tour, with nav2's log kept and each goal's reply recorded."""
 import json
 import os

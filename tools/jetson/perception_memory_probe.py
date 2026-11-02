@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.81.A: where perception's host memory goes (one YOLOE + CLIP pipeline,
 as tools/jetson/perception_loop.py carries it), on the board.
 

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >
   vision-picar without a VPC: static SPA on S3, two Lambdas behind one API

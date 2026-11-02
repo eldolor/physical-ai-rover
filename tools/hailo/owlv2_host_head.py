@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """The half of OWLv2 that stays on the Pi's CPU.
 
 The accelerator returns five per-patch tensors and knows nothing about the

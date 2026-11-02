@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """The behavior tree's node kinds, on py_trees (3.94, 3.95).
 
 The tiered policy's decisions are drawn as trees ticked once per frame,

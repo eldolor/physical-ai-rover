@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/demo_nav_goals.py -- R6's instrument (PLAN-ros-alignment.md 3.15).
 

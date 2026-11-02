@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 brain/room_labels.py -- 3.70 S2: rooms labelled during a survey.
 

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.77: compare `brain/frontier.py` with the pure-Python version it replaced
 (`tests/frontier_reference.py`, frozen at 3.65's head). Shared by
 `test_frontier_fast.py` (fast tier) and `test_frontier_fast_sweep.py`."""

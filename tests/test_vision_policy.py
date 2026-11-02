@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 Phase S2b (partial) -- the vision policy, and the recorded-walk backend
 it runs against.

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.89: explore's escape creep answered after the brain had given up.
 
 Under `drive: ros`, nav2's collision_monitor halves every forward twist with

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """mapversion -- when the bridge's map_version moves (3.124).
 
 slam_toolbox publishes /map every `map_update_interval` whether or not a

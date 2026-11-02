@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-396/train.py -- 3.96 B2-B4 (amendment 2): clone the
 oracle, then PPO, for one arm; every stage resumable after a spot

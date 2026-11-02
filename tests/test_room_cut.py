@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.118 criterion 1 (fast tier): the fast `segment()` and `clearance()`
 give exactly the frozen copy's answers -- the same room ids and the
 clearance bit for bit -- on random grids, the suite's own two-room map, one

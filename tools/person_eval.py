@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tools/person_eval.py -- 3.52 criteria 1-2: does a person detector find the
 people in the corpus, and how often does it fire on furniture?

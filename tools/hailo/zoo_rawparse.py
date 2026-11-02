@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """P15 row D -- which variable actually caused P14's `is_null_split`?
 
 The parse matrix (rows A/B) settled that DFC 5.4.0 parses yolov11s,

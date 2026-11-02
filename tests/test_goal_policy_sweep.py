@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/test_goal_policy_sweep.py -- 3.65 phase 2 criterion 6: the network
 goal choice (`brain/explore_goal_net.json`, amendment 2) on the 200 test

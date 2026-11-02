@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """The whole ROS side, in one launch -- PLAN-ros-alignment.md R4.
 
     twist_mux -> diff_drive_controller -> picar_sim_hardware -> HTTP -> robot/server.py

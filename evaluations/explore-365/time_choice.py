@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/explore-365/time_choice.py -- 3.65 amendment 3 check C: how long
 explore's goal choice takes on a real SLAM map (0.05 m), under the rule and

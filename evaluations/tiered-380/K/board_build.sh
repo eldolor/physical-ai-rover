@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.K, on the board: RT and RVE engines from the export host's ONNX, with
 # VE's flags (KV 1024, input 1024, 128-512 image tokens). The LLM build OOMs
 # at 8 GB (3.78), so the twin's units stop and a temporary 8 GB swapfile is

@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.R: the bench's server for a GGUF. $LLBIN is the llama-server binary
 # (a fork or 3.78's Ln), the bench's argv is passed through, and every run
 # gets 3.80.M's image-token bounds plus $LLEXTRA (e.g. --special).

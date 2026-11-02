@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.78 amendment 3: let Edge-LLM v0.9.1 build against JetPack 6.2's
 TensorRT 10.3. v0.9.1 lists "JetPack 6.2+" as compatible but loads engines
 through `nvinfer1::IStreamReaderV2`, which TensorRT added in 10.7. Below 10.7
@@ -9,6 +11,13 @@ path v0.9.1's own audio runners already use. Idempotent.
 import sys
 from pathlib import Path
 
+# Borrowed: the C++ lines this script searches for and rewrites (`head` and
+# `old` in patch(), the `isDeviceAccessiblePointer` line, FP4_LINE and
+# CUBIN_OLD below) are quoted from NVIDIA
+# TensorRT-Edge-LLM v0.9.1 (cpp/common/trtUtils.cpp,
+# fusedNvfp4GemmAllReducePlugin.cpp, contextFMHARunner.cpp), Copyright (c)
+# 2025-2026 NVIDIA CORPORATION & AFFILIATES, under the Apache License 2.0
+# (LICENSES/Apache-2.0.txt).
 GUARD = "#if NV_TENSORRT_MAJOR > 10 || (NV_TENSORRT_MAJOR == 10 && NV_TENSORRT_MINOR >= 7)"
 
 
@@ -66,6 +75,7 @@ def patch(text: str) -> str:
     return text
 
 
+# Quoted from Edge-LLM v0.9.1 (Apache-2.0); see the note above GUARD.
 FP4_LINE = ("        return desc.type == DataType::kFP4 || desc.type == DataType::kINT8 "
             "|| desc.type == DataType::kFP8;\n")
 
@@ -83,6 +93,7 @@ def patch_fp4(text: str) -> str:
         "        return desc.type == DataType::kINT8 || desc.type == DataType::kFP8;\n#endif\n"))
 
 
+# Quoted from Edge-LLM v0.9.1 (Apache-2.0); see the note above GUARD.
 CUBIN_OLD = "                CUDA_DRIVER_CHECK(cuModuleLoadData(&hModule, kernelMeta.mCubin));\n"
 CUBIN_NEW = """                // PICAR_378_CUBIN: v0.9.1 ships two sm87 custom-mask cubins
                 // (head dim 256) built by CUDA 12.8+ (ELF ABI version 8).

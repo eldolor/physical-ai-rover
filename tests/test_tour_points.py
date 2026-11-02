@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/test_tour_points.py -- PLAN-ros-alignment.md 3.57 criterion 1.
 

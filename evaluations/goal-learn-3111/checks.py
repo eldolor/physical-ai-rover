@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-3111/checks.py -- 3.111: why copying the oracle
 better does not search better. Three checks on the desktop, none on the

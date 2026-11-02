@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 #
 # Install (or re-install) the Jetson's three services from the repo
 # (PLAN-ros-alignment.md 3.71; B5's first half):

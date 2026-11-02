@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # evaluations/goal-learn-396/remote.sh -- runs ON the spot instance (sent by
 # cloud.sh through `tools/gpu/ec2.sh run`). Setup only, inside the SSM
 # command: fetch the code, make the venv once, pull every stage's checkpoints

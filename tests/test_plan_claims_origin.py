@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """tools/plan_claims.py, 3.139: a claim is a `claim/<step>` branch on
 origin, pushed create-only before the local claim file is written; the
 session owns it; the commit, edit and push hooks refuse work on a section

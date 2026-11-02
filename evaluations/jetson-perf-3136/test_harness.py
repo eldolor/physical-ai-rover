@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.136.A's harness against a fake board (no ssh, no locks):
 
     .venv/bin/python -m pytest evaluations/jetson-perf-3136/test_harness.py -q

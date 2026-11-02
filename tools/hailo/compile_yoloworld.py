@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Can YOLO-World compile to a Hailo-8L HEF?
 
 The sibling of `compile_owlv2.py`, pointed at the model the part decision

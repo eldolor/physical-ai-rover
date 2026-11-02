@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.132 deploy evidence: python shoot.py <out-dir>  (the deployed twin, 390x844, dark and light)
 import json, sys
 from playwright.sync_api import sync_playwright

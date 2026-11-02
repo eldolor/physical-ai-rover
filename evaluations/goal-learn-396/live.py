@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.96 criterion 7: live explore missions on nav2, the rule against
 `explore_goal_policy: rooms`, alternated (default R N R N R N).
 

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """AWS Lambda entry point for the vision service.
 
 `service/vision_analyze/app.py` is an ordinary FastAPI app and stays that

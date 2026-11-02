@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/test_floor_band_safety.py -- PLAN-ros-alignment.md 3.74 part B,
 seeded samples of the sweeps in `tests/floor_band_sweep.py` (the full ones

@@ -1,4 +1,6 @@
 #!/bin/sh
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # The merge gate (docs/guides/PARALLEL-SESSIONS.md, rule 6). A push to `dev`
 # runs `tools/plan_section.py gate`: a docs-only push runs the spec lint;
 # anything else runs the FAST tier (no real-browser or live-stack tests)

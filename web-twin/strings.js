@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// Copyright (C) 2026 Anshu Gaind
 /* web-twin/strings.js -- the twin's words, in two voices (3.132 Stage 2A).
 
    `op` is the default: a person at home with the robot, who knows nothing

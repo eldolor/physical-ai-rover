@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Does quantization preserve the DETECTOR'S PROPOSALS?
 
 The right question for a crop source. YOLO11s has no class for "woven

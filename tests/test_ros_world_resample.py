@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.87: `RosWorld._resample` in numpy gives EXACTLY the old loop's cells.
 
 The old per-cell Python loop (frozen below as the reference) took 141 ms a

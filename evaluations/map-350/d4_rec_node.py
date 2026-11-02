@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Inside the ROS container (3.50.D4, amendment 4's data): record every /map,
 each /scan with map -> laser at its own stamp, and the wheel odometry, for
 SECS seconds, to OUT (a pickle). Run by d4_record.py with `docker exec`."""

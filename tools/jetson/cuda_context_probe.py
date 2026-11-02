@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.81.A: what a GPU process costs before it loads any weights, on the board.
 
   sudo .venv/bin/python tools/jetson/cuda_context_probe.py <stage>

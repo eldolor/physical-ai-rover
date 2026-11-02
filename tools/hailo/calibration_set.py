@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Build a Hailo calibration set out of the recorded rig walks.
 
 Post-training quantization needs a few hundred frames that look like what

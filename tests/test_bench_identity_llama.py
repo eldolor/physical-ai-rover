@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """tests/test_bench_identity_llama.py -- 3.48 amendments 1-2's score: P(it
 localises) read from llama-server's top_logprobs, whatever the tokenizer
 merges `[` with and however much whitespace comes before the brace."""

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 import sys, json, statistics as st
 import brain.room_labels as rl
 import control.mission_runner as mr

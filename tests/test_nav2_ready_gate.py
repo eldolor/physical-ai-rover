@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 3.105: the bridge holds goals until nav2's lifecycle manager answers active.
 

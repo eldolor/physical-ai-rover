@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.130: brain/frontier.py frozen at dev 67c5cbd (this section's fork), timed
 beside the new code by evaluations/fast-map-3130/time_map.py and compared
 with it by tests/test_frontier_3130.py and, call for call, by

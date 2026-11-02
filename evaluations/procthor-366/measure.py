@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/procthor-366/measure.py -- 3.66's criteria 1-4 over every
 ProcTHOR `val` house (or `test`, 3.65 amendment 3). Writes

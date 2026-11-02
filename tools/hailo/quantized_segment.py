@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Does INT8 preserve the FLOOR MASK? -- the measurement P16 made decisive.
 
 P16's tier table is the reason this exists:

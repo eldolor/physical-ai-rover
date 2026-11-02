@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/choice-3131/choice_time.py -- 3.131 criterion 2: F-large's whole
 goal choice as explore now makes it, timed on 3.96's benchmark (the six live

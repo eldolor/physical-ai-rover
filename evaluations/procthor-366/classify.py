@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/procthor-366/classify.py -- why explore missed the target in
 3.66's sweep: every sighting (bearing, lidar range, the range to the true

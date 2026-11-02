@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.131.B: 3.125.B's board script (evaluations/goal-learn-3125/board_time.sh)
 # with this section's timing (choice_time.py: F-large as explore now makes it,
 # beside the path without the hand-off, alternating at every pose). Runs ON

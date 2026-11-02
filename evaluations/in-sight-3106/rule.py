@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/in-sight-3106/rule.py -- 3.106 criterion 2: the rule arm on
 3.96's 588 test houses (`train` 1000-1999, modes R and U), with 3.106's

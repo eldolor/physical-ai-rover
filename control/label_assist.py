@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Propose per-frame visibility labels for a walk, for a human to adjudicate.
 
 **This never writes `labels.json`.** It writes `labels.candidate.json`, and

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/fast-map-3130/time_map.py -- 3.130 criterion 3: explore's map
 work (`reach` + `find_frontiers` + `find_view_gaps`, as 3.103's

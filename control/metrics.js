@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// Copyright (C) 2026 Anshu Gaind
 /* control/metrics.js -- the Lab console's Metrics tab (3.132 Stage 4; was
  * the tier-metrics page, control/metrics.html).
  *

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Walk OWLv2's ONNX exports through the Hailo Dataflow Compiler.
 
 Runs on the x86-64 EC2 host, not on a Mac -- the DFC ships as a linux_x86_64

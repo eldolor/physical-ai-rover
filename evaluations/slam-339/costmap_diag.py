@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 import json, os, subprocess, sys, time
 sys.path.insert(0, ".")
 from tests import demo_explore as dx

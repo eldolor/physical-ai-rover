@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Headroom's perception load as a MISSION carries it: one target, so ONE
 pipeline -- one detector and one CLIP in memory (pipeline_for loads its own
 models per call; the latency bench builds one per target, seven in all) --

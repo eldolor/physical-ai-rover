@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Frozen copy of `brain/room_labels.py`'s `_walk()` and `_floor_near()`
 as they were before 3.120 (dev at 4d843a2), verbatim. 3.120 added
 `_walk_dist()`, the same distances in numpy; `tests/test_walk_dist.py`

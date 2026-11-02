@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tools/jetson/bench_trt.py -- `PLAN-ros-alignment.md` 3.41 Part A: the
 perception tier on TensorRT, against the shipped torch pipeline, on the

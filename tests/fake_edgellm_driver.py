@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """A stand-in for tools/jetson/edgellm_identity.cpp, speaking its protocol,
 for tests/test_local_vlm.py. The target in the request picks what it does:
 

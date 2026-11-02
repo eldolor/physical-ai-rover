@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """A fingerprint of what the simulator's sensors report on a fixed drive
 (PLAN-ros-alignment.md 3.74 criterion A1).
 

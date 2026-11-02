@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.80.E D10's latency part (run D): the frame question with its box
 (`/identity`, `box: true`) to VE on the board, for the visible frames of
 3.48's pinned 299, pass after pass until <seconds> run out -- while the

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """PLAN-ros-alignment.md 3.42 -- the D500 lidar read by the robot server.
 
 Criteria 1-3 and 4b: the LD19 protocol, the scan through a real serial line

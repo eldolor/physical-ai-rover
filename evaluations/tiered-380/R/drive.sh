@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.R: one model end to end, from the Mac. $1 name, $2 the board
 # environment (e.g. 'NATIVE_SPEC=florence:/path NSRV_PY=...' or
 # 'MODEL=.. MMPROJ=.. LLBIN=.. LLEXTRA=--special'), $3 identity arms

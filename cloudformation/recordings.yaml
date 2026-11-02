@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >
   Persistent storage for Robot-view "Record this walk" data: one EFS

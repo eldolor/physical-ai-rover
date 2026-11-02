@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # The P15 parse matrix, run INSIDE the Hailo AI Software Suite container.
 #
 # A separate file on purpose. The first version of this lived in a heredoc

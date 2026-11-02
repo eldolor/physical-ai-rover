@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// Copyright (C) 2026 Anshu Gaind
 // web-twin/app.js -- the digital twin's whole client.
 //
 // Extracted verbatim from index.html, where it lived as one inline <script>

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.94: the tiered policy's decisions as they were before the behavior tree,
 frozen, so the tree can be checked against them decision for decision
 (as `frontier_reference.py` is for 3.77's numpy search).

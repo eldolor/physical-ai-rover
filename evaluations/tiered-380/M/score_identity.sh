@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # 3.80.M: score the identity records in M/board/ beside VE (3.48's four walks, gate 0.5).
 cd "$(dirname "$0")/../../.."
 args=()

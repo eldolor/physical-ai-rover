@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.120 criterion 1 (fast tier): `_walk_dist()` gives exactly the frozen
 `_walk()`'s distances on random cuts, the suite's two-room map, one live
 SLAM map and the simulator's houses, with seeds on floor, on walls, off the

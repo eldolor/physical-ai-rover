@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.76 batch H2: the cloud's templates and scripts. Read as text; nothing
 here reaches AWS. The vision service's own fixes are tested in
 service/vision_analyze/tests/test_review_376h2.py."""

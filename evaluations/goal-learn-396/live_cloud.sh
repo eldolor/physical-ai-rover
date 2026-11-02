@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 # evaluations/goal-learn-396/live_cloud.sh -- 3.96 criterion 7 (live.py's six
 # missions) on one spot CPU instance, off the shared workstation (the user,
 # 2026-10-24: heavy jobs go to AWS, on spot). Wraps tools/gpu/ec2.sh with its

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """P7c item 2 / P25: a sighting that survives the robot turning."""
 
 import math

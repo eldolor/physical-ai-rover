@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-learn-3102/cem.py -- 3.102: the evolutionary method (3.65's
 cross-entropy method) on 3.96's and 3.101's fact sets, against their

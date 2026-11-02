@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 choice_log.py -- 3.88 A: explore asks a person which goal to send next, and
 every choice it then makes is recorded.

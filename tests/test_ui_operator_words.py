@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.132 Stage 2A criterion 3: every end state in plain words, in operator
 mode (Engineer mode off, the default).
 

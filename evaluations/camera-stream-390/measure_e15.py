@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.90 E criterion 15: paid cloud calls per minute do not rise with the
 phone's frame rate.
 

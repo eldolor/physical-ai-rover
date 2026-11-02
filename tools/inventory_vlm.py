@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.46 amendment 6: Qwen2.5-VL-3B as the inventory's namer.
 
     python -m tools.inventory_vlm name           # the VLM over the frames (~19 s each, resumable)

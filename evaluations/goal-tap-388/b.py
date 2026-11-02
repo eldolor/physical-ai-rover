@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 evaluations/goal-tap-388/b.py -- 3.88 B: clone the oracle's goal choices
 into explore's ten linear weights, then DAgger; judge on fresh houses.

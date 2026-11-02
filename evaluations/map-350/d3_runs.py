@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.50.D3: the reload, measured on the criteria written in the plan
 ("3.50.D3 criteria") before this ran.
 

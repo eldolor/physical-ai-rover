@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.46 criterion 6: does a detector that names everything name things right?
 
     python -m tools.inventory_label vocab              # once: which of the 4,585 names are objects

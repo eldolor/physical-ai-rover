@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Where a mission's object inventory goes when the mission ends
 (PLAN-ros-alignment.md 3.46 D).
 

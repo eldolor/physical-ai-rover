@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """Does a candidate target STRING fire spuriously? A probe, not a scorer.
 
 Pre-flight for a rig session. The target string is a first-class variable

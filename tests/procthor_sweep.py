@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/procthor_sweep.py -- 3.66 criterion 5: the `explore` policy over the
 first N usable ProcTHOR houses, in process, with `tests/test_explore.py`'s

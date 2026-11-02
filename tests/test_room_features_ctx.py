@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.131 criterion 1 (fast tier): `room_features()` and `coarse()` handed a
 choice's `goal_context()` -- explore's one map conversion a choice -- give
 exactly the frozen pre-3.131 answers (`tests/room_features_reference.py`),

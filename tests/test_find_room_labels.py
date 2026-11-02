@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.116.B: a find mission names rooms as a survey does, behind
 `brain.find_room_labels` (default "off"), for explore_goal_policy "rooms"'s
 room types only."""

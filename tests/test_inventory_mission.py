@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/test_inventory_mission.py -- the object inventory on the mission path
 (PLAN-ros-alignment.md 3.46 criteria 1, 3-5 pinned, and D).

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/test_floor_hazards.py -- PLAN-ros-alignment.md 3.74 part A: the
 simulator's objects can be lower than the lidar's plane.

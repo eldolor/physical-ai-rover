@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tools/plan_section.py -- one plan section per branch, so parallel Claude
 sessions never collide (docs/guides/PARALLEL-SESSIONS.md).

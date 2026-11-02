@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """
 tests/test_goal_tap_oracle.py -- 3.88 B's oracle and cloning
 (`evaluations/goal-tap-388/`): the oracle's cost is the true floor path to
