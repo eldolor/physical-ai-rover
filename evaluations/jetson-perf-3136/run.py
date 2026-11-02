@@ -39,14 +39,16 @@ PY = sys.executable
 
 def board_run(label: str, board_cmd: str, out: Path, *, sha: str = "HEAD",
               allow_sudo: bool = False, stop_twin: bool = False, run=br.ssh,
-              push=br.push_checkout, fetch=br.fetch, sampler_cls=br.Sampler) -> dict:
+              push=br.push_checkout, fetch=br.fetch, sampler_cls=br.Sampler,
+              bench_dir: str = br.BENCH_DIR) -> dict:
     """One board test, inside `boardrun.locked` (refuses without the token).
-    `board_cmd` runs in ~/bench-3136 with $OUT set to its own output
-    directory there and PICAR_BOARD_TOKEN exported."""
+    `board_cmd` runs in ~/<bench_dir> (3.136's `bench-3136` by default;
+    3.135 passes `bench-3135`) with $OUT set to its own output directory
+    there and PICAR_BOARD_TOKEN exported."""
     token = br.require_board_lock()
     out.mkdir(parents=True, exist_ok=True)
     stamp = time.strftime("%Y%m%d-%H%M%S")
-    board_out = f"{br.BENCH_DIR}/out-{label}-{stamp}"
+    board_out = f"{bench_dir}/out-{label}-{stamp}"
     rec: dict = {"label": label, "started": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
                  "allow_sudo": allow_sudo, "stop_twin": stop_twin, "board_out": board_out}
     before = br.snapshot(run)
@@ -54,13 +56,14 @@ def board_run(label: str, board_cmd: str, out: Path, *, sha: str = "HEAD",
     (out / "as_found.json").write_text(json.dumps(before, indent=1))
     sampler = None
     try:
-        rec["sha"] = push(sha, run)
+        rec["sha"] = (push(sha, run) if bench_dir == br.BENCH_DIR
+                      else push(sha, run, bench_dir=bench_dir))
         if stop_twin:
             br.stop_twin(run, allow_sudo=allow_sudo)
         sampler = sampler_cls(f"~/{board_out}/telemetry", run)
         sampler.start()
         t0 = time.time()
-        r = run(f"cd ~/{br.BENCH_DIR} && export OUT=~/{board_out} PICAR_BOARD_TOKEN={shlex.quote(token)} "
+        r = run(f"cd ~/{bench_dir} && export OUT=~/{board_out} PICAR_BOARD_TOKEN={shlex.quote(token)} "
                 f"&& mkdir -p $OUT && {{ {board_cmd} ; }} > $OUT/cmd.log 2>&1; echo $?",
                 check=False, timeout=6 * 3600)
         rec["cmd_exit"] = int(r.strip().splitlines()[-1]) if r.strip() else None

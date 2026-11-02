@@ -43,6 +43,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import shlex
 import subprocess
 import sys
@@ -221,19 +222,23 @@ def settle_and_check(before: dict, run: Callable[..., str] = ssh, *, wait_s: flo
 
 # ------------------------------------------------------- the commit, there
 
-def push_checkout(sha: str, run: Callable[..., str] = ssh) -> str:
-    """The commit under test at ~/bench-3136 on the board, a git checkout.
-    Returns the board's `git rev-parse HEAD` there (must equal `sha`)."""
+def push_checkout(sha: str, run: Callable[..., str] = ssh, bench_dir: str = BENCH_DIR) -> str:
+    """The commit under test at ~/<bench_dir> on the board (3.136's
+    `bench-3136` by default; 3.135 passes `bench-3135`), a git checkout, on
+    a board branch of the same name. Returns the board's `git rev-parse
+    HEAD` there (must equal `sha`)."""
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", bench_dir):
+        raise BoardError(f"bench_dir {bench_dir!r}: a plain directory name only")
     full = subprocess.run(["git", "rev-parse", sha], cwd=ROOT, capture_output=True, text=True,
                           check=True).stdout.strip()
     # Our own ref on the board's repo; `+` because the bench ref moves with each commit tested.
     subprocess.run(["git", "push", "-q", f"picar-jetson:{BOARD_REPO}",
-                    f"+{full}:refs/heads/{BENCH_DIR}"], cwd=ROOT, check=True,
+                    f"+{full}:refs/heads/{bench_dir}"], cwd=ROOT, check=True,
                    capture_output=True, text=True, timeout=300)
     got = run(f"""set -e
-if [ ! -d ~/{BENCH_DIR}/.git ]; then git clone -q --no-checkout ~/{BOARD_REPO} ~/{BENCH_DIR}; fi
-cd ~/{BENCH_DIR}
-git fetch -q ~/{BOARD_REPO} {BENCH_DIR}
+if [ ! -d ~/{bench_dir}/.git ]; then git clone -q --no-checkout ~/{BOARD_REPO} ~/{bench_dir}; fi
+cd ~/{bench_dir}
+git fetch -q ~/{BOARD_REPO} {bench_dir}
 git checkout -q -f --detach {full}
 [ -e .venv ] || ln -s ~/{SERVICE_DIR}/.venv .venv
 for f in yoloe-11s-seg.pt mobileclip_blt.ts; do [ -e "$f" ] || ln -s ~/{SERVICE_DIR}/"$f" "$f"; done

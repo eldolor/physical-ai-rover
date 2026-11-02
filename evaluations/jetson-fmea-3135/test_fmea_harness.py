@@ -1,0 +1,177 @@
+"""3.135.A's harness against made-up truth logs and a fake board (no
+stack, no ssh, no locks):
+
+    .venv/bin/python -m pytest evaluations/jetson-fmea-3135/test_fmea_harness.py -q
+"""
+
+import copy
+import importlib.util
+import json
+import sys
+from pathlib import Path
+
+import pytest
+
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+
+import fmea  # noqa: E402
+import measure as m  # noqa: E402
+import plant_bugs as plant  # noqa: E402
+import stack  # noqa: E402
+
+# This section's run.py by path: 3.136's is also `run`, and it imports it.
+_spec = importlib.util.spec_from_file_location("fmea_run", HERE / "run.py")
+fmea_run = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(fmea_run)
+br, perf_run = fmea_run.br, fmea_run.perf_run
+
+
+def log(samples):
+    """(t, x, sp) tuples -> truth rows, 1 m of open floor around each."""
+    return [{"t": t, "x": x, "y": 0.0, "th": 0.0, "sp": sp, "gap_cm": 50.0} for t, x, sp in samples]
+
+
+def test_wheels_zero_is_the_first_zero_setpoint_at_or_after_the_fault():
+    rows = log([(0.0, 0.0, [0.3, 0.3]), (0.5, 0.15, [0.3, 0.3]), (1.0, 0.3, [0.0, 0.0]),
+                (1.5, 0.3, [0.1, -0.1])])
+    assert m.wheels_zero_s(rows, 0.4) == 0.6
+    assert m.wheels_zero_s(rows, 1.2) is None          # a turn later is not zero
+    assert m.is_forward([0.3, 0.3]) and not m.is_forward([0.1032, -0.1032])
+
+
+def test_travel_contacts_and_holes():
+    rows = log([(0.0, 0.0, [0, 0]), (0.1, 0.01, [0, 0]), (0.2, 0.03, [0, 0]), (0.9, 0.05, [0, 0])])
+    assert m.travel_cm(rows, 0.05) == 4.0
+    assert m.travel_cm(rows, 0.0, 0.15) == 1.0
+    rows[2]["gap_cm"] = 0.4
+    assert m.contacts(rows) == 1 and m.contacts(rows, 0.5) == 0
+    assert m.gaps_s(rows, 0.0, 1.0) == 0.7
+    assert m.nonzero_after(log([(1, 0, [0.1, 0.1]), (2, 0, [0, 0])]), 0, 3) == 1
+
+
+def test_truth_reader_skips_a_line_cut_by_the_kill(tmp_path):
+    p = tmp_path / "truth.jsonl"
+    p.write_text('{"t": 2, "x": 0, "y": 0, "th": 0, "sp": [0, 0], "gap_cm": 9}\n'
+                 '{"t": 1, "x": 0, "y": 0, "th": 0, "sp": [0, 0], "gap_cm": 9}\n{"t": 3, "x"')
+    assert [r["t"] for r in m.read_truth(p)] == [1, 2]
+
+
+GOOD = {"fault_at": 10.0, "truth_hole_s": 0.02, "contacts": 0, "wheels_zero_s": 0.3,
+        "travel_cm": 5.0, "travel_stale_cm": 0.5, "drive_after_cont": 0,
+        "no_feedback_refusals": 1, "outcome": "failed"}
+
+
+@pytest.mark.parametrize("row", sorted(fmea.ROWS))
+def test_a_run_inside_every_bar_passes(row):
+    assert fmea.judge(row, GOOD) == {"pass": True, "reasons": []}
+
+
+@pytest.mark.parametrize("row, change, reason", [
+    ("F6", {"wheels_zero_s": 1.2}, "bar 1.1"),
+    ("F6", {"wheels_zero_s": None}, "after None s"),
+    ("F6", {"travel_cm": 15.1}, "bar 15"),
+    ("F7", {"drive_after_cont": 3}, "after SIGCONT"),
+    ("F8", {"wheels_zero_s": 1.7}, "bar 1.6"),
+    ("F8", {"outcome": "found"}, "ended found"),
+    ("F9", {"travel_stale_cm": 2.1}, "bar 2"),
+    ("F10", {"no_feedback_refusals": 0}, "no_feedback"),
+    ("F13", {"wheels_zero_s": 1.11}, "bar 1.1"),
+    ("F13", {"contacts": 2}, "2 contact"),
+    ("F9", {"truth_hole_s": 0.5}, "hole"),
+    ("F6", {"fault_at": None}, "never injected"),
+])
+def test_each_broken_bar_fails_its_row(row, change, reason):
+    v = fmea.judge(row, {**GOOD, **change})
+    assert not v["pass"] and any(reason in r for r in v["reasons"]), v
+
+
+def test_every_row_names_a_known_plant():
+    assert {r["plant"] for r in fmea.ROWS.values()} <= stack.ROBOT_PLANTS | stack.BODY_PLANTS
+    with pytest.raises(stack.StackError):
+        stack.Stack(Path("/nonexistent-never-made"), plant="nope")
+
+
+def test_the_stack_environment_carries_nothing_of_the_shell(tmp_path, monkeypatch):
+    for k in ("APP_SHARED_SECRET", "VISION_URL", "METRICS_URL", "INVENTORY_BUCKET", "LOCAL_VLM_URL",
+              "WALKS_SECRET", "AWS_PROFILE"):
+        monkeypatch.setenv(k, "leak")
+    env = stack.Stack(tmp_path, plant="watchdog,heartbeat").env
+    assert "leak" not in env.values()
+    assert env["VISION_URL"] == f"http://127.0.0.1:{stack.CLOSED_PORT}"
+    assert env["INVENTORY_BUCKET"] == "" and "METRICS_URL" not in env
+    assert env["APP_SHARED_SECRET"] == env["ROBOT_SHARED_SECRET"] and len(env["APP_SHARED_SECRET"]) == 32
+
+
+def test_plant_summary_catches_only_a_planted_run_that_fails_cleanly():
+    ok = {"verdict": {"pass": True, "reasons": []}, "measures": {"wheels_zero_s": 1.0}}
+    bad = {"verdict": {"pass": False, "reasons": ["x"]}, "measures": {"wheels_zero_s": None}}
+    s = plant.summarise("F13", ok, bad)
+    assert s["caught"] and s["discriminates"] and s["base"]["wheels_zero_s"] == 1.0
+    assert not plant.summarise("F13", ok, ok)["caught"]
+    assert not plant.summarise("F13", ok, {**bad, "error": "stack died"})["caught"]
+    s = plant.summarise("F9", bad, bad)                  # caught, but the base fails too
+    assert s["caught"] and not s["discriminates"]
+
+
+# ------------------------------------------------- the board, faked (criterion 5)
+
+FOUND = {"units": {u: {"active": "active", "enabled": "enabled"} for u in br.UNITS},
+         "hold_flag": None, "vlm_env": {"sha256": "ab", "mode": "600"}, "containers": "",
+         "listening": "8000 8001 8005 8080 ", "power_mode": "NV Power Mode: 15W",
+         "mem_available_mb": 2500, "oom_kill": 0, "uptime_s": 1.0, "epoch": 1.0}
+
+
+class FakeBoard:
+    def __init__(self):
+        self.state, self.cmds = copy.deepcopy(FOUND), []
+
+    def __call__(self, cmd, check=True, timeout=0, input=None):
+        self.cmds.append(cmd)
+        if "systemctl is-active" in cmd and "units=" in cmd:
+            return json.dumps(self.state)
+        return "0\n" if "echo $?" in cmd else ""
+
+
+class FakeSampler:
+    def __init__(self, out, run):
+        self.desktop_load = [[1, 0.1, 0.1, 0.1]]
+
+    def start(self):
+        pass
+
+    def stop(self):
+        pass
+
+
+def test_board_run_uses_this_sections_checkout_and_leaves_the_board_as_found(monkeypatch, tmp_path):
+    monkeypatch.setenv("PICAR_BOARD_TOKEN", "t0k")
+    b, pushed = FakeBoard(), []
+
+    def push(sha, run, bench_dir="bench-3136"):
+        pushed.append(bench_dir)
+        return "f" * 40
+
+    rec = perf_run.board_run("fmea-smoke", fmea_run.SMOKE_CMD, tmp_path, run=b, push=push,
+                             fetch=lambda *a: None, sampler_cls=FakeSampler, bench_dir="bench-3135")
+    assert pushed == ["bench-3135"] and rec["board_out"].startswith("bench-3135/out-fmea-smoke-")
+    cmd = next(c for c in b.cmds if "fmea.py F13" in c)
+    assert cmd.startswith("cd ~/bench-3135 &&") and "PICAR_BOARD_TOKEN=t0k" in cmd
+    assert rec["left_as_found"] and rec["as_found_differences"] == []
+    assert not any("sudo" in c for c in b.cmds)
+    s = fmea_run.smoke_summary(rec, tmp_path)
+    assert s["left_as_found"] and s["fmea_exit"] is None        # nothing fetched: nothing claimed
+
+
+def test_3136s_default_checkout_is_unchanged(monkeypatch, tmp_path):
+    monkeypatch.setenv("PICAR_BOARD_TOKEN", "t0k")
+    b = FakeBoard()
+    rec = perf_run.board_run("x", "true", tmp_path, run=b, push=lambda s, r: "f" * 40,
+                             fetch=lambda *a: None, sampler_cls=FakeSampler)
+    assert rec["board_out"].startswith("bench-3136/") and br.BENCH_DIR == "bench-3136"
+
+
+def test_push_checkout_refuses_a_bench_dir_that_is_not_a_plain_name():
+    for bad in ("../x", "a b", "x;rm", "", "-x"):
+        with pytest.raises(br.BoardError):
+            br.push_checkout("HEAD", run=lambda *a, **k: "", bench_dir=bad)
