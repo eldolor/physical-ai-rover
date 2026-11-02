@@ -236,3 +236,11 @@ curl -X POST localhost:8001/mission/start -H 'content-type: application/json' \
 
 The build journal this file used to carry is in
 `docs/archive/README-build-journal-2026-10-06.md`, verbatim.
+
+## Licence
+
+Dual-licensed: the [GNU AGPL-3.0](LICENSE) for everyone, or a
+[commercial licence](COMMERCIAL-LICENSE.md) for shipping or hosting it
+without the AGPL's obligations. Third-party parts keep their own licences,
+and some restrict commercial use on their own:
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
