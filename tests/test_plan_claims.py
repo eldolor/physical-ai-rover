@@ -190,6 +190,9 @@ def test_criterion_2_a_reused_pid_does_not_keep_the_claim(repo, owners):
     path = os.path.join(pc.repo(repo)[1], "plan-claims", "3.90.A.json")
     c["start"] = "Thu Jan  1 00:00:00 1970"          # same PID, another process
     json.dump(c, open(path, "w"))
+    # 3.139: origin's copy names the holder too; the same process, reused.
+    sha = pc._claim_commit(repo, c)
+    _git(repo, "push", "-q", "--force", "origin", f"{sha}:refs/heads/claim/3.90.A")
     assert pc.claim("3.90.A", cwd=repo, me=b)["pid"] == b["pid"]
 
 

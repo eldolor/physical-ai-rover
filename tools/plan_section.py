@@ -15,6 +15,7 @@ sessions never collide (docs/guides/PARALLEL-SESSIONS.md).
     python tools/plan_section.py next                   the first step this session may claim
     python tools/plan_section.py claim <step>           take a step for this session (tools/plan_claims.py)
     python tools/plan_section.py release [<step>]       give back this session's claims
+    python tools/plan_section.py release --force <step> free anyone's claim (the user's word only)
 
 Sections live in `docs/plans/ros-alignment/<number>-<slug>.md`; the number is
 reserved by the BRANCH NAME `plan/<number>-<slug>`. Worktrees share one .git,
@@ -171,7 +172,23 @@ def used_numbers(root: str) -> set:
         m = BRANCH_RE.search(b)
         if m:
             nums.add(int(m.group(2)))
+    # 3.139: a claim on origin (`claim/3.N` or `claim/3.N.X`) holds its number
+    # for every machine. Best effort: `new`'s own create-only claim is the arbiter.
+    code, out, _ = _claims().net(["ls-remote", "origin", _claims().CLAIM_REF + "3.*"], root)
+    for line in out.splitlines() if code == 0 else []:
+        m = re.search(r"refs/heads/claim/3\.(\d+)", line)
+        if m:
+            nums.add(int(m.group(1)))
     return nums
+
+
+def _claims():
+    """tools/plan_claims.py, imported from beside this file."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    if here not in sys.path:
+        sys.path.append(here)
+    import plan_claims
+    return plan_claims
 
 
 def cmd_new(slug: str, title: str) -> None:
@@ -198,7 +215,19 @@ def cmd_new(slug: str, title: str) -> None:
         r = subprocess.run(["git", "worktree", "add", "-q", wt, branch],
                            capture_output=True, text=True, cwd=root)
         if r.returncode == 0:
-            break
+            # 3.139: the whole section is claimed on origin at once, which
+            # reserves the number across machines (the branch name reserves
+            # it only on this one) and lets this session commit on it.
+            try:
+                _claims().claim(num, cwd=wt)
+                break
+            except SystemExit as e:
+                git("worktree", "remove", "--force", wt, check=False, cwd=root)
+                git("branch", "-D", branch, check=False, cwd=root)
+                if not isinstance(e, _claims().ClaimRefused):
+                    raise SystemExit(f"new: {e}")
+                n += 1             # another machine holds 3.N on origin
+                continue
         git("branch", "-D", branch, check=False, cwd=root)
         if "already exists" not in r.stderr:
             raise SystemExit(r.stderr.strip())
@@ -703,6 +732,16 @@ def cmd_gate(base: str, sha: str) -> None:
     os.environ.clear()
     os.environ.update(clean)
     warn_reviews(base, sha, root)
+    # 3.139: a section's file or an open step's Touches is pushed only by a
+    # session holding a claim in that section -- checked first, before any
+    # recorded pass or tier (a claim can lapse after a pass).
+    refused = _claims().push_refusals(base, sha, cwd=root) if base else []
+    if refused:
+        raise SystemExit(
+            "pre-push: REFUSED -- this push changes plan sections this session holds no claim in "
+            "(PARALLEL-SESSIONS.md rule 12):\n  " + "\n  ".join(refused) + "\n  Claim first "
+            "(python tools/plan_section.py claim <step>); if refused, stop and report. A person, "
+            "never an agent, may override with PICAR_CLAIM_BYPASS=1.")
     if os.path.exists(os.path.join(gate_dir(), sha)):
         return
     cid = change_id(base, sha, root) if base else ""

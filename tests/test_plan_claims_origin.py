@@ -403,3 +403,19 @@ def test_board_shows_a_whole_section_claim(repo, owners):
     fake_claim(repo, "3.150", host="far", worktree="/far/plan-3.150")
     board = pc.cmd_board(cwd=repo)
     assert "3.150" in board and "plan-3.150" in board
+
+
+def test_new_claims_its_section_on_origin_and_skips_a_number_held_there(tmp_path, monkeypatch):
+    """`new` takes `claim/3.N` at once; a number another machine claimed on
+    origin after this one listed the numbers in use is skipped."""
+    from tests.test_review_376i import _with_origin
+    repo, g = _with_origin(tmp_path, monkeypatch)
+    monkeypatch.setattr(ps, "used_numbers", lambda root: set())     # the listing raced
+    fake_claim(str(repo), "3.1", host="far")
+    ps.cmd_new("foo", "Foo")
+    refs = remote_refs(str(repo))
+    assert set(refs) == {"3.1", "3.2"}
+    assert pc.parse_claim_message(_out(str(repo), "log", "-1", "--format=%B", refs["3.2"]))["pid"] \
+        == os.getpid()
+    branches = g("branch", "--format=%(refname:short)").splitlines()
+    assert "plan/3.2-foo" in branches and "plan/3.1-foo" not in branches
