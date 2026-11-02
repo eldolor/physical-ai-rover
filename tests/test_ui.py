@@ -4460,3 +4460,21 @@ def test_a_start_refused_at_low_battery_is_said_plainly(browser, twin_server, de
     assert "battery_low" not in toast.inner_text()
     assert not errors, errors
     page.context.close()
+
+
+def test_reserve_shows_over_guides_fullscreen(browser, twin_server):
+    """Thermos on 3.137.B: Guide's fullscreen (z-index 200, every guidance
+    walk, Drive via brain included) covered the banner, so a person walking
+    never saw the countdown. Reserve and Power-off now float above it."""
+    page, errors = _battery_page(browser, twin_server, _battery_reply(
+        "reserve", 10.18, reserve_s=10.0, poweroff_in_s=110.0))
+    sync_api.expect(page.locator("#battery-title")).to_contain_text("shutting down in",
+                                                                    timeout=6000)
+    page.evaluate("document.getElementById('guide-fullscreen').classList.add('active')")
+    on_top = page.evaluate("""() => { const r = document.getElementById('battery-banner')
+        .getBoundingClientRect();
+      const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return !!hit && !!hit.closest('#battery-banner'); }""")
+    assert on_top
+    assert not errors, errors
+    page.context.close()

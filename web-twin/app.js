@@ -1463,6 +1463,9 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
       el.innerHTML = '<span class="dot"></span>' + escapeHtml(label) + " environment";
       el.classList.add("visible");
       document.body.classList.add("env-flagged");
+      // 3.137.B: the sticky battery banner sits below this one, however
+      // many lines the label wraps to.
+      document.documentElement.style.setProperty("--env-banner-h", el.offsetHeight + "px");
       document.title = label.toUpperCase() + " \u00b7 " + document.title;
     } catch (e) {
       /* no banner -- see above */

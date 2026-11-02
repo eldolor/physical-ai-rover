@@ -263,7 +263,7 @@ literal in `twin.css`; the page is checked in both themes
 
 ## Known gaps
 
-- **The battery banner (3.137.B) is hidden under Guide's fullscreen** (z-index 200) and its countdown is the server's `poweroff_in_s`, which in the simulator runs on the sim's clock: re-read each second, so it can step by more than one between reads. A Reserve the page last saw before the robot went quiet stays on screen, counting down, until its countdown ends (then Power-off) -- a page that lost only the network says the same. Polls `/battery` on its own timer although the Sim tab's `/health` poll carries the same `battery` block.
+- **The battery banner (3.137.B):** at Low it is hidden under Guide's fullscreen (Reserve and Power-off float above it, z-index 250); Power-off is remembered for one robot URL only (another robot's power-off, or the same robot under another address, replaces or misses it); and its countdown is the server's `poweroff_in_s`, which in the simulator runs on the sim's clock: re-read each second, so it can step by more than one between reads. A Reserve the page last saw before the robot went quiet stays on screen, counting down, until its countdown ends (then Power-off) -- a page that lost only the network says the same. Polls `/battery` on its own timer although the Sim tab's `/health` poll carries the same `battery` block.
 - **The environment banner cannot show on the CloudFront deployment.**
   `renderEnvBanner()` fetches a relative `/health`. Under CloudFront that
   route goes to the vision function, whose `/health` returns only

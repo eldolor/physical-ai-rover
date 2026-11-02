@@ -53,7 +53,18 @@ body.env-flagged .tab-bar { border-top: 2px solid var(--accent-alert); }
   box-shadow: var(--shadow-1);
 }
 .battery-banner[hidden] { display: none; }
-body.env-flagged .battery-banner { top: calc(env(safe-area-inset-top, 0px) + 30px); }
+body.env-flagged .battery-banner {
+  top: calc(env(safe-area-inset-top, 0px) + var(--env-banner-h, 30px));
+}
+/* Over Guide's fullscreen (z-index 200; Thermos, 3.137.B): Reserve's
+   countdown and Power-off's last word float at its top, under the toasts
+   (260). Low does not cover the camera. */
+body:has(#guide-fullscreen.active) .battery-banner[data-level="reserve"],
+body:has(#guide-fullscreen.active) .battery-banner[data-level="poweroff"] {
+  position: fixed; z-index: 250;
+  top: calc(env(safe-area-inset-top, 0px) + var(--space-2));
+  left: var(--space-2); right: var(--space-2);
+}
 .battery-banner[data-level="reserve"] { border-left-color: var(--accent-alert); }
 .battery-banner[data-level="poweroff"] {
   background: var(--accent-alert); color: var(--accent-alert-ink);

@@ -70,6 +70,8 @@ def start(mod, port, env, run, logs):
 
 
 def stop(proc):
+    if proc is None:
+        return
     proc.terminate()
     try:
         proc.wait(timeout=10)
@@ -99,14 +101,17 @@ def main():
     socketserver.TCPServer.allow_reuse_address = True
     httpd = socketserver.ThreadingTCPServer(("127.0.0.1", STATIC_PORT), measure._Deployed)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
-    robot = start("robot.server:app", ROBOT_PORT, env, run, logs)
-    brain = start("control.brain_server:app", BRAIN_PORT, env, run, logs)
+    robot = brain = None
     t0 = time.monotonic()
 
     def now():
         return round(time.monotonic() - t0, 2)
 
     try:
+        # Inside the try (Thermos): a failed start stops what did start.
+        robot = start("robot.server:app", ROBOT_PORT, env, run, logs)
+        brain = start("control.brain_server:app", BRAIN_PORT, env, run, logs)
+        t0 = time.monotonic()
         with sync_playwright() as p:
             browser = p.chromium.launch()
             ctx = browser.new_context(viewport={"width": 390, "height": 844}, color_scheme="dark")
