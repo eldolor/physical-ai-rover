@@ -1,0 +1,50 @@
+{
+ "label": "full",
+ "host": "picar-jetson",
+ "machine": "aarch64",
+ "start_unix": 1793481767,
+ "end_unix": 1793481801,
+ "loadavg": [
+  4.18994140625,
+  2.34130859375,
+  1.00732421875
+ ],
+ "poses": 120,
+ "candidates_median": 85.0,
+ "whole_choice": {
+  "F-large-new": {
+   "choices": 120,
+   "p50_ms": 86.54,
+   "p90_ms": 97.69,
+   "max_ms": 152.29
+  },
+  "F-large-before": {
+   "choices": 120,
+   "p50_ms": 91.17,
+   "p90_ms": 101.5,
+   "max_ms": 159.6
+  }
+ },
+ "F-large_parts": {
+  "map_work": {
+   "p50_ms": 60.34,
+   "p90_ms": 68.25,
+   "max_ms": 115.04
+  },
+  "ten_facts": {
+   "p50_ms": 14.47,
+   "p90_ms": 15.35,
+   "max_ms": 33.6
+  },
+  "room_facts": {
+   "p50_ms": 10.18,
+   "p90_ms": 12.24,
+   "max_ms": 56.1
+  },
+  "network": {
+   "p50_ms": 0.4,
+   "p90_ms": 0.44,
+   "max_ms": 2.15
+  }
+ }
+}

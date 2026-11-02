@@ -99,6 +99,9 @@ browser, they ERROR rather than skip (seen in the Python 3.10 run).
 
 ## 4. G4 and headroom
 
+**Log every whole-stack run** in `docs/evaluations/BOARD-BENCH.md` (a
+row in its trend table, records in `docs/evaluations/board-bench/<date>/`).
+
 **Take the board lock first** (3.93): sessions share this board.
 `python tools/jetson/board_lock.py status` says who holds it.
 `board_lock.py hold --why "<what>"` (or `run -- <command>`) takes it. The

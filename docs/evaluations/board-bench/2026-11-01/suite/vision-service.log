@@ -1,0 +1,56 @@
+.....F.................................................................. [ 35%]
+........................................................................ [ 71%]
+.........................................................                [100%]
+=================================== FAILURES ===================================
+____________________ test_analyze_oversized_image_is_a_413 _____________________
+
+client = <starlette.testclient.TestClient object at 0xffff9708b9d0>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0xffff97088ee0>
+
+    def test_analyze_oversized_image_is_a_413(client, monkeypatch):
+        monkeypatch.setattr(app_module.vision_core, "MAX_IMAGE_BYTES", 4)
+        resp = client.post("/analyze", json={"image_base64": IMAGE_B64})
+>       assert resp.status_code == 413
+E       assert 502 == 413
+E        +  where 502 = <Response [502 Bad Gateway]>.status_code
+
+service/vision_analyze/tests/test_app.py:123: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    vision_analyze:app.py:270 Vision API call failed
+Traceback (most recent call last):
+  File "/home/picar/bench-dev/service/vision_analyze/app.py", line 266, in _vision_call
+    return fn(*args, **kwargs)
+  File "/home/picar/bench-dev/service/vision_analyze/vision_core.py", line 458, in describe_image_bytes
+    client = _get_client(ANALYZE_MODEL_ID)
+  File "/home/picar/bench-dev/service/vision_analyze/vision_core.py", line 302, in _get_client
+    _clients[region] = boto3.client("bedrock-runtime", region_name=region,
+  File "/home/picar/bench-dev/.venv/lib/python3.10/site-packages/boto3/__init__.py", line 93, in client
+    return _get_default_session().client(*args, **kwargs)
+  File "/home/picar/bench-dev/.venv/lib/python3.10/site-packages/boto3/session.py", line 337, in client
+    return self._session.create_client(
+  File "/home/picar/bench-dev/.venv/lib/python3.10/site-packages/botocore/context.py", line 123, in wrapper
+    return func(*args, **kwargs)
+  File "/home/picar/bench-dev/.venv/lib/python3.10/site-packages/botocore/session.py", line 1031, in create_client
+    client = client_creator.create_client(
+  File "/home/picar/bench-dev/.venv/lib/python3.10/site-packages/botocore/client.py", line 161, in create_client
+    client_args = self._get_client_args(
+  File "/home/picar/bench-dev/.venv/lib/python3.10/site-packages/botocore/client.py", line 561, in _get_client_args
+    return args_creator.get_client_args(
+  File "/home/picar/bench-dev/.venv/lib/python3.10/site-packages/botocore/args.py", line 121, in get_client_args
+    final_args = self.compute_client_args(
+  File "/home/picar/bench-dev/.venv/lib/python3.10/site-packages/botocore/args.py", line 265, in compute_client_args
+    endpoint_config = self._compute_endpoint_config(
+  File "/home/picar/bench-dev/.venv/lib/python3.10/site-packages/botocore/args.py", line 459, in _compute_endpoint_config
+    return self._resolve_endpoint(**resolve_endpoint_kwargs)
+  File "/home/picar/bench-dev/.venv/lib/python3.10/site-packages/botocore/args.py", line 577, in _resolve_endpoint
+    return endpoint_bridge.resolve(
+  File "/home/picar/bench-dev/.venv/lib/python3.10/site-packages/botocore/client.py", line 675, in resolve
+    resolved = self.endpoint_resolver.construct_endpoint(
+  File "/home/picar/bench-dev/.venv/lib/python3.10/site-packages/botocore/regions.py", line 237, in construct_endpoint
+    result = self._endpoint_for_partition(
+  File "/home/picar/bench-dev/.venv/lib/python3.10/site-packages/botocore/regions.py", line 285, in _endpoint_for_partition
+    raise NoRegionError()
+botocore.exceptions.NoRegionError: You must specify a region.
+=========================== short test summary info ============================
+FAILED service/vision_analyze/tests/test_app.py::test_analyze_oversized_image_is_a_413
+1 failed, 200 passed in 5.16s

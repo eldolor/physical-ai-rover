@@ -1,0 +1,2 @@
+tests/test_intervention_log.py::test_the_brain_server_writes_a_line_for_a_stopped_mission
+tests/test_sim_fingerprint.py::test_a_house_without_heights_senses_what_it_did[home_first_floor]

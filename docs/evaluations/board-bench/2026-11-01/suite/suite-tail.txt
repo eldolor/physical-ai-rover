@@ -1,0 +1,3 @@
+FAILED tests/test_intervention_log.py::test_the_brain_server_writes_a_line_for_a_stopped_mission
+FAILED tests/test_sim_fingerprint.py::test_a_house_without_heights_senses_what_it_did[home_first_floor]
+2 failed, 4260 passed, 26 skipped, 5 xfailed, 302 warnings in 7236.28s (2:00:36)
