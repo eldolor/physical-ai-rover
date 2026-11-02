@@ -244,7 +244,9 @@ Copyright (C) 2026 Anshu Gaind.
 This project is licensed under the [GNU AGPL-3.0-only](LICENSE). The ESP32
 firmware patch in `firmware/ugv_base_ros/` modifies GPL-3.0 firmware and
 stays GPL-3.0. `sim/fake_esp32.py` is GPL-3.0-only because it
-reimplements behaviour from Waveshare's GPL-3.0 firmware. Third-party
+reimplements behaviour from Waveshare's GPL-3.0 firmware, and so are its
+tests (`tests/test_fake_esp32.py`, `tests/test_ros_driver_board.py` and
+`tests/test_firmware_fork.py`), which pin that behaviour. Third-party
 parts keep their own licences, listed in
 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md). How contributions are
 licensed: [`CONTRIBUTING.md`](CONTRIBUTING.md).

@@ -11,7 +11,7 @@ project's published licence; re-check before a release.
 |---|---|---|
 | ProcTHOR-10K floor plans (Allen Institute for AI) | `sim/maps/procthor_data/` | Apache-2.0 (`sim/maps/procthor_data/LICENSE`) |
 | Patch to Waveshare's UGV ESP32 firmware (`ugv_base_ros`) | `firmware/ugv_base_ros/` | GPL-3.0 only (a modification of GPL-3.0 firmware) |
-| Simulated motor board reimplementing Waveshare's `ugv_base_ros` firmware behaviour | `sim/fake_esp32.py` | GPL-3.0-only (reimplements GPL-3.0 firmware) |
+| Simulated motor board reimplementing Waveshare's `ugv_base_ros` firmware behaviour, and its tests | `sim/fake_esp32.py`; `tests/test_fake_esp32.py`, `tests/test_ros_driver_board.py`, `tests/test_firmware_fork.py` | GPL-3.0-only (reimplements GPL-3.0 firmware; the tests pin that behaviour) |
 | LDROBOT's CRC-8 table (`ldlidar_stl_ros2`, `lipkg.cpp` `CrcTable`) | `robot/lidar_ld19.py` (`CRC_TABLE`) | MIT (`LICENSES/MIT-LDROBOT.txt`). LICENSE: "Copyright (c) 2020 SHENZHEN LDROBOT CO., LTD. All rights"; `lipkg.cpp`: "Copyright (c) 2021  SHENZHEN LDROBOT CO., LTD. All rights reserved." |
 | Lines of NVIDIA TensorRT-Edge-LLM v0.9.1 source, quoted as patch anchors | `tools/jetson/patch_edgellm_trt103.py` | Apache-2.0, Copyright (c) 2025-2026 NVIDIA CORPORATION & AFFILIATES (`LICENSES/Apache-2.0.txt`) |
 
