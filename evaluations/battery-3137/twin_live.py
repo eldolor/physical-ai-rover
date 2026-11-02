@@ -129,7 +129,7 @@ def main():
                     lvl = b.get("level")
                     rec["server"].setdefault(lvl, {"t_s": now(), "v": b.get("v")})
                 except httpx.HTTPError:
-                    lvl = None
+                    b = {}              # no countdown recorded from a missed read (review)
                 pg = page.evaluate(BANNER)
                 if pg["shown"]:
                     rec["page"].setdefault(pg["level"], {"t_s": now(), "title": pg["title"]})

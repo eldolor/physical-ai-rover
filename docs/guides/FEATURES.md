@@ -957,6 +957,27 @@ is why `control/drills.py`'s fault picker exists in the Sim tab -- and
 why the live phone walk in section 1.2.c is the closest thing to
 provoking them for real without a drill.
 
+### 5.0 The battery banner (3.137.B)
+
+The robot server owns the pack's reading and the battery ladder
+(`robot/battery_ladder.py`, `PLAN-ros-alignment.md` 3.137); the twin shows
+its level at the top of every tab, from `GET /battery`, read every 5 s
+(every second once at Reserve):
+
+* **Battery low** -- "Charge the robot soon. A new search can't start until
+  it's charged." A Start tapped then is refused, and the toast says the
+  battery is low (or, for a low reading being checked again at rest, to try
+  again in a moment).
+* **Battery reserve: shutting down in N s** -- the countdown to the robot's
+  own power-off; the autopilot has stopped, and a person can still drive
+  slowly with the D-pad to the charger.
+* **Powered off: unplug the battery** -- the robot's last word. It stays
+  on screen after the robot stops answering, and after a reload, until the
+  same robot answers again with a settled reading at another level.
+
+Engineer mode adds the volts, the levels and, at Power-off, why and the
+shutdown steps. Screenshots: `docs/evaluations/battery-3137B-*-live-2026-11-02.png`.
+
 ### 5.1 The vision proximity veto -- deleted
 
 `brain/agent.py` once had a `vision_proximity_veto` that stopped a
