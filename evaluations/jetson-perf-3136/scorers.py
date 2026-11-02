@@ -184,9 +184,14 @@ def jsonl(path) -> list:
     """Rows of a JSON-lines file; a line cut by a kill is skipped."""
     out = []
     p = Path(path)
-    if not p.exists():
+    if not p.exists() and Path(f"{p}.gz").exists():
+        import gzip                      # a big record committed compressed
+        text = gzip.decompress(Path(f"{p}.gz").read_bytes()).decode()
+    elif p.exists():
+        text = p.read_text()
+    else:
         return out
-    for line in p.read_text().splitlines():
+    for line in text.splitlines():
         try:
             out.append(json.loads(line))
         except ValueError:
