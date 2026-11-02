@@ -1033,7 +1033,7 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   the nightly waits in the queue for the exclusive lock, SKIPPED (exit 0, no
   email) after 2 h of a busy desktop. The nightly runs on the Mac only.
 * **A staged UX redesign (3.132), Stages 0-1, 2A and 4 merged 2026-10-31/11-01,
-  2B merged 2026-11-02 (not deployed); 3 and 5 open; the twin deployed with Stages 1-2A from `dev` `4ee9f4bd`
+  2B merged and deployed 2026-11-02 (from `dev` `85823e7e`); 3 and 5 open; the twin deployed with Stages 1-2A from `dev` `4ee9f4bd`
   on 2026-11-01; Stage 4 (the Lab console) deployed from `dev` `74c58cc7`
   on 2026-11-01, walks Lambda first** (the user, 2026-10-31: twin first, the two consoles merged into
   one, vanilla JS, no build step). Audiences:
@@ -1090,7 +1090,7 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   * Operator mode never starts a drill, and it says a saved paid policy's
     cost beside Start.
 
-  **Stage 2B (the twin's modules), merged 2026-11-02, not deployed:**
+  **Stage 2B (the twin's modules), merged and deployed 2026-11-02 (`dev` `85823e7e`; all 24 objects match, invalidation `I9PVYFX9CFEC1VOCYMRMVURCMF`):**
   * `app.js` is an ES module entry (`<script type="module">`, its IIFE
     kept); eight sections moved verbatim into `web-twin/js/`: `qr`,
     `icons`, `prefs`, `ui`, `debuglog`, `history`, `state`, `connstatus`
