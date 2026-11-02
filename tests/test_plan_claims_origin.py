@@ -140,7 +140,7 @@ def test_criterion_2_a_rejected_push_writes_nothing_and_names_the_holder(repo, o
     real = pc.remote_claims
     calls = []
 
-    def stale_view(top):                        # the board saw origin before the other push
+    def stale_view(top, timeout=None):                        # the board saw origin before the other push
         calls.append(1)
         return ([], None) if len(calls) == 1 else real(top)
     monkeypatch.setattr(pc, "remote_claims", stale_view)
@@ -159,7 +159,7 @@ def test_a_claim_is_a_branch_on_origin_named_for_its_holder(repo, owners):
     msg = _out(repo, "log", "-1", "--format=%B", c["sha"])
     held = pc.parse_claim_message(msg)
     assert held["session"] == "sess-a" and held["pid"] == a["pid"] and held["host"] == pc.host()
-    assert held["step"] == "3.90.A" and held["worktree"] == repo
+    assert held["step"] == "3.90.A" and held["worktree"] == os.path.basename(repo)   # public: no path
     assert json.load(open(os.path.join(pc.repo(repo)[1], "plan-claims", "3.90.A.json")))["sha"] == c["sha"]
 
 
@@ -445,3 +445,79 @@ def test_shared_status_and_a_pushers_own_touches_are_not_fenced(repo, owners):
     _git(repo, "add", "-A")
     _git(repo, "commit", "-q", "-m", "work")
     assert pc.push_refusals(base, _out(repo, "rev-parse", "HEAD"), cwd=repo, me=a) == []
+
+
+# ---------- review fixes (code-review + Thermos, 2026-11-01) ----------
+
+def test_review_a_sibling_session_in_one_process_cannot_take_a_claim(repo, owners):
+    """Thermos 1: a claim by another session in this same, live process read
+    as an earlier conversation's and was taken over or released."""
+    _, proc = owners()
+    a, b = session_of(proc, "sess-a"), session_of(proc, "sess-b")
+    pc.claim("3.90.A", cwd=repo, me=a)
+    with pytest.raises(SystemExit, match="claimed"):
+        pc.claim("3.90.A", cwd=repo, me=b)
+    with pytest.raises(SystemExit, match="refused"):
+        pc.release("3.90.A", cwd=repo, me=b)
+    assert list(remote_refs(repo)) == ["3.90.A"]
+
+
+def test_review_a_rival_in_the_section_landing_meanwhile_withdraws_the_claim(repo, owners, monkeypatch):
+    """code-review 1: claim/3.90 and claim/3.90.A are two refs; both pushes
+    won from two machines with stale views."""
+    _, a = owners()
+    real = pc.remote_claims
+    calls = []
+
+    def stale_view(top, timeout=None):
+        calls.append(1)
+        return ([], None) if len(calls) == 1 else real(top)
+    monkeypatch.setattr(pc, "remote_claims", stale_view)
+    fake_claim(repo, "3.90", host="far")                    # the whole section, another machine
+    with pytest.raises(SystemExit, match="meanwhile"):
+        pc.claim("3.90.A", cwd=repo, me=a)
+    assert list(remote_refs(repo)) == ["3.90"] and local_files(repo) == []
+
+
+def test_review_a_session_survives_its_machine_renaming_itself(repo, owners):
+    """code-review 6: macOS changes its host name with the network."""
+    _, proc = owners()
+    pc.claim("3.90.A", cwd=repo, me=session_of(proc, "sess-a", "old-name"))
+    me = session_of(proc, "sess-a", "new-name")
+    with as_host("new-name"):
+        assert pc.claim("3.90.A", cwd=repo, me=me)["step"] == "3.90.A"     # still its own
+        assert pc.release(cwd=repo, me=me) == ["3.90.A"]
+
+
+def test_review_waiting_and_blocked_steps_fence_nothing(repo, owners):
+    """Thermos 2: 3.90.B (needs A) and 3.90.C (waits on the user) cannot be
+    claimed, so their Touches must not be fenced."""
+    _, a = owners()
+    assert _edit_hook(repo, "brain/b.py", a["pid"]) is None
+    assert _edit_hook(repo, "brain/c.py", a["pid"]) is None
+
+
+def test_review_a_claim_freed_on_origin_no_longer_passes_the_push_gate(repo, owners):
+    """Both reviewers: the hooks trusted the local file after the user freed
+    the claim with --force from another machine."""
+    _, a = owners()
+    base = _out(repo, "rev-parse", "HEAD")
+    pc.claim("3.90.A", cwd=repo, me=a)
+    open(os.path.join(repo, pc.DIR, "3.90-test.md"), "a").write("\nmore\n")
+    _git(repo, "commit", "-qam", "work")
+    sha = _out(repo, "rev-parse", "HEAD")
+    assert pc.push_refusals(base, sha, cwd=repo, me=a) == []
+    _git(repo, "push", "-q", "origin", ":refs/heads/claim/3.90.A")   # freed elsewhere
+    assert pc.push_refusals(base, sha, cwd=repo, me=a)
+
+
+def test_review_published_holder_carries_no_path_or_raw_ids(repo, owners, monkeypatch):
+    """Origin is a public repository: the worktree's folder only, host and
+    session as digests."""
+    monkeypatch.setenv("CLAUDE_CODE_SESSION_ID", "66ecaeb8-raw-session")
+    _, a = owners()
+    me = {**a, "session": pc.session_id(), "host": pc.host()}
+    c = pc.claim("3.90.A", cwd=repo, me=me)
+    msg = _out(repo, "log", "-1", "--format=%B", c["sha"])
+    assert "66ecaeb8-raw-session" not in msg and repo not in msg
+    assert "session: s-" in msg

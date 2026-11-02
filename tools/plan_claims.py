@@ -47,6 +47,7 @@ Standard library only: the hooks run under whatever `python3` is on PATH.
 
 import fcntl
 import fnmatch
+import hashlib
 import json
 import os
 import re
@@ -68,6 +69,7 @@ ACTIVE_S = 2 * 3600          # a section branch committed within this is "active
 CLAIM_REF = "refs/heads/claim/"
 STALE_S = 24 * 3600          # another host's claim reads "claimed (stale?)" after this quiet
 NET_TIMEOUT_S = 20           # one call to origin
+START_TIMEOUT_S = 5          # the session-start board's calls to origin
 BYPASS = "PICAR_CLAIM_BYPASS"
 CLAIM_CMD = "python tools/plan_section.py claim"
 MSG_KEYS = ("step", "section", "title", "session", "worktree", "branch", "host", "pid", "start", "at")
@@ -103,14 +105,31 @@ def repo(cwd=None):
     return (lines[0], lines[1]) if len(lines) == 2 else None
 
 
+def _digest(prefix: str, text: str) -> str:
+    return prefix + hashlib.sha256(text.encode()).hexdigest()[:12]
+
+
 def host() -> str:
-    """This machine's name in a claim (PICAR_CLAIM_HOST: tests)."""
-    return os.environ.get("PICAR_CLAIM_HOST") or socket.gethostname()
+    """This machine in a claim (PICAR_CLAIM_HOST: tests). Origin is a PUBLIC
+    repository, so it is a digest, never the host name; and it includes the
+    process-id namespace, so two containers sharing a host name (cloud
+    sessions) are two machines, each unable to see the other's processes
+    (3.139 review). Stable across reboots: no boot id."""
+    forced = os.environ.get("PICAR_CLAIM_HOST")
+    if forced:
+        return forced
+    try:
+        ns = str(os.stat("/proc/self/ns/pid").st_ino)
+    except OSError:
+        ns = ""
+    return _digest("h-", f"{socket.gethostname()}|{ns}")
 
 
 def session_id() -> str:
-    """This Claude Code session's id, which Claude Code exports to its tools."""
-    return os.environ.get("CLAUDE_CODE_SESSION_ID") or os.environ.get("CLAUDE_SESSION_ID") or ""
+    """This Claude Code session, as a digest of the id Claude Code exports
+    to its tools (published on a public origin: never the id itself)."""
+    raw = os.environ.get("CLAUDE_CODE_SESSION_ID") or os.environ.get("CLAUDE_SESSION_ID") or ""
+    return _digest("s-", raw) if raw else ""
 
 
 def bypassed() -> bool:
@@ -179,13 +198,16 @@ def same_process(claim: dict, me) -> bool:
 
 def same_owner(claim: dict, me) -> bool:
     """The session when both carry one (3.139: one `claude` process -- or
-    a resumed one -- is not one owner), else the process; on one host. A
-    claim made before 3.139 carries no host or session: this host, by pid."""
-    if not me or (claim.get("host") or host()) != (me.get("host") or host()):
+    a resumed one -- is not one owner; a session whose machine changed its
+    name is still itself), else the process on one host. A claim made
+    before 3.139 carries no host or session: this host, by pid."""
+    if not me:
         return False
     cs, ms = claim.get("session") or "", me.get("session") or ""
     if cs and ms:
         return cs == ms
+    if (claim.get("host") or host()) != (me.get("host") or host()):
+        return False
     return claim.get("pid") == me["pid"] and claim.get("start") == me["start"]
 
 
@@ -194,15 +216,12 @@ def _here(claim: dict) -> bool:
 
 
 def held(claim: dict, procs: dict, me) -> bool:
-    """A claim that still holds: its owner is this session, or another
-    host's (never judged from here), or a live process on this host that is
-    not this one under another conversation (amendment: a /clear's earlier
-    conversation is taken over by `claim`)."""
-    if same_owner(claim, me):
-        return True
-    if not _here(claim):
-        return True
-    return alive(claim, procs) and not same_process(claim, me)
+    """A claim that still holds: its owner is this session, or it is
+    another host's (never judged from here), or its process on this host
+    still runs -- even when that is this very process under another session
+    (review: two conversations in one process must not take each other's
+    claims; an earlier conversation's claim is freed by the user)."""
+    return same_owner(claim, me) or not _here(claim) or alive(claim, procs)
 
 
 def who(c: dict) -> str:
@@ -222,8 +241,11 @@ def _clean(v) -> str:
 
 def claim_message(c: dict) -> str:
     """The claim commit's message: a subject and one `key: value` line per
-    field, readable on GitHub and parsed by `parse_claim_message`."""
-    return f"claim {_clean(c['step'])}\n\n" + "\n".join(f"{k}: {_clean(c.get(k))}" for k in MSG_KEYS)
+    field, readable on GitHub and parsed by `parse_claim_message`. Origin is
+    public: the worktree is its folder name only, host and session are
+    digests (`host()`, `session_id()`)."""
+    pub = {**c, "worktree": os.path.basename(str(c.get("worktree") or "").rstrip("/"))}
+    return f"claim {_clean(c['step'])}\n\n" + "\n".join(f"{k}: {_clean(pub.get(k))}" for k in MSG_KEYS)
 
 
 def parse_claim_message(text: str) -> dict:
@@ -267,11 +289,12 @@ def _commits(top: str, shas: list) -> dict:
     return out
 
 
-def remote_claims(top: str):
+def remote_claims(top: str, timeout: float = NET_TIMEOUT_S):
     """([claim, ...], None) for every `claim/*` branch on origin, read with
     one `ls-remote` (the holders of claims not seen before are fetched as
-    objects, no ref written); ([], reason) when origin cannot be read."""
-    code, out, err = net(["ls-remote", "origin", CLAIM_REF + "*"], top)
+    objects, through `<ref>:` refspecs that store no ref); ([], reason)
+    when origin cannot be read."""
+    code, out, err = net(["ls-remote", "origin", CLAIM_REF + "*"], top, timeout)
     if code:
         return [], err or f"git ls-remote exited {code}"
     refs = {}
@@ -283,7 +306,7 @@ def remote_claims(top: str):
     missing = [s for s, sha in refs.items() if sha not in have]
     if missing:
         net(["fetch", "-q", "--no-tags", "--no-write-fetch-head", "origin",
-             *[CLAIM_REF + s for s in missing]], top)
+             *[f"{CLAIM_REF}{s}:" for s in missing]], top, timeout)
         have.update(_commits(top, [refs[s] for s in missing]))
     claims = []
     for step, sha in sorted(refs.items()):
@@ -766,7 +789,7 @@ def assess(step: dict, steps: list, live: list, me, branches: dict, here_branch:
 
 
 class Board:
-    def __init__(self, cwd=None, me=None, remote=True):
+    def __init__(self, cwd=None, me=None, remote=True, timeout=NET_TIMEOUT_S):
         rp = repo(cwd)
         if not rp:
             raise SystemExit("not in a git repository")
@@ -779,7 +802,8 @@ class Board:
         self.steps = load_steps(self.top, self.branches)
         self.times = plan_times(self.top)
         self.claims = read_claims(self.common)
-        self.remote, self.remote_err = remote_claims(self.top) if remote else ([], "not read")
+        self.remote, self.remote_err = (remote_claims(self.top, timeout) if remote
+                                        else ([], "not read"))
         self.split()
 
     def split(self):
@@ -934,6 +958,22 @@ def claim(sid: str, cwd=None, me=None, accept_overlap=False) -> dict:
             raise SystemExit(f"claim failed: could not push claim/{sid} to origin ({err}); "
                              "no claim taken")
         c["sha"] = sha
+        # Origin arbitrates one ref name; the one-session-per-section rule
+        # and Touches overlap span several. Read origin again: a rival that
+        # landed meanwhile means this claim backs off (both may; neither
+        # then holds twice) (review: two machines both won one section).
+        after, err2 = remote_claims(b.top)
+        procs = processes()
+        rivals = [x for x in after if x["sha"] != sha and not same_owner(x, b.me)
+                  and held(x, procs, b.me)
+                  and (claim_section(x) == c["section"]
+                       or overlap(c["touches"], (b.find(x["step"]) or {}).get("touches", [])))]
+        if err2 or rivals:
+            _push_delete(b.top, sid, sha)
+            raise ClaimRefused(f"claim refused: {sid} -- " + (
+                f"{rivals[0]['step']} was claimed on origin meanwhile by {who(rivals[0])}" if rivals
+                else f"origin could not be read again to check for a rival ({err2})") +
+                "; this claim was withdrawn")
         _write_claim(path, c)
     return c
 
@@ -1042,7 +1082,12 @@ def tracked(rel: str, steps: list):
         return {m.group(1)}, m.group(1)
     if rel in SHARED:
         return set(), ""
-    hits = [s for s in steps if s["state"] not in CLOSED and any(matches(rel, t) for t in s["touches"])]
+    done = {s["id"] for s in steps if s["state"] == "done"}
+    # Only a step someone could be working on fences: open, waiting on no
+    # one, its Needs done (review: waiting and blocked steps fenced tests/,
+    # control/ and web-twin/ while nobody could claim them).
+    hits = [s for s in steps if s["state"] not in CLOSED and not s["waits"]
+            and all(n in done for n in s["needs"]) and any(matches(rel, t) for t in s["touches"])]
     return {s["section"] for s in hits}, (hits[0]["id"] if hits else "")
 
 
@@ -1126,6 +1171,8 @@ def hook_edit(stdin_text: str) -> str:
             return ""
         procs = processes()
         me = owner(procs)
+        if me and data.get("session_id") and not os.environ.get("PICAR_CLAIM_PID"):
+            me = {**me, "session": _digest("s-", str(data["session_id"]))}   # the hook's own word
         hits = foreign_claims_on(rel, rp[1], procs, me)
         if hits:
             c = hits[0]
@@ -1205,16 +1252,30 @@ def push_refusals(base: str, sha: str, cwd=None, me=None) -> list:
     if not rp:
         return []
     top, common = rp
-    files = git("diff", "--name-only", "--no-renames", base, sha, cwd=top).splitlines()
+    r = subprocess.run(["git", "diff", "--name-only", "--no-renames", base, sha], cwd=top,
+                       capture_output=True, text=True)
+    if r.returncode:              # origin's dev is not here (moved since the fetch): the
+        return []                 # server refuses the push as non-fast-forward anyway
+    files = r.stdout.splitlines()
     procs = processes()
     me = me or owner(procs)
-    mine = [c for c in read_claims(common) if same_owner(c, me)]
     steps = quick_steps(top, ref=base, here=False)
+    fenced = [(f, *tracked(f, steps)) for f in files]
+    fenced = [x for x in fenced if x[1]]
+    if not fenced:
+        return []
+    # A claim counts only while origin still holds it as this session's
+    # (review: a claim freed with --force, or taken over, kept passing).
+    remote, err = remote_claims(top)
+    if err:
+        return [f"cannot read the claims on origin ({err}), so this session's claims cannot be "
+                "checked; push again"]
+    on_origin = {(c["step"], c["sha"]) for c in remote}
+    mine = [c for c in read_claims(common) if same_owner(c, me) and (c["step"], c.get("sha")) in on_origin]
     pushed = quick_steps(top, ref=sha, here=False)      # the pusher's own tables, as pushed
     out = []
-    for f in files:
-        secs, hint = tracked(f, steps)
-        if secs and not covered(f, secs, mine, pushed):
+    for f, secs, hint in fenced:
+        if not covered(f, secs, mine, pushed):
             out.append(f"{f}: section {', '.join(sorted(secs))}"
                        + (f" (open step {hint})" if STEP_ID_RE.fullmatch(hint) else " (its file)")
                        + f" -- claim it: {CLAIM_CMD} {hint}")
@@ -1225,7 +1286,7 @@ def hook_start(cwd=None) -> str:
     """The board for a new conversation, and what this session (or an
     earlier conversation of this process) already holds."""
     try:
-        b = Board(cwd)
+        b = Board(cwd, timeout=START_TIMEOUT_S)      # a session start never waits long
         board = cmd_board(short=True, b=b)
         mine = [c for c in b.live if same_owner(c, b.me)]
         earlier = [c for c in b.claims + b.stale
@@ -1242,9 +1303,9 @@ def hook_start(cwd=None) -> str:
     for c in earlier:
         if c["step"] not in seen:
             seen.add(c["step"])
-            head += (f"AN EARLIER CONVERSATION OF THIS CLAUDE PROCESS HOLDS {c['step']} "
-                     f"({c.get('title', '')[:60]}). `{CLAIM_CMD} {c['step']}` takes it over for this "
-                     f"one; `python3 tools/plan_claims.py release {c['step']}` gives it back.\n")
+            head += (f"ANOTHER CONVERSATION OF THIS CLAUDE PROCESS HOLDS {c['step']} "
+                     f"({c.get('title', '')[:60]}). It is not this session's: if that conversation "
+                     f"is over, ask the user to free it (`release --force {c['step']}`).\n")
     return (head + "Plan steps (PARALLEL-SESSIONS.md rules 8 and 12). Claim before working on the "
             "plan: `python tools/plan_section.py next`, then `claim <step>`; if refused, stop and "
             "report. Board:\n" + board)

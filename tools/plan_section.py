@@ -221,11 +221,13 @@ def cmd_new(slug: str, title: str) -> None:
             try:
                 _claims().claim(num, cwd=wt)
                 break
-            except SystemExit as e:
+            except BaseException as e:     # any failure: no branch or worktree left behind
                 git("worktree", "remove", "--force", wt, check=False, cwd=root)
                 git("branch", "-D", branch, check=False, cwd=root)
                 if not isinstance(e, _claims().ClaimRefused):
-                    raise SystemExit(f"new: {e}")
+                    if isinstance(e, SystemExit):
+                        raise SystemExit(f"new: {e}")
+                    raise
                 n += 1             # another machine holds 3.N on origin
                 continue
         git("branch", "-D", branch, check=False, cwd=root)
