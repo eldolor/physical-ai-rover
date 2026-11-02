@@ -698,7 +698,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         if ladder.check_level is None:
             return False
         holder = state["driver"]
-        return not (state["verbs_running"] and holder is not None
+        # A person's BODY verb (a pan or a goal awaiting the bridge drives
+        # nothing through ROS, and must not let nav2's goal through).
+        return not (batt["body_verbs"] and holder is not None
                     and driver_priority(holder) == DRIVER_MANUAL)
 
     def route_poll() -> None:
@@ -812,7 +814,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             robot.stop()
             time.sleep(0.05)
         batt["shutdown"].append({"step": "wheels", "t_s": round(time.monotonic() - t0, 3),
-                                 "rc": 0 if not commanded() else 1})
+                                 "rc": 0 if not (commanded() or batt["body_verbs"]) else 1})
         for name, cmd in battery_cfg["shutdown_steps"]:
             run_step(name, cmd, t0)
         try:
@@ -1120,7 +1122,6 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         # 3.137: a verb that moves the body keeps every battery reading off
         # "at rest" while it runs, and for BATTERY_REST_S after (a pan never).
         body = req.action in BODY_MOVES
-        outcome = None
         if body:
             with verbs_lock:
                 batt["body_verbs"] += 1
@@ -1129,10 +1130,11 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 outcome = _carry_out(req, driver, now, stops)
         finally:
             if body:
+                # Stamped first, whatever the outcome: a verb cut short may
+                # still have moved.
+                mark_moving()
                 with verbs_lock:
                     batt["body_verbs"] -= 1
-                if isinstance(outcome, dict) and outcome.get("executed"):
-                    mark_moving()
         if is_autonomy(driver) and isinstance(outcome, dict):
             # 3.84: a person's Stop latched by the time the brain's verb
             # ended -- it cut the verb, ended it before its first motion, or
