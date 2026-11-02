@@ -44,12 +44,23 @@ def is_forward(sp) -> bool:
     return sp is not None and all(v > FORWARD_M_S for v in sp)
 
 
-def wheels_zero_s(rows: list, t0: float) -> Optional[float]:
-    """Seconds from `t0` to the first sample at or after it with both
-    setpoints zero; None if they never were (inside the log)."""
-    for r in rows:
-        if r["t"] >= t0 and is_zero(r["sp"]):
-            return round(r["t"] - t0, 3)
+HOLD_ZERO_S = 0.5
+
+
+def wheels_zero_s(rows: list, t0: float, hold_s: float = HOLD_ZERO_S) -> Optional[float]:
+    """Seconds from `t0` to the first sample at or after it from which both
+    setpoints stay zero for `hold_s` (a zero that the next command undoes
+    is not a stop); the log must reach that far. None if they never did."""
+    after = [r for r in rows if r["t"] >= t0]
+    start = None                        # the first sample of the current run of zeros
+    for r in after:
+        if not is_zero(r["sp"]):
+            start = None
+            continue
+        if start is None:
+            start = r["t"]
+        if r["t"] >= start + hold_s:
+            return round(start - t0, 3)
     return None
 
 
@@ -76,7 +87,17 @@ def span(rows: list) -> Optional[list]:
 
 
 def gaps_s(rows: list, t0: float, t1: float) -> float:
-    """The longest hole in the log inside [t0, t1]: a recorder that stalled
-    cannot vouch for what happened in it."""
-    ts = [r["t"] for r in rows if t0 <= r["t"] <= t1]
-    return round(max((b - a for a, b in zip(ts, ts[1:])), default=math.inf if not ts else 0.0), 3)
+    """The longest hole in the log over [t0, t1], its edges included: a
+    recorder that stalled or died cannot vouch for what happened in it."""
+    ts = [t0] + [r["t"] for r in rows if t0 < r["t"] < t1] + [t1]
+    inside = [r for r in rows if t0 <= r["t"] <= t1]
+    if not inside:
+        return math.inf
+    return round(max(b - a for a, b in zip(ts, ts[1:])), 3)
+
+
+def forward_at(rows: list, t: float) -> Optional[bool]:
+    """Whether the board drove both wheels forward at the last sample at or
+    before `t` (None with no sample there)."""
+    before = [r for r in rows if r["t"] <= t]
+    return is_forward(before[-1]["sp"]) if before else None

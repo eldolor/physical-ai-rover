@@ -39,7 +39,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 import measure as m  # noqa: E402
-from stack import PY, Stack, StackError  # noqa: E402
+from stack import PY, Stack, StackError, http  # noqa: E402
 
 LIDAR_STALE_S = 0.3        # robot/lidar_ld19.py STALE_S
 FEEDBACK_STALE_S = 0.25    # robot/hardware_robot.py FEEDBACK_STALE_S
@@ -84,6 +84,8 @@ def judge(row: str, ms: dict) -> dict:
 
     if ms.get("fault_at") is None:
         return {"pass": False, "reasons": ["the fault was never injected (the robot never moved)"]}
+    if ms.get("forward_at_fault") is not True:
+        r.append("invalid: the board was not driving forward when the fault fired")
     bar(ms.get("truth_hole_s", 9) <= 0.2, f"truth log has a {ms.get('truth_hole_s')} s hole")
     bar(ms.get("contacts") == 0, f"{ms.get('contacts')} contact samples")
     z = ms.get("wheels_zero_s")
@@ -169,20 +171,22 @@ def recover(st: Stack, rec: dict) -> None:
     """The progress half (section 7.4): a new mission running, no person.
     The desktop restarts a killed role itself (systemd's job on the board)."""
     t0 = time.monotonic()
-    for role, starter in (("robot", st.start_robot), ("brain", st.start_brain)):
-        if not st.alive(role):
-            starter()
-            rec.setdefault("restarted", []).append(role)
     try:
+        for role, starter in (("robot", st.start_robot), ("brain", st.start_brain)):
+            if not st.alive(role):
+                starter()
+                rec.setdefault("restarted", []).append(role)
         if status(st).get("running"):
             st.brain("POST", "/mission/stop", {})
-            time.sleep(1.0)
+            end = time.monotonic() + 20       # a start waits for the ended runner's close
+            while status(st).get("running") and time.monotonic() < end:
+                time.sleep(0.5)
         st.robot("POST", "/autonomy/resume", {})
         start_mission(st)
         wait_forward(st, 60.0)
         rec["recovery_s"] = round(time.monotonic() - t0, 2)
-    except (StackError, OSError) as e:
-        rec["recovery_error"] = str(e)
+    except Exception as e:                 # noqa: BLE001 -- recovery is reported, not the row
+        rec["recovery_error"] = f"{type(e).__name__}: {e}"
 
 
 # --------------------------------------------------------------------- run
@@ -203,8 +207,12 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 dpad = subprocess.Popen([PY, str(HERE / "dpad_client.py"), st.urls["robot"], st.secret],
                                         stdout=open(out / "dpad.log", "w"), stderr=subprocess.STDOUT,
                                         start_new_session=True)
-            wait_forward(st)
-            time.sleep(0.15)               # well into the move, not its first sample
+            for _ in range(10):            # fire 0.15 s into a FORWARD that is still on
+                wait_forward(st)
+                time.sleep(0.15)
+                n = st.now()
+                if isinstance(n, dict) and m.is_forward(n.get("sp")):
+                    break
             t = time.monotonic()
             hold = spec.get("hold_s", 0.0)
             if row == "F6":
@@ -221,8 +229,9 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 time.sleep(hold)
                 ms["cont_at"] = st.signal("lidar", signal.SIGCONT)
             elif row == "F10":
-                code, body = __import__("stack").http(
-                    "POST", f"{st.urls['body']}/fmea/silence?s={hold}")
+                code, body = http("POST", f"{st.urls['body']}/fmea/silence?s={hold}")
+                if code != 200 or not isinstance(body, dict):
+                    raise StackError(f"the body refused the silence: {code} {str(body)[:200]}")
                 t = body["silent_from"]
                 time.sleep(hold + 0.2)
                 ms["cont_at"] = body["silent_until"]
@@ -251,21 +260,26 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                                     "max_dt_s": h1["wheel_loop"]["max_dt_s"]}
                 ms["last_refusal"] = h1.get("last_refusal")
             recover(st, rec)
-        except StackError as e:
-            rec["error"] = str(e)
+        except Exception as e:             # noqa: BLE001 -- recorded, never a lost result
+            rec["error"] = f"{type(e).__name__}: {e}"
         finally:
             if dpad is not None and dpad.poll() is None:
                 os.killpg(dpad.pid, signal.SIGKILL)
     rows = m.read_truth(out / "truth.jsonl") if (out / "truth.jsonl").exists() else []
     t = ms["fault_at"]
     if t is not None:
+        ms["forward_at_fault"] = m.forward_at(rows, t)
         ms["wheels_zero_s"] = m.wheels_zero_s(rows, t)
         ms["travel_cm"] = m.travel_cm(rows, t, t + WATCH_S)
-        ms["truth_hole_s"] = m.gaps_s(rows, t - 1.0, t + WATCH_S)
-        if "cont_at" in ms:
+        holes = [m.gaps_s(rows, t - 1.0, t + WATCH_S)]      # every window a bar reads
+        if row in ("F9", "F10"):
             stale = LIDAR_STALE_S if row == "F9" else FEEDBACK_STALE_S
             ms["travel_stale_cm"] = m.travel_cm(rows, t + stale, ms["cont_at"])
+            holes.append(m.gaps_s(rows, t, ms["cont_at"]))
+        if row == "F7":
             ms["drive_after_cont"] = m.nonzero_after(rows, ms["cont_at"], ms["cont_at"] + 10.0)
+            holes.append(m.gaps_s(rows, ms["cont_at"], ms["cont_at"] + 10.0))
+        ms["truth_hole_s"] = max(holes)
     ms["contacts"] = m.contacts(rows)
     ms["truth_span"] = m.span(rows)
     if mw.rows:

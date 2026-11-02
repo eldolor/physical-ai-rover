@@ -227,8 +227,10 @@ def push_checkout(sha: str, run: Callable[..., str] = ssh, bench_dir: str = BENC
     `bench-3136` by default; 3.135 passes `bench-3135`), a git checkout, on
     a board branch of the same name. Returns the board's `git rev-parse
     HEAD` there (must equal `sha`)."""
-    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", bench_dir):
-        raise BoardError(f"bench_dir {bench_dir!r}: a plain directory name only")
+    # A plain name starting `bench-`: never the board's service worktree or
+    # its repo, which a forced checkout here would detach under the twin.
+    if not re.fullmatch(r"bench-[A-Za-z0-9._-]+", bench_dir):
+        raise BoardError(f"bench_dir {bench_dir!r}: a plain directory name starting 'bench-' only")
     full = subprocess.run(["git", "rev-parse", sha], cwd=ROOT, capture_output=True, text=True,
                           check=True).stdout.strip()
     # Our own ref on the board's repo; `+` because the bench ref moves with each commit tested.

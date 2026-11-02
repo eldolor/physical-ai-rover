@@ -70,7 +70,10 @@ def recorder(path: Path) -> None:
                    "gap_cm": None if gap is None or math.isinf(gap) else round(gap, 2)}
             latest.clear()
             latest.update(row)
-            f.write(json.dumps(row) + "\n")
+            try:
+                f.write(json.dumps(row) + "\n")
+            except OSError as e:                # a hole in the log, never a dead recorder
+                print(f"truth write failed: {e}", file=sys.stderr, flush=True)
             nxt += PERIOD_S
             time.sleep(max(0.0, nxt - time.monotonic()))
 

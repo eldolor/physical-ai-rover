@@ -187,7 +187,7 @@ def test_board_run_restores_even_when_the_command_breaks_the_board(monkeypatch, 
     monkeypatch.setenv("PICAR_BOARD_TOKEN", "t0k")
     b = FakeBoard()
 
-    def push(sha, run):
+    def push(sha, run, bench_dir=br.BENCH_DIR):
         return "f" * 40
 
     def bad_cmd_board(cmd, check=True, timeout=0, input=None):
@@ -207,7 +207,7 @@ def test_board_run_restores_even_when_the_command_breaks_the_board(monkeypatch, 
 def test_board_run_passes_the_token_to_the_board_command(monkeypatch, tmp_path):
     monkeypatch.setenv("PICAR_BOARD_TOKEN", "t0k")
     b = FakeBoard()
-    rec = runner.board_run("x", "echo hi", tmp_path, run=b, push=lambda s, r: "f" * 40,
+    rec = runner.board_run("x", "echo hi", tmp_path, run=b, push=lambda s, r, bench_dir=None: "f" * 40,
                            fetch=lambda *a: None, sampler_cls=FakeSampler)
     cmd = next(c for c in b.cmds if "echo hi" in c)
     assert "PICAR_BOARD_TOKEN=t0k" in cmd and rec["cmd_exit"] == 0 and rec["left_as_found"]

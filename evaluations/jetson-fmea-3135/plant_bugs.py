@@ -46,11 +46,15 @@ def summarise(row: str, base: dict, planted: dict) -> dict:
         ms = r.get("measures") or {}
         return {k: ms.get(k) for k in keys if k in ms}
 
-    caught = (not planted["verdict"]["pass"]) and "error" not in planted
+    def clean(r):                          # a run that errored or was invalid proves nothing
+        return r.get("error") is None and not any(
+            x.startswith("invalid") for x in r["verdict"]["reasons"])
+
+    caught = (not planted["verdict"]["pass"]) and clean(planted)
     # Caught is criterion 4 as written. It tells the guard apart only if the
     # shipped build passes the same row: a row whose base fails too (its guard
     # does not hold today) is caught but proves nothing about the harness.
-    discriminates = caught and base["verdict"]["pass"] and "error" not in base
+    discriminates = caught and base["verdict"]["pass"] and clean(base)
     return {"row": row, "plant": fmea.ROWS[row]["plant"], "reading": fmea.ROWS[row]["reading"],
             "base": {"pass": base["verdict"]["pass"], "reasons": base["verdict"]["reasons"],
                      "error": base.get("error"), "recovery_s": base.get("recovery_s"), **pick(base)},

@@ -56,8 +56,7 @@ def board_run(label: str, board_cmd: str, out: Path, *, sha: str = "HEAD",
     (out / "as_found.json").write_text(json.dumps(before, indent=1))
     sampler = None
     try:
-        rec["sha"] = (push(sha, run) if bench_dir == br.BENCH_DIR
-                      else push(sha, run, bench_dir=bench_dir))
+        rec["sha"] = push(sha, run, bench_dir=bench_dir)
         if stop_twin:
             br.stop_twin(run, allow_sudo=allow_sudo)
         sampler = sampler_cls(f"~/{board_out}/telemetry", run)

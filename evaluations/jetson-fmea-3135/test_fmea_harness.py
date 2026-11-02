@@ -32,12 +32,16 @@ def log(samples):
     return [{"t": t, "x": x, "y": 0.0, "th": 0.0, "sp": sp, "gap_cm": 50.0} for t, x, sp in samples]
 
 
-def test_wheels_zero_is_the_first_zero_setpoint_at_or_after_the_fault():
+def test_wheels_zero_is_the_first_zero_that_holds_half_a_second():
     rows = log([(0.0, 0.0, [0.3, 0.3]), (0.5, 0.15, [0.3, 0.3]), (1.0, 0.3, [0.0, 0.0]),
-                (1.5, 0.3, [0.1, -0.1])])
-    assert m.wheels_zero_s(rows, 0.4) == 0.6
-    assert m.wheels_zero_s(rows, 1.2) is None          # a turn later is not zero
+                (1.2, 0.3, [0.3, 0.3]), (1.4, 0.3, [0.0, 0.0]), (1.7, 0.3, [0.0, 0.0]),
+                (1.9, 0.3, [0.0, 0.0]), (2.5, 0.3, [0.1, -0.1])])
+    assert m.wheels_zero_s(rows, 0.4) == 1.0           # 1.0 was undone at 1.2; 1.4 holds
+    assert m.wheels_zero_s(rows, 2.0) is None           # a turn later is not zero
+    assert m.wheels_zero_s(rows[:6], 0.4) is None       # the log ends before it held
     assert m.is_forward([0.3, 0.3]) and not m.is_forward([0.1032, -0.1032])
+    assert m.forward_at(rows, 0.7) is True and m.forward_at(rows, 1.1) is False
+    assert m.forward_at(rows, -1) is None
 
 
 def test_travel_contacts_and_holes():
@@ -47,6 +51,8 @@ def test_travel_contacts_and_holes():
     rows[2]["gap_cm"] = 0.4
     assert m.contacts(rows) == 1 and m.contacts(rows, 0.5) == 0
     assert m.gaps_s(rows, 0.0, 1.0) == 0.7
+    assert m.gaps_s(rows, 0.0, 3.0) == 2.1                # a log that stops early has a hole
+    assert m.gaps_s(rows, 5.0, 6.0) == float("inf")
     assert m.nonzero_after(log([(1, 0, [0.1, 0.1]), (2, 0, [0, 0])]), 0, 3) == 1
 
 
@@ -57,7 +63,7 @@ def test_truth_reader_skips_a_line_cut_by_the_kill(tmp_path):
     assert [r["t"] for r in m.read_truth(p)] == [1, 2]
 
 
-GOOD = {"fault_at": 10.0, "truth_hole_s": 0.02, "contacts": 0, "wheels_zero_s": 0.3,
+GOOD = {"fault_at": 10.0, "forward_at_fault": True, "truth_hole_s": 0.02, "contacts": 0, "wheels_zero_s": 0.3,
         "travel_cm": 5.0, "travel_stale_cm": 0.5, "drive_after_cont": 0,
         "no_feedback_refusals": 1, "outcome": "failed"}
 
@@ -80,6 +86,7 @@ def test_a_run_inside_every_bar_passes(row):
     ("F13", {"contacts": 2}, "2 contact"),
     ("F9", {"truth_hole_s": 0.5}, "hole"),
     ("F6", {"fault_at": None}, "never injected"),
+    ("F13", {"forward_at_fault": False}, "invalid"),
 ])
 def test_each_broken_bar_fails_its_row(row, change, reason):
     v = fmea.judge(row, {**GOOD, **change})
@@ -112,6 +119,8 @@ def test_plant_summary_catches_only_a_planted_run_that_fails_cleanly():
     assert not plant.summarise("F13", ok, {**bad, "error": "stack died"})["caught"]
     s = plant.summarise("F9", bad, bad)                  # caught, but the base fails too
     assert s["caught"] and not s["discriminates"]
+    invalid = {"verdict": {"pass": False, "reasons": ["invalid: not driving"]}, "measures": {}}
+    assert not plant.summarise("F13", ok, invalid)["caught"]
 
 
 # ------------------------------------------------- the board, faked (criterion 5)
@@ -166,12 +175,12 @@ def test_board_run_uses_this_sections_checkout_and_leaves_the_board_as_found(mon
 def test_3136s_default_checkout_is_unchanged(monkeypatch, tmp_path):
     monkeypatch.setenv("PICAR_BOARD_TOKEN", "t0k")
     b = FakeBoard()
-    rec = perf_run.board_run("x", "true", tmp_path, run=b, push=lambda s, r: "f" * 40,
+    rec = perf_run.board_run("x", "true", tmp_path, run=b, push=lambda s, r, bench_dir: "f" * 40,
                              fetch=lambda *a: None, sampler_cls=FakeSampler)
     assert rec["board_out"].startswith("bench-3136/") and br.BENCH_DIR == "bench-3136"
 
 
 def test_push_checkout_refuses_a_bench_dir_that_is_not_a_plain_name():
-    for bad in ("../x", "a b", "x;rm", "", "-x"):
+    for bad in ("../x", "a b", "x;rm", "", "-x", "vision-picar-service", "vision-picar", "bench-a/b"):
         with pytest.raises(br.BoardError):
             br.push_checkout("HEAD", run=lambda *a, **k: "", bench_dir=bad)
