@@ -98,6 +98,7 @@ def test_a_run_inside_every_bar_passes(row):
     ("F6", {"fault_at": None}, "never injected"),
     ("F13", {"forward_at_fault": False}, "invalid"),
     ("F8", {"gap_unknown": 3}, "contact unjudged"),
+    ("F8", {"gap_unknown": None}, "contact unjudged"),
 ])
 def test_each_broken_bar_fails_its_row(row, change, reason):
     v = fmea.judge(row, {**GOOD, **change})

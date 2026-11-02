@@ -88,7 +88,7 @@ def judge(row: str, ms: dict) -> dict:
     valid = ms.get("forward_at_fault") is True
     if not valid:
         r.append("invalid: the board was not driving forward when the fault fired")
-    bar(ms.get("gap_unknown", 0) == 0, f"{ms.get('gap_unknown')} truth samples with no gap (contact unjudged)")
+    bar(ms.get("gap_unknown", 1) == 0, f"{ms.get('gap_unknown')} truth samples with no gap (contact unjudged)")
     bar(ms.get("truth_hole_s", 9) <= 0.2, f"truth log has a {ms.get('truth_hole_s')} s hole")
     bar(ms.get("contacts") == 0, f"{ms.get('contacts')} contact samples")
     z = ms.get("wheels_zero_s")
@@ -203,9 +203,10 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
            "house": house, "host": os.uname().nodename, "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
     ms: dict = {"fault_at": None}
     dpad = None
-    mw, st = MemWatch(), Stack(out, house=house, plant=plant)
+    mw, st = MemWatch(), None
     with mw:
         try:
+            st = Stack(out, house=house, plant=plant)
             st.start()                     # a stack that will not start is a recorded error
             h0 = robot_health(st)
             if spec["mover"] == "mission":
@@ -274,7 +275,8 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
         finally:
             if dpad is not None and dpad.poll() is None:
                 os.killpg(dpad.pid, signal.SIGKILL)
-            st.stop()
+            if st is not None:
+                st.stop()
     rows = m.read_truth(out / "truth.jsonl") if (out / "truth.jsonl").exists() else []
     t = ms["fault_at"]
     if t is not None:
@@ -289,8 +291,8 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
         if row == "F7":
             ms["drive_after_cont"] = m.nonzero_after(rows, ms["cont_at"], ms["cont_at"] + 10.0)
             holes.append(m.gaps_s(rows, ms["cont_at"], ms["cont_at"] + 10.0))
-        sp = m.span(rows)
-        holes.append(m.gaps_s(rows, sp[0], sp[1]))           # contacts read the whole log
+        sp = m.span(rows)                                    # contacts read the whole log
+        holes.append(m.gaps_s(rows, sp[0], sp[1]) if sp else float("inf"))
         ms["truth_hole_s"] = max(holes)
     ms["contacts"] = m.contacts(rows)
     ms["gap_unknown"] = sum(1 for r in rows if r.get("gap_cm") is None)

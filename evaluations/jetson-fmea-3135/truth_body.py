@@ -12,7 +12,8 @@ simulator's, never the code under test.
   wheel setpoints in m/s (`sp`, what the firmware drives) and `gap_cm`, the
   chassis' true distance to the nearest wall or solid object
   (`tests/footprint_sweep.py`'s ground truth, which shares no code with what
-  it judges; < 1 cm is a contact, its G bar).
+  it judges; < 1 cm is a contact, its G bar; 999 when nothing is within its
+  2.5-cell look, null only if the geometry raised).
 * `GET /fmea/now`: the newest sample (the injectors wait on it for motion).
 * `POST /fmea/silence?s=5`: the board stops sending its `T:1001` feedback
   frames for `s` seconds (the firmware copy's own `silent_until`): F10.
@@ -36,6 +37,7 @@ sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 
 PERIOD_S = 0.02
+FAR_CM = 999.0
 PLANTS = {p for p in os.environ.get("FMEA_PLANT", "").split(",") if p}
 CELL_M = 0.30
 
@@ -55,7 +57,7 @@ latest: dict = {}
 
 
 def recorder(path: Path) -> None:
-    with open(path, "a", buffering=1) as f:
+    with open(path, "w", buffering=1) as f:     # one stack, one log
         nxt = time.monotonic()
         while True:
             with board.lock:                    # one instant; held only to copy it
@@ -66,11 +68,13 @@ def recorder(path: Path) -> None:
             try:                                # the geometry outside the board's lock
                 gap = fs.truth(SimpleNamespace(x=x, y=y, theta=th, layout=grid.layout,
                                                solid_cells=solid))[1]
-            except Exception:                   # noqa: BLE001
+            except Exception:                   # noqa: BLE001 -- null: contact unjudged
                 gap = None
             row = {"t": round(t, 4), "x": round(x * CELL_M, 5), "y": round(y * CELL_M, 5),
                    "th": round(th, 5), "sp": sp,
-                   "gap_cm": None if gap is None or math.isinf(gap) else round(gap, 2)}
+                   # footprint_sweep looks 2.5 cells out: inf is "nothing that
+                   # near", written as FAR_CM; null only when it raised.
+                   "gap_cm": None if gap is None else FAR_CM if math.isinf(gap) else round(gap, 2)}
             latest.clear()
             latest.update(row)
             try:
