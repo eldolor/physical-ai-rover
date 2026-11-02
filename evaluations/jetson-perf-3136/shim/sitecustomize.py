@@ -19,7 +19,7 @@ or class (so every caller sees the wrapper, `from x import f` included):
 One JSON line per call: `{"k", "t0", "t1", "tid", "pid"}` (epoch seconds,
 the calling thread). Nothing in brain/ or control/ is edited.
 
-Criterion 3: PERF_SHIM_PLANT="segment,walk" (any kinds) sleeps
+Criterion 3: PERF_SHIM_PLANT="segment,walk" (any kinds) busy-waits
 PERF_SHIM_PLANT_S (0.1) inside the wrapped call, before the real one, so
 `plant_room.py` can check that the timing reads it back.
 
@@ -62,7 +62,11 @@ def _timed(kind: str, fn):
         t0 = time.time()
         try:
             if kind in _PLANT:
-                time.sleep(_PLANT_S)
+                # A busy wait, not a sleep (amendment 3): a sleeping core
+                # drops its clock, and the real call after it ran slower.
+                end = time.perf_counter() + _PLANT_S
+                while time.perf_counter() < end:
+                    pass
             return fn(*a, **k)
         finally:
             _write(kind, t0, time.time())

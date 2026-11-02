@@ -44,7 +44,8 @@ import scorers  # noqa: E402
 from plant import DELAY_MS, TOL, verdict  # noqa: E402
 
 PY = sys.executable
-IMAGE = os.environ.get("ROS_IMAGE", "vision-picar-ros:latest")
+# The board runs :latest; `plan_section.py env` sets ROS_IMAGE to a branch tag.
+IMAGE = os.environ.get("PLANT_ROS_IMAGE", "vision-picar-ros:latest")
 HOUSES = (12, 2, 9, 0, 4, 10, 15, 18, 3, 5, 11, 13)
 
 
