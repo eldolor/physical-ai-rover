@@ -122,6 +122,29 @@ safety:
   # hardware-day pre-flight, same day as robot/safety.py's CHASSIS_WIDTH_CM.
   sensor_to_bumper_cm: 0.0
 
+# 3.137: the battery ladder, decided in the robot server on the motor board's
+# `v` (robot/battery_ladder.py). Each level needs two distinct board samples
+# under it; at Reserve and Power-off a sample read with the wheels turning is
+# read again at rest first. Volts are placeholders until 3.137.E measures the
+# Rover's discharge curve (confirmed by the user 2026-11-01).
+#   Low: reported; no mission may start (the brain's battery_floor_v ends one).
+#   Reserve: all autonomy refused; a person may drive at reserve_speed (0-100).
+#   Power-off: 10.0 V, or Reserve held reserve_max_s: nothing may drive; the
+#     shutdown steps run in order, then poweroff_cmd, once.
+battery:
+  low_v: 10.5
+  reserve_v: 10.2
+  poweroff_v: 10.0
+  reserve_max_s: 120
+  reserve_speed: 30
+  # [name, shell command] pairs, run in order before the power-off (each up
+  # to 60 s): the brain's mission, ROS, the local VLM. Set on the board by
+  # 3.137.C. BATTERY_SHUTDOWN_CMDS (a JSON list of pairs) overrides.
+  shutdown_steps: []
+  # null: `systemctl poweroff` in mode: hardware, nothing (a logged stub)
+  # in every other mode. BATTERY_POWEROFF_CMD overrides; "" is the stub.
+  poweroff_cmd: null
+
 server:
   # Origins allowed to call robot/server.py's HTTP API (e.g. the web
   # twin). "*" is fine for a server that only ever binds to a local/LAN

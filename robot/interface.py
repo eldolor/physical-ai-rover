@@ -132,6 +132,21 @@ class StoppedByPerson(Preempted):
     runner ends it `cancelled` with `cancelled_by: "stop"`, not "dpad"."""
 
 
+# 3.137: the battery ladder's refusals, by name. At Reserve every autonomous
+# command is refused (a person may still drive, slowly, to the charger); at
+# Power-off every command that moves the robot is. `battery_check` holds
+# autonomy for a moment while a low reading is read again at rest.
+BATTERY_RESERVE = "battery_reserve"
+BATTERY_POWEROFF = "battery_poweroff"
+BATTERY_CHECK = "battery_check"
+
+
+class BatteryReserve(Preempted):
+    """The robot server's battery ladder refused autonomy (3.137): the pack
+    is at Reserve or the robot is powering off. Never retried: the runner
+    ends the mission `out_of_budget`, the battery its budget (3.70 E4)."""
+
+
 
 # ---------- the depth grid (phase M2, PLAN-microduck-transplants.md) ----------
 #

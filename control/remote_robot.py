@@ -38,7 +38,8 @@ from typing import Optional
 
 import httpx
 
-from robot.interface import (PERSON_STOP, Preempted, RobotInterface, StoppedByPerson,
+from robot.interface import (BATTERY_POWEROFF, BATTERY_RESERVE, PERSON_STOP, BatteryReserve,
+                             Preempted, RobotInterface, StoppedByPerson,
                              unusable_battery, unusable_grid, unusable_scan,
                              unusable_wheels, unusable_odometry)
 from robot.safety import SafetyViolation
@@ -265,6 +266,10 @@ class RemoteRobot(RobotInterface):
                 # 3.84: a person's Stop latched autonomy off -- the end of
                 # the mission, `cancelled` by that Stop.
                 raise StoppedByPerson(detail)
+            if body.get("reason") in (BATTERY_RESERVE, BATTERY_POWEROFF):
+                # 3.137: the battery ladder took autonomy away -- the end of
+                # the mission, `out_of_budget`, never a veto to retry.
+                raise BatteryReserve(f"{body['reason']}: {detail}")
             if body.get("reason") == "preempted":
                 raise Preempted(detail)
             if body.get("reason") == "ros_unavailable":

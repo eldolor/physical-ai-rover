@@ -959,6 +959,24 @@ def create_app(
             state["robot"] = make_robot()
         return state["robot"]
 
+    def battery_too_low(r: RobotInterface) -> Optional[str]:
+        """3.137: why a mission may not start on this battery, or None."""
+        try:
+            reading = r.get_battery() or {}
+        except Exception as e:  # noqa: BLE001 -- see start_mission
+            logger.warning("battery unreadable at mission start: %s", e)
+            return None
+        level = reading.get("level")
+        if level in ("low", "reserve", "poweroff"):
+            return (f"battery_low: the robot server reads the battery at {level} "
+                    f"({reading.get('v')} V) -- charge it before a mission")
+        v = reading.get("v") if reading.get("usable") else None
+        floor = config["battery_floor_v"]
+        if floor and isinstance(v, (int, float)) and v < floor:
+            return (f"battery_low: {v} V, under the {floor:g} V floor -- "
+                    "charge it before a mission")
+        return None
+
     def world() -> WorldInterface:
         """The world client, built once, and never able to stop a mission.
 
@@ -1072,6 +1090,14 @@ def create_app(
         build = state["building"] = {"stopped": False}
         lifted = None
         try:
+            # 3.137: no autonomous mission starts on a low battery -- the
+            # robot server's ladder at Low or worse, or a reading under this
+            # brain's own floor. Before a person's Stop is lifted, so a
+            # refused start leaves it as it was. An unreadable battery is no
+            # refusal: the floor guards a battery the brain can see (E4).
+            why = await asyncio.to_thread(battery_too_low, robot())
+            if why:
+                raise HTTPException(status_code=409, detail=why)
             # 3.84: a person pressed Start, so a person's earlier Stop no
             # longer latches the brain out. Lifted FIRST, before the build: a
             # D-pad Stop pressed while the mission is set up latches it again,

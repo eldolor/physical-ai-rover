@@ -161,8 +161,14 @@ class MockRobot(RobotInterface):
         render_width: int = renderer.DEFAULT_WIDTH,
         render_height: int = renderer.DEFAULT_HEIGHT,
         encoder_scale: tuple = (1.0, 1.0),
+        battery=None,
     ):
         self.world = world
+        # 3.137: a `sim/battery.py` pack on the simulator's clock, or None
+        # (the default): no battery to report, as before. The factory gives
+        # one only when SIM_BATTERY_V is set, so the plain simulator can run
+        # the battery ladder in process.
+        self.battery = battery
         self.realtime = realtime
         # R5's opt-in odometry drift (`sim.odom_drift`): what each ENCODER
         # reports, as a multiple of what its wheel actually turned. The robot
@@ -255,7 +261,15 @@ class MockRobot(RobotInterface):
             left, right = left * k, right * k
         self._cmd_left_rad_s = left
         self._cmd_right_rad_s = right
+        if self.battery is not None:
+            self.battery.driving(left != 0 or right != 0)
         return self.get_wheel_state()
+
+    def get_battery(self) -> dict:
+        """The simulated pack (3.137), when this body was given one."""
+        if self.battery is None:
+            return super().get_battery()
+        return {"usable": True, "v": round(self.battery.read(), 2)}
 
     def step(self, dt: float) -> dict:
         """Integrate the standing wheel command for `dt` seconds.
@@ -514,6 +528,8 @@ class MockRobot(RobotInterface):
         """
         self._cmd_left_rad_s = 0.0
         self._cmd_right_rad_s = 0.0
+        if self.battery is not None:
+            self.battery.driving(False)
         self.stop_count += 1
         self.world._record("STOP")
         return {"action": "stop"}
