@@ -1478,21 +1478,33 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
   // does, and why it stopped after.
   //
   // Its own timer chain, one request at a time: 5 s while the pack is fine
-  // (a level change shows within 6 s, B1), 1 s once it is not (the
-  // countdown, and the power-off's last word before the robot goes quiet).
-  // Power-off is remembered per robot server (PREF.batteryPoweroff): the
-  // board powers off seconds later, and "unplug the battery" must outlive
-  // the robot's silence, and a reload (B2). Only that same server answering
-  // another level clears it.
+  // or Low (a level change shows within 6 s, B1), 1 s at Reserve and
+  // Power-off (the countdown, and the last word before the robot goes
+  // quiet), 15 s while nothing answers and nothing is shown.
+  //
+  // What outlives the robot's silence (B2): a level is kept through missed
+  // reads (a slow tunnel must not flicker it, nor re-announce it); a Low
+  // nobody has confirmed for BATTERY_STALE_MS is no longer claimed; a
+  // Reserve whose countdown has run out IS a Power-off -- the ladder latches
+  // Reserve and powers off at the end of it whatever happens -- so a page
+  // that was hidden, or lost the robot, through the end still says "unplug
+  // the battery". Power-off is remembered per robot server
+  // (PREF.batteryPoweroff), across reloads, and is cleared only when the
+  // same server answers another level with a settled reading (two samples:
+  // a robot just booted on a spent pack reads `ok` until it has them).
   const BATTERY_POLL_OK_MS = 5000;
   const BATTERY_POLL_NEAR_MS = 1000;
+  const BATTERY_POLL_UNANSWERED_MS = 15000;
   const BATTERY_FETCH_TIMEOUT_MS = 3000;
+  const BATTERY_STALE_MS = 15000;
   const BATTERY_LEVELS = { ok: true, low: true, reserve: true, poweroff: true };
   let batteryGen = 0, batteryInFlight = false, batteryAnnounced = "ok";
 
   function batteryInterval() {
-    const level = state.battery ? state.battery.level : "ok";
-    return level === "ok" ? BATTERY_POLL_OK_MS : BATTERY_POLL_NEAR_MS;
+    const b = state.battery;
+    if (!b) return BATTERY_POLL_UNANSWERED_MS;
+    return b.level === "reserve" || b.level === "poweroff" ? BATTERY_POLL_NEAR_MS
+      : BATTERY_POLL_OK_MS;
   }
 
   function scheduleBatteryPoll(ms) {
@@ -1511,11 +1523,14 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     // What is known before the first answer: this server's remembered
     // Power-off, or nothing (another server's level is not this one's).
     if (!state.battery || state.battery.url !== url) {
-      state.battery = url && prefGet(PREF.batteryPoweroff) === url
-        ? { url: url, level: "poweroff", v: null, ladder: {}, readAt: 0, stale: true } : null;
+      state.battery = url && prefGet(PREF.batteryPoweroff) === url ? remembered(url) : null;
       renderBattery();
     }
     pollBattery();
+  }
+
+  function remembered(url) {
+    return { url: url, level: "poweroff", v: null, ladder: {}, readAt: 0, answeredAt: 0 };
   }
 
   async function pollBattery() {
@@ -1537,8 +1552,14 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
         if (res.ok) body = await res.json();
       } catch (e) { /* not answered: below */ }
       if (gen !== batteryGen || url !== state.serverUrl) return;
-      if (body && typeof body === "object") applyBattery(url, body);
-      else batteryUnanswered(url);
+      // A reading names one of the ladder's levels; anything else (a server
+      // before 3.137, a level this page does not know) is no reading.
+      if (body && typeof body === "object"
+          && Object.prototype.hasOwnProperty.call(BATTERY_LEVELS, body.level)) {
+        applyBattery(url, body);
+      } else {
+        batteryUnanswered(url);
+      }
     } finally {
       clearTimeout(timer);
       batteryInFlight = false;
@@ -1548,28 +1569,38 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
   }
 
   function applyBattery(url, body) {
-    const level = Object.prototype.hasOwnProperty.call(BATTERY_LEVELS, body.level)
-      ? body.level : "ok";               // a server before 3.137 sends none
     const ladder = body.ladder && typeof body.ladder === "object" ? body.ladder : {};
-    state.battery = { url: url, level: level, ladder: ladder, readAt: performance.now(),
+    const prev = state.battery && state.battery.url === url ? state.battery : null;
+    const wasOff = (prev && prev.level === "poweroff") || prefGet(PREF.batteryPoweroff) === url;
+    // Two distinct samples (robot/battery_ladder.py READINGS); a server
+    // that does not say is read as settled.
+    const settled = typeof ladder.samples !== "number" || ladder.samples >= 2;
+    let level = body.level;
+    if (level !== "poweroff" && wasOff && !settled) level = "poweroff";   // not yet known
+    const now = performance.now();
+    state.battery = { url: url, level: level, readAt: now, answeredAt: now,
+                      ladder: level === body.level ? ladder : (prev ? prev.ladder : {}),
                       v: typeof body.v === "number" && body.usable !== false ? body.v : null };
     if (level === "poweroff") prefSet(PREF.batteryPoweroff, url);
     else if (prefGet(PREF.batteryPoweroff) === url) prefSet(PREF.batteryPoweroff, "");
     renderBattery();
   }
 
-  // No answer (the robot is off, or out of reach), or an answer that is not
-  // a reading (a wrong secret, a server before 3.137): only a Power-off
-  // stays; any other level is no longer known, so it is not shown.
+  // No reading: the robot is off, out of reach, or answered something else
+  // (a wrong secret, an error). See the rules above.
   function batteryUnanswered(url) {
-    const b = state.battery;
-    const latched = (b && b.url === url && b.level === "poweroff")
-      || prefGet(PREF.batteryPoweroff) === url;
-    state.battery = latched
-      ? Object.assign({ v: null, ladder: {}, readAt: 0 },
-                      b && b.url === url && b.level === "poweroff" ? b : {},
-                      { url: url, level: "poweroff", stale: true })
-      : null;
+    const b = state.battery && state.battery.url === url ? state.battery : null;
+    if (prefGet(PREF.batteryPoweroff) === url && (!b || b.level !== "poweroff")) {
+      state.battery = remembered(url);
+    } else if (b && b.level === "reserve" && batteryCountdown(b) === 0) {
+      state.battery = Object.assign({}, b, { level: "poweroff", ladder: {} });
+      prefSet(PREF.batteryPoweroff, url);
+    } else if (b && (b.level === "low" || (b.level === "reserve" && batteryCountdown(b) == null))
+               && performance.now() - b.answeredAt > BATTERY_STALE_MS) {
+      state.battery = null;
+    } else if (!b || b.level === "ok") {
+      state.battery = null;
+    }
     renderBattery();
   }
 
@@ -1593,6 +1624,13 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
       poweroff: batteryVolts(lv.poweroff),
       checking: b.ladder.checking ? t("battery.checking", {level: b.ladder.checking}) : "",
     });
+  }
+
+  // A power-off step as Engineer mode reads it: rc None is a step that
+  // timed out or could not run (robot/server.py run_step()).
+  function batteryStep(st) {
+    if (st.stub) return st.step + " stub";
+    return st.step + (st.rc == null ? " failed" : " rc " + st.rc);
   }
 
   function renderBattery() {
@@ -1619,9 +1657,7 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
       if (s != null && s > 0) state.batteryTickId = setTimeout(renderBattery, 1000);
     } else if (level === "poweroff") {
       title = t("battery.poweroffTitle");
-      const steps = (b.ladder.shutdown || []).map(function (st) {
-        return st.step + " " + (st.stub ? "stub" : "rc " + st.rc);
-      }).join(", ");
+      const steps = (b.ladder.shutdown || []).map(batteryStep).join(", ");
       body = t("battery.poweroffBody", {why: b.ladder.poweroff_why || "?", steps: steps || "none yet"});
       say = t("battery.announcePoweroff");
     }
@@ -1636,11 +1672,14 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     }
   }
 
-  // A start refused because the battery is low (the brain's 409
-  // `battery_low: ...`): said for a person; Engineer mode keeps the reason.
+  // A start refused at the battery (the brain's 409 `battery_low: ...`),
+  // said for a person: a low pack, or a low reading being read again at rest
+  // (control/brain_server.py; that one passes in a moment). Engineer mode
+  // keeps the brain's reason.
   function batteryStartWords(e) {
     const msg = (e && e.message) || "";
-    return /^battery_low:/.test(msg) ? t("mission.batteryLow", {why: msg}) : null;
+    if (!/^battery_low:/.test(msg)) return null;
+    return t(/again at rest/.test(msg) ? "mission.batteryCheck" : "mission.batteryLow", {why: msg});
   }
 
   document.addEventListener("visibilitychange", function () {

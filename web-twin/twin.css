@@ -38,7 +38,11 @@ body.env-flagged .tab-bar { border-top: 2px solid var(--accent-alert); }
    colour on the edge; Power-off fills the card with it -- the robot's last
    word, which must read from across a room. Text stays --text on the card
    (and --accent-alert-ink on the fill) for contrast in both themes. */
+/* Sticky, as the environment banner above it, so a Reserve's countdown
+   stays in view while a person scrolls down to the D-pad. Under an
+   environment banner it sits below that one (its height: one line). */
 .battery-banner {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 19;
   margin: 0 0 var(--space-3);
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-lg);
@@ -49,6 +53,7 @@ body.env-flagged .tab-bar { border-top: 2px solid var(--accent-alert); }
   box-shadow: var(--shadow-1);
 }
 .battery-banner[hidden] { display: none; }
+body.env-flagged .battery-banner { top: calc(env(safe-area-inset-top, 0px) + 30px); }
 .battery-banner[data-level="reserve"] { border-left-color: var(--accent-alert); }
 .battery-banner[data-level="poweroff"] {
   background: var(--accent-alert); color: var(--accent-alert-ink);

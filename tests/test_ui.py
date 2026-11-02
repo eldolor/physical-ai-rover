@@ -4360,21 +4360,46 @@ def test_the_power_off_is_the_last_word_even_when_the_robot_goes_quiet(browser, 
     sync_api.expect(title).to_have_text("Powered off: unplug the battery", timeout=3000)
     page.wait_for_timeout(2000)
     sync_api.expect(banner).to_be_visible()
-    # Booted again, on its charger.
+    # Booted again: until its ladder has two samples it reads `ok` whatever
+    # the pack (review round 1), so the last word stays...
+    _route_battery(page, _battery_reply("ok", 10.1, samples=0))
+    page.wait_for_timeout(2500)
+    sync_api.expect(title).to_have_text("Powered off: unplug the battery")
+    # ...until the reading has settled: on its charger.
     _route_battery(page, _battery_reply("ok", 12.4))
     sync_api.expect(banner).to_be_hidden(timeout=7000)
     assert not errors, errors
     page.context.close()
 
 
+def test_a_reserve_that_goes_quiet_at_its_end_is_a_power_off(browser, twin_server):
+    """B2, review round 1: the ladder powers off at the end of Reserve
+    whatever happens, so a page that loses the robot (or was hidden) through
+    the end says "unplug the battery" -- it hid the banner. A missed read
+    before the end keeps the countdown (no flicker)."""
+    page, errors = _battery_page(browser, twin_server, lambda dt: _battery_reply(
+        "reserve", 10.18, reserve_s=round(116.0 + dt, 1), poweroff_in_s=round(4.0 - dt, 1)))
+    title = page.locator("#battery-title")
+    sync_api.expect(title).to_contain_text("shutting down in", timeout=6000)
+    _route_battery(page, None)
+    page.wait_for_timeout(1200)
+    sync_api.expect(title).to_contain_text("Battery reserve")      # one miss: kept
+    sync_api.expect(title).to_have_text("Powered off: unplug the battery", timeout=8000)
+    assert not errors, errors
+    page.context.close()
+
+
 def test_a_level_no_longer_known_is_not_shown(browser, twin_server):
     """A guard on B2: only Power-off outlives the robot's silence. A Low the
-    robot no longer answers about is not claimed."""
+    robot has not confirmed for 15 s is no longer claimed (one missed read
+    keeps it: review round 1)."""
     page, errors = _battery_page(browser, twin_server, _battery_reply("low", 10.43))
     banner = page.locator("#battery-banner")
     sync_api.expect(banner).to_be_visible(timeout=6000)
     _route_battery(page, None)
-    sync_api.expect(banner).to_be_hidden(timeout=3000)
+    page.wait_for_timeout(6000)
+    sync_api.expect(banner).to_be_visible()
+    sync_api.expect(banner).to_be_hidden(timeout=16000)
     assert not errors, errors
     page.context.close()
 
@@ -4404,7 +4429,14 @@ def test_engineer_mode_adds_the_volts_and_the_steps(browser, twin_server):
     page.context.close()
 
 
-def test_a_start_refused_at_low_battery_is_said_plainly(browser, twin_server):
+@pytest.mark.parametrize("detail, words", [
+    ("battery_low: the robot server reads the battery at low (10.43 V) -- "
+     "charge it before a mission", "battery is low"),
+    # Review round 1: a sag being read again at rest passes in a moment.
+    ("battery_low: the robot server is reading a low battery again at rest "
+     "-- try again in a moment", "Try again in a moment"),
+])
+def test_a_start_refused_at_low_battery_is_said_plainly(browser, twin_server, detail, words):
     """3.137.B B4: the brain's 409 `battery_low: ...` was shown as it came
     ("Couldn't start: battery_low: the robot server reads ...")."""
     page, errors = _battery_page(browser, twin_server, _battery_reply("low", 10.43))
@@ -4414,9 +4446,7 @@ def test_a_start_refused_at_low_battery_is_said_plainly(browser, twin_server):
         status=200, content_type="application/json",
         body=_json({"running": False, "outcome": "idle", "step": 0})))
     page.route("**/brain-stub/mission/start", lambda route: route.fulfill(
-        status=409, content_type="application/json", body=_json({
-            "detail": "battery_low: the robot server reads the battery at low (10.43 V) -- "
-                      "charge it before a mission"})))
+        status=409, content_type="application/json", body=_json({"detail": detail})))
     page.click("#btn-settings")
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
@@ -4424,7 +4454,7 @@ def test_a_start_refused_at_low_battery_is_said_plainly(browser, twin_server):
     page.click('.tab-btn[data-tab="sim"]')
     page.wait_for_selector("#btn-brain-mission:not([disabled])", timeout=8000)
     page.click("#btn-brain-mission")
-    toast = page.locator(".toast.err", has_text="battery is low")
+    toast = page.locator(".toast.err", has_text=words)
     sync_api.expect(toast).to_have_count(1, timeout=3000)
     assert not _jargon(toast.inner_text()), toast.inner_text()
     assert "battery_low" not in toast.inner_text()

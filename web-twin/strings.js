@@ -178,7 +178,8 @@
     "battery.detail": "",
     "battery.checking": "",
     "battery.noReading": "",
-    "mission.batteryLow": "Couldn't start: the battery is low. Charge the robot first."
+    "mission.batteryLow": "Couldn't start: the battery is low. Charge the robot first.",
+    "mission.batteryCheck": "Couldn't start: the robot is checking its battery. Try again in a moment."
   },
   "eng": {
     "explore.alreadyPicked": "Already picked -- explore is on its way",
@@ -299,7 +300,8 @@
     "battery.detail": "{v} V \u00b7 low {low} V \u00b7 reserve {reserve} V \u00b7 power-off {poweroff} V{checking}",
     "battery.checking": " \u00b7 checking {level} at rest",
     "battery.noReading": "no reading",
-    "mission.batteryLow": "Could not start: {why}"
+    "mission.batteryLow": "Could not start: {why}",
+    "mission.batteryCheck": "Could not start: {why}"
   }
 } /* END STRINGS */;
 

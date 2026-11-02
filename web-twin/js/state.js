@@ -43,7 +43,8 @@ export const state = {
   guidanceConsecutiveSkips: 0, guidanceErrorStreak: 0, guidanceCaptionIsAnswer: false,
   connecting: false,
   // 3.137.B: the robot server's battery ladder ({url, level, v, ladder,
-  // readAt, stale?}, or null when unknown), and its poll and countdown timers.
+  // readAt, answeredAt}, or null when unknown), and its poll and countdown
+  // timers (app.js, "the battery ladder, shown").
   battery: null, batteryTimerId: null, batteryTickId: null,
   // Remote brain (phase B4): this page observes a mission it does not run.
   brainUrl: "", brainSecret: "", brainConnected: false, brainConnecting: false,

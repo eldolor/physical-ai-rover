@@ -43,7 +43,10 @@
   <div class="battery-banner" id="battery-banner" data-level="ok" hidden>
     <div class="battery-title" id="battery-title"></div>
     <div class="battery-body" id="battery-body"></div>
-    <div class="battery-detail eng-only" id="battery-detail"></div>
+    <!-- Engineer mode's volts and levels: filled only in that mode, and
+         hidden while empty (not .eng-only, whose rule would also hide it
+         in that mode whenever it is empty). -->
+    <div class="battery-detail" id="battery-detail"></div>
   </div>
   <div class="sr-only" id="battery-announce" role="status" aria-live="polite" aria-atomic="true"></div>
 
