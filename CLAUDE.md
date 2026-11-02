@@ -1032,8 +1032,8 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   `desktop_lock.step_aside()` between steps (the goal-learn PPO loops do);
   the nightly waits in the queue for the exclusive lock, SKIPPED (exit 0, no
   email) after 2 h of a busy desktop. The nightly runs on the Mac only.
-* **A staged UX redesign (3.132), Stages 0-1, 2A and 4 merged 2026-10-31/11-01;
-  2B, 3 and 5 open; the twin deployed with Stages 1-2A from `dev` `4ee9f4bd`
+* **A staged UX redesign (3.132), Stages 0-1, 2A and 4 merged 2026-10-31/11-01,
+  2B merged 2026-11-02 (not deployed); 3 and 5 open; the twin deployed with Stages 1-2A from `dev` `4ee9f4bd`
   on 2026-11-01; Stage 4 (the Lab console) deployed from `dev` `74c58cc7`
   on 2026-11-01, walks Lambda first** (the user, 2026-10-31: twin first, the two consoles merged into
   one, vanilla JS, no build step). Audiences:
@@ -1089,8 +1089,23 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
     legacy suite pins. Operator tests pass `engineer=False`.
   * Operator mode never starts a drill, and it says a saved paid policy's
     cost beside Start.
-  * Next, 2B (the `app.js` module split):
-    `docs/handoffs/HANDOFF-2026-11-01-3.132-2B.md`.
+
+  **Stage 2B (the twin's modules), merged 2026-11-02, not deployed:**
+  * `app.js` is an ES module entry (`<script type="module">`, its IIFE
+    kept); eight sections moved verbatim into `web-twin/js/`: `qr`,
+    `icons`, `prefs`, `ui`, `debuglog`, `history`, `state`, `connstatus`
+    (6,777 -> 6,098 lines).
+  * A module's top level only declares, and no module imports `app.js`
+    (`tests/test_twin_modules.py`, `tests/test_ui_modules.py`); the page's
+    only own global stays `twinStrings`.
+  * The robot server serves `/js/{name}`. `assets.json` uploads modules,
+    then `index.html`, then `app.js`: keep that order.
+  * Tests that read the twin's code read every script
+    (`tests/twin_sources.py`).
+  * The UI suite and the pixels held after every move, and the harness
+    matches the records. The rest of `app.js` needs code changes to move
+    (Stage 3).
+  * Next, Stage 3: `docs/handoffs/HANDOFF-2026-11-02-3.132-3.md`.
 
   Run as 3.130 until a numbering collision (3.130 is fast-map-work).
   **Stage 4 (one Lab console):**
