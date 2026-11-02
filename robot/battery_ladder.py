@@ -98,8 +98,11 @@ class BatteryLadder:
                 return level
         return None
 
-    def _bar(self, level: str) -> float:
-        return self.poweroff_v if level == POWEROFF else self.reserve_v
+    def _under(self, v: float) -> Optional[str]:
+        for level, bar in ((POWEROFF, self.poweroff_v), (RESERVE, self.reserve_v)):
+            if v < bar and LEVELS.index(level) > LEVELS.index(self.level):
+                return level
+        return None
 
     def observe(self, v: Optional[float], now: float, at_rest: bool) -> Optional[str]:
         """One battery read: `v` volts (None: no reading, which never moves a
@@ -126,19 +129,26 @@ class BatteryLadder:
                 self.level = OK
 
         if self.check_level is not None:
-            level = self.check_level
-            if v >= self._bar(level):
-                # Back over the line, at rest or not: a sag only lowers a
+            # The highest latched level above the current one that this
+            # reading is under (a check for Power-off read again at 10.1 V is
+            # still a Reserve).
+            level = self._under(v)
+            if level is None:
+                # Back over every line, at rest or not: a sag only lowers a
                 # reading, so this one is the pack's own.
                 self.check_level = self.check_at = None
                 self.sags += 1
                 return CLEAR
             if at_rest:
-                # At rest and still under: fire the highest level now met.
+                # Fire what the last two distinct samples both support: one
+                # glitch read at rest under Power-off is not two (review).
+                target = self._target()
+                if target is None:
+                    self.check_level = level
+                    return self.tick(now)
                 self.check_level = self.check_at = None
-                if v < self.poweroff_v:
-                    level = POWEROFF
-                return self._fire(level, now, "at rest")
+                return self._fire(target, now, "at rest")
+            self.check_level = level
             return self.tick(now)
 
         target = self._target()

@@ -96,18 +96,22 @@ never earns the creep margin.
 
 The robot server reads the pack (`robot.get_battery()`, the board's `v`) every
 `BATTERY_POLL_S` of the robot's clock -- the simulator's in process, the
-monotonic clock otherwise -- from `battery_loop()` (off the event loop) and at
-the top of `/action`, `/wheels`, `/world/goal` and `/battery`, so the ladder
-also runs with no lifespan (tests, in-process evaluations). Each read goes to
-`BatteryLadder.observe(v, now, at_rest)`; `at_rest` is the wheels at zero and
-no verb running for `BATTERY_REST_S`.
+monotonic clock otherwise, wrapped so it never runs backwards across a house
+swap -- from `battery_loop()` (off the event loop), and, only when that loop
+is not running (in process: tests, evaluations), at the top of `/action`,
+`/wheels` and `/world/goal`; `/battery` reads the last poll's reading. Each
+read goes to `BatteryLadder.observe(v, now, at_rest)`; `at_rest` is nothing
+having turned the wheels for `BATTERY_REST_S`, stamped where motion happens
+(a verb's start and end, a non-zero wheel command, a moving wheel-loop tick)
+and sampled at the poll; unusable wheel state counts as turning.
+"Autonomy" below is every rank under a person's (`!= DRIVER_MANUAL`).
 
 | Level (`battery:`) | Crossed by | What the server does | Refusal |
 |---|---|---|---|
 | Low, `low_v` 10.5 | Two distinct samples under it; not latched | Reports it (`/battery` `level`); the brain refuses a start (`battery_low`) and its own `battery_floor_v` ends a mission | none here |
 | Reserve, `reserve_v` 10.2 | Two distinct samples under it, at rest (else CHECK); latched | `enter_reserve()`: lapses an autonomous claim, counts a goal end (the Stop's goal-ending loop and hold, no person's latch), `robot.stop()`. Autonomy refused; a person's verb has its `speed` capped at `reserve_speed` (30), a person's `/wheels` scaled by it; no goal from anyone; `ros` wheel posts zeroed under `drive: direct` (under `drive: ros` they carry the person's verbs) | `battery_reserve` (autonomy only) |
 | Power-off, `poweroff_v` 10.0, or Reserve held `reserve_max_s` (120 s) | As Reserve; latched | Everything Reserve does, then `power_off()` on its own thread, once: the wheels at rest (up to 2 s), each `shutdown_steps` command in order (60 s each), `os.sync()`, `poweroff_cmd`. Every step is recorded (`/battery` `ladder.shutdown`) | `battery_poweroff` (everyone; `/stop` still answers) |
-| CHECK (a crossing read with the wheels turning) | -- | `robot.stop()`; autonomy held until the next distinct sample: at or over the level clears it (a sag), under it and at rest fires it; `check_max_s` (15 s) without a sample at rest fires if the last two are still under | `battery_check` (autonomy only; the brain reads it as a veto) |
+| CHECK (a crossing read with the wheels turning) | -- | `robot.stop()`; autonomy held, and under `drive: ros` every `ros` wheel post zeroed (nav2's goal held still, not ended), until the next distinct sample: over every level clears it (a sag), under one and at rest fires the highest level the last two distinct samples are both under (one glitch at rest is not two); `check_max_s` (15 s) without a sample at rest fires if the last two are still under | `battery_check` (autonomy only, and never a camera pan; the brain reads it as a veto it does not count toward `stuck_after`) |
 
 `battery_refusal()` is checked where `person_stop_refusal()` is: before
 arbitration, and again at execution after the verb's stop baseline is set,
@@ -500,7 +504,9 @@ order; record the table in the plan entry.
   saves). A repeated reading counted after 12 s may have been measured by the
   board before the wheels stopped (its refresh instant is not reported). The
   simulator's pack restarts its drain on a house swap (3.72). Levels are
-  placeholders until 3.137.E.
+  placeholders until 3.137.E. A check holds nav2 still (its `ros` wheel
+  posts zeroed, the goal not ended) for up to 15 s; nav2's progress checker
+  may abort the goal meanwhile, and explore then counts that place failed.
 
 - **The floor band's blind range (3.74).** Inside the depth camera's
   minimum range (about 14 cm past the bumper) the band sees nothing, and

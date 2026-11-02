@@ -167,7 +167,17 @@ repeat inside that is the same sag read twice); any read at or over the
 floor resets the count. A moving reading (the fake board's drain) still
 ends inside 2 s; a value that holds ends 12-12.5 s after its first read.
 `robot.get_battery()` with `usable: false`, or a read that raises, never
-ends a mission (logged once). `max_steps` defaults to
+ends a mission (logged once). **The robot server's battery ladder (3.137)** ends
+it too: a read whose `level` is `reserve` or `poweroff` ends it at once
+(the server already applied two distinct samples), and a command refused
+`battery_reserve` / `battery_poweroff` raises `BatteryReserve` (a
+`Preempted`), which `_finish_preempted()` ends `out_of_budget` naming the
+battery; a goal reply with either reason does the same. A FORWARD refused
+`battery_check` (a low reading read again at rest) is not counted toward
+`stuck_after`. `POST /mission/start` answers 409 `battery_low: ...` before it
+lifts a person's Stop when the robot server's `level` is `low` or worse; a
+server older than 3.137 (no `level`) is judged on one reading under
+`battery_floor_v`; an unreadable battery never refuses a start. `max_steps` defaults to
 `derived_max_steps(mission_time_limit_s)` = limit / 0.5 s x 2 (120 with no
 limit); an explicit `max_steps` overrides it. Under `policy: "vision"` only,
 the check also ends it when `_cloud_calls` reaches `vision_max_calls`: one

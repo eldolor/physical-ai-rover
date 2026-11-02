@@ -111,6 +111,26 @@ def test_a_check_that_times_out_never_fires_on_a_recovered_pack():
     assert lad.level not in (RESERVE, POWEROFF)
 
 
+def test_a_power_off_check_read_at_rest_under_reserve_fires_reserve():
+    """Review: a check opened for Power-off cleared on 10.1 V at rest, which
+    is under Reserve."""
+    lad = ladder()
+    lad.observe(9.90, 0.0, at_rest=False)
+    assert lad.observe(9.89, 0.5, at_rest=False) == CHECK
+    assert lad.check_level == POWEROFF
+    assert lad.observe(10.10, 1.0, at_rest=True) == RESERVE
+
+
+def test_one_glitch_under_power_off_at_rest_fires_reserve_not_power_off():
+    """Thermos review: a Reserve check read again at rest once under 10.0 V
+    powered off on that one sample."""
+    lad = ladder()
+    lad.observe(10.15, 0.0, at_rest=False)
+    assert lad.observe(10.14, 0.5, at_rest=False) == CHECK
+    assert lad.observe(9.98, 1.0, at_rest=True) == RESERVE
+    assert lad.level == RESERVE
+
+
 def test_reserve_held_too_long_powers_off():
     lad = ladder()
     lad.observe(10.15, 0.0, at_rest=True)
@@ -463,3 +483,89 @@ def test_no_mission_starts_on_a_low_battery(served, monkeypatch):
                                            "policy": "frontier"})
     assert r.status_code == 409 and r.json()["detail"].startswith("battery_low"), r.text
     assert brain.get("/mission/status").json().get("running") in (False, None)
+
+
+# ---------- review fixes (code review of 3.137.A) ----------
+
+def _check_open(bat, body):
+    """Two low readings with the wheels turning: a check at rest begins."""
+    for v in (10.05, 10.04):
+        body.battery.v = v
+        bat["batt"]["moved_at"] = None
+        body.set_wheel_velocity(1.0, 1.0)
+        body.pass_time(0.6)
+        bat["poll"](force=True)
+    assert bat["ladder"].check_level == RESERVE
+
+
+def test_a_local_brain_rank_is_refused_at_reserve_too(served):
+    client, bat, body, reading, _ = served
+    drive_to(reading, 10.15)
+    r = client.post("/action", json={"action": "FORWARD"},
+                    headers={"x-driver": "twin-local-brain"}).json()
+    assert r["executed"] is False and r["reason"] == BATTERY_RESERVE
+
+
+def test_a_short_move_between_polls_keeps_the_next_reading_off_rest(served):
+    client, bat, body, reading, _ = served
+    reading(10.15)
+    body.pass_time(0.6)
+    # A whole verb between two polls: the wheels are still again by the poll.
+    client.post("/action", json={"action": "FORWARD", "duration": 0.3},
+                headers={"x-driver": "twin-dpad"})
+    body.battery.v = 10.14
+    bat["poll"](force=True)
+    assert bat["ladder"].level != RESERVE, "a reading just after a move counted as at rest"
+    assert bat["ladder"].check_level == RESERVE
+
+
+def test_the_ladder_clock_survives_a_house_swap(served):
+    """Review: a house swap (3.72) restarts the simulator's clock; the
+    ladder's own rate limit then read every poll as too soon, for as long as
+    the old clock had run. Ordinary (unforced) polls, as the loop makes."""
+    client, bat, body, reading, _ = served
+    body.pass_time(300.0)
+    bat["poll"]()
+    from sim.maps import build_world
+    pack = body.battery
+    body.load_house(build_world("starter_house"))       # sim clock back to 0
+    body.battery = pack
+    for v in (10.15, 10.14):
+        pack.v = v
+        body.pass_time(0.6)
+        bat["poll"]()
+    assert bat["ladder"].level == RESERVE
+
+
+def test_a_battery_check_is_not_counted_as_the_way_ahead_blocked(served):
+    from control.mission_runner import MissionRunner
+    from control.remote_robot import RemoteRobot
+    from tests.conftest import ASGI_BASE_URL
+    client, bat, body, reading, _ = served
+    remote = RemoteRobot(ASGI_BASE_URL, client=client)
+    runner = MissionRunner(remote, target_object="purple elephant",
+                           mission_time_limit_s=600.0, battery_floor_v=None, stuck_after=2)
+    runner.start()
+    _check_open(bat, body)
+    body.set_wheel_velocity(0.0, 0.0)
+    # Hold the check open while the brain keeps trying (no new sample).
+    for _ in range(6):
+        runner.tick()
+        bat["ladder"].check_at = bat["ladder"].check_at or 0.0
+    assert runner._refused_forwards == 0
+    assert runner.status()["outcome"] in (None, "running"), runner.status()["log_tail"]
+
+
+def test_a_start_is_not_refused_on_one_low_reading_when_the_ladder_says_ok(served):
+    from control.brain_server import create_app as brain_app
+    from control.remote_robot import RemoteRobot
+    from tests.conftest import ASGI_BASE_URL
+    client, bat, body, reading, _ = served
+    reading(10.40)          # one reading under the 10.5 V floor; the ladder: ok
+    assert bat["ladder"].level == OK
+    remote = RemoteRobot(ASGI_BASE_URL, client=client)
+    brain = TestClient(brain_app(robot_factory=lambda: remote))
+    r = brain.post("/mission/start", json={"target_object": "purple elephant",
+                                           "policy": "frontier"})
+    assert r.status_code == 200, r.text
+    brain.post("/mission/stop")

@@ -68,7 +68,8 @@ from brain.mission_report import map_coverage
 from brain.navigate import CloudUnavailable
 from brain.room_labels import RoomLabeller, frame_room
 from brain.vision_agent import VisionAgent
-from robot.interface import (BATTERY_POWEROFF, BATTERY_RESERVE, DRIVER_MANUAL, PERSON_STOP,
+from robot.interface import (BATTERY_CHECK, BATTERY_POWEROFF, BATTERY_RESERVE, DRIVER_MANUAL,
+                             PERSON_STOP,
                              BatteryReserve, Preempted, RobotInterface, StoppedByPerson,
                              driver_priority)
 from robot.safety import SafetyViolation
@@ -1117,7 +1118,10 @@ class MissionRunner:
             # went through resets it, so a robot that turns away and makes
             # progress is never called stuck.
             if result.action == "FORWARD" and not result.executed:
-                self._refused_forwards += 1
+                # 3.137: a refusal while the robot server reads the battery
+                # again at rest says nothing about the way ahead.
+                if not str(result.detail).startswith(BATTERY_CHECK):
+                    self._refused_forwards += 1
             elif result.executed:
                 self._refused_forwards = 0
 

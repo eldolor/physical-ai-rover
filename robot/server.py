@@ -158,6 +158,7 @@ Finite = Annotated[float, Field(allow_inf_nan=False)]
 # The verbs that move the body (`robot/safety.py`'s), as against LOOK_* (the
 # camera only) and STOP: a person's move ends a nav2 goal (3.97).
 BODY_MOVES = frozenset({"FORWARD", "REVERSE", "LEFT", "RIGHT"})
+CAMERA_ONLY = frozenset({"LOOK_LEFT", "LOOK_RIGHT", "LOOK_CENTER"})
 
 
 class ActionRequest(BaseModel):
@@ -641,24 +642,55 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                            reserve_max_s=battery_cfg["reserve_max_s"])
     # The robot's own clock: the simulator's in process (a mission there
     # costs no wall time), the monotonic clock on the car and the fake board.
-    battery_clock = getattr(robot, "sim_clock", None) or time.monotonic
+    # Never runs backwards: a house swap (3.72) restarts the simulator's
+    # clock, which would freeze every timer here for as long as the old one ran.
+    raw_clock = getattr(robot, "sim_clock", None) or time.monotonic
+    clock_state = {"raw": raw_clock(), "t": 0.0}
+    clock_lock = threading.Lock()
+
+    def battery_clock() -> float:
+        with clock_lock:
+            raw = raw_clock()
+            last = clock_state["raw"]
+            # A clock that went back restarted from zero: what it has run
+            # since is time that passed.
+            clock_state["t"] += raw - last if raw >= last else max(0.0, raw)
+            clock_state["raw"] = raw
+            return clock_state["t"]
+
     battery_lock = threading.Lock()     # one poll at a time; never waited on
-    # The robot starts at rest (nothing has driven it yet).
-    batt = {"polled_at": None, "rest_since": battery_clock(), "v": None,
+    # `moved_at`: the last time anything turned the wheels, stamped where it
+    # happens (verbs, wheel commands, the wheel loop), so a short move between
+    # two polls still keeps the next reading from counting as at rest.
+    # `loop`: the background loop runs (a live server); routes then need not
+    # poll on the actuator's 20 Hz path.
+    batt = {"polled_at": None, "moved_at": None, "v": None, "reading": {}, "loop": False,
             # The power-off's steps as they ran: name, seconds from its
             # start, return code (3.137 criterion 1c's order).
             "shutdown": [], "poweroff_calls": 0, "shutdown_done": threading.Event()}
 
     def wheels_turning() -> bool:
+        """Whether the wheels may be turning now. Unreadable or unusable
+        wheel state may be turning: a reading then never counts as at rest,
+        and a check fires only on its timeout (the safe side)."""
         if state["verbs_running"]:
             return True
         try:
             w = robot.get_wheel_state()
-        except Exception:  # noqa: BLE001 -- unreadable wheels: assume they may turn
+        except Exception:  # noqa: BLE001
             return True
         if not w.get("usable"):
-            return False
+            return True
         return (w["left"]["velocity_rad_s"] != 0 or w["right"]["velocity_rad_s"] != 0)
+
+    def mark_moving() -> None:
+        batt["moved_at"] = battery_clock()
+
+    def route_poll() -> None:
+        """A moving route's poll: only when no background loop polls (in
+        process), so a live actuator's 20 Hz posts pay nothing."""
+        if not batt["loop"]:
+            battery_poll()
 
     def battery_poll(force: bool = False) -> None:
         """Read the pack and move the ladder, at most every BATTERY_POLL_S of
@@ -678,13 +710,10 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 reading = {}
             v = reading.get("v") if reading.get("usable") else None
             v = float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else None
-            batt["v"] = v
+            batt["v"], batt["reading"] = v, reading
             if wheels_turning():
-                batt["rest_since"] = None
-            elif batt["rest_since"] is None:
-                batt["rest_since"] = now
-            at_rest = (batt["rest_since"] is not None
-                       and now - batt["rest_since"] >= BATTERY_REST_S)
+                batt["moved_at"] = now
+            at_rest = batt["moved_at"] is None or now - batt["moved_at"] >= BATTERY_REST_S
             event = ladder.observe(v, now, at_rest)
             if event is None:
                 return
@@ -692,7 +721,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 # Read again at rest before acting: a motor's inrush sags the
                 # pack. Autonomy is held (`battery_check`) until it decides.
                 robot.stop()
-                batt["rest_since"] = now
+                batt["moved_at"] = now
                 logger.warning(f"battery: {v} V under the {ladder.check_level} level with "
                                "the wheels turning -- stopped, reading again at rest")
             elif event == CLEAR:
@@ -726,8 +755,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         reason = BATTERY_POWEROFF if poweroff else BATTERY_RESERVE
         detail = (f"battery at {v} V: "
                   + (f"powering off ({ladder.poweroff_why})" if poweroff
-                     else f"reserve -- autonomy refused; power-off in "
-                          f"{battery_cfg['reserve_max_s']:g} s unless charged"))
+                     else f"reserve -- autonomy refused; shutting down in "
+                          f"{battery_cfg['reserve_max_s']:g} s (latched: charging does "
+                          "not cancel it)"))
         refuse(reason, detail, "battery")
 
     def run_step(name: str, cmd: str, t0: float) -> None:
@@ -777,12 +807,13 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                            "stopped here (the stub)")
         batt["shutdown_done"].set()
 
-    def battery_refusal(driver: str, record: bool = True):
+    def battery_refusal(driver: str, record: bool = True, action: Optional[str] = None):
         """3.137: what the ladder says to a command from `driver`. Power-off
         refuses everyone; Reserve and a check at rest refuse autonomy (the
         brain, teleop, ROS's own goals) only. None when it may go on."""
         level, checking = ladder.level, ladder.check_level
-        autonomous = driver_priority(driver) == DRIVER_AUTONOMOUS
+        # Every rank below a person's: the brain, teleop, ROS, a local brain.
+        autonomous = driver_priority(driver) != DRIVER_MANUAL
         if level == POWEROFF:
             reason = BATTERY_POWEROFF
             detail = "the robot is powering off: the battery is spent -- nothing may drive"
@@ -790,7 +821,8 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             reason = BATTERY_RESERVE
             detail = (f"the battery is at reserve -- autonomy is refused, so {driver} was "
                       "refused; a person may drive slowly to the charger")
-        elif autonomous and checking is not None:
+        elif autonomous and checking is not None and action not in CAMERA_ONLY:
+            # A pan moves the camera, not the body: it never sags the pack.
             reason = BATTERY_CHECK
             detail = "a low battery reading is being read again at rest -- autonomy waits"
         else:
@@ -847,6 +879,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                         continue
                     wl = state["wheel_loop"]
                     wl["moving_ticks"] += 1
+                    mark_moving()
                     wl["late_ticks"] += dt > 2 * WHEEL_LOOP_INTERVAL_S
                     wl["max_dt_s"] = round(max(wl["max_dt_s"], dt), 4)
                     new_left, new_right, reason = safety.vet_wheel_velocity(left, right)
@@ -876,6 +909,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         """3.137: the ladder moves with nobody driving too (Reserve's timer,
         a pack draining while the robot waits). Off the event loop: a body's
         reading may be a request to another process."""
+        batt["loop"] = True
         while True:
             await asyncio.sleep(BATTERY_POLL_S)
             try:
@@ -1008,7 +1042,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             return stop(x_driver)
         # 3.137: the battery ladder, before anything else may move. Power-off
         # refuses everyone; at Reserve a person drives on, slowly.
-        battery_poll()
+        route_poll()
         if ladder.level == POWEROFF:
             return battery_refusal(driver)
         if ladder.level == RESERVE and driver_priority(driver) == DRIVER_MANUAL:
@@ -1032,7 +1066,8 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         # arbitration could answer it anything else -- and lets go of the
         # robot, as one refused at execution does (3.76 K1: its claim from
         # before the Stop held the slot for the watchdog's timeout).
-        refused = person_stop_refusal(driver, latch) or battery_refusal(driver)
+        refused = (person_stop_refusal(driver, latch)
+                   or battery_refusal(driver, action=req.action))
         if refused:
             return lapse_refused_claim(driver, refused, stamp0)
 
@@ -1084,9 +1119,11 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         stamp written (3.84: a lapse clears only its own command's claim)."""
         with verbs_lock:     # threadpool threads: a lost update would never lapse
             state["verbs_running"] += 1
+        mark_moving()        # 3.137: a reading during a verb is never at rest
         try:
             yield
         finally:
+            mark_moving()
             with verbs_lock:
                 # Re-stamped before the count drops (3.82), so the claim
                 # never reads as lapsed in between.
@@ -1189,7 +1226,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 baseline = VERB_STOP_BASELINE.set(getattr(robot, "stop_count", 0))
                 # 3.137: read again at execution, after the baseline: a level
                 # latched after this stops the robot, which ends the verb.
-                refused = battery_refusal(driver)
+                refused = battery_refusal(driver, action=req.action)
                 if refused:
                     VERB_STOP_BASELINE.reset(baseline)
                     return refused
@@ -1242,7 +1279,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                     baseline = VERB_STOP_BASELINE.set(getattr(robot, "stop_count", 0))
                     try:
                         refused = (person_stop_refusal(driver, autonomy_latch())
-                                   or battery_refusal(driver))
+                                   or battery_refusal(driver, action=req.action))
                         if refused:
                             return refused
                         result = safety.check_and_execute(
@@ -1277,7 +1314,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         """
         now = time.monotonic()
         driver = (x_driver or "").strip() or DRIVER_UNKNOWN
-        battery_poll()
+        route_poll()
         if by_velocity:
             # R4, `drive: ros`: this is the ACTUATOR's route, and the ROS
             # container is its only writer. The people and programs that
@@ -1303,9 +1340,11 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 return {"executed": False, "reason": "ros_unavailable",
                         "detail": "the bridge is down -- ROS's wheel commands are not "
                                   "applied while a person drives the fallback"}
-            if goal_stop["hold"] or ladder.level == POWEROFF:
-                # 3.137: at Power-off nothing drives. (At Reserve these posts
-                # carry only a person's slow verbs: goals are ended and refused.)
+            if goal_stop["hold"] or ladder.level == POWEROFF or ladder.check_level is not None:
+                # 3.137: at Power-off nothing drives, and during a check at
+                # rest nav2's goal is held still too (a person's verb with it,
+                # for that moment). (At Reserve these posts carry only a
+                # person's slow verbs: goals are ended and refused.)
                 req = WheelsRequest(left_rad_s=0.0, right_rad_s=0.0)
         else:
             if driver == DRIVER_ROS and (goal_stop["hold"]
@@ -1363,6 +1402,8 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             if not by_velocity and driver == DRIVER_ROS and battery_refusal(driver, record=False):
                 req = WheelsRequest(left_rad_s=0.0, right_rad_s=0.0)   # 3.137, at execution
             left, right, reason = safety.vet_wheel_velocity(req.left_rad_s, req.right_rad_s)
+            if left or right:
+                mark_moving()
             try:
                 robot.set_wheel_velocity(left, right)
                 if not by_velocity and getattr(robot, "stop_count", 0) != stops0:
@@ -1592,9 +1633,10 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         `poweroff`), its countdown and the power-off's steps, as `ladder`.
         `level` is also at the top, where the brain reads it.
         """
-        battery_poll()
+        battery_poll(force=not batt["reading"])
         status = battery_status()
-        return {**robot.get_battery(), "level": status["level"], "ladder": status}
+        reading = batt["reading"] or {"usable": False, "v": None}
+        return {**reading, "level": status["level"], "ladder": status}
 
     @app.get(prefix + "/scan", dependencies=[Depends(require_secret)])
     def scan(max_range_m: Optional[float] = None):
@@ -1758,7 +1800,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         # 3.137: at Reserve (or during its check at rest) no goal is taken from
         # anyone -- nav2 drives a goal on its own, at full speed, and a person
         # drives slowly by D-pad: a goal is autonomy whoever asked (DRIVER_ROS).
-        battery_poll()
+        route_poll()
         refused = battery_refusal(DRIVER_ROS)
         if refused:
             return {"accepted": False, **refused}
