@@ -4,7 +4,7 @@
   <version>0.1.0</version>
   <description>ros2_control SystemInterface over robot/server.py's HTTP API -- the sim side of PLAN-ros-alignment.md section 1's seam.</description>
   <maintainer email="anshu.gaind@gmail.com">vision-picar</maintainer>
-  <license>Proprietary</license>
+  <license>AGPL-3.0-only</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>hardware_interface</depend>
   <depend>pluginlib</depend>

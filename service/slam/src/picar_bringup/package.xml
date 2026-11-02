@@ -4,7 +4,7 @@
   <version>0.1.0</version>
   <description>Launch and controller configuration for the ROS side of PLAN-ros-alignment.md R4.</description>
   <maintainer email="anshu.gaind@gmail.com">vision-picar</maintainer>
-  <license>Proprietary</license>
+  <license>AGPL-3.0-only</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <exec_depend>picar_description</exec_depend>
   <exec_depend>picar_sim_hardware</exec_depend>

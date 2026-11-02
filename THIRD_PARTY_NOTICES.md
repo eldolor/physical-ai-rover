@@ -1,10 +1,9 @@
 # Third-party notices
 
-This project's own code is licensed under the AGPL-3.0 (`LICENSE`), or
-commercially (`COMMERCIAL-LICENSE.md`). The parts below are not; each keeps
-its own licence, and neither the AGPL nor a commercial licence from this
-project changes their terms. Checked 2026-11-02 against each project's
-published licence; re-check before a commercial release.
+This project's own code is licensed under the AGPL-3.0 (`LICENSE`). The
+parts below are not; each keeps its own licence, and this project's
+licence does not change their terms. Checked 2026-11-02 against each
+project's published licence; re-check before a release.
 
 ## Included in this repository
 

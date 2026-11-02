@@ -239,8 +239,10 @@ The build journal this file used to carry is in
 
 ## Licence
 
-Dual-licensed: the [GNU AGPL-3.0](LICENSE) for everyone, or a
-[commercial licence](COMMERCIAL-LICENSE.md) for shipping or hosting it
-without the AGPL's obligations. Third-party parts keep their own licences,
-and some restrict commercial use on their own:
-[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+Copyright (C) 2026 Anshu Gaind.
+
+This project is licensed under the [GNU AGPL-3.0-only](LICENSE). The ESP32
+firmware patch in `firmware/ugv_base_ros/` modifies GPL-3.0 firmware and
+stays GPL-3.0. Third-party parts keep their own licences, listed in
+[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md). How contributions are
+licensed: [`CONTRIBUTING.md`](CONTRIBUTING.md).

@@ -1,0 +1,20 @@
+# Contributing
+
+Copyright (C) 2026 Anshu Gaind.
+
+This project is licensed under the GNU AGPL-3.0 (`LICENSE`). The firmware
+patch in `firmware/ugv_base_ros/` is GPL-3.0.
+
+## Contributor licence agreement
+
+Contributions are accepted under a contributor licence agreement:
+
+* you license your contribution under the AGPL-3.0, like the rest of the
+  project (the firmware patch under the GPL-3.0); and
+* you also grant the copyright holder the right to relicense your
+  contribution under other terms.
+
+By opening a pull request, you agree to these terms.
+
+You keep the copyright in your contribution. Please ask before opening a
+substantial pull request.

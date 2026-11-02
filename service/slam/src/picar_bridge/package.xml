@@ -4,7 +4,7 @@
   <version>0.1.0</version>
   <description>HTTP in, ROS out: verbs reach twist_mux, the scan reaches /scan (PLAN-ros-alignment.md R4).</description>
   <maintainer email="anshu.gaind@gmail.com">vision-picar</maintainer>
-  <license>Proprietary</license>
+  <license>AGPL-3.0-only</license>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>nav_msgs</exec_depend>
