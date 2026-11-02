@@ -1371,6 +1371,11 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
     `vision-picar-ros:latest` from a branch. Since 3.107 ports never wrap
     (3.106 -> 10060); ROS domains still do past 3.99, and `env` prints a
     WARNING comment naming an active section on yours.
+  * **Claim first, on origin (3.139):** `python tools/plan_section.py claim
+    <step>` pushes `claim/<step>` to origin before anything else; if it is
+    refused, stop and report. Every brief and subagent starts with it; the
+    hooks refuse unclaimed commits, edits and pushes. `release` when done.
+    `PICAR_CLAIM_BYPASS=1` is the user's alone. `PARALLEL-SESSIONS.md` rule 12.
   * `overlap` before editing a shared file.
   * `ready` (rebase check + full suite) before pushing to `dev`; a
     pre-push hook enforces it. Since 3.121 (merged 2026-10-30) the fast
