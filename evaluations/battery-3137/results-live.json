@@ -1,0 +1,115 @@
+{
+ "events": [
+  {
+   "t_s": 0.0,
+   "what": "stack up",
+   "v": 10.85,
+   "level": "ok"
+  },
+  {
+   "t_s": 0.0,
+   "what": "mission start",
+   "v": 10.85,
+   "level": "ok",
+   "status": 200
+  },
+  {
+   "t_s": 19.2,
+   "what": "mission ended",
+   "v": 10.47,
+   "level": "low",
+   "outcome": "out_of_budget",
+   "end_reason": "battery at 10.47 V, under the 10.5 V floor 2 readings in a row"
+  },
+  {
+   "t_s": 19.3,
+   "what": "start at low",
+   "v": 10.47,
+   "level": "low",
+   "status": 409,
+   "detail": "battery_low: the robot server reads the battery at low (10.47 V) -- charge it before a mission"
+  },
+  {
+   "t_s": 33.5,
+   "what": "brain verb at reserve",
+   "v": 10.18,
+   "level": "reserve",
+   "reason": "battery_reserve"
+  },
+  {
+   "t_s": 33.6,
+   "what": "person goal at reserve",
+   "v": 10.18,
+   "level": "reserve",
+   "reason": "battery_reserve"
+  },
+  {
+   "t_s": 36.2,
+   "what": "person forward at reserve",
+   "v": 10.13,
+   "level": "reserve",
+   "executed": true,
+   "speed": 30,
+   "moved_cm": 29.9,
+   "autonomous_motion_cm": 0.0
+  },
+  {
+   "t_s": 49.8,
+   "what": "power-off done",
+   "v": 9.86,
+   "level": "poweroff",
+   "shutdown": [
+    {
+     "step": "wheels",
+     "t_s": 0.0,
+     "rc": 0
+    },
+    {
+     "step": "brain",
+     "t_s": 1.11,
+     "rc": 0
+    },
+    {
+     "step": "ros",
+     "t_s": 6.246,
+     "rc": 0
+    },
+    {
+     "step": "vlm",
+     "t_s": 6.247,
+     "rc": 0
+    },
+    {
+     "step": "sync",
+     "t_s": 6.247,
+     "rc": 0
+    },
+    {
+     "step": "poweroff",
+     "t_s": 6.248,
+     "rc": 0
+    }
+   ],
+   "poweroff_why": "at rest"
+  },
+  {
+   "t_s": 49.8,
+   "what": "person at power-off",
+   "v": 9.86,
+   "level": "poweroff",
+   "reason": "battery_poweroff"
+  }
+ ],
+ "mission": {
+  "outcome": "out_of_budget",
+  "end_reason": "battery at 10.47 V, under the 10.5 V floor 2 readings in a row"
+ },
+ "brain_down": true,
+ "ros_running": false,
+ "steps_log": [
+  "brain",
+  "ros",
+  "vlm",
+  "poweroff"
+ ]
+}
