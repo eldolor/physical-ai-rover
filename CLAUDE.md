@@ -829,6 +829,14 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   (`battery_check`). Criterion 1a FAILED as written (Reserve 2-3 s after the
   crossing, the re-read included; kept by the user), 1b-1d and 2 met, live
   run met. Sim pack: `sim/battery.py` (`SIM_BATTERY_*`).
+* **Live checks on the Rover (3.140): the harness (A) merged 2026-11-02;
+  B-J wait on the Rover.** `evaluations/rover-live-3140/run.py` runs one row
+  at a time on 3.136's `boardrun` (`bench-3140`): rows read from the section
+  file, the safety rules a checklist each run signs, gates for level order,
+  stand first, the commit on `dev` and the car running it (`/health`
+  `identity`), a ledger in the shared `.git` mirrored beside the records.
+  Amendment 1 gives every *reported* row a bar. Open for the user: criterion
+  2 holds L4's floor walks (3.140.F) behind every L3 row.
 * **Older review bugs (3.64), merged 2026-10-09, deployed 2026-10-10.** Ten bugs
   from the reviewer comparison still live on `dev`, fixed red-first: the
   twin's guidance loop after Stop, a hidden page and an outage (A2, A4,
