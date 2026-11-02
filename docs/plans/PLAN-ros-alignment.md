@@ -269,6 +269,9 @@ job, on a phone.
   board's 7-13V). And the 4S fallback's **Pololu D36V28F12 is 12V 2.4A**,
   which is exactly two TB6612FNG channels at continuous rating before the
   servo -- undersized as listed.
+- **Licence tidy-up after 3.132 and 3.50 merge** (2026-11-02, the user):
+  apply `licence-headers-twin` (79bdb575) and add SPDX headers to the
+  `d5_*.py` files and any other new first-party files without one.
 
 ---
 
