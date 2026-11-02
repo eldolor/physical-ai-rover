@@ -51,17 +51,32 @@ HOUSES = ("scaled_house", "home_first_floor")
 ARMS = {"base": {"PICAR_SLAM_LIFELONG": "0", "PICAR_MAP_CAP": "0"},
         "lifelong": {"PICAR_SLAM_LIFELONG": "1", "PICAR_MAP_CAP": "0"},
         "cap": {"PICAR_SLAM_LIFELONG": "0", "PICAR_MAP_CAP": "1.5"},
-        "both": {"PICAR_SLAM_LIFELONG": "1", "PICAR_MAP_CAP": "1.5"}}
+        "both": {"PICAR_SLAM_LIFELONG": "1", "PICAR_MAP_CAP": "1.5"},
+        # Amendment 3 (2026-11-02): the defaults, the cap now per square
+        # metre mapped -- the same settings as "both", on the newer bridge.
+        "area": {"PICAR_SLAM_LIFELONG": "1", "PICAR_MAP_CAP": "1.5"}}
 ARM = os.environ.get("D5_ARM", "base")
+# Amendment 3, A2: a five-session chain from a short first session.
+PARTIAL = os.environ.get("D5_PARTIAL") == "1"
+PARTIAL_S = {"scaled_house": 120, "home_first_floor": 240}
+PARTIAL_SESSIONS = 5
+PARTIAL_AREA = 0.6
 _network = d3._network
+# The off-dock step runs with the cap off (the review's item 4): a store
+# already over the cap would otherwise start afresh without trying a reload.
+_cap_off = [False]
 
 
 def _armed_network():
     """d3.container's docker flags, plus this arm's bridge settings."""
-    return _network() + [a for k, v in ARMS[ARM].items() for a in ("-e", f"{k}={v}")]
+    env = dict(ARMS[ARM], **({"PICAR_MAP_CAP": "0"} if _cap_off[0] else {}))
+    return _network() + [a for k, v in env.items() for a in ("-e", f"{k}={v}")]
 
 
 d3._network = _armed_network
+# The bridge's own cap rule, not a copy (review): mapstore is plain Python.
+sys.path.insert(0, os.path.join(d3.ROOT, "service", "slam", "src", "picar_bridge"))
+from picar_bridge import mapstore  # noqa: E402
 # A smoke run of the harness only (shorter missions; never a result).
 SMOKE_S = int(os.environ.get("D5_SMOKE_S", "0"))
 
@@ -147,8 +162,20 @@ def graph_mb(maps):
     d = os.path.join(maps, cur["map_id"], f"v{cur['version']}")
     parts = {ext: os.path.getsize(os.path.join(d, "graph" + ext)) / 1e6
              for ext in (".posegraph", ".data")}
-    return {"map_id": cur["map_id"], "version": cur["version"],
-            "mb": round(sum(parts.values()), 2), "parts_mb": {k: round(v, 2) for k, v in parts.items()}}
+    out = {"map_id": cur["map_id"], "version": cur["version"],
+           "mb": round(sum(parts.values()), 2), "parts_mb": {k: round(v, 2) for k, v in parts.items()}}
+    try:                                         # amendment 3: what the cap reads
+        with open(os.path.join(d, "meta.json")) as f:
+            meta = json.load(f)
+    except (OSError, ValueError):
+        meta = {}
+    ratio, basis = mapstore.cap_ratio(meta)
+    size = mapstore.growth(meta)
+    out.update(area_m2=meta.get("area_m2"), first_area_m2=meta.get("first_area_m2"),
+               area_carried=meta.get("area_carried"),
+               size_ratio=round(size, 3) if size is not None else None,
+               cap_ratio=round(ratio, 3) if ratio is not None else None, cap_basis=basis)
+    return out
 
 
 def reload_s(watch):
@@ -230,15 +257,17 @@ def chain(house, n_sessions):
     os.environ["INVENTORY_DIR"] = inv_dir
     os.environ["INVENTORY_BUCKET"] = ""          # local only (3.55)
     secs = SMOKE_S or d4.MAP_RUN_S[house]
-    out = {"house": house, "image": d3.IMAGE, "mission_s": secs, "sessions": []}
+    first_s = SMOKE_S or (PARTIAL_S[house] if PARTIAL else secs)
+    out = {"house": house, "image": d3.IMAGE, "mission_s": secs, "first_mission_s": first_s,
+           "partial": PARTIAL, "sessions": []}
 
     # Session 1: the map run, probed like the others.
     os.makedirs(maps, exist_ok=True)
     bridge = d4.httpx.Client(base_url=f"http://127.0.0.1:{de.BRIDGE}", timeout=30)
     robot, brain = d4.servers(house)
     w = d3.container(maps, bridge)
-    de.MISSION_LIMIT_S = secs
-    with Probe(secs + 30) as p, d4.Sampler(robot, bridge, house) as s:
+    de.MISSION_LIMIT_S = first_s
+    with Probe(first_s + 30) as p, d4.Sampler(robot, bridge, house) as s:
         mission = de.run_mission(robot, house, policy="explore", target=d3.ABSENT, max_steps=100000)
     t = time.time()
     while time.time() - t < 30 and d4.health(bridge)["map"]["saved"] < 1:
@@ -317,8 +346,20 @@ def chain(house, n_sessions):
               f"lag p90 {sess['probe']['lag_p90_ms']} ms, mem {sess['probe']['mem_peak_mib']} MiB, "
               f"reload {sess['reload_s']} s, remap {sess['remap'].get('result')}", flush=True)
 
-    # F: off the dock, a fall-back; a mission there carries nothing.
-    robot, brain, bridge, fs = d4.reload(house, maps)
+    # F: off the dock, a fall-back; a mission there carries nothing. The cap
+    # off for both starts, so the reload is always tried (the review's item 4).
+    _cap_off[0] = True
+    try:
+        robot, brain, bridge, fs = d4.reload(house, maps)
+        _fall_back(robot, brain, bridge, fs, maps)
+    finally:
+        _cap_off[0] = False
+    out["fall_back"] = fs
+    out["criteria"], out["verdict"] = (partial_verdicts if PARTIAL else verdicts)(out, saved_id)
+    return out
+
+
+def _fall_back(robot, brain, bridge, fs, maps):
     if fs["reload"].get("result") == "matched":
         dock = d3.truth(robot)
         for _ in range(3):
@@ -332,9 +373,6 @@ def chain(house, n_sessions):
         w = d3.container(maps, bridge)
         fs["after"] = {"reload": w["health"]["slam"]["reload"], "map_id": w["health"]["map"]["map_id"]}
         fs["readback"] = readback(robot, brain)
-    out["fall_back"] = fs
-    out["criteria"], out["verdict"] = verdicts(out, saved_id)
-    return out
 
 
 def verdicts(out, saved_id):
@@ -375,11 +413,57 @@ def verdicts(out, saved_id):
              and c["carried_reported_within"] == c["carried_reported"] and c["carried_same_frame"]
              and c["fell_back"] and c["fall_back_carried"] == 0 and fb_rb.get("carried_from") is None)
     return c, {"6 (laptop part; reload's bar on the Jetson)": "MET" if six else "FAILED",
-               "7": "MET" if seven else "FAILED"}
+               "7": "MET" if seven else "FAILED",
+               "L5 (0 jumps over 0.5 m)": "MET" if c["jumps"] == 0 else "FAILED"}
+
+
+def partial_verdicts(out, saved_id):
+    """Amendment 3's A2: a partial first map is not thrown away. Valid only
+    if session 1 covers at most PARTIAL_AREA of session N's floor and the
+    size rule would have capped a start at least once."""
+    ss = [s for s in out["sessions"] if s.get("probe")]
+    c = {"sessions": len(ss) == SESSIONS and all(
+        (s.get("remap") or {}).get("result") in ("mapping", "capped") for s in ss[1:])}
+    c["capped_sessions"] = [s["n"] for s in ss if (s.get("remap") or {}).get("result") == "capped"]
+    c["per_session"] = [{k: s["graph"].get(k) for k in ("map_id", "version", "mb", "area_m2",
+                                                       "size_ratio", "cap_ratio", "cap_basis")}
+                        for s in ss]
+    # A session whose reload did not match (fell back, failed) threw the map
+    # away as surely as a cap (review): FAILED, never INVALID.
+    c["not_reloaded"] = [s["n"] for s in out["sessions"][1:] if not s.get("probe")]
+    # Session 1's map's newest version (review): after a wrong cap the last
+    # session is another map, whose area would turn FAILED into INVALID.
+    own = [s for s in ss if s["graph"].get("map_id") == saved_id]
+    a1, aN = ss[0]["graph"].get("area_m2"), own[-1]["graph"].get("area_m2")
+    c["first_area_share"] = round(a1 / aN, 3) if a1 and aN else None
+    # The versions starts 2..N reloaded: sessions 1..N-1's saves.
+    c["size_rule_would_cap"] = [s["n"] + 1 for s in ss[:-1]
+                                if (s["graph"].get("size_ratio") or 0) > GROWTH]
+    c["contacts"] = sum(s["sampler"]["contacts"] for s in ss)
+    c["jumps"] = sum(len(s["sampler"]["jumps"]) for s in ss)
+    for k in ("lag_p90_ms", "mem_peak_mib"):
+        c[k] = [s["probe"][k] for s in ss]
+    rb = out["readback"].get("readback") or {}
+    rep_ = [d for d in rb.get("carried", []) if d["reported"]]
+    c["carried"], c["carried_reported"] = len(rb.get("carried", [])), len(rep_)
+    c["carried_reported_within"] = sum(d["truth_m"] is not None and d["truth_m"] <= CARRY_M
+                                       for d in rep_)
+    c["carried_same_frame"] = rb.get("frame_id") == saved_id
+    valid = (c["sessions"] and c["first_area_share"] is not None
+             and c["first_area_share"] <= PARTIAL_AREA and bool(c["size_rule_would_cap"]))
+    met = (not c["capped_sessions"] and c["carried"] > 0 and c["carried_reported"] > 0
+           and c["carried_reported_within"] == c["carried_reported"] and c["carried_same_frame"])
+    thrown = c["capped_sessions"] or c["not_reloaded"]
+    a2 = "FAILED" if thrown else ("MET" if met else "FAILED") if valid else \
+        "INVALID (session 1 not partial enough, or the size rule would not have capped)"
+    return c, {"A2 (a partial first map is kept)": a2,
+               "L5 (0 jumps over 0.5 m)": "MET" if c["jumps"] == 0 else "FAILED"}
 
 
 def main(argv):
     global SESSIONS
+    if PARTIAL:
+        SESSIONS = PARTIAL_SESSIONS
     if "--sessions" in argv:
         SESSIONS = int(argv[argv.index("--sessions") + 1])
     houses = [a for a in argv if a in HOUSES] or list(HOUSES)
@@ -406,7 +490,9 @@ def main(argv):
                                    or got.get("lifelong_running") != lifelong
                                    or got.get("map_cap") != float(want["PICAR_MAP_CAP"])):
             res["verdict"] = {k: f"INVALID (bridge read {got}; arm {ARM})" for k in res["verdict"]}
-        name = f"{house}{'' if ARM == 'base' else f'-{ARM}'}{'' if SESSIONS == 10 else f'-n{SESSIONS}'}.json"
+        n_std = PARTIAL_SESSIONS if PARTIAL else 10
+        name = (f"{house}{'' if ARM == 'base' else f'-{ARM}'}{'-partial' if PARTIAL else ''}"
+                f"{'' if SESSIONS == n_std else f'-n{SESSIONS}'}.json")
         out_dir = os.path.join(OUT, "smoke") if SMOKE_S else OUT
         os.makedirs(out_dir, exist_ok=True)
         with open(os.path.join(out_dir, name), "w") as f:

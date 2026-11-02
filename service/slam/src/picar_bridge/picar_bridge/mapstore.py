@@ -19,6 +19,7 @@ laptop (tests/test_map_persist.py).
 """
 
 import json
+import math
 import os
 import re
 import shutil
@@ -49,6 +50,13 @@ def _bytes(v) -> Optional[int]:
     return v if isinstance(v, int) and not isinstance(v, bool) and v > 0 else None
 
 
+def _area(v) -> Optional[float]:
+    """A recorded floor area: a finite positive number, else unknown."""
+    if isinstance(v, bool) or not isinstance(v, (int, float)):
+        return None
+    return float(v) if math.isfinite(v) and v > 0 else None
+
+
 def first_bytes_of(meta: Optional[dict]) -> Optional[int]:
     """The map's first version's graph size, from a version's meta: its
     `first_bytes`, else (written before 3.50.D5) its own files."""
@@ -77,12 +85,28 @@ def growth(meta: Optional[dict]) -> Optional[float]:
     return sum(files.values()) / first
 
 
-def over_cap(meta: Optional[dict], cap: float) -> bool:
-    """The size cap (PICAR_MAP_CAP, a growth ratio; 0 is off): a saved map
-    grown past `cap` times its first version is not reloaded -- the session
-    maps afresh from the dock. Unknown growth is never over the cap."""
+def cap_ratio(meta: Optional[dict]) -> tuple:
+    """3.50.D5 amendment 3: what the cap judges, as (ratio, basis). With an
+    area recorded at this version and at the first one, the growth of bytes
+    per square metre mapped ("area"): new floor adds area as well as bytes,
+    re-driving known floor only bytes. Otherwise the size growth ("size"),
+    or (None, None) when that is unknown too."""
     g = growth(meta)
-    return cap > 0 and g is not None and g > cap
+    if g is None:
+        return None, None
+    area, first = _area(meta.get("area_m2")), _area(meta.get("first_area_m2"))
+    if area and first:
+        return round(g * first / area, 6), "area"
+    return g, "size"
+
+
+def over_cap(meta: Optional[dict], cap: float) -> bool:
+    """The cap (PICAR_MAP_CAP, a growth ratio; 0 is off): a saved map grown
+    past `cap` times its first version, per square metre where both areas
+    are known (cap_ratio), is not reloaded -- the session maps afresh from
+    the dock. Unknown growth is never over the cap."""
+    r, _ = cap_ratio(meta)
+    return cap > 0 and r is not None and r > cap
 
 
 class SaveFailed(Exception):
@@ -168,7 +192,8 @@ class MapStore:
         self._live.add(staging)
         return Pending(map_id, version, staging)
 
-    def commit(self, pending: Pending, *, session: str, start_truth: Optional[dict]) -> dict:
+    def commit(self, pending: Pending, *, session: str, start_truth: Optional[dict],
+               area_m2: Optional[float] = None) -> dict:
         """Make the staged files version N and the current map. Raises
         SaveFailed (and removes the staging) if slam_toolbox's files are
         missing or empty. `start_truth` is kept from the map's first save:
@@ -185,7 +210,20 @@ class MapStore:
             kept_start = earlier["start_truth"] if earlier else start_truth
             # 3.50.D5: the map's first version's size, carried, for the cap
             # (an older meta without it: its own files, the nearest known).
-            first_bytes = (first_bytes_of(earlier) if earlier else None) or sum(sizes.values())
+            carried = first_bytes_of(earlier) if earlier else None
+            first_bytes = carried or sum(sizes.values())
+            # Amendment 3: the floor mapped, and the first version's, carried
+            # as a pair with first_bytes -- an earlier version that recorded
+            # no area leaves it unknown (the size rule), never this one's.
+            area = _area(area_m2)
+            first_area = _area(earlier.get("first_area_m2")) if carried else area
+            area_carried = False
+            if area is None and first_area:
+                # Review: one save without a /map must not put the map back
+                # on the size rule. The newest kept version's area stands in
+                # (a map's floor does not shrink), marked as carried.
+                area = self._newest_area(pending.map_id)
+                area_carried = area is not None
             if kept_start is None and session == first_session:
                 # A first save before the start truth arrived: the same
                 # session's start is the map frame's, so it fills it in. A
@@ -201,6 +239,9 @@ class MapStore:
                 "start_truth": kept_start,
                 "files": sizes,
                 "first_bytes": first_bytes,
+                "area_m2": area,
+                "first_area_m2": first_area,
+                "area_carried": area_carried,
             }
             _fsync_write(os.path.join(pending.staging, META), json.dumps(meta, indent=1))
             for ext in GRAPH_FILES:
@@ -240,7 +281,7 @@ class MapStore:
         Its start_truth may have been None (saved before it arrived) and
         filled by a later version of the same first session, so the first
         non-None start_truth of any kept version is carried."""
-        oldest, first_bytes = None, None
+        oldest, first_bytes, first_area = None, None, None
         for v in versions:
             try:
                 with open(os.path.join(self._map_dir(map_id), f"v{v}", META)) as f:
@@ -255,13 +296,31 @@ class MapStore:
                     oldest = dict(meta)
                 # 3.50.D5: the first recorded first_bytes of any kept version,
                 # so pruning the oldest never moves the cap's baseline.
-                first_bytes = first_bytes or _bytes(meta.get("first_bytes"))
+                if not first_bytes and _bytes(meta.get("first_bytes")):
+                    # Amendment 3: the area from the same meta, so the pair
+                    # describes one version (None if it recorded none).
+                    first_bytes = _bytes(meta.get("first_bytes"))
+                    first_area = _area(meta.get("first_area_m2"))
                 if oldest["start_truth"] is None and meta["start_truth"] is not None \
                         and meta["first_session"] == oldest["first_session"]:
                     oldest["start_truth"] = meta["start_truth"]
         if oldest is not None and first_bytes:
             oldest["first_bytes"] = first_bytes
+            oldest["first_area_m2"] = first_area
         return oldest
+
+    def _newest_area(self, map_id: str) -> Optional[float]:
+        """The newest kept version's recorded `area_m2`, or None."""
+        for v in reversed(self.versions(map_id)):
+            try:
+                with open(os.path.join(self._map_dir(map_id), f"v{v}", META)) as f:
+                    meta = json.load(f)
+            except (OSError, ValueError):
+                continue
+            got = _area(meta.get("area_m2")) if isinstance(meta, dict) else None
+            if got:
+                return got
+        return None
 
     def _point_at(self, map_id: str, version: int) -> None:
         # Not by pid: a container's pids repeat, and two stacks may share a volume.

@@ -184,6 +184,9 @@ MAP_DIR = os.environ.get("PICAR_MAP_DIR", "/maps")
 # slam_toolbox writes the graph in well under a second for a house
 # (3.50.D1: 0.4 s for 7 MB); a save stuck this long is abandoned.
 SAVE_TIMEOUT_S = 30.0
+# 3.50.D5 amendment 3: how long a save waits for the node's first /map to
+# read its area (slam.yaml's map_update_interval is 1 s).
+MAP_AREA_WAIT_S = 3.0
 # 3.50.D3: with a saved map in the store, slam_toolbox starts localising on
 # it from the dock. PICAR_MAP_RELOAD=0 keeps a fresh map every start (a run
 # that must map from empty while a store is mounted).
@@ -214,6 +217,19 @@ def _map_cap(raw: str) -> float:
 
 
 MAP_CAP = _map_cap(os.environ.get("PICAR_MAP_CAP", "1.5"))
+
+
+def _known_area(grid):
+    """3.50.D5 amendment 3: the floor a /map grid has mapped (free or
+    occupied cells, m^2), recorded at a save for the cap; None without one."""
+    if not grid:
+        return None
+    try:
+        data = grid["data"]
+        known = len(data) - data.count(-1)
+        return known * grid["resolution_m"] ** 2 or None
+    except (KeyError, TypeError):
+        return None
 # A stopped node's last map -> odom is stamped up to slam.yaml's
 # transform_timeout (0.2 s) ahead: a fresh node's frame starts after it.
 SLAM_TF_LEAD_S = 0.25
@@ -1233,11 +1249,16 @@ class Bridge(Node):
             self._start_fresh({"result": "none" if MAP_RELOAD else "off"})
             return
         if mapstore.over_cap(saved.meta, MAP_CAP):
-            g = mapstore.growth(saved.meta)
-            self.get_logger().warning(f"saved map {saved.map_id} v{saved.version} is {g:.2f}x its "
-                                      f"first version (cap {MAP_CAP}): starting a fresh map")
+            r, basis = mapstore.cap_ratio(saved.meta)
+            per = " per square metre" if basis == "area" else ""
+            self.get_logger().warning(f"saved map {saved.map_id} v{saved.version} is {r:.2f}x its "
+                                      f"first version{per} (cap {MAP_CAP}): starting a fresh map")
+            # `growth` stays the size growth (as in the trial's records);
+            # `ratio` is what the cap judged, on `basis` (amendment 3).
             self._start_fresh({"result": "capped", "map_id": saved.map_id,
-                               "version": saved.version, "growth": round(g, 3), "cap": MAP_CAP})
+                               "version": saved.version,
+                               "growth": round(mapstore.growth(saved.meta), 3),
+                               "ratio": round(r, 3), "basis": basis, "cap": MAP_CAP})
             return
         d = saved.meta.get("dock_pose")
         try:
@@ -1743,6 +1764,20 @@ class Bridge(Node):
                 self._saving = False
             raise
 
+    def _map_for_area(self):
+        """3.50.D5 amendment 3 (review): the running node's /map for the
+        save's area. Every SLAM start clears `last_map`, so a save queued
+        behind a re-map's swap can serialise before the new node's first
+        /map (map_update_interval 1 s): wait for it briefly rather than
+        record no area, which would put that version on the size rule."""
+        end = time.monotonic() + MAP_AREA_WAIT_S
+        while True:
+            with self.lock:
+                grid = self.last_map
+            if grid is not None or time.monotonic() >= end:
+                return grid
+            time.sleep(0.1)
+
     def _save_map(self, why: str) -> None:
         """slam_toolbox serialises into a staging directory; the store makes
         it the next version only if both files arrived. Any failure leaves
@@ -1790,7 +1825,8 @@ class Bridge(Node):
                 raise mapstore.SaveFailed(f"serialize_map failed ({getattr(result, 'result', None)})")
             with self.lock:
                 start = self.start_truth
-            meta = self.map_store.commit(pending, session=self.session, start_truth=start)
+            meta = self.map_store.commit(pending, session=self.session, start_truth=start,
+                                         area_m2=_known_area(self._map_for_area()))
         except Exception as e:  # noqa: BLE001 -- a failed save is a state, not a crash
             error = f"{type(e).__name__}: {e}"[:300]
             if pending is not None:

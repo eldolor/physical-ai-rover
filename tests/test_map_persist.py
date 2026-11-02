@@ -1312,6 +1312,7 @@ def test_a_trigger_that_cannot_start_a_re_map_backs_off(bridge_mod, monkeypatch,
 def test_a_mission_end_during_the_swap_saves_once_it_is_mapping(bridge_mod, monkeypatch, tmp_path):
     """Thermos (low): the re-map session's cells are not lost to a skip."""
     b, live, store = _matched(bridge_mod, monkeypatch, tmp_path)
+    monkeypatch.setattr(bridge_mod, "MAP_AREA_WAIT_S", 0.2)   # no /map from the fake node
     b.serialize_cli = _Serialise()
     monkeypatch.setattr(bridge_mod, "SerializePoseGraph", types.SimpleNamespace(
         Request=types.SimpleNamespace, Response=types.SimpleNamespace(RESULT_SUCCESS=0)))
@@ -1894,6 +1895,7 @@ def test_a_map_grown_past_the_cap_is_not_reloaded(bridge_mod, monkeypatch, tmp_p
     b.start_slam()
     assert fake.calls == [("mapping", None, None)]                  # never localised
     assert b.reload["result"] == "capped" and b.reload["growth"] == 1.6
+    assert b.reload["ratio"] == 1.6 and b.reload["basis"] == "size"
     assert b.map_id != "map-0a1b2c3d" and b.reload_matched is False
     assert b.health()[1]["slam"]["map_cap"] == 1.5
 
@@ -1909,3 +1911,148 @@ def test_health_names_the_settings_lifelong_and_cap_on_by_default(bridge_mod):
     assert bridge_mod.SLAM_LIFELONG is True and bridge_mod.MAP_CAP == 1.5
     slam = bridge_mod.Bridge().health()[1]["slam"]
     assert slam["lifelong"] is True and slam["map_cap"] == 1.5
+
+
+# ---------- 3.50.D5 amendment 3: the cap on growth per square metre mapped ----------
+
+def _save_area(store, map_id, size, area, session="s1"):
+    pending = store.begin(map_id)
+    _fake_serialise(pending.prefix, size)
+    return store.commit(pending, session=session, start_truth=None, area_m2=area)
+
+
+def test_a_map_that_grows_by_covering_new_floor_is_not_capped(tmp_path):
+    """A partial first map (the review's item 1): bytes and area grow together."""
+    store = MapStore(str(tmp_path))
+    m1 = _save_area(store, "map-0a1b2c3d", 10, 20.0)
+    assert m1["area_m2"] == 20.0 and m1["first_area_m2"] == 20.0
+    m2 = _save_area(store, "map-0a1b2c3d", 30, 60.0, session="s2")    # 3x bytes, 3x floor
+    assert m2["first_bytes"] == 20 and m2["first_area_m2"] == 20.0
+    assert mapstore.growth(m2) == 3.0                                 # raw size, recorded
+    assert mapstore.cap_ratio(m2) == (1.0, "area")
+    assert not mapstore.over_cap(m2, 1.5)
+
+
+def test_a_map_that_grows_over_the_same_floor_is_capped(tmp_path):
+    store = MapStore(str(tmp_path))
+    _save_area(store, "map-0a1b2c3d", 10, 20.0)
+    m = _save_area(store, "map-0a1b2c3d", 20, 25.0, session="s2")     # 2x bytes, 1.25x floor
+    assert mapstore.cap_ratio(m) == (1.6, "area")
+    assert mapstore.over_cap(m, 1.5)
+    for _ in range(3):                                                # v1 pruned: still carried
+        m = _save_area(store, "map-0a1b2c3d", 20, 25.0, session="s3")
+    assert 1 not in store.versions("map-0a1b2c3d")
+    assert m["first_area_m2"] == 20.0 and mapstore.cap_ratio(m) == (1.6, "area")
+
+
+def test_without_a_recorded_area_the_size_rule_applies(tmp_path):
+    """A map whose first version recorded no area keeps the size rule: its
+    baseline's area is unknown."""
+    store = MapStore(str(tmp_path))
+    _save_area(store, "map-0a1b2c3d", 10, None)
+    m = _save_area(store, "map-0a1b2c3d", 20, 80.0, session="s2")
+    assert m["first_area_m2"] is None and m["area_m2"] == 80.0
+    assert mapstore.cap_ratio(m) == (2.0, "size") and mapstore.over_cap(m, 1.5)
+
+
+def test_one_save_without_an_area_keeps_the_area_rule(tmp_path):
+    """Review: a version saved with no /map carries the newest area rather
+    than put the map back on the size rule."""
+    store = MapStore(str(tmp_path))
+    _save_area(store, "map-0a1b2c3d", 10, 20.0)
+    _save_area(store, "map-0a1b2c3d", 30, 60.0, session="s2")
+    m = _save_area(store, "map-0a1b2c3d", 30, None, session="s3")
+    assert m["area_m2"] == 60.0 and m["area_carried"] is True
+    assert mapstore.cap_ratio(m) == (1.0, "area") and not mapstore.over_cap(m, 1.5)
+
+
+@pytest.mark.parametrize("bad", [0, 0.0, -5.0, float("nan"), float("inf"), True, "20"])
+def test_an_unusable_area_is_not_recorded(tmp_path, bad):
+    store = MapStore(str(tmp_path))
+    m = _save_area(store, "map-0a1b2c3d", 10, bad)
+    assert m["area_m2"] is None and m["first_area_m2"] is None
+
+
+def test_the_area_baseline_comes_from_the_same_version_as_the_size_baseline(tmp_path):
+    """v1 recorded first_bytes but no area (saved before amendment 3): a
+    later version's area must not be paired with v1's bytes."""
+    store = MapStore(str(tmp_path))
+    _save_area(store, "map-0a1b2c3d", 10, None)
+    for _ in range(4):                                                # v1 pruned in turn
+        m = _save_area(store, "map-0a1b2c3d", 12, 30.0, session="s2")
+    assert m["first_bytes"] == 20 and m["first_area_m2"] is None
+
+
+def test_the_bridge_records_the_known_floor_of_its_map_at_a_save(bridge_mod, monkeypatch, tmp_path):
+    b, live, store = _matched(bridge_mod, monkeypatch, tmp_path)
+    assert b.remap("request")[0] == 200
+    _settle(b)
+    b.serialize_cli = _Serialise()
+    monkeypatch.setattr(bridge_mod, "SerializePoseGraph", types.SimpleNamespace(
+        Request=types.SimpleNamespace, Response=types.SimpleNamespace(RESULT_SUCCESS=0)))
+    grid = _room_grid()
+    grid["data"] = [-1] * 40 + grid["data"][40:]                      # 40 cells unknown
+    b.last_map = {**grid, "session": b.session, "version": 2}
+    b._save_map("mission_end")
+    meta = store.current().meta
+    known = grid["width"] * grid["height"] - 40
+    assert meta["area_m2"] == pytest.approx(known * RES * RES)
+
+
+def _saving_bridge(bridge_mod, monkeypatch, tmp_path):
+    b, live, store = _matched(bridge_mod, monkeypatch, tmp_path)
+    assert b.remap("request")[0] == 200
+    _settle(b)
+    b.serialize_cli = _Serialise()
+    monkeypatch.setattr(bridge_mod, "SerializePoseGraph", types.SimpleNamespace(
+        Request=types.SimpleNamespace, Response=types.SimpleNamespace(RESULT_SUCCESS=0)))
+    return b, store
+
+
+def test_a_save_before_the_new_node_s_first_map_waits_for_it(bridge_mod, monkeypatch, tmp_path):
+    """Review: a save queued behind a re-map's swap serialises before the
+    node's first /map (every SLAM start clears it); it waits, then reads it."""
+    b, store = _saving_bridge(bridge_mod, monkeypatch, tmp_path)
+    b.last_map = None
+    late = __import__("threading").Timer(
+        0.3, lambda: setattr(b, "last_map", {**_room_grid(), "session": b.session, "version": 3}))
+    late.start()
+    b._save_map("mission_end")
+    grid = _room_grid()
+    assert store.current().meta["area_m2"] == pytest.approx(grid["width"] * grid["height"] * RES * RES)
+
+
+def test_a_save_with_no_map_at_all_records_no_area(bridge_mod, monkeypatch, tmp_path):
+    b, store = _saving_bridge(bridge_mod, monkeypatch, tmp_path)
+    monkeypatch.setattr(bridge_mod, "MAP_AREA_WAIT_S", 0.2)
+    b.last_map = None
+    b._save_map("mission_end")
+    assert b.map_saves["saved"] == 1 and store.current().meta["area_m2"] is None
+
+
+def test_a_capped_start_names_the_rule_it_used(bridge_mod, monkeypatch, tmp_path):
+    b, fake, store = _reload_bridge(bridge_mod, monkeypatch, tmp_path,
+                                    relocalise.judge([0.9] * 5, (0.0, 0.0, 0.0)))
+    # _reload_bridge's v1 has no area: re-save a map whose first version has one.
+    store2 = MapStore(str(tmp_path / "area"))
+    _save_area(store2, "map-0a1b2c3d", 10, 20.0)
+    _save_area(store2, "map-0a1b2c3d", 20, 25.0, session="s2")
+    monkeypatch.setattr(b, "map_store", store2)
+    monkeypatch.setattr(bridge_mod, "MAP_CAP", 1.5)
+    b.start_slam()
+    assert b.reload["result"] == "capped"
+    assert b.reload["growth"] == 2.0                    # the size growth, as before
+    assert b.reload["ratio"] == 1.6 and b.reload["basis"] == "area"
+
+
+def test_a_re_map_on_an_over_cap_store_extends_it_never_starts_afresh(
+        bridge_mod, monkeypatch, tmp_path):
+    """Item 3's rule: only a start from the dock may begin a fresh map."""
+    b, live, store = _matched(bridge_mod, monkeypatch, tmp_path)
+    _save_sized(store, "map-0a1b2c3d", 50, session="s2")              # now 5x v1
+    assert mapstore.over_cap(store.current().meta, 1.5)
+    monkeypatch.setattr(bridge_mod, "MAP_CAP", 1.5)
+    assert b.remap("request")[0] == 200
+    _settle(b)
+    assert live.calls[-1][0] == "mapping" and live.calls[-1][1] is not None   # on the saved graph
+    assert b.map_id == "map-0a1b2c3d"
