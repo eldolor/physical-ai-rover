@@ -1,6 +1,6 @@
 {
  "axe": "4.10.3",
- "commit": "7c4ce23d7",
+ "commit": "43b397910",
  "states": {
   "twin.battery_low": {
    "M2L_light_contrast": {
@@ -31,10 +31,10 @@
    },
    "brain": {
     "cancelled_by": "stop",
-    "last_action": "RIGHT",
+    "last_action": "FORWARD",
     "outcome": "cancelled",
     "running": false,
-    "step": 17
+    "step": 16
    },
    "scroll": {
     "clientWidth": 390,
@@ -71,10 +71,10 @@
    },
    "brain": {
     "cancelled_by": "stop",
-    "last_action": "RIGHT",
+    "last_action": "FORWARD",
     "outcome": "cancelled",
     "running": false,
-    "step": 17
+    "step": 16
    },
    "scroll": {
     "clientWidth": 390,
@@ -111,10 +111,10 @@
    },
    "brain": {
     "cancelled_by": "stop",
-    "last_action": "RIGHT",
+    "last_action": "FORWARD",
     "outcome": "cancelled",
     "running": false,
-    "step": 17
+    "step": 16
    },
    "scroll": {
     "clientWidth": 390,
@@ -224,10 +224,10 @@
    },
    "brain": {
     "cancelled_by": "stop",
-    "last_action": "RIGHT",
+    "last_action": "FORWARD",
     "outcome": "cancelled",
     "running": false,
-    "step": 17
+    "step": 16
    },
    "scroll": {
     "clientWidth": 390,
@@ -368,10 +368,10 @@
    },
    "brain": {
     "cancelled_by": "stop",
-    "last_action": "RIGHT",
+    "last_action": "FORWARD",
     "outcome": "cancelled",
     "running": false,
-    "step": 17
+    "step": 16
    },
    "scroll": {
     "clientWidth": 390,
@@ -440,10 +440,10 @@
    },
    "brain": {
     "cancelled_by": null,
-    "last_action": "RIGHT",
+    "last_action": "FORWARD",
     "outcome": "running",
     "running": true,
-    "step": 17
+    "step": 16
    },
    "scroll": {
     "clientWidth": 390,

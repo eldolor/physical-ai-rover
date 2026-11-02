@@ -817,8 +817,8 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   toast for `nav2_starting` reads "(still starting up)", no longer "(starting,
   or restarting)"; pinned by `tests/test_twin_strings.py`. The twin is NOT
   deployed with it yet (the user's go).
-* **The battery ladder (3.137.A), merged 2026-11-01** (B, C, E open; D waits
-  on the Rover). The robot server decides on the board's `v`
+* **The battery ladder (3.137.A), merged 2026-11-01; the twin's three states
+  (3.137.B) merged 2026-11-02** (C, E open; D waits on the Rover). The robot server decides on the board's `v`
   (`robot/battery_ladder.py`, `battery:` in `config/robot.yaml`; levels
   placeholders until E): Low 10.5 V (no mission starts), Reserve 10.2 V
   (latched; autonomy refused `battery_reserve`, a person's D-pad at speed 30,
@@ -829,6 +829,13 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   (`battery_check`). Criterion 1a FAILED as written (Reserve 2-3 s after the
   crossing, the re-read included; kept by the user), 1b-1d and 2 met, live
   run met. Sim pack: `sim/battery.py` (`SIM_BATTERY_*`).
+  **3.137.B:** the twin's `#battery-banner`, on every tab from `GET /battery`
+  (5 s, 1 s at Reserve): "Battery low", "Battery reserve: shutting down in
+  N s", "Powered off: unplug the battery" (kept through the robot's silence
+  and a reload, `vp_battery_poweroff`); Engineer mode adds volts and steps;
+  a Start refused `battery_low:` worded. B1-B6 met (live lag <= 2.8 s, bar
+  6; M2/M2L/M3/M4/M5/M7 0 in each state). The twin is NOT deployed with it
+  yet (the user's go).
 * **Live checks on the Rover (3.140): the harness (A) merged 2026-11-02;
   B-J wait on the Rover.** `evaluations/rover-live-3140/run.py` runs one row
   at a time on 3.136's `boardrun` (`bench-3140`): rows read from the section

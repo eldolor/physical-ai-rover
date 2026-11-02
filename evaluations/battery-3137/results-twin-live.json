@@ -1,433 +1,398 @@
 {
- "commit": "7c4ce23d7",
+ "commit": "43b397910",
  "v0": 10.62,
  "drain_v_per_s": 0.01,
  "server": {
   "ok": {
-   "t_s": 1.1,
+   "t_s": 1.06,
    "v": 10.61
   },
   "low": {
-   "t_s": 12.96,
+   "t_s": 12.74,
    "v": 10.48
   },
   "reserve": {
-   "t_s": 43.14,
+   "t_s": 42.78,
    "v": 10.18
   },
   "poweroff": {
-   "t_s": 63.01,
+   "t_s": 62.99,
    "v": 9.98
   }
  },
  "page": {
   "low": {
-   "t_s": 15.71,
+   "t_s": 15.57,
    "title": "Battery low"
   },
   "reserve": {
-   "t_s": 43.7,
-   "title": "Battery reserve: shutting down in 120 s"
+   "t_s": 45.47,
+   "title": "Battery reserve: shutting down in 118 s"
   },
   "poweroff": {
-   "t_s": 63.85,
+   "t_s": 63.8,
    "title": "Powered off: unplug the battery"
   }
  },
  "countdown": [
   {
-   "t_s": 43.7,
-   "title": "Battery reserve: shutting down in 120 s",
-   "server_poweroff_in_s": 119.2
-  },
-  {
-   "t_s": 43.99,
-   "title": "Battery reserve: shutting down in 120 s",
-   "server_poweroff_in_s": 118.9
-  },
-  {
-   "t_s": 44.25,
-   "title": "Battery reserve: shutting down in 120 s",
-   "server_poweroff_in_s": 118.7
-  },
-  {
-   "t_s": 44.54,
-   "title": "Battery reserve: shutting down in 120 s",
-   "server_poweroff_in_s": 118.4
-  },
-  {
-   "t_s": 44.83,
-   "title": "Battery reserve: shutting down in 119 s",
-   "server_poweroff_in_s": 118.1
-  },
-  {
-   "t_s": 45.09,
-   "title": "Battery reserve: shutting down in 119 s",
-   "server_poweroff_in_s": 117.8
-  },
-  {
-   "t_s": 45.35,
-   "title": "Battery reserve: shutting down in 119 s",
-   "server_poweroff_in_s": 117.6
-  },
-  {
-   "t_s": 45.64,
-   "title": "Battery reserve: shutting down in 119 s",
+   "t_s": 45.47,
+   "title": "Battery reserve: shutting down in 118 s",
    "server_poweroff_in_s": 117.3
   },
   {
-   "t_s": 45.92,
+   "t_s": 45.74,
    "title": "Battery reserve: shutting down in 118 s",
-   "server_poweroff_in_s": 117.0
+   "server_poweroff_in_s": 117.1
   },
   {
-   "t_s": 46.19,
+   "t_s": 46.03,
    "title": "Battery reserve: shutting down in 118 s",
    "server_poweroff_in_s": 116.8
   },
   {
-   "t_s": 46.46,
+   "t_s": 46.31,
    "title": "Battery reserve: shutting down in 118 s",
    "server_poweroff_in_s": 116.5
   },
   {
-   "t_s": 46.74,
+   "t_s": 46.58,
    "title": "Battery reserve: shutting down in 117 s",
    "server_poweroff_in_s": 116.2
   },
   {
-   "t_s": 47.03,
+   "t_s": 46.87,
    "title": "Battery reserve: shutting down in 117 s",
-   "server_poweroff_in_s": 115.9
+   "server_poweroff_in_s": 116.0
   },
   {
-   "t_s": 47.31,
+   "t_s": 47.15,
    "title": "Battery reserve: shutting down in 117 s",
    "server_poweroff_in_s": 115.6
   },
   {
-   "t_s": 47.6,
+   "t_s": 47.44,
    "title": "Battery reserve: shutting down in 117 s",
    "server_poweroff_in_s": 115.3
   },
   {
-   "t_s": 47.88,
+   "t_s": 47.7,
    "title": "Battery reserve: shutting down in 116 s",
-   "server_poweroff_in_s": 115.0
+   "server_poweroff_in_s": 115.1
   },
   {
-   "t_s": 48.26,
+   "t_s": 47.98,
    "title": "Battery reserve: shutting down in 116 s",
-   "server_poweroff_in_s": 114.7
+   "server_poweroff_in_s": 114.8
+  },
+  {
+   "t_s": 48.24,
+   "title": "Battery reserve: shutting down in 116 s",
+   "server_poweroff_in_s": 114.5
   },
   {
    "t_s": 48.53,
-   "title": "Battery reserve: shutting down in 116 s",
-   "server_poweroff_in_s": 114.4
+   "title": "Battery reserve: shutting down in 115 s",
+   "server_poweroff_in_s": 114.3
   },
   {
-   "t_s": 48.82,
+   "t_s": 48.79,
    "title": "Battery reserve: shutting down in 115 s",
-   "server_poweroff_in_s": 114.1
+   "server_poweroff_in_s": 114.0
   },
   {
-   "t_s": 49.1,
+   "t_s": 49.07,
    "title": "Battery reserve: shutting down in 115 s",
-   "server_poweroff_in_s": 113.8
+   "server_poweroff_in_s": 113.7
   },
   {
    "t_s": 49.36,
    "title": "Battery reserve: shutting down in 115 s",
-   "server_poweroff_in_s": 113.6
+   "server_poweroff_in_s": 113.4
   },
   {
-   "t_s": 49.65,
-   "title": "Battery reserve: shutting down in 115 s",
-   "server_poweroff_in_s": 113.3
-  },
-  {
-   "t_s": 49.91,
+   "t_s": 49.63,
    "title": "Battery reserve: shutting down in 114 s",
-   "server_poweroff_in_s": 113.0
+   "server_poweroff_in_s": 113.2
   },
   {
-   "t_s": 50.17,
+   "t_s": 49.99,
    "title": "Battery reserve: shutting down in 114 s",
    "server_poweroff_in_s": 112.8
   },
   {
-   "t_s": 50.43,
+   "t_s": 50.28,
    "title": "Battery reserve: shutting down in 114 s",
    "server_poweroff_in_s": 112.5
   },
   {
-   "t_s": 50.71,
-   "title": "Battery reserve: shutting down in 114 s",
-   "server_poweroff_in_s": 112.2
-  },
-  {
-   "t_s": 50.98,
+   "t_s": 50.54,
    "title": "Battery reserve: shutting down in 113 s",
-   "server_poweroff_in_s": 111.9
+   "server_poweroff_in_s": 112.3
   },
   {
-   "t_s": 51.26,
+   "t_s": 50.83,
+   "title": "Battery reserve: shutting down in 113 s",
+   "server_poweroff_in_s": 112.0
+  },
+  {
+   "t_s": 51.11,
    "title": "Battery reserve: shutting down in 113 s",
    "server_poweroff_in_s": 111.7
   },
   {
-   "t_s": 51.53,
+   "t_s": 51.37,
    "title": "Battery reserve: shutting down in 113 s",
    "server_poweroff_in_s": 111.4
   },
   {
-   "t_s": 51.8,
+   "t_s": 51.63,
    "title": "Battery reserve: shutting down in 112 s",
-   "server_poweroff_in_s": 111.1
+   "server_poweroff_in_s": 111.2
   },
   {
-   "t_s": 52.09,
+   "t_s": 51.91,
    "title": "Battery reserve: shutting down in 112 s",
-   "server_poweroff_in_s": 110.8
+   "server_poweroff_in_s": 110.9
   },
   {
-   "t_s": 52.35,
+   "t_s": 52.2,
    "title": "Battery reserve: shutting down in 112 s",
    "server_poweroff_in_s": 110.6
   },
   {
-   "t_s": 52.64,
+   "t_s": 52.46,
    "title": "Battery reserve: shutting down in 112 s",
    "server_poweroff_in_s": 110.3
   },
   {
-   "t_s": 52.92,
+   "t_s": 52.72,
    "title": "Battery reserve: shutting down in 111 s",
-   "server_poweroff_in_s": 110.0
+   "server_poweroff_in_s": 110.1
   },
   {
-   "t_s": 53.18,
+   "t_s": 52.98,
    "title": "Battery reserve: shutting down in 111 s",
    "server_poweroff_in_s": 109.8
   },
   {
-   "t_s": 53.44,
+   "t_s": 53.26,
    "title": "Battery reserve: shutting down in 111 s",
    "server_poweroff_in_s": 109.5
   },
   {
-   "t_s": 53.73,
-   "title": "Battery reserve: shutting down in 111 s",
-   "server_poweroff_in_s": 109.2
+   "t_s": 53.55,
+   "title": "Battery reserve: shutting down in 110 s",
+   "server_poweroff_in_s": 109.3
   },
   {
-   "t_s": 53.99,
+   "t_s": 53.83,
    "title": "Battery reserve: shutting down in 110 s",
    "server_poweroff_in_s": 109.0
   },
   {
-   "t_s": 54.24,
+   "t_s": 54.08,
    "title": "Battery reserve: shutting down in 110 s",
    "server_poweroff_in_s": 108.7
   },
   {
-   "t_s": 54.5,
+   "t_s": 54.37,
    "title": "Battery reserve: shutting down in 110 s",
-   "server_poweroff_in_s": 108.4
+   "server_poweroff_in_s": 108.5
   },
   {
-   "t_s": 54.79,
+   "t_s": 54.65,
    "title": "Battery reserve: shutting down in 109 s",
-   "server_poweroff_in_s": 108.2
+   "server_poweroff_in_s": 108.1
   },
   {
-   "t_s": 55.07,
+   "t_s": 54.93,
    "title": "Battery reserve: shutting down in 109 s",
    "server_poweroff_in_s": 107.8
   },
   {
-   "t_s": 55.35,
+   "t_s": 55.22,
    "title": "Battery reserve: shutting down in 109 s",
    "server_poweroff_in_s": 107.6
   },
   {
-   "t_s": 55.64,
+   "t_s": 55.5,
    "title": "Battery reserve: shutting down in 109 s",
    "server_poweroff_in_s": 107.3
   },
   {
-   "t_s": 55.92,
+   "t_s": 55.77,
    "title": "Battery reserve: shutting down in 108 s",
    "server_poweroff_in_s": 107.0
   },
   {
-   "t_s": 56.18,
+   "t_s": 56.05,
    "title": "Battery reserve: shutting down in 108 s",
    "server_poweroff_in_s": 106.7
   },
   {
-   "t_s": 56.44,
+   "t_s": 56.34,
    "title": "Battery reserve: shutting down in 108 s",
    "server_poweroff_in_s": 106.5
   },
   {
-   "t_s": 56.7,
-   "title": "Battery reserve: shutting down in 108 s",
+   "t_s": 56.62,
+   "title": "Battery reserve: shutting down in 107 s",
    "server_poweroff_in_s": 106.2
   },
   {
-   "t_s": 56.96,
+   "t_s": 56.9,
    "title": "Battery reserve: shutting down in 107 s",
-   "server_poweroff_in_s": 106.0
+   "server_poweroff_in_s": 105.9
   },
   {
-   "t_s": 57.23,
+   "t_s": 57.18,
    "title": "Battery reserve: shutting down in 107 s",
-   "server_poweroff_in_s": 105.7
+   "server_poweroff_in_s": 105.6
   },
   {
-   "t_s": 57.5,
+   "t_s": 57.45,
    "title": "Battery reserve: shutting down in 107 s",
    "server_poweroff_in_s": 105.4
   },
   {
-   "t_s": 57.78,
-   "title": "Battery reserve: shutting down in 107 s",
-   "server_poweroff_in_s": 105.2
-  },
-  {
-   "t_s": 58.06,
+   "t_s": 57.73,
    "title": "Battery reserve: shutting down in 106 s",
-   "server_poweroff_in_s": 104.9
+   "server_poweroff_in_s": 105.1
   },
   {
-   "t_s": 58.33,
+   "t_s": 58.02,
    "title": "Battery reserve: shutting down in 106 s",
-   "server_poweroff_in_s": 104.6
+   "server_poweroff_in_s": 104.8
   },
   {
-   "t_s": 58.59,
+   "t_s": 58.3,
    "title": "Battery reserve: shutting down in 106 s",
-   "server_poweroff_in_s": 104.4
+   "server_poweroff_in_s": 104.5
   },
   {
-   "t_s": 58.87,
+   "t_s": 58.58,
    "title": "Battery reserve: shutting down in 105 s",
-   "server_poweroff_in_s": 104.0
+   "server_poweroff_in_s": 104.2
   },
   {
-   "t_s": 59.16,
+   "t_s": 58.85,
    "title": "Battery reserve: shutting down in 105 s",
-   "server_poweroff_in_s": 103.8
+   "server_poweroff_in_s": 103.9
   },
   {
-   "t_s": 59.43,
+   "t_s": 59.11,
    "title": "Battery reserve: shutting down in 105 s",
-   "server_poweroff_in_s": 103.5
+   "server_poweroff_in_s": 103.7
   },
   {
-   "t_s": 59.71,
+   "t_s": 59.39,
    "title": "Battery reserve: shutting down in 105 s",
-   "server_poweroff_in_s": 103.2
+   "server_poweroff_in_s": 103.4
   },
   {
-   "t_s": 60.0,
+   "t_s": 59.67,
+   "title": "Battery reserve: shutting down in 104 s",
+   "server_poweroff_in_s": 103.1
+  },
+  {
+   "t_s": 59.93,
    "title": "Battery reserve: shutting down in 104 s",
    "server_poweroff_in_s": 102.9
   },
   {
-   "t_s": 60.28,
+   "t_s": 60.22,
    "title": "Battery reserve: shutting down in 104 s",
    "server_poweroff_in_s": 102.6
   },
   {
-   "t_s": 60.55,
+   "t_s": 60.5,
    "title": "Battery reserve: shutting down in 104 s",
-   "server_poweroff_in_s": 102.4
+   "server_poweroff_in_s": 102.3
   },
   {
-   "t_s": 60.81,
+   "t_s": 60.76,
    "title": "Battery reserve: shutting down in 103 s",
-   "server_poweroff_in_s": 102.1
+   "server_poweroff_in_s": 102.0
   },
   {
-   "t_s": 61.07,
+   "t_s": 61.05,
    "title": "Battery reserve: shutting down in 103 s",
-   "server_poweroff_in_s": 101.9
+   "server_poweroff_in_s": 101.8
   },
   {
-   "t_s": 61.36,
+   "t_s": 61.33,
    "title": "Battery reserve: shutting down in 103 s",
-   "server_poweroff_in_s": 101.6
+   "server_poweroff_in_s": 101.5
   },
   {
-   "t_s": 61.64,
-   "title": "Battery reserve: shutting down in 103 s",
-   "server_poweroff_in_s": 101.3
-  },
-  {
-   "t_s": 61.93,
+   "t_s": 61.61,
    "title": "Battery reserve: shutting down in 102 s",
-   "server_poweroff_in_s": 101.0
+   "server_poweroff_in_s": 101.2
   },
   {
-   "t_s": 62.19,
+   "t_s": 61.9,
    "title": "Battery reserve: shutting down in 102 s",
-   "server_poweroff_in_s": 100.8
+   "server_poweroff_in_s": 100.9
   },
   {
-   "t_s": 62.45,
+   "t_s": 62.16,
    "title": "Battery reserve: shutting down in 102 s",
-   "server_poweroff_in_s": 100.5
+   "server_poweroff_in_s": 100.6
   },
   {
-   "t_s": 62.74,
+   "t_s": 62.42,
    "title": "Battery reserve: shutting down in 102 s",
-   "server_poweroff_in_s": 100.2
+   "server_poweroff_in_s": 100.4
   },
   {
-   "t_s": 63.01,
+   "t_s": 62.7,
+   "title": "Battery reserve: shutting down in 101 s",
+   "server_poweroff_in_s": 100.1
+  },
+  {
+   "t_s": 62.99,
    "title": "Battery reserve: shutting down in 101 s",
    "server_poweroff_in_s": null
   },
   {
-   "t_s": 63.27,
+   "t_s": 63.25,
    "title": "Battery reserve: shutting down in 101 s",
    "server_poweroff_in_s": null
   },
   {
-   "t_s": 63.56,
+   "t_s": 63.51,
    "title": "Battery reserve: shutting down in 101 s",
    "server_poweroff_in_s": null
   }
  ],
  "events": [
   {
-   "t_s": 1.09,
+   "t_s": 1.04,
    "what": "page connected"
   },
   {
-   "t_s": 16.08,
+   "t_s": 15.99,
    "what": "start at low",
    "toast": "Couldn't start: the battery is low. Charge the robot first."
   },
   {
-   "t_s": 20.33,
+   "t_s": 20.23,
    "what": "shot low",
    "title": "Battery low"
   },
   {
-   "t_s": 47.98,
+   "t_s": 49.71,
    "what": "shot reserve",
-   "title": "Battery reserve: shutting down in 116 s"
+   "title": "Battery reserve: shutting down in 114 s"
   },
   {
-   "t_s": 68.07,
+   "t_s": 68.14,
    "what": "shot poweroff",
    "title": "Powered off: unplug the battery"
   },
   {
-   "t_s": 68.29,
+   "t_s": 68.36,
    "what": "robot server stopped"
   }
  ],
@@ -444,7 +409,7 @@
    "poweroff": 10.0
   },
   "checking": null,
-  "reserve_s": 25.1,
+  "reserve_s": 25.3,
   "poweroff_in_s": null,
   "poweroff_why": "at rest",
   "samples": 2,
@@ -460,12 +425,12 @@
    },
    {
     "step": "sync",
-    "t_s": 0.018,
+    "t_s": 0.017,
     "rc": 0
    },
    {
     "step": "poweroff",
-    "t_s": 0.018,
+    "t_s": 0.017,
     "rc": null,
     "stub": true
    }
@@ -484,8 +449,8 @@
  },
  "page_errors": [],
  "lag_s": {
-  "low": 2.75,
-  "reserve": 0.56,
-  "poweroff": 0.84
+  "low": 2.83,
+  "reserve": 2.69,
+  "poweroff": 0.81
  }
 }
