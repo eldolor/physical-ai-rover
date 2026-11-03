@@ -124,7 +124,7 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
 | Motor board | `robot/hardware_robot.py` over the ESP32's JSON serial protocol (R7). `sim/fake_esp32.py` copies the Rover's firmware from source (3.25). Our GPL-3.0 firmware fork adds 0.1 mm odometers and a timestamp; compiled, not flashed (3.28-3.29). | `firmware/`, `docs/motor-board/` |
 | Jetson | JetPack 6.2.1 on the NVMe, 15 W, kept 2026-10-05. The suite, G4 and headroom all pass there (0 late wheel-loop ticks in 14,289). | 3.33-3.37, `tools/jetson/README.md` |
 | Cloud | The twin and console are static on S3 + CloudFront. `/navigate` (Opus 4.5) and the walks API run on Lambda (`cloudformation/serverless.yaml`). The robot and brain run locally, reached through `service/tunnel/`. | `docs/cloud-vision/`, `docs/operations/` |
-| Twin | `web-twin/`: Sim tab (D-pad, map, depth strip, Remote brain panel), Guide tab (Robot view, Drive via brain), Settings. | `docs/guides/FEATURES.md` |
+| Twin | `web-twin/`: Home (Find or Survey, mission card), Drive (D-pad, map, depth strip), Record (Robot view, Guide me, Drive via brain), Settings; a STOP bar on every tab (3.132 Stage 3). | `docs/guides/FEATURES.md` |
 | Recorded walks | S3 storage, scorecard (`walk_eval`), replay under another model (`walk_replay`), corpus scoring (`perception_eval`), labelling help (`label_assist`). | `docs/recordings/` |
 
 ### 3b. Open work, in order
@@ -1048,7 +1048,8 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   the nightly waits in the queue for the exclusive lock, SKIPPED (exit 0, no
   email) after 2 h of a busy desktop. The nightly runs on the Mac only.
 * **A staged UX redesign (3.132), Stages 0-1, 2A and 4 merged 2026-10-31/11-01,
-  2B merged and deployed 2026-11-02 (from `dev` `85823e7e`); 3 and 5 open; the twin deployed with Stages 1-2A from `dev` `4ee9f4bd`
+  2B merged and deployed 2026-11-02 (from `dev` `85823e7e`); 3 merged
+  2026-11-03, NOT deployed (the user's go); 5 open; the twin deployed with Stages 1-2A from `dev` `4ee9f4bd`
   on 2026-11-01; Stage 4 (the Lab console) deployed from `dev` `74c58cc7`
   on 2026-11-01, walks Lambda first** (the user, 2026-10-31: twin first, the two consoles merged into
   one, vanilla JS, no build step). Audiences:
@@ -1121,6 +1122,23 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
     matches the records. The rest of `app.js` needs code changes to move
     (Stage 3).
   * Next, Stage 3: `docs/handoffs/HANDOFF-2026-11-02-3.132-3.md`.
+
+  **Stage 3 (the twin's layout and behaviours), merged 2026-11-03:**
+  * Four tabs: Home (Find or Survey, the one-sentence mission card),
+    Drive (camera, map, D-pad), Record (Guide; Robot view by default) and
+    Settings. Saved `guide`/`sim` tabs open where they moved.
+  * A STOP bar on every tab while anything moves. It sends the robot's
+    `/stop` and `POST /mission/stop` at once, bounded at 4 s.
+  * The header names the robot's real mode. An idle fired watchdog is
+    neutral.
+  * A first-run card on Home: one field and one tap, then the autopilot
+    guessed from the robot's address.
+  * F1: the idle ping reads `/mission/status`.
+  * F2: Start waits while a person holds the robot (`authority_holder`).
+  * The Guide HUD's codes are Engineer mode's. `voicedStatus` is private.
+  * Every bar is met in two runs each (`stage3a*/`, `stage3b*/`); T1 is 1
+    tap (was 2), T4 1 from every tab, T6 0.
+  * UI tests seed a saved robot unless `first_run=True`.
 
   Run as 3.130 until a numbering collision (3.130 is fast-map-work).
   **Stage 4 (one Lab console):**

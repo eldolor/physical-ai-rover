@@ -1,0 +1,759 @@
+{
+ "M6": {
+  "admin": [],
+  "metrics": [],
+  "twin": []
+ },
+ "M6_count": {
+  "admin": 0,
+  "metrics": 0,
+  "twin": 0
+ },
+ "axe": "4.10.3",
+ "commit": "d35c78adc",
+ "states": {
+  "admin.not_connected": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 0,
+    "hits": []
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": "stop",
+    "last_action": "FORWARD",
+    "outcome": "cancelled",
+    "running": false,
+    "step": 16
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "admin.walk_expanded": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 3,
+    "hits": [
+     [
+      "snake_case",
+      "frame_0000"
+     ],
+     [
+      "snake_case",
+      "frame_0001"
+     ],
+     [
+      "snake_case",
+      "frame_0002"
+     ]
+    ]
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": "stop",
+    "last_action": "FORWARD",
+    "outcome": "cancelled",
+    "running": false,
+    "step": 16
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "admin.walks": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 0,
+    "hits": []
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": "stop",
+    "last_action": "FORWARD",
+    "outcome": "cancelled",
+    "running": false,
+    "step": 16
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "metrics.first_open": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 4,
+    "hits": [
+     [
+      "term",
+      "Tier"
+     ],
+     [
+      "term",
+      "p50"
+     ],
+     [
+      "term",
+      "p90"
+     ],
+     [
+      "term",
+      "p99"
+     ]
+    ]
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": "stop",
+    "last_action": "FORWARD",
+    "outcome": "cancelled",
+    "running": false,
+    "step": 16
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "metrics.loaded": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 6,
+    "hits": [
+     [
+      "snake_case",
+      "cold_search_after"
+     ],
+     [
+      "term",
+      "Tier"
+     ],
+     [
+      "term",
+      "p50"
+     ],
+     [
+      "term",
+      "p90"
+     ],
+     [
+      "term",
+      "p99"
+     ],
+     [
+      "term",
+      "tier"
+     ]
+    ]
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": "stop",
+    "last_action": "FORWARD",
+    "outcome": "cancelled",
+    "running": false,
+    "step": 16
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "twin.drive": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 0,
+    "hits": []
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": null,
+    "last_action": null,
+    "outcome": "idle",
+    "running": false,
+    "step": 0
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "twin.engineer_home_idle": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 14,
+    "hits": [
+     [
+      "ENV_VAR",
+      "LOOK_CENTER"
+     ],
+     [
+      "ENV_VAR",
+      "LOOK_LEFT"
+     ],
+     [
+      "ENV_VAR",
+      "LOOK_RIGHT"
+     ],
+     [
+      "file name",
+      "control/brain_server.py"
+     ],
+     [
+      "plan code",
+      "B3.2"
+     ],
+     [
+      "plan code",
+      "B3.3"
+     ],
+     [
+      "snake_case",
+      "brain_server"
+     ],
+     [
+      "term",
+      "Drill"
+     ],
+     [
+      "term",
+      "Tiered"
+     ],
+     [
+      "term",
+      "WATCHDOG"
+     ],
+     [
+      "term",
+      "drills"
+     ],
+     [
+      "term",
+      "frontier"
+     ],
+     [
+      "term",
+      "nav2"
+     ],
+     [
+      "term",
+      "watchdog"
+     ]
+    ]
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": "stop",
+    "last_action": "FORWARD",
+    "outcome": "cancelled",
+    "running": false,
+    "step": 16
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "twin.first_run": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 0,
+    "hits": []
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": null,
+    "last_action": null,
+    "outcome": "idle",
+    "running": false,
+    "step": 0
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "twin.home_idle": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 0,
+    "hits": []
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": null,
+    "last_action": null,
+    "outcome": "idle",
+    "running": false,
+    "step": 0
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "twin.home_mission": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 0,
+    "hits": []
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": null,
+    "last_action": "FORWARD",
+    "outcome": "running",
+    "running": true,
+    "step": 16
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "twin.record": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 0,
+    "hits": []
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": null,
+    "last_action": null,
+    "outcome": "idle",
+    "running": false,
+    "step": 0
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "twin.record_guide_me": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 0,
+    "hits": []
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": null,
+    "last_action": null,
+    "outcome": "idle",
+    "running": false,
+    "step": 0
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  },
+  "twin.settings": {
+   "M2L_light_contrast": {
+    "nodes": 0,
+    "targets": []
+   },
+   "M2_axe": {
+    "nodes": 0,
+    "rules": 0,
+    "violations": []
+   },
+   "M3_small_targets": {
+    "count": 0,
+    "elements": []
+   },
+   "M4_sideways_scroll": false,
+   "M5_jargon": {
+    "count": 0,
+    "hits": []
+   },
+   "M7_reduced_motion": {
+    "count": 0,
+    "moving": []
+   },
+   "brain": {
+    "cancelled_by": "stop",
+    "last_action": "FORWARD",
+    "outcome": "cancelled",
+    "running": false,
+    "step": 16
+   },
+   "scroll": {
+    "clientWidth": 390,
+    "scrollWidth": 390
+   },
+   "settled": true
+  }
+ },
+ "tasks": {
+  "A1": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "the walk's name"
+   ],
+   "taps": 1
+  },
+  "A2": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "Replay with\u2026 nova-lite",
+    "Confirm the replay"
+   ],
+   "taps": 2
+  },
+  "A3": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "Delete walk",
+    "confirm the delete"
+   ],
+   "taps": 2
+  },
+  "A4": {
+   "fields": 0,
+   "linked": true,
+   "ok": true,
+   "path": [
+    "Metrics link"
+   ],
+   "taps": 1
+  },
+  "T1": {
+   "fields": 1,
+   "ok": true,
+   "path": [
+    "type the robot's address",
+    "Connect"
+   ],
+   "taps": 1
+  },
+  "T2": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "Start"
+   ],
+   "request": {
+    "fault": "none",
+    "policy": "frontier",
+    "target_object": "red backpack"
+   },
+   "status": 200,
+   "taps": 1
+  },
+  "T3": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "Job: Survey the house",
+    "Start"
+   ],
+   "request": {
+    "job": "survey",
+    "policy": "explore"
+   },
+   "status": 400,
+   "taps": 2
+  },
+  "T4": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "STOP bar"
+   ],
+   "request": "http://127.0.0.1:10320/stop",
+   "tab": "home",
+   "taps": 1
+  },
+  "T4.drive": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "STOP bar"
+   ],
+   "request": "http://127.0.0.1:10320/stop",
+   "tab": "drive",
+   "taps": 1
+  },
+  "T4.home": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "STOP bar"
+   ],
+   "request": "http://127.0.0.1:10320/stop",
+   "tab": "home",
+   "taps": 1
+  },
+  "T4.record": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "STOP bar"
+   ],
+   "request": "http://127.0.0.1:10320/stop",
+   "tab": "record",
+   "taps": 1
+  },
+  "T4.settings": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "STOP bar"
+   ],
+   "request": "http://127.0.0.1:10320/stop",
+   "tab": "settings",
+   "taps": 1
+  },
+  "T5": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "Drive tab",
+    "D-pad up"
+   ],
+   "taps": 2
+  },
+  "T6": {
+   "brain": {
+    "cancelled_by": null,
+    "last_action": "FORWARD",
+    "outcome": "running",
+    "running": true,
+    "step": 7
+   },
+   "fields": 0,
+   "ok": true,
+   "path": [],
+   "scroll_px": 0,
+   "taps": 0,
+   "text": "Searching for the purple unicorn \u2014 1 room looked at so far."
+  },
+  "T7": {
+   "fields": 0,
+   "ok": true,
+   "path": [
+    "Record tab",
+    "Record this walk",
+    "Start",
+    "Got it, start"
+   ],
+   "taps": 4
+  }
+ },
+ "viewport": {
+  "height": 844,
+  "width": 390
+ }
+}
