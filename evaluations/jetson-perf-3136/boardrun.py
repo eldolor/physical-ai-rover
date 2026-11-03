@@ -46,8 +46,10 @@ What it gives a test step:
   it can take the board lock -- removes the containers not running as found,
   puts the systemd target back and `restore()`s the units from the as-found
   snapshot it was handed; `<out>/lease.json` says what it did. `board_run`
-  lets it go (`<out>/lease.stop`) once its bench has ended, and if the bench
-  ssh failed it leaves the lease to act and waits for its record. *Why:*
+  lets it go (`<out>/lease.stop`) once its bench has ended and the board is
+  put back. If no exit code came back and the bench may still run, the
+  desktop does nothing more on the board and ends; the lease is then the one
+  owner (one owner at a time). *Why:*
   on 2026-11-03 a desktop runner stopped mid-row left its bench running,
   the twin's units stopped and the samplers on, beside the next session's
   bench (3.135.B, amendment 10); since 2026-11-02 a soak's samplers outlived
@@ -559,6 +561,7 @@ def _take_board(lock_dir: Path, who: str):
 
 
 LOCK_RETRY_S = 150.0   # longer than a dying desktop holder's silence limit plus a keeper's poll
+OWN_HOLD_MAX_S = 6 * 3600.0   # this run's own hold (its desktop still scoring) is waited out this long
 FALLBACK_DIR = Path("/dev/shm")
 
 
@@ -594,7 +597,8 @@ def _write_record(out: Path, text: str) -> None:
 
 def lease(out, *, silence_s: float = LEASE_SILENCE_S, period_s: float = LEASE_POLL_S,
           run: Callable[..., str] = local_run, allow_sudo: bool = False,
-          term_wait_s: float = LEASE_TERM_WAIT_S, lock_dir=None, lock_retry_s: float = LOCK_RETRY_S) -> str:
+          term_wait_s: float = LEASE_TERM_WAIT_S, lock_dir=None, lock_retry_s: float = LOCK_RETRY_S,
+          token: str = "") -> str:
     """The board's half: wait for `<out>/lease.stop` (the desktop let go:
     "released") or `silence_s` without a heartbeat (the desktop gone), then:
 
@@ -679,8 +683,19 @@ def lease(out, *, silence_s: float = LEASE_SILENCE_S, period_s: float = LEASE_PO
     rec["samplers_ended"], rec["sampler_pids_skipped"] = samplers, skipped
     rec["survivors"] = survivors
     who = f"3.136.F lease of {out} (pid {os.getpid()}), since {time.strftime('%Y-%m-%dT%H:%M:%S%z')}"
-    held, end = _take_board(lock_dir, who), time.monotonic() + lock_retry_s
-    while held is None and time.monotonic() < end:
+    # Retried: a dead desktop's holder and the bench's keeper let go a little later. While
+    # the holder is this run's own (its token in the owner line: a desktop still scoring
+    # under its hold), it is waited out; another session's hold is its own board.
+    t_try = time.monotonic()
+    held = _take_board(lock_dir, who)
+    while held is None:
+        try:
+            owner = (lock_dir / ".picar-board.owner").read_text()
+        except OSError:
+            owner = ""
+        own = bool(token) and token in owner
+        if time.monotonic() - t_try > (OWN_HOLD_MAX_S if own else lock_retry_s):
+            break
         time.sleep(2.0)
         held = _take_board(lock_dir, who)
     rec["board_lock"] = "taken" if held else "held by another session: its containers and units left"
@@ -728,8 +743,9 @@ def main(argv=None) -> int:
     le.add_argument("out")
     le.add_argument("--silence", type=float, default=LEASE_SILENCE_S)
     le.add_argument("--sudo", action="store_true")
+    le.add_argument("--token", default="")
     a = ap.parse_args(argv)
-    print(lease(a.out, silence_s=a.silence, allow_sudo=a.sudo), flush=True)
+    print(lease(a.out, silence_s=a.silence, allow_sudo=a.sudo, token=a.token), flush=True)
     return 0
 
 

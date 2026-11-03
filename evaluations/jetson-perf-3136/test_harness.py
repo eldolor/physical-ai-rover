@@ -110,6 +110,7 @@ class FakeBoard:
         self.cmds = []
         self.lease_state = "watching"
         self.lease_dead = False
+        self.bench_after = "BENCH-ALIVE"
 
     def __call__(self, cmd, check=True, timeout=0, input=None):
         self.cmds.append(cmd)
@@ -130,7 +131,9 @@ class FakeBoard:
         if "echo $?" in cmd:
             return "0\n"
         if "lease_boardrun.py lease" in cmd:
-            return "4242\nalive 99\n"                             # the lease's pid, alive 2 s on, its start
+            return "4242\nOOM-NOT-SET\nalive 99\n"                 # the lease's pid, alive 2 s on, its start
+        if "BENCH-ALIVE" in cmd:
+            return self.bench_after + "\n"
         if "lease.stop" in cmd:
             return "STOPPED\n" + self.lease_state + "\n" + ("" if self.lease_dead else "LEASE-ALIVE\n")
         if "lease.json" in cmd:
@@ -573,7 +576,7 @@ def test_an_ssh_that_returns_no_exit_code_is_not_a_bench_that_ended(monkeypatch,
         return b(cmd, check, timeout, input)
 
     rec = _run_with(monkeypatch, tmp_path, dropped)
-    assert rec["cmd_exit"] is None and rec["lease"].startswith("left to the lease")
+    assert rec["cmd_exit"] is None and rec["lease"].startswith("left to the lease") and rec["left_to_lease"]
     assert not any("lease.stop" in c or "systemctl start" in c for c in b.cmds)
 
 
@@ -621,3 +624,45 @@ def test_a_bench_that_never_started_is_not_waited_for(monkeypatch, tmp_path):
     assert rec["lease"] == "released" and rec["left_as_found"]
 
 
+
+
+def test_a_bench_found_gone_after_its_ssh_failed_is_a_normal_end(monkeypatch, tmp_path):
+    b = FakeBoard()
+    b.bench_after = "BENCH-GONE"
+
+    def dropped(cmd, check=True, timeout=0, input=None):
+        if "echo $?" in cmd:
+            b.cmds.append(cmd)
+            return ""
+        return b(cmd, check, timeout, input)
+
+    rec = _run_with(monkeypatch, tmp_path, dropped)
+    assert rec["bench_after_ssh"] == "gone" and rec["lease"] == "released" and rec["left_as_found"]
+
+
+def test_a_refused_lock_check_comes_back_as_the_benchs_exit_code():
+    import inspect
+    src = inspect.getsource(runner.board_run)
+    assert "( source tools/jetson/board_lock_check.sh ) && ( {board_cmd} )" in src
+
+
+def test_an_exit_in_the_board_command_still_echoes_its_code(tmp_path):
+    """The shape board_run sends, run for real: `exit 75` inside the command."""
+    out = subprocess.run(["bash", "-c", "true && ( exit 75 ) > /dev/null 2>&1; echo $?"],
+                         capture_output=True, text=True).stdout.strip()
+    assert out == "75"
+
+
+def test_the_lease_waits_out_its_own_runs_hold_but_not_anothers(tmp_path):
+    import fcntl
+    import threading
+    (tmp_path / "as_found.json").write_text(json.dumps(FOUND))
+    lock = open(tmp_path / ".picar-board.lock", "a")
+    fcntl.flock(lock, fcntl.LOCK_EX)
+    (tmp_path / ".picar-board.owner").write_text("plan/x pid 1 (desk): 3.136 run, token t0k\n")
+    threading.Timer(1.0, lock.close).start()          # this run's desktop finishes scoring at 1 s
+    b = LeaseBoard()
+    br.lease(tmp_path, silence_s=0.2, period_s=0.01, run=b, lock_dir=tmp_path, lock_retry_s=0.1,
+             allow_sudo=True, token="t0k")
+    assert json.loads((tmp_path / "lease.json").read_text())["board_lock"] == "taken"
+    assert (tmp_path / ".picar-board.owner").read_text() == ""      # left as a released holder leaves it

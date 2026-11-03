@@ -77,12 +77,14 @@ def board_run(label: str, board_cmd: str, out: Path, *, sha: str = "HEAD",
                   f"{{ systemctl is-active graphical.target >/dev/null && echo graphical || echo other; }}"
                   f" > ~/{board_out}/target_at_start && {{ setsid nohup python3 ~/{board_out}/lease_boardrun.py"
                   f" lease ~/{board_out} --silence {br.LEASE_SILENCE_S:g}{' --sudo' if allow_sudo else ''}"
+                  f" --token {shlex.quote(token)}"
                   f" > ~/{board_out}/lease.log 2>&1 < /dev/null & }} && L=$! && echo $L && "
-                  + (f"{{ echo {br.LEASE_OOM_ADJ} | sudo -n tee /proc/$L/oom_score_adj >/dev/null; }}; "
-                     if allow_sudo else "")
+                  + (f"{{ echo {br.LEASE_OOM_ADJ} | sudo -n tee /proc/$L/oom_score_adj >/dev/null "
+                     f"&& echo OOM-SET || echo OOM-NOT-SET; }}; " if allow_sudo else "echo OOM-NOT-SET; ")
                   + f"sleep 2; kill -0 $L 2>/dev/null && echo alive $({br.START_TIME_SH % '$L'})",
                   input=json.dumps(before), check=False) or ""
-        lines = got.split()
+        rec["lease_oom_score_adj"] = br.LEASE_OOM_ADJ if "OOM-SET" in got.split() else "not set"
+        lines = [w for w in got.split() if w not in ("OOM-SET", "OOM-NOT-SET")]
         if len(lines) < 3 or not lines[0].isdigit() or lines[1] != "alive":
             # A lease that did start but answered wrong must not act later: let it go.
             run(f"touch ~/{board_out}/lease.stop", check=False)
@@ -100,7 +102,9 @@ def board_run(label: str, board_cmd: str, out: Path, *, sha: str = "HEAD",
         # so a desktop gone mid-run never hands the board over beside its bench.
         r = run(f"cd ~/{bench_dir} && export OUT=~/{board_out} PICAR_BOARD_TOKEN={shlex.quote(token)} "
                 f"&& mkdir -p $OUT && echo \"$$ $({br.START_TIME_SH % '$$'})\" > $OUT/bench.pid "
-                f"&& {{ source tools/jetson/board_lock_check.sh || exit $?; {board_cmd} ; }} "
+                # Both in subshells: an `exit` in the check or in the board command
+                # ends its subshell with its code, never the shell that echoes it.
+                f"&& ( source tools/jetson/board_lock_check.sh ) && ( {board_cmd} ) "
                 f"> $OUT/cmd.log 2>&1; echo $?",
                 check=False, timeout=6 * 3600)
         last = r.strip().splitlines()[-1] if r.strip() else ""
@@ -114,15 +118,35 @@ def board_run(label: str, board_cmd: str, out: Path, *, sha: str = "HEAD",
         # restore, no release, no sampler kill -- and the run ends here, which ends its board
         # hold. The bench's keeper keeps the board while it lives; the lease (no more
         # beats) ends it, takes the board and restores, and its `lease.json` says so.
-        if lease_started and bench_started and rec.get("cmd_exit") is None:
-            if heartbeat is not None:
-                heartbeat.stop()
-                rec["heartbeat_losses"] = getattr(heartbeat, "losses", None)
-            rec["lease"] = "left to the lease: no exit code from the bench's ssh"
+        maybe_running = lease_started and bench_started and rec.get("cmd_exit") is None
+        if maybe_running:
+            # Is the bench (its pid and start time) still running there? Asked once; an
+            # answer that does not come back counts as yes.
+            try:
+                alive = run(f"read P S < ~/{board_out}/bench.pid && "
+                            f"[ \"$({br.START_TIME_SH % '$P'})\" = \"$S\" ] && echo BENCH-ALIVE || echo BENCH-GONE",
+                            check=False, timeout=30) or ""
+            except Exception:  # noqa: BLE001
+                alive = ""
+            rec["bench_after_ssh"] = "gone" if "BENCH-GONE" in alive else "running or unknown"
+            maybe_running = "BENCH-GONE" not in alive
+        if maybe_running:
+            try:
+                if heartbeat is not None:
+                    heartbeat.stop()
+                    rec["heartbeat_losses"] = getattr(heartbeat, "losses", None)
+            except Exception as e:  # noqa: BLE001
+                rec["heartbeat_error"] = str(e)
+            rec["lease"] = "left to the lease: no exit code from the bench's ssh, the bench maybe running"
+            rec["left_to_lease"] = True
             rec["restore_actions"] = [f"left to the lease: see ~/{board_out}/lease.json"]
             rec["left_as_found"] = None
             if sampler is not None:
                 rec["desktop_load"] = sampler.desktop_load
+            try:                                      # read-only: what the bench wrote so far
+                fetch(f"~/{board_out}", out / "board")
+            except Exception as e:  # noqa: BLE001
+                rec["fetch_error"] = str(e)
         else:
             if sampler is not None:
                 try:
@@ -146,9 +170,12 @@ def board_run(label: str, board_cmd: str, out: Path, *, sha: str = "HEAD",
                 rec["restore_error"] = f"{type(e).__name__}: {e}"
             # Only now, the board put back, is the lease let go (STOPPED: the file landed).
             if lease_started:
-                if heartbeat is not None:
-                    heartbeat.stop()
-                    rec["heartbeat_losses"] = getattr(heartbeat, "losses", None)
+                try:
+                    if heartbeat is not None:
+                        heartbeat.stop()
+                        rec["heartbeat_losses"] = getattr(heartbeat, "losses", None)
+                except Exception as e:  # noqa: BLE001
+                    rec["heartbeat_error"] = str(e)
                 st = ""
                 for _ in range(3):
                     try:
@@ -161,6 +188,10 @@ def board_run(label: str, board_cmd: str, out: Path, *, sha: str = "HEAD",
                     if "STOPPED" in st:
                         break
                 words = st.split()
+                if "acting" in words:              # it may be letting go this instant: once more
+                    sleep(2.0)
+                    again = run(f"cat {br.state_path(board_out)} 2>/dev/null", check=False) or ""
+                    words = [w for w in words if w != "acting"] + again.split()
                 if "STOPPED" not in words:
                     rec["lease"] = f"not released ({st.strip()[:80]!r}): it may act on its own"
                 elif "LEASE-ALIVE" not in words and not {"released", "done"} & set(words):
