@@ -44,8 +44,9 @@ PORTS = {"robot": int(os.environ.get("PICAR_ROBOT_PORT", 10350)),
          "sensor": int(os.environ.get("PICAR_SENSOR_PORT", 10353)),
          "sensor2": int(os.environ.get("PICAR_SENSOR2_PORT", 10354))}
 CLOSED_PORT = 9          # discard: nothing listens; a refused connection, never a paid call
-ROBOT_PLANTS = {"watchdog", "lidar_fresh", "feedback_fresh"}
+ROBOT_PLANTS = {"watchdog", "lidar_fresh", "feedback_fresh", "stop_waits"}
 BODY_PLANTS = {"heartbeat"}
+BRAIN_PLANTS = {"cloud_class", "cloud_deadline"}
 KEEP_ENV = ("PATH", "HOME", "USER", "LANG", "LC_ALL", "TZ", "TMPDIR", "XDG_RUNTIME_DIR")
 
 
@@ -76,8 +77,8 @@ class Stack:
     def __init__(self, out: Path, *, house: str = "scaled_house", plant: str = "",
                  vision_url: Optional[str] = None, extra_env: Optional[dict] = None):
         plants = {p for p in plant.split(",") if p}
-        if plants - ROBOT_PLANTS - BODY_PLANTS:
-            raise StackError(f"unknown plant(s) {sorted(plants - ROBOT_PLANTS - BODY_PLANTS)}")
+        if plants - ROBOT_PLANTS - BODY_PLANTS - BRAIN_PLANTS:
+            raise StackError(f"unknown plant(s) {sorted(plants - ROBOT_PLANTS - BODY_PLANTS - BRAIN_PLANTS)}")
         self.out = Path(out)
         self.out.mkdir(parents=True, exist_ok=True)
         self.plants = plants
@@ -169,7 +170,11 @@ class Stack:
         self._wait_health("robot", self.urls["robot"])
 
     def start_brain(self) -> None:
-        self._spawn("brain", self._uvicorn("control.brain_server:app", PORTS["brain"]))
+        if self.plants & BRAIN_PLANTS:
+            argv = [PY, str(HERE / "brain_plant.py"), str(PORTS["brain"])]
+        else:
+            argv = self._uvicorn("control.brain_server:app", PORTS["brain"])     # the shipped code
+        self._spawn("brain", argv, dict(self.env, FMEA_PLANT=",".join(sorted(self.plants & BRAIN_PLANTS))))
         self._wait_health("brain", self.urls["brain"])
 
     def pid(self, role: str) -> int:

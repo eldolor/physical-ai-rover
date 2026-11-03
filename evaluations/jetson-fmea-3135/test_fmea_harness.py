@@ -77,7 +77,11 @@ def test_truth_reader_skips_a_line_cut_by_the_kill(tmp_path):
 
 GOOD = {"fault_at": 10.0, "forward_at_fault": True, "truth_hole_s": 0.02, "gap_unknown": 0, "contacts": 0, "wheels_zero_s": 0.3,
         "travel_cm": 5.0, "travel_stale_cm": 0.5, "drive_after_cont": 0,
-        "no_feedback_refusals": 1, "outcome": "failed"}
+        "no_feedback_refusals": 1, "outcome": "failed",
+        # 3.135.B's goal rows
+        "end_reason": "ros_unavailable: the bridge is gone", "last_refusal": {"reason": "ros_unavailable"},
+        "recovery_outcome": "found", "stop_code": 200, "stop_answer_s": 0.05,
+        "wheels_zero_from_stop_s": 0.0, "drive_after_unpause": 0, "driver_at_fault": "ros"}
 
 
 @pytest.mark.parametrize("row", sorted(fmea.ROWS))
@@ -101,6 +105,19 @@ def test_a_run_inside_every_bar_passes(row):
     ("F13", {"forward_at_fault": False}, "invalid"),
     ("F8", {"gap_unknown": 3}, "contact unjudged"),
     ("F8", {"gap_unknown": None}, "contact unjudged"),
+    ("F4", {"wheels_zero_s": 0.51}, "bar 0.5"),
+    ("F4", {"travel_cm": 5.1}, "bar 5"),
+    ("F4", {"end_reason": "time limit"}, "not failed naming ROS"),
+    ("F4", {"outcome": "exhausted"}, "not failed naming ROS"),
+    ("F4", {"last_refusal": {"reason": "watchdog"}}, "not ros_unavailable"),
+    ("F4", {"recovery_outcome": "out_of_budget"}, "not found"),
+    ("F5", {"stop_answer_s": 1.2}, "within 1.0"),
+    ("F5", {"stop_code": "TimeoutError: x"}, "within 1.0"),
+    ("F5", {"wheels_zero_from_stop_s": None}, "bar 0.5"),
+    ("F5", {"drive_after_unpause": 4}, "after unpause"),
+    ("F6g", {"travel_cm": 15.1}, "bar 15"),
+    ("F7g", {"drive_after_cont": 1}, "after SIGCONT"),
+    ("F4", {"driver_at_fault": "brain"}, "not nav2"),
 ])
 def test_each_broken_bar_fails_its_row(row, change, reason):
     v = fmea.judge(row, {**GOOD, **change})
@@ -251,3 +268,46 @@ def test_the_row_command_runs_rows_py_with_its_plant():
     c = fmea_run.row_cmd("F9", 5, "lidar_fresh")
     assert "rows.py F9 --out $OUT/rows --runs 5 --plant lidar_fresh" in c
     assert "--house" not in c and "--plant" not in fmea_run.row_cmd("F8", 5)
+
+
+# ------------------------------------------------------- 3.135.B: cloud rows
+
+import cloud_rows  # noqa: E402
+
+CLOUD_GOOD = {"outcome": "arrived_unconfirmed", "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.02,
+              "late_confirmation": {"state": "refused"}, "drive_after_end": 0, "max_open_paid": 1,
+              "park_s": 9.0, "travel_mission_cm": 0.0, "mission_s": 70.0}
+
+
+def test_cloud_cases_pass_inside_their_bars():
+    for row in ("F11a", "F11b", "F12a"):
+        assert cloud_rows.judge(row, CLOUD_GOOD)["pass"], row
+    for row in ("F11c", "F12b"):
+        assert cloud_rows.judge(row, {**CLOUD_GOOD, "outcome": "failed"})["pass"], row
+
+
+@pytest.mark.parametrize("row, change, reason", [
+    ("F11a", {"outcome": "failed"}, "not arrived_unconfirmed"),
+    ("F11a", {"outcome": "found"}, "not arrived_unconfirmed"),
+    ("F11b", {"outcome": "found"}, "no cloud yes"),
+    ("F11b", {"late_confirmation": None}, "no late confirmation"),
+    ("F11b", {"drive_after_end": 2}, "after the mission's end"),
+    ("F11c", {"outcome": "failed", "travel_mission_cm": 3.0}, "bar 0.5"),
+    ("F12a", {"max_open_paid": 2}, "open at once"),
+    ("F12a", {"park_s": 31.0}, "bar 30"),
+    ("F12b", {"outcome": "failed", "mission_s": 301.0}, "bar 300"),
+    ("F12b", {"outcome": "out_of_budget"}, "not failed"),
+    ("F11a", {"contacts": 1}, "contact"),
+])
+def test_each_broken_cloud_bar_fails(row, change, reason):
+    v = cloud_rows.judge(row, {**CLOUD_GOOD, **change})
+    assert not v["pass"] and any(reason in r for r in v["reasons"]), v
+
+
+def test_a_cloud_case_that_never_ended_is_not_scored():
+    assert cloud_rows.judge("F11a", {"outcome": None})["valid"] is False
+
+
+def test_rows_py_finds_both_kinds_of_row():
+    assert rows.runner("F9").__name__ == "fmea" and rows.runner("F12a").__name__ == "cloud_rows"
+    assert {r["plant"] for r in cloud_rows.ROWS.values()} - {""} <= stack.BRAIN_PLANTS

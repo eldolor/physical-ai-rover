@@ -36,13 +36,18 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 
 import fmea  # noqa: E402
+import rows as rowsmod  # noqa: E402
 
 ORDER = ("F13", "F9", "F10", "F8", "F6", "F7")
+# 3.135.B (amendment 5): the goal rows and the cloud cases with a plant.
+ORDER_B = ("F6g", "F7g", "F4", "F5", "F11a", "F12a", "F12b", "F11b")
 
 
 def summarise(row: str, base: dict, planted: dict) -> dict:
     keys = ("wheels_zero_s", "travel_cm", "travel_stale_cm", "drive_after_cont", "contacts",
-            "no_feedback_refusals", "outcome", "recovery_s")
+            "no_feedback_refusals", "outcome", "recovery_s", "driver_at_fault", "stop_answer_s",
+            "wheels_zero_from_stop_s", "drive_after_unpause", "recovery_outcome", "max_open_paid",
+            "park_s", "mission_s", "late_confirmation", "drive_after_end", "travel_mission_cm")
 
     def pick(r):
         ms = r.get("measures") or {}
@@ -56,7 +61,8 @@ def summarise(row: str, base: dict, planted: dict) -> dict:
     # shipped build passes the same row: a row whose base fails too (its guard
     # does not hold today) is caught but proves nothing about the harness.
     discriminates = caught and base["verdict"]["pass"] and clean(base)
-    return {"row": row, "plant": fmea.ROWS[row]["plant"], "reading": fmea.ROWS[row]["reading"],
+    spec = rowsmod.runner(row).ROWS[row]
+    return {"row": row, "plant": spec["plant"], "reading": spec["reading"],
             "base": {"pass": base["verdict"]["pass"], "reasons": base["verdict"]["reasons"],
                      "error": base.get("error"), "recovery_s": base.get("recovery_s"), **pick(base)},
             "planted": {"pass": planted["verdict"]["pass"], "reasons": planted["verdict"]["reasons"],
@@ -68,14 +74,16 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", default=str(HERE / "desktop"))
     ap.add_argument("--rows", default=",".join(ORDER))
+    ap.add_argument("--record", default="planted.json", help="the record's name in --out")
     a = ap.parse_args(argv)
     out = Path(a.out)
     stamp = time.strftime("%Y%m%d-%H%M%S")
     results = []
     for row in a.rows.split(","):
         runs = {}
-        for kind, plant in (("base", ""), ("planted", fmea.ROWS[row]["plant"])):
-            runs[kind] = fmea.run_row(row, out / "runs" / f"{stamp}-{row}-{kind}", plant=plant)
+        mod = rowsmod.runner(row)
+        for kind, plant in (("base", ""), ("planted", mod.ROWS[row]["plant"])):
+            runs[kind] = mod.run_row(row, out / "runs" / f"{stamp}-{row}-{kind}", plant=plant)
             print(json.dumps({"row": row, "kind": kind, "verdict": runs[kind]["verdict"],
                               "error": runs[kind].get("error")}), flush=True)
         results.append(summarise(row, runs["base"], runs["planted"]))
@@ -89,7 +97,7 @@ def main(argv=None) -> int:
            "met": all(r["caught"] for r in results),
            "not_scored_until_fixed": [r["row"] for r in results if not r["caught"]],
            "base_fails_too": [r["row"] for r in results if r["caught"] and not r["discriminates"]]}
-    (out / "planted.json").write_text(json.dumps(doc, indent=1))
+    (out / a.record).write_text(json.dumps(doc, indent=1))
     print(json.dumps({"met": doc["met"], "not_caught": doc["not_scored_until_fixed"]}))
     return 0 if doc["met"] else 1
 

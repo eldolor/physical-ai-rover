@@ -1,0 +1,47 @@
+{
+ "row": "F8",
+ "title": "Robot server killed",
+ "reading": "the fake board's setpoints zero <= 1.6 s after the SIGKILL; the brain's mission does not end found; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-03T12:01:34-0600",
+ "restarted": [
+  "robot"
+ ],
+ "recovery_s": 3.22,
+ "measures": {
+  "fault_at": 83162.006027165,
+  "outcome": "failed",
+  "end_state": null,
+  "end_reason": "step failed: POST /action failed: Server disconnected without sending a response.",
+  "status": {
+   "running": false,
+   "outcome": "failed",
+   "end_state": null,
+   "end_reason": "step failed: POST /action failed: Server disconnected without sending a response.",
+   "cancelled_by": null,
+   "step": 4,
+   "last_action": "RIGHT",
+   "error": "step failed: POST /action failed: Server disconnected without sending a response."
+  },
+  "forward_at_fault": true,
+  "wheels_zero_s": 1.492,
+  "travel_cm": 44.06,
+  "truth_hole_s": 0.026,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   83153.5981,
+   83176.3582
+  ],
+  "mem_available_min_mb": 2257,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-03T12:01:58-0600"
+}

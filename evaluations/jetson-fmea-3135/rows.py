@@ -26,9 +26,11 @@ import argparse
 import gzip
 import json
 import shutil
+import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
 
 EXTRA = 3
 
@@ -57,15 +59,26 @@ def gz(path: Path) -> None:
         path.unlink()
 
 
-def main(argv=None) -> int:
+def runner(row: str):
+    """The module that runs a row: the stop rows (`fmea.py`) or the cloud
+    rows (`cloud_rows.py`)."""
+    import cloud_rows
     import fmea
+    for mod in (fmea, cloud_rows):
+        if row in mod.ROWS:
+            return mod
+    raise SystemExit(f"no such row {row!r}")
+
+
+def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("row", choices=sorted(fmea.ROWS))
+    ap.add_argument("row")
     ap.add_argument("--out", required=True)
     ap.add_argument("--runs", type=int, default=5)
     ap.add_argument("--plant", default="")
     ap.add_argument("--house", default="scaled_house")
     a = ap.parse_args(argv)
+    runner(a.row)
     out = Path(a.out)
     out.mkdir(parents=True, exist_ok=True)
     recs = []
@@ -73,7 +86,7 @@ def main(argv=None) -> int:
         if sum(scored(r) for r in recs) >= a.runs:
             break
         d = out / f"{a.row}-{i}"
-        rec = fmea.run_row(a.row, d, a.plant, a.house)
+        rec = runner(a.row).run_row(a.row, d, a.plant, a.house)
         rec["i"] = i
         recs.append(rec)
         gz(d / "truth.jsonl")

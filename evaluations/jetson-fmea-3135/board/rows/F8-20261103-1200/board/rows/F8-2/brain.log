@@ -1,0 +1,73 @@
+1793728876.467 WARNING identity vision-picar brain server starting -- git=a3382c18 executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793728879.972 ERROR mission_runner mission step failed
+Traceback (most recent call last):
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpx/_transports/default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpx/_transports/default.py", line 250, in handle_request
+    resp = self._pool.handle_request(req)
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpcore/_sync/connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpcore/_sync/connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpcore/_sync/connection.py", line 103, in handle_request
+    return self._connection.handle_request(request)
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpcore/_sync/http11.py", line 136, in handle_request
+    raise exc
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpcore/_sync/http11.py", line 106, in handle_request
+    ) = self._receive_response_headers(**kwargs)
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpcore/_sync/http11.py", line 177, in _receive_response_headers
+    event = self._receive_event(timeout=timeout)
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpcore/_sync/http11.py", line 231, in _receive_event
+    raise RemoteProtocolError(msg)
+httpcore.RemoteProtocolError: Server disconnected without sending a response.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/picar/bench-3135/control/remote_robot.py", line 299, in _request
+    response = self._client.request(
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpx/_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpx/_client.py", line 914, in send
+    response = self._send_handling_auth(
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpx/_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpx/_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpx/_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpx/_transports/default.py", line 249, in handle_request
+    with map_httpcore_exceptions():
+  File "/usr/lib/python3.10/contextlib.py", line 153, in __exit__
+    self.gen.throw(typ, value, traceback)
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpx/_transports/default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.RemoteProtocolError: Server disconnected without sending a response.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/picar/bench-3135/control/mission_runner.py", line 1016, in tick
+    result = self.agent.step()
+  File "/home/picar/bench-3135/brain/agent.py", line 689, in step
+    result = super().step()
+  File "/home/picar/bench-3135/brain/agent.py", line 228, in step
+    result = self.safety.check_and_execute(action, **kwargs)
+  File "/home/picar/bench-3135/robot/safety.py", line 984, in check_and_execute
+    return self._check_and_execute(action, self.required_clearance_cm(v, v <= CREEP_M_S),
+  File "/home/picar/bench-3135/robot/safety.py", line 1027, in _check_and_execute
+    result = self._dispatch(action, **kwargs)
+  File "/home/picar/bench-3135/robot/safety.py", line 1199, in _dispatch
+    return dispatch_table[action]()
+  File "/home/picar/bench-3135/robot/safety.py", line 1184, in <lambda>
+    "FORWARD": lambda: self.robot.drive_forward(
+  File "/home/picar/bench-3135/control/mission_runner.py", line 458, in drive_forward
+    return self._robot.drive_forward(speed, duration)
+  File "/home/picar/bench-3135/control/remote_robot.py", line 99, in drive_forward
+    return self._action("FORWARD", speed=speed, duration=duration)
+  File "/home/picar/bench-3135/control/remote_robot.py", line 253, in _action
+    body = self._request("POST", "/action", json={"action": action, **kwargs})
+  File "/home/picar/bench-3135/control/remote_robot.py", line 303, in _request
+    raise RobotTransportError(f"{method} {path} failed: {e}") from e
+control.remote_robot.RobotTransportError: POST /action failed: Server disconnected without sending a response.
+1793728879.979 ERROR mission_runner could not stop the robot: POST /stop failed: [Errno 111] Connection refused

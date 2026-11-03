@@ -1,0 +1,297 @@
+{
+ "sha": "a3382c18f7cd50c443a25e5dc7be2a6dca6f9670",
+ "cmd_exit": 0,
+ "cmd_s": 84.9,
+ "verdict": {
+  "row": "F13",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "met",
+  "runs_wanted": 5,
+  "runs_scored": 5,
+  "runs_total": 5,
+  "runs_failed": 0,
+  "not_scored": [],
+  "reasons": []
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 3.23,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 82978.564205186,
+    "outcome": "idle",
+    "end_state": null,
+    "end_reason": null,
+    "refusals": {},
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 22,
+     "max_dt_s": 0.0533
+    },
+    "last_refusal": {
+     "reason": "watchdog",
+     "detail": "no command for over 1.0s -- motors stopped",
+     "driver": "twin-dpad",
+     "at": 82979.547134637,
+     "seconds_ago": 5.03
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 1.002,
+    "travel_cm": 19.56,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     82973.4263,
+     82989.4464
+    ],
+    "mem_available_min_mb": 2251,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "idle",
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": 0,
+    "last_action": null,
+    "error": null
+   }
+  },
+  {
+   "i": 2,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 3.35,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 82995.374934779,
+    "outcome": "idle",
+    "end_state": null,
+    "end_reason": null,
+    "refusals": {},
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 23,
+     "max_dt_s": 0.0533
+    },
+    "last_refusal": {
+     "reason": "watchdog",
+     "detail": "no command for over 1.0s -- motors stopped",
+     "driver": "twin-dpad",
+     "at": 82996.384981321,
+     "seconds_ago": 5.0
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 1.013,
+    "travel_cm": 19.91,
+    "truth_hole_s": 0.023,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     82990.5274,
+     83006.3675
+    ],
+    "mem_available_min_mb": 2257,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "idle",
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": 0,
+    "last_action": null,
+    "error": null
+   }
+  },
+  {
+   "i": 3,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 3.32,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83012.457922292,
+    "outcome": "idle",
+    "end_state": null,
+    "end_reason": null,
+    "refusals": {},
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 23,
+     "max_dt_s": 0.0536
+    },
+    "last_refusal": {
+     "reason": "watchdog",
+     "detail": "no command for over 1.0s -- motors stopped",
+     "driver": "twin-dpad",
+     "at": 83013.466521108,
+     "seconds_ago": 5.0
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 1.014,
+    "travel_cm": 19.8,
+    "truth_hole_s": 0.025,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83007.4123,
+     83023.4524
+    ],
+    "mem_available_min_mb": 2252,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "idle",
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": 0,
+    "last_action": null,
+    "error": null
+   }
+  },
+  {
+   "i": 4,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 3.26,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83029.353845805,
+    "outcome": "idle",
+    "end_state": null,
+    "end_reason": null,
+    "refusals": {},
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 23,
+     "max_dt_s": 0.0546
+    },
+    "last_refusal": {
+     "reason": "watchdog",
+     "detail": "no command for over 1.0s -- motors stopped",
+     "driver": "twin-dpad",
+     "at": 83030.363428781,
+     "seconds_ago": 5.0
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 1.021,
+    "travel_cm": 20.26,
+    "truth_hole_s": 0.023,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83024.5145,
+     83040.2546
+    ],
+    "mem_available_min_mb": 2261,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "idle",
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": 0,
+    "last_action": null,
+    "error": null
+   }
+  },
+  {
+   "i": 5,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 3.26,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83045.927721193,
+    "outcome": "idle",
+    "end_state": null,
+    "end_reason": null,
+    "refusals": {},
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 23,
+     "max_dt_s": 0.0536
+    },
+    "last_refusal": {
+     "reason": "watchdog",
+     "detail": "no command for over 1.0s -- motors stopped",
+     "driver": "twin-dpad",
+     "at": 83046.939563472,
+     "seconds_ago": 5.0
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 1.02,
+    "travel_cm": 20.24,
+    "truth_hole_s": 0.021,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83041.2881,
+     83056.7882
+    ],
+    "mem_available_min_mb": 2258,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "idle",
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": 0,
+    "last_action": null,
+    "error": null
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 77,
+  "temps": 77,
+  "clocks": 77,
+  "max_temp_c": 49.406,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2253,
+  "cpu_below_max_samples": 68,
+  "gpu_below_max_samples": 77
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true
+}

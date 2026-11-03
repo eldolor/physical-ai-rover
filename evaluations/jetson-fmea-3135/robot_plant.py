@@ -14,6 +14,7 @@ patch is on the module, here.
 | `watchdog` | B3.1: `watchdog_should_stop()` never says stop | F6, F7, F13 |
 | `lidar_fresh` | 3.42: the LD19 driver calls its scan fresh once any packet came | F9 |
 | `feedback_fresh` | 3.34: the board's feedback is called fresh once any frame came | F10 |
+| `stop_waits` | SPEC-REVIEW finding 1 (2026-10-02) undone: under `drive: ros` a stop zeroes the ROS inputs first, synchronously, at the client's 2 s timeout, then the robot | F5 |
 
     FMEA_PLANT=watchdog python evaluations/jetson-fmea-3135/robot_plant.py <port>
 """
@@ -27,7 +28,7 @@ sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 
 PLANTS = {p for p in os.environ.get("FMEA_PLANT", "").split(",") if p}
-KNOWN = {"watchdog", "lidar_fresh", "feedback_fresh"}
+KNOWN = {"watchdog", "lidar_fresh", "feedback_fresh", "stop_waits"}
 if not PLANTS or PLANTS - KNOWN:
     raise SystemExit(f"FMEA_PLANT must name one or more of {sorted(KNOWN)}, not {sorted(PLANTS)}")
 
@@ -48,6 +49,24 @@ if "feedback_fresh" in PLANTS:
     from robot import hardware_robot
 
     hardware_robot.HardwareRobot._fresh = lambda self: self._last_frame_at is not None
+
+if "stop_waits" in PLANTS:
+    from robot import ros_drive
+
+    def _stop_waits(self):
+        with self._gen_lock:
+            self._stops += 1
+            self._generation += 1
+            self._hold_gen = self._generation
+            self._hold_until = ros_drive.time.monotonic() + ros_drive.STOP_HOLD_S
+        for driver in ("twin-dpad", "brain", "ros"):       # planted: waits on the bridge first
+            try:
+                self._send(0.0, 0.0, driver=driver, timeout=2.0)
+            except Exception:  # noqa: BLE001
+                pass
+        return self.inner.stop()
+
+    ros_drive.RosDriveRobot.stop = _stop_waits
 
 import uvicorn  # noqa: E402
 
