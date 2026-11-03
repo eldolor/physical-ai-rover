@@ -125,15 +125,25 @@ class FakeBoard:
         if "sudo -n rm -f" in cmd:
             self.state["hold_flag"] = None
             return ""
-        if "echo $?" in cmd:                                      # the bench (it reads /proc/$$/stat too)
+        # The bench, the lease's start and its release read /proc too: they answer first.
+        if "echo $?" in cmd:
             return "0\n"
-        if "/proc/" in cmd and "stat" in cmd:
-            return ""                                             # the flag's owner is gone
         if "lease_boardrun.py lease" in cmd:
-            return "4242\nalive\n"                                # the lease's pid, alive 2 s on
+            return "4242\nalive 99\n"                             # the lease's pid, alive 2 s on, its start
         if "lease.stop" in cmd:
             return self.lease_state + "\n"
+        if "lease.json" in cmd:
+            return ""
+        if "/proc/" in cmd and "stat" in cmd:
+            return ""                                             # the flag's owner is gone
         return ""
+
+
+@pytest.fixture(autouse=True)
+def _ram(tmp_path, monkeypatch):
+    """The lease's RAM files (its state, a full disk's record) under the test's own directory."""
+    (tmp_path / "shm").mkdir(exist_ok=True)
+    monkeypatch.setattr(br, "FALLBACK_DIR", tmp_path / "shm")
 
 
 class FakeHeartbeat:
@@ -349,7 +359,7 @@ def test_a_lost_desktop_ends_the_bench_its_samplers_and_containers_and_restores_
                         term_wait_s=2.0, lock_dir=tmp_path) == "acted"
         _reap(bench, *samplers)
         assert not any(_alive(p) for p in [bench.pid, *kids, *(s.pid for s in samplers)])
-        assert (tmp_path / "lease.state").read_text().strip() == "done"
+        assert br.state_path(tmp_path).read_text().strip() == "done"
         assert "docker rm -f picar-ros-3135" in b.cmds
         rec = json.loads((tmp_path / "lease.json").read_text())
         assert sum(a.startswith("started") for a in rec["restore_actions"]) == 2
@@ -379,7 +389,9 @@ def test_a_lost_desktop_without_sudo_ends_the_bench_and_reports_the_units(tmp_pa
         _reap(bench)
         assert not _alive(bench.pid)
         rec = json.loads((tmp_path / "lease.json").read_text())
-        assert all(a.startswith("NOT RESTORED") for a in rec["restore_actions"])
+        acts = rec["restore_actions"]
+        assert "removed container picar-ros-3135" in acts           # docker needs no sudo
+        assert all(a.startswith("NOT RESTORED") for a in acts if "picar-" in a and "container" not in a)
         assert not any("sudo" in c for c in b.cmds)
     finally:
         if bench.poll() is None:
@@ -400,8 +412,9 @@ def test_board_run_holds_a_lease_heartbeats_it_and_lets_it_go_before_its_restore
     assert "as_found.json" in b.cmds[lease] and "setsid nohup" in b.cmds[lease]
     # the commit under test's boardrun.py is never the lease: the harness's own copy is
     assert "evaluations/jetson-perf-3136/boardrun.py" not in b.cmds[lease]
+    # the lease is let go only once the board is put back (a desktop lost mid-restore is still covered)
     snaps = [i for i, c in enumerate(b.cmds) if "systemctl is-active" in c and "units=" in c]
-    assert all(i < lease or i > stop for i in snaps) and snaps[-1] > stop
+    assert snaps[-1] < stop and rec["left_as_found"]
 
 
 def test_board_run_refuses_to_run_a_bench_with_no_lease(monkeypatch, tmp_path):
@@ -550,20 +563,23 @@ def test_the_lease_retries_the_board_lock_while_a_dying_holder_lets_go(tmp_path)
     assert rec["board_lock"] == "taken" and "docker rm -f picar-ros-3135" in b.cmds
 
 
-def test_a_full_disk_keeps_the_lease_record_in_ram(tmp_path, monkeypatch):
-    monkeypatch.setattr(br, "FALLBACK_DIR", tmp_path / "shm")
-    (tmp_path / "shm").mkdir()
+def test_a_full_disk_keeps_the_lease_acting_and_its_record_in_ram(tmp_path, monkeypatch):
     (tmp_path / "as_found.json").write_text(json.dumps(FOUND))
     real = Path.write_text
 
-    def full(self, *a, **k):
-        if self.name == "lease.json":
+    def full(self, *a, **k):                       # the run's directory full; RAM is not
+        if self.parent == tmp_path and self.name not in ("as_found.json", "lease.pid"):   # written before it filled
             raise OSError(28, "No space left on device")
         return real(self, *a, **k)
 
     monkeypatch.setattr(Path, "write_text", full)
-    br.lease(tmp_path, silence_s=0.2, period_s=0.01, run=LeaseBoard(), lock_dir=tmp_path, lock_retry_s=0.1)
+    monkeypatch.setattr(br, "_take_board", lambda d, who: open(os.devnull))       # the lock file is on the full disk too
+    b = LeaseBoard()
+    assert br.lease(tmp_path, silence_s=0.2, period_s=0.01, run=b, lock_dir=tmp_path,
+                    lock_retry_s=0.1, allow_sudo=True) == "acted"
+    assert "docker rm -f picar-ros-3135" in b.cmds                  # it acted, though nothing could be written
     assert json.loads(br.fallback_record(tmp_path).read_text())["board_lock"] == "taken"
+    assert not (tmp_path / "lease.json").exists()
 
 
 def _run_with(monkeypatch, tmp_path, board, **kw):
@@ -587,6 +603,7 @@ def test_an_ssh_that_returns_no_exit_code_is_not_a_bench_that_ended(monkeypatch,
 
     rec = _run_with(monkeypatch, tmp_path, dropped)
     assert rec["cmd_exit"] is None and "left to act" in rec["lease"]
+    assert any("lease.desktop_restores" in c for c in b.cmds)        # the lease is told this side restores
     assert not any("lease.stop" in c for c in b.cmds)
     # The lease could not take the board (this side's holder had it): this side restores.
     assert rec["left_as_found"] and sum(a.startswith("started") for a in rec["restore_actions"]) == 2
@@ -603,8 +620,8 @@ def test_a_lease_that_got_there_first_is_waited_for_not_told_it_was_released(mon
         return b(cmd, check, timeout, input)
 
     rec = _run_with(monkeypatch, tmp_path, board)
-    assert rec["lease"].startswith("acting when let go") and rec["lease_record"] == lease_rec
-    assert rec["restore_actions"][0] == "by the lease: started picar-stack (was inactive)"
+    # The board was put back here first; a lease found acting at the release is said so.
+    assert rec["left_as_found"] and rec["lease"].startswith("not cleanly released (acting)")
 
 
 def test_survivors_of_the_lease_mean_nothing_is_restored_beside_them(monkeypatch, tmp_path):
@@ -639,3 +656,29 @@ def test_a_lease_that_leaves_no_record_means_nothing_is_started_beside_the_bench
     rec = json.loads((tmp_path / "record.json").read_text())
     assert "ended with no record" in rec["lease"] and rec["restore_actions"][0].startswith("NOT RESTORED")
     assert not any("systemctl start" in c for c in b.cmds)
+
+
+def test_a_bench_that_never_started_is_not_waited_for(monkeypatch, tmp_path):
+    b = FakeBoard()
+
+    def no_sudo(cmd, check=True, timeout=0, input=None):
+        if "systemctl stop picar-stack" in cmd:
+            raise br.BoardError("sudo -n refused")
+        if "lease.json" in cmd:
+            raise AssertionError("waited for a lease although no bench started")
+        return b(cmd, check, timeout, input)
+
+    with pytest.raises(br.BoardError):
+        _run_with(monkeypatch, tmp_path, no_sudo)
+    rec = json.loads((tmp_path / "record.json").read_text())
+    assert rec["lease"] == "released" and rec["left_as_found"]
+
+
+def test_a_lease_told_the_desktop_restores_skips_the_board_lock(tmp_path):
+    (tmp_path / "as_found.json").write_text(json.dumps(FOUND))
+    (tmp_path / "lease.desktop_restores").touch()
+    b = LeaseBoard()
+    t0 = time.monotonic()
+    br.lease(tmp_path, silence_s=0.2, period_s=0.01, run=b, lock_dir=tmp_path, lock_retry_s=30.0)
+    assert time.monotonic() - t0 < 5 and b.cmds == []
+    assert "left to the desktop" in json.loads((tmp_path / "lease.json").read_text())["board_lock"]

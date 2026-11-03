@@ -350,12 +350,33 @@ class Sampler:
 
 # ---------------------------------------------------- 3.136.F: the lease
 
-def restore_and_check(before: dict, run: Callable[..., str] = ssh, *, allow_sudo: bool) -> tuple:
-    """`restore()`, then `settle_and_check()` for as long as a restore that
-    did something needs (units come up slowly): (actions, after, diffs).
-    Shared by the desktop's end of a run and the lease's."""
-    acts = restore(before, run, allow_sudo=allow_sudo)
-    acted = any(not a.startswith(("NOT RESTORED", "hold flag kept")) for a in acts)
+def restore_and_check(before: dict, run: Callable[..., str] = ssh, *, allow_sudo: bool,
+                      board_out: Optional[str] = None) -> tuple:
+    """Everything a run may leave, put back, then `settle_and_check()` for as
+    long as a restore that did something needs (units come up slowly):
+    (actions, after, diffs). With `board_out` (the run's directory on the
+    board, `~/...` or absolute): first the containers not running as found
+    are removed, and the systemd target is put back if the run found it
+    graphical (`<board_out>/target_at_start`). Shared by the desktop's end
+    of a run and the lease's."""
+    acts = []
+    if board_out:
+        found = set((before.get("containers") or "").split())
+        now = snapshot(run)
+        for c in sorted(set((now.get("containers") or "").split()) - found):
+            run(f"docker rm -f {shlex.quote(c)}", check=False, timeout=60)   # the bench's user needs no sudo
+            acts.append(f"removed container {c}")
+        tgt = (run(f"cat {board_out}/target_at_start 2>/dev/null", check=False) or "").strip()
+        if tgt == "graphical" and (run("systemctl is-active graphical.target", check=False) or "").strip() != "active":
+            if allow_sudo:
+                run("sudo -n systemctl isolate graphical.target", check=False, timeout=120)
+                acts.append("isolated graphical.target")
+            else:
+                acts.append("NOT RESTORED (allow_sudo off): graphical.target")
+    units = restore(before, run, allow_sudo=allow_sudo)
+    acts += units
+    # Only a unit started or stopped needs time to settle; a removed container does not.
+    acted = any(not a.startswith(("NOT RESTORED", "hold flag kept")) for a in units)
     after, diffs = settle_and_check(before, run, wait_s=120 if acted else 5)
     return acts, after, diffs
 
@@ -452,11 +473,12 @@ def _descendants(roots) -> list:
             st = _stat(int(d))
             if st:
                 kids.setdefault(int(st[1]), []).append(int(d))
-    out, todo = [], list(roots)
+    out, seen, todo = [], set(), list(roots)
     while todo:
         p = todo.pop()
-        if p in out:
+        if p in seen:
             continue
+        seen.add(p)
         out.append(p)
         todo.extend(kids.get(p, []))
     return out
@@ -535,16 +557,34 @@ LOCK_RETRY_S = 150.0   # longer than a dying desktop holder's silence limit plus
 FALLBACK_DIR = Path("/dev/shm")
 
 
+def state_path(out) -> Path:
+    """The lease's state (`watching`, `acting`, `released`, `done`): in RAM,
+    so a full disk (3.135's F15) can never stop the lease from acting."""
+    return FALLBACK_DIR / f"picar-lease-{Path(out).name}.state"
+
+
 def _state(out: Path, state: str) -> None:
-    tmp = out / "lease.state.tmp"
-    tmp.write_text(state + "\n")
-    os.replace(tmp, out / "lease.state")
+    try:
+        tmp = state_path(out).with_suffix(".tmp")
+        tmp.write_text(state + "\n")
+        os.replace(tmp, state_path(out))
+    except OSError:
+        pass                                # the state is the desktop's hint, never the lease's gate
 
 
-def fallback_record(out: Path) -> Path:
+def fallback_record(out) -> Path:
     """Where a lease's record goes when `<out>` cannot be written (a full
     disk): RAM, named after the run's directory."""
     return FALLBACK_DIR / f"picar-lease-{Path(out).name}.json"
+
+
+def _write_record(out: Path, text: str) -> None:
+    try:
+        tmp = out / "lease.json.tmp"
+        tmp.write_text(text)
+        os.replace(tmp, out / "lease.json")          # whole or absent, never empty
+    except OSError:
+        fallback_record(out).write_text(text)
 
 
 def lease(out, *, silence_s: float = LEASE_SILENCE_S, period_s: float = LEASE_POLL_S,
@@ -630,6 +670,12 @@ def lease(out, *, silence_s: float = LEASE_SILENCE_S, period_s: float = LEASE_PO
             survivors += r["survivors"]
     rec["samplers_ended"], rec["sampler_pids_skipped"] = samplers, skipped
     rec["survivors"] = survivors
+    if (out / "lease.desktop_restores").exists():
+        # The desktop is alive (its bench ssh failed): it holds the board and restores.
+        rec["board_lock"] = "left to the desktop, alive and holding the board"
+        _write_record(out, json.dumps(rec, indent=1, default=str))
+        _state(out, "done")
+        return "acted"
     who = f"3.136.F lease of {out} (pid {os.getpid()}), since {time.strftime('%Y-%m-%dT%H:%M:%S%z')}"
     held, end = _take_board(lock_dir, who), time.monotonic() + lock_retry_s
     while held is None and time.monotonic() < end:
@@ -641,33 +687,15 @@ def lease(out, *, silence_s: float = LEASE_SILENCE_S, period_s: float = LEASE_PO
             rec["error"] = f"processes of the bench survived ({survivors}): units not restored beside them"
         elif held:
             before = json.loads((out / "as_found.json").read_text())
-            found = set((before.get("containers") or "").split())
-            now = snapshot(run)
-            extra = sorted(set((now.get("containers") or "").split()) - found)
-            for c in extra:                 # docker needs no sudo for the bench's user
-                run(f"docker rm -f {shlex.quote(c)}", check=False, timeout=60)
-            rec["containers_removed"] = extra
-            tgt = (out / "target_at_start").read_text().strip() if (out / "target_at_start").exists() else ""
-            if tgt == "graphical" and allow_sudo and \
-                    run("systemctl is-active graphical.target", check=False).strip() != "active":
-                run("sudo -n systemctl isolate graphical.target", check=False, timeout=120)
-                rec["target_restored"] = "graphical.target"
             rec["restore_actions"], _after, rec["after_differences"] = restore_and_check(
-                before, run, allow_sudo=allow_sudo)
+                before, run, allow_sudo=allow_sudo, board_out=str(out))
     except Exception as e:  # noqa: BLE001 -- what was done is still written
         rec["error"] = f"{type(e).__name__}: {e}"
     finally:
         if held:
             held.close()
-    text = json.dumps(rec, indent=1, default=str)
-    try:
-        (out / "lease.json").write_text(text)
-    except OSError:
-        fallback_record(out).write_text(text)       # a full disk: the record in RAM
-    try:
-        _state(out, "done")
-    except OSError:
-        pass
+    _write_record(out, json.dumps(rec, indent=1, default=str))
+    _state(out, "done")
     return "acted"
 
 

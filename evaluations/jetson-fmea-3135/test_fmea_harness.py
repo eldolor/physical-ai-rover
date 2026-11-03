@@ -157,7 +157,7 @@ class FakeBoard:
         if "echo $?" in cmd:
             return "0\n"
         if "lease_boardrun.py lease" in cmd:          # 3.136.F's lease: its pid, alive
-            return "4242\nalive\n"
+            return "4242\nalive 99\n"
         return "watching\n" if "lease.stop" in cmd else ""
 
 
