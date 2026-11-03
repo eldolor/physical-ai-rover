@@ -815,8 +815,8 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   amendment 1 (a point 0.9 m east of the dock, known free on the first map)
   3 of 3 succeeded. **3.134 (merged 2026-11-01):** the twin's Engineer
   toast for `nav2_starting` reads "(still starting up)", no longer "(starting,
-  or restarting)"; pinned by `tests/test_twin_strings.py`. The twin is NOT
-  deployed with it yet (the user's go).
+  or restarting)"; pinned by `tests/test_twin_strings.py`. The twin was
+  deployed with it on 2026-11-03 (with 3.132 Stage 3).
 * **The battery ladder (3.137.A), merged 2026-11-01; the twin's three states
   (3.137.B) merged 2026-11-02** (C, E open; D waits on the Rover). The robot server decides on the board's `v`
   (`robot/battery_ladder.py`, `battery:` in `config/robot.yaml`; levels
@@ -834,8 +834,8 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   N s", "Powered off: unplug the battery" (kept through the robot's silence
   and a reload, `vp_battery_poweroff`); Engineer mode adds volts and steps;
   a Start refused `battery_low:` worded. B1-B6 met (live lag <= 2.8 s, bar
-  6; M2/M2L/M3/M4/M5/M7 0 in each state). The twin is NOT deployed with it
-  yet (the user's go).
+  6; M2/M2L/M3/M4/M5/M7 0 in each state). The twin was deployed with it on
+  2026-11-03 (with 3.132 Stage 3).
 * **Live checks on the Rover (3.140): the harness (A) merged 2026-11-02;
   B-J wait on the Rover.** `evaluations/rover-live-3140/run.py` runs one row
   at a time on 3.136's `boardrun` (`bench-3140`): rows read from the section
@@ -1049,7 +1049,7 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   email) after 2 h of a busy desktop. The nightly runs on the Mac only.
 * **A staged UX redesign (3.132), Stages 0-1, 2A and 4 merged 2026-10-31/11-01,
   2B merged and deployed 2026-11-02 (from `dev` `85823e7e`); 3 merged
-  2026-11-03, NOT deployed (the user's go); 5 open; the twin deployed with Stages 1-2A from `dev` `4ee9f4bd`
+  2026-11-03 and deployed the same day (from `dev` `ffcef51e`, with 3.134 and 3.137.B); 5 open; the twin deployed with Stages 1-2A from `dev` `4ee9f4bd`
   on 2026-11-01; Stage 4 (the Lab console) deployed from `dev` `74c58cc7`
   on 2026-11-01, walks Lambda first** (the user, 2026-10-31: twin first, the two consoles merged into
   one, vanilla JS, no build step). Audiences:
