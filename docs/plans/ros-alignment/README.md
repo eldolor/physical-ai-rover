@@ -148,4 +148,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.140](3.140-rover-live-checks.md) | Live checks on the Rover and Jetson: everything built, tested on the car |
 | [3.141](3.141-wheel-loop-full-stack.md) | The wheel loop late under the full mission stack (3.136.B P4) |
 | [3.142](3.142-soak-memory-trend.md) | The soak's per-mission memory minimum falls 21 MB/h (3.135.C (b)) |
+| [3.143](3.143-soak-find-rate.md) | The live find rate on the board, 10/19 against the sweep's 39/40 (3.135.C (d)) |
 <!-- /sections -->
