@@ -46,7 +46,7 @@ PORTS = {"robot": int(os.environ.get("PICAR_ROBOT_PORT", 10350)),
 CLOSED_PORT = 9          # discard: nothing listens; a refused connection, never a paid call
 ROBOT_PLANTS = {"watchdog", "lidar_fresh", "feedback_fresh", "stop_waits", "wall_clock", "no_latch"}
 BODY_PLANTS = {"heartbeat"}
-BRAIN_PLANTS = {"cloud_class", "cloud_deadline", "vlm_absent"}
+BRAIN_PLANTS = {"cloud_class", "cloud_deadline", "vlm_absent", "write_intolerant"}
 KEEP_ENV = ("PATH", "HOME", "USER", "LANG", "LC_ALL", "TZ", "TMPDIR", "XDG_RUNTIME_DIR")
 
 

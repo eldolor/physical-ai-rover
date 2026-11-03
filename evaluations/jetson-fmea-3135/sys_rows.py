@@ -12,6 +12,12 @@ red backpack in `scaled_house`:
 | F16c | none: the fault-free control, whose outcome the others must match | -- |
 | F16p | the wall clock stepped +5 min 0.15 s into a FORWARD, put back after the mission | `wall_clock` |
 | F16m | the wall clock stepped -5 min 0.15 s into a FORWARD, put back after the mission | `wall_clock` |
+| F15 | the recording dirs (inventory, interventions, explore choices) on a full disk | `write_intolerant` |
+
+F15's full disk (amendment 9) is a 20 MB tmpfs mounted with sudo under
+`~/bench-3135` and filled (the user's yes, 2026-11-03), unmounted after; with
+`FMEA_FULL=devfull` (the desktop's planted check, no sudo) it is a directory
+whose `interventions.jsonl` is a link to `/dev/full` (every write ENOSPC).
 
 The step is `sudo date -s` with NTP off (`timedatectl set-ntp false`); after
 the case the clock is stepped back by the same amount and NTP turned on
@@ -46,6 +52,10 @@ MISSION_WAIT_S = 1200 + 300
 NTP_WAIT_S = 120.0
 
 ROWS = {
+    "F15": {"title": "Disk full on the recordings volume", "step_s": 0.0, "plant": "write_intolerant",
+            "reading": "a failing write was seen (the brain's log names it); the mission ends with an "
+                       "outcome; at most one failing-write line a minute of mission (plus one); 0 late "
+                       "wheel ticks over the mission; 0 contacts"},
     "F16c": {"title": "Wall clock (fault-free control)", "step_s": 0.0, "plant": "",
              "reading": "the outcome every stepped case must match"},
     "F16p": {"title": "Wall clock jumps +5 min", "step_s": STEP_S, "plant": "wall_clock",
@@ -73,6 +83,14 @@ def judge(row: str, ms: dict, control: str | None = "found") -> dict:
     bar(ms.get("truth_hole_s", 9) <= 0.2, f"truth log has a {ms.get('truth_hole_s')} s hole")
     if row == "F16c":
         return {"pass": not r, "valid": True, "reasons": r}
+    if row == "F15":
+        n, mins = ms.get("write_fail_lines"), ms.get("mission_s", 0) / 60.0
+        valid = bool(n)
+        if not valid:
+            r.append("invalid: no failing write was seen")
+        bar(n is not None and n <= int(mins) + 2, f"{n} failing-write lines in {mins:.1f} min (bar one a minute)")
+        bar(ms.get("late_ticks") == 0, f"{ms.get('late_ticks')} late wheel ticks over the mission (bar 0)")
+        return {"pass": not r, "valid": valid, "reasons": r}
     valid = ms.get("stepped") is True
     if not valid:
         r.append("invalid: the clock was not stepped")
@@ -140,6 +158,60 @@ class Clock:
         return res
 
 
+FULL_MB = 20
+WRITE_FAIL = ("not saved", "not recorded", "no space", "enospc", "errno 28")
+
+
+class FullDisk:
+    """F15's full recordings volume: a filled tmpfs (the board) or /dev/full (the desktop)."""
+
+    def __init__(self, out: Path):
+        self.kind = os.environ.get("FMEA_FULL", "tmpfs")
+        self.dir = (Path.home() / "bench-3135" / f"fmea-full-{os.getpid()}") if self.kind == "tmpfs" \
+            else out / "full"
+        self.mounted = False
+
+    def make(self) -> dict:
+        self.dir.mkdir(parents=True, exist_ok=True)
+        if self.kind == "devfull":
+            (self.dir / "interventions.jsonl").symlink_to("/dev/full")
+            return {"kind": "devfull", "dir": str(self.dir)}
+        r = sudo("mount", "-t", "tmpfs", "-o", f"size={FULL_MB}m,mode=0755,uid={os.getuid()},gid={os.getgid()}",
+                 "tmpfs", str(self.dir))
+        if r.returncode != 0:
+            raise StackError(f"mount tmpfs: {r.stderr.strip()[:200]}")
+        self.mounted = True
+        with open(self.dir / "filler", "wb") as f:      # filled to the last block
+            try:
+                while True:
+                    f.write(b"\0" * (1 << 20))
+                    f.flush()
+            except OSError:
+                pass
+        try:
+            with open(self.dir / "filler", "ab") as f:
+                while True:
+                    f.write(b"\0" * 4096)
+                    f.flush()
+        except OSError:
+            pass
+        st = os.statvfs(self.dir)
+        return {"kind": "tmpfs", "dir": str(self.dir), "free_bytes": st.f_bavail * st.f_frsize}
+
+    def remove(self) -> dict:
+        res = {}
+        if self.mounted:
+            r = sudo("umount", str(self.dir))
+            res["umount_rc"] = r.returncode
+            self.mounted = r.returncode != 0
+        mounts = Path("/proc/mounts").read_text()
+        res["still_mounted"] = str(self.dir) in mounts
+        if not res["still_mounted"]:
+            import shutil
+            shutil.rmtree(self.dir, ignore_errors=True)
+        return res
+
+
 def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -> dict:
     spec = ROWS[row]
     out.mkdir(parents=True, exist_ok=True)
@@ -147,12 +219,18 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
            "house": house, "host": os.uname().nodename, "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
     ms: dict = {"outcome": None, "stepped": False}
     clock = Clock(out)
+    full = FullDisk(out) if row == "F15" else None
     mw, st = MemWatch(), None
     with mw:
         try:
-            st = Stack(out, house=house, plant=plant,
-                       extra_env={"FMEA_CLOCK_OFFSET_FILE": str(clock.offset_file)})
+            env = {"FMEA_CLOCK_OFFSET_FILE": str(clock.offset_file)}
+            if full is not None:
+                ms["full"] = full.make()
+                env.update(INVENTORY_DIR=str(full.dir), INTERVENTION_DIR=str(full.dir),
+                           EXPLORE_CHOICE_DIR=str(full.dir))
+            st = Stack(out, house=house, plant=plant, extra_env=env)
             st.start()
+            h_start = robot_health(st)
             start_mission(st)
             ms["start_at"] = time.monotonic()
             if spec["step_s"]:
@@ -177,6 +255,13 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
             ms["outcome"] = s1.get("outcome") if s1.get("running") is False else None
             ms["mission_s"] = round(ms["end_at"] - ms["start_at"], 1)
             ms["status"] = {k: s1.get(k) for k in ("outcome", "end_state", "end_reason", "error", "step")}
+            if full is not None:
+                time.sleep(5.0)            # the end's writes (inventory, the intervention line)
+                h_end = robot_health(st)
+                if h_start and h_end:
+                    ms["late_ticks"] = h_end["wheel_loop"]["late_ticks"] - h_start["wheel_loop"]["late_ticks"]
+                text = (out / "brain.log").read_text(errors="replace").lower()
+                ms["write_fail_lines"] = sum(1 for line in text.splitlines() if any(w in line for w in WRITE_FAIL))
             if spec["step_s"]:
                 text = (out / "brain.log").read_bytes()[log0:].decode(errors="replace")
                 ms["brain_503_lines"] = sum(1 for line in text.splitlines()
@@ -189,6 +274,8 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
             finally:
                 if st is not None:
                     st.stop()
+                if full is not None:
+                    rec["full_removed"] = full.remove()
     rows = m.read_truth(out / "truth.jsonl") if (out / "truth.jsonl").exists() else []
     sp = m.span(rows)
     ms["truth_hole_s"] = m.gaps_s(rows, sp[0], sp[1]) if sp else float("inf")
@@ -202,6 +289,8 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
     rec["measures"] = ms
     control = os.environ.get("FMEA_F16_CONTROL", "found")
     rec["verdict"] = judge(row, ms, control)
+    if (rec.get("full_removed") or {}).get("still_mounted"):
+        rec["error"] = f"the full tmpfs is still mounted: {rec['full_removed']}"
     if rec.get("clock_restore", {}).get("ntp_synchronized") not in (None, "yes"):
         rec["error"] = f"NTP not synchronized after the case: {rec['clock_restore']}"
     rec["ended"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")

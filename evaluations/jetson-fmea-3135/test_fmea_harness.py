@@ -332,7 +332,7 @@ def test_the_clock_cases_and_their_bars():
         assert not v["pass"] and any(reason in r for r in v["reasons"]), (change, v)
     assert sys_rows.judge("F16m", {**CLOCK_GOOD, "stepped": False})["valid"] is False
     assert rows.runner("F16p").__name__ == "sys_rows"
-    assert {r["plant"] for r in sys_rows.ROWS.values()} - {""} <= stack.ROBOT_PLANTS
+    assert {r["plant"] for r in sys_rows.ROWS.values()} - {""} <= stack.ROBOT_PLANTS | stack.BRAIN_PLANTS
 
 
 # --------------------------------------------------------- 3.135.B: VE rows
@@ -375,3 +375,13 @@ def test_a_ve_fault_off_its_moment_is_invalid():
     assert vlm_rows.judge("F17g", {**VLM_GOOD, "driver_at_fault": "brain", "outcome": "cancelled"})["valid"] is False
     assert rows.runner("F17q").__name__ == "vlm_rows"
     assert {r["plant"] for r in vlm_rows.ROWS.values()} - {"ve_oom0"} <= stack.ROBOT_PLANTS | stack.BRAIN_PLANTS
+
+
+def test_the_full_disk_case_and_its_bars():
+    ok = {"outcome": "found", "write_fail_lines": 2, "mission_s": 120.0, "late_ticks": 0,
+          "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.02}
+    assert sys_rows.judge("F15", ok)["pass"]
+    assert sys_rows.judge("F15", {**ok, "write_fail_lines": 0})["valid"] is False
+    assert not sys_rows.judge("F15", {**ok, "write_fail_lines": 9})["pass"]       # per frame, not per minute
+    assert not sys_rows.judge("F15", {**ok, "late_ticks": 1})["pass"]
+    assert not sys_rows.judge("F15", {**ok, "outcome": None})["pass"]

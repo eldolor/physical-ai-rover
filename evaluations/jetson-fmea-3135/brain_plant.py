@@ -13,6 +13,7 @@ Nothing in brain/ or control/ is edited; the patch is on the module, here.
 |---|---|---|
 | `cloud_class` | 3.47: a transport error to the cloud is a plain RuntimeError, not `CloudUnavailable` | F11 |
 | `vlm_absent` | 3.80: the local VLM gone (refused, dropped) is a plain RuntimeError, not `LocalVLMAbsent`, so the tiers do not hand its questions on | F3 |
+| `write_intolerant` | 3.99: a mission-end write that fails (a full disk) reaches the mission: `MissionRunner._log_intervention` without its catch | F15 |
 | `cloud_deadline` | 3.56 and B3.2's deadlines raised to 120 s (`arrival_confirm_timeout_s`, `vision_timeout_s`) | F12 |
 
     FMEA_PLANT=cloud_class python evaluations/jetson-fmea-3135/brain_plant.py <port>
@@ -27,7 +28,7 @@ sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 
 PLANTS = {p for p in os.environ.get("FMEA_PLANT", "").split(",") if p}
-KNOWN = {"cloud_class", "cloud_deadline", "vlm_absent"}
+KNOWN = {"cloud_class", "cloud_deadline", "vlm_absent", "write_intolerant"}
 if not PLANTS or PLANTS - KNOWN:
     raise SystemExit(f"FMEA_PLANT must name one or more of {sorted(KNOWN)}, not {sorted(PLANTS)}")
 
@@ -66,6 +67,18 @@ if "vlm_absent" in PLANTS:
             raise RuntimeError(f"planted: {e}") from None       # VE gone read as a fault
 
     local_vlm.LocalVLM._post = _vpost_unsorted
+
+if "write_intolerant" in PLANTS:
+    from control import mission_runner
+
+    def _log_uncaught(self, line):
+        try:
+            self.intervention = line
+            self.intervention_log.append(line)      # planted: no catch, the write's error goes on
+        finally:
+            self.intervention_done.set()
+
+    mission_runner.MissionRunner._log_intervention = _log_uncaught
 
 import control.brain_server as server  # noqa: E402  (builds `app` with the patches in place)
 import uvicorn  # noqa: E402
