@@ -103,11 +103,17 @@ def test_the_workload_check_names_a_mission_that_encoded_nothing():
     yo = f"{YOLOE_TEXT_MODEL}:mobileclip_blt.ts:1"
     rows = [{"k": 0, "t0": 1.0, "encoded": [yo, "open_clip:RN50:openai"]},
             {"k": 1, "t0": 2.0, "encoded": []},
-            {"k": 2, "setup_t": 3.0, "error": "stack"}]       # never came up: not judged
+            {"k": 2, "setup_t": 3.0, "error": "stack"},      # never came up: not judged
+            {"k": 3, "t0": 4.0, "t1": 500.0, "error": "start: 500", "encoded": []},
+            {"k": 4, "t0": 600.0, "t1": 630.0, "encoded": []}]   # ended before its encode
+    for r in rows[:2]:
+        r["t1"] = r["t0"] + 300
     w = ss.workload(rows)
-    assert w["missing"] == [1] and w["clip_encoded"] == 1 and w["met"] is False
+    assert w["missing"] == [1] and w["not_judged"] == [3, 4]
+    assert w["clip_encoded"] == 1 and w["met"] is False
     assert ss.workload(rows[:1])["met"] is True
-    assert ss.workload([{"k": 0, "t0": 1.0}])["met"] is None   # run 1: nothing recorded
+    w = ss.workload([{"k": 0, "t0": 1.0, "t1": 400.0}])        # run 1: nothing recorded
+    assert w["met"] is None and "before 3.142" in w["note"]
 
 
 def test_the_soak_holds_the_board_past_four_hours_on_a_shared_desktop_lock():

@@ -46,6 +46,7 @@ from tools.jetson.memory_account import component  # noqa: E402
 
 # brain.text_encoder's model id for YOLOE's prompt, without importing torch's side.
 YOLOE_TEXT_MODEL = "mobileclip:blt"
+SHORT_S = 60.0          # a mission shorter than this may end before its encode lands
 FLOOR_MB = 500.0
 SLOPE_MB_H = -10.0
 GROWTH_MB = 50.0
@@ -209,16 +210,25 @@ def bar_b(mins: list, run_start: float, hour_s: float = HOUR_S) -> dict:
 def workload(missions: list) -> dict:
     """3.142 criterion 3, beside (b): every mission that came up encoded its
     target's YOLOE prompt in the soak's own text cache (`soak.encoded`).
-    Not part of `met`; None for a run from before 3.142, which records nothing."""
-    came_up = [x for x in missions if x.get("t0") is not None]
+    A mission that errored or ended within SHORT_S of its start is reported
+    apart, not judged: the encode lands 7-42 s in, after `encoded` is read
+    (3.142 amendment 1). Not part of `met`; `met` is None when no mission
+    recorded `encoded` (a run from before 3.142, or one with perception off)."""
+    began = [x for x in missions if x.get("t0") is not None]
+    short = [x.get("k") for x in began
+             if x.get("error") or x.get("t1") is None or x["t1"] - x["t0"] < SHORT_S]
+    came_up = [x for x in began if x.get("k") not in short]
     rec = [x for x in came_up if isinstance(x.get("encoded"), list)]
     yoloe = [x.get("k") for x in rec
              if any(m == YOLOE_TEXT_MODEL or m.startswith(YOLOE_TEXT_MODEL + ":")
                     for m in x["encoded"])]
     w = {"missions": len(came_up), "recorded": len(rec), "yoloe_encoded": len(yoloe),
          "clip_encoded": sum(any(m.startswith("open_clip:") for m in x["encoded"]) for x in rec),
-         "missing": [x.get("k") for x in came_up if x.get("k") not in yoloe]}
+         "missing": [x.get("k") for x in came_up if x.get("k") not in yoloe],
+         "not_judged": short}
     w["met"] = (len(rec) == len(came_up) and not w["missing"]) if rec else None
+    if w["met"] is None:
+        w["note"] = "no mission recorded `encoded`: a run from before 3.142, or perception off"
     return w
 
 
@@ -365,7 +375,7 @@ def main(argv=None) -> int:
                                                    _f(board / "run_end"))
     (out / "summary.json").write_text(json.dumps(s, indent=1, default=str))
     print(json.dumps({k: s[k] for k in ("met", "run_s")}, default=str))
-    for k in "abcd":
+    for k in ("a", "b", "c", "d", "workload"):
         print(k, json.dumps({x: s[k][x] for x in s[k] if x not in ("growth", "per_mission")},
                             default=str)[:600])
     return 0

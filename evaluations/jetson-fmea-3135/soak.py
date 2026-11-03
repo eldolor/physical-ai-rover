@@ -243,8 +243,9 @@ class Soak:
 
     def encoded(self, target: str) -> list:
         """The models that encoded `target`'s own text since the last switch
-        (YOLOE's prompt is `[target]`, CLIP's list starts with it; CLIP's
-        anchor-only lookups are not the target's)."""
+        (YOLOE's prompt is `[target]`, CLIP's scoring list starts with it).
+        Under `crop_path: soft_gate` CLIP's anchor lookup is `[target]` too
+        and counts; CLIP is reported only, so nothing is judged on it."""
         models = set()
         for f in sorted(self.text_cache.glob("*.json")):
             try:
