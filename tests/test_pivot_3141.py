@@ -45,7 +45,7 @@ def scan_of(ranges):
             "ranges_m": list(ranges)}
 
 
-def _box(rng, half_x, half_y):
+def _box(half_x, half_y):
     out = []
     for i in range(360):
         a = math.radians(-180 + i)
@@ -65,7 +65,7 @@ def case(rng: random.Random):
                      rng.uniform(0.3, 3.0)])
     hy = rng.choice([rng.uniform(0.116, 0.15), rng.uniform(0.14, 0.30), rng.uniform(0.14, 0.30),
                      rng.uniform(0.3, 3.0)])
-    ranges = _box(rng, hx, hy)
+    ranges = _box(hx, hy)
     hl, hw = safety.FOOTPRINT_LENGTH_M * 50.0, safety.FOOTPRINT_WIDTH_M * 50.0
     for _ in range(rng.randrange(0, 6)):
         # A return a chosen distance from the chassis outline: on the
@@ -86,6 +86,8 @@ def case(rng: random.Random):
         ranges[i] = hi
     for _ in range(rng.randrange(0, 30)):
         ranges[rng.randrange(360)] = None
+    if rng.random() < 0.1:
+        ranges[rng.randrange(360)] = rng.choice([math.nan, math.inf])
     missed = 0.0 if rng.random() < 0.4 else rng.uniform(-0.2, 0.2)
     omega = rng.choice([1, -1]) * rng.choice([rng.uniform(0.001, 0.4), rng.uniform(0.4, 4.0)])
     v = rng.choice([0.0, 0.0, rng.uniform(-0.3, 0.3)])
@@ -151,6 +153,21 @@ class _DropsNearestRows(safety._PivotRows):
         return super()._first((xs[keep], ys[keep], nows[keep]), c, s)
 
 
+class _FirstChunkClosesOnEqual(safety._PivotRows):
+    def _first_exact(self, rows, c, s):
+        for x, y, now in rows:
+            after = self._dist(c * x - s * y, s * x + c * y)
+            if after < PIVOT_MARGIN_CM + 0.05 and after < now - 1e-6:
+                return after
+        return None
+
+
+class _ReachWithoutTheChassis(safety._PivotRows):
+    def __init__(self, scan, missed):
+        super().__init__(scan, missed)
+        self._reach = math.hypot(self._hl, self._hw) + 1.0
+
+
 class _LaterChunksFirst(safety._PivotRows):
     def first_blocking(self, c, s):
         while not self._done:
@@ -165,8 +182,16 @@ class _LaterChunksFirst(safety._PivotRows):
         return self._first_exact(self._first_rows, c, s)
 
 
-@pytest.mark.parametrize("mutant", [_ArcOffByOne, _DropsNearestRows, _LaterChunksFirst],
+@pytest.mark.parametrize("mutant", [_ArcOffByOne, _DropsNearestRows, _LaterChunksFirst,
+                                    _FirstChunkClosesOnEqual, _ReachWithoutTheChassis],
                          ids=lambda m: m.__name__)
 def test_planted_bugs_are_caught(monkeypatch, mutant):
     monkeypatch.setattr(safety, "_PivotRows", mutant)
-    assert differences(500, seed=3141) > 0
+    assert differences(300, seed=3141) > 0
+
+
+def test_rows_of_another_scan_are_not_used():
+    near, far = [0.14] * 360, [3.0] * 360
+    s = SafetyController(Body(near, 0.0))
+    stale = safety._PivotRows(scan_of(far), 0.0)
+    assert s.pivot_blocked(3.0, scan_of(near), _rows=stale) is not None

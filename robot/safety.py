@@ -470,7 +470,7 @@ class _PivotRows:
     _FIRST_CHUNK = 8
 
     def __init__(self, scan: dict, missed: float):
-        self.missed = missed
+        self.scan, self.missed = scan, missed
         arc = [missed * k / PIVOT_AGE_SAMPLES for k in range(PIVOT_AGE_SAMPLES + 1)] \
             if missed else [0.0]
         self._rots = [(math.cos(-a), math.sin(-a)) for a in arc]
@@ -794,14 +794,19 @@ class SafetyController:
         stopped robots a whole control period (~3 degrees at 1 rad/s)
         short of where they could safely have turned.
 
-        3.141: the search's eight passes share one `_PivotRows`: the wheel
-        loop vets on its event loop, and redoing the scan's points in every
-        pass cost a turn beside furniture ~22 ms on the board.
+        3.141: the search's passes share one `_PivotRows`: the wheel loop
+        vets on its event loop, and redoing the scan's points in every pass
+        cost a turn beside furniture ~22 ms on the board. So the turn the
+        scan has missed (`_turn_since_scan()`) is read once for the whole
+        search; each pass read it again before, and on a live body the
+        reading can move between passes. For a given reading the answer is
+        the per-pass loop's exactly.
         """
         scan = self._scan() if scan is None else scan
         rows = (_PivotRows(scan, self._turn_since_scan())
                 if omega_rad_s != 0 and scan and scan.get("usable") else None)
-        if self.pivot_blocked(omega_rad_s, scan, _rows=rows) is None:
+        why = self.pivot_blocked(omega_rad_s, scan, _rows=rows)
+        if why is None:
             return 1.0, None
         lo, hi = 0.0, 1.0
         for _ in range(6):
@@ -810,7 +815,9 @@ class SafetyController:
                 lo = mid
             else:
                 hi = mid
-        return lo, self.pivot_blocked(omega_rad_s, scan, _rows=rows)
+        # The asked turn's reason, from the same rows: the pass after the
+        # search asked exactly it again.
+        return lo, why
 
     def pivot_blocked(self, omega_rad_s: float, scan: Optional[dict] = None,
                       exact: bool = False, _rows: Optional["_PivotRows"] = None) -> Optional[str]:
@@ -826,14 +833,16 @@ class SafetyController:
         a rotation within the circle the forward checks already cleared.
 
         `_rows` is `pivot_scale()`'s `_PivotRows` of this same scan (3.141):
-        the returns, aged and filtered once for the whole search.
+        the returns, aged and filtered once for the whole search. Rows of
+        another scan are not used: this scan's are built.
         """
         if omega_rad_s == 0:
             return None
         scan = self._scan() if scan is None else scan
         if not scan or not scan.get("usable"):
             return None
-        rows = _PivotRows(scan, self._turn_since_scan()) if _rows is None else _rows
+        rows = (_rows if _rows is not None and _rows.scan is scan
+                else _PivotRows(scan, self._turn_since_scan()))
         d = omega_rad_s * PIVOT_LOOKAHEAD_S
         if not exact and abs(d) < math.radians(PIVOT_MIN_LOOKAHEAD_DEG):
             d = math.copysign(math.radians(PIVOT_MIN_LOOKAHEAD_DEG), d)

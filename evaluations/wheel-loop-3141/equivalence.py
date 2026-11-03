@@ -21,7 +21,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 from robot.safety import SafetyController  # noqa: E402
 from tests.pivot_reference import ReferenceSafety  # noqa: E402
-from tests.test_pivot_3141 import Body, answers, case, scan_of  # noqa: E402
+from tests.test_pivot_3141 import answers, case  # noqa: E402
 
 BATCH = 2000
 
