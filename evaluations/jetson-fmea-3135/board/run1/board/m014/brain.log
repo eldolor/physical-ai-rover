@@ -1,0 +1,2 @@
+1793688652.954 WARNING identity vision-picar brain server starting -- git=dd0a7c9f executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793689584.914 WARNING safety Blocked REVERSE: rear clearance=19.7cm < min=20cm (scan_footprint)

@@ -255,3 +255,31 @@ def test_a_run_that_ended_early_is_not_met(tmp_path):
 def test_soak_length_is_bounded_by_the_ssh_timeout():
     with pytest.raises(SystemExit):
         fmea_run.main(["soak", "--seconds", str(6 * 3600)])
+
+
+def test_run1_on_the_board_scores_as_recorded(tmp_path):
+    """3.135.C run 1 (2026-11-02/03, rev dd0a7c9f), re-scored from its
+    committed form (memory.jsonl.gz, sysfs.jsonl.gz; no account or truth
+    logs): criterion 1 FAILED on (b), (c) and (d)."""
+    import shutil
+    src = HERE / "board" / "run1"
+    out = tmp_path / "run1"
+    shutil.copytree(src, out, ignore=shutil.ignore_patterns(
+        "account.jsonl", "account.jsonl.gz", "truth.jsonl.gz", "summary.json"))
+    assert not (out / "board" / "telemetry" / "sysfs.jsonl").exists()
+    assert ss.main([str(out)]) == 0
+    s = json.loads((out / "summary.json").read_text())
+    assert s["complete"] and s["run_s"] == 14676.7 and not s["met"]
+    assert s["a"]["met"] and s["a"]["min_mb"] == 700 and s["a"]["account_min_mb"] == 791.1
+    assert s["telemetry"]["mem_available_min_mb"] == 700 and s["telemetry"]["oom_kills"] == 0
+    assert not s["b"]["met"] and s["b"]["slope_mb_per_h"] == -21.08
+    assert s["b"]["slope_missions"] == 13 and s["b"]["over"] == []
+    assert not s["c"]["met"] and s["c"]["oom_kills"] == 0 and s["c"]["late_ticks"] == 2
+    assert s["c"]["late_by_mission"] == {"1": 1, "18": 1} and s["c"]["max_dt_s"] == 0.104
+    assert s["c"]["moving_ticks"] == 201841
+    assert not s["d"]["met"] and (s["d"]["found"], s["d"]["missions"]) == (10, 19)
+    assert s["d"]["contacts"] == 0 and s["d"]["truth_unjudged_missions"] == []
+    assert s["d"]["outcomes"] == {"found": 10, "out_of_budget": 8, "exhausted": 1}
+    assert s["d"]["by_house"] == {"home_first_floor": "4/4", "complex_house": "1/4",
+                                  "procthor:val:0": "3/4", "procthor:val:2": "0/4",
+                                  "procthor:val:3": "2/3"}

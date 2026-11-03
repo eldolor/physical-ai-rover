@@ -1,0 +1,853 @@
+{
+ "run_s": 14676.7,
+ "complete": true,
+ "missions_started_within_s": 13461.2,
+ "a": {
+  "account_min_mb": 791.1,
+  "sysfs_min_mb": 700,
+  "samples": 2933,
+  "sysfs_samples": 12759,
+  "min_mb": 700,
+  "met": true
+ },
+ "b": {
+  "slope_mb_per_h": -21.08,
+  "slope_missions": 13,
+  "hour1_missions": 6,
+  "hour4_missions": 5,
+  "growth": {
+   "ROS container: async_slam_toolbox_node": {
+    "hour1_median_mb": 32.4,
+    "hour4_median_mb": 32.8,
+    "growth_mb": 0.4,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "ROS container: behavior_server": {
+    "hour1_median_mb": 19.2,
+    "hour4_median_mb": 18.6,
+    "growth_mb": -0.6,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "ROS container: bt_navigator": {
+    "hour1_median_mb": 25.1,
+    "hour4_median_mb": 25.6,
+    "growth_mb": 0.6,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "ROS container: collision_monitor": {
+    "hour1_median_mb": 18.4,
+    "hour4_median_mb": 18.0,
+    "growth_mb": -0.4,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "ROS container: controller_server": {
+    "hour1_median_mb": 20.8,
+    "hour4_median_mb": 23.2,
+    "growth_mb": 2.4,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "ROS container: lifecycle_manager": {
+    "hour1_median_mb": 29.4,
+    "hour4_median_mb": 30.5,
+    "growth_mb": 1.1,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "ROS container: planner_server": {
+    "hour1_median_mb": 23.1,
+    "hour4_median_mb": 24.6,
+    "growth_mb": 1.5,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "ROS container: python3": {
+    "hour1_median_mb": 60.1,
+    "hour4_median_mb": 64.6,
+    "growth_mb": 4.5,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "ROS container: robot_state_publisher": {
+    "hour1_median_mb": 14.4,
+    "hour4_median_mb": 14.2,
+    "growth_mb": -0.2,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "ROS container: ros2 launch": {
+    "hour1_median_mb": 32.5,
+    "hour4_median_mb": 32.1,
+    "growth_mb": -0.4,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "ROS container: ros2_control_node": {
+    "hour1_median_mb": 21.4,
+    "hour4_median_mb": 21.0,
+    "growth_mb": -0.4,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "ROS container: twist_mux": {
+    "hour1_median_mb": 12.8,
+    "hour4_median_mb": 13.3,
+    "growth_mb": 0.5,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "VLM driver (VE, Edge-LLM)": {
+    "hour1_median_mb": 195.9,
+    "hour4_median_mb": 183.5,
+    "growth_mb": -12.4,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "brain": {
+    "hour1_median_mb": 72.8,
+    "hour4_median_mb": 72.7,
+    "growth_mb": -0.1,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "cloud stand-in": {
+    "hour1_median_mb": 14.6,
+    "hour4_median_mb": 12.9,
+    "growth_mb": -1.7,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "desktop (gdm, gnome)": {
+    "hour1_median_mb": 42.8,
+    "hour4_median_mb": 36.8,
+    "growth_mb": -6.0,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "docker daemons": {
+    "hour1_median_mb": 64.2,
+    "hour4_median_mb": 58.2,
+    "growth_mb": -6.0,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "fake lidar": {
+    "hour1_median_mb": 32.2,
+    "hour4_median_mb": 20.5,
+    "growth_mb": -11.8,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "harness": {
+    "hour1_median_mb": 29.4,
+    "hour4_median_mb": 35.0,
+    "growth_mb": 5.6,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "local VLM service": {
+    "hour1_median_mb": 36.4,
+    "hour4_median_mb": 33.1,
+    "growth_mb": -3.2,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "measurement (sampler, tegrastats)": {
+    "hour1_median_mb": 15.9,
+    "hour4_median_mb": 15.2,
+    "growth_mb": -0.7,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "other: (sd-pam)": {
+    "hour1_median_mb": 0.9,
+    "hour4_median_mb": 0.7,
+    "growth_mb": -0.2,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: ModemManager": {
+    "hour1_median_mb": 0.9,
+    "hour4_median_mb": 0.1,
+    "growth_mb": -0.8,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: NetworkManager": {
+    "hour1_median_mb": 2.6,
+    "hour4_median_mb": 2.2,
+    "growth_mb": -0.4,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: agetty": {
+    "hour1_median_mb": 0.3,
+    "hour4_median_mb": 0.1,
+    "growth_mb": -0.2,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: avahi-daemon": {
+    "hour1_median_mb": 0.5,
+    "hour4_median_mb": 0.4,
+    "growth_mb": -0.1,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: cron": {
+    "hour1_median_mb": 0.1,
+    "hour4_median_mb": 0.1,
+    "growth_mb": 0.0,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: dbus-daemon": {
+    "hour1_median_mb": 2.7,
+    "hour4_median_mb": 1.6,
+    "growth_mb": -1.1,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: haveged": {
+    "hour1_median_mb": 0.0,
+    "hour4_median_mb": 0.0,
+    "growth_mb": 0.0,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: kerneloops": {
+    "hour1_median_mb": 0.3,
+    "hour4_median_mb": 0.2,
+    "growth_mb": -0.1,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: lpd": {
+    "hour1_median_mb": 0.1,
+    "hour4_median_mb": 0.0,
+    "growth_mb": -0.1,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: networkd-dispat": {
+    "hour1_median_mb": 0.3,
+    "hour4_median_mb": 0.0,
+    "growth_mb": -0.3,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: nv-tee-supplica": {
+    "hour1_median_mb": 0.1,
+    "hour4_median_mb": 0.0,
+    "growth_mb": -0.1,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: nvargus-daemon": {
+    "hour1_median_mb": 0.2,
+    "hour4_median_mb": 0.0,
+    "growth_mb": -0.2,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: nvfancontrol": {
+    "hour1_median_mb": 0.2,
+    "hour4_median_mb": 0.2,
+    "growth_mb": 0.0,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: nvmemwarning.sh": {
+    "hour1_median_mb": 0.2,
+    "hour4_median_mb": 0.2,
+    "growth_mb": 0.0,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: nvphsd": {
+    "hour1_median_mb": 0.1,
+    "hour4_median_mb": 0.1,
+    "growth_mb": 0.0,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: nvs-service": {
+    "hour1_median_mb": 0.1,
+    "hour4_median_mb": 0.0,
+    "growth_mb": -0.1,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: pipewire": {
+    "hour1_median_mb": 0.9,
+    "hour4_median_mb": 0.1,
+    "growth_mb": -0.8,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: pipewire-media-": {
+    "hour1_median_mb": 0.9,
+    "hour4_median_mb": 0.2,
+    "growth_mb": -0.8,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: polkitd": {
+    "hour1_median_mb": 3.7,
+    "hour4_median_mb": 1.1,
+    "growth_mb": -2.6,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: python3": {
+    "hour1_median_mb": 2.7,
+    "hour4_median_mb": 0.3,
+    "growth_mb": -2.4,
+    "n1": 6,
+    "n4": 4,
+    "measure": "anon"
+   },
+   "other: rpcbind": {
+    "hour1_median_mb": 0.2,
+    "hour4_median_mb": 0.1,
+    "growth_mb": -0.1,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: rsyslogd": {
+    "hour1_median_mb": 0.5,
+    "hour4_median_mb": 0.3,
+    "growth_mb": -0.2,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: seatd": {
+    "hour1_median_mb": 0.1,
+    "hour4_median_mb": 0.0,
+    "growth_mb": -0.1,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: sleep": {
+    "hour1_median_mb": 0.1,
+    "hour4_median_mb": 0.1,
+    "growth_mb": 0.0,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: sshd": {
+    "hour1_median_mb": 3.5,
+    "hour4_median_mb": 0.5,
+    "growth_mb": -3.0,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: systemd": {
+    "hour1_median_mb": 5.1,
+    "hour4_median_mb": 3.9,
+    "growth_mb": -1.2,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: systemd-journal": {
+    "hour1_median_mb": 0.9,
+    "hour4_median_mb": 0.7,
+    "growth_mb": -0.2,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: systemd-logind": {
+    "hour1_median_mb": 0.8,
+    "hour4_median_mb": 0.3,
+    "growth_mb": -0.5,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: systemd-resolve": {
+    "hour1_median_mb": 0.4,
+    "hour4_median_mb": 0.4,
+    "growth_mb": 0.0,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: systemd-timesyn": {
+    "hour1_median_mb": 0.2,
+    "hour4_median_mb": 0.1,
+    "growth_mb": -0.1,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: systemd-udevd": {
+    "hour1_median_mb": 3.4,
+    "hour4_median_mb": 1.9,
+    "growth_mb": -1.5,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: tee-supplicant": {
+    "hour1_median_mb": 0.2,
+    "hour4_median_mb": 0.0,
+    "growth_mb": -0.2,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: uuidd": {
+    "hour1_median_mb": 0.2,
+    "hour4_median_mb": 0.0,
+    "growth_mb": -0.2,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "other: wpa_supplicant": {
+    "hour1_median_mb": 0.4,
+    "hour4_median_mb": 0.2,
+    "growth_mb": -0.2,
+    "n1": 6,
+    "n4": 5,
+    "measure": "anon"
+   },
+   "perception (YOLOE + CLIP)": {
+    "hour1_median_mb": 507.4,
+    "hour4_median_mb": 434.9,
+    "growth_mb": -72.6,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "robot server": {
+    "hour1_median_mb": 73.7,
+    "hour4_median_mb": 70.5,
+    "growth_mb": -3.2,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "simulator body": {
+    "hour1_median_mb": 59.6,
+    "hour4_median_mb": 26.9,
+    "growth_mb": -32.7,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   },
+   "simulator sensors": {
+    "hour1_median_mb": 112.5,
+    "hour4_median_mb": 87.6,
+    "growth_mb": -24.9,
+    "n1": 6,
+    "n4": 5,
+    "measure": "rss"
+   }
+  },
+  "roles_not_in_both_hours": [],
+  "over": [],
+  "met": false,
+  "reasons": [
+   "slope -21.1 MB/h < -10.0"
+  ]
+ },
+ "c": {
+  "oom_kills_vmstat": 0,
+  "oom_kills_dmesg": 0,
+  "late_ticks": 2,
+  "max_dt_s": 0.104,
+  "moving_ticks": 201841,
+  "wheel_unread_missions": [],
+  "late_by_mission": {
+   "1": 1,
+   "18": 1
+  },
+  "oom_kills": 0,
+  "met": false
+ },
+ "d": {
+  "missions": 19,
+  "found": 10,
+  "share": 0.526,
+  "contacts": 0,
+  "truth_unjudged_missions": [],
+  "outcomes": {
+   "found": 10,
+   "out_of_budget": 8,
+   "exhausted": 1
+  },
+  "by_house": {
+   "home_first_floor": "4/4",
+   "complex_house": "1/4",
+   "procthor:val:0": "3/4",
+   "procthor:val:2": "0/4",
+   "procthor:val:3": "2/3"
+  },
+  "harness_stopped": [],
+  "errors": {},
+  "sweep": {
+   "found": 39,
+   "n": 40,
+   "missed": [
+    "procthor:val:3 / box (exhausted)"
+   ],
+   "how": "in-process explore sweep (FakeNav), the 40 house/target pairs, 2026-11-02"
+  },
+  "met": false
+ },
+ "met": false,
+ "durations_s": [
+  487.1,
+  1201.2,
+  60.8,
+  1201.3,
+  515.2,
+  812.8,
+  1201.5,
+  992.0,
+  1201.1,
+  378.5,
+  485.3,
+  1201.2,
+  117.1,
+  1201.0,
+  1201.4,
+  113.2,
+  778.9,
+  64.9,
+  1201.1
+ ],
+ "per_mission": [
+  {
+   "k": 0,
+   "house": "home_first_floor",
+   "target": "red backpack",
+   "outcome": "found",
+   "error": null,
+   "s": 487.1,
+   "mem_min_mb": 791.1,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.033
+  },
+  {
+   "k": 1,
+   "house": "complex_house",
+   "target": "shoes",
+   "outcome": "out_of_budget",
+   "error": null,
+   "s": 1201.2,
+   "mem_min_mb": 858.8,
+   "late_ticks": 1,
+   "contacts": 0,
+   "truth_hole_s": 0.033
+  },
+  {
+   "k": 2,
+   "house": "procthor:val:0",
+   "target": "red backpack",
+   "outcome": "found",
+   "error": null,
+   "s": 60.8,
+   "mem_min_mb": 1200.4,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.027
+  },
+  {
+   "k": 3,
+   "house": "procthor:val:2",
+   "target": "basketball",
+   "outcome": "out_of_budget",
+   "error": null,
+   "s": 1201.3,
+   "mem_min_mb": 1042.6,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.032
+  },
+  {
+   "k": 4,
+   "house": "procthor:val:3",
+   "target": "red backpack",
+   "outcome": "found",
+   "error": null,
+   "s": 515.2,
+   "mem_min_mb": 1004.2,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.033
+  },
+  {
+   "k": 5,
+   "house": "home_first_floor",
+   "target": "sofa",
+   "outcome": "found",
+   "error": null,
+   "s": 812.8,
+   "mem_min_mb": 887.4,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.039
+  },
+  {
+   "k": 6,
+   "house": "complex_house",
+   "target": "slippers",
+   "outcome": "out_of_budget",
+   "error": null,
+   "s": 1201.5,
+   "mem_min_mb": 918.2,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.036
+  },
+  {
+   "k": 7,
+   "house": "procthor:val:0",
+   "target": "plunger",
+   "outcome": "exhausted",
+   "error": null,
+   "s": 992.0,
+   "mem_min_mb": 932.8,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.033
+  },
+  {
+   "k": 8,
+   "house": "procthor:val:2",
+   "target": "laundry hamper",
+   "outcome": "out_of_budget",
+   "error": null,
+   "s": 1201.1,
+   "mem_min_mb": 835.5,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.031
+  },
+  {
+   "k": 9,
+   "house": "procthor:val:3",
+   "target": "plunger",
+   "outcome": "found",
+   "error": null,
+   "s": 378.5,
+   "mem_min_mb": 1253.4,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.035
+  },
+  {
+   "k": 10,
+   "house": "home_first_floor",
+   "target": "chair",
+   "outcome": "found",
+   "error": null,
+   "s": 485.3,
+   "mem_min_mb": 847.9,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.035
+  },
+  {
+   "k": 11,
+   "house": "complex_house",
+   "target": "toy car",
+   "outcome": "out_of_budget",
+   "error": null,
+   "s": 1201.2,
+   "mem_min_mb": 871.1,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.032
+  },
+  {
+   "k": 12,
+   "house": "procthor:val:0",
+   "target": "dog bed",
+   "outcome": "found",
+   "error": null,
+   "s": 117.1,
+   "mem_min_mb": 842.6,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.031
+  },
+  {
+   "k": 13,
+   "house": "procthor:val:2",
+   "target": "house plant",
+   "outcome": "out_of_budget",
+   "error": null,
+   "s": 1201.0,
+   "mem_min_mb": 798.0,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.034
+  },
+  {
+   "k": 14,
+   "house": "procthor:val:3",
+   "target": "garbage bag",
+   "outcome": "out_of_budget",
+   "error": null,
+   "s": 1201.4,
+   "mem_min_mb": 813.4,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.029
+  },
+  {
+   "k": 15,
+   "house": "home_first_floor",
+   "target": "dining table",
+   "outcome": "found",
+   "error": null,
+   "s": 113.2,
+   "mem_min_mb": 883.2,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.034
+  },
+  {
+   "k": 16,
+   "house": "complex_house",
+   "target": "water bottle",
+   "outcome": "found",
+   "error": null,
+   "s": 778.9,
+   "mem_min_mb": 938.3,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.032
+  },
+  {
+   "k": 17,
+   "house": "procthor:val:0",
+   "target": "box",
+   "outcome": "found",
+   "error": null,
+   "s": 64.9,
+   "mem_min_mb": 815.1,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.029
+  },
+  {
+   "k": 18,
+   "house": "procthor:val:2",
+   "target": "garbage can",
+   "outcome": "out_of_budget",
+   "error": null,
+   "s": 1201.1,
+   "mem_min_mb": 1018.8,
+   "late_ticks": 1,
+   "contacts": 0,
+   "truth_hole_s": 0.034
+  }
+ ],
+ "desktop_load_max": null,
+ "sha": null,
+ "cmd_exit": null,
+ "cmd_s": null,
+ "power_mode": "NV Power Mode: 15W",
+ "ve_before": {
+  "MainPID": "213172",
+  "NRestarts": "0",
+  "ActiveState": "active",
+  "ActiveEnterTimestamp": "Mon 2026-11-02 14:07:19 CST",
+  "health": {
+   "service": "local_vlm",
+   "ready": true,
+   "alive": true,
+   "load_s": 8.815076702000624,
+   "served": 1252,
+   "engines": "/home/picar/bench-378/ws91/q25VE/engines",
+   "pid": 213172
+  }
+ },
+ "ve_after": {
+  "MainPID": "213172",
+  "NRestarts": "0",
+  "ActiveState": "active",
+  "ActiveEnterTimestamp": "Mon 2026-11-02 14:07:19 CST",
+  "health": {
+   "service": "local_vlm",
+   "ready": true,
+   "alive": true,
+   "load_s": 8.815076702000624,
+   "served": 15336,
+   "engines": "/home/picar/bench-378/ws91/q25VE/engines",
+   "pid": 213172
+  }
+ },
+ "cloud_calls": 2,
+ "restore_actions": null,
+ "restore_error": null,
+ "as_found_differences": null,
+ "left_as_found": null,
+ "telemetry": {
+  "samples": 12759,
+  "temps": 12759,
+  "clocks": 12759,
+  "max_temp_c": 61.718,
+  "oom_kills": 0,
+  "mem_available_min_mb": 700,
+  "cpu_below_max_samples": 4901,
+  "gpu_below_max_samples": 2689
+ }
+}

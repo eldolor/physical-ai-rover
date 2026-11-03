@@ -1,0 +1,277 @@
+{
+ "candidates": [
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 18,
+   "hits": 1,
+   "id": 6,
+   "label": "bed",
+   "last_step": 20,
+   "misses": 0,
+   "points": 3,
+   "reported": false,
+   "room": "bedroom",
+   "votes": {
+    "bed": 1
+   },
+   "x_m": 10.512,
+   "y_m": 5.297
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 1,
+   "id": 2,
+   "label": "desk",
+   "last_step": 2,
+   "misses": 0,
+   "points": 3,
+   "reported": false,
+   "room": "bedroom",
+   "votes": {
+    "desk": 1
+   },
+   "x_m": 10.424,
+   "y_m": 0.919
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 62,
+   "hits": 1,
+   "id": 13,
+   "label": "fridge",
+   "last_step": 62,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "kitchen",
+   "votes": {
+    "fridge": 1
+   },
+   "x_m": 8.374,
+   "y_m": 3.828
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 40,
+   "hits": 1,
+   "id": 9,
+   "label": "house plant",
+   "last_step": 40,
+   "misses": 0,
+   "points": 2,
+   "reported": false,
+   "room": "bedroom",
+   "votes": {
+    "house plant": 1
+   },
+   "x_m": 10.498,
+   "y_m": 8.299
+  },
+  {
+   "belief": 0.512,
+   "carried": false,
+   "disputed": false,
+   "first_step": 37,
+   "hits": 1,
+   "id": 8,
+   "label": "counter top",
+   "last_step": 44,
+   "misses": 2,
+   "points": 3,
+   "reported": false,
+   "room": "bedroom",
+   "votes": {
+    "counter top": 1
+   },
+   "x_m": 8.721,
+   "y_m": 7.46
+  }
+ ],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 65,
+  "landmarks": 13,
+  "no_pose": 0,
+  "observations": 123,
+  "reported": 8,
+  "unplaced": 0
+ },
+ "frame_id": null,
+ "map_id": "slam-354065c3",
+ "mission": "Find the red backpack.",
+ "mission_id": "20261103T041205.968549Z-red backpack",
+ "outcome": "found",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 23,
+   "hits": 7,
+   "id": 7,
+   "label": "counter top",
+   "last_step": 52,
+   "misses": 0,
+   "points": 25,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "counter top": 7
+   },
+   "x_m": 7.852,
+   "y_m": 7.574
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 11,
+   "hits": 7,
+   "id": 4,
+   "label": "dresser",
+   "last_step": 41,
+   "misses": 0,
+   "points": 16,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "dresser": 7
+   },
+   "x_m": 9.323,
+   "y_m": 6.308
+  },
+  {
+   "belief": 0.968,
+   "carried": false,
+   "disputed": false,
+   "first_step": 47,
+   "hits": 4,
+   "id": 10,
+   "label": "chair",
+   "last_step": 64,
+   "misses": 0,
+   "points": 24,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "chair": 4
+   },
+   "x_m": 6.391,
+   "y_m": 5.675
+  },
+  {
+   "belief": 0.928,
+   "carried": false,
+   "disputed": false,
+   "first_step": 52,
+   "hits": 3,
+   "id": 11,
+   "label": "dining table",
+   "last_step": 64,
+   "misses": 0,
+   "points": 13,
+   "reported": true,
+   "room": "kitchen",
+   "votes": {
+    "dining table": 3
+   },
+   "x_m": 6.856,
+   "y_m": 5.429
+  },
+  {
+   "belief": 0.928,
+   "carried": false,
+   "disputed": false,
+   "first_step": 11,
+   "hits": 3,
+   "id": 5,
+   "label": "tv stand",
+   "last_step": 18,
+   "misses": 0,
+   "points": 8,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "tv stand": 3
+   },
+   "x_m": 11.819,
+   "y_m": 6.29
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 2,
+   "id": 1,
+   "label": "bed",
+   "last_step": 10,
+   "misses": 0,
+   "points": 5,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "bed": 2
+   },
+   "x_m": 11.917,
+   "y_m": 1.8
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 6,
+   "hits": 2,
+   "id": 3,
+   "label": "desk",
+   "last_step": 15,
+   "misses": 0,
+   "points": 8,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "desk": 2
+   },
+   "x_m": 14.649,
+   "y_m": 6.241
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 53,
+   "hits": 2,
+   "id": 12,
+   "label": "red backpack",
+   "last_step": 64,
+   "misses": 0,
+   "points": 12,
+   "reported": true,
+   "room": "kitchen",
+   "votes": {
+    "red backpack": 2
+   },
+   "x_m": 7.689,
+   "y_m": 6.021
+  }
+ ]
+}

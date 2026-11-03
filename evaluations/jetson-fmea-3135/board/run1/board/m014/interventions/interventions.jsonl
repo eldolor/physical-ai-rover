@@ -1,0 +1,1 @@
+{"autonomous_s": 1200.42, "end_via": null, "ended_at": 1793689859.555, "house": "procthor:val:3", "intervention": null, "job": "find", "mission_id": "20261103T065059.130836Z-garbage bag", "outcome": "out_of_budget", "person_picks": 0, "policy": "tiered", "started_at": 1793688659.131, "target_object": "garbage bag", "target_room": null}

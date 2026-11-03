@@ -324,15 +324,14 @@ def _count(items) -> dict:
 
 
 def main(argv=None) -> int:
-    import boardrun as br
     argv = argv if argv is not None else sys.argv[1:]
     out = Path(argv[0])
     board = out / "board"
     rec = json.loads((out / "record.json").read_text()) if (out / "record.json").exists() else {}
-    tele = board / "telemetry" / "sysfs.jsonl"
+    # sysfs.jsonl, or its committed .gz (a 4 h run's is ~9 MB raw)
+    sys_rows = jsonl(board / "telemetry" / "sysfs.jsonl")
     write_compact(board)
-    s = score(board, sysfs=br.read_sysfs(tele) if tele.exists() else [],
-              desktop_load=rec.get("desktop_load"))
+    s = score(board, sysfs=sys_rows, desktop_load=rec.get("desktop_load"))
     s.update({"sha": rec.get("sha"), "cmd_exit": rec.get("cmd_exit"), "cmd_s": rec.get("cmd_s"),
               "power_mode": (board / "nvpmodel.txt").read_text().strip()
               if (board / "nvpmodel.txt").exists() else None,
@@ -341,9 +340,9 @@ def main(argv=None) -> int:
               "restore_actions": rec.get("restore_actions"), "restore_error": rec.get("restore_error"),
               "as_found_differences": rec.get("as_found_differences"),
               "left_as_found": rec.get("left_as_found")})
-    if tele.exists():
+    if sys_rows:
         import validity
-        s["telemetry"] = validity.telemetry_counts(br.read_sysfs(tele), _f(board / "run_start"),
+        s["telemetry"] = validity.telemetry_counts(sys_rows, _f(board / "run_start"),
                                                    _f(board / "run_end"))
     (out / "summary.json").write_text(json.dumps(s, indent=1, default=str))
     print(json.dumps({k: s[k] for k in ("met", "run_s")}, default=str))

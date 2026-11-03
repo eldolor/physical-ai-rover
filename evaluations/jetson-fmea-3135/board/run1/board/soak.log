@@ -1,0 +1,40 @@
+21:43:18 setup done; MemAvailable 1753 MB
+21:43:18 m000 home_first_floor / red backpack; MemAvailable 1753 MB
+21:51:38 m000 -> found 
+21:51:38 m001 complex_house / shoes; MemAvailable 1293 MB
+22:11:53 m001 -> out_of_budget 
+22:11:53 m002 procthor:val:0 / red backpack; MemAvailable 1843 MB
+22:13:07 m002 -> found 
+22:13:07 m003 procthor:val:2 / basketball; MemAvailable 1755 MB
+22:33:22 m003 -> out_of_budget 
+22:33:22 m004 procthor:val:3 / red backpack; MemAvailable 2024 MB
+22:42:11 m004 -> found 
+22:42:11 m005 home_first_floor / sofa; MemAvailable 1963 MB
+22:55:58 m005 -> found 
+22:55:58 m006 complex_house / slippers; MemAvailable 2040 MB
+23:16:13 m006 -> out_of_budget 
+23:16:13 m007 procthor:val:0 / plunger; MemAvailable 2037 MB
+23:32:59 m007 -> exhausted 
+23:32:59 m008 procthor:val:2 / laundry hamper; MemAvailable 2052 MB
+23:53:15 m008 -> out_of_budget 
+23:53:15 m009 procthor:val:3 / plunger; MemAvailable 2008 MB
+23:59:47 m009 -> found 
+23:59:47 m010 home_first_floor / chair; MemAvailable 1847 MB
+00:08:05 m010 -> found 
+00:08:05 m011 complex_house / toy car; MemAvailable 1985 MB
+00:28:20 m011 -> out_of_budget 
+00:28:20 m012 procthor:val:0 / dog bed; MemAvailable 2021 MB
+00:30:31 m012 -> found 
+00:30:31 m013 procthor:val:2 / house plant; MemAvailable 2049 MB
+00:50:46 m013 -> out_of_budget 
+00:50:46 m014 procthor:val:3 / garbage bag; MemAvailable 2059 MB
+01:11:02 m014 -> out_of_budget 
+01:11:02 m015 home_first_floor / dining table; MemAvailable 2025 MB
+01:13:08 m015 -> found 
+01:13:08 m016 complex_house / water bottle; MemAvailable 2044 MB
+01:26:21 m016 -> found 
+01:26:21 m017 procthor:val:0 / box; MemAvailable 2051 MB
+01:27:39 m017 -> found 
+01:27:39 m018 procthor:val:2 / garbage can; MemAvailable 2036 MB
+01:47:54 m018 -> out_of_budget 
+01:48:01 torn down

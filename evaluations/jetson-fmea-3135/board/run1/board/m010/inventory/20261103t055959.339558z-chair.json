@@ -1,0 +1,563 @@
+{
+ "candidates": [
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 202,
+   "hits": 1,
+   "id": 18,
+   "label": "breakfast table",
+   "last_step": 205,
+   "misses": 0,
+   "points": 4,
+   "reported": false,
+   "room": "family room",
+   "votes": {
+    "breakfast table": 1
+   },
+   "x_m": 9.835,
+   "y_m": 4.613
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 320,
+   "hits": 1,
+   "id": 35,
+   "label": "breakfast table",
+   "last_step": 327,
+   "misses": 0,
+   "points": 3,
+   "reported": false,
+   "room": "family room",
+   "votes": {
+    "breakfast table": 1
+   },
+   "x_m": 8.896,
+   "y_m": 2.047
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 204,
+   "hits": 1,
+   "id": 20,
+   "label": "chair",
+   "last_step": 205,
+   "misses": 0,
+   "points": 2,
+   "reported": false,
+   "room": "family room",
+   "votes": {
+    "chair": 1
+   },
+   "x_m": 10.01,
+   "y_m": 4.859
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 224,
+   "hits": 1,
+   "id": 23,
+   "label": "sectional sofa",
+   "last_step": 224,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "family room",
+   "votes": {
+    "sectional sofa": 1
+   },
+   "x_m": 6.313,
+   "y_m": 4.166
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 277,
+   "hits": 1,
+   "id": 31,
+   "label": "sectional sofa",
+   "last_step": 277,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "family room",
+   "votes": {
+    "sectional sofa": 1
+   },
+   "x_m": 5.117,
+   "y_m": 3.401
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 278,
+   "hits": 1,
+   "id": 32,
+   "label": "sectional sofa",
+   "last_step": 278,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "family room",
+   "votes": {
+    "sectional sofa": 1
+   },
+   "x_m": 5.304,
+   "y_m": 4.19
+  }
+ ],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 449,
+  "landmarks": 28,
+  "no_pose": 0,
+  "observations": 1194,
+  "reported": 22,
+  "unplaced": 6
+ },
+ "frame_id": null,
+ "map_id": "slam-eda682c4",
+ "mission": "Find the chair.",
+ "mission_id": "20261103T055959.339558Z-chair",
+ "outcome": "found",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 17,
+   "id": 1,
+   "label": "armchair",
+   "last_step": 156,
+   "misses": 0,
+   "points": 128,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "armchair": 17
+   },
+   "x_m": 2.999,
+   "y_m": 8.368
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 28,
+   "hits": 15,
+   "id": 7,
+   "label": "armchair",
+   "last_step": 153,
+   "misses": 0,
+   "points": 103,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "armchair": 15
+   },
+   "x_m": 3.092,
+   "y_m": 11.07
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 177,
+   "hits": 18,
+   "id": 15,
+   "label": "armchair",
+   "last_step": 378,
+   "misses": 0,
+   "points": 118,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "armchair": 18
+   },
+   "x_m": 7.385,
+   "y_m": 4.44
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 231,
+   "hits": 5,
+   "id": 26,
+   "label": "breakfast table",
+   "last_step": 328,
+   "misses": 0,
+   "points": 18,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "breakfast table": 5
+   },
+   "x_m": 9.816,
+   "y_m": 3.607
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 202,
+   "hits": 9,
+   "id": 19,
+   "label": "chair",
+   "last_step": 334,
+   "misses": 0,
+   "points": 37,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "chair": 9
+   },
+   "x_m": 9.731,
+   "y_m": 3.565
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 347,
+   "hits": 14,
+   "id": 38,
+   "label": "chair",
+   "last_step": 397,
+   "misses": 0,
+   "points": 52,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "chair": 14
+   },
+   "x_m": 8.402,
+   "y_m": 9.068
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 356,
+   "hits": 6,
+   "id": 40,
+   "label": "chair",
+   "last_step": 445,
+   "misses": 0,
+   "points": 18,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "chair": 6
+   },
+   "x_m": 7.619,
+   "y_m": 9.873
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 367,
+   "hits": 8,
+   "id": 43,
+   "label": "chair",
+   "last_step": 440,
+   "misses": 0,
+   "points": 63,
+   "reported": true,
+   "room": "hall",
+   "votes": {
+    "chair": 8
+   },
+   "x_m": 8.934,
+   "y_m": 11.082
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 407,
+   "hits": 5,
+   "id": 45,
+   "label": "chair",
+   "last_step": 448,
+   "misses": 0,
+   "points": 34,
+   "reported": true,
+   "room": "dining room",
+   "votes": {
+    "chair": 5
+   },
+   "x_m": 7.747,
+   "y_m": 11.019
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 3,
+   "hits": 16,
+   "id": 4,
+   "label": "coffee table",
+   "last_step": 138,
+   "misses": 0,
+   "points": 59,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "coffee table": 15,
+    "side table": 1
+   },
+   "x_m": 2.17,
+   "y_m": 9.429
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 206,
+   "hits": 15,
+   "id": 21,
+   "label": "coffee table",
+   "last_step": 325,
+   "misses": 0,
+   "points": 72,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "coffee table": 15
+   },
+   "x_m": 6.389,
+   "y_m": 2.969
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 350,
+   "hits": 9,
+   "id": 39,
+   "label": "dining table",
+   "last_step": 400,
+   "misses": 0,
+   "points": 32,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "dining table": 9
+   },
+   "x_m": 8.083,
+   "y_m": 9.56
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 362,
+   "hits": 11,
+   "id": 41,
+   "label": "dining table",
+   "last_step": 442,
+   "misses": 0,
+   "points": 40,
+   "reported": true,
+   "room": "hall",
+   "votes": {
+    "dining table": 11
+   },
+   "x_m": 8.53,
+   "y_m": 11.367
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 169,
+   "hits": 9,
+   "id": 14,
+   "label": "sectional sofa",
+   "last_step": 379,
+   "misses": 0,
+   "points": 49,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "sectional sofa": 9
+   },
+   "x_m": 5.682,
+   "y_m": 5.091
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 225,
+   "hits": 10,
+   "id": 25,
+   "label": "sectional sofa",
+   "last_step": 324,
+   "misses": 0,
+   "points": 72,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "sectional sofa": 10
+   },
+   "x_m": 5.051,
+   "y_m": 2.038
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 35,
+   "hits": 6,
+   "id": 8,
+   "label": "side table",
+   "last_step": 146,
+   "misses": 0,
+   "points": 24,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "side table": 6
+   },
+   "x_m": 0.942,
+   "y_m": 11.457
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 11,
+   "hits": 13,
+   "id": 5,
+   "label": "sofa",
+   "last_step": 146,
+   "misses": 0,
+   "points": 43,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "sofa": 13
+   },
+   "x_m": 1.211,
+   "y_m": 9.769
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 12,
+   "id": 2,
+   "label": "staircase",
+   "last_step": 184,
+   "misses": 0,
+   "points": 56,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "staircase": 12
+   },
+   "x_m": 5.964,
+   "y_m": 8.317
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 342,
+   "hits": 7,
+   "id": 36,
+   "label": "staircase",
+   "last_step": 385,
+   "misses": 0,
+   "points": 31,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "staircase": 7
+   },
+   "x_m": 6.926,
+   "y_m": 8.018
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 398,
+   "hits": 5,
+   "id": 44,
+   "label": "staircase",
+   "last_step": 448,
+   "misses": 0,
+   "points": 20,
+   "reported": true,
+   "room": "dining room",
+   "votes": {
+    "staircase": 5
+   },
+   "x_m": 6.934,
+   "y_m": 10.029
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 224,
+   "hits": 16,
+   "id": 24,
+   "label": "tv console",
+   "last_step": 324,
+   "misses": 0,
+   "points": 101,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "tv console": 16
+   },
+   "x_m": 6.881,
+   "y_m": 0.848
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 194,
+   "hits": 2,
+   "id": 17,
+   "label": "chair",
+   "last_step": 205,
+   "misses": 0,
+   "points": 6,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "chair": 2
+   },
+   "x_m": 7.942,
+   "y_m": 4.828
+  }
+ ]
+}
