@@ -49,6 +49,9 @@ BRIDGE = int(os.environ["PICAR_BRIDGE_PORT"])
 CLOUD, VLM = BRIDGE + 1, BRIDGE + 2
 CONTAINER = os.environ["PICAR_ROS_CONTAINER"]
 DOMAIN = os.environ["ROS_DOMAIN_ID"]
+# The board ran `:latest` (3.136.B); `plan_section.py env` names a per-branch
+# tag this section never builds.
+IMAGE = os.environ.get("TRACE_3141_IMAGE", "vision-picar-ros:latest")
 HOUSE = os.environ.get("HOUSE", "procthor:val:12")
 TARGETS = os.environ.get("TARGETS", "garbage can|house plant|laundry hamper|basketball|dog bed|"
                          "box|plunger|cart|garbage bag").split("|")
@@ -122,7 +125,7 @@ def main():
                         "-e", f"ROBOT_URL=http://127.0.0.1:{ROBOT}",
                         "-e", f"BRAIN_URL=http://127.0.0.1:{BRAIN}",
                         "-e", f"ROS_DOMAIN_ID={DOMAIN}",
-                        os.environ.get("ROS_IMAGE", "vision-picar-ros:latest"),
+                        IMAGE,
                         "ros2", "launch", "picar_bringup", "picar.launch.py"],
                        capture_output=True, check=True)
         wait("bridge", lambda: httpx.get(f"http://127.0.0.1:{BRIDGE}/health").status_code == 200, 180)

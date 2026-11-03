@@ -177,6 +177,18 @@ No runs yet. The 3.135.A smoke (2026-11-01, F13 only, not scored) is in
 
 ## Runs
 
+### 2026-11-03, one wheel-loop vet's cost (3.141.A, a diagnostic, not a recurring test)
+
+The board quiet (load 0.7, 15 W, the board's checkout at its own rev, its
+`robot/safety.py` last changed in `f9c2ede7`), 12:09-12:10 under
+`board_lock`. `evaluations/wheel-loop-3141/vet_bench.py`: one
+`SafetyController.vet_wheel_velocity()` on a 360-bin scan, by case.
+Straight in the open 0.64 ms p50; turning in the open 2.47 ms; **a turn
+clamped near a corner, where `pivot_scale()` searches, 20.1-22.8 ms p50**
+(desktop 9-16 ms). That vet runs on the event loop inside the wheel tick, so
+it counts toward the 100 ms late line. Record:
+`evaluations/wheel-loop-3141/board/vet-bench-20261103-1209.txt`.
+
 ### 2026-11-02/03, memory soak run 1 (3.135.C), rev `dd0a7c9f`
 
 On the board 21:43 -> 01:48 (14,677 s scored), 15 W, the board booted

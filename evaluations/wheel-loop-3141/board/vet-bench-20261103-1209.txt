@@ -1,0 +1,10 @@
+board lock held: plan/3.141-wheel-loop-fix pid 945919 (anshu-Legion-T5-28IMB05): 3.141.A vet bench (one minute), since 2026-11-03T12:09:55-06:00, until 2026-11-03T16:09:55-06:00
+straight, open           p50   0.64 ms  p90   0.66  max   1.41  -> None
+straight, wall 25 cm     p50   0.66 ms  p90   0.66  max   0.69  -> forward clamped: 24.1cm <= 25cm (scan_footprint, aged 80 ms)
+turn, open               p50   2.47 ms  p90   2.47  max   2.61  -> None
+turn, corner 1 cm off    p50   0.11 ms  p90   0.11  max   0.14  -> turn left clamped: a corner would come within 0.8cm < 1.3cm (scan_footprint, aged 2.9 deg)
+corner 0.171 0.14 p50 21.8 p90 21.9 max 22.1
+corner 0.167 0.152 p50 22.8 p90 22.9 max 23.2
+corner 0.159 0.14 p50 20.1 p90 20.2 max 20.2
+ 12:10:00 up 23:14,  1 user,  load average: 0.72, 0.65, 0.42
+board lock released

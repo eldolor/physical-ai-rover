@@ -216,13 +216,17 @@ class _Traced:
 def _timed_vet(fn):
     def wrapper(*a, **k):
         t0 = time.perf_counter()
+        out = None
         try:
-            return fn(*a, **k)
+            out = fn(*a, **k)
+            return out
         finally:
             ms = (time.perf_counter() - t0) * 1000
             if ms > VET_MS:
                 _write({"k": "vet", "t": time.time(), "ms": round(ms, 2),
-                        "thread": threading.current_thread().name})
+                        "thread": threading.current_thread().name,
+                        "cmd": [round(x, 2) for x in a[1:3]],
+                        "reason": (out[2] or "")[:100] if out else "raised"})
     wrapper.__wrapped__ = fn
     return wrapper
 
