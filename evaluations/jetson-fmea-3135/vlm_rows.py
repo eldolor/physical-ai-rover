@@ -183,6 +183,33 @@ def proxy_log(path: Path) -> list:
     return out
 
 
+DROPIN = f"/etc/systemd/system/{VE_UNIT}.service.d/99-fmea-3135-oom0.conf"
+UNIT_OOM_ADJ = "1000"           # the unit's own (3.80.B), checked after the drop-in goes
+
+
+def ve_oom_dropin(on: bool) -> dict:
+    """F2's planted check (the user's yes, 2026-11-03): VE's OOMScoreAdjust
+    at 0 by a drop-in, the unit restarted under it; `on=False` removes it,
+    restarts the unit and checks it is back at its own 1000 and ready."""
+    if on:
+        sh("sudo", "-n", "mkdir", "-p", str(Path(DROPIN).parent))
+        sh("sudo", "-n", "tee", DROPIN, input="[Service]\nOOMScoreAdjust=0\n")
+    else:
+        sh("sudo", "-n", "rm", "-f", DROPIN)
+    sh("sudo", "-n", "systemctl", "daemon-reload")
+    sh("sudo", "-n", "systemctl", "restart", VE_UNIT, timeout=120)
+    end = time.monotonic() + 300
+    while not ve_ready() and time.monotonic() < end:
+        time.sleep(2.0)
+    adj = sh("systemctl", "show", "-p", "OOMScoreAdjust", "--value", VE_UNIT).stdout.strip()
+    res = {"on": on, "unit_oom_score_adjust": adj, "ready": ve_ready()}
+    if not on and (adj != UNIT_OOM_ADJ or Path(DROPIN).exists()):
+        raise StackError(f"the ve_oom0 drop-in was not undone: {res}")
+    if on and adj != "0":
+        raise StackError(f"the ve_oom0 drop-in did not take: {res}")
+    return res
+
+
 def oom_count() -> int:
     for line in Path("/proc/vmstat").read_text().splitlines():
         if line.startswith("oom_kill "):
@@ -195,12 +222,6 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
     out.mkdir(parents=True, exist_ok=True)
     rec = {"row": row, "title": spec["title"], "reading": spec["reading"], "plant": plant or None,
            "house": house, "host": os.uname().nodename, "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
-    if plant == "ve_oom0":
-        rec.update(error="the ve_oom0 plant (a drop-in on picar-local-vlm) is not built: it waits on "
-                         "the user's yes", measures={}, verdict={"pass": False, "valid": False,
-                                                                  "reasons": ["not run"]})
-        (out / "result.json").write_text(json.dumps(rec, indent=1))
-        return rec
     ms: dict = {"fault_at": None}
     plog, calls_log = out / "vlm_proxy.jsonl", out / "cloud_calls.jsonl"
     helpers: dict = {}
@@ -211,6 +232,8 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
         try:
             if not secret:
                 raise StackError("no APP_SHARED_SECRET in the VLM's env file")
+            if plant == "ve_oom0":
+                ms["plant_dropin"] = ve_oom_dropin(True)
             if not ve_ready():
                 raise StackError("VE is not ready at the start")
             ms["ve_before"] = sh("systemctl", "show", "-p", "MainPID,NRestarts", VE_UNIT).stdout.split()
@@ -370,6 +393,11 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 for p in helpers.values():
                     if p.poll() is None:
                         os.killpg(p.pid, signal.SIGKILL)
+            if plant == "ve_oom0":
+                try:
+                    ms["plant_removed"] = ve_oom_dropin(False)
+                except Exception as e:     # noqa: BLE001 -- never lose the run; the board check says so too
+                    rec["error"] = f"the plant's removal: {type(e).__name__}: {e}"
             end = time.monotonic() + 180                  # VE as found before the next run
             while not ve_ready() and time.monotonic() < end:
                 time.sleep(1.0)
