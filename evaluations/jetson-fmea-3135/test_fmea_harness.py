@@ -118,6 +118,7 @@ def test_a_run_inside_every_bar_passes(row):
     ("F6g", {"travel_cm": 15.1}, "bar 15"),
     ("F7g", {"drive_after_cont": 1}, "after SIGCONT"),
     ("F4", {"driver_at_fault": "brain"}, "not nav2"),
+    ("F6g", {"driver_at_fault": "twin-dpad"}, "not nav2"),
 ])
 def test_each_broken_bar_fails_its_row(row, change, reason):
     v = fmea.judge(row, {**GOOD, **change})

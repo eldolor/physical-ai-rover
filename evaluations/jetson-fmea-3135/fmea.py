@@ -119,7 +119,7 @@ def judge(row: str, ms: dict) -> dict:
     valid = ms.get("forward_at_fault") is True
     if not valid:
         r.append("invalid: the board was not driving forward when the fault fired")
-    if ROWS[row]["mover"] == "goal" and ms.get("driver_at_fault") != "ros":
+    if ROWS[row]["mover"] == "goal" and ms.get("driver_at_fault") not in (None, "ros"):
         valid = False
         r.append(f"invalid: the driver at the fault was {ms.get('driver_at_fault')}, not nav2 (ros)")
     bar(ms.get("gap_unknown", 1) == 0, f"{ms.get('gap_unknown')} truth samples with no gap (contact unjudged)")
@@ -304,7 +304,9 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 n = st.now()
                 if goal:                   # nav2's own drive, not one of explore's verbs
                     ms["driver_at_fault"] = robot_health(st).get("authority_holder")
-                    if ms["driver_at_fault"] != "ros":
+                    # Under drive: ros nav2's wheel posts are the actuator's, never arbitrated:
+                    # the holder lapses to None a second after the goal. A brain verb holds it.
+                    if ms["driver_at_fault"] not in (None, "ros"):
                         time.sleep(1.0)
                         continue
                 if isinstance(n, dict) and m.is_forward(n.get("sp")):

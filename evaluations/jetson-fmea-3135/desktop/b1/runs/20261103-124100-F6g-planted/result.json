@@ -1,0 +1,30 @@
+{
+ "row": "F6g",
+ "title": "Brain killed mid-move (a nav2 goal)",
+ "reading": "as F6, the robot on an explore mission's nav2 goal",
+ "plant": "watchdog",
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-03T12:42:26-0600",
+ "error": "StackError: the robot never drove forward on a goal in 240 s",
+ "measures": {
+  "fault_at": null,
+  "driver_at_fault": null,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   58302.8867,
+   58587.7068
+  ],
+  "mem_available_min_mb": 9756,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": false,
+  "reasons": [
+   "the fault was never injected (the robot never moved)"
+  ]
+ },
+ "ended": "2026-11-03T12:47:12-0600"
+}

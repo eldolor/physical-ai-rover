@@ -1,0 +1,30 @@
+{
+ "row": "F4",
+ "title": "ROS container dies mid-goal",
+ "reading": "wheels zero <= 0.5 s after the `docker kill`; true path from the kill over the next 6 s <= 5 cm; the mission ends failed with ROS named in its reason; the robot server's last refusal (the twin's readout) is ros_unavailable (ROS DOWN); after a new container the next explore mission ends found; 0 contacts",
+ "plant": "watchdog",
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-03T12:58:20-0600",
+ "error": "StackError: the robot never drove forward on a goal in 240 s",
+ "measures": {
+  "fault_at": null,
+  "driver_at_fault": null,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   59256.6796,
+   59564.1797
+  ],
+  "mem_available_min_mb": 9904,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": false,
+  "reasons": [
+   "the fault was never injected (the robot never moved)"
+  ]
+ },
+ "ended": "2026-11-03T13:03:28-0600"
+}
