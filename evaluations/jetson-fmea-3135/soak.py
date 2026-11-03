@@ -26,7 +26,9 @@ What lands in <out>:
                   mission (`m007`) or `setup` / `between` / `end`
   missions.jsonl  one line per mission: house, target, stamps (epoch and
                   monotonic), outcome, the robot server's wheel loop at the end,
-                  contacts and the longest hole in the truth log
+                  contacts and the longest hole in the truth log, and `encoded`:
+                  the models that encoded its target's text (3.142)
+  text-cache/     the perception loop's text cache, emptied before each mission
   m<k>/           that mission's stack logs, truth.jsonl.gz, ros.log.gz
   perception.log, cloud_calls.jsonl, soak.log, ve_before.json, ve_after.json
 """
@@ -143,6 +145,10 @@ class Soak:
         self.log = open(self.out / "soak.log", "a", buffering=1)
         self.phase_file = self.out / "phase"
         self.switch_file = self.out / "targets.txt"
+        # 3.142: the perception loop's text cache is the run's own, emptied
+        # before each switch, so every mission encodes its target (run 1 read
+        # the board's ~/.cache, where earlier benches had left targets).
+        self.text_cache = self.out / "text-cache"
         self.vlm_secret = read_vlm_secret()
 
     # ---------------------------------------------------------------- utils
@@ -210,15 +216,37 @@ class Soak:
         wait(lambda: http_ok(f"http://127.0.0.1:{STUB_PORT}/health"), 30, "the cloud stand-in")
         if self.perception:
             self.switch_file.write_text("")
-            env = dict(os.environ, PERCEPTION_SWITCH_FILE=str(self.switch_file),
-                       PERCEPTION_SWITCH_RELEASE="1", PYTHONPATH=str(ROOT), PYTHONUNBUFFERED="1")
             p = self.spawn("perception", [PY, "tools/jetson/perception_loop.py",
-                                          str(int(self.seconds + 4 * 3600))], env=env)
+                                          str(int(self.seconds + 4 * 3600))],
+                           env=self.perception_env())
             log = self.out / "perception.log"
             wait(lambda: "loaded 1 pipeline" in log.read_text(errors="replace"), 600,
                  "perception loaded", proc=p)
             self.oom_adj(p.pid, STACK_OOM_ADJ)   # it is the brain's perception on the car
         self.say(f"setup done; MemAvailable {mem_available_mb()} MB")
+
+    def perception_env(self) -> dict:
+        return dict(os.environ, PERCEPTION_SWITCH_FILE=str(self.switch_file),
+                    PERCEPTION_SWITCH_RELEASE="1", PICAR_TEXT_CACHE=str(self.text_cache),
+                    PYTHONPATH=str(ROOT), PYTHONUNBUFFERED="1")
+
+    def next_target(self, target: str) -> None:
+        """Switch the perception loop to `target` with nothing cached, so its
+        first predict encodes the text in `brain.text_encoder`'s children."""
+        shutil.rmtree(self.text_cache, ignore_errors=True)
+        self.text_cache.mkdir(parents=True, exist_ok=True)
+        with open(self.switch_file, "a") as f:
+            f.write(target + "\n")
+
+    def encoded(self) -> list:
+        """The models whose text features were written since the last switch."""
+        models = set()
+        for f in sorted(self.text_cache.glob("*.json")):
+            try:
+                models.add(json.loads(f.read_text())["model"])
+            except (OSError, ValueError, KeyError, TypeError):
+                continue
+        return sorted(models)
 
     # -------------------------------------------------------------- mission
 
@@ -254,8 +282,7 @@ class Soak:
                 120, "SLAM's start pose")
             rec["ready_t"] = round(time.time(), 3)
             if self.perception:
-                with open(self.switch_file, "a") as f:
-                    f.write(target + "\n")
+                self.next_target(target)
             rec["t0"], rec["m0"] = round(time.time(), 3), round(time.monotonic(), 4)
             code, body = st.brain("POST", "/mission/start",
                                   {"target_object": target, "policy": "tiered"}, timeout=600)
@@ -309,6 +336,8 @@ class Soak:
                 except OSError:
                     pass
         finally:
+            if self.perception and self.switch_file.exists() and "ready_t" in rec:
+                rec["encoded"] = self.encoded()
             self.phase("between")
             self.teardown_mission(mdir, st)
             self.stack = None

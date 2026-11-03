@@ -63,6 +63,36 @@ def test_the_stack_gets_ros_the_local_tier_and_explore(tmp_path):
     assert soak.read_vlm_secret(tmp_path / "none") == ""
 
 
+def test_every_mission_encodes_its_target_in_the_soaks_own_cache(tmp_path, monkeypatch):
+    """3.142 criterion 1: run 1's perception loop read the board's own text
+    cache, so a target cached by an earlier bench or mission encoded nothing
+    (5 of 19 missions) and the new-target path did not run every time."""
+    monkeypatch.setattr(soak, "read_vlm_secret", lambda *a, **k: "")
+    s = soak.Soak(tmp_path / "out", 60)
+    cache = s.text_cache
+    assert cache.parent == s.out                       # the run's own, never ~/.cache
+    env = s.perception_env()
+    assert env["PICAR_TEXT_CACHE"] == str(cache)
+    assert env["PERCEPTION_SWITCH_FILE"] == str(s.switch_file)
+    s.switch_file.write_text("")
+    # An encoding left from the last mission (or a bench) is gone before the switch.
+    cache.mkdir(parents=True)
+    (cache / "old.json").write_text(json.dumps({"model": "mobileclip:blt", "texts": ["plunger"]}))
+    s.next_target("plunger")
+    assert list(cache.iterdir()) == []
+    assert s.switch_file.read_text() == "plunger\n"
+    # What the mission's children wrote is its record.
+    (cache / "a.json").write_text(json.dumps({"model": "open_clip:RN50:openai",
+                                              "texts": ["plunger", "a wall"]}))
+    (cache / "b.json").write_text(json.dumps({"model": "mobileclip:blt", "texts": ["plunger"]}))
+    (cache / "c.tmp").write_text("{")                    # a write cut short is not one
+    (cache / "d.json").write_text("not json")
+    assert s.encoded() == ["mobileclip:blt", "open_clip:RN50:openai"]
+    s.next_target("box")
+    assert s.encoded() == []
+    assert s.switch_file.read_text() == "plunger\nbox\n"
+
+
 def test_the_soak_holds_the_board_past_four_hours_on_a_shared_desktop_lock():
     argv = fmea_run.soak_lock_argv(["x"], "3.135.C soak", 14400 + 7200, False)
     assert argv[2:4] == ["shared", "--no-wait"]
