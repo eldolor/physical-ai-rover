@@ -333,3 +333,45 @@ def test_the_clock_cases_and_their_bars():
     assert sys_rows.judge("F16m", {**CLOCK_GOOD, "stepped": False})["valid"] is False
     assert rows.runner("F16p").__name__ == "sys_rows"
     assert {r["plant"] for r in sys_rows.ROWS.values()} - {""} <= stack.ROBOT_PLANTS
+
+
+# --------------------------------------------------------- 3.135.B: VE rows
+
+import vlm_rows  # noqa: E402
+
+VLM_GOOD = {"fault_at": 1.0, "forward_at_fault": True, "driver_at_fault": "ros", "question_hit": True,
+            "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.02, "oom_kills": 1, "killed_ve": True,
+            "alive_after": {"robot": True, "brain": True, "ros": True}, "late_ticks": 0,
+            "ve_back_s": 45.0, "next_answer": True, "failed_in_watch": False,
+            "wheels_zero_from_stop_s": 0.06, "cancelled_by": "stop", "paid_after_stop": 0}
+
+
+@pytest.mark.parametrize("row, outcome", [("F2", "found"), ("F3f", "stopped_by_harness"), ("F3a", "found"),
+                                          ("F3r", "arrived_unconfirmed"), ("F17g", "cancelled"),
+                                          ("F17q", "cancelled"), ("F17a", "cancelled")])
+def test_ve_cases_pass_inside_their_bars(row, outcome):
+    assert vlm_rows.judge(row, {**VLM_GOOD, "outcome": outcome}) == {"pass": True, "valid": True, "reasons": []}
+
+
+@pytest.mark.parametrize("row, change, reason", [
+    ("F2", {"oom_kills": 2}, "bar 1"), ("F2", {"killed_ve": False}, "not VE"),
+    ("F2", {"alive_after": {"robot": True, "brain": False, "ros": True}}, "alive after"),
+    ("F2", {"late_ticks": 1}, "late wheel"), ("F2", {"outcome": "running"}, "ended running"),
+    ("F3f", {"ve_back_s": 61.0}, "bar 60"), ("F3f", {"next_answer": False}, "not answered"),
+    ("F3f", {"failed_in_watch": True}, "failed after the kill"),
+    ("F3a", {"outcome": "out_of_budget"}, "not found"), ("F3r", {"outcome": "found"}, "not arrived_unconfirmed"),
+    ("F17g", {"wheels_zero_from_stop_s": 0.21}, "bar 0.2"),
+    ("F17q", {"outcome": "running", "cancelled_by": None}, "not cancelled by stop"),
+    ("F17a", {"paid_after_stop": 1}, "paid calls after"),
+])
+def test_each_broken_ve_bar_fails(row, change, reason):
+    base = {**VLM_GOOD, "outcome": {"F2": "found", "F3f": "x", "F3a": "found", "F3r": "arrived_unconfirmed"}.get(row, "cancelled")}
+    v = vlm_rows.judge(row, {**base, **change})
+    assert not v["pass"] and any(reason in r for r in v["reasons"]), v
+
+
+def test_a_ve_fault_off_its_moment_is_invalid():
+    assert vlm_rows.judge("F3a", {**VLM_GOOD, "question_hit": False, "outcome": "found"})["valid"] is False
+    assert vlm_rows.judge("F17g", {**VLM_GOOD, "driver_at_fault": "brain", "outcome": "cancelled"})["valid"] is False
+    assert rows.runner("F17q").__name__ == "vlm_rows"
+    assert {r["plant"] for r in vlm_rows.ROWS.values()} - {"ve_oom0"} <= stack.ROBOT_PLANTS | stack.BRAIN_PLANTS
