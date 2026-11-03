@@ -30,7 +30,7 @@ export const state = {
   sightings: [], found: false, foundSighting: null,
   log: [], step: 0,
   safetyFlashUntil: 0,
-  guidanceMode: "guide", // "guide" -> /guidance (steer a person); "robot" -> /navigate (what would the robot do)
+  guidanceMode: "robot", // "guide" -> /guidance (steer a person); "robot" -> /navigate (what would the robot do)
   guidanceRunning: false, guidanceStarting: false, guidanceTimerId: null, guidanceTarget: null,
   guidanceInFlight: 0, guidanceSeq: 0, guidanceLastRenderedSeq: 0,
   // Which run a vision call belongs to. Bumped on every stop, captured at

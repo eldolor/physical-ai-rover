@@ -48,7 +48,7 @@ def _tap_refused(browser, twin_server, reply):
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.wait_for_function(
         "() => (document.getElementById('map-readout') || {}).textContent.includes('tap the map')",
         timeout=8000)

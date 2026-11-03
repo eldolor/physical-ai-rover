@@ -175,7 +175,9 @@ def browser():
         # never starts, silently and with no error on the page.
         b = p.chromium.launch(args=["--use-fake-ui-for-media-stream",
                                     "--use-fake-device-for-media-stream"])
-        yield b
+        # 3.132 Stage 3: contexts start on Record, as tests/test_ui.py's do.
+        from tests.test_ui import _LegacyTabBrowser
+        yield _LegacyTabBrowser(b)
         b.close()
 
 

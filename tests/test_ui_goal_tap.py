@@ -92,6 +92,7 @@ def _tap_at(page, grid, x_m, y_m):
 def _open_asking(browser, twin_server, points):
     page, errors = open_with_brain(browser, twin_server, health=TIERED_BRAIN_HEALTH,
                                    status=ask_status(points))
+    page.click('.tab-btn[data-tab="drive"]')     # 3.132 Stage 3: the map's tab
     sync_api.expect(page.locator("#map-readout")).to_contain_text("explore asks", timeout=5000)
     return page, errors
 
@@ -190,6 +191,7 @@ def test_a_new_missions_choice_1_takes_a_tap_after_the_last_ones_choice_1(browse
     grid, points = _free_cells(twin_server, 2)
     page, errors = open_with_brain(browser, twin_server, health=TIERED_BRAIN_HEALTH,
                                    status=ask_status(points, choice=1))
+    page.click('.tab-btn[data-tab="drive"]')     # 3.132 Stage 3: the map's tab
     sync_api.expect(page.locator("#map-readout")).to_contain_text("explore asks", timeout=5000)
     picks = _record(page, "**/brain-stub/mission/explore/pick")
     _tap_at(page, grid, *points[0])

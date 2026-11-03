@@ -96,7 +96,9 @@ def browser():
     with sync_api.sync_playwright() as p:
         b = p.chromium.launch(args=["--use-fake-ui-for-media-stream",
                                     "--use-fake-device-for-media-stream"])
-        yield b
+        # 3.132 Stage 3: contexts start on Record, as tests/test_ui.py's do.
+        from tests.test_ui import _LegacyTabBrowser
+        yield _LegacyTabBrowser(b)
         b.close()
 
 
@@ -149,7 +151,7 @@ def _drive(browser, server, prefs):
     page.route("**/brain-stub/recording/**", recording)
     page.goto(server, wait_until="networkidle")
     page.wait_for_timeout(800)
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.fill("#guidance-target", "red backpack")
     page.click("#btn-guidance")
     page.wait_for_timeout(1000)

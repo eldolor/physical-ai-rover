@@ -141,6 +141,18 @@
     "svc.brain": "autopilot",
     "svc.and": " and ",
     "word.target": "target",
+    "card.ready": "Ready — name something and tap Start.",
+    "card.searching": "Searching for the {target}.",
+    "card.searchingRoom": "Searching for the {target} — 1 room looked at so far.",
+    "card.searchingRooms": "Searching for the {target} — {n} rooms looked at so far.",
+    "card.surveying": "Surveying the house.",
+    "card.found": "Found the {target}.",
+    "mode.sim": "Simulator",
+    "mode.teleop": "Phone camera",
+    "mode.hardware": "Rover",
+    "mode.other": "Connected",
+    "mode.checking": "Connected",
+    "mode.none": "Not connected",
     "hint.brainUnreachable": "Autopilot unreachable at {host} — retrying every few seconds. Start comes back on its own.",
     "hint.brainNone": "No autopilot connected — open Settings to connect one.",
     "hint.survey": "Drives everywhere it can reach and names the rooms as it goes, then stops.",
@@ -301,7 +313,13 @@
     "battery.checking": " \u00b7 checking {level} at rest",
     "battery.noReading": "no reading",
     "mission.batteryLow": "Could not start: {why}",
-    "mission.batteryCheck": "Could not start: {why}"
+    "mission.batteryCheck": "Could not start: {why}",
+    "mode.sim": "sim mode",
+    "mode.teleop": "teleop mode",
+    "mode.hardware": "hardware mode",
+    "mode.other": "{mode} mode",
+    "mode.checking": "mode unknown",
+    "mode.none": "not connected"
   }
 } /* END STRINGS */;
 

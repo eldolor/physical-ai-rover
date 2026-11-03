@@ -58,7 +58,7 @@ def test_the_banner_does_not_make_the_page_scroll_sideways(browser, twin_server)
     """`margin: 0 -16px` against `.wrap`'s 14 px: every tab 392 px wide on a
     390 px phone (both reviewers)."""
     page, _ = _open_with_health(browser, twin_server, "Lab")
-    for tab in ("guide", "sim"):
+    for tab in ("home", "drive", "record", "settings"):
         page.click(f'.tab-btn[data-tab="{tab}"]')
         page.wait_for_timeout(100)
         width = page.evaluate("[document.documentElement.scrollWidth, document.documentElement.clientWidth]")
@@ -171,7 +171,7 @@ def test_the_safety_readout_is_set_like_the_other_readouts(browser, twin_server)
     """`#tel-safety` sat outside `.telemetry`, so "Safety: OK" rendered in
     the default 16 px sans (Thermos)."""
     page, _ = open_twin(browser, twin_server)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     font = page.evaluate("[getComputedStyle(document.getElementById('tel-safety')).fontFamily,"
                          " getComputedStyle(document.getElementById('tel-safety')).fontSize]")
     assert "mono" in font[0].lower() or "menlo" in font[0].lower() or "courier" in font[0].lower(), font
@@ -213,7 +213,7 @@ def test_the_safety_readout_says_vetoed_in_red(browser, twin_server):
     """Round 1 (/code-review): outside `.telemetry` its state colours never
     applied -- OK was never green, VETOED never red."""
     page, _ = open_twin(browser, twin_server)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.evaluate("document.getElementById('tel-safety').innerHTML ="
                   " 'Safety: <span class=\"alert\">VETOED</span>'")
     colour, alert = page.evaluate("""() => [

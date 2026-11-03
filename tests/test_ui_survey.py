@@ -156,6 +156,7 @@ def test_the_d_pad_still_takes_over_a_running_survey(browser, twin_server):
                       body=_json({"executed": True, "driver": "twin-dpad", "result": {}}))
 
     page.route("**/action", capture)
+    page.click('.tab-btn[data-tab="drive"]')     # 3.132 Stage 3: the D-pad's tab
     page.click("#btn-left")
     page.wait_for_timeout(500)
     assert any(d == "twin-dpad" for d, _ in sent), sent

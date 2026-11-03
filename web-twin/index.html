@@ -52,17 +52,16 @@
 
   <header>
     <div class="header-text">
-      <div class="eyebrow">Digital twin &middot; sim mode</div>
+      <div class="eyebrow" id="header-mode">Digital twin &middot; Not connected</div>
       <h1>vision-picar</h1>
       <div class="mission-summary" id="mission-summary">No rooms searched yet.</div>
     </div>
     <div class="header-actions">
       <button class="conn-dot" id="header-conn-dot"><span class="dot"></span><span id="header-conn-text">Not connected</span></button>
-      <button class="header-gear" id="btn-settings" aria-label="Settings" aria-expanded="false" data-icon="settings"></button>
     </div>
   </header>
 
-  <div class="tab-page active" role="tabpanel" data-tab="guide">
+  <div class="tab-page" role="tabpanel" data-tab="record" id="tab-record" aria-labelledby="tab-btn-record">
     <div class="panel">
       <div class="section-label">Guide me to&hellip;</div>
       <div class="lede">
@@ -89,8 +88,8 @@
         </div>
       </div>
       <div class="robot-mode-row" role="group" aria-label="What to ask the vision service">
-        <button id="btn-mode-guide" class="ghost robot-mode-btn active-mode" aria-pressed="true">Guide me</button>
-        <button id="btn-mode-robot" class="ghost robot-mode-btn" aria-pressed="false">Robot view</button>
+        <button id="btn-mode-guide" class="ghost robot-mode-btn" aria-pressed="false">Guide me</button>
+        <button id="btn-mode-robot" class="ghost robot-mode-btn active-mode" aria-pressed="true">Robot view</button>
       </div>
       <div class="hint" id="guide-mode-hint" style="margin-top:6px;">
         <b>Guide me</b> steers <i>you</i> to the object with an arrow.
@@ -101,7 +100,7 @@
           <span class="switch-sub" id="navigate-model-sub">
             Which model answers /navigate for this walk -- pick one, then
             record, to compare price/performance across models on the same
-            room. Applies to "Drive via brain" and to the Sim tab's remote
+            room. Applies to "Drive via brain" and to the Home tab's remote
             brain on the vision policy too.
           </span>
         </span>
@@ -146,7 +145,7 @@
         <input type="checkbox" id="cfg-drive-via-brain" class="switch">
       </label>
       <!-- Which policy the walk's mission runs. Its own control rather than
-           the Sim tab's, because they start two different missions: that
+           the Home tab's, because they start two different missions: that
            one drives the grid world, this one drives a phone on a wheeled
            rig. The tiered option is the only place in this app where YOLO
            and CLIP get real pixels -- PLAN-onboard-perception.md 4.10's
@@ -187,53 +186,12 @@
     </div>
   </div>
 
-  <div class="tab-page" role="tabpanel" data-tab="sim">
-    <!-- This tab used to lead with a top-down view of the house drawn from
-         a hardcoded copy of the starter map, plus five readouts of
-         `frame_description()`'s grid facts (room, cardinal heading, free
-         cells, doorway, objects). All of it is gone with the ROS alignment
-         (`PLAN-ros-alignment.md`): the map is `GET /world/map`, discovered
-         and tri-state, further down -- the same route `slam_toolbox` serves
-         at R5 -- and the grid facts were cells and cardinals, which
-         `robot/interface.py` forbids any hardware-path policy from reading.
-         A readout is a consumer too. What is left is what survives a real
-         robot. -->
-    <div class="panel">
-      <div class="section-label">Manual control</div>
-      <div class="dpad">
-        <div class="spacer"></div><button id="btn-forward" disabled aria-label="Move forward"><span data-icon="chevronUp"></span></button><div class="spacer"></div>
-        <button id="btn-left" disabled aria-label="Turn left"><span data-icon="chevronLeft"></span></button><button id="btn-stop" class="danger" disabled>STOP</button><button id="btn-right" disabled aria-label="Turn right"><span data-icon="chevronRight"></span></button>
-        <div class="spacer"></div><button id="btn-reverse" disabled aria-label="Move reverse"><span data-icon="chevronDown"></span></button><div class="spacer"></div>
-      </div>
-      <div class="btn-row">
-        <button id="btn-look-left" disabled aria-label="Look left"><span data-icon="eye"></span><span data-icon="chevronLeft"></span></button>
-        <button id="btn-look-center" disabled aria-label="Look center"><span data-icon="eye"></span></button>
-        <button id="btn-look-right" disabled aria-label="Look right"><span data-icon="eye"></span><span data-icon="chevronRight"></span></button>
-      </div>
-      <!-- R0's UI proof (PLAN-ros-alignment.md): how far LEFT and RIGHT turn.
-           The pose has been continuous since R0, but every tap still sent
-           90 degrees, so the only way to reach a non-cardinal heading was
-           curl. Three fixed steps rather than a slider on purpose: a tap you
-           can repeat exactly is what makes "turn 45, drive, turn 45 again"
-           reproducible from a phone. Press-and-hold wheel velocity arrives
-           with R4, when the D-pad goes through twist_mux. -->
-      <div class="turn-step-row" role="group" aria-label="How far left and right turn">
-        <span class="turn-step-label">Turn</span>
-        <button class="ghost turn-step-btn" data-turn-deg="15" aria-pressed="false">15&deg;</button>
-        <button class="ghost turn-step-btn" data-turn-deg="45" aria-pressed="false">45&deg;</button>
-        <button class="ghost turn-step-btn active-mode" data-turn-deg="90" aria-pressed="true">90&deg;</button>
-      </div>
-      <div class="full telemetry-line" id="tel-safety">Safety: <span class="safe">OK</span></div>
-      <!-- Moved here from the deleted map panel: this log is written by the
-           D-pad (and by any refused command), so it belongs beside the
-           buttons that cause it rather than under a brain that no longer
-           runs in this tab. -->
-      <div id="log" role="log" aria-live="polite" tabindex="0" aria-label="Robot log"></div>
-      <div class="hint" id="drive-connect-hint">Not connected &mdash; open Settings from the header to connect to the <span class="op-only">robot</span><span class="eng-only">robot server</span>.</div>
-    </div>
-
+  <div class="tab-page active" role="tabpanel" data-tab="home" id="tab-home" aria-labelledby="tab-btn-home">
     <div class="panel">
       <div class="section-label"><span class="op-only">Autopilot</span><span class="eng-only">Remote brain &middot; runs on the robot</span></div>
+      <!-- 3.132 Stage 3: the mission in one sentence, for a person at home.
+           The telemetry rows below are Engineer mode's. -->
+      <div class="mission-card op-only" id="mission-card" data-state="none" hidden></div>
       <div class="lede op-only">
         The robot searches on its own. Once it starts you can close this page
         or open it on another phone &mdash; the robot keeps going.
@@ -299,7 +257,7 @@
         </select>
       </div>
       <div class="telemetry" id="brain-telemetry">
-        <div>Mission: <span class="val" id="brain-tel-outcome">idle</span></div>
+        <div class="eng-only">Mission: <span class="val" id="brain-tel-outcome">idle</span></div>
         <div class="eng-only">Step: <span class="val" id="brain-tel-step">&ndash;</span></div>
         <div class="eng-only">Last action: <span class="val" id="brain-tel-action">&ndash;</span></div>
         <div class="eng-only">Vision fails: <span class="val" id="brain-tel-vision">0</span></div>
@@ -308,10 +266,10 @@
              correcting onto a target turns a few times the same way; one
              that cannot aim goes LEFT, RIGHT, LEFT. -->
         <div class="full eng-only">Turns: <span class="val" id="brain-tel-turns">&ndash;</span></div>
-        <div class="full">Rooms searched: <span class="val" id="brain-tel-rooms">&ndash;</span></div>
-        <div class="full" id="brain-survey-row" style="display:none;">Rooms named: <span class="val" id="brain-tel-survey">&ndash;</span></div>
+        <div class="full eng-only">Rooms searched: <span class="val" id="brain-tel-rooms">&ndash;</span></div>
+        <div class="full eng-only" id="brain-survey-row" style="display:none;">Rooms named: <span class="val" id="brain-tel-survey">&ndash;</span></div>
         <div class="full eng-only">Why: <span class="val" id="brain-tel-why">&ndash;</span></div>
-        <div class="full">Where it looked: <span class="val" id="brain-tel-report">&ndash;</span></div>
+        <div class="full" id="brain-report-row" hidden>Where it looked: <span class="val" id="brain-tel-report">&ndash;</span></div>
         <!-- 3.56. Whether the vision service answers its free /health, looked
              at while a cloud-policy mission runs (and by 3.53's late check
              after one parks). "Reachable" says /health answered; Bedrock
@@ -323,7 +281,7 @@
              same question a person actually asks: the robot is not moving,
              what stopped it? Before this, a preemption and a wall looked
              identical from here. -->
-        <div class="full">Driving: <span class="val" id="brain-tel-driver">&ndash;</span></div>
+        <div class="full eng-only">Driving: <span class="val" id="brain-tel-driver">&ndash;</span></div>
         <div class="full eng-only">Last refusal: <span class="val" id="brain-tel-refusal">&ndash;</span></div>
       </div>
       <!-- Phase P2 / PLAN-onboard-perception.md 6.3. Its own block rather
@@ -387,6 +345,53 @@
       <div class="hint" id="brain-connect-hint">
         No autopilot connected &mdash; open Settings to connect one.
       </div>
+    </div>
+
+  </div>
+
+  <div class="tab-page" role="tabpanel" data-tab="drive" id="tab-drive" aria-labelledby="tab-btn-drive">
+    <!-- This tab used to lead with a top-down view of the house drawn from
+         a hardcoded copy of the starter map, plus five readouts of
+         `frame_description()`'s grid facts (room, cardinal heading, free
+         cells, doorway, objects). All of it is gone with the ROS alignment
+         (`PLAN-ros-alignment.md`): the map is `GET /world/map`, discovered
+         and tri-state, further down -- the same route `slam_toolbox` serves
+         at R5 -- and the grid facts were cells and cardinals, which
+         `robot/interface.py` forbids any hardware-path policy from reading.
+         A readout is a consumer too. What is left is what survives a real
+         robot. -->
+    <div class="panel">
+      <div class="section-label">Manual control</div>
+      <div class="dpad">
+        <div class="spacer"></div><button id="btn-forward" disabled aria-label="Move forward"><span data-icon="chevronUp"></span></button><div class="spacer"></div>
+        <button id="btn-left" disabled aria-label="Turn left"><span data-icon="chevronLeft"></span></button><button id="btn-stop" class="danger" disabled>STOP</button><button id="btn-right" disabled aria-label="Turn right"><span data-icon="chevronRight"></span></button>
+        <div class="spacer"></div><button id="btn-reverse" disabled aria-label="Move reverse"><span data-icon="chevronDown"></span></button><div class="spacer"></div>
+      </div>
+      <div class="btn-row">
+        <button id="btn-look-left" disabled aria-label="Look left"><span data-icon="eye"></span><span data-icon="chevronLeft"></span></button>
+        <button id="btn-look-center" disabled aria-label="Look center"><span data-icon="eye"></span></button>
+        <button id="btn-look-right" disabled aria-label="Look right"><span data-icon="eye"></span><span data-icon="chevronRight"></span></button>
+      </div>
+      <!-- R0's UI proof (PLAN-ros-alignment.md): how far LEFT and RIGHT turn.
+           The pose has been continuous since R0, but every tap still sent
+           90 degrees, so the only way to reach a non-cardinal heading was
+           curl. Three fixed steps rather than a slider on purpose: a tap you
+           can repeat exactly is what makes "turn 45, drive, turn 45 again"
+           reproducible from a phone. Press-and-hold wheel velocity arrives
+           with R4, when the D-pad goes through twist_mux. -->
+      <div class="turn-step-row" role="group" aria-label="How far left and right turn">
+        <span class="turn-step-label">Turn</span>
+        <button class="ghost turn-step-btn" data-turn-deg="15" aria-pressed="false">15&deg;</button>
+        <button class="ghost turn-step-btn" data-turn-deg="45" aria-pressed="false">45&deg;</button>
+        <button class="ghost turn-step-btn active-mode" data-turn-deg="90" aria-pressed="true">90&deg;</button>
+      </div>
+      <div class="full telemetry-line" id="tel-safety">Safety: <span class="safe">OK</span></div>
+      <!-- Moved here from the deleted map panel: this log is written by the
+           D-pad (and by any refused command), so it belongs beside the
+           buttons that cause it rather than under a brain that no longer
+           runs in this tab. -->
+      <div id="log" role="log" aria-live="polite" tabindex="0" aria-label="Robot log"></div>
+      <div class="hint" id="drive-connect-hint">Not connected &mdash; open the Settings tab to connect to the <span class="op-only">robot</span><span class="eng-only">robot server</span>.</div>
     </div>
 
     <div class="panel">
@@ -555,7 +560,7 @@
     </div>
   </div>
 
-  <div class="tab-page" role="tabpanel" data-tab="settings">
+  <div class="tab-page" role="tabpanel" data-tab="settings" id="tab-settings" aria-labelledby="btn-settings">
     <div class="panel">
       <div class="section-label"><span class="op-only">Robot connection</span><span class="eng-only">Robot server connection</span></div>
       <div class="btn-row">
@@ -735,10 +740,18 @@
 
 <div class="toast-stack" id="toast-stack" role="status" aria-live="polite"></div>
 
+<!-- 3.132 Stage 3: one tap stops everything, from any tab, while anything
+     moves. It calls only the routes a person's STOP already calls. -->
+<div class="stop-bar" id="stop-bar" hidden>
+  <button id="btn-stop-bar" class="danger">STOP</button>
+</div>
+
 <nav class="tab-bar">
   <div class="tab-bar-inner" role="tablist" aria-label="Sections">
-    <button class="tab-btn active" role="tab" aria-selected="true" data-tab="guide"><span class="tab-icon" data-icon="mapPin"></span>Guide</button>
-    <button class="tab-btn" role="tab" aria-selected="false" data-tab="sim"><span class="tab-icon" data-icon="bot"></span>Sim</button>
+    <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="tab-home" id="tab-btn-home" data-tab="home"><span class="tab-icon" data-icon="home"></span>Home</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-drive" id="tab-btn-drive" data-tab="drive"><span class="tab-icon" data-icon="car"></span>Drive</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-record" id="tab-btn-record" data-tab="record"><span class="tab-icon" data-icon="camera"></span>Record</button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="tab-settings" id="btn-settings" data-tab="settings"><span class="tab-icon" data-icon="settings"></span>Settings</button>
   </div>
 </nav>
 

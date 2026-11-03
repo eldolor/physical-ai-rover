@@ -509,13 +509,12 @@ def configure_twin(page, *, policy="frontier"):
     q = f"?serverUrl={ROBOT}&brainUrl={BRAIN}&visionUrl={VISION}"
     page.goto(TWIN + q)
     page.wait_for_function(CONNECTED, timeout=20_000)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     page.wait_for_selector("#btn-brain-mission:not([disabled])", timeout=20_000)
     # Amendment 9: the policy is saved as the page saves it (vp_brain_policy).
     # Since Stage 2A its picker is Engineer mode's, and choosing it there is a
     # one-time setup, not a task.
     page.evaluate("p => localStorage.setItem('vp_brain_policy', p)", policy)
-    page.click('.tab-btn[data-tab="guide"]')
     page.goto(TWIN)
     wait_twin_ready(page)
 
@@ -538,7 +537,7 @@ def new_twin_page(browser, *, configured=True, engineer=False):
         if engineer:
             page.click("#btn-settings")
             page.locator("label[for=cfg-debug-readouts]").first.click()
-            page.click("#btn-settings")
+            page.click('.tab-btn[data-tab="home"]')
             page.goto(TWIN)
             wait_twin_ready(page)
     else:
@@ -577,13 +576,13 @@ def start_mission_quietly(page):
     """A mission the person started on this page (uncounted), then back to
     the default tab (amendment 2). Not through the API: a connected, idle
     twin does not notice a mission started elsewhere (finding F1)."""
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     page.fill("#brain-target", ABSENT)
     page.click("#btn-brain-mission")
     page.wait_for_function(
         "() => /stop/i.test(document.getElementById('btn-brain-mission').textContent)", timeout=20_000)
     page.wait_for_timeout(1500)
-    page.click('.tab-btn[data-tab="guide"]')
+    # Stage 3: Home is the default tab, where the mission was started.
     page.evaluate("() => window.scrollTo(0, 0)")
 
 
@@ -606,7 +605,7 @@ def run_task(out, key, opener, fn):
 
 def t1_first_connect(page, reqs, t):
     if not page.locator("#cfg-server-url").first.is_visible():
-        t.tap("#btn-settings", "Settings (gear)")
+        t.tap("#btn-settings", "Settings tab")
     t.fill("#cfg-server-url", ROBOT, "type the robot server's URL")
     t.tap("#btn-connect", "Connect")
     page.wait_for_function(CONNECTED, timeout=15_000)
@@ -616,7 +615,8 @@ def t1_first_connect(page, reqs, t):
 def start_task(job):
     def fn(page, reqs, t):
         seen = watch(page, _is("/mission/start"))
-        t.tap('.tab-btn[data-tab="sim"]', "Sim tab")
+        if page.evaluate("() => document.body.dataset.tab") != "home":
+            t.tap('.tab-btn[data-tab="home"]', "Home tab")
         if job == "survey":
             t.select("#brain-job", "survey", "Job: Survey the house")
         t.tap("#btn-brain-mission", "Start")
@@ -633,30 +633,35 @@ def start_task(job):
     return fn
 
 
-def t4_stop(page, reqs, t):
-    start_mission_quietly(page)
-    seen = watch(page, lambda r: r.method == "POST"
-                 and (r.url.endswith("/mission/stop") or r.url.endswith("/stop")))
-    t.tap('.tab-btn[data-tab="sim"]', "Sim tab")
-    t.tap("#btn-brain-mission", "Stop")
-    ok = wait_for(page, seen)
-    return t.result(ok, request=seen[0].url if seen else None)
+def t4_stop_from(tab):
+    """Amendment 12: Stop from each tab. The person is already on the tab
+    (uncounted), as Stage 0's T4 started on Guide; the STOP bar is the tap."""
+    def fn(page, reqs, t):
+        start_mission_quietly(page)
+        page.click(f'.tab-btn[data-tab="{tab}"]')
+        page.wait_for_timeout(700)
+        seen = watch(page, lambda r: r.method == "POST"
+                     and (r.url.endswith("/mission/stop") or r.url.endswith("/stop")))
+        t.tap("#btn-stop-bar", "STOP bar")
+        ok = wait_for(page, seen)
+        return t.result(ok, request=seen[0].url if seen else None, tab=tab)
+    return fn
 
 
 def t5_forward(page, reqs, t):
     seen = watch(page, lambda r: r.method == "POST" and r.url.endswith("/action")
                  and "FORWARD" in (r.post_data or ""))
-    t.tap('.tab-btn[data-tab="sim"]', "Sim tab")
+    t.tap('.tab-btn[data-tab="drive"]', "Drive tab")
     t.tap("#btn-forward", "D-pad up")
     return t.result(wait_for(page, seen))
 
 
 def t6_status(page, reqs, t):
     start_mission_quietly(page)
-    t.tap('.tab-btn[data-tab="sim"]', "Sim tab")
     page.wait_for_timeout(1000)
     page.evaluate("() => window.scrollTo(0, 0)")
-    el = page.locator("#brain-tel-outcome")
+    # Stage 3: the mission card on Home, the default tab (operator mode).
+    el = page.locator("#mission-card")
     box = el.bounding_box()
     brain = brain_status()
     if box is None:      # not rendered at all: no scroll reaches it
@@ -678,7 +683,9 @@ def t7_record(page, reqs, t):
     page.route(BRAIN + "/recording/**", lambda r: r.fulfill(
         status=200, content_type="application/json", body=json.dumps({"saved": True, "walk": "stub"})))
     seen = watch(page, lambda r: "/recording/frame" in r.url)
-    t.tap("#btn-mode-robot", "Robot view")
+    t.tap('.tab-btn[data-tab="record"]', "Record tab")
+    if page.evaluate("() => document.getElementById('btn-mode-robot').getAttribute('aria-pressed')") != "true":
+        t.tap("#btn-mode-robot", "Robot view")
     t.tap("label[for=cfg-record-walk]", "Record this walk")
     t.tap("#btn-guidance", "Start")
     with contextlib.suppress(Exception):
@@ -693,13 +700,20 @@ def twin_tasks(browser, out):
     for key, opener, fn in (("T1", first_run, t1_first_connect),
                             ("T2", configured, start_task("find")),
                             ("T3", configured, start_task("survey")),
-                            ("T4", configured, t4_stop),
+                            ("T4.home", configured, t4_stop_from("home")),
+                            ("T4.drive", configured, t4_stop_from("drive")),
+                            ("T4.record", configured, t4_stop_from("record")),
+                            ("T4.settings", configured, t4_stop_from("settings")),
                             ("T5", configured, t5_forward),
                             ("T6", configured, t6_status),
                             ("T7", configured, t7_record)):
         reset_robot_and_brain()
         run_task(out, key, opener, fn)
     reset_robot_and_brain()
+    # Amendment 12: the plain T4 is the worst of the four tabs.
+    t4 = [out[k] for k in ("T4.home", "T4.drive", "T4.record", "T4.settings") if k in out]
+    if t4:
+        out["T4"] = dict(max(t4, key=lambda r: (not r.get("ok"), r.get("taps", 0))))
 
 
 # ---------- states ----------
@@ -738,17 +752,19 @@ def twin_states(browser, axe, shots):
         wait_twin_ready(page)
         page.wait_for_timeout(8000)
         m6["twin"] = paid(reqs)
-        measure_into(states, page, "twin.guide", axe, shots)
-        page.click("#btn-mode-robot")
-        measure_into(states, page, "twin.guide_robot_view", axe, shots)
+        page.wait_for_timeout(1500)
+        measure_into(states, page, "twin.home_idle", axe, shots)
+        page.click('.tab-btn[data-tab="drive"]')
+        page.wait_for_timeout(1500)
+        measure_into(states, page, "twin.drive", axe, shots)
+        page.click('.tab-btn[data-tab="record"]')
+        measure_into(states, page, "twin.record", axe, shots)
         page.click("#btn-mode-guide")
-        page.click('.tab-btn[data-tab="sim"]')
-        page.wait_for_timeout(1500)
-        measure_into(states, page, "twin.sim_idle", axe, shots)
+        measure_into(states, page, "twin.record_guide_me", axe, shots)
+        page.click("#btn-mode-robot")
         start_mission_quietly(page)
-        page.click('.tab-btn[data-tab="sim"]')
         page.wait_for_timeout(1500)
-        measure_into(states, page, "twin.sim_mission", axe, shots)
+        measure_into(states, page, "twin.home_mission", axe, shots)
         reset_robot_and_brain()
         page.click("#btn-settings")
         measure_into(states, page, "twin.settings", axe, shots)
@@ -756,17 +772,17 @@ def twin_states(browser, axe, shots):
 
     def engineer():
         ctx, page, _ = new_twin_page(browser, engineer=True)
-        page.click('.tab-btn[data-tab="sim"]')
+        page.click('.tab-btn[data-tab="home"]')
         page.wait_for_timeout(1500)
-        measure_into(states, page, "twin.engineer_sim_idle", axe, shots)
+        measure_into(states, page, "twin.engineer_home_idle", axe, shots)
         return ctx
 
     guarded(["twin.first_run"], first_run)
     reset_robot_and_brain()
-    guarded(["twin.guide", "twin.guide_robot_view", "twin.sim_idle", "twin.sim_mission",
-             "twin.settings"], main_states)
+    guarded(["twin.home_idle", "twin.drive", "twin.record", "twin.record_guide_me",
+             "twin.home_mission", "twin.settings"], main_states)
     reset_robot_and_brain()
-    guarded(["twin.engineer_sim_idle"], engineer)
+    guarded(["twin.engineer_home_idle"], engineer)
     reset_robot_and_brain()
     return states, m6
 

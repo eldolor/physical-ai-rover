@@ -317,7 +317,7 @@ def test_a_stop_that_never_reached_the_robot_says_so(browser, twin_server):
     page.goto(twin_server, wait_until="networkidle")
     page.wait_for_timeout(800)
     page.route(f"{twin_server}/stop", lambda route: route.abort())
-    page.click('button.tab-btn[data-tab="sim"]')
+    page.click('button.tab-btn[data-tab="drive"]')
     page.evaluate("document.getElementById('btn-stop').click()")
     # 3.132 Stage 2A: in the operator voice (Engineer mode says "STOP did
     # not reach the robot"); the point is that a lost STOP is said at all.

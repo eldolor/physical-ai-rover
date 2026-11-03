@@ -22,10 +22,28 @@ what comes back.
 > safety table) and 6 (the current AWS topology; the ECS layout is now
 > history). Section 1's other detail is still as of `01054a0`.
 
-The app has three tabs: **Guide**, **Sim**, **Settings**. This
-doc covers all three, then the AWS deployment they run against, in the
-most detail for Guide's two modes since that's where a phone actually
-exercises the brain/control loop against real pixels.
+The app has four tabs (3.132 Stage 3): **Home** (Find or Survey, the
+mission card, results), **Drive** (camera, depth, map, D-pad), **Record**
+(Guide me, Robot view and recorded walks; it was the Guide tab) and
+**Settings** (it was the header's gear). Home and Drive are the old Sim
+tab's two halves; section 3 still describes them together. This doc covers
+them all, then the AWS deployment they run against, in the most detail for
+Record's two modes since that's where a phone actually exercises the
+brain/control loop against real pixels.
+
+**On every tab (3.132 Stage 3):**
+- **The STOP bar** sits above the tab bar while anything moves: a mission,
+  Drive via brain, or anyone holding the robot by the robot server's
+  `/health` (`authority_holder`). One tap sends the robot's `/stop`, as the
+  D-pad's STOP does (a person's Stop, 3.84's latch), then
+  `POST /mission/stop` if a mission runs; with no robot connected, only the
+  mission's stop. `/health` is read while the robot is connected and the
+  page is visible: every 500 ms in Engineer mode on Home and Drive, every 2 s otherwise.
+- **The header names the robot's real mode** from its `/health` `mode`:
+  Simulator, Phone camera or Rover (Engineer mode: `sim mode`, `teleop
+  mode`, `hardware mode`), or Not connected.
+- **A saved tab from before** opens where it moved: `guide` on Record,
+  `sim` and `autonomous` on Home. A first visit opens Home.
 
 ---
 
@@ -95,10 +113,12 @@ alignment.)*
 
 ---
 
-## 1. Guide tab
+## 1. Record tab (the Guide tab until 3.132 Stage 3)
 
 Two modes, picked with the **Guide me / Robot view** toggle
-(`btn-mode-guide` / `btn-mode-robot`, `state.guidanceMode`). Both modes
+(`btn-mode-guide` / `btn-mode-robot`, `state.guidanceMode`). Robot view,
+the recording mode, is the default on a device with no saved choice
+(3.132 Stage 3); Guide me is the tab's secondary entry. Both modes
 share almost everything -- the full-screen camera takeover, the ~500ms
 capture-and-call loop, the found-streak-to-pause logic, the call-budget
 meter, the countdown ring, the corner brackets and capture scanline --
@@ -638,7 +658,18 @@ tested** in `service/vision_analyze/`; nothing in the twin calls them.
 
 ---
 
-## 3. Sim tab -- the simulated robot, and the brain that drives it
+## 3. Home and Drive tabs -- the robot, and the brain that drives it
+
+Until 3.132 Stage 3 these were one tab, Sim. **Home** holds the Remote
+brain panel below (Find or Survey, Start or Stop) and, in operator mode,
+**the mission card**: one sentence naming the mission's state, target and
+progress ("Searching for the red backpack -- 2 rooms looked at so far.",
+"Found the red backpack."), coloured by 3.70 E6's ending styles. The
+telemetry rows are Engineer mode's, except "Where it looked", shown once
+an ending has one. **Drive** holds Manual control and What the robot
+senses. The watchdog row draws a robot at rest (fired, nothing running)
+neutral and a fired watchdog during a mission amber; only a safety veto
+takes the alarm colour (3.86).
 
 **Two views (3.132 Stage 2A).** By default the page speaks to a person at
 home: the brain is "the Autopilot", outcomes and who is driving are said in

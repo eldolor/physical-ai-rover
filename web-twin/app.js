@@ -1213,27 +1213,27 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
   }
 
   // The header status answers "can I use what I'm looking at?", which is a
-  // different question on each tab. Guide and Camera never touch
-  // robot/server.py at all -- they talk to the vision service -- so showing
-  // them a red "Not connected" about the robot was both irrelevant and
-  // alarming, on the two tabs meant for people rather than for developing
-  // the robot. Sim is the only tab that needs the robot connection.
+  // different question on each tab. Record's Guide me and Robot view never
+  // touch robot/server.py at all -- they talk to the vision service -- so
+  // showing them a red "Not connected" about the robot was both irrelevant
+  // and alarming. Home and Drive are the tabs that need the robot.
   function renderHeaderConnStatus() {
     const dot = document.getElementById("header-conn-dot");
     const text = document.getElementById("header-conn-text");
-    const tab = document.body.dataset.tab || "guide";
+    const tab = document.body.dataset.tab || "home";
 
-    // Sim's own panel already reports both connections in full.
+    // Settings' own panels already report every connection in full.
     dot.classList.toggle("hidden", tab === "settings");
+    renderHeaderMode();
 
     let label, connected, connecting = false, needsSetup = false, actionable = false;
-    if (tab === "sim") {
+    if (tab === "home" || tab === "drive") {
       connected = state.connected;
       connecting = state.connecting && !state.connected;
       label = connected ? "Connected" : connecting ? "Connecting\u2026" : "Not connected";
       actionable = !connected && !connecting;
     } else {
-      // Guide and Camera need one thing: somewhere to send the image.
+      // Guide me and Robot view need one thing: somewhere to send the image.
       const hasVisionUrl = !!document.getElementById("cfg-url").value.trim();
       connected = hasVisionUrl;
       needsSetup = !hasVisionUrl;
@@ -1250,6 +1250,26 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
 
     const hint = document.getElementById("drive-connect-hint");
     if (hint) hint.style.display = state.connected ? "none" : "";
+  }
+
+  // 3.132 Stage 3: the header names the robot's real mode, from its /health
+  // (renderWatchdog keeps state.robotMode), instead of a fixed "sim mode".
+  const MODE_KEYS = { sim: "mode.sim", teleop: "mode.teleop", hardware: "mode.hardware" };
+  function renderHeaderMode() {
+    const el = document.getElementById("header-mode");
+    if (!el) return;
+    // Record works without a robot (review): there, no robot reads as
+    // nothing, not "Not connected" beside the vision service's "Ready".
+    if (!state.connected && document.body.dataset.tab === "record") {
+      el.textContent = "Digital twin";
+      el.dataset.mode = "none";
+      return;
+    }
+    const mode = !state.connected ? "mode.none"
+      : MODE_KEYS[state.robotMode] || (state.robotMode ? "mode.other" : "mode.checking");
+    const words = t(mode, {mode: state.robotMode || ""});
+    el.textContent = "Digital twin \u00b7 " + words;
+    el.dataset.mode = state.connected ? (state.robotMode || "") : "none";
   }
 
   // Tapping the status when something is missing goes where it can be fixed.
@@ -1272,6 +1292,10 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
       return;
     }
     state.serverUrl = url;
+    // 3.132 Stage 3 (review): another server's mode is unknown until its
+    // /health answers -- the header must not name the last one's.
+    state.robotMode = null;
+    renderHeaderMode();
     // Connecting somewhere else clears the "this server has no /depth"
     // latch -- otherwise one pre-M2 server would silence the strip for
     // every server connected to afterwards in the same session.
@@ -1687,6 +1711,9 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
 
   document.addEventListener("visibilitychange", function () {
     if (!document.hidden && state.serverUrl) restartBatteryPoll();
+    // 3.132 Stage 3 (review): the STOP bar follows /health, which is not
+    // read while hidden -- read it at once rather than up to 2 s later.
+    if (!document.hidden && state.connected) renderWatchdog();
   });
 
   // The twin used to paint its own top-down view of the house here, from a
@@ -1998,6 +2025,41 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     setBrainText("brain-tel-cloud", cloud.text, cloud.cls);
   }
 
+  // ---------- 3.132 Stage 3: the mission card ----------
+  // The mission in one sentence, for a person at home: what it is doing,
+  // for what, and how far it has got. Operator mode's (.op-only); Engineer
+  // mode keeps the telemetry rows below it. Hidden with no autopilot,
+  // where the connect hint says what to do.
+  function missionCardText(status) {
+    if (!status) return { text: t("card.ready"), kind: "idle" };
+    const r = readOutcome(status);
+    const target = status.target_object || t("word.target");
+    if (status.running) {
+      if (status.job === "survey") return { text: t("card.surveying"), kind: "running" };
+      const n = (status.rooms_searched || []).length;
+      const key = n === 0 ? "card.searching" : n === 1 ? "card.searchingRoom" : "card.searchingRooms";
+      return { text: t(key, {target: target, n: n}), kind: "running" };
+    }
+    if (r.outcome === "idle") return { text: t("card.ready"), kind: "idle" };
+    if (surveyDone(status)) return { text: surveyStateText(status) + ".", kind: "found" };
+    if (r.outcome === "found") return { text: t("card.found", {target: target}), kind: "found" };
+    const late = r.outcome === "arrived_unconfirmed" ? lateWords(status) : "";
+    const words = (surveyStateText(status) || endStateText(status) || outcomeWords(r.outcome))
+      + (late ? " \u2014 " + late.charAt(0).toLowerCase() + late.slice(1) : "");
+    const cls = BRAIN_OUTCOME_CLASS[r.outcome];
+    return { text: words + ".", kind: cls === "safe" ? "found" : cls ? "warn" : "idle" };
+  }
+  function renderMissionCard() {
+    const el = document.getElementById("mission-card");
+    if (!el) return;
+    el.hidden = !state.brainConnected;
+    if (!state.brainConnected) return;
+    const card = missionCardText(state.lastBrainStatus);
+    // Only on a change: the card is read on every poll.
+    if (el.textContent !== card.text) el.textContent = card.text;
+    el.dataset.state = card.kind;
+  }
+
   function renderBrainStatus(status) {
     state.lastBrainStatus = status;      // 3.132: redrawn in the other voice
     const outcome = readOutcome(status).outcome;
@@ -2016,9 +2078,11 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
         + (late ? " — " + late.charAt(0).toLowerCase() + late.slice(1) : ""),
       surveyDone(status) ? "safe" : BRAIN_OUTCOME_CLASS[outcome]);
     // 3.70 E6: where an Out of budget or Cancelled mission looked.
-    setBrainText("brain-tel-report",
-      (outcome === "out_of_budget" || outcome === "cancelled" || outcome === "exhausted")
-        ? reportText(status.report) : null);
+    const report = (outcome === "out_of_budget" || outcome === "cancelled" || outcome === "exhausted")
+      ? reportText(status.report) : null;
+    setBrainText("brain-tel-report", report);
+    // 3.132 Stage 3: the results line shows only once there is one.
+    document.getElementById("brain-report-row").hidden = !report;
     setBrainText("brain-tel-step",
       status.step == null ? null : status.step + (status.max_steps ? " / " + status.max_steps : ""));
     // R1: a turn names its size. "LEFT 23°" is a bearing-sized correction;
@@ -2048,6 +2112,7 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
       status.error ? "alert" : unconfirmed ? "warn" : null);
     renderCloudRow(status);
     renderTierReadouts(status);
+    renderMissionCard();
 
     // The mission log comes from the brain, so it is rewritten wholesale
     // each poll rather than appended to -- there is no local copy to keep
@@ -2289,10 +2354,17 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
   function startWatchdogPolling() {
     stopWatchdogPolling();
     state.watchdogTimerId = setInterval(function () {
-      // Only while the Sim tab is actually on screen -- Guide and Camera
-      // never touch the robot server, and a hidden readout is not worth a
-      // request every half second.
-      if ((document.body.dataset.tab || "guide") !== "sim") return;
+      // 3.132 Stage 3: on every tab, because the STOP bar shows whenever
+      // someone holds the robot, wherever the person is. Every tick in
+      // Engineer mode on Home, where the watchdog and driver rows are, and
+      // on Drive, beside the D-pad they answer for; every
+      // WATCHDOG_SLOW_TICKS-th elsewhere, enough for the bar. Not while the
+      // page is hidden: nobody is there to see it.
+      if (document.hidden) return;
+      const tab = document.body.dataset.tab || "home";
+      const readouts = (tab === "home" || tab === "drive") && engineerMode();
+      watchdogTick += 1;
+      if (!readouts && watchdogTick % WATCHDOG_SLOW_TICKS !== 0) return;
       renderWatchdog();
     }, WATCHDOG_POLL_MS);
     renderWatchdog();
@@ -2302,10 +2374,19 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     state.watchdogTimerId = null;
   }
 
+  // Without the readouts, /health is read every 4th tick (2 s): enough for
+  // the STOP bar, and quiet enough for the page to go idle.
+  const WATCHDOG_SLOW_TICKS = 4;
+  let watchdogTick = 0;
   let watchdogInFlight = false;
   const WATCHDOG_FETCH_TIMEOUT_MS = 3000;
   async function renderWatchdog() {
-    if (!state.connected) { setBrainText("brain-tel-watchdog", null); return; }
+    if (!state.connected) {
+      setBrainText("brain-tel-watchdog", null);
+      state.lastAuthorityHealth = null;
+      updateStopBar();
+      return;
+    }
     // 3.76: one at a time -- on a slow tunnel the 500 ms interval stacked
     // requests whose answers could land out of order.
     if (watchdogInFlight) return;
@@ -2343,16 +2424,23 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
       if (mode !== state.robotMode) {
         state.robotMode = mode;
         renderBrainPolicyHint();
+        renderHeaderMode();
       }
+      // 3.132 Stage 3: a fired watchdog with nothing running is the robot at
+      // rest, drawn neutral. During a mission it is a fault, amber -- only a
+      // safety veto takes the alarm colour (3.86).
+      const resting = fired && !state.brainMissionRunning && !driveViaBrainMoving();
       setBrainText("brain-tel-watchdog",
-        "quiet " + age.toFixed(1) + "s / " + timeout + "s " + (fired ? "\u2014 motors stopped" : "\u2014 armed"),
-        fired ? "alert" : "safe");
+        "quiet " + age.toFixed(1) + "s / " + timeout + "s " +
+          (resting ? "\u2014 motors stopped (at rest)" : fired ? "\u2014 motors stopped" : "\u2014 armed"),
+        resting ? null : fired ? "warn" : "safe");
       renderAuthority(health);
     } catch (e) {
-      setBrainText("brain-tel-watchdog", /^HTTP \d/.test(e.message || "") ? e.message : "unreachable", "alert");
+      setBrainText("brain-tel-watchdog", /^HTTP \d/.test(e.message || "") ? e.message : "unreachable", "warn");
       setBrainText("brain-tel-driver", null);
       setBrainText("brain-tel-refusal", null);
       state.lastAuthorityHealth = null;   // 3.132: revoice() must not redraw a robot gone quiet
+      updateStopBar();
     } finally {
       watchdogInFlight = false;
     }
@@ -2460,9 +2548,11 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
       state.lastAuthorityHealth = null;
       setBrainText("brain-tel-driver", null);
       setBrainText("brain-tel-refusal", null);
+      updateStopBar();
       return;
     }
     state.lastAuthorityHealth = health;   // 3.132: redrawn in the other voice
+    updateStopBar();
     const holder = health.authority_holder;
     setBrainText("brain-tel-driver",
       holder ? driverWords(holder)
@@ -2630,6 +2720,7 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
         if (token !== reportToken || !s || s.running || readOutcome(s).outcome !== outcome) return;
         if (s.report) {
           setBrainText("brain-tel-report", reportText(s.report));
+          document.getElementById("brain-report-row").hidden = false;
           if (state.guideEndShown) {
             const r = missionStatusToRobotResult(s);
             renderRobotTelemetry(r);
@@ -2769,7 +2860,56 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     }
     renderBrainPolicyHint();
     updateBrainPickersRow();
+    renderMissionCard();
+    updateStopBar();
   }
+
+  // ---------- 3.132 Stage 3: the STOP bar ----------
+  // One tap stops everything from any tab, shown only while something
+  // moves: a mission, Drive via brain, or anyone holding the robot by the
+  // robot server's own /health (renderAuthority). It calls only the routes
+  // a person's STOP already calls -- the robot's /stop first, as the
+  // D-pad's STOP does (3.84's latch, arbitration and safety unchanged),
+  // then the mission's own stop if one runs.
+  function driveViaBrainMoving() {
+    return !!(state.guidanceRunning && !state.guidancePaused && driveViaBrainActive());
+  }
+  function somethingMoves() {
+    const held = !!(state.connected && state.lastAuthorityHealth
+      && state.lastAuthorityHealth.authority_holder);
+    return !!(state.brainMissionRunning || held || driveViaBrainMoving());
+  }
+  function updateStopBar() {
+    const bar = document.getElementById("stop-bar");
+    if (!bar) return;
+    const on = somethingMoves();
+    bar.hidden = !on;
+    document.body.classList.toggle("stop-bar-on", on);
+  }
+  // Both stops go out at once (review): the mission's must not wait behind
+  // the robot's, whose reply is followed by a frame read, on a slow tunnel.
+  // The button is given back after STOP_BAR_HOLD_MS whatever is still out,
+  // so a hung request never leaves the person without it.
+  const STOP_BAR_HOLD_MS = 4000;
+  async function stopEverything() {
+    const btn = document.getElementById("btn-stop-bar");
+    btn.disabled = true;
+    const stops = [];
+    if (state.connected) stops.push(manualAction("STOP"));
+    if (state.brainConnected && state.brainMissionRunning) stops.push(stopBrainMission());
+    // Drive via brain's own loop: the same Stop as Record's button.
+    if (driveViaBrainMoving()) stopGuidance();
+    try {
+      await Promise.race([
+        Promise.allSettled(stops),
+        new Promise(function (resolve) { setTimeout(resolve, STOP_BAR_HOLD_MS); }),
+      ]);
+    } finally {
+      btn.disabled = false;
+      updateStopBar();
+    }
+  }
+  document.getElementById("btn-stop-bar").onclick = stopEverything;
 
   // The two policies that reach the cloud vision service. They differ in
   // how OFTEN they call it, not in whether they can -- so everything that
@@ -2886,13 +3026,13 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     updateBrainControls();
   });
 
-  // The two pickers live on the Guide tab, next to Robot view -- the flow
+  // The two pickers live on the Record tab, next to Robot view -- the flow
   // they were built for. The vision policy is their second consumer, and a
   // control the operator cannot find is the same as no control, so this jumps
   // there rather than duplicating the selects in a second tab where the two
   // copies could disagree about what is selected.
   document.getElementById("btn-brain-pickers").onclick = function () {
-    switchTab("guide");
+    switchTab("record");
     const row = document.getElementById("navigate-model-row");
     if (row && row.scrollIntoView) row.scrollIntoView({ block: "center" });
   };
@@ -5603,6 +5743,7 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     const btn = document.getElementById("btn-guidance");
     btn.textContent = state.guidanceRunning ? "Stop" : "Start";
     btn.classList.toggle("active-mode", state.guidanceRunning);
+    updateStopBar();
   }
 
   function updateGuidanceMuteButton() {
@@ -5719,10 +5860,11 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
   }
   document.getElementById("btn-mode-guide").onclick = function () { setGuidanceMode("guide"); };
   document.getElementById("btn-mode-robot").onclick = function () { setGuidanceMode("robot"); };
-  try {
-    const savedMode = localStorage.getItem("guidanceMode");
-    if (savedMode === "robot" || savedMode === "guide") setGuidanceMode(savedMode);
-  } catch (e) { /* private mode -- default stays "guide" */ }
+  // 3.132 Stage 3: Robot view, the recording mode, is the Record tab's
+  // default; Guide me is its secondary entry. A device keeps its own choice.
+  let savedMode = null;
+  try { savedMode = localStorage.getItem("guidanceMode"); } catch (e) { /* private mode */ }
+  setGuidanceMode(savedMode === "guide" ? "guide" : "robot");
 
   document.getElementById("btn-how-it-works").onclick = function () {
     showGuidanceOnboarding(true);
@@ -5747,15 +5889,13 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
   // .tab-btn is marked active. No element ids changed when the panels were
   // grouped into tabs, so nothing else in this file needed to change.
 
-  const TAB_NAMES = ["guide", "sim", "settings"];
-  // "drive" and "autonomous" were separate tabs before they merged into
-  // "sim"; a device that stored either one still has it in localStorage.
-  const LEGACY_TAB_ALIASES = { drive: "sim", autonomous: "sim" };
-
-  // Settings is reached from the header gear rather than the tab bar, so
-  // it has no tab button to highlight -- the gear lights up instead, and
-  // remembers which tab to return to.
-  let tabBeforeSettings = "guide";
+  // 3.132 Stage 3: Home (the mission), Drive (camera, D-pad, map), Record
+  // (Guide me and recorded walks) and Settings, which was the header's gear.
+  const TAB_NAMES = ["home", "drive", "record", "settings"];
+  // Names a device may have saved before: Guide became Record, and Sim's
+  // mission panel is Home's ("autonomous" merged into Sim long before).
+  // "drive" is a tab again, so it is not an alias.
+  const LEGACY_TAB_ALIASES = { guide: "record", sim: "home", autonomous: "home" };
 
   // Declared here (used only by hideSetupQr()/showSetupQr() down in the
   // "setup sharing" section, well below) rather than nearer that code: the
@@ -5770,10 +5910,6 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
   let qrHideTimer = null, qrCountdownTimer = null;
 
   function switchTab(name, opts) {
-    if (name === "settings") {
-      const current = document.querySelector(".tab-page.active");
-      if (current && current.dataset.tab !== "settings") tabBeforeSettings = current.dataset.tab;
-    }
     document.querySelectorAll(".tab-page").forEach(function (el) {
       el.classList.toggle("active", el.dataset.tab === name);
     });
@@ -5784,9 +5920,6 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     document.body.dataset.tab = name;
     if (name !== "settings") hideSetupQr();
     renderHeaderConnStatus();
-    const gear = document.getElementById("btn-settings");
-    gear.classList.toggle("active", name === "settings");
-    gear.setAttribute("aria-expanded", name === "settings" ? "true" : "false");
     if (!(opts && opts.restoring)) prefSet(PREF.tab, name);
     // A tab page that was display:none had zero width, so its canvases
     // couldn't measure themselves. This is a no-op where ResizeObserver
@@ -5797,10 +5930,6 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
   document.querySelectorAll(".tab-btn").forEach(function (btn) {
     btn.onclick = function () { switchTab(btn.dataset.tab); };
   });
-  document.getElementById("btn-settings").onclick = function () {
-    const onSettings = document.querySelector(".tab-page.active").dataset.tab === "settings";
-    switchTab(onSettings ? tabBeforeSettings : "settings");
-  };
 
   // ---------- init ----------
   // No server connection yet at page load. render() no-ops until
@@ -5927,10 +6056,9 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     prefSet(PREF.brainUrl, this.value.trim());
   });
 
+  // An unknown or missing saved tab opens Home, the default.
   const savedTab = LEGACY_TAB_ALIASES[prefGet(PREF.tab)] || prefGet(PREF.tab);
-  if (savedTab && TAB_NAMES.indexOf(savedTab) !== -1) {
-    switchTab(savedTab, { restoring: true });
-  }
+  switchTab(savedTab && TAB_NAMES.indexOf(savedTab) !== -1 ? savedTab : "home", { restoring: true });
 
   // Developer readouts: the exact call count and the pan-speed meter. Both
   // are instrumentation for working on this page, not information a person
@@ -5961,6 +6089,7 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     }
     if (state.connected && state.lastAuthorityHealth) renderAuthority(state.lastAuthorityHealth);
     renderBattery();
+    renderHeaderMode();
   }
   applyDebugReadouts(prefGet(PREF.debugReadouts) === "1");
   debugToggleEl.addEventListener("change", function () {

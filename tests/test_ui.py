@@ -153,12 +153,34 @@ def browser():
                 "--use-fake-ui-for-media-stream",
                 "--use-fake-device-for-media-stream",
             ])
-        yield b
+        yield _LegacyTabBrowser(b)
         b.close()
 
 
+class _LegacyTabBrowser:
+    """3.132 Stage 3: Home became the default tab. The tests that make their
+    own contexts were written on the Guide tab (today's Record) and reach
+    for its fields, so a context starts there unless the page or the test
+    saved a tab of its own. `new_context(legacy_tab=None)` opts out -- the
+    tests of the default tab itself do."""
+
+    def __init__(self, browser):
+        self._browser = browser
+
+    def new_context(self, *args, legacy_tab="record", **kwargs):
+        ctx = self._browser.new_context(*args, **kwargs)
+        if legacy_tab:
+            ctx.add_init_script(
+                "(() => { try { if (!localStorage.getItem('vp_active_tab'))"
+                " localStorage.setItem('vp_active_tab', %s); } catch (e) {} })();" % _json(legacy_tab))
+        return ctx
+
+    def __getattr__(self, name):
+        return getattr(self._browser, name)
+
+
 def open_twin(browser, twin_server, *, saved_vision_url=True, mode="robot", models=None,
-              engineer=True):
+              engineer=True, tab="record"):
     """A phone-sized page with the twin loaded.
 
     `saved_vision_url` seeds localStorage the way a returning user's browser
@@ -170,8 +192,12 @@ def open_twin(browser, twin_server, *, saved_vision_url=True, mode="robot", mode
     logs and raw readouts live there now, in their old words. A test of what
     a person sees by default passes `engineer=False` (tests/test_ui_operator_words.py).
     """
-    context = browser.new_context(viewport=PHONE)
+    context = browser.new_context(viewport=PHONE, legacy_tab=None)
     seed = {"guidanceMode": mode, "vp_debug_readouts": "1" if engineer else "0"}
+    if tab:
+        # 3.132 Stage 3: Home is the default tab now. The tests here were
+        # written on the Guide tab, today's Record, so they open there.
+        seed["vp_active_tab"] = tab
     if saved_vision_url:
         seed["vp_vision_url"] = twin_server
     context.add_init_script(
@@ -184,7 +210,13 @@ def open_twin(browser, twin_server, *, saved_vision_url=True, mode="robot", mode
         status=200, content_type="application/json", body=_json(models or MODELS_REPLY)))
     errors = []
     page.on("pageerror", lambda e: errors.append(str(e)))
-    page.goto(twin_server, wait_until="networkidle")
+    # Home in Engineer mode reads the robot's /health every 500 ms (3.132
+    # Stage 3), so a page opening there never goes network-idle.
+    fast = engineer and tab in (None, "home", "drive")
+    page.goto(twin_server, wait_until="load" if fast else "networkidle")
+    if fast:
+        page.wait_for_function("() => !!document.body.dataset.tab")
+        page.wait_for_timeout(1000)
     return page, errors
 
 
@@ -718,7 +750,7 @@ def test_double_tapping_start_does_not_begin_two_walks(browser, twin_server):
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.wait_for_timeout(300)
     page.fill("#guidance-target", "red backpack")
 
@@ -869,7 +901,7 @@ def test_the_banner_is_readable_on_a_phone(browser, twin_server):
 
 def open_sim_tab(browser, twin_server, **kwargs):
     page, errors = open_twin(browser, twin_server, **kwargs)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     return page, errors
 
 
@@ -913,15 +945,15 @@ def test_the_vision_policy_brings_the_model_and_prompt_pickers_with_it(browser, 
 
     # They live on the Guide tab -- see the button test below for why -- so
     # "visible" is only a fair question once that tab is on screen.
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     sync_api.expect(page.locator("#navigate-model-row")).to_be_visible()
     sync_api.expect(page.locator("#navigate-prompt-row")).to_be_visible()
 
     # And they go away again with the policy that wanted them: Guide mode
     # steers a person and has no model to choose.
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     page.locator("#brain-policy").select_option("frontier")
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     sync_api.expect(page.locator("#navigate-model-row")).to_be_hidden()
     page.close()
 
@@ -935,7 +967,7 @@ def test_the_hint_follows_the_pickers(browser, twin_server):
     page.click("#btn-brain-pickers")
     page.locator("#cfg-navigate-prompt").select_option("next-step-obstacle")
 
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     hint = page.locator("#brain-policy-hint")
     sync_api.expect(hint).to_contain_text("next-step-obstacle")
     sync_api.expect(hint).to_contain_text("your pick")
@@ -954,7 +986,7 @@ def test_the_pickers_are_one_tap_away_from_the_panel(browser, twin_server):
     sync_api.expect(page.locator("#brain-policy-pickers-row")).to_be_visible()
 
     page.click("#btn-brain-pickers")
-    sync_api.expect(page.locator('.tab-page[data-tab="guide"]')).to_have_class(
+    sync_api.expect(page.locator('.tab-page[data-tab="record"]')).to_have_class(
         re.compile(r"\bactive\b"))
     sync_api.expect(page.locator("#cfg-navigate-model")).to_be_visible()
     page.close()
@@ -967,7 +999,7 @@ def test_the_policy_choice_survives_a_reload(browser, twin_server):
     page.locator("#brain-policy").select_option("vision")
     page.reload(wait_until="load")
 
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     assert page.locator("#brain-policy").input_value() == "vision"
     sync_api.expect(page.locator("#brain-policy-hint")).to_be_visible()
     page.close()
@@ -996,7 +1028,7 @@ def _connect_for_depth(browser, twin_server):
     # the zones exist in the DOM and are not visible -- which is the first
     # thing these tests caught, and a reminder that "the element is there"
     # and "someone can see it" are different assertions.
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.wait_for_selector("#depth-strip .depth-zone", state="visible", timeout=5000)
     return page, errors
 
@@ -1100,7 +1132,7 @@ def test_a_blocked_path_says_the_move_would_be_vetoed(browser, twin_server):
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.wait_for_selector("#depth-strip .depth-zone.path", state="visible", timeout=5000)
     assert "vetoed" in page.inner_text("#depth-readout")
     assert page.locator("#depth-strip.blocked").count() == 1
@@ -1129,7 +1161,7 @@ def test_a_blind_path_says_it_fell_back_to_the_single_beam(browser, twin_server)
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     wait_for_mocked_strip(page, 4)
     text = page.inner_text("#depth-readout")
     assert "single beam" in text, text
@@ -1155,7 +1187,7 @@ def test_nothing_within_range_is_not_reported_as_a_distance(browser, twin_server
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     wait_for_mocked_strip(page, 2)
     text = page.inner_text("#depth-readout")
     assert "clear beyond range" in text, text
@@ -1176,7 +1208,7 @@ def test_a_server_with_no_depth_route_says_so_instead_of_going_blank(browser, tw
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.wait_for_timeout(900)
     text = page.inner_text("#depth-readout")
     assert "not reported" in text, text
@@ -1210,7 +1242,7 @@ def test_an_unmeasurable_zone_is_not_drawn_as_a_distance(browser, twin_server):
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     wait_for_mocked_strip(page, 2)
     zones = page.locator("#depth-strip .depth-zone")
     assert zones.count() == 2
@@ -1234,7 +1266,7 @@ def _open_sim_tab(browser, twin_server):
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     return page, errors
 
 
@@ -1297,7 +1329,7 @@ def test_the_step_is_remembered_and_defaults_to_a_quarter_turn(browser, twin_ser
     # "load", not "networkidle": a connected page polls /health twice a
     # second and is never idle.
     page.reload(wait_until="load")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     sync_api.expect(page.locator(".turn-step-btn.active-mode")).to_have_attribute(
         "data-turn-deg", "45")
     assert not errors, errors
@@ -1342,7 +1374,7 @@ def _press_answered(browser, twin_server, answer):
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.evaluate("""() => {
         window.__vetoed = false;
         const el = document.getElementById("tel-safety");
@@ -1430,7 +1462,7 @@ def test_a_stop_that_never_reached_the_robot_stands_out(browser, twin_server):
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.route("**/stop", lambda route: route.abort())
     page.click("#btn-stop")
     line = page.locator("#log .entry", has_text="NOT SENT")
@@ -1462,7 +1494,7 @@ def test_the_refusal_readout_colours_by_kind(browser, twin_server, reason, drive
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     readout = page.locator("#brain-tel-refusal")
     sync_api.expect(readout).to_contain_text(driver, timeout=5000)
     classes = (readout.get_attribute("class") or "").split()
@@ -1491,7 +1523,7 @@ def test_the_refusal_readout_names_a_persons_stop(browser, twin_server):
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     readout = page.locator("#brain-tel-refusal")
     sync_api.expect(readout).to_contain_text("STOPPED BY A PERSON", timeout=5000)
     assert "alert" not in (readout.get_attribute("class") or ""), "a person's Stop as an alarm"
@@ -1518,7 +1550,7 @@ def test_the_refusal_readout_names_the_reason_and_who_was_refused(browser, twin_
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     readout = page.locator("#brain-tel-refusal")
     sync_api.expect(readout).to_contain_text("PREEMPTED", timeout=5000)
     sync_api.expect(readout).to_contain_text("brain")
@@ -1545,7 +1577,7 @@ def test_a_refusal_with_no_driver_does_not_print_null(browser, twin_server):
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     readout = page.locator("#brain-tel-refusal")
     sync_api.expect(readout).to_contain_text("WATCHDOG", timeout=5000)
     sync_api.expect(readout).to_contain_text("no driver")
@@ -1567,7 +1599,7 @@ def test_a_server_older_than_m4_leaves_both_readouts_blank(browser, twin_server)
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     page.wait_for_timeout(900)
     assert page.inner_text("#brain-tel-driver").strip() in ("–", "-", ""), \
         page.inner_text("#brain-tel-driver")
@@ -1774,7 +1806,7 @@ def open_with_brain(browser, twin_server, *, status=None, health=None,
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     return page, errors
 
 
@@ -1857,7 +1889,7 @@ def test_the_brain_reconnects_on_its_own_after_an_outage(browser, twin_server):
     page.click("#btn-settings")
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     btn = page.locator("#btn-brain-mission")
     sync_api.expect(btn).to_be_disabled()
     sync_api.expect(page.locator("#brain-connect-hint")).to_contain_text("retrying")
@@ -1929,7 +1961,7 @@ def test_against_the_simulator_the_tiered_hint_names_no_model(browser, twin_serv
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     page.locator("#brain-policy").select_option("tiered")
     hint = page.locator("#brain-policy-hint")
     sync_api.expect(hint).to_contain_text("sim ground truth", timeout=5000)
@@ -1944,7 +1976,7 @@ def test_the_tiered_policy_brings_the_model_and_prompt_pickers_with_it(browser, 
     page, _ = open_sim_tab(browser, twin_server, mode="guide")
     page.locator("#brain-policy").select_option("tiered")
     sync_api.expect(page.locator("#brain-policy-pickers-row")).to_be_visible()
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     sync_api.expect(page.locator("#navigate-model-row")).to_be_visible()
     sync_api.expect(page.locator("#navigate-prompt-row")).to_be_visible()
     page.close()
@@ -2071,7 +2103,7 @@ def open_robot_view(browser, twin_server, *, health=None):
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     return page, errors
 
 
@@ -2170,7 +2202,7 @@ def test_the_walk_sends_the_policy_it_was_set_to(browser, twin_server):
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.wait_for_timeout(300)
     page.fill("#guidance-target", "red backpack")
     page.click("#btn-guidance")
@@ -2242,7 +2274,7 @@ def test_a_mission_that_ENDS_says_so_instead_of_sitting_on_deciding(browser, twi
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.wait_for_timeout(300)
     page.fill("#guidance-target", "woven laundry basket")
     page.click("#btn-guidance")
@@ -2289,7 +2321,7 @@ def test_an_unconfirmed_arrival_is_a_warning_not_an_error_and_the_late_answer_la
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
 
     current["body"] = unconfirmed_status("waiting")
     outcome = page.locator("#brain-tel-outcome")
@@ -2324,7 +2356,7 @@ def test_a_page_that_connects_after_the_ending_still_sees_the_late_answer(
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     outcome = page.locator("#brain-tel-outcome")
     sync_api.expect(outcome).to_contain_text("will ask again")
     current["body"] = unconfirmed_status("refused")
@@ -2380,7 +2412,7 @@ def test_the_late_watch_stops_on_a_guide_start(browser, twin_server):
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     current["body"] = unconfirmed_status("waiting")  # the panel's watch starts
     sync_api.expect(page.locator(".toast.warn")).to_have_count(1, timeout=5000)
 
@@ -2393,7 +2425,7 @@ def test_the_late_watch_stops_on_a_guide_start(browser, twin_server):
         page.wait_for_timeout(100)
     current["hold"] = False
     current["body"] = tiered_status()  # what the new session sees
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.wait_for_timeout(300)
     page.fill("#guidance-target", "red backpack")
     page.click("#btn-guidance")
@@ -2443,11 +2475,11 @@ def test_a_refused_guide_start_keeps_watching_the_old_check(browser, twin_server
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     current["body"] = unconfirmed_status("waiting")
     sync_api.expect(page.locator(".toast.warn")).to_have_count(1, timeout=5000)
 
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.wait_for_timeout(300)
     page.fill("#guidance-target", "red backpack")
     page.click("#btn-guidance")  # refused with a 400
@@ -2500,10 +2532,10 @@ def test_a_verdict_that_lands_during_a_refused_guide_start_is_shown(browser, twi
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     current["body"] = unconfirmed_status("waiting")
     sync_api.expect(page.locator(".toast.warn")).to_have_count(1, timeout=5000)
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.wait_for_timeout(300)
     page.fill("#guidance-target", "red backpack")
     page.click("#btn-guidance")
@@ -2551,7 +2583,7 @@ def test_a_refused_start_never_toasts_a_verdict_this_page_was_not_waiting_on(
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.wait_for_timeout(300)
     page.fill("#guidance-target", "blue shoes")
     page.click("#btn-guidance")  # refused
@@ -2614,11 +2646,11 @@ def test_a_stale_resume_never_draws_over_a_newer_guide_start(browser, twin_serve
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     current["body"] = unconfirmed_status("waiting")
     sync_api.expect(page.locator(".toast.warn")).to_have_count(1, timeout=5000)
 
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.wait_for_timeout(300)
     page.fill("#guidance-target", "red backpack")
     page.click("#btn-guidance")  # Start #1: refused; its resume GET is held
@@ -2687,11 +2719,11 @@ def test_two_refused_starts_in_a_row_still_watch_the_old_check(browser, twin_ser
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     current["body"] = unconfirmed_status("waiting")
     sync_api.expect(page.locator(".toast.warn")).to_have_count(1, timeout=5000)
 
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.wait_for_timeout(300)
     page.fill("#guidance-target", "red backpack")
     page.click("#btn-guidance")  # Start #1: refused; resume held
@@ -2762,11 +2794,11 @@ def test_a_resume_made_stale_by_a_reconnect_owes_nothing_later(browser, twin_ser
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     current["body"] = unconfirmed_status("waiting")
     sync_api.expect(page.locator(".toast.warn")).to_have_count(1, timeout=5000)
 
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.wait_for_timeout(300)
     page.fill("#guidance-target", "red backpack")
     page.click("#btn-guidance")  # refused; its resume is held
@@ -2786,7 +2818,7 @@ def test_a_resume_made_stale_by_a_reconnect_owes_nothing_later(browser, twin_ser
     page.wait_for_timeout(500)
     before = page.locator(".toast", has_text="Late identity check").count()
     # Much later, a refused start: nothing was being watched.
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.wait_for_timeout(300)
     page.click("#btn-guidance")
     page.wait_for_timeout(2500)
@@ -2816,7 +2848,7 @@ def test_the_late_watch_stops_on_a_dead_brain(browser, twin_server):
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     current["body"] = unconfirmed_status("waiting")
     sync_api.expect(page.locator(".toast.warn")).to_have_count(1, timeout=5000)
     current["fail"] = True
@@ -2866,7 +2898,7 @@ def test_on_the_guide_tab_an_unconfirmed_arrival_is_an_outcome_not_a_lost_link(
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.wait_for_timeout(300)
     page.fill("#guidance-target", "red backpack")
     page.click("#btn-guidance")
@@ -2945,7 +2977,7 @@ def test_a_tunnelled_robot_gets_the_interstitial_bypass(browser, twin_server):
     page.click("#btn-settings")
     page.fill("#cfg-server-url", tunnel)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     headers = _headers_for(page, "() => {}", tunnel)
 
     assert headers.get("ngrok-skip-browser-warning") == "1", sorted(headers)
@@ -2967,7 +2999,7 @@ def test_a_plain_host_is_left_alone(browser, twin_server):
     page.click("#btn-settings")
     page.fill("#cfg-server-url", lan)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     headers = _headers_for(page, "() => {}", lan)
 
     assert "ngrok-skip-browser-warning" not in headers, sorted(headers)
@@ -3296,7 +3328,7 @@ def test_the_cloud_check_is_readable_on_a_phone(browser, twin_server):
 def test_turning_on_drive_via_brain_leaves_recording_alone(browser, twin_server):
     page, errors = open_with_brain(browser, twin_server, status=tiered_status(),
                                    mode="robot")
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.locator("#cfg-record-walk").check()
     page.locator("#cfg-drive-via-brain").check()
     assert page.locator("#cfg-record-walk").is_checked(), (
@@ -3310,7 +3342,7 @@ def test_turning_on_recording_leaves_drive_via_brain_alone(browser, twin_server)
     """The same exclusion, from the other side. Both handlers enforced it."""
     page, errors = open_with_brain(browser, twin_server, status=tiered_status(),
                                    mode="robot")
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.locator("#cfg-drive-via-brain").check()
     page.locator("#cfg-record-walk").check()
     assert page.locator("#cfg-drive-via-brain").is_checked(), (
@@ -3324,7 +3356,7 @@ def test_both_switches_can_be_on_at_once(browser, twin_server):
     robot AND every frame kept for the corpus."""
     page, _ = open_with_brain(browser, twin_server, status=tiered_status(),
                               mode="robot")
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.locator("#cfg-record-walk").check()
     page.locator("#cfg-drive-via-brain").check()
     assert page.locator("#cfg-record-walk").is_checked()
@@ -3379,7 +3411,7 @@ def test_the_odometry_line_says_NO_ENCODERS_rather_than_zero(browser, twin_serve
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.wait_for_function(
         "() => /no encoders/.test("
         "document.getElementById('odometry-readout').innerText)", timeout=5000)
@@ -3403,7 +3435,7 @@ def test_a_server_with_no_odometry_route_says_so_rather_than_going_blank(
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.wait_for_function(
         "() => /not reported/.test("
         "document.getElementById('odometry-readout').innerText)", timeout=5000)
@@ -3534,7 +3566,7 @@ def _connect_for_map(browser, twin_server):
     page.click("#btn-connect")
     # Same lesson as the depth strip: the canvas lives on the Sim tab, and
     # "the element exists" is not "someone can see it".
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.wait_for_function(
         "() => { const c = document.getElementById('world-map');"
         " return c && c.width > 0; }", timeout=5000)
@@ -3626,7 +3658,7 @@ def test_a_server_with_no_world_routes_says_so_instead_of_going_blank(browser, t
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.wait_for_function(
         "() => (document.getElementById('map-readout') || {}).textContent"
         "      === 'map: not reported by this server'", timeout=8000)
@@ -3674,7 +3706,7 @@ def test_a_slam_map_shows_its_error_and_the_truth_as_a_ghost(browser, twin_serve
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.wait_for_function(
         "() => (document.getElementById('map-readout') || {}).textContent.includes('SLAM error')",
         timeout=8000)
@@ -3696,7 +3728,7 @@ def test_a_sim_map_shows_no_error_line_and_no_ghost(browser, twin_server):
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.wait_for_function(
         "() => (document.getElementById('map-readout') || {}).textContent.includes('cells seen')",
         timeout=8000)
@@ -3723,7 +3755,7 @@ def test_tapping_a_slam_map_sends_the_robot_there(browser, twin_server):
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.wait_for_function(
         "() => (document.getElementById('map-readout') || {}).textContent.includes('tap the map')",
         timeout=8000)
@@ -3753,7 +3785,7 @@ def test_a_sim_map_is_not_tappable(browser, twin_server):
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.wait_for_function(
         "() => (document.getElementById('map-readout') || {}).textContent.includes('cells seen')",
         timeout=8000)
@@ -3783,7 +3815,7 @@ def test_the_panel_says_whether_the_cloud_is_reachable(browser, twin_server):
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
 
     cloud = page.locator("#brain-tel-cloud")
     sync_api.expect(cloud).to_contain_text("unknown", timeout=5000)
@@ -3833,7 +3865,7 @@ def test_the_cloud_row_keeps_moving_while_a_parked_arrival_waits(browser, twin_s
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
 
     down = {"state": "unreachable", "since": 1760000000, "checked_at": 1760000000,
             "age_s": 1, "probes": 1, "probe_s": 15}
@@ -3889,7 +3921,7 @@ def test_the_guide_tab_shows_the_cloud_row_too(browser, twin_server):
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.wait_for_timeout(300)
     page.fill("#guidance-target", "red backpack")
     page.click("#btn-guidance")
@@ -3952,7 +3984,7 @@ def test_random_house_is_off_while_a_brain_mission_runs(browser, private_twin_se
     page.click("#btn-settings")
     page.fill("#cfg-server-url", private_twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.wait_for_timeout(800)
     assert page.locator("#btn-random-house").is_disabled()
     assert not errors, errors
@@ -3971,7 +4003,7 @@ def test_random_house_is_hidden_on_a_robot_that_is_not_simulated(browser, twin_s
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.wait_for_timeout(800)
     assert page.locator("#btn-random-house").is_hidden()
     assert not errors, errors
@@ -4042,7 +4074,7 @@ def test_the_panel_shows_each_end_state_in_its_own_words_and_style(
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
 
     current["body"] = ended_status(outcome)
     el = page.locator("#brain-tel-outcome")
@@ -4076,7 +4108,7 @@ def test_a_report_written_after_the_ending_still_lands(browser, twin_server):
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     current["body"] = ended_status("out_of_budget", report=None)
     sync_api.expect(page.locator("#brain-tel-outcome")).to_contain_text("Out of budget",
                                                                         timeout=5000)
@@ -4126,7 +4158,7 @@ def test_on_the_guide_tab_a_late_report_still_lands(browser, twin_server):
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.wait_for_timeout(300)
     page.fill("#guidance-target", "red backpack")
     page.click("#btn-guidance")
@@ -4154,7 +4186,7 @@ def test_an_old_brain_s_outcome_names_are_read_as_the_new_ones(browser, twin_ser
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     old = dict(tiered_status(running=False))
     old.update({"outcome": "preempted", "error": None})
     current["body"] = old
@@ -4210,7 +4242,7 @@ def test_on_the_guide_tab_an_end_state_is_an_outcome_not_a_lost_link(
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="guide"]')
+    page.click('.tab-btn[data-tab="record"]')
     page.wait_for_timeout(300)
     page.fill("#guidance-target", "red backpack")
     page.click("#btn-guidance")
@@ -4307,7 +4339,7 @@ def test_a_low_battery_is_shown_on_every_tab(browser, twin_server):
     assert not _jargon(banner.inner_text()), banner.inner_text()
     assert "10.43" not in banner.inner_text()      # volts are Engineer mode's
     _battery_shot(page, "battery-low-390.png")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     sync_api.expect(banner).to_be_visible()
     # Charged again: the same server answers ok, and the banner goes.
     _route_battery(page, _battery_reply("ok", 11.6))
@@ -4451,7 +4483,7 @@ def test_a_start_refused_at_low_battery_is_said_plainly(browser, twin_server, de
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     page.wait_for_selector("#btn-brain-mission:not([disabled])", timeout=8000)
     page.click("#btn-brain-mission")
     toast = page.locator(".toast.err", has_text=words)

@@ -94,7 +94,9 @@ def twin_server():
 def browser():
     with sync_api.sync_playwright() as p:
         b = p.chromium.launch()
-        yield b
+        # 3.132 Stage 3: contexts start on Record, as tests/test_ui.py's do.
+        from tests.test_ui import _LegacyTabBrowser
+        yield _LegacyTabBrowser(b)
         b.close()
 
 
@@ -134,7 +136,7 @@ def _open_twin(browser, twin_server, *, strip_image):
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
     page.click("#btn-settings")  # toggles back out of settings
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.wait_for_function(
         "() => { const c = document.getElementById('fpv-canvas');"
         " return c && c.width > 0 && c.height > 0; }"
@@ -197,7 +199,7 @@ def test_the_page_survives_a_frame_with_no_pixels(browser, twin_server):
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
     page.click("#btn-settings")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.click("#btn-forward")
     page.wait_for_timeout(500)
     assert not errors, f"page errors while drawing a frame with no pixels: {errors}"

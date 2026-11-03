@@ -92,13 +92,11 @@ header .mission-summary {
   font-family: var(--sans); font-size: var(--fs-body); color: var(--text-dim);
   line-height: 1.4;
 }
-/* Sim bookkeeping ("hallway, living room searched.") in a global header.
-   It was only ever about the simulated robot, which became conspicuous
-   once Drive and Autonomous merged into one tab and the other two tabs
-   stopped having anything to do with it. Hidden by default so the
-   attribute being absent at first paint is the correct state. */
-body:not([data-tab="sim"]) header .mission-summary,
-body:not([data-tab="sim"]) header .eyebrow { display: none; }
+/* The robot's bookkeeping ("hallway, living room searched.") belongs with
+   the robot's tabs. Hidden by default so the attribute being absent at
+   first paint is the correct state. The eyebrow names the robot's real
+   mode (3.132 Stage 3), so every tab shows it. */
+body:not([data-tab="home"]):not([data-tab="drive"]) header .mission-summary { display: none; }
 
 canvas { border-radius: 6px; display: block; max-width: 100%; }
 
@@ -892,15 +890,6 @@ header .header-text { min-width: 0; }
    tab you came from, so it behaves like a detour rather than a
    destination. */
 .header-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.header-gear {
-  width: var(--target); height: var(--target); min-height: unset; flex: unset; padding: 0;
-  border-radius: 50%; background: transparent; color: var(--text-dim);
-  display: flex; align-items: center; justify-content: center;
-  transition: color 0.12s, background 0.12s;
-}
-.header-gear svg { width: 18px; height: 18px; }
-.header-gear:hover { background: var(--surface-raised); color: var(--text); }
-.header-gear.active { color: var(--accent-primary); background: var(--surface-raised); }
 
 .conn-dot {
   display: inline-flex; align-items: center; gap: 5px;
@@ -1025,3 +1014,41 @@ header .header-text { min-width: 0; }
    script toggles on these rows, which still decides within Engineer mode. */
 body:not(.debug-readouts) .eng-only { display: none !important; }
 body.debug-readouts .op-only { display: none !important; }
+
+/* 3.132 Stage 3: the STOP bar. Fixed just above the tab bar on every tab,
+   shown only while something moves. Its own colour is the STOP button's;
+   no readout takes the alarm colour from it (3.86). */
+.stop-bar {
+  position: fixed; left: 0; right: 0;
+  bottom: calc(62px + env(safe-area-inset-bottom));
+  padding: 8px calc(14px + env(safe-area-inset-right)) 8px calc(14px + env(safe-area-inset-left));
+  z-index: 11;
+}
+.stop-bar[hidden] { display: none; }
+.stop-bar button {
+  display: block; width: 100%; max-width: 392px; margin: 0 auto;
+  min-height: 52px; font-size: var(--fs-md); font-weight: 700; letter-spacing: 0.08em;
+  box-shadow: var(--shadow-2);
+}
+body.stop-bar-on .wrap { padding-bottom: 152px; }
+/* Over Guide's fullscreen (z 200), where Robot view and Drive via brain run
+   (review): there the tab bar is covered, so the bar sits at the bottom and
+   the fullscreen's own bottom bar moves up above it. */
+body:has(#guide-fullscreen.active) .stop-bar { z-index: 250; bottom: env(safe-area-inset-bottom); }
+body.stop-bar-on .guide-bottombar { bottom: 68px; }
+body.stop-bar-on .toast-stack { bottom: calc(160px + env(safe-area-inset-bottom)); }
+
+/* 3.132 Stage 3: the mission in one sentence. Its colour follows 3.70 E6's
+   ending styles: found is safe, a search that looked and did not find is
+   warn, a person's Stop neutral; a running search is the primary accent. */
+.mission-card {
+  margin: 8px 0 10px; padding: 12px 14px;
+  border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--surface-raised); color: var(--text);
+  font-size: var(--fs-md); line-height: var(--lh-tight); font-weight: 600;
+}
+.mission-card[hidden] { display: none; }
+.mission-card[data-state="running"] { border-color: var(--accent-primary); }
+.mission-card[data-state="found"] { border-color: var(--accent-safe); }
+.mission-card[data-state="warn"] { border-color: var(--accent-warn); }
+#brain-report-row[hidden] { display: none; }

@@ -86,7 +86,7 @@ def test_each_ending_is_told_in_plain_words(browser, twin_server, case):  # noqa
     page.fill("#cfg-brain-url", twin_server + "/brain-stub")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(600)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
 
     page.wait_for_timeout(300)
     before = page.locator(".toast").count()      # the connect toast, if still up

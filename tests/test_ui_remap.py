@@ -35,7 +35,7 @@ def _open(browser, twin_server, grid=_SLAM_MAP, pose=_SLAM_POSE):
     page.click("#btn-settings")
     page.fill("#cfg-server-url", twin_server)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
     page.wait_for_function(
         "() => (document.getElementById('map-readout') || {}).textContent.includes('cells seen')",
         timeout=8000)
@@ -70,7 +70,7 @@ def _reconnect(page, url):
     page.click("#btn-settings")
     page.fill("#cfg-server-url", url)
     page.click("#btn-connect")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="drive"]')
 
 
 def test_the_button_shows_on_a_slam_map_only(browser, twin_server):

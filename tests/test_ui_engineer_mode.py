@@ -68,8 +68,7 @@ def test_engineer_mode_loses_nothing_and_applies_live(browser, twin_server):  # 
     _connect_brain(page, twin_server)
     page.click("#btn-settings")
     sync_api.expect(page.locator("label[for=cfg-debug-readouts] .switch-title")).to_have_text("Engineer mode")
-    page.click("#btn-settings")
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
 
     # Operator mode: every eng-only element hidden, the op-only wording shown.
     states = page.evaluate(STATE_JS)
@@ -77,13 +76,13 @@ def test_engineer_mode_loses_nothing_and_applies_live(browser, twin_server):  # 
     shown_eng = [s["id"] for s in states if s["cls"] == "eng" and s["display"] != "none"]
     assert not shown_eng, f"operator mode shows engineer-only elements: {shown_eng}"
     # Rendered text: section labels are upper-cased by CSS, so compare folded.
-    sim_text = page.locator('.tab-page[data-tab="sim"]').inner_text().lower()
+    sim_text = page.locator('.tab-page[data-tab="home"]').inner_text().lower()
     assert "autopilot" in sim_text and "remote brain" not in sim_text, sim_text[:300]
     assert page.locator("#brain-tel-driver").inner_text() != "brain"   # a person's words, never the id
 
     # Engineer mode, live: everything back, in today's words.
     _flip(page)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     states = page.evaluate(STATE_JS)
     lost = [s["id"] for s in states if s["cls"] == "eng" and s["display"] == "none"
             and not s["inlineHidden"]]
@@ -106,9 +105,12 @@ def test_engineer_mode_loses_nothing_and_applies_live(browser, twin_server):  # 
 
     # And back: the plain view returns, with no reload.
     _flip(page)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     assert page.locator("#brain-tel-outcome").inner_text() == "Searching"
-    sim_text = page.locator('.tab-page[data-tab="sim"]').inner_text().lower()
+    # 3.132 Stage 3: Sim's two halves are Home and Drive.
+    sim_text = page.locator('.tab-page[data-tab="home"]').inner_text().lower()
+    page.click('.tab-btn[data-tab="drive"]')
+    sim_text += " " + page.locator('.tab-page[data-tab="drive"]').inner_text().lower()
     for words in OPERATOR_WORDS[::2]:
         assert words.lower() in sim_text, words
     assert page.evaluate("localStorage.getItem('vp_debug_readouts')") == "0"
@@ -130,7 +132,7 @@ def test_a_saved_paid_policy_is_said_and_a_drill_never_starts_in_operator_mode(b
                                                          r.fulfill(status=200, content_type="application/json",
                                                                    body=_json({"started": True}))))
     _connect_brain(page, twin_server, running=False)
-    page.click('.tab-btn[data-tab="sim"]')
+    page.click('.tab-btn[data-tab="home"]')
     cost = page.locator("#brain-cost-hint")
     sync_api.expect(cost).to_be_visible()
     sync_api.expect(cost).to_contain_text("paid vision service at every step")
