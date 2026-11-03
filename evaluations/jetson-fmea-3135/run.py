@@ -8,6 +8,8 @@ evaluations/jetson-fmea-3135/run.py
     python evaluations/jetson-fmea-3135/run.py plant [--wait]          # criterion 4, desktop, exclusive lock
     python evaluations/jetson-fmea-3135/run.py smoke [--sha REV] [--wait]  # 3.135.A's board smoke run (no sudo)
     python evaluations/jetson-fmea-3135/run.py found                   # the board's as-found state, read only
+    python evaluations/jetson-fmea-3135/run.py soak [--seconds 14400] [--label soak] [--wait]  # 3.135.C (sudo)
+    python evaluations/jetson-fmea-3135/run.py soak-score OUT          # re-score a fetched soak
 
 Board runs reuse 3.136.A's runner, not a copy (`evaluations/jetson-perf-3136/`):
 `boardrun.locked()` (the desktop lock, then `board_lock.py run --why`),
@@ -23,6 +25,7 @@ import argparse
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -81,6 +84,28 @@ def smoke_inner(a) -> int:
     return 0 if ok else 1
 
 
+# ----------------------------------------------- 3.135.C: the memory soak
+
+def soak_lock_argv(argv: list, why: str, max_s: float, desktop_wait: bool) -> list:
+    """`boardrun.locked`'s two locks, with the board hold's --max raised past
+    a soak's length (its default is 4 h). The desktop lock is shared: every
+    number criterion 1 reads is the board's, none is timed on the desktop."""
+    return [PY, str(ROOT / "tools/desktop_lock.py"), "shared",
+            *([] if desktop_wait else ["--no-wait"]), "--why", why, "--",
+            PY, str(ROOT / "tools/jetson/board_lock.py"), "run", "--why", why,
+            "--max", str(int(max_s)), "--", *argv]
+
+
+def soak_inner(a) -> int:
+    import soak_score
+    out = Path(a.out)
+    rec = perf_run.board_run(a.label, f"bash evaluations/jetson-fmea-3135/soak.sh $OUT "
+                             f"--seconds {float(a.seconds)}", out, sha=a.sha, allow_sudo=True,
+                             stop_twin=True, bench_dir=BENCH_DIR)
+    soak_score.main([str(out)])
+    return 0 if rec.get("cmd_exit") == 0 and rec.get("left_as_found") else 1
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -95,6 +120,15 @@ def main(argv=None) -> int:
     p.add_argument("--wait", action="store_true", help="wait for the desktop lock")
     p.add_argument("--out", default=str(HERE / "desktop"))
     sub.add_parser("found")
+    for name in ("soak", "_soak"):
+        t = sub.add_parser(name)
+        t.add_argument("--sha", default="HEAD")
+        t.add_argument("--seconds", type=float, default=14400.0)
+        t.add_argument("--label", default="soak")
+        t.add_argument("--out", default=None)
+        t.add_argument("--wait", action="store_true", help="wait for the desktop lock")
+    sc = sub.add_parser("soak-score")
+    sc.add_argument("out")
     a = ap.parse_args(argv)
     if a.cmd == "smoke":
         sha = subprocess.run(["git", "rev-parse", a.sha], cwd=ROOT, capture_output=True, text=True,
@@ -109,6 +143,22 @@ def main(argv=None) -> int:
         return subprocess.call([PY, str(ROOT / "tools/desktop_lock.py"), "exclusive",
                                 *([] if a.wait else ["--no-wait"]), "--why", "3.135.A planted bugs",
                                 "--", PY, str(HERE / "plant_bugs.py"), "--out", a.out], cwd=ROOT)
+    if a.cmd == "soak":
+        sha = subprocess.run(["git", "rev-parse", a.sha], cwd=ROOT, capture_output=True, text=True,
+                             check=True).stdout.strip()
+        out = a.out or str(HERE / "board" / f"{a.label}-{time.strftime('%Y%m%d-%H%M')}")
+        argv_ = [PY, str(Path(__file__).resolve()), "_soak", "--sha", sha, "--seconds",
+                 str(a.seconds), "--label", a.label, "--out", out]
+        # The hold outlasts the soak: setup, the last mission (<= 30 min), teardown, restore.
+        return subprocess.call(soak_lock_argv(argv_, f"3.135.C {a.label}", a.seconds + 2 * 3600,
+                                              a.wait), cwd=ROOT)
+    if a.cmd == "_soak":
+        if not a.out:
+            raise SystemExit("_soak needs --out")
+        return soak_inner(a)
+    if a.cmd == "soak-score":
+        import soak_score
+        return soak_score.main([a.out])
     if a.cmd == "found":
         print(json.dumps(br.snapshot(), indent=1))
         return 0
