@@ -1,0 +1,1089 @@
+{
+ "arm": "A3n",
+ "pairs": 40,
+ "found": 0,
+ "misses": [
+  [
+   "home_first_floor",
+   "red backpack",
+   "exhausted"
+  ],
+  [
+   "home_first_floor",
+   "sofa",
+   "exhausted"
+  ],
+  [
+   "home_first_floor",
+   "chair",
+   "exhausted"
+  ],
+  [
+   "home_first_floor",
+   "dining table",
+   "exhausted"
+  ],
+  [
+   "home_first_floor",
+   "toilet",
+   "exhausted"
+  ],
+  [
+   "home_first_floor",
+   "desk",
+   "exhausted"
+  ],
+  [
+   "home_first_floor",
+   "coffee table",
+   "exhausted"
+  ],
+  [
+   "home_first_floor",
+   "armchair",
+   "exhausted"
+  ],
+  [
+   "complex_house",
+   "red backpack",
+   "exhausted"
+  ],
+  [
+   "complex_house",
+   "shoes",
+   "exhausted"
+  ],
+  [
+   "complex_house",
+   "slippers",
+   "exhausted"
+  ],
+  [
+   "complex_house",
+   "toy car",
+   "exhausted"
+  ],
+  [
+   "complex_house",
+   "water bottle",
+   "exhausted"
+  ],
+  [
+   "complex_house",
+   "pet bowl",
+   "exhausted"
+  ],
+  [
+   "complex_house",
+   "laptop bag",
+   "exhausted"
+  ],
+  [
+   "complex_house",
+   "laundry basket",
+   "exhausted"
+  ],
+  [
+   "procthor:val:0",
+   "red backpack",
+   "exhausted"
+  ],
+  [
+   "procthor:val:0",
+   "plunger",
+   "exhausted"
+  ],
+  [
+   "procthor:val:0",
+   "dog bed",
+   "exhausted"
+  ],
+  [
+   "procthor:val:0",
+   "box",
+   "exhausted"
+  ],
+  [
+   "procthor:val:0",
+   "house plant",
+   "exhausted"
+  ],
+  [
+   "procthor:val:0",
+   "garbage can",
+   "exhausted"
+  ],
+  [
+   "procthor:val:0",
+   "sofa",
+   "exhausted"
+  ],
+  [
+   "procthor:val:0",
+   "chair",
+   "exhausted"
+  ],
+  [
+   "procthor:val:2",
+   "red backpack",
+   "exhausted"
+  ],
+  [
+   "procthor:val:2",
+   "basketball",
+   "exhausted"
+  ],
+  [
+   "procthor:val:2",
+   "plunger",
+   "exhausted"
+  ],
+  [
+   "procthor:val:2",
+   "laundry hamper",
+   "exhausted"
+  ],
+  [
+   "procthor:val:2",
+   "dog bed",
+   "exhausted"
+  ],
+  [
+   "procthor:val:2",
+   "house plant",
+   "exhausted"
+  ],
+  [
+   "procthor:val:2",
+   "garbage can",
+   "exhausted"
+  ],
+  [
+   "procthor:val:2",
+   "sofa",
+   "exhausted"
+  ],
+  [
+   "procthor:val:3",
+   "red backpack",
+   "exhausted"
+  ],
+  [
+   "procthor:val:3",
+   "plunger",
+   "exhausted"
+  ],
+  [
+   "procthor:val:3",
+   "garbage bag",
+   "exhausted"
+  ],
+  [
+   "procthor:val:3",
+   "box",
+   "exhausted"
+  ],
+  [
+   "procthor:val:3",
+   "garbage can",
+   "exhausted"
+  ],
+  [
+   "procthor:val:3",
+   "sofa",
+   "exhausted"
+  ],
+  [
+   "procthor:val:3",
+   "chair",
+   "exhausted"
+  ],
+  [
+   "procthor:val:3",
+   "dining table",
+   "exhausted"
+  ]
+ ],
+ "wall_s": 1224,
+ "rows": [
+  {
+   "arm": "A3n",
+   "house": "home_first_floor",
+   "target": "red backpack",
+   "outcome": "exhausted",
+   "ticks": 283,
+   "capped": false,
+   "steps": 79,
+   "goals": 78,
+   "closest_m": 0.5,
+   "end_m": 7.5,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 46 reported, 21 candidates from 284 frames -- chair x9, sectional sofa x4, armchair x3, breakfast table x3, car x2, coffee table x2, desk x2, dining table x2, garage shelves x2, kitchen counter x2, staircase x2, tv console x2, kitchen island, bookcase, side table, sofa, toilet, desk chair, pantry shelves, refrigerator, vanity, washer, dryer",
+    "mission ended (exhausted): no reachable frontier left (11 on the map: 11 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "home_first_floor",
+   "target": "sofa",
+   "outcome": "exhausted",
+   "ticks": 403,
+   "capped": false,
+   "steps": 82,
+   "goals": 81,
+   "closest_m": 0.3,
+   "end_m": 12.36,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 45 reported, 17 candidates from 404 frames -- chair x8, staircase x4, armchair x3, sectional sofa x3, car x2, desk x2, dining table x2, garage shelves x2, kitchen counter x2, kitchen island x2, breakfast table x2, tv console x2, bookcase, desk chair, side table, sofa, coffee table, toilet, pantry shelves, refrigerator, washer, dryer, vanity",
+    "mission ended (exhausted): no reachable frontier left (10 on the map: 10 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "home_first_floor",
+   "target": "chair",
+   "outcome": "exhausted",
+   "ticks": 512,
+   "capped": false,
+   "steps": 104,
+   "goals": 103,
+   "closest_m": 0.55,
+   "end_m": 7.26,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 51 reported, 9 candidates from 513 frames -- chair x9, sectional sofa x4, staircase x4, armchair x3, car x3, coffee table x3, breakfast table x2, desk x2, dining table x2, garage shelves x2, kitchen counter x2, kitchen island x2, tv console x2, desk chair, sofa, toilet, vanity, pantry shelves, refrigerator, side table, bookcase, dryer, red backpack, washer",
+    "mission ended (exhausted): no reachable frontier left (10 on the map: 10 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "home_first_floor",
+   "target": "dining table",
+   "outcome": "exhausted",
+   "ticks": 288,
+   "capped": false,
+   "steps": 80,
+   "goals": 79,
+   "closest_m": 0.42,
+   "end_m": 5.1,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 52 reported, 21 candidates from 289 frames -- chair x8, armchair x5, car x4, staircase x4, breakfast table x3, coffee table x3, kitchen counter x3, dining table x2, garage shelves x2, kitchen island x2, desk x2, sofa x2, sectional sofa x2, toilet, tv console, side table, vanity, bookcase, dryer, pantry shelves, red backpack, refrigerator, desk chair",
+    "mission ended (exhausted): no reachable frontier left (10 on the map: 9 reached twice, 1 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "home_first_floor",
+   "target": "toilet",
+   "outcome": "exhausted",
+   "ticks": 289,
+   "capped": false,
+   "steps": 79,
+   "goals": 78,
+   "closest_m": 0.54,
+   "end_m": 14.63,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 45 reported, 21 candidates from 290 frames -- chair x9, armchair x4, sectional sofa x3, car x2, coffee table x2, desk x2, kitchen counter x2, staircase x2, breakfast table x2, dining table x2, sofa x2, tv console x2, garage shelves, kitchen island, toilet, vanity, bookcase, side table, desk chair, pantry shelves, refrigerator, washer, dryer",
+    "mission ended (exhausted): no reachable frontier left (11 on the map: 11 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "home_first_floor",
+   "target": "desk",
+   "outcome": "exhausted",
+   "ticks": 301,
+   "capped": false,
+   "steps": 80,
+   "goals": 79,
+   "closest_m": 0.5,
+   "end_m": 15.42,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ],
+    [
+     "local",
+     false,
+     0.0
+    ],
+    [
+     "local",
+     false,
+     0.0
+    ],
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 48 reported, 18 candidates from 302 frames -- chair x8, sectional sofa x5, armchair x3, desk x3, coffee table x3, breakfast table x3, staircase x3, car x2, kitchen counter x2, dining table x2, sofa x2, garage shelves, kitchen island, toilet, bookcase, side table, pantry shelves, refrigerator, tv console, washer, desk chair, dryer, vanity",
+    "mission ended (exhausted): no reachable frontier left (10 on the map: 10 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "home_first_floor",
+   "target": "coffee table",
+   "outcome": "exhausted",
+   "ticks": 310,
+   "capped": false,
+   "steps": 83,
+   "goals": 82,
+   "closest_m": 0.3,
+   "end_m": 7.35,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ],
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 47 reported, 23 candidates from 311 frames -- chair x8, coffee table x4, sectional sofa x4, armchair x3, staircase x3, car x2, desk x2, garage shelves x2, kitchen counter x2, breakfast table x2, dining table x2, tv console x2, kitchen island, sofa, bookcase, side table, toilet, desk chair, pantry shelves, refrigerator, vanity, washer, dryer",
+    "mission ended (exhausted): no reachable frontier left (10 on the map: 10 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "home_first_floor",
+   "target": "armchair",
+   "outcome": "exhausted",
+   "ticks": 315,
+   "capped": false,
+   "steps": 90,
+   "goals": 89,
+   "closest_m": 0.3,
+   "end_m": 9.57,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 45 reported, 15 candidates from 316 frames -- chair x5, sectional sofa x4, staircase x4, armchair x3, car x3, kitchen counter x3, tv console x3, coffee table x2, desk x2, garage shelves x2, breakfast table x2, bookcase, kitchen island, sofa, desk chair, pantry shelves, refrigerator, side table, dryer, red backpack, toilet, vanity, washer",
+    "mission ended (exhausted): no reachable frontier left (9 on the map: 9 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "complex_house",
+   "target": "red backpack",
+   "outcome": "exhausted",
+   "ticks": 313,
+   "capped": false,
+   "steps": 93,
+   "goals": 92,
+   "closest_m": 0.6,
+   "end_m": 4.58,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 57 reported, 21 candidates from 314 frames -- chair x6, bed x5, armchair x3, desk x3, dining table x3, dresser x3, kitchen counter x3, kitchen island x3, bookcase x2, shoe bench x2, tv console x2, toilet x2, book, refrigerator, sideboard, bathtub, coffee table, desk chair, guitar, mug, pet bowl, shoes, sofa, tv remote, umbrella, water bottle, headphones, laptop bag, laundry basket, red backpack, slippers, towel",
+    "mission ended (exhausted): no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "complex_house",
+   "target": "shoes",
+   "outcome": "exhausted",
+   "ticks": 341,
+   "capped": false,
+   "steps": 103,
+   "goals": 102,
+   "closest_m": 0.6,
+   "end_m": 5.16,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 62 reported, 20 candidates from 342 frames -- bed x6, chair x6, armchair x4, dresser x3, kitchen island x3, desk x3, tv console x3, dining table x2, kitchen counter x2, bookcase x2, shoe bench x2, sideboard x2, coffee table x2, book, shoes, water bottle, toy car, bathtub, desk chair, guitar, keys, laptop bag, mug, pet bowl, toilet, headphones, laundry basket, red backpack, refrigerator, slippers, sofa, towel, trash can, tv remote, umbrella",
+    "mission ended (exhausted): no reachable frontier left (5 on the map: 5 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "complex_house",
+   "target": "slippers",
+   "outcome": "exhausted",
+   "ticks": 312,
+   "capped": false,
+   "steps": 92,
+   "goals": 91,
+   "closest_m": 0.67,
+   "end_m": 8.71,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 57 reported, 21 candidates from 313 frames -- chair x6, bed x5, dresser x4, armchair x3, desk x3, dining table x3, kitchen counter x3, kitchen island x3, bookcase x2, shoe bench x2, tv console x2, toilet x2, book, refrigerator, sideboard, bathtub, coffee table, desk chair, guitar, mug, pet bowl, shoes, slippers, sofa, tv remote, umbrella, water bottle, headphones, laptop bag, laundry basket, towel",
+    "mission ended (exhausted): no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "complex_house",
+   "target": "toy car",
+   "outcome": "exhausted",
+   "ticks": 312,
+   "capped": false,
+   "steps": 98,
+   "goals": 97,
+   "closest_m": 0.6,
+   "end_m": 12.35,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 57 reported, 25 candidates from 313 frames -- bed x6, armchair x5, chair x4, desk x3, dresser x3, kitchen island x2, toilet x2, bookcase x2, dining table x2, kitchen counter x2, sideboard x2, sofa x2, tv console x2, bathtub, laptop bag, shoes, trash can, umbrella, book, coffee table, toy car, desk chair, guitar, mug, pet bowl, tv remote, water bottle, headphones, laundry basket, red backpack, refrigerator, shoe bench, slippers",
+    "mission ended (exhausted): no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "complex_house",
+   "target": "water bottle",
+   "outcome": "exhausted",
+   "ticks": 334,
+   "capped": false,
+   "steps": 102,
+   "goals": 101,
+   "closest_m": 0.67,
+   "end_m": 6.96,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 59 reported, 15 candidates from 335 frames -- chair x6, bed x5, kitchen island x4, dining table x4, dresser x4, armchair x3, desk x3, bookcase x2, shoe bench x2, toilet x2, tv console x2, sofa x2, sideboard, water bottle, laptop bag, book, coffee table, desk chair, guitar, headphones, kitchen counter, mug, pet bowl, shoes, toy car, tv remote, umbrella, bathtub, red backpack, slippers, towel, trash can",
+    "mission ended (exhausted): no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "complex_house",
+   "target": "pet bowl",
+   "outcome": "exhausted",
+   "ticks": 313,
+   "capped": false,
+   "steps": 96,
+   "goals": 95,
+   "closest_m": 0.6,
+   "end_m": 5.16,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 56 reported, 23 candidates from 314 frames -- bed x5, armchair x5, chair x5, dresser x4, desk x3, sofa x3, sideboard x2, bookcase x2, kitchen island x2, toilet x2, tv console x2, book, kitchen counter, water bottle, coffee table, shoe bench, shoes, umbrella, bathtub, desk chair, dining table, guitar, laptop bag, pet bowl, toy car, trash can, keys, laundry basket, mug, red backpack, refrigerator, slippers",
+    "mission ended (exhausted): no reachable frontier left (5 on the map: 5 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "complex_house",
+   "target": "laptop bag",
+   "outcome": "exhausted",
+   "ticks": 319,
+   "capped": false,
+   "steps": 94,
+   "goals": 93,
+   "closest_m": 0.55,
+   "end_m": 4.7,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 54 reported, 23 candidates from 320 frames -- chair x6, bed x5, armchair x3, dresser x3, kitchen counter x3, kitchen island x3, desk x2, laptop bag x2, bookcase x2, shoe bench x2, tv console x2, dining table x2, toilet x2, sideboard, book, refrigerator, bathtub, coffee table, mug, pet bowl, shoes, sofa, tv remote, umbrella, water bottle, guitar, headphones, laundry basket, slippers, towel",
+    "mission ended (exhausted): no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "complex_house",
+   "target": "laundry basket",
+   "outcome": "exhausted",
+   "ticks": 313,
+   "capped": false,
+   "steps": 93,
+   "goals": 92,
+   "closest_m": 0.6,
+   "end_m": 8.08,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 56 reported, 22 candidates from 314 frames -- chair x6, bed x5, armchair x3, desk x3, dining table x3, dresser x3, kitchen counter x3, kitchen island x3, bookcase x2, shoe bench x2, tv console x2, toilet x2, book, refrigerator, sideboard, bathtub, coffee table, desk chair, guitar, mug, pet bowl, shoes, sofa, tv remote, umbrella, water bottle, headphones, laptop bag, laundry basket, slippers, towel",
+    "mission ended (exhausted): no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:0",
+   "target": "red backpack",
+   "outcome": "exhausted",
+   "ticks": 153,
+   "capped": false,
+   "steps": 48,
+   "goals": 47,
+   "closest_m": 0.55,
+   "end_m": 7.22,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 49 reported, 11 candidates from 154 frames -- dining table x8, bed x6, chair x5, garbage can x4, desk x3, tv stand x3, house plant x3, counter top x2, fridge x2, sofa x2, baseball bat x2, dresser x2, red backpack, shelving unit, sink, dog bed, toilet, box, safe",
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:0",
+   "target": "plunger",
+   "outcome": "exhausted",
+   "ticks": 135,
+   "capped": false,
+   "steps": 42,
+   "goals": 41,
+   "closest_m": 0.42,
+   "end_m": 2.47,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 40 reported, 20 candidates from 136 frames -- dining table x7, chair x4, bed x4, desk x3, counter top x3, dresser x3, tv stand x2, house plant x2, baseball bat x2, sofa x2, garbage can, safe, shelving unit, sink, box, dog bed, plunger, red backpack",
+    "mission ended (exhausted): no reachable frontier left (1 on the map: 1 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:0",
+   "target": "dog bed",
+   "outcome": "exhausted",
+   "ticks": 141,
+   "capped": false,
+   "steps": 43,
+   "goals": 42,
+   "closest_m": 0.6,
+   "end_m": 8.64,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 45 reported, 14 candidates from 142 frames -- dining table x6, garbage can x4, bed x4, chair x4, desk x3, counter top x3, house plant x3, tv stand x2, baseball bat x2, dresser x2, sink x2, dog bed, red backpack, sofa, safe, fridge, shelving unit, box, floor lamp, plunger, toilet",
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:0",
+   "target": "box",
+   "outcome": "exhausted",
+   "ticks": 148,
+   "capped": false,
+   "steps": 49,
+   "goals": 48,
+   "closest_m": 0.5,
+   "end_m": 8.78,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 42 reported, 11 candidates from 149 frames -- dining table x7, bed x4, chair x4, desk x3, counter top x3, garbage can x3, house plant x3, dresser x3, tv stand x2, sofa x2, box, sink, baseball bat, dog bed, safe, shelving unit, red backpack, toilet",
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:0",
+   "target": "house plant",
+   "outcome": "exhausted",
+   "ticks": 201,
+   "capped": false,
+   "steps": 50,
+   "goals": 49,
+   "closest_m": 0.6,
+   "end_m": 0.67,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 42 reported, 12 candidates from 202 frames -- dining table x6, chair x5, bed x4, desk x3, house plant x3, counter top x2, dresser x2, floor lamp x2, garbage can x2, sofa x2, sink x2, dog bed, fridge, red backpack, shelving unit, tv stand, baseball bat, box, safe, toilet",
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:0",
+   "target": "garbage can",
+   "outcome": "exhausted",
+   "ticks": 169,
+   "capped": false,
+   "steps": 50,
+   "goals": 49,
+   "closest_m": 0.51,
+   "end_m": 2.68,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 46 reported, 14 candidates from 170 frames -- dining table x8, chair x5, bed x5, garbage can x4, desk x3, counter top x2, safe x2, tv stand x2, house plant x2, baseball bat x2, dresser x2, red backpack, shelving unit, sofa, floor lamp, sink, box, dog bed, fridge, toilet",
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:0",
+   "target": "sofa",
+   "outcome": "exhausted",
+   "ticks": 147,
+   "capped": false,
+   "steps": 45,
+   "goals": 44,
+   "closest_m": 0.6,
+   "end_m": 8.08,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 41 reported, 17 candidates from 148 frames -- dining table x5, bed x4, desk x3, chair x3, sofa x3, garbage can x3, house plant x3, tv stand x3, counter top x2, dog bed x2, dresser x2, sink, shelving unit, baseball bat, box, red backpack, safe, floor lamp, fridge",
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:0",
+   "target": "chair",
+   "outcome": "exhausted",
+   "ticks": 176,
+   "capped": false,
+   "steps": 48,
+   "goals": 47,
+   "closest_m": 0.3,
+   "end_m": 5.58,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 48 reported, 10 candidates from 177 frames -- dining table x8, chair x5, counter top x5, bed x3, desk x3, garbage can x3, tv stand x3, dresser x3, baseball bat x2, sofa x2, house plant x2, fridge x2, dog bed, sink, red backpack, shelving unit, box, floor lamp, toilet",
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:2",
+   "target": "red backpack",
+   "outcome": "exhausted",
+   "ticks": 250,
+   "capped": false,
+   "steps": 76,
+   "goals": 75,
+   "closest_m": 0.42,
+   "end_m": 8.95,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 56 reported, 20 candidates from 251 frames -- dining table x11, chair x7, house plant x4, garbage can x4, sink x3, bed x3, sofa x3, toilet x3, dresser x3, tv stand x2, counter top x2, plunger x2, dog bed, fridge, red backpack, safe, side table, basketball, arm chair, laundry hamper, stool",
+    "mission ended (exhausted): no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:2",
+   "target": "basketball",
+   "outcome": "exhausted",
+   "ticks": 246,
+   "capped": false,
+   "steps": 77,
+   "goals": 76,
+   "closest_m": 0.5,
+   "end_m": 9.18,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 52 reported, 21 candidates from 247 frames -- dining table x9, chair x5, house plant x4, garbage can x4, bed x3, sink x3, sofa x3, toilet x3, dresser x3, tv stand x2, counter top x2, plunger x2, basketball, dog bed, fridge, safe, side table, arm chair, laundry hamper, red backpack, stool",
+    "mission ended (exhausted): no reachable frontier left (3 on the map: 3 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:2",
+   "target": "plunger",
+   "outcome": "exhausted",
+   "ticks": 261,
+   "capped": false,
+   "steps": 82,
+   "goals": 81,
+   "closest_m": 0.6,
+   "end_m": 5.1,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 58 reported, 14 candidates from 262 frames -- dining table x11, chair x5, sofa x5, garbage can x5, house plant x4, bed x3, plunger x3, sink x3, counter top x3, dresser x3, toilet x3, tv stand x2, dog bed, fridge, safe, side table, arm chair, basketball, red backpack, stool",
+    "mission ended (exhausted): no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:2",
+   "target": "laundry hamper",
+   "outcome": "exhausted",
+   "ticks": 247,
+   "capped": false,
+   "steps": 76,
+   "goals": 75,
+   "closest_m": 0.6,
+   "end_m": 5.73,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 59 reported, 11 candidates from 248 frames -- dining table x11, chair x5, sofa x5, bed x4, house plant x4, garbage can x4, counter top x3, dresser x3, plunger x3, sink x3, toilet x3, tv stand x2, arm chair x2, dog bed, fridge, laundry hamper, safe, basketball, side table, stool",
+    "mission ended (exhausted): no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:2",
+   "target": "dog bed",
+   "outcome": "exhausted",
+   "ticks": 247,
+   "capped": false,
+   "steps": 73,
+   "goals": 72,
+   "closest_m": 0.42,
+   "end_m": 6.74,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ],
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 55 reported, 16 candidates from 248 frames -- dining table x11, bed x5, chair x5, house plant x4, sofa x4, garbage can x3, sink x3, plunger x3, counter top x3, tv stand x2, dresser x2, toilet x2, dog bed, fridge, safe, basketball, stool, arm chair, red backpack, side table",
+    "mission ended (exhausted): no reachable frontier left (5 on the map: 5 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:2",
+   "target": "house plant",
+   "outcome": "exhausted",
+   "ticks": 236,
+   "capped": false,
+   "steps": 72,
+   "goals": 71,
+   "closest_m": 0.54,
+   "end_m": 3.42,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ],
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 53 reported, 22 candidates from 237 frames -- dining table x12, chair x5, house plant x4, garbage can x4, sofa x4, dresser x3, toilet x3, bed x3, counter top x3, sink x2, tv stand x2, arm chair, fridge, safe, dog bed, side table, plunger, basketball, laundry hamper",
+    "mission ended (exhausted): no reachable frontier left (3 on the map: 3 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:2",
+   "target": "garbage can",
+   "outcome": "exhausted",
+   "ticks": 267,
+   "capped": false,
+   "steps": 77,
+   "goals": 76,
+   "closest_m": 0.51,
+   "end_m": 1.24,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ],
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 55 reported, 20 candidates from 268 frames -- dining table x9, chair x6, sofa x5, garbage can x4, bed x4, house plant x4, toilet x3, plunger x3, sink x3, tv stand x2, counter top x2, dresser x2, red backpack, safe, basketball, fridge, dog bed, stool, arm chair, side table",
+    "mission ended (exhausted): no reachable frontier left (5 on the map: 5 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:2",
+   "target": "sofa",
+   "outcome": "exhausted",
+   "ticks": 283,
+   "capped": false,
+   "steps": 83,
+   "goals": 82,
+   "closest_m": 0.3,
+   "end_m": 9.9,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 55 reported, 13 candidates from 284 frames -- dining table x12, bed x5, chair x5, sofa x4, house plant x4, plunger x3, sink x3, toilet x3, dresser x2, tv stand x2, counter top x2, garbage can x2, dog bed, fridge, safe, basketball, stool, arm chair, red backpack, side table",
+    "mission ended (exhausted): no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:3",
+   "target": "red backpack",
+   "outcome": "exhausted",
+   "ticks": 184,
+   "capped": false,
+   "steps": 48,
+   "goals": 47,
+   "closest_m": 0.67,
+   "end_m": 9.74,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 27 reported, 12 candidates from 185 frames -- chair x6, bed x4, dining table x4, sofa x2, counter top x2, shelving unit, ottoman, sink, tv stand, dresser, garbage bag, garbage can, desk, toilet",
+    "mission ended (exhausted): no reachable frontier left (3 on the map: 1 reached twice, 2 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:3",
+   "target": "plunger",
+   "outcome": "exhausted",
+   "ticks": 136,
+   "capped": false,
+   "steps": 44,
+   "goals": 43,
+   "closest_m": 0.67,
+   "end_m": 8.76,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 27 reported, 13 candidates from 137 frames -- chair x7, dining table x4, bed x3, sofa x2, shelving unit, sink, tv stand, dresser, garbage bag, garbage can, counter top, desk, ottoman, plunger, toilet",
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:3",
+   "target": "garbage bag",
+   "outcome": "exhausted",
+   "ticks": 136,
+   "capped": false,
+   "steps": 43,
+   "goals": 42,
+   "closest_m": 0.5,
+   "end_m": 2.55,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 25 reported, 14 candidates from 137 frames -- chair x8, dining table x4, bed x3, counter top, garbage bag, sofa, tv stand, dresser, shelving unit, desk, garbage can, sink, toilet",
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:3",
+   "target": "box",
+   "outcome": "exhausted",
+   "ticks": 134,
+   "capped": false,
+   "steps": 44,
+   "goals": 43,
+   "closest_m": 1.34,
+   "end_m": 11.29,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 27 reported, 12 candidates from 135 frames -- chair x8, dining table x4, bed x3, counter top x2, shelving unit, sofa, sink, tv stand, dresser, garbage bag, garbage can, desk, ottoman, toilet",
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:3",
+   "target": "garbage can",
+   "outcome": "exhausted",
+   "ticks": 207,
+   "capped": false,
+   "steps": 51,
+   "goals": 50,
+   "closest_m": 0.54,
+   "end_m": 5.03,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 26 reported, 10 candidates from 208 frames -- chair x6, bed x3, dining table x3, sofa x2, counter top x2, garbage can, garbage bag, dresser, ottoman, desk, plunger, shelving unit, sink, toilet, tv stand",
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 0 reached twice, 2 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:3",
+   "target": "sofa",
+   "outcome": "exhausted",
+   "ticks": 167,
+   "capped": false,
+   "steps": 50,
+   "goals": 49,
+   "closest_m": 0.3,
+   "end_m": 4.3,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 28 reported, 11 candidates from 168 frames -- chair x8, dining table x4, bed x3, dresser x2, garbage can x2, ottoman, shelving unit, sofa, counter top, garbage bag, tv stand, desk, plunger, sink",
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:3",
+   "target": "chair",
+   "outcome": "exhausted",
+   "ticks": 209,
+   "capped": false,
+   "steps": 58,
+   "goals": 57,
+   "closest_m": 0.55,
+   "end_m": 1.9,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 35 reported, 5 candidates from 210 frames -- bed x6, chair x6, dining table x6, sofa x3, desk x2, dresser x2, garbage can x2, ottoman, tv stand, shelving unit, box, counter top, garbage bag, plunger, toilet",
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A3n",
+   "house": "procthor:val:3",
+   "target": "dining table",
+   "outcome": "exhausted",
+   "ticks": 187,
+   "capped": false,
+   "steps": 48,
+   "goals": 47,
+   "closest_m": 0.42,
+   "end_m": 2.1,
+   "arrivals": [
+    [
+     "local",
+     false,
+     0.0
+    ],
+    [
+     "local",
+     false,
+     0.0
+    ],
+    [
+     "local",
+     false,
+     0.0
+    ]
+   ],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 31 reported, 7 candidates from 188 frames -- chair x7, dining table x5, bed x4, sofa x3, desk x2, garbage bag, ottoman, shelving unit, tv stand, box, counter top, dresser, garbage can, plunger, toilet",
+    "mission ended (exhausted): no reachable frontier left (3 on the map: 2 reached twice, 1 set aside or dropped)"
+   ]
+  }
+ ]
+}

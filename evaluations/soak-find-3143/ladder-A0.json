@@ -1,0 +1,735 @@
+{
+ "arm": "A0",
+ "pairs": 40,
+ "found": 39,
+ "misses": [
+  [
+   "procthor:val:3",
+   "box",
+   "exhausted"
+  ]
+ ],
+ "wall_s": 64,
+ "rows": [
+  {
+   "arm": "A0",
+   "house": "home_first_floor",
+   "target": "red backpack",
+   "outcome": "found",
+   "ticks": 75,
+   "capped": false,
+   "steps": 19,
+   "goals": 19,
+   "closest_m": 0.67,
+   "end_m": 0.67,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 23 reported, 15 candidates from 76 frames -- chair x5, armchair x3, staircase x3, sofa x3, coffee table x2, dining table x2, red backpack, side table, dryer, kitchen counter, kitchen island",
+    "mission ended (found): Breakfast, dining room, family room, foyer, hall, kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "home_first_floor",
+   "target": "sofa",
+   "outcome": "found",
+   "ticks": 18,
+   "capped": false,
+   "steps": 5,
+   "goals": 5,
+   "closest_m": 0.6,
+   "end_m": 0.6,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 5 reported, 5 candidates from 19 frames -- armchair x2, side table, staircase, sofa",
+    "mission ended (found): Foyer, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "home_first_floor",
+   "target": "chair",
+   "outcome": "found",
+   "ticks": 11,
+   "capped": false,
+   "steps": 3,
+   "goals": 3,
+   "closest_m": 0.6,
+   "end_m": 0.6,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 3 reported, 2 candidates from 12 frames -- chair, armchair, staircase",
+    "mission ended (found): Dining room, foyer searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "home_first_floor",
+   "target": "dining table",
+   "outcome": "found",
+   "ticks": 51,
+   "capped": false,
+   "steps": 13,
+   "goals": 13,
+   "closest_m": 0.6,
+   "end_m": 0.6,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 13 reported, 13 candidates from 52 frames -- armchair x3, sofa x3, staircase x2, coffee table x2, dining table, side table, chair",
+    "mission ended (found): Dining room, family room, foyer, hall, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "home_first_floor",
+   "target": "toilet",
+   "outcome": "found",
+   "ticks": 144,
+   "capped": false,
+   "steps": 36,
+   "goals": 36,
+   "closest_m": 0.6,
+   "end_m": 0.6,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 36 reported, 26 candidates from 145 frames -- chair x6, coffee table x4, armchair x3, staircase x3, sofa x3, bookcase x2, sectional sofa x2, dining table x2, breakfast table x2, tv console x2, desk, desk chair, side table, toilet, vanity, kitchen counter, kitchen island",
+    "mission ended (found): Breakfast, den, dining room, family room, foyer, half bath, hall, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "home_first_floor",
+   "target": "desk",
+   "outcome": "found",
+   "ticks": 124,
+   "capped": false,
+   "steps": 30,
+   "goals": 30,
+   "closest_m": 0.67,
+   "end_m": 0.58,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 31 reported, 27 candidates from 125 frames -- chair x6, coffee table x4, armchair x3, staircase x3, sofa x3, sectional sofa x2, dining table x2, breakfast table x2, tv console x2, side table, desk, kitchen counter, kitchen island",
+    "mission ended (found): Breakfast, den, dining room, family room, foyer, hall, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "home_first_floor",
+   "target": "coffee table",
+   "outcome": "found",
+   "ticks": 14,
+   "capped": false,
+   "steps": 4,
+   "goals": 4,
+   "closest_m": 0.6,
+   "end_m": 0.6,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 3 reported, 6 candidates from 15 frames -- armchair, staircase, coffee table",
+    "mission ended (found): Foyer, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "home_first_floor",
+   "target": "armchair",
+   "outcome": "found",
+   "ticks": 4,
+   "capped": false,
+   "steps": 1,
+   "goals": 1,
+   "closest_m": 0.42,
+   "end_m": 0.42,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 1 reported, 1 candidates from 5 frames -- armchair",
+    "mission ended (found): Foyer, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "complex_house",
+   "target": "red backpack",
+   "outcome": "found",
+   "ticks": 158,
+   "capped": false,
+   "steps": 40,
+   "goals": 40,
+   "closest_m": 0.67,
+   "end_m": 0.67,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 28 reported, 29 candidates from 159 frames -- chair x6, sideboard x2, dresser x2, kitchen island x2, bookcase, laptop bag, desk, guitar, armchair, bed, umbrella, kitchen counter, laundry basket, mug, pet bowl, shoes, slippers, toilet, trash can, water bottle",
+    "mission ended (found): Bathroom, bedroom 1, bedroom 2, closet, dining room, entry, hall, kitchen, living room, study searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "complex_house",
+   "target": "shoes",
+   "outcome": "found",
+   "ticks": 2,
+   "capped": false,
+   "steps": 1,
+   "goals": 1,
+   "closest_m": 0.6,
+   "end_m": 0.6,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 1 reported, 2 candidates from 3 frames -- shoes",
+    "mission ended (found): Entry searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "complex_house",
+   "target": "slippers",
+   "outcome": "found",
+   "ticks": 118,
+   "capped": false,
+   "steps": 30,
+   "goals": 30,
+   "closest_m": 0.6,
+   "end_m": 0.6,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 23 reported, 23 candidates from 119 frames -- chair x6, sideboard x2, bookcase, laptop bag, desk, guitar, armchair, slippers, umbrella, dresser, kitchen counter, kitchen island, mug, shoes, toilet, trash can, water bottle",
+    "mission ended (found): Bathroom, bedroom 1, dining room, entry, hall, kitchen, living room, study searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "complex_house",
+   "target": "toy car",
+   "outcome": "found",
+   "ticks": 22,
+   "capped": false,
+   "steps": 6,
+   "goals": 6,
+   "closest_m": 0.67,
+   "end_m": 0.67,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 6 reported, 6 candidates from 23 frames -- umbrella, armchair, coffee table, mug, shoes, toy car",
+    "mission ended (found): Entry, hall, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "complex_house",
+   "target": "water bottle",
+   "outcome": "found",
+   "ticks": 30,
+   "capped": false,
+   "steps": 8,
+   "goals": 8,
+   "closest_m": 0.67,
+   "end_m": 0.67,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 6 reported, 10 candidates from 31 frames -- armchair, umbrella, kitchen island, mug, shoes, water bottle",
+    "mission ended (found): Entry, hall, kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "complex_house",
+   "target": "pet bowl",
+   "outcome": "found",
+   "ticks": 32,
+   "capped": false,
+   "steps": 8,
+   "goals": 8,
+   "closest_m": 0.6,
+   "end_m": 0.6,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 6 reported, 10 candidates from 33 frames -- armchair, pet bowl, umbrella, kitchen island, mug, shoes",
+    "mission ended (found): Entry, hall, kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "complex_house",
+   "target": "laptop bag",
+   "outcome": "found",
+   "ticks": 67,
+   "capped": false,
+   "steps": 17,
+   "goals": 17,
+   "closest_m": 0.67,
+   "end_m": 0.67,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 17 reported, 22 candidates from 68 frames -- chair x6, sideboard x2, armchair, laptop bag, umbrella, kitchen counter, kitchen island, mug, shoes, trash can, water bottle",
+    "mission ended (found): Dining room, entry, hall, kitchen, living room, study searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "complex_house",
+   "target": "laundry basket",
+   "outcome": "found",
+   "ticks": 127,
+   "capped": false,
+   "steps": 32,
+   "goals": 32,
+   "closest_m": 0.6,
+   "end_m": 0.6,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 23 reported, 26 candidates from 128 frames -- chair x6, sideboard x2, bookcase, laptop bag, desk, guitar, armchair, umbrella, dresser, kitchen counter, kitchen island, mug, shoes, slippers, toilet, trash can, water bottle",
+    "mission ended (found): Bathroom, bedroom 1, closet, dining room, entry, hall, kitchen, living room, study searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:0",
+   "target": "red backpack",
+   "outcome": "found",
+   "ticks": 23,
+   "capped": false,
+   "steps": 6,
+   "goals": 6,
+   "closest_m": 0.67,
+   "end_m": 0.67,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 11 reported, 12 candidates from 24 frames -- bed x2, chair x2, desk x2, garbage can, red backpack, baseball bat, box, fridge",
+    "mission ended (found): Bedroom, bedroom 2, kitchen searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:0",
+   "target": "plunger",
+   "outcome": "found",
+   "ticks": 67,
+   "capped": false,
+   "steps": 17,
+   "goals": 17,
+   "closest_m": 0.67,
+   "end_m": 0.67,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 25 reported, 23 candidates from 68 frames -- dining table x4, chair x2, fridge x2, bed x2, desk x2, dog bed, floor lamp, toilet, baseball bat, box, counter top, garbage can, house plant, plunger, red backpack, shelving unit, sink, sofa",
+    "mission ended (found): Bathroom, bedroom, bedroom 2, kitchen, living room, living room 2 searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:0",
+   "target": "dog bed",
+   "outcome": "found",
+   "ticks": 22,
+   "capped": false,
+   "steps": 6,
+   "goals": 6,
+   "closest_m": 0.6,
+   "end_m": 0.6,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 8 reported, 16 candidates from 23 frames -- bed x2, desk x2, baseball bat, box, chair, dog bed",
+    "mission ended (found): Bedroom, bedroom 2, kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:0",
+   "target": "box",
+   "outcome": "found",
+   "ticks": 6,
+   "capped": false,
+   "steps": 2,
+   "goals": 2,
+   "closest_m": 0.6,
+   "end_m": 0.6,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 4 reported, 4 candidates from 7 frames -- baseball bat, box, bed, dresser",
+    "mission ended (found): Bedroom, bedroom 2 searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:0",
+   "target": "house plant",
+   "outcome": "found",
+   "ticks": 19,
+   "capped": false,
+   "steps": 5,
+   "goals": 5,
+   "closest_m": 0.67,
+   "end_m": 0.67,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 8 reported, 5 candidates from 20 frames -- bed x2, desk x2, baseball bat, box, chair, house plant",
+    "mission ended (found): Bedroom, bedroom 2 searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:0",
+   "target": "garbage can",
+   "outcome": "found",
+   "ticks": 24,
+   "capped": false,
+   "steps": 6,
+   "goals": 6,
+   "closest_m": 0.67,
+   "end_m": 0.67,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 11 reported, 12 candidates from 25 frames -- bed x2, chair x2, desk x2, fridge, garbage can, baseball bat, box, red backpack",
+    "mission ended (found): Bedroom, bedroom 2, kitchen searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:0",
+   "target": "sofa",
+   "outcome": "found",
+   "ticks": 34,
+   "capped": false,
+   "steps": 9,
+   "goals": 9,
+   "closest_m": 0.67,
+   "end_m": 0.67,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 15 reported, 20 candidates from 35 frames -- bed x2, desk x2, dog bed, fridge, sofa, baseball bat, box, chair, counter top, dining table, garbage can, house plant, red backpack",
+    "mission ended (found): Bedroom, bedroom 2, kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:0",
+   "target": "chair",
+   "outcome": "found",
+   "ticks": 14,
+   "capped": false,
+   "steps": 3,
+   "goals": 3,
+   "closest_m": 0.6,
+   "end_m": 0.71,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 6 reported, 5 candidates from 15 frames -- desk x2, baseball bat, bed, box, chair",
+    "mission ended (found): Bedroom, bedroom 2 searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:2",
+   "target": "red backpack",
+   "outcome": "found",
+   "ticks": 79,
+   "capped": false,
+   "steps": 20,
+   "goals": 20,
+   "closest_m": 0.67,
+   "end_m": 0.67,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 16 reported, 28 candidates from 80 frames -- chair x2, garbage can x2, sink x2, dining table x2, tv stand, dog bed, basketball, bed, house plant, plunger, sofa, toilet",
+    "mission ended (found): Bathroom, bathroom 2, bathroom 3, bedroom, bedroom 2, bedroom 3, living room 2, living room 3 searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:2",
+   "target": "basketball",
+   "outcome": "found",
+   "ticks": 55,
+   "capped": false,
+   "steps": 14,
+   "goals": 14,
+   "closest_m": 0.6,
+   "end_m": 0.6,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 11 reported, 15 candidates from 56 frames -- garbage can x2, dining table x2, tv stand, dog bed, basketball, sink, plunger, sofa, toilet",
+    "mission ended (found): Bathroom 2, bedroom 2, bedroom 3, living room 2, living room 3 searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:2",
+   "target": "plunger",
+   "outcome": "found",
+   "ticks": 40,
+   "capped": false,
+   "steps": 10,
+   "goals": 10,
+   "closest_m": 0.67,
+   "end_m": 0.67,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 8 reported, 11 candidates from 41 frames -- garbage can x2, tv stand, dog bed, plunger, sink, dining table, sofa",
+    "mission ended (found): Bathroom 2, bedroom 2, living room 2, living room 3 searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:2",
+   "target": "laundry hamper",
+   "outcome": "found",
+   "ticks": 99,
+   "capped": false,
+   "steps": 25,
+   "goals": 25,
+   "closest_m": 0.6,
+   "end_m": 0.6,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 20 reported, 28 candidates from 100 frames -- dining table x4, sink x3, chair x2, garbage can x2, plunger x2, tv stand, dog bed, bed, basketball, house plant, sofa, toilet",
+    "mission ended (found): Bathroom, bathroom 2, bathroom 3, bedroom, bedroom 2, bedroom 3, living room 2, living room 3 searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:2",
+   "target": "dog bed",
+   "outcome": "found",
+   "ticks": 2,
+   "capped": false,
+   "steps": 1,
+   "goals": 1,
+   "closest_m": 0.67,
+   "end_m": 0.67,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 2 reported, 1 candidates from 3 frames -- dog bed, garbage can",
+    "mission ended (found): Living room 2 searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:2",
+   "target": "house plant",
+   "outcome": "found",
+   "ticks": 22,
+   "capped": false,
+   "steps": 6,
+   "goals": 6,
+   "closest_m": 0.6,
+   "end_m": 0.6,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 5 reported, 4 candidates from 23 frames -- tv stand, dog bed, garbage can, house plant, sofa",
+    "mission ended (found): Living room 2, living room 3 searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:2",
+   "target": "garbage can",
+   "outcome": "found",
+   "ticks": 2,
+   "capped": false,
+   "steps": 1,
+   "goals": 1,
+   "closest_m": 0.6,
+   "end_m": 0.6,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 1 reported, 2 candidates from 3 frames -- garbage can",
+    "mission ended (found): Living room 2 searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:2",
+   "target": "sofa",
+   "outcome": "found",
+   "ticks": 2,
+   "capped": false,
+   "steps": 1,
+   "goals": 1,
+   "closest_m": 0.3,
+   "end_m": 0.3,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 0 reported, 4 candidates from 3 frames",
+    "mission ended (found): Living room 2 searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:3",
+   "target": "red backpack",
+   "outcome": "found",
+   "ticks": 26,
+   "capped": false,
+   "steps": 5,
+   "goals": 5,
+   "closest_m": 0.67,
+   "end_m": 0.58,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 7 reported, 7 candidates from 27 frames -- bed x3, red backpack, chair, desk, dresser",
+    "mission ended (found): Bedroom, bedroom 2 searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:3",
+   "target": "plunger",
+   "outcome": "found",
+   "ticks": 87,
+   "capped": false,
+   "steps": 22,
+   "goals": 22,
+   "closest_m": 0.6,
+   "end_m": 0.6,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 20 reported, 19 candidates from 88 frames -- chair x6, dining table x2, sofa x2, bed x2, tv stand, shelving unit, garbage bag, ottoman, plunger, desk, dresser, red backpack",
+    "mission ended (found): Bathroom, bedroom, bedroom 2, kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:3",
+   "target": "garbage bag",
+   "outcome": "found",
+   "ticks": 54,
+   "capped": false,
+   "steps": 14,
+   "goals": 14,
+   "closest_m": 0.67,
+   "end_m": 0.67,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 13 reported, 14 candidates from 55 frames -- chair x4, bed x2, sofa, garbage bag, desk, dining table, dresser, ottoman, red backpack",
+    "mission ended (found): Bedroom, bedroom 2, kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:3",
+   "target": "box",
+   "outcome": "exhausted",
+   "ticks": 139,
+   "capped": false,
+   "steps": 44,
+   "goals": 43,
+   "closest_m": 0.85,
+   "end_m": 5.24,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 26 reported, 16 candidates from 140 frames -- chair x6, bed x3, dining table x2, sofa x2, dresser x2, garbage can x2, ottoman, shelving unit, tv stand, desk, garbage bag, red backpack, sink, counter top, toilet",
+    "mission ended (exhausted): no reachable frontier left (3 on the map: 3 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:3",
+   "target": "garbage can",
+   "outcome": "found",
+   "ticks": 51,
+   "capped": false,
+   "steps": 13,
+   "goals": 13,
+   "closest_m": 0.67,
+   "end_m": 0.67,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 14 reported, 12 candidates from 52 frames -- chair x4, bed x2, garbage can, counter top, desk, dining table, dresser, ottoman, red backpack, sofa",
+    "mission ended (found): Bedroom, bedroom 2, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:3",
+   "target": "sofa",
+   "outcome": "found",
+   "ticks": 45,
+   "capped": false,
+   "steps": 12,
+   "goals": 12,
+   "closest_m": 0.6,
+   "end_m": 0.6,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 10 reported, 12 candidates from 46 frames -- chair x4, bed x2, sofa, desk, dresser, red backpack",
+    "mission ended (found): Bedroom, bedroom 2, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:3",
+   "target": "chair",
+   "outcome": "found",
+   "ticks": 11,
+   "capped": false,
+   "steps": 3,
+   "goals": 3,
+   "closest_m": 0.67,
+   "end_m": 0.67,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 5 reported, 4 candidates from 12 frames -- bed x2, chair, desk, dresser",
+    "mission ended (found): Bedroom, bedroom 2 searched. Found."
+   ]
+  },
+  {
+   "arm": "A0",
+   "house": "procthor:val:3",
+   "target": "dining table",
+   "outcome": "found",
+   "ticks": 29,
+   "capped": false,
+   "steps": 8,
+   "goals": 8,
+   "closest_m": 0.42,
+   "end_m": 0.42,
+   "arrivals": [],
+   "cloud_calls": 0,
+   "tail": [
+    "inventory: 6 reported, 13 candidates from 30 frames -- chair x3, bed, desk, dresser",
+    "mission ended (found): Bedroom, bedroom 2 searched. Found."
+   ]
+  }
+ ]
+}
