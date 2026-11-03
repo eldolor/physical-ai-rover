@@ -467,7 +467,7 @@ class _PivotRows:
     than through numpy), so a turn blocked at the first returns costs what
     it did."""
 
-    _FIRST_CHUNK = 8
+    _FIRST_CHUNK = 2
 
     def __init__(self, scan: dict, missed: float):
         self.scan, self.missed = scan, missed
