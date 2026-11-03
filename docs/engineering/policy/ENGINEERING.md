@@ -122,6 +122,24 @@ landed first) and the agent's own path uses it the same way
 (`brain.agent._held_no_route`). A wrong held no never overrules the sim's
 ground truth at arrival; its steering mask still holds the robot off a
 target the cloud wrongly refused, as on the car.
+**3.143 (fix V, the user's option (a), 2026-11-03): a local no on a sim
+frame is the geometry's to judge too.** With `sim_identity_fn` set:
+`confirm_local()`'s no on a frame `geometry_identity` says has the target
+in front becomes `{"confirmed": true, "tier": "sim", "local_overruled":
+true}` (VE still asked, its `local_score` kept, `stats.local`
+`no_overruled_sim` counted); a no the geometry agrees with, or cannot
+judge, stays VE's own (`tier: local`). On a frame's question
+(`_Question.sim`, `brain/arrival.py` `is_sim_frame()`), a local no about
+perception's candidate does nothing of 3.91.C's (no memory, no re-hold of a
+cloud no on its probation, no far-no end of probation, no escalation, no
+`cannot_tell`) and does not reject a band crop (3.80.F): the simulator's
+perception is its ground truth. `stats.local` `no` still counts VE's nos;
+subtract `no_overruled_sim` for the ones that decided nothing. A local yes is
+unchanged. Real frames, and `sim_arrival_confirm: cloud`, are untouched.
+Why: VE judging the raycaster's render refused the true target in 5 of the
+3.135 soak's 9 misses (`docs/plans/ros-alignment/3.143-soak-find-rate.md`).
+Frames need their provenance: an unrendered `MockRobot` frame carries no
+`metadata.source`, so a harness that wants either rule stamps it.
 
 `TieredVision.confirm_arrival(frame)` makes one synchronous call to the
 cloud (even under `async_cloud`) -- through `confirm_vision_fn` when one was
@@ -908,6 +926,7 @@ alert colour.
 | `tests/test_arrival.py` (14) | Uses `tests/test_bearing_turns.py`'s `_build()`, so the scaled house. **Recorded 2026-10-01 (PLAN 3.32, guarded verbs):** of missions that arrived, 69/69 (perfect detection), 689/689 (90%) and 677/689 = 98.3% (80%) end `found` (bar 95%); 0 false arrivals in 69 / 690 / 690; farthest `found` 0.51-0.52 m from the target's centre (bar 0.60 m, so 0.08 m of margin). **Re-measured 2026-10-02 with the arrival confirmation (handoff 1a) and a cloud that reports `target_visible`:** identical -- 69/69, 689/689, 677/689, 0 false, farthest 0.507/0.515/0.515 m. Also: not judged without scan, with a panned camera, or without local perception; two frames needed; range read at the bearing; edges refused |
 | `tests/test_arrival_confirmation.py` (9) | Handoff 2026-10-02 1a, scaled house, cloud faked: the right object ends `found` after one `arrival_confirmation` call; a cloud that disagrees refuses the arrival (ends `blocked`, at most 2 confirmation calls); a false-positive run (absent, absent, detected...) cannot end `found` and the same run with an agreeing cloud does; the call is counted; at the call cap it refuses without calling. Spec review 3: under `async_cloud` the confirmation never overlaps a trigger call (peak concurrency 1 with a 0.2 s cloud); a `found` mission's `status.tier.stats` counts it; the paid step is logged `[cloud: arrival_confirmation]`; a refused mission's final `status.arrival` keeps `identity` and its end line does not say "obstructed" |
 | `tests/test_sim_geometry_first.py` (8) | 3.91.D2, a started mission's `_guarded_confirm`: under a held cloud no the sim's geometry confirms the target and refuses another object, a spent cap's wait neither holds, pays nor starts its clock, a real frame keeps the free refusal, a Stop first leaves it undecided; the agent's own path routes the same way, a confirmer without `local_ok` included |
+| `tests/test_sim_local_no.py` (9) | 3.143 fix V: a local no at a sim arrival on the target is the geometry's yes (VE asked, score kept, counted), on another object it stays VE's; a real frame's no is the local tier's; a local yes and an unable answer unchanged; an always-no local tier finds `home_first_floor`'s backpack in process; a frame no (3.91.C) and a band no (3.80.F) on a sim frame are not remembered, on a real frame they are |
 | `tests/test_refused_turn_loop.py` (3) | Handoff 5a, starter house: a refused turn is never chosen again from the same spot (was 130 times); with the world the active-search demo finds the backpack in 61 steps (the reference trace); with no world the boxed-in fallback runs instead of a refused LEFT alternating with STOP |
 | `tests/test_tier_tree.py` | 3.94: the tree module's statuses; on 10,000 seeded random states the tree's "what to do this frame" gives exactly the frozen code's scene and state (`tests/tiered_reference.py`), every rung exercised; "when to ask" (3.94.B) the same trigger and state on 10,000 random frame sequences, every trigger fired; "who to ask" (3.94.C) the same scene, state, stats and model calls through the whole `__call__` on 2,500 random runs of 1-10 frames (sync and async, local failures, cloud failures, the cap, calls in flight, a Stop mid-frame); `tier_tree` (3.94.D): the shipped yaml is today's values, sixteen bad trees refused at load (the arrival's band, the scan outside the bounds, a fractional turn, a required rung left out among them), explore's band and bounds kept, the band cap pinned to the arrival's, and order, numbers and `local_yes_at` each take effect; p90 under 1 ms a frame; `describe()` reads settings live; a ladder that chooses nothing raises |
 | `tests/test_tier_remember_no.py` (86) | 3.91.C: a local no stops the steer and the questions about the candidate (off: 9 FORWARDs, staleness re-asks); released on a phone by 3 lost frames (not 2) or 20 s, with odometry by 0.5 m or 30 deg (not by time or loss), and by a yes; probation after a loss or time release until a yes, none after a move, ended by a spent cap; the box range (inclusive, unknown counts); the disagreement question once per candidate, the cloud's answer remembered, off without a local tier or with the bar off; a cloud no remembered sync and async; the taupe loop's shape (<= 1 reversal, <= 4 calls; off >= 5); the settings passed by the brain and bad ones refused; the review's fixes

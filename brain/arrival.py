@@ -314,6 +314,11 @@ class ArrivalCheck:
 SIM_CONFIRM_CENTRE_DEG = 10.0
 
 
+def is_sim_frame(frame: dict) -> bool:
+    """The frame's provenance (`metadata.source`) says the simulator drew it."""
+    return (frame.get("metadata") or {}).get("source") == "sim"
+
+
 def geometry_identity(frame: dict, target: str) -> Optional[bool]:
     """3.98: the simulator's answer to the arrival's identity question, from
     its own ground truth (`detections`, 1.12) -- True when the NEAREST object
@@ -321,7 +326,7 @@ def geometry_identity(frame: dict, target: str) -> Optional[bool]:
     frame that is not the simulator's (`metadata.source`), so a real camera's
     arrival is always put to the tiers; False for a sim frame with no
     detections (never a confirmation it cannot back)."""
-    if (frame.get("metadata") or {}).get("source") != "sim":
+    if not is_sim_frame(frame):
         return None
     detections = frame.get("detections")
     if not isinstance(detections, list):

@@ -183,6 +183,9 @@ def run(arm, house, target):
                    arrivals=[(v.get("tier"), v.get("confirmed"), v.get("local_score"))
                              for v in s.get("arrival_verdicts") or []],
                    cloud_calls=(cloud.calls + confirm.calls) if cloud else 0,
+                   # fix V's overrules: 0 on an always-no arm means unstamped frames
+                   no_overruled_sim=((s.get("tier") or {}).get("stats") or {}).get(
+                       "local", {}).get("no_overruled_sim", 0),
                    tail=s["log_tail"][-2:])
     except Exception as e:  # noqa: BLE001 -- counted, as procthor_sweep counts them
         row.update(outcome="exception", error=f"{type(e).__name__}: {e}")

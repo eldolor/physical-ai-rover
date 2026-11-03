@@ -86,7 +86,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from dataclasses import dataclass, field
 from typing import Callable, Optional
 
-from brain.arrival import run_spans
+from brain.arrival import is_sim_frame, run_spans
 from brain.goal_pose import GoalPose, OdomTracker, Pose, _wrap
 from brain.tree import SUCCESS, Action, Condition, Decorator, Fallback, Node, Sequence
 from brain.perceive import (ABSENT, DEFAULT_MATCH_PROBABILITY, DETECTED, UNAVAILABLE,
@@ -773,6 +773,9 @@ class _Question:
     # of the frame (None: unknown, so a no about it counts).
     episode: int = 0
     box_share: Optional[float] = None
+    # 3.143: the asked frame is the simulator's, judged by its geometry
+    # (`sim_identity_fn`); a local no about its candidate is not remembered.
+    sim: bool = False
     # Set when the local tier has answered (or failed): the arrival's own
     # local check waits for this, not for the whole question.
     local_done: threading.Event = field(default_factory=threading.Event)
@@ -1827,6 +1830,7 @@ class TieredVision:
             band=self._band_run > 0,
             episode=self._episode,
             box_share=perception.box_share if perception.status == DETECTED else None,
+            sim=self.sim_identity_fn is not None and is_sim_frame(frame),
             # An absent local tier hands this to the cloud, which an
             # out-of-vocabulary question earns only at cold_search's bar.
             # 3.80.P: a cold search asked at the local pace reaches the
@@ -2039,11 +2043,17 @@ class TieredVision:
                     # (3.80.F) is about where to look, and a no does not
                     # answer that.
                     self._local_held = self._local_held_why = None
-                if ans.q.detected and self.remember_no:
+                if ans.q.detected and self.remember_no and not ans.q.sim:
                     # 3.91.C: about the candidate perception called the
                     # target -- remembered where Qwen can tell, else a
                     # disagreement the cloud may settle. Off, none of it
                     # (review: off is dev's behaviour, its stats too).
+                    # 3.143 (fix V, the user's option (a)): none of this on
+                    # a sim frame -- no memory, no re-hold of a cloud no, no
+                    # probation ended, no escalation, no `cannot_tell` --
+                    # since its perception is the simulator's ground truth:
+                    # VE judging a raycaster's render refused the true target
+                    # in 5 of the 3.135 soak's 9 misses.
                     lo, hi = self.no_box_range
                     share = ans.q.box_share
                     if share is None or lo <= share <= hi:
@@ -2077,11 +2087,12 @@ class TieredVision:
                             self._reject("local", ans.q.pose, ans.q.episode)
                         with self._stats_lock:
                             self.stats.cannot_tell += 1
-                if ans.q.band:
+                if ans.q.band and not ans.q.sim:
                     # 3.80.F: the crop in view when it was asked is not the
                     # target. Rejected until the band run breaks (the crop
                     # leaves view or crosses the gate): the band question is
-                    # not asked again in that run either.
+                    # not asked again in that run either. 3.143: not on a sim
+                    # frame, as above (review).
                     self._candidate_rejected = True
         else:
             self._frame_unable += 1
@@ -2254,9 +2265,28 @@ class TieredVision:
                 self._local_abandoned.discard(call_id)
                 return None
             s.record("local_ms", (time.perf_counter() - started) * 1000)
-            verdict = self._local_verdict(got, error)
+            verdict = self._sim_over_local_no(frame, self._local_verdict(got, error))
             self._local_done = (call_id, verdict)
             return verdict
+
+    def _sim_over_local_no(self, frame: dict, verdict: Optional[dict]) -> Optional[dict]:
+        """3.143 (fix V, the user's option (a), 2026-11-03): in the simulator
+        a local no at arrival is the geometry's to judge, as a held cloud no
+        is (3.91.D) -- VE judging a raycaster's render refused the true target
+        in 5 of the 3.135 soak's 9 misses. VE is still asked and its score
+        kept, and the overrule counted (`local["no_overruled_sim"]`). Any other
+        verdict, a no the geometry agrees with, or a frame that is not the
+        sim's, as it was. Takes no lock: called under `_local_lock`."""
+        if (verdict is None or verdict.get("confirmed") or verdict.get("undecided")
+                or self.sim_identity_fn is None or not self.sim_identity_fn(frame)):
+            # A no the geometry agrees with (or cannot judge) stays VE's own.
+            return verdict
+        s = self.stats
+        s.local["no_overruled_sim"] = s.local.get("no_overruled_sim", 0) + 1
+        return {**verdict, "confirmed": True, "tier": "sim", "local_overruled": True,
+                "stats": s.as_dict(),
+                "reason": f"{verdict['reason']}; the simulator's geometry puts the target "
+                          "in front"}
 
     def _local_verdict(self, got: Optional[dict], error: Optional[BaseException]):
         s = self.stats
