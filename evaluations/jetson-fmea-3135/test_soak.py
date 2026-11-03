@@ -81,16 +81,33 @@ def test_every_mission_encodes_its_target_in_the_soaks_own_cache(tmp_path, monke
     s.next_target("plunger")
     assert list(cache.iterdir()) == []
     assert s.switch_file.read_text() == "plunger\n"
-    # What the mission's children wrote is its record.
+    # What the mission's children wrote of its own target is its record, in
+    # the ids the board writes (yoloe_features: model, file name, size).
+    yoloe = f"{ss.YOLOE_TEXT_MODEL}:mobileclip_blt.ts:599048191"
     (cache / "a.json").write_text(json.dumps({"model": "open_clip:RN50:openai",
-                                              "texts": ["plunger", "a wall"]}))
-    (cache / "b.json").write_text(json.dumps({"model": "mobileclip:blt", "texts": ["plunger"]}))
+                                              "texts": ["plunger", "a wall", "a floor"]}))
+    (cache / "b.json").write_text(json.dumps({"model": yoloe, "texts": ["plunger"]}))
+    (cache / "e.json").write_text(json.dumps({"model": "open_clip:RN100:x",   # an anchor only
+                                              "texts": ["sofa"]}))
     (cache / "c.tmp").write_text("{")                    # a write cut short is not one
     (cache / "d.json").write_text("not json")
-    assert s.encoded() == ["mobileclip:blt", "open_clip:RN50:openai"]
+    assert s.encoded("plunger") == sorted([yoloe, "open_clip:RN50:openai"])
     s.next_target("box")
-    assert s.encoded() == []
+    assert s.encoded("box") == []
     assert s.switch_file.read_text() == "plunger\nbox\n"
+
+
+def test_the_workload_check_names_a_mission_that_encoded_nothing():
+    from brain.text_encoder import YOLOE_TEXT_MODEL
+    assert ss.YOLOE_TEXT_MODEL == YOLOE_TEXT_MODEL      # one id on both sides
+    yo = f"{YOLOE_TEXT_MODEL}:mobileclip_blt.ts:1"
+    rows = [{"k": 0, "t0": 1.0, "encoded": [yo, "open_clip:RN50:openai"]},
+            {"k": 1, "t0": 2.0, "encoded": []},
+            {"k": 2, "setup_t": 3.0, "error": "stack"}]       # never came up: not judged
+    w = ss.workload(rows)
+    assert w["missing"] == [1] and w["clip_encoded"] == 1 and w["met"] is False
+    assert ss.workload(rows[:1])["met"] is True
+    assert ss.workload([{"k": 0, "t0": 1.0}])["met"] is None   # run 1: nothing recorded
 
 
 def test_the_soak_holds_the_board_past_four_hours_on_a_shared_desktop_lock():
@@ -309,6 +326,7 @@ def test_run1_on_the_board_scores_as_recorded(tmp_path):
     assert s["c"]["moving_ticks"] == 201841
     assert not s["d"]["met"] and (s["d"]["found"], s["d"]["missions"]) == (10, 19)
     assert s["d"]["contacts"] == 0 and s["d"]["truth_unjudged_missions"] == []
+    assert s["workload"]["met"] is None and s["workload"]["recorded"] == 0
     assert s["d"]["outcomes"] == {"found": 10, "out_of_budget": 8, "exhausted": 1}
     assert s["d"]["by_house"] == {"home_first_floor": "4/4", "complex_house": "1/4",
                                   "procthor:val:0": "3/4", "procthor:val:2": "0/4",

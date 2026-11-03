@@ -233,18 +233,25 @@ class Soak:
     def next_target(self, target: str) -> None:
         """Switch the perception loop to `target` with nothing cached, so its
         first predict encodes the text in `brain.text_encoder`'s children."""
-        shutil.rmtree(self.text_cache, ignore_errors=True)
-        self.text_cache.mkdir(parents=True, exist_ok=True)
+        try:              # a purge that fails must fail the mission, not credit
+            shutil.rmtree(self.text_cache)   # an old file as this mission's encode
+        except FileNotFoundError:
+            pass
+        self.text_cache.mkdir(parents=True)
         with open(self.switch_file, "a") as f:
             f.write(target + "\n")
 
-    def encoded(self) -> list:
-        """The models whose text features were written since the last switch."""
+    def encoded(self, target: str) -> list:
+        """The models that encoded `target`'s own text since the last switch
+        (YOLOE's prompt is `[target]`, CLIP's list starts with it; CLIP's
+        anchor-only lookups are not the target's)."""
         models = set()
         for f in sorted(self.text_cache.glob("*.json")):
             try:
-                models.add(json.loads(f.read_text())["model"])
-            except (OSError, ValueError, KeyError, TypeError):
+                rec = json.loads(f.read_text())
+                if rec["texts"][0] == target:
+                    models.add(rec["model"])
+            except (OSError, ValueError, KeyError, TypeError, IndexError):
                 continue
         return sorted(models)
 
@@ -336,8 +343,9 @@ class Soak:
                 except OSError:
                     pass
         finally:
-            if self.perception and self.switch_file.exists() and "ready_t" in rec:
-                rec["encoded"] = self.encoded()
+            # Read at the end: the encode lands ~7-42 s into a mission (3.142).
+            if self.perception and "t0" in rec:
+                rec["encoded"] = self.encoded(target)
             self.phase("between")
             self.teardown_mission(mdir, st)
             self.stack = None

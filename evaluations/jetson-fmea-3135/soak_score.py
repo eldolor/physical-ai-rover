@@ -44,6 +44,8 @@ sys.path.insert(0, str(ROOT / "evaluations" / "jetson-perf-3136"))
 
 from tools.jetson.memory_account import component  # noqa: E402
 
+# brain.text_encoder's model id for YOLOE's prompt, without importing torch's side.
+YOLOE_TEXT_MODEL = "mobileclip:blt"
 FLOOR_MB = 500.0
 SLOPE_MB_H = -10.0
 GROWTH_MB = 50.0
@@ -204,6 +206,22 @@ def bar_b(mins: list, run_start: float, hour_s: float = HOUR_S) -> dict:
             "met": not reasons, "reasons": reasons}
 
 
+def workload(missions: list) -> dict:
+    """3.142 criterion 3, beside (b): every mission that came up encoded its
+    target's YOLOE prompt in the soak's own text cache (`soak.encoded`).
+    Not part of `met`; None for a run from before 3.142, which records nothing."""
+    came_up = [x for x in missions if x.get("t0") is not None]
+    rec = [x for x in came_up if isinstance(x.get("encoded"), list)]
+    yoloe = [x.get("k") for x in rec
+             if any(m == YOLOE_TEXT_MODEL or m.startswith(YOLOE_TEXT_MODEL + ":")
+                    for m in x["encoded"])]
+    w = {"missions": len(came_up), "recorded": len(rec), "yoloe_encoded": len(yoloe),
+         "clip_encoded": sum(any(m.startswith("open_clip:") for m in x["encoded"]) for x in rec),
+         "missing": [x.get("k") for x in came_up if x.get("k") not in yoloe]}
+    w["met"] = (len(rec) == len(came_up) and not w["missing"]) if rec else None
+    return w
+
+
 def score(board: Path, *, hour_s: float = HOUR_S, sysfs: Optional[list] = None,
           desktop_load: Optional[list] = None) -> dict:
     board = Path(board)
@@ -276,13 +294,14 @@ def score(board: Path, *, hour_s: float = HOUR_S, sysfs: Optional[list] = None,
          "errors": {x.get("k"): x["error"] for x in missions if x.get("error")},
          "sweep": SWEEP}
     d["met"] = bool(n) and found / n >= FOUND_SHARE and contacts == 0 and not unjudged
+    w = workload(missions)
     span = (re_ - rs) if have else None
     # The loop wrote run_end, so it started missions for the whole 4 h.
     complete = ended is not None and span is not None and span >= 4 * hour_s
     return {"run_s": None if span is None else round(span, 1), "complete": complete,
             "missions_started_within_s": round(max((x["setup_t"] for x in missions), default=rs)
                                                - rs, 1) if rs is not None and missions else None,
-            "a": a, "b": b, "c": c, "d": d,
+            "a": a, "b": b, "c": c, "d": d, "workload": w,
             "met": complete and all(x["met"] for x in (a, b, c, d)),
             "durations_s": [round(x["t1"] - x["t0"], 1) for x in missions
                             if x.get("t0") and x.get("t1")],
