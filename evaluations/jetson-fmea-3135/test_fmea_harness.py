@@ -215,3 +215,39 @@ def test_push_checkout_refuses_a_bench_dir_that_is_not_a_plain_name():
     for bad in ("../x", "a b", "x;rm", "", "-x", "vision-picar-service", "vision-picar", "bench-a/b", "bench-378", "bench-3135x"):
         with pytest.raises(br.BoardError):
             br.push_checkout("HEAD", run=lambda *a, **k: "", bench_dir=bad)
+
+
+# ------------------------------------------------- 3.135.B: rows.py, amendment 4
+
+import rows  # noqa: E402
+
+
+def _run(i, ok, valid=True, error=None, why=()):
+    return {"i": i, "error": error, "verdict": {"pass": ok, "valid": valid, "reasons": list(why)}}
+
+
+def test_a_row_is_met_only_with_every_scored_run_passing():
+    assert rows.verdict([_run(i, True) for i in range(1, 6)], 5)["state"] == "met"
+    v = rows.verdict([_run(1, True), _run(2, False, why=["moved 3 cm"]), *[_run(i, True) for i in (3, 4, 5)]], 5)
+    assert v["state"] == "FAILED" and v["runs_failed"] == 1 and v["reasons"] == ["moved 3 cm"]
+
+
+def test_errored_and_invalid_runs_are_replaced_not_scored():
+    recs = [_run(1, False, valid=False), _run(2, True, error="StackError: x"),
+            *[_run(i, True) for i in range(3, 8)]]
+    v = rows.verdict(recs, 5)
+    assert v["state"] == "met" and v["runs_scored"] == 5 and v["runs_total"] == 7
+    assert [n["i"] for n in v["not_scored"]] == [1, 2]
+    # an errored run's verdict says fail, but it is not a guard's failure
+    assert rows.verdict([_run(1, False, error="boom")] + [_run(i, True) for i in range(2, 4)], 5)["state"] == "incomplete"
+
+
+def test_runs_past_the_wanted_count_are_not_scored():
+    recs = [_run(i, True) for i in range(1, 6)] + [_run(6, False)]
+    assert rows.verdict(recs, 5)["state"] == "met"
+
+
+def test_the_row_command_runs_rows_py_with_its_plant():
+    c = fmea_run.row_cmd("F9", 5, "lidar_fresh")
+    assert "rows.py F9 --out $OUT/rows --runs 5 --plant lidar_fresh" in c
+    assert "--house" not in c and "--plant" not in fmea_run.row_cmd("F8", 5)

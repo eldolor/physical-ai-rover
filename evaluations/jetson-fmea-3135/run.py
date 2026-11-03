@@ -10,6 +10,7 @@ evaluations/jetson-fmea-3135/run.py
     python evaluations/jetson-fmea-3135/run.py found                   # the board's as-found state, read only
     python evaluations/jetson-fmea-3135/run.py soak [--seconds 14400] [--label soak] [--wait]  # 3.135.C (sudo)
     python evaluations/jetson-fmea-3135/run.py soak-score OUT          # re-score a fetched soak
+    python evaluations/jetson-fmea-3135/run.py row F9 [--runs 5] [--plant P] [--wait]  # 3.135.B (sudo)
 
 Board runs reuse 3.136.A's runner, not a copy (`evaluations/jetson-perf-3136/`):
 `boardrun.locked()` (the desktop lock, then `board_lock.py run --why`),
@@ -111,6 +112,57 @@ def soak_inner(a) -> int:
     return 0 if rec.get("cmd_exit") == 0 and rec.get("left_as_found") else 1
 
 
+# ------------------------------------------- 3.135.B: one fault row (criterion 3)
+
+def row_cmd(row: str, runs: int, plant: str = "", house: str = "scaled_house") -> str:
+    """The board side of one row: `rows.py` (N scored runs, amendment 4),
+    with the power mode and the run's stamps beside it."""
+    extra = (f" --plant {plant}" if plant else "") + (f" --house {house}" if house != "scaled_house" else "")
+    return (f"nvpmodel -q 2>&1 | grep -m1 'NV Power Mode' > $OUT/nvpmodel.txt; "
+            f"date +%s.%N > $OUT/run_start; "
+            f".venv/bin/python evaluations/jetson-fmea-3135/rows.py {row} --out $OUT/rows "
+            f"--runs {int(runs)}{extra} > $OUT/rows.log 2>&1; echo $? > $OUT/rows_exit; "
+            f"date +%s.%N > $OUT/run_end")
+
+
+def row_summary(rec: dict, out: Path) -> dict:
+    b = out / "board"
+    tele = br.read_sysfs(b / "telemetry/sysfs.jsonl") if (b / "telemetry/sysfs.jsonl").exists() else []
+
+    def num(name):
+        p = b / name
+        return float(p.read_text()) if p.exists() and p.read_text().strip() else None
+
+    v = json.loads((b / "rows/row.json").read_text()) if (b / "rows/row.json").exists() else {}
+    runs = []
+    for res in sorted((b / "rows").glob("*/result.json"), key=lambda p: int(p.parent.name.split("-")[-1])):
+        r = json.loads(res.read_text())
+        runs.append({"i": int(res.parent.name.split("-")[-1]), "pass": r["verdict"]["pass"],
+                     "valid": r["verdict"].get("valid"), "reasons": r["verdict"]["reasons"],
+                     "error": r.get("error"), "recovery_s": r.get("recovery_s"),
+                     "recovery_error": r.get("recovery_error"), "host": r.get("host"),
+                     "measures": {k: x for k, x in (r.get("measures") or {}).items() if k != "status"},
+                     "status": (r.get("measures") or {}).get("status")})
+    return {"sha": rec.get("sha"), "cmd_exit": rec.get("cmd_exit"), "cmd_s": rec.get("cmd_s"),
+            "verdict": v, "runs": runs,
+            "power_mode": (b / "nvpmodel.txt").read_text().strip() if (b / "nvpmodel.txt").exists() else None,
+            "telemetry": validity.telemetry_counts(tele, num("run_start"), num("run_end")),
+            "restore_actions": rec.get("restore_actions"), "restore_error": rec.get("restore_error"),
+            "as_found_differences": rec.get("as_found_differences"),
+            "left_as_found": rec.get("left_as_found")}
+
+
+def row_inner(a) -> int:
+    out = Path(a.out)
+    rec = perf_run.board_run(f"fmea-{a.row}", row_cmd(a.row, a.runs, a.plant, a.house), out,
+                             sha=a.sha, allow_sudo=True, stop_twin=True, bench_dir=BENCH_DIR)
+    s = row_summary(rec, out)
+    (out / "summary.json").write_text(json.dumps(s, indent=1, default=str))
+    print(json.dumps({k: s[k] for k in ("sha", "cmd_exit", "verdict", "left_as_found",
+                                        "as_found_differences")}, indent=1, default=str))
+    return 0 if rec.get("cmd_exit") == 0 and s["left_as_found"] and s["verdict"] else 1
+
+
 # board_run's ssh ends at 6 h: the loop, the setup (perception <= 10 min)
 # and the last mission at its worst (stack and ROS waits ~25 min, the cap
 # 32 min, teardown ~5 min: ~70 min) must fit inside it.
@@ -138,6 +190,16 @@ def main(argv=None) -> int:
         t.add_argument("--label", default="soak")
         t.add_argument("--out", default=None)
         t.add_argument("--wait", action="store_true", help="wait for the desktop lock")
+    for name in ("row", "_row"):
+        r = sub.add_parser(name)
+        r.add_argument("row")
+        r.add_argument("--sha", default="HEAD")
+        r.add_argument("--runs", type=int, default=5)
+        r.add_argument("--plant", default="")
+        r.add_argument("--house", default="scaled_house")
+        r.add_argument("--label", default="")
+        r.add_argument("--out", default=None)
+        r.add_argument("--wait", action="store_true", help="wait for the desktop lock")
     sc = sub.add_parser("soak-score")
     sc.add_argument("out")
     a = ap.parse_args(argv)
@@ -169,6 +231,18 @@ def main(argv=None) -> int:
         if not a.out:
             raise SystemExit("_soak needs --out")
         return soak_inner(a)
+    if a.cmd == "row":
+        sha = subprocess.run(["git", "rev-parse", a.sha], cwd=ROOT, capture_output=True, text=True,
+                             check=True).stdout.strip()
+        name = a.label or (f"{a.row}-planted-{a.plant}" if a.plant else a.row)
+        out = a.out or str(HERE / "board" / "rows" / f"{name}-{time.strftime('%Y%m%d-%H%M')}")
+        argv_ = [PY, str(Path(__file__).resolve()), "_row", a.row, "--sha", sha, "--runs",
+                 str(a.runs), "--plant", a.plant, "--house", a.house, "--out", out]
+        # Every number is the board's: the shared desktop lock (3.128), the board lock
+        # for this row only, released after it (3.141-3.143 share the board).
+        return br.locked(argv_, f"3.135.B {name}", desktop_mode="shared", desktop_wait=a.wait)
+    if a.cmd == "_row":
+        return row_inner(a)
     if a.cmd == "soak-score":
         import soak_score
         return soak_score.main([a.out])
