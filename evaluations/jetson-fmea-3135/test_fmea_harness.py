@@ -154,7 +154,22 @@ class FakeBoard:
         self.cmds.append(cmd)
         if "systemctl is-active" in cmd and "units=" in cmd:
             return json.dumps(self.state)
-        return "0\n" if "echo $?" in cmd else ""
+        if "echo $?" in cmd:
+            return "0\n"
+        if "lease_boardrun.py lease" in cmd:          # 3.136.F's lease: its pid, alive
+            return "4242\nalive\n"
+        return "watching\n" if "lease.stop" in cmd else ""
+
+
+class FakeHeartbeat:
+    def __init__(self, path):
+        pass
+
+    def start(self):
+        pass
+
+    def stop(self):
+        pass
 
 
 class FakeSampler:
@@ -177,7 +192,8 @@ def test_board_run_uses_this_sections_checkout_and_leaves_the_board_as_found(mon
         return "f" * 40
 
     rec = perf_run.board_run("fmea-smoke", fmea_run.SMOKE_CMD, tmp_path, run=b, push=push,
-                             fetch=lambda *a: None, sampler_cls=FakeSampler, bench_dir="bench-3135")
+                             fetch=lambda *a: None, sampler_cls=FakeSampler, bench_dir="bench-3135",
+                             heartbeat_cls=FakeHeartbeat)
     assert pushed == ["bench-3135"] and rec["board_out"].startswith("bench-3135/out-fmea-smoke-")
     cmd = next(c for c in b.cmds if "fmea.py F13" in c)
     assert cmd.startswith("cd ~/bench-3135 &&") and "PICAR_BOARD_TOKEN=t0k" in cmd
@@ -191,7 +207,7 @@ def test_3136s_default_checkout_is_unchanged(monkeypatch, tmp_path):
     monkeypatch.setenv("PICAR_BOARD_TOKEN", "t0k")
     b = FakeBoard()
     rec = perf_run.board_run("x", "true", tmp_path, run=b, push=lambda s, r, bench_dir: "f" * 40,
-                             fetch=lambda *a: None, sampler_cls=FakeSampler)
+                             fetch=lambda *a: None, sampler_cls=FakeSampler, heartbeat_cls=FakeHeartbeat)
     assert rec["board_out"].startswith("bench-3136/") and br.BENCH_DIR == "bench-3136"
 
 
