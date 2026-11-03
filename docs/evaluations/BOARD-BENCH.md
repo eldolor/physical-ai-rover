@@ -18,6 +18,117 @@ each check: `tools/jetson/README.md` section 4 (G4, headroom) and section 3
 (perception). **G4 is judged on the fork firmware
 (`SIM_BOARD_FIRMWARE=fork`)**; on the stock emulation it fails by design.
 
+## What each test is for
+
+The robot runs everything on one Jetson: perception, the local vision model
+(VE), ROS (SLAM and nav2), the robot server and the brain, in 8 GB shared by
+the CPU and GPU. Each test below asks one question about that board. The
+bars live in the plan section named; this list says why the test exists.
+Every test runs in sim mode (fake motor board and lidar) until the Rover
+arrives, then again on the Rover.
+
+### Whole-stack bench (after a deploy)
+
+* **Question:** did this `dev` commit make the board slower, hotter or
+  less healthy than the last one?
+* **Covers:** perception speed, the wheel loop, nav2, free memory, VE's
+  answer time, explore's goal choice, G4 and the full test suite.
+* **Why:** a regression check. One row per deploy shows a drift that no
+  single section would notice.
+* **When:** each time `dev` is deployed to the board.
+
+### Steady-state performance window (3.136.B)
+
+* **Question:** with every part loaded at once, does each part still meet
+  its own speed budget?
+* **Covers:** perception per frame (P1) and with floor-hazard prompts
+  added (P2), VE's answer time (P8), the wheel loop's timing when the
+  heaviest jobs overlap (P4), whether SLAM and nav2 keep their pace
+  (P11), and how long the map and room work holds up a mission (P12).
+* **Why:** each budget was first measured alone. Several sit close to
+  their bar, so the question is whether they still hold side by side.
+* **Valid only if** the 30-minute window is clean: no late wheel ticks,
+  no memory kills, nav2's goals succeed, the board at 15 W. An invalid run
+  is repeated, not scored.
+
+### Latencies (3.136.C)
+
+* **Question:** how fast does the robot react when it matters?
+* **Covers:** an obstacle appearing to wheels stopped (P5), a person's
+  Stop to wheels stopped and nav2's goal cancelled (P6), and arriving at
+  the target to a verdict on what it is (P7).
+* **Why:** these are safety and responsiveness times that have never been
+  measured on the board under load.
+
+### Live choice, cold start, heat and power (3.136.D)
+
+* **Question:** how does the board behave over a real day?
+* **Covers:** explore's goal choice on live maps (P3), power-on to ready
+  and a new target's first frame (P9), an hour of missions without
+  throttling (P10), and the power drawn, which sets battery runtime (P14).
+* **Why:** a cold start and sustained heat are what a person at home sees
+  first. The power numbers feed the battery ladder (3.137).
+
+### Memory soak, 4 h (3.135.C)
+
+* **Question:** does the board leak memory slowly over hours?
+* **Covers:** 4 hours of back-to-back missions, a new target each time,
+  five houses in turn. Free memory and every process's size are sampled
+  every 5 s.
+* **Why:** every earlier memory number came from one mission. The margin
+  above the 500 MB floor is a few hundred MB, so a leak of tens of MB an
+  hour would run the board out of memory within a day and could kill a
+  process mid-mission.
+* **Passes if:**
+  * free memory never drops below 500 MB;
+  * it does not trend down faster than 10 MB an hour, and no process grows
+    more than 50 MB;
+  * there are no memory kills and no late wheel ticks;
+  * at least 90% of missions find the target with no contacts, so a run
+    cannot pass by standing still.
+* **Why 4 hours:** about three charges of the Rover's battery, plus a
+  session on the charger.
+
+### Single faults (3.135.B)
+
+* **Question:** when one thing breaks, does the robot stop safely and
+  recover without a person?
+* **Covers:** one fault at a time (F2-F18, and F24): memory runs out, VE
+  crashes, the ROS container dies or hangs, the brain is killed or hangs,
+  the robot server is killed, the lidar or wheel feedback stops, the cloud
+  is down or hangs, the phone's link drops mid-drive, the board reboots,
+  the disk fills, the clock jumps, a person's Stop under full load, two
+  faults at once, and the battery running down mid-mission.
+* **Why:** each fault has a guard that is supposed to catch it. This
+  checks each guard on the real board, measured on the simulator's ground
+  truth, not on the readings the guard itself uses.
+* **The harness is checked first:** each test is run once with its guard
+  switched off and must fail. A test that passes with no guard proves
+  nothing.
+
+### Chaos soak (3.135.D)
+
+* **Question:** does the robot stay safe and keep working when faults
+  arrive at random for hours?
+* **Covers:** at least 40 faults, one every 3-7 minutes, drawn from the
+  single-fault list, with a simulated battery charge cycle about every
+  hour.
+* **Why:** single faults are tested clean. Real faults overlap with
+  missions in progress, half-finished recoveries and a running-down
+  battery.
+* **Passes if:** every fault meets its own stop bar, there are no
+  contacts, a new mission is running within 90 s of every fault, and the
+  memory soak's bars still hold.
+
+### On the Rover (3.135.E, 3.136.E)
+
+* **Question:** do the same numbers hold with the real camera, lidar,
+  motor board and battery?
+* **Adds:** a battery that sags, an unplugged motor board or lidar, a
+  stalled motor, and brownouts from motor current. These cannot be tested
+  in sim.
+* **When:** after the Rover arrives (3.26).
+
 ## Trend
 
 Jetson Orin Nano Super, 15 W, every check under the board lock.
