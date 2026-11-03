@@ -174,8 +174,18 @@ found, 0 contacts.
 
 ### Fault tests (3.135.B) and chaos soak (3.135.D)
 
-No runs yet. The 3.135.A smoke (2026-11-01, F13 only, not scored) is in
-`evaluations/jetson-fmea-3135/board/smoke/`.
+One row per row or case run on the board (`evaluations/jetson-fmea-3135/`,
+`run.py row`), 15 W, the twin's units stopped unless the case says
+otherwise. The stack is in sim mode, judged on the simulator's ground truth.
+"Runs" are scored / run in total; amendment 4 has the rules. The 3.135.A
+smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
+
+| Date | Rev | Row (case) | Runs | Verdict | The row's measure (bar) | Contacts | Late ticks | `MemAvailable` min (MB) | OOM | Max temp | Recovery | As found |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-11-03 | `a3382c18` | F13 D-pad link lost | 5/5 | met | wheels zero 1.00-1.02 s (1.1) | 0 | 0 | 2,251 | 0 | 49.4 °C | 3.2-3.4 s | yes |
+| 2026-11-03 | `a3382c18` | F8 robot server killed (harness) | 5/5 | met | wheels zero 1.48-1.49 s (1.6); never `found` | 0 | 0 | 2,250 | 0 | 49.5 °C | 3.2-3.3 s | yes |
+| 2026-11-03 | `a3382c18` | F9 lidar stops | 5/5 | **FAILED** | **101.2-104.6 cm** moved while the scan was stale (2) | 0 | 0 | 2,247 | 0 | 49.8 °C | 3.0-3.2 s | yes |
+| 2026-11-03 | `5b6b01cc` | F10 wheel feedback stops | 5/5 | met | 0.0-0.31 cm while stale (2); `no_feedback` refused 5/5 | 0 | 0 | 2,246 | 0 | 49.8 °C | 3.0-3.2 s | yes |
 
 ## Runs
 
@@ -395,6 +405,31 @@ clamped near a corner, where `pivot_scale()` searches, 20.1-22.8 ms p50**
 (desktop 9-16 ms). That vet runs on the event loop inside the wheel tick, so
 it counts toward the 100 ms late line. Record:
 `evaluations/wheel-loop-3141/board/vet-bench-20261103-1209.txt`.
+
+### 2026-11-03, single faults (3.135.B): F13, F8, F9, F10
+
+On the board 11:58-12:13, one board hold per row, released between rows.
+15 W, the twin's units stopped and put back. Amendment 2's mover: a
+frontier mission in `scaled_house`, no ROS, no VE.
+
+* **F13 met**: wheels zero 1.00-1.02 s after the D-pad client's kill
+  (bar 1.1).
+* **F8's harness case met**: the fake board zeroed its wheels 1.48-1.49 s
+  after the robot server's SIGKILL (bar 1.6), and the mission never ended
+  `found`. F8 as a row also needs its production-unit case (amendment 6).
+* **F9 FAILED, 5 of 5**: with the fake D500 stopped for 10 s, the robot
+  drove 101-105 cm on the stale scan. It stopped only once the scan came
+  back, 11.0 s after the fault. 0 contacts. `forward_clearance()` falls back
+  to the depth cone alone when the scan is unusable, as 3.135.A saw on the
+  desktop. It needs a fix section of its own (a safety-path change).
+* **F10 met**: 0.0-0.31 cm while the board's feedback was silent (bar 2),
+  and a `no_feedback` refusal every run.
+* Every run had 0 contacts, 0 late wheel ticks and 0 OOM kills.
+  `MemAvailable` minimum 2,246 MB, max 49.8 °C. A new mission was driving
+  3.0-3.4 s after every fault. The board was left as found after each row
+  (0 differences).
+* Records: `evaluations/jetson-fmea-3135/board/rows/`; analysis in
+  `docs/plans/ros-alignment/3.135-jetson-fmea.md`.
 
 ### 2026-11-02/03, memory soak run 1 (3.135.C), rev `dd0a7c9f`
 
