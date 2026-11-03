@@ -19,11 +19,15 @@ oom() { sudo -n dmesg | grep -ciE "killed process" || true; }
 teardown() {
   echo "$(oom)" > "$OUT/oom_end"
   sudo -n dmesg | grep -iE "killed process|oom-kill|invoked oom-killer" > "$OUT/oom.log"
-  sudo -n systemctl isolate graphical.target
+  # Back to the target the board was found in (3.136's isolate assumes graphical).
+  sudo -n systemctl isolate "$FOUND_TARGET"
   echo "== torn down $(date +%T); desktop: $(systemctl is-active gdm); vlm: $(systemctl is-active picar-local-vlm)" | tee -a "$OUT/run.log"
 }
 [ "$(systemctl is-active picar-local-vlm)" = active ] || { echo "STOP: picar-local-vlm is not active (VE must be resident as found)" | tee "$OUT/run.log"; exit 2; }
 sudo -n true || { echo "STOP: no passwordless sudo on the board" | tee "$OUT/run.log"; exit 2; }
+FOUND_TARGET=multi-user.target
+[ "$(systemctl is-active graphical.target)" = active ] && FOUND_TARGET=graphical.target
+echo "$FOUND_TARGET" > "$OUT/found_target"
 trap teardown EXIT
 # The isolate starts every enabled unit of multi-user (the twin's): stop them after it.
 sudo -n systemctl isolate multi-user.target; sleep 5

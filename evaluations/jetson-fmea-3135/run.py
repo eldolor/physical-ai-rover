@@ -111,9 +111,10 @@ def soak_inner(a) -> int:
     return 0 if rec.get("cmd_exit") == 0 and rec.get("left_as_found") else 1
 
 
-# board_run's ssh ends at 6 h: the loop, its last mission (<= 30 min), the
-# setup and the teardown must fit inside it.
-MAX_SOAK_S = 5 * 3600.0
+# board_run's ssh ends at 6 h: the loop, the setup (perception <= 10 min)
+# and the last mission at its worst (stack and ROS waits ~25 min, the cap
+# 32 min, teardown ~5 min: ~70 min) must fit inside it.
+MAX_SOAK_S = 4.5 * 3600.0
 
 
 def main(argv=None) -> int:
@@ -161,7 +162,7 @@ def main(argv=None) -> int:
         out = a.out or str(HERE / "board" / f"{a.label}-{time.strftime('%Y%m%d-%H%M')}")
         argv_ = [PY, str(Path(__file__).resolve()), "_soak", "--sha", sha, "--seconds",
                  str(a.seconds), "--label", a.label, "--out", out]
-        # The hold outlasts the soak: setup, the last mission (<= 30 min), teardown, restore.
+        # The hold outlasts the soak: setup, the last mission (~70 min at worst), teardown, restore.
         return subprocess.call(soak_lock_argv(argv_, f"3.135.C {a.label}", a.seconds + 2 * 3600,
                                               a.wait), cwd=ROOT)
     if a.cmd == "_soak":

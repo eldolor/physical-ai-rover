@@ -42,6 +42,7 @@ import signal
 import subprocess
 import sys
 import time
+from http.client import HTTPException
 from pathlib import Path
 from typing import Optional
 
@@ -85,6 +86,7 @@ STUB_PORT = int(os.environ.get("SOAK_STUB_PORT", 8099))
 STACK_OOM_ADJ = -900               # picar-stack's OOMScoreAdjust (3.80.B4)
 MISSION_CAP_S = 1200 + 600         # mission_time_limit_s + slack: past it the harness stops it
 POLL_S = 2.0
+MAX_ERRORS_IN_A_ROW = 5
 
 
 def schedule(n: int, houses=HOUSES, targets=TARGETS) -> list:
@@ -271,12 +273,12 @@ class Soak:
                     try:
                         st.brain("POST", "/mission/stop", {}, timeout=10)
                         stopped = True
-                    except OSError as e:     # tried again on the next poll
+                    except (OSError, HTTPException) as e:     # tried again on the next poll
                         self.say(f"m{k:03d} the cap's Stop: {e}")
                     rec["stopped_by_harness"] = True
                 try:
                     code, s = st.brain("GET", "/mission/status", timeout=10)
-                except OSError:
+                except (OSError, HTTPException):
                     code, s = None, {}
                 if code != 200 or not isinstance(s, dict):
                     s = {}
@@ -329,10 +331,18 @@ class Soak:
                                timeout=60)
         except (OSError, subprocess.SubprocessError) as e:
             self.say(f"docker logs: {e}")
-        self.sh(["docker", "rm", "-f", CONTAINER])
-        if st is not None:
-            st.stop()
-        gz(mdir / "ros.log")
+        try:
+            self.docker_rm()
+        finally:                  # the stack goes whatever docker does
+            if st is not None:
+                st.stop()
+            gz(mdir / "ros.log")
+
+    def docker_rm(self) -> None:
+        try:
+            self.sh(["docker", "rm", "-f", CONTAINER])
+        except (OSError, subprocess.SubprocessError) as e:
+            self.say(f"docker rm: {e}")
 
     # ------------------------------------------------------------------ run
 
@@ -342,7 +352,7 @@ class Soak:
             t_start = time.time()
             (self.out / "run_start").write_text(f"{t_start}\n")
             plan = schedule(10_000, self.houses)
-            k = 0
+            k, errors = 0, 0
             with open(self.out / "missions.jsonl", "a", buffering=1) as f:
                 while time.time() - t_start < self.seconds:
                     # The 4 h's long-lived load and instruments, still there: a
@@ -356,6 +366,12 @@ class Soak:
                     f.write(json.dumps(rec, default=str) + "\n")
                     self.say(f"m{k:03d} -> {rec.get('outcome')} {rec.get('error') or ''}")
                     k += 1
+                    # A stack that keeps failing is a broken run, not thousands of rows.
+                    errors = errors + 1 if rec.get("error") else 0
+                    if errors >= MAX_ERRORS_IN_A_ROW:
+                        raise StackError(f"{errors} missions in a row ended in an error")
+                    if errors:
+                        time.sleep(30)
             (self.out / "run_end").write_text(f"{time.time()}\n")
             return 0
         finally:
@@ -368,7 +384,12 @@ class Soak:
                 self.teardown_mission(self.out / "teardown", self.stack)
             except Exception as e:  # noqa: BLE001
                 self.say(f"teardown stack: {e}")
-        self.sh(["docker", "rm", "-f", CONTAINER])
+            finally:
+                try:
+                    self.stack.stop()
+                except Exception as e:  # noqa: BLE001
+                    self.say(f"teardown stack stop: {e}")
+        self.docker_rm()
         try:
             (self.out / "ve_after.json").write_text(json.dumps(self.ve_state(), indent=1))
         except Exception as e:  # noqa: BLE001
