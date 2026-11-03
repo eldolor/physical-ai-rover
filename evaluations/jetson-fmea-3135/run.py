@@ -152,10 +152,21 @@ def row_summary(rec: dict, out: Path) -> dict:
             "left_as_found": rec.get("left_as_found")}
 
 
+# F8's production-unit case (amendment 4): the twin's units as found, no sudo.
+UNIT_ROWS = {"F8-unit": "f8_unit.py"}
+
+
 def row_inner(a) -> int:
     out = Path(a.out)
-    rec = perf_run.board_run(f"fmea-{a.row}", row_cmd(a.row, a.runs, a.plant, a.house), out,
-                             sha=a.sha, allow_sudo=True, stop_twin=True, bench_dir=BENCH_DIR)
+    if a.row in UNIT_ROWS:
+        cmd = (f"nvpmodel -q 2>&1 | grep -m1 'NV Power Mode' > $OUT/nvpmodel.txt; date +%s.%N > $OUT/run_start; "
+               f".venv/bin/python evaluations/jetson-fmea-3135/{UNIT_ROWS[a.row]} $OUT/rows --runs {int(a.runs)} "
+               f"> $OUT/rows.log 2>&1; echo $? > $OUT/rows_exit; date +%s.%N > $OUT/run_end")
+        rec = perf_run.board_run(f"fmea-{a.row}", cmd, out, sha=a.sha, allow_sudo=False,
+                                 stop_twin=False, bench_dir=BENCH_DIR)
+    else:
+        rec = perf_run.board_run(f"fmea-{a.row}", row_cmd(a.row, a.runs, a.plant, a.house), out,
+                                 sha=a.sha, allow_sudo=True, stop_twin=True, bench_dir=BENCH_DIR)
     s = row_summary(rec, out)
     (out / "summary.json").write_text(json.dumps(s, indent=1, default=str))
     print(json.dumps({k: s[k] for k in ("sha", "cmd_exit", "verdict", "left_as_found",

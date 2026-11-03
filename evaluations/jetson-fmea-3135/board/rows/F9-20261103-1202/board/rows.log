@@ -1,0 +1,6 @@
+{"i": 1, "verdict": {"pass": false, "valid": true, "reasons": ["moved 104.57 cm while stale (bar 2)"]}, "error": null}
+{"i": 2, "verdict": {"pass": false, "valid": true, "reasons": ["moved 101.2 cm while stale (bar 2)"]}, "error": null}
+{"i": 3, "verdict": {"pass": false, "valid": true, "reasons": ["moved 101.57 cm while stale (bar 2)"]}, "error": null}
+{"i": 4, "verdict": {"pass": false, "valid": true, "reasons": ["moved 101.3 cm while stale (bar 2)"]}, "error": null}
+{"i": 5, "verdict": {"pass": false, "valid": true, "reasons": ["moved 104.29 cm while stale (bar 2)"]}, "error": null}
+{"row": "F9", "plant": null, "house": "scaled_house", "state": "FAILED", "runs_wanted": 5, "runs_scored": 5, "runs_total": 5, "runs_failed": 5, "not_scored": [], "reasons": ["moved 101.2 cm while stale (bar 2)", "moved 101.3 cm while stale (bar 2)", "moved 101.57 cm while stale (bar 2)", "moved 104.29 cm while stale (bar 2)", "moved 104.57 cm while stale (bar 2)"]}

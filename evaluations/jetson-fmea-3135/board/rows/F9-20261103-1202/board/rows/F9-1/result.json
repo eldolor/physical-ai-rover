@@ -1,0 +1,62 @@
+{
+ "row": "F9",
+ "title": "Lidar stops (no scans)",
+ "reading": "true path from the SIGSTOP + 0.3 s (the scan's freshness bar) to the SIGCONT <= 2 cm; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-03T12:07:09-0600",
+ "recovery_s": 3.19,
+ "measures": {
+  "fault_at": 83496.887893898,
+  "cont_at": 83506.898289503,
+  "outcome": "running",
+  "end_state": null,
+  "end_reason": null,
+  "status": {
+   "running": true,
+   "outcome": "running",
+   "end_state": null,
+   "end_reason": null,
+   "cancelled_by": null,
+   "step": 11,
+   "last_action": "FORWARD",
+   "error": null
+  },
+  "refusals": {},
+  "no_feedback_refusals": 0,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 0,
+   "max_dt_s": 0.0
+  },
+  "last_refusal": {
+   "reason": "watchdog",
+   "detail": "no command for over 1.0s -- motors stopped",
+   "driver": null,
+   "at": 83492.737554776,
+   "seconds_ago": 15.17
+  },
+  "forward_at_fault": true,
+  "wheels_zero_s": 11.055,
+  "travel_cm": 55.27,
+  "travel_stale_cm": 104.57,
+  "truth_hole_s": 0.024,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   83488.7028,
+   83512.6029
+  ],
+  "mem_available_min_mb": 2253,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "moved 104.57 cm while stale (bar 2)"
+  ]
+ },
+ "ended": "2026-11-03T12:07:34-0600"
+}
