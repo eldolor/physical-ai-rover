@@ -168,7 +168,7 @@ def test_with_odometry_time_and_loss_do_not_forget_it():
 def _local_answer(got, episode=1, detected=True, share=0.5):
     q = type("Q", (), {"epoch": 0, "trigger": "x", "detected": detected, "band": False,
                        "episode": episode, "box_share": share, "pose": None,
-                       "pan_deg": 0.0, "hfov_deg": 60.0})()
+                       "pan_deg": 0.0, "hfov_deg": 60.0, "sim": False})()
     return type("A", (), {"q": q, "got": got, "absent": False, "direction": None})()
 
 
