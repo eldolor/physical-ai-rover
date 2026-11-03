@@ -97,7 +97,7 @@ def test_compact_sums_a_roles_processes_and_its_gpu():
     c = ss.compact(account(5.0, 900, [proc(1, "uvicorn sim.sensor_server:app", 100),
                                       proc(2, "uvicorn sim.sensor_server:app", 50)],
                            nv={"1": 2048}))
-    assert c["mem_mb"] == 900 and c["roles"]["simulator sensors"] == [150.0, 2.0, 2]
+    assert c["mem_mb"] == 900 and c["roles"]["simulator sensors"] == [150.0, 2.0, 2, 150.0]
 
 
 def test_slope():
@@ -218,3 +218,40 @@ def test_harness_roles_are_reported_not_judged():
             enumerate([10, 1000, 2000, 3 * H + 10, 3 * H + 1000])]
     b = ss.bar_b(mins, 0.0)
     assert b["growth"]["harness"]["growth_mb"] == 300 and b["over"] == []
+
+
+def test_a_process_outside_the_stack_is_judged_on_its_anonymous_memory():
+    def mins(rss1, anon1, rss4, anon4):
+        return [{"k": k, "t0": t, "t1": t + 100, "n": 3, "mem_min_mb": 900.0,
+                 "rss_min_mb": {"other: systemd-journal": r},
+                 "judged_min_mb": {"other: systemd-journal": a}}
+                for k, (t, r, a) in enumerate([(10, rss1, anon1), (3 * H + 10, rss4, anon4)])]
+    # its mapped journal grows 200 MB (file-backed): not a leak
+    assert ss.bar_b(mins(100, 20, 300, 25), 0.0)["over"] == []
+    # its heap grows 60 MB: a leak
+    assert ss.bar_b(mins(100, 20, 160, 80), 0.0)["over"] == ["other: systemd-journal"]
+    p = proc(1, "/usr/lib/systemd/systemd-journald", 300, "systemd-journal")
+    p["Pss_Anon"] = 25 * 1024
+    v = ss.compact(account(0, 900, [p]))["roles"]["other: systemd-journal"]
+    assert ss.judged_mb("other: systemd-journal", v) == 25 and ss.judged_mb("robot server", v) == 300
+
+
+def test_dmesg_alone_cannot_vouch_for_no_oom_kill(tmp_path):
+    missions, samples = soak_records()
+    s = ss.score(write_board(tmp_path / "1", missions, samples, oom=(2, 1)), sysfs=sysfs_rows())
+    assert s["c"]["oom_kills_dmesg"] is None and s["c"]["met"]        # vmstat read 0
+    s = ss.score(write_board(tmp_path / "2", missions, samples), sysfs=[])
+    assert s["c"]["oom_kills_vmstat"] is None and not s["c"]["met"]
+
+
+def test_a_run_that_ended_early_is_not_met(tmp_path):
+    missions, samples = soak_records()
+    b = write_board(tmp_path, missions, samples)
+    (b / "run_end").unlink()
+    s = ss.score(b, sysfs=sysfs_rows())
+    assert not s["complete"] and not s["met"]
+
+
+def test_soak_length_is_bounded_by_the_ssh_timeout():
+    with pytest.raises(SystemExit):
+        fmea_run.main(["soak", "--seconds", str(6 * 3600)])

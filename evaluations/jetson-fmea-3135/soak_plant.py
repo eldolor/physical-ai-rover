@@ -22,6 +22,7 @@ import argparse
 import json
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -36,8 +37,13 @@ PY = sys.executable
 
 def run(out: Path, hour_s: float = 40.0, mission_s: float = 10.0) -> dict:
     out.mkdir(parents=True, exist_ok=True)
-    for f in ("account.jsonl", "missions.jsonl", "phase"):
-        (out / f).unlink(missing_ok=True)
+    with tempfile.TemporaryDirectory(prefix="soak-plant-") as work:   # only planted.json is kept
+        res = _run(Path(work), hour_s, mission_s)
+    (out / "planted.json").write_text(json.dumps(res, indent=1))
+    return res
+
+
+def _run(out: Path, hour_s: float, mission_s: float) -> dict:
     total = 4 * hour_s
     phase = out / "phase"
     phase.write_text("setup\n")
@@ -90,9 +96,6 @@ def run(out: Path, hour_s: float = 40.0, mission_s: float = 10.0) -> dict:
            "caught": caught, "steady_passes": passes, "discriminates": caught and passes,
            "b_reasons": b["reasons"],
            "when": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
-    (out / "planted.json").write_text(json.dumps(res, indent=1))
-    for f in ("account.jsonl", "phase"):          # the raw sampler output is not kept
-        (out / f).unlink(missing_ok=True)
     return res
 
 

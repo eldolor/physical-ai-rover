@@ -102,17 +102,27 @@ def jsonl(path: Path) -> list:
 
 
 def compact(rec: dict) -> dict:
-    """One account sample as {t, phase, mem_mb, roles: {role: [rss_mb, gpu_mb, n]}}."""
+    """One account sample as {t, phase, mem_mb, roles: {role: [rss_mb, gpu_mb, n, anon_mb]}}
+    (anon: the processes' Pss_Anon)."""
     roles: dict = {}
     nv = rec.get("nvmap") or {}
     for p in rec.get("procs") or []:
-        r = roles.setdefault(role(p), [0.0, 0.0, 0])
+        r = roles.setdefault(role(p), [0.0, 0.0, 0, 0.0])
         r[0] += p.get("Rss", 0) / 1024
         r[1] += nv.get(str(p.get("pid")), 0) / 1024
         r[2] += 1
+        r[3] += p.get("Pss_Anon", p.get("Rss", 0)) / 1024
     return {"t": rec["t"], "phase": rec.get("phase", ""),
             "mem_mb": rec["meminfo"]["MemAvailable"] / 1024,
-            "roles": {k: [round(v[0], 1), round(v[1], 1), v[2]] for k, v in roles.items()}}
+            "roles": {k: [round(v[0], 1), round(v[1], 1), v[2], round(v[3], 1)]
+                      for k, v in roles.items()}}
+
+
+def judged_mb(r: str, v: list) -> float:
+    """(b)'s per-role measure: RSS for the stack's named roles; for a process
+    outside it (`other: <comm>`), its anonymous memory, so a journal or an
+    image file it maps is not read as a leak (amendment 3)."""
+    return v[3] if r.startswith("other: ") and len(v) > 3 else v[0]
 
 
 def slope_per_h(points: list) -> Optional[float]:
@@ -149,6 +159,8 @@ def mission_mins(samples: list, missions: list) -> list:
         out.append({"k": mi.get("k"), "t0": mi["t0"], "t1": mi["t1"], "n": len(w),
                     "mem_min_mb": round(min(s["mem_mb"] for s in w), 1),
                     "rss_min_mb": {r: round(min(s["roles"][r][0] for s in w), 1) for r in always},
+                    "judged_min_mb": {r: round(min(judged_mb(r, s["roles"][r]) for s in w), 1)
+                                      for r in always},
                     "rss_max_mb": {r: round(max(s["roles"][r][0] for s in w), 1) for r in always},
                     "gpu_min_mb": {r: round(min(s["roles"][r][1] for s in w), 1) for r in always}})
     return out
@@ -162,16 +174,19 @@ def bar_b(mins: list, run_start: float, hour_s: float = HOUR_S) -> dict:
     h1 = [x for x in mins if run_start <= x["t0"] < run_start + hour_s and x["n"]]
     h4 = [x for x in mins if run_start + 3 * hour_s <= x["t0"] < run_start + 4 * hour_s and x["n"]]
     growth, missing = {}, []
-    for r in sorted({r for x in h1 + h4 for r in x["rss_min_mb"]}):
-        a = [x["rss_min_mb"][r] for x in h1 if r in x["rss_min_mb"]]
-        b = [x["rss_min_mb"][r] for x in h4 if r in x["rss_min_mb"]]
+    def jm(x):
+        return x.get("judged_min_mb", x["rss_min_mb"])
+    for r in sorted({r for x in h1 + h4 for r in jm(x)}):
+        a = [jm(x)[r] for x in h1 if r in jm(x)]
+        b = [jm(x)[r] for x in h4 if r in jm(x)]
         if not a or not b:
             missing.append(r)
             continue
         growth[r] = {"hour1_median_mb": round(statistics.median(a), 1),
                      "hour4_median_mb": round(statistics.median(b), 1),
                      "growth_mb": round(statistics.median(b) - statistics.median(a), 1),
-                     "n1": len(a), "n4": len(b)}
+                     "n1": len(a), "n4": len(b),
+                     "measure": "anon" if r.startswith("other: ") else "rss"}
     judged = {r: g for r, g in growth.items() if r not in HARNESS_ROLES}
     over = sorted(r for r, g in judged.items() if g["growth_mb"] > GROWTH_MB)
     reasons = []
@@ -220,7 +235,9 @@ def score(board: Path, *, hour_s: float = HOUR_S, sysfs: Optional[list] = None,
     ooms = [r["oom_kill"] for r in sys_rows if isinstance(r.get("oom_kill"), int)]
     vm = (ooms[-1] - ooms[0]) if ooms else None
     o0, o1 = _f(board / "oom_start"), _f(board / "oom_end")
-    dm = max(0, int(o1 - o0)) if o0 is not None and o1 is not None else None
+    # dmesg is a ring buffer: a count that fell means lines scrolled out, so
+    # it says nothing (None), never 0; vmstat's counter is the primary.
+    dm = int(o1 - o0) if o0 is not None and o1 is not None and o1 >= o0 else None
     late, unread = 0, []
     for x in missions:
         w = x.get("wheel_loop")
@@ -239,7 +256,8 @@ def score(board: Path, *, hour_s: float = HOUR_S, sysfs: Optional[list] = None,
                              and x["wheel_loop"].get("late_ticks")}}
     kills = [v for v in (vm, dm) if v is not None]
     c["oom_kills"] = max(kills) if kills else None
-    c["met"] = c["oom_kills"] == 0 and late == 0 and not unread
+    # vmstat's counter must have been read: dmesg alone cannot vouch for 0.
+    c["met"] = vm is not None and c["oom_kills"] == 0 and late == 0 and not unread
     # (d)
     n = len(missions)
     found = sum(x.get("outcome") == "found" for x in missions)

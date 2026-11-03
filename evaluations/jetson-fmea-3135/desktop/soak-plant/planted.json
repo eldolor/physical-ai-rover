@@ -4,26 +4,28 @@
  "missions": 16,
  "samples": 163,
  "leak": {
-  "hour1_median_mb": 102.4,
-  "hour4_median_mb": 402.5,
+  "hour1_median_mb": 102.5,
+  "hour4_median_mb": 402.6,
   "growth_mb": 300.1,
   "n1": 4,
-  "n4": 4
+  "n4": 4,
+  "measure": "rss"
  },
  "steady": {
   "hour1_median_mb": 65.0,
   "hour4_median_mb": 65.0,
   "growth_mb": 0.0,
   "n1": 4,
-  "n4": 4
+  "n4": 4,
+  "measure": "rss"
  },
  "caught": true,
  "steady_passes": true,
  "discriminates": true,
  "b_reasons": [
-  "slope -260.3 MB/h < -10.0",
-  "other: chrome-headless grew 1804.7 MB hour 1 -> 4",
+  "slope -145.4 MB/h < -10.0",
+  "other: chrome-headless grew 92.1 MB hour 1 -> 4",
   "stand-in leak grew 300.1 MB hour 1 -> 4"
  ],
- "when": "2026-11-02T21:04:11-0600"
+ "when": "2026-11-02T21:14:39-0600"
 }

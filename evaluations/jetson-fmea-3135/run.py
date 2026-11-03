@@ -102,8 +102,18 @@ def soak_inner(a) -> int:
     rec = perf_run.board_run(a.label, f"bash evaluations/jetson-fmea-3135/soak.sh $OUT "
                              f"--seconds {float(a.seconds)}", out, sha=a.sha, allow_sudo=True,
                              stop_twin=True, bench_dir=BENCH_DIR)
-    soak_score.main([str(out)])
+    try:
+        soak_score.main([str(out)])
+    except Exception as e:  # noqa: BLE001 -- the run's own result is never lost to the scorer
+        print(f"scoring failed ({type(e).__name__}: {e}); re-score with `run.py soak-score {out}`",
+              file=sys.stderr)
+    print(f"cmd_exit {rec.get('cmd_exit')}, left as found {rec.get('left_as_found')}")
     return 0 if rec.get("cmd_exit") == 0 and rec.get("left_as_found") else 1
+
+
+# board_run's ssh ends at 6 h: the loop, its last mission (<= 30 min), the
+# setup and the teardown must fit inside it.
+MAX_SOAK_S = 5 * 3600.0
 
 
 def main(argv=None) -> int:
@@ -143,8 +153,10 @@ def main(argv=None) -> int:
         return subprocess.call([PY, str(ROOT / "tools/desktop_lock.py"), "exclusive",
                                 *([] if a.wait else ["--no-wait"]), "--why", "3.135.A planted bugs",
                                 "--", PY, str(HERE / "plant_bugs.py"), "--out", a.out], cwd=ROOT)
+    if a.cmd in ("soak", "_soak") and not 0 < a.seconds <= MAX_SOAK_S:
+        raise SystemExit(f"--seconds must be in (0, {MAX_SOAK_S:.0f}]: board_run's ssh ends at 6 h")
     if a.cmd == "soak":
-        sha = subprocess.run(["git", "rev-parse", a.sha], cwd=ROOT, capture_output=True, text=True,
+        sha =subprocess.run(["git", "rev-parse", a.sha], cwd=ROOT, capture_output=True, text=True,
                              check=True).stdout.strip()
         out = a.out or str(HERE / "board" / f"{a.label}-{time.strftime('%Y%m%d-%H%M')}")
         argv_ = [PY, str(Path(__file__).resolve()), "_soak", "--sha", sha, "--seconds",

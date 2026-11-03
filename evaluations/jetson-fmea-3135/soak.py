@@ -189,7 +189,10 @@ class Soak:
         if not (isinstance(ve.get("health"), dict) and ve["health"].get("ready")):
             raise StackError(f"the board's local VLM is not ready: {ve}")
         if not self.vlm_secret:
-            self.say("WARNING: no APP_SHARED_SECRET in the VLM's env file; the brain sends none")
+            # Without it the brain would send the stack's own secret, VE would
+            # 401 every question into the cloud stand-in, and VE carry no load.
+            raise StackError("no APP_SHARED_SECRET in the VLM's env file: the local tier "
+                             "would be refused")
         if self.sh(["docker", "ps", "-aq", "-f", f"name=^{CONTAINER}$"]).stdout.strip():
             raise StackError(f"a container named {CONTAINER} exists already")
         for port in (8090, STUB_PORT):
@@ -221,6 +224,11 @@ class Soak:
         mdir = self.out / f"m{k:03d}"
         rec: dict = {"k": k, "house": house, "target": target, "setup_t": round(time.time(), 3)}
         self.phase(f"m{k:03d}")
+        try:                      # VE's process: a change between missions is a restart
+            r = self.sh(["systemctl", "show", "-p", "MainPID,NRestarts", "picar-local-vlm"])
+            rec["ve"] = dict(x.split("=", 1) for x in r.stdout.splitlines() if "=" in x)
+        except (OSError, subprocess.SubprocessError):
+            pass
         st = None
         try:
             st = self.stack = Stack(mdir, house=house,
@@ -251,9 +259,21 @@ class Soak:
                                   {"target_object": target, "policy": "tiered"}, timeout=600)
             if code != 200:
                 raise StackError(f"mission start: {code} {str(body)[:300]}")
-            s, stopped = {}, False
+            s, stopped, last = {}, False, {}
             while True:
                 time.sleep(POLL_S)
+                # The cap first: a brain alive but not answering must still end here.
+                age = time.time() - rec["t0"]
+                if age > MISSION_CAP_S + 120:
+                    rec["status_last"] = last
+                    raise StackError("the mission did not end 120 s after the harness's cap")
+                if age > MISSION_CAP_S and not stopped:
+                    try:
+                        st.brain("POST", "/mission/stop", {}, timeout=10)
+                        stopped = True
+                    except OSError as e:     # tried again on the next poll
+                        self.say(f"m{k:03d} the cap's Stop: {e}")
+                    rec["stopped_by_harness"] = True
                 try:
                     code, s = st.brain("GET", "/mission/status", timeout=10)
                 except OSError:
@@ -263,15 +283,12 @@ class Soak:
                     if not st.alive("brain"):
                         raise StackError("the brain died mid-mission")
                     continue
+                last = s
                 if not s.get("running") and s.get("outcome") not in (None, "idle", "running"):
                     break
-                if not stopped and time.time() - rec["t0"] > MISSION_CAP_S:
-                    st.brain("POST", "/mission/stop", {})
-                    stopped = True
-                if stopped and time.time() - rec["t0"] > MISSION_CAP_S + 120:
-                    raise StackError("the mission did not end 120 s after the harness's Stop")
             rec["t1"], rec["m1"] = round(time.time(), 3), round(time.monotonic(), 4)
-            rec["outcome"], rec["stopped_by_harness"] = s.get("outcome"), stopped
+            rec["outcome"] = s.get("outcome")
+            rec.setdefault("stopped_by_harness", False)
             rec["status"] = {k_: s.get(k_) for k_ in ("outcome", "end_state", "end_reason", "step",
                                                       "error", "cancelled_by", "report",
                                                       "arrival_verdicts", "cloud")}
@@ -328,6 +345,11 @@ class Soak:
             k = 0
             with open(self.out / "missions.jsonl", "a", buffering=1) as f:
                 while time.time() - t_start < self.seconds:
+                    # The 4 h's long-lived load and instruments, still there: a
+                    # soak without them would score a lighter workload.
+                    dead = {n: p.returncode for n, p in self.helpers.items() if p.poll() is not None}
+                    if dead:
+                        raise StackError(f"a long-lived helper ended: {dead}")
                     house, target = plan[k]
                     self.say(f"m{k:03d} {house} / {target}; MemAvailable {mem_available_mb()} MB")
                     rec = self.mission(k, house, target)
@@ -356,9 +378,17 @@ class Soak:
             p = self.helpers.get(name)
             if p is None or p.poll() is not None:
                 continue
+            if name == "account":           # root's: only sudo can signal it, by its own file
+                pat = f"memory_account.py sample {self.out}/account.jsonl"
+                for sig in ("-TERM", "-KILL"):
+                    subprocess.run(["sudo", "-n", "pkill", sig, "-f", pat], timeout=10)
+                    try:
+                        p.wait(timeout=15)
+                        break
+                    except subprocess.TimeoutExpired:
+                        continue
+                continue
             try:
-                if name == "account":       # root's: only sudo can signal it
-                    subprocess.run(["sudo", "-n", "pkill", "-TERM", "-P", str(p.pid)], timeout=10)
                 os.killpg(p.pid, signal.SIGTERM)
                 p.wait(timeout=20)
             except (ProcessLookupError, PermissionError, subprocess.TimeoutExpired):
