@@ -182,6 +182,21 @@ class _LaterChunksFirst(safety._PivotRows):
         return self._first_exact(self._first_rows, c, s)
 
 
+def _first_beams_case():
+    """A return at the margin's edge in the scan's first beam (dead
+    astern, -180 deg), so the first chunk's exact path decides: a turn
+    that would bring the rear edge onto it is scaled."""
+    ranges = [3.0] * 360
+    ranges[0] = (safety.FOOTPRINT_LENGTH_M / 2 + safety.LIDAR_X_M) + (PIVOT_MARGIN_CM + 0.02) / 100
+    ranges[1] = ranges[0] + 0.001
+    return ranges, 0.0, 2.5, (-5.3125, 5.3125)
+
+
+def test_first_chunk_decides_a_turn():
+    c = _first_beams_case()
+    assert answers(ReferenceSafety, *c) == answers(SafetyController, *c)
+
+
 @pytest.mark.parametrize("mutant", [_ArcOffByOne, _DropsNearestRows, _LaterChunksFirst,
                                     _FirstChunkClosesOnEqual, _ReachWithoutTheChassis],
                          ids=lambda m: m.__name__)
@@ -195,3 +210,10 @@ def test_rows_of_another_scan_are_not_used():
     s = SafetyController(Body(near, 0.0))
     stale = safety._PivotRows(scan_of(far), 0.0)
     assert s.pivot_blocked(3.0, scan_of(near), _rows=stale) is not None
+
+
+def test_first_chunk_mutant_caught_on_the_first_beams(monkeypatch):
+    c = _first_beams_case()
+    before = answers(SafetyController, *c)
+    monkeypatch.setattr(safety, "_PivotRows", _FirstChunkClosesOnEqual)
+    assert answers(SafetyController, *c) != before

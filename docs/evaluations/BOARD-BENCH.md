@@ -177,6 +177,26 @@ No runs yet. The 3.135.A smoke (2026-11-01, F13 only, not scored) is in
 
 ## Runs
 
+### 2026-11-03, the vet's cost with 3.141's turn guard (3.141 criterion 2, not a recurring test)
+
+`evaluations/wheel-loop-3141/vet_compare.py`: the branch's `robot/` copied to
+`/tmp` on the board, dev's turn guard (`tests/pivot_reference.py`) beside
+3.141's, one vet each, 15 W, under `board_lock`; every answer the same.
+
+* 12:27, `83b5009e` (first chunk 8 returns), load 4.6. **Contaminated:** a
+  3.135.B run orphaned after its desktop runner stopped (its sim stack:
+  robot server, brain, `picar-ros-3135`, sensor programs) ran beside this
+  bench from 12:27:00 to ~12:27:40; none of its numbers backs a bar.
+  Read as such: corner-turn boxes p90
+  2.45-3.28 ms (dev 20.6-23.3); the turn blocked at the first returns 0.13
+  ms (dev 0.11): **+18%, the 10% bar FAILED** on that case.
+  `evaluations/wheel-loop-3141/board/vet-compare-20261103-1226.txt`.
+* 12:32, `c6496ea6` (first chunk 2), load 0.15: **corner-turn boxes p90
+  2.33-2.36 ms** (dev 20.34-23.04; bar 5: met); a turn in the open 1.21 (dev
+  2.47); blocked at the first returns 0.08 (dev 0.11); straight 0.62-0.65
+  (dev 0.65): every case at or under dev's. Criterion 2 met.
+  `evaluations/wheel-loop-3141/board/vet-compare-20261103-1230.txt`.
+
 ### 2026-11-03, one wheel-loop vet's cost (3.141.A, a diagnostic, not a recurring test)
 
 The board quiet (load 0.7, 15 W, the board's checkout at its own rev, its

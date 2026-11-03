@@ -833,8 +833,9 @@ class SafetyController:
         a rotation within the circle the forward checks already cleared.
 
         `_rows` is `pivot_scale()`'s `_PivotRows` of this same scan (3.141):
-        the returns, aged and filtered once for the whole search. Rows of
-        another scan are not used: this scan's are built.
+        the returns, aged and filtered once for the whole search. Rows built
+        from another scan object are not used: this scan's are built (rows
+        are never valid for a scan changed in place after them).
         """
         if omega_rad_s == 0:
             return None
