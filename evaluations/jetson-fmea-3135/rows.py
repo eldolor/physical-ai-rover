@@ -61,10 +61,11 @@ def gz(path: Path) -> None:
 
 def runner(row: str):
     """The module that runs a row: the stop rows (`fmea.py`) or the cloud
-    rows (`cloud_rows.py`)."""
+    rows (`cloud_rows.py`), or the clock row (`sys_rows.py`)."""
     import cloud_rows
     import fmea
-    for mod in (fmea, cloud_rows):
+    import sys_rows
+    for mod in (fmea, cloud_rows, sys_rows):
         if row in mod.ROWS:
             return mod
     raise SystemExit(f"no such row {row!r}")

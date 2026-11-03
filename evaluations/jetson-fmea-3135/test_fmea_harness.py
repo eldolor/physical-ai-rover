@@ -311,3 +311,25 @@ def test_a_cloud_case_that_never_ended_is_not_scored():
 def test_rows_py_finds_both_kinds_of_row():
     assert rows.runner("F9").__name__ == "fmea" and rows.runner("F12a").__name__ == "cloud_rows"
     assert {r["plant"] for r in cloud_rows.ROWS.values()} - {""} <= stack.BRAIN_PLANTS
+
+
+# ------------------------------------------------------- 3.135.B: the clock row
+
+import sys_rows  # noqa: E402
+
+CLOCK_GOOD = {"outcome": "found", "stepped": True, "watchdog_after_step": 0, "brain_503_lines": 0,
+              "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.02}
+
+
+def test_the_clock_cases_and_their_bars():
+    assert sys_rows.judge("F16p", CLOCK_GOOD)["pass"] and sys_rows.judge("F16c", CLOCK_GOOD)["pass"]
+    for change, reason in (({"watchdog_after_step": 1}, "watchdog stops"),
+                           ({"brain_503_lines": 2}, "503/stale"),
+                           ({"outcome": "out_of_budget"}, "out_of_budget"),
+                           ({"outcome": "exhausted"}, "the control's found"),
+                           ({"stepped": False}, "not stepped")):
+        v = sys_rows.judge("F16m", {**CLOCK_GOOD, **change})
+        assert not v["pass"] and any(reason in r for r in v["reasons"]), (change, v)
+    assert sys_rows.judge("F16m", {**CLOCK_GOOD, "stepped": False})["valid"] is False
+    assert rows.runner("F16p").__name__ == "sys_rows"
+    assert {r["plant"] for r in sys_rows.ROWS.values()} - {""} <= stack.ROBOT_PLANTS
