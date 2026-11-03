@@ -43,7 +43,7 @@ def board_run(label: str, board_cmd: str, out: Path, *, sha: str = "HEAD",
               allow_sudo: bool = False, stop_twin: bool = False, run=br.ssh,
               push=br.push_checkout, fetch=br.fetch, sampler_cls=br.Sampler,
               bench_dir: str = br.BENCH_DIR, heartbeat_cls=br.Heartbeat,
-              lease_wait_s: float = 1800.0, sleep=time.sleep) -> dict:
+              sleep=time.sleep) -> dict:
     """One board test, inside `boardrun.locked` (refuses without the token).
     `board_cmd` runs in ~/<bench_dir> (3.136's `bench-3136` by default;
     3.135 passes `bench-3135`) with $OUT set to its own output directory
@@ -51,12 +51,11 @@ def board_run(label: str, board_cmd: str, out: Path, *, sha: str = "HEAD",
 
     3.136.F: a lease runs beside it on the board, so a desktop that goes
     away mid-run (killed, or its network lost) still leaves the board as
-    found (`boardrun.lease`). If the bench's ssh fails while the bench may
-    still be running there (no exit code came back), this side does NOT
-    restore beside it: the heartbeat stops, the lease ends the bench, and
-    its record (`lease.json`) is waited for while the lease runs; then this
-    side restores what the lease could not (it cannot take the board lock
-    this side's live holder has), unless the bench left survivors.""" 
+    found (`boardrun.lease`). If no exit code comes back from the bench's
+    ssh, the bench may still run there: this side then does nothing on the
+    board and returns (its own board hold ends); the lease ends the bench,
+    takes the board and restores, and its `lease.json` is the record.
+    """ 
     token = br.require_board_lock()
     out.mkdir(parents=True, exist_ok=True)
     stamp = time.strftime("%Y%m%d-%H%M%S")
@@ -76,11 +75,13 @@ def board_run(label: str, board_cmd: str, out: Path, *, sha: str = "HEAD",
             input=Path(br.__file__).read_text())
         got = run(f"cat > ~/{board_out}/as_found.json && touch ~/{board_out}/heartbeat && "
                   f"{{ systemctl is-active graphical.target >/dev/null && echo graphical || echo other; }}"
-                  f" > ~/{board_out}/target_at_start; setsid nohup python3 ~/{board_out}/lease_boardrun.py"
+                  f" > ~/{board_out}/target_at_start && {{ setsid nohup python3 ~/{board_out}/lease_boardrun.py"
                   f" lease ~/{board_out} --silence {br.LEASE_SILENCE_S:g}{' --sudo' if allow_sudo else ''}"
-                  f" > ~/{board_out}/lease.log 2>&1 < /dev/null & echo $!; sleep 2; "
-                  f"kill -0 $! 2>/dev/null && echo alive $(sed 's/^.*) //' /proc/$!/stat | cut -d' ' -f20)",
-                  input=json.dumps(before))
+                  f" > ~/{board_out}/lease.log 2>&1 < /dev/null & }} && L=$! && echo $L && "
+                  + (f"{{ echo {br.LEASE_OOM_ADJ} | sudo -n tee /proc/$L/oom_score_adj >/dev/null; }}; "
+                     if allow_sudo else "")
+                  + f"sleep 2; kill -0 $L 2>/dev/null && echo alive $({br.START_TIME_SH % '$L'})",
+                  input=json.dumps(before), check=False) or ""
         lines = got.split()
         if len(lines) < 3 or not lines[0].isdigit() or lines[1] != "alive":
             # A lease that did start but answered wrong must not act later: let it go.
@@ -95,9 +96,12 @@ def board_run(label: str, board_cmd: str, out: Path, *, sha: str = "HEAD",
         sampler.start()
         t0 = time.time()
         bench_started = True
+        # 3.93's check in every bench: its keeper holds the board while the bench lives,
+        # so a desktop gone mid-run never hands the board over beside its bench.
         r = run(f"cd ~/{bench_dir} && export OUT=~/{board_out} PICAR_BOARD_TOKEN={shlex.quote(token)} "
-                f"&& mkdir -p $OUT && echo \"$$ $(sed 's/^.*) //' /proc/$$/stat | cut -d' ' -f20)\" > $OUT/bench.pid "
-                f"&& {{ {board_cmd} ; }} > $OUT/cmd.log 2>&1; echo $?",
+                f"&& mkdir -p $OUT && echo \"$$ $({br.START_TIME_SH % '$$'})\" > $OUT/bench.pid "
+                f"&& {{ source tools/jetson/board_lock_check.sh || exit $?; {board_cmd} ; }} "
+                f"> $OUT/cmd.log 2>&1; echo $?",
                 check=False, timeout=6 * 3600)
         last = r.strip().splitlines()[-1] if r.strip() else ""
         rec["cmd_exit"] = int(last) if last.lstrip("-").isdigit() else None
@@ -105,83 +109,66 @@ def board_run(label: str, board_cmd: str, out: Path, *, sha: str = "HEAD",
     finally:
         # Each step on its own: a failure in one (an ssh drop) never skips
         # the restore or the record, and never masks the run's own error.
-        # The bench may still run there only if it started and no exit code came
-        # back (an ssh that returned empty, a drop read as exit 255, or one that raised).
-        maybe_running = bench_started and rec.get("cmd_exit") is None
-        alive = f"[ \"$(sed 's/^.*) //' /proc/{lease_pid}/stat 2>/dev/null | cut -d' ' -f20)\" = {lease_start or 'x'} ]"
-        if maybe_running and lease_started:
-            # This side is alive and holds the board: the lease ends the bench, this side restores.
+        # No exit code back (an ssh that raised, or returned empty: a drop read as 255):
+        # the bench may still run there. This side then does NOTHING on the board -- no
+        # restore, no release, no sampler kill -- and the run ends here, which ends its board
+        # hold. The bench's keeper keeps the board while it lives; the lease (no more
+        # beats) ends it, takes the board and restores, and its `lease.json` says so.
+        if lease_started and bench_started and rec.get("cmd_exit") is None:
             if heartbeat is not None:
                 heartbeat.stop()
                 rec["heartbeat_losses"] = getattr(heartbeat, "losses", None)
-            rec["lease"] = "left to act: no exit code from the bench's ssh"
-            run(f"touch ~/{board_out}/lease.desktop_restores", check=False)
-            end = time.monotonic() + lease_wait_s
-            while time.monotonic() < end:
+            rec["lease"] = "left to the lease: no exit code from the bench's ssh"
+            rec["restore_actions"] = [f"left to the lease: see ~/{board_out}/lease.json"]
+            rec["left_as_found"] = None
+            if sampler is not None:
+                rec["desktop_load"] = sampler.desktop_load
+        else:
+            if sampler is not None:
                 try:
-                    got = run(f"[ -s ~/{board_out}/lease.json ] && cat ~/{board_out}/lease.json || "
-                              f"cat {br.fallback_record(board_out)} 2>/dev/null; "
-                              f"{alive} && echo LEASE-ALIVE", check=False) or ""
-                    body = got.replace("LEASE-ALIVE", "").strip()
-                    if body.startswith("{"):
-                        rec["lease_record"] = json.loads(body)
-                        break
-                    if "LEASE-ALIVE" not in got:
-                        rec["lease"] += "; the lease ended with no record"
-                        break
-                except Exception:  # noqa: BLE001 -- unreachable, or a record mid-write: try again
-                    pass
-                sleep(10.0)
-            else:
-                rec["lease"] += "; no lease record in time"
-        if sampler is not None:
+                    sampler.stop()
+                except Exception as e:  # noqa: BLE001
+                    rec["sampler_error"] = str(e)
+                rec["desktop_load"] = sampler.desktop_load
             try:
-                sampler.stop()
+                fetch(f"~/{board_out}", out / "board")
             except Exception as e:  # noqa: BLE001
-                rec["sampler_error"] = str(e)
-            rec["desktop_load"] = sampler.desktop_load
-        try:
-            fetch(f"~/{board_out}", out / "board")
-        except Exception as e:  # noqa: BLE001
-            rec["fetch_error"] = str(e)
-        rec["left_as_found"] = False
-        lr = rec.get("lease_record") or {}
-        try:
-            if maybe_running and lease_started and not lr:
-                # No record: the bench may still run there. Nothing is started beside it.
-                after, diffs = br.settle_and_check(before, run, wait_s=0, sleep=sleep)
-                rec["restore_actions"] = ["NOT RESTORED: the lease left no record; the bench may still run"]
-            elif lr.get("survivors"):
-                after, diffs = br.settle_and_check(before, run, wait_s=0, sleep=sleep)
-                rec["restore_actions"] = [f"NOT RESTORED: the bench's processes survived the lease "
-                                          f"({lr['survivors']})"]
-            else:
-                # The bench has ended (or the lease ended it): everything put back here, the
-                # lease still beating behind, so a desktop lost now still leaves it to the lease.
-                acts, after, diffs = br.restore_and_check(before, run, allow_sudo=allow_sudo,
-                                                          board_out=f"~/{board_out}")
-                rec["restore_actions"] = ([f"by the lease: {a}" for a in lr.get("restore_actions") or []]
-                                          + acts)
-            rec["after"] = after
-            rec["as_found_differences"] = diffs
-            rec["left_as_found"] = not diffs
-        except Exception as e:  # noqa: BLE001
-            rec["restore_error"] = f"{type(e).__name__}: {e}"
-        # Only now, the board put back, is the lease let go (unless it already acted).
-        if lease_started and not lr:
-            if heartbeat is not None:
-                heartbeat.stop()
-                rec["heartbeat_losses"] = getattr(heartbeat, "losses", None)
+                rec["fetch_error"] = str(e)
+            rec["left_as_found"] = False
             try:
-                st = (run(f"touch ~/{board_out}/lease.stop; sleep 0.5; cat {br.state_path(board_out)}",
-                          check=False) or "").strip()
-                if st in ("watching", "released"):
-                    rec.setdefault("lease", "released")
+                # Put back with the lease still beating behind: a desktop lost now is still covered.
+                rec["restore_actions"], after, diffs = br.restore_and_check(
+                    before, run, allow_sudo=allow_sudo, board_out=f"~/{board_out}")
+                rec["after"] = after
+                rec["as_found_differences"] = diffs
+                rec["left_as_found"] = not diffs
+            except Exception as e:  # noqa: BLE001
+                rec["restore_error"] = f"{type(e).__name__}: {e}"
+            # Only now, the board put back, is the lease let go (STOPPED: the file landed).
+            if lease_started:
+                if heartbeat is not None:
+                    heartbeat.stop()
+                    rec["heartbeat_losses"] = getattr(heartbeat, "losses", None)
+                st = ""
+                for _ in range(3):
+                    try:
+                        st = (run(f"touch ~/{board_out}/lease.stop && echo STOPPED; sleep 0.5; "
+                                  f"cat {br.state_path(board_out)} 2>/dev/null; "
+                                  f"[ \"$({br.START_TIME_SH % lease_pid})\" = {lease_start} ] && echo LEASE-ALIVE",
+                                  check=False) or "")
+                    except Exception as e:  # noqa: BLE001
+                        st = f"error {e}"
+                    if "STOPPED" in st:
+                        break
+                words = st.split()
+                if "STOPPED" not in words:
+                    rec["lease"] = f"not released ({st.strip()[:80]!r}): it may act on its own"
+                elif "LEASE-ALIVE" not in words and not {"released", "done"} & set(words):
+                    rec["lease"] = "the lease had died during the run: this run was unprotected"
+                elif {"acting", "done"} & set(words):
+                    rec["lease"] = "the lease acted during the run: see lease.json"
                 else:
-                    rec["lease_after_release"] = st or "unknown"
-                    rec.setdefault("lease", f"not cleanly released ({st or 'no state'}): see lease.json")
-            except Exception as e:  # noqa: BLE001
-                rec.setdefault("lease", f"not released ({e})")
+                    rec["lease"] = "released"
         (out / "record.json").write_text(json.dumps(rec, indent=1))
     return rec
 

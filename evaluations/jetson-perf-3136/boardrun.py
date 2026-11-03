@@ -95,6 +95,10 @@ HEARTBEAT_S = 15.0
 LEASE_SILENCE_S = 90.0
 LEASE_POLL_S = 5.0
 LEASE_TERM_WAIT_S = 120.0
+LEASE_OOM_ADJ = -900          # picar-stack's: the lease outlives what it guards under memory pressure
+# A process's start time (field 22 of /proc/<pid>/stat), from the shell: the
+# one spelling, matching start_time() (the name may hold ")" or spaces).
+START_TIME_SH = "sed 's/^.*) //' /proc/%s/stat 2>/dev/null | cut -d' ' -f20"
 
 
 class BoardError(RuntimeError):
@@ -359,7 +363,7 @@ def restore_and_check(before: dict, run: Callable[..., str] = ssh, *, allow_sudo
     are removed, and the systemd target is put back if the run found it
     graphical (`<board_out>/target_at_start`). Shared by the desktop's end
     of a run and the lease's."""
-    acts = []
+    acts, isolated = [], False
     if board_out:
         found = set((before.get("containers") or "").split())
         now = snapshot(run)
@@ -371,12 +375,13 @@ def restore_and_check(before: dict, run: Callable[..., str] = ssh, *, allow_sudo
             if allow_sudo:
                 run("sudo -n systemctl isolate graphical.target", check=False, timeout=120)
                 acts.append("isolated graphical.target")
+                isolated = True
             else:
                 acts.append("NOT RESTORED (allow_sudo off): graphical.target")
     units = restore(before, run, allow_sudo=allow_sudo)
     acts += units
     # Only a unit started or stopped needs time to settle; a removed container does not.
-    acted = any(not a.startswith(("NOT RESTORED", "hold flag kept")) for a in units)
+    acted = isolated or any(not a.startswith(("NOT RESTORED", "hold flag kept")) for a in units)
     after, diffs = settle_and_check(before, run, wait_s=120 if acted else 5)
     return acts, after, diffs
 
@@ -494,8 +499,8 @@ def end_tree(pid: int, term_wait_s: float, *, allow_sudo: bool = False) -> dict:
     is killed with `sudo -n kill -9` when the run has sudo. Returns the pids
     signalled and any still alive after.
 
-    Known limit: a process the bench daemonised (re-parented to init) is not
-    in the tree."""
+    Known limits: a process the bench daemonised, or one left when the bench's
+    own shell died first (both re-parented to init), is not in the tree.""" 
     import signal
     born = {p: start_time(p) for p in _descendants([pid]) if _alive(p)}
 
@@ -638,44 +643,41 @@ def lease(out, *, silence_s: float = LEASE_SILENCE_S, period_s: float = LEASE_PO
             break
         time.sleep(period_s)
     rec: dict = {"silence_s": round(silence, 1), "acted_at": time.time()}
-    survivors = []
+    survivors, samplers, skipped = [], [], []
     try:
-        pid_s, start_s = ((out / "bench.pid").read_text().split() + [""])[:2]
-        pid = int(pid_s)
-        if start_time(pid) is None:
-            rec["bench_ended"] = "the bench had already ended"
-        elif start_s and start_time(pid) != start_s:
-            rec["bench_ended"] = f"pid {pid} is no longer the bench (start time {start_time(pid)}, not {start_s})"
-        else:
-            rec["bench_ended"] = end_tree(pid, term_wait_s, allow_sudo=allow_sudo)
-            survivors += rec["bench_ended"]["survivors"]
-    except (OSError, ValueError) as e:
-        rec["bench_ended"] = f"no bench pid: {e}"
-    samplers, skipped = [], []
-    for f in (out / "sampler.pids", out / "telemetry" / "sampler.pids"):
         try:
-            pids = [int(p) for p in f.read_text().split()]
-        except (OSError, ValueError):
-            continue
-        for p in pids:
+            pid_s, start_s = ((out / "bench.pid").read_text().split() + [""])[:2]
+            pid = int(pid_s)
+            if start_time(pid) is None:
+                rec["bench_ended"] = "the bench had already ended"
+            elif start_s and start_time(pid) != start_s:
+                rec["bench_ended"] = f"pid {pid} is no longer the bench (start time {start_time(pid)}, not {start_s})"
+            else:
+                rec["bench_ended"] = end_tree(pid, term_wait_s, allow_sudo=allow_sudo)
+                survivors += rec["bench_ended"]["survivors"]
+        except (OSError, ValueError) as e:
+            rec["bench_ended"] = f"no bench pid: {e}"
+        for f in (out / "sampler.pids", out / "telemetry" / "sampler.pids"):
             try:
-                cmd = Path(f"/proc/{p}/cmdline").read_bytes().replace(b"\0", b" ").decode(errors="replace")
-            except OSError:
-                continue                    # gone already
-            if "tegrastats" not in cmd and str(out.name) not in cmd:
-                skipped.append(p)           # not a sampler of this run any more: a reused pid
+                pids = [int(p) for p in f.read_text().split()]
+            except (OSError, ValueError):
                 continue
-            r = end_tree(p, 5.0, allow_sudo=allow_sudo)
-            samplers += r["signalled"]
-            survivors += r["survivors"]
+            for p in pids:
+                try:
+                    cmd = Path(f"/proc/{p}/cmdline").read_bytes().replace(b"\0", b" ").decode(errors="replace")
+                except OSError:
+                    continue                    # gone already
+                if "tegrastats" not in cmd and str(out.name) not in cmd:
+                    skipped.append(p)           # not a sampler of this run any more: a reused pid
+                    continue
+                r = end_tree(p, 5.0, allow_sudo=allow_sudo)
+                samplers += r["signalled"]
+                survivors += r["survivors"]
+    except Exception as e:  # noqa: BLE001 -- the record is still written, and nothing is restored
+        rec["error"] = f"ending the bench: {type(e).__name__}: {e}"
+        survivors.append("unknown")
     rec["samplers_ended"], rec["sampler_pids_skipped"] = samplers, skipped
     rec["survivors"] = survivors
-    if (out / "lease.desktop_restores").exists():
-        # The desktop is alive (its bench ssh failed): it holds the board and restores.
-        rec["board_lock"] = "left to the desktop, alive and holding the board"
-        _write_record(out, json.dumps(rec, indent=1, default=str))
-        _state(out, "done")
-        return "acted"
     who = f"3.136.F lease of {out} (pid {os.getpid()}), since {time.strftime('%Y-%m-%dT%H:%M:%S%z')}"
     held, end = _take_board(lock_dir, who), time.monotonic() + lock_retry_s
     while held is None and time.monotonic() < end:
@@ -693,6 +695,10 @@ def lease(out, *, silence_s: float = LEASE_SILENCE_S, period_s: float = LEASE_PO
         rec["error"] = f"{type(e).__name__}: {e}"
     finally:
         if held:
+            try:
+                (lock_dir / ".picar-board.owner").write_text("")    # as board_lock.py's holder leaves it
+            except OSError:
+                pass
             held.close()
     _write_record(out, json.dumps(rec, indent=1, default=str))
     _state(out, "done")

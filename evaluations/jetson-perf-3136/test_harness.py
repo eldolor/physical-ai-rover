@@ -109,6 +109,7 @@ class FakeBoard:
         self.state = copy.deepcopy(state or FOUND)
         self.cmds = []
         self.lease_state = "watching"
+        self.lease_dead = False
 
     def __call__(self, cmd, check=True, timeout=0, input=None):
         self.cmds.append(cmd)
@@ -131,7 +132,7 @@ class FakeBoard:
         if "lease_boardrun.py lease" in cmd:
             return "4242\nalive 99\n"                             # the lease's pid, alive 2 s on, its start
         if "lease.stop" in cmd:
-            return self.lease_state + "\n"
+            return "STOPPED\n" + self.lease_state + "\n" + ("" if self.lease_dead else "LEASE-ALIVE\n")
         if "lease.json" in cmd:
             return ""
         if "/proc/" in cmd and "stat" in cmd:
@@ -211,7 +212,11 @@ class FakeSampler:
         pass
 
 
-def test_board_run_restores_even_when_the_command_breaks_the_board(monkeypatch, tmp_path):
+def test_a_bench_whose_ssh_breaks_is_left_to_the_lease_and_nothing_is_done_beside_it(monkeypatch, tmp_path):
+    """3.136.F: was "board_run restores even when the command breaks the board".
+    With no exit code back the bench may still run there: this side touches
+    nothing (no restore, no release), records that, and returns -- its board
+    hold ends, and the lease ends the bench and restores."""
     monkeypatch.setenv("PICAR_BOARD_TOKEN", "t0k")
     b = FakeBoard()
 
@@ -219,12 +224,9 @@ def test_board_run_restores_even_when_the_command_breaks_the_board(monkeypatch, 
         return "f" * 40
 
     def bad_cmd_board(cmd, check=True, timeout=0, input=None):
-        if "echo $?" in cmd:          # the bench: stops the VLM, then dies
+        if "echo $?" in cmd:          # the bench: stops the VLM, then its ssh dies
             b.state["units"]["picar-local-vlm"]["active"] = "inactive"
             raise RuntimeError("ssh dropped")
-        if "lease.json" in cmd:       # 3.136.F: the lease ended the bench, but this side held the lock
-            return json.dumps({"board_lock": "held by another session: its containers and units left",
-                               "survivors": []})
         return b(cmd, check, timeout, input)
 
     with pytest.raises(RuntimeError):
@@ -232,8 +234,8 @@ def test_board_run_restores_even_when_the_command_breaks_the_board(monkeypatch, 
                          push=push, fetch=lambda *a: None, sampler_cls=FakeSampler,
                          heartbeat_cls=FakeHeartbeat, sleep=lambda s: None)
     rec = json.loads((tmp_path / "record.json").read_text())
-    assert rec["left_as_found"] and rec["as_found_differences"] == []
-    assert sum(a.startswith("started") for a in rec["restore_actions"]) == 3
+    assert rec["lease"].startswith("left to the lease") and rec["left_as_found"] is None
+    assert not any(("systemctl start" in c or "lease.stop" in c or "docker rm" in c) for c in b.cmds)
 
 
 def test_board_run_passes_the_token_to_the_board_command(monkeypatch, tmp_path):
@@ -430,33 +432,6 @@ def test_board_run_refuses_to_run_a_bench_with_no_lease(monkeypatch, tmp_path):
     assert not any("echo hi" in c for c in b.cmds)
 
 
-def test_a_bench_whose_ssh_dies_is_left_to_the_lease_not_restored_beside(monkeypatch, tmp_path):
-    monkeypatch.setenv("PICAR_BOARD_TOKEN", "t0k")
-    b = FakeBoard()
-    lease_rec = {"silence_s": 95.0, "restore_actions": ["started picar-stack (was inactive)"],
-                 "after_differences": [], "survivors": [], "board_lock": "taken"}
-
-    def dying(cmd, check=True, timeout=0, input=None):
-        if "echo $?" in cmd:
-            raise RuntimeError("ssh dropped")
-        if "cat ~/" in cmd and "lease.json" in cmd:
-            for u in ("picar-stack", "picar-ngrok"):               # what the lease restored
-                b.state["units"][u]["active"] = "active"
-            return json.dumps(lease_rec)
-        return b(cmd, check, timeout, input)
-
-    with pytest.raises(RuntimeError):
-        runner.board_run("x", "true", tmp_path, allow_sudo=True, stop_twin=True, run=dying,
-                         push=lambda s, r, bench_dir=None: "f" * 40, fetch=lambda *a: None,
-                         sampler_cls=FakeSampler, heartbeat_cls=FakeHeartbeat, sleep=lambda s: None)
-    assert not any("lease.stop" in c for c in b.cmds)
-    rec = json.loads((tmp_path / "record.json").read_text())
-    assert rec["lease_record"] == lease_rec
-    assert rec["restore_actions"][0] == "by the lease: started picar-stack (was inactive)"
-    assert rec["left_as_found"] is True
-    assert not any("systemctl start" in c for c in b.cmds)      # the desktop started nothing beside the bench
-
-
 def test_the_heartbeat_is_one_held_session_touching_the_file_per_beat(tmp_path):
     hb = br.Heartbeat(str(tmp_path), period_s=0.02,
                       spawn=lambda cmd: subprocess.Popen(["bash", "-c", cmd], stdin=subprocess.PIPE))
@@ -591,71 +566,43 @@ def _run_with(monkeypatch, tmp_path, board, **kw):
 
 def test_an_ssh_that_returns_no_exit_code_is_not_a_bench_that_ended(monkeypatch, tmp_path):
     b = FakeBoard()
-    lease_rec = {"board_lock": "held by another session: its containers and units left", "survivors": []}
-
     def dropped(cmd, check=True, timeout=0, input=None):
         if "echo $?" in cmd:
             b.cmds.append(cmd)
             return ""                                              # ssh 255, nothing back
-        if "lease.json" in cmd:
-            return json.dumps(lease_rec)
         return b(cmd, check, timeout, input)
 
     rec = _run_with(monkeypatch, tmp_path, dropped)
-    assert rec["cmd_exit"] is None and "left to act" in rec["lease"]
-    assert any("lease.desktop_restores" in c for c in b.cmds)        # the lease is told this side restores
-    assert not any("lease.stop" in c for c in b.cmds)
-    # The lease could not take the board (this side's holder had it): this side restores.
-    assert rec["left_as_found"] and sum(a.startswith("started") for a in rec["restore_actions"]) == 2
+    assert rec["cmd_exit"] is None and rec["lease"].startswith("left to the lease")
+    assert not any("lease.stop" in c or "systemctl start" in c for c in b.cmds)
 
 
-def test_a_lease_that_got_there_first_is_waited_for_not_told_it_was_released(monkeypatch, tmp_path):
+def test_the_release_says_when_the_lease_acted_or_died_during_the_run(monkeypatch, tmp_path):
     b = FakeBoard()
-    b.lease_state = "acting"
-    lease_rec = {"board_lock": "taken", "survivors": [], "restore_actions": ["started picar-stack (was inactive)"]}
-
-    def board(cmd, check=True, timeout=0, input=None):
-        if "lease.json" in cmd:
-            return json.dumps(lease_rec)
-        return b(cmd, check, timeout, input)
-
-    rec = _run_with(monkeypatch, tmp_path, board)
-    # The board was put back here first; a lease found acting at the release is said so.
-    assert rec["left_as_found"] and rec["lease"].startswith("not cleanly released (acting)")
+    b.lease_state = "done"
+    rec = _run_with(monkeypatch, tmp_path, b)
+    assert rec["left_as_found"] and rec["lease"] == "the lease acted during the run: see lease.json"
+    b = FakeBoard()
+    b.lease_dead = True
+    rec = _run_with(monkeypatch, tmp_path / "2", b) if (tmp_path / "2").mkdir() is None else None
+    assert rec["lease"].startswith("the lease had died during the run")
 
 
-def test_survivors_of_the_lease_mean_nothing_is_restored_beside_them(monkeypatch, tmp_path):
+def test_a_release_that_never_landed_is_not_called_released(monkeypatch, tmp_path):
     b = FakeBoard()
 
-    def dying(cmd, check=True, timeout=0, input=None):
-        if "echo $?" in cmd:
-            raise RuntimeError("ssh dropped")
-        if "lease.json" in cmd:
-            return json.dumps({"board_lock": "taken", "survivors": [777]})
-        return b(cmd, check, timeout, input)
+    def lost(cmd, check=True, timeout=0, input=None):
+        return "" if "lease.stop" in cmd else b(cmd, check, timeout, input)
 
-    with pytest.raises(RuntimeError):
-        _run_with(monkeypatch, tmp_path, dying)
-    rec = json.loads((tmp_path / "record.json").read_text())
-    assert rec["restore_actions"][0].startswith("NOT RESTORED") and not rec["left_as_found"]
-    assert not any("systemctl start" in c for c in b.cmds)
+    rec = _run_with(monkeypatch, tmp_path, lost)
+    assert rec["lease"].startswith("not released") and sum("lease.stop" in c for c in b.cmds) == 0
 
 
-def test_a_lease_that_leaves_no_record_means_nothing_is_started_beside_the_bench(monkeypatch, tmp_path):
+def test_every_bench_keeps_the_board_while_it_lives(monkeypatch, tmp_path):
     b = FakeBoard()
-
-    def gone(cmd, check=True, timeout=0, input=None):
-        if "echo $?" in cmd:
-            raise RuntimeError("ssh dropped")
-        if "lease.json" in cmd:
-            return ""                                              # no record, and the lease is not alive
-        return b(cmd, check, timeout, input)
-
-    with pytest.raises(RuntimeError):
-        _run_with(monkeypatch, tmp_path, gone)
-    rec = json.loads((tmp_path / "record.json").read_text())
-    assert "ended with no record" in rec["lease"] and rec["restore_actions"][0].startswith("NOT RESTORED")
-    assert not any("systemctl start" in c for c in b.cmds)
+    _run_with(monkeypatch, tmp_path, b)
+    bench = next(c for c in b.cmds if "echo $?" in c)
+    assert "source tools/jetson/board_lock_check.sh" in bench
 
 
 def test_a_bench_that_never_started_is_not_waited_for(monkeypatch, tmp_path):
@@ -674,11 +621,3 @@ def test_a_bench_that_never_started_is_not_waited_for(monkeypatch, tmp_path):
     assert rec["lease"] == "released" and rec["left_as_found"]
 
 
-def test_a_lease_told_the_desktop_restores_skips_the_board_lock(tmp_path):
-    (tmp_path / "as_found.json").write_text(json.dumps(FOUND))
-    (tmp_path / "lease.desktop_restores").touch()
-    b = LeaseBoard()
-    t0 = time.monotonic()
-    br.lease(tmp_path, silence_s=0.2, period_s=0.01, run=b, lock_dir=tmp_path, lock_retry_s=30.0)
-    assert time.monotonic() - t0 < 5 and b.cmds == []
-    assert "left to the desktop" in json.loads((tmp_path / "lease.json").read_text())["board_lock"]
