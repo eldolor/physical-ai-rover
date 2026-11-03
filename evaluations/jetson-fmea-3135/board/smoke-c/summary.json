@@ -1,0 +1,191 @@
+{
+ "run_s": 1215.6,
+ "complete": false,
+ "missions_started_within_s": 0.0,
+ "a": {
+  "account_min_mb": 838.0,
+  "sysfs_min_mb": 627,
+  "samples": 243,
+  "sysfs_samples": 1056,
+  "min_mb": 627,
+  "met": true
+ },
+ "b": {
+  "slope_mb_per_h": null,
+  "slope_missions": 0,
+  "hour1_missions": 1,
+  "hour4_missions": 0,
+  "growth": {},
+  "roles_not_in_both_hours": [
+   "ROS container: async_slam_toolbox_node",
+   "ROS container: behavior_server",
+   "ROS container: bt_navigator",
+   "ROS container: collision_monitor",
+   "ROS container: controller_server",
+   "ROS container: lifecycle_manager",
+   "ROS container: planner_server",
+   "ROS container: python3",
+   "ROS container: robot_state_publisher",
+   "ROS container: ros2 launch",
+   "ROS container: ros2_control_node",
+   "ROS container: twist_mux",
+   "VLM driver (VE, Edge-LLM)",
+   "brain",
+   "cloud stand-in",
+   "desktop (gdm, gnome)",
+   "docker daemons",
+   "fake lidar",
+   "harness",
+   "local VLM service",
+   "measurement (sampler, tegrastats)",
+   "other: (sd-pam)",
+   "other: ModemManager",
+   "other: NetworkManager",
+   "other: agetty",
+   "other: avahi-daemon",
+   "other: cron",
+   "other: dbus-daemon",
+   "other: haveged",
+   "other: kerneloops",
+   "other: lpd",
+   "other: networkd-dispat",
+   "other: nv-tee-supplica",
+   "other: nvargus-daemon",
+   "other: nvfancontrol",
+   "other: nvmemwarning.sh",
+   "other: nvphsd",
+   "other: nvs-service",
+   "other: pipewire",
+   "other: pipewire-media-",
+   "other: polkitd",
+   "other: python3",
+   "other: rpcbind",
+   "other: rsyslogd",
+   "other: seatd",
+   "other: sleep",
+   "other: sshd",
+   "other: systemd",
+   "other: systemd-journal",
+   "other: systemd-logind",
+   "other: systemd-resolve",
+   "other: systemd-timesyn",
+   "other: systemd-udevd",
+   "other: tee-supplicant",
+   "other: uuidd",
+   "other: wpa_supplicant",
+   "perception (YOLOE + CLIP)",
+   "robot server",
+   "simulator body",
+   "simulator sensors"
+  ],
+  "over": [],
+  "met": false,
+  "reasons": [
+   "slope: under 2 missions after the first hour",
+   "missions in hour 1: 1, hour 4: 0"
+  ]
+ },
+ "c": {
+  "oom_kills_vmstat": 0,
+  "oom_kills_dmesg": 0,
+  "late_ticks": 0,
+  "max_dt_s": 0.094,
+  "moving_ticks": 16898,
+  "wheel_unread_missions": [],
+  "late_by_mission": {},
+  "oom_kills": 0,
+  "met": true
+ },
+ "d": {
+  "missions": 1,
+  "found": 0,
+  "share": 0.0,
+  "contacts": 0,
+  "truth_unjudged_missions": [],
+  "outcomes": {
+   "out_of_budget": 1
+  },
+  "by_house": {
+   "home_first_floor": "0/1"
+  },
+  "harness_stopped": [],
+  "errors": {},
+  "sweep": {
+   "found": 39,
+   "n": 40,
+   "missed": [
+    "procthor:val:3 / box (exhausted)"
+   ],
+   "how": "in-process explore sweep (FakeNav), the 40 house/target pairs, 2026-11-02"
+  },
+  "met": false
+ },
+ "met": false,
+ "durations_s": [
+  1201.3
+ ],
+ "per_mission": [
+  {
+   "k": 0,
+   "house": "home_first_floor",
+   "target": "red backpack",
+   "outcome": "out_of_budget",
+   "error": null,
+   "s": 1201.3,
+   "mem_min_mb": 838.0,
+   "late_ticks": 0,
+   "contacts": 0,
+   "truth_hole_s": 0.032
+  }
+ ],
+ "desktop_load_max": 3.52,
+ "sha": "ea2d48518a5815ec89cf8fbd14df36b3c96366a3",
+ "cmd_exit": 0,
+ "cmd_s": 1253.2,
+ "power_mode": "NV Power Mode: 15W",
+ "ve_before": {
+  "MainPID": "213172",
+  "NRestarts": "0",
+  "ActiveState": "active",
+  "ActiveEnterTimestamp": "Mon 2026-11-02 14:07:19 CST",
+  "health": {
+   "service": "local_vlm",
+   "ready": true,
+   "alive": true,
+   "load_s": 8.815076702000624,
+   "served": 0,
+   "engines": "/home/picar/bench-378/ws91/q25VE/engines",
+   "pid": 213172
+  }
+ },
+ "ve_after": {
+  "MainPID": "213172",
+  "NRestarts": "0",
+  "ActiveState": "active",
+  "ActiveEnterTimestamp": "Mon 2026-11-02 14:07:19 CST",
+  "health": {
+   "service": "local_vlm",
+   "ready": true,
+   "alive": true,
+   "load_s": 8.815076702000624,
+   "served": 1252,
+   "engines": "/home/picar/bench-378/ws91/q25VE/engines",
+   "pid": 213172
+  }
+ },
+ "cloud_calls": 0,
+ "restore_actions": [],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "telemetry": {
+  "samples": 1056,
+  "temps": 1056,
+  "clocks": 1056,
+  "max_temp_c": 60.906,
+  "oom_kills": 0,
+  "mem_available_min_mb": 627,
+  "cpu_below_max_samples": 392,
+  "gpu_below_max_samples": 186
+ }
+}
