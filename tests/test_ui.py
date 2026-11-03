@@ -162,17 +162,27 @@ class _LegacyTabBrowser:
     own contexts were written on the Guide tab (today's Record) and reach
     for its fields, so a context starts there unless the page or the test
     saved a tab of its own. `new_context(legacy_tab=None)` opts out -- the
-    tests of the default tab itself do."""
+    tests of the default tab itself do. Every context is a returning
+    device (a robot saved) unless it passes `first_run=True`."""
 
     def __init__(self, browser):
         self._browser = browser
 
-    def new_context(self, *args, legacy_tab="record", **kwargs):
+    def new_context(self, *args, legacy_tab="record", first_run=False, **kwargs):
         ctx = self._browser.new_context(*args, **kwargs)
         if legacy_tab:
             ctx.add_init_script(
                 "(() => { try { if (!localStorage.getItem('vp_active_tab'))"
                 " localStorage.setItem('vp_active_tab', %s); } catch (e) {} })();" % _json(legacy_tab))
+        if not first_run:
+            # 3.132 Stage 3B: a device with no robot saved opens on the
+            # first-run card in Home's place. The legacy tests are a
+            # returning device on the page's own robot server, so one is
+            # saved unless the test saved its own; `first_run=True` opts out.
+            ctx.add_init_script(
+                "(() => { try { if (location.protocol.startsWith('http')"
+                " && !localStorage.getItem('vp_server_url'))"
+                " localStorage.setItem('vp_server_url', location.origin); } catch (e) {} })();")
         return ctx
 
     def __getattr__(self, name):
@@ -2854,9 +2864,11 @@ def test_the_late_watch_stops_on_a_dead_brain(browser, twin_server):
     current["fail"] = True
     page.wait_for_timeout(3000 * 6 + 1000)  # past LATE_MAX_ERRORS (5) polls
     before = len(status_calls)
-    page.wait_for_timeout(7000)
-    assert len(status_calls) == before, (
-        f"{len(status_calls) - before} status polls after the watch should have stopped")
+    page.wait_for_timeout(10000)
+    # 3.132 F1: the idle liveness ping reads /mission/status too, every 5 s
+    # (at most 3 in 10 s); a watch still polling every 3 s would add 3 more.
+    assert len(status_calls) - before <= 3, (
+        f"{len(status_calls) - before} status polls in 10 s: the watch did not stop")
     page.close()
 
 

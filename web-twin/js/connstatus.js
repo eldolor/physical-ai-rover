@@ -17,10 +17,19 @@ const CONN_STATE_CLASS = {ok: "is-ok", err: "is-err", busy: "is-busy", idle: ""}
 // 3.132 Stage 2A: a status whose words depend on the voice is kept as the
 // function that draws it, and drawn again when Engineer mode is switched
 // (revoice()). Any plain setConnStatus() on the same element replaces it.
-export const voicedStatus = new Map();
+// Stage 3: the registry is this module's own, reached only through these
+// functions (Stage 2B exported it for app.js's revoice() to walk).
+const voicedStatus = new Map();
 export function setVoicedConnStatus(el, draw) {
   draw();
   if (el) voicedStatus.set(el, draw);
+}
+// Draws every voiced status again in the voice now chosen. Each draw goes
+// through setConnStatus(), which drops its element's entry; re-registering
+// keeps it for the next switch (Thermos: only the first switch changed the
+// voice). A snapshot, so the loop is not walking a map it is rewriting.
+export function redrawVoicedStatus() {
+  Array.from(voicedStatus).forEach(function (entry) { setVoicedConnStatus(entry[0], entry[1]); });
 }
 export function setConnStatus(el, stateName, label, detail) {
   if (!el) return;

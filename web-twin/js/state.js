@@ -30,6 +30,14 @@ export const state = {
   sightings: [], found: false, foundSighting: null,
   log: [], step: 0,
   safetyFlashUntil: 0,
+  // 3.132 F2: this page's D-pad presses in flight, when the last ended
+  // (performance.now()), a count of a person's STOPs, and the robot
+  // server's watchdog lapse from /health.
+  dpadInFlight: 0,
+  dpadDoneAt: 0,
+  personStops: 0,
+  watchdogTimeoutS: null,
+  firstRun: null,        // 3.132 Stage 3B: "robot", "brain", or null once done
   guidanceMode: "robot", // "guide" -> /guidance (steer a person); "robot" -> /navigate (what would the robot do)
   guidanceRunning: false, guidanceStarting: false, guidanceTimerId: null, guidanceTarget: null,
   guidanceInFlight: 0, guidanceSeq: 0, guidanceLastRenderedSeq: 0,

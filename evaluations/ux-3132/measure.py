@@ -604,6 +604,13 @@ def run_task(out, key, opener, fn):
 # ---------- the twin's tasks ----------
 
 def t1_first_connect(page, reqs, t):
+    # Stage 3B: a first run opens on Home's card (amendment 4: a stage may
+    # rewrite a task's path; the goal check is unchanged).
+    if page.locator("#wiz-robot-url").first.is_visible():
+        t.fill("#wiz-robot-url", ROBOT, "type the robot's address")
+        t.tap("#btn-wiz-connect", "Connect")
+        page.wait_for_function(CONNECTED, timeout=15_000)
+        return t.result(True)
     if not page.locator("#cfg-server-url").first.is_visible():
         t.tap("#btn-settings", "Settings tab")
     t.fill("#cfg-server-url", ROBOT, "type the robot server's URL")

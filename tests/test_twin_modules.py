@@ -298,3 +298,24 @@ def test_the_module_route_serves_only_the_module_folder(tmp_path, monkeypatch):
             (folder / "later.js").write_text("export const w = 4;\n")
             assert client.get(prefix + "/js/later.js").status_code == 200, prefix
             (folder / "later.js").unlink()
+
+
+EXPORTED = re.compile(r"^export\s+(?:async\s+)?(?:function\*?|const|let|var|class)\s+([A-Za-z_$][\w$]*)", re.M)
+
+
+def exported_values(code: str) -> list:
+    """Names a module exports that are not functions: state another file
+    could reach into."""
+    return [m.group(1) for m in EXPORTED.finditer(code)
+            if not re.match(r"export\s+(?:async\s+)?function", m.group(0))]
+
+
+def test_connstatus_exports_no_registry():
+    """3.132 Stage 3B, criterion 8: `voicedStatus` (the voiced statuses kept
+    for a voice switch) is connstatus.js's own again; app.js reaches it only
+    through its functions. Stage 2B had exported the Map."""
+    code = (MODULE_DIR / "connstatus.js").read_text()
+    assert exported_values(code) == [], exported_values(code)
+    assert not any("voicedStatus" in g for g in re.findall(r"export\s*\{([^}]*)\}", code))
+    assert exported_values("export const voicedStatus = new Map();\nexport function f() {}\n") \
+        == ["voicedStatus"]

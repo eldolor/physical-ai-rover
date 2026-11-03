@@ -373,8 +373,9 @@ def test_an_overtaken_answer_is_not_drawn(browser, twin_server):
         page.wait_for_timeout(4000)          # the slow first call has landed
         after = page.inner_text("#robot-action-verb").strip().upper()
         assert not errors, errors
-        assert before == "RIGHT", f"expected the fast answers, got {before!r}"
-        assert after == "RIGHT", (
+        # 3.132 Stage 3B: operator mode words the badge ("Turn right").
+        assert before in ("RIGHT", "TURN RIGHT"), f"expected the fast answers, got {before!r}"
+        assert after in ("RIGHT", "TURN RIGHT"), (
             f"a stale answer repainted the HUD: {after!r} -- the sequence "
             "check is not holding"
         )

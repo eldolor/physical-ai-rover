@@ -44,6 +44,19 @@ brain/control loop against real pixels.
   mode`, `hardware mode`), or Not connected.
 - **A saved tab from before** opens where it moved: `guide` on Record,
   `sim` and `autonomous` on Home. A first visit opens Home.
+- **The first run (Stage 3B).** A device with no robot saved and no setup
+  link opens Home on one card in place of its panels: the robot's address
+  and access code, then Connect (one field, one tap). Once the robot
+  connects -- from the card, from Settings, or by itself on a page the
+  robot serves -- the card offers the autopilot at an address guessed from
+  the robot's (the same host's `:8001`; for an address with no port, the
+  tunnel's `/brain`), with its access code (the robot's, if none is saved),
+  and Connect or Skip. Connect reads the autopilot's `/mission/status`
+  first, so a wrong code keeps the card and says so. A robot that refuses
+  the load's own connect with a 401 keeps its address in the card and asks
+  for the code. The card fills the Settings tab's own fields and calls the
+  same connects, so Settings shows and changes what it saved; a robot that
+  never connects saves no address, and the card shows again next time.
 
 ---
 
@@ -389,7 +402,12 @@ never look like arrival).
   prevent.
 - A telemetry readout (`TGT`/`ACT`/`VIS`/`OBS`/`SEQ`, plus `STA: REACHED`
   on arrival) and an `OBSTACLE AHEAD` banner when `obstacle_ahead` is
-  true.
+  true. **The code line is Engineer mode's (3.132 Stage 3B):** in
+  operator mode the readout says only what an ending or a fault needs, in
+  words ("Looked in: hall, kitchen. 42 m² mapped.", an arrival not
+  confirmed, no answer this time), the pan readout is hidden, and the
+  action badge and the screen-reader announcement say the move in words
+  ("Turn right", "Found it").
 - **No audio/haptic cues in this mode** -- they encode `proximity`, a
   field `/navigate` doesn't return.
 - **No auto-pause on a single arrival tick** -- Robot view pauses only
@@ -717,7 +735,19 @@ finished map at mission start; N1's discovered map replaced it.)
   while a mission runs. It is greyed only when the brain is unreachable, and
   the page then says so and **retries every 5 seconds on its own** -- a
   restarted brain used to leave Start dead until Connect was pressed in
-  Settings. Only a brain that does not answer (or a 502/503/504 from the
+  Settings. While connected and idle, the same 5 s ping reads
+  `/mission/status`, so a mission started from another phone or the API
+  shows here within one period (3.132 F1); a Drive via brain walk from
+  this page is left to its own loop.
+- **Start after driving (3.132 F2).** A person's claim on the robot (a
+  D-pad press here, for the watchdog's lapse after it ends, or a map goal
+  while it drives) outranks the brain, so a Start right after driving into
+  place used to end at once, "D-pad took over". Start now waits for the
+  robot server's `authority_holder` to clear, reading `/health` every
+  300 ms and saying "Waiting for your last move to finish..." on the
+  button; a STOP or a second tap cancels it, and a claim still held after
+  10 s starts nothing ("Someone is still driving the robot"). Ranks are
+  unchanged. Only a brain that does not answer (or a 502/503/504 from the
   tunnel's proxy) counts as lost; one that answers with an error stays
   connected so the error is shown.
 - **Job picker** (3.70 S5) -- **Find an object** (the target box, policy

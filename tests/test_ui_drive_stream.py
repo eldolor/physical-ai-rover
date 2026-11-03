@@ -112,7 +112,9 @@ def _drive(browser, server, prefs):
     ctx = browser.new_context(viewport=PHONE, permissions=["camera"])
     seed = {"guidanceMode": "robot", "vp_guide_onboarded": "1",
             "vp_brain_url": server + "/brain-stub", "vp_drive_via_brain": "1",
-            "vp_drive_policy": "tiered", **prefs}
+            "vp_drive_policy": "tiered",
+            # 3.132 Stage 3B: the HUD's FPS and VOTE rows are Engineer mode's.
+            "vp_debug_readouts": "1", **prefs}
     ctx.add_init_script(
         "(() => { const s = %s;"
         " try { for (const k in s) localStorage.setItem(k, s[k]); } catch (e) {} })();"

@@ -34,7 +34,7 @@ import { escapeHtml, setEmptyState, clearEmptyState, LOG_EMPTY, showToast, setBu
 import { DEBUG_LOG_KEY, pushDebugLog } from "./js/debuglog.js";
 import { renderTargetHistory, saveTargetToHistory } from "./js/history.js";
 import { state } from "./js/state.js";
-import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatus.js";
+import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatus.js";
 
 (function () {
   "use strict";
@@ -1099,6 +1099,12 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     if (!state.connected) return;
     const extra = (action === "LEFT" || action === "RIGHT")
       ? { angle: state.turnStepDeg } : undefined;
+    // 3.132 F2: a Start waits out this press's hold on the robot, and a
+    // STOP cancels a Start that is waiting.
+    // A STOP claims nothing (it ends autonomy), so it is no hold to wait out.
+    const holds = action !== "STOP";
+    if (!holds) state.personStops++;
+    if (holds) state.dpadInFlight++;
     try {
       await commitAction(action, DRIVER_DPAD, extra);
     } catch (e) {
@@ -1112,6 +1118,11 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
       const lostStop = !answered && action === "STOP";
       const key = answered ? "drive.refused" : lostStop ? "drive.stopLost" : "drive.notSent";
       showToast(t(key, {action: actionWords(action), status: e.status, why: e.message || e}), "err");
+    } finally {
+      if (holds) {
+        state.dpadInFlight--;
+        state.dpadDoneAt = performance.now();
+      }
     }
   }
 
@@ -1295,6 +1306,7 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     // 3.132 Stage 3 (review): another server's mode is unknown until its
     // /health answers -- the header must not name the last one's.
     state.robotMode = null;
+    state.watchdogTimeoutS = null;     // F2: the new server's lapse, once read
     renderHeaderMode();
     // Connecting somewhere else clears the "this server has no /depth"
     // latch -- otherwise one pre-M2 server would silence the strip for
@@ -1341,6 +1353,7 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
       recordObservation(frame);
       render(frame);
       if (!silent) showToast(t("robot.connected"), "ok");
+      firstRunAfterRobot();
     } catch (e) {
       state.connected = false;
       setControlsEnabled(false);
@@ -1350,12 +1363,130 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
         setConnStatus(statusEl, f.state, f.label, f.detail);
       });
       if (!silent && failure.toast) showToast(failure.toast, "err");
+      firstRunRobotRefused(url, e);
     } finally {
       state.connecting = false;
       setButtonBusy(btn, false);
       renderHeaderConnStatus();
     }
   }
+
+  // ---------- 3.132 Stage 3B: the first run ----------
+  // A device with no robot saved and no setup link opens on one card in
+  // Home's place: the robot's address and access code, then the
+  // autopilot's, guessed from the robot's. It fills the Settings tab's own
+  // fields and calls the same connect(), so what it saves is what Settings
+  // shows and changes later.
+  function guessBrainUrl(robotUrl) {
+    try {
+      const u = new URL(robotUrl);
+      // A robot on a port (the LAN, local development) has its autopilot on
+      // the same host's :8001; one with none is the tunnel's single domain,
+      // which serves it under /brain (service/tunnel/).
+      if (u.port) return u.protocol + "//" + u.hostname + ":8001";
+      return u.origin + "/brain";
+    } catch (e) { return ""; }
+  }
+  function showFirstRun(step) {
+    state.firstRun = step;
+    if (step === "robot" || step === "brain") {
+      // The codes saved on this device, if any, start in the card's fields.
+      const fill = function (to, from) {
+        const field = document.getElementById(to);
+        if (!field.value) field.value = document.getElementById(from).value.trim();
+      };
+      fill("wiz-robot-secret", "cfg-server-secret");
+      // One access code usually opens both (the tunnel's shared secret).
+      fill("wiz-brain-secret", "cfg-brain-secret");
+      fill("wiz-brain-secret", "cfg-server-secret");
+    }
+    document.getElementById("first-run").hidden = !step;
+    document.body.classList.toggle("first-run-on", !!step);
+    document.getElementById("first-run-robot").hidden = step !== "robot";
+    document.getElementById("first-run-brain").hidden = step !== "brain";
+    if (step === "brain") {
+      const field = document.getElementById("wiz-brain-url");
+      if (!field.value) field.value = guessBrainUrl(document.getElementById("cfg-server-url").value.trim());
+    }
+  }
+  // The robot connected, from this card, Settings or the silent connect at
+  // load (a page the robot serves): on to the autopilot, unless it is
+  // connected already.
+  function firstRunAfterRobot() {
+    if (state.firstRun === "robot") showFirstRun(state.brainConnected ? null : "brain");
+  }
+  // Only at the autopilot's step: a brain that connects first (a saved
+  // address, the liveness reconnect) leaves the robot's step showing, and
+  // firstRunAfterRobot() closes the card once the robot connects.
+  function firstRunAfterBrain() {
+    if (state.firstRun === "brain") showFirstRun(null);
+  }
+  // The robot's silent connect at load answered but refused (a robot that
+  // needs its access code): the address was right, so the card keeps it and
+  // asks for the code. Only a 401 (require_secret's): the static host a
+  // deployed page comes from answers 403 for a path it lacks.
+  function firstRunRobotRefused(url, e) {
+    if (state.firstRun !== "robot" || e.status !== 401) return;
+    const field = document.getElementById("wiz-robot-url");
+    if (!field.value.trim()) field.value = url;
+    setFirstRunStatus("wiz-robot-status", t("wizard.needsCode"), true);
+  }
+  function setFirstRunStatus(id, text, isErr) {
+    const el = document.getElementById(id);
+    el.textContent = text || "";
+    el.classList.toggle("is-err", !!isErr);
+  }
+  document.getElementById("btn-wiz-connect").onclick = async function () {
+    const url = document.getElementById("wiz-robot-url").value.trim();
+    if (!url) { setFirstRunStatus("wiz-robot-status", t("wizard.noUrl"), true); return; }
+    document.getElementById("cfg-server-url").value = url;
+    renderEndpointNote();          // as Settings' own field redraws it (saved once it connects)
+    // The card's field starts as the code saved here, if any (init); an
+    // empty one never wipes a saved code.
+    const secret = document.getElementById("wiz-robot-secret").value.trim();
+    const secretEl = document.getElementById("cfg-server-secret");
+    if (secret && secret !== secretEl.value.trim()) {
+      secretEl.value = secret;
+      secretEl.dispatchEvent(new Event("change"));    // remembered as Settings remembers it
+    }
+    setFirstRunStatus("wiz-robot-status", "");
+    this.disabled = true;            // one connect at a time (review)
+    setButtonBusy(this, true, t("wizard.connecting"));
+    try { await connect(); } finally { setButtonBusy(this, false); this.disabled = false; }
+    if (!state.connected) setFirstRunStatus("wiz-robot-status", t("wizard.robotFailed"), true);
+  };
+  document.getElementById("btn-wiz-brain").onclick = async function () {
+    const url = document.getElementById("wiz-brain-url").value.trim();
+    if (!url) { setFirstRunStatus("wiz-brain-status", t("wizard.noUrl"), true); return; }
+    document.getElementById("cfg-brain-url").value = url;
+    renderEndpointNote();
+    const secret = document.getElementById("wiz-brain-secret").value.trim();
+    const brainSecretEl = document.getElementById("cfg-brain-secret");
+    if (secret && secret !== brainSecretEl.value.trim()) {
+      brainSecretEl.value = secret;
+      brainSecretEl.dispatchEvent(new Event("change"));
+    }
+    setFirstRunStatus("wiz-brain-status", "");
+    this.disabled = true;
+    setButtonBusy(this, true, t("wizard.connecting"));
+    let refused = false;
+    try {
+      // connectBrain() checks the open /health only; the card closes on it.
+      // A wrong code would then fail every mission call quietly (both
+      // reviewers), so the card reads the status first, which needs it.
+      const keep = state.firstRun;
+      state.firstRun = null;           // firstRunAfterBrain() waits for the check
+      try { await connectBrain(); } finally { state.firstRun = keep; }
+      if (state.brainConnected) {
+        try { await brainApi("GET", "/mission/status"); }
+        catch (e) { refused = e.status === 401; }
+      }
+    } finally { setButtonBusy(this, false); this.disabled = false; }
+    if (!state.brainConnected) setFirstRunStatus("wiz-brain-status", t("wizard.brainFailed"), true);
+    else if (refused) setFirstRunStatus("wiz-brain-status", t("wizard.brainCode"), true);
+    else firstRunAfterBrain();
+  };
+  document.getElementById("btn-wiz-skip").onclick = function () { showFirstRun(null); };
 
   // ---------- rendering ----------
 
@@ -2406,6 +2537,7 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
       const health = await res.json();
       const age = health.seconds_since_last_command;
       const timeout = health.watchdog_timeout_s;
+      if (typeof timeout === "number" && timeout > 0) state.watchdogTimeoutS = timeout;
       const fired = age > timeout;
       // Keep the local-brain's own clearance checks and the map's safety
       // collar (below) in sync with whatever this server actually
@@ -2602,13 +2734,23 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
         return;
       }
       // Connected and idle: a mission's own status poll covers the running
-      // case, so only ping when nothing else is asking.
-      if (state.brainPollTimerId) return;
-      try { await brainApi("GET", "/health"); } catch (e) { if (brainGone(e)) markBrainLost(e); }
+      // case, so only ping when nothing else is asking. 3.132 F1: the ping
+      // is the mission's status, so a mission started from another phone or
+      // the API is picked up within one period (it used to show "idle" over
+      // a moving robot until a reload). Not while this page starts or stops
+      // one: its own Start and Stop own the poll then.
+      // Nor while Record's Drive via brain runs: that walk is a mission
+      // too, and its own loop reads and ends it (both reviewers).
+      if (state.brainPollTimerId || brainStartStopBusy || driveViaBrainWalking()) return;
+      let status;
+      try { status = await brainApi("GET", "/mission/status"); }
+      catch (e) { if (brainGone(e)) markBrainLost(e); return; }
+      if (status && status.running && state.brainConnected && !state.brainPollTimerId
+          && !brainStartStopBusy && !driveViaBrainWalking()) startBrainPolling();
     }, BRAIN_LIVENESS_MS);
   }
 
-  let brainPollGen = 0, brainPollInFlight = false;
+  let brainPollGen = 0, brainPollInFlight = false, brainStartStopBusy = false;
   async function pollBrainOnce() {
     // 3.76: one at a time (a slow brain error stacked requests), and an
     // answer from before a Stop or a stop of polling is dropped -- it used
@@ -2896,6 +3038,7 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     btn.disabled = true;
     const stops = [];
     if (state.connected) stops.push(manualAction("STOP"));
+    else state.personStops++;      // F2: still cancels a Start that waits
     if (state.brainConnected && state.brainMissionRunning) stops.push(stopBrainMission());
     // Drive via brain's own loop: the same Stop as Record's button.
     if (driveViaBrainMoving()) stopGuidance();
@@ -3052,9 +3195,30 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     // A survey sends no drill: its picker is hidden, and may still hold one.
     // 3.132: drills are Engineer mode's; a person's Start is never one (review).
     const fault = survey || !engineerMode() ? "none" : document.getElementById("brain-fault").value;
-    if (!survey) saveTargetToHistory(target);
     const btn = document.getElementById("btn-brain-mission");
+    brainStartStopBusy = true;
+    let waited;
+    try {
+      // 3.132 F2: a person's claim on the robot (this page's D-pad press,
+      // or a map goal still driving) outranks the brain (M4), so a Start
+      // right after driving into place used to end at once, "D-pad took
+      // over". Wait the claim out, saying so; a STOP or a second tap
+      // meanwhile cancels the Start, and a claim that outlasts the wait
+      // starts nothing.
+      waited = await waitForPersonHold(btn);
+    } finally {
+      brainStartStopBusy = false;
+    }
+    if (waited !== "free") {
+      setButtonBusy(btn, false);
+      updateBrainControls();
+      const why = waited === "held" ? "mission.stillHeld" : "mission.startCancelled";
+      showToast(t(why), "info");
+      return;
+    }
+    if (!survey) saveTargetToHistory(target);
     setButtonBusy(btn, true, "Starting\u2026");
+    brainStartStopBusy = true;
     const body = survey ? { job: "survey", policy: "explore" }
       : { target_object: target, fault: fault, policy: state.brainPolicy };
     // 3.88 A: sent only when switched on, and only for explore's search.
@@ -3081,8 +3245,64 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     } catch (e) {
       showToast(batteryStartWords(e) || t("mission.startFailed", {why: e.message}), "err");
     } finally {
+      brainStartStopBusy = false;
       setButtonBusy(btn, false);
       updateBrainControls();
+    }
+  }
+
+  // 3.132 F2: how long this page's D-pad keeps the robot after its last
+  // press -- the robot server's watchdog lapse (`/health`
+  // watchdog_timeout_s), plus 0.5 s for the clocks and the poll.
+  const DPAD_LAPSE_SLACK_MS = 500;
+  function dpadLapseLeftMs() {
+    if (state.dpadInFlight > 0) return Infinity;
+    if (!state.dpadDoneAt) return 0;
+    const lapse = (state.watchdogTimeoutS || 1) * 1000 + DPAD_LAPSE_SLACK_MS;
+    return Math.max(0, lapse - (performance.now() - state.dpadDoneAt));
+  }
+  // The robot server's own word on who holds it, read fresh: a person's map
+  // goal holds it for as long as it drives, which no press here counts.
+  // Null when it cannot say (no robot, an old server, no answer).
+  const AUTONOMY_HOLDERS = ["brain", "ros", DRIVER_LOCAL_BRAIN];
+  async function personHolder() {
+    if (!state.connected) return null;
+    try {
+      const health = await apiGet("/health");
+      if (typeof health.watchdog_timeout_s === "number" && health.watchdog_timeout_s > 0) {
+        state.watchdogTimeoutS = health.watchdog_timeout_s;
+      }
+      const holder = health.authority_holder;
+      return holder && AUTONOMY_HOLDERS.indexOf(holder) === -1 ? holder : null;
+    } catch (e) { return null; }
+  }
+  // A press whose reply never comes (the robot calls have no timeout), or a
+  // map goal that drives on, must not hold Start for ever: past this the
+  // Start is given up, and the person told why.
+  const HOLD_WAIT_MAX_MS = 10000;
+  const HOLD_POLL_MS = 300;
+  // A tap on the button while it waits cancels, as STOP does.
+  let startWaiting = false, startWaitCancelled = false;
+  // "free" once no person holds the robot (at once if none does),
+  // "cancelled" on a STOP or a second tap, "held" if the claim outlasts the
+  // wait.
+  async function waitForPersonHold(btn) {
+    const stops = state.personStops, until = performance.now() + HOLD_WAIT_MAX_MS;
+    startWaiting = true;
+    startWaitCancelled = false;
+    let said = false;
+    try {
+      for (;;) {
+        const held = dpadLapseLeftMs() > 0 || (await personHolder()) !== null;
+        if (state.personStops !== stops || startWaitCancelled) return "cancelled";
+        if (!held) return "free";
+        if (performance.now() >= until) return "held";
+        if (!said) { setButtonBusy(btn, true, t("mission.waitDpad")); said = true; }
+        await new Promise(function (r) { setTimeout(r, HOLD_POLL_MS); });
+        if (state.personStops !== stops || startWaitCancelled) return "cancelled";
+      }
+    } finally {
+      startWaiting = false;
     }
   }
 
@@ -3094,6 +3314,7 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     // and resumed if the Stop fails: the mission is still running, and a
     // failed Stop used to stop the page watching it.
     stopBrainPolling();
+    brainStartStopBusy = true;       // F1: the liveness ping keeps off
     try {
       const res = await brainApi("POST", "/mission/stop");
       state.brainMissionRunning = false;
@@ -3106,12 +3327,14 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
       showToast(t("mission.stopFailed", {why: e.message}), "err");
       if (state.brainConnected) startBrainPolling();
     } finally {
+      brainStartStopBusy = false;
       setButtonBusy(btn, false);
       updateBrainControls();
     }
   }
 
   document.getElementById("btn-brain-mission").onclick = function () {
+    if (startWaiting) { startWaitCancelled = true; return; }
     if (state.brainMissionRunning) stopBrainMission();
     else startBrainMission();
   };
@@ -3186,6 +3409,7 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
       updateBrainControls();
       renderRecordStatus();
       renderDriveViaBrainStatus();
+      firstRunAfterBrain();
       // A mission may already be running -- started from another device, or
       // before this page was even opened. Pick it up rather than showing
       // "idle" over a robot that is moving.
@@ -3387,6 +3611,10 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
   // sim cannot test the detector by 1.12's design), so it is the one walk
   // most worth keeping, and it was the one walk the twin refused to record.
   // It cost a rig session before anyone noticed.
+  // A Drive via brain walk under way from this page, paused or not.
+  function driveViaBrainWalking() {
+    return !!(state.guidanceRunning && driveViaBrainActive());
+  }
   function driveViaBrainActive() {
     return state.driveViaBrain && state.brainConnected && state.guidanceMode === "robot";
   }
@@ -4229,8 +4457,34 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
         : '<div id="robot-tel-cov"><b>MAP</b>' + Math.round(report.mapped_free_m2) + " m\u00B2</div>");
   }
 
+  // 3.132 Stage 3B: what operator mode's fullscreen view says in place of
+  // the code line -- only what an ending or a fault needs, in words.
+  function plainRobotTelemetry(result) {
+    if (!result) return "";
+    if (result.error) return t("hud.noAnswer");
+    const mission = result._missionStatus;
+    if (result.unconfirmed) {
+      return t("hud.unconfirmed", {target: state.guidanceTarget || t("word.target")});
+    }
+    const report = mission && mission.report;
+    if (result.endState && report) {
+      const rooms = (report.rooms_entered || []).join(", ");
+      const m2 = report.mapped_free_m2 == null ? "" : t("hud.mapped", {m2: Math.round(report.mapped_free_m2)});
+      return rooms ? t("hud.looked", {rooms: rooms}) + (m2 ? " " + m2 : "") : m2;
+    }
+    return "";
+  }
+
   function renderRobotTelemetry(result) {
     const el = document.getElementById("robot-telemetry");
+    const plain = !engineerMode();
+    el.classList.toggle("plain", plain);
+    if (plain) {
+      el.textContent = plainRobotTelemetry(result);
+      document.getElementById("robot-obstacle")
+        .classList.toggle("visible", !!result && result.obstacle_ahead === true);
+      return;
+    }
     if (!result || result.error) {
       el.innerHTML = "<div><b>ERR</b><span class=\"v-alert\">LINK</span></div>";
       return;
@@ -4587,7 +4841,10 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     else if (!reached && zone === "right") guidanceEdgeGlowRight.style.opacity = ROBOT_EDGE_GLOW_OPACITY;
 
     robotActionBadge.dataset.action = reached ? "REACHED" : action;
-    document.getElementById("robot-action-verb").textContent = reached ? "REACHED" : action;
+    // 3.132 Stage 3: a person reads the move in words; Engineer mode keeps
+    // the verb as sent (the badge's style still keys on the raw action).
+    const verb = reached ? t("hud.reached") : actionWords(action);
+    document.getElementById("robot-action-verb").textContent = verb.charAt(0).toUpperCase() + verb.slice(1);
     document.getElementById("robot-action-target").textContent = reached
       ? (state.guidanceTarget || "target")
       : (result.target_visible
@@ -4650,7 +4907,7 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
       : result.unconfirmed || result.endState ? result.reasoning
       : key === "reached"
         ? "Reached " + (state.guidanceTarget || "the target") + ". Search paused."
-        : key + ". " + (result.reasoning || "");
+        : actionWords(key) + ". " + (result.reasoning || "");   // 3.132: words, not the verb
     announce(document.getElementById("guide-announce-polite"), msg);
   }
 
@@ -6020,6 +6277,10 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
   }
 
   const savedServerUrl = prefGet(PREF.serverUrl);
+  // 3.132 Stage 3B: read before prefillTesterSecrets() below takes a setup
+  // link's parameters off the address.
+  const firstRunWanted = !savedServerUrl && !["secret", "robotSecret", "brainSecret", "visionUrl",
+    "serverUrl", "brainUrl"].some(function (k) { return new URLSearchParams(location.search).has(k); });
   const savedVisionUrl = prefGet(PREF.visionUrl);
   const savedBrainUrl = prefGet(PREF.brainUrl);
   if (savedServerUrl) cfgServerUrlEl.value = savedServerUrl;
@@ -6077,11 +6338,7 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
     renderDriveViaBrainStatus();
     updateBrainControls();
     renderBrainPolicyHint();
-    // Each draw goes through setConnStatus(), which drops its element's
-    // entry; re-registering keeps it for the next switch (Thermos: only the
-    // first switch changed the voice). A snapshot, so the loop is not
-    // walking a map it is rewriting.
-    Array.from(voicedStatus).forEach(function (entry) { setVoicedConnStatus(entry[0], entry[1]); });
+    redrawVoicedStatus();
     // Only what is still current: a brain that stopped answering keeps its
     // "unreachable" line, never its last good status (review).
     if (state.brainConnected && !state.brainLost && state.lastBrainStatus) {
@@ -6402,6 +6659,7 @@ import { voicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatu
   // remembered or derived from this page's own origin, so in the common
   // case there is nothing left to ask. Failure is quiet and non-blocking
   // (see connect()'s `silent`); the manual button remains the retry path.
+  if (firstRunWanted) showFirstRun("robot");
   if (document.getElementById("cfg-server-url").value.trim()) {
     connect({ silent: true });
   }

@@ -187,7 +187,39 @@
   </div>
 
   <div class="tab-page active" role="tabpanel" data-tab="home" id="tab-home" aria-labelledby="tab-btn-home">
-    <div class="panel">
+    <!-- 3.132 Stage 3B: the first run. With no robot saved on this device
+         and no setup link, Home is this card until the robot connects and
+         the autopilot is connected or skipped. It drives the Settings
+         tab's own fields and Connect calls; Settings changes them later. -->
+    <div class="panel first-run" id="first-run" hidden>
+      <div class="first-run-step" id="first-run-robot">
+        <h2 class="first-run-title">Connect to your robot</h2>
+        <div class="lede">Type the robot&rsquo;s address, and its access code if it has one.</div>
+        <label class="first-run-label" for="wiz-robot-url">Robot address</label>
+        <input type="url" id="wiz-robot-url" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" class="text-input" placeholder="http://192.168.1.20:8000">
+        <label class="first-run-label" for="wiz-robot-secret">Access code (if it has one)</label>
+        <input type="text" id="wiz-robot-secret" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" class="text-input">
+        <button id="btn-wiz-connect" class="primary first-run-go">Connect</button>
+        <div class="first-run-status" id="wiz-robot-status" role="status" aria-live="polite"></div>
+      </div>
+      <div class="first-run-step" id="first-run-brain" hidden>
+        <h2 class="first-run-title">Connected. Now the autopilot</h2>
+        <div class="lede">
+          The autopilot is what searches the house on its own. It usually
+          runs beside the robot, at this address:
+        </div>
+        <label class="first-run-label" for="wiz-brain-url">Autopilot address</label>
+        <input type="url" id="wiz-brain-url" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" class="text-input">
+        <label class="first-run-label" for="wiz-brain-secret">Access code (if it has one)</label>
+        <input type="text" id="wiz-brain-secret" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" class="text-input">
+        <div class="btn-row">
+          <button id="btn-wiz-skip" style="flex:1;">Skip</button>
+          <button id="btn-wiz-brain" class="primary" style="flex:2;">Connect</button>
+        </div>
+        <div class="first-run-status" id="wiz-brain-status" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+    <div class="panel" id="home-mission-panel">
       <div class="section-label"><span class="op-only">Autopilot</span><span class="eng-only">Remote brain &middot; runs on the robot</span></div>
       <!-- 3.132 Stage 3: the mission in one sentence, for a person at home.
            The telemetry rows below are Engineer mode's. -->
@@ -507,6 +539,8 @@
       <div id="robot-hud">
         <div class="robot-reticle"></div>
         <div class="robot-countdown" id="robot-countdown"><span></span></div>
+        <!-- 3.132 Stage 3: the code line is Engineer mode's; a person
+             reads only what an ending needs, in words (renderRobotTelemetry). -->
         <div class="robot-telemetry" id="robot-telemetry"></div>
         <div class="robot-obstacle" id="robot-obstacle">&#9650; OBSTACLE AHEAD</div>
       </div>
@@ -536,7 +570,7 @@
           <span class="guide-budget-track" aria-hidden="true"><span class="guide-budget-fill" id="guide-budget-fill"></span></span>
           <span class="guide-budget-count" id="guidance-call-count" aria-hidden="true">0</span>
         </span>
-        <span class="guide-call-count guide-glass" id="guide-pan-readout">pan: --</span>
+        <span class="guide-call-count guide-glass eng-only" id="guide-pan-readout">pan: --</span>
       </div>
     </div>
     <div class="guide-motion-warning guide-glass" id="guide-motion-warning">
