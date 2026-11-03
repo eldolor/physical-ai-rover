@@ -104,10 +104,10 @@ def judge(row: str, ms: dict) -> dict:
         return {"pass": False, "valid": False, "reasons": ["the fault was never injected"]}
     valid = True
     if spec["when"] == "goal":
-        if ms.get("forward_at_fault") is not True or ms.get("driver_at_fault") != "ros":
+        if ms.get("forward_at_fault") is not True or ms.get("goal_at_fault") is not True:
             valid = False
-            r.append(f"invalid: not nav2's forward drive at the fault "
-                     f"(forward {ms.get('forward_at_fault')}, driver {ms.get('driver_at_fault')})")
+            r.append(f"invalid: not driving forward on an active goal at the fault "
+                     f"(forward {ms.get('forward_at_fault')}, goal {ms.get('goal_at_fault')})")
     else:
         if not ms.get("question_hit"):
             valid = False
@@ -262,13 +262,18 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
             ms["start_at"] = time.monotonic()
             # ---- when: the fault's moment
             if spec["when"] == "goal":
-                for _ in range(30):
+                # "During an explore goal": an active goal and the board driving forward
+                # (amendment 10; under tiered explore the brain's own verbs share the goal).
+                for _ in range(10):
                     wait_forward(st, GOAL_MOVE_WAIT_S, goal=True)
                     time.sleep(0.15)
-                    ms["driver_at_fault"] = robot_health(st).get("driver")
-                    if ms["driver_at_fault"] == "ros":
+                    n = st.now()
+                    if isinstance(n, dict) and m.is_forward(n.get("sp")) and rosmod.goal_state(st) == "active":
+                        ms["goal_at_fault"] = True
+                        ms["holder_at_fault"] = robot_health(st).get("authority_holder")
                         break
-                    time.sleep(1.0)
+                else:
+                    raise StackError("no FORWARD on an active goal lasted 0.15 s in 10 tries: not fired")
             else:
                 end = time.monotonic() + QUESTION_WAIT_S
                 while time.monotonic() < end:

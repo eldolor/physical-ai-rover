@@ -303,14 +303,14 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 time.sleep(0.15)
                 n = st.now()
                 if goal:                   # nav2's own drive, not one of explore's verbs
-                    ms["driver_at_fault"] = robot_health(st).get("driver")
+                    ms["driver_at_fault"] = robot_health(st).get("authority_holder")
                     if ms["driver_at_fault"] != "ros":
                         time.sleep(1.0)
                         continue
                 if isinstance(n, dict) and m.is_forward(n.get("sp")):
                     break
             else:
-                raise StackError("no FORWARD lasted 0.15 s in 10 tries: the fault was not fired")
+                raise StackError("no FORWARD (nav2's, on a goal row) lasted 0.15 s in every try: the fault was not fired")
             t = time.monotonic()
             hold = spec.get("hold_s", 0.0)
             if row in ("F6", "F6g"):

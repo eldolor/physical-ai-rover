@@ -55,7 +55,10 @@ def main():
     seq = [0]
 
     class H(BaseHTTPRequestHandler):
-        protocol_version = "HTTP/1.1"
+        # One request a connection (HTTP/1.0, closed after each reply): a kept-alive
+        # connection the proxy dropped could fail in a way VE itself never does
+        # (seen on the board: one EBADF in 142 questions, 2026-11-03).
+        protocol_version = "HTTP/1.0"
 
         def log_message(self, *a):
             pass

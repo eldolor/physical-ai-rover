@@ -118,7 +118,10 @@ def row_cmd(row: str, runs: int, plant: str = "", house: str = "scaled_house") -
     """The board side of one row: `rows.py` (N scored runs, amendment 4),
     with the power mode and the run's stamps beside it."""
     extra = (f" --plant {plant}" if plant else "") + (f" --house {house}" if house != "scaled_house" else "")
-    return (f"nvpmodel -q 2>&1 | grep -m1 'NV Power Mode' > $OUT/nvpmodel.txt; "
+    # 3.93's check, as soak.sh: the bench keeps the board for as long as it runs,
+    # so a desktop side that ends early can never hand the board over mid-row.
+    return (f"source tools/jetson/board_lock_check.sh || exit $?; "
+            f"nvpmodel -q 2>&1 | grep -m1 'NV Power Mode' > $OUT/nvpmodel.txt; "
             f"date +%s.%N > $OUT/run_start; "
             f".venv/bin/python evaluations/jetson-fmea-3135/rows.py {row} --out $OUT/rows "
             f"--runs {int(runs)}{extra} > $OUT/rows.log 2>&1; echo $? > $OUT/rows_exit; "
@@ -159,7 +162,8 @@ UNIT_ROWS = {"F8-unit": "f8_unit.py"}
 def row_inner(a) -> int:
     out = Path(a.out)
     if a.row in UNIT_ROWS:
-        cmd = (f"nvpmodel -q 2>&1 | grep -m1 'NV Power Mode' > $OUT/nvpmodel.txt; date +%s.%N > $OUT/run_start; "
+        cmd = (f"source tools/jetson/board_lock_check.sh || exit $?; "
+               f"nvpmodel -q 2>&1 | grep -m1 'NV Power Mode' > $OUT/nvpmodel.txt; date +%s.%N > $OUT/run_start; "
                f".venv/bin/python evaluations/jetson-fmea-3135/{UNIT_ROWS[a.row]} $OUT/rows --runs {int(a.runs)} "
                f"> $OUT/rows.log 2>&1; echo $? > $OUT/rows_exit; date +%s.%N > $OUT/run_end")
         rec = perf_run.board_run(f"fmea-{a.row}", cmd, out, sha=a.sha, allow_sudo=False,

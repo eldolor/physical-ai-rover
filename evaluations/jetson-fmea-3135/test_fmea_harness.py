@@ -268,6 +268,7 @@ def test_the_row_command_runs_rows_py_with_its_plant():
     c = fmea_run.row_cmd("F9", 5, "lidar_fresh")
     assert "rows.py F9 --out $OUT/rows --runs 5 --plant lidar_fresh" in c
     assert "--house" not in c and "--plant" not in fmea_run.row_cmd("F8", 5)
+    assert c.startswith("source tools/jetson/board_lock_check.sh")      # the bench keeps the board
 
 
 # ------------------------------------------------------- 3.135.B: cloud rows
@@ -339,7 +340,7 @@ def test_the_clock_cases_and_their_bars():
 
 import vlm_rows  # noqa: E402
 
-VLM_GOOD = {"fault_at": 1.0, "forward_at_fault": True, "driver_at_fault": "ros", "question_hit": True,
+VLM_GOOD = {"fault_at": 1.0, "forward_at_fault": True, "goal_at_fault": True, "question_hit": True,
             "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.02, "oom_kills": 1, "killed_ve": True,
             "alive_after": {"robot": True, "brain": True, "ros": True}, "late_ticks": 0,
             "ve_back_s": 45.0, "next_answer": True, "failed_in_watch": False,
@@ -372,7 +373,7 @@ def test_each_broken_ve_bar_fails(row, change, reason):
 
 def test_a_ve_fault_off_its_moment_is_invalid():
     assert vlm_rows.judge("F3a", {**VLM_GOOD, "question_hit": False, "outcome": "found"})["valid"] is False
-    assert vlm_rows.judge("F17g", {**VLM_GOOD, "driver_at_fault": "brain", "outcome": "cancelled"})["valid"] is False
+    assert vlm_rows.judge("F17g", {**VLM_GOOD, "goal_at_fault": None, "outcome": "cancelled"})["valid"] is False
     assert rows.runner("F17q").__name__ == "vlm_rows"
     assert {r["plant"] for r in vlm_rows.ROWS.values()} - {"ve_oom0"} <= stack.ROBOT_PLANTS | stack.BRAIN_PLANTS
 
