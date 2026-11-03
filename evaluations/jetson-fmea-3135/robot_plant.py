@@ -15,6 +15,7 @@ patch is on the module, here.
 | `lidar_fresh` | 3.42: the LD19 driver calls its scan fresh once any packet came | F9 |
 | `feedback_fresh` | 3.34: the board's feedback is called fresh once any frame came | F10 |
 | `wall_clock` | the robot server's own timers (`robot.server`'s `time.monotonic`) read the wall clock, plus `FMEA_CLOCK_OFFSET_FILE`'s seconds (the desktop's stand-in for a step) | F16 |
+| `no_latch` | 3.84 off: a person's Stop latches nothing (`goal_stop`, the dict every `create_app` closure shares, swapped for one that drops the latch) | F17 |
 | `stop_waits` | SPEC-REVIEW finding 1 (2026-10-02) undone: under `drive: ros` a stop zeroes the ROS inputs first, synchronously, at the client's 2 s timeout, then the robot | F5 |
 
     FMEA_PLANT=watchdog python evaluations/jetson-fmea-3135/robot_plant.py <port>
@@ -29,7 +30,7 @@ sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 
 PLANTS = {p for p in os.environ.get("FMEA_PLANT", "").split(",") if p}
-KNOWN = {"watchdog", "lidar_fresh", "feedback_fresh", "stop_waits", "wall_clock"}
+KNOWN = {"watchdog", "lidar_fresh", "feedback_fresh", "stop_waits", "wall_clock", "no_latch"}
 if not PLANTS or PLANTS - KNOWN:
     raise SystemExit(f"FMEA_PLANT must name one or more of {sorted(KNOWN)}, not {sorted(PLANTS)}")
 
@@ -68,6 +69,19 @@ if "stop_waits" in PLANTS:
         return self.inner.stop()
 
     ros_drive.RosDriveRobot.stop = _stop_waits
+
+if "no_latch" in PLANTS:
+    _stop = next(r.endpoint for r in server.app.routes
+                 if getattr(r, "path", "").endswith("/stop") and "POST" in getattr(r, "methods", ()))
+    _cell = _stop.__closure__[_stop.__code__.co_freevars.index("goal_stop")]
+
+    class _NoLatch(dict):
+        def __setitem__(self, k, v):
+            if k == "autonomy_stopped" and v is not None:
+                return                      # planted: a person's Stop latches nothing
+            super().__setitem__(k, v)
+
+    _cell.cell_contents = _NoLatch(_cell.cell_contents)   # one cell, shared by every closure
 
 if "wall_clock" in PLANTS:
     import time as _time

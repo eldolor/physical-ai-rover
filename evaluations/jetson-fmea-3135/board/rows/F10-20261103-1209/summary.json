@@ -1,0 +1,322 @@
+{
+ "sha": "5b6b01cc49b0141ced1b47c684bb8b4a099c14e0",
+ "cmd_exit": 0,
+ "cmd_s": 100.9,
+ "verdict": {
+  "row": "F10",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "met",
+  "runs_wanted": 5,
+  "runs_scored": 5,
+  "runs_total": 5,
+  "runs_failed": 0,
+  "not_scored": [],
+  "reasons": []
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 3.05,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83871.977065424,
+    "cont_at": 83876.977065424,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+    "end_error": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+    "refusals": {
+     "no_feedback": 1
+    },
+    "no_feedback_refusals": 1,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "last_refusal": {
+     "reason": "watchdog",
+     "detail": "no command for over 1.0s -- motors stopped",
+     "driver": "brain",
+     "at": 83873.307027153,
+     "seconds_ago": 4.88
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 0.238,
+    "travel_cm": 6.16,
+    "travel_stale_cm": 0.0,
+    "truth_hole_s": 0.023,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83863.6348,
+     83882.8949
+    ],
+    "mem_available_min_mb": 2250,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+    "cancelled_by": null,
+    "step": 4,
+    "last_action": "RIGHT",
+    "error": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb"
+   }
+  },
+  {
+   "i": 2,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 3.06,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83891.976334395,
+    "cont_at": 83896.976334395,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+    "end_error": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+    "refusals": {
+     "no_feedback": 1
+    },
+    "no_feedback_refusals": 1,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "last_refusal": {
+     "reason": "watchdog",
+     "detail": "no command for over 1.0s -- motors stopped",
+     "driver": "brain",
+     "at": 83893.309587334,
+     "seconds_ago": 4.87
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 0.289,
+    "travel_cm": 8.11,
+    "travel_stale_cm": 0.31,
+    "truth_hole_s": 0.025,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83883.9457,
+     83902.8058
+    ],
+    "mem_available_min_mb": 2255,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+    "cancelled_by": null,
+    "step": 4,
+    "last_action": "RIGHT",
+    "error": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb"
+   }
+  },
+  {
+   "i": 3,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 3.16,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83912.139863754,
+    "cont_at": 83917.139863754,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+    "end_error": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+    "refusals": {
+     "no_feedback": 1
+    },
+    "no_feedback_refusals": 1,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "last_refusal": {
+     "reason": "watchdog",
+     "detail": "no command for over 1.0s -- motors stopped",
+     "driver": "brain",
+     "at": 83913.446122902,
+     "seconds_ago": 4.91
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 0.238,
+    "travel_cm": 6.22,
+    "travel_stale_cm": 0.0,
+    "truth_hole_s": 0.025,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83903.8375,
+     83923.1176
+    ],
+    "mem_available_min_mb": 2248,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+    "cancelled_by": null,
+    "step": 4,
+    "last_action": "RIGHT",
+    "error": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb"
+   }
+  },
+  {
+   "i": 4,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 2.96,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83932.476192591,
+    "cont_at": 83937.476192591,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+    "end_error": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+    "refusals": {
+     "no_feedback": 1
+    },
+    "no_feedback_refusals": 1,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "last_refusal": {
+     "reason": "watchdog",
+     "detail": "no command for over 1.0s -- motors stopped",
+     "driver": "brain",
+     "at": 83933.73611784,
+     "seconds_ago": 4.95
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 0.226,
+    "travel_cm": 6.53,
+    "travel_stale_cm": 0.0,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83924.1625,
+     83943.1226
+    ],
+    "mem_available_min_mb": 2246,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+    "cancelled_by": null,
+    "step": 4,
+    "last_action": "RIGHT",
+    "error": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb"
+   }
+  },
+  {
+   "i": 5,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 2.99,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83952.078581765,
+    "cont_at": 83957.078581765,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+    "end_error": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+    "refusals": {
+     "no_feedback": 1
+    },
+    "no_feedback_refusals": 1,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "last_refusal": {
+     "reason": "watchdog",
+     "detail": "no command for over 1.0s -- motors stopped",
+     "driver": "brain",
+     "at": 83953.424339135,
+     "seconds_ago": 4.86
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 0.253,
+    "travel_cm": 6.84,
+    "travel_stale_cm": 0.0,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83944.1916,
+     83962.8517
+    ],
+    "mem_available_min_mb": 2247,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+    "cancelled_by": null,
+    "step": 4,
+    "last_action": "RIGHT",
+    "error": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb"
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 91,
+  "temps": 91,
+  "clocks": 91,
+  "max_temp_c": 49.75,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2246,
+  "cpu_below_max_samples": 79,
+  "gpu_below_max_samples": 91
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true
+}

@@ -12,6 +12,7 @@ Nothing in brain/ or control/ is edited; the patch is on the module, here.
 | Plant | The guard switched off | Row |
 |---|---|---|
 | `cloud_class` | 3.47: a transport error to the cloud is a plain RuntimeError, not `CloudUnavailable` | F11 |
+| `vlm_absent` | 3.80: the local VLM gone (refused, dropped) is a plain RuntimeError, not `LocalVLMAbsent`, so the tiers do not hand its questions on | F3 |
 | `cloud_deadline` | 3.56 and B3.2's deadlines raised to 120 s (`arrival_confirm_timeout_s`, `vision_timeout_s`) | F12 |
 
     FMEA_PLANT=cloud_class python evaluations/jetson-fmea-3135/brain_plant.py <port>
@@ -26,7 +27,7 @@ sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 
 PLANTS = {p for p in os.environ.get("FMEA_PLANT", "").split(",") if p}
-KNOWN = {"cloud_class", "cloud_deadline"}
+KNOWN = {"cloud_class", "cloud_deadline", "vlm_absent"}
 if not PLANTS or PLANTS - KNOWN:
     raise SystemExit(f"FMEA_PLANT must name one or more of {sorted(KNOWN)}, not {sorted(PLANTS)}")
 
@@ -52,6 +53,19 @@ if "cloud_class" in PLANTS:
             raise
 
     navigate._post = _post_unsorted       # a module global, looked up at each call
+
+if "vlm_absent" in PLANTS:
+    from brain import local_vlm
+
+    _vpost = local_vlm.LocalVLM._post
+
+    def _vpost_unsorted(self, route, frame, box=False):
+        try:
+            return _vpost(self, route, frame, box=box)
+        except local_vlm.LocalVLMAbsent as e:
+            raise RuntimeError(f"planted: {e}") from None       # VE gone read as a fault
+
+    local_vlm.LocalVLM._post = _vpost_unsorted
 
 import control.brain_server as server  # noqa: E402  (builds `app` with the patches in place)
 import uvicorn  # noqa: E402

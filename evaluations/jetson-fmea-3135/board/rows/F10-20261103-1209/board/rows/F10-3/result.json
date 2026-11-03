@@ -1,0 +1,63 @@
+{
+ "row": "F10",
+ "title": "Wheel feedback stops",
+ "reading": "true path from the silence + 0.25 s (feedback's freshness bar) to its end <= 2 cm; the robot server refused something as no_feedback; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-03T12:14:04-0600",
+ "recovery_s": 3.16,
+ "measures": {
+  "fault_at": 83912.139863754,
+  "cont_at": 83917.139863754,
+  "outcome": "failed",
+  "end_state": null,
+  "end_reason": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+  "end_error": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+  "status": {
+   "running": false,
+   "outcome": "failed",
+   "end_state": null,
+   "end_reason": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb",
+   "cancelled_by": null,
+   "step": 4,
+   "last_action": "RIGHT",
+   "error": "step failed: no_feedback: FORWARD ended: the wheels stopped being measured mid-verb"
+  },
+  "refusals": {
+   "no_feedback": 1
+  },
+  "no_feedback_refusals": 1,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 0,
+   "max_dt_s": 0.0
+  },
+  "last_refusal": {
+   "reason": "watchdog",
+   "detail": "no command for over 1.0s -- motors stopped",
+   "driver": "brain",
+   "at": 83913.446122902,
+   "seconds_ago": 4.91
+  },
+  "forward_at_fault": true,
+  "wheels_zero_s": 0.238,
+  "travel_cm": 6.22,
+  "travel_stale_cm": 0.0,
+  "truth_hole_s": 0.025,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   83903.8375,
+   83923.1176
+  ],
+  "mem_available_min_mb": 2248,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-03T12:14:24-0600"
+}
