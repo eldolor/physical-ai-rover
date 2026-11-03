@@ -1,0 +1,35 @@
+{
+ "sha": "15e83bb95d3f96dc70950d53f6ce170010d2f6b5",
+ "cmd_exit": 0,
+ "cmd_s": 191.8,
+ "verdict": {
+  "row": "F8-unit",
+  "state": "met",
+  "runs_wanted": 5,
+  "runs_scored": 5,
+  "back_s": [
+   7.21,
+   8.52,
+   8.32,
+   8.42,
+   8.43
+  ],
+  "bar_s": 10.0
+ },
+ "runs": [],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 173,
+  "temps": 173,
+  "clocks": 173,
+  "max_temp_c": 48.687,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2334,
+  "cpu_below_max_samples": 168,
+  "gpu_below_max_samples": 173
+ },
+ "restore_actions": [],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true
+}
