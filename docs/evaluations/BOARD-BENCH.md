@@ -202,6 +202,7 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-04 | `affb16fd` | F15 disk full | 5/5 | met | `found` 5/5; failing-write lines 1 per writer (choices, inventory, intervention) in 38-100 s | 0 | 0 | 2,034 | 0 | 51.5 °C | -- | yes |
 | 2026-11-04 | `5425f8ac` | F16p clock +5 min (re-run, amendment 15) | 5/5 | met | `out_of_budget` at 400.9-402.0 s (F16c's end, within 10 s of 400); 0 watchdog stops, 0 stale 503s; every step between verbs | 0 | -- | 2,196 | 0 | 49.7 °C | -- | yes |
 | 2026-11-04 | `36b6a944` | F16m clock -5 min (re-run, amendment 15) | 5/5 | met | `out_of_budget` at 401.0-402.1 s; 0 watchdog stops, 0 stale 503s; every step between verbs | 0 | -- | 2,200 | 0 | 49.7 °C | -- | yes |
+| 2026-11-04 | `53bcbe61` | F12b cloud hangs (`vision`) | 5/5 | met | `failed` at 61.4-61.5 s (300), B3.2's 3 x 20 s; open paid calls max 1; 0.0 cm | 0 | -- | 2,207 | 0 | 49.8 °C | -- | yes |
 
 ## Runs
 
@@ -416,6 +417,10 @@ explore mission with `explore_ask` on the ROS stack (F15).
   * Whether the fault causes the wedge is unmeasured (no fault-free tiered
     control); the fix section is **3.148**.
 * **F11c met:** a `vision` mission ended `failed` in 2 s without moving.
+* **F12b met** (14:47-14:54, after its planted check was re-run on the
+  desktop): a `vision` mission against a hanging cloud ended `failed` at
+  61.4 s on B3.2's three 20 s timeouts, with one paid call open at a time
+  and without moving.
 * **F15 met:** every mission ended `found`, with 0 late ticks. Each of the
   three writers logged its failing write once.
 * **F16c met** (the control): `out_of_budget` at the 400 s limit, 3/3.
