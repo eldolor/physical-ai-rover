@@ -142,6 +142,10 @@ REFUSED = [
     "git push --no-verify origin $BR",
     "for b in plan/x dev; do git push --no-verify origin $b:$b; done",
     "B=dev; git push --no-verify origin $B",
+    # Round 4: still refused after the fixes above.
+    "x=$(echo case); git push --no-verify origin HEAD:dev",
+    "cd; git push --no-verify",
+    "cat <<EOF | sudo bash -s\nPICAR_SKIP_GATE=1 git push\nEOF",
     "i=$(( i << 1 ))\ngit commit -n -m x\n1",
     # Round 3 (the transcript corpus): --no-verify only matters on a push
     # that can reach dev, the one ref the pre-push gate checks.
@@ -202,6 +206,16 @@ PASSED = [
     "case $1 in a) echo a;; b) echo b;; esac",
     "for b in plan/3.96-x plan/3.50-y; do git push -q --no-verify origin $b:$b; done",
     "B=plan/3.150-bash-guard; git push --no-verify origin ${B}",
+    # Round 4 (regressions of round 3, /code-review): each refused wrongly.
+    "x=$(echo case); echo ok",
+    'n=$(grep -c case f.txt); docker images "vision-picar-ros"',
+    "ssh board 'echo it'\"'\"'s; docker ps | grep vision-picar-ros'",
+    'X=$X; git push --no-verify origin "feat-$X"',
+    "y=$(echo $((1+(2*3)))); ls",
+    "((cd a && make) || true)\ngit status",
+    "git push --no-verify origin HEAD:$USER-wip",
+    "grep bash <<< 'it'\\''s vision-picar-ros'",
+    "git commit -F - <<EOF || bash fallback.sh\nfix: git push --no-verify origin dev was wrong\nEOF",
     'x=$(case "$m" in auto) echo deny;; *) echo ask;; esac); echo $x',
     # Round 3: real commands from past sessions' transcripts; the pre-push
     # gate ignores every ref but dev, and tools/hooks has no stash hook.

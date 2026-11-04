@@ -35,7 +35,7 @@ import sys
 BYPASS_ENV = ("PICAR_SKIP_GATE", "PICAR_CLAIM_BYPASS")
 SHARED_IMAGE = "vision-picar-ros"
 REPO_HOOKS = "tools/hooks"
-GUARDED_WORDS = BYPASS_ENV + ("no-ver", "hookspath", "git_config", "config-env", SHARED_IMAGE)
+GUARDED_WORDS = BYPASS_ENV + ("no-ver", "hookspath", "git_config", "config-env")
 ASK_MODES = ("default", "plan", "acceptEdits")   # plan_claims.py's (a test pins it)
 PUNCT = set(";&|()")
 WORD_END = set(" \t\n;&|()<>")
@@ -82,6 +82,8 @@ DOCKER_BUILD_VALUE_OPTS = {
     "-m", "--memory", "--memory-swap", "--cpu-shares", "--cpuset-cpus", "--isolation",
     "--metadata-file", "--builder", "--allow", "--attest", "--annotation",
     "--cgroup-parent", "--iidfile"}
+VAR_RE = re.compile(r"\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?")
+CASE_RE = re.compile(r"(case|esac)(?=[\s;)]|$)")
 REDIRECT_RE = re.compile(r"(\d*)(&>>|&>|>>|>&|>\||<&|<>|>|<)")
 
 
@@ -120,21 +122,44 @@ def _segment_runs_heredoc(out: list) -> bool:
         words = shlex.split(seg[cut + 1:])
     except ValueError:
         words = seg[cut + 1:].split()
-    return any(os.path.basename(w) in HEREDOC_RUNNERS for w in words)
+    return _runner(words) in HEREDOC_RUNNERS
+
+
+def _runner(words: list) -> str:
+    """The program a simple command's words run, past assignments, keywords
+    and wrappers (approximately: their flags are skipped, not their values)."""
+    for w in words:
+        if ASSIGN_RE.match(w) or w in KEYWORDS or w in PREFIXES or w.startswith("-"):
+            continue
+        return os.path.basename(w)
+    return ""
+
+
+def _command_position(out: list) -> bool:
+    """Whether the next word starts a command: after a separator or a
+    keyword that runs one (so `echo case` is an argument, not `case`)."""
+    prev = "".join(out[-8:]).rstrip(" \t")
+    if not prev or prev[-1] in ";&|(\n":
+        return True
+    last = prev.split()[-1] if prev.split() else ""
+    return last in ("then", "do", "else", "elif", "!", "{", "if", "while", "until")
 
 
 def _piped_to_shell(tail: str) -> bool:
     """Whether the rest of a heredoc's line pipes it into a shell reading
     stdin (`cat <<EOF | bash`), not one given `-c`."""
-    for seg in tail.split("|")[1:]:
+    for seg in re.split(r"(?<!\|)\|(?!\|)", tail.split("||")[0])[1:]:
         try:
             words = shlex.split(seg)
         except ValueError:
             words = seg.split()
-        words = [w for w in words if w not in ("sudo", "env") and not ASSIGN_RE.match(w)]
-        if words and os.path.basename(words[0]) in SHELLS and not any(
-                re.match(r"^-[a-zA-Z]*c[a-zA-Z]*$", w) for w in words[1:]):
-            return True
+        if _runner(words) not in SHELLS:
+            continue
+        rest = words[[os.path.basename(w) for w in words].index(_runner(words)) + 1:]
+        if any(re.match(r"^-[a-zA-Z]*c[a-zA-Z]*$", w) for w in rest):
+            continue                      # bash -c: the heredoc is not its script
+        if "-s" in rest or "-" in rest or not [w for w in rest if not w.startswith("-")]:
+            return True                   # it reads its script from stdin
     return False
 
 
@@ -148,10 +173,9 @@ def _scan(text: str, i: int, extras: list, closer: str = "") -> tuple:
     out, quote, depth, pending, cases, arith = [], None, 0, [], 0, 0
     while i < len(text):
         c = text[i]
-        at_word = not out or out[-1][-1:] in " \t\n;&|()"
-        if quote is None and at_word:
-            m = re.match(r"(case|esac)(?=[\s;)]|$)", text[i:])
-            if m:
+        if quote is None and c in "ce" and _command_position(out):
+            m = CASE_RE.match(text, i)
+            if m and (m.group(1) == "case" or cases):
                 cases += 1 if m.group(1) == "case" else -1 if cases else 0
                 out.append(m.group(1))
                 i += 4
@@ -196,17 +220,13 @@ def _scan(text: str, i: int, extras: list, closer: str = "") -> tuple:
             while i < len(text) and text[i] != "\n":
                 i += 1                    # a comment, to the end of its line
             continue
-        if quote is None and text.startswith("((", i):
-            arith += 1                    # `(( ))` / `$(( ))`: `<<` is a shift there
+        if quote is None and not arith and text.startswith("((", i):
+            arith = 2                     # `(( ))` / `$(( ))`: `<<` is a shift there
             out.append("((")
             i += 2
             continue
-        if quote is None and arith and text.startswith("))", i):
-            arith -= 1
-            out.append("))")
-            i += 2
-            continue
         if arith:
+            arith += 1 if c == "(" else -1 if c == ")" else 0
             out.append(c)
             i += 1
             continue
@@ -263,7 +283,7 @@ def _scan(text: str, i: int, extras: list, closer: str = "") -> tuple:
             out.append(" ; ")
             i += 1
             for dash, word, quoted, to_shell, at in pending:
-                to_shell = to_shell or _piped_to_shell("".join(out[at:]))
+                to_shell = to_shell or _piped_to_shell("".join(out[at:-1]))   # not the " ; "
                 lines = text[i:].split("\n")
                 for n, line in enumerate(lines):
                     if (line.lstrip("\t") if dash else line) == word:
@@ -377,13 +397,20 @@ def _expand(word: str, variables: dict) -> list:
     """`word` with each `$NAME`/`${NAME}` replaced by every value a literal
     `for NAME in ...` or `NAME=...` earlier in the command gave it; a
     variable it cannot resolve stays, so the caller reads it as unknown."""
-    m = re.search(r"\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?", word)
-    if not m or m.group(1) not in (variables or {}):
-        return [word]
-    out = []
-    for v in variables[m.group(1)][:50]:
-        out += _expand(word[:m.start()] + v + word[m.end():], variables)
-    return out or [word]
+    words = [word]
+    for _ in range(4):                    # a few variables a word, values from literals only
+        nxt = []
+        for w in words:
+            m = VAR_RE.search(w)
+            if not m or m.group(1) not in (variables or {}) or \
+                    any(VAR_RE.search(v) for v in variables[m.group(1)]):
+                nxt.append(w)
+                continue
+            nxt += [w[:m.start()] + v + w[m.end():] for v in variables[m.group(1)][:50]]
+        if nxt == words:
+            break
+        words = nxt[:200]
+    return words
 
 
 def _push_reaches_dev(rest: list, flags: list, cwd: str, variables: dict = None) -> bool:
@@ -411,8 +438,8 @@ def _push_reaches_dev(rest: list, flags: list, cwd: str, variables: dict = None)
         dest = r.lstrip("+").split(":")[-1] if ":" in r else r.lstrip("+")
         if dest == "HEAD":
             dest = _current_branch(cwd)
-        name = _ref_name(dest)
-        if name in ("dev", "") or "$" in name or ("*" in name and fnmatch.fnmatch("dev", name)):
+        name = VAR_RE.sub("*", _ref_name(dest))
+        if name in ("dev", "") or ("*" in name and fnmatch.fnmatch("dev", name)):
             return True
     return False
 
@@ -431,7 +458,9 @@ def _current_branch(cwd: str) -> str:
                            capture_output=True, text=True, timeout=3)
     except (OSError, subprocess.TimeoutExpired):
         return ""
-    return r.stdout.strip() if r.returncode == 0 else "(detached)"
+    if r.returncode == 0:
+        return r.stdout.strip()
+    return "(detached)" if r.returncode == 1 else ""   # 128: not a repo -- unknown
 
 
 def _repo_hooks(value: str) -> bool:
@@ -658,7 +687,10 @@ def check_simple(words: list, state: dict):
     elif prog == "ssh":
         remote = _ssh_command(args)
         if remote:
-            check_text(" ".join(remote), {"cwd": state["cwd"], "remote": True})
+            try:
+                check_text(" ".join(remote), {"cwd": state["cwd"], "remote": True})
+            except ValueError:
+                pass                      # unparseable there too: the remote shell refuses it
     elif prog == "eval":
         check_text(" ".join(args), state)
     elif prog in SHELLS:
@@ -700,8 +732,13 @@ def _refuse(mode: str, why: str) -> str:
 
 
 def _names_guarded(text: str) -> bool:
+    """Whether a command the guard could not read may break a rule: it names
+    a bypass, a hook skip, or the shared image beside a docker verb that
+    writes one. Mentioning the image (`docker images`, `grep`) is not enough."""
     low = text.lower()
-    return any(w.lower() in low for w in GUARDED_WORDS)
+    if any(w.lower() in low for w in GUARDED_WORDS):
+        return True
+    return SHARED_IMAGE in low and bool(re.search(r"\b(build|tag|commit|import)\b", low))
 
 
 def hook(stdin_text: str) -> str:
