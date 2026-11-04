@@ -19,8 +19,10 @@ Judged on the simulator's ground truth (CLAUDE.md section 6).
 
 import math
 import time
+from pathlib import Path
 
 import pytest
+import yaml
 from fastapi.testclient import TestClient
 
 import robot.server as server
@@ -103,9 +105,7 @@ def test_a_body_with_no_wheels_is_unchanged():
 
 def test_a_body_with_a_scan_is_judged_by_it():
     robot = _placed(LidarStops(build_scaled_world(), render=False))
-    clearance, source = SafetyController(robot).forward_clearance()
-    assert source != "ahead_not_observed"
-    assert clearance is None or clearance > 0
+    assert SafetyController(robot).forward_clearance() == (244.5, "depth_grid")
 
 
 def test_a_forward_under_way_stops_when_the_scan_goes(monkeypatch):
@@ -130,10 +130,30 @@ def test_a_forward_under_way_stops_when_the_scan_goes(monkeypatch):
     assert after <= STALE_TRAVEL_BAR_CM, f"{after:.1f} cm after the scan went"
 
 
-def test_the_wheel_loop_stops_it_and_it_does_not_resume(monkeypatch):
+def _until(cond, deadline_s):
+    end = time.monotonic() + deadline_s
+    while not cond():
+        if time.monotonic() > end:
+            return False
+        time.sleep(0.01)
+    return True
+
+
+def _still(robot):
+    w = robot.get_wheel_state()
+    return (w["left"]["velocity_rad_s"], w["right"]["velocity_rad_s"]) == (0.0, 0.0)
+
+
+def test_the_wheel_loop_stops_it_and_it_does_not_resume(monkeypatch, tmp_path):
     """Criterion 2b: through POST /wheels and robot/server.py's own wheel
-    loop. The scan comes back inside the watchdog's 1 s, with no new
-    command: the clamped command was written back, so nothing drives."""
+    loop. The scan comes back with no new command: the clamped command was
+    written back, so nothing drives. The watchdog is raised to 5 s here so
+    that it, not the fix, cannot be what holds the wheels still."""
+    cfg = yaml.safe_load(Path(server.__file__).parent.parent.joinpath(
+        "config/robot.yaml").read_text())
+    cfg["safety"]["watchdog_timeout_s"] = 5.0
+    path = tmp_path / "robot.yaml"
+    path.write_text(yaml.safe_dump(cfg))
     monkeypatch.setenv("SIM_MAP", HOUSE)
     built = {}
 
@@ -143,25 +163,25 @@ def test_the_wheel_loop_stops_it_and_it_does_not_resume(monkeypatch):
 
     monkeypatch.setattr(server, "get_robot", placed)
     fwd = 0.3 / WHEEL_RADIUS_M      # 1.5 cm a 50 ms period: the bar is under two
-    with TestClient(server.create_app()) as c:
+    with TestClient(server.create_app(str(path))) as c:
         robot = built["robot"]
         start = _xy(robot)
         r = c.post("/wheels", json={"left_rad_s": fwd, "right_rad_s": fwd},
                    headers={"x-driver": "ros"})
         assert r.status_code == 200, r.text
-        time.sleep(0.25)
-        assert _cm(_xy(robot), start) > 1.0, "the robot must be moving before the fault"
+        assert _until(lambda: _cm(_xy(robot), start) > 1.0, 2.0), "never moved before the fault"
         robot.blind = True
         at_blind = _xy(robot)
+        assert _until(lambda: _still(robot), 2.0), "the wheels never stopped"
         time.sleep(0.2)
         stopped_at = _xy(robot)
         robot.blind = False                      # the scan is back; no new command
-        time.sleep(0.25)
-        w = robot.get_wheel_state()
+        time.sleep(0.5)                          # ten wheel-loop periods
+        still = _still(robot)
         back = _xy(robot)
         c.post("/stop")
     after = _cm(stopped_at, at_blind)
     resumed = _cm(back, stopped_at)
     assert after <= STALE_TRAVEL_BAR_CM, f"{after:.1f} cm after the scan went"
-    assert (w["left"]["velocity_rad_s"], w["right"]["velocity_rad_s"]) == (0.0, 0.0)
+    assert still
     assert resumed == 0.0, f"drove {resumed:.1f} cm on the old command once the scan returned"

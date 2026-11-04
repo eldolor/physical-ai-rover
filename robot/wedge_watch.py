@@ -39,6 +39,13 @@ def forward_clamped(left_cmd: float, right_cmd: float, reason) -> bool:
     return bool(reason) and "forward clamped" in reason and (left_cmd + right_cmd) > 0
 
 
+def blind(reason) -> bool:
+    """Was it zeroed because nothing could see ahead (3.144's
+    `ahead_not_observed`, 3.18's `path_not_observed`)? That says nothing
+    about what is ahead: a stalled lidar must not mark a spot on free floor."""
+    return bool(reason) and "_not_observed" in reason
+
+
 class WedgeWatch:
     def __init__(self, hold_s: float = HOLD_S, gap_s: float = GAP_S):
         self.hold_s, self.gap_s = hold_s, gap_s
@@ -47,7 +54,11 @@ class WedgeWatch:
 
     def wheel(self, now: float, left_cmd: float, right_cmd: float, reason) -> bool:
         """One wheel post. True exactly when a wedge is declared; the watch
-        then re-arms, so a robot still wedged HOLD_S later fires again."""
+        then re-arms, so a robot still wedged HOLD_S later fires again.
+        A blind clamp is neither a wedge nor progress: the run is left as it
+        stands (and GAP_S ends it if the blindness lasts)."""
+        if blind(reason):
+            return False
         if forward_clamped(left_cmd, right_cmd, reason):
             if self.run_start is None or now - self.last_clamp > self.gap_s:
                 self.run_start = now

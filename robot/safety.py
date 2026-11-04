@@ -1002,13 +1002,14 @@ class SafetyController:
         `reverse_clearance()` refuses astern. With the lidar stopped and the
         camera ahead, the cone alone let the car drive 101-105 cm blind on
         the board: the cone cannot see the chassis' corners or what is
-        under its view."""
-        scan = self._scan()
-        if not (scan and scan.get("usable")) and self._has_wheels():
-            return 0.0, "ahead_not_observed"
+        under its view. So `path_not_observed` is now a body WITHOUT wheels'
+        answer only (one whose FORWARD moves nothing, or a person)."""
         if grid is None:
             get_grid = getattr(self.robot, "get_depth_grid", None)
             grid = get_grid() if get_grid is not None else None
+        scan = self._scan()
+        if self._blind(scan):
+            return 0.0, "ahead_not_observed"
         cone, corridor = self.path_clearance(grid, scan), self.footprint_clearance(+1, scan)
         if cone[1] == "depth_grid_facing_away" and corridor[1] == "no_scan":
             return 0.0, "path_not_observed"
@@ -1028,7 +1029,7 @@ class SafetyController:
         nothing, or moves a person who can see. Turns stay allowed blind --
         they are how a robot turns away from something."""
         scan = self._scan()
-        if not (scan and scan.get("usable")) and self._has_wheels():
+        if self._blind(scan):
             return 0.0, "astern_not_observed"
         return self._aged(self._nearer(self.rear_clearance(scan),
                                        self.footprint_clearance(-1, scan)), -1)
@@ -1061,6 +1062,11 @@ class SafetyController:
             return result
         return (max(0.0, round(clearance - toward * age * 100.0, 1)),
                 f"{source}, aged {age * 1000:.0f} ms")
+
+    def _blind(self, scan: Optional[dict]) -> bool:
+        """No usable scan on a body that really moves: the one rule that
+        refuses a straight move ahead (3.144) and astern (2026-10-02)."""
+        return not (scan and scan.get("usable")) and self._has_wheels()
 
     def _has_wheels(self) -> bool:
         get_wheel_state = getattr(self.robot, "get_wheel_state", None)
