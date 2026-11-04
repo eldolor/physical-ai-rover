@@ -267,6 +267,41 @@ def nav_goals(pace_rows: list, t0=None, t1=None) -> dict:
     return {"n": len(inside), **{v: inside.count(v) for v in TERMINAL.values()}}
 
 
+GOAL_ID_HEX = 12        # ros_pace.py's `_gid`: nav2's goal UUID, first 12 hex digits
+
+
+def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None) -> dict:
+    """`nav_goals()` with each ABORTED end split by its goal's kind --
+    amendment 5, by id (3.136.G): `aborted_frontier` (explore expects and
+    drops those) and `aborted_other` (any other kind). Each nav2 goal's kind
+    is what explore recorded with the id the bridge gave it
+    (`status.explore.sent`, written by `board_probe.py missions` as
+    `explore_sends.jsonl`); a goal no send recorded is `unmatched` and is
+    not a frontier goal. Goals that ended inside the window."""
+    kind = {}
+    for r in sent_rows:
+        for gid, k in r.get("sent") or []:
+            if gid:
+                kind[gid[:GOAL_ID_HEX]] = k
+    ended = {}
+    for r in sorted((r for r in pace_rows if r.get("k") == "nav"), key=lambda r: r["t"]):
+        for gid, st in r.get("goals") or []:
+            if st in TERMINAL and gid not in ended:
+                ended[gid] = (r["t"], TERMINAL[st])
+    out = {"n": 0, "succeeded": 0, "canceled": 0, "aborted": 0,
+           "aborted_frontier": 0, "aborted_other": 0, "unmatched": 0}
+    for gid, (t, st) in ended.items():
+        if (t0 is not None and t < t0) or (t1 is not None and t > t1):
+            continue
+        k = kind.get(gid[:GOAL_ID_HEX])
+        out["n"] += 1
+        out[st] += 1
+        out["unmatched"] += k is None
+        if st == "aborted":
+            out["aborted_frontier" if k == "frontier" else "aborted_other"] += 1
+    return out
+
+
 def map_updates(pace_rows: list, t0=None, t1=None) -> list:
     return sorted(r["t"] for r in _within(pace_rows, t0, t1) if r.get("k") == "map")
 

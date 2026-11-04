@@ -46,7 +46,9 @@ def missions(flag: str, out: str, targets: list) -> int:
     # client timeout would leave the mission running unrecorded.
     b = httpx.Client(base_url=BRAIN, timeout=600, headers=h)
     i = 0
-    with open(out, "a", buffering=1) as f:
+    # Amendment 5 (3.136.G): each send's goal id and kind, from status.
+    sends_path = os.path.join(os.path.dirname(out) or ".", "explore_sends.jsonl")
+    with open(out, "a", buffering=1) as f, open(sends_path, "a", buffering=1) as sends:
         while os.path.exists(flag):
             target = targets[i % len(targets)]
             i += 1
@@ -62,7 +64,7 @@ def missions(flag: str, out: str, targets: list) -> int:
                                     "body": r.text[:300], "t0": t0}) + "\n")
                 time.sleep(5)
                 continue
-            s, stopped = {}, False
+            s, stopped, seen = {}, False, 0
             while True:
                 if not os.path.exists(flag) and not stopped:
                     try:
@@ -75,6 +77,14 @@ def missions(flag: str, out: str, targets: list) -> int:
                 except (httpx.HTTPError, ValueError):
                     time.sleep(1)
                     continue
+                ex = s.get("explore") or {}
+                n = ex.get("goals_sent") or 0
+                if n > seen:
+                    # The newest n - seen of `sent` (it keeps the last 64).
+                    new = (ex.get("sent") or [])[-(n - seen):]
+                    seen = n
+                    sends.write(json.dumps({"t": round(time.time(), 3), "mission": i,
+                                            "goals_sent": n, "sent": new}) + "\n")
                 if not s.get("running") and s.get("outcome") not in (None, "idle", "running"):
                     break
                 if stopped and time.time() - t0 > 3600:

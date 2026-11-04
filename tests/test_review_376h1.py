@@ -139,6 +139,8 @@ def bridge_mod(monkeypatch):
     mod("std_srvs")
     mod("std_srvs.srv", Trigger=types.SimpleNamespace(Request=_Msg))   # 3.105: nav2's is_active
     mod("tf2_ros", Buffer=_Msg, TransformListener=lambda *a, **kw: None)
+    mod("unique_identifier_msgs")
+    mod("unique_identifier_msgs.msg", UUID=_Msg)          # 3.136.G: a goal's id
     mod("visualization_msgs")
     mod("visualization_msgs.msg", Marker=_Msg, MarkerArray=_Msg)
     for name, m in mods.items():
@@ -197,6 +199,7 @@ class _Handle:
 class _Nav:
     def __init__(self):
         self.futures = []
+        self.uuids = []
         self.waited = []
         self.ready = True
 
@@ -207,9 +210,10 @@ class _Nav:
         self.waited.append(timeout_sec)
         return True
 
-    def send_goal_async(self, goal):
+    def send_goal_async(self, goal, goal_uuid=None):
         f = _Future()
         self.futures.append(f)
+        self.uuids.append(goal_uuid)       # 3.136.G: the bridge names the goal
         return f
 
 

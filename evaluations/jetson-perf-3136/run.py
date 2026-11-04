@@ -267,6 +267,13 @@ def _f(p: Path):
     return float(p.read_text().strip()) if p.exists() and p.read_text().strip() else None
 
 
+def amended_nav_item(nav: dict) -> dict:
+    """validity's nav item under amendment 5: an ABORTED frontier goal is
+    explore's to drop; every other abort counts, an unmatched goal's too.
+    With none succeeded and nothing else counted, n is 0 ("no nav2 goals")."""
+    return {"ok": nav["succeeded"], "n": nav["succeeded"] + nav["aborted_other"]}
+
+
 def score_steady(out: Path, rec: dict) -> dict:
     """3.136.B's rows from one steady.sh window (amendment 2)."""
     b = out / "board"
@@ -280,7 +287,11 @@ def score_steady(out: Path, rec: dict) -> dict:
     wheel = scorers.wheel_delta(h0, h1) if "wheel_loop" in h0 and "wheel_loop" in h1 else None
     pace = scorers.jsonl(b / "pace.jsonl")
     shim = scorers.jsonl(b / "shim.jsonl")
-    nav = scorers.nav_goals(pace, ws, we)
+    # Amendment 5 (3.136.G): with explore's record of its sends' goal ids;
+    # without one (a run from before), amendment 2's rule: every abort counts.
+    sends = scorers.jsonl(b / "explore_sends.jsonl")
+    amended = bool(sends)
+    nav = scorers.nav_goals_amended(pace, sends, ws, we) if amended else scorers.nav_goals(pace, ws, we)
     tc = validity.telemetry_counts(tele, ws, we)
     o0, o1 = _f(b / "oom_start"), _f(b / "oom_end")
     # Clipped: a ring buffer that wrapped never cancels a kill the counter saw.
@@ -293,7 +304,8 @@ def score_steady(out: Path, rec: dict) -> dict:
                "oom_kills": None if tc["oom_kills"] is None else max(tc["oom_kills"], dmesg_ooms or 0),
                # Amendment 2: explore's goals; a goal its sender cancelled is
                # neither (n counts succeeded + aborted).
-               "nav": {"ok": nav["succeeded"], "n": nav["succeeded"] + nav["aborted"]},
+               "nav": (amended_nav_item(nav) if amended
+                       else {"ok": nav["succeeded"], "n": nav["succeeded"] + nav["aborted"]}),
                "power_mode": pm, "desktop_load": rec.get("desktop_load"),
                "temps": tc["temps"], "clocks": tc["clocks"]}
         return doc, validity.judge(doc)
@@ -366,7 +378,9 @@ def score_steady(out: Path, rec: dict) -> dict:
     refused = sum("outcome" not in m for m in scorers.jsonl(b / "missions.jsonl"))
     return {"sha": rec.get("sha"), "stamps": st, "window_s": rows["P4"]["window_s"],
             "uptime_at_start_s": (rec.get("as_found") or {}).get("uptime_s"),
-            "wheel": wheel, "nav2_goals": nav, "telemetry": tc, "dmesg_oom_kills": dmesg_ooms,
+            "wheel": wheel, "nav2_goals": nav,
+            "nav2_rule": ("amendment 5, by goal id" if amended
+                          else "amendment 2 (no explore_sends.jsonl rows: every abort counts)"), "telemetry": tc, "dmesg_oom_kills": dmesg_ooms,
             "power_mode": pm, "validity": j,
             "desktop_load_max": max((x[1] for x in rec.get("desktop_load") or []), default=None),
             "missions": {"n": len(missions), "refused_starts": refused,

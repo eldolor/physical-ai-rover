@@ -194,6 +194,9 @@ def leave_clearance_m(min_distance_cm: float) -> float:
 
 # 3.45: decisions kept for a run's record (`events`), newest last.
 MAX_EVENTS = 5000
+# 3.136.G: the accepted sends kept with the bridge's goal id, for a reader
+# that must know what each nav2 goal was (status.explore.sent).
+SENT_IDS_KEPT = 64
 # 3.77: goal-choice times kept for `choice_stats()`.
 CHOICE_TIMES_KEPT = 5000
 
@@ -337,6 +340,7 @@ class ExploreAgent(MissionAgent):
         self.seen_res: Optional[float] = None
         self._seen_lattice: Optional[tuple] = None   # the first map's origin (3.76 L2)
         self.goals_sent = 0
+        self.sent = collections.deque(maxlen=SENT_IDS_KEPT)   # [(goal_id or None, kind)]
         # 3.77: a goal choice's wall time, from the start of `_next_frontier`
         # to its decision -- before the navigator is asked or an escape move
         # runs. Logged as `choice_ms` on the goal it sends, and every
@@ -645,6 +649,9 @@ class ExploreAgent(MissionAgent):
         self._close_in_refused = 0
         self._reset_in_sight()             # 3.106: as close-in's (a goal tick is never counted)
         self.goals_sent += 1
+        # 3.136.G: the bridge names the goal it gave nav2; an older bridge
+        # does not (None).
+        self.sent.append((reply.get("goal_id"), kind))
         self.last_event = f"goal sent ({kind}) to ({x_m:.2f}, {y_m:.2f})"
         self._event("goal_sent", kind=kind, goal=[round(x_m, 2), round(y_m, 2)], **info)
         return "GOAL", True, self.last_event

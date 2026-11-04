@@ -87,6 +87,7 @@ from sensor_msgs.msg import JointState, LaserScan
 from slam_toolbox.srv import SerializePoseGraph
 from std_msgs.msg import String
 from std_srvs.srv import Trigger
+from unique_identifier_msgs.msg import UUID
 from tf2_ros import Buffer, TransformListener
 from visualization_msgs.msg import Marker, MarkerArray
 
@@ -584,14 +585,18 @@ class Bridge(Node):
             # navigator preempts it for this one anyway; its handle must not
             # stand in for the new goal's.
             self.goal_handle = None
+            # 3.136.G: the goal's UUID is made here, not by rclpy, so the
+            # reply can name it before nav2 answers: nav2's status reports
+            # goals by it, and the sender keeps it with what the goal was.
+            gid = uuid.uuid4()
             self.goal = {"x_m": ps.pose.position.x, "y_m": ps.pose.position.y, "yaw_rad": yaw,
-                         "state": "pending", "since": time.time(),
+                         "state": "pending", "since": time.time(), "goal_id": gid.hex,
                          # internal, monotonic, never published (round 8)
                          "_t0": time.monotonic()}
             record = self.goal
-        future = self.nav.send_goal_async(goal)
+        future = self.nav.send_goal_async(goal, goal_uuid=UUID(uuid=list(gid.bytes)))
         future.add_done_callback(lambda f: self._on_goal_response(f, record))
-        return 200, {"state": "pending"}
+        return 200, {"state": "pending", "goal_id": gid.hex}
 
     def _goal_refusal(self):
         """Under self.lock: the 503 body if no goal may be sent now, else None."""

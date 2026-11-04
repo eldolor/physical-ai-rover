@@ -666,3 +666,47 @@ def test_the_lease_waits_out_its_own_runs_hold_but_not_anothers(tmp_path):
              allow_sudo=True, token="t0k")
     assert json.loads((tmp_path / "lease.json").read_text())["board_lock"] == "taken"
     assert (tmp_path / ".picar-board.owner").read_text() == ""      # left as a released holder leaves it
+
+
+# ---- amendment 5 by goal id (3.136.G): a frontier goal's ABORTED end is explore's to drop ----
+
+def _nav(t, *goals):
+    return {"k": "nav", "t": t, "goals": [list(g) for g in goals]}
+
+
+A, B, C = "a1" * 16, "b2" * 16, "c3" * 16
+
+
+def _sent(*pairs):
+    return [{"t": 1.0, "mission": 1, "sent": [list(p) for p in pairs]}]
+
+
+def _ab(kind_a, kind_b="view"):
+    pace = [_nav(10.2, (A[:12], 2)), _nav(15.0, (A[:12], 6)),
+            _nav(20.3, (B[:12], 2)), _nav(25.0, (B[:12], 4))]
+    return scorers.nav_goals_amended(pace, _sent((A, kind_a), (B, kind_b)), 0, 100)
+
+
+def test_by_id_a_frontier_abort_is_set_aside():
+    got = _ab("frontier")
+    assert got["aborted_frontier"] == 1 and got["aborted_other"] == 0 and got["unmatched"] == 0
+    assert runner.amended_nav_item(got) == {"ok": 1, "n": 1}
+
+
+@pytest.mark.parametrize("kind", ["view", "approach", None])
+def test_by_id_planted_non_frontier_abort_still_invalidates(kind):
+    item = runner.amended_nav_item(_ab(kind))
+    assert item["ok"] != item["n"]
+
+
+def test_by_id_a_goal_explore_never_recorded_is_not_frontier():
+    pace = [_nav(10.2, (C[:12], 2)), _nav(15.0, (C[:12], 6)), _nav(20.3, (B[:12], 2)), _nav(25.0, (B[:12], 4))]
+    got = scorers.nav_goals_amended(pace, _sent((A, "frontier"), (B, "view")), 0, 100)
+    assert got["unmatched"] == 1 and got["aborted_other"] == 1
+
+
+def test_by_id_needs_one_success():
+    pace = [_nav(10.2, (A[:12], 2)), _nav(15.0, (A[:12], 6))]
+    item = runner.amended_nav_item(scorers.nav_goals_amended(pace, _sent((A, "frontier")), 0, 100))
+    assert item == {"ok": 0, "n": 0}
+    assert any("no nav2 goals" in r for r in validity.judge({**GOOD, "nav": item})["reasons"])
