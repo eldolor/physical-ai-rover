@@ -60,8 +60,9 @@ def _write(rec: dict) -> None:
     try:
         with _lock:
             if _fh is None:
-                # Truncated: this process's trace only, whoever launched it.
-                _fh = open(_LOG, "w", buffering=1)
+                # Appended: a restarted robot server keeps its predecessor's
+                # rows; a caller clears a reused file (steady.sh does).
+                _fh = open(_LOG, "a", buffering=1)
             _fh.write(json.dumps(rec) + "\n")
     except OSError:
         pass
@@ -164,16 +165,16 @@ def _heap() -> None:
     _own.append(threading.get_native_id())
     while True:
         time.sleep(HEAP_S)
-        t0 = time.perf_counter()
-        sizes = None
+        sizes = cost = None
         if HEAP_OBJECTS:
+            t0 = time.perf_counter()
             # Walks every tracked object with the GIL held: a pause of its own
             # on a big heap, so off unless asked (TRACE_3141_HEAP_OBJECTS=1).
             try:
                 sizes = [len(gc.get_objects(g)) for g in range(3)]
             except Exception:  # noqa: BLE001 -- generation numbering differs by version
                 pass
-        cost = (time.perf_counter() - t0) * 1000 if HEAP_OBJECTS else None
+            cost = (time.perf_counter() - t0) * 1000
         try:
             with open("/proc/self/statm") as f:
                 rss = int(f.read().split()[1]) * os.sysconf("SC_PAGE_SIZE") // 2**20
@@ -278,25 +279,29 @@ class _Traced:
 
 
 def _timed_vet(fn):
-    def record(t0, cmd, reason):
+    def record(t0, a, k, out, exc):
         try:
             ms = (time.perf_counter() - t0) * 1000
             if ms > VET_MS:
+                cmd = [a[1] if len(a) > 1 else k.get("left_rad_s"),
+                       a[2] if len(a) > 2 else k.get("right_rad_s")]
+                reason = (f"raised {type(exc).__name__}" if exc is not None
+                          else str(out[2] or ""))
                 _write({"k": "vet", "t": time.time(), "ms": round(ms, 2),
                         "thread": threading.current_thread().name,
-                        "cmd": [round(float(x), 2) for x in cmd], "reason": reason[:100]})
+                        "cmd": [None if x is None else round(float(x), 2) for x in cmd],
+                        "reason": reason[:100]})
         except Exception:  # noqa: BLE001 -- a record must never change a vet
             pass
 
     def wrapper(*a, **k):
         t0 = time.perf_counter()
-        cmd = a[1:3] or [k.get("left_rad_s", 0.0), k.get("right_rad_s", 0.0)]
         try:
             out = fn(*a, **k)              # the safety answer, untouched
-        except BaseException:
-            record(t0, cmd, "raised")
+        except BaseException as e:
+            record(t0, a, k, None, e)
             raise
-        record(t0, cmd, str(out[2] or ""))
+        record(t0, a, k, out, None)
         return out
     wrapper.__wrapped__ = fn
     return wrapper
