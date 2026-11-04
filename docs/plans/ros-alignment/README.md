@@ -236,4 +236,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.232](3.232-twin-liveness.md) | The twin says when the robot or brain stops answering, and the shutdown card says what to do next |
 | [3.234](3.234-mover-prediction.md) | Predicting where people and pets will be: a short-horizon mover tracker in the safety veto |
 | [3.235](3.235-frontier-gain-on-rover-data.md) | Frontier gain: does a frontier's predicted gain hold on the Rover's real maps? |
+| [3.147](3.147-verb-outlives-dead-brain.md) | A FORWARD verb outlives a dead brain (3.135.B F6) |
 <!-- /sections -->
