@@ -86,26 +86,50 @@ REFUSED = [
     "git commit -m 'a <<EOF'\nPICAR_SKIP_GATE=1 git push",
     "python -c 'print(1 << n)'\nPICAR_SKIP_GATE=1 git push",
     "git push origin HEAD:dev \\\n  --no-verify",
-    "timeout 60 git push --no-verify",
-    "nice -n 5 git push --no-verify",
+    "timeout 60 git push --no-verify origin HEAD:dev",
+    "nice -n 5 git push --no-verify origin HEAD:dev",
     "sudo -E -H PICAR_SKIP_GATE=1 git push",
     "env -u A -u B PICAR_SKIP_GATE=1 git push",
-    "if true; then git push --no-verify; fi",
+    "if true; then git push --no-verify origin HEAD:dev; fi",
     "bash -c 'PICAR_SKIP_GATE=1 git push'",
-    "sh -lc \"git push --no-verify\"",
+    "sh -lc \"git push --no-verify origin HEAD:dev\"",
     "eval 'PICAR_SKIP_GATE=1 git push'",
     "declare -x PICAR_SKIP_GATE=1",
     "git push --no-veri origin HEAD:dev",
     "git commit --no-veri -m x",    # git 2.53: `--no-ver` is ambiguous (--no-verbose)
-    "git -ccore.hooksPath=/dev/null push",
+    "git -ccore.hooksPath=/dev/null push origin HEAD:dev",
     "GIT_CONFIG_PARAMETERS=\"'core.hooksPath=/dev/null'\" git push",
     "GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/dev/null git push",
-    "git --config-env=core.hooksPath=X push",
+    "git --config-env=core.hooksPath=X push origin HEAD:dev",
     "git config --unset core.hooksPath",
     "git config unset core.hooksPath",
     "git config set core.hooksPath /dev/null",
     "docker --context x build -t vision-picar-ros:latest service/slam",
     "docker -H unix:///x build -t vision-picar-ros:latest .",
+    # Review round 2: each slipped through round 1's hook.
+    'out="$(PICAR_SKIP_GATE=1 git push 2>&1)"',
+    'echo "$(git push --no-verify origin HEAD:dev)"',
+    "echo `git push --no-verify origin HEAD:dev`",
+    "diff <(PICAR_SKIP_GATE=1 git push) x",
+    "cat <<EOF\n$(git push --no-verify origin HEAD:dev)\nEOF",
+    "bash <<'EOF'\ngit push --no-verify origin HEAD:dev\nEOF",
+    "ssh jetson bash <<EOF\nPICAR_SKIP_GATE=1 git push\nEOF",
+    'cat <<"EOF"x\nEOFx\nPICAR_SKIP_GATE=1 git push\nEOF',
+    "git push origin dev 2>&1 --no-verify",
+    "git push origin HEAD:dev &> log --no-verify",
+    "python tools/desktop_lock.py exclusive --why b -- git push --no-verify origin HEAD:dev",
+    "flock /tmp/l git push --no-verify origin HEAD:dev",
+    "stdbuf -oL git push --no-verify origin HEAD:dev",
+    "env -S 'PICAR_SKIP_GATE=1 git push'",
+    "git config --remove-section core",
+    "git config rename-section core x",
+    "docker commit c vision-picar-ros:latest",
+    # Round 3 (the transcript corpus): --no-verify only matters on a push
+    # that can reach dev, the one ref the pre-push gate checks.
+    "git push --no-verify origin --delete dev",
+    "git push --no-verify --all origin",
+    "git push --no-verify origin +HEAD:refs/heads/dev",
+    "git push --no-verify origin feature:dev",
 ]
 
 PASSED = [
@@ -145,6 +169,23 @@ PASSED = [
     "# a comment only",
     "echo 'a # not a comment' && ls",
     "timeout 60 git push origin HEAD:dev",
+    # Review round 2: refused wrongly by round 1's hook, or near a fixed hole.
+    "git commit -m '--no-verify was dropped from the docs'",
+    "git config core.hooksPath /home/x/vision-picar/tools/hooks",
+    "git config core.hooksPath ./tools/hooks",
+    "git -c core.hooksPath=tools/hooks status",
+    "git commit -m \"$(cat <<'EOF'\nsay \" once and PICAR_SKIP_GATE here\nEOF\n)\"",
+    "git commit -m \"$(cat <<'EOF'\nfix: PICAR_SKIP_GATE=1 is the user's\nEOF\n)\"",
+    "cat <<'EOF' | python3 -\nprint('git push --no-verify')\nEOF",
+    "cd service/slam 2>/dev/null && ls",
+    "echo $((1 << 3)) && ls",
+    # Round 3: real commands from past sessions' transcripts; the pre-push
+    # gate ignores every ref but dev, and tools/hooks has no stash hook.
+    "git push -q --no-verify origin --delete plan/3.96-explore-goal-learning-revisited",
+    "git push -q --no-verify picar-jetson:vision-picar HEAD:refs/heads/plan/3.80-e",
+    "git push --no-verify origin plan/3.150-bash-guard",
+    "git -c core.hooksPath=/dev/null stash push -q -m x -- service/",
+    "git -c core.hooksPath=/dev/null worktree add -q -b scratch/x /tmp/x HEAD",
 ]
 
 
@@ -188,10 +229,26 @@ def checkout(tmp_path):
 LATEST = "docker build -t vision-picar-ros:latest service/slam"
 
 
+@pytest.mark.parametrize("command", ["git push --no-verify", "git push --no-verify origin",
+                                     "git push --no-verify origin HEAD"])
+def test_a_bare_no_verify_push_is_refused_only_from_dev(checkout, command):
+    """With no destination, a push goes to the current branch: dev's is gated."""
+    assert run_hook(command, cwd=str(checkout)) == (None, "")
+    _git(checkout, "checkout", "-q", "-b", "dev")
+    assert run_hook(command, cwd=str(checkout))[0] == "deny"
+
+
 def test_latest_from_a_clean_origin_dev_checkout_passes(checkout):
     assert run_hook(LATEST, cwd=str(checkout)) == (None, "")
     _git(checkout, "checkout", "-q", "--detach")
     assert run_hook(LATEST, cwd=str(checkout)) == (None, "")
+
+
+@pytest.mark.parametrize("tail", ["2>&1 | tail -5", "> build.log 2>&1", "--no-cache"])
+def test_latest_from_a_clean_checkout_with_a_redirect_or_flag_after_passes(checkout, tail):
+    """Review round 2: a redirection or a flag after the context read as it."""
+    cmd = f"docker build -t vision-picar-ros:latest service/slam {tail}"
+    assert run_hook(cmd, cwd=str(checkout)) == (None, "")
 
 
 def test_latest_after_a_cd_into_a_clean_checkout_passes(checkout, tmp_path):
@@ -238,6 +295,16 @@ def test_latest_from_inside_a_dirty_service_slam_is_refused(checkout):
     (checkout / "service" / "slam" / "new.py").write_text("x = 1\n")
     assert run_hook(LATEST.replace("service/slam", "."),
                     cwd=str(checkout / "service" / "slam"))[0] == "deny"
+
+
+def test_latest_in_a_checkout_made_by_the_same_command_says_how(tmp_path):
+    """Seen in past transcripts: `git worktree add $D origin/dev && cd $D &&
+    docker build -t ...:latest`. The hook runs before the checkout exists, so
+    it cannot check it; the reason says to build in a second call."""
+    d = tmp_path / "dev-fresh"
+    decision, reason = run_hook(f"git worktree add -q --detach {d} origin/dev && cd {d} && "
+                                f"{LATEST}", cwd=str(tmp_path))
+    assert decision == "deny" and "build in the next" in reason
 
 
 def test_latest_outside_any_repo_is_refused(tmp_path):

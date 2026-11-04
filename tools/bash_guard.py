@@ -13,14 +13,15 @@ Refuses the three things a session never does on its own:
   * `--no-verify` on `git push`/`git commit`, or a `core.hooksPath` other than
     the repo's `tools/hooks`, which skip those hooks altogether;
   * `vision-picar-ros:latest` built from anything but a clean `origin/dev`
-    checkout, or tagged onto by `docker tag` -- every session's live runs
-    use it ("never rebuild :latest from a branch").
+    checkout, or put there by `docker tag`/`commit`/`import` -- every
+    session's live runs use it ("never rebuild :latest from a branch").
 
 A refusal asks where Claude Code shows the user a question and denies
 elsewhere, as `plan_claims.py hook-edit` does. If the input cannot be read,
 or a check raises, a command naming a guarded word is refused and any other
-passes (failing closed). It reads `bash -c` / `eval` strings, not scripts
-run from files: a seatbelt for honest mistakes, not a sandbox.
+passes (failing closed). It reads command substitutions, `bash -c`/`eval`
+strings, wrappers' `-- CMD` and heredocs fed to a shell or `ssh`; it does not
+read scripts run from files: a seatbelt for honest mistakes, not a sandbox.
 """
 
 import json
@@ -36,51 +37,98 @@ REPO_HOOKS = "tools/hooks"
 GUARDED_WORDS = BYPASS_ENV + ("no-ver", "hookspath", "git_config", "config-env", SHARED_IMAGE)
 ASK_MODES = ("default", "plan", "acceptEdits")
 PUNCT = set(";&|()")
+WORD_END = set(" \t\n;&|()<>")
 # Words that run the command after them: {word: (options taking a value,
 # positional words before the command)}. Shell keywords run what follows.
 PREFIXES = {
-    "env": ({"-u", "--unset", "-C", "--chdir", "-S", "--split-string"}, 0),
+    "env": ({"-u", "--unset", "-C", "--chdir"}, 0),
     "sudo": ({"-u", "--user", "-g", "--group", "-h", "--host", "-p", "--prompt",
               "-C", "--close-from", "-D", "--chdir", "-r", "--role", "-t", "--type",
               "-U", "--other-user", "-T", "--command-timeout"}, 0),
     "nice": ({"-n", "--adjustment"}, 0),
+    "ionice": ({"-c", "--class", "-n", "--classdata", "-p", "--pid"}, 0),
     "timeout": ({"-s", "--signal", "-k", "--kill-after"}, 1),
-    "nohup": (set(), 0), "command": (set(), 0), "time": (set(), 0),
+    "flock": ({"-w", "--timeout", "-E", "--conflict-exit-code"}, 1),
+    "watch": ({"-n", "--interval", "-d"}, 0),
+    "stdbuf": ({"-i", "-o", "-e"}, 0),
+    "nohup": (set(), 0), "command": (set(), 0), "time": (set(), 0), "setsid": (set(), 0),
     "exec": ({"-a"}, 0), "xargs": ({"-I", "-n", "-P", "-d", "-L", "-s", "-E", "-a"}, 0),
 }
 KEYWORDS = {"if", "then", "else", "elif", "do", "while", "until", "!", "{", "}", "fi", "done"}
 SHELLS = {"bash", "sh", "zsh", "dash"}
+HEREDOC_RUNNERS = SHELLS | {"ssh"}
 DECLARERS = {"export", "declare", "typeset", "readonly", "local"}
 ASSIGN_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)=(.*)$", re.S)
 GIT_VALUE_OPTS = {"-C", "--git-dir", "--work-tree", "--namespace", "--exec-path",
-                  "--super-prefix", "--config-env"}
-DOCKER_GLOBAL_VALUE_OPTS = {"--context", "-c", "-H", "--host", "--config", "-l",
-                            "--log-level", "--tlscacert", "--tlscert", "--tlskey"}
-# git commit's short options that take a value: in a cluster, the rest of it
+                  "--super-prefix"}
+# Options whose value is the next word, so it is text, never a flag.
+GIT_SUB_VALUE_OPTS = {
+    "commit": {"-m", "-F", "-C", "-c", "-t", "--message", "--file", "--template",
+               "--reuse-message", "--reedit-message", "--author", "--date", "--trailer",
+               "--cleanup", "--fixup", "--squash", "--pathspec-from-file"},
+    "push": {"-o", "--push-option", "--repo", "--receive-pack", "--exec"},
+}
+# git commit's short options that take a value: in a cluster the rest of it
 # (or the next word) is that value, never more flags (`-uno`, `-mnote`).
 COMMIT_VALUE_SHORT = set("mFCctuS")
+DOCKER_GLOBAL_VALUE_OPTS = {"--context", "-c", "-H", "--host", "--config", "-l",
+                            "--log-level", "--tlscacert", "--tlscert", "--tlskey"}
+DOCKER_BUILD_VALUE_OPTS = {
+    "-t", "--tag", "-f", "--file", "--build-arg", "--target", "--platform", "--label",
+    "--network", "--cache-from", "--cache-to", "--secret", "--ssh", "-o", "--output",
+    "--progress", "--iidfile", "--add-host", "--build-context", "--shm-size", "--ulimit",
+    "-m", "--memory", "--memory-swap", "--cpu-shares", "--cpuset-cpus", "--isolation",
+    "--metadata-file", "--builder", "--allow", "--attest", "--annotation",
+    "--cgroup-parent", "--iidfile"}
+REDIRECT_RE = re.compile(r"(\d*)(&>>|&>|>>|>&|>\||<&|<>|>|<)")
 
 
 class Refusal(Exception):
     pass
 
 
-def _delimiter(text: str, i: int) -> tuple:
-    """A heredoc's (strip tabs, delimiter, index after it) at text[i:] just
-    past `<<`, or None."""
-    dash = text.startswith("-", i)
-    j = i + dash
-    while j < len(text) and text[j] in " \t":
+def _word_end(text: str, j: int) -> int:
+    """The end of the shell word starting at text[j] (quotes kept inside)."""
+    quote = None
+    while j < len(text):
+        c = text[j]
+        if quote:
+            if c == "\\" and quote == '"':
+                j += 2
+                continue
+            if c == quote:
+                quote = None
+        elif c in "'\"":
+            quote = c
+        elif c == "\\":
+            j += 2
+            continue
+        elif c in WORD_END:
+            break
         j += 1
-    m = re.match(r"(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\1", text[j:])
-    return (dash, m.group(2), j + m.end()) if m else None
+    return j
 
 
-def preprocess(text: str) -> str:
-    """The command as one line of shell for shlex: line continuations joined,
-    comments and heredoc bodies dropped, each newline outside quotes a `;`.
-    Quote state is tracked, so a `#` or `<<` inside a string is text."""
-    out, i, quote, pending = [], 0, None, []
+def _segment_runs_heredoc(out: list) -> bool:
+    """Whether the simple command written so far feeds a heredoc to a shell
+    or `ssh` (`bash <<EOF`, `ssh host bash -s <<EOF`)."""
+    seg = "".join(out)
+    cut = max(seg.rfind(ch) for ch in ";|&(")
+    try:
+        words = shlex.split(seg[cut + 1:])
+    except ValueError:
+        words = seg[cut + 1:].split()
+    return any(os.path.basename(w) in HEREDOC_RUNNERS for w in words)
+
+
+def _scan(text: str, i: int, extras: list, closer: str = "") -> tuple:
+    """Read shell from text[i] to `closer` (")" or "`") or the end. Returns
+    (the text as one line for shlex, the index after the closer). Comments,
+    redirections and heredoc bodies are dropped and each newline outside
+    quotes is a `;`. Every command substitution's body, and every heredoc
+    fed to a shell, is appended to `extras` for its own check; an unquoted
+    heredoc's substitutions too."""
+    out, quote, depth, pending = [], None, 0, []
     while i < len(text):
         c = text[i]
         if quote == "'":
@@ -91,9 +139,23 @@ def preprocess(text: str) -> str:
         if c == "\\" and i + 1 < len(text):
             if text[i + 1] == "\n":
                 i += 2                    # a line continuation
-                continue
-            out.append(text[i:i + 2])
-            i += 2
+            else:
+                out.append(text[i:i + 2])
+                i += 2
+            continue
+        if closer == "`" and c == "`":
+            return "".join(out), i + 1
+        if text.startswith("$(", i) and not text.startswith("$((", i):
+            start = i + 2
+            _, i = _scan(text, start, extras, ")")
+            extras.append(text[start:i - 1])
+            out.append("SUBST")
+            continue
+        if c == "`" and closer != "`":
+            start = i + 1
+            _, i = _scan(text, start, extras, "`")
+            extras.append(text[start:i - 1])
+            out.append("SUBST")
             continue
         if quote == '"':
             out.append(c)
@@ -110,37 +172,90 @@ def preprocess(text: str) -> str:
                 i += 1                    # a comment, to the end of its line
             continue
         if text.startswith("<<<", i):
-            out.append("<<<")
-            i += 3
+            j = _word_end(text, i + 3 + len(text[i + 3:]) - len(text[i + 3:].lstrip(" \t")))
+            out.append(" ")
+            i = j
             continue
         if text.startswith("<<", i):
-            d = _delimiter(text, i + 2)
-            if d:
-                pending.append(d[:2])
+            j = i + 2
+            dash = text.startswith("-", j)
+            j += dash
+            while j < len(text) and text[j] in " \t":
+                j += 1
+            k = _word_end(text, j)
+            raw = text[j:k]
+            if raw:
+                word = raw.replace("'", "").replace('"', "").replace("\\", "")
+                pending.append((dash, word, raw != word, _segment_runs_heredoc(out)))
                 out.append(" ")
-                i = d[2]
+                i = k
                 continue
+        if c in "<>" and text.startswith("(", i + 1):
+            start = i + 2                 # process substitution
+            _, i = _scan(text, start, extras, ")")
+            extras.append(text[start:i - 1])
+            out.append("SUBST")
+            continue
+        m = REDIRECT_RE.match(text, i)
+        if m and (not m.group(1) or not out or out[-1][-1:] in " \t;&|()"):
+            j = m.end()
+            while j < len(text) and text[j] in " \t":
+                j += 1
+            i = _word_end(text, j)        # the redirection and its target
+            out.append(" ")
+            continue
+        if c == "(":
+            depth += 1
+        elif c == ")":
+            if closer == ")" and depth == 0:
+                return "".join(out), i + 1
+            depth -= 1
         if c == "\n":
             out.append(" ; ")
             i += 1
-            for dash, word in pending:    # skip each heredoc's body
+            for dash, word, quoted, to_shell in pending:
                 lines = text[i:].split("\n")
                 for n, line in enumerate(lines):
                     if (line.lstrip("\t") if dash else line) == word:
+                        body = "\n".join(lines[:n])
                         i += sum(len(x) + 1 for x in lines[:n + 1])
+                        if to_shell:
+                            extras.append(body)
+                        elif not quoted:
+                            _substitutions(body, extras)
                         break
-                else:
-                    pass                  # no closing line: keep the rest as commands
             pending = []
             continue
         out.append(c)
         i += 1
-    return "".join(out)
+    return "".join(out), i
 
 
-def simple_commands(text: str) -> list:
-    """The command split into simple commands, each a list of words."""
-    lex = shlex.shlex(preprocess(text), posix=True, punctuation_chars=";&|()")
+def _substitutions(body: str, extras: list):
+    """The `$(...)` and backticks in an unquoted heredoc's body, which bash
+    runs when it expands it."""
+    i = 0
+    while i < len(body):
+        if body[i] == "\\":
+            i += 2
+            continue
+        if body.startswith("$(", i) and not body.startswith("$((", i):
+            _, j = _scan(body, i + 2, extras, ")")
+            extras.append(body[i + 2:j - 1])
+            i = j
+        elif body[i] == "`":
+            _, j = _scan(body, i + 1, extras, "`")
+            extras.append(body[i + 1:j - 1])
+            i = j
+        else:
+            i += 1
+
+
+def simple_commands(text: str, extras: list = None) -> list:
+    """The command split into simple commands, each a list of words; the
+    texts to check on their own are appended to `extras`."""
+    flat, _ = _scan(text, 0, extras if extras is not None else [])
+    lex = shlex.shlex(flat, posix=True, punctuation_chars=";&|()")
     lex.whitespace_split = True
     lex.commenters = ""
     cmds, cur = [], []
@@ -166,7 +281,7 @@ def _check_assignment(name: str, value: str):
         raise Refusal(f"`{name}` setting core.hooksPath skips the repo's git hooks")
 
 
-def _strip_prefixes(words: list) -> list:
+def _strip_prefixes(words: list, state: dict) -> list:
     """The words from the program on; NAME=VAL before it (or after `env` /
     `sudo`) checked on the way, through keywords and wrappers."""
     i, n = 0, len(words)
@@ -187,6 +302,12 @@ def _strip_prefixes(words: list) -> list:
                 if m and w in ("env", "sudo"):
                     _check_assignment(m.group(1), m.group(2))
                     i += 1
+                elif w == "env" and x in ("-S", "--split-string") and i + 1 < n:
+                    check_text(words[i + 1], dict(state))   # env -S 'CMD'
+                    i += 2
+                elif w == "env" and x.startswith("--split-string="):
+                    check_text(x.split("=", 1)[1], dict(state))
+                    i += 1
                 elif x == "--":
                     i += 1
                     break
@@ -202,19 +323,83 @@ def _strip_prefixes(words: list) -> list:
     return words[i:]
 
 
-def check_git(args: list):
-    sub, i = None, 0
+def _push_reaches_dev(rest: list, flags: list, cwd: str) -> bool:
+    """Whether a push may update `dev`, the one ref the pre-push gate checks
+    (tools/hooks/pre-push): a refspec onto it, `--all`/`--mirror`, or a
+    push of the current branch (no refspec, or `HEAD`) while on `dev`."""
+    if any(f in ("--all", "--mirror", "--branches") for f in flags):
+        return True
+    value_opts, pos, skip = GIT_SUB_VALUE_OPTS["push"], [], False
+    for a in rest:
+        if skip:
+            skip = False
+        elif a.startswith("-"):
+            skip = a in value_opts
+        else:
+            pos.append(a)
+    if any(f in ("-d", "--delete") for f in flags):
+        return any(_ref_name(r) == "dev" for r in pos[1:])
+    refspecs = pos[1:]
+    if not refspecs:
+        return _current_branch(cwd) in ("dev", "")
+    for r in refspecs:
+        dest = r.lstrip("+").split(":")[-1] if ":" in r else r.lstrip("+")
+        if dest == "HEAD":
+            dest = _current_branch(cwd)
+        if _ref_name(dest) in ("dev", ""):
+            return True
+    return False
+
+
+def _ref_name(ref: str) -> str:
+    return ref[len("refs/heads/"):] if ref.startswith("refs/heads/") else ref
+
+
+def _current_branch(cwd: str) -> str:
+    """The branch checked out in `cwd`; '' when it cannot be told."""
+    try:
+        r = subprocess.run(["git", "-C", cwd, "symbolic-ref", "-q", "--short", "HEAD"],
+                           capture_output=True, text=True, timeout=3)
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+    return r.stdout.strip() if r.returncode == 0 else "(detached)"
+
+
+def _repo_hooks(value: str) -> bool:
+    v = os.path.normpath(os.path.expanduser(value))
+    return v == REPO_HOOKS or (os.path.isabs(v) and v.endswith("/" + REPO_HOOKS))
+
+
+def _flags(sub: str, rest: list) -> list:
+    """`rest`'s option words, without the values of options that take one."""
+    value_opts, out, skip = GIT_SUB_VALUE_OPTS.get(sub, set()), [], False
+    for a in rest:
+        if skip:
+            skip = False
+            continue
+        if a == "--":
+            break
+        if a.startswith("-"):
+            out.append(a)
+            skip = a in value_opts
+    return out
+
+
+def check_git(args: list, cwd: str = "."):
+    sub, i, hooks_off = None, 0, False
     while i < len(args):
         a = args[i]
         if a == "-c" and i + 1 < len(args):
-            key = args[i + 1]
+            setting = args[i + 1]
             i += 2
         elif a.startswith("-c") and not a.startswith("--"):
-            key = a[2:]
+            setting = a[2:]
             i += 1
         elif a.startswith("--config-env"):
-            key = a.split("=", 1)[1] if "=" in a else (args[i + 1] if i + 1 < len(args) else "")
+            setting = a.split("=", 1)[1] if "=" in a else (args[i + 1] if i + 1 < len(args) else "")
+            hooks_off = hooks_off or setting.lower().startswith("core.hookspath")
             i += 1 if "=" in a else 2
+            continue
         elif a in GIT_VALUE_OPTS:
             i += 2
             continue
@@ -224,27 +409,28 @@ def check_git(args: list):
         else:
             sub = a
             break
-        if key.lower().startswith("core.hookspath"):
-            raise Refusal("git's `-c core.hooksPath` skips the repo's git hooks")
+        key, _, value = setting.partition("=")
+        if key.lower() == "core.hookspath" and not _repo_hooks(value):
+            hooks_off = True
     rest = args[i + 1:] if sub else []
-    if sub in ("push", "commit") and any(a.startswith("--no-veri") for a in rest):
-        raise Refusal(f"`git {sub} --no-verify` skips the "
+    if hooks_off and (sub == "commit" or (sub == "push" and _push_reaches_dev(
+            rest, _flags(sub, rest), cwd))):
+        raise Refusal(f"git's `-c core.hooksPath` on `{sub}` skips the repo's "
                       + ("push gate" if sub == "push" else "claim hook"))
+    flags = _flags(sub, rest)
+    no_verify = any(a.startswith("--no-veri") for a in flags)
+    if sub == "commit" and no_verify:
+        raise Refusal("`git commit --no-verify` skips the claim hook")
+    if sub == "push" and no_verify and _push_reaches_dev(rest, flags, cwd):
+        raise Refusal("`git push --no-verify` to `dev` skips the push gate")
     if sub == "commit":
-        skip = False
-        for a in rest:
-            if skip:
-                skip = False
+        for a in flags:
+            if a.startswith("--"):
                 continue
-            if a == "--":
-                break
-            if not a.startswith("-") or a.startswith("--"):
-                continue
-            for k, ch in enumerate(a[1:]):
+            for ch in a[1:]:
                 if ch == "n":
                     raise Refusal("`git commit -n` (no-verify) skips the claim hook")
                 if ch in COMMIT_VALUE_SHORT:
-                    skip = k == len(a) - 2 and ch not in "uS"   # value is the next word
                     break
     if sub == "config":
         _check_git_config(rest)
@@ -259,22 +445,28 @@ def _check_git_config(rest: list):
             continue
         (flags if a.startswith("-") else pos).append(a)
         i += 1
-    verb = None
     if pos and pos[0] in ("set", "unset", "get", "list", "edit", "rename-section",
                           "remove-section"):
         verb, pos = pos[0], pos[1:]
     elif any(f.startswith("--unset") for f in flags):
         verb = "unset"
+    elif any(f in ("--remove-section", "--rename-section") for f in flags):
+        verb = flags[[f in ("--remove-section", "--rename-section") for f in flags].index(True)][2:]
     elif any(f.startswith("--get") or f in ("-l", "--list") for f in flags):
         verb = "get"
     else:
         verb = "set" if len(pos) >= 2 else "get"
+    if verb in ("remove-section", "rename-section"):
+        if pos and pos[0].lower() == "core":
+            raise Refusal(f"`git config {verb} core` drops `core.hooksPath`, turning off the "
+                          "repo's git hooks for every session")
+        return
     if not pos or pos[0].lower() != "core.hookspath":
         return
     if verb == "unset":
         raise Refusal("unsetting `core.hooksPath` turns off the repo's git hooks for "
                       "every session")
-    if verb == "set" and pos[1:2] != [REPO_HOOKS] and pos[1:2] != [REPO_HOOKS + "/"]:
+    if verb == "set" and not (len(pos) > 1 and _repo_hooks(pos[1])):
         raise Refusal(f"`core.hooksPath` other than `{REPO_HOOKS}` turns off the repo's "
                       "git hooks for every session")
 
@@ -292,13 +484,17 @@ def clean_dev_checkout(path: str) -> str:
         return subprocess.run(["git", "-C", path, *a], capture_output=True, text=True,
                               timeout=3)
     if not os.path.isdir(path):
-        return f"{path} is not a directory here"
-    head, dev = git("rev-parse", "HEAD"), git("rev-parse", "origin/dev")
-    if head.returncode or dev.returncode:
-        return f"{path} is not in a checkout with an origin/dev"
-    if head.stdout.strip() != dev.stdout.strip():
-        return f"{path} is at {head.stdout.strip()[:9]}, not origin/dev"
-    st = git("status", "--porcelain", "--untracked-files=all", "--", ":/service/slam")
+        return (f"{path} does not exist yet; create the clean origin/dev checkout in one "
+                "call and build in the next, so this hook can check it")
+    try:
+        head, dev = git("rev-parse", "HEAD"), git("rev-parse", "origin/dev")
+        if head.returncode or dev.returncode:
+            return f"{path} is not in a checkout with an origin/dev"
+        if head.stdout.strip() != dev.stdout.strip():
+            return f"{path} is at {head.stdout.strip()[:9]}, not origin/dev"
+        st = git("status", "--porcelain", "--untracked-files=all", "--", ":/service/slam")
+    except subprocess.TimeoutExpired:
+        return f"git took over 3 s to answer about {path} (a busy desktop?); try again"
     if st.returncode or st.stdout.strip():
         return f"{path}'s checkout has changes under service/slam/"
     return ""
@@ -309,39 +505,42 @@ def check_docker(args: list, cwd: str):
     while i < len(args) and args[i].startswith("-"):
         i += 2 if args[i] in DOCKER_GLOBAL_VALUE_OPTS else 1
     words = args[i:]
-    while words[:1] and words[0] in ("buildx", "image", "builder"):
+    while words[:1] and words[0] in ("buildx", "image", "builder", "container"):
         words = words[1:]
     verb, opts = (words[0], words[1:]) if words else ("", [])
-    if verb == "tag":
+    if verb in ("tag", "commit", "import"):
         pos = [a for a in opts if not a.startswith("-")]
         if len(pos) >= 2 and _is_shared(pos[1]):
-            raise Refusal(f"`docker tag` onto `{SHARED_IMAGE}:latest` gives every session "
+            raise Refusal(f"`docker {verb}` onto `{SHARED_IMAGE}:latest` gives every session "
                           "an image no one built from origin/dev")
         return
     if verb != "build":
         return
-    tags, files, i = [], [], 0
+    tags, files, pos, i = [], [], [], 0
     while i < len(opts):
         a = opts[i]
-        if a in ("-t", "--tag", "-f", "--file") and i + 1 < len(opts):
-            (tags if a in ("-t", "--tag") else files).append(opts[i + 1])
+        if a.startswith("--") and "=" in a:
+            name, value = a.split("=", 1)
+            (tags if name == "--tag" else files if name == "--file" else []).append(value)
+        elif a in DOCKER_BUILD_VALUE_OPTS and i + 1 < len(opts):
+            if a in ("-t", "--tag"):
+                tags.append(opts[i + 1])
+            elif a in ("-f", "--file"):
+                files.append(opts[i + 1])
             i += 1
-        elif a.startswith("--tag="):
-            tags.append(a[len("--tag="):])
-        elif a.startswith("--file="):
-            files.append(a[len("--file="):])
         elif a.startswith("-t") and len(a) > 2 and not a.startswith("--"):
             tags.append(a[2:])
         elif a.startswith("-f") and len(a) > 2 and not a.startswith("--"):
             files.append(a[2:])
+        elif not a.startswith("-"):
+            pos.append(a)
         i += 1
     if not any(_is_shared(t) for t in tags):
         return
-    context = opts[-1] if opts and not opts[-1].startswith("-") else ""
-    if not context:
+    if len(pos) != 1 or pos[0] == "-":
         raise Refusal(f"`{SHARED_IMAGE}:latest` is built only from a clean origin/dev "
                       "checkout, and this build's context cannot be read")
-    places = [os.path.join(cwd, os.path.expanduser(context))]
+    places = [os.path.join(cwd, os.path.expanduser(pos[0]))]
     places += [os.path.dirname(os.path.join(cwd, os.path.expanduser(f))) for f in files]
     for p in places:
         why = clean_dev_checkout(os.path.normpath(p))
@@ -351,7 +550,7 @@ def check_docker(args: list, cwd: str):
 
 
 def check_simple(words: list, state: dict):
-    rest = _strip_prefixes(words)
+    rest = _strip_prefixes(words, state)
     if not rest:
         return
     prog, args = os.path.basename(rest[0]), rest[1:]
@@ -363,7 +562,7 @@ def check_simple(words: list, state: dict):
     elif prog == "cd" and args:
         state["cwd"] = os.path.join(state["cwd"], os.path.expanduser(args[-1]))
     elif prog == "git":
-        check_git(args)
+        check_git(args, state["cwd"])
     elif prog in ("docker", "podman"):
         check_docker(args, state["cwd"])
     elif prog == "eval":
@@ -373,11 +572,16 @@ def check_simple(words: list, state: dict):
             if re.match(r"^-[a-zA-Z]*c[a-zA-Z]*$", a) and k + 1 < len(args):
                 check_text(args[k + 1], dict(state))
                 break
+    elif "--" in args:                    # a wrapper's `-- CMD` (desktop_lock, board_lock)
+        check_simple(args[args.index("--") + 1:], dict(state))
 
 
 def check_text(text: str, state: dict):
-    for words in simple_commands(text):
+    extras = []
+    for words in simple_commands(text, extras):
         check_simple(words, state)
+    for body in extras:
+        check_text(body, dict(state))
 
 
 def _decision(decision: str, reason: str) -> str:
