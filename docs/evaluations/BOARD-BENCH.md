@@ -177,6 +177,16 @@ No runs yet. The 3.135.A smoke (2026-11-01, F13 only, not scored) is in
 
 ## Runs
 
+### 2026-11-04, F9 re-run on the fixed build (3.144.B, a 3.135.B row)
+
+`run.py row F9 --runs 5` at `ad1def4b` (3.144.A's `forward_clearance()` fix,
+3.136.F's lease), 15 W, 07:10-07:12, one board hold. **Met 5/5: 0.0 cm moved
+while the scan was stale** (bar 2 cm; the shipped build on 2026-11-03: 101-105
+cm, FAILED, 3.135.B's record). Wheels zero 2.0 s after the fault by the
+watchdog (no FORWARD starts on a stale scan); 0 contacts, 0 late ticks, 0 OOM,
+`MemAvailable` minimum 2,360 MB, max 50.1 °C; recovery 3.1 s; left as found.
+Records: `evaluations/jetson-fmea-3135/board/rows/F9-3144B-20261104-0710/`.
+
 ### 2026-11-03, the vet's cost with 3.141's turn guard (3.141 criterion 2, not a recurring test)
 
 `evaluations/wheel-loop-3141/vet_compare.py`: the branch's `robot/` copied to
