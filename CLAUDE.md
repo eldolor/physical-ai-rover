@@ -282,7 +282,8 @@ paragraph.**
   `PICAR_MAP_RELOAD=0` maps from empty.
 * 3.105, 3.127, 3.133, 3.134: goals wait for nav2 and SLAM; a 503 names
   its `hold`. 3.136.G: nav2's goal id comes back in `POST /goal`'s reply
-  (`status.explore.sent`); needs the image rebuilt from `dev`.
+  (`status.explore.sent`); the desktop's image rebuilt from `dev`
+  `ed6875b5` (2026-11-04), the Jetson's not yet.
 
 *The twin, consoles and tooling*
 
