@@ -150,4 +150,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.142](3.142-soak-memory-trend.md) | The soak's per-mission memory minimum falls 21 MB/h (3.135.C (b)) |
 | [3.143](3.143-soak-find-rate.md) | The live find rate on the board, 10/19 against the sweep's 39/40 (3.135.C (d)) |
 | [3.144](3.144-lidar-stale-forward.md) | Forward moves refused on a stale lidar scan (3.135.B F9) |
+| [3.147](3.147-verb-outlives-dead-brain.md) | A FORWARD verb outlives a dead brain (3.135.B F6) |
 <!-- /sections -->
