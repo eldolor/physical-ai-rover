@@ -28,6 +28,7 @@ says who ran. Ubuntu's own sitecustomize is chained, as 3.136's shim does.
 """
 
 import asyncio
+import atexit
 import collections
 import gc
 import importlib.abc
@@ -51,8 +52,7 @@ HEAP_S = float(os.environ.get("TRACE_3141_HEAP_S", "30"))
 HEAP_OBJECTS = os.environ.get("TRACE_3141_HEAP_OBJECTS") == "1"
 CLK = os.sysconf("SC_CLK_TCK")
 
-_PID = os.getpid()
-_rows: collections.deque = collections.deque(maxlen=100000)
+_rows: collections.deque = collections.deque(maxlen=20000)
 _rows_dropped = [0]
 _sampler_ticks = [0]                 # the sampler's passes: a heap row's proof it is alive
 _sampler_errors = [0]
@@ -67,7 +67,7 @@ def _write(rec: dict) -> None:
     sampler holds while encoding a large row."""
     if len(_rows) == _rows.maxlen:
         _rows_dropped[0] += 1
-    _rows.append({**rec, "pid": _PID})
+    _rows.append({**rec, "pid": os.getpid()})
 
 
 def _drain() -> None:
@@ -82,7 +82,7 @@ def _drain() -> None:
                 _fh = open(_LOG, "a", buffering=1)
             _fh.write(json.dumps(rec) + "\n")
         except (OSError, TypeError, ValueError):
-            pass
+            _rows_dropped[0] += 1          # lost, and counted as lost
 
 
 def _thread_cpu() -> dict:
@@ -158,13 +158,14 @@ def _sampler() -> None:
             base, base_t, in_stall, start_cpu, rec = _sample(base, base_t, in_stall, start_cpu, rec)
         except Exception:  # noqa: BLE001 -- the sampler must outlive one odd /proc read
             _sampler_errors[0] += 1
-            in_stall = False
+            in_stall, rec = False, None        # that stall's row is lost (counted)
+            base_t = 0.0                       # a fresh baseline next pass
 
 
 def _sample(base, base_t, in_stall, start_cpu, rec):
     """One look: drain the queue, then the heartbeat's age."""
-    now = time.monotonic()
     _drain()
+    now = time.monotonic()                 # after the drain: its own time is not age
     _sampler_ticks[0] += 1
     age = (now - _hb[0]) * 1000
     if not in_stall and age > STALL_MS:
@@ -193,28 +194,35 @@ def _heap() -> None:
     _own.append(threading.get_native_id())
     while True:
         time.sleep(HEAP_S)
-        sizes = cost = None
-        if HEAP_OBJECTS:
-            t0 = time.perf_counter()
-            # Walks every tracked object with the GIL held: a pause of its own
-            # on a big heap, so off unless asked (TRACE_3141_HEAP_OBJECTS=1).
-            try:
-                sizes = [len(gc.get_objects(g)) for g in range(3)]
-            except Exception:  # noqa: BLE001 -- generation numbering differs by version
-                pass
-            cost = (time.perf_counter() - t0) * 1000
         try:
-            with open("/proc/self/statm") as f:
-                rss = int(f.read().split()[1]) * os.sysconf("SC_PAGE_SIZE") // 2**20
-        except OSError:
-            rss = None
-        _write({"k": "heap", "t": time.time(), "count": gc.get_count(), "sizes": sizes,
-                "cost_ms": None if cost is None else round(cost, 1), "frozen": gc.get_freeze_count(), "rss_mb": rss,
-                "tracer_cpu_ms": _own_cpu_ms(), "probe_ms": round(_probe_s[0] * 1000),
-                "loop_cpu_ms": _cpu_ms_of(_loop_tid), "rows_dropped": _rows_dropped[0],
-                "sampler_ticks": _sampler_ticks[0], "sampler_errors": _sampler_errors[0],
-                "tracer_tids": list(_own), "loop_tid": _loop_tid[:1],
-                "stats": gc.get_stats(), "threads": threading.active_count()})
+            _heap_row()
+        except Exception:  # noqa: BLE001 -- the next row must still come
+            _sampler_errors[0] += 1
+
+
+def _heap_row() -> None:
+    sizes = cost = None
+    if HEAP_OBJECTS:
+        t0 = time.perf_counter()
+        # Walks every tracked object with the GIL held: a pause of its own
+        # on a big heap, so off unless asked (TRACE_3141_HEAP_OBJECTS=1).
+        try:
+            sizes = [len(gc.get_objects(g)) for g in range(3)]
+        except Exception:  # noqa: BLE001 -- generation numbering differs by version
+            pass
+        cost = (time.perf_counter() - t0) * 1000
+    try:
+        with open("/proc/self/statm") as f:
+            rss = int(f.read().split()[1]) * os.sysconf("SC_PAGE_SIZE") // 2**20
+    except OSError:
+        rss = None
+    _write({"k": "heap", "t": time.time(), "count": gc.get_count(), "sizes": sizes,
+            "cost_ms": None if cost is None else round(cost, 1), "frozen": gc.get_freeze_count(), "rss_mb": rss,
+            "tracer_cpu_ms": _own_cpu_ms(), "probe_ms": round(_probe_s[0] * 1000),
+            "loop_cpu_ms": _cpu_ms_of(_loop_tid), "rows_dropped": _rows_dropped[0],
+            "sampler_ticks": _sampler_ticks[0], "sampler_errors": _sampler_errors[0],
+            "tracer_tids": list(_own), "loop_tid": _loop_tid[:1],
+            "stats": gc.get_stats(), "threads": threading.active_count()})
 
 
 _gc_t0 = [0.0]
@@ -227,7 +235,7 @@ def _gc_cb(phase, info):
     ms = (time.perf_counter() - _gc_t0[0]) * 1000
     if ms >= GC_MS:
         _write({"k": "gc", "t": time.time(), "ms": round(ms, 2), "gen": info.get("generation"),
-                "collected": info.get("collected"), "thread": threading.get_native_id()})
+                "collected": info.get("collected"), "tid": threading.get_native_id()})
 
 
 async def _probe5():
@@ -360,6 +368,13 @@ class _Finder(importlib.abc.MetaPathFinder):
         return None
 
 
+def _drain_at_exit() -> None:
+    try:
+        _drain()
+    except Exception:  # noqa: BLE001 -- exiting anyway
+        pass
+
+
 def _chain_system_sitecustomize() -> None:
     # Only what comes AFTER this directory: 3.136's shim, first on the path,
     # chains this file, and looking before it would load the shim again.
@@ -382,3 +397,4 @@ def _chain_system_sitecustomize() -> None:
 _chain_system_sitecustomize()
 if _LOG and any("robot.server" in a for a in sys.argv):
     sys.meta_path.insert(0, _Finder())
+    atexit.register(_drain_at_exit)    # rows still queued when the server stops
