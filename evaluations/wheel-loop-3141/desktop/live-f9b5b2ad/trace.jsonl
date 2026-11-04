@@ -1,0 +1,1137 @@
+{"k": "start", "t": 1793756810.5942976, "py": "3.14.4 (main, Aug 20 2026, 10:41:58) [GCC 15.2.0]", "pid": 1360621, "gc_threshold": [2000, 10, 0]}
+{"k": "gc", "t": 1793756810.612745, "ms": 18.0, "gen": 2, "collected": 30, "thread": "MainThread"}
+{"k": "req", "t0": 1793756814.2058032, "ms": 23.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756815.72852, "ms": 38.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756816.8521793, "ms": 21.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756817.402136, "ms": 32.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756817.9648628, "ms": 41.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756818.5350454, "ms": 65.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756819.1357052, "ms": 42.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756819.7076874, "ms": 97.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756820.3350635, "ms": 30.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756820.9026656, "ms": 28.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756821.4600182, "ms": 26.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756822.026597, "ms": 25.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793756822.58632, "ms": 6.39, "thread": "AnyIO worker thread", "cmd": [4.81, 5.19], "reason": ""}
+{"k": "req", "t0": 1793756822.5943682, "ms": 35.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756823.1629212, "ms": 24.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756823.7338188, "ms": 45.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756824.3113225, "ms": 21.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756824.8672962, "ms": 24.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756825.4192667, "ms": 20.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756825.9816792, "ms": 21.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756826.536166, "ms": 24.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756827.647346, "ms": 26.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756827.984427, "ms": 49.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756828.3311265, "ms": 21.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756830.6796916, "ms": 27.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756832.9391358, "ms": 22.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756833.4939036, "ms": 33.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756834.058826, "ms": 21.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756834.6292021, "ms": 34.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756835.2009232, "ms": 21.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756835.7662835, "ms": 23.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "heap", "t": 1793756840.5946374, "count": [467, 0, 0], "sizes": [994, 0, 2910], "cost_ms": 0.2, "frozen": 80047, "rss_mb": 86, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 30, "collected": 36660, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 9}
+{"k": "req", "t0": 1793756845.7387767, "ms": 33.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793756847.327705, "ms": 6.18, "thread": "MainThread", "cmd": [5.11, 4.89], "reason": ""}
+{"k": "req", "t0": 1793756850.7021706, "ms": 21.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756853.7742586, "ms": 44.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756858.5767322, "ms": 21.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756859.132732, "ms": 35.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756859.703212, "ms": 73.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756860.308758, "ms": 42.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756860.8995743, "ms": 39.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756861.4740841, "ms": 36.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756862.0466611, "ms": 43.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756862.6358378, "ms": 36.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756863.202032, "ms": 36.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756863.787638, "ms": 48.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756864.3802097, "ms": 40.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756864.9675283, "ms": 38.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756865.5383117, "ms": 42.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793756865.686036, "ms": 5.01, "thread": "AnyIO worker thread", "cmd": [5.05, 4.95], "reason": ""}
+{"k": "req", "t0": 1793756866.1235044, "ms": 41.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756866.7142966, "ms": 98.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756867.3498826, "ms": 54.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756867.9517882, "ms": 43.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756868.5297687, "ms": 43.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756869.1122, "ms": 48.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756869.7059684, "ms": 92.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756870.332917, "ms": 47.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "heap", "t": 1793756870.5988204, "count": [898, 0, 0], "sizes": [1457, 0, 3044], "cost_ms": 0.2, "frozen": 80047, "rss_mb": 87, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 48, "collected": 74438, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 9}
+{"k": "req", "t0": 1793756870.9241645, "ms": 41.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756871.5053117, "ms": 38.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756871.5778131, "ms": 35.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756872.1177742, "ms": 32.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756872.6943839, "ms": 53.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756873.2996037, "ms": 21.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756873.865815, "ms": 24.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756876.1004102, "ms": 26.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793756885.7268074, "ms": 2.58, "gen": 1, "collected": 1822, "thread": "AnyIO worker thread"}
+{"k": "req", "t0": 1793756891.7194326, "ms": 35.4, "path": "/world/pose", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756894.7415452, "ms": 64.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756894.8083322, "ms": 21.1, "path": "/world/pose", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756895.4102335, "ms": 49.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756895.9978063, "ms": 54.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756896.5873191, "ms": 59.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756897.1906073, "ms": 52.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756897.2880435, "ms": 51.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756897.8434105, "ms": 49.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756898.4336352, "ms": 50.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756899.0343952, "ms": 48.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756899.632685, "ms": 49.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756900.2230148, "ms": 46.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "heap", "t": 1793756900.602706, "count": [281, 0, 0], "sizes": [597, 0, 3454], "cost_ms": 0.2, "frozen": 80047, "rss_mb": 89, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 67, "collected": 113184, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 10}
+{"k": "req", "t0": 1793756900.8227413, "ms": 61.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756901.4169528, "ms": 48.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756902.0173287, "ms": 42.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756902.615411, "ms": 43.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756903.1948457, "ms": 42.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756903.7880673, "ms": 54.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756904.3764749, "ms": 41.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756904.9685948, "ms": 42.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756905.5457513, "ms": 40.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756905.6320093, "ms": 41.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756906.1764276, "ms": 40.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756906.7722626, "ms": 42.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756907.350067, "ms": 39.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756907.9412334, "ms": 35.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756908.5075223, "ms": 36.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756909.0901952, "ms": 35.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756909.6756403, "ms": 40.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756910.3025897, "ms": 38.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756910.8884099, "ms": 39.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756911.4624982, "ms": 38.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756912.0519247, "ms": 37.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756912.6429694, "ms": 35.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756912.7174153, "ms": 116.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756913.337332, "ms": 36.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756913.9239998, "ms": 34.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756914.4876165, "ms": 37.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756915.0700283, "ms": 36.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756915.6567042, "ms": 38.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756916.2574306, "ms": 38.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756916.8459954, "ms": 39.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756917.4183626, "ms": 38.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756918.0060825, "ms": 38.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756918.5821068, "ms": 36.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756919.1676118, "ms": 38.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756919.2511792, "ms": 40.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756919.7957897, "ms": 69.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756920.4058542, "ms": 41.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756921.0003383, "ms": 38.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756921.572756, "ms": 57.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756922.1820054, "ms": 37.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756922.7694457, "ms": 51.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756923.3541057, "ms": 40.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756923.9458232, "ms": 36.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756924.5144486, "ms": 35.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756925.0990934, "ms": 35.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756925.6878989, "ms": 56.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756926.2976325, "ms": 32.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756926.3411849, "ms": 20.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756926.8878105, "ms": 30.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756927.4543, "ms": 33.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756927.5447447, "ms": 31.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756928.0795484, "ms": 31.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756928.6685252, "ms": 31.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756929.2679875, "ms": 31.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756929.3100078, "ms": 21.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756929.8580654, "ms": 30.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756930.1814919, "ms": 36.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "heap", "t": 1793756930.6073313, "count": [1431, 0, 0], "sizes": [1973, 0, 3014], "cost_ms": 0.3, "frozen": 80047, "rss_mb": 93, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 85, "collected": 149219, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 10}
+{"k": "req", "t0": 1793756930.8257864, "ms": 30.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756931.4374526, "ms": 30.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756932.0575128, "ms": 38.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756932.4344046, "ms": 29.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756933.0021708, "ms": 39.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756933.5774333, "ms": 33.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756934.1472688, "ms": 29.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756934.7394052, "ms": 47.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756935.3234053, "ms": 30.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756935.3636184, "ms": 23.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756935.9127688, "ms": 29.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756936.475318, "ms": 30.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756937.0831265, "ms": 29.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756937.1250033, "ms": 25.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756937.6805127, "ms": 31.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756938.285812, "ms": 27.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756938.3255403, "ms": 24.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756938.8817248, "ms": 29.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756939.445722, "ms": 30.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756939.4863317, "ms": 25.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756940.0432498, "ms": 45.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756940.1002839, "ms": 22.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756940.654368, "ms": 25.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756941.215136, "ms": 24.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756941.25071, "ms": 25.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756941.8119867, "ms": 30.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756941.8735309, "ms": 27.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756942.404552, "ms": 24.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756942.4375153, "ms": 27.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756942.9980063, "ms": 22.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793756943.4917731, "ms": 6.07, "thread": "MainThread", "cmd": [4.94, 5.06], "reason": ""}
+{"k": "req", "t0": 1793756943.5588405, "ms": 23.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756943.5927703, "ms": 24.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756944.1471462, "ms": 23.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756944.1836174, "ms": 23.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793756944.7814856, "ms": 5.12, "thread": "AnyIO worker thread", "cmd": [4.62, 5.38], "reason": ""}
+{"k": "req", "t0": 1793756944.7387774, "ms": 56.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756945.3320065, "ms": 36.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756945.3815403, "ms": 21.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756945.941529, "ms": 21.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756946.4974267, "ms": 21.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756946.5304391, "ms": 24.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756947.0910807, "ms": 21.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756947.1245997, "ms": 25.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756947.6799328, "ms": 24.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756948.2673113, "ms": 27.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756948.3056476, "ms": 26.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756948.8589418, "ms": 24.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756949.4121065, "ms": 24.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756949.4496126, "ms": 21.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756950.0006459, "ms": 26.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756950.5580645, "ms": 26.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756950.5942118, "ms": 24.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756951.1454086, "ms": 23.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756951.7023416, "ms": 64.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756952.3107169, "ms": 23.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756952.8631268, "ms": 25.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756953.4183767, "ms": 24.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756953.9761305, "ms": 25.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756954.5366485, "ms": 25.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756955.0940483, "ms": 24.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756955.651797, "ms": 25.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756956.210399, "ms": 25.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756956.7663436, "ms": 41.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756957.3414032, "ms": 23.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756957.8992572, "ms": 35.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756958.46558, "ms": 28.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756959.032576, "ms": 39.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756959.6082516, "ms": 25.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756960.1632297, "ms": 25.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "heap", "t": 1793756960.6120243, "count": [1003, 0, 0], "sizes": [1372, 0, 2977], "cost_ms": 0.2, "frozen": 80046, "rss_mb": 95, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 102, "collected": 187211, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 9}
+{"k": "req", "t0": 1793756960.721515, "ms": 57.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756961.3073933, "ms": 25.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756961.8644779, "ms": 24.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756962.4200788, "ms": 25.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756962.9839647, "ms": 28.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756963.5454159, "ms": 24.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756964.1050365, "ms": 27.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756964.663005, "ms": 25.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756965.2210684, "ms": 24.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756965.7795355, "ms": 36.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756966.3487914, "ms": 24.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756966.902067, "ms": 26.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756967.4606347, "ms": 36.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756968.030947, "ms": 25.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756968.5895877, "ms": 25.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756969.1516542, "ms": 28.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756969.7384667, "ms": 62.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756969.8267722, "ms": 2119.7, "path": "/action", "method": "POST", "status": 200}
+{"k": "req", "t0": 1793756971.9529848, "ms": 25.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756972.2077463, "ms": 28.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756972.269001, "ms": 3292.5, "path": "/action", "method": "POST", "status": 200}
+{"k": "req", "t0": 1793756977.4076922, "ms": 25.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756977.9656756, "ms": 22.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756978.52422, "ms": 20.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756979.07617, "ms": 26.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756979.6366327, "ms": 32.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756980.2148693, "ms": 33.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756980.7856352, "ms": 44.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756981.364563, "ms": 37.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756981.4131618, "ms": 23.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756981.9753656, "ms": 38.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756982.548424, "ms": 36.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756982.5958004, "ms": 25.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756983.157197, "ms": 43.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756983.2123876, "ms": 24.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756983.7717915, "ms": 49.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756984.3577304, "ms": 33.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756984.4010284, "ms": 27.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756984.9586086, "ms": 30.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756985.5281606, "ms": 27.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756985.5658119, "ms": 30.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756986.128015, "ms": 27.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756986.1669314, "ms": 30.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756986.7335658, "ms": 66.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756987.3397079, "ms": 26.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756987.3799186, "ms": 26.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756987.9377344, "ms": 31.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756988.5085833, "ms": 30.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756988.5558798, "ms": 33.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756989.12918, "ms": 27.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756989.1680973, "ms": 25.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756989.2254798, "ms": 28.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756989.7595584, "ms": 59.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756990.4271734, "ms": 26.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756990.464561, "ms": 29.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "heap", "t": 1793756990.6159127, "count": [298, 0, 0], "sizes": [611, 0, 3511], "cost_ms": 0.3, "frozen": 80046, "rss_mb": 95, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 123, "collected": 227011, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 10}
+{"k": "req", "t0": 1793756991.0281425, "ms": 26.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756991.5884614, "ms": 25.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756991.6266668, "ms": 27.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756992.1920319, "ms": 51.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756992.2539978, "ms": 25.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756992.8108792, "ms": 27.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756993.375467, "ms": 27.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793756993.4233005, "ms": 2.13, "gen": 1, "collected": 3538, "thread": "AnyIO worker thread"}
+{"k": "req", "t0": 1793756993.4133325, "ms": 27.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756993.9688833, "ms": 26.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756994.527293, "ms": 24.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756994.5658033, "ms": 29.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756995.1295345, "ms": 24.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756995.1638315, "ms": 25.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793756995.3843088, "ms": 6.75, "thread": "AnyIO worker thread", "cmd": [4.16, 5.84], "reason": ""}
+{"k": "vet", "t": 1793756995.7792678, "ms": 5.38, "thread": "AnyIO worker thread", "cmd": [4.33, 5.67], "reason": ""}
+{"k": "req", "t0": 1793756995.7180185, "ms": 83.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756996.4155903, "ms": 29.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756996.4562674, "ms": 28.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756997.0151381, "ms": 27.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756997.5908883, "ms": 31.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756997.6390214, "ms": 69.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793756997.827686, "ms": 6.16, "gen": 1, "collected": 1676, "thread": "MainThread"}
+{"k": "vet", "t": 1793756997.8574066, "ms": 5.12, "thread": "MainThread", "cmd": [5.33, 4.67], "reason": ""}
+{"k": "req", "t0": 1793756997.8009956, "ms": 73.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793756997.8867395, "ms": 7.35, "thread": "AnyIO worker thread", "cmd": [5.39, 4.61], "reason": ""}
+{"k": "vet", "t": 1793756998.1842425, "ms": 5.31, "thread": "AnyIO worker thread", "cmd": [5.7, 4.3], "reason": ""}
+{"k": "req", "t0": 1793756998.388858, "ms": 36.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756998.4356914, "ms": 28.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756998.9999256, "ms": 32.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756999.0631957, "ms": 35.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756999.6022773, "ms": 34.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793756999.650486, "ms": 22.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757000.203134, "ms": 34.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757000.2518125, "ms": 20.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757000.8017526, "ms": 59.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757001.413844, "ms": 36.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757001.4603524, "ms": 25.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757002.0153825, "ms": 33.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757002.5827866, "ms": 33.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757002.6279886, "ms": 31.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757002.9911308, "ms": 5.15, "thread": "MainThread", "cmd": [5.02, 4.98], "reason": ""}
+{"k": "req", "t0": 1793757003.1877732, "ms": 32.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757003.232922, "ms": 24.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757003.793337, "ms": 37.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757004.0874245, "ms": 25.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757004.4097335, "ms": 31.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757004.9830754, "ms": 30.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757005.1135697, "ms": 24.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757005.5467622, "ms": 32.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757006.125513, "ms": 31.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757006.1390805, "ms": 30.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757006.204198, "ms": 43.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757006.7507007, "ms": 28.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757007.1718414, "ms": 23.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757007.3183143, "ms": 28.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757007.8893816, "ms": 28.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757008.1966946, "ms": 26.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757008.4522378, "ms": 27.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757009.0259686, "ms": 63.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757009.623771, "ms": 27.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757009.9432292, "ms": 25.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757010.2267914, "ms": 22.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757010.565648, "ms": 27.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757011.2052593, "ms": 27.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757011.5923567, "ms": 26.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757012.1536477, "ms": 26.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757012.1920643, "ms": 25.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757012.7464228, "ms": 26.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757013.2555516, "ms": 26.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757013.3040342, "ms": 26.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757013.8703709, "ms": 35.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757014.2831979, "ms": 23.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757014.4415944, "ms": 25.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757015.0122552, "ms": 23.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757015.3078787, "ms": 31.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757015.573931, "ms": 24.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757016.1397192, "ms": 24.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757016.1781876, "ms": 29.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757016.7409904, "ms": 22.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757017.3004136, "ms": 23.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757017.33473, "ms": 29.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757017.3920023, "ms": 24.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757017.919066, "ms": 23.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757018.36863, "ms": 27.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757018.4838088, "ms": 23.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757018.8794436, "ms": 5.43, "thread": "AnyIO worker thread", "cmd": [4.57, 5.43], "reason": ""}
+{"k": "req", "t0": 1793757019.0562286, "ms": 41.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757019.397268, "ms": 25.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757019.6405156, "ms": 20.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757020.2066061, "ms": 23.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757020.2434402, "ms": 26.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "heap", "t": 1793757020.6232803, "count": [337, 0, 0], "sizes": [640, 0, 3278], "cost_ms": 0.2, "frozen": 80046, "rss_mb": 97, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 141, "collected": 264653, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 10}
+{"k": "req", "t0": 1793757020.8028092, "ms": 23.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757020.9038203, "ms": 48.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757021.4268684, "ms": 27.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757021.45641, "ms": 23.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757022.0319345, "ms": 22.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757022.4554083, "ms": 28.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757023.1924334, "ms": 26.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757024.324765, "ms": 24.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757024.6394207, "ms": 24.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757027.468072, "ms": 23.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757028.5016956, "ms": 26.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757029.14035, "ms": 26.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757030.2578828, "ms": 20.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757030.2876582, "ms": 25.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757030.8409097, "ms": 65.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757031.443935, "ms": 20.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757031.4756496, "ms": 22.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757032.5381093, "ms": 26.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757033.1611977, "ms": 26.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757034.284377, "ms": 22.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757034.8404436, "ms": 43.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757035.475823, "ms": 23.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757035.9798663, "ms": 5.03, "thread": "MainThread", "cmd": [5.01, 4.99], "reason": ""}
+{"k": "req", "t0": 1793757036.5750499, "ms": 22.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757037.1958466, "ms": 23.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757038.2071118, "ms": 24.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757039.6039014, "ms": 25.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757038.2558396, "ms": 1397.8, "path": "/action", "method": "POST", "status": 200}
+{"k": "req", "t0": 1793757039.9750392, "ms": 3356.0, "path": "/action", "method": "POST", "status": 200}
+{"k": "req", "t0": 1793757043.6074111, "ms": 21.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757044.6651077, "ms": 20.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757045.2156544, "ms": 20.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757046.8752387, "ms": 47.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757047.4561722, "ms": 29.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757048.0275126, "ms": 38.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757048.6046412, "ms": 56.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757049.19624, "ms": 54.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757049.2608364, "ms": 28.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757049.8299856, "ms": 112.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757049.9774764, "ms": 40.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757050.5233486, "ms": 40.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757050.5822723, "ms": 23.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "heap", "t": 1793757050.627637, "count": [1354, 0, 0], "sizes": [1978, 0, 3021], "cost_ms": 0.2, "frozen": 80046, "rss_mb": 96, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 159, "collected": 304071, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 10}
+{"k": "req", "t0": 1793757051.1383848, "ms": 41.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757051.193096, "ms": 23.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757051.7490473, "ms": 38.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757052.321409, "ms": 36.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757052.3692455, "ms": 23.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757052.923922, "ms": 36.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757053.4958088, "ms": 30.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757053.5358236, "ms": 29.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757054.0933456, "ms": 27.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757054.133617, "ms": 24.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757054.6892781, "ms": 27.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757054.752801, "ms": 23.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757055.2792392, "ms": 30.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757055.3236713, "ms": 28.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757055.8851457, "ms": 47.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757056.487305, "ms": 23.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757056.5212657, "ms": 30.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757057.0785615, "ms": 22.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757057.11654, "ms": 24.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757057.665083, "ms": 24.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757058.22393, "ms": 23.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757058.257872, "ms": 29.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757058.810804, "ms": 23.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757059.4188504, "ms": 22.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757059.455495, "ms": 24.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757060.004536, "ms": 24.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757060.5622413, "ms": 25.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757060.59953, "ms": 23.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757061.1488183, "ms": 25.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757061.1862257, "ms": 22.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757061.7350004, "ms": 26.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757062.2978907, "ms": 41.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757062.3546064, "ms": 30.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757062.9146779, "ms": 34.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757063.4856575, "ms": 25.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757063.5246766, "ms": 25.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757064.0766356, "ms": 27.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757064.1156735, "ms": 29.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757064.6686792, "ms": 31.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757065.235749, "ms": 32.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757065.2817402, "ms": 24.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757065.83201, "ms": 61.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757065.9306405, "ms": 4.72, "gen": 1, "collected": 3420, "thread": "AnyIO worker thread"}
+{"k": "req", "t0": 1793757066.4531, "ms": 28.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757066.4937212, "ms": 23.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757067.0412006, "ms": 24.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757067.6005104, "ms": 27.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757067.6384027, "ms": 25.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757068.1883006, "ms": 27.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757068.2285957, "ms": 25.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757068.778746, "ms": 28.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757069.3421752, "ms": 26.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757069.380772, "ms": 23.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757069.9278207, "ms": 25.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757070.487519, "ms": 25.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757070.5249057, "ms": 23.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757071.0732946, "ms": 26.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757071.1097898, "ms": 26.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757071.6648288, "ms": 25.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757072.2818303, "ms": 32.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757072.6035616, "ms": 25.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757073.205535, "ms": 25.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757073.8024533, "ms": 24.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757074.208879, "ms": 26.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757074.7688668, "ms": 28.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757075.331607, "ms": 27.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757075.891724, "ms": 45.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757076.4882536, "ms": 28.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757077.0510237, "ms": 28.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757077.6143718, "ms": 23.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757078.1879058, "ms": 6.46, "thread": "MainThread", "cmd": [4.03, 2.31], "reason": ""}
+{"k": "req", "t0": 1793757078.1803167, "ms": 28.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757079.3135133, "ms": 22.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757079.860122, "ms": 28.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757079.9449582, "ms": 3.76, "gen": 1, "collected": 2726, "thread": "AnyIO worker thread"}
+{"k": "req", "t0": 1793757080.4925652, "ms": 23.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "heap", "t": 1793757080.6316764, "count": [769, 0, 0], "sizes": [1325, 0, 3074], "cost_ms": 0.2, "frozen": 80046, "rss_mb": 96, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 179, "collected": 342545, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 9}
+{"k": "vet", "t": 1793757081.182534, "ms": 5.57, "thread": "AnyIO worker thread", "cmd": [5.74, 4.26], "reason": ""}
+{"k": "req", "t0": 1793757081.5895824, "ms": 24.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757081.6255703, "ms": 24.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757082.1730397, "ms": 25.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757082.2084382, "ms": 25.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757082.7601824, "ms": 28.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757083.3277035, "ms": 30.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757083.369194, "ms": 23.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757083.9238703, "ms": 3.32, "gen": 1, "collected": 1812, "thread": "MainThread"}
+{"k": "req", "t0": 1793757083.9197066, "ms": 43.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757084.4971645, "ms": 27.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757084.5355396, "ms": 24.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757085.0843096, "ms": 27.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757085.125464, "ms": 22.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757085.673863, "ms": 26.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757086.2325425, "ms": 24.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757086.265258, "ms": 23.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757086.8113897, "ms": 23.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757087.4131384, "ms": 20.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757087.4450839, "ms": 20.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757089.1422963, "ms": 20.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757090.244114, "ms": 21.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757090.27635, "ms": 22.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757090.4625025, "ms": 5.73, "thread": "MainThread", "cmd": [5.51, 4.49], "reason": ""}
+{"k": "req", "t0": 1793757090.8341238, "ms": 44.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757091.4604151, "ms": 24.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757091.4953372, "ms": 31.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757091.6852064, "ms": 8.1, "thread": "AnyIO worker thread", "cmd": [5.08, 4.92], "reason": ""}
+{"k": "req", "t0": 1793757092.0548656, "ms": 23.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757092.613218, "ms": 22.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757092.6479332, "ms": 24.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757093.187205, "ms": 10.25, "thread": "AnyIO worker thread", "cmd": [4.86, 5.14], "reason": ""}
+{"k": "req", "t0": 1793757093.1995122, "ms": 30.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757093.241108, "ms": 22.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757093.682744, "ms": 5.6, "gen": 1, "collected": 1826, "thread": "AnyIO worker thread"}
+{"k": "vet", "t": 1793757093.6870182, "ms": 9.99, "thread": "AnyIO worker thread", "cmd": [4.78, 5.22], "reason": ""}
+{"k": "req", "t0": 1793757093.7877529, "ms": 21.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757094.3720787, "ms": 25.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757095.5006375, "ms": 24.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757095.8511043, "ms": 29.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757096.460636, "ms": 26.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757097.0146465, "ms": 30.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757097.613942, "ms": 2.07, "gen": 1, "collected": 3690, "thread": "sim-sensor-poll"}
+{"k": "req", "t0": 1793757097.605649, "ms": 24.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757100.2022698, "ms": 20.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757100.7528996, "ms": 21.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757101.305355, "ms": 23.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757101.3402288, "ms": 26.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757101.900834, "ms": 30.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757102.4628766, "ms": 25.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757102.5004752, "ms": 34.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757103.0569897, "ms": 21.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757103.279492, "ms": 6.19, "thread": "MainThread", "cmd": [4.54, 5.46], "reason": ""}
+{"k": "req", "t0": 1793757103.6100752, "ms": 21.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757103.6437414, "ms": 22.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757104.0325897, "ms": 5.82, "thread": "AnyIO worker thread", "cmd": [4.86, 5.14], "reason": ""}
+{"k": "vet", "t": 1793757104.0824594, "ms": 5.94, "thread": "AnyIO worker thread", "cmd": [4.87, 5.13], "reason": ""}
+{"k": "req", "t0": 1793757104.1907718, "ms": 20.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757104.2255676, "ms": 21.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757104.7718568, "ms": 28.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757105.3383322, "ms": 31.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757105.3860848, "ms": 20.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757105.932575, "ms": 48.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757106.5217626, "ms": 44.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757106.5790098, "ms": 21.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757107.1263294, "ms": 23.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757107.1606588, "ms": 28.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757107.714146, "ms": 22.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757108.2687185, "ms": 22.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757108.30364, "ms": 23.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757108.5823407, "ms": 5.62, "thread": "AnyIO worker thread", "cmd": [5.01, 4.99], "reason": ""}
+{"k": "req", "t0": 1793757108.8494468, "ms": 73.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757109.4954093, "ms": 25.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757109.5363185, "ms": 22.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757110.0860698, "ms": 24.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757110.126125, "ms": 22.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "heap", "t": 1793757110.6354601, "count": [413, 0, 0], "sizes": [748, 0, 3232], "cost_ms": 0.2, "frozen": 80046, "rss_mb": 97, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 198, "collected": 380349, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 9}
+{"k": "vet", "t": 1793757110.690301, "ms": 5.91, "thread": "AnyIO worker thread", "cmd": [4.9, 5.1], "reason": ""}
+{"k": "req", "t0": 1793757110.6940334, "ms": 24.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757111.254844, "ms": 25.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757111.292936, "ms": 21.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757111.8359015, "ms": 75.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757112.303082, "ms": 5.34, "thread": "MainThread", "cmd": [5.27, 4.73], "reason": ""}
+{"k": "req", "t0": 1793757112.4609296, "ms": 30.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757112.5034783, "ms": 25.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757113.0514073, "ms": 24.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757113.6092672, "ms": 28.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757113.651073, "ms": 22.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757114.1955903, "ms": 25.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757114.2350278, "ms": 24.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757114.7832017, "ms": 25.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757115.3472707, "ms": 23.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757115.3850877, "ms": 32.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757115.9390845, "ms": 22.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757116.496271, "ms": 21.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757116.5310426, "ms": 22.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757117.0772521, "ms": 20.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757117.1131516, "ms": 25.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757117.662084, "ms": 22.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757118.2449863, "ms": 21.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757118.6315176, "ms": 6.92, "thread": "MainThread", "cmd": [3.31, 5.03], "reason": ""}
+{"k": "req", "t0": 1793757118.7902575, "ms": 23.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757119.347302, "ms": 20.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757119.3807282, "ms": 22.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757119.927606, "ms": 23.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757120.4826965, "ms": 23.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757120.5191495, "ms": 21.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757120.8362832, "ms": 5.94, "thread": "AnyIO worker thread", "cmd": [2.56, 2.67], "reason": ""}
+{"k": "req", "t0": 1793757121.0645835, "ms": 23.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757121.619792, "ms": 22.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757121.6528988, "ms": 20.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757122.177748, "ms": 5.29, "thread": "MainThread", "cmd": [1.28, 1.38], "reason": ""}
+{"k": "req", "t0": 1793757122.1953654, "ms": 21.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757122.8084066, "ms": 22.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757123.1374707, "ms": 22.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757123.171947, "ms": 21.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757123.8140354, "ms": 34.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757124.2755837, "ms": 26.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757124.8345401, "ms": 37.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757125.4370296, "ms": 23.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757125.9937108, "ms": 23.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757126.5578573, "ms": 22.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757126.591411, "ms": 20.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757127.1334727, "ms": 22.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757127.1665154, "ms": 24.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757127.711369, "ms": 21.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757128.262739, "ms": 20.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757128.2950974, "ms": 21.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757128.8393638, "ms": 46.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757129.4613147, "ms": 22.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757130.5782056, "ms": 22.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757131.1452894, "ms": 31.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757131.698129, "ms": 25.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757131.9797184, "ms": 5.39, "thread": "MainThread", "cmd": [5.86, 4.14], "reason": ""}
+{"k": "req", "t0": 1793757132.283558, "ms": 23.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757133.2834835, "ms": 6.35, "thread": "AnyIO worker thread", "cmd": [3.52, 2.85], "reason": ""}
+{"k": "req", "t0": 1793757133.4556372, "ms": 27.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757134.0039964, "ms": 31.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757134.5667968, "ms": 24.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757134.6016674, "ms": 25.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757135.1548035, "ms": 33.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757135.199257, "ms": 20.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757135.79928, "ms": 41.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757136.1487954, "ms": 20.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757136.8033376, "ms": 56.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757137.294504, "ms": 22.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757137.8508694, "ms": 46.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757138.4486423, "ms": 26.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757138.4854016, "ms": 24.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757139.036423, "ms": 25.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757139.6039765, "ms": 26.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757140.1854274, "ms": 23.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757140.2198253, "ms": 21.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "heap", "t": 1793757140.6399624, "count": [1456, 0, 0], "sizes": [1999, 0, 2873], "cost_ms": 0.6, "frozen": 80046, "rss_mb": 94, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 215, "collected": 418423, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 10}
+{"k": "req", "t0": 1793757140.7627327, "ms": 24.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757141.3210363, "ms": 23.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757141.3582642, "ms": 24.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757141.9116385, "ms": 45.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757142.4869323, "ms": 23.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757142.5213795, "ms": 24.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757143.067355, "ms": 21.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757143.6178916, "ms": 20.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757143.6497557, "ms": 21.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757144.1942039, "ms": 24.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757144.2303462, "ms": 21.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757144.7734683, "ms": 26.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757145.3334324, "ms": 35.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757145.3802884, "ms": 21.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757145.9284613, "ms": 35.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757146.4975715, "ms": 36.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757146.5450451, "ms": 24.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757147.0939953, "ms": 38.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757147.665091, "ms": 38.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757147.7139022, "ms": 22.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757148.2575378, "ms": 36.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757148.3041196, "ms": 22.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757148.848965, "ms": 64.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757149.451881, "ms": 32.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757149.4949415, "ms": 23.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757150.039826, "ms": 33.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757150.6032546, "ms": 29.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757150.6441603, "ms": 21.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757151.1873252, "ms": 24.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757151.222653, "ms": 23.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757151.7288423, "ms": 5.42, "thread": "MainThread", "cmd": [2.18, 1.76], "reason": ""}
+{"k": "req", "t0": 1793757152.315281, "ms": 21.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757152.3472545, "ms": 20.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757152.8943233, "ms": 29.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757153.2093256, "ms": 21.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757153.5415173, "ms": 27.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757153.8571324, "ms": 24.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757155.004107, "ms": 20.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757155.553658, "ms": 28.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757156.1112757, "ms": 29.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757156.6720395, "ms": 38.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757157.2419298, "ms": 38.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757157.8127422, "ms": 25.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757158.3737655, "ms": 22.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757158.4066155, "ms": 25.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757158.953457, "ms": 23.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757159.5075078, "ms": 20.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757159.5385697, "ms": 22.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757160.0855546, "ms": 28.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757160.127018, "ms": 26.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757160.6772583, "ms": 20.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757161.2306323, "ms": 20.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757161.2616522, "ms": 22.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757161.808559, "ms": 20.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757162.1159263, "ms": 25.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757162.3595798, "ms": 20.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757162.9153986, "ms": 20.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757163.1419823, "ms": 26.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757163.6888535, "ms": 6.06, "thread": "AnyIO worker thread", "cmd": [4.6, 5.4], "reason": ""}
+{"k": "req", "t0": 1793757164.1695032, "ms": 21.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757164.9872916, "ms": 5.05, "thread": "AnyIO worker thread", "cmd": [3.62, 5.34], "reason": ""}
+{"k": "req", "t0": 1793757165.149359, "ms": 23.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757166.1951458, "ms": 24.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757166.7947934, "ms": 5.95, "thread": "MainThread", "cmd": [4.67, 5.33], "reason": ""}
+{"k": "req", "t0": 1793757167.2201352, "ms": 24.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757167.9079368, "ms": 26.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757168.2472823, "ms": 45.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757169.2939842, "ms": 21.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757169.5755074, "ms": 5.26, "gen": 1, "collected": 1822, "thread": "AnyIO worker thread"}
+{"k": "req", "t0": 1793757169.567498, "ms": 49.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757169.912204, "ms": 26.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757170.2821555, "ms": 45.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "heap", "t": 1793757170.6504939, "count": [734, 0, 0], "sizes": [1050, 0, 3214], "cost_ms": 0.2, "frozen": 80046, "rss_mb": 98, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 235, "collected": 457981, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 10}
+{"k": "req", "t0": 1793757170.3503728, "ms": 3336.0, "path": "/action", "method": "POST", "status": 200}
+{"k": "req", "t0": 1793757174.0007331, "ms": 1080.5, "path": "/action", "method": "POST", "status": 200}
+{"k": "req", "t0": 1793757178.863309, "ms": 21.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757179.8381853, "ms": 5.47, "thread": "AnyIO worker thread", "cmd": [4.06, 2.34], "reason": ""}
+{"k": "req", "t0": 1793757180.3759253, "ms": 27.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757180.55595, "ms": 6.49, "thread": "MainThread", "cmd": [4.25, 2.53], "reason": ""}
+{"k": "req", "t0": 1793757181.2023065, "ms": 30.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757181.245037, "ms": 20.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757182.3628676, "ms": 25.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757182.9203606, "ms": 20.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757183.4111347, "ms": 52.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757183.6684968, "ms": 5.23, "thread": "MainThread", "cmd": [4.59, 5.41], "reason": ""}
+{"k": "req", "t0": 1793757184.4665377, "ms": 29.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757185.1516676, "ms": 22.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757185.4330409, "ms": 5.89, "thread": "AnyIO worker thread", "cmd": [4.68, 5.32], "reason": ""}
+{"k": "req", "t0": 1793757186.269205, "ms": 26.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757187.3775065, "ms": 21.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757188.4920883, "ms": 24.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757188.50536, "ms": 21.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757189.5282626, "ms": 26.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757190.5374653, "ms": 7.97, "gen": 1, "collected": 1810, "thread": "AnyIO worker thread"}
+{"k": "vet", "t": 1793757190.539027, "ms": 11.04, "thread": "AnyIO worker thread", "cmd": [1.67, 1.76], "reason": "forward clamped: 18.9cm <= 20cm (floor_band)"}
+{"k": "req", "t0": 1793757190.657575, "ms": 34.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757192.3044565, "ms": 25.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757195.574926, "ms": 20.8, "path": "/world/map", "method": "GET", "status": 304}
+{"k": "heap", "t": 1793757200.6543474, "count": [358, 0, 0], "sizes": [822, 0, 3047], "cost_ms": 0.2, "frozen": 80046, "rss_mb": 98, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 252, "collected": 496399, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 9}
+{"k": "vet", "t": 1793757204.6870503, "ms": 6.28, "thread": "AnyIO worker thread", "cmd": [1.71, 1.74], "reason": "forward clamped: 18.2cm <= 20cm (floor_band)"}
+{"k": "vet", "t": 1793757204.7842286, "ms": 5.97, "thread": "AnyIO worker thread", "cmd": [1.71, 1.74], "reason": "forward clamped: 18.2cm <= 20cm (floor_band)"}
+{"k": "req", "t0": 1793757204.7666996, "ms": 31.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757206.8354785, "ms": 6.14, "thread": "AnyIO worker thread", "cmd": [1.75, 1.73], "reason": "forward clamped: 18.4cm <= 20cm (scan_footprint)"}
+{"k": "req", "t0": 1793757207.5745223, "ms": 26.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757208.1465209, "ms": 25.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757210.6482844, "ms": 47.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757209.3013642, "ms": 2433.4, "path": "/action", "method": "POST", "status": 200}
+{"k": "req", "t0": 1793757211.6983075, "ms": 49.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757212.0042431, "ms": 42.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757214.4311368, "ms": 4.34, "gen": 1, "collected": 3492, "thread": "ld19-reader"}
+{"k": "req", "t0": 1793757212.0797386, "ms": 2879.8, "path": "/action", "method": "POST", "status": 200}
+{"k": "req", "t0": 1793757219.0527437, "ms": 24.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757219.4217963, "ms": 5.85, "thread": "MainThread", "cmd": [3.93, 2.21], "reason": ""}
+{"k": "vet", "t": 1793757219.4797435, "ms": 5.85, "thread": "MainThread", "cmd": [3.97, 2.25], "reason": ""}
+{"k": "req", "t0": 1793757219.6084309, "ms": 31.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757220.1819656, "ms": 31.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757220.2289708, "ms": 24.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757220.7924674, "ms": 5.08, "thread": "MainThread", "cmd": [5.06, 4.94], "reason": ""}
+{"k": "req", "t0": 1793757220.8018413, "ms": 33.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757221.2511165, "ms": 5.42, "gen": 1, "collected": 1914, "thread": "MainThread"}
+{"k": "req", "t0": 1793757221.3783574, "ms": 32.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757221.4253812, "ms": 24.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757221.6825519, "ms": 5.92, "thread": "AnyIO worker thread", "cmd": [4.59, 5.41], "reason": ""}
+{"k": "req", "t0": 1793757221.9773934, "ms": 32.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757222.5561054, "ms": 43.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757222.611371, "ms": 25.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757223.1632512, "ms": 32.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757223.205677, "ms": 21.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757223.7600868, "ms": 27.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757223.8904352, "ms": 6.52, "thread": "AnyIO worker thread", "cmd": [5.8, 4.2], "reason": ""}
+{"k": "gc", "t": 1793757224.2799816, "ms": 4.83, "gen": 1, "collected": 1792, "thread": "AnyIO worker thread"}
+{"k": "req", "t0": 1793757224.3360825, "ms": 29.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757224.3768811, "ms": 23.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757224.927985, "ms": 51.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757225.44613, "ms": 5.77, "thread": "MainThread", "cmd": [5.73, 4.27], "reason": ""}
+{"k": "req", "t0": 1793757225.520002, "ms": 38.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757225.5683503, "ms": 24.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757226.1162004, "ms": 23.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757226.151405, "ms": 20.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757226.7032025, "ms": 21.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757227.256483, "ms": 25.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757227.2924082, "ms": 20.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757227.6353636, "ms": 5.84, "thread": "AnyIO worker thread", "cmd": [5.29, 4.71], "reason": ""}
+{"k": "req", "t0": 1793757228.3890057, "ms": 21.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757228.4226854, "ms": 22.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757228.8896523, "ms": 5.4, "thread": "MainThread", "cmd": [5.6, 4.4], "reason": ""}
+{"k": "req", "t0": 1793757228.9722846, "ms": 49.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757229.5999038, "ms": 20.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757229.632326, "ms": 25.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757230.1844475, "ms": 24.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757230.2199426, "ms": 27.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "heap", "t": 1793757230.6580958, "count": [650, 0, 0], "sizes": [1017, 0, 3184], "cost_ms": 0.2, "frozen": 80046, "rss_mb": 96, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 272, "collected": 535467, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 9}
+{"k": "req", "t0": 1793757230.7731302, "ms": 28.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757231.333529, "ms": 27.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757231.375212, "ms": 23.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757231.9290106, "ms": 60.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757232.5233614, "ms": 26.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757232.5613072, "ms": 31.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757233.1159406, "ms": 30.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757233.1571686, "ms": 26.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757233.7072244, "ms": 25.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757234.2634306, "ms": 23.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "gap", "t": 1793757234.3026447, "gap_ms": 15.0}
+{"k": "gc", "t": 1793757234.3222857, "ms": 2.1, "gen": 1, "collected": 3182, "thread": "AnyIO worker thread"}
+{"k": "req", "t0": 1793757234.3141403, "ms": 23.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757234.8624897, "ms": 23.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757235.459398, "ms": 21.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757235.4926202, "ms": 21.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757236.039952, "ms": 34.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757236.6156352, "ms": 20.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757236.651894, "ms": 23.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757236.784616, "ms": 8.22, "thread": "AnyIO worker thread", "cmd": [5.04, 4.96], "reason": ""}
+{"k": "req", "t0": 1793757237.2288213, "ms": 21.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757237.343136, "ms": 2.64, "gen": 1, "collected": 3788, "thread": "MainThread"}
+{"k": "vet", "t": 1793757238.0332818, "ms": 5.88, "thread": "AnyIO worker thread", "cmd": [5.25, 4.75], "reason": ""}
+{"k": "req", "t0": 1793757238.3575134, "ms": 22.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757238.4828146, "ms": 5.14, "thread": "AnyIO worker thread", "cmd": [5.44, 4.56], "reason": ""}
+{"k": "gc", "t": 1793757238.905706, "ms": 2.14, "gen": 1, "collected": 1630, "thread": "AnyIO worker thread"}
+{"k": "req", "t0": 1793757238.9104826, "ms": 32.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757239.2331727, "ms": 5.69, "thread": "AnyIO worker thread", "cmd": [2.84, 1.69], "reason": ""}
+{"k": "req", "t0": 1793757239.5257308, "ms": 21.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757240.04025, "ms": 5.53, "thread": "MainThread", "cmd": [2.02, 1.16], "reason": ""}
+{"k": "vet", "t": 1793757240.283401, "ms": 6.27, "thread": "AnyIO worker thread", "cmd": [1.9, 1.11], "reason": ""}
+{"k": "vet", "t": 1793757240.302513, "ms": 5.08, "thread": "MainThread", "cmd": [1.9, 1.11], "reason": ""}
+{"k": "vet", "t": 1793757240.3592691, "ms": 5.62, "thread": "MainThread", "cmd": [1.79, 1.01], "reason": ""}
+{"k": "vet", "t": 1793757240.4819627, "ms": 5.55, "thread": "AnyIO worker thread", "cmd": [1.79, 1.05], "reason": ""}
+{"k": "req", "t0": 1793757240.6445782, "ms": 22.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757241.2150676, "ms": 23.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757242.3438215, "ms": 20.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757242.6438954, "ms": 50.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757242.9431822, "ms": 2.4, "gen": 1, "collected": 1788, "thread": "MainThread"}
+{"k": "req", "t0": 1793757242.98205, "ms": 46.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757243.313817, "ms": 32.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757244.9472272, "ms": 20.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757247.1266851, "ms": 23.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757247.680348, "ms": 31.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757248.2463565, "ms": 34.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757248.2924774, "ms": 21.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757248.8376687, "ms": 24.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757249.4013681, "ms": 27.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757249.4379368, "ms": 24.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757249.7516923, "ms": 5.03, "thread": "MainThread", "cmd": [4.44, 5.56], "reason": ""}
+{"k": "req", "t0": 1793757249.9937642, "ms": 36.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757250.5605881, "ms": 28.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757250.5982163, "ms": 20.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757250.6884077, "ms": 6.22, "thread": "AnyIO worker thread", "cmd": [4.92, 5.08], "reason": ""}
+{"k": "req", "t0": 1793757251.1426065, "ms": 25.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757251.179722, "ms": 22.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757251.2861767, "ms": 8.68, "thread": "AnyIO worker thread", "cmd": [4.69, 5.31], "reason": ""}
+{"k": "vet", "t": 1793757251.3825772, "ms": 5.43, "thread": "AnyIO worker thread", "cmd": [4.61, 5.39], "reason": ""}
+{"k": "req", "t0": 1793757251.7357843, "ms": 26.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757252.295052, "ms": 24.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757252.3325584, "ms": 23.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757252.8861334, "ms": 44.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757253.4897149, "ms": 21.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757253.5232172, "ms": 22.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757254.0679426, "ms": 21.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757254.6186945, "ms": 20.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757254.6509843, "ms": 26.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757254.8008409, "ms": 5.46, "thread": "MainThread", "cmd": [4.29, 5.71], "reason": ""}
+{"k": "req", "t0": 1793757255.230069, "ms": 23.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757256.3526533, "ms": 26.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757256.78288, "ms": 6.03, "thread": "MainThread", "cmd": [4.05, 5.77], "reason": ""}
+{"k": "vet", "t": 1793757256.8856719, "ms": 6.95, "thread": "AnyIO worker thread", "cmd": [4.24, 5.76], "reason": ""}
+{"k": "req", "t0": 1793757256.9032807, "ms": 23.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757257.5537436, "ms": 24.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757257.7841983, "ms": 6.46, "thread": "MainThread", "cmd": [4.31, 5.69], "reason": ""}
+{"k": "req", "t0": 1793757258.103934, "ms": 24.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757258.1405869, "ms": 21.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757258.1800098, "ms": 2.03, "gen": 1, "collected": 3498, "thread": "AnyIO worker thread"}
+{"k": "req", "t0": 1793757259.2637131, "ms": 24.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757260.385444, "ms": 22.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "heap", "t": 1793757260.6620486, "count": [1169, 0, 0], "sizes": [1698, 0, 3046], "cost_ms": 0.2, "frozen": 80046, "rss_mb": 96, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 289, "collected": 572717, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 9}
+{"k": "req", "t0": 1793757260.9347532, "ms": 33.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757261.5379276, "ms": 25.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757263.2123878, "ms": 22.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757264.3316233, "ms": 23.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757265.360787, "ms": 5.49, "thread": "MainThread", "cmd": [5.08, 4.92], "reason": ""}
+{"k": "vet", "t": 1793757265.4720182, "ms": 6.47, "thread": "MainThread", "cmd": [5.06, 4.94], "reason": ""}
+{"k": "req", "t0": 1793757265.484429, "ms": 31.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757267.1616006, "ms": 26.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757268.1962917, "ms": 5.31, "thread": "MainThread", "cmd": [5.34, 4.66], "reason": ""}
+{"k": "req", "t0": 1793757268.283475, "ms": 22.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757268.4838698, "ms": 5.34, "thread": "AnyIO worker thread", "cmd": [5.3, 4.7], "reason": ""}
+{"k": "req", "t0": 1793757269.3944945, "ms": 20.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757269.9454803, "ms": 2.64, "gen": 1, "collected": 1758, "thread": "MainThread"}
+{"k": "req", "t0": 1793757269.9377644, "ms": 20.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757270.38928, "ms": 5.12, "thread": "MainThread", "cmd": [3.11, 3.64], "reason": ""}
+{"k": "req", "t0": 1793757270.5185566, "ms": 24.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757271.287319, "ms": 7.75, "thread": "AnyIO worker thread", "cmd": [1.75, 2.23], "reason": ""}
+{"k": "vet", "t": 1793757271.4821913, "ms": 5.58, "thread": "AnyIO worker thread", "cmd": [1.62, 1.96], "reason": ""}
+{"k": "req", "t0": 1793757271.6269717, "ms": 25.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757272.1927354, "ms": 20.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757275.9741797, "ms": 3.01, "gen": 1, "collected": 3438, "thread": "sim-sensor-poll"}
+{"k": "req", "t0": 1793757277.9057684, "ms": 46.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757278.4913344, "ms": 28.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757278.8775923, "ms": 2.02, "gen": 1, "collected": 1766, "thread": "AnyIO worker thread"}
+{"k": "vet", "t": 1793757278.8800056, "ms": 5.26, "thread": "AnyIO worker thread", "cmd": [3.1, 2.13], "reason": ""}
+{"k": "req", "t0": 1793757279.0530977, "ms": 29.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757279.3531485, "ms": 6.16, "thread": "MainThread", "cmd": [2.52, 1.96], "reason": ""}
+{"k": "req", "t0": 1793757279.62118, "ms": 31.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757279.6667972, "ms": 22.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757280.2146986, "ms": 33.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757280.262412, "ms": 24.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757280.6132038, "ms": 35.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757280.6810224, "ms": 2732.3, "path": "/action", "method": "POST", "status": 200}
+{"k": "req", "t0": 1793757283.678019, "ms": 32.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757284.293318, "ms": 25.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757284.8976755, "ms": 47.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757285.245757, "ms": 5.39, "thread": "MainThread", "cmd": [4.03, 2.69], "reason": ""}
+{"k": "req", "t0": 1793757285.299363, "ms": 24.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757285.8615155, "ms": 25.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757286.4337611, "ms": 21.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757286.4679248, "ms": 20.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757287.0103233, "ms": 21.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757287.613948, "ms": 2589.0, "path": "/action", "method": "POST", "status": 200}
+{"k": "req", "t0": 1793757290.463629, "ms": 28.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "heap", "t": 1793757290.66608, "count": [40, 0, 0], "sizes": [292, 0, 3304], "cost_ms": 0.2, "frozen": 80046, "rss_mb": 95, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 309, "collected": 615547, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 10}
+{"k": "req", "t0": 1793757291.0265088, "ms": 27.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757291.6965985, "ms": 59.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757292.1445765, "ms": 28.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757292.7080493, "ms": 24.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757294.4731045, "ms": 2.32, "gen": 1, "collected": 1786, "thread": "MainThread"}
+{"k": "vet", "t": 1793757294.8293588, "ms": 5.22, "thread": "MainThread", "cmd": [0.6, 1.9], "reason": ""}
+{"k": "req", "t0": 1793757295.1345966, "ms": 23.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757295.284121, "ms": 20.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757296.1587834, "ms": 23.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757295.8909683, "ms": 1987.0, "path": "/action", "method": "POST", "status": 200}
+{"k": "req", "t0": 1793757298.1375923, "ms": 22.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757298.7045689, "ms": 58.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757299.1553133, "ms": 22.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757303.215711, "ms": 21.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757305.1916032, "ms": 23.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757306.5805473, "ms": 8.04, "gen": 1, "collected": 3584, "thread": "MainThread"}
+{"k": "req", "t0": 1793757306.572232, "ms": 41.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757309.4914503, "ms": 33.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757311.6788476, "ms": 22.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757312.2392552, "ms": 32.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757312.8136506, "ms": 40.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757313.2412558, "ms": 38.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757313.2780101, "ms": 25.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757314.3228805, "ms": 2.26, "gen": 1, "collected": 1592, "thread": "MainThread"}
+{"k": "req", "t0": 1793757314.3060882, "ms": 43.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757313.3317094, "ms": 2199.0, "path": "/action", "method": "POST", "status": 200}
+{"k": "gc", "t": 1793757315.578883, "ms": 6.56, "gen": 1, "collected": 1840, "thread": "MainThread"}
+{"k": "req", "t0": 1793757315.8337317, "ms": 35.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757317.9254053, "ms": 2.3, "gen": 1, "collected": 2042, "thread": "MainThread"}
+{"k": "req", "t0": 1793757315.9055219, "ms": 3015.5, "path": "/action", "method": "POST", "status": 200}
+{"k": "heap", "t": 1793757320.6702592, "count": [389, 0, 0], "sizes": [718, 0, 3243], "cost_ms": 0.5, "frozen": 80046, "rss_mb": 97, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 331, "collected": 658015, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 10}
+{"k": "req", "t0": 1793757321.9482827, "ms": 82.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757322.567706, "ms": 32.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757323.1370435, "ms": 33.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757323.7178366, "ms": 40.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757324.3014386, "ms": 34.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757324.6829104, "ms": 5.8, "thread": "AnyIO worker thread", "cmd": [5.26, 4.74], "reason": ""}
+{"k": "req", "t0": 1793757324.8764477, "ms": 37.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757325.4967754, "ms": 31.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757326.0698783, "ms": 39.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757326.4143395, "ms": 27.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757326.4834712, "ms": 6.65, "thread": "AnyIO worker thread", "cmd": [4.77, 5.23], "reason": ""}
+{"k": "req", "t0": 1793757326.6542199, "ms": 38.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757327.2316668, "ms": 32.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757327.2783377, "ms": 23.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757327.747048, "ms": 5.2, "thread": "MainThread", "cmd": [5.04, 4.96], "reason": ""}
+{"k": "req", "t0": 1793757327.838382, "ms": 60.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757328.3886032, "ms": 6.7, "thread": "AnyIO worker thread", "cmd": [4.71, 5.29], "reason": ""}
+{"k": "req", "t0": 1793757328.4539669, "ms": 31.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757328.8850007, "ms": 7.9, "thread": "AnyIO worker thread", "cmd": [4.54, 5.46], "reason": ""}
+{"k": "req", "t0": 1793757329.015718, "ms": 28.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757329.2328503, "ms": 6.23, "thread": "AnyIO worker thread", "cmd": [4.56, 5.44], "reason": ""}
+{"k": "req", "t0": 1793757329.5769773, "ms": 28.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757330.1358318, "ms": 25.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757330.1737838, "ms": 20.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757330.7180238, "ms": 25.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757331.273723, "ms": 27.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757331.8342338, "ms": 26.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757332.3983665, "ms": 23.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757332.9554894, "ms": 53.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757333.4571404, "ms": 25.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757333.5469449, "ms": 20.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757334.103126, "ms": 20.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757334.1347687, "ms": 21.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757335.2704082, "ms": 31.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757336.0258055, "ms": 2.9, "gen": 1, "collected": 1906, "thread": "AnyIO worker thread"}
+{"k": "req", "t0": 1793757336.3716364, "ms": 22.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757336.9297707, "ms": 55.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757337.4935124, "ms": 24.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757337.5232186, "ms": 24.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757338.0915859, "ms": 26.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757338.5188472, "ms": 23.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757338.6555727, "ms": 27.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757338.7827237, "ms": 5.52, "thread": "AnyIO worker thread", "cmd": [5.69, 4.31], "reason": ""}
+{"k": "req", "t0": 1793757339.2195172, "ms": 30.7, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757339.2616599, "ms": 24.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757339.8097878, "ms": 27.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757340.3722377, "ms": 28.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757340.41369, "ms": 26.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757340.978214, "ms": 31.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757341.4898748, "ms": 5.2, "thread": "MainThread", "cmd": [5.46, 4.54], "reason": ""}
+{"k": "req", "t0": 1793757341.5434482, "ms": 21.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757341.5686002, "ms": 33.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757342.1248267, "ms": 21.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757342.1631544, "ms": 24.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757342.712777, "ms": 21.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757343.2672956, "ms": 20.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757343.3038628, "ms": 23.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757344.4347892, "ms": 24.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757345.5710866, "ms": 24.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757346.1463137, "ms": 20.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757347.256738, "ms": 25.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757348.3679037, "ms": 23.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757348.9734468, "ms": 2.41, "gen": 1, "collected": 1698, "thread": "MainThread"}
+{"k": "req", "t0": 1793757350.471433, "ms": 25.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "heap", "t": 1793757350.6804245, "count": [1669, 0, 0], "sizes": [2199, 0, 3124], "cost_ms": 0.3, "frozen": 80046, "rss_mb": 96, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 348, "collected": 694819, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 9}
+{"k": "req", "t0": 1793757351.9626172, "ms": 34.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757353.0861151, "ms": 29.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757354.1935394, "ms": 21.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757354.7462916, "ms": 31.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757355.3105261, "ms": 33.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757355.873646, "ms": 26.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757356.3843205, "ms": 6.48, "thread": "AnyIO worker thread", "cmd": [4.83, 5.17], "reason": ""}
+{"k": "req", "t0": 1793757356.429594, "ms": 23.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757356.4626148, "ms": 23.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757357.0085588, "ms": 24.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757357.5643208, "ms": 31.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757357.6053166, "ms": 22.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757358.1529396, "ms": 28.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757358.1930099, "ms": 20.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757358.7427454, "ms": 31.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757359.3107622, "ms": 25.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757359.3462539, "ms": 21.9, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757359.8952346, "ms": 23.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757360.466154, "ms": 23.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757360.5004132, "ms": 22.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757361.6011527, "ms": 21.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757361.633563, "ms": 23.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757362.2085993, "ms": 23.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757363.3244622, "ms": 22.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757364.4393969, "ms": 24.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757364.9743779, "ms": 3.84, "gen": 1, "collected": 3502, "thread": "ld19-reader"}
+{"k": "req", "t0": 1793757365.5690088, "ms": 23.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757366.669172, "ms": 27.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757366.693318, "ms": 25.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757368.2825885, "ms": 5.0, "thread": "AnyIO worker thread", "cmd": [3.93, 5.65], "reason": ""}
+{"k": "req", "t0": 1793757368.377317, "ms": 22.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757368.9481, "ms": 5.61, "thread": "MainThread", "cmd": [2.28, 3.39], "reason": ""}
+{"k": "req", "t0": 1793757368.9289618, "ms": 45.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757369.047117, "ms": 3.65, "gen": 1, "collected": 1660, "thread": "AnyIO worker thread"}
+{"k": "vet", "t": 1793757369.6834128, "ms": 6.12, "thread": "AnyIO worker thread", "cmd": [1.7, 2.42], "reason": ""}
+{"k": "req", "t0": 1793757371.262419, "ms": 2084.4, "path": "/action", "method": "POST", "status": 200}
+{"k": "req", "t0": 1793757373.6476493, "ms": 47.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757376.9421535, "ms": 27.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757380.02515, "ms": 2.52, "gen": 1, "collected": 3176, "thread": "MainThread"}
+{"k": "heap", "t": 1793757380.6848361, "count": [552, 0, 0], "sizes": [976, 0, 3223], "cost_ms": 0.2, "frozen": 80046, "rss_mb": 97, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 367, "collected": 733571, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 9}
+{"k": "req", "t0": 1793757381.7796526, "ms": 23.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757384.558306, "ms": 20.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757385.118732, "ms": 24.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757385.3709092, "ms": 5.65, "thread": "MainThread", "cmd": [2.83, 4.55], "reason": ""}
+{"k": "vet", "t": 1793757385.4849393, "ms": 10.96, "thread": "MainThread", "cmd": [3.37, 5.09], "reason": ""}
+{"k": "vet", "t": 1793757385.593405, "ms": 5.87, "thread": "MainThread", "cmd": [4.15, 5.85], "reason": ""}
+{"k": "req", "t0": 1793757385.677988, "ms": 23.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757386.2391052, "ms": 24.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757386.276478, "ms": 20.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757386.734634, "ms": 6.59, "thread": "AnyIO worker thread", "cmd": [4.99, 5.01], "reason": ""}
+{"k": "req", "t0": 1793757386.8247252, "ms": 23.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757387.3855271, "ms": 23.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757387.4213676, "ms": 23.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757387.9703588, "ms": 41.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757389.6565676, "ms": 21.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757389.6943848, "ms": 21.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757390.2503538, "ms": 22.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757390.28865, "ms": 26.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757390.8422215, "ms": 25.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757391.4138806, "ms": 27.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757391.4544823, "ms": 24.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757392.0103843, "ms": 27.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757392.5721033, "ms": 31.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757392.6144905, "ms": 25.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757393.170111, "ms": 27.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757393.208972, "ms": 22.2, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757393.755799, "ms": 23.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757394.351464, "ms": 20.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757394.9038296, "ms": 41.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757394.9994304, "ms": 3.78, "gen": 1, "collected": 1410, "thread": "AnyIO worker thread"}
+{"k": "req", "t0": 1793757395.5323439, "ms": 21.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757395.565423, "ms": 24.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757396.486913, "ms": 9.49, "thread": "AnyIO worker thread", "cmd": [5.14, 4.86], "reason": ""}
+{"k": "vet", "t": 1793757396.6853294, "ms": 5.93, "thread": "AnyIO worker thread", "cmd": [5.04, 4.96], "reason": ""}
+{"k": "req", "t0": 1793757396.6685302, "ms": 36.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757396.714855, "ms": 21.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757397.292611, "ms": 21.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757397.843655, "ms": 46.4, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757398.4503841, "ms": 28.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757399.4819226, "ms": 5.1, "thread": "AnyIO worker thread", "cmd": [4.95, 5.05], "reason": ""}
+{"k": "vet", "t": 1793757399.5699651, "ms": 5.84, "thread": "MainThread", "cmd": [5.1, 4.9], "reason": ""}
+{"k": "req", "t0": 1793757399.5628738, "ms": 35.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757399.608791, "ms": 25.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757399.8832524, "ms": 6.29, "thread": "MainThread", "cmd": [5.04, 4.96], "reason": ""}
+{"k": "req", "t0": 1793757400.1883197, "ms": 37.1, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757400.7531676, "ms": 48.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757401.3737092, "ms": 20.7, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757401.5862684, "ms": 9.34, "thread": "AnyIO worker thread", "cmd": [5.34, 4.66], "reason": ""}
+{"k": "req", "t0": 1793757401.917568, "ms": 20.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757401.9848466, "ms": 3.29, "gen": 1, "collected": 1380, "thread": "AnyIO worker thread"}
+{"k": "req", "t0": 1793757402.5049376, "ms": 22.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757402.5376954, "ms": 24.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757403.0888665, "ms": 21.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757403.6485124, "ms": 20.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757403.685629, "ms": 21.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757404.235359, "ms": 20.2, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757404.2663383, "ms": 25.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757405.3994458, "ms": 24.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757405.9539015, "ms": 24.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757406.5381572, "ms": 20.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757406.5675545, "ms": 21.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757407.1134892, "ms": 23.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757407.149411, "ms": 23.6, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757407.382734, "ms": 5.08, "thread": "AnyIO worker thread", "cmd": [3.44, 5.16], "reason": ""}
+{"k": "req", "t0": 1793757407.6976166, "ms": 26.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757408.2578402, "ms": 35.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757408.3029456, "ms": 23.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757408.852609, "ms": 33.3, "path": "/frame", "method": "GET", "status": 200}
+{"k": "gc", "t": 1793757408.9152513, "ms": 2.0, "gen": 1, "collected": 2722, "thread": "AnyIO worker thread"}
+{"k": "req", "t0": 1793757409.4406822, "ms": 35.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757409.4896424, "ms": 23.4, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757410.036819, "ms": 39.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757410.531111, "ms": 6.16, "thread": "MainThread", "cmd": [5.04, 4.96], "reason": ""}
+{"k": "req", "t0": 1793757410.6111324, "ms": 39.0, "path": "/frame", "method": "GET", "status": 200}
+{"k": "heap", "t": 1793757410.6894636, "count": [784, 0, 0], "sizes": [2774, 0, 3490], "cost_ms": 0.3, "frozen": 80046, "rss_mb": 103, "stats": [{"collections": 0, "collected": 0, "uncollectable": 0}, {"collections": 389, "collected": 768309, "uncollectable": 0}, {"collections": 1, "collected": 30, "uncollectable": 0}], "threads": 9}
+{"k": "req", "t0": 1793757410.6634488, "ms": 34.5, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757411.2234108, "ms": 29.6, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757411.265605, "ms": 24.3, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757411.8173215, "ms": 27.1, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757412.382036, "ms": 29.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757412.9470015, "ms": 47.5, "path": "/frame", "method": "GET", "status": 200}
+{"k": "vet", "t": 1793757413.3847454, "ms": 6.41, "thread": "AnyIO worker thread", "cmd": [5.18, 4.82], "reason": ""}
+{"k": "req", "t0": 1793757413.5678897, "ms": 27.8, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757413.606053, "ms": 24.8, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757414.1706924, "ms": 28.9, "path": "/frame", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757414.210748, "ms": 24.0, "path": "/world/map", "method": "GET", "status": 200}
+{"k": "req", "t0": 1793757414.7617543, "ms": 67.5, "path": "/frame", "method": "GET", "status": 200}
