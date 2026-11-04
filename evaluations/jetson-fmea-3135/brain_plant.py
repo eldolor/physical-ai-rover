@@ -14,7 +14,7 @@ Nothing in brain/ or control/ is edited; the patch is on the module, here.
 | `cloud_class` | 3.47: a transport error to the cloud is a plain RuntimeError, not `CloudUnavailable` | F11 |
 | `vlm_absent` | 3.80: the local VLM gone (refused, dropped) is read as its answer "no" (score 0), so the tiers hand nothing on to the cloud | F3 |
 | `write_intolerant` | 3.88 A: a goal-choice write that fails (a full disk) is logged every time and raised into the mission (`MissionRunner._record_choice` without its once-only catch) | F15 |
-| `cloud_deadline` | 3.56 and B3.2's deadlines raised to 120 s (`arrival_confirm_timeout_s`, `vision_timeout_s`) | F12 |
+| `cloud_deadline` | 3.56 and B3.2's deadlines raised to 120 s (`arrival_confirm_timeout_s`, `vision_timeout_s`), and B3.3's `tick_timeout_s` to 600 s | F12 |
 
     FMEA_PLANT=cloud_class python evaluations/jetson-fmea-3135/brain_plant.py <port>
 """
@@ -43,6 +43,9 @@ if "cloud_deadline" in PLANTS:
         cfg = _load(*a, **k)
         cfg["arrival_confirm_timeout_s"] = 120.0
         cfg["vision_timeout_s"] = 120.0
+        # amendment 13: B3.3's tick deadline backs B3.2 up on a hung call; off too, or the
+        # plant leaves the row's outcome to the other guard and cannot fail it
+        cfg["tick_timeout_s"] = 600.0
         return cfg
 
     brain_config.load_brain_config = _load_long

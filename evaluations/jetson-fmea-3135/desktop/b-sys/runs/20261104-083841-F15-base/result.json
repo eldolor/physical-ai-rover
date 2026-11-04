@@ -1,0 +1,48 @@
+{
+ "row": "F15",
+ "title": "Disk full on the recordings volume",
+ "reading": "a failing write was seen (the brain's log names it); the mission ends with an outcome; at most one failing-write line a minute of mission (plus one); 0 late wheel ticks over the mission; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-04T09:18:51-0600",
+ "clock_restore": {},
+ "full_removed": {
+  "still_mounted": false
+ },
+ "measures": {
+  "outcome": "found",
+  "stepped": false,
+  "full": {
+   "kind": "devfull",
+   "dir": "evaluations/jetson-fmea-3135/desktop/b-sys/runs/20261104-083841-F15-base/full"
+  },
+  "start_at": 14542.508386373,
+  "end_at": 14601.630094123,
+  "choices_picked": 4,
+  "mission_s": 59.1,
+  "status": {
+   "outcome": "found",
+   "end_state": "found",
+   "end_reason": "Hallway, kitchen, living room searched. Found.",
+   "error": null,
+   "step": 6
+  },
+  "choice_fail_lines": 1,
+  "late_ticks": 0,
+  "write_fail_lines": 3,
+  "truth_hole_s": 0.031,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "mem_available_min_mb": 11185,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "3 failing-write lines in 1.0 min (bar one a minute)"
+  ]
+ },
+ "ended": "2026-11-04T09:20:03-0600"
+}

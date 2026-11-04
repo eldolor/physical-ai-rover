@@ -1,0 +1,4 @@
+1793805533.655 WARNING identity vision-picar brain server starting -- git=a560d952 executable=/home/anshu/vision-picar/.venv/bin/python config=(default)
+1793805539.196 WARNING mission_runner goal choice not recorded: [Errno 13] Permission denied: 'evaluations/jetson-fmea-3135/desktop/b-sys/runs/20261104-083841-F15-base/full/20261104t151858.033061z-red-backpack.jsonl'
+1793805596.927 WARNING mission_runner mission end not recorded in the intervention log: [Errno 13] Permission denied: 'evaluations/jetson-fmea-3135/desktop/b-sys/runs/20261104-083841-F15-base/full/interventions.jsonl'
+1793805596.928 WARNING control.inventory_store inventory 20261104T151858.033061Z-red backpack not saved: local: [Errno 13] Permission denied: 'evaluations/jetson-fmea-3135/desktop/b-sys/runs/20261104-083841-F15-base/full/.20261104t151858.033061z-red-backpack.json.tmp'

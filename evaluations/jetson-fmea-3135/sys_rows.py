@@ -93,7 +93,10 @@ def judge(row: str, ms: dict, control: str | None = "found") -> dict:
             r.append(f"invalid: no goal choice made or none failed to write "
                      f"({ms.get('choices_picked')} picked, {ms.get('choice_fail_lines')} failed)")
         bar(out != "failed", "the mission ended failed (it did not go on)")
-        bar(n is not None and n <= int(mins) + 2, f"{n} failing-write lines in {mins:.1f} min (bar one a minute)")
+        # amendment 13: once a minute per writer (choice log, inventory, intervention line)
+        per = ms.get("write_fail_by_writer") or {}
+        worst = max(per.values(), default=n or 0)
+        bar(worst <= int(mins) + 1, f"{worst} failing-write lines from one writer in {mins:.1f} min ({per}; bar one a minute)")
         bar(ms.get("late_ticks") == 0, f"{ms.get('late_ticks')} late wheel ticks over the mission (bar 0)")
         return {"pass": not r, "valid": valid, "reasons": r}
     valid = ms.get("stepped") is True and ms.get("idle_at_fault") is not False
@@ -344,6 +347,10 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                     ms["late_ticks"] = h_end["wheel_loop"]["late_ticks"] - h_start["wheel_loop"]["late_ticks"]
                 text = (out / "brain.log").read_text(errors="replace").lower()
                 ms["write_fail_lines"] = sum(1 for line in text.splitlines() if any(w in line for w in WRITE_FAIL))
+                ms["write_fail_by_writer"] = {
+                    w: sum(1 for line in text.splitlines() if k in line)
+                    for w, k in (("choices", "goal choice not recorded"), ("inventory", " not saved:"),
+                                 ("intervention", "intervention log"))}
             if spec["step_s"]:
                 text = (out / "brain.log").read_bytes()[log0:].decode(errors="replace")
                 ms["brain_503_lines"] = sum(1 for line in text.splitlines()

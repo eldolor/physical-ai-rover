@@ -1,0 +1,44 @@
+{
+ "row": "F16p",
+ "title": "Wall clock jumps +5 min",
+ "reading": "no watchdog stop in the 3 s after the step (the robot server's watchdog refusal count unchanged); no 503 or stale-frame line in the brain's log after it; the mission does not end out_of_budget, and ends as the control's runs (found); 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-04T08:38:41-0600",
+ "clock_restore": {},
+ "measures": {
+  "outcome": "out_of_budget",
+  "stepped": true,
+  "start_at": 12128.524543781,
+  "step_at": 12132.102826327,
+  "fault_at": 12132.102826327,
+  "watchdog_after_step": 0,
+  "refusals_after_step": [],
+  "end_at": 13329.166236419,
+  "mission_s": 1200.6,
+  "status": {
+   "outcome": "out_of_budget",
+   "end_state": "out_of_budget",
+   "end_reason": "time limit of 1200 s reached (1200.4 s)",
+   "error": null,
+   "step": 832
+  },
+  "brain_503_lines": 0,
+  "truth_hole_s": 0.033,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "idle_at_fault": true,
+  "mem_available_min_mb": 11154,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "the mission ended out_of_budget",
+   "the mission ended out_of_budget, the control's found"
+  ]
+ },
+ "ended": "2026-11-04T08:58:45-0600"
+}

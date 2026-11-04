@@ -1,0 +1,213 @@
+{
+ "stamp": "20261104-083841",
+ "criterion": 4,
+ "rows": [
+  {
+   "row": "F16p",
+   "plant": "wall_clock",
+   "reading": "no watchdog stop in the 3 s after the step (the robot server's watchdog refusal count unchanged); no 503 or stale-frame line in the brain's log after it; the mission does not end out_of_budget, and ends as the control's runs (found); 0 contacts",
+   "base": {
+    "pass": false,
+    "reasons": [
+     "the mission ended out_of_budget",
+     "the mission ended out_of_budget, the control's found"
+    ],
+    "error": null,
+    "recovery_s": null,
+    "contacts": 0,
+    "outcome": "out_of_budget",
+    "mission_s": 1200.6
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "1 watchdog stops in the 3 s after the step (bar 0)",
+     "the mission ended out_of_budget",
+     "the mission ended out_of_budget, the control's found"
+    ],
+    "error": null,
+    "contacts": 0,
+    "outcome": "out_of_budget",
+    "mission_s": 1201.6
+   },
+   "caught": true,
+   "discriminates": false
+  },
+  {
+   "row": "F15",
+   "plant": "write_intolerant",
+   "reading": "a failing write was seen (the brain's log names it); the mission ends with an outcome; at most one failing-write line a minute of mission (plus one); 0 late wheel ticks over the mission; 0 contacts",
+   "base": {
+    "pass": false,
+    "reasons": [
+     "3 failing-write lines in 1.0 min (bar one a minute)"
+    ],
+    "error": null,
+    "recovery_s": null,
+    "contacts": 0,
+    "outcome": "found",
+    "mission_s": 59.1
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "the mission ended failed (it did not go on)",
+     "3 failing-write lines in 0.0 min (bar one a minute)"
+    ],
+    "error": null,
+    "contacts": 0,
+    "outcome": "failed",
+    "mission_s": 2.0
+   },
+   "caught": true,
+   "discriminates": false
+  },
+  {
+   "row": "F11a",
+   "plant": "cloud_class",
+   "reading": "the mission ends arrived_unconfirmed (no tier here could confirm, so found would be wrong, 3.47), never failed; 0 contacts",
+   "base": {
+    "pass": true,
+    "reasons": [],
+    "error": null,
+    "recovery_s": null,
+    "contacts": 0,
+    "outcome": "arrived_unconfirmed",
+    "max_open_paid": 0,
+    "mission_s": 86.3,
+    "drive_after_end": 0,
+    "travel_mission_cm": 461.03
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "the mission ended failed, not arrived_unconfirmed"
+    ],
+    "error": null,
+    "contacts": 0,
+    "outcome": "failed",
+    "max_open_paid": 0,
+    "mission_s": 85.2,
+    "drive_after_end": 0,
+    "travel_mission_cm": 458.89
+   },
+   "caught": true,
+   "discriminates": true
+  },
+  {
+   "row": "F12a",
+   "plant": "cloud_deadline",
+   "reading": "never two paid calls open at once (open_paid <= 1); the mission ends arrived_unconfirmed, its end <= 30 s after the last paid call was sent (the arrival parks); 0 contacts",
+   "base": {
+    "pass": true,
+    "reasons": [],
+    "error": null,
+    "recovery_s": null,
+    "contacts": 0,
+    "outcome": "arrived_unconfirmed",
+    "max_open_paid": 1,
+    "park_s": 8.9,
+    "mission_s": 109.3,
+    "drive_after_end": 0,
+    "travel_mission_cm": 458.69
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "the mission ended failed, not arrived_unconfirmed",
+     "ended 112.3 s after the last paid call (bar 30)"
+    ],
+    "error": null,
+    "contacts": 0,
+    "outcome": "failed",
+    "max_open_paid": 1,
+    "park_s": 112.3,
+    "mission_s": 112.3,
+    "drive_after_end": 0,
+    "travel_mission_cm": 461.19
+   },
+   "caught": true,
+   "discriminates": true
+  },
+  {
+   "row": "F12b",
+   "plant": "cloud_deadline",
+   "reading": "never two paid calls open at once; B3.2's budget ends the mission failed, within 300 s of its start; 0 contacts",
+   "base": {
+    "pass": true,
+    "reasons": [],
+    "error": null,
+    "recovery_s": null,
+    "contacts": 0,
+    "outcome": "failed",
+    "max_open_paid": 1,
+    "park_s": 20.5,
+    "mission_s": 61.1,
+    "drive_after_end": 0,
+    "travel_mission_cm": 0.0
+   },
+   "planted": {
+    "pass": true,
+    "reasons": [],
+    "error": null,
+    "contacts": 0,
+    "outcome": "failed",
+    "max_open_paid": 1,
+    "park_s": 30.0,
+    "mission_s": 30.1,
+    "drive_after_end": 0,
+    "travel_mission_cm": 0.0
+   },
+   "caught": false,
+   "discriminates": false
+  },
+  {
+   "row": "F11b",
+   "plant": "cloud_class",
+   "reading": "the cloud answers, then is gone; the mission ends arrived_unconfirmed or found (found only by a cloud yes landed before it went), never failed; with the cloud back, the late confirmation lands and no wheel setpoint is non-zero from the mission's end to 10 s after it; 0 contacts",
+   "base": {
+    "pass": true,
+    "reasons": [],
+    "error": null,
+    "recovery_s": null,
+    "contacts": 0,
+    "outcome": "arrived_unconfirmed",
+    "max_open_paid": 1,
+    "mission_s": 86.8,
+    "late_confirmation": {
+     "state": "refused",
+     "probes": 1,
+     "paid_calls": 1,
+     "reason": "the cloud does not see the target in the arrival frame",
+     "at": 1793806277.879999,
+     "confirmed": false
+    },
+    "drive_after_end": 0,
+    "travel_mission_cm": 458.9
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "the mission ended failed"
+    ],
+    "error": null,
+    "contacts": 0,
+    "outcome": "failed",
+    "max_open_paid": 1,
+    "mission_s": 85.7,
+    "drive_after_end": 0,
+    "travel_mission_cm": 458.99
+   },
+   "caught": true,
+   "discriminates": true
+  }
+ ],
+ "met": false,
+ "not_scored_until_fixed": [
+  "F12b"
+ ],
+ "base_fails_too": [
+  "F16p",
+  "F15"
+ ]
+}

@@ -1,0 +1,6 @@
+vision-picar sim body server starting -- git=a560d952 executable=/home/anshu/vision-picar/.venv/bin/python config=/home/anshu/vision-picar/.claude/worktrees/gracious-saha-df23c5/config/robot.yaml
+vision-picar sim body server starting -- git=a560d952 executable=/home/anshu/vision-picar/.venv/bin/python config=/home/anshu/vision-picar/.claude/worktrees/gracious-saha-df23c5/config/robot.yaml
+/usr/lib/python3.14/multiprocessing/resource_tracker.py:396: UserWarning: resource_tracker: There appear to be 1 leaked shared_memory objects to clean up at shutdown: {'/picar_fmea_314388'}
+  warnings.warn(
+/usr/lib/python3.14/multiprocessing/resource_tracker.py:412: UserWarning: resource_tracker: '/picar_fmea_314388': [Errno 2] No such file or directory: '/picar_fmea_314388'
+  warnings.warn('resource_tracker: %r: %s' % (name, e))

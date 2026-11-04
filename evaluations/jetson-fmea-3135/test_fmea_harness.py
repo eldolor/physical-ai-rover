@@ -387,7 +387,11 @@ def test_the_full_disk_case_and_its_bars():
     ok = {"outcome": "found", "write_fail_lines": 2, "mission_s": 120.0, "late_ticks": 0,
           "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.02, "choices_picked": 4, "choice_fail_lines": 1}
     assert sys_rows.judge("F15", ok)["pass"]
-    assert not sys_rows.judge("F15", {**ok, "write_fail_lines": 9})["pass"]       # per frame, not per minute
+    assert not sys_rows.judge("F15", {**ok, "write_fail_lines": 9,
+                                      "write_fail_by_writer": {"choices": 9}})["pass"]       # per frame
+    three = {**ok, "mission_s": 59.0, "write_fail_lines": 3,
+             "write_fail_by_writer": {"choices": 1, "inventory": 1, "intervention": 1}}
+    assert sys_rows.judge("F15", three)["pass"]                     # one each, under a minute
     assert not sys_rows.judge("F15", {**ok, "late_ticks": 1})["pass"]
     assert not sys_rows.judge("F15", {**ok, "outcome": None})["pass"]
     assert not sys_rows.judge("F15", {**ok, "outcome": "failed"})["pass"]               # it did not go on
