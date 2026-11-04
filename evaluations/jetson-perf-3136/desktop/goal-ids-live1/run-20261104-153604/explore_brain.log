@@ -1,0 +1,34 @@
+1793828165.475 WARNING identity vision-picar brain server starting -- git=519979e6 executable=/home/anshu/vision-picar/.venv/bin/python config=(default)
+1793828176.424 INFO mission_runner mission started: Find the red backpack. (time limit 600 s, step backstop 2400, battery floor 10.5 V)
+1793828176.522 INFO explore explore {"event": "goal_refused", "t": 37181.0, "kind": "frontier", "goal": [1.61, 1.49], "reason": "preempted", "pose": [1.95, 1.35, 90.0]}
+1793828176.524 INFO mission_runner waiting -- goal refused: preempted -- living room, facing ?, free space clear, sees nothing of note
+1793828177.107 INFO explore explore {"event": "goal_refused", "t": 37181.58, "kind": "frontier", "goal": [1.61, 1.49], "reason": "preempted", "pose": [1.95, 1.35, 90.0]}
+1793828177.732 INFO explore explore {"event": "goal_sent", "t": 37182.21, "kind": "frontier", "goal": [1.61, 1.49], "rank": 3, "candidates": 21, "path_m": 0.49, "size_m": 1.45, "score": -0.96, "skipped": {"reached twice": 0, "set aside": 0}, "learned": 4.383, "choice_ms": 10.5, "pose": [1.95, 1.35, 90.0]}
+1793828177.734 INFO mission_runner step 0: GOAL (ok) -- goal sent (frontier) to (1.61, 1.49) -- living room, facing ?, free space clear, sees nothing of note
+1793828178.121 INFO mission_runner waiting -- nav2 active: frontier -- living room, facing ?, free space clear, sees nothing of note
+1793828184.082 INFO explore explore {"event": "goal_ended", "t": 37188.56, "kind": "frontier", "state": "succeeded", "goal": [1.61, 1.49], "seconds": 6.4, "moved_m": 0.28, "pose": [1.7, 1.47, 253.7]}
+1793828184.090 INFO explore explore {"event": "verb", "t": 37188.56, "action": "LOOK_LEFT", "executed": true, "waited": false, "detail": "{'action': 'look_left', 'pan': -1}", "pose": [1.7, 1.47, 253.7]}
+1793828184.092 INFO mission_runner step 1: LOOK_LEFT (ok) -- {'action': 'look_left', 'pan': -1} -- living room, facing ?, free space clear, sees nothing of note
+1793828184.390 INFO explore explore {"event": "verb", "t": 37188.86, "action": "LOOK_RIGHT", "executed": true, "waited": false, "detail": "{'action': 'look_right', 'pan': 1}", "pose": [1.7, 1.47, 253.7]}
+1793828184.392 INFO mission_runner step 1: LOOK_RIGHT (ok) -- {'action': 'look_right', 'pan': 1} -- living room, facing ?, free space clear, sees nothing of note
+1793828184.737 INFO explore explore {"event": "verb", "t": 37189.21, "action": "LOOK_CENTER", "executed": true, "waited": false, "detail": "{'action': 'look_center', 'pan': 0}", "pose": [1.7, 1.47, 253.7]}
+1793828184.739 INFO mission_runner step 1: LOOK_CENTER (ok) -- {'action': 'look_center', 'pan': 0} -- living room, facing ?, free space clear, sees nothing of note
+1793828185.039 INFO explore explore {"event": "goal_refused", "t": 37189.51, "kind": "frontier", "goal": [5.76, 0.79], "reason": "preempted", "pose": [1.7, 1.47, 253.7]}
+1793828185.041 INFO mission_runner waiting -- goal refused: preempted -- living room, facing ?, free space clear, sees nothing of note
+1793828185.704 INFO explore explore {"event": "goal_refused", "t": 37190.18, "kind": "frontier", "goal": [5.76, 0.79], "reason": "preempted", "pose": [1.7, 1.47, 253.7]}
+1793828186.269 INFO explore explore {"event": "goal_sent", "t": 37190.74, "kind": "frontier", "goal": [5.76, 0.79], "rank": 4, "candidates": 22, "path_m": 5.04, "size_m": 1.45, "score": 3.59, "skipped": {"reached twice": 0, "set aside": 0}, "learned": 5.042, "choice_ms": 12.3, "pose": [1.7, 1.47, 253.7]}
+1793828186.283 INFO mission_runner step 1: GOAL (ok) -- goal sent (frontier) to (5.76, 0.79) -- living room, facing ?, free space clear, sees nothing of note
+1793828186.586 INFO mission_runner waiting -- nav2 active: frontier -- living room, facing ?, free space clear, sees nothing of note
+1793828188.255 INFO mission_runner waiting -- nav2 active: frontier -- living room, facing ?, free space some, sees nothing of note
+1793828189.990 INFO mission_runner waiting -- nav2 active: frontier -- living room, facing ?, free space clear, sees nothing of note
+1793828196.195 INFO explore explore {"event": "goal_sent", "t": 37200.67, "kind": "approach", "goal": [6.36, 1.39], "pose": [2.95, 1.48, 79.3]}
+1793828196.197 INFO mission_runner step 2: GOAL (ok) -- goal sent (approach) to (6.36, 1.39) -- living room, facing ?, free space clear, sees nothing of note
+1793828196.563 INFO mission_runner waiting -- nav2 active: approach -- living room, facing ?, free space clear, sees nothing of note
+1793828198.413 INFO mission_runner waiting -- nav2 active: approach -- unknown, facing ?, free space clear, sees nothing of note
+1793828200.201 INFO mission_runner waiting -- nav2 active: approach -- hallway, facing ?, free space clear, sees nothing of note
+1793828206.310 INFO mission_runner waiting -- nav2 active: approach -- unknown, facing ?, free space clear, sees nothing of note
+1793828207.502 INFO mission_runner waiting -- nav2 active: approach -- kitchen, facing ?, free space clear, sees nothing of note
+1793828211.361 INFO mission_runner waiting -- nav2 active: approach -- kitchen, facing ?, free space some, sees nothing of note
+1793828213.229 INFO mission_runner waiting -- nav2 active: approach -- kitchen, facing ?, free space some, sees red backpack
+1793828213.232 INFO mission_runner inventory: 2 reported, 1 candidates from 64 frames -- red backpack, refrigerator
+1793828213.232 INFO mission_runner mission ended (found): Hallway, kitchen, living room searched. Found.

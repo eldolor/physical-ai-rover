@@ -1,0 +1,31 @@
+{
+ "house": "scaled_house",
+ "outcome": "found",
+ "goals_sent": 3,
+ "nav2_goal_ids": 3,
+ "matched": 3,
+ "unmatched_ids": [],
+ "sends_missing": 0,
+ "kinds_recorded": [
+  "frontier",
+  "frontier",
+  "approach"
+ ],
+ "kinds_logged": [
+  "frontier",
+  "frontier",
+  "approach"
+ ],
+ "kinds_equal": true,
+ "amended": {
+  "n": 3,
+  "succeeded": 1,
+  "canceled": 2,
+  "aborted": 0,
+  "aborted_frontier": 0,
+  "aborted_other": 0,
+  "unmatched": 0,
+  "sends_missing": 0
+ },
+ "criterion_5": true
+}
