@@ -836,6 +836,17 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   a Start refused `battery_low:` worded. B1-B6 met (live lag <= 2.8 s, bar
   6; M2/M2L/M3/M4/M5/M7 0 in each state). The twin was deployed with it on
   2026-11-03 (with 3.132 Stage 3).
+* **The wheel loop's corner-turn vet (3.141.B), merged 2026-11-03 with
+  criterion 3 failed (the user's call).** 3.136.B run 1 and the 3.135.C
+  soak ran late wheel ticks (max 104-114 ms). Cause: a turn clamped beside
+  furniture re-derived the whole scan in each of `pivot_scale()`'s eight
+  passes, on the event loop, 20-23 ms on the board. Now `_PivotRows`
+  builds the rows once per search (numpy as a filter only), exactly dev's
+  answers (frozen `tests/pivot_reference.py`; 200,000 cases, 0
+  differences; do not "simplify" it): 2.3 ms p90 on the board. Criterion 3
+  (no live vet over 5 ms) FAILED: 103 curving vets over it, max 11 ms,
+  outside the turn guard; 0 late ticks. Criterion 4 (0 late ticks, 30 min,
+  full stack) waits on 3.136.B run 2. `evaluations/wheel-loop-3141/`.
 * **Live checks on the Rover (3.140): the harness (A) merged 2026-11-02;
   B-J wait on the Rover.** `evaluations/rover-live-3140/run.py` runs one row
   at a time on 3.136's `boardrun` (`bench-3140`): rows read from the section
