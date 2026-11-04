@@ -14,11 +14,11 @@ One JSON line per event (epoch seconds):
 |--------|----------------------------------------------------------------------|
 | gap    | the 5 ms probe on the loop woke `gap_ms` late (over GAP_MS)          |
 | tick   | a 50 ms probe shaped as `wheel_loop()` (sleep, then dt): dt > TICK_MS |
-| stall  | the sampler thread saw the loop's heartbeat older than STALL_MS: every thread's stack at first sight, and each thread's CPU (ms, /proc) over the stall |
+| stall  | the sampler thread saw the loop's heartbeat older than STALL_MS: every thread's stack at first sight, and each thread's CPU (ms, /proc) from first sight to the stall's end |
 | gc     | one collection over GC_MS: generation, duration, collected           |
 | vet    | `SafetyController.vet_wheel_velocity` over VET_MS                     |
 | req    | an HTTP request over REQ_MS, end to end                              |
-| heap   | every HEAP_S: gc counts, tracked objects per generation, frozen, RSS |
+| heap   | every HEAP_S: gc counts, tracked objects per generation, frozen, RSS, the tracer's own threads' CPU (ms, cumulative) |
 
 The sampler needs the GIL to look, so a C call holding it (a `json.dumps`)
 is seen only after it returns: the per-thread CPU over the stall is what
@@ -95,20 +95,30 @@ def _stacks() -> list:
     return out
 
 
+_own = []                         # native ids of the tracer's own threads
+
+
+def _own_cpu_ms() -> int:
+    cpu = _thread_cpu()
+    return round(sum(cpu[t][1] for t in _own if t in cpu) * 1000 / CLK)
+
+
 def _sampler() -> None:
-    prev = _thread_cpu()
+    """Each 5 ms: only the heartbeat's age. Thread CPU is read at a stall's
+    first sight and at its end (so the first STALL_MS of a stall's CPU is
+    not counted): reading every thread's /proc stat each 5 ms cost ~17% of a
+    core on the desktop."""
+    _own.append(threading.get_native_id())
     in_stall, start_cpu, rec = False, None, None
     while True:
         time.sleep(0.005)
-        t_wake = time.monotonic()
-        now_cpu = _thread_cpu()
-        age = (t_wake - _hb[0]) * 1000
+        age = (time.monotonic() - _hb[0]) * 1000
         if not in_stall and age > STALL_MS:
-            in_stall, start_cpu = True, prev
+            in_stall, start_cpu = True, _thread_cpu()
             rec = {"k": "stall", "t": time.time(), "age_ms": round(age, 1), "threads": _stacks()}
         elif in_stall and age <= STALL_MS:
             cpu = {}
-            for tid, (comm, ticks) in now_cpu.items():
+            for tid, (comm, ticks) in _thread_cpu().items():
                 d = ticks - start_cpu.get(tid, (comm, 0))[1]
                 if d:
                     cpu[f"{comm}/{tid}"] = round(d * 1000 / CLK)
@@ -118,10 +128,10 @@ def _sampler() -> None:
             in_stall = False
         elif in_stall:
             rec["age_ms"] = round(max(rec["age_ms"], age), 1)
-        prev = now_cpu
 
 
 def _heap() -> None:
+    _own.append(threading.get_native_id())
     while True:
         time.sleep(HEAP_S)
         t0 = time.perf_counter()
@@ -137,6 +147,7 @@ def _heap() -> None:
             rss = None
         _write({"k": "heap", "t": time.time(), "count": gc.get_count(), "sizes": sizes,
                 "cost_ms": round(cost, 1), "frozen": gc.get_freeze_count(), "rss_mb": rss,
+                "tracer_cpu_ms": _own_cpu_ms(),
                 "stats": gc.get_stats(), "threads": threading.active_count()})
 
 
@@ -268,9 +279,13 @@ class _Finder(importlib.abc.MetaPathFinder):
 
 
 def _chain_system_sitecustomize() -> None:
+    # Only what comes AFTER this directory: 3.136's shim, first on the path,
+    # chains this file, and looking before it would load the shim again.
     here = os.path.dirname(os.path.abspath(__file__))
-    for d in sys.path:
-        if not d or os.path.abspath(d) == here:
+    paths = [os.path.abspath(d) for d in sys.path if d]
+    after = paths[paths.index(here) + 1:] if here in paths else paths
+    for d in after:
+        if d == here:
             continue
         p = os.path.join(d, "sitecustomize.py")
         if os.path.isfile(p):

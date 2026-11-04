@@ -108,7 +108,10 @@ for c in $(pgrep -P $VLMP); do echo 1000 | sudo tee /proc/$c/oom_score_adj >/dev
 echo "== VE ready $(date +%T); MemAvailable $(awk '/MemAvailable/{print int($2/1024)}' /proc/meminfo) MB" | tee -a "$OUT/run.log"
 
 # The robot server and the brain, with the brain's timing shim (P4, P12).
-PYTHONPATH="$PWD/$HERE/shim" PERF_SHIM_LOG="$OUT/shim.jsonl" \
+# 3.141.D: STEADY_TRACER=1 puts 3.141's stall tracer after the shim (which
+# chains it) in the robot server; it acts only in that process.
+TRACER_PATH=; [ "${STEADY_TRACER:-0}" = 1 ] && TRACER_PATH=":$PWD/evaluations/wheel-loop-3141/tracer"
+PYTHONPATH="$PWD/$HERE/shim$TRACER_PATH" PERF_SHIM_LOG="$OUT/shim.jsonl" TRACE_3141_LOG="$OUT/trace3141.jsonl" \
   SIM_MAP="$HOUSE" ROBOT_DRIVE=ros WORLD_MODE=ros ROBOT_MODE=hardware SIM_MOTOR_BOARD=fake SIM_LIDAR=fake \
   VISION_URL=http://127.0.0.1:8099 LOCAL_VLM_URL=http://127.0.0.1:8005 TIER_SEARCH=explore \
   FIND_ROOM_LABELS=frame EXPLORE_GOAL_POLICY=rooms INVENTORY_BUCKET= \
