@@ -82,7 +82,8 @@ DOCKER_BUILD_VALUE_OPTS = {
     "-m", "--memory", "--memory-swap", "--cpu-shares", "--cpuset-cpus", "--isolation",
     "--metadata-file", "--builder", "--allow", "--attest", "--annotation",
     "--cgroup-parent", "--iidfile"}
-VAR_RE = re.compile(r"\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?")
+VAR_RE = re.compile(r"\$(?:\{([A-Za-z_][A-Za-z0-9_]*)\}|([A-Za-z_][A-Za-z0-9_]*))")
+SHELL_VALUE_OPTS = {"-o", "+o", "-O", "+O", "--rcfile", "--init-file"}
 CASE_RE = re.compile(r"(case|esac)(?=[\s;)]|$)")
 REDIRECT_RE = re.compile(r"(\d*)(&>>|&>|>>|>&|>\||<&|<>|>|<)")
 
@@ -122,17 +123,19 @@ def _segment_runs_heredoc(out: list) -> bool:
         words = shlex.split(seg[cut + 1:])
     except ValueError:
         words = seg[cut + 1:].split()
-    return _runner(words) in HEREDOC_RUNNERS
+    return _runner(words)[1] in HEREDOC_RUNNERS
 
 
-def _runner(words: list) -> str:
-    """The program a simple command's words run, past assignments, keywords
-    and wrappers (approximately: their flags are skipped, not their values)."""
-    for w in words:
-        if ASSIGN_RE.match(w) or w in KEYWORDS or w in PREFIXES or w.startswith("-"):
-            continue
-        return os.path.basename(w)
-    return ""
+def _runner(words: list) -> tuple:
+    """(index, name) of the program a simple command's words run, past
+    assignments, keywords and wrappers (`_strip_prefixes`, which knows their
+    options), and through a wrapper's `-- CMD`; (-1, '') for none."""
+    rest = _strip_prefixes(words, {"cwd": "."})
+    while rest and os.path.basename(rest[0]) not in HEREDOC_RUNNERS and "--" in rest[1:]:
+        rest = _strip_prefixes(rest[rest.index("--", 1) + 1:], {"cwd": "."})
+    if not rest:
+        return -1, ""
+    return len(words) - len(rest), os.path.basename(rest[0])
 
 
 def _command_position(out: list) -> bool:
@@ -141,7 +144,7 @@ def _command_position(out: list) -> bool:
     prev = "".join(out[-8:]).rstrip(" \t")
     if not prev or prev[-1] in ";&|(\n":
         return True
-    last = prev.split()[-1] if prev.split() else ""
+    last = re.split(r"[\s;&|(]+", prev)[-1]
     return last in ("then", "do", "else", "elif", "!", "{", "if", "while", "until")
 
 
@@ -153,12 +156,21 @@ def _piped_to_shell(tail: str) -> bool:
             words = shlex.split(seg)
         except ValueError:
             words = seg.split()
-        if _runner(words) not in SHELLS:
+        at, name = _runner(words)
+        if name not in SHELLS:
             continue
-        rest = words[[os.path.basename(w) for w in words].index(_runner(words)) + 1:]
+        rest = words[at + 1:] if 0 <= at < len(words) else []
         if any(re.match(r"^-[a-zA-Z]*c[a-zA-Z]*$", w) for w in rest):
             continue                      # bash -c: the heredoc is not its script
-        if "-s" in rest or "-" in rest or not [w for w in rest if not w.startswith("-")]:
+        script, k = [], 0
+        while k < len(rest):
+            if rest[k] in SHELL_VALUE_OPTS:
+                k += 2                    # bash -o pipefail: a value, not a script
+                continue
+            if not rest[k].startswith("-"):
+                script.append(rest[k])
+            k += 1
+        if "-s" in rest or "-" in rest or not script:
             return True                   # it reads its script from stdin
     return False
 
@@ -176,7 +188,7 @@ def _scan(text: str, i: int, extras: list, closer: str = "") -> tuple:
         if quote is None and c in "ce" and _command_position(out):
             m = CASE_RE.match(text, i)
             if m and (m.group(1) == "case" or cases):
-                cases += 1 if m.group(1) == "case" else -1 if cases else 0
+                cases += 1 if m.group(1) == "case" else -1
                 out.append(m.group(1))
                 i += 4
                 continue
@@ -402,14 +414,17 @@ def _expand(word: str, variables: dict) -> list:
         nxt = []
         for w in words:
             m = VAR_RE.search(w)
-            if not m or m.group(1) not in (variables or {}) or \
-                    any(VAR_RE.search(v) for v in variables[m.group(1)]):
+            name = m and (m.group(1) or m.group(2))
+            if not m or name not in (variables or {}) or \
+                    any(VAR_RE.search(v) for v in variables[name]):
                 nxt.append(w)
                 continue
-            nxt += [w[:m.start()] + v + w[m.end():] for v in variables[m.group(1)][:50]]
+            nxt += [w[:m.start()] + v + w[m.end():] for v in variables[name]]
         if nxt == words:
             break
-        words = nxt[:200]
+        if len(nxt) > 5000:
+            return ["$TOO_MANY"]          # unknown: the caller reads it as maybe dev
+        words = nxt
     return words
 
 
@@ -439,6 +454,8 @@ def _push_reaches_dev(rest: list, flags: list, cwd: str, variables: dict = None)
         if dest == "HEAD":
             dest = _current_branch(cwd)
         name = VAR_RE.sub("*", _ref_name(dest))
+        if "$" in name:                   # $1, "$@", ${B%/}: anything at all
+            return True
         if name in ("dev", "") or ("*" in name and fnmatch.fnmatch("dev", name)):
             return True
     return False
@@ -687,10 +704,13 @@ def check_simple(words: list, state: dict):
     elif prog == "ssh":
         remote = _ssh_command(args)
         if remote:
+            text = " ".join(remote)
             try:
-                check_text(" ".join(remote), {"cwd": state["cwd"], "remote": True})
-            except ValueError:
-                pass                      # unparseable there too: the remote shell refuses it
+                check_text(text, {"cwd": state["cwd"], "remote": True})
+            except ValueError:            # the remote bash may still run the lines before it
+                if _names_guarded(text):
+                    raise Refusal("could not read the remote command, and it names a "
+                                  "guarded word")
     elif prog == "eval":
         check_text(" ".join(args), state)
     elif prog in SHELLS:

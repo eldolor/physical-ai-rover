@@ -146,6 +146,16 @@ REFUSED = [
     "x=$(echo case); git push --no-verify origin HEAD:dev",
     "cd; git push --no-verify",
     "cat <<EOF | sudo bash -s\nPICAR_SKIP_GATE=1 git push\nEOF",
+    # Round 5 (refusals round 4 lost, /code-review).
+    "timeout 60 ssh board <<EOF\nPICAR_SKIP_GATE=1 git push\nEOF",
+    "sudo -u root bash <<EOF\nPICAR_SKIP_GATE=1 git push\nEOF",
+    "python tools/jetson/board_lock.py run --why x -- ssh board <<EOF\nPICAR_SKIP_GATE=1 git push\nEOF",
+    "git push --no-verify origin $1",
+    'git push --no-verify origin "$@"',
+    "git push --no-verify origin ${B%/}",
+    "cat <<EOF | bash -o pipefail\nPICAR_SKIP_GATE=1 git push\nEOF",
+    "ssh board \"PICAR_SKIP_GATE=1 git push\necho 'x\"",
+    "y=$(for f in *;do case $f in a) git commit -n -m x;; esac; done)",
     "i=$(( i << 1 ))\ngit commit -n -m x\n1",
     # Round 3 (the transcript corpus): --no-verify only matters on a push
     # that can reach dev, the one ref the pre-push gate checks.
