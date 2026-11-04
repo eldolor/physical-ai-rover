@@ -5,7 +5,9 @@ evaluations/wheel-loop-3141/tracer/sitecustomize.py
 
 3.141's stall tracer for the robot server: what holds its event loop (the
 loop `wheel_loop()` and the watchdog run on) when a tick runs late. Put this
-directory first on PYTHONPATH with TRACE_3141_LOG set; it acts only in the
+directory on PYTHONPATH with TRACE_3141_LOG set -- first, or right after
+3.136's shim, which chains it (`steady.sh STEADY_TRACER=1`; never before the
+shim, which would chain it again); it acts only in the
 process started on `robot.server` and edits nothing in `robot/`.
 
 One JSON line per event (epoch seconds):
@@ -14,11 +16,11 @@ One JSON line per event (epoch seconds):
 |--------|----------------------------------------------------------------------|
 | gap    | the 5 ms probe on the loop woke `gap_ms` late (over GAP_MS)          |
 | tick   | a 50 ms probe shaped as `wheel_loop()` (sleep, then dt): dt > TICK_MS |
-| stall  | the sampler thread saw the loop's heartbeat older than STALL_MS: every thread's stack at first sight, and each thread's CPU (ms, /proc) from first sight to the stall's end |
+| stall  | the sampler thread saw the loop's heartbeat older than STALL_MS: every thread's stack at first sight, and each thread's CPU (ms, /proc) from a baseline at most BASELINE_S before it to the stall's end |
 | gc     | one collection over GC_MS: generation, duration, collected           |
 | vet    | `SafetyController.vet_wheel_velocity` over VET_MS                     |
 | req    | an HTTP request over REQ_MS, end to end                              |
-| heap   | every HEAP_S: gc counts, tracked objects per generation, frozen, RSS, the tracer's own threads' CPU (ms, cumulative) |
+| heap   | every HEAP_S: gc counts, tracked objects per generation, frozen, RSS, the tracer's own threads' CPU and its probes' work on the loop (ms, cumulative from the tracer's start: diff two rows for a window) |
 
 The sampler needs the GIL to look, so a C call holding it (a `json.dumps`)
 is seen only after it returns: the per-thread CPU over the stall is what
@@ -26,6 +28,7 @@ says who ran. Ubuntu's own sitecustomize is chained, as 3.136's shim does.
 """
 
 import asyncio
+import collections
 import gc
 import importlib.abc
 import importlib.util
@@ -96,26 +99,41 @@ def _stacks() -> list:
 
 
 _own = []                         # native ids of the tracer's own threads
+_probe_s = [0.0]                  # the probes' own work on the loop, s (not their sleeps)
+BASELINE_S = 1.0                  # how old a stall's CPU baseline may be
+SAMPLE_S = 0.01                   # the sampler's look at the heartbeat (STALL_MS is 25)
 
 
 def _own_cpu_ms() -> int:
-    cpu = _thread_cpu()
-    return round(sum(cpu[t][1] for t in _own if t in cpu) * 1000 / CLK)
+    ticks = 0
+    for tid in list(_own):
+        try:
+            with open(f"/proc/self/task/{tid}/stat") as f:
+                st = f.read()
+        except OSError:
+            continue
+        fields = st[st.rindex(")") + 2:].split()
+        ticks += int(fields[11]) + int(fields[12])
+    return round(ticks * 1000 / CLK)
 
 
 def _sampler() -> None:
-    """Each 5 ms: only the heartbeat's age. Thread CPU is read at a stall's
-    first sight and at its end (so the first STALL_MS of a stall's CPU is
-    not counted): reading every thread's /proc stat each 5 ms cost ~17% of a
-    core on the desktop."""
+    """Each SAMPLE_S: only the heartbeat's age; every BASELINE_S, every thread's
+    CPU (/proc), so a stall's CPU is measured from a baseline taken before it
+    began -- a C call holding the GIL keeps this thread out until it returns.
+    Reading /proc every 5 ms cost ~17% of a core on the desktop."""
     _own.append(threading.get_native_id())
+    base, base_t = _thread_cpu(), time.monotonic()
     in_stall, start_cpu, rec = False, None, None
     while True:
-        time.sleep(0.005)
-        age = (time.monotonic() - _hb[0]) * 1000
+        time.sleep(SAMPLE_S)
+        now = time.monotonic()
+        _flush_gc()
+        age = (now - _hb[0]) * 1000
         if not in_stall and age > STALL_MS:
-            in_stall, start_cpu = True, _thread_cpu()
-            rec = {"k": "stall", "t": time.time(), "age_ms": round(age, 1), "threads": _stacks()}
+            in_stall, start_cpu = True, base
+            rec = {"k": "stall", "t": time.time(), "age_ms": round(age, 1),
+                   "baseline_age_ms": round((now - base_t) * 1000), "threads": _stacks()}
         elif in_stall and age <= STALL_MS:
             cpu = {}
             for tid, (comm, ticks) in _thread_cpu().items():
@@ -126,8 +144,11 @@ def _sampler() -> None:
             rec["t_end"] = time.time()
             _write(rec)
             in_stall = False
+            base, base_t = _thread_cpu(), time.monotonic()
         elif in_stall:
             rec["age_ms"] = round(max(rec["age_ms"], age), 1)
+        elif now - base_t >= BASELINE_S:
+            base, base_t = _thread_cpu(), now
 
 
 def _heap() -> None:
@@ -147,11 +168,16 @@ def _heap() -> None:
             rss = None
         _write({"k": "heap", "t": time.time(), "count": gc.get_count(), "sizes": sizes,
                 "cost_ms": round(cost, 1), "frozen": gc.get_freeze_count(), "rss_mb": rss,
-                "tracer_cpu_ms": _own_cpu_ms(),
+                "tracer_cpu_ms": _own_cpu_ms(), "probe_ms": round(_probe_s[0] * 1000),
                 "stats": gc.get_stats(), "threads": threading.active_count()})
 
 
 _gc_t0 = [0.0]
+# A collection can start inside `_write` (json.dumps allocates) with its lock
+# held; a callback that wrote there would wait on that lock for ever on its
+# own thread -- the event loop's, as like as not. So it only appends here
+# (never blocks, takes no lock), and the sampler writes the rows out.
+_gc_rows: collections.deque = collections.deque(maxlen=10000)
 
 
 def _gc_cb(phase, info):
@@ -160,8 +186,14 @@ def _gc_cb(phase, info):
         return
     ms = (time.perf_counter() - _gc_t0[0]) * 1000
     if ms >= GC_MS:
-        _write({"k": "gc", "t": time.time(), "ms": round(ms, 2), "gen": info.get("generation"),
-                "collected": info.get("collected"), "thread": threading.current_thread().name})
+        _gc_rows.append({"k": "gc", "t": time.time(), "ms": round(ms, 2),
+                         "gen": info.get("generation"), "collected": info.get("collected"),
+                         "thread": threading.current_thread().name})
+
+
+def _flush_gc() -> None:
+    while _gc_rows:
+        _write(_gc_rows.popleft())
 
 
 async def _probe5():
@@ -174,6 +206,7 @@ async def _probe5():
         if late > GAP_MS:
             _write({"k": "gap", "t": time.time(), "gap_ms": round(late, 1)})
         last = now
+        _probe_s[0] += time.monotonic() - now
 
 
 async def _probe50():
@@ -185,6 +218,7 @@ async def _probe50():
         if dt > TICK_MS:
             _write({"k": "tick", "t": time.time(), "dt_ms": round(dt, 1)})
         last = now
+        _probe_s[0] += time.monotonic() - now
 
 
 class _Traced:
@@ -199,6 +233,7 @@ class _Traced:
         if not self.started:
             self.started = True
             loop = asyncio.get_running_loop()
+            _hb[0] = time.monotonic()      # not import time: no stall before the first beat
             loop.create_task(_probe5())
             loop.create_task(_probe50())
             threading.Thread(target=_sampler, daemon=True, name="trace-sampler").start()

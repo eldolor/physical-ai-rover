@@ -117,6 +117,11 @@ PYTHONPATH="$PWD/$HERE/shim$TRACER_PATH" PERF_SHIM_LOG="$OUT/shim.jsonl" TRACE_3
   FIND_ROOM_LABELS=frame EXPLORE_GOAL_POLICY=rooms INVENTORY_BUCKET= \
   bash service/tunnel/restart.sh >> "$OUT/run.log" 2>&1 || { echo "STOP: restart.sh failed" | tee -a "$OUT/run.log"; exit 2; }
 waitfor 90 "wheels usable" sh -c "curl -s -H 'x-app-secret: $LOCAL_SECRET' localhost:8000/wheels | grep -q '\"usable\": *true'"
+# 3.141.D: the tracer loads through the shim's chain, which swallows errors:
+# no start row means no trace, and the window would run for nothing.
+if [ "${STEADY_TRACER:-0}" = 1 ]; then
+  waitfor 30 "the stall tracer's start row" grep -q '"k": "start"' "$OUT/trace3141.jsonl"
+fi
 # picar-stack's own OOMScoreAdjust (-900), as in production.
 for p in 8000 8001 8002 8003 8004 8080; do
   for q in $(lsof -nP -tiTCP:$p -sTCP:LISTEN); do echo -900 | sudo tee /proc/$q/oom_score_adj >/dev/null; done
