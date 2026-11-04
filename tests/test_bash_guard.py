@@ -79,6 +79,33 @@ REFUSED = [
     "docker tag vision-picar-ros:plan-3.150 vision-picar-ros:latest",
     "docker image tag vision-picar-ros:plan-3.150 vision-picar-ros",
     "echo start\nPICAR_SKIP_GATE=1 git push origin HEAD:dev",
+    # Review round 1 (/code-review and the Thermos pass): each slipped through.
+    "# note\nPICAR_SKIP_GATE=1 git push",
+    "ls # a comment\nPICAR_SKIP_GATE=1 git push",
+    "cat <<< \"x\"\nPICAR_SKIP_GATE=1 git push",
+    "git commit -m 'a <<EOF'\nPICAR_SKIP_GATE=1 git push",
+    "python -c 'print(1 << n)'\nPICAR_SKIP_GATE=1 git push",
+    "git push origin HEAD:dev \\\n  --no-verify",
+    "timeout 60 git push --no-verify",
+    "nice -n 5 git push --no-verify",
+    "sudo -E -H PICAR_SKIP_GATE=1 git push",
+    "env -u A -u B PICAR_SKIP_GATE=1 git push",
+    "if true; then git push --no-verify; fi",
+    "bash -c 'PICAR_SKIP_GATE=1 git push'",
+    "sh -lc \"git push --no-verify\"",
+    "eval 'PICAR_SKIP_GATE=1 git push'",
+    "declare -x PICAR_SKIP_GATE=1",
+    "git push --no-veri origin HEAD:dev",
+    "git commit --no-veri -m x",    # git 2.53: `--no-ver` is ambiguous (--no-verbose)
+    "git -ccore.hooksPath=/dev/null push",
+    "GIT_CONFIG_PARAMETERS=\"'core.hooksPath=/dev/null'\" git push",
+    "GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=/dev/null git push",
+    "git --config-env=core.hooksPath=X push",
+    "git config --unset core.hooksPath",
+    "git config unset core.hooksPath",
+    "git config set core.hooksPath /dev/null",
+    "docker --context x build -t vision-picar-ros:latest service/slam",
+    "docker -H unix:///x build -t vision-picar-ros:latest .",
 ]
 
 PASSED = [
@@ -108,6 +135,16 @@ PASSED = [
     "ls -la && git status",
     "git log --grep no-verify",
     "pytest -k 'hooksPath'",
+    # Review round 1: refused wrongly, or near a fixed hole.
+    "git config core.hooksPath tools/hooks",
+    "git commit -uno -m x",
+    "git commit -m '-n foo'",
+    "git commit -m -nope",
+    "cat <<< 'hello'",
+    "python -c 'print(1 << 3)'\nls",
+    "# a comment only",
+    "echo 'a # not a comment' && ls",
+    "timeout 60 git push origin HEAD:dev",
 ]
 
 
@@ -181,6 +218,26 @@ def test_latest_with_changes_under_service_slam_is_refused(checkout, change):
 def test_latest_after_a_cd_into_a_branch_is_refused(checkout, tmp_path):
     (checkout / "service" / "slam" / "new.py").write_text("x = 1\n")
     assert run_hook(f"cd {checkout} && {LATEST}", cwd=str(tmp_path))[0] == "deny"
+
+
+def test_latest_with_a_branch_context_from_a_clean_cwd_is_refused(checkout, tmp_path):
+    """The build context, not the shell's cwd, is what goes into the image."""
+    other = tmp_path / "other"
+    (other / "service" / "slam").mkdir(parents=True)
+    (other / "service" / "slam" / "Dockerfile").write_text("FROM busybox\n")
+    _git(other, "init", "-q")
+    _git(other, "add", "-A")
+    _git(other, "commit", "-qm", "branch")
+    cmd = f"docker build -t vision-picar-ros:latest {other}/service/slam"
+    assert run_hook(cmd, cwd=str(checkout))[0] == "deny"
+    cmd = f"docker build -t vision-picar-ros:latest -f {other}/service/slam/Dockerfile service/slam"
+    assert run_hook(cmd, cwd=str(checkout))[0] == "deny"
+
+
+def test_latest_from_inside_a_dirty_service_slam_is_refused(checkout):
+    (checkout / "service" / "slam" / "new.py").write_text("x = 1\n")
+    assert run_hook(LATEST.replace("service/slam", "."),
+                    cwd=str(checkout / "service" / "slam"))[0] == "deny"
 
 
 def test_latest_outside_any_repo_is_refused(tmp_path):
