@@ -52,10 +52,12 @@ HEAP_S = float(os.environ.get("TRACE_3141_HEAP_S", "30"))
 HEAP_OBJECTS = os.environ.get("TRACE_3141_HEAP_OBJECTS") == "1"
 CLK = os.sysconf("SC_CLK_TCK")
 
+_PID = os.getpid()                   # a fork's child has no sampler: its rows are never written
 _rows: collections.deque = collections.deque(maxlen=20000)
 _rows_dropped = [0]
 _sampler_ticks = [0]                 # the sampler's passes: a heap row's proof it is alive
 _sampler_errors = [0]
+_heap_errors = [0]
 _fh = None
 _hb = [time.monotonic()]          # the loop's heartbeat (monotonic)
 
@@ -67,7 +69,7 @@ def _write(rec: dict) -> None:
     sampler holds while encoding a large row."""
     if len(_rows) == _rows.maxlen:
         _rows_dropped[0] += 1
-    _rows.append({**rec, "pid": os.getpid()})
+    _rows.append({**rec, "pid": _PID})
 
 
 def _drain() -> None:
@@ -75,8 +77,11 @@ def _drain() -> None:
     restarted robot server keeps its predecessor's rows; a caller clears a
     reused file, as steady.sh does)."""
     global _fh
-    while _rows:
-        rec = _rows.popleft()
+    while True:
+        try:
+            rec = _rows.popleft()
+        except IndexError:                 # empty (the exit drain may race the sampler)
+            return
         try:
             if _fh is None:
                 _fh = open(_LOG, "a", buffering=1)
@@ -158,15 +163,20 @@ def _sampler() -> None:
             base, base_t, in_stall, start_cpu, rec = _sample(base, base_t, in_stall, start_cpu, rec)
         except Exception:  # noqa: BLE001 -- the sampler must outlive one odd /proc read
             _sampler_errors[0] += 1
-            in_stall, rec = False, None        # that stall's row is lost (counted)
-            base_t = 0.0                       # a fresh baseline next pass
+            if rec is not None:
+                _rows_dropped[0] += 1          # that stall's row is lost
+            in_stall, rec, base = False, None, None   # a fresh baseline next pass
 
 
 def _sample(base, base_t, in_stall, start_cpu, rec):
     """One look: drain the queue, then the heartbeat's age."""
+    d0 = time.monotonic()
     _drain()
-    now = time.monotonic()                 # after the drain: its own time is not age
-    _sampler_ticks[0] += 1
+    now = time.monotonic()
+    drain_ms = (now - d0) * 1000           # recorded: an encode holds the GIL, so a
+    _sampler_ticks[0] += 1                 # stall right after it may be the tracer's
+    if base is None:
+        base, base_t = _thread_cpu(), now
     age = (now - _hb[0]) * 1000
     if not in_stall and age > STALL_MS:
         in_stall, start_cpu = True, base
@@ -197,7 +207,7 @@ def _heap() -> None:
         try:
             _heap_row()
         except Exception:  # noqa: BLE001 -- the next row must still come
-            _sampler_errors[0] += 1
+            _heap_errors[0] += 1
 
 
 def _heap_row() -> None:
@@ -221,6 +231,7 @@ def _heap_row() -> None:
             "tracer_cpu_ms": _own_cpu_ms(), "probe_ms": round(_probe_s[0] * 1000),
             "loop_cpu_ms": _cpu_ms_of(_loop_tid), "rows_dropped": _rows_dropped[0],
             "sampler_ticks": _sampler_ticks[0], "sampler_errors": _sampler_errors[0],
+            "heap_errors": _heap_errors[0],
             "tracer_tids": list(_own), "loop_tid": _loop_tid[:1],
             "stats": gc.get_stats(), "threads": threading.active_count()})
 
