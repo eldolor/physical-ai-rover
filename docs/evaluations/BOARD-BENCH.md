@@ -186,6 +186,11 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-03 | `a3382c18` | F8 robot server killed (harness) | 5/5 | met | wheels zero 1.48-1.49 s (1.6); never `found` | 0 | 0 | 2,250 | 0 | 49.5 °C | 3.2-3.3 s | yes |
 | 2026-11-03 | `a3382c18` | F9 lidar stops | 5/5 | **FAILED** | **101.2-104.6 cm** moved while the scan was stale (2) | 0 | 0 | 2,247 | 0 | 49.8 °C | 3.0-3.2 s | yes |
 | 2026-11-03 | `5b6b01cc` | F10 wheel feedback stops | 5/5 | met | 0.0-0.31 cm while stale (2); `no_feedback` refused 5/5 | 0 | 0 | 2,246 | 0 | 49.8 °C | 3.0-3.2 s | yes |
+| 2026-11-04 | `ad1def4b` | F9 lidar stops (3.144.B, the fix) | 5/5 | met | 0.0 cm while stale (2) | 0 | 0 | 2,360 | 0 | 50.1 °C | 3.1 s | yes |
+| 2026-11-04 | `d1d69eff` | F5 ROS bridge hung, a person's Stop | 5/5 | met | `/stop` 0.008-0.016 s (1.0); zero 0.008-0.021 s after it (0.5) | 0 | 0 | 2,099 | 0 | 51.8 °C | -- | yes |
+| 2026-11-04 | `d1d69eff` | F4 ROS container killed | 5/5 | **FAILED** | **zero 1.08-1.14 s (0.5), 8.3-9.4 cm (5)**; ROS not named, readout `watchdog` | 0 | 0 | 2,070 | 0 | 51.3 °C | a new container, then `found`, 5/5 | yes |
+| 2026-11-04 | `d1d69eff` | F6g brain killed, a nav2 goal | 5/5 | **FAILED** | **zero 2.80-3.33 s (1.1), 16.9-18.5 cm (15)** | 0 | 0 | 2,097 | 0 | 50.9 °C | 6.4-6.6 s | yes |
+| 2026-11-04 | `d1d69eff` | F7g brain hung 30 s, a nav2 goal | 5/5 | **FAILED** | **zero 2.79-3.15 s (1.1), 17.1-18.3 cm (15)**; 0 driving after SIGCONT (met) | 0 | 0 | 2,082 | 0 | 50.7 °C | 4.9-5.7 s | yes |
 
 ## Runs
 
@@ -373,6 +378,35 @@ cm, FAILED, 3.135.B's record). Wheels zero 2.0 s after the fault by the
 watchdog (no FORWARD starts on a stale scan); 0 contacts, 0 late ticks, 0 OOM,
 `MemAvailable` minimum 2,360 MB, max 50.1 °C; recovery 3.1 s; left as found.
 Records: `evaluations/jetson-fmea-3135/board/rows/F9-3144B-20261104-0710/`.
+
+### 2026-11-04, single faults (3.135.B): F5, F4, F6g, F7g
+
+On the board 08:12-08:34, one hold per row, released between rows, at
+`d1d69eff` (`dev` with 3.144.A and 3.136.F's lease). 15 W, the twin's units
+stopped and put back. The mover is amendment 5's goal stack: an explore
+mission on the ROS container, the fault 0.15 s into a FORWARD on an active
+nav2 goal.
+
+* **F5 met:** with the bridge frozen (`docker pause`), a person's `/stop`
+  answered in 0.008-0.016 s, the wheels were zero 0.008-0.021 s after it,
+  and nothing drove after unpause.
+* **F4 FAILED, 5 of 5:**
+  * after the container's kill the wheels reached zero only at the 1 s
+    watchdog (1.08-1.14 s, bar 0.5), after 8.3-9.4 cm (bar 5);
+  * the mission ended `failed` on a bare 503 that names no ROS, and the
+    readout showed `watchdog`, not ROS DOWN;
+  * the recovery (a new container, then `found`) held 5/5;
+  * its fix section is **3.146**.
+* **F6g and F7g FAILED, 5 of 5 each:**
+  * with the brain killed or frozen, nav2 drove its goal on for 2.8-3.3 s
+    and 17-18.5 cm (bars 1.1 s, 15 cm): nav2's wheel posts keep the
+    watchdog fed;
+  * F7g's other half was met (nothing drove after SIGCONT);
+  * their fix section is **3.145**, with a design question for the user.
+* Every run: 0 contacts, 0 late ticks, 0 OOM, `MemAvailable` minimum
+  2,070 MB, max 51.8 °C. The board was left as found, and no harness
+  leftovers remained (drop-in, tmpfs, NTP).
+* Records: `evaluations/jetson-fmea-3135/board/rows/`.
 
 ### 2026-11-03, the vet's cost with 3.141's turn guard (3.141 criterion 2, not a recurring test)
 
