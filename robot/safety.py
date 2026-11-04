@@ -994,11 +994,21 @@ class SafetyController:
         0.0** (3.18 part 2): a camera panned away and no scan means nothing
         observes the ground the move crosses, and unobserved must not read
         as clear -- M3's rule, one level up. The band does not lift that:
-        it sees only the near floor."""
+        it sees only the near floor.
+
+        **A body that really moves and has no usable scan does not go
+        forward either** (3.144, 3.135.B's FMEA row F9): `(0.0,
+        "ahead_not_observed")` whatever the cone says, as
+        `reverse_clearance()` refuses astern. With the lidar stopped and the
+        camera ahead, the cone alone let the car drive 101-105 cm blind on
+        the board: the cone cannot see the chassis' corners or what is
+        under its view."""
+        scan = self._scan()
+        if not (scan and scan.get("usable")) and self._has_wheels():
+            return 0.0, "ahead_not_observed"
         if grid is None:
             get_grid = getattr(self.robot, "get_depth_grid", None)
             grid = get_grid() if get_grid is not None else None
-        scan = self._scan()
         cone, corridor = self.path_clearance(grid, scan), self.footprint_clearance(+1, scan)
         if cone[1] == "depth_grid_facing_away" and corridor[1] == "no_scan":
             return 0.0, "path_not_observed"

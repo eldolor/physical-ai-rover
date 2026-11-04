@@ -178,6 +178,22 @@ forward-facing robot has the least idea what is there.
 out of a dead end, and a guarded move that overshoots forward cannot correct
 itself backwards; it stops where it is. A person may still turn it.
 
+### A body whose scan stops does not go forward
+
+**3.144, from the board's FMEA row F9 (2026-11-03).** The same rule ahead:
+a body that really moves and has no usable scan -- the lidar stopped, or its
+last revolution older than the driver's freshness bar -- refuses every
+forward move, the verb, a standing command and a guarded verb's next period,
+whatever the camera sees. Before it, forward was refused only when the
+camera ALSO faced away, so with the lidar SIGSTOPped and the camera ahead the
+board drove 101-105 cm on the depth cone alone: the cone cannot see the
+chassis' corners, nor what lies under its view. A stopped move does not
+restart when the scan returns; only a new command drives. Turns stay
+allowed, for the reason above.
+
+**Trade-off accepted:** a lidar that drops out for a moment stops the robot
+for that moment, and a mission's FORWARD in it is refused.
+
 ### Stop at the line, and keep checking while moving
 
 A move is re-vetted every control period and looks ahead. It may cover only

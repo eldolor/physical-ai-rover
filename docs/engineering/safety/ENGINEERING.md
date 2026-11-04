@@ -31,7 +31,7 @@ changes it.
 
 | Motion | Path | Check |
 |---|---|---|
-| `/action` FORWARD | `check_and_execute()` | Pre-check `forward_clearance() < required_clearance_cm(v, creep)` raises, where `v` is the verb's `speed` as m/s (`verb_speed_m_s()`). Then, if the body has a `verb_plan()`, `run_verb()` re-vets every 50 ms period with look-ahead against the same bar |
+| `/action` FORWARD | `check_and_execute()` | Refused outright (`ahead_not_observed`) on a body with wheels and no usable scan (3.144). Pre-check `forward_clearance() < required_clearance_cm(v, creep)` raises, where `v` is the verb's `speed` as m/s (`verb_speed_m_s()`). Then, if the body has a `verb_plan()`, `run_verb()` re-vets every 50 ms period with look-ahead against the same bar |
 | `/action` REVERSE | same | `reverse_clearance()`, then `run_verb()`. Refused outright (`astern_not_observed`) on a body with wheels and no usable scan |
 | `/action` LEFT / RIGHT | same | No pre-check. `run_verb()` limits each step with `pivot_scale()` (only on bodies with a plan). With no usable scan, never limited |
 | `/action` LOOK_* / STOP | `_dispatch()` | None |
@@ -50,7 +50,7 @@ within range, never "unknown".
 | `footprint_clearance(+1 / -1)` | `scan_footprint`, `scan_footprint_no_target`, `no_scan` | Returns in the body frame within half-width + 3 cm of the centre-line and beyond the leading edge: distance past the edge. A return inside the outline reads 0.0 |
 | `rear_clearance()` | `scan_rear`, `scan_rear_no_target`, `no_rear_sensor` | Beams within `PATH_HALF_ANGLE_DEG` of astern, minus `LIDAR_TO_REAR_BUMPER_CM` |
 | `floor_clearance(grid)` | `floor_band`, `floor_band_no_target`, `floor_band_unusable`, `no_floor_band` | 3.74. The depth grid's `floor` block (the depth camera's floor band: body-fixed, `origin_x_cm` ahead of `base_link`, `fov_deg`, `min_range_cm`, zones of `{status, distance_cm, bearing_deg?}`; fields in `RobotInterface.get_depth_grid()`). Each `ZONE_RANGE` zone is a point in the body frame -- range from the origin along the zone's `bearing_deg` (null or absent: its centre) -- judged by `_corridor_room()`, the one corridor rule the scan's `footprint_clearance()` uses too: ahead of the front edge within half-width + 3 cm, the room past the edge; beside the body only within the half-width (0.0). Inside the band's minimum range nothing is seen or carried (Known gaps). Unusable zones never compared. `no_floor_band` for a grid without the block or with no usable `fov_deg` (every real body today). `floor_band_unusable` (3.76 K1) when no zone could be read (blind is not clear) or the band itself cannot be: a field that does not parse, or zones that disagree with its `cols`; a malformed zone is skipped as unusable, never raised out of the check (a raise made every FORWARD a 400 and skipped the wheel loop's re-vet) |
-| `forward_clearance()` | the least of cone, corridor and floor band, or `path_not_observed` (0.0); then aged (below) | The cone and the band read ONE depth grid, the corridor and the band ONE scan. `path_not_observed` when the grid faces away and there is no scan; the band does not lift it |
+| `forward_clearance()` | `ahead_not_observed` (0.0), `path_not_observed` (0.0), or the least of cone, corridor and floor band; then aged (below) | The cone and the band read ONE depth grid, the corridor and the band ONE scan. `(0.0, "ahead_not_observed")` when the scan is missing or unusable **and** `_has_wheels()`, whatever the cone says (3.144, FMEA F9: the lidar stopped and the cone alone let the board drive 101-105 cm); the scan is read first and the grid only after. Otherwise `path_not_observed` when the grid faces away and there is no scan (a body without wheels); the band does not lift either |
 | `reverse_clearance()` | `astern_not_observed` (0.0), or the lesser of rear and corridor astern, off one scan; then aged (below) | `(0.0, "astern_not_observed")` when the scan is missing or unusable **and** `_has_wheels()` (the body's `get_wheel_state()` reports `usable: true`; a body without the method, or whose call raises, has none). Otherwise, with no scan, `(None, "no_rear_sensor")` and the reverse proceeds. The rule and its reasons: [architecture spec](../../safety/ARCHITECTURE.md), "A body that cannot see astern does not reverse" |
 | `pivot_blocked(omega)` / `pivot_scale(omega)` | reason string or None / `(fraction, reason)` | A return whose distance to the rectangle would end under `PIVOT_MARGIN_CM` **and** shrink. Binary search to 1/64 of the turn rate. No usable scan: never blocked. **Aged rotation** (3.42): `_turn_since_scan()` is the turn the scan has missed -- the body's own answer (`turn_since_scan()`, `HardwareRobot` from its encoder heading history) or else yaw rate x `sensor_age_s()` -- and the check runs from `PIVOT_AGE_SAMPLES` + 1 rotations across that arc. Zero for a body whose readings have no age. **One set of rows for the search** (3.141): `pivot_scale()` builds a `_PivotRows` once -- the returns in the body frame across the aged arc, those within `PIVOT_NEAR_CM` of the chassis now, read from the scan in growing chunks (the first in plain Python) -- and every pass of its search uses it, so `_turn_since_scan()` is read once per search. Each pass looks ahead in numpy as a filter only (`PIVOT_FILTER_SLACK_CM`); every row it passes is decided in scan order by the exact per-point expressions, so the first blocking return and its reason are the old loop's (`tests/pivot_reference.py`, `tests/test_pivot_3141.py`). Before, a turn clamped beside furniture cost ~22 ms on the board, on the wheel loop's event loop |
 
@@ -134,7 +134,7 @@ usable):
 
 | Motion | Result | Why |
 |---|---|---|
-| FORWARD verb, or a forward component of `/wheels` | Refused / clamped, `safety_distance` (source `distance_sensor`) | No usable grid, so the cone falls back to the scalar, which reads 0.0 |
+| FORWARD verb, or a forward component of `/wheels` | Refused / clamped, `ahead_not_observed` | `forward_clearance()` with `_has_wheels()` and no scan (3.144; before it, the cone's fallback to the scalar, 0.0) |
 | REVERSE verb, a reverse component of `/wheels`, a settle pass astern | Refused / clamped, `astern_not_observed` | `reverse_clearance()` with `_has_wheels()` and no scan |
 | LEFT / RIGHT verb, rotation in `/wheels`, a turning settle pass | Allowed, never limited | `pivot_blocked()` / `pivot_scale()` never refuse with no usable scan |
 
@@ -156,7 +156,7 @@ astern does not reverse".
 | `check_and_execute(action, speed=, duration=, angle=)` | The body's result dict. Raises `SafetyViolation` on a veto, or when a guarded verb achieved under `VERB_MIN_MOVE_M` / `VERB_MIN_TURN_DEG`; `ValueError` on an unknown action. A straight verb's `speed` (default 50) sets its bar (3.44) |
 | `required_clearance_cm(v_m_s, creep=False)` | The straight-move bar in cm, as above |
 | `scan_hint_m()` | The range the vet's scans ask for: half the chassis length plus 1.5 x the bar at `MAX_LINEAR_M_S` (about 0.85 m) |
-| `vet_wheel_velocity(left_rad_s, right_rad_s)` | `(left, right, reason)`. `reason` is None when only slowed. Pass-through if the body's wheels are unusable (`robot/safety.py:665`). A reverse component on a blind body with wheels is clamped to zero with `astern_not_observed` in the reason; rotation is untouched |
+| `vet_wheel_velocity(left_rad_s, right_rad_s)` | `(left, right, reason)`. `reason` is None when only slowed. Pass-through if the body's wheels are unusable (`robot/safety.py:665`). A forward or reverse component on a blind body with wheels is clamped to zero with `ahead_not_observed` / `astern_not_observed` in the reason; the loop writes the clamped command back, so a scan that returns does not restart it -- only a new command drives (3.144); rotation is untouched |
 | `run_verb(plan)` | `carry_out_verb()`'s `{"done", "ended", "reason"}`, after the settle pass when the plan asks for one |
 | `forward_clearance()`, `reverse_clearance()` (both aged), `path_clearance()`, `footprint_clearance(direction, scan)`, `rear_clearance(scan)`, `pivot_scale(omega, scan)`, `pivot_blocked(omega, scan, exact)` | See above |
 
@@ -441,6 +441,9 @@ gives `blocked`, `veto_cm`, `veto_source` and `clearance_cm`.
   the serial line is gone (cable, USB, udev); `link_error` null with a
   growing `age_s` means the board is heard-but-silent (feedback switched
   off, firmware hung). Nothing moves until frames return.
+- `safety_distance` with `ahead_not_observed`: a FORWARD (or a positive
+  `/wheels`) on a body with wheels and no usable scan: the lidar has stopped
+  or gone stale (`STALE_S`). Read `/health`'s lidar block; turn instead.
 - `safety_distance` with `astern_not_observed`: a REVERSE (or a negative
   `/wheels`, or a settle pass astern) on a body with wheels and no usable
   scan. Expected on the car until its lidar driver lands; turn instead.
@@ -458,6 +461,7 @@ recorded as such (3.27 did this for `PIVOT_MARGIN_CM`).
 | `tests/test_depth_veto.py` (28) | Tri-state handling; unusable zones never compared; fallback to the scalar; angle-based zone selection |
 | `tests/test_footprint_safety.py` (12) | 3.18: seeded sample of the oblique-approach sweep over three houses. 3.36: the same bars hold on readings `SENSOR_STALE_S` old, and `_aged()` subtracts `v x age` closing and nothing moving away or with no age |
 | `tests/test_pan_safety.py` (6) | 3.18 part 2: zones by body bearing; `path_not_observed` |
+| `tests/test_stale_scan_forward.py` (8) | 3.144 (FMEA F9): `ahead_not_observed` with the cone seeing open floor; a verb under way stops within 2 cm of true path once the scan goes; through the wheel loop, a standing `/wheels` stops and stays stopped when the scan returns |
 | `tests/test_pivot_safety.py` (4) | 3.19: no contact from turning; turns with room complete |
 | `tests/test_pivot_3141.py` (9) | 3.141: the shared rows give the frozen reference's answers on random scans; five planted bugs caught; rows of another scan are never used |
 | `tests/test_lidar_safety.py` (4) | 3.42 criterion 4: the 3.18/3.19 samples with the vet reading the D500's timed scan (no depth grid): straight runs pass; pivots 0/120 within 1 cm with the rotation aged, and fail without it |
