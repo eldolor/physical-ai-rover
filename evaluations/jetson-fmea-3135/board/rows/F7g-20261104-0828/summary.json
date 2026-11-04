@@ -1,0 +1,365 @@
+{
+ "sha": "e7e7a8675eb4bc72756c9b2a9f6fa4f2f093ff58",
+ "cmd_exit": 0,
+ "cmd_s": 329.7,
+ "verdict": {
+  "row": "F7g",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "FAILED",
+  "runs_wanted": 5,
+  "runs_scored": 5,
+  "runs_total": 5,
+  "runs_failed": 5,
+  "not_scored": [],
+  "reasons": [
+   "moved 17.06 cm after the fault (bar 15)",
+   "moved 17.27 cm after the fault (bar 15)",
+   "moved 17.39 cm after the fault (bar 15)",
+   "moved 18.28 cm after the fault (bar 15)",
+   "moved 18.31 cm after the fault (bar 15)",
+   "wheels zero after 2.794 s (bar 1.1)",
+   "wheels zero after 2.866 s (bar 1.1)",
+   "wheels zero after 3.062 s (bar 1.1)",
+   "wheels zero after 3.12 s (bar 1.1)",
+   "wheels zero after 3.148 s (bar 1.1)"
+  ]
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "wheels zero after 3.12 s (bar 1.1)",
+    "moved 18.31 cm after the fault (bar 15)"
+   ],
+   "error": null,
+   "recovery_s": 5.04,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 20254.827549538,
+    "driver_at_fault": null,
+    "cont_at": 20284.856060565,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "brain loop hung: tick exceeded 30.0s",
+    "end_error": "brain loop hung: tick exceeded 30.0s",
+    "refusals": {
+     "preempted": 1
+    },
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 117,
+     "max_dt_s": 0.0623
+    },
+    "last_refusal": {
+     "reason": "preempted",
+     "detail": "brain is driving -- one autonomous driver at a time, so ros was refused until it lapses",
+     "driver": "ros",
+     "at": 20249.975037651,
+     "seconds_ago": 46.39
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 3.12,
+    "travel_cm": 18.31,
+    "drive_after_cont": 0,
+    "truth_hole_s": 0.024,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     20238.4276,
+     20302.5878
+    ],
+    "mem_available_min_mb": 2086,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "brain loop hung: tick exceeded 30.0s",
+    "cancelled_by": null,
+    "step": 1,
+    "last_action": "WAIT",
+    "error": "brain loop hung: tick exceeded 30.0s"
+   }
+  },
+  {
+   "i": 2,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "wheels zero after 3.148 s (bar 1.1)",
+    "moved 18.28 cm after the fault (bar 15)"
+   ],
+   "error": null,
+   "recovery_s": 5.15,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 20320.213513535,
+    "driver_at_fault": null,
+    "cont_at": 20350.240051941,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "brain loop hung: tick exceeded 30.0s",
+    "end_error": "brain loop hung: tick exceeded 30.0s",
+    "refusals": {
+     "preempted": 1
+    },
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 125,
+     "max_dt_s": 0.0662
+    },
+    "last_refusal": {
+     "reason": "preempted",
+     "detail": "brain is driving -- one autonomous driver at a time, so ros was refused until it lapses",
+     "driver": "ros",
+     "at": 20315.301607983,
+     "seconds_ago": 46.46
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 3.148,
+    "travel_cm": 18.28,
+    "drive_after_cont": 0,
+    "truth_hole_s": 0.027,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     20303.821,
+     20368.0811
+    ],
+    "mem_available_min_mb": 2082,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "brain loop hung: tick exceeded 30.0s",
+    "cancelled_by": null,
+    "step": 1,
+    "last_action": "WAIT",
+    "error": "brain loop hung: tick exceeded 30.0s"
+   }
+  },
+  {
+   "i": 3,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "wheels zero after 3.062 s (bar 1.1)",
+    "moved 17.06 cm after the fault (bar 15)"
+   ],
+   "error": null,
+   "recovery_s": 4.87,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 20386.048468241,
+    "driver_at_fault": null,
+    "cont_at": 20416.076054925,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "brain loop hung: tick exceeded 30.0s",
+    "end_error": "brain loop hung: tick exceeded 30.0s",
+    "refusals": {
+     "preempted": 1
+    },
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 125,
+     "max_dt_s": 0.0643
+    },
+    "last_refusal": {
+     "reason": "preempted",
+     "detail": "brain is driving -- one autonomous driver at a time, so ros was refused until it lapses",
+     "driver": "ros",
+     "at": 20381.058831561,
+     "seconds_ago": 46.53
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 3.062,
+    "travel_cm": 17.06,
+    "drive_after_cont": 0,
+    "truth_hole_s": 0.025,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     20369.3106,
+     20433.5707
+    ],
+    "mem_available_min_mb": 2096,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "brain loop hung: tick exceeded 30.0s",
+    "cancelled_by": null,
+    "step": 1,
+    "last_action": "WAIT",
+    "error": "brain loop hung: tick exceeded 30.0s"
+   }
+  },
+  {
+   "i": 4,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "wheels zero after 2.794 s (bar 1.1)",
+    "moved 17.39 cm after the fault (bar 15)"
+   ],
+   "error": null,
+   "recovery_s": 5.66,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 20452.551815366,
+    "driver_at_fault": null,
+    "cont_at": 20482.58005981,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "brain loop hung: tick exceeded 30.0s",
+    "end_error": "brain loop hung: tick exceeded 30.0s",
+    "refusals": {
+     "preempted": 1
+    },
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 121,
+     "max_dt_s": 0.0611
+    },
+    "last_refusal": {
+     "reason": "preempted",
+     "detail": "brain is driving -- one autonomous driver at a time, so ros was refused until it lapses",
+     "driver": "ros",
+     "at": 20447.613818822,
+     "seconds_ago": 46.49
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 2.794,
+    "travel_cm": 17.39,
+    "drive_after_cont": 0,
+    "truth_hole_s": 0.023,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     20434.8253,
+     20500.9654
+    ],
+    "mem_available_min_mb": 2098,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "brain loop hung: tick exceeded 30.0s",
+    "cancelled_by": null,
+    "step": 1,
+    "last_action": "WAIT",
+    "error": "brain loop hung: tick exceeded 30.0s"
+   }
+  },
+  {
+   "i": 5,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "wheels zero after 2.866 s (bar 1.1)",
+    "moved 17.27 cm after the fault (bar 15)"
+   ],
+   "error": null,
+   "recovery_s": 4.99,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 20518.542782253,
+    "driver_at_fault": null,
+    "cont_at": 20548.572175968,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "brain loop hung: tick exceeded 30.0s",
+    "end_error": "brain loop hung: tick exceeded 30.0s",
+    "refusals": {
+     "preempted": 1
+    },
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 121,
+     "max_dt_s": 0.0614
+    },
+    "last_refusal": {
+     "reason": "preempted",
+     "detail": "brain is driving -- one autonomous driver at a time, so ros was refused until it lapses",
+     "driver": "ros",
+     "at": 20513.663801173,
+     "seconds_ago": 46.42
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 2.866,
+    "travel_cm": 17.27,
+    "drive_after_cont": 0,
+    "truth_hole_s": 0.024,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     20502.1688,
+     20566.3088
+    ],
+    "mem_available_min_mb": 2107,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "brain loop hung: tick exceeded 30.0s",
+    "cancelled_by": null,
+    "step": 1,
+    "last_action": "WAIT",
+    "error": "brain loop hung: tick exceeded 30.0s"
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 295,
+  "temps": 295,
+  "clocks": 295,
+  "max_temp_c": 50.687,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2082,
+  "cpu_below_max_samples": 223,
+  "gpu_below_max_samples": 295
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "harness_leftovers": {
+  "before": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  },
+  "after": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  }
+ }
+}
