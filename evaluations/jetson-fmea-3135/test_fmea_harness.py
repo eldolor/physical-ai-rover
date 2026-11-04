@@ -10,6 +10,7 @@ import copy
 import importlib.util
 import json
 import sys
+import types
 from pathlib import Path
 
 import pytest
@@ -337,6 +338,24 @@ def test_the_clock_cases_and_their_bars():
     assert sys_rows.judge("F16m", {**CLOCK_GOOD, "stepped": False})["valid"] is False
     assert rows.runner("F16p").__name__ == "sys_rows"
     assert {r["plant"] for r in sys_rows.ROWS.values()} - {""} <= stack.ROBOT_PLANTS | stack.BRAIN_PLANTS
+
+
+def test_the_clock_is_armed_before_the_idle_wait(tmp_path, monkeypatch):
+    """Amendment 15: NTP goes off in `arm()`, so the step between verbs is one
+    `date -s` -- on the board `set-ntp` outlasted the 0.38-0.5 s gap."""
+    calls = []
+    monkeypatch.delenv("FMEA_CLOCK", raising=False)
+    monkeypatch.setattr(sys_rows.subprocess, "run", lambda *a, **k: types.SimpleNamespace(
+        returncode=0, stdout="yes\n", stderr=""))
+    monkeypatch.setattr(sys_rows, "sudo", lambda *argv: calls.append(argv) or types.SimpleNamespace(
+        returncode=0, stdout="", stderr=""))
+    c = sys_rows.Clock(tmp_path)
+    c.arm()
+    assert calls == [("timedatectl", "set-ntp", "false")]
+    c.step(300)
+    assert calls[1:] == [("date", "-s", "+300 seconds")]
+    src = open(sys_rows.__file__).read()
+    assert src.index("clock.arm()") < src.index("wait_forward(st, MOVE_WAIT_S)\n                    end, z0")
 
 
 # --------------------------------------------------------- 3.135.B: VE rows

@@ -133,17 +133,23 @@ class Clock:
             ["timedatectl", "show", "-p", "NTP", "--value"], capture_output=True, text=True,
             timeout=10).stdout.strip()
 
+    def arm(self) -> None:
+        """NTP off before the wait for an idle moment (amendment 15): `set-ntp`
+        takes longer than the 0.38-0.5 s between a FORWARD and the next verb."""
+        if self.fake or self.ntp_off:
+            return
+        r = sudo("timedatectl", "set-ntp", "false")
+        if r.returncode != 0:
+            raise StackError(f"set-ntp false: {r.stderr.strip()[:200]}")
+        self.ntp_off = True
+
     def step(self, s: float) -> float:
         t = time.monotonic()
         if self.fake:
             self.stepped += s
             self.offset_file.write_text(f"{self.stepped}\n")
             return t
-        if not self.ntp_off:
-            r = sudo("timedatectl", "set-ntp", "false")
-            if r.returncode != 0:
-                raise StackError(f"set-ntp false: {r.stderr.strip()[:200]}")
-            self.ntp_off = True
+        self.arm()
         t = time.monotonic()
         r = sudo("date", "-s", f"{'+' if s >= 0 else '-'}{abs(int(s))} seconds")
         if r.returncode != 0:
@@ -310,6 +316,7 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
             ms["start_at"] = time.monotonic()
             if spec["step_s"]:
                 # Amendment 12: between verbs -- after a FORWARD, the setpoints zero for 0.1 s.
+                clock.arm()
                 for _ in range(10):
                     wait_forward(st, MOVE_WAIT_S)
                     end, z0 = time.monotonic() + 10.0, None
