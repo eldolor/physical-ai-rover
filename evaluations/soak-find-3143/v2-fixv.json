@@ -1,0 +1,36 @@
+[
+ {
+  "house": "procthor:val:0",
+  "target": "box",
+  "outcome": "exhausted",
+  "step": 48,
+  "ticks": 244,
+  "arrivals": [
+   [
+    "local",
+    false,
+    0.0
+   ]
+  ],
+  "local": {
+   "no": 1
+  }
+ },
+ {
+  "house": "procthor:val:2",
+  "target": "basketball",
+  "outcome": "found",
+  "step": 29,
+  "ticks": 157,
+  "arrivals": [
+   [
+    "local",
+    true,
+    1.0
+   ]
+  ],
+  "local": {
+   "yes": 1
+  }
+ }
+]
