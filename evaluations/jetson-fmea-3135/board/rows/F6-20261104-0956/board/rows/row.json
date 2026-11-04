@@ -1,0 +1,18 @@
+{
+ "row": "F6",
+ "plant": null,
+ "house": "scaled_house",
+ "state": "FAILED",
+ "runs_wanted": 5,
+ "runs_scored": 5,
+ "runs_total": 5,
+ "runs_failed": 5,
+ "not_scored": [],
+ "reasons": [
+  "moved 23.75 cm after the fault (bar 15)",
+  "moved 24.09 cm after the fault (bar 15)",
+  "moved 24.41 cm after the fault (bar 15)",
+  "moved 24.71 cm after the fault (bar 15)",
+  "moved 24.76 cm after the fault (bar 15)"
+ ]
+}

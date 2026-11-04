@@ -1,0 +1,53 @@
+{
+ "row": "F15",
+ "title": "Disk full on the recordings volume",
+ "reading": "a failing write was seen (the brain's log names it); the mission ends with an outcome; at most one failing-write line a minute of mission (plus one); 0 late wheel ticks over the mission; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T13:26:26-0600",
+ "clock_restore": {},
+ "full_removed": {
+  "umount_rc": 0,
+  "still_mounted": false
+ },
+ "measures": {
+  "outcome": "found",
+  "stepped": false,
+  "full": {
+   "kind": "tmpfs",
+   "dir": "/home/picar/bench-3135/fmea-full-1294388",
+   "free_bytes": 0
+  },
+  "start_at": 38093.565090311,
+  "end_at": 38132.929156535,
+  "choices_picked": 2,
+  "mission_s": 39.4,
+  "status": {
+   "outcome": "found",
+   "end_state": "found",
+   "end_reason": "Hallway, kitchen, living room searched. Found.",
+   "error": null,
+   "step": 3
+  },
+  "choice_fail_lines": 1,
+  "late_ticks": 0,
+  "write_fail_lines": 3,
+  "write_fail_by_writer": {
+   "choices": 1,
+   "inventory": 1,
+   "intervention": 1
+  },
+  "truth_hole_s": 0.025,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "mem_available_min_mb": 2043,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-04T13:27:24-0600"
+}

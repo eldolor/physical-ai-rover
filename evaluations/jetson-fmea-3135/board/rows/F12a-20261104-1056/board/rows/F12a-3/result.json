@@ -1,0 +1,56 @@
+{
+ "row": "F12a",
+ "title": "Cloud hangs (tiered)",
+ "reading": "never two paid calls open at once (open_paid <= 1); the mission ends arrived_unconfirmed, its end <= 30 s after the last paid call was sent (the arrival parks); 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T11:02:29-0600",
+ "measures": {
+  "outcome": "blocked",
+  "start_at": 29450.928131579,
+  "end_at": 29603.163069929,
+  "timed_out": false,
+  "mission_s": 152.2,
+  "status": {
+   "outcome": "blocked",
+   "end_state": null,
+   "end_reason": "FORWARD refused 5 times in a row by the safety layer, 3 times over -- the way ahead is obstructed. Going around it is route planning (nav2, PLAN-ros-alignment.md R6)",
+   "error": null,
+   "step": 95,
+   "arrival_verdicts": [],
+   "cloud": {
+    "state": "unreachable",
+    "since": 1793811758.9003513,
+    "checked_at": 1793811903.5558088,
+    "age_s": 4.5022120629982965,
+    "probes": 9,
+    "probe_s": 15.0
+   },
+   "late_confirmation": null
+  },
+  "wheel_loop": {
+   "late": 0,
+   "moving": 0,
+   "max_dt_s": 0.0
+  },
+  "paid_calls": 5,
+  "max_open_paid": 1,
+  "park_s": 3.8,
+  "travel_mission_cm": 376.78,
+  "drive_after_end": 0,
+  "truth_hole_s": 0.025,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "mem_available_min_mb": 2387,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "the mission ended blocked, not arrived_unconfirmed"
+  ]
+ },
+ "ended": "2026-11-04T11:05:19-0600"
+}

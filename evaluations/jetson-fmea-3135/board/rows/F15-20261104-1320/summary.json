@@ -1,0 +1,264 @@
+{
+ "sha": "affb16fdd3d314c6e3a924a1de1876afc53e471e",
+ "cmd_exit": 0,
+ "cmd_s": 384.3,
+ "verdict": {
+  "row": "F15",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "met",
+  "runs_wanted": 5,
+  "runs_scored": 5,
+  "runs_total": 5,
+  "runs_failed": 0,
+  "not_scored": [],
+  "reasons": []
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "found",
+    "stepped": false,
+    "full": {
+     "kind": "tmpfs",
+     "dir": "/home/picar/bench-3135/fmea-full-1294388",
+     "free_bytes": 0
+    },
+    "start_at": 37777.01289295,
+    "end_at": 37839.560650169,
+    "choices_picked": 4,
+    "mission_s": 62.5,
+    "choice_fail_lines": 1,
+    "late_ticks": 0,
+    "write_fail_lines": 3,
+    "write_fail_by_writer": {
+     "choices": 1,
+     "inventory": 1,
+     "intervention": 1
+    },
+    "truth_hole_s": 0.026,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2066,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "found",
+    "end_state": "found",
+    "end_reason": "Hallway, kitchen, living room searched. Found.",
+    "error": null,
+    "step": 6
+   }
+  },
+  {
+   "i": 2,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "found",
+    "stepped": false,
+    "full": {
+     "kind": "tmpfs",
+     "dir": "/home/picar/bench-3135/fmea-full-1294388",
+     "free_bytes": 0
+    },
+    "start_at": 37859.07207238,
+    "end_at": 37958.925870476,
+    "choices_picked": 6,
+    "mission_s": 99.9,
+    "choice_fail_lines": 1,
+    "late_ticks": 0,
+    "write_fail_lines": 3,
+    "write_fail_by_writer": {
+     "choices": 1,
+     "inventory": 1,
+     "intervention": 1
+    },
+    "truth_hole_s": 0.027,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2058,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "found",
+    "end_state": "found",
+    "end_reason": "Hallway, kitchen, living room searched. Found.",
+    "error": null,
+    "step": 9
+   }
+  },
+  {
+   "i": 3,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "found",
+    "stepped": false,
+    "full": {
+     "kind": "tmpfs",
+     "dir": "/home/picar/bench-3135/fmea-full-1294388",
+     "free_bytes": 0
+    },
+    "start_at": 37978.141515522,
+    "end_at": 38016.464129762,
+    "choices_picked": 2,
+    "mission_s": 38.3,
+    "choice_fail_lines": 1,
+    "late_ticks": 0,
+    "write_fail_lines": 3,
+    "write_fail_by_writer": {
+     "choices": 1,
+     "inventory": 1,
+     "intervention": 1
+    },
+    "truth_hole_s": 0.024,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2062,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "found",
+    "end_state": "found",
+    "end_reason": "Hallway, kitchen, living room searched. Found.",
+    "error": null,
+    "step": 3
+   }
+  },
+  {
+   "i": 4,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "found",
+    "stepped": false,
+    "full": {
+     "kind": "tmpfs",
+     "dir": "/home/picar/bench-3135/fmea-full-1294388",
+     "free_bytes": 0
+    },
+    "start_at": 38035.514179301,
+    "end_at": 38074.854728912,
+    "choices_picked": 2,
+    "mission_s": 39.3,
+    "choice_fail_lines": 1,
+    "late_ticks": 0,
+    "write_fail_lines": 3,
+    "write_fail_by_writer": {
+     "choices": 1,
+     "inventory": 1,
+     "intervention": 1
+    },
+    "truth_hole_s": 0.026,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2034,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "found",
+    "end_state": "found",
+    "end_reason": "Hallway, kitchen, living room searched. Found.",
+    "error": null,
+    "step": 3
+   }
+  },
+  {
+   "i": 5,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "found",
+    "stepped": false,
+    "full": {
+     "kind": "tmpfs",
+     "dir": "/home/picar/bench-3135/fmea-full-1294388",
+     "free_bytes": 0
+    },
+    "start_at": 38093.565090311,
+    "end_at": 38132.929156535,
+    "choices_picked": 2,
+    "mission_s": 39.4,
+    "choice_fail_lines": 1,
+    "late_ticks": 0,
+    "write_fail_lines": 3,
+    "write_fail_by_writer": {
+     "choices": 1,
+     "inventory": 1,
+     "intervention": 1
+    },
+    "truth_hole_s": 0.025,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2043,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "found",
+    "end_state": "found",
+    "end_reason": "Hallway, kitchen, living room searched. Found.",
+    "error": null,
+    "step": 3
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 342,
+  "temps": 342,
+  "clocks": 342,
+  "max_temp_c": 51.5,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2034,
+  "cpu_below_max_samples": 221,
+  "gpu_below_max_samples": 342
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "harness_leftovers": {
+  "before": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  },
+  "after": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  }
+ }
+}

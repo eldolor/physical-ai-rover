@@ -1,0 +1,312 @@
+{
+ "sha": "affb16fdd3d314c6e3a924a1de1876afc53e471e",
+ "cmd_exit": 0,
+ "cmd_s": 753.3,
+ "verdict": {
+  "row": "F12a",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "FAILED",
+  "runs_wanted": 5,
+  "runs_scored": 5,
+  "runs_total": 5,
+  "runs_failed": 2,
+  "not_scored": [],
+  "reasons": [
+   "the mission ended blocked, not arrived_unconfirmed"
+  ]
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "the mission ended blocked, not arrived_unconfirmed"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "blocked",
+    "start_at": 29125.946734519,
+    "end_at": 29304.374436786,
+    "timed_out": false,
+    "mission_s": 178.4,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "paid_calls": 6,
+    "max_open_paid": 1,
+    "park_s": 15.6,
+    "travel_mission_cm": 228.46,
+    "drive_after_end": 0,
+    "truth_hole_s": 0.021,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2387,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "blocked",
+    "end_state": null,
+    "end_reason": "FORWARD refused 5 times in a row by the safety layer, 3 times over -- the way ahead is obstructed. Going around it is route planning (nav2, PLAN-ros-alignment.md R6)",
+    "error": null,
+    "step": 123,
+    "arrival_verdicts": [],
+    "cloud": {
+     "state": "unreachable",
+     "since": 1793811433.9191737,
+     "checked_at": 1793811596.6231873,
+     "age_s": 12.646291836997989,
+     "probes": 10,
+     "probe_s": 15.0
+    },
+    "late_confirmation": null
+   }
+  },
+  {
+   "i": 2,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "arrived_unconfirmed",
+    "start_at": 29322.265203234,
+    "end_at": 29433.168773474,
+    "timed_out": false,
+    "mission_s": 110.9,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "paid_calls": 6,
+    "max_open_paid": 1,
+    "park_s": 8.4,
+    "travel_mission_cm": 461.15,
+    "drive_after_end": 0,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2391,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "arrived_unconfirmed",
+    "end_state": null,
+    "end_reason": "arrived (lidar 0.364 m, streak 3) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ReadTimeout: timed out",
+    "error": null,
+    "step": 84,
+    "arrival_verdicts": [],
+    "cloud": {
+     "state": "unreachable",
+     "since": 1793811630.2408392,
+     "checked_at": 1793811720.6408937,
+     "age_s": 17.422508128001937,
+     "probes": 6,
+     "probe_s": 15.0
+    },
+    "late_confirmation": {
+     "state": "waiting",
+     "probes": 0,
+     "paid_calls": 0,
+     "reason": "cloud unreachable; probing",
+     "at": 1793811737.96102
+    }
+   }
+  },
+  {
+   "i": 3,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "the mission ended blocked, not arrived_unconfirmed"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "blocked",
+    "start_at": 29450.928131579,
+    "end_at": 29603.163069929,
+    "timed_out": false,
+    "mission_s": 152.2,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "paid_calls": 5,
+    "max_open_paid": 1,
+    "park_s": 3.8,
+    "travel_mission_cm": 376.78,
+    "drive_after_end": 0,
+    "truth_hole_s": 0.025,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2387,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "blocked",
+    "end_state": null,
+    "end_reason": "FORWARD refused 5 times in a row by the safety layer, 3 times over -- the way ahead is obstructed. Going around it is route planning (nav2, PLAN-ros-alignment.md R6)",
+    "error": null,
+    "step": 95,
+    "arrival_verdicts": [],
+    "cloud": {
+     "state": "unreachable",
+     "since": 1793811758.9003513,
+     "checked_at": 1793811903.5558088,
+     "age_s": 4.5022120629982965,
+     "probes": 9,
+     "probe_s": 15.0
+    },
+    "late_confirmation": null
+   }
+  },
+  {
+   "i": 4,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "arrived_unconfirmed",
+    "start_at": 29621.082326507,
+    "end_at": 29731.950771208,
+    "timed_out": false,
+    "mission_s": 110.9,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "paid_calls": 6,
+    "max_open_paid": 1,
+    "park_s": 8.2,
+    "travel_mission_cm": 461.16,
+    "drive_after_end": 0,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2385,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "arrived_unconfirmed",
+    "end_state": null,
+    "end_reason": "arrived (lidar 0.374 m, streak 3) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ReadTimeout: timed out",
+    "error": null,
+    "step": 84,
+    "arrival_verdicts": [],
+    "cloud": {
+     "state": "unreachable",
+     "since": 1793811929.055734,
+     "checked_at": 1793812019.451274,
+     "age_s": 17.39452378400165,
+     "probes": 6,
+     "probe_s": 15.0
+    },
+    "late_confirmation": null
+   }
+  },
+  {
+   "i": 5,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "arrived_unconfirmed",
+    "start_at": 29749.958499179,
+    "end_at": 29860.915308952,
+    "timed_out": false,
+    "mission_s": 111.0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "paid_calls": 6,
+    "max_open_paid": 1,
+    "park_s": 8.7,
+    "travel_mission_cm": 458.95,
+    "drive_after_end": 0,
+    "truth_hole_s": 0.023,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2389,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "arrived_unconfirmed",
+    "end_state": null,
+    "end_reason": "arrived (lidar 0.374 m, streak 3) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ReadTimeout: timed out",
+    "error": null,
+    "step": 82,
+    "arrival_verdicts": [],
+    "cloud": {
+     "state": "unreachable",
+     "since": 1793812057.9309716,
+     "checked_at": 1793812148.331397,
+     "age_s": 17.47709775200201,
+     "probes": 6,
+     "probe_s": 15.0
+    },
+    "late_confirmation": {
+     "state": "waiting",
+     "probes": 0,
+     "paid_calls": 0,
+     "reason": "cloud unreachable; probing",
+     "at": 1793812165.4118543
+    }
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 686,
+  "temps": 686,
+  "clocks": 686,
+  "max_temp_c": 49.593,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2385,
+  "cpu_below_max_samples": 672,
+  "gpu_below_max_samples": 686
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "harness_leftovers": {
+  "before": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  },
+  "after": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  }
+ }
+}

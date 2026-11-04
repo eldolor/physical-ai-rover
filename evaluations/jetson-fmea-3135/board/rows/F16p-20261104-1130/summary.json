@@ -1,0 +1,418 @@
+{
+ "sha": "affb16fdd3d314c6e3a924a1de1876afc53e471e",
+ "cmd_exit": 0,
+ "cmd_s": 3290.1,
+ "verdict": {
+  "row": "F16p",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "incomplete",
+  "runs_wanted": 5,
+  "runs_scored": 0,
+  "runs_total": 8,
+  "runs_failed": 0,
+  "not_scored": [
+   {
+    "i": 1,
+    "error": null,
+    "reasons": [
+     "invalid: the clock was not stepped between verbs (amendment 12)"
+    ]
+   },
+   {
+    "i": 2,
+    "error": null,
+    "reasons": [
+     "invalid: the clock was not stepped between verbs (amendment 12)"
+    ]
+   },
+   {
+    "i": 3,
+    "error": null,
+    "reasons": [
+     "invalid: the clock was not stepped between verbs (amendment 12)"
+    ]
+   },
+   {
+    "i": 4,
+    "error": null,
+    "reasons": [
+     "invalid: the clock was not stepped between verbs (amendment 12)"
+    ]
+   },
+   {
+    "i": 5,
+    "error": null,
+    "reasons": [
+     "invalid: the clock was not stepped between verbs (amendment 12)"
+    ]
+   },
+   {
+    "i": 6,
+    "error": null,
+    "reasons": [
+     "invalid: the clock was not stepped between verbs (amendment 12)"
+    ]
+   },
+   {
+    "i": 7,
+    "error": null,
+    "reasons": [
+     "invalid: the clock was not stepped between verbs (amendment 12)"
+    ]
+   },
+   {
+    "i": 8,
+    "error": null,
+    "reasons": [
+     "invalid: the clock was not stepped between verbs (amendment 12)"
+    ]
+   }
+  ],
+  "reasons": []
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": false,
+   "valid": false,
+   "reasons": [
+    "invalid: the clock was not stepped between verbs (amendment 12)"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "out_of_budget",
+    "stepped": true,
+    "start_at": 31142.119490112,
+    "step_at": 31146.987713733,
+    "fault_at": 31146.987713733,
+    "watchdog_after_step": 0,
+    "refusals_after_step": [
+     "watchdog"
+    ],
+    "end_at": 31543.887528257,
+    "mission_s": 401.8,
+    "brain_503_lines": 0,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "idle_at_fault": false,
+    "mem_available_min_mb": 2376,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "out_of_budget",
+    "end_state": "out_of_budget",
+    "end_reason": "time limit of 400 s reached (401.4 s)",
+    "error": null,
+    "step": 260
+   }
+  },
+  {
+   "i": 2,
+   "pass": false,
+   "valid": false,
+   "reasons": [
+    "invalid: the clock was not stepped between verbs (amendment 12)"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "out_of_budget",
+    "stepped": true,
+    "start_at": 31553.856484248,
+    "step_at": 31558.672817873,
+    "fault_at": 31558.672817873,
+    "watchdog_after_step": 0,
+    "refusals_after_step": [
+     "watchdog"
+    ],
+    "end_at": 31954.607228283,
+    "mission_s": 400.8,
+    "brain_503_lines": 0,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "idle_at_fault": false,
+    "mem_available_min_mb": 2356,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "out_of_budget",
+    "end_state": "out_of_budget",
+    "end_reason": "time limit of 400 s reached (400.1 s)",
+    "error": null,
+    "step": 259
+   }
+  },
+  {
+   "i": 3,
+   "pass": false,
+   "valid": false,
+   "reasons": [
+    "invalid: the clock was not stepped between verbs (amendment 12)"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "out_of_budget",
+    "stepped": true,
+    "start_at": 31964.892395423,
+    "step_at": 31969.680132172,
+    "fault_at": 31969.680132172,
+    "watchdog_after_step": 0,
+    "refusals_after_step": [
+     "watchdog"
+    ],
+    "end_at": 32365.612888301,
+    "mission_s": 400.7,
+    "brain_503_lines": 0,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "idle_at_fault": false,
+    "mem_available_min_mb": 2341,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "out_of_budget",
+    "end_state": "out_of_budget",
+    "end_reason": "time limit of 400 s reached (400.7 s)",
+    "error": null,
+    "step": 259
+   }
+  },
+  {
+   "i": 4,
+   "pass": false,
+   "valid": false,
+   "reasons": [
+    "invalid: the clock was not stepped between verbs (amendment 12)"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "out_of_budget",
+    "stepped": true,
+    "start_at": 32375.453064216,
+    "step_at": 32380.198059665,
+    "fault_at": 32380.198059665,
+    "watchdog_after_step": 0,
+    "refusals_after_step": [
+     "watchdog"
+    ],
+    "end_at": 32776.128920209,
+    "mission_s": 400.7,
+    "brain_503_lines": 0,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "idle_at_fault": false,
+    "mem_available_min_mb": 2325,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "out_of_budget",
+    "end_state": "out_of_budget",
+    "end_reason": "time limit of 400 s reached (400.3 s)",
+    "error": null,
+    "step": 260
+   }
+  },
+  {
+   "i": 5,
+   "pass": false,
+   "valid": false,
+   "reasons": [
+    "invalid: the clock was not stepped between verbs (amendment 12)"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "out_of_budget",
+    "stepped": true,
+    "start_at": 32786.059765899,
+    "step_at": 32791.039000511,
+    "fault_at": 32791.039000511,
+    "watchdog_after_step": 0,
+    "refusals_after_step": [
+     "watchdog"
+    ],
+    "end_at": 33187.984894685,
+    "mission_s": 401.9,
+    "brain_503_lines": 0,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "idle_at_fault": false,
+    "mem_available_min_mb": 2319,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "out_of_budget",
+    "end_state": "out_of_budget",
+    "end_reason": "time limit of 400 s reached (401.1 s)",
+    "error": null,
+    "step": 260
+   }
+  },
+  {
+   "i": 6,
+   "pass": false,
+   "valid": false,
+   "reasons": [
+    "invalid: the clock was not stepped between verbs (amendment 12)"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "out_of_budget",
+    "stepped": true,
+    "start_at": 33198.098662921,
+    "step_at": 33202.865064941,
+    "fault_at": 33202.865064941,
+    "watchdog_after_step": 0,
+    "refusals_after_step": [
+     "watchdog"
+    ],
+    "end_at": 33599.643246597,
+    "mission_s": 401.5,
+    "brain_503_lines": 0,
+    "truth_hole_s": 0.023,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "idle_at_fault": false,
+    "mem_available_min_mb": 2313,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "out_of_budget",
+    "end_state": "out_of_budget",
+    "end_reason": "time limit of 400 s reached (401.4 s)",
+    "error": null,
+    "step": 260
+   }
+  },
+  {
+   "i": 7,
+   "pass": false,
+   "valid": false,
+   "reasons": [
+    "invalid: the clock was not stepped between verbs (amendment 12)"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "out_of_budget",
+    "stepped": true,
+    "start_at": 33609.822696867,
+    "step_at": 33614.693766204,
+    "fault_at": 33614.693766204,
+    "watchdog_after_step": 0,
+    "refusals_after_step": [
+     "watchdog"
+    ],
+    "end_at": 34010.583408387,
+    "mission_s": 400.8,
+    "brain_503_lines": 0,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "idle_at_fault": false,
+    "mem_available_min_mb": 2302,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "out_of_budget",
+    "end_state": "out_of_budget",
+    "end_reason": "time limit of 400 s reached (400.1 s)",
+    "error": null,
+    "step": 259
+   }
+  },
+  {
+   "i": 8,
+   "pass": false,
+   "valid": false,
+   "reasons": [
+    "invalid: the clock was not stepped between verbs (amendment 12)"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "out_of_budget",
+    "stepped": true,
+    "start_at": 34020.719586425,
+    "step_at": 34025.58659918,
+    "fault_at": 34025.58659918,
+    "watchdog_after_step": 0,
+    "refusals_after_step": [
+     "watchdog"
+    ],
+    "end_at": 34421.489859496,
+    "mission_s": 400.8,
+    "brain_503_lines": 0,
+    "truth_hole_s": 0.023,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "idle_at_fault": false,
+    "mem_available_min_mb": 2290,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "out_of_budget",
+    "end_state": "out_of_budget",
+    "end_reason": "time limit of 400 s reached (400.5 s)",
+    "error": null,
+    "step": 259
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 2723,
+  "temps": 2723,
+  "clocks": 2723,
+  "max_temp_c": 50.062,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2290,
+  "cpu_below_max_samples": 2691,
+  "gpu_below_max_samples": 2723
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "harness_leftovers": {
+  "before": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  },
+  "after": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  }
+ }
+}

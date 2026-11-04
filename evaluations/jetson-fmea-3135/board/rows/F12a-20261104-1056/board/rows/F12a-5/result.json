@@ -1,0 +1,60 @@
+{
+ "row": "F12a",
+ "title": "Cloud hangs (tiered)",
+ "reading": "never two paid calls open at once (open_paid <= 1); the mission ends arrived_unconfirmed, its end <= 30 s after the last paid call was sent (the arrival parks); 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T11:07:28-0600",
+ "measures": {
+  "outcome": "arrived_unconfirmed",
+  "start_at": 29749.958499179,
+  "end_at": 29860.915308952,
+  "timed_out": false,
+  "mission_s": 111.0,
+  "status": {
+   "outcome": "arrived_unconfirmed",
+   "end_state": null,
+   "end_reason": "arrived (lidar 0.374 m, streak 3) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ReadTimeout: timed out",
+   "error": null,
+   "step": 82,
+   "arrival_verdicts": [],
+   "cloud": {
+    "state": "unreachable",
+    "since": 1793812057.9309716,
+    "checked_at": 1793812148.331397,
+    "age_s": 17.47709775200201,
+    "probes": 6,
+    "probe_s": 15.0
+   },
+   "late_confirmation": {
+    "state": "waiting",
+    "probes": 0,
+    "paid_calls": 0,
+    "reason": "cloud unreachable; probing",
+    "at": 1793812165.4118543
+   }
+  },
+  "wheel_loop": {
+   "late": 0,
+   "moving": 0,
+   "max_dt_s": 0.0
+  },
+  "paid_calls": 6,
+  "max_open_paid": 1,
+  "park_s": 8.7,
+  "travel_mission_cm": 458.95,
+  "drive_after_end": 0,
+  "truth_hole_s": 0.023,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "mem_available_min_mb": 2389,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-04T11:09:37-0600"
+}

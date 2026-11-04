@@ -191,6 +191,15 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-04 | `d1d69eff` | F4 ROS container killed | 5/5 | **FAILED** | **zero 1.08-1.14 s (0.5), 8.3-9.4 cm (5)**; ROS not named, readout `watchdog` | 0 | 0 | 2,070 | 0 | 51.3 °C | a new container, then `found`, 5/5 | yes |
 | 2026-11-04 | `d1d69eff` | F6g brain killed, a nav2 goal | 5/5 | **FAILED** | **zero 2.80-3.33 s (1.1), 16.9-18.5 cm (15)** | 0 | 0 | 2,097 | 0 | 50.9 °C | 6.4-6.6 s | yes |
 | 2026-11-04 | `d1d69eff` | F7g brain hung 30 s, a nav2 goal | 5/5 | **FAILED** | **zero 2.79-3.15 s (1.1), 17.1-18.3 cm (15)**; 0 driving after SIGCONT (met) | 0 | 0 | 2,082 | 0 | 50.7 °C | 4.9-5.7 s | yes |
+| 2026-11-04 | `affb16fd` | F6 brain killed, a FORWARD | 5/5 | **FAILED** | zero 0.82-0.85 s (1.1); **23.8-24.8 cm (15)** | 0 | 0 | 2,463 | 0 | 55.9 °C | 4.4-4.8 s | yes |
+| 2026-11-04 | `affb16fd` | F11a cloud refused from the start (tiered) | 5/5 | **FAILED** | 4 `arrived_unconfirmed`, **1 `blocked`** (any other end fails); 0 paid calls | 0 | 0 | 2,415 | 0 | 51.9 °C | -- | yes |
+| 2026-11-04 | `affb16fd` | F11b cloud lost mid-mission (tiered) | 5/5 | **FAILED** | 2 `arrived_unconfirmed` (late confirmation final: `refused`), **3 `blocked`**; open paid calls max 1 | 0 | 0 | 2,376 | 0 | 49.6 °C | -- | yes |
+| 2026-11-04 | `affb16fd` | F11c cloud refused (`vision`) | 5/5 | met | `failed` in 2 s, 0.0 cm (0.5) | 0 | 0 | 2,392 | 0 | 49.6 °C | -- | yes |
+| 2026-11-04 | `affb16fd` | F12a cloud hangs (tiered) | 5/5 | **FAILED** | 3 `arrived_unconfirmed`, **2 `blocked`**; open paid calls max 1; parked 3.8-15.6 s (30) | 0 | 0 | 2,385 | 0 | 49.6 °C | -- | yes |
+| 2026-11-04 | `affb16fd` | F16c clock control (no step) | 3/3 | met | `out_of_budget` at 400.9-401.8 s (the 400 s limit) | 0 | -- | 2,392 | 0 | 51.0 °C | -- | yes |
+| 2026-11-04 | `affb16fd` | F16p clock +5 min | 0/8 | incomplete | every step landed in a pivot, not between verbs: invalid (amendment 15) | 0 | -- | 2,376 | 0 | -- | -- | yes |
+| 2026-11-04 | `affb16fd` | F16m clock -5 min | 0/8 | incomplete | as F16p: invalid (amendment 15) | 0 | -- | -- | 0 | -- | -- | yes |
+| 2026-11-04 | `affb16fd` | F15 disk full | 5/5 | met | `found` 5/5; failing-write lines 1 per writer (choices, inventory, intervention) in 38-100 s | 0 | 0 | 2,034 | 0 | 51.5 °C | -- | yes |
 
 ## Runs
 
@@ -378,6 +387,45 @@ cm, FAILED, 3.135.B's record). Wheels zero 2.0 s after the fault by the
 watchdog (no FORWARD starts on a stale scan); 0 contacts, 0 late ticks, 0 OOM,
 `MemAvailable` minimum 2,360 MB, max 50.1 °C; recovery 3.1 s; left as found.
 Records: `evaluations/jetson-fmea-3135/board/rows/F9-3144B-20261104-0710/`.
+
+### 2026-11-04, single faults (3.135.B): F6, F11, F12a, F15, F16
+
+On the board 10:27-13:27, one hold per row, released between rows (the
+queue waited behind 3.141's 30-min window), at `affb16fd`. 15 W, the twin's
+units stopped and put back. The mover was a frontier mission in
+`scaled_house` (F6, F16), the cloud stack of amendment 5 (F11, F12a), or an
+explore mission with `explore_ask` on the ROS stack (F15).
+
+* **F6, the FORWARD case, FAILED 5 of 5:**
+  * the wheels were zero 0.82-0.85 s after the kill (met);
+  * but the robot moved 23.8-24.8 cm (bar 15): the verb runs to its end,
+    and the watchdog skips a busy verb;
+  * F6 as a whole is FAILED (F6g failed too);
+  * the fix section is **3.147**.
+* **F11a, F11b and F12a FAILED:** 6 of their 15 tiered missions ended
+  `blocked` (1, 3 and 2 runs).
+  * Each wedged at one of two places, at a true gap of ~20 cm: (2.97, 1.72)
+    or (4.48, 1.66), facing east.
+  * The cloud's own guards held in every run:
+    * never two paid calls open at once;
+    * F12a parked in 3.8-15.6 s;
+    * F11b's late confirmation reached a final state;
+    * nothing was driven after the end.
+  * Whether the fault causes the wedge is unmeasured (no fault-free tiered
+    control); the fix section is **3.148**.
+* **F11c met:** a `vision` mission ended `failed` in 2 s without moving.
+* **F15 met:** every mission ended `found`, with 0 late ticks. Each of the
+  three writers logged its failing write once.
+* **F16c met** (the control): `out_of_budget` at the 400 s limit, 3/3.
+* **F16p and F16m incomplete, 0 of 8 scored each, a harness fault:**
+  * every step landed in a pivot, because `set-ntp` outlasted the
+    0.38-0.5 s gap between verbs;
+  * every run still ended `out_of_budget` at ~401 s with no watchdog stop
+    (information only);
+  * fixed by amendment 15 and re-run.
+* Every run: 0 contacts, 0 OOM, `MemAvailable` minimum 2,034 MB, max
+  55.9 °C. The board was left as found, with no harness leftovers.
+* Records: `evaluations/jetson-fmea-3135/board/rows/`.
 
 ### 2026-11-04, single faults (3.135.B): F5, F4, F6g, F7g
 

@@ -1,0 +1,49 @@
+{
+ "row": "F16m",
+ "title": "Wall clock jumps -5 min",
+ "reading": "as F16p, the step -5 min",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T12:46:24-0600",
+ "clock_restore": {
+  "step_back_rc": 0,
+  "ntp_on_rc": 0,
+  "ntp_synchronized": "yes"
+ },
+ "measures": {
+  "outcome": "out_of_budget",
+  "stepped": true,
+  "start_at": 35684.923261512,
+  "step_at": 35689.80057001,
+  "fault_at": 35689.80057001,
+  "watchdog_after_step": 0,
+  "refusals_after_step": [
+   "watchdog"
+  ],
+  "end_at": 36086.803477259,
+  "mission_s": 401.9,
+  "status": {
+   "outcome": "out_of_budget",
+   "end_state": "out_of_budget",
+   "end_reason": "time limit of 400 s reached (401.3 s)",
+   "error": null,
+   "step": 260
+  },
+  "brain_503_lines": 0,
+  "truth_hole_s": 0.023,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "idle_at_fault": false,
+  "mem_available_min_mb": 2258,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": false,
+  "reasons": [
+   "invalid: the clock was not stepped between verbs (amendment 12)"
+  ]
+ },
+ "ended": "2026-11-04T12:53:15-0600"
+}

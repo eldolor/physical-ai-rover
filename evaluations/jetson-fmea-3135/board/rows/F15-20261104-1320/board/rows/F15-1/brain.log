@@ -1,0 +1,4 @@
+1793820066.138 WARNING identity vision-picar brain server starting -- git=affb16fdd executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793820083.711 WARNING mission_runner goal choice not recorded: [Errno 28] No space left on device
+1793820143.546 WARNING mission_runner mission end not recorded in the intervention log: [Errno 28] No space left on device
+1793820143.547 WARNING control.inventory_store inventory 20261104T192121.897697Z-red backpack not saved: local: [Errno 28] No space left on device

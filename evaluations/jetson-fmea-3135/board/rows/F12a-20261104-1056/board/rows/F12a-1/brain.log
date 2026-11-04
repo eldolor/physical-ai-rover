@@ -1,0 +1,18 @@
+1793811430.368 WARNING identity vision-picar brain server starting -- git=affb16fdd executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793811451.736 WARNING tiered async cloud call failed: ReadTimeout: timed out
+1793811477.913 WARNING tiered async cloud call failed: ReadTimeout: timed out
+1793811503.528 WARNING tiered async cloud call failed: ReadTimeout: timed out
+1793811503.905 WARNING safety Blocked FORWARD: distance=18.5cm < min=20cm (scan_footprint)
+1793811504.295 WARNING safety Blocked FORWARD: distance=18.5cm < min=20cm (scan_footprint)
+1793811504.707 WARNING safety Blocked FORWARD: distance=18.5cm < min=20cm (scan_footprint)
+1793811505.104 WARNING safety Blocked FORWARD: distance=18.5cm < min=20cm (scan_footprint)
+1793811505.522 WARNING safety Blocked FORWARD: distance=18.5cm < min=20cm (scan_footprint)
+1793811536.879 WARNING tiered async cloud call failed: ReadTimeout: timed out
+1793811555.955 WARNING safety Blocked FORWARD: distance=19.7cm < min=20cm (scan_footprint)
+1793811556.367 WARNING safety Blocked FORWARD: distance=19.7cm < min=20cm (scan_footprint)
+1793811556.770 WARNING safety Blocked FORWARD: distance=19.7cm < min=20cm (scan_footprint)
+1793811588.184 WARNING tiered async cloud call failed: ReadTimeout: timed out
+1793811607.898 WARNING safety Blocked FORWARD: distance=19.9cm < min=20cm (scan_footprint)
+1793811608.300 WARNING safety Blocked FORWARD: distance=19.9cm < min=20cm (scan_footprint)
+1793811608.708 WARNING safety Blocked FORWARD: distance=19.9cm < min=20cm (scan_footprint)
+1793811609.137 WARNING safety Blocked FORWARD: distance=19.9cm < min=20cm (scan_footprint)
