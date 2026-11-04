@@ -72,10 +72,18 @@ def _write(rec: dict) -> None:
     _rows.append({**rec, "pid": _PID})
 
 
+_drain_lock = threading.Lock()       # the sampler's and the exit drain's; never the loop's
+
+
 def _drain() -> None:
     """The sampler's: every queued row out to the file, appended (a
     restarted robot server keeps its predecessor's rows; a caller clears a
     reused file, as steady.sh does)."""
+    with _drain_lock:
+        _drain_locked()
+
+
+def _drain_locked() -> None:
     global _fh
     while True:
         try:
@@ -181,7 +189,8 @@ def _sample(base, base_t, in_stall, start_cpu, rec):
     if not in_stall and age > STALL_MS:
         in_stall, start_cpu = True, base
         rec = {"k": "stall", "t": time.time(), "age_ms": round(age, 1),
-               "baseline_age_ms": round((now - base_t) * 1000), "threads": _stacks()}
+               "baseline_age_ms": round((now - base_t) * 1000),
+               "drain_ms": round(drain_ms, 1), "threads": _stacks()}
     elif in_stall and age <= STALL_MS:
         cpu = {}
         for tid, (comm, ticks) in _thread_cpu().items():
