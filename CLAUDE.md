@@ -847,6 +847,16 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   (no live vet over 5 ms) FAILED: 103 curving vets over it, max 11 ms,
   outside the turn guard; 0 late ticks. Criterion 4 (0 late ticks, 30 min,
   full stack) waits on 3.136.B run 2. `evaluations/wheel-loop-3141/`.
+* **nav2's goal id travels with the goal (3.136.G), merged 2026-11-04**
+  (amendment 5, the user's option (b)). The bridge makes each goal's UUID
+  (`send_goal_async(goal_uuid=)`) and returns it as `goal_id` in `POST
+  /goal`'s reply and goal record; explore keeps each accepted send as
+  `[n, goal_id, kind]`, the last 64 in `status.explore.sent`; 3.136's harness
+  joins nav2's status ids to them, so an ABORTED frontier goal no longer
+  invalidates a window (any other abort, or an unrecorded goal, still does).
+  Live: 3 of 3 ids matched, kinds equal explore's own. Needs
+  `vision-picar-ros:latest` rebuilt from `dev` (an older bridge returns no
+  id: every abort counts, as before).
 * **Live checks on the Rover (3.140): the harness (A) merged 2026-11-02;
   B-J wait on the Rover.** `evaluations/rover-live-3140/run.py` runs one row
   at a time on 3.136's `boardrun` (`bench-3140`): rows read from the section
