@@ -16,15 +16,16 @@ One JSON line per event (epoch seconds):
 |--------|----------------------------------------------------------------------|
 | gap    | the 5 ms probe on the loop woke `gap_ms` late (over GAP_MS)          |
 | tick   | a 50 ms probe shaped as `wheel_loop()` (sleep, then dt): dt > TICK_MS |
-| stall  | the sampler thread saw the loop's heartbeat older than STALL_MS: every thread's stack at first sight, and each thread's CPU (ms, /proc) from first sight to the stall's end (its first STALL_MS not counted) |
+| stall  | the sampler thread saw the loop's heartbeat older than STALL_MS: every thread's stack at first sight, the drain's time just before it, the longest age seen and its end (no per-thread CPU: amendment 4) |
 | gc     | one collection over GC_MS: generation, duration, collected           |
 | vet    | `SafetyController.vet_wheel_velocity` over VET_MS                     |
 | req    | an HTTP request over REQ_MS, end to end                              |
 | heap   | every HEAP_S: gc counts, tracked objects per generation (only with TRACE_3141_HEAP_OBJECTS=1), frozen, RSS, the event loop thread's CPU (from the process's start: only diffs mean anything), rows dropped from the queue, the tracer's own threads' CPU and its probes' work on the loop (ms, cumulative from the tracer's start: diff two rows for a window) |
 
 The sampler needs the GIL to look, so a C call holding it (a `json.dumps`)
-is seen only after it returns: the per-thread CPU over the stall is what
-says who ran. Ubuntu's own sitecustomize is chained, as 3.136's shim does.
+is seen only after it returns: what names a stall is the `gc` and `vet` rows
+that overlap it, and its stacks at first sight. Ubuntu's own sitecustomize
+is chained, as 3.136's shim does.
 """
 
 import asyncio
@@ -98,25 +99,6 @@ def _drain_locked() -> None:
             _rows_dropped[0] += 1          # lost, and counted as lost
 
 
-def _thread_cpu() -> dict:
-    """native tid -> (comm, cpu ticks) for every thread of this process."""
-    out = {}
-    try:
-        tids = os.listdir("/proc/self/task")
-    except OSError:
-        return out
-    for tid in tids:
-        try:
-            with open(f"/proc/self/task/{tid}/stat") as f:
-                s = f.read()
-        except OSError:
-            continue
-        comm = s[s.index("(") + 1:s.rindex(")")]
-        fields = s[s.rindex(")") + 2:].split()
-        out[int(tid)] = (comm, int(fields[11]) + int(fields[12]))
-    return out
-
-
 def _stacks() -> list:
     names = {t.ident: (t.name, t.native_id) for t in threading.enumerate()}
     me = threading.get_ident()
@@ -157,49 +139,44 @@ def _own_cpu_ms() -> int:
 
 
 def _sampler() -> None:
-    """Each SAMPLE_S: drain the queue, then only the heartbeat's age. Thread
-    CPU (/proc, every thread) is read only once a stall is seen and at its
-    end, so a stall's first STALL_MS of CPU is not counted: 3.141.D's D1 on
-    the board (2026-11-04) found a once-a-second full read cost a tracer
-    thread ~20 ms of CPU and delayed the loop itself."""
+    """Each SAMPLE_S: drain the queue, then only the heartbeat's age; a stall
+    row holds every thread's stack at first sight and the drain's time just
+    before it. No other thread's CPU is read: 3.141.D's D1 on the board
+    (2026-11-04) found a full /proc read cost ~20 ms -- periodic, it delayed
+    the loop; at a stall, it lengthened the stall and measured the wrong
+    window (amendment 4)."""
     _own.append(threading.get_native_id())
-    in_stall, start_cpu, rec = False, None, None
+    in_stall, rec = False, None
     while True:
         time.sleep(SAMPLE_S)
         try:
-            in_stall, start_cpu, rec = _sample(in_stall, start_cpu, rec)
-        except Exception:  # noqa: BLE001 -- the sampler must outlive one odd /proc read
+            in_stall, rec = _sample(in_stall, rec)
+        except Exception:  # noqa: BLE001 -- the sampler must outlive one odd read
             _sampler_errors[0] += 1
-            if rec is not None:
+            if in_stall:
                 _rows_dropped[0] += 1          # that stall's row is lost
             in_stall, rec = False, None
 
 
-def _sample(in_stall, start_cpu, rec):
+def _sample(in_stall, rec):
     """One look: drain the queue, then the heartbeat's age."""
     d0 = time.monotonic()
     _drain()
     now = time.monotonic()
-    drain_ms = (now - d0) * 1000           # recorded: an encode holds the GIL, so a
-    _sampler_ticks[0] += 1                 # stall right after it may be the tracer's
+    drain_ms = (now - d0) * 1000           # an encode holds the GIL: a stall right
+    _sampler_ticks[0] += 1                 # after a long drain may be the tracer's
     age = (now - _hb[0]) * 1000
     if not in_stall and age > STALL_MS:
         rec = {"k": "stall", "t": time.time(), "age_ms": round(age, 1),
                "drain_ms": round(drain_ms, 1), "threads": _stacks()}
-        in_stall, start_cpu = True, _thread_cpu()        # after the stacks: they come first
-    elif in_stall and age <= STALL_MS:
-        cpu = {}
-        for tid, (comm, ticks) in _thread_cpu().items():
-            d = ticks - start_cpu.get(tid, (comm, 0))[1]
-            if d:
-                cpu[f"{comm}/{tid}"] = round(d * 1000 / CLK)
-        rec["cpu_ms"] = cpu
+        return True, rec
+    if in_stall and age <= STALL_MS:
         rec["t_end"] = time.time()
         _write(rec)
-        in_stall = False
-    elif in_stall:
+        return False, None
+    if in_stall:
         rec["age_ms"] = round(max(rec["age_ms"], age), 1)
-    return in_stall, start_cpu, rec
+    return in_stall, rec
 
 
 def _heap() -> None:
