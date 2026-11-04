@@ -298,7 +298,7 @@ class Bridge(Node):
         self._nav2_ask = None            # the ask in flight, under self.lock
         self._nav2_ask_since = 0.0       # monotonic
         self.create_timer(NAV2_ASK_S, self._poll_nav2)
-        self.goal = None               # {"x_m","y_m","yaw_rad","state","since"}
+        self.goal = None               # {"x_m","y_m","yaw_rad","state","since","goal_id"}
         self.plan = []
         self.create_subscription(Path, "/plan", self._on_plan, 10)
         self.create_subscription(Twist, "/cmd_vel_mux", self._on_mux, 10)

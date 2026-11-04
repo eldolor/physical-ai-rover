@@ -78,13 +78,16 @@ def missions(flag: str, out: str, targets: list) -> int:
                     time.sleep(1)
                     continue
                 ex = s.get("explore") or {}
-                n = ex.get("goals_sent") or 0
-                if n > seen:
-                    # The newest n - seen of `sent` (it keeps the last 64).
-                    new = (ex.get("sent") or [])[-(n - seen):]
-                    seen = n
+                # Each entry is [n, goal_id, kind]: take those numbered past
+                # the last one written; a jump past the next number is sends
+                # the 64-entry window lost before a poll saw them.
+                new = [e for e in ex.get("sent") or [] if e[0] > seen]
+                if new:
+                    missing = new[0][0] - seen - 1
+                    seen = new[-1][0]
                     sends.write(json.dumps({"t": round(time.time(), 3), "mission": i,
-                                            "goals_sent": n, "sent": new}) + "\n")
+                                            "sent": [e[1:] for e in new],
+                                            "missing": missing}) + "\n")
                 if not s.get("running") and s.get("outcome") not in (None, "idle", "running"):
                     break
                 if stopped and time.time() - t0 > 3600:

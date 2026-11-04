@@ -6,7 +6,7 @@ each accepted send's id with its kind, published as `status.explore.sent`."""
 
 import uuid
 
-from tests.test_explore import FakeNav, _mission
+from tests.test_explore import FakeNav
 from tests.test_review_376h1 import _bridge, bridge_mod  # noqa: F401  (the fixture)
 
 
@@ -36,30 +36,40 @@ class IdNav(FakeNav):
         return reply
 
 
-def _run(nav_cls, **kw):
-    import tests.test_explore as te
-    old = te.FakeNav
-    te.FakeNav = nav_cls
-    try:
-        return _mission(**kw)
-    finally:
-        te.FakeNav = old
+def _run(nav_cls, refuse_first=0, max_steps=80):
+    """tests.test_explore's `_mission`, with the navigator class given."""
+    from control.mission_runner import MissionRunner
+    from sim.maps import build_world
+    from sim.mock_robot import MockRobot
+    from sim.mock_world import MockWorld
+    grid = build_world("scaled_house")
+    robot = MockRobot(grid, render=False)
+    nav = nav_cls(robot, refuse_first=refuse_first)
+    runner = MissionRunner(robot, target_object="red backpack", policy="explore", navigator=nav,
+                           world=MockWorld(grid), max_steps=max_steps,
+                           clock=lambda: grid.sim_time, idle=robot.pass_time)
+    runner.start()
+    ticks = 0
+    while runner.tick() and ticks < 5000:
+        ticks += 1
+    return runner, nav, grid
 
 
 def test_explore_publishes_each_accepted_send_with_its_kind_and_id():
     runner, nav, grid = _run(IdNav, refuse_first=2)
     s = runner.status()["explore"]
     sent = s["sent"]
-    assert [i for i, _ in sent] == nav.ids[-64:]           # in order; refusals record nothing
+    assert [i for _, i, _ in sent] == nav.ids[-64:]        # in order; refusals record nothing
     assert len(sent) == min(64, s["goals_sent"])
+    assert [n for n, _, _ in sent] == list(range(s["goals_sent"] - len(sent) + 1, s["goals_sent"] + 1))
     kinds = [e["kind"] for e in runner.agent.events if e["event"] == "goal_sent"]
-    assert [k for _, k in sent] == kinds[-64:]
+    assert [k for _, _, k in sent] == kinds[-64:]
 
 
 def test_a_bridge_with_no_id_records_null():
-    runner, nav, grid = _mission()
+    runner, nav, grid = _run(FakeNav)
     sent = runner.status()["explore"]["sent"]
-    assert sent and all(i is None for i, _ in sent)
+    assert sent and all(i is None for _, i, _ in sent)
 
 
 def test_the_record_is_bounded():

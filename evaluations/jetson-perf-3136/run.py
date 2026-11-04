@@ -290,7 +290,8 @@ def score_steady(out: Path, rec: dict) -> dict:
     # Amendment 5 (3.136.G): with explore's record of its sends' goal ids;
     # without one (a run from before), amendment 2's rule: every abort counts.
     sends = scorers.jsonl(b / "explore_sends.jsonl")
-    amended = bool(sends)
+    # Rows with no id at all are an older bridge's: no join happened.
+    amended = any(e[0] for r in sends for e in r.get("sent") or [])
     nav = scorers.nav_goals_amended(pace, sends, ws, we) if amended else scorers.nav_goals(pace, ws, we)
     tc = validity.telemetry_counts(tele, ws, we)
     o0, o1 = _f(b / "oom_start"), _f(b / "oom_end")
@@ -380,7 +381,7 @@ def score_steady(out: Path, rec: dict) -> dict:
             "uptime_at_start_s": (rec.get("as_found") or {}).get("uptime_s"),
             "wheel": wheel, "nav2_goals": nav,
             "nav2_rule": ("amendment 5, by goal id" if amended
-                          else "amendment 2 (no explore_sends.jsonl rows: every abort counts)"), "telemetry": tc, "dmesg_oom_kills": dmesg_ooms,
+                          else "amendment 2 (no goal ids recorded: every abort counts)"), "telemetry": tc, "dmesg_oom_kills": dmesg_ooms,
             "power_mode": pm, "validity": j,
             "desktop_load_max": max((x[1] for x in rec.get("desktop_load") or []), default=None),
             "missions": {"n": len(missions), "refused_starts": refused,

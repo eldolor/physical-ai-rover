@@ -66,7 +66,7 @@ def test_goals_go_once_nav2_answers_active(bridge_mod):
     m.answer(True)
     assert b.health()[1]["nav2"]["active"] is True
     code, body = b.send_goal({"x_m": 1.0, "y_m": 0.0})
-    assert code == 200 and body == {"state": "pending"}
+    assert code == 200 and body["state"] == "pending" and len(body["goal_id"]) == 32   # 3.136.G
     assert len(b.nav.futures) == 1
 
 

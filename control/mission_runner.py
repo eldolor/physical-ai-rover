@@ -1571,7 +1571,9 @@ class MissionRunner:
                                    if self._cooldown_until is not None else None),
                 "explore": ({"goals_sent": self.agent.goals_sent,
                              # 3.136.G: what each nav2 goal was, by its id.
-                             "sent": [list(x) for x in self.agent.sent],
+                             # Copied in one call: the mission thread appends
+                             # outside this lock.
+                             "sent": [list(x) for x in list(self.agent.sent)],
                              "goals_failed": self.agent.goals_failed,
                              "last_event": self.agent.last_event,
                              "camera_seen_m2": round(len(self.agent.seen)

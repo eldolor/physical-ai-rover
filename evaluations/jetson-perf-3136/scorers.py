@@ -289,7 +289,8 @@ def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None) -> dic
             if st in TERMINAL and gid not in ended:
                 ended[gid] = (r["t"], TERMINAL[st])
     out = {"n": 0, "succeeded": 0, "canceled": 0, "aborted": 0,
-           "aborted_frontier": 0, "aborted_other": 0, "unmatched": 0}
+           "aborted_frontier": 0, "aborted_other": 0, "unmatched": 0,
+           "sends_missing": sum(r.get("missing") or 0 for r in sent_rows)}
     for gid, (t, st) in ended.items():
         if (t0 is not None and t < t0) or (t1 is not None and t > t1):
             continue

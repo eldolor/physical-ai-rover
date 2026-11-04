@@ -186,7 +186,8 @@ def test_active_ends_the_hold_and_goals_go(bridge_mod):
     b = _bridge(bridge_mod, m)
     b._poll_nav2()
     m.answer(True)
-    assert b.send_goal({"x_m": 1.0, "y_m": 0.0}) == (200, {"state": "pending"})
+    code, body = b.send_goal({"x_m": 1.0, "y_m": 0.0})
+    assert code == 200 and body["state"] == "pending" and len(body["goal_id"]) == 32   # 3.136.G
 
 
 # ---------- (d) SLAM ----------
