@@ -1,0 +1,42 @@
+vision-picar brain server starting -- git=00271a5c executable=/home/picar/bench-3143/.venv/bin/python config=(default)
+{"house": "home_first_floor", "target": "red backpack", "outcome": "found", "steps": 44, "goals": 44, "closest_m": 0.5, "arrivals": [["sim", true, null]]}
+{"house": "home_first_floor", "target": "sofa", "outcome": "found", "steps": 5, "goals": 5, "closest_m": 4.24, "arrivals": [["sim", true, 0.0015170786178054486]]}
+{"house": "home_first_floor", "target": "chair", "outcome": "found", "steps": 1, "goals": 1, "closest_m": 2.4, "arrivals": [["sim", true, 0.0]]}
+{"house": "home_first_floor", "target": "dining table", "outcome": "found", "steps": 2, "goals": 2, "closest_m": 0.42, "arrivals": [["local", true, 0.698557460967744]]}
+{"house": "home_first_floor", "target": "toilet", "outcome": "found", "steps": 12, "goals": 12, "closest_m": 0.5, "arrivals": [["sim", true, 0.0029712063249403473]]}
+{"house": "home_first_floor", "target": "desk", "outcome": "found", "steps": 11, "goals": 11, "closest_m": 0.55, "arrivals": [["sim", true, 0.0015117103847980763]]}
+{"house": "home_first_floor", "target": "coffee table", "outcome": "found", "steps": 21, "goals": 21, "closest_m": 0.5, "arrivals": [["local", true, 0.9359093571299777]]}
+{"house": "home_first_floor", "target": "armchair", "outcome": "found", "steps": 1, "goals": 1, "closest_m": 0.42, "arrivals": [["sim", true, 0.0013872261014006518]]}
+{"house": "complex_house", "target": "red backpack", "outcome": "found", "steps": 43, "goals": 43, "closest_m": 0.54, "arrivals": [["local", true, 0.8128786763587852]]}
+{"house": "complex_house", "target": "shoes", "outcome": "found", "steps": 1, "goals": 1, "closest_m": 0.5, "arrivals": [["sim", true, 0.0]]}
+{"house": "complex_house", "target": "slippers", "outcome": "found", "steps": 29, "goals": 29, "closest_m": 0.54, "arrivals": [["sim", true, 0.0]]}
+{"house": "complex_house", "target": "toy car", "outcome": "found", "steps": 5, "goals": 5, "closest_m": 0.54, "arrivals": [["local", true, 0.9243174825042997]]}
+{"house": "complex_house", "target": "water bottle", "outcome": "found", "steps": 7, "goals": 7, "closest_m": 0.55, "arrivals": [["sim", true, 0.0012151524657007015]]}
+{"house": "complex_house", "target": "pet bowl", "outcome": "found", "steps": 7, "goals": 7, "closest_m": 0.5, "arrivals": [["sim", true, 0.0]]}
+{"house": "complex_house", "target": "laptop bag", "outcome": "found", "steps": 14, "goals": 14, "closest_m": 0.55, "arrivals": [["sim", true, 0.001900465740743242]]}
+{"house": "complex_house", "target": "laundry basket", "outcome": "found", "steps": 85, "goals": 85, "closest_m": 0.5, "arrivals": [["sim", true, 0.002365129124238767]]}
+{"house": "procthor:val:0", "target": "red backpack", "outcome": "found", "steps": 3, "goals": 3, "closest_m": 0.54, "arrivals": [["local", true, 0.8523206931131055]]}
+{"house": "procthor:val:0", "target": "plunger", "outcome": "found", "steps": 26, "goals": 26, "closest_m": 0.42, "arrivals": [["local", true, 0.547238836195183]]}
+{"house": "procthor:val:0", "target": "dog bed", "outcome": "found", "steps": 6, "goals": 6, "closest_m": 0.55, "arrivals": [["local", true, 0.737644536289085]]}
+{"house": "procthor:val:0", "target": "box", "outcome": "found", "steps": 23, "goals": 23, "closest_m": 0.5, "arrivals": [["sim", true, 0.0017691459144880994]]}
+{"house": "procthor:val:0", "target": "house plant", "outcome": "found", "steps": 2, "goals": 2, "closest_m": 0.55, "arrivals": [["sim", true, 0.0]]}
+{"house": "procthor:val:0", "target": "garbage can", "outcome": "found", "steps": 3, "goals": 3, "closest_m": 0.51, "arrivals": [["sim", true, 0.0016438354151697056]]}
+{"house": "procthor:val:0", "target": "sofa", "outcome": "found", "steps": 5, "goals": 5, "closest_m": 0.5, "arrivals": [["local", true, 0.8536212610988152]]}
+{"house": "procthor:val:0", "target": "chair", "outcome": "found", "steps": 7, "goals": 7, "closest_m": 0.3, "arrivals": [["sim", true, 0.0014618165094538137]]}
+{"house": "procthor:val:2", "target": "red backpack", "outcome": "found", "steps": 30, "goals": 30, "closest_m": 0.42, "arrivals": [["local", true, 0.6058566534014449]]}
+{"house": "procthor:val:2", "target": "basketball", "outcome": "found", "steps": 26, "goals": 26, "closest_m": 0.5, "arrivals": [["sim", true, 0.003405265760562945]]}
+{"house": "procthor:val:2", "target": "plunger", "outcome": "found", "steps": 23, "goals": 23, "closest_m": 0.54, "arrivals": [["local", true, 0.8964370854042316]]}
+{"house": "procthor:val:2", "target": "laundry hamper", "outcome": "found", "steps": 28, "goals": 28, "closest_m": 0.54, "arrivals": [["local", true, 0.500384513430931]]}
+{"house": "procthor:val:2", "target": "dog bed", "outcome": "found", "steps": 1, "goals": 1, "closest_m": 0.54, "arrivals": [["local", true, 0.6094375534748769]]}
+{"house": "procthor:val:2", "target": "house plant", "outcome": "found", "steps": 8, "goals": 8, "closest_m": 0.5, "arrivals": [["sim", true, 0.0005365547178763626]]}
+{"house": "procthor:val:2", "target": "garbage can", "outcome": "found", "steps": 1, "goals": 1, "closest_m": 0.5, "arrivals": [["sim", true, 0.00043865335403112706]]}
+{"house": "procthor:val:2", "target": "sofa", "outcome": "found", "steps": 2, "goals": 2, "closest_m": 0.5, "arrivals": [["local", true, 0.8479151119024656]]}
+{"house": "procthor:val:3", "target": "red backpack", "outcome": "found", "steps": 22, "goals": 22, "closest_m": 0.5, "arrivals": [["local", true, 0.7962124456425888]]}
+{"house": "procthor:val:3", "target": "plunger", "outcome": "found", "steps": 13, "goals": 13, "closest_m": 0.54, "arrivals": [["local", true, 0.7614940322263178]]}
+{"house": "procthor:val:3", "target": "garbage bag", "outcome": "found", "steps": 9, "goals": 9, "closest_m": 0.5, "arrivals": [["sim", true, 0.0029516527082433033]]}
+{"house": "procthor:val:3", "target": "box", "outcome": "exhausted", "steps": 44, "goals": 43, "closest_m": 1.34, "arrivals": []}
+{"house": "procthor:val:3", "target": "garbage can", "outcome": "found", "steps": 10, "goals": 10, "closest_m": 0.55, "arrivals": [["sim", true, 0.0]]}
+{"house": "procthor:val:3", "target": "sofa", "outcome": "found", "steps": 9, "goals": 9, "closest_m": 0.5, "arrivals": [["local", true, 0.8396140409443944]]}
+{"house": "procthor:val:3", "target": "chair", "outcome": "found", "steps": 2, "goals": 2, "closest_m": 0.55, "arrivals": [["sim", true, null]]}
+{"house": "procthor:val:3", "target": "dining table", "outcome": "found", "steps": 3, "goals": 3, "closest_m": 0.55, "arrivals": [["sim", true, 0.002828008377095778]]}
+{"arm": "A3", "pairs": 40, "found": 39, "misses": [["procthor:val:3", "box", "exhausted"]], "wall_s": 489}

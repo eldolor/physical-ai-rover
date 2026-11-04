@@ -177,6 +177,22 @@ No runs yet. The 3.135.A smoke (2026-11-01, F13 only, not scored) is in
 
 ## Runs
 
+### 2026-11-04, 3.143's A3: fix V with VE, in process (3.143 bar V1, not a recurring test)
+
+`evaluations/soak-find-3143/board.py a3`, rev `00271a5c` (dev with
+`139f97a3` and `3f0c3adc`), 07:16-07:24 under `board_lock` through 3.136's
+`board_run` and lease. 15 W, the desktop and the twin's units stopped, VE
+resident as found (MainPID 838, 0 restarts, before and after).
+`MemAvailable` 2,838 MB before, 2,753 MB after. The board was left as found
+(no restore actions) and the lease released. `ladder.py A3` ran the 40 soak
+pairs in process with rendered frames and VE as the local tier, taking 489 s.
+* **39/40 found (V1 met: bar A2's 38).**
+* VE yes at 16 arrivals, **no at 21 true-target arrivals** (decided by
+  fix V's geometry), unscored at 2.
+* 1 stand-in call.
+
+Records: `evaluations/soak-find-3143/board/a3-1/`.
+
 ### 2026-11-03, the vet's cost with 3.141's turn guard (3.141 criterion 2, not a recurring test)
 
 `evaluations/wheel-loop-3141/vet_compare.py`: the branch's `robot/` copied to
