@@ -1,0 +1,203 @@
+{
+ "sha": "ae5cecffa11b47f5c0a1c6c9994db854be2b78a4",
+ "stamps": {
+  "window_start": 1793807833.4856858,
+  "window_end": 1793809633.6438456,
+  "p1_start": 1793807833.4960284,
+  "p1_end": 1793808433.51025,
+  "p8_start": 1793808433.5353684,
+  "p8_end": 1793808961.0053463,
+  "p2_start": 1793809001.5401757,
+  "p2_end": 1793809601.5487707
+ },
+ "window_s": 1800.2,
+ "uptime_at_start_s": 25410.76,
+ "wheel": {
+  "moving": 24925,
+  "late": 6,
+  "max_dt_s": 0.1133,
+  "max_dt_s_before": 0.0707
+ },
+ "nav2_goals": {
+  "n": 64,
+  "succeeded": 47,
+  "canceled": 11,
+  "aborted": 6
+ },
+ "telemetry": {
+  "samples": 1550,
+  "temps": 1550,
+  "clocks": 1550,
+  "max_temp_c": 64.406,
+  "oom_kills": 0,
+  "mem_available_min_mb": 648,
+  "cpu_below_max_samples": 497,
+  "gpu_below_max_samples": 167
+ },
+ "dmesg_oom_kills": 0,
+ "power_mode": "NV Power Mode: 15W",
+ "validity": {
+  "valid": false,
+  "reasons": [
+   "6 late wheel ticks",
+   "nav2 goals 47/53 succeeded"
+  ]
+ },
+ "desktop_load_max": 2.17,
+ "missions": {
+  "n": 5,
+  "refused_starts": 0,
+  "outcomes": {
+   "cancelled": 1,
+   "found": 4
+  },
+  "label_calls": 91
+ },
+ "cloud_calls": 0,
+ "rows": {
+  "P1": {
+   "n": 2398,
+   "p50_ms": 99,
+   "p90_ms": 166,
+   "mem_available_min_mb": 690,
+   "valid": false,
+   "reasons": [
+    "6 late wheel ticks",
+    "nav2 goals 47/53 succeeded"
+   ],
+   "met": true
+  },
+  "P2": {
+   "n": 2395,
+   "p50_ms": 103,
+   "p90_ms": 150,
+   "mem_available_min_mb": 784,
+   "valid": false,
+   "reasons": [
+    "6 late wheel ticks",
+    "nav2 goals 47/53 succeeded"
+   ],
+   "hazard_boxes_per_frame": 1.079,
+   "added_mem_mb": -94,
+   "met": true
+  },
+  "P8": {
+   "n": 299,
+   "p50": 1734.3278500011365,
+   "p90": 1992.3361770015617,
+   "max": 2947.5998430025356,
+   "statuses": {
+    "answered": 299
+   },
+   "answers_identical": true,
+   "flips": [],
+   "off": 0,
+   "missing": 0,
+   "valid": false,
+   "reasons": [
+    "6 late wheel ticks",
+    "nav2 goals 47/53 succeeded"
+   ],
+   "met": false
+  },
+  "P4": {
+   "late_ticks": 6,
+   "moving_ticks": 24925,
+   "max_dt_s_since_start": 0.1133,
+   "window_s": 1800.2,
+   "overlap": {
+    "all_spans": 0,
+    "all_s": 0,
+    "all_with_map_update": 0,
+    "per_group": {
+     "map_fetch": 2065,
+     "ve_question": 1613,
+     "perception": 7091,
+     "room_cut": 267
+    }
+   },
+   "valid": false,
+   "reasons": [
+    "6 late wheel ticks",
+    "nav2 goals 47/53 succeeded"
+   ],
+   "met": false
+  },
+  "P11": {
+   "controller": {
+    "spans": 71,
+    "intervals": 26014,
+    "executing_s": 1297.2,
+    "rate_hz": 20.054,
+    "mean_period_ms": 49.87,
+    "period_p50_ms": 49.98588562011719,
+    "period_p90_ms": 51.73993110656738
+   },
+   "ratio": 1.003,
+   "scan_lag": {
+    "n": 18002,
+    "p50_ms": 6.267547607421875,
+    "p90_ms": 11.277198791503906,
+    "max_ms": 131.37245178222656
+   },
+   "valid": false,
+   "reasons": [
+    "6 late wheel ticks",
+    "nav2 goals 47/53 succeeded"
+   ],
+   "met": true
+  },
+  "P12": {
+   "segment_by_caller": {
+    "goal_policy.py": {
+     "n": 104,
+     "p50_ms": 7.745981216430664,
+     "p90_ms": 8.882999420166016,
+     "max_ms": 17.400026321411133
+    },
+    "room_labels.py": {
+     "n": 267,
+     "p50_ms": 8.762121200561523,
+     "p90_ms": 13.976097106933594,
+     "max_ms": 35.25114059448242
+    }
+   },
+   "segment": {
+    "n": 371,
+    "p50_ms": 8.302927017211914,
+    "p90_ms": 12.78996467590332,
+    "max_ms": 35.25114059448242
+   },
+   "walk": {
+    "n": 316,
+    "p50_ms": 7.174015045166016,
+    "p90_ms": 12.25590705871582,
+    "max_ms": 18.882036209106445
+   },
+   "pause_share": 0.0032,
+   "map_reply": {
+    "n": 1727,
+    "ok": 1727,
+    "p50_ms": 22.912141001143027,
+    "p90_ms": 116.37038999833749,
+    "full_replies": 986,
+    "bytes_max": 249797
+   },
+   "explore_map_fetch": {
+    "n": 2065,
+    "p50_ms": 30.095815658569336,
+    "p90_ms": 145.75886726379395
+   },
+   "valid": false,
+   "reasons": [
+    "6 late wheel ticks",
+    "nav2 goals 47/53 succeeded"
+   ],
+   "met": true
+  }
+ },
+ "cmd_exit": 0,
+ "restore_actions": [],
+ "as_found_differences": [],
+ "left_as_found": true
+}

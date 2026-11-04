@@ -152,6 +152,7 @@ run are information only.
 | Date | Rev | Valid | P1 perception p90 (ms) | P2 hazards p90 (ms) | P8 VE p90 (s) | P4 late ticks | P11 controller (Hz) | P12 room pause | `MemAvailable` min (MB) | OOM | Max temp |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 2026-11-02 | harness `51f1e6e2` on `dev` `d8be7e09` | **no** (4 late ticks; 10 of 47 nav2 goals aborted) | 153 | 153 | **1.99** | **4** / 24,711 (max 114 ms) | 20.05 | 0.17% | 645 | 0 | 65.5 °C |
+| 2026-11-04 | 3.141.C window (not run 2), `dev` `ae5cecff` | **no** (6 late ticks; 6 of 53 nav2 goals aborted, amendment 2's rule) | 166 | 150 | **1.99** | **6** / 24,925 (max 113 ms) | 20.05 | 0.32% | 648 | 0 | 64.4 °C |
 
 Bars: P1, P2 250 ms; P2 memory +100 MB; P8 1.5 s and the same answers as
 3.78; P4 0 late; P11 >= 18 Hz; P12 pause <= 10%.
@@ -176,6 +177,25 @@ No runs yet. The 3.135.A smoke (2026-11-01, F13 only, not scored) is in
 `evaluations/jetson-fmea-3135/board/smoke/`.
 
 ## Runs
+
+### 2026-11-04, the steady window as 3.141.C's check (not 3.136.B run 2), `dev` `ae5cecff`
+
+The board booted 02:51 (the house power cut; up ~7 h), 15 W, max 64.4 °C,
+0 OOM kills, `MemAvailable` minimum 648 MB, desktop load ~1.1; 3.136's
+runner with its lease, 09:55-10:35, left as found. `dev` here includes
+3.141.B (`4d8f472a`). Judged only for 3.141.C criterion 4 (P4's bar): the
+harness had no amendment-5 join yet, so nav2 is read by amendment 2's rule
+and this is not 3.136.B run 2.
+* **P4: 6 late wheel ticks in 24,925 moving (max 113 ms; 70.7 ms before
+  the window): criterion 4 FAILED** (run 1: 4 in 24,711, max 114 ms). One
+  every 4-5 min (+298, +460, +708, +911, +1200, +1469 s), in P1, P8 and
+  P2 alike, each 101-113 ms: a periodic pause near the line, not 3.141.B's
+  corner-turn vet (now 2.3 ms).
+* Others, information only: P1 p90 166 ms, P2 150, P8 VE p90 1.99 s
+  (299/299, answers identical), P11 20.05 Hz, P12 pause 0.32%; nav2 47 of
+  53 succeeded (6 aborted, 11 cancelled); missions 4 `found`, 1 cancelled
+  by the window's end.
+* Records: `evaluations/jetson-perf-3136/board/3141C-window-20261104-0955/`.
 
 ### 2026-11-04, 3.143's V3: fix V with VE, the live stack (3.143 bar V3, not a recurring test)
 
