@@ -49,6 +49,8 @@ from fmea import MOVE_WAIT_S, MemWatch, robot_health, start_mission, status, wai
 from stack import Stack, StackError  # noqa: E402
 
 STEP_S = 300.0
+F16_LIMIT_S = 400.0          # amendment 14
+BUDGET_TOL_S = 10.0
 STALE_RE = re.compile(r"\b503\b|\bstale\b", re.IGNORECASE)     # on a line past its epoch stamp
 AFTER_S = 3.0              # the window a guard that read the jump would fire in
 MISSION_WAIT_S = 1200 + 300
@@ -105,7 +107,11 @@ def judge(row: str, ms: dict, control: str | None = "found") -> dict:
     bar(ms.get("watchdog_after_step") == 0,
         f"{ms.get('watchdog_after_step')} watchdog stops in the 3 s after the step (bar 0)")
     bar(ms.get("brain_503_lines") == 0, f"{ms.get('brain_503_lines')} 503/stale lines in the brain's log")
-    bar(out != "out_of_budget", "the mission ended out_of_budget")
+    # amendment 14: "no budget end from the jump" -- a budget end only at the mission's own limit
+    if out == "out_of_budget":
+        ms_s = ms.get("mission_s") or 0.0
+        bar(abs(ms_s - F16_LIMIT_S) <= BUDGET_TOL_S,
+            f"ended out_of_budget after {ms_s} s, not at its {F16_LIMIT_S:.0f} s limit (a budget end from the jump)")
     bar(out == control, f"the mission ended {out}, the control's {control}")
     return {"pass": not r, "valid": valid, "reasons": r}
 
@@ -294,7 +300,13 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 picker = Picker(st)
                 picker.start()
             else:
-                start_mission(st)
+                # amendment 14: F16's missions run to a 400 s limit (the mover's fault-free end is
+                # that limit: frontier livelocks in scaled_house), so the clock's own budget is read
+                code, body = st.brain("POST", "/mission/start", {"target_object": "red backpack",
+                                                                 "policy": "frontier",
+                                                                 "mission_time_limit_s": F16_LIMIT_S})
+                if code != 200:
+                    raise StackError(f"mission start: {code} {str(body)[:300]}")
             ms["start_at"] = time.monotonic()
             if spec["step_s"]:
                 # Amendment 12: between verbs -- after a FORWARD, the setpoints zero for 0.1 s.
@@ -382,7 +394,7 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
         ms["mem_available_min_mb"] = min(r[1] for r in mw.rows)
         ms["oom_kills"] = mw.rows[-1][2] - mw.rows[0][2]
     rec["measures"] = ms
-    control = os.environ.get("FMEA_F16_CONTROL", "found")
+    control = os.environ.get("FMEA_F16_CONTROL", "out_of_budget")
     rec["verdict"] = judge(row, ms, control)
     errs = [rec["error"]] if rec.get("error") else []
     if (rec.get("full_removed") or {}).get("still_mounted"):
