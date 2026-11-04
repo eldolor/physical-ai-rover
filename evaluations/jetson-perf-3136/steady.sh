@@ -111,7 +111,7 @@ echo "== VE ready $(date +%T); MemAvailable $(awk '/MemAvailable/{print int($2/1
 # 3.141.D: STEADY_TRACER=1 puts 3.141's stall tracer after the shim (which
 # chains it) in the robot server; it acts only in that process.
 TRACER_PATH=; [ "${STEADY_TRACER:-0}" = 1 ] && TRACER_PATH=":$PWD/evaluations/wheel-loop-3141/tracer"
-rm -f "$OUT/trace3141.jsonl"     # the tracer appends: a reused OUT's start row is not this run's
+rm -f "$OUT/trace3141.jsonl" "$OUT/shim.jsonl"     # a reused OUT's rows are not this run's
 PYTHONPATH="$PWD/$HERE/shim$TRACER_PATH" PERF_SHIM_LOG="$OUT/shim.jsonl" TRACE_3141_LOG="$OUT/trace3141.jsonl" \
   SIM_MAP="$HOUSE" ROBOT_DRIVE=ros WORLD_MODE=ros ROBOT_MODE=hardware SIM_MOTOR_BOARD=fake SIM_LIDAR=fake \
   VISION_URL=http://127.0.0.1:8099 LOCAL_VLM_URL=http://127.0.0.1:8005 TIER_SEARCH=explore \

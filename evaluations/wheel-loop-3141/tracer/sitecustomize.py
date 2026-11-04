@@ -20,7 +20,7 @@ One JSON line per event (epoch seconds):
 | gc     | one collection over GC_MS: generation, duration, collected           |
 | vet    | `SafetyController.vet_wheel_velocity` over VET_MS                     |
 | req    | an HTTP request over REQ_MS, end to end                              |
-| heap   | every HEAP_S: gc counts, tracked objects per generation (only with TRACE_3141_HEAP_OBJECTS=1), frozen, RSS, the event loop thread's CPU, GC rows dropped, the tracer's own threads' CPU and its probes' work on the loop (ms, cumulative from the tracer's start: diff two rows for a window) |
+| heap   | every HEAP_S: gc counts, tracked objects per generation (only with TRACE_3141_HEAP_OBJECTS=1), frozen, RSS, the event loop thread's CPU (from the process's start: only diffs mean anything), GC rows dropped, the tracer's own threads' CPU and its probes' work on the loop (ms, cumulative from the tracer's start: diff two rows for a window) |
 
 The sampler needs the GIL to look, so a C call holding it (a `json.dumps`)
 is seen only after it returns: the per-thread CPU over the stall is what
@@ -60,7 +60,8 @@ def _write(rec: dict) -> None:
     try:
         with _lock:
             if _fh is None:
-                _fh = open(_LOG, "a", buffering=1)
+                # Truncated: this process's trace only, whoever launched it.
+                _fh = open(_LOG, "w", buffering=1)
             _fh.write(json.dumps(rec) + "\n")
     except OSError:
         pass
@@ -172,14 +173,14 @@ def _heap() -> None:
                 sizes = [len(gc.get_objects(g)) for g in range(3)]
             except Exception:  # noqa: BLE001 -- generation numbering differs by version
                 pass
-        cost = (time.perf_counter() - t0) * 1000
+        cost = (time.perf_counter() - t0) * 1000 if HEAP_OBJECTS else None
         try:
             with open("/proc/self/statm") as f:
                 rss = int(f.read().split()[1]) * os.sysconf("SC_PAGE_SIZE") // 2**20
         except OSError:
             rss = None
         _write({"k": "heap", "t": time.time(), "count": gc.get_count(), "sizes": sizes,
-                "cost_ms": round(cost, 1), "frozen": gc.get_freeze_count(), "rss_mb": rss,
+                "cost_ms": None if cost is None else round(cost, 1), "frozen": gc.get_freeze_count(), "rss_mb": rss,
                 "tracer_cpu_ms": _own_cpu_ms(), "probe_ms": round(_probe_s[0] * 1000),
                 "loop_cpu_ms": _cpu_ms_of(_loop_tid), "gc_dropped": _gc_dropped[0],
                 "stats": gc.get_stats(), "threads": threading.active_count()})
@@ -277,18 +278,25 @@ class _Traced:
 
 
 def _timed_vet(fn):
-    def wrapper(*a, **k):
-        t0 = time.perf_counter()
-        out = fn(*a, **k)                  # the safety answer, untouched and first
+    def record(t0, cmd, reason):
         try:
             ms = (time.perf_counter() - t0) * 1000
             if ms > VET_MS:
                 _write({"k": "vet", "t": time.time(), "ms": round(ms, 2),
                         "thread": threading.current_thread().name,
-                        "cmd": [round(float(x), 2) for x in a[1:3]],
-                        "reason": str(out[2] or "")[:100]})
+                        "cmd": [round(float(x), 2) for x in cmd], "reason": reason[:100]})
         except Exception:  # noqa: BLE001 -- a record must never change a vet
             pass
+
+    def wrapper(*a, **k):
+        t0 = time.perf_counter()
+        cmd = a[1:3] or [k.get("left_rad_s", 0.0), k.get("right_rad_s", 0.0)]
+        try:
+            out = fn(*a, **k)              # the safety answer, untouched
+        except BaseException:
+            record(t0, cmd, "raised")
+            raise
+        record(t0, cmd, str(out[2] or ""))
         return out
     wrapper.__wrapped__ = fn
     return wrapper
