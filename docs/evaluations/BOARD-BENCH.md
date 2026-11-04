@@ -200,6 +200,8 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-04 | `affb16fd` | F16p clock +5 min | 0/8 | incomplete | every step landed in a pivot, not between verbs: invalid (amendment 15) | 0 | -- | 2,376 | 0 | -- | -- | yes |
 | 2026-11-04 | `affb16fd` | F16m clock -5 min | 0/8 | incomplete | as F16p: invalid (amendment 15) | 0 | -- | -- | 0 | -- | -- | yes |
 | 2026-11-04 | `affb16fd` | F15 disk full | 5/5 | met | `found` 5/5; failing-write lines 1 per writer (choices, inventory, intervention) in 38-100 s | 0 | 0 | 2,034 | 0 | 51.5 °C | -- | yes |
+| 2026-11-04 | `5425f8ac` | F16p clock +5 min (re-run, amendment 15) | 5/5 | met | `out_of_budget` at 400.9-402.0 s (F16c's end, within 10 s of 400); 0 watchdog stops, 0 stale 503s; every step between verbs | 0 | -- | 2,196 | 0 | 49.7 °C | -- | yes |
+| 2026-11-04 | `36b6a944` | F16m clock -5 min (re-run, amendment 15) | 5/5 | met | `out_of_budget` at 401.0-402.1 s; 0 watchdog stops, 0 stale 503s; every step between verbs | 0 | -- | 2,200 | 0 | 49.7 °C | -- | yes |
 
 ## Runs
 
@@ -422,7 +424,9 @@ explore mission with `explore_ask` on the ROS stack (F15).
     0.38-0.5 s gap between verbs;
   * every run still ended `out_of_budget` at ~401 s with no watchdog stop
     (information only);
-  * fixed by amendment 15 and re-run.
+  * fixed by amendment 15 and re-run 13:30-14:39: **F16p and F16m met
+    5/5 each** (every step between verbs; `out_of_budget` at 401-402 s, as
+    F16c; 0 watchdog stops, 0 stale 503s), so F16 is met.
 * Every run: 0 contacts, 0 OOM, `MemAvailable` minimum 2,034 MB, max
   55.9 °C. The board was left as found, with no harness leftovers.
 * Records: `evaluations/jetson-fmea-3135/board/rows/`.

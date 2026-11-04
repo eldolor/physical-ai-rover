@@ -1,0 +1,234 @@
+{
+ "sha": "36b6a9443e68a11486477741e620bb031d95ba76",
+ "cmd_exit": 0,
+ "cmd_s": 2058.2,
+ "verdict": {
+  "row": "F16m",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "met",
+  "runs_wanted": 5,
+  "runs_scored": 5,
+  "runs_total": 5,
+  "runs_failed": 0,
+  "not_scored": [],
+  "reasons": []
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "out_of_budget",
+    "stepped": true,
+    "start_at": 40423.713569853,
+    "step_at": 40427.857809324,
+    "fault_at": 40427.857809324,
+    "watchdog_after_step": 0,
+    "refusals_after_step": [
+     "watchdog"
+    ],
+    "end_at": 40824.720609997,
+    "mission_s": 401.0,
+    "brain_503_lines": 0,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "idle_at_fault": true,
+    "mem_available_min_mb": 2211,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "out_of_budget",
+    "end_state": "out_of_budget",
+    "end_reason": "time limit of 400 s reached (400.4 s)",
+    "error": null,
+    "step": 259
+   }
+  },
+  {
+   "i": 2,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "out_of_budget",
+    "stepped": true,
+    "start_at": 40834.797767878,
+    "step_at": 40838.928903402,
+    "fault_at": 40838.928903402,
+    "watchdog_after_step": 0,
+    "refusals_after_step": [
+     "watchdog"
+    ],
+    "end_at": 41236.890075676,
+    "mission_s": 402.1,
+    "brain_503_lines": 0,
+    "truth_hole_s": 0.038,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "idle_at_fault": true,
+    "mem_available_min_mb": 2211,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "out_of_budget",
+    "end_state": "out_of_budget",
+    "end_reason": "time limit of 400 s reached (401.2 s)",
+    "error": null,
+    "step": 260
+   }
+  },
+  {
+   "i": 3,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "out_of_budget",
+    "stepped": true,
+    "start_at": 41246.819356246,
+    "step_at": 41251.006355464,
+    "fault_at": 41251.006355464,
+    "watchdog_after_step": 0,
+    "refusals_after_step": [
+     "watchdog"
+    ],
+    "end_at": 41647.899219559,
+    "mission_s": 401.1,
+    "brain_503_lines": 0,
+    "truth_hole_s": 0.023,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "idle_at_fault": true,
+    "mem_available_min_mb": 2212,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "out_of_budget",
+    "end_state": "out_of_budget",
+    "end_reason": "time limit of 400 s reached (400.2 s)",
+    "error": null,
+    "step": 259
+   }
+  },
+  {
+   "i": 4,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "out_of_budget",
+    "stepped": true,
+    "start_at": 41658.147165987,
+    "step_at": 41662.250735401,
+    "fault_at": 41662.250735401,
+    "watchdog_after_step": 0,
+    "refusals_after_step": [
+     "watchdog"
+    ],
+    "end_at": 42060.097752496,
+    "mission_s": 402.0,
+    "brain_503_lines": 0,
+    "truth_hole_s": 0.025,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "idle_at_fault": true,
+    "mem_available_min_mb": 2201,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "out_of_budget",
+    "end_state": "out_of_budget",
+    "end_reason": "time limit of 400 s reached (401.2 s)",
+    "error": null,
+    "step": 260
+   }
+  },
+  {
+   "i": 5,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "out_of_budget",
+    "stepped": true,
+    "start_at": 42069.981514385,
+    "step_at": 42074.090362626,
+    "fault_at": 42074.090362626,
+    "watchdog_after_step": 0,
+    "refusals_after_step": [
+     "watchdog"
+    ],
+    "end_at": 42470.984787486,
+    "mission_s": 401.0,
+    "brain_503_lines": 0,
+    "truth_hole_s": 0.023,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "idle_at_fault": true,
+    "mem_available_min_mb": 2200,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "out_of_budget",
+    "end_state": "out_of_budget",
+    "end_reason": "time limit of 400 s reached (400.4 s)",
+    "error": null,
+    "step": 259
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 1608,
+  "temps": 1608,
+  "clocks": 1608,
+  "max_temp_c": 49.656,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2200,
+  "cpu_below_max_samples": 1582,
+  "gpu_below_max_samples": 1608
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "harness_leftovers": {
+  "before": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  },
+  "after": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  }
+ }
+}

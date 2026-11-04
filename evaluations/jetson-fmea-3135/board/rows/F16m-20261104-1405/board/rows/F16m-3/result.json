@@ -1,0 +1,47 @@
+{
+ "row": "F16m",
+ "title": "Wall clock jumps -5 min",
+ "reading": "as F16p, the step -5 min",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T14:19:05-0600",
+ "clock_restore": {
+  "step_back_rc": 0,
+  "ntp_on_rc": 0,
+  "ntp_synchronized": "yes"
+ },
+ "measures": {
+  "outcome": "out_of_budget",
+  "stepped": true,
+  "start_at": 41246.819356246,
+  "step_at": 41251.006355464,
+  "fault_at": 41251.006355464,
+  "watchdog_after_step": 0,
+  "refusals_after_step": [
+   "watchdog"
+  ],
+  "end_at": 41647.899219559,
+  "mission_s": 401.1,
+  "status": {
+   "outcome": "out_of_budget",
+   "end_state": "out_of_budget",
+   "end_reason": "time limit of 400 s reached (400.2 s)",
+   "error": null,
+   "step": 259
+  },
+  "brain_503_lines": 0,
+  "truth_hole_s": 0.023,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "idle_at_fault": true,
+  "mem_available_min_mb": 2212,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-04T14:25:56-0600"
+}
