@@ -16,7 +16,7 @@ One JSON line per event (epoch seconds):
 |--------|----------------------------------------------------------------------|
 | gap    | the 5 ms probe on the loop woke `gap_ms` late (over GAP_MS)          |
 | tick   | a 50 ms probe shaped as `wheel_loop()` (sleep, then dt): dt > TICK_MS |
-| stall  | the sampler thread saw the loop's heartbeat older than STALL_MS: every thread's stack at first sight, and each thread's CPU (ms, /proc) from a baseline at most BASELINE_S before it to the stall's end |
+| stall  | the sampler thread saw the loop's heartbeat older than STALL_MS: every thread's stack at first sight, and each thread's CPU (ms, /proc) from first sight to the stall's end (its first STALL_MS not counted) |
 | gc     | one collection over GC_MS: generation, duration, collected           |
 | vet    | `SafetyController.vet_wheel_velocity` over VET_MS                     |
 | req    | an HTTP request over REQ_MS, end to end                              |
@@ -133,7 +133,6 @@ def _stacks() -> list:
 
 _own = []                         # native ids of the tracer's own threads
 _probe_s = [0.0]                  # the probes' own work on the loop, s (not their sleeps)
-BASELINE_S = 1.0                  # how old a stall's CPU baseline may be
 SAMPLE_S = 0.01                   # the sampler's look at the heartbeat (STALL_MS is 25)
 
 
@@ -158,39 +157,36 @@ def _own_cpu_ms() -> int:
 
 
 def _sampler() -> None:
-    """Each SAMPLE_S: only the heartbeat's age; every BASELINE_S, every thread's
-    CPU (/proc), so a stall's CPU is measured from a baseline taken before it
-    began -- a C call holding the GIL keeps this thread out until it returns.
-    Reading /proc every 5 ms cost ~17% of a core on the desktop."""
+    """Each SAMPLE_S: drain the queue, then only the heartbeat's age. Thread
+    CPU (/proc, every thread) is read only once a stall is seen and at its
+    end, so a stall's first STALL_MS of CPU is not counted: 3.141.D's D1 on
+    the board (2026-11-04) found a once-a-second full read cost a tracer
+    thread ~20 ms of CPU and delayed the loop itself."""
     _own.append(threading.get_native_id())
-    base, base_t = _thread_cpu(), time.monotonic()
     in_stall, start_cpu, rec = False, None, None
     while True:
         time.sleep(SAMPLE_S)
         try:
-            base, base_t, in_stall, start_cpu, rec = _sample(base, base_t, in_stall, start_cpu, rec)
+            in_stall, start_cpu, rec = _sample(in_stall, start_cpu, rec)
         except Exception:  # noqa: BLE001 -- the sampler must outlive one odd /proc read
             _sampler_errors[0] += 1
             if rec is not None:
                 _rows_dropped[0] += 1          # that stall's row is lost
-            in_stall, rec, base = False, None, None   # a fresh baseline next pass
+            in_stall, rec = False, None
 
 
-def _sample(base, base_t, in_stall, start_cpu, rec):
+def _sample(in_stall, start_cpu, rec):
     """One look: drain the queue, then the heartbeat's age."""
     d0 = time.monotonic()
     _drain()
     now = time.monotonic()
     drain_ms = (now - d0) * 1000           # recorded: an encode holds the GIL, so a
     _sampler_ticks[0] += 1                 # stall right after it may be the tracer's
-    if base is None:
-        base, base_t = _thread_cpu(), now
     age = (now - _hb[0]) * 1000
     if not in_stall and age > STALL_MS:
-        in_stall, start_cpu = True, base
         rec = {"k": "stall", "t": time.time(), "age_ms": round(age, 1),
-               "baseline_age_ms": round((now - base_t) * 1000),
                "drain_ms": round(drain_ms, 1), "threads": _stacks()}
+        in_stall, start_cpu = True, _thread_cpu()        # after the stacks: they come first
     elif in_stall and age <= STALL_MS:
         cpu = {}
         for tid, (comm, ticks) in _thread_cpu().items():
@@ -201,12 +197,9 @@ def _sample(base, base_t, in_stall, start_cpu, rec):
         rec["t_end"] = time.time()
         _write(rec)
         in_stall = False
-        base, base_t = _thread_cpu(), time.monotonic()
     elif in_stall:
         rec["age_ms"] = round(max(rec["age_ms"], age), 1)
-    elif now - base_t >= BASELINE_S:
-        base, base_t = _thread_cpu(), now
-    return base, base_t, in_stall, start_cpu, rec
+    return in_stall, start_cpu, rec
 
 
 def _heap() -> None:

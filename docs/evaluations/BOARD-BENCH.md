@@ -178,6 +178,17 @@ No runs yet. The 3.135.A smoke (2026-11-01, F13 only, not scored) is in
 
 ## Runs
 
+### 2026-11-04, 3.141.D D1 run 1: the stall tracer's smoke on the board, `dev` `aec7fd4b` + the tracer (`503638da`)
+
+15 W, an 806 s steady window with `STEADY_TRACER=1`, left as found. The
+tracer's own CPU 1.26% of a core (bar 2), heap rows every 30 s, 0 errors,
+0 rows dropped; **FAILED on (c)**: one stall where a tracer thread (its
+once-a-second `/proc` read) outran the loop. Seen beside it: 5 late wheel
+ticks, generation-2 GC at most 15.8 ms, 5,480 vets over 5 ms (p90 12.6,
+max 55 ms). Records:
+`evaluations/jetson-perf-3136/board/3141D-smoke-20261104-1533/`; analysis in
+3.141's section.
+
 ### 2026-11-04, the steady window as 3.141.C's check (not 3.136.B run 2), `dev` `ae5cecff`
 
 The board booted 02:51 (the house power cut; up ~7 h), 15 W, max 64.4 °C,
