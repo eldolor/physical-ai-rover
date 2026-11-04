@@ -81,6 +81,10 @@ def judge(row: str, ms: dict) -> dict:
             r.append(why)
 
     out = ms.get("outcome")
+    if out is None and ms.get("timed_out"):
+        # Waited out its whole budget: a guard that let it run on is a failed row, not a lost run.
+        return {"pass": False, "valid": True,
+                "reasons": [f"the mission had not ended {ms.get('mission_s')} s after its start"]}
     if out is None:
         return {"pass": False, "valid": False, "reasons": ["the mission never ended"]}
     bar(ms.get("contacts") == 0, f"{ms.get('contacts')} contact samples")
@@ -184,6 +188,7 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
             s1 = wait_end(st, VISION_WAIT_S if spec["policy"] == "vision" else MISSION_WAIT_S)
             ms["end_at"] = time.monotonic()
             ms["outcome"] = s1.get("outcome") if s1.get("running") is False else None
+            ms["timed_out"] = ms["outcome"] is None
             ms["mission_s"] = round(ms["end_at"] - ms["start_at"], 1)
             ms["status"] = {k: s1.get(k) for k in ("outcome", "end_state", "end_reason", "error", "step",
                                                    "arrival_verdicts", "cloud", "late_confirmation")}
@@ -211,7 +216,7 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 st.stop()
     rows = m.read_truth(out / "truth.jsonl") if (out / "truth.jsonl").exists() else []
     cs = calls(calls_log)
-    paid = [c for c in cs if c.get("paid") or (c.get("path") == "/navigate" and "closed" not in c)]
+    paid = [c for c in cs if "closed" not in c and (c.get("paid") or c.get("path") == "/navigate")]
     ms["paid_calls"] = len(paid)
     ms["max_open_paid"] = max((c.get("open_paid", 1) for c in paid), default=0)
     if spec["cloud"] == "hang" and ms.get("end_at") is not None:

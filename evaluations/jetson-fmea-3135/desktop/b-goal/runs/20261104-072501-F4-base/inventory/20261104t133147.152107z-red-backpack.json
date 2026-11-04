@@ -1,0 +1,48 @@
+{
+ "candidates": [
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 9,
+   "hits": 1,
+   "id": 1,
+   "label": "sofa",
+   "last_step": 9,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "living room",
+   "votes": {
+    "sofa": 1
+   },
+   "x_m": 0.822,
+   "y_m": 0.83
+  }
+ ],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 10,
+  "landmarks": 1,
+  "no_pose": 41,
+  "observations": 1,
+  "reported": 0,
+  "unplaced": 0
+ },
+ "frame_id": "map-bf8f03a6",
+ "map_id": "slam-ed183148",
+ "mission": "Find the red backpack.",
+ "mission_id": "20261104T133147.152107Z-red backpack",
+ "outcome": "failed",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": []
+}

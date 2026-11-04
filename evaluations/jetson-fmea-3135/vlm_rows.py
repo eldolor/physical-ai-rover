@@ -196,6 +196,7 @@ def ve_oom_dropin(on: bool) -> dict:
         sh("sudo", "-n", "tee", DROPIN, input="[Service]\nOOMScoreAdjust=0\n")
     else:
         sh("sudo", "-n", "rm", "-f", DROPIN)
+        sh("sudo", "-n", "rmdir", "--ignore-fail-on-non-empty", str(Path(DROPIN).parent))
     sh("sudo", "-n", "systemctl", "daemon-reload")
     sh("sudo", "-n", "systemctl", "restart", VE_UNIT, timeout=120)
     end = time.monotonic() + 300
@@ -248,7 +249,9 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
             env = {**rosmod.ROS_ENV, "TIER_SEARCH": "explore", "LOCAL_VLM_URL": f"http://127.0.0.1:{PROXY_PORT}",
                    "LOCAL_VLM_SECRET": secret}
             url = f"http://127.0.0.1:{STUB_PORT}" if spec["cloud"] == "standin" else f"http://127.0.0.1:{CLOSED_PORT}"
-            st = Stack(out, house=house, plant=plant, vision_url=url, extra_env=env)
+            # ve_oom0 is the unit's drop-in, not a process plant: the stack runs as shipped.
+            st = Stack(out, house=house, plant="" if plant == "ve_oom0" else plant, vision_url=url,
+                       extra_env=env)
             st.start()
             for p in st.procs.values():
                 sh("sudo", "-n", "tee", f"/proc/{p.pid}/oom_score_adj", input=f"{STACK_OOM_ADJ}\n")
@@ -392,12 +395,16 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
             try:
                 if ros is not None:
                     ros.down()
-            finally:
+            except Exception as e:  # noqa: BLE001 -- the drop-in and the record still follow
+                rec["teardown_error"] = f"ros down: {type(e).__name__}: {e}"
+            try:
                 if st is not None:
                     st.stop()
                 for p in helpers.values():
                     if p.poll() is None:
                         os.killpg(p.pid, signal.SIGKILL)
+            except Exception as e:  # noqa: BLE001
+                rec["teardown_error"] = f"stack stop: {type(e).__name__}: {e}"
             if plant == "ve_oom0":
                 try:
                     ms["plant_removed"] = ve_oom_dropin(False)

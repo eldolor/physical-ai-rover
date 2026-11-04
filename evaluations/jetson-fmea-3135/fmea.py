@@ -136,8 +136,10 @@ def judge(row: str, ms: dict) -> dict:
         why = f"{ms.get('end_reason') or ''} {ms.get('end_error') or ''}".lower()
         bar(ms.get("outcome") == "failed" and "ros" in why,
             f"the mission ended {ms.get('outcome')} ({why.strip()[:120] or 'no reason'}), not failed naming ROS")
-        bar((ms.get("last_refusal") or {}).get("reason") == "ros_unavailable",
-            f"the readout's last refusal is {(ms.get('last_refusal') or {}).get('reason')}, not ros_unavailable")
+        # The watchdog's record replaces a refusal ~1 s on (3.86's open item): the count is the reading.
+        bar((ms.get("refusals") or {}).get("ros_unavailable", 0) >= 1
+            or (ms.get("last_refusal") or {}).get("reason") == "ros_unavailable",
+            f"no ros_unavailable refusal after the kill (last {(ms.get('last_refusal') or {}).get('reason')})")
         bar(ms.get("recovery_outcome") == "found",
             f"the mission after a new container ended {ms.get('recovery_outcome')}, not found")
     if row == "F5":
@@ -386,6 +388,8 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
             try:
                 if ros is not None:
                     ros.down()
+            except Exception as e:  # noqa: BLE001 -- the stack and the record still follow
+                rec["teardown_error"] = f"ros down: {type(e).__name__}: {e}"
             finally:
                 if st is not None:
                     st.stop()

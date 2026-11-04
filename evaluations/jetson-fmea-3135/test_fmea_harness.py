@@ -109,7 +109,7 @@ def test_a_run_inside_every_bar_passes(row):
     ("F4", {"travel_cm": 5.1}, "bar 5"),
     ("F4", {"end_reason": "time limit"}, "not failed naming ROS"),
     ("F4", {"outcome": "exhausted"}, "not failed naming ROS"),
-    ("F4", {"last_refusal": {"reason": "watchdog"}}, "not ros_unavailable"),
+    ("F4", {"last_refusal": {"reason": "watchdog"}, "refusals": {}}, "no ros_unavailable"),
     ("F4", {"recovery_outcome": "out_of_budget"}, "not found"),
     ("F5", {"stop_answer_s": 1.2}, "within 1.0"),
     ("F5", {"stop_code": "TimeoutError: x"}, "within 1.0"),
@@ -377,6 +377,8 @@ def test_a_ve_fault_off_its_moment_is_invalid():
     assert vlm_rows.judge("F17g", {**VLM_GOOD, "goal_at_fault": None, "outcome": "cancelled"})["valid"] is False
     assert rows.runner("F17q").__name__ == "vlm_rows"
     assert {r["plant"] for r in vlm_rows.ROWS.values()} - {"ve_oom0"} <= stack.ROBOT_PLANTS | stack.BRAIN_PLANTS
+    import inspect
+    assert 'plant="" if plant == "ve_oom0" else plant' in inspect.getsource(vlm_rows.run_row)
 
 
 def test_the_full_disk_case_and_its_bars():
@@ -387,3 +389,21 @@ def test_the_full_disk_case_and_its_bars():
     assert not sys_rows.judge("F15", {**ok, "write_fail_lines": 9})["pass"]       # per frame, not per minute
     assert not sys_rows.judge("F15", {**ok, "late_ticks": 1})["pass"]
     assert not sys_rows.judge("F15", {**ok, "outcome": None})["pass"]
+
+
+def test_f4_reads_the_refusal_count_when_the_watchdog_has_overwritten_the_readout():
+    ok = {**GOOD, "last_refusal": {"reason": "watchdog"}, "refusals": {"ros_unavailable": 3}}
+    assert fmea.judge("F4", ok)["pass"]
+
+
+def test_a_cloud_mission_that_outran_its_budget_is_a_failed_row_not_a_lost_run():
+    v = cloud_rows.judge("F12b", {"outcome": None, "timed_out": True, "mission_s": 300.4})
+    assert v["valid"] is True and not v["pass"]
+
+
+def test_the_clock_rows_stale_count_ignores_the_epoch_stamp():
+    assert not sys_rows.STALE_RE.search("1793592979.614 WARNING ok".split(" ", 1)[-1].replace("503", "x"))
+    assert sys_rows.STALE_RE.search("WARNING cloud answered 503")
+    line = "1795033979.614 WARNING tiered asked"
+    assert not sys_rows.STALE_RE.search(line.split(" ", 1)[-1])
+    assert sys_rows.judge("F16p", {**CLOCK_GOOD, "forward_at_fault": False})["valid"] is False

@@ -33,11 +33,19 @@ if not PLANTS or PLANTS - KNOWN:
     raise SystemExit(f"FMEA_PLANT must name one or more of {sorted(KNOWN)}, not {sorted(PLANTS)}")
 
 if "cloud_deadline" in PLANTS:
-    # Read by load_brain_config() under the yaml, which sets neither key.
+    # config/robot.yaml sets both keys (20 s, 8 s), so they are set on the loaded
+    # config, after the yaml; brain_server takes the function by name at import.
     from control import brain_config
 
-    brain_config.DEFAULTS["arrival_confirm_timeout_s"] = 120.0
-    brain_config.DEFAULTS["vision_timeout_s"] = 120.0
+    _load = brain_config.load_brain_config
+
+    def _load_long(*a, **k):
+        cfg = _load(*a, **k)
+        cfg["arrival_confirm_timeout_s"] = 120.0
+        cfg["vision_timeout_s"] = 120.0
+        return cfg
+
+    brain_config.load_brain_config = _load_long
 if "cloud_class" in PLANTS:
     import httpx
 

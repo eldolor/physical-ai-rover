@@ -159,8 +159,23 @@ def row_summary(rec: dict, out: Path) -> dict:
 UNIT_ROWS = {"F8-unit": "f8_unit.py"}
 
 
+# What this section's rows can leave that boardrun's as-found check does not compare:
+# F2's drop-in, F15's tmpfs, F16's clock (NTP). Read before and after every row.
+LEFTOVERS_SH = ("echo dropin=$(test -e /etc/systemd/system/picar-local-vlm.service.d/99-fmea-3135-oom0.conf "
+                "&& echo yes || echo no) tmpfs=$(grep -c ' /home/[^ ]*/bench-3135/fmea-full' /proc/mounts) "
+                "ntp=$(timedatectl show -p NTP --value)")
+
+
+def leftovers() -> dict:
+    try:
+        return dict(kv.split("=", 1) for kv in br.ssh(LEFTOVERS_SH, check=False).split() if "=" in kv)
+    except Exception as e:  # noqa: BLE001
+        return {"error": str(e)}
+
+
 def row_inner(a) -> int:
     out = Path(a.out)
+    before_left = leftovers()
     if a.row in UNIT_ROWS:
         cmd = (f"source tools/jetson/board_lock_check.sh || exit $?; "
                f"nvpmodel -q 2>&1 | grep -m1 'NV Power Mode' > $OUT/nvpmodel.txt; date +%s.%N > $OUT/run_start; "
@@ -172,6 +187,11 @@ def row_inner(a) -> int:
         rec = perf_run.board_run(f"fmea-{a.row}", row_cmd(a.row, a.runs, a.plant, a.house), out,
                                  sha=a.sha, allow_sudo=True, stop_twin=True, bench_dir=BENCH_DIR)
     s = row_summary(rec, out)
+    s["harness_leftovers"] = {"before": before_left, "after": leftovers()}
+    if s["harness_leftovers"]["after"] != before_left:
+        s["left_as_found"] = False
+        s["as_found_differences"] = (s.get("as_found_differences") or []) + [
+            f"harness leftovers: {before_left} -> {s['harness_leftovers']['after']}"]
     (out / "summary.json").write_text(json.dumps(s, indent=1, default=str))
     print(json.dumps({k: s[k] for k in ("sha", "cmd_exit", "verdict", "left_as_found",
                                         "as_found_differences")}, indent=1, default=str))

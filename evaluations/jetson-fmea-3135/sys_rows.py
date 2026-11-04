@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import os
 import subprocess
 import sys
@@ -47,6 +48,7 @@ from fmea import MOVE_WAIT_S, MemWatch, robot_health, start_mission, wait_end, w
 from stack import Stack, StackError  # noqa: E402
 
 STEP_S = 300.0
+STALE_RE = re.compile(r"\b503\b|\bstale\b", re.IGNORECASE)     # on a line past its epoch stamp
 AFTER_S = 3.0              # the window a guard that read the jump would fire in
 MISSION_WAIT_S = 1200 + 300
 NTP_WAIT_S = 120.0
@@ -91,9 +93,9 @@ def judge(row: str, ms: dict, control: str | None = "found") -> dict:
         bar(n is not None and n <= int(mins) + 2, f"{n} failing-write lines in {mins:.1f} min (bar one a minute)")
         bar(ms.get("late_ticks") == 0, f"{ms.get('late_ticks')} late wheel ticks over the mission (bar 0)")
         return {"pass": not r, "valid": valid, "reasons": r}
-    valid = ms.get("stepped") is True
+    valid = ms.get("stepped") is True and ms.get("forward_at_fault") is not False
     if not valid:
-        r.append("invalid: the clock was not stepped")
+        r.append("invalid: the clock was not stepped 0.15 s into a FORWARD")
     bar(ms.get("watchdog_after_step") == 0,
         f"{ms.get('watchdog_after_step')} watchdog stops in the 3 s after the step (bar 0)")
     bar(ms.get("brain_503_lines") == 0, f"{ms.get('brain_503_lines')} 503/stale lines in the brain's log")
@@ -115,6 +117,9 @@ class Clock:
         self.offset_file.write_text("0\n")
         self.stepped = 0.0
         self.ntp_off = False
+        self.ntp_found = None if self.fake else subprocess.run(
+            ["timedatectl", "show", "-p", "NTP", "--value"], capture_output=True, text=True,
+            timeout=10).stdout.strip()
 
     def step(self, s: float) -> float:
         t = time.monotonic()
@@ -144,6 +149,10 @@ class Clock:
                 r = sudo("date", "-s", f"{'-' if self.stepped >= 0 else '+'}{abs(int(self.stepped))} seconds")
                 res["step_back_rc"] = r.returncode
             self.stepped = 0.0
+        if self.ntp_off and self.ntp_found != "yes":
+            res["ntp_on_rc"] = sudo("timedatectl", "set-ntp", "false").returncode   # as found: off
+            self.ntp_off = False
+            return res
         if self.ntp_off:
             res["ntp_on_rc"] = sudo("timedatectl", "set-ntp", "true").returncode
             end = time.monotonic() + NTP_WAIT_S
@@ -240,16 +249,20 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                     n = st.now()
                     if isinstance(n, dict) and m.is_forward(n.get("sp")):
                         break
-                h0 = robot_health(st)
+                else:
+                    raise StackError("no FORWARD lasted 0.15 s in 10 tries: the clock was not stepped")
                 log0 = (out / "brain.log").stat().st_size if (out / "brain.log").exists() else 0
                 ms["step_at"] = clock.step(spec["step_s"])
                 ms["stepped"] = True
                 ms["fault_at"] = ms["step_at"]
                 time.sleep(AFTER_S)
                 h1 = robot_health(st)
-                rc0, rc1 = (h0.get("refusal_counts") or {}), (h1.get("refusal_counts") or {})
-                ms["watchdog_after_step"] = rc1.get("watchdog", 0) - rc0.get("watchdog", 0) if h1 else None
-                ms["last_refusal_after_step"] = h1.get("last_refusal")
+                # The watchdog only writes last_refusal (never refusal_counts): a watchdog
+                # record newer than the step, by the server's own `seconds_ago`.
+                lr = h1.get("last_refusal") or {} if h1 else None
+                ms["last_refusal_after_step"] = lr
+                ms["watchdog_after_step"] = (None if lr is None else int(
+                    lr.get("reason") == "watchdog" and (lr.get("seconds_ago") or 1e9) <= AFTER_S + 0.5))
             s1 = wait_end(st, MISSION_WAIT_S)
             ms["end_at"] = time.monotonic()
             ms["outcome"] = s1.get("outcome") if s1.get("running") is False else None
@@ -265,7 +278,7 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
             if spec["step_s"]:
                 text = (out / "brain.log").read_bytes()[log0:].decode(errors="replace")
                 ms["brain_503_lines"] = sum(1 for line in text.splitlines()
-                                            if "503" in line or "stale" in line.lower())
+                                            if STALE_RE.search(line.split(" ", 1)[-1]))
         except Exception as e:             # noqa: BLE001 -- recorded, never a lost result
             rec["error"] = f"{type(e).__name__}: {e}"
         finally:
