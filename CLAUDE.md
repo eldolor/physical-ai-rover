@@ -166,6 +166,8 @@ paragraph.**
 * 3.50.D5: criteria 6 (ten sessions) and 7 (15 cm, live).
 * 3.143: V3's slippers miss; the soak keeps no brain log.
 * 3.105: a nav2 never up holds explore to its limit.
+* 3.150 criterion 6: the first session started after it merged checks the
+  Bash hook live (hooks load at session start).
 * The tour's goal 6, the garage exit, fails 0/3 (3.57, 3.67, 3.68).
 * 3.70: the live survey ran out of time; room labels 46 of 90 rooms (bar
   95%); S4 and M1-M3 wait on missions on a saved map.
@@ -294,6 +296,12 @@ paragraph.**
   serves the deployed twin (`picar-stack`, `picar-ngrok`).
 * 3.93, 3.128, 3.129, 3.139, 3.121, 3.113: locks, claims and the fast tier
   (section 3c; 3.113 in section 6).
+* 3.150: `tools/bash_guard.py`, a PreToolUse hook on Bash, refuses
+  `PICAR_SKIP_GATE=1` / `PICAR_CLAIM_BYPASS=1`, `--no-verify` or a
+  `core.hooksPath` skip on a commit or a push that can reach `dev`, and
+  `vision-picar-ros:latest` built outside a clean `origin/dev` checkout
+  (asks where you see it, denies in auto mode). Build `:latest` in a second
+  call after creating its checkout.
 
 ### 3c. Standing facts a session needs
 
