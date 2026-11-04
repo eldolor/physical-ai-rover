@@ -124,6 +124,25 @@ REFUSED = [
     "git config --remove-section core",
     "git config rename-section core x",
     "docker commit c vision-picar-ros:latest",
+    # Round 3 (/code-review): each slipped through round 2's hook.
+    "cat <<EOF | bash\nPICAR_SKIP_GATE=1 git push\nEOF",
+    "bash <<< 'PICAR_SKIP_GATE=1 git push'",
+    "ssh jetson 'PICAR_SKIP_GATE=1 git push'",
+    "ssh -p 22 jetson 'cd ~/vp && git push --no-verify'",
+    "git push --no-verify --repo origin dev",
+    "docker build -qt vision-picar-ros:latest .",
+    # Round 3 (the Thermos pass): each slipped through round 2's hook.
+    "echo $(case x in a) PICAR_SKIP_GATE=1 ls;; esac)",
+    "echo $(case x in a) git commit -n;; esac)",
+    'echo > "$(PICAR_SKIP_GATE=1 ls)"',
+    'cat <<< "$(PICAR_SKIP_GATE=1 ls)"',
+    "echo > `PICAR_SKIP_GATE=1 ls`",
+    "git push --no-verify origin 'refs/heads/*:refs/heads/*'",
+    "git push --no-verify origin 'refs/heads/d*'",
+    "git push --no-verify origin $BR",
+    "for b in plan/x dev; do git push --no-verify origin $b:$b; done",
+    "B=dev; git push --no-verify origin $B",
+    "i=$(( i << 1 ))\ngit commit -n -m x\n1",
     # Round 3 (the transcript corpus): --no-verify only matters on a push
     # that can reach dev, the one ref the pre-push gate checks.
     "git push --no-verify origin --delete dev",
@@ -179,6 +198,11 @@ PASSED = [
     "cat <<'EOF' | python3 -\nprint('git push --no-verify')\nEOF",
     "cd service/slam 2>/dev/null && ls",
     "echo $((1 << 3)) && ls",
+    "i=$(( i << 1 ))\nls\n1",
+    "case $1 in a) echo a;; b) echo b;; esac",
+    "for b in plan/3.96-x plan/3.50-y; do git push -q --no-verify origin $b:$b; done",
+    "B=plan/3.150-bash-guard; git push --no-verify origin ${B}",
+    'x=$(case "$m" in auto) echo deny;; *) echo ask;; esac); echo $x',
     # Round 3: real commands from past sessions' transcripts; the pre-push
     # gate ignores every ref but dev, and tools/hooks has no stash hook.
     "git push -q --no-verify origin --delete plan/3.96-explore-goal-learning-revisited",
@@ -186,6 +210,12 @@ PASSED = [
     "git push --no-verify origin plan/3.150-bash-guard",
     "git -c core.hooksPath=/dev/null stash push -q -m x -- service/",
     "git -c core.hooksPath=/dev/null worktree add -q -b scratch/x /tmp/x HEAD",
+    # Round 3: refused wrongly, or the board's own rebuild (no checkout there).
+    "git commit -am '-n is a flag'",
+    "ssh picar-jetson 'cd ~/build-ros-dev && docker build -t vision-picar-ros:latest .'",
+    "ssh picar-jetson \"docker images vision-picar-ros --format '{{.Tag}}'\"",
+    "ssh picar-jetson 'cd ~/vp && git push --no-verify origin plan/3.80-e'",
+    "cat <<'EOF' | bash -c 'cat > /tmp/x'\nPICAR_SKIP_GATE=1 git push\nEOF",
 ]
 
 
@@ -227,6 +257,34 @@ def checkout(tmp_path):
 
 
 LATEST = "docker build -t vision-picar-ros:latest service/slam"
+
+
+def test_git_dash_c_reads_that_repos_branch(checkout, tmp_path):
+    """Round 3: `git -C <dir> push` pushes <dir>'s branch, not the cwd's."""
+    _git(checkout, "checkout", "-q", "-b", "dev")
+    assert run_hook(f"git -C {checkout} push --no-verify", cwd=str(tmp_path))[0] == "deny"
+
+
+def test_nested_substitutions_take_linear_time():
+    """Round 3: each level's body was scanned again by every level above it
+    (5 s at 18 levels); a hook past its 10 s timeout fails open."""
+    import time
+    import bash_guard as bg
+    def timed(cmd):
+        t = time.perf_counter()
+        out = bg.hook(json.dumps({"cwd": ROOT, "permission_mode": "auto", "tool_name": "Bash",
+                                  "tool_input": {"command": cmd}}))
+        return time.perf_counter() - t, out
+    took, out = timed("echo " + "$(echo " * 40 + "x" + ")" * 40)      # passes: every level read
+    assert took < 1.0 and out == ""
+    took, out = timed("echo " + "$(echo " * 39 + "$(PICAR_SKIP_GATE=1 git push)" + ")" * 39)
+    assert took < 1.0 and '"deny"' in out
+
+
+def test_ask_modes_match_the_edit_hook():
+    import bash_guard as bg
+    import plan_claims as pc
+    assert bg.ASK_MODES == pc.ASK_MODES
 
 
 @pytest.mark.parametrize("command", ["git push --no-verify", "git push --no-verify origin",

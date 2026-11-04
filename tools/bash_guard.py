@@ -24,6 +24,7 @@ strings, wrappers' `-- CMD` and heredocs fed to a shell or `ssh`; it does not
 read scripts run from files: a seatbelt for honest mistakes, not a sandbox.
 """
 
+import fnmatch
 import json
 import os
 import re
@@ -35,7 +36,7 @@ BYPASS_ENV = ("PICAR_SKIP_GATE", "PICAR_CLAIM_BYPASS")
 SHARED_IMAGE = "vision-picar-ros"
 REPO_HOOKS = "tools/hooks"
 GUARDED_WORDS = BYPASS_ENV + ("no-ver", "hookspath", "git_config", "config-env", SHARED_IMAGE)
-ASK_MODES = ("default", "plan", "acceptEdits")
+ASK_MODES = ("default", "plan", "acceptEdits")   # plan_claims.py's (a test pins it)
 PUNCT = set(";&|()")
 WORD_END = set(" \t\n;&|()<>")
 # Words that run the command after them: {word: (options taking a value,
@@ -57,6 +58,7 @@ PREFIXES = {
 KEYWORDS = {"if", "then", "else", "elif", "do", "while", "until", "!", "{", "}", "fi", "done"}
 SHELLS = {"bash", "sh", "zsh", "dash"}
 HEREDOC_RUNNERS = SHELLS | {"ssh"}
+SSH_VALUE_FLAGS = set("BbcDEeFIiJLlmOoPpQRSWw")
 DECLARERS = {"export", "declare", "typeset", "readonly", "local"}
 ASSIGN_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)=(.*)$", re.S)
 GIT_VALUE_OPTS = {"-C", "--git-dir", "--work-tree", "--namespace", "--exec-path",
@@ -98,7 +100,7 @@ def _word_end(text: str, j: int) -> int:
                 continue
             if c == quote:
                 quote = None
-        elif c in "'\"":
+        elif c in "'\"`":
             quote = c
         elif c == "\\":
             j += 2
@@ -121,6 +123,21 @@ def _segment_runs_heredoc(out: list) -> bool:
     return any(os.path.basename(w) in HEREDOC_RUNNERS for w in words)
 
 
+def _piped_to_shell(tail: str) -> bool:
+    """Whether the rest of a heredoc's line pipes it into a shell reading
+    stdin (`cat <<EOF | bash`), not one given `-c`."""
+    for seg in tail.split("|")[1:]:
+        try:
+            words = shlex.split(seg)
+        except ValueError:
+            words = seg.split()
+        words = [w for w in words if w not in ("sudo", "env") and not ASSIGN_RE.match(w)]
+        if words and os.path.basename(words[0]) in SHELLS and not any(
+                re.match(r"^-[a-zA-Z]*c[a-zA-Z]*$", w) for w in words[1:]):
+            return True
+    return False
+
+
 def _scan(text: str, i: int, extras: list, closer: str = "") -> tuple:
     """Read shell from text[i] to `closer` (")" or "`") or the end. Returns
     (the text as one line for shlex, the index after the closer). Comments,
@@ -128,9 +145,17 @@ def _scan(text: str, i: int, extras: list, closer: str = "") -> tuple:
     quotes is a `;`. Every command substitution's body, and every heredoc
     fed to a shell, is appended to `extras` for its own check; an unquoted
     heredoc's substitutions too."""
-    out, quote, depth, pending = [], None, 0, []
+    out, quote, depth, pending, cases, arith = [], None, 0, [], 0, 0
     while i < len(text):
         c = text[i]
+        at_word = not out or out[-1][-1:] in " \t\n;&|()"
+        if quote is None and at_word:
+            m = re.match(r"(case|esac)(?=[\s;)]|$)", text[i:])
+            if m:
+                cases += 1 if m.group(1) == "case" else -1 if cases else 0
+                out.append(m.group(1))
+                i += 4
+                continue
         if quote == "'":
             out.append(c)
             quote = None if c == "'" else quote
@@ -147,13 +172,13 @@ def _scan(text: str, i: int, extras: list, closer: str = "") -> tuple:
             return "".join(out), i + 1
         if text.startswith("$(", i) and not text.startswith("$((", i):
             start = i + 2
-            _, i = _scan(text, start, extras, ")")
+            _, i = _scan(text, start, [], ")")   # its own check finds what it holds
             extras.append(text[start:i - 1])
             out.append("SUBST")
             continue
         if c == "`" and closer != "`":
             start = i + 1
-            _, i = _scan(text, start, extras, "`")
+            _, i = _scan(text, start, [], "`")
             extras.append(text[start:i - 1])
             out.append("SUBST")
             continue
@@ -171,8 +196,29 @@ def _scan(text: str, i: int, extras: list, closer: str = "") -> tuple:
             while i < len(text) and text[i] != "\n":
                 i += 1                    # a comment, to the end of its line
             continue
+        if quote is None and text.startswith("((", i):
+            arith += 1                    # `(( ))` / `$(( ))`: `<<` is a shift there
+            out.append("((")
+            i += 2
+            continue
+        if quote is None and arith and text.startswith("))", i):
+            arith -= 1
+            out.append("))")
+            i += 2
+            continue
+        if arith:
+            out.append(c)
+            i += 1
+            continue
         if text.startswith("<<<", i):
-            j = _word_end(text, i + 3 + len(text[i + 3:]) - len(text[i + 3:].lstrip(" \t")))
+            j0 = i + 3 + len(text[i + 3:]) - len(text[i + 3:].lstrip(" \t"))
+            j = _word_end(text, j0)
+            _substitutions(text[j0:j], extras)
+            if _segment_runs_heredoc(out):
+                try:
+                    extras.append(" ".join(shlex.split(text[j0:j])))
+                except ValueError:
+                    extras.append(text[j0:j])
             out.append(" ")
             i = j
             continue
@@ -186,13 +232,13 @@ def _scan(text: str, i: int, extras: list, closer: str = "") -> tuple:
             raw = text[j:k]
             if raw:
                 word = raw.replace("'", "").replace('"', "").replace("\\", "")
-                pending.append((dash, word, raw != word, _segment_runs_heredoc(out)))
+                pending.append((dash, word, raw != word, _segment_runs_heredoc(out), len(out)))
                 out.append(" ")
                 i = k
                 continue
         if c in "<>" and text.startswith("(", i + 1):
             start = i + 2                 # process substitution
-            _, i = _scan(text, start, extras, ")")
+            _, i = _scan(text, start, [], ")")
             extras.append(text[start:i - 1])
             out.append("SUBST")
             continue
@@ -202,10 +248,13 @@ def _scan(text: str, i: int, extras: list, closer: str = "") -> tuple:
             while j < len(text) and text[j] in " \t":
                 j += 1
             i = _word_end(text, j)        # the redirection and its target
+            _substitutions(text[j:i], extras)
             out.append(" ")
             continue
         if c == "(":
             depth += 1
+        elif c == ")" and cases and depth == 0:
+            pass                          # a case pattern's `)`
         elif c == ")":
             if closer == ")" and depth == 0:
                 return "".join(out), i + 1
@@ -213,7 +262,8 @@ def _scan(text: str, i: int, extras: list, closer: str = "") -> tuple:
         if c == "\n":
             out.append(" ; ")
             i += 1
-            for dash, word, quoted, to_shell in pending:
+            for dash, word, quoted, to_shell, at in pending:
+                to_shell = to_shell or _piped_to_shell("".join(out[at:]))
                 lines = text[i:].split("\n")
                 for n, line in enumerate(lines):
                     if (line.lstrip("\t") if dash else line) == word:
@@ -240,11 +290,11 @@ def _substitutions(body: str, extras: list):
             i += 2
             continue
         if body.startswith("$(", i) and not body.startswith("$((", i):
-            _, j = _scan(body, i + 2, extras, ")")
+            _, j = _scan(body, i + 2, [], ")")
             extras.append(body[i + 2:j - 1])
             i = j
         elif body[i] == "`":
-            _, j = _scan(body, i + 1, extras, "`")
+            _, j = _scan(body, i + 1, [], "`")
             extras.append(body[i + 1:j - 1])
             i = j
         else:
@@ -323,7 +373,20 @@ def _strip_prefixes(words: list, state: dict) -> list:
     return words[i:]
 
 
-def _push_reaches_dev(rest: list, flags: list, cwd: str) -> bool:
+def _expand(word: str, variables: dict) -> list:
+    """`word` with each `$NAME`/`${NAME}` replaced by every value a literal
+    `for NAME in ...` or `NAME=...` earlier in the command gave it; a
+    variable it cannot resolve stays, so the caller reads it as unknown."""
+    m = re.search(r"\$\{?([A-Za-z_][A-Za-z0-9_]*)\}?", word)
+    if not m or m.group(1) not in (variables or {}):
+        return [word]
+    out = []
+    for v in variables[m.group(1)][:50]:
+        out += _expand(word[:m.start()] + v + word[m.end():], variables)
+    return out or [word]
+
+
+def _push_reaches_dev(rest: list, flags: list, cwd: str, variables: dict = None) -> bool:
     """Whether a push may update `dev`, the one ref the pre-push gate checks
     (tools/hooks/pre-push): a refspec onto it, `--all`/`--mirror`, or a
     push of the current branch (no refspec, or `HEAD`) while on `dev`."""
@@ -337,16 +400,19 @@ def _push_reaches_dev(rest: list, flags: list, cwd: str) -> bool:
             skip = a in value_opts
         else:
             pos.append(a)
+    if any(f == "--repo" or f.startswith("--repo=") for f in flags):
+        pos = [""] + pos                  # the remote is --repo's: every word is a refspec
     if any(f in ("-d", "--delete") for f in flags):
         return any(_ref_name(r) == "dev" for r in pos[1:])
     refspecs = pos[1:]
     if not refspecs:
         return _current_branch(cwd) in ("dev", "")
-    for r in refspecs:
+    for r in [x for spec in refspecs for x in _expand(spec, variables)]:
         dest = r.lstrip("+").split(":")[-1] if ":" in r else r.lstrip("+")
         if dest == "HEAD":
             dest = _current_branch(cwd)
-        if _ref_name(dest) in ("dev", ""):
+        name = _ref_name(dest)
+        if name in ("dev", "") or "$" in name or ("*" in name and fnmatch.fnmatch("dev", name)):
             return True
     return False
 
@@ -356,7 +422,10 @@ def _ref_name(ref: str) -> str:
 
 
 def _current_branch(cwd: str) -> str:
-    """The branch checked out in `cwd`; '' when it cannot be told."""
+    """The branch checked out in `cwd`; '' when it cannot be told (or the
+    push runs on another host)."""
+    if cwd is None:
+        return ""
     try:
         r = subprocess.run(["git", "-C", cwd, "symbolic-ref", "-q", "--short", "HEAD"],
                            capture_output=True, text=True, timeout=3)
@@ -382,10 +451,13 @@ def _flags(sub: str, rest: list) -> list:
         if a.startswith("-"):
             out.append(a)
             skip = a in value_opts
+            if sub == "commit" and re.match(r"^-[a-zA-Z]{2,}$", a):
+                first = next((ch for ch in a[1:] if ch in COMMIT_VALUE_SHORT), "")
+                skip = bool(first) and a.index(first) == len(a) - 1 and first not in "uS"
     return out
 
 
-def check_git(args: list, cwd: str = "."):
+def check_git(args: list, cwd: str = ".", variables: dict = None):
     sub, i, hooks_off = None, 0, False
     while i < len(args):
         a = args[i]
@@ -401,6 +473,8 @@ def check_git(args: list, cwd: str = "."):
             i += 1 if "=" in a else 2
             continue
         elif a in GIT_VALUE_OPTS:
+            if a == "-C" and i + 1 < len(args) and cwd is not None:
+                cwd = os.path.join(cwd, os.path.expanduser(args[i + 1]))
             i += 2
             continue
         elif a.startswith("-"):
@@ -414,14 +488,14 @@ def check_git(args: list, cwd: str = "."):
             hooks_off = True
     rest = args[i + 1:] if sub else []
     if hooks_off and (sub == "commit" or (sub == "push" and _push_reaches_dev(
-            rest, _flags(sub, rest), cwd))):
+            rest, _flags(sub, rest), cwd, variables))):
         raise Refusal(f"git's `-c core.hooksPath` on `{sub}` skips the repo's "
                       + ("push gate" if sub == "push" else "claim hook"))
     flags = _flags(sub, rest)
     no_verify = any(a.startswith("--no-veri") for a in flags)
     if sub == "commit" and no_verify:
         raise Refusal("`git commit --no-verify` skips the claim hook")
-    if sub == "push" and no_verify and _push_reaches_dev(rest, flags, cwd):
+    if sub == "push" and no_verify and _push_reaches_dev(rest, flags, cwd, variables):
         raise Refusal("`git push --no-verify` to `dev` skips the push gate")
     if sub == "commit":
         for a in flags:
@@ -522,6 +596,10 @@ def check_docker(args: list, cwd: str):
         if a.startswith("--") and "=" in a:
             name, value = a.split("=", 1)
             (tags if name == "--tag" else files if name == "--file" else []).append(value)
+        elif re.match(r"^-[a-zA-Z]+$", a) and a[-1] in "tf" and i + 1 < len(opts) \
+                and a not in DOCKER_BUILD_VALUE_OPTS:
+            (tags if a[-1] == "t" else files).append(opts[i + 1])   # -qt NAME
+            i += 1
         elif a in DOCKER_BUILD_VALUE_OPTS and i + 1 < len(opts):
             if a in ("-t", "--tag"):
                 tags.append(opts[i + 1])
@@ -550,6 +628,15 @@ def check_docker(args: list, cwd: str):
 
 
 def check_simple(words: list, state: dict):
+    if len(words) >= 3 and words[0] == "for" and words[2] == "in":
+        state.setdefault("vars", {})[words[1]] = words[3:]     # for b in x y z
+        return
+    if words and all(ASSIGN_RE.match(w) for w in words):
+        for w in words:                   # plain NAME=VAL: kept for refspecs
+            m = ASSIGN_RE.match(w)
+            _check_assignment(m.group(1), m.group(2))
+            state.setdefault("vars", {})[m.group(1)] = [m.group(2)]
+        return
     rest = _strip_prefixes(words, state)
     if not rest:
         return
@@ -559,12 +646,19 @@ def check_simple(words: list, state: dict):
             m = ASSIGN_RE.match(a)
             if m:
                 _check_assignment(m.group(1), m.group(2))
-    elif prog == "cd" and args:
-        state["cwd"] = os.path.join(state["cwd"], os.path.expanduser(args[-1]))
+    elif prog in ("cd", "pushd"):
+        target = args[-1] if args else "~"
+        if target != "-":
+            state["cwd"] = os.path.join(state["cwd"], os.path.expanduser(target))
     elif prog == "git":
-        check_git(args, state["cwd"])
+        check_git(args, None if state.get("remote") else state["cwd"], state.get("vars", {}))
     elif prog in ("docker", "podman"):
-        check_docker(args, state["cwd"])
+        if not state.get("remote"):       # a remote build has no checkout here to check
+            check_docker(args, state["cwd"])
+    elif prog == "ssh":
+        remote = _ssh_command(args)
+        if remote:
+            check_text(" ".join(remote), {"cwd": state["cwd"], "remote": True})
     elif prog == "eval":
         check_text(" ".join(args), state)
     elif prog in SHELLS:
@@ -574,6 +668,15 @@ def check_simple(words: list, state: dict):
                 break
     elif "--" in args:                    # a wrapper's `-- CMD` (desktop_lock, board_lock)
         check_simple(args[args.index("--") + 1:], dict(state))
+
+
+def _ssh_command(args: list) -> list:
+    """The remote command's words of `ssh [options] host [command]`."""
+    i = 0
+    while i < len(args) and args[i].startswith("-"):
+        a = args[i]
+        i += 2 if len(a) == 2 and a[1] in SSH_VALUE_FLAGS else 1
+    return args[i + 1:]
 
 
 def check_text(text: str, state: dict):
