@@ -102,7 +102,7 @@ car uses.
 
 ---
 
-## 3. Current state (2026-10-06)
+## 3. Current state (2026-11-04)
 
 ### 3a. What is built
 
@@ -129,1238 +129,59 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
 
 ### 3b. Open work, in order
 
-* **SLAM in the furnished home: fixed and merged** (3.38-3.40; branch
-  `frontier-search` merged into `dev` 2026-10-06). The map bent 2.5-6 deg in
-  the open rooms because slam_toolbox's scan matcher blurred each point
-  10 cm before scoring (`correlation_search_space_smear_deviation`
-  0.10 -> 0.03 m: two tours within 4.2 cm, every room's walls 100% true).
-  Scans are also stamped with their capture time (skew 21 -> 7 ms).
-* **The operator sees the cloud (3.56), merged 2026-10-09.** `status.cloud`
-  from the free `/health` while a cloud mission runs, shown on the twin's
-  panel; the arrival confirmation has its own 8 s deadline
-  (`arrival_confirm_timeout_s`), so a hanging cloud parks in ~25 s. The
-  Guide HUD shows it too (`CLD`). Re-check the 8 s once 500+ real calls
-  exist (the user, 2026-10-09). 3.61: Stop clears the brain's task slot
-  only if it is still the task it awaited.
-* **Local identity check (3.48), merged 2026-10-09.** Five small VLMs on
-  the Jetson at 15 W (llama.cpp): Qwen2.5-VL-3B Q4 meets accuracy (97.1%
-  precision, 0/34 teal bin; the cloud 67.9%) but fails latency (5.58 s p90
-  for the full reply, 2.84 s to its decision) and memory (3.48 GB vs 3.25);
-  Cosmos-Reason2, Qwen3-VL and LFM2 confabulate; no Nemotron VL fits. Not
-  built. 3.58: stopping at the deciding token changes no answer, but with
-  the robot stack running it fails latency (3.64 s p90, bar 3.6) and memory
-  (`MemAvailable` minimum 296 MB, bar 1 GB); not recommended. Open for the
-  user: close it, or try loading the model only at arrival.
-* **The local VLM's runtime (3.78), merged 2026-10-14: TensorRT Edge-LLM
-  v0.9.1, engine VE.** Qwen2.5-VL-3B INT4 AWQ with a reduced vocabulary
-  (17,920) and FP8 embedding (`~/bench-378/ws91/q25VE/engines` on the
-  Jetson), driven by `tools/jetson/edgellm_identity.cpp` (JetPack 6.2
-  patches: `patch_edgellm_trt103.py`). 2.6x faster than llama.cpp; under the
-  whole robot stack 1.32 s p90, 606 MB `MemAvailable` minimum, 3.48's
-  accuracy (97.2% precision). The user set the memory floor at **0.5 GB with
-  the VLM killed first** (2026-10-14) and waived the teal-bin bar. Qwen3-VL-4B
-  and Qwen3.5-4B fail accuracy under every runtime. Margin over the floor is
-  ~100 MB; 3.81 (memory budget) raised it to ~500 MB; D deferred to the Rover.
-* **Memory budget (3.81), steps A-C and E merged 2026-10-15; D deferred
-  (amendment 4, the user): measure on the Rover first (step F).**
-  Criterion 4 FAILED on `dev`'s cloud-off search (3.81.G G1-G2), then met
-  under 3.80.G's search (G3, `found`, VE confirmed; 1,196 late wheel ticks:
-  `dev`'s explore path, `/world/map` encoding on the loop; fixed in 3.87). Sim tiered loads no YOLOE/CLIP, so only
-  the Rover's step F tests perception's memory with VE. A: under VE the VLM driver holds 3.97 GB (engines
-  3.05, visual encoder 1.29), perception 1.94, Python services ~0.2, ROS
-  0.25; a torch GPU process costs ~0.6 GB before any model. C (amendment 1):
-  text features come from a disk cache or a CPU-only child
-  (`brain/text_encoder.py`, `PICAR_TEXT_CACHE`), so MobileCLIP and CLIP's
-  text tower leave perception's process; YOLOE's CPU copy is dropped;
-  `foxglove_bridge` runs only with `PICAR_FOXGLOVE=1`. Steady
-  `MemAvailable` minimum 992-1,086 MB over three runs (606 before):
-  criterion 2 (+1.0 GB) not met, ~600 MB short. Failed and kept by the
-  user: T1's heap bar (A's MobileCLIP attribution was wrong: YOLOE's first
-  predict reuses that heap) and new-target time (a new target's first frame
-  7-36 s; a cached one is faster than before). E (amendment 3): a mission
-  start held two pipelines (377 MB free); now `TieredVision.close()` drops
-  the pipeline, a start waits for the ended runner's close (10 s) and for a
-  frame still in perception (30 s), and `pipeline_for` collects first: the
-  new-target low is 508 MB (floor 500), set by the text child. Records:
-  `evaluations/memory-381/`; `headroom_identity.sh SWITCH=release`.
-* **Tiered identity (3.80), A-C merged 2026-10-14; the local tier is ON by
-  default on the board since 3.108 (off elsewhere).** The user's strict order: perception, then local Qwen, then the
-  cloud only after `tier_local_max_unable` (2) unable answers or when the
-  local VLM is absent; thresholds approved (no_below 0.1, yes at 0.5,
-  timeout 3.0 s). B: `service/local_vlm` on `127.0.0.1:8005`, systemd unit
-  `picar-local-vlm` (`OOMScoreAdjust=1000`) installed by
-  `install_services.sh`, **enabled at boot since 3.108** (the user,
-  2026-10-26), and `picar-stack` sets `LOCAL_VLM_URL`. Benches hold it off
-  with `tools/jetson/vlm_hold.sh` (a `/run/picar-vlm-hold` flag the unit's
-  `ConditionPathExists` honours, cleared at boot) and put it back as found.
-  Board: 299/299 answers as 3.78, HTTP p90 1.17 s, 4.07 GB. C: the arrival
-  question asks it first (`brain/local_vlm.py`, `TieredVision.confirm_local`,
-  arrival state `checking`); on with `tier_local_vlm_url` / `LOCAL_VLM_URL`.
-  C1-C8 met (live: `found` offline, 0 cloud calls at arrival).
-  `picar-stack` runs at `oom_score_adj` -900 on the Jetson (B4, checked
-  2026-10-14 at `954cc68`). Survey room labels go through the same tiers in 3.70.S6.
-  **D-P merged 2026-10-17 (`e9b4017`):**
-  * D: every frame's question goes local first. F: Qwen's direction
-    question says FORWARD on every frame (`tier_local_direction` off);
-    YOLOE + CLIP's candidate steer is on. G: `tier_search: explore` (needs
-    nav2 and a local tier): explore picks where to look, the tiers decide
-    identity; cloud calls 765 -> 6 over 21 houses, 0 contacts.
-  * I-N: nine more local VLMs or builds (RoboBrain2.0-3B, InternVL3.5-2B/4B,
-    Youtu-VL-4B, MiniCPM-V 4.0, under llama.cpp and Edge-LLM); none
-    replaces VE.
-  * Cloud models on 3.80.I's frames (2026-10-17, on dev at `ad4c774`):
-    with the target in view, GPT-6 Astra steers best of every tier (56/60,
-    the only one over the 80% bar); Opus 5.5 49/60, Opus 4.5 46/60. Out of
-    view, no model, local or cloud, gives a search direction (best 41%, below
-    the 43% of always naming the commoner side). So where to look is chosen
-    from the map: `docs/policy/ARCHITECTURE.md` "Where to look is chosen from
-    the map" -- the learned goal ranker (3.65) orders frontier candidates,
-    and a room prior (next), inventory distance and visual promise join it
-    as inputs.
-  * Q (2026-10-18): GPT-6 Astra as the identity check FAILED (precision
-    56.1% vs Opus 4.5's 67.9%, recall 100%; the teal bin). Opus 4.5 stays
-    `/navigate`'s default. Astra's Bedrock usage omits image tokens, so
-    its reported cost is a floor.
-  * R (2026-10-19, on dev at `061637f`): every grounding VLM from the
-    2026-10-18 web check; none replaces VE on R1-R3. Bonsai 2 2B fails
-    identity by one false positive (94.5%, bar 95), meets steering 48/60
-    and memory; PaliGemma 2 (Mac) meets identity (97.4%, 0/34 teal) but is
-    6.1 GB; Florence-2 steers best (57/60, 0.58 s for -base) but always
-    draws a box. Photon, RoboRefer, the Moondream GGUF and Moondream 3.1
-    do not load; Molmo2 (9.1 GB fp16) hung the 16 GB Mac into a kernel
-    panic, not run. The board's
-    zram has been off since 2026-10-17 (`nvzramconfig.service` failed).
-  * S (2026-10-20, on dev at `7aecad7`): YOLOE + CLIP gates Florence-2-base
-    (asked only after a detection in the last 3 frames): steers 53/60,
-    answers 2/40 out of view, p90 0.81 s; FAILED memory as written (3,372 MB
-    drop vs VE-alone's 2,978) and the 640-wide arm (48/60). Like for like
-    (amendment 1), VE + perception drops 5,063 MB against Florence +
-    perception's 3,118-3,372, so S4b is met. Florence can't do the arrival
-    identity check (it boxes 40/40 out of view), and Florence + VE +
-    perception does not fit (amendment 2: Florence OOM-killed at the first
-    request, lowest 25 MB; the twin stack unharmed). Downscaling hurts
-    YOLOE + CLIP (44 -> 42 -> 21 at 320), not Florence (56 -> 56 -> 51).
-    Not adopted.
-  * T (2026-10-20): PaliGemma 2 3B (R's best identity, 97.4% on the Mac
-    at fp16) at 4 bits on the board (bitsandbytes NF4, its library built
-    for sm_87) does not replace VE: precision 93.7% (92.5% with the vision
-    tower at fp16; new false yeses on one walk), 3,398 MB alone, p90 2.76 s,
-    and beside YOLOE + CLIP a 5,294 MB drop, leaving 137 MB. It steers 55/60.
-  * U (2026-10-20, the user: no VE-or-Florence choice yet; "target the top
-    3 / top 5 models for the rover"): the shortlist's five (VE, Bonsai 2 2B,
-    MiniCPM-V 4.0, Florence-2 behind the gate, InternVL3.5-4B) are re-measured
-    on the Rover's own frames by one harness (`evaluations/tiered-380/U/`,
-    `run.sh` then `score.py`), bars U1-U4 written, smoke-tested on phone
-    frames. U0: the board's llama.cpp `7f51953d7` (3.80.M's build was deleted)
-    gives 299/299 the same answers. Waits on the Rover's walks.
-  * O: the local VLM's box finishes the approach and the arrival when
-    perception is silent, and only the cloud may confirm such an arrival
-    (never the local tier). Blind perception, 21 houses: 17 at pace 1, 12 at
-    pace 6, 0 `found` away from the target.
-  * P: on the Jetson at pace 1, perception p90 171 ms and `MemAvailable`
-    minimum 823 MB, 0 OOM. `tier_local_cold_search_after: 1` (the user's
-    option a) paces only questions the local tier takes; any question handed
-    to the cloud waits `tier_cold_search_after` (6).
-  * The local tier stays off unless `tier_local_vlm_url` is set: on the
-    board `picar-stack` sets it (3.108); the laptop, suite and cloud leave
-    it empty. A VLM that is down still reads as configured, so its
-    questions go to the cloud (paid).
-  * **E (criteria 1-6, merged 2026-10-24):** 1 met offline on the 299
-    (97.2% / 94.6%, VE never in the band, 0 cloud calls); on the Jetson, 3
-    met (arrival to verdict p90 1.91 s, bar 2.0, five arrivals; the wait for
-    a frame question holding VE is what nears it), 4 met (3 `found` with
-    the cloud refused), 5 met (VE killed: 0 late ticks, the cloud takes
-    over), 6's memory met (776 MB) and its OOM drill kills VE's driver only,
-    but one wheel tick ran late (0.127 s) as memory ran out -- FAILED as
-    written; D10 met (box p90 2.86 s). Status now reports `verdict_s` and
-    `arrival_verdicts`. `evaluations/tiered-380/E/board/`.
-  * H, done 2026-10-24: with 3.87 merged, G3's configuration has 0 late
-    wheel ticks (E's `A1-noload`: 0 of 12,367, max 85 ms; G3 before: 1,196).
-  * A person's Stop during an arrival's confirmation now ends it
-    `cancelled`, not `found` (3.104, below).
-    `vision-picar-ros:latest` rebuilt from `dev` d496c67 on 2026-10-31.
-* **Calibrating the tiers (3.92), merged 2026-10-22; nothing changed in
-  the code.** VE and YOLOE + CLIP on all 2,261 labelled frames (free):
-  * The raw scores are already calibrated on average (VE ECE 0.034), but
-    not per object (shoes 0.13).
-  * VE's frame question is 94.9% precise there (97.2% on 3.48's 299), and
-    it is almost never unable (6 of 2,261). So the cloud's "2 unable"
-    trigger rarely fires.
-  * A learned "is Qwen wrong" router FAILED (AUROC 0.70). The tiers'
-    disagreement catches the same 43 of 77 errors while flagging 5.4% of
-    frames.
-  * Perception is silent on 20.4% of in-view frames, and VE covers 56% of
-    those, so no Astra replay is proposed (re-read on Rover frames).
-  * Inputs to 3.91.C and the behavior-tree work.
-* **A no about a candidate, remembered (3.91.C), code merged 2026-10-26;
-  the step stays open for criterion 9 (the user's live Drive-via-brain walk
-  on the deployed twin).** `tier_remember_no` (on): a no about the
-  candidate perception calls the target masks it until the body moves
-  0.5 m / turns 30 deg (odometry) or, on a phone, 3 lost frames or 20 s;
-  then a probation until a yes. The tiers' order (amendment 5): a lower
-  tier never undoes a higher one's answer; a local no Qwen cannot vouch for
-  (box outside `tier_no_box_range`) asks the cloud once a run (option a);
-  at arrival, once the cloud has spoken, the identity check is the cloud's
-  (`cloud_spoke()`, decided in `MissionRunner._guarded_confirm`). With the
-  call cap spent and a cloud no held, an arrival waits at most 20 s, then
-  the local tier (the user, 2026-10-26). Replays: C6 met (0 / 1
-  reversals), C5b met, C7 met local first (1 call) and FAILED cloud only
-  (10, bar 4), C5a FAILED on its own stub -- both kept as written by the
-  user. Criterion 8 (AWS spot, 21 houses) found met on all seven arms;
-  contacts not measured (needs a live run). Open items for the user are in
-  `docs/plans/ros-alignment/3.91-tier-fusion.md`. **3.91.D, merged
-  2026-10-26:** in the sim, where a held cloud no would decide an arrival,
-  3.98's geometry judges it first, free (`TieredVision.sim_over_held_no`).
-  D1 (a spent cap ending `arrived_unconfirmed`) was dropped by the user: it
-  broke 3.47's criterion 3 (the twin reads it as an outage).
-* **The tiered ladder as behavior trees (3.94), merged 2026-10-23.**
-  `brain/tree.py` (Sequence, Fallback, Condition, Action, Decorator;
-  py_trees semantics) builds the tiered policy's three decisions as trees:
-  what to do this frame, when to ask, who to ask.
-  * Hard rules stay outside the trees: safety, a person's Stop, arrival,
-    "found needs the cloud", B3, and who-to-ask's guard order.
-  * Rung order and the node settings are config (`brain:` `tier_tree:`,
-    validated in `control/brain_config.py`; every default is the old
-    value). `describe_*tree()` prints the trees.
-  * Exactly the old behaviour: 0 differences against the frozen
-    `tests/tiered_reference.py` on random states, and 0 in 41,585 sweep
-    frames against `dev` before it.
-  * Live criterion FAILED on its run: explore's close-in was vetoed at
-    the target (K3.4, kept by the user until the Rover's runs). Two more
-    runs on the tree found, 0 contacts.
-  * Groundwork for learned or tuned trees in simulation.
-* **The trees on py_trees (3.95), merged 2026-10-23.** `brain/tree.py`'s
-  node kinds are py_trees 2.6.0 classes (pinned), ticked by py_trees.
-  * No behaviour change: 0 differences in 41,585 sweep frames against `dev`
-    before it, and live `found` with 0 contacts.
-  * Jetson p90 0.85 ms a frame for all three trees.
-  * py_trees' XML parser loads all 12 of nav2's shipped trees with
-    stand-in nodes (`evaluations/tree-395/nav2_probe.py`).
-  * The board's brain needs `pip install -r requirements.txt` at its next
-    update (the README's update step does it).
-* **Rooms from CLIP (3.51, 3.54), merged 2026-10-09.** Zero-shot fails
-  (67%); few-shot on the user's own rooms meets accuracy on three rooms
-  (81%, within 1.1 points of the cloud) but not laptop-CPU cost. Not wired
-  in; the rest of the house is unrecorded.
-* **Offline is a mode (3.49), merged 2026-10-09.** With every connection
-  refused: the robot server loads no cloud client, `frontier`/`explore`
-  still find, tiered ends `arrived_unconfirmed` at the target, `vision`
-  ends `failed` without moving, the twin loads nothing from the internet.
-  One criterion failed and is recorded (an async start closes 0.62 cells
-  less than with the network). `tests/test_offline_mode.py`.
-* **Offline arrival (3.47), merged 2026-10-09.** A tiered mission whose
-  arrival holds but whose identity check cannot reach the cloud ends
-  `arrived_unconfirmed` (not `found`, not `failed`). Only `CloudUnavailable`
-  from `brain/navigate.py` (transport error, 5xx, 408, 429) counts as
-  unreachable. Known limits in the section. Since 3.53 (merged and the twin
-  deployed 2026-10-09) the twin shows it as a warning, and the brain keeps
-  the arrival frame, probes the cloud's free `/health` (15 s, up to 600 s)
-  and asks once when it returns: `status.late_confirmation`, never `found`,
-  never a robot call.
-* **Object inventory (3.46), merged 2026-10-08.** Every mission records
-  what it saw, placed by the lidar, weighted by looks from new viewpoints;
-  `GET /mission/inventory`, and uploaded to the recordings bucket under
-  `inventory/` (labels and positions only; the user's decision). Nothing
-  reads it. Sim criteria met on fresh missions (sweep 3: recall 96.6%,
-  precision 97.2%); sweep 1's recall failure is recorded. **Real frames
-  give it nothing yet:** phase C (a namer for camera frames) was
-  **closed by the user 2026-10-10** after amendments 4-13: no namer
-  reaches the 75% judge bar (YOLOE prompt-free 30%, Qwen3.5-4B 64%, Gemma
-  4 E2B 60% and fits beside the stack, E4B 63.5% and does not). Lookup by
-  appearance (stored CLIP embeddings, matched to the user's words) put
-  the right object first on 11 of 11 targets but failed per-frame recall
-  on held-out walks (64% vs live 78%). Reopen on the Rover's own frames;
-  `docs/evaluations/INVENTORY-NAMERS-2026-10-10.md`.
-  `HANDOFF-2026-10-08-3.46-object-inventory.md`. **Review fixes (3.55),
-  merged 2026-10-09:** a stop that could skip the stop command, one look
-  counted twice on an in-frame merge, mission ids sharing a file,
-  `INVENTORY_BUCKET=` (empty) is now local only, durable saves.
-  **Accuracy (3.60), merged 2026-10-09:** 3.55's seven open claims
-  verified -- five fixed (looks and misses kept by frame, so a merge never
-  counts a frame twice; no miss without a scan or for a label seen there
-  without a range; any sighting clears a pending miss; a merge keeps the
-  newest viewpoints; the lidar offset in one place), placement by the
-  nearest return kept on data (the median traded precision and duplicates
-  for recall), the per-frame reads kept by design. Seed 3463: every 3.46
-  bar met before and after; landmarks with more hits than frames 2 -> 0.
-* **Four end states (3.70 E1-E6), merged and the twin deployed
-  2026-10-12.** A mission ends `found`, `exhausted` (was `searched`),
-  `out_of_budget` (was `max_steps`) or `cancelled` (was `stopped` and
-  `preempted`, with `cancelled_by` `stop`/`dpad`), beside the faults.
-  Old records are read through `read_outcome()`, never rewritten. The
-  budget is a time limit (`mission_time_limit_s` 1200 s, the user's;
-  900 s of explore never finishes `home_first_floor`), a battery floor
-  (`battery_floor_v` 10.5 V, two low readings; re-measure on the Rover)
-  and, for `vision` only, 120 paid calls (`vision_max_calls`); `max_steps`
-  is only a backstop derived from the limit. Each end carries a report
-  (rooms entered, goals, m² mapped); its `coverage` share FAILED its
-  2-point bar mid-search (+69/+77 live), so the phone shows m².
-  **Survey mode (3.70 S1-S3), merged 2026-10-14, sim only.** `job:
-  "survey"` (no target, explore only, `survey_time_limit_s` 1800 s) ends
-  `exhausted`, never `found`: 9/9 sim and 100/100 ProcTHOR; the one live
-  run in `home_first_floor` FAILED (out of time at 30 min, 26 frontiers
-  left). Room labels (`brain/room_labels.py`): asked every 2 m and through
-  every doorway (`room_label_mode: spacing`; a doorway counts 3 m, an
-  answer reaches one doorway on), at most 60 calls a survey -- the user's
-  choice 2026-10-13, ~$0.43 typical, ~$0.88 at the cap on Opus 5.5 (an
-  estimate). FAILED the 95%-per-room bar: 46 of 90 rooms (was 36), even
-  asking at every stop tops out at 57 (open plans, rooms never entered).
-  Objects during a survey FAILED on duplicates only (1.30, bar 1.2).
-  **S2's car half, merged 2026-10-23, deployed 2026-10-24, off by default:**
-  the vision service's `POST /room` (one room name, Opus 5.5) and
-  `brain.room_label_source: cloud` (default `frame`); each ask bounded on
-  the wall clock and fitted inside the tick; 401/403/404 stop the asking
-  with `status.survey.source_error` (the twin shows it since 3.127). Its
-  first real call found **every reply cut**: Opus 5.5 always thinks, and
-  at 16 tokens the thinking ate the cap (`unclear` every time, unlogged).
-  **S2b (merged and deployed 2026-10-24, `969cfe2`):** effort `low` (only
-  to ids a real call confirmed), cap 256, a reply not ending cleanly is
-  `unclear` with `_stop` and a warning. Three real calls: bedroom,
-  bedroom, office; 6-145 tokens out, 1.7-2.9 s; ~$0.006-0.009 a call,
-  ~$0.18-0.27 a median survey, ~$0.36-0.55 at the cap, approved by the
-  user 2026-10-24; left: the labels' accuracy on the Rover. The map cut
-  (`segment()`, every 5 s on the mission thread): 1.45-2.77 s on the
-  Jetson at 0.05 m (2026-10-28), **0.18-0.37 s since 3.118** (merged
-  2026-10-29: numpy with exactly the old answers, frozen
-  `tests/room_cut_reference.py`; do not "simplify" it); `spacing`'s walk
-  0.35-0.79 s -> **0.04-0.07 s since 3.120** (merged 2026-10-29:
-  `_wants()` reads `_walk_dist()`, exactly the old distances, frozen
-  `tests/walk_reference.py`; `layer()` keeps `_walk()`), so the pause is
-  ~4-9% (was ~11-23%). Live survey: `out_of_budget`, 43 calls, 0 contacts.
-  Missions on a
-  saved map (S4, M1-M3) wait on 3.50's build. **S5, merged and the twin
-  deployed 2026-10-14:** the Sim tab's Remote brain panel picks Find or
-  Survey; a survey reads "Surveying the house" with its rooms named
-  against the cap (the brain's `/health` `room_label_max_calls`).
-  **M5 (no survey, no saved map), merged 2026-10-15 with its live
-  criterion FAILED:** ProcTHOR usable 200-299 98/100 (bar 90, pinned);
-  `home_first_floor` from an empty map 10 of 13 rooms (median 612 s,
-  0 contacts) -- hall, laundry and living room ran out 1800 s in the
-  dining room, wedged under the table between its legs and the chairs.
-  No run entered the laundry. `evaluations/unsurveyed-370/`. **The fix
-  (3.83), records merged 2026-10-16, FAILED and not adopted:** 3.68's
-  refusal keepout (nav2's global costmap) marked once per spot, plus a
-  20 s stall cut that backs explore out; the three rooms are found, but
-  11/13 overall -- breakfast pinned in a pocket under the table, pantry an
-  explore livelock ("already facing it", not 3.83's code). Code on branch
-  `plan/3.83-dining-room-trap`; the user agreed to keep it off `dev`.
-  **Adopted with 3.85, merged 2026-10-18 with criteria 2-4 failed (the
-  user's call):** 3.83's code plus an approach counted only once nav2
-  took it (the pantry livelock), an escape that drives FORWARD when
-  REVERSE is refused and the front is open (the table pocket), and a stall
-  under way fails its place at once. Live 26/26 found over two batches
-  (median 389 s, 36.7 m), 0 contacts, R6 6/6 with 0 marks, sweeps hold.
-  Failed: criteria 2 and 3 by 0.1-0.6 s in four runs (their 120 s bar is
-  the goal timeout itself) and one hall run at 150.2 s; laundry 6 marks
-  (bar 5). `nav2.yaml` now has the keepout filter; `vision-picar-ros:latest`
-  rebuilt from `dev` d496c67 on 2026-10-31.
-* **Review of the code written before the review rule (3.76): done 2026-10-18,
-  every batch A-P3 merged; what waits on the user is the plan's closing list.** Both reviewers on whole files, risky files only,
-  every confirmed bug fixed (the user, 2026-10-12). A (`safety.py`,
-  `server.py`): 5 fixed -- a verb longer than the watchdog lost its
-  driver's authority, the wheel loop could overwrite a stop, lost feedback
-  under ROS drive read as a ROS outage, `/stop` waited on a hung bridge, a
-  take-over under ROS drive cancelled the person's own move. B (the board,
-  lidar and ROS drivers): 8 fixed -- a stop could leave the real board
-  driving, one bad board frame ended feedback for good, both serial readers
-  spun on an unplugged line, late lidar reads aged too young, an unbounded
-  revolution buffer, a 0 deg turn pulsed the motors, the board clock map
-  drifted with uptime, a ROS twist after a stop. Open for the user: `/scan`'s
-  stamp is the request time (3.42's own open item). **Batch C (the mission
-  loop), merged 2026-10-13:** 6 fixed -- Stop (any non-found end) left an
-  explore mission's own nav2 goal driving (the server spares a goal on the
-  brain's stop; the runner now ends its own), two starts during one build
-  both ran and a Stop during the build was lost, explore's goals bypassed
-  the halt gate, a person at the D-pad did not end explore, explore's pan
-  just after its goal failed the mission, and start errors (a bare 500, a
-  wrong secret read as no nav2). **Batch D (the twin), merged 2026-10-13,
-  deployed 2026-10-14:** 24 fixed, one a security bug -- a setup link that
-  moved a service to another origin kept the phone's saved secret and the
-  load-time auto-connect sent it there (now dropped, with a warning). Also:
-  Close during Start hung Start or began an invisible run; one brain error
-  or a failed Stop froze the Sim panel over a running mission; walk names
-  over 64 characters lost whole walks; a lost STOP said nothing; the
-  120-call cap paused Drive-via-brain walks. **Batch E (perception,
-  arrival, cloud calls), merged 2026-10-13:** 12 fixed -- a Stop mid-frame
-  still bought a paid tiered call; landed answers fed the spin guard;
-  sightings lost behind a call in flight; a scheme-less vision URL read as
-  "cloud unreachable"; explore adopted or cancelled a person's map goal,
-  drove away from a target within standoff, failed on one nav2 blip, and
-  never ran its early-retry rule (now on: the 100-house sweep still pins
-  99). **Open, found by it:** explore reads `frame["detections"]`, which
-  only the simulator provides -- on the car it cannot see the target until
-  its perception on real frames is built (the user, 2026-10-13); and
-  cold search counts absent frames since the last answer landed, not
-  consecutive ones (kept; since E4 every tiered pacing count runs from the
-  landing, so a slow call no longer buys a second one back to back).
-  **Batch H (cloud, tunnel, ROS bridge), merged 2026-10-14, NOT YET
-  DEPLOYED:** 34 fixed. The bridge forgot a goal after one cancel (a lost
-  cancel left nav2 driving after a Stop): it now re-sends until nav2's
-  result. Each SLAM session is anchored once, after `start_truth_pending`
-  clears, and never moved -- `vision-picar-ros:latest` rebuilt from `dev` d496c67 on 2026-10-31
-  (an old bridge anchors at first contact for good). The cloud read
-  odd model replies and Bedrock's 3.75 MB / 8000 px limits as outages, and
-  a hung call outlived the Lambda; the tunnel served an empty
-  `LOCAL_SECRET` open (`run.sh` now refuses one under 16 characters).
-  The vision Lambda and the deploy bucket's 365-day retention deployed
-  2026-10-14. Its two open goal bugs are fixed by 3.82 (below).
-  **A refused goal keeps a Stop's hold (3.82), merged 2026-10-15:** a
-  goal supersedes a Stop's goal-ending loop only when the bridge took it
-  and no Stop was counted since the request arrived (live, a refused goal
-  right after a Stop: 0 cm true vs 128 cm on `dev`); a bridge that refuses
-  the secret ends explore `failed` naming the 401 (one retry rule,
-  `world/bridge_faults.py`). Open items:
-  `HANDOFF-2026-10-15-3.82-refused-goal-hold.md`. **A person's Stop is
-  the last word over autonomy (3.84), merged 2026-10-16:** a `/stop` from
-  a person (`twin-dpad`, `teleop-operator`, unnamed) latches the brain out
-  -- its verbs, wheels and `brain`-named goals refused `person_stop`, the
-  mission ending `cancelled`/`stop` -- until a mission starts
-  (`POST /autonomy/resume`); explore names itself on its goals. Live, a
-  D-pad Stop during explore: 0.0 cm true vs 29.8 cm on `dev`. A verb under
-  `drive: ros` lifts the Stop's hold only under its lock and only if no
-  Stop came after it; a verb's stop baseline is the server's
-  (`VERB_STOP_BASELINE`). `HANDOFF-2026-10-15-3.84-person-stop-last-word.md`.
-  **The twin names a Stop's refusals (3.86), merged and deployed
-  2026-10-16:** STOPPED, STOPPED BY A PERSON, NO WHEEL FEEDBACK, ROS DOWN,
-  unknown reasons by name; only a safety veto flashes VETOED or takes the
-  alarm colour, a Stop or preemption is plain, a fault or a lost STOP amber.
-  Open (the user's call, a follow-up): the robot server's watchdog record
-  names the last driver and replaces a Stop's or fault's refusal ~1 s later,
-  so the readout cannot tell a hung brain from a finished mission. **Batches F and G (recorded walks, the inventory and the late
-  identity check), merged and deployed 2026-10-14** (walks Lambda and
-  consoles from `5fcb7bb`; G runs in the brain, no deploy). F: 20 fixed,
-  one a security bug -- the metrics console put stored text into
-  `innerHTML` in the page holding the walks secret. Also: judge or
-  collision outages stored as finished scores (now flagged and left out of
-  the summary), judged and metrics-only scores averaged together, a replay
-  outliving the 900 s Lambda, a frame delete that half-failed or left
-  scores current (scores are marked, then the manifest, then the image),
-  a score recreating a deleted walk, `label_assist` paying again for a
-  reply it could not parse, `compare` over different frames. G: 9 fixed,
-  all in the late identity check (3.53) -- a call outliving its guard
-  ended the window `failed`, and in later rounds landed answers and errors
-  were lost, doubled or counted twice. Open for the user: landmark points
-  grow without bound (G2, latent: real frames carry no detections), and
-  what the uploaded inventory may carry (G12, G13). **Batch I (the
-  tooling), merged 2026-10-14:** 8 fixed -- `ready` and the push gate
-  passed with an un-added module the commit imports (untracked files now
-  refuse); passes and review records ignored whitespace (`git patch-id`;
-  now a diff id that keeps it, so records written before no longer match:
-  re-run `reviewed`); a docs-only push linted the checkout, not the commit,
-  and counted `docs/` data tests read; `new` leaked a branch or nested a
-  worktree; the venv was missed from a subdirectory; 3.100 sat on ROS
-  domain 0; `git push origin :dev` passed unchecked. `tools/plan_claims.py`
-  and `tools/nightly_suite.sh` joined the risky list (the user).
-  **Scope widened to everything outstanding (the user, 2026-10-15): steps
-  J-P3. Batch J (`plan_claims.py`, `nightly_suite.sh`), merged 2026-10-18:**
-  8 fixed (the nightly refresh tested the previous commit; no time limit; a
-  stale worktree failed every night; `done (...)` read as open; a glob
-  missed by `overlap`; an old branch table over `dev`'s; a claim race; a
-  plain Touches entry dropped) and 26 review rounds on the fixes -- above
-  all, the nightly's lock was inherited by daemons git starts, so every
-  later night read SKIPPED unmailed (now held by a python parent); a stop
-  in a stalled fetch never landed; a night that died showed yesterday's
-  verdict. Also fixed on the way: `test_pipeline_release` failed every
-  fast-tier run on `dev` (a 0.2 s bound timing `gc.collect()`). K (66
-  commits on risky files after their batch, plus `service/local_vlm/`) is
-  split K1 robot, K2 control, K3 brain, K4 twin, K5 world/ROS/local VLM.
-  **K1 (the robot server and safety since A-B), merged 2026-10-18:** 5
-  fixed -- a person's STOP through `/action` latched nothing and ended no
-  nav2 goal (every `/action STOP` is now `/stop`); a brain goal landing
-  inside `/stop` was accepted (the stop is now counted with the latch,
-  before `robot.stop()`, and the goal ends even if that raises); a
-  malformed floor band raised out of `forward_clearance` (now
-  `floor_band_unusable`; a band seeing nothing ahead too); a battery
-  reading no pack gives (USB 5 V, a failed read of 0) ended every mission
-  on the floor (6-30 V or no reading); a brain refused under the latch
-  kept its claim. Four review rounds. **K2 (the mission loop), K3 (tiered,
-  explore, arrival) and K4 (the twin), merged 2026-10-18:** K2 3 fixed -- a
-  Stop during the arrival's waits still bought a paid confirmation; a start
-  refused after lifting a person's Stop left it lifted (now put back,
-  `POST /autonomy/relatch`, which only latches); a start during a stopped
-  build's discard skipped 3.81.E's wait. K3 3 fixed -- offline, a frame's
-  question handed to a failing cloud never came back to the local VLM; an
-  abandoned arrival check made frame questions read `busy` and buy a paid
-  call; close-in's refusals carried to the next target. K4: nothing above
-  low. **For the user (K3.4):** an approach stalled with the robot already
-  near the target is a plain failure whose 30 s cooldown blocks close-in,
-  so explore can drive off from a target it sees -- 3.85's recorded choice
-  (as `dev` was on the timeout); changing it needs live runs. **K5 (world,
-  ROS, the local VLM), merged 2026-10-18:** 1 fixed -- the keepout mask was 0
-  outside its discs, which nav2's KeepoutFilter writes over unknown cells, so
-  unmapped space read free (now -1; `vision-picar-ros:latest`
-  rebuilt from `dev` d496c67 on 2026-10-31). For the user: 3.83's dedupe (a wedge 0.15-0.30 m from a live spot
-  marks nothing) and marks cleared only by their 300 s expiry. **L1 (brain
-  perception, whole files), merged 2026-10-18:** 2 fixed -- no lock on a
-  pipeline, so a new target's first frame (its text encoded in 20 s
-  children, past B3.2's guard) shared the models with the next frame (now
-  one frame at a time; past 60 s in the models `PerceptionWedged` reaches
-  B3.2); YOLOE labels every box with the target text, so `auto` and the
-  label gates saw nothing for a multi-word target. For 3.81.F: encoding the
-  texts at mission start would take the first frame out of the guard. The
-  Hailo path's replayed boxes were never rescaled (its P16/P19 rows).
-  **L2 (brain decisions, whole files), merged 2026-10-18:** 5 fixed -- the
-  cloud's free-text room names (two spellings were two rooms, "Unclear" a
-  room); a room-label seed off the grid took the map's corner; the camera's
-  seen cells grew without bound on a SLAM map whose origin moves by
-  fractions of a cell; the stuck-breaker turned away on the found frame; a
-  Stop after the local check read as a refusal. **For the user (L2.1):** a
-  perception-led arrival forgets its refusal on one detector miss and pays
-  the cloud again; remembering it makes one wrong no final -- paid repeats
-  vs a second chance. **M1 (the simulator's core), merged 2026-10-18:** 4
-  fixed -- the sim's event log grew for the robot server's life; a mover
-  hopped under the chassis (switching its collision off); the sim took any
-  wheel command; and, **on the car's path**, JSON NaN/Infinity passed
-  `/wheels`, `/action` and `/world/goal`, so the board was sent NaN and kept
-  its last setpoint (now a 422, and the car sends a non-finite command as a
-  stop). **For the user (M1.5-M1.11): the sim is kinder than the car** --
-  rays pass diagonal wall corners (scan, map, depth), the model's frame
-  labels the target, odometry never drifts, turns run ~6x the car's rate,
-  clearance rounds up; each moves pinned numbers, so a section of its own.
-  **M2 (simulated bodies and maps), merged 2026-10-18:** 6 fixed -- the
-  split body's inventory read evicted the safety bundle (the vet waited
-  inside `motion_lock`, the inventory got a 0.9 m scan) and a slow reply read
-  as fresh (now aged from the sensor program's snapshot); the default house's
-  rooms disagreed with its layout (the target was in the "hallway"); teleop's
-  frame number was read outside its lock; replay ordered frames by name; one
-  bad line killed the fake board's reader. **For the user:** the board
-  refreshes its battery reading every 10 s, so the mission's two low
-  readings 0.5 s apart can be one sample (M2.7); the firmware's `T:0` does
-  stop the wheels (M2.8; 3c corrected 2026-10-18). **N1 (contracts, config, control
-  helpers), merged 2026-10-18:** 8 fixed -- feedback lost on a verb's last
-  read turned a Stop's verb into a fault (the mission read `failed`); the
-  tick-hang drill shared the runner's tick count (no camera centring);
-  deadlines of 0 or NaN loaded; health read a tick inside its deadline as a
-  dead loop; the ROS world ignored `drive.bridge_url`; an empty
-  `LIDAR_YAW_DEG`/`TRACK_SCRUB` stopped the robot server; `identity_eval`
-  counted never-asked frames as cloud misses; the pose heading comment
-  pointed south. **N2 (the consoles), merged 2026-10-18, deployed
-  2026-10-20:** 14 fixed, one a security bug -- a frame's stored token counts
-  went into the admin page's `innerHTML` (script beside the walks secret,
-  posted under the brain's). Also: rebuilt rows forgot what was out (a
-  second paid replay or judge run one click away), bulk delete stayed armed,
-  a Refresh mid-scoring lost every score, Download on S3 was a CORS request
-  the bucket refuses (now `?link=1` on the walks route), and the slideshow
-  and metrics loads raced. Consoles (`sync.sh`) and the walks Lambda (`?link=1`, verified) deployed
-  2026-10-20. **O (the
-  twin's page), merged 2026-10-18, deployed 2026-10-20:** 10 fixed -- toasts
-  sat under Guide's fullscreen (a recorded walk's "Frame not saved" was
-  never seen), the env banner scrolled every tab 2 px sideways, iOS
-  capitalised a hand-typed secret, the reduced-motion countdown, the
-  portrait action badge over the telemetry (and, in round 1, the chevron),
-  home-screen insets (parity checked, phone screenshots
-  `docs/evaluations/deployed-*-2026-10-20.png`). **P1 (the Jetson
-  tools), merged 2026-10-18:** 12 fixed -- `bench_local_vlm.sh` installed,
-  then DELETED, the production `picar-local-vlm` unit and rewrote its env
-  file (now its own `picar-local-vlm-bench`); README's G4 left `picar-ros`
-  restarting at every boot, and the headroom harnesses measured it in place
-  of their own (they now refuse a busy :8090); OOM kills counted 3x; the
-  identity harness's perception p90 outside its window; secrets redacted
-  from the committed memory samples. No recorded number moved. `tegrastats`
-  on JetPack 6 prints no throttling: "no throttling" rests on temperature.
-  The board's `~/.vision-picar-local-vlm.env` checked 2026-10-20: the old
-  bench's `LOCAL_VLM_DRIVER_LOG` removed (backup `.bak-20261020`); it holds
-  only the three keys the unit reads; the unit still disabled.
-  **P2 (the evaluation tools), merged 2026-10-18:** 11 fixed -- Ctrl-C in
-  the inventory judge still sent and billed every queued frame (now stops,
-  saves, keeps what was out); two recorded numbers corrected in place, no
-  verdict moved (Gemma 4 E2B: ~0.97 right boxes a frame, not 0.85; 74 search
-  false alarms, not 72); atomic paid caches. YOLO-World's low proposal floor
-  is by design (my "fix" reverted). Reviewers on Sonnet from here (the
-  user's call, to spend less quota). **P3 (the remaining tools, hooks,
-  firmware patch), merged 2026-10-18 -- the review is done:** 8 fixed --
-  `ec2.sh` (both) read an AWS failure as "no instance", so `down` left a
-  GPU billing and exited 0; a failed `up` now names the instance it left
-  running; `eval_host`'s dead-man switch is armed first and reported
-  truthfully; `run_matrix.sh` never ran as committed; `pacing_sweep`'s async
-  rows recorded no calls; `steer_check` scored on the wrong band;
-  `spec_lint` gaps. The firmware patch is clean. **Waiting on the user:**
-  nothing: the deploys and the env file done 2026-10-20, the decisions
-  made 2026-10-21; M2.7 built 2026-10-21 (a low battery read counts only
-  as a new board sample: a changed value, or the same one after
-  `BATTERY_SAMPLE_S` 12 s); K5.3 built 2026-10-22 (a mission's keepout
-  marks cleared at its end: `DELETE /world/keepout`, called by the
-  brain's navigator after its last goal; in-process sweeps unchanged, as
-  `FakeNav` has no clear); live tour MET 2026-10-22 on `5b47b06a` (the line
-  now a WARNING): 26/26 found, 0 contacts, R6 6/6, a clear line after
-  all 19 missions with a mark live at their end; M1.5-M1.11 a sim-honesty
-  section after the Rover's numbers. Handoff:
-  `HANDOFF-2026-10-15-3.76-J-onward.md`.
-* **The wheel loop late under explore (3.87), merged 2026-10-16.** Found by
-  3.81's G3: explore fetches `/world/map` every tick, and the robot server
-  ran late on 9.7% of wheel ticks on the Jetson (dev's own explore, H1).
-  Two causes, both on the event loop's GIL: FastAPI encoded the map reply
-  with `jsonable_encoder` on the loop (131-218 ms; now a `JSONResponse`
-  built in the route), and `RosWorld._resample` was a per-cell Python loop
-  (141 ms a map version; now numpy, 11 ms, cell-for-cell the old loop).
-  H3: 0 late in 18,273 (max 99 ms, a thin margin). A sync route returning
-  a big dict blocks the wheel loop: return a built `JSONResponse`.
-* **Explore asks a person (3.88 A), merged 2026-10-20; the twin deployed
-  2026-10-20 (with N2/O), the board's brain not yet updated.**
-  `explore_ask` (default off; plain `explore` only, 400 for tiered): explore
-  pauses at each goal choice and publishes 3.65's candidate pool
-  (`status.explore.ask`); `POST /mission/explore/pick` names one by id (409
-  on a stale, unknown, second or late pick); 60 s without one takes the
-  rule's pick as `rule_timeout`. Paused time is outside
-  `mission_time_limit_s`; Stop and D-pad unchanged (a `LOOK_CENTER` probe each
-  second hears 3.84's latch). Each choice carried out is one fsynced JSON line
-  (`recordings/explore-choices/`, `brain/choice_log.py`). The twin's Sim tab
-  numbers the goals; a tap is a pick, never `/world/goal` (UI test pinned).
-  Live 1 of 2 found, 0 contacts, 0.0 cm moved in pauses; run 2 failed on
-  `dev`'s escape creep outliving `RemoteRobot`'s 10 s timeout under
-  `drive: ros` (fixed by 3.89, below). Up to 71 candidates a choice.
-  **B (an oracle as the expert) FAILED, merged 2026-10-21; C and D dropped.**
-  The oracle (shortest true floor path to the target) is the ceiling: median
-  3 goals vs the rule's 9 on 600 fresh houses (`procthor:train:<i>`, the
-  first 1,000 of ProcTHOR's `train` split, 615 usable). Cloning it into the
-  ten weights agrees 29% (bar 60%; it underfits); DAgger did not help; clone
-  then PPO won selection and on the fresh houses cut median goals 22% (bar
-  20%) but found 590 vs 596 (bar 590.04, the user's strict reading) with
-  +8% metres. Default stays `rule`. Reopen with richer features, not more
-  labels. `evaluations/goal-tap-388/`.
-* **The escape creep inside the brain's timeout (3.89), merged 2026-10-21.**
-  Under `drive: ros` nav2's `collision_monitor` (`PolygonSlow`, 13-33 cm
-  ahead, ratio 0.5) halves a forward twist, so the escape's creep FORWARD
-  from the 20 cm bar took 11.07 s median (max 12.70) and outlived
-  `RemoteRobot`'s 10 s. Now every wall-clock verb (ROS and the real board)
-  ends at `VERB_MAX_S` (7 s) with `VERB_MAX_TAG` in its reason, and explore
-  sends a creep cut that way again, up to `CREEP_PIECES` (3), while more
-  than 1 cm is left past the 3 cm line. RemoteRobot's 10 s (B3.2's guard)
-  is unchanged; no safety bar moved. Live: 47 creeps, longest reply 7.23 s,
-  0 timeouts, gain 16.9 cm (dev 17.0); 3/3 explore missions `found`; 8
-  scripted wedges under the dining table, each finished, 0 timeouts; escape
-  sweep and ProcTHOR pin (99) unchanged. Known limits: a slow bridge adds to
-  the bound, and a ROS verb planned over 4/3 s now reads `timeout` to
-  `SHORT_MOVES` if cut (no policy sends one).
-* **The saved map (3.50.D), D1-D3 merged 2026-10-23.** Option
-  D (the user, 2026-10-09/11). D2: the bridge saves slam_toolbox's pose graph
-  at every mission end into `PICAR_MAP_DIR` (`/maps`, a volume: run the
-  container with `-v picar-maps:/maps`), versioned, 3 kept, `current.json`
-  only ever naming a whole save (`picar_bridge/mapstore.py`); `/health`'s
-  `map` block. Saved 0.2 s after the end, survives a new container. D2-b
-  FAILED on `map_and_localization_slam_toolbox_node` (east max 0.142/0.228 m,
-  kitchen 86/76%), against the async node's 0.089/0.071 m on the same branch,
-  so mapping stays on the async node and a reload (D3) restarts slam_toolbox
-  in localisation mode (the user, 2026-10-23). The async node itself missed
-  the room bar once in two on today's `dev` (3.40: 2/2), its own section.
-  **D3: the bridge starts slam_toolbox** (not the launch file;
-  `picar_bridge/slam_process.py`). With a saved map in the store a container
-  start localises on it from the dock (`localization_slam_toolbox_node`),
-  checks the scans against it (`relocalise.py`: >= 60% of returns on the map,
-  within 0.5 m / 15 deg of the dock) and falls back to a fresh map if not;
-  goals, the map pose and `/slam/map` are held until `/health` `slam.state`
-  is `ready`. Verdict in ~1.7 s; 3 reloads per house within 0.9 cm / 0.4 deg
-  after a drive; off the dock 10/10 fell back. `PICAR_MAP_RELOAD=0` maps from
-  empty. The robot must start on the dock. One `home_first_floor` session
-  saved 50.7 MB (criterion 6's ten-session bar is 50). **D4 (merged
-  2026-10-26): re-maps** on a reloaded map restart slam_toolbox as the
-  async node on the saved graph from the current pose, saved as the next
-  version, when the robot enters the saved map's unknown or a person asks
-  (`POST /world/remap`; goals held while it re-maps, a live goal cancelled
-  after 5 s). The scan-contradiction trigger is built but **off** (the
-  user, 2026-10-24; `PICAR_REMAP_CONTRADICTION=1`): live it found every
-  moved object but fired on a fixed wall. D4-c, D4-e met; D4-a (nav2 does
-  not enter the just-re-mapped room), D4-b (harness) and D4-d FAILED.
-  The bridge's `ready` before nav2 was active is fixed by 3.105 (below).
-  **D5's code half (merged 2026-10-31):** `/slam/pose` carries the saved
-  map's `map_id` once ready, and the pose gains `frame_id` (a world-contract
-  field, `None` but on a saved map's frame; `map_id` stays per session). A
-  mission's inventory is seeded from the chain's head on that frame (the
-  report with the highest `carry_seq`; landmarks of belief >= 0.5, votes as
-  weights capped at 20); a failed lookup detaches the mission. The S3 copy
-  is stripped to the mission's own landmarks (the user's call, G12/G13).
-  Owed: criterion 7 live (15 cm) and criterion 6 (ten sessions, Jetson).
-  **D4b (merged and the twin deployed
-  2026-10-26; open until it re-maps on the Rover, the user 2026-10-27):** the
-  Sim tab's "Re-map now" under a SLAM map -- two taps, a person's
-  `POST /world/remap`, the server's answer toasted (the page cannot see
-  `slam.state`); five review rounds. The Jetson's stack runs teleop (no
-  map), so nothing shows it before the Rover. Next: D5 sightings; D6 (S3) asks
-  first. Maps are a home's floor plan:
-  never commit or upload one unasked.
-* **Goals wait for nav2 (3.105), merged 2026-10-26.** The bridge asks
-  nav2's lifecycle manager (`/lifecycle_manager_navigation/is_active`)
-  every 0.5 s and answers `POST /goal` 503 (retryable: explore waits)
-  until it says active, read again before the cancel and the send; before
-  it, a goal sent after a reload's `ready` but before nav2 was up was
-  rejected and explore failed that place (3.50.D4-b). `/health` `nav2`.
-  Live: 0 of 5 starts rejected (`dev` 1 of 5), an explore mission `found`.
-  Open: a nav2 that never comes up holds explore to its time limit.
-  **3.127 (merged 2026-10-31, deployed):** the robot server refuses a held
-  goal `nav2_starting` or `slam_not_ready`, still retryable; a map tap
-  shows it as information, not an error. Also the survey row shows
-  `source_error`. **3.133 (merged 2026-11-01): the bridge names the hold
-  itself** -- every 503 goal refusal carries `hold` (`nav2_starting`,
-  `slam_not_ready` or null), and `bridge_faults.hold_reason()` reads it
-  instead of 3.127's guess from the body (60 s of `inactive_s`):
-  * `nav2_starting` only until the lifecycle manager's first reply (a raised
-    call is not one);
-  * `slam_not_ready` for `checking`/`remapping`, and for `starting`;
-  * a start's one ceiling is `START_HOLD_MAX_S` (300 s from the bridge's
-    start), applied to nav2 and to SLAM `starting`;
-  * so a crash, a reset, a failed bring-up or SLAM `failed` is
-    `ros_unavailable`;
-  * a bridge with no `hold` (an image from before 3.133) reads
-    `ros_unavailable` (the deliberate fallback, wording only);
-  * names pinned across the wall by `tests/test_bridge_hold.py`.
+A line or two per section; its numbers, failed criteria and review
+rounds are in its file (`docs/plans/ros-alignment/3.N-*.md`), and this
+section before 3.149 is `docs/archive/CLAUDE-2026-11-04.md`. `plan_section.py
+board` lists open steps. **Whoever merges adds one line here, not a
+paragraph.**
 
-  **Live check (3.133.C, 2026-10-31): criterion 8 FAILED as written;
-  its re-run (3.133.D, 2026-11-01) MET it.** `vision-picar-ros:latest` was
-  rebuilt from `dev` `c40979ee` (its bridge still `dev`'s). In 3 + 3 cold
-  starts every refusal between SLAM ready and nav2 active (~1 s) read
-  `nav2_starting`, retryable, with 0 `ros_unavailable`, and nav2 never
-  answered not-active before active; explore waited on `nav2_starting` and
-  ended `found` with 0 contacts both times. The first run's goals (3.105's
-  point, outside a cold start's first map) succeeded 0 of 3; under
-  amendment 1 (a point 0.9 m east of the dock, known free on the first map)
-  3 of 3 succeeded. **3.134 (merged 2026-11-01):** the twin's Engineer
-  toast for `nav2_starting` reads "(still starting up)", no longer "(starting,
-  or restarting)"; pinned by `tests/test_twin_strings.py`. The twin was
-  deployed with it on 2026-11-03 (with 3.132 Stage 3).
-* **The battery ladder (3.137.A), merged 2026-11-01; the twin's three states
-  (3.137.B) merged 2026-11-02** (C, E open; D waits on the Rover). The robot server decides on the board's `v`
-  (`robot/battery_ladder.py`, `battery:` in `config/robot.yaml`; levels
-  placeholders until E): Low 10.5 V (no mission starts), Reserve 10.2 V
-  (latched; autonomy refused `battery_reserve`, a person's D-pad at speed 30,
-  goals ended and refused), Power-off 10.0 V or 120 s at Reserve (everyone
-  refused `battery_poweroff`; `shutdown_steps` in order, then `poweroff_cmd`
-  once -- a logged stub except `mode: hardware` with a real board). Two
-  distinct samples per level; one read while driving is read again at rest
-  (`battery_check`). Criterion 1a FAILED as written (Reserve 2-3 s after the
-  crossing, the re-read included; kept by the user), 1b-1d and 2 met, live
-  run met. Sim pack: `sim/battery.py` (`SIM_BATTERY_*`).
-  **3.137.B:** the twin's `#battery-banner`, on every tab from `GET /battery`
-  (5 s, 1 s at Reserve): "Battery low", "Battery reserve: shutting down in
-  N s", "Powered off: unplug the battery" (kept through the robot's silence
-  and a reload, `vp_battery_poweroff`); Engineer mode adds volts and steps;
-  a Start refused `battery_low:` worded. B1-B6 met (live lag <= 2.8 s, bar
-  6; M2/M2L/M3/M4/M5/M7 0 in each state). The twin was deployed with it on
-  2026-11-03 (with 3.132 Stage 3).
-* **The wheel loop's corner-turn vet (3.141.B), merged 2026-11-03 with
-  criterion 3 failed (the user's call).** 3.136.B run 1 and the 3.135.C
-  soak ran late wheel ticks (max 104-114 ms). Cause: a turn clamped beside
-  furniture re-derived the whole scan in each of `pivot_scale()`'s eight
-  passes, on the event loop, 20-23 ms on the board. Now `_PivotRows`
-  builds the rows once per search (numpy as a filter only), exactly dev's
-  answers (frozen `tests/pivot_reference.py`; 200,000 cases, 0
-  differences; do not "simplify" it): 2.3 ms p90 on the board. Criterion 3
-  (no live vet over 5 ms) FAILED: 103 curving vets over it, max 11 ms,
-  outside the turn guard; 0 late ticks. Criterion 4 (0 late ticks, 30 min,
-  full stack) waits on 3.136.B run 2. `evaluations/wheel-loop-3141/`.
-* **nav2's goal id travels with the goal (3.136.G), merged 2026-11-04**
-  (amendment 5, the user's option (b)). The bridge makes each goal's UUID
-  (`send_goal_async(goal_uuid=)`) and returns it as `goal_id` in `POST
-  /goal`'s reply and goal record; explore keeps each accepted send as
-  `[n, goal_id, kind]`, the last 64 in `status.explore.sent`; 3.136's harness
-  joins nav2's status ids to them, so an ABORTED frontier goal no longer
-  invalidates a window (any other abort, or an unrecorded goal, still does).
-  Live: 3 of 3 ids matched, kinds equal explore's own. Needs
-  `vision-picar-ros:latest` rebuilt from `dev` (an older bridge returns no
-  id: every abort counts, as before).
-* **Live checks on the Rover (3.140): the harness (A) merged 2026-11-02;
-  B-J wait on the Rover.** `evaluations/rover-live-3140/run.py` runs one row
-  at a time on 3.136's `boardrun` (`bench-3140`): rows read from the section
-  file, the safety rules a checklist each run signs, gates for level order,
-  stand first, the commit on `dev` and the car running it (`/health`
-  `identity`), a ledger in the shared `.git` mirrored beside the records.
-  Amendment 1 gives every *reported* row a bar. Open for the user: criterion
-  2 holds L4's floor walks (3.140.F) behind every L3 row.
-* **No FORWARD on a stale scan (3.144.A), merged 2026-11-04** (FMEA F9: the
-  board drove 101-105 cm with the lidar stopped and the camera ahead). A
-  body with wheels and no usable scan refuses forward `ahead_not_observed`
-  whatever the cone says, as astern (`_blind()`); a stopped move restarts
-  only on a new command; a blind clamp is never a wedge (no keepout).
-  Desktop F9 5/5 at 0.0 cm (bar 2). A car with no lidar can only turn.
-  3.144.B (F9 on the board) is owed.
-* **The soak's find rate (3.143), merged 2026-11-04; fix V on.** 3.135.C's
-  board soak found 10/19 (run 1) and 11/21 (run 2), where the in-process
-  sweep finds 39/40.
-  * **Cause:** VE said no at true-target arrivals on the simulator's rendered
-    frames: 5 of run 1's 9 misses, 8 of run 2's 10. On the board, VE said no
-    at 21 of 37 scored true-target arrivals. That is rendered frames only:
-    on real walks VE's precision is 94.9-97.2% (3.48, 3.92).
-  * **Fix V (the user's option (a)):** in the simulator, a local no is judged
-    by 3.98's geometry, both at arrival and on a frame's question (no 3.91.C
-    memory, no 3.80.F band rejection). VE is still asked and its score kept
-    (`local["no_overruled_sim"]`). Real frames are untouched.
-  * **Bars:** the ladder in process with VE on the board finds 39/40 (V1;
-    A2 38); the five class V pairs, live on the board, 4/5 with 0 contacts
-    (V3). V2 is pinned by `tests/test_sim_local_no_real.py`, a differential
-    test with and without the sim judge.
-  * **Not reproduced:** the class A and R misses (near the target with no
-    arrival, or the room never reached), 8/8 found live on the desktop.
-  * **Found, not fixed here:** K3.4's drive-off; the dining-table pocket in
-    `procthor:val:0` (3.83/3.85's line); V3's slippers miss (never within
-    0.8 m), still open.
-  * **A gap for 3.142/3.135:** the soak harness keeps no brain log beyond its
-    start line.
-  * Board arms: `evaluations/soak-find-3143/board.py`, through 3.136's lease.
-* **Older review bugs (3.64), merged 2026-10-09, deployed 2026-10-10.** Ten bugs
-  from the reviewer comparison still live on `dev`, fixed red-first: the
-  twin's guidance loop after Stop, a hidden page and an outage (A2, A4,
-  A7); replays that showed an old result or erased a scored one (C1, C3);
-  stale scorecards shown as current (E2, marked, never auto-re-scored);
-  the environment banner (`/health` on the vision service now returns
-  `env_label`, B1); a false host notice (B2); brain errors worded by what
-  came back (D7r); the vision proximity veto deleted (F1, the user's
-  call). Twin, console, vision and walks Lambdas deployed and verified
-  2026-10-10 (3.64 criterion 5).
-* **Explore's corner stalls: fixed** (3.45, merged 2026-10-09 with the
-  tour criterion failed, the user's call; 3.43/3.44 before it). Frontier and
-  view goals now keep the chassis' half-length plus the 20 cm stop
-  (0.3265 m) from the map's walls, where 0.22 m let nav2 reach goals the
-  safety layer would not let the robot leave. On recorded maps the goals
-  explore chooses are 95.5% leavable on ground truth (was 24%). Live:
-  parked 99 / 93 / 88 s (bar < 120 s; was 119 / 197 / 152), coverage median
-  0.88 (was 0.55). 3.44's speed-dependent stop and creep escape stay.
-  **The tour now fails on its own:** 4 / 8 / 4 of 9. Goal 6's point lies
-  inside the dining furniture and can never succeed, and nav2 wedges itself
-  near the garage door on its own costmap while truth is free. **Goal 6
-  moved (3.57, merged 2026-10-09 with its live criterion failed):** its
-  point is now reachable and pinned (`tests/test_tour_points.py`), but it
-  still fails 0/3 leaving the garage beside the car, where nav2's path
-  keeps the robot against the safety bar. **The garage exit is not
-  solvable by nav2's parameters (3.67).** **Candidate A is adopted in
-  `nav2.yaml` (merged 2026-10-11, criterion 1 waived by the user;
-  `vision-picar-ros:latest` rebuilt from `dev` d496c67 on 2026-10-31).** Inflation 0.35 m (A) keeps goal 6 at 0/3 --
-  the plan runs down a 30 cm slot beside the car to an unmapped wall --
-  but meets every other bar (tour 8/8/8, parked <= 99 s, coverage
-  0.93-0.95, R6 6/6). Footprint padding (B) and `allow_unknown: false`
-  (C) break other goals. **A refusal-aware replan (3.68, built, records
-  merged 2026-10-11, code left on `plan/3.68-refusal-replan`) also
-  fails:** the robot server marks a keepout spot after 3 s of refused
-  forward moves; it breaks the garage wedge (refusals 1,200 -> 130-194)
-  but goal 6 still times out 0/3, run 2's tour is 7/9, one park is
-  123 s, and explore re-marks one spot up to 30 times. Goal 6 stays
-  open. Every tour count before 3.57 is "of 8 reachable goals". Live runs now keep
-  per-run logs with explore's decisions (`PICAR_LOG_LEVEL`,
-  `evaluations/slam-345/`). Handoff:
-  `HANDOFF-2026-10-07-3.45-explore-goal-choice.md`. 3.31's frontier-search
-  batch is unblocked.
-* **1,000 imported houses (3.66), merged 2026-10-11 with criterion 5b
-  failed.** ProcTHOR-10K's `val` floor plans load as `SIM_MAP=procthor:val:N`
-  (one simulator still: only the plan crosses over). Import checks all met
-  (topology 1000/1000, furniture 99.85%, usable 570/570). Explore finds the
-  target in 84 of the first 100 usable houses (bar 90; 84 pinned). The 16
-  misses are explore's, in four classes. `docs/evaluations/PROCTHOR-HOUSES-2026-10-11.md`.
-  **Fixed (3.69), merged 2026-10-11:** explore now turns the body toward a
-  target seen on a pan, retries a refused turn to face it (smaller, then
-  back off once), takes the nearest lidar return on an edge beyond the
-  approach band, and looks at unseen patches from a place that can see
-  them. Found 84 -> 99 (tuning), 85 -> 100 and 84 -> 99 on two unseen
-  hundreds; median goals -24 to -38%; live explore in the furnished home
-  `found` (741 s). Left: house 27 (a 0.6 m passage with no 3.45-leavable
-  stop). Sweep pins 99. Known limit: in-band edge windows, majority wins.
-* **The Jetson serves the deployed twin (3.71), merged 2026-10-11.** Two
-  systemd units on the Jetson, `picar-stack` (`service/tunnel/run.sh`, sim
-  mode, from the worktree `~/vision-picar-service`) and `picar-ngrok`; the
-  laptop's ngrok is stopped (one domain, one agent). Back in ~7 s after a
-  crash and 53 s after a reboot. The Jetson uses the Mac's secret files.
-  **Stop both before a Jetson bench** (`tools/jetson/README.md` sections 4-5,
-  which also has the update steps). `run.sh` now exits when any server does.
-* **Random house (3.72), merged and deployed 2026-10-11.** The Sim tab's
-  button: `POST /sim/house/random` swaps in one of the 100 sweep houses in
-  place, no restart -- the one reset route, plain sim only, refused while
-  anyone drives and for 30 s after the brain last drove. Known limit: a
-  mission started elsewhere that has not moved yet is not seen.
-  `HANDOFF-2026-10-11-3.69-3.72.md`.
-* **Explore's next goal can be learned (3.65 phase 2), merged 2026-10-12;
-  default still `rule`.** `explore_goal_policy: rule | learned | network | rooms`
-  (env `EXPLORE_GOAL_POLICY`; `brain/goal_policy.py`). Only explore's
-  choice among the goals the rules already allow is learned; nothing else.
-  `learned` (10 weights, cross-entropy method) FAILED criterion 1 (-18%
-  median goals, bar 20%). `network` (linear + MLP 32x32, PPO, amendment 2)
-  met criteria 1-6: 196/200 test houses, median goals 11 -> 8 (-27%), live
-  3/3 found, 0 contacts, +4% time. Caveats: the median moved one step,
-  the mean only -12%; live in `home_first_floor` it sent more goals (27 vs
-  21). **Amendment 3 kept `rule` the default:** on 613 fresh houses
-  (ProcTHOR `test` split, `procthor:test:<i>`) the network finds 608 vs 606
-  and scores higher, but saves only 11% of median goals (bar 20%).
-  Goal choice was slow on the Jetson at SLAM resolution (1.4 s p90, the
-  rule's own); fixed by 3.77. Trainers and `time_choice.py` in
-  `evaluations/explore-365/`. **3.96 (merged 2026-10-26; default still
-  `rule`):** F-large, a network on room features (unentered rooms, doorways,
-  a room prior for the target), is `explore_goal_policy: rooms`
-  (`brain/explore_goal_rooms.json`). On the 588 test houses criteria 2-4 met
-  (median goals R 7 -> 4, U 9 -> 5, finds held); 5 FAILED (one close-in
-  livelock, house 1395), 6 FAILED (312.9 ms p90 a choice on the Jetson,
-  bar 100), 8 FAILED (3 rule-pinning tests); live 7 met on EC2 (3/3 found
-  per arm, 0 contacts, median 427 s each). A find mission's map has no room
-  labels, and without them it saves nothing in mode R (-20% goals in U).
-  **3.100 (2026-10-25, the user):** `learned`
-  on the same 613 fresh houses, never run there before: 608 found, median
-  goals -11.1%, metres +4.7% -- FAILED as the network did, and nearly the
-  same policy (the same 6 houses gained and 4 lost; equal goals in 559 of
-  608). Both methods land on -11%, so the ten features are the limit, not
-  the learner. Run in the cloud: `4cd6eb7` re-run there reproduces the
-  Mac's rows (network 40/40). **3.101 (2026-10-25, the user; records
-  only):** F-rich, 3.96's F-large plus 25 features (route, raycast
-  information gain, room graph, search history, budget, pool-relative),
-  trained exactly as F-large in the cloud: clone agreement 43% (F-large
-  35%), selection R 0.644 (0.574); on the 588 test houses criterion 1
-  FAILED (R reward 0.563 vs bar 0.573, +0.010 inside the noise), finds,
-  trips and clean met; fewer goals than F-large in 199 vs 121 houses.
-  `lidar_gain` is the one new feature that clearly matters; the choice
-  costs 213 ms p90 here vs 117 (Jetson owed). Nothing in `brain/` changed.
-  **3.102 (2026-10-25, the user; records only):** the evolutionary method
-  on the same fact sets (E-small, E-large, E-rich; weighted sums, 23,040
-  searches each): worse than its gradient twins in mode R (paired: E-large
-  -0.147, E-rich -0.129 reward), level in U; no E arm meets the 20% goal.
-  The oracle on the 588 test houses (amendment 1) scores 0.783 (R, median
-  2 goals, 8.4 m): F-rich's gap is 0.012 finds and 0.208 goals + metres,
-  so the chooser has room and **3.103** (lean facts and a shape sweep,
-  then pool attention; criteria written) may start on the user's word.
-  **3.103.B (2026-10-26, the user's go; records only):** F-lean, F-large's
-  17 facts plus `lidar_gain` (cast on the 0.30 m grid), in four shapes:
-  the oracle copy is flat across them (36.8-37.8% for 659 to 3,347
-  numbers), and the best (one layer of 64) is level with F-large on the
-  test houses (-0.041, paired interval [-0.102, +0.021]; criterion 1
-  FAILED), with the most finds of any learned arm (573) and F-large's
-  choice time (102 ms p90 here). The network's shape is not the lever.
-  **3.103.C (2026-10-26, the user's go; records only):** F-pool, B's S64
-  layer plus one 4-head self-attention layer over the candidate pool, its
-  width swept 32 / 64 / 128 (4,883 to 68,627 numbers; W32 and W128 on AWS
-  spot): the widths copy the oracle within two points (39-41%) and select
-  level (0.594 / 0.590 / 0.596), so W32 was tested: R 0.555, +0.043 over
-  F-lean [-0.007, +0.091] (criterion 1 FAILED), level with F-large and
-  F-rich, the least driving of any learned arm (median 13.8 m), choice
-  time F-lean's (90.5 ms p90). Every chooser since 3.96 lands at
-  0.55-0.56, ~0.22 under the oracle, whatever its facts, shape or pool
-  attention: the facts are the limit. Section closed. On the Jetson at
-  15 W with the full stack (nav2, YOLOE + CLIP, Qwen VE) every arm's whole
-  choice is 326-341 ms p90 (bar 100; quiet 316-331, F-large reproducing
-  3.96's 313): over half is the ten 3.65 facts' Python loop (185 ms), the
-  network 1-2 ms at any width; numpy for `features()` is the first fix.
-  **3.109 (merged 2026-10-26):** `features()` in numpy with one
-  `goal_context` per choice, exactly the old answers (frozen
-  `tests/goal_features_reference.py`; do not "simplify" it): the ten facts
-  187 -> 14.8 ms p90 on the board under the full stack (bar 10: FAILED), the
-  whole choice 326 -> 159 ms (F-large); the map work (~90 ms) and the room
-  cut (~42 ms) are now the cost. **3.110 (stage 1, 2026-10-26):** a copying
-  ladder from 17 to 42 facts (78 clones): one step, at `lidar_gain` (+3.8
-  points), a climb to ~24 facts, a knee at 34; stage 2 (PPO and test for
-  18 / 24 / 34 facts) waits on the user. **3.111 (2026-10-27):** three
-  desktop checks on 200 untouched `val` houses. Regret against the oracle
-  tracks the score (Spearman 0.79-0.95) but is spread (top 10% of choices
-  carry 30-33%, bar 50: FAILED); PPO lifts W32's clone +0.59 there; 60
-  more PPO iterations add nothing (+0.005 [-0.05, 0.05]: FAILED); clones
-  do not memorise (gap <= 3.3 points); **78% of held-out choices are
-  near ties** (another candidate within 1 m); a ground-truth `target_room`
-  fact adds +4.4 points (bar 10). Choosers agree with the oracle on 16-20%
-  of their own choices vs 42-45% on its. PPO's workers grew ~40 MB an
-  iteration each (fixed by 3.113).
-  **3.114 (2026-10-27, records only):** W32's clone with the near ties
-  labelled as ties (a soft target, or any near-best pick counted right),
-  three seeds each: near agreement 62.0% (hard) -> 63.9% (soft), bar +5
-  points: FAILED; hard also drove best on the selection houses (R 0.213 vs
-  0.207 / 0.197), so no PPO run. Not labels: DAgger on the learner's
-  states or richer facts is next.
-  **3.115 (2026-10-27, records only):** DAgger on W32's own states (5
-  rounds x 1,000 training houses, aggregated, clone from scratch): round
-  3 kept (selection R 0.270 -> 0.470); own-choice near agreement 14.2% ->
-  31.4% (met); clone vs W32's clone on the diagnostic houses R +0.40
-  [0.23, 0.56] (met); then PPO: R -0.091 [-0.203, -0.005] vs W32's
-  `best.json` (FAILED). PPO reaches ~0.59 selection R from either start:
-  not the start state, richer facts next.
-  **3.117 (2026-10-28, records only, desktop):** 3.110's stage 2: W32 at
-  24 and 34 facts (rungs k07, k17), clone then PPO, on the 200 diagnostic
-  houses vs W32's `best.json`: clones copy better (41.4 / 44.0% vs 39.2%)
-  but PPO drives no better -- R -0.102 [-0.216, -0.006] and -0.048
-  [-0.125, +0.025], U -0.118 and -0.048 (criteria 1-2 FAILED for both).
-  No test houses spent; facts from the 42 are closed as a lever. Next
-  candidates: steadier PPO steps, or the target's room from the detector
-  or VLM (mode U's gap).
-  **3.119 (2026-10-30, records only, desktop):** per-choice credit in W32's
-  PPO (3.96's trainer gives every choice in a mission one group-relative
-  advantage): A1 a learned critic with GAE, A2 a critic that also sees the
-  truth (true distance, oracle's best cost, target room). The critic fits
-  (explained variance up to 0.46 / 0.75) but neither drives better than
-  W32 on the 200 diagnostic houses: R -0.116 [-0.213, -0.030] and -0.053
-  [-0.130, +0.018], U level but wide (criteria 1-2 FAILED for both); A3
-  (shaping) not run by its rule. No test houses spent. **The learned
-  chooser line is closed until the Rover's data**; next lever, the
-  target's room from real perception.
-  **3.122 (2026-10-30, records only, $5.31):** `/room` (Opus 5.5) on 734
-  room-labelled frames of the 15 recorded rig walks: 51.4% wrong [34.3,
-  66.2] over walks (bar for a sim noise model 15%), so room labels wait
-  for the Rover. Living room 1.3% and stair hall 0/30 wrong; the basement
-  (93.8%) and home gym (40.9%), one open space, carry it. No kitchen,
-  bedroom or bathroom frames exist; the reference is unadjudicated.
-* **A shared/exclusive desktop lock (3.128), merged 2026-10-31.** After one
-  session's fast tier ran beside another's live run (load 3.7-5.8 for ~4
-  min; the run was redone), `tools/desktop_lock.py` makes rule 7's lock a
-  readers-writer lock with a fairness gate: timed runs alone, other heavy
-  jobs together; children pass through by a `<mode>:<pid>` token or a
-  parent's flock (/proc/locks). Criteria 1-8 met; live, its own `ready`
-  waited for 3.126's rerun. **3.129 (merged 2026-10-31):** a push's fast
-  tier skips the queue (never beside a live run, never behind a queued
-  one); long shared jobs that hold the lock themselves call
-  `desktop_lock.step_aside()` between steps (the goal-learn PPO loops do);
-  the nightly waits in the queue for the exclusive lock, SKIPPED (exit 0, no
-  email) after 2 h of a busy desktop. The nightly runs on the Mac only.
-* **A staged UX redesign (3.132), Stages 0-1, 2A and 4 merged 2026-10-31/11-01,
-  2B merged and deployed 2026-11-02 (from `dev` `85823e7e`); 3 merged
-  2026-11-03 and deployed the same day (from `dev` `ffcef51e`, with 3.134 and 3.137.B); 5 open; the twin deployed with Stages 1-2A from `dev` `4ee9f4bd`
-  on 2026-11-01; Stage 4 (the Lab console) deployed from `dev` `74c58cc7`
-  on 2026-11-01, walks Lambda first** (the user, 2026-10-31: twin first, the two consoles merged into
-  one, vanilla JS, no build step). Audiences:
-  * A, primary: anyone at home with the Rover, using the twin's operator
-    mode;
-  * B: the engineer, using Engineer mode and one Lab console;
-  * C: Guide me, as a secondary entry.
+**Waiting on the user**
 
-  `evaluations/ux-3132/measure.py` measures every page at 390 px, against
-  bars written before measuring (M1 taps, M2 axe, M3 under-44 px targets,
-  M4 sideways scroll, M5 jargon, M6 paid calls with no click).
+* **Deploys:** the twin is live from `dev` `ffcef51e` (2026-11-03); 3.132
+  Stage 5 waits on the user's go.
+* **The board's brain is behind `dev`** (3.88, 3.130, 3.131): update it
+  only when asked (`tools/jetson/README.md`'s update step).
+* **3.91.C criterion 9:** the user's live Drive-via-brain walk on the
+  deployed twin.
+* **3.48, 3.58:** close the llama.cpp local-identity line, or load the
+  model only at arrival.
+* **3.56:** re-check the 8 s arrival deadline after 500+ real calls.
+* **3.86's follow-up:** the watchdog record replaces a Stop's or fault's
+  refusal ~1 s later, so the twin cannot tell a hung brain from a finished
+  mission.
+* **3.42 / 3.76 A4:** `/scan`'s stamp is the request time; fix it before
+  raising nav2's speed (`HANDOFF-2026-10-07-lidar-and-speed.md`).
+* **3.76 G2 (latent):** inventory landmark points grow without bound;
+  unreachable while real frames carry no detections.
+* **3.140 criterion 2** holds L4's floor walks behind every L3 row.
+* **3.83's code** stays on `plan/3.83-dining-room-trap`, off `dev`.
 
-  The baseline, two identical runs:
-  * Stop takes 2 taps from Guide (bar 1).
-  * The mission's state needs a tap plus 120 px of scroll (bar 0).
-  * The Sim tab shows 16-19 jargon hits, and Engineer mode barely changes
-    it, so the twin has no operator mode yet.
-  * Opening the walks console makes 1 paid judge call (bar 0).
+**Open now** (claim first)
 
-  Found on the way, for Stage 3:
-  * F1: a connected twin never notices a mission started elsewhere.
-  * F2: a Start within ~1-2 s of the D-pad ends the mission "D-pad took
-    over".
+* 3.136.B-E, R: the board's steady state, latencies, heat and power; the
+  sudo revert. 3.141.D: a traced window (3.141.C: 6 late wheel ticks in
+  24,925, max 113 ms).
+* 3.144.B: F9 on the board.
+* 3.135.B (faults F2-F18), 3.137.C (a real power-off), 3.142.A.
+* 3.50.D5: criteria 6 (ten sessions) and 7 (15 cm, live).
+* 3.143: V3's slippers miss; the soak keeps no brain log.
+* 3.105: a nav2 never up holds explore to its limit.
+* The tour's goal 6, the garage exit, fails 0/3 (3.57, 3.67, 3.68).
+* 3.70: the live survey ran out of time; room labels 46 of 90 rooms (bar
+  95%); S4 and M1-M3 wait on missions on a saved map.
+* **Explore reads `frame["detections"]`, which only the simulator
+  provides** (3.76 E): on the car explore cannot see the target until
+  perception on real frames is built.
+* Not built: `brain/planner.py`, S7 (chaos and soak), a Stage 1 vision
+  re-run against the lit renderer.
 
-  **Stage 1 (one design system):**
-  * The twin's style left `index.html` for `web-shared/ui.css` (tokens
-    and shared components) and `web-twin/twin.css`.
-  * Every twin colour is a token, with no literal in `twin.css`
-    (`tests/test_ui_tokens.py`).
-  * There is a light theme under `prefers-color-scheme`. `--media-*`
-    colours, drawn over the camera, and the `.ui-dark` viewfinder stay
-    dark.
-  * Targets are 44 px (`--target`). The Guide-me contrast bug is fixed,
-    red first (`tests/test_ui_active_mode.py`).
-  * M2 dark and light, M3 and M7 are 0 on all seven twin states. Taps and
-    jargon are unchanged.
-  * A new colour goes in `ui.css` as a token. `sync.sh` must also publish
-    `ui.css` and `twin.css` (both are in `assets.json`).
+**Waiting on the Rover** (due Oct 19 - Nov 11)
 
-  **Stage 2A (the words and Engineer mode):**
-  * Settings' "Show developer readouts" is now **Engineer mode** (same
-    `vp_debug_readouts` setting). Off, the default, the twin speaks to a
-    person at home: the brain is "the Autopilot", and endings, outcomes,
-    drivers and connection states are in plain words. `.eng-only` material
-    (policies, drills, tier rows, logs, raw readouts, setup recipes) is
-    hidden; `.op-only` wording sits beside it.
-  * Every toast's words are in `web-twin/strings.js`, in two voices; the
-    engineer voice is the old wording. `t(key, vars)` fills placeholders,
-    and server text enters only through one.
-  * M5 jargon is 0 on all six operator states (was up to 19), with nothing
-    else moved.
-  * `tests/test_ui.py` `open_twin()` opens in Engineer mode, the view the
-    legacy suite pins. Operator tests pass `engineer=False`.
-  * Operator mode never starts a drill, and it says a saved paid policy's
-    cost beside Start.
-
-  **Stage 2B (the twin's modules), merged and deployed 2026-11-02 (`dev` `85823e7e`; all 24 objects match, invalidation `I9PVYFX9CFEC1VOCYMRMVURCMF`):**
-  * `app.js` is an ES module entry (`<script type="module">`, its IIFE
-    kept); eight sections moved verbatim into `web-twin/js/`: `qr`,
-    `icons`, `prefs`, `ui`, `debuglog`, `history`, `state`, `connstatus`
-    (6,777 -> 6,098 lines).
-  * A module's top level only declares, and no module imports `app.js`
-    (`tests/test_twin_modules.py`, `tests/test_ui_modules.py`); the page's
-    only own global stays `twinStrings`.
-  * The robot server serves `/js/{name}`. `assets.json` uploads modules,
-    then `index.html`, then `app.js`: keep that order.
-  * Tests that read the twin's code read every script
-    (`tests/twin_sources.py`).
-  * The UI suite and the pixels held after every move, and the harness
-    matches the records. The rest of `app.js` needs code changes to move
-    (Stage 3).
-  * Next, Stage 3: `docs/handoffs/HANDOFF-2026-11-02-3.132-3.md`.
-
-  **Stage 3 (the twin's layout and behaviours), merged 2026-11-03:**
-  * Four tabs: Home (Find or Survey, the one-sentence mission card),
-    Drive (camera, map, D-pad), Record (Guide; Robot view by default) and
-    Settings. Saved `guide`/`sim` tabs open where they moved.
-  * A STOP bar on every tab while anything moves. It sends the robot's
-    `/stop` and `POST /mission/stop` at once, bounded at 4 s.
-  * The header names the robot's real mode. An idle fired watchdog is
-    neutral.
-  * A first-run card on Home: one field and one tap, then the autopilot
-    guessed from the robot's address.
-  * F1: the idle ping reads `/mission/status`.
-  * F2: Start waits while a person holds the robot (`authority_holder`).
-  * The Guide HUD's codes are Engineer mode's. `voicedStatus` is private.
-  * Every bar is met in two runs each (`stage3a*/`, `stage3b*/`); T1 is 1
-    tap (was 2), T4 1 from every tab, T6 0.
-  * UI tests seed a saved robot unless `first_run=True`.
-
-  Run as 3.130 until a numbering collision (3.130 is fast-map-work).
-  **Stage 4 (one Lab console):**
-  * The walks and metrics consoles are one page, `control/lab.html`,
-    with Walks and Metrics tabs. It is published at `/admin`, `/metrics`
-    and `/lab`, and each opens its own tab. There is one secret for both.
-    The logic is in `lab.js`, `admin.js` and `metrics.js`, and `lab.css`
-    uses tokens only.
-  * Nothing is scored on opening (M6 0, was 1). Score, Re-score,
-    "Score them" and Replay each confirm first, naming the paid calls and
-    an estimated cost. The cost comes from the free
-    `GET /recording/walks/{walk}/estimate`, priced by
-    `control/admin_prices.py` at this account's billed Bedrock rates. A
-    model with no listed price shows calls only.
-  * M2, M2L and M3 are 0 on all five console states. Taps: A1 1, A2 2
-    (the confirm), A3 2, A4 1.
-  * Deployed 2026-11-01. In a later deploy, still put the walks Lambda
-    before the page.
-* **The map is sent only when it changed (3.123), merged 2026-10-30 with
-  criteria 2-3 failed (the user's call).** `/world/map` carries an ETag
-  (the server's start token, `map_id`, `map_version`); `RemoteWorld`
-  revalidates and a 304 skips the encode, transfer and decode. Live only
-  43% of reads were 304s (bar 80%): the ROS bridge bumped `map_version` on
-  every SLAM message, changed or not. **3.124 (merged 2026-10-31 with
-  criterion 3 failed, the user's call):** the bridge keeps the version when
-  a `/map` repeats the held grid (`picar_bridge/mapversion.py`; 44% of
-  messages did, now 0); live 63.3% 304s (bar 80%), `found`, 0 contacts.
-  The map really changes ~0.6/s while driving against explore's ~1.7
-  reads/s, so ~2 in 3 is this fix's ceiling. **3.126 (merged 2026-10-31,
-  all criteria met):** the bridge tags `/slam/map` `"<session>:<version>"`
-  and answers 304 to `RosWorld`'s `If-None-Match`, so an unchanged map
-  crosses neither hop (a 400 x 400 read 13.5 -> 0.68 ms; live 72% of the
-  bridge's map replies 304s, `found`, 0 contacts). `/health`
-  `map_replies`.
-* **Explore's goal choice defaults to `rooms` (3.125), merged 2026-10-31**
-  (the user's call). On 3.96's 588 test houses with NO room labels (what a
-  find mission has), `rooms` against the rule: median goals -14% (R) and
-  -22% (U), metres -1% / -9%, finds within 1%, 0 unclean; R's mean metres
-  are +10% (the long searches get longer). On the Jetson under the full
-  stack the choice is 132.9 ms p90 (3.109: 158.9; 3.118 halved the room
-  facts), bar 100 FAILED: the map work (reach, frontiers, view gaps) is
-  98.6 ms alone -- the next fix. In-process sweeps keep their `rule`
-  constructor default. `evaluations/goal-learn-3125/`.
-* **Explore's map work faster, exactly the old answers (3.130), merged
-  2026-10-31, criteria 1-6 met.** `brain/frontier.py` only, numpy only (scipy
-  was +22.6 MB in the brain on the board: not used). `reach()`'s level step
-  by a running minimum, box dilations by doubling ORs, the camera's rays a
-  stretch at a time, touching runs paired by `searchsorted`. Board, 15 W:
-  map work p90 89.7 -> 59.4 ms with `seen=set()` (0.662, bar 0.70) and
-  158.4 -> 101.2 ms with the camera's seen cells (0.639; 3.103's benchmark
-  passed none, understating explore's real cost); F-large's whole choice p90
-  120.8 -> 92.4 ms. Dev's file frozen as `tests/frontier_dev.py`; every call
-  in 24 missions compared (`test_frontier_3130_sweep.py`, slow tier); 17 of 17
-  planted bugs caught. Live `found`, 0 contacts. The board's brain is not
-  updated (asked first).
-* **F-large's whole choice under 100 ms on the board (3.131), merged
-  2026-10-31, criteria 1-4 met.** On 3.130's code, explore's `_pool()` hands
-  its `goal_context()` down (`extend(ctx=)` -> `room_features(ctx=)` ->
-  `coarse(cells=)`), so the map's cell list becomes an array once a choice,
-  not three times; exactly the old answers (frozen
-  `tests/room_features_reference.py`; every call in 24 `rooms` missions,
-  `test_room_features_ctx_sweep.py`, slow tier). Jetson, 15 W, under the full
-  stack (3.125.B's method, valid window: 0 late ticks, nav2 18/18, 0 OOM):
-  **whole choice p90 95.2 ms** (bar 100; 103.6 at the same poses without the
-  hand-off, so 3.130 alone just missed), map work 69.1, room facts 11.2;
-  quiet 81.8 (87.4). A single run, ~5 ms of margin. 3.96 criterion 6's bar
-  is met on 3.96's benchmark, whose camera-seen set is empty (3.130: with
-  explore's real seen cells the map work is ~1.7x). Live `found`, 0
-  contacts. `evaluations/choice-3131/`. The board's brain is not updated.
-* **Harness missions collect their cycles (3.113), merged 2026-10-27.**
-  `evaluations/goal-learn-396/train.py` `mission()` runs `gc.collect()` in
-  a `finally` (a mission's runner, agent and house are reference cycles);
-  a pool worker `gc.freeze()`s once per new house file. A PPO worker:
-  +1 MB over 300 missions, was +220. Do not move the collection back into
-  `_job`: `c.py`, `wired.py` and later harnesses call `mission()` directly.
-* **Explore's in-sight livelock bounded (3.106), merged 2026-10-26**
-  (3.96 criterion 5's house `train:1395`, the user's pick): in the band, the
-  target in sight, nothing to close in with (the `explore` policy's frame
-  sightings) and never found -- in the simulator a table leg hid the box's
-  centre from the found rule while the detector saw its edge -- explore
-  faced it for ever ("already facing it"; a WAIT passes no sim time). Now
-  three such ticks in a row at one place give the sighting up as close-in
-  does (one retry failure, REVERSE). F-large finds 1395; the rule arm on
-  3.96's 588 test houses is unchanged house for house; explore sweeps hold.
-  Never runs on the car (real frames carry no detections).
-* **Room labels in a find mission, and an LLM's room prior (3.116), A-C
-  merged 2026-10-29; `find_room_labels` OFF by default.** The user's ask
-  (2026-10-28): an LLM's "a knife lives in the kitchen" as a fact for
-  explore. The `rooms` policy already has one (3.96's per-type prior); what
-  a find lacked was room labels.
-  * A (sim, 588 test houses): labels asked as a survey asks them (true room
-    at the robot) keep half the stand-in's goal saving (met at the bar;
-    paired reward +0.091 [+0.032, +0.151], ~61% of the stand-in's), median
-    5 asks; 15% wrong answers erase most of the gain. They HURT the red
-    backpack (-0.080 [-0.154, -0.004], +19% metres): its learned prior is
-    near-flat, and the brain reads it.
-  * B: `brain.find_room_labels` (`off`/`frame`/`cloud`, cap
-    `find_room_label_max_calls` 20; env `FIND_ROOM_LABELS`), only with
-    `explore_goal_policy: rooms` and an explore search; the layer feeds the
-    policy's types only (never the map). Same answers as A 100/100; off =
-    0 of 200 differ; live 3/3 found, 0 contacts, 2 of 3 at the cap. On Linux
-    a live run needs `PICAR_ROS_NETWORK=host`.
-  * C: Opus 5.5's prior (29 cached calls, `evaluations/room-prior-3116/`):
-    criterion 8 FAILED (cart; garbage can by a tie), sim swap met at the bar
-    (paired -0.045 [-0.095, +0.007]). Not adopted until D (the user).
-  * Amendment 7 (the user's yes, 2026-10-29): a target whose prior does not
-    single out a room (max < 2 x min; only the red backpack, and any name
-    the prior lacks) asks nothing: R unchanged, U back to no labels (0 of
-    588 differ each). Before `cloud` on the car, D measures the ask holding
-    the tick (~2-3 s), choice time on the Jetson and real labels; the twin
-    does not show a find's asks.
-* **Fast goal choice (3.77), merged 2026-10-13.** `brain/frontier.py`'s
-  grid work in numpy with **exactly** the old answers (0 differences
-  against the frozen `tests/frontier_reference.py`; do not "simplify" its
-  order-keeping). One `reach()` per choice, shared. Jetson 15 W worst path
-  p90 2,424 -> 90 ms (bar 100). Live 3/3 found, 0 contacts, median 642 s.
-  Status reports `explore.choice_ms`. **Its extra goals come from the
-  speed (3.79, merged 2026-10-14):** on one `dev`, slowing only the choice
-  by 450 ms took median goals 29 -> 22, with time to find unchanged
-  (758 vs 752 s) and 0 contacts; why is untested. Fix only if fewer goals
-  matter on the Rover (wait for a fresh scan; its own section). Live runs
-  at laptop load above ~4 are invalid (3.79's runner waits for quiet).
-* **Below the lidar (3.74), parts A-B merged 2026-10-12.** Borrowed from
-  Ecovacs' vacuum detector. A: sim objects can be lower than the lidar
-  (`SIM_MAP=complex_house_hazards`), a body-fixed depth-camera floor band
-  in the depth grid (`floor` block), a seeded stand-in hazard detector.
-  B: `robot/safety.py`'s `floor_clearance()` in series with the cone and
-  corridor, by the corridor's own rule. B1 met (a 5 cm object: 600 runs,
-  0 under 18 cm; without the band 437 contacts). Failed and recorded:
-  B2a (iii) under S5 noise (10.2% stopped early; a per-zone noise
-  artefact, the car's B3 decides) and B2b's park (124 s, the lidar
-  corridor's wedge, not the band). Known gap: the band's blind range
-  (a creep or pivot can carry a sock inside 14 cm). C (hazard class,
-  steering) and D (perception data) to go.
-* **The camera as a stream (3.90 A, E), merged 2026-10-21; twin on
-  `ad4977d` 2026-10-21; the Jetson's stack (sim mode) on `476e6ae`
-  2026-10-22.** A: `robot/camera_stream.py` reads the car's camera
-  (`ROBOT_CAMERA`; `SIM_CAMERA=fake` for benches) on a thread, newest frame
-  only, stale -> 503 on the monotonic clock; frames from a real camera or
-  the phone carry `captured_at`, and with stamps `candidate_sighting` and
-  arrival runs must also span 0.25 s (less 0.05 s slack). Jetson, beside the
-  stack: frame age p90 46 ms, 0 late ticks, reader 0.23% of a core. E: under
-  Drive via brain the twin streams at 2/4/8 fps on its own timer (newest
-  wins), "Combine frames" (`tier_frame_vote`, off by default) votes k of n,
-  and with Record on the BRAIN records every frame received
-  (`control/stream_recorder.py`, `record_walk`), marked `perceived`; laptop:
-  5-min walk 1,195 rows / 1,192 pushed, paid calls 19.0/min at 2 and 8 fps.
-  The laptop brain perceives ~2.6 fps whatever the phone sends. **B
-  FAILED (2026-10-23):** k-of-n on 3.92's 2,261 labelled frames moves
-  precision under a point (single frames are already 98.8%, so +5 was out
-  of reach) and costs 7.7-12.5 points of recall; C still measures all
-  three. Open: criterion 11 through the tunnel, C/D on the Rover.
-* **Raising nav2's speed** (6.9's high end) now has its speed-dependent
-  stop, but waits on measured braking (6.9 (d)) and 3.42's relayed-scan
-  time stamp; read `HANDOFF-2026-10-07-lidar-and-speed.md` first.
-* **Isaac ROS evaluation (3.41).** Isaac ROS 3.2 is the last release for
-  JetPack 6 / Humble.
-  * **Part A, measured 2026-10-06: TensorRT not adopted; torch stays.**
-    The fp16 engines change CLIP probabilities by up to 0.052 (bar 0.01).
-    p90 is only 20-25% faster (bar 30%).
-  * **Closed by the user the same day.** Revisit TensorRT or Isaac ROS
-    only if perception goes over its 250 ms budget on the car: a real
-    camera, a higher frame rate or a heavier model. 3.41 lists the order
-    to try things in.
-  * **Part B (cuVSLAM, nvblox)** needs the Rover's camera.
-* **Before the Rover arrives:** check with calipers that the devkit's
-  mounting holes match the Rover deck's 86 x 58 mm pattern
+* **Before it arrives:** check with calipers that the devkit's mounting
+  holes match the Rover deck's 86 x 58 mm pattern
   (`UGV-ROVER-MOUNTING.md`); fallback is an adapter plate. Waveshare
   request 258472 (sent 2026-10-06) is open on the same question.
-* **On arrival** (`HARDWARE-READINESS.md` section 5;
-  `PLAN-ros-alignment.md` 3.26):
+* **On arrival** (`HARDWARE-READINESS.md` section 5; 3.26):
   * Disable Waveshare's stock app and its ROS nodes, which would hold the
     serial port and bypass safety.
   * Confirm the serial route (expected `/dev/ttyTHS1`); dump the stock
@@ -1372,68 +193,106 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
     battery (`JETSON-BOM.md` 9.5).
   * On the charger (3.137.D): the UPS runs the full stack with no dip at
     plug and unplug, and the pack's net current says whether it charges
-    while running. The battery ladder (3.137: low 10.5 V, reserve, a clean
-    power-off at ~10.0 V) is not built yet; build it before running on
-    battery unattended.
+    while running. The battery ladder is built (3.137.A-B) but its levels
+    are placeholders until 3.137.E, and 3.137.C's real power-off is open:
+    finish both before running on battery unattended.
   * Measure every `[PLACEHOLDER]` in the xacro, including `track_scrub`.
   * B5: systemd units so everything starts at boot.
   * 3.81.F: `MemAvailable` over a full tiered mission with VE resident and
     one change of target; below 500 MB (or trending there inside 1,200 s)
     reopens 3.81.D, in amendment 4's order.
-* **A person's move ends a nav2 goal under every drive (3.97), merged
-  2026-10-24** (`SPEC-REVIEW-3.md` fix 11, the user): a person's FORWARD,
-  REVERSE or turn starts the Stop's goal-ending loop without its latch
-  (`begin_goal_end()`); a pan does not. `drive: ros`'s bridge already
-  cancelled; `drive: direct` let nav2 drive on. Live (criterion 4,
-  2026-10-26): a D-pad LEFT or FORWARD during a goal cancels it in
-  0.042-0.115 s and the robot stays put after the verb, under both drives.
-* **A sim arrival is confirmed from geometry (3.98), merged 2026-10-24**
-  (`SPEC-REVIEW-3.md` fix 7, the user): on the simulator's frames the
-  arrival's cloud step is `brain/arrival.py` `geometry_identity()` -- the
-  nearest object within 10 deg of the centre must be the target -- with no
-  paid call; `brain.sim_arrival_confirm: cloud` (env `SIM_ARRIVAL_CONFIRM`)
-  keeps the call for a run that tests it (Stage 1, 3.80.O-style blind
-  evaluations). Real frames always ask the tiers. Offline in the sim a
-  tiered mission now ends `found` (3.49's `arrived_unconfirmed` is the
-  `cloud` arm's). Live: `found` on `scaled_house`, no arrival call.
-* **A person's interventions are logged (3.99), merged 2026-10-24** (the
-  user's parked idea, started on their word): every mission's end is one
-  fsynced line in `<intervention_dir>/interventions.jsonl` (`brain.intervention_dir`,
-  default `recordings/interventions`, env `INTERVENTION_DIR`; local only,
-  never uploaded). A line carries the mission's autonomous time and, if a
-  person ended it (`cancelled` by `stop` or `dpad`; every intervention
-  ends the mission today), the kind, how it came, the driver, step, last
-  action and the pose read after the stop. A 3.88 pick is counted beside
-  it, never as one; a shutdown's cancel is none. `python -m
-  control.intervention_report` prints interventions per hour, overall and
-  per policy. Live: `dpad`, `stop`, `null` on three missions. Whether to
-  learn from them waits on the Rover's data. Known limits in the section
-  (since 3.104 a Stop during the arrival's confirmation is heard).
-* **A person's Stop during the arrival's confirmation is heard (3.104),
-  merged 2026-10-26** (the user's pick from the open list): before
-  finishing `found`/`room_reached` the runner sends 3.88's `LOOK_CENTER`
-  probe once (through the halt gate, 2 s), so 3.84's latch or a person's
-  hold refused there ends the mission `cancelled` (`stop`/`dpad`, with
-  3.99's intervention line). A veto, an autonomous holder, no answer, or a
-  goal refusal when the mission had a goal accepted (or lost its answer)
-  keep `found`; a goal in progress when it never had one is a person's tap
-  (`dpad`). In process only; four review rounds. Known limits in the
-  section: the refusal names no goal owner (a position check is the deeper
-  fix), a D-pad press under the mission's own goal reads as the goal, and
-  a read-only latch route would remove the camera move.
-* **Decisions still open:** `PLAN-ros-alignment.md` section 6's gyro
-  heading, floor band and speed by clearance all wait on the car's numbers
-  (their triggers are written). Decided 2026-10-24: fix 7 (3.98), 3.50.D4's re-map trigger
-  (scan contradiction, beside entered-unknown) and fix 11 (3.97); the
-  spec-review handoff's 3a-3c were decided 2026-10-05.
-* **Claims on origin (3.139), merged 2026-11-02.** `claim <step>` pushes
-  `claim/<step>` to origin create-only before the local file; ownership is
-  the session; the commit, edit and push hooks refuse unclaimed section
-  work; `new` claims its section. A session holding a claim from before:
-  re-run `claim <step>`. `PARALLEL-SESSIONS.md` rule 12.
-* **Not built:** `brain/planner.py`, room-level planning over
-  `MissionMemory`. S7 (chaos and soak). A Stage 1 re-run of a vision
-  mission against the lit renderer.
+* Then, on its data: 3.140.B-J, 3.80.U (`evaluations/tiered-380/U/`),
+  3.116.D, room labels' accuracy (3.122, 3.70.S2), 3.50.D4b, 3.90.C-D,
+  3.74.C-D, 3.41 part B, 3.46.C, the sim-honesty section (3.76
+  M1.5-M1.11), K3.4 and K5.2, `PLAN-ros-alignment.md` section 6's open
+  decisions, and nav2's speed (6.9 (d): measured braking first).
+
+**Merged: what is true because of it**
+
+*Identity and perception*
+
+* 3.78, 3.80: the local tier is **VE** (Qwen2.5-VL-3B INT4 AWQ on TensorRT
+  Edge-LLM v0.9.1), `service/local_vlm` on `127.0.0.1:8005`, unit
+  `picar-local-vlm`; on at boot on the board since 3.108, off elsewhere
+  (`tier_local_vlm_url` / `LOCAL_VLM_URL`). Order: perception, local, then
+  the cloud after `tier_local_max_unable` (2) or with no local VLM.
+  `tier_search` defaults `cloud` (`explore` needs nav2 and a local tier).
+  Memory floor 0.5 GB, the VLM killed first.
+  3.80.D-T: no other local VLM, nor GPT-6 Astra, replaced it; Opus 4.5
+  stays `/navigate`'s default; where to look comes from the map.
+* 3.81: text features from a cache or a CPU child
+  (`brain/text_encoder.py`); `foxglove_bridge` only with `PICAR_FOXGLOVE=1`.
+* 3.91.C-D: `tier_remember_no` on; a lower tier never undoes a higher. 3.92: no code. 3.94, 3.95: the ladder is three py_trees
+  2.6.0 trees (`brain/tree.py`, `tier_tree:`).
+* 3.98, 3.143: on the simulator's frames an arrival and a local no are
+  judged from geometry; real frames always ask the tiers.
+* 3.47, 3.49, 3.53, 3.56, 3.61: offline is a mode; an unreachable cloud at
+  arrival ends `arrived_unconfirmed` (a late confirmation follows, never
+  `found`); the confirmation's 8 s deadline (`arrival_confirm_timeout_s`).
+* 3.90: `robot/camera_stream.py`; `tier_frame_vote` off.
+* 3.46, 3.55, 3.60: missions record an inventory; nothing reads it. 3.51, 3.54: rooms from
+  CLIP, not wired. 3.41: TensorRT not adopted.
+
+*Explore and goal choice*
+
+* 3.125: `explore_goal_policy` defaults to `rooms` (in-process sweeps keep
+  `rule`). 3.65, 3.96, 3.100, 3.101, 3.102, 3.103, 3.110, 3.111, 3.114,
+  3.115, 3.117, 3.119: learned choosers land ~0.22 under the oracle;
+  closed until the Rover's data. 3.116: `find_room_labels` off.
+* 3.77, 3.109, 3.118, 3.120, 3.130, 3.131: goal choice, room cut and walk in
+  numpy, exactly the old answers (frozen references, section 6). 3.79:
+  the extra goals come from the speed; why is untested.
+* 3.43, 3.44, 3.45: goals keep 0.3265 m from walls; 3.31's
+  frontier-search batch is unblocked. 3.69: the ProcTHOR sweep pins 99.
+  3.66: `SIM_MAP=procthor:val:N`. 3.72: random house.
+* 3.83, 3.85: nav2's keepout filter and the escape; marks clear at a
+  mission's end. 3.89: wall-clock verbs end
+  at `VERB_MAX_S` (7 s). 3.106: the in-sight livelock is bounded.
+* 3.88: `explore_ask` off.
+* 3.87, 3.123, 3.124, 3.126: an unchanged map is a 304 on both hops.
+
+*Safety, stops and arbitration*
+
+* 3.76: the pre-rule review is done.
+* 3.82, 3.84, 3.86, 3.97, 3.104: a person's Stop latches the brain out
+  until a mission starts (`POST /autonomy/resume`); a person's move ends a
+  nav2 goal under every drive; a Stop during the arrival's confirmation
+  ends it `cancelled`; the twin names each refusal.
+* 3.141.B: `_PivotRows`. 3.144.A: no FORWARD without a usable scan
+  (`ahead_not_observed`).
+* 3.137.A-B: the battery ladder (`robot/battery_ladder.py`; 10.5 / 10.2 /
+  10.0 V, placeholders) and the twin's banner. 3.74.A-B: the floor band in series with the cone and
+  corridor; gap: a creep or pivot can carry a sock inside its 14 cm blind
+  range. 3.99: interventions logged, local only (`control.intervention_report`).
+
+*Missions*
+
+* 3.70: four end states (`found`, `exhausted`, `out_of_budget`,
+  `cancelled`), read through `read_outcome()`; the budget is
+  `mission_time_limit_s` (1200 s), `battery_floor_v` and, for `vision`,
+  `vision_max_calls`. Survey mode; `room_label_source: cloud` off.
+
+*ROS and maps*
+
+* 3.38-3.40: smear 0.03 m. 3.67: inflation 0.35 m.
+* 3.50.D: the bridge saves the pose graph at every mission end
+  (`PICAR_MAP_DIR`), localises on it from the dock at start, falls back to a
+  fresh map; re-maps on entering unknown or on request (`POST /world/remap`);
+  the scan-contradiction trigger is off (`PICAR_REMAP_CONTRADICTION=1`);
+  `PICAR_MAP_RELOAD=0` maps from empty.
+* 3.105, 3.127, 3.133, 3.134: goals wait for nav2 and SLAM; a 503 names
+  its `hold`. 3.136.G: nav2's goal id comes back in `POST /goal`'s reply
+  (`status.explore.sent`); needs the image rebuilt from `dev`.
+
+*The twin, consoles and tooling*
+
+* 3.132 Stages 0-4: tokens in `web-shared/ui.css`, Engineer mode, every
+  string in `web-twin/strings.js`, ES modules in `web-twin/js/`, four tabs
+  with a STOP bar on each, one Lab console (`control/lab.html`) that
+  confirms every paid call. 3.64: older review bugs. 3.71: the Jetson
+  serves the deployed twin (`picar-stack`, `picar-ngrok`).
+* 3.93, 3.128, 3.129, 3.139, 3.121, 3.113: locks, claims and the fast tier
+  (section 3c; 3.113 in section 6).
 
 ### 3c. Standing facts a session needs
 
@@ -1763,11 +622,44 @@ project coherent. Their full narrative is in the archive copy.
   conflict by hand gets no warning, so review it as part of the branch. Added
   2026-10-09 after a session pushed three commits unreviewed; the user's
   call: warn first, block only if warnings are pushed past.
+- **Reviewers run on Sonnet** (the user, 2026-10-18, to spend less quota).
 - **Why both:** measured on six commits, `/code-review` found 17 of 18
   real bugs and the bug pass 15. Together they found all 18. The file
   above has the numbers. A finding only one of them raised is a claim to
   verify, not an order. Thermos's code-quality pass is not used; it added
   no bug and much noise.
+
+**Carried from merged sections** (moved from 3b by 3.149; each section's
+file has the why)
+
+- **Frozen references: keep the code's exact answers; do not "simplify"
+  it.** `tests/frontier_reference.py` (3.77), `tests/frontier_dev.py`
+  (3.130), `tests/goal_features_reference.py` (3.109),
+  `tests/room_cut_reference.py` (3.118), `tests/walk_reference.py` (3.120),
+  `tests/room_features_reference.py` (3.131), `tests/pivot_reference.py`
+  (3.141.B), `tests/tiered_reference.py` (3.94).
+- **A sync route returning a big dict blocks the wheel loop** (3.87):
+  return a built `JSONResponse`.
+- **`evaluations/goal-learn-396/train.py` `mission()` collects its cycles
+  in a `finally`** (3.113). Do not move it into `_job`: other harnesses
+  call `mission()` directly.
+- **A local VLM that is down still reads as configured:** its questions go
+  to the paid cloud (3.80).
+- **The twin's deploy:** `assets.json` uploads modules, then `index.html`,
+  then `app.js` (3.132 2B); put the walks Lambda before the Lab page
+  (Stage 4); `sync.sh` must publish `ui.css` and `twin.css`. A new colour is
+  a token in `ui.css`. UI tests open in Engineer mode (`open_twin()`;
+  operator tests pass `engineer=False`) and seed a saved robot unless
+  `first_run=True`.
+- **The shared `vision-picar-ros:latest`** was last rebuilt from `dev`
+  `c40979ee` (3.133.C); a bridge change after that needs your own tag.
+- **Live runs:** on Linux they need `PICAR_ROS_NETWORK=host`; a run at
+  laptop load above ~4 is invalid (3.79). Run the ROS container with
+  `-v picar-maps:/maps`, and start the robot on the dock (3.50.D). Maps
+  are a home's floor plan: never commit or upload one unasked.
+- **The Jetson:** stop `picar-stack` and `picar-ngrok` before a bench
+  (3.71); benches hold the local VLM off with `tools/jetson/vlm_hold.sh`
+  and put it back as found (3.80). Its zram is off since 2026-10-17.
 
 ---
 
