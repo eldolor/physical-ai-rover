@@ -56,6 +56,20 @@ def test_three_seconds_of_forward_clamps_is_a_wedge():
     assert feed(w, 2.95, 3.1) == [3.0]
 
 
+def test_a_blind_clamp_is_not_a_wedge():
+    """3.144: a stalled lidar zeroes nav2's forward twists with
+    `ahead_not_observed`; that says nothing about what is ahead, so it must
+    not mark a keepout spot on free floor -- nor reset a real run."""
+    w = ww.WedgeWatch()
+    blind = "forward clamped: 0.0cm <= 20cm (ahead_not_observed)"
+    assert feed(w, 0.0, 6.0, reason=blind) == []
+    assert feed(w, 6.05, 7.5) == []                      # a real run starts afresh
+    w = ww.WedgeWatch()
+    assert feed(w, 0.0, 1.5) == []
+    assert feed(w, 1.55, 1.95, reason=blind) == []       # under GAP_S: the run stands
+    assert feed(w, 2.0, 3.1) == [3.0]
+
+
 def test_it_fires_again_only_a_hold_later():
     w = ww.WedgeWatch()
     assert feed(w, 0.0, 6.5) == [3.0, 6.0]

@@ -1,0 +1,7 @@
+<frozen site>:107: RuntimeWarning: Unexpected value in sys.prefix, expected /home/anshu/vision-picar/.venv, got /home/anshu/vision-picar/.claude/worktrees/plan-3.136F/../../../.venv
+<frozen site>:107: RuntimeWarning: Unexpected value in sys.exec_prefix, expected /home/anshu/vision-picar/.venv, got /home/anshu/vision-picar/.claude/worktrees/plan-3.136F/../../../.venv
+<frozen site>:107: RuntimeWarning: Unexpected value in sys.prefix, expected /home/anshu/vision-picar/.venv, got /home/anshu/vision-picar/.claude/worktrees/plan-3.136F/../../../.venv
+<frozen site>:107: RuntimeWarning: Unexpected value in sys.exec_prefix, expected /home/anshu/vision-picar/.venv, got /home/anshu/vision-picar/.claude/worktrees/plan-3.136F/../../../.venv
+board lock held: plan/3.136.F-lost-desktop pid 137327 (anshu-Legion-T5-28IMB05): 3.136.F live check, lost desktop, since 2026-11-04T07:01:00-06:00, until 2026-11-04T11:01:01-06:00, token 69aa9b1d52a41b17
+<frozen site>:107: RuntimeWarning: Unexpected value in sys.prefix, expected /home/anshu/vision-picar/.venv, got /home/anshu/vision-picar/.claude/worktrees/plan-3.136F/../../../.venv
+<frozen site>:107: RuntimeWarning: Unexpected value in sys.exec_prefix, expected /home/anshu/vision-picar/.venv, got /home/anshu/vision-picar/.claude/worktrees/plan-3.136F/../../../.venv

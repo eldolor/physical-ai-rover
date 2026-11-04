@@ -145,7 +145,9 @@ every `/wheels` post from driver `ros`, under `motion_lock`, with the
 command and `vet_wheel_velocity()`'s reason. `HOLD_S` (3.0 s) of forward
 commands clamped by the safety layer, with no forward command executed
 between and no silence over `GAP_S` (1.0 s), is a wedge; it re-arms for
-another `HOLD_S`. On a wedge the server starts a thread (`mark_wedge`, so
+another `HOLD_S`. A clamp whose reason is `*_not_observed` (3.144: the lidar
+stalled, nothing seen ahead) is neither a clamp nor progress: the run is left
+as it stands. On a wedge the server starts a thread (`mark_wedge`, so
 the 20 Hz post never waits) that, only while `goal_in_progress()` and on a
 world with `set_keepout`, reads the pose and adds a disc of `SPOT_R_M`
 (0.15 m) centred `SPOT_AHEAD_M` (0.30 m) ahead -- clear of the chassis' own nose and corners -- to `SpotBook` (`SPOT_TTL_S`

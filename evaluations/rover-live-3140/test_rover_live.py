@@ -95,8 +95,8 @@ def test_coverage_of_the_real_plan_is_complete():
 
 def test_coverage_names_what_is_missing():
     text = rw.PLAN.read_text()
-    index = rw.INDEX.read_text() + "| [3.141](3.141-x.md) | a later section |\n"
-    assert rw.coverage(text, index, ROWS) == ["3.141: in the index, not in the coverage table"]
+    index = rw.INDEX.read_text() + "| [3.999](3.999-x.md) | a later section |\n"
+    assert rw.coverage(text, index, ROWS) == ["3.999: in the index, not in the coverage table"]
     broken = text.replace("| 3.34 | L2.1 |", "| 3.34 | L2.99 |")
     assert rw.coverage(broken, rw.INDEX.read_text(), ROWS) == ["3.34: names L2.99, which does not exist"]
     dropped = text.replace("| 3.38-3.40 SLAM | L3.3 |", "| 3.38-3.39 SLAM | L3.3 |")
@@ -120,15 +120,30 @@ def test_a_levels_in_order():
     events = passed(*level_ids(0)) + stand("verb")       # L1 not run
     why = floor(events)
     assert any("L2 on the floor waits on L1.1 (not run)" in w for w in why)
-    # A FAILED L3 row with the user's go lets L4 on the floor; without it, not.
-    base = passed(*level_ids(0, 1, 2)) + passed(*[r for r in level_ids(3) if r != "L3.5"]) + stand("verb")
+    # A FAILED L3 row with the user's go lets L5 on the floor; without it, not.
+    base = passed(*level_ids(0, 1, 2, 4)) + passed(*[r for r in level_ids(3) if r != "L3.5"]) + stand("verb")
     failed = base + [ev("open", "L3.5", "f", surface="none", motion=[]), ev("close", "L3.5", "f", surprise=False),
                      ev("score", "L3.5", "f", verdict="FAILED")]
-    assert any("L3.5 (FAILED, no go" in w for w in floor(failed, row="L4.1"))
-    assert floor(failed + [ev("go", "L3.5")], row="L4.1") == []
+    assert any("L3.5 (FAILED, no go" in w for w in floor(failed, row="L5.1"))
+    assert floor(failed + [ev("go", "L3.5")], row="L5.1") == []
     # A go given before the latest FAILED does not count.
     again = failed + [ev("go", "L3.5"), ev("score", "L3.5", "f", verdict="FAILED")]
-    assert any("L3.5" in w for w in floor(again, row="L4.1"))
+    assert any("L3.5" in w for w in floor(again, row="L5.1"))
+
+
+def test_a_l4_on_the_floor_waits_on_l0_to_l2_only():
+    """Amendment 2: the Rover's walks (L4) need bring-up and safety, not L3."""
+    events = passed(*level_ids(0, 1, 2)) + stand("verb")       # no L3 row run
+    assert floor(events, row="L4.1") == []
+    assert any("waits on L3.1" in w for w in floor(events, row="L5.1"))
+    assert any("L4 on the floor waits on L2.1 (not run)" in w
+               for w in floor(passed(*level_ids(0, 1)) + stand("verb"), row="L4.1"))
+    # A FAILED hard row still stops L4's walks.
+    hard = events + [ev("score", "L2.3", "x", verdict="FAILED")]
+    assert any("L2.3 FAILED stops every floor run" in w for w in floor(hard, row="L4.1"))
+    # L5 still waits on L4 as on L3.
+    l5 = events + passed(*level_ids(3))
+    assert any("waits on L4.1" in w for w in floor(l5, row="L5.1"))
 
 
 def test_a_failed_hard_row_stops_every_floor_run_but_its_own():

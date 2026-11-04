@@ -36,6 +36,25 @@ What it gives a test step:
   and maximum clock from sysfs (JetPack 6's tegrastats prints no
   throttling, 3.76 P1). The desktop's load average is sampled beside it.
 
+* `lease()` / `Heartbeat` (3.136.F) -- a run whose desktop goes away still
+  ends on the board. `board_run` sends this file to `<out>` and starts it
+  there as a lease beside the bench (`python3 <out>/lease_boardrun.py lease
+  <out>`, detached, stdlib only -- the harness's own copy, never the commit
+  under test's), and beats down one held ssh session every `HEARTBEAT_S`.
+  With no beat for `LEASE_SILENCE_S` the lease ends the bench's process tree
+  (`<out>/bench.pid`, pid and start time) and the samplers, then -- only if
+  it can take the board lock -- removes the containers not running as found,
+  puts the systemd target back and `restore()`s the units from the as-found
+  snapshot it was handed; `<out>/lease.json` says what it did. `board_run`
+  lets it go (`<out>/lease.stop`) once its bench has ended and the board is
+  put back. If no exit code came back and the bench may still run, the
+  desktop does nothing more on the board and ends; the lease is then the one
+  owner (one owner at a time). *Why:*
+  on 2026-11-03 a desktop runner stopped mid-row left its bench running,
+  the twin's units stopped and the samplers on, beside the next session's
+  bench (3.135.B, amendment 10); since 2026-11-02 a soak's samplers outlived
+  their desktop, too.
+
 The pieces are plain functions over an `ssh` callable, so tests drive them
 with a fake board.
 """
@@ -69,6 +88,19 @@ PORTS = (8000, 8001, 8002, 8003, 8004, 8005, 8080, 8090)
 # Keys whose change means the board was not left as found (criterion 4).
 # MemAvailable, load and uptime move by themselves and are recorded only.
 COMPARED = ("units", "hold_flag", "vlm_env", "containers", "listening", "power_mode")
+
+
+# 3.136.F: the lease. 90 s of silence is a desktop gone (the board lock's own
+# silence limit); a bench gets two minutes to tear itself down before SIGKILL
+# (a soak's teardown isolates the systemd target back).
+HEARTBEAT_S = 15.0
+LEASE_SILENCE_S = 90.0
+LEASE_POLL_S = 5.0
+LEASE_TERM_WAIT_S = 120.0
+LEASE_OOM_ADJ = -900          # picar-stack's: the lease outlives what it guards under memory pressure
+# A process's start time (field 22 of /proc/<pid>/stat), from the shell: the
+# one spelling, matching start_time() (the name may hold ")" or spaces).
+START_TIME_SH = "sed 's/^.*) //' /proc/%s/stat 2>/dev/null | cut -d' ' -f20"
 
 
 class BoardError(RuntimeError):
@@ -322,6 +354,372 @@ class Sampler:
                  f"pkill -P $p 2>/dev/null; kill $p 2>/dev/null; done; true", check=False)
 
 
+# ---------------------------------------------------- 3.136.F: the lease
+
+def restore_and_check(before: dict, run: Callable[..., str] = ssh, *, allow_sudo: bool,
+                      board_out: Optional[str] = None) -> tuple:
+    """Everything a run may leave, put back, then `settle_and_check()` for as
+    long as a restore that did something needs (units come up slowly):
+    (actions, after, diffs). With `board_out` (the run's directory on the
+    board, `~/...` or absolute): first the containers not running as found
+    are removed, and the systemd target is put back if the run found it
+    graphical (`<board_out>/target_at_start`). Shared by the desktop's end
+    of a run and the lease's."""
+    acts, isolated = [], False
+    if board_out:
+        found = set((before.get("containers") or "").split())
+        now = snapshot(run)
+        for c in sorted(set((now.get("containers") or "").split()) - found):
+            run(f"docker rm -f {shlex.quote(c)}", check=False, timeout=60)   # the bench's user needs no sudo
+            acts.append(f"removed container {c}")
+        tgt = (run(f"cat {board_out}/target_at_start 2>/dev/null", check=False) or "").strip()
+        if tgt == "graphical" and (run("systemctl is-active graphical.target", check=False) or "").strip() != "active":
+            if allow_sudo:
+                run("sudo -n systemctl isolate graphical.target", check=False, timeout=120)
+                acts.append("isolated graphical.target")
+                isolated = True
+            else:
+                acts.append("NOT RESTORED (allow_sudo off): graphical.target")
+    units = restore(before, run, allow_sudo=allow_sudo)
+    acts += units
+    # Only a unit started or stopped needs time to settle; a removed container does not.
+    acted = isolated or any(not a.startswith(("NOT RESTORED", "hold flag kept")) for a in units)
+    after, diffs = settle_and_check(before, run, wait_s=120 if acted else 5)
+    return acts, after, diffs
+
+
+class Heartbeat:
+    """The desktop's half: one held ssh session, a byte down its stdin every
+    `period_s`, the board touching `<path>/heartbeat` per byte. Held, as
+    board_lock.py's keeper is, so a fault row that stops NEW ssh logins
+    (memory, a full disk) cannot fake a desktop gone. A session that ends
+    while the desktop lives (the board side killed, a hiccup) is opened again
+    at the next beat and counted (`losses`), so only a desktop that stays
+    away for `LEASE_SILENCE_S` reads as gone. `spawn(cmd)` starts the board
+    side with a writable stdin (tests: a local bash)."""
+
+    def __init__(self, path: str, period_s: float = HEARTBEAT_S, spawn=None):
+        self.path, self.period_s = path, period_s
+        self.spawn = spawn or (lambda cmd: subprocess.Popen([*SSH, cmd], stdin=subprocess.PIPE,
+                                                            stdout=subprocess.DEVNULL,
+                                                            stderr=subprocess.DEVNULL))
+        self._stop = threading.Event()
+        self._thread: Optional[threading.Thread] = None
+        self.proc = None
+        self.losses = 0
+
+    def _open(self) -> None:
+        self.proc = self.spawn(f"while read -r _; do touch {self.path}/heartbeat; done")
+
+    def start(self) -> None:
+        self._open()
+        self._thread = threading.Thread(target=self._beat, daemon=True, name="board-heartbeat")
+        self._thread.start()
+
+    def _beat(self) -> None:
+        while not self._stop.is_set():
+            try:
+                if self.proc is None or self.proc.poll() is not None:
+                    self.losses += 1
+                    self._open()
+                self.proc.stdin.write(b"\n")
+                self.proc.stdin.flush()
+            except (OSError, ValueError):
+                self.proc = None            # opened again at the next beat
+            self._stop.wait(self.period_s)
+
+    def stop(self) -> None:
+        self._stop.set()
+        if self._thread:
+            self._thread.join(timeout=5)
+        if self.proc is not None:
+            try:
+                self.proc.stdin.close()
+            except OSError:
+                pass
+            try:
+                self.proc.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                self.proc.kill()
+
+
+def local_run(cmd: str, check: bool = True, timeout: float = 120.0, input: Optional[str] = None) -> str:
+    """The board's own shell, for the lease (it runs there): `ssh`'s shape."""
+    r = subprocess.run(["bash", "-c", cmd], capture_output=True, text=True, timeout=timeout, input=input)
+    if check and r.returncode != 0:
+        raise BoardError(f"{cmd[:80]}: exit {r.returncode}: {r.stderr.strip()[:200]}")
+    return r.stdout
+
+
+def _stat(pid: int) -> Optional[list]:
+    """/proc/<pid>/stat's fields after the command name (state is [0], ppid
+    [1], start time [19]), or None."""
+    try:
+        with open(f"/proc/{pid}/stat") as f:
+            return f.read().rsplit(")", 1)[1].split()
+    except (OSError, IndexError):
+        return None
+
+
+def _alive(pid: int) -> bool:
+    st = _stat(pid)
+    return st is not None and st[0] != "Z"
+
+
+def start_time(pid: int) -> Optional[str]:
+    st = _stat(pid)
+    return st[19] if st else None
+
+
+def _descendants(roots) -> list:
+    """`roots` and every process under them, by parent pid (a child in its
+    own session, as `stack.py` starts each role, is still a child)."""
+    kids: dict = {}
+    for d in os.listdir("/proc"):
+        if d.isdigit():
+            st = _stat(int(d))
+            if st:
+                kids.setdefault(int(st[1]), []).append(int(d))
+    out, seen, todo = [], set(), list(roots)
+    while todo:
+        p = todo.pop()
+        if p in seen:
+            continue
+        seen.add(p)
+        out.append(p)
+        todo.extend(kids.get(p, []))
+    return out
+
+
+def end_tree(pid: int, term_wait_s: float, *, allow_sudo: bool = False) -> dict:
+    """SIGTERM `pid`'s whole tree at once (each process its own teardown:
+    soak.sh's EXIT trap, soak.py's handlers), wait up to `term_wait_s`, then
+    SIGKILL the tree as it is THEN (walked again from every member, so what
+    a teardown forked meanwhile goes too). Every pid is kept with its start
+    time and signalled only while it still has it, so a pid reused meanwhile
+    is never touched. A process this user may not signal (a `sudo` step's)
+    is killed with `sudo -n kill -9` when the run has sudo. Returns the pids
+    signalled and any still alive after.
+
+    Known limits: a process the bench daemonised, or one left when the bench's
+    own shell died first (both re-parented to init), is not in the tree.""" 
+    import signal
+    born = {p: start_time(p) for p in _descendants([pid]) if _alive(p)}
+
+    def same(p):
+        return _alive(p) and start_time(p) == born.get(p)
+
+    for p in list(born):
+        try:
+            os.kill(p, signal.SIGTERM)
+        except OSError:
+            pass
+    end = time.monotonic() + term_wait_s
+    while time.monotonic() < end and any(same(p) for p in born):
+        time.sleep(0.2)
+    for _ in range(3):
+        for p in _descendants([q for q in born if same(q)]):
+            if p not in born and _alive(p):
+                born[p] = start_time(p)     # forked by a teardown since: its own start time
+        left = [p for p in born if same(p)]
+        if not left:
+            break
+        denied = []
+        for p in left:
+            try:
+                os.kill(p, signal.SIGKILL)
+            except PermissionError:
+                denied.append(p)
+            except OSError:
+                pass
+        if denied and allow_sudo:
+            subprocess.run(["sudo", "-n", "kill", "-9", *map(str, denied)], capture_output=True, timeout=10)
+        time.sleep(0.5)
+    return {"signalled": sorted(born), "survivors": [p for p in born if same(p)]}
+
+
+def _take_board(lock_dir: Path, who: str):
+    """The board lock (3.93's file), without waiting: an open file holding it,
+    or None if another session has it now."""
+    import fcntl
+    try:
+        f = open(lock_dir / ".picar-board.lock", "a")
+    except OSError:
+        return None
+    try:
+        fcntl.flock(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        f.close()
+        return None
+    try:
+        tmp = lock_dir / ".picar-board.owner.tmp"
+        tmp.write_text(who + "\n")
+        os.replace(tmp, lock_dir / ".picar-board.owner")
+    except OSError:
+        pass
+    return f
+
+
+LOCK_RETRY_S = 150.0   # longer than a dying desktop holder's silence limit plus a keeper's poll
+OWN_HOLD_MAX_S = 6 * 3600.0   # this run's own hold (its desktop still scoring) is waited out this long
+FALLBACK_DIR = Path("/dev/shm")
+
+
+def state_path(out) -> Path:
+    """The lease's state (`watching`, `acting`, `released`, `done`): in RAM,
+    so a full disk (3.135's F15) can never stop the lease from acting."""
+    return FALLBACK_DIR / f"picar-lease-{Path(out).name}.state"
+
+
+def _state(out: Path, state: str) -> None:
+    try:
+        tmp = state_path(out).with_suffix(".tmp")
+        tmp.write_text(state + "\n")
+        os.replace(tmp, state_path(out))
+    except OSError:
+        pass                                # the state is the desktop's hint, never the lease's gate
+
+
+def fallback_record(out) -> Path:
+    """Where a lease's record goes when `<out>` cannot be written (a full
+    disk): RAM, named after the run's directory."""
+    return FALLBACK_DIR / f"picar-lease-{Path(out).name}.json"
+
+
+def _write_record(out: Path, text: str) -> None:
+    try:
+        tmp = out / "lease.json.tmp"
+        tmp.write_text(text)
+        os.replace(tmp, out / "lease.json")          # whole or absent, never empty
+    except OSError:
+        fallback_record(out).write_text(text)
+
+
+def lease(out, *, silence_s: float = LEASE_SILENCE_S, period_s: float = LEASE_POLL_S,
+          run: Callable[..., str] = local_run, allow_sudo: bool = False,
+          term_wait_s: float = LEASE_TERM_WAIT_S, lock_dir=None, lock_retry_s: float = LOCK_RETRY_S,
+          token: str = "") -> str:
+    """The board's half: wait for `<out>/lease.stop` (the desktop let go:
+    "released") or `silence_s` without a heartbeat (the desktop gone), then:
+
+    0. `lease.state` goes `acting` BEFORE `lease.stop` is read a last time, so
+       a desktop that lets go reads `acting` after its stop if the lease got
+       there first (and waits for its record), and never both act unseen;
+    1. end this run's own bench (`bench.pid`: "<pid> <start time>", checked
+       so a reused pid is never killed) and its samplers (only a pid still
+       running a sampler of this run), always -- they are this run's, and on
+       a board someone else now holds they are in the way;
+    2. only with the board lock taken here (retried for `lock_retry_s`: the
+       dead desktop's holder and the bench's own keeper let go a little
+       later): remove the containers that were not running as found, put the
+       systemd target back if the bench moved it, and restore the units. If
+       another session holds the board, its state is its own: left, said so.
+
+    Silence is counted on the monotonic clock from the last heartbeat SEEN
+    (its mtime changing), never wall clock minus mtime: a clock step on the
+    board (3.135's F16) is no silence. Writes `<out>/lease.json` (or, on a
+    full disk, `fallback_record(out)`): "acted"."""
+    out = Path(out).expanduser()
+    lock_dir = Path(lock_dir or os.environ.get("PICAR_BOARD_LOCK_DIR") or Path.home())
+    (out / "lease.pid").write_text(f"{os.getpid()}\n")
+    _state(out, "watching")
+
+    def mtime():
+        try:
+            return (out / "heartbeat").stat().st_mtime_ns
+        except OSError:
+            return None
+
+    last, seen_at = mtime(), time.monotonic()
+    while True:
+        if (out / "lease.stop").exists():
+            _state(out, "released")
+            return "released"
+        m = mtime()
+        if m != last:
+            last, seen_at = m, time.monotonic()
+        silence = time.monotonic() - seen_at
+        if silence > silence_s:
+            _state(out, "acting")
+            if (out / "lease.stop").exists():          # let go just now: the desktop restores
+                _state(out, "released")
+                return "released"
+            break
+        time.sleep(period_s)
+    rec: dict = {"silence_s": round(silence, 1), "acted_at": time.time()}
+    survivors, samplers, skipped = [], [], []
+    try:
+        try:
+            pid_s, start_s = ((out / "bench.pid").read_text().split() + [""])[:2]
+            pid = int(pid_s)
+            if start_time(pid) is None:
+                rec["bench_ended"] = "the bench had already ended"
+            elif start_s and start_time(pid) != start_s:
+                rec["bench_ended"] = f"pid {pid} is no longer the bench (start time {start_time(pid)}, not {start_s})"
+            else:
+                rec["bench_ended"] = end_tree(pid, term_wait_s, allow_sudo=allow_sudo)
+                survivors += rec["bench_ended"]["survivors"]
+        except (OSError, ValueError) as e:
+            rec["bench_ended"] = f"no bench pid: {e}"
+        for f in (out / "sampler.pids", out / "telemetry" / "sampler.pids"):
+            try:
+                pids = [int(p) for p in f.read_text().split()]
+            except (OSError, ValueError):
+                continue
+            for p in pids:
+                try:
+                    cmd = Path(f"/proc/{p}/cmdline").read_bytes().replace(b"\0", b" ").decode(errors="replace")
+                except OSError:
+                    continue                    # gone already
+                if "tegrastats" not in cmd and str(out.name) not in cmd:
+                    skipped.append(p)           # not a sampler of this run any more: a reused pid
+                    continue
+                r = end_tree(p, 5.0, allow_sudo=allow_sudo)
+                samplers += r["signalled"]
+                survivors += r["survivors"]
+    except Exception as e:  # noqa: BLE001 -- the record is still written, and nothing is restored
+        rec["error"] = f"ending the bench: {type(e).__name__}: {e}"
+        survivors.append("unknown")
+    rec["samplers_ended"], rec["sampler_pids_skipped"] = samplers, skipped
+    rec["survivors"] = survivors
+    who = f"3.136.F lease of {out} (pid {os.getpid()}), since {time.strftime('%Y-%m-%dT%H:%M:%S%z')}"
+    # Retried: a dead desktop's holder and the bench's keeper let go a little later. While
+    # the holder is this run's own (its token in the owner line: a desktop still scoring
+    # under its hold), it is waited out; another session's hold is its own board.
+    t_try = time.monotonic()
+    held = _take_board(lock_dir, who)
+    while held is None:
+        try:
+            owner = (lock_dir / ".picar-board.owner").read_text()
+        except OSError:
+            owner = ""
+        own = bool(token) and token in owner
+        if time.monotonic() - t_try > (OWN_HOLD_MAX_S if own else lock_retry_s):
+            break
+        time.sleep(2.0)
+        held = _take_board(lock_dir, who)
+    rec["board_lock"] = "taken" if held else "held by another session: its containers and units left"
+    try:
+        if held and survivors:
+            rec["error"] = f"processes of the bench survived ({survivors}): units not restored beside them"
+        elif held:
+            before = json.loads((out / "as_found.json").read_text())
+            rec["restore_actions"], _after, rec["after_differences"] = restore_and_check(
+                before, run, allow_sudo=allow_sudo, board_out=str(out))
+    except Exception as e:  # noqa: BLE001 -- what was done is still written
+        rec["error"] = f"{type(e).__name__}: {e}"
+    finally:
+        if held:
+            try:
+                (lock_dir / ".picar-board.owner").write_text("")    # as board_lock.py's holder leaves it
+            except OSError:
+                pass
+            held.close()
+    _write_record(out, json.dumps(rec, indent=1, default=str))
+    _state(out, "done")
+    return "acted"
+
+
 def read_sysfs(path: Path) -> list:
     rows = []
     for line in Path(path).read_text().splitlines():
@@ -334,3 +732,22 @@ def read_sysfs(path: Path) -> list:
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def main(argv=None) -> int:
+    """`python3 boardrun.py lease <out> [--silence S] [--sudo]`: the lease, on the board."""
+    import argparse
+    ap = argparse.ArgumentParser()
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    le = sub.add_parser("lease")
+    le.add_argument("out")
+    le.add_argument("--silence", type=float, default=LEASE_SILENCE_S)
+    le.add_argument("--sudo", action="store_true")
+    le.add_argument("--token", default="")
+    a = ap.parse_args(argv)
+    print(lease(a.out, silence_s=a.silence, allow_sudo=a.sudo, token=a.token), flush=True)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

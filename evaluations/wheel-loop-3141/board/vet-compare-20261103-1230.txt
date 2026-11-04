@@ -1,0 +1,13 @@
+board busy, waiting: plan/3.135.B-single-faults pid 1027886 (anshu-Legion-T5-28IMB05): 3.135.B restore picar-stack after the 12:27 orphan, since 2026-11-03T12:29:34-06:00, until 2026-11-03T16:29:36-06:00
+board lock held: plan/3.141-wheel-loop-fix pid 1031355 (anshu-Legion-T5-28IMB05): 3.141 criterion 2 vet bench, rerun (two minutes), since 2026-11-03T12:30:22-06:00, until 2026-11-03T16:31:51-06:00
+NV Power Mode: 15W
+ 12:31:52 up 23:36,  1 user,  load average: 0.15, 1.25, 1.07
+straight, open           dev p50   0.63 p90   0.65 | 3.141 p50   0.63 p90   0.65 | same True
+straight, wall 25 cm     dev p50   0.64 p90   0.65 | 3.141 p50   0.61 p90   0.62 | same True
+turn, open               dev p50   2.46 p90   2.47 | 3.141 p50   1.19 p90   1.21 | same True
+turn, corner 1 cm off    dev p50   0.10 p90   0.11 | 3.141 p50   0.07 p90   0.08 | same True
+corner box 0.171x0.140   dev p50  21.97 p90  22.02 | 3.141 p50   2.31 p90   2.33 | same True
+corner box 0.167x0.152   dev p50  22.98 p90  23.04 | 3.141 p50   2.34 p90   2.36 | same True
+corner box 0.159x0.140   dev p50  20.27 p90  20.34 | 3.141 p50   2.32 p90   2.34 | same True
+ 12:32:24 up 23:36,  1 user,  load average: 0.49, 1.22, 1.07
+board lock released

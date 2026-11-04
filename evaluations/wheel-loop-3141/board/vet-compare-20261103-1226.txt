@@ -1,0 +1,12 @@
+board lock held: plan/3.141-wheel-loop-fix pid 1015983 (anshu-Legion-T5-28IMB05): 3.141 criterion 2 vet bench (two minutes), since 2026-11-03T12:27:00-06:00, until 2026-11-03T16:27:01-06:00
+NV Power Mode: 15W
+ 12:27:03 up 23:31,  1 user,  load average: 4.57, 2.36, 1.19
+straight, open           dev p50   0.64 p90   0.91 | 3.141 p50   0.64 p90   0.67 | same True
+straight, wall 25 cm     dev p50   0.65 p90   0.67 | 3.141 p50   0.65 p90   0.67 | same True
+turn, open               dev p50   2.53 p90   2.55 | 3.141 p50   1.04 p90   1.06 | same True
+turn, corner 1 cm off    dev p50   0.11 p90   0.11 | 3.141 p50   0.12 p90   0.13 | same True
+corner box 0.171x0.140   dev p50  22.21 p90  22.55 | 3.141 p50   2.50 p90   3.28 | same True
+corner box 0.167x0.152   dev p50  23.20 p90  23.32 | 3.141 p50   2.44 p90   2.50 | same True
+corner box 0.159x0.140   dev p50  20.43 p90  20.58 | 3.141 p50   2.38 p90   2.45 | same True
+ 12:27:19 up 23:31,  1 user,  load average: 5.19, 2.60, 1.29
+board lock released

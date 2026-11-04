@@ -40,6 +40,14 @@ TRUTH = ("grid", "none")
 # Rows of these levels that FAIL stop every later floor run until fixed
 # (criterion 2); a FAILED row above them needs only the user's go.
 HARD_LEVELS = (0, 1, 2)
+# Amendment 2 (the user, 2026-11-03): L4's floor runs, the Rover's walks for
+# the corpus, wait on L0-L2 only, not on L3's drive and navigation rows.
+# Every other level waits on all the levels beneath it.
+LEVELS_BEFORE = {4: (0, 1, 2)}
+
+
+def levels_before(level: int) -> tuple:
+    return LEVELS_BEFORE.get(level, tuple(range(level)))
 
 
 class Refused(RuntimeError):
@@ -188,7 +196,7 @@ def stand_done(events: list, path: str) -> bool:
 
 
 def floor_gate(events: list, rows: dict, row) -> list:
-    """Criterion 2, for a floor run of `row`."""
+    """Criterion 2 (with amendment 2's L4 order), for a floor run of `row`."""
     out = []
     for r in rows.values():
         if r.decision or r.level not in HARD_LEVELS or r.id == row.id:
@@ -196,7 +204,7 @@ def floor_gate(events: list, rows: dict, row) -> list:
         if latest_verdict(events, r.id) == "FAILED":
             out.append(f"criterion 2: {r.id} FAILED stops every floor run but its own re-run until fixed")
     for r in rows.values():
-        if r.decision or r.level >= row.level:
+        if r.decision or r.level not in levels_before(row.level):
             continue
         v = latest_verdict(events, r.id)
         if v == "met":
