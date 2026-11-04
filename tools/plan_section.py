@@ -598,6 +598,8 @@ RISKY_PREFIXES = (
     # The rest of the gate (3.76 I12, the user): the claims the pre-commit
     # hook reads, and the nightly full run.
     "tools/plan_claims.py", "tools/nightly_suite.sh",
+    # 3.150: the Bash hook that refuses the gate's bypasses.
+    "tools/bash_guard.py", ".claude/settings.json",
 )
 
 
