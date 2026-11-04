@@ -1,0 +1,47 @@
+{
+ "house": "procthor:val:0",
+ "target": "box",
+ "arm": "truth",
+ "run": 1,
+ "outcome": "found",
+ "seconds": 564,
+ "target_at": [
+  [
+   50,
+   9
+  ]
+ ],
+ "status_file": "explore_status_tiered-box-1793755027.json",
+ "steps": 20,
+ "explore": {
+  "goals_sent": 20,
+  "goals_failed": 6,
+  "last_event": "reached approach goal",
+  "camera_seen_m2": 64.86,
+  "choice_ms": {
+   "n": 42,
+   "p50_ms": 44.4,
+   "p90_ms": 55.4,
+   "max_ms": 79.3
+  },
+  "asks": false,
+  "ask": null,
+  "choices": 0
+ },
+ "stuck_episodes": 0,
+ "travel_m": 64.7,
+ "min_gap_cm": 6.4,
+ "contact_samples": 0,
+ "inside_samples": 0,
+ "samples": 1083,
+ "room_labels": null,
+ "last_log": [
+  "waiting -- arrived; holding for the identity check -- [local: arrival_confirmation] target reached -- arrived -- target centred at 0.37 m, 2 frame(s) running; [reactive tier, local question: staleness] asked the local tier -- steering on local sighting (center)",
+  "inventory: 37 reported, 10 candidates from 913 frames -- dining table x6, chair x5, garbage can x4, bed x3, dresser x2, house plant x2, tv stand x2, baseball bat, box, counter top, desk, dog bed, floor lamp, fridge, plunger, red backpack, shelving unit, sink, sofa, toilet",
+  "mission ended (found): Bathroom, bedroom, bedroom 2, kitchen, living room, living room 2 searched. Found."
+ ],
+ "harness_cut": false,
+ "standin_alive_at_end": true,
+ "closest_m": 0.55,
+ "cloud_calls": 0
+}

@@ -1,0 +1,42 @@
+{
+ "house": "complex_house",
+ "target": "shoes",
+ "arm": "truth",
+ "run": 1,
+ "outcome": "found",
+ "seconds": 22,
+ "target_at": [
+  [
+   3,
+   26
+  ]
+ ],
+ "status_file": "explore_status_tiered-shoes-1793751558.json",
+ "steps": 1,
+ "explore": {
+  "goals_sent": 1,
+  "goals_failed": 0,
+  "last_event": "goal refused: preempted",
+  "camera_seen_m2": 7.57,
+  "choice_ms": null,
+  "asks": false,
+  "ask": null,
+  "choices": 0
+ },
+ "stuck_episodes": 0,
+ "travel_m": 2.9,
+ "min_gap_cm": Infinity,
+ "contact_samples": 0,
+ "inside_samples": 0,
+ "samples": 44,
+ "room_labels": null,
+ "last_log": [
+  "waiting -- arrived; holding for the identity check -- [local: arrival_confirmation] target reached -- arrived -- target centred at 0.385 m, 2 frame(s) running; [reactive tier, no cloud call] no trigger (detected) -- steering on local sighting (center)",
+  "inventory: 2 reported, 1 candidates from 31 frames -- shoes, umbrella",
+  "mission ended (found): Entry searched. Found."
+ ],
+ "harness_cut": false,
+ "standin_alive_at_end": true,
+ "closest_m": 0.53,
+ "cloud_calls": 0
+}

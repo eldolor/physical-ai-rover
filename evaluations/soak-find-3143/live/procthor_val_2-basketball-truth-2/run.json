@@ -1,0 +1,47 @@
+{
+ "house": "procthor:val:2",
+ "target": "basketball",
+ "arm": "truth",
+ "run": 2,
+ "outcome": "found",
+ "seconds": 469,
+ "target_at": [
+  [
+   21,
+   12
+  ]
+ ],
+ "status_file": "explore_status_tiered-basketball-1793752288.json",
+ "steps": 21,
+ "explore": {
+  "goals_sent": 21,
+  "goals_failed": 3,
+  "last_event": "goal refused: preempted",
+  "camera_seen_m2": 79.88,
+  "choice_ms": {
+   "n": 42,
+   "p50_ms": 40.4,
+   "p90_ms": 82.3,
+   "max_ms": 155.6
+  },
+  "asks": false,
+  "ask": null,
+  "choices": 0
+ },
+ "stuck_episodes": 0,
+ "travel_m": 51.3,
+ "min_gap_cm": 10.8,
+ "contact_samples": 0,
+ "inside_samples": 0,
+ "samples": 903,
+ "room_labels": null,
+ "last_log": [
+  "waiting -- arrived; holding for the identity check -- [local: arrival_confirmation] target reached -- arrived -- target centred at 0.385 m, 2 frame(s) running; [reactive tier, no cloud call] no trigger (detected) -- steering on local sighting (center)",
+  "inventory: 28 reported, 9 candidates from 777 frames -- dining table x6, house plant x3, sofa x3, chair x2, counter top x2, tv stand x2, garbage can x2, arm chair, basketball, bed, dog bed, fridge, safe, stool, dresser",
+  "mission ended (found): Bedroom 2, bedroom 3, kitchen, living room, living room 2, living room 3 searched. Found."
+ ],
+ "harness_cut": false,
+ "standin_alive_at_end": true,
+ "closest_m": 0.52,
+ "cloud_calls": 0
+}

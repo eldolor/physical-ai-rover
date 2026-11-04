@@ -1,0 +1,47 @@
+{
+ "house": "procthor:val:2",
+ "target": "laundry hamper",
+ "arm": "truth",
+ "run": 1,
+ "outcome": "found",
+ "seconds": 672,
+ "target_at": [
+  [
+   27,
+   6
+  ]
+ ],
+ "status_file": "explore_status_tiered-laundry_hamper-1793752771.json",
+ "steps": 33,
+ "explore": {
+  "goals_sent": 33,
+  "goals_failed": 2,
+  "last_event": "goal refused: preempted",
+  "camera_seen_m2": 113.37,
+  "choice_ms": {
+   "n": 73,
+   "p50_ms": 42.1,
+   "p90_ms": 80.7,
+   "max_ms": 122.7
+  },
+  "asks": false,
+  "ask": null,
+  "choices": 0
+ },
+ "stuck_episodes": 0,
+ "travel_m": 86.2,
+ "min_gap_cm": 9.6,
+ "contact_samples": 0,
+ "inside_samples": 0,
+ "samples": 1287,
+ "room_labels": null,
+ "last_log": [
+  "waiting -- arrived; holding for the identity check -- [local: arrival_confirmation] target reached -- arrived -- target centred at 0.37 m, 2 frame(s) running; [reactive tier, no cloud call] no trigger (detected) -- steering on local sighting (center)",
+  "inventory: 51 reported, 12 candidates from 1109 frames -- dining table x11, chair x5, garbage can x4, house plant x4, bed x4, sink x3, sofa x3, counter top x2, plunger x2, toilet x2, tv stand x2, arm chair, basketball, dog bed, fridge, laundry hamper, safe, stool, side table, dresser",
+  "mission ended (found): Bathroom 2, bathroom 3, bedroom, bedroom 2, bedroom 3, kitchen, living room, living room 2, living room 3 searched. Found."
+ ],
+ "harness_cut": false,
+ "standin_alive_at_end": true,
+ "closest_m": 0.51,
+ "cloud_calls": 0
+}

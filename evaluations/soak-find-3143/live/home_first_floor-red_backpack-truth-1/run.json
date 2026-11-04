@@ -1,0 +1,47 @@
+{
+ "house": "home_first_floor",
+ "target": "red backpack",
+ "arm": "truth",
+ "run": 1,
+ "outcome": "found",
+ "seconds": 245,
+ "target_at": [
+  [
+   46,
+   19
+  ]
+ ],
+ "status_file": "explore_status_tiered-red_backpack-1793754174.json",
+ "steps": 14,
+ "explore": {
+  "goals_sent": 14,
+  "goals_failed": 0,
+  "last_event": "goal refused: preempted",
+  "camera_seen_m2": 40.28,
+  "choice_ms": {
+   "n": 28,
+   "p50_ms": 38.5,
+   "p90_ms": 54.1,
+   "max_ms": 56.8
+  },
+  "asks": false,
+  "ask": null,
+  "choices": 0
+ },
+ "stuck_episodes": 0,
+ "travel_m": 25.7,
+ "min_gap_cm": 6.3,
+ "contact_samples": 0,
+ "inside_samples": 0,
+ "samples": 466,
+ "room_labels": null,
+ "last_log": [
+  "waiting -- arrived; holding for the identity check -- [local: arrival_confirmation] target reached -- arrived -- target centred at 0.37 m, 2 frame(s) running; [reactive tier, no cloud call] no trigger (detected) -- steering on local sighting (center)",
+  "inventory: 15 reported, 11 candidates from 396 frames -- staircase x3, chair x2, dining table x2, kitchen counter x2, armchair, breakfast table, kitchen island, red backpack, sectional sofa, coffee table",
+  "mission ended (found): Breakfast, dining room, family room, foyer, hall, kitchen searched. Found."
+ ],
+ "harness_cut": false,
+ "standin_alive_at_end": true,
+ "closest_m": 0.51,
+ "cloud_calls": 0
+}

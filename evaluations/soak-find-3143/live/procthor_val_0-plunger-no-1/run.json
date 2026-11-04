@@ -1,0 +1,47 @@
+{
+ "house": "procthor:val:0",
+ "target": "plunger",
+ "arm": "no",
+ "run": 1,
+ "outcome": "exhausted",
+ "seconds": 991,
+ "target_at": [
+  [
+   28,
+   7
+  ]
+ ],
+ "status_file": "explore_status_tiered-plunger-1793750053.json",
+ "steps": 35,
+ "explore": {
+  "goals_sent": 34,
+  "goals_failed": 5,
+  "last_event": "no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)",
+  "camera_seen_m2": 81.56,
+  "choice_ms": {
+   "n": 68,
+   "p50_ms": 52.2,
+   "p90_ms": 76.8,
+   "max_ms": 145.1
+  },
+  "asks": false,
+  "ask": null,
+  "choices": 0
+ },
+ "stuck_episodes": 0,
+ "travel_m": 117.8,
+ "min_gap_cm": 3.8,
+ "contact_samples": 0,
+ "inside_samples": 0,
+ "samples": 1904,
+ "room_labels": null,
+ "last_log": [
+  "step 34: STOP (ok) -- no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped) -- target not visible -- [reactive tier, local question: cold_search] asked the local tier",
+  "inventory: 44 reported, 8 candidates from 1603 frames -- dining table x6, bed x4, garbage can x4, tv stand x4, chair x3, desk x3, dresser x3, house plant x3, baseball bat x2, box, counter top, dog bed, floor lamp, red backpack, safe, shelving unit, sink, sofa, toilet, fridge, plunger",
+  "mission ended (exhausted): no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)"
+ ],
+ "harness_cut": false,
+ "standin_alive_at_end": true,
+ "closest_m": 1.07,
+ "cloud_calls": 0
+}

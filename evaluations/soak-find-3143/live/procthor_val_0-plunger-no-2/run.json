@@ -1,0 +1,47 @@
+{
+ "house": "procthor:val:0",
+ "target": "plunger",
+ "arm": "no",
+ "run": 2,
+ "outcome": "found",
+ "seconds": 486,
+ "target_at": [
+  [
+   28,
+   7
+  ]
+ ],
+ "status_file": "explore_status_tiered-plunger-1793751058.json",
+ "steps": 25,
+ "explore": {
+  "goals_sent": 25,
+  "goals_failed": 6,
+  "last_event": "goal refused: preempted",
+  "camera_seen_m2": 70.32,
+  "choice_ms": {
+   "n": 49,
+   "p50_ms": 42.1,
+   "p90_ms": 59.9,
+   "max_ms": 86.0
+  },
+  "asks": false,
+  "ask": null,
+  "choices": 0
+ },
+ "stuck_episodes": 0,
+ "travel_m": 52.7,
+ "min_gap_cm": 9.3,
+ "contact_samples": 0,
+ "inside_samples": 0,
+ "samples": 933,
+ "room_labels": null,
+ "last_log": [
+  "waiting -- arrived; holding for the identity check -- target reached -- arrived -- target centred at 0.385 m, 2 frame(s) running; [reactive tier, no cloud call] no trigger (detected) -- steering on local sighting (center)",
+  "inventory: 43 reported, 9 candidates from 779 frames -- dining table x8, house plant x4, bed x3, chair x3, desk x3, dresser x3, baseball bat x2, counter top x2, garbage can x2, tv stand x2, box, dog bed, floor lamp, shelving unit, sink, sofa, toilet, fridge, plunger, red backpack, safe",
+  "mission ended (found): Bathroom, bedroom, bedroom 2, bedroom 3, kitchen, living room, living room 2 searched. Found."
+ ],
+ "harness_cut": false,
+ "standin_alive_at_end": true,
+ "closest_m": 0.53,
+ "cloud_calls": 0
+}

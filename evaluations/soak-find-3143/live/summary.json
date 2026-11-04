@@ -1,0 +1,287 @@
+[
+ {
+  "house": "complex_house",
+  "target": "shoes",
+  "arm": "truth",
+  "run": 1,
+  "outcome": "found",
+  "seconds": 22,
+  "closest_m": 0.53,
+  "contact_samples": 0,
+  "cloud_calls": 0,
+  "travel_m": 2.9,
+  "harness_cut": false,
+  "standin_alive_at_end": true,
+  "approach_sent": 1,
+  "approach_ends": {
+   "succeeded": 1
+  },
+  "goals_sent": 1,
+  "goals_failed": 0
+ },
+ {
+  "house": "complex_house",
+  "target": "shoes",
+  "arm": "truth",
+  "run": 2,
+  "outcome": "found",
+  "seconds": 23,
+  "closest_m": 0.52,
+  "contact_samples": 0,
+  "cloud_calls": 0,
+  "travel_m": 2.9,
+  "harness_cut": false,
+  "standin_alive_at_end": true,
+  "approach_sent": 1,
+  "approach_ends": {
+   "succeeded": 1
+  },
+  "goals_sent": 1,
+  "goals_failed": 0
+ },
+ {
+  "house": "home_first_floor",
+  "target": "red backpack",
+  "arm": "truth",
+  "run": 1,
+  "outcome": "found",
+  "seconds": 245,
+  "closest_m": 0.51,
+  "contact_samples": 0,
+  "cloud_calls": 0,
+  "travel_m": 25.7,
+  "harness_cut": false,
+  "standin_alive_at_end": true,
+  "approach_sent": 3,
+  "approach_ends": {
+   "succeeded": 3
+  },
+  "goals_sent": 14,
+  "goals_failed": 0
+ },
+ {
+  "house": "home_first_floor",
+  "target": "red backpack",
+  "arm": "truth",
+  "run": 2,
+  "outcome": "found",
+  "seconds": 580,
+  "closest_m": 0.51,
+  "contact_samples": 0,
+  "cloud_calls": 0,
+  "travel_m": 51.8,
+  "harness_cut": false,
+  "standin_alive_at_end": true,
+  "approach_sent": 2,
+  "approach_ends": {
+   "aborted": 1,
+   "succeeded": 1
+  },
+  "goals_sent": 21,
+  "goals_failed": 5
+ },
+ {
+  "house": "procthor:val:0",
+  "target": "box",
+  "arm": "truth",
+  "run": 1,
+  "outcome": "found",
+  "seconds": 564,
+  "closest_m": 0.55,
+  "contact_samples": 0,
+  "cloud_calls": 0,
+  "travel_m": 64.7,
+  "harness_cut": false,
+  "standin_alive_at_end": true,
+  "approach_sent": 2,
+  "approach_ends": {
+   "aborted": 1,
+   "succeeded": 1
+  },
+  "goals_sent": 20,
+  "goals_failed": 6
+ },
+ {
+  "house": "procthor:val:0",
+  "target": "box",
+  "arm": "truth",
+  "run": 2,
+  "outcome": "out_of_budget",
+  "seconds": 1201,
+  "closest_m": 3.76,
+  "contact_samples": 0,
+  "cloud_calls": 0,
+  "travel_m": 50.7,
+  "harness_cut": false,
+  "standin_alive_at_end": true,
+  "approach_sent": 0,
+  "approach_ends": {},
+  "goals_sent": 36,
+  "goals_failed": 24
+ },
+ {
+  "house": "procthor:val:0",
+  "target": "plunger",
+  "arm": "no",
+  "run": 1,
+  "outcome": "exhausted",
+  "seconds": 991,
+  "closest_m": 1.07,
+  "contact_samples": 0,
+  "cloud_calls": 0,
+  "travel_m": 117.8,
+  "harness_cut": false,
+  "standin_alive_at_end": true,
+  "approach_sent": 3,
+  "approach_ends": {
+   "aborted": 1,
+   "stalled": 1,
+   "succeeded": 1
+  },
+  "goals_sent": 34,
+  "goals_failed": 5
+ },
+ {
+  "house": "procthor:val:0",
+  "target": "plunger",
+  "arm": "no",
+  "run": 2,
+  "outcome": "found",
+  "seconds": 486,
+  "closest_m": 0.53,
+  "contact_samples": 0,
+  "cloud_calls": 0,
+  "travel_m": 52.7,
+  "harness_cut": false,
+  "standin_alive_at_end": true,
+  "approach_sent": 4,
+  "approach_ends": {
+   "aborted": 2,
+   "succeeded": 1
+  },
+  "goals_sent": 25,
+  "goals_failed": 6
+ },
+ {
+  "house": "procthor:val:0",
+  "target": "plunger",
+  "arm": "truth",
+  "run": 1,
+  "outcome": "found",
+  "seconds": 493,
+  "closest_m": 0.54,
+  "contact_samples": 0,
+  "cloud_calls": 0,
+  "travel_m": 55.3,
+  "harness_cut": false,
+  "standin_alive_at_end": true,
+  "approach_sent": 2,
+  "approach_ends": {
+   "succeeded": 1
+  },
+  "goals_sent": 23,
+  "goals_failed": 4
+ },
+ {
+  "house": "procthor:val:0",
+  "target": "plunger",
+  "arm": "truth",
+  "run": 2,
+  "outcome": "found",
+  "seconds": 225,
+  "closest_m": 0.54,
+  "contact_samples": 0,
+  "cloud_calls": 0,
+  "travel_m": 26.1,
+  "harness_cut": false,
+  "standin_alive_at_end": true,
+  "approach_sent": 2,
+  "approach_ends": {
+   "succeeded": 2
+  },
+  "goals_sent": 13,
+  "goals_failed": 1
+ },
+ {
+  "house": "procthor:val:2",
+  "target": "basketball",
+  "arm": "truth",
+  "run": 1,
+  "outcome": "found",
+  "seconds": 642,
+  "closest_m": 0.5,
+  "contact_samples": 0,
+  "cloud_calls": 0,
+  "travel_m": 76.1,
+  "harness_cut": false,
+  "standin_alive_at_end": true,
+  "approach_sent": 2,
+  "approach_ends": {
+   "aborted": 2
+  },
+  "goals_sent": 31,
+  "goals_failed": 4
+ },
+ {
+  "house": "procthor:val:2",
+  "target": "basketball",
+  "arm": "truth",
+  "run": 2,
+  "outcome": "found",
+  "seconds": 469,
+  "closest_m": 0.52,
+  "contact_samples": 0,
+  "cloud_calls": 0,
+  "travel_m": 51.3,
+  "harness_cut": false,
+  "standin_alive_at_end": true,
+  "approach_sent": 1,
+  "approach_ends": {
+   "succeeded": 1
+  },
+  "goals_sent": 21,
+  "goals_failed": 3
+ },
+ {
+  "house": "procthor:val:2",
+  "target": "laundry hamper",
+  "arm": "truth",
+  "run": 1,
+  "outcome": "found",
+  "seconds": 672,
+  "closest_m": 0.51,
+  "contact_samples": 0,
+  "cloud_calls": 0,
+  "travel_m": 86.2,
+  "harness_cut": false,
+  "standin_alive_at_end": true,
+  "approach_sent": 3,
+  "approach_ends": {
+   "aborted": 1,
+   "succeeded": 2
+  },
+  "goals_sent": 33,
+  "goals_failed": 2
+ },
+ {
+  "house": "procthor:val:2",
+  "target": "laundry hamper",
+  "arm": "truth",
+  "run": 2,
+  "outcome": "found",
+  "seconds": 702,
+  "closest_m": 0.56,
+  "contact_samples": 0,
+  "cloud_calls": 0,
+  "travel_m": 83.9,
+  "harness_cut": false,
+  "standin_alive_at_end": true,
+  "approach_sent": 2,
+  "approach_ends": {
+   "aborted": 1,
+   "succeeded": 1
+  },
+  "goals_sent": 34,
+  "goals_failed": 3
+ }
+]

@@ -1,0 +1,47 @@
+{
+ "house": "procthor:val:0",
+ "target": "box",
+ "arm": "truth",
+ "run": 2,
+ "outcome": "out_of_budget",
+ "seconds": 1201,
+ "target_at": [
+  [
+   50,
+   9
+  ]
+ ],
+ "status_file": "explore_status_tiered-box-1793755604.json",
+ "steps": 36,
+ "explore": {
+  "goals_sent": 36,
+  "goals_failed": 24,
+  "last_event": "goal sent (frontier) to (15.25, 5.65)",
+  "camera_seen_m2": 49.79,
+  "choice_ms": {
+   "n": 84,
+   "p50_ms": 46.8,
+   "p90_ms": 56.7,
+   "max_ms": 100.8
+  },
+  "asks": false,
+  "ask": null,
+  "choices": 0
+ },
+ "stuck_episodes": 0,
+ "travel_m": 50.7,
+ "min_gap_cm": 3.3,
+ "contact_samples": 0,
+ "inside_samples": 0,
+ "samples": 2339,
+ "room_labels": null,
+ "last_log": [
+  "waiting -- nav2 active: frontier -- target not visible -- [reactive tier, local question: cold_search] asked the local tier",
+  "inventory: 28 reported, 9 candidates from 1920 frames -- dining table x7, garbage can x3, chair x2, tv stand x2, counter top, dog bed, dresser, floor lamp, fridge, house plant, red backpack, shelving unit, sink, sofa, toilet, bed, desk, plunger",
+  "mission ended (out_of_budget): time limit of 1200 s reached (1200.2 s)"
+ ],
+ "harness_cut": false,
+ "standin_alive_at_end": true,
+ "closest_m": 3.76,
+ "cloud_calls": 0
+}

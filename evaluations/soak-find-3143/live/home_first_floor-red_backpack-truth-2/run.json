@@ -1,0 +1,47 @@
+{
+ "house": "home_first_floor",
+ "target": "red backpack",
+ "arm": "truth",
+ "run": 2,
+ "outcome": "found",
+ "seconds": 580,
+ "target_at": [
+  [
+   46,
+   19
+  ]
+ ],
+ "status_file": "explore_status_tiered-red_backpack-1793754433.json",
+ "steps": 21,
+ "explore": {
+  "goals_sent": 21,
+  "goals_failed": 5,
+  "last_event": "goal refused: preempted",
+  "camera_seen_m2": 71.44,
+  "choice_ms": {
+   "n": 39,
+   "p50_ms": 55.4,
+   "p90_ms": 66.4,
+   "max_ms": 103.6
+  },
+  "asks": false,
+  "ask": null,
+  "choices": 0
+ },
+ "stuck_episodes": 0,
+ "travel_m": 51.8,
+ "min_gap_cm": 5.0,
+ "contact_samples": 0,
+ "inside_samples": 0,
+ "samples": 1104,
+ "room_labels": null,
+ "last_log": [
+  "waiting -- arrived; holding for the identity check -- [local: arrival_confirmation] target reached -- arrived -- target centred at 0.37 m, 2 frame(s) running; [reactive tier, no cloud call] no trigger (detected) -- steering on local sighting (center)",
+  "inventory: 27 reported, 22 candidates from 919 frames -- chair x5, kitchen counter x4, breakfast table x2, car x2, coffee table x2, sectional sofa x2, staircase x2, armchair, dining table, kitchen island, red backpack, refrigerator, tv console, dryer, garage shelves",
+  "mission ended (found): Breakfast, dining room, family room, foyer, garage, garage hall, hall, kitchen searched. Found."
+ ],
+ "harness_cut": false,
+ "standin_alive_at_end": true,
+ "closest_m": 0.51,
+ "cloud_calls": 0
+}
