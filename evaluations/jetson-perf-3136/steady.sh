@@ -121,7 +121,9 @@ waitfor 90 "wheels usable" sh -c "curl -s -H 'x-app-secret: $LOCAL_SECRET' local
 # 3.141.D: the tracer loads through the shim's chain, which swallows errors:
 # no start row means no trace, and the window would run for nothing.
 if [ "${STEADY_TRACER:-0}" = 1 ]; then
-  waitfor 30 "the stall tracer's start row" grep -q '"k": "start"' "$OUT/trace3141.jsonl"
+  RPID=$(lsof -nP -tiTCP:8000 -sTCP:LISTEN | head -1)
+  waitfor 30 "the stall tracer's start row (robot server $RPID)" \
+    grep -q "\"k\": \"start\".*\"pid\": $RPID[,}]" "$OUT/trace3141.jsonl"
 fi
 # picar-stack's own OOMScoreAdjust (-900), as in production.
 for p in 8000 8001 8002 8003 8004 8080; do

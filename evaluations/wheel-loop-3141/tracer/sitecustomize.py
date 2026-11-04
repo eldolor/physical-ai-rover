@@ -33,6 +33,7 @@ import gc
 import importlib.abc
 import importlib.util
 import json
+import math
 import os
 import sys
 import threading
@@ -51,6 +52,7 @@ HEAP_OBJECTS = os.environ.get("TRACE_3141_HEAP_OBJECTS") == "1"
 CLK = os.sysconf("SC_CLK_TCK")
 
 _lock = threading.Lock()
+_PID = os.getpid()
 _fh = None
 _hb = [time.monotonic()]          # the loop's heartbeat (monotonic)
 
@@ -63,7 +65,9 @@ def _write(rec: dict) -> None:
                 # Appended: a restarted robot server keeps its predecessor's
                 # rows; a caller clears a reused file (steady.sh does).
                 _fh = open(_LOG, "a", buffering=1)
-            _fh.write(json.dumps(rec) + "\n")
+            # Every row names its process: a restarted robot server appends
+            # beside its predecessor, and counters restart with the process.
+            _fh.write(json.dumps({**rec, "pid": _PID}) + "\n")
     except OSError:
         pass
 
@@ -289,7 +293,8 @@ def _timed_vet(fn):
                           else str(out[2] or ""))
                 _write({"k": "vet", "t": time.time(), "ms": round(ms, 2),
                         "thread": threading.current_thread().name,
-                        "cmd": [None if x is None else round(float(x), 2) for x in cmd],
+                        "cmd": [round(float(x), 2) if x is not None and math.isfinite(float(x)) else None
+                                for x in cmd],
                         "reason": reason[:100]})
         except Exception:  # noqa: BLE001 -- a record must never change a vet
             pass
