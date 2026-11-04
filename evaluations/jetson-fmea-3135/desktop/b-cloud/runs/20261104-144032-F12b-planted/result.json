@@ -1,0 +1,56 @@
+{
+ "row": "F12b",
+ "title": "Cloud hangs (vision)",
+ "reading": "never two paid calls open at once; B3.2's budget ends the mission failed, within 300 s of its start; 0 contacts",
+ "plant": "cloud_deadline",
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-04T14:41:47-0600",
+ "measures": {
+  "outcome": null,
+  "start_at": 33914.691254541,
+  "end_at": 34215.396022338,
+  "timed_out": true,
+  "mission_s": 300.7,
+  "status": {
+   "outcome": "running",
+   "end_state": null,
+   "end_reason": null,
+   "error": null,
+   "step": 0,
+   "arrival_verdicts": [],
+   "cloud": {
+    "state": "unreachable",
+    "since": 1793824913.2267678,
+    "checked_at": 1793825201.426491,
+    "age_s": 8.494632850000926,
+    "probes": 17,
+    "probe_s": 15.0
+   },
+   "late_confirmation": null
+  },
+  "wheel_loop": {
+   "late": 0,
+   "moving": 0,
+   "max_dt_s": 0.0
+  },
+  "paid_calls": 3,
+  "max_open_paid": 1,
+  "park_s": 60.1,
+  "travel_mission_cm": 0.0,
+  "drive_after_end": 0,
+  "truth_hole_s": 0.025,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "mem_available_min_mb": 11913,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "the mission had not ended 300.7 s after its start"
+  ]
+ },
+ "ended": "2026-11-04T14:47:02-0600"
+}
