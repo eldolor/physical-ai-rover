@@ -1,0 +1,170 @@
+{
+ "stamp": "20261104-072501",
+ "criterion": 4,
+ "rows": [
+  {
+   "row": "F6g",
+   "plant": "watchdog",
+   "reading": "as F6, the robot on an explore mission's nav2 goal",
+   "base": {
+    "pass": false,
+    "reasons": [
+     "wheels zero after 3.274 s (bar 1.1)",
+     "moved 18.76 cm after the fault (bar 15)"
+    ],
+    "error": null,
+    "recovery_s": 5.45,
+    "wheels_zero_s": 3.274,
+    "travel_cm": 18.76,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": null,
+    "driver_at_fault": null
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "wheels zero after 3.168 s (bar 1.1)",
+     "moved 18.47 cm after the fault (bar 15)"
+    ],
+    "error": null,
+    "wheels_zero_s": 3.168,
+    "travel_cm": 18.47,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": null,
+    "driver_at_fault": null
+   },
+   "caught": true,
+   "discriminates": false
+  },
+  {
+   "row": "F7g",
+   "plant": "watchdog",
+   "reading": "as F7, the robot on an explore mission's nav2 goal",
+   "base": {
+    "pass": false,
+    "reasons": [
+     "wheels zero after 3.306 s (bar 1.1)",
+     "moved 19.19 cm after the fault (bar 15)",
+     "390 driving samples in the 10 s after SIGCONT (bar 0)"
+    ],
+    "error": null,
+    "recovery_s": null,
+    "wheels_zero_s": 3.306,
+    "travel_cm": 19.19,
+    "drive_after_cont": 390,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": "running",
+    "driver_at_fault": null
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "wheels zero after 3.302 s (bar 1.1)",
+     "moved 18.73 cm after the fault (bar 15)",
+     "385 driving samples in the 10 s after SIGCONT (bar 0)"
+    ],
+    "error": null,
+    "wheels_zero_s": 3.302,
+    "travel_cm": 18.73,
+    "drive_after_cont": 385,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": "running",
+    "driver_at_fault": null
+   },
+   "caught": true,
+   "discriminates": false
+  },
+  {
+   "row": "F4",
+   "plant": "watchdog",
+   "reading": "wheels zero <= 0.5 s after the `docker kill`; true path from the kill over the next 6 s <= 5 cm; the mission ends failed with ROS named in its reason; the robot server's last refusal (the twin's readout) is ros_unavailable (ROS DOWN); after a new container the next explore mission ends found; 0 contacts",
+   "base": {
+    "pass": false,
+    "reasons": [
+     "wheels zero after 1.082 s (bar 0.5)",
+     "moved 7.95 cm after the kill (bar 5)",
+     "the mission ended failed (step failed: server error '503 service unavailable' for url 'http://127.0.0.1:10350/world/goal'\nfor more information che), not failed naming ROS",
+     "the readout's last refusal is watchdog, not ros_unavailable"
+    ],
+    "error": null,
+    "recovery_s": 7.92,
+    "wheels_zero_s": 1.082,
+    "travel_cm": 7.95,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": "failed",
+    "driver_at_fault": null,
+    "recovery_outcome": "found"
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "wheels zero after 21.723 s (bar 0.5)",
+     "moved 45.43 cm after the kill (bar 5)",
+     "the mission ended failed (step failed: server error '503 service unavailable' for url 'http://127.0.0.1:10350/world/goal'\nfor more information che), not failed naming ROS",
+     "the readout's last refusal is preempted, not ros_unavailable"
+    ],
+    "error": null,
+    "wheels_zero_s": 21.723,
+    "travel_cm": 45.43,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": "failed",
+    "driver_at_fault": null,
+    "recovery_outcome": "found"
+   },
+   "caught": true,
+   "discriminates": false
+  },
+  {
+   "row": "F5",
+   "plant": "stop_waits",
+   "reading": "a person's /stop, 1 s after the `docker pause`, answers <= 1 s; wheels zero <= 0.5 s from the /stop sent; no non-zero wheel setpoint in the 10 s after `docker unpause`; 0 contacts",
+   "base": {
+    "pass": true,
+    "reasons": [],
+    "error": null,
+    "recovery_s": 4.86,
+    "wheels_zero_s": 0.983,
+    "travel_cm": 8.03,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": "cancelled",
+    "driver_at_fault": null,
+    "stop_answer_s": 0.004,
+    "wheels_zero_from_stop_s": 0.019,
+    "drive_after_unpause": 0
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "/stop answered 200 after 7.053 s (bar 200 within 1.0)",
+     "wheels zero 2.555 s after the /stop (bar 0.5)"
+    ],
+    "error": null,
+    "wheels_zero_s": 3.623,
+    "travel_cm": 27.16,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": "running",
+    "driver_at_fault": null,
+    "stop_answer_s": 7.053,
+    "wheels_zero_from_stop_s": 2.555,
+    "drive_after_unpause": 0
+   },
+   "caught": true,
+   "discriminates": true
+  }
+ ],
+ "met": true,
+ "not_scored_until_fixed": [],
+ "base_fails_too": [
+  "F6g",
+  "F7g",
+  "F4"
+ ]
+}

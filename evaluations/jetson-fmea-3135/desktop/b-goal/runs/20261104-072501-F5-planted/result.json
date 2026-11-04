@@ -1,0 +1,71 @@
+{
+ "row": "F5",
+ "title": "ROS bridge hangs (alive, not answering)",
+ "reading": "a person's /stop, 1 s after the `docker pause`, answers <= 1 s; wheels zero <= 0.5 s from the /stop sent; no non-zero wheel setpoint in the 10 s after `docker unpause`; 0 contacts",
+ "plant": "stop_waits",
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-04T07:35:07-0600",
+ "recovery_error": "StackError: the robot never drove forward on a goal in 240 s",
+ "measures": {
+  "fault_at": 8324.377301563,
+  "driver_at_fault": null,
+  "stop_at": 8325.44553935,
+  "stop_code": 200,
+  "stop_answer_s": 7.053,
+  "unpause_at": 8337.498860594,
+  "outcome": "running",
+  "end_state": null,
+  "end_reason": null,
+  "end_error": null,
+  "status": {
+   "running": true,
+   "outcome": "running",
+   "end_state": null,
+   "end_reason": null,
+   "cancelled_by": null,
+   "step": 1,
+   "last_action": "WAIT",
+   "error": null
+  },
+  "refusals": {
+   "preempted": 2
+  },
+  "no_feedback_refusals": 0,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 117,
+   "max_dt_s": 0.0555
+  },
+  "last_refusal": {
+   "reason": "watchdog",
+   "detail": "no command for over 1.0s -- motors stopped",
+   "driver": "brain",
+   "at": 8326.4911938,
+   "seconds_ago": 22.54
+  },
+  "forward_at_fault": true,
+  "wheels_zero_s": 3.623,
+  "travel_cm": 27.16,
+  "wheels_zero_from_stop_s": 2.555,
+  "drive_after_unpause": 0,
+  "truth_hole_s": 0.031,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   8312.82,
+   8590.1001
+  ],
+  "mem_available_min_mb": 10869,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "/stop answered 200 after 7.053 s (bar 200 within 1.0)",
+   "wheels zero 2.555 s after the /stop (bar 0.5)"
+  ]
+ },
+ "ended": "2026-11-04T07:39:45-0600"
+}

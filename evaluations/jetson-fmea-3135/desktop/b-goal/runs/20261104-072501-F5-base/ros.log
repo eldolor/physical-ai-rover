@@ -1,0 +1,477 @@
+[INFO] [launch]: All log files can be found below /root/.ros/log/2026-11-04-13-34-35-939938-anshu-Legion-T5-28IMB05-1
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [robot_state_publisher-1]: process started with pid [32]
+[INFO] [ros2_control_node-2]: process started with pid [34]
+[INFO] [spawner-3]: process started with pid [36]
+[INFO] [spawner-4]: process started with pid [38]
+[INFO] [twist_mux-5]: process started with pid [40]
+[INFO] [bridge-6]: process started with pid [42]
+[INFO] [controller_server-7]: process started with pid [44]
+[INFO] [planner_server-8]: process started with pid [46]
+[INFO] [behavior_server-9]: process started with pid [48]
+[INFO] [bt_navigator-10]: process started with pid [50]
+[INFO] [lifecycle_manager-11]: process started with pid [52]
+[INFO] [collision_monitor-12]: process started with pid [54]
+[INFO] [lifecycle_manager-13]: process started with pid [58]
+[twist_mux-5] [INFO] [1793799276.107096205] [twist_mux]: Topic handler 'topics.brain' subscribed to topic 'cmd_vel/brain': timeout = 0.250000s , priority = 50.
+[robot_state_publisher-1] [INFO] [1793799276.108421982] [robot_state_publisher]: got segment base_footprint
+[robot_state_publisher-1] [INFO] [1793799276.108483529] [robot_state_publisher]: got segment base_link
+[robot_state_publisher-1] [INFO] [1793799276.108492857] [robot_state_publisher]: got segment camera_link
+[robot_state_publisher-1] [INFO] [1793799276.108498337] [robot_state_publisher]: got segment camera_optical_frame
+[robot_state_publisher-1] [INFO] [1793799276.108503678] [robot_state_publisher]: got segment front_bumper
+[robot_state_publisher-1] [INFO] [1793799276.108509008] [robot_state_publisher]: got segment laser
+[robot_state_publisher-1] [INFO] [1793799276.108514021] [robot_state_publisher]: got segment left_wheel
+[robot_state_publisher-1] [INFO] [1793799276.108518757] [robot_state_publisher]: got segment pan_link
+[robot_state_publisher-1] [INFO] [1793799276.108523619] [robot_state_publisher]: got segment rear_bumper
+[robot_state_publisher-1] [INFO] [1793799276.108529008] [robot_state_publisher]: got segment right_wheel
+[twist_mux-5] [INFO] [1793799276.108546001] [twist_mux]: Topic handler 'topics.nav' subscribed to topic 'cmd_vel/nav': timeout = 0.250000s , priority = 50.
+[twist_mux-5] [INFO] [1793799276.109101886] [twist_mux]: Topic handler 'topics.teleop' subscribed to topic 'cmd_vel/teleop': timeout = 0.250000s , priority = 100.
+[lifecycle_manager-11] [INFO] [1793799276.112051930] [lifecycle_manager_navigation]: Creating
+[lifecycle_manager-11] [INFO] [1793799276.113902555] [lifecycle_manager_navigation]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[controller_server-7] [INFO] [1793799276.121286915] [controller_server]: 
+[controller_server-7] 	controller_server lifecycle node launched. 
+[controller_server-7] 	Waiting on external lifecycle transitions to activate
+[controller_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-8] [INFO] [1793799276.121847791] [planner_server]: 
+[planner_server-8] 	planner_server lifecycle node launched. 
+[planner_server-8] 	Waiting on external lifecycle transitions to activate
+[planner_server-8] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[lifecycle_manager-13] [INFO] [1793799276.123186472] [lifecycle_manager_collision]: Creating
+[behavior_server-9] [INFO] [1793799276.123333438] [behavior_server]: 
+[behavior_server-9] 	behavior_server lifecycle node launched. 
+[behavior_server-9] 	Waiting on external lifecycle transitions to activate
+[behavior_server-9] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-8] [INFO] [1793799276.126758926] [planner_server]: Creating
+[bt_navigator-10] [INFO] [1793799276.127432820] [bt_navigator]: 
+[bt_navigator-10] 	bt_navigator lifecycle node launched. 
+[bt_navigator-10] 	Waiting on external lifecycle transitions to activate
+[bt_navigator-10] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[bt_navigator-10] [INFO] [1793799276.128118929] [bt_navigator]: Creating
+[lifecycle_manager-13] [INFO] [1793799276.132009224] [lifecycle_manager_collision]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[collision_monitor-12] [INFO] [1793799276.133469195] [collision_monitor]: 
+[collision_monitor-12] 	collision_monitor lifecycle node launched. 
+[collision_monitor-12] 	Waiting on external lifecycle transitions to activate
+[collision_monitor-12] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-7] [INFO] [1793799276.134199194] [controller_server]: Creating controller server
+[planner_server-8] [INFO] [1793799276.137557703] [global_costmap.global_costmap]: 
+[planner_server-8] 	global_costmap lifecycle node launched. 
+[planner_server-8] 	Waiting on external lifecycle transitions to activate
+[planner_server-8] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[ros2_control_node-2] [WARN] [1793799276.138724137] [controller_manager]: [Deprecated] Passing the robot description parameter directly to the control_manager node is deprecated. Use '~/robot_description' topic from 'robot_state_publisher' instead.
+[planner_server-8] [INFO] [1793799276.138858897] [global_costmap.global_costmap]: Creating Costmap
+[lifecycle_manager-13] [INFO] [1793799276.139173267] [lifecycle_manager_collision]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-13] [INFO] [1793799276.139216974] [lifecycle_manager_collision]: [34m[1mConfiguring collision_monitor[0m[0m
+[ros2_control_node-2] [INFO] [1793799276.140014414] [resource_manager]: Loading hardware 'picar' 
+[controller_server-7] [INFO] [1793799276.145276563] [local_costmap.local_costmap]: 
+[controller_server-7] 	local_costmap lifecycle node launched. 
+[controller_server-7] 	Waiting on external lifecycle transitions to activate
+[controller_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-7] [INFO] [1793799276.145902991] [local_costmap.local_costmap]: Creating Costmap
+[ros2_control_node-2] [INFO] [1793799276.147443632] [resource_manager]: Initialize hardware 'picar' 
+[ros2_control_node-2] [INFO] [1793799276.148810958] [PicarSimHardware]: robot server at http://127.0.0.1:10350
+[ros2_control_node-2] [INFO] [1793799276.149264858] [resource_manager]: Successful initialization of hardware 'picar'
+[ros2_control_node-2] [INFO] [1793799276.149309791] [resource_manager]: 'configure' hardware 'picar' 
+[ros2_control_node-2] [INFO] [1793799276.149317462] [resource_manager]: Successful 'configure' of hardware 'picar'
+[ros2_control_node-2] [INFO] [1793799276.149321676] [resource_manager]: 'activate' hardware 'picar' 
+[ros2_control_node-2] [INFO] [1793799276.153256228] [resource_manager]: Successful 'activate' of hardware 'picar'
+[collision_monitor-12] [INFO] [1793799276.156631493] [collision_monitor]: Configuring
+[ros2_control_node-2] [INFO] [1793799276.157634523] [controller_manager]: update rate is 20 Hz
+[ros2_control_node-2] [INFO] [1793799276.157662065] [controller_manager]: Spawning controller_manager RT thread with scheduler priority: 50
+[ros2_control_node-2] [WARN] [1793799276.157834088] [controller_manager]: Could not enable FIFO RT scheduling policy: with error number <1>(Operation not permitted). See [https://control.ros.org/master/doc/ros2_control/controller_manager/doc/userdoc.html] for details on how to enable realtime scheduling.
+[collision_monitor-12] [INFO] [1793799276.161880131] [collision_monitor]: [FootprintApproach]: Creating Polygon
+[collision_monitor-12] [INFO] [1793799276.163168555] [collision_monitor]: [PolygonSlow]: Creating Polygon
+[collision_monitor-12] [INFO] [1793799276.163736190] [collision_monitor]: [scan]: Creating Scan
+[lifecycle_manager-13] [INFO] [1793799276.165569805] [lifecycle_manager_collision]: [34m[1mActivating collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1793799276.165733981] [collision_monitor]: Activating
+[collision_monitor-12] [INFO] [1793799276.165761073] [collision_monitor]: Creating bond (collision_monitor) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793799276.224606913] [lifecycle_manager_navigation]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-11] [INFO] [1793799276.224651033] [lifecycle_manager_navigation]: [34m[1mConfiguring controller_server[0m[0m
+[controller_server-7] [INFO] [1793799276.224848013] [controller_server]: Configuring controller interface
+[controller_server-7] [INFO] [1793799276.224969915] [controller_server]: getting goal checker plugins..
+[controller_server-7] [INFO] [1793799276.225071266] [controller_server]: Controller frequency set to 20.0000Hz
+[controller_server-7] [INFO] [1793799276.225107312] [local_costmap.local_costmap]: Configuring
+[controller_server-7] [INFO] [1793799276.227629747] [local_costmap.local_costmap]: Using plugin "obstacle_layer"
+[controller_server-7] [INFO] [1793799276.230443982] [local_costmap.local_costmap]: Subscribed to Topics: scan
+[controller_server-7] [INFO] [1793799276.232546796] [local_costmap.local_costmap]: Initialized plugin "obstacle_layer"
+[controller_server-7] [INFO] [1793799276.232583637] [local_costmap.local_costmap]: Using plugin "inflation_layer"
+[controller_server-7] [INFO] [1793799276.233092310] [local_costmap.local_costmap]: Initialized plugin "inflation_layer"
+[controller_server-7] [INFO] [1793799276.236625239] [controller_server]: Created progress_checker : progress_checker of type nav2_controller::SimpleProgressChecker
+[controller_server-7] [INFO] [1793799276.237187551] [controller_server]: Created goal checker : general_goal_checker of type nav2_controller::SimpleGoalChecker
+[controller_server-7] [INFO] [1793799276.237426514] [controller_server]: Controller Server has general_goal_checker  goal checkers available.
+[controller_server-7] [INFO] [1793799276.238038428] [controller_server]: Created controller : FollowPath of type nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-7] [INFO] [1793799276.241150141] [controller_server]: Controller Server has FollowPath  controllers available.
+[lifecycle_manager-11] [INFO] [1793799276.243467497] [lifecycle_manager_navigation]: [34m[1mConfiguring planner_server[0m[0m
+[planner_server-8] [INFO] [1793799276.243861044] [planner_server]: Configuring
+[planner_server-8] [INFO] [1793799276.243891673] [global_costmap.global_costmap]: Configuring
+[planner_server-8] [INFO] [1793799276.246190130] [global_costmap.global_costmap]: Using plugin "static_layer"
+[planner_server-8] [INFO] [1793799276.248970536] [global_costmap.global_costmap]: Subscribing to the map topic (/map) with transient local durability
+[planner_server-8] [INFO] [1793799276.249433416] [global_costmap.global_costmap]: Initialized plugin "static_layer"
+[planner_server-8] [INFO] [1793799276.249455365] [global_costmap.global_costmap]: Using plugin "obstacle_layer"
+[planner_server-8] [INFO] [1793799276.250055734] [global_costmap.global_costmap]: Subscribed to Topics: scan
+[planner_server-8] [INFO] [1793799276.252344829] [global_costmap.global_costmap]: Initialized plugin "obstacle_layer"
+[planner_server-8] [INFO] [1793799276.252379412] [global_costmap.global_costmap]: Using plugin "inflation_layer"
+[planner_server-8] [INFO] [1793799276.252905196] [global_costmap.global_costmap]: Initialized plugin "inflation_layer"
+[planner_server-8] [INFO] [1793799276.252922775] [global_costmap.global_costmap]: Using costmap filter "keepout_filter"
+[planner_server-8] [INFO] [1793799276.254736141] [global_costmap.global_costmap]: Initialized costmap filter "keepout_filter"
+[planner_server-8] [INFO] [1793799276.259095585] [planner_server]: Created global planner plugin GridBased of type nav2_navfn_planner/NavfnPlanner
+[planner_server-8] [INFO] [1793799276.259130226] [planner_server]: Configuring plugin GridBased of type NavfnPlanner
+[planner_server-8] [INFO] [1793799276.260116740] [planner_server]: Planner Server has GridBased  planners available.
+[lifecycle_manager-11] [INFO] [1793799276.264126399] [lifecycle_manager_navigation]: [34m[1mConfiguring behavior_server[0m[0m
+[behavior_server-9] [INFO] [1793799276.264318502] [behavior_server]: Configuring
+[lifecycle_manager-13] [INFO] [1793799276.268196178] [lifecycle_manager_collision]: Server collision_monitor connected with bond.
+[lifecycle_manager-13] [INFO] [1793799276.268245071] [lifecycle_manager_collision]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-13] [INFO] [1793799276.268262376] [lifecycle_manager_collision]: [34m[1mCreating bond timer...[0m[0m
+[behavior_server-9] [INFO] [1793799276.268960569] [behavior_server]: Creating behavior plugin spin of type nav2_behaviors/Spin
+[behavior_server-9] [INFO] [1793799276.269658859] [behavior_server]: Configuring spin
+[behavior_server-9] [INFO] [1793799276.271801193] [behavior_server]: Creating behavior plugin backup of type nav2_behaviors/BackUp
+[behavior_server-9] [INFO] [1793799276.272368396] [behavior_server]: Configuring backup
+[behavior_server-9] [INFO] [1793799276.274631948] [behavior_server]: Creating behavior plugin wait of type nav2_behaviors/Wait
+[behavior_server-9] [INFO] [1793799276.275276174] [behavior_server]: Configuring wait
+[lifecycle_manager-11] [INFO] [1793799276.277291942] [lifecycle_manager_navigation]: [34m[1mConfiguring bt_navigator[0m[0m
+[bt_navigator-10] [INFO] [1793799276.277452416] [bt_navigator]: Configuring
+[lifecycle_manager-11] [INFO] [1793799276.314988995] [lifecycle_manager_navigation]: [34m[1mActivating controller_server[0m[0m
+[controller_server-7] [INFO] [1793799276.315417633] [controller_server]: Activating
+[controller_server-7] [INFO] [1793799276.315452405] [local_costmap.local_costmap]: Activating
+[controller_server-7] [INFO] [1793799276.315463953] [local_costmap.local_costmap]: Checking transform
+[controller_server-7] [INFO] [1793799276.315482401] [local_costmap.local_costmap]: Timed out waiting for transform from base_footprint to odom to become available, tf error: Invalid frame ID "odom" passed to canTransform argument target_frame - frame does not exist
+[ros2_control_node-2] [INFO] [1793799276.371052269] [controller_manager]: Loading controller 'diff_drive_controller'
+[ros2_control_node-2] [INFO] [1793799276.410569105] [controller_manager]: Loading controller 'joint_state_broadcaster'
+[spawner-4] [INFO] [1793799276.427271308] [spawner_diff_drive_controller]: [94mLoaded [1mdiff_drive_controller[0m
+[ros2_control_node-2] [INFO] [1793799276.459123408] [controller_manager]: Configuring controller 'diff_drive_controller'
+[spawner-3] [INFO] [1793799276.475910646] [spawner_joint_state_broadcaster]: [94mLoaded [1mjoint_state_broadcaster[0m
+[ros2_control_node-2] [INFO] [1793799276.509106465] [controller_manager]: Configuring controller 'joint_state_broadcaster'
+[ros2_control_node-2] [INFO] [1793799276.509169971] [joint_state_broadcaster]: 'joints' or 'interfaces' parameter is empty. All available state interfaces will be published
+[spawner-4] [INFO] [1793799276.662052238] [spawner_diff_drive_controller]: [92mConfigured and activated [1mdiff_drive_controller[0m
+[spawner-3] [INFO] [1793799276.759915969] [spawner_joint_state_broadcaster]: [92mConfigured and activated [1mjoint_state_broadcaster[0m
+[bridge-6] [WARN] [1793799276.790898690] [picar_bridge]: no /maps: maps are not saved this session
+[bridge-6] [INFO] [1793799276.792949426] [picar_bridge]: bridge on :8090, robot at http://127.0.0.1:10350
+[bridge-6] [INFO] [1793799276.815593936] [slam_toolbox]: Node using stack size 40000000
+[controller_server-7] [INFO] [1793799276.815609628] [local_costmap.local_costmap]: start
+[INFO] [spawner-4]: process has finished cleanly [pid 38]
+[controller_server-7] [INFO] [1793799276.966018392] [controller_server]: Activating controller: FollowPath of type regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-7] [INFO] [1793799276.966055483] [controller_server]: Creating bond (controller_server) to lifecycle manager.
+[INFO] [spawner-3]: process has finished cleanly [pid 36]
+[bridge-6] [INFO] [1793799277.049086478] [slam_toolbox]: Using solver plugin solver_plugins::CeresSolver
+[bridge-6] [INFO] [1793799277.049615781] [slam_toolbox]: CeresSolver: Using SCHUR_JACOBI preconditioner.
+[lifecycle_manager-11] [INFO] [1793799277.067905921] [lifecycle_manager_navigation]: Server controller_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793799277.067940787] [lifecycle_manager_navigation]: [34m[1mActivating planner_server[0m[0m
+[planner_server-8] [INFO] [1793799277.068089612] [planner_server]: Activating
+[planner_server-8] [INFO] [1793799277.068119395] [global_costmap.global_costmap]: Activating
+[planner_server-8] [INFO] [1793799277.068130424] [global_costmap.global_costmap]: Checking transform
+[planner_server-8] [INFO] [1793799277.068146804] [global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[bridge-6] [WARN] [1793799277.109690348] [slam_toolbox]: minimum laser range setting (0.0 m) exceeds the capabilities of the used Lidar (0.0 m)
+[bridge-6] Registering sensor: [Custom Described Lidar]
+[planner_server-8] [INFO] [1793799277.568284707] [global_costmap.global_costmap]: start
+[planner_server-8] [INFO] [1793799277.569103465] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793799277.571239809] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793799277.571264583] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [INFO] [1793799277.573644174] [global_costmap.global_costmap]: KeepoutFilter: Received filter mask from /keepout_mask topic.
+[planner_server-8] [INFO] [1793799278.054350440] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 150 X 42 at 0.050000 m/pix
+[planner_server-8] [INFO] [1793799278.070021661] [planner_server]: Activating plugin GridBased of type NavfnPlanner
+[planner_server-8] [INFO] [1793799278.070421230] [planner_server]: Creating bond (planner_server) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793799278.171801111] [lifecycle_manager_navigation]: Server planner_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793799278.171836139] [lifecycle_manager_navigation]: [34m[1mActivating behavior_server[0m[0m
+[behavior_server-9] [INFO] [1793799278.172010816] [behavior_server]: Activating
+[behavior_server-9] [INFO] [1793799278.172037546] [behavior_server]: Activating spin
+[behavior_server-9] [INFO] [1793799278.172053758] [behavior_server]: Activating backup
+[behavior_server-9] [INFO] [1793799278.172067916] [behavior_server]: Activating wait
+[behavior_server-9] [INFO] [1793799278.172080826] [behavior_server]: Creating bond (behavior_server) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793799278.273609703] [lifecycle_manager_navigation]: Server behavior_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793799278.273647126] [lifecycle_manager_navigation]: [34m[1mActivating bt_navigator[0m[0m
+[bt_navigator-10] [INFO] [1793799278.273813985] [bt_navigator]: Activating
+[bt_navigator-10] [INFO] [1793799278.290383841] [bt_navigator]: Creating bond (bt_navigator) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793799278.391844591] [lifecycle_manager_navigation]: Server bt_navigator connected with bond.
+[lifecycle_manager-11] [INFO] [1793799278.391876058] [lifecycle_manager_navigation]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-11] [INFO] [1793799278.391890668] [lifecycle_manager_navigation]: [34m[1mCreating bond timer...[0m[0m
+[bridge-6] [INFO] [1793799278.393489182] [picar_bridge]: nav2 active: goals taken
+[bt_navigator-10] [INFO] [1793799280.395019599] [bt_navigator]: Begin navigating from current location (0.00, 0.00) to (-0.28, 0.02)
+[controller_server-7] [INFO] [1793799280.415485542] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [WARN] [1793799280.415522710] [controller_server]: No goal checker was specified in parameter 'current_goal_checker'. Server will use only plugin loaded general_goal_checker . This warning will appear once.
+[controller_server-7] [INFO] [1793799281.465608413] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793799282.515611313] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793799283.515608081] [controller_server]: Passing new path to controller.
+[collision_monitor-12] [ERROR] [1793799290.521751277] [getTransform]: Failed to get "laser"->"base_footprint" frame transform: Lookup would require extrapolation into the future.  Requested time 1793799284.416458 but the latest data is at time 1793799284.408821, when looking up transform from frame [odom] to frame [base_footprint]
+[controller_server-7] [WARN] [1793799290.522745035] [controller_server]: Control loop missed its desired rate of 20.0000Hz
+[lifecycle_manager-13] [INFO] [1793799290.523408866] [lifecycle_manager_collision]: [34m[1mHave not received a heartbeat from collision_monitor.[0m[0m
+[lifecycle_manager-13] [ERROR] [1793799290.523443713] [lifecycle_manager_collision]: CRITICAL FAILURE: SERVER collision_monitor IS DOWN after not receiving a heartbeat for 4000 ms. Shutting down related nodes.
+[lifecycle_manager-13] [INFO] [1793799290.523471066] [lifecycle_manager_collision]: [34m[1mTerminating bond timer...[0m[0m
+[lifecycle_manager-13] [INFO] [1793799290.523486287] [lifecycle_manager_collision]: [34m[1mResetting managed nodes...[0m[0m
+[lifecycle_manager-13] [INFO] [1793799290.523496736] [lifecycle_manager_collision]: [34m[1mDeactivating collision_monitor[0m[0m
+[lifecycle_manager-11] [INFO] [1793799290.523801604] [lifecycle_manager_navigation]: [34m[1mHave not received a heartbeat from controller_server.[0m[0m
+[lifecycle_manager-11] [ERROR] [1793799290.524229727] [lifecycle_manager_navigation]: CRITICAL FAILURE: SERVER controller_server IS DOWN after not receiving a heartbeat for 4000 ms. Shutting down related nodes.
+[lifecycle_manager-11] [INFO] [1793799290.524259426] [lifecycle_manager_navigation]: [34m[1mTerminating bond timer...[0m[0m
+[lifecycle_manager-11] [INFO] [1793799290.524273186] [lifecycle_manager_navigation]: [34m[1mResetting managed nodes...[0m[0m
+[lifecycle_manager-11] [INFO] [1793799290.524284488] [lifecycle_manager_navigation]: [34m[1mDeactivating bt_navigator[0m[0m
+[bt_navigator-10] [WARN] [1793799290.526353379] [BehaviorTreeEngine]: Behavior Tree tick rate 100.00 was exceeded!
+[bt_navigator-10] [INFO] [1793799290.526570537] [bt_navigator]: Deactivating
+[bt_navigator-10] [WARN] [1793799290.526999646] [bt_navigator]: [navigate_to_pose] [ActionServer] Requested to deactivate server but goal is still executing. Should check if action server is running before deactivating.
+[controller_server-7] [INFO] [1793799290.531075061] [local_costmap.local_costmap]: Message Filter dropping message: frame 'laser' at time 1793799284.363 for reason 'the timestamp on the message is earlier than all the data in the transform cache'
+[planner_server-8] [INFO] [1793799290.531090373] [global_costmap.global_costmap]: Message Filter dropping message: frame 'laser' at time 1793799284.363 for reason 'the timestamp on the message is earlier than all the data in the transform cache'
+[collision_monitor-12] [WARN] [1793799290.531330870] [collision_monitor]: [scan]: Latest source and current collision monitor node timestamps differ on 6.168171 seconds. Ignoring the source.
+[collision_monitor-12] [INFO] [1793799290.531428855] [collision_monitor]: Deactivating
+[collision_monitor-12] [INFO] [1793799290.531450933] [collision_monitor]: Destroying bond (collision_monitor) to lifecycle manager.
+[bridge-6] ----------------------------------------
+[bridge-6] Exception occurred during processing of request from ('127.0.0.1', 35350)
+[bridge-6] ----------------------------------------
+[bridge-6] Exception occurred during processing of request from ('127.0.0.1', 35340)
+[bridge-6] ----------------------------------------
+[bridge-6] Exception occurred during processing of request from ('127.0.0.1', 35362)
+[bridge-6] ----------------------------------------
+[bridge-6] Exception occurred during processing of request from ('127.0.0.1', 35374)
+[bridge-6] ----------------------------------------
+[bridge-6] Exception occurred during processing of request from ('127.0.0.1', 35382)
+[bt_navigator-10] [ERROR] [1793799290.557593271] [bt_navigator_navigate_to_pose_rclcpp_node]: Failed to get result for follow_path in node halt!
+[bt_navigator-10] [WARN] [1793799290.557694834] [bt_navigator]: [navigate_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1793799290.557821095] [bt_navigator]: Goal canceled
+[bt_navigator-10] [WARN] [1793799290.557836630] [bt_navigator]: [navigate_to_pose] [ActionServer] Stopping the thread per request.
+[bt_navigator-10] [INFO] [1793799290.558497905] [bt_navigator]: Destroying bond (bt_navigator) to lifecycle manager.
+[bridge-6] Traceback (most recent call last):
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 683, in process_request_thread
+[bridge-6]     self.finish_request(request, client_address)
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 360, in finish_request
+[bridge-6]     self.RequestHandlerClass(request, client_address, self)
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 747, in __init__
+[bridge-6]     self.handle()
+[bridge-6]   File "/usr/lib/python3.10/http/server.py", line 433, in handle
+[bridge-6]     self.handle_one_request()
+[bridge-6]   File "/usr/lib/python3.10/http/server.py", line 421, in handle_one_request
+[bridge-6]     method()
+[bridge-6]   File "/ws/build/picar_bridge/picar_bridge/bridge.py", line 1891, in do_POST
+[bridge-6]     return self._send(*bridge.cmd_vel(body))
+[bridge-6]   File "/ws/build/picar_bridge/picar_bridge/bridge.py", line 1828, in _send
+[bridge-6]     self.wfile.write(data)
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 826, in write
+[bridge-6]     self._sock.sendall(b)
+[bridge-6] BrokenPipeError: [Errno 32] Broken pipe
+[bridge-6] ----------------------------------------
+[bridge-6] Traceback (most recent call last):
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 683, in process_request_thread
+[bridge-6]     self.finish_request(request, client_address)
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 360, in finish_request
+[bridge-6]     self.RequestHandlerClass(request, client_address, self)
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 747, in __init__
+[bridge-6]     self.handle()
+[bridge-6]   File "/usr/lib/python3.10/http/server.py", line 433, in handle
+[bridge-6]     self.handle_one_request()
+[bridge-6] Traceback (most recent call last):
+[bridge-6] Traceback (most recent call last):
+[controller_server-7] [INFO] [1793799290.573734447] [controller_server]: Goal was canceled. Stopping the robot.
+[controller_server-7] [INFO] [1793799290.573781001] [controller_server]: [follow_path] [ActionServer] Client requested to cancel the goal. Cancelling.
+[bridge-6] Traceback (most recent call last):
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 683, in process_request_thread
+[bridge-6]     self.finish_request(request, client_address)
+[bridge-6] ----------------------------------------
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 683, in process_request_thread
+[bridge-6]     self.finish_request(request, client_address)
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 683, in process_request_thread
+[bridge-6]     self.finish_request(request, client_address)
+[bridge-6] Exception occurred during processing of request from ('127.0.0.1', 35398)
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 360, in finish_request
+[bridge-6]     self.RequestHandlerClass(request, client_address, self)
+[bridge-6]   File "/usr/lib/python3.10/http/server.py", line 421, in handle_one_request
+[bridge-6]     method()
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 360, in finish_request
+[bridge-6]     self.RequestHandlerClass(request, client_address, self)
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 360, in finish_request
+[bridge-6]     self.RequestHandlerClass(request, client_address, self)
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 747, in __init__
+[bridge-6]     self.handle()
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 747, in __init__
+[bridge-6]     self.handle()
+[bridge-6]   File "/ws/build/picar_bridge/picar_bridge/bridge.py", line 1891, in do_POST
+[bridge-6]     return self._send(*bridge.cmd_vel(body))
+[bridge-6]   File "/usr/lib/python3.10/http/server.py", line 433, in handle
+[bridge-6]     self.handle_one_request()
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 747, in __init__
+[bridge-6]     self.handle()
+[bridge-6]   File "/ws/build/picar_bridge/picar_bridge/bridge.py", line 1828, in _send
+[bridge-6]     self.wfile.write(data)
+[bridge-6]   File "/usr/lib/python3.10/http/server.py", line 421, in handle_one_request
+[bridge-6]     method()
+[bridge-6] Traceback (most recent call last):
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 826, in write
+[bridge-6]     self._sock.sendall(b)
+[bridge-6]   File "/ws/build/picar_bridge/picar_bridge/bridge.py", line 1855, in do_GET
+[bridge-6]     return self._send(*bridge.slam_pose())
+[bridge-6]   File "/usr/lib/python3.10/http/server.py", line 433, in handle
+[bridge-6]     self.handle_one_request()
+[bridge-6] BrokenPipeError: [Errno 32] Broken pipe
+[bridge-6]   File "/ws/build/picar_bridge/picar_bridge/bridge.py", line 1828, in _send
+[bridge-6]     self.wfile.write(data)
+[bridge-6]   File "/usr/lib/python3.10/http/server.py", line 421, in handle_one_request
+[bridge-6]     method()
+[bridge-6]   File "/ws/build/picar_bridge/picar_bridge/bridge.py", line 1873, in do_GET
+[bridge-6]     return self._send(*bridge.goal_state())
+[bridge-6] ----------------------------------------
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 683, in process_request_thread
+[bridge-6]     self.finish_request(request, client_address)
+[bridge-6]   File "/usr/lib/python3.10/http/server.py", line 433, in handle
+[bridge-6]     self.handle_one_request()
+[bridge-6]   File "/ws/build/picar_bridge/picar_bridge/bridge.py", line 1828, in _send
+[bridge-6]     self.wfile.write(data)
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 360, in finish_request
+[bridge-6]     self.RequestHandlerClass(request, client_address, self)
+[bridge-6]   File "/usr/lib/python3.10/http/server.py", line 421, in handle_one_request
+[bridge-6]     method()
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 826, in write
+[bridge-6]     self._sock.sendall(b)
+[bridge-6]   File "/ws/build/picar_bridge/picar_bridge/bridge.py", line 1891, in do_POST
+[bridge-6]     return self._send(*bridge.cmd_vel(body))
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 747, in __init__
+[bridge-6]     self.handle()
+[bridge-6] BrokenPipeError: [Errno 32] Broken pipe
+[bridge-6]   File "/ws/build/picar_bridge/picar_bridge/bridge.py", line 1828, in _send
+[bridge-6]     self.wfile.write(data)
+[bridge-6]   File "/usr/lib/python3.10/http/server.py", line 433, in handle
+[bridge-6]     self.handle_one_request()
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 826, in write
+[bridge-6]     self._sock.sendall(b)
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 826, in write
+[bridge-6]     self._sock.sendall(b)
+[bridge-6] BrokenPipeError: [Errno 32] Broken pipe
+[bridge-6] ----------------------------------------
+[bridge-6] BrokenPipeError: [Errno 32] Broken pipe
+[bridge-6]   File "/usr/lib/python3.10/http/server.py", line 421, in handle_one_request
+[bridge-6]     method()
+[bridge-6] ----------------------------------------
+[bridge-6] ----------------------------------------
+[bridge-6]   File "/ws/build/picar_bridge/picar_bridge/bridge.py", line 1855, in do_GET
+[bridge-6]     return self._send(*bridge.slam_pose())
+[bridge-6]   File "/ws/build/picar_bridge/picar_bridge/bridge.py", line 1828, in _send
+[bridge-6]     self.wfile.write(data)
+[bridge-6]   File "/usr/lib/python3.10/socketserver.py", line 826, in write
+[bridge-6]     self._sock.sendall(b)
+[bridge-6] BrokenPipeError: [Errno 32] Broken pipe
+[bridge-6] ----------------------------------------
+[lifecycle_manager-11] [INFO] [1793799290.733867551] [lifecycle_manager_navigation]: [34m[1mDeactivating behavior_server[0m[0m
+[behavior_server-9] [INFO] [1793799290.734075541] [behavior_server]: Deactivating
+[behavior_server-9] [INFO] [1793799290.734105375] [behavior_server]: Destroying bond (behavior_server) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1793799290.742965478] [lifecycle_manager_collision]: [34m[1mCleaning up collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1793799290.743189320] [collision_monitor]: Cleaning up
+[collision_monitor-12] [INFO] [1793799290.744466461] [collision_monitor]: [FootprintApproach]: Destroying Polygon
+[collision_monitor-12] [INFO] [1793799290.745537230] [collision_monitor]: [PolygonSlow]: Destroying Polygon
+[collision_monitor-12] [INFO] [1793799290.745563437] [collision_monitor]: [scan]: Destroying Scan
+[lifecycle_manager-13] [INFO] [1793799290.750522698] [lifecycle_manager_collision]: [34m[1mManaged nodes have been reset[0m[0m
+[lifecycle_manager-11] [INFO] [1793799290.845996107] [lifecycle_manager_navigation]: [34m[1mDeactivating planner_server[0m[0m
+[planner_server-8] [INFO] [1793799290.846237238] [planner_server]: Deactivating
+[planner_server-8] [INFO] [1793799290.846272718] [global_costmap.global_costmap]: Deactivating
+[planner_server-8] [INFO] [1793799291.023718325] [planner_server]: Deactivating plugin GridBased of type NavfnPlanner
+[planner_server-8] [INFO] [1793799291.023750599] [planner_server]: Destroying bond (planner_server) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793799291.135728626] [lifecycle_manager_navigation]: [34m[1mDeactivating controller_server[0m[0m
+[controller_server-7] [INFO] [1793799291.135989145] [controller_server]: Deactivating
+[controller_server-7] [INFO] [1793799291.136018865] [controller_server]: Deactivating controller: FollowPath of type regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-7] [INFO] [1793799291.136044751] [local_costmap.local_costmap]: Deactivating
+[controller_server-7] [INFO] [1793799291.225316838] [controller_server]: Destroying bond (controller_server) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793799291.337173094] [lifecycle_manager_navigation]: [34m[1mCleaning up bt_navigator[0m[0m
+[bt_navigator-10] [INFO] [1793799291.337385636] [bt_navigator]: Cleaning up
+[bt_navigator-10] [INFO] [1793799291.499838059] [bt_navigator]: Completed Cleaning up
+[lifecycle_manager-11] [INFO] [1793799291.500145034] [lifecycle_manager_navigation]: [34m[1mCleaning up behavior_server[0m[0m
+[behavior_server-9] [INFO] [1793799291.500288994] [behavior_server]: Cleaning up
+[lifecycle_manager-11] [INFO] [1793799291.534131328] [lifecycle_manager_navigation]: [34m[1mCleaning up planner_server[0m[0m
+[planner_server-8] [INFO] [1793799291.534698486] [planner_server]: Cleaning up
+[planner_server-8] [INFO] [1793799291.553221219] [global_costmap.global_costmap]: Cleaning up
+[planner_server-8] [INFO] [1793799291.559113343] [planner_server]: Cleaning up plugin GridBased of type NavfnPlanner
+[planner_server-8] [INFO] [1793799291.559158017] [planner_server]: Destroying plugin GridBased of type NavfnPlanner
+[lifecycle_manager-11] [INFO] [1793799291.577357558] [lifecycle_manager_navigation]: [34m[1mCleaning up controller_server[0m[0m
+[controller_server-7] [INFO] [1793799291.577503333] [controller_server]: Cleaning up
+[controller_server-7] [INFO] [1793799291.577529663] [controller_server]: Cleaning up controller: FollowPath of type regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-7] [INFO] [1793799291.581744531] [local_costmap.local_costmap]: Cleaning up
+[lifecycle_manager-11] [INFO] [1793799291.614188448] [lifecycle_manager_navigation]: [34m[1mManaged nodes have been reset[0m[0m
+[bridge-6] [INFO] [1793799291.620857295] [picar_bridge]: nav2 not active, goals held: nav2's nodes are not active
+[lifecycle_manager-13] [INFO] [1793799291.750873440] [lifecycle_manager_collision]: [34m[1mSuccessfully re-established connections from server respawns, starting back up.[0m[0m
+[lifecycle_manager-13] [INFO] [1793799291.750904644] [lifecycle_manager_collision]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-13] [INFO] [1793799291.750912998] [lifecycle_manager_collision]: [34m[1mConfiguring collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1793799291.751006376] [collision_monitor]: Configuring
+[collision_monitor-12] [INFO] [1793799291.752479487] [collision_monitor]: [FootprintApproach]: Creating Polygon
+[collision_monitor-12] [INFO] [1793799291.752721046] [collision_monitor]: [PolygonSlow]: Creating Polygon
+[collision_monitor-12] [INFO] [1793799291.752750211] [collision_monitor]: [scan]: Creating Scan
+[lifecycle_manager-13] [INFO] [1793799291.753555416] [lifecycle_manager_collision]: [34m[1mActivating collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1793799291.753652546] [collision_monitor]: Activating
+[collision_monitor-12] [INFO] [1793799291.753671709] [collision_monitor]: Creating bond (collision_monitor) to lifecycle manager.
+[lifecycle_manager-13] [INFO] [1793799291.854950336] [lifecycle_manager_collision]: Server collision_monitor connected with bond.
+[lifecycle_manager-13] [INFO] [1793799291.854980949] [lifecycle_manager_collision]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-13] [INFO] [1793799291.854990597] [lifecycle_manager_collision]: [34m[1mCreating bond timer...[0m[0m
+[lifecycle_manager-11] [INFO] [1793799292.615097802] [lifecycle_manager_navigation]: [34m[1mSuccessfully re-established connections from server respawns, starting back up.[0m[0m
+[lifecycle_manager-11] [INFO] [1793799292.615127322] [lifecycle_manager_navigation]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-11] [INFO] [1793799292.615135734] [lifecycle_manager_navigation]: [34m[1mConfiguring controller_server[0m[0m
+[controller_server-7] [INFO] [1793799292.615232289] [controller_server]: Configuring controller interface
+[controller_server-7] [INFO] [1793799292.615256783] [controller_server]: getting goal checker plugins..
+[controller_server-7] [INFO] [1793799292.615269082] [controller_server]: Controller frequency set to 20.0000Hz
+[controller_server-7] [INFO] [1793799292.615285650] [local_costmap.local_costmap]: Configuring
+[controller_server-7] [INFO] [1793799292.616619907] [local_costmap.local_costmap]: Using plugin "obstacle_layer"
+[controller_server-7] [INFO] [1793799292.616666255] [local_costmap.local_costmap]: Subscribed to Topics: scan
+[controller_server-7] [INFO] [1793799292.617012072] [local_costmap.local_costmap]: Initialized plugin "obstacle_layer"
+[controller_server-7] [INFO] [1793799292.617028791] [local_costmap.local_costmap]: Using plugin "inflation_layer"
+[controller_server-7] [INFO] [1793799292.617083005] [local_costmap.local_costmap]: Initialized plugin "inflation_layer"
+[controller_server-7] [INFO] [1793799292.619130756] [controller_server]: Created progress_checker : progress_checker of type nav2_controller::SimpleProgressChecker
+[controller_server-7] [INFO] [1793799292.619167459] [controller_server]: Created goal checker : general_goal_checker of type nav2_controller::SimpleGoalChecker
+[controller_server-7] [INFO] [1793799292.619187907] [controller_server]: Controller Server has general_goal_checker general_goal_checker  goal checkers available.
+[controller_server-7] [INFO] [1793799292.619210061] [controller_server]: Created controller : FollowPath of type nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-7] [INFO] [1793799292.619886591] [controller_server]: Controller Server has FollowPath FollowPath  controllers available.
+[lifecycle_manager-11] [INFO] [1793799292.621727549] [lifecycle_manager_navigation]: [34m[1mConfiguring planner_server[0m[0m
+[planner_server-8] [INFO] [1793799292.621868104] [planner_server]: Configuring
+[planner_server-8] [INFO] [1793799292.621898860] [global_costmap.global_costmap]: Configuring
+[planner_server-8] [INFO] [1793799292.623206762] [global_costmap.global_costmap]: Using plugin "static_layer"
+[planner_server-8] [INFO] [1793799292.623268294] [global_costmap.global_costmap]: Subscribing to the map topic (/map) with transient local durability
+[planner_server-8] [INFO] [1793799292.623483045] [global_costmap.global_costmap]: Initialized plugin "static_layer"
+[planner_server-8] [INFO] [1793799292.623502153] [global_costmap.global_costmap]: Using plugin "obstacle_layer"
+[planner_server-8] [INFO] [1793799292.623532366] [global_costmap.global_costmap]: Subscribed to Topics: scan
+[planner_server-8] [INFO] [1793799292.623916908] [global_costmap.global_costmap]: Initialized plugin "obstacle_layer"
+[planner_server-8] [INFO] [1793799292.623937091] [global_costmap.global_costmap]: Using plugin "inflation_layer"
+[planner_server-8] [INFO] [1793799292.624001237] [global_costmap.global_costmap]: Initialized plugin "inflation_layer"
+[planner_server-8] [INFO] [1793799292.624013571] [global_costmap.global_costmap]: Using costmap filter "keepout_filter"
+[planner_server-8] [INFO] [1793799292.624247479] [global_costmap.global_costmap]: Initialized costmap filter "keepout_filter"
+[planner_server-8] [INFO] [1793799292.626146982] [planner_server]: Created global planner plugin GridBased of type nav2_navfn_planner/NavfnPlanner
+[planner_server-8] [INFO] [1793799292.626168617] [planner_server]: Configuring plugin GridBased of type NavfnPlanner
+[planner_server-8] [INFO] [1793799292.626192738] [planner_server]: Planner Server has GridBased GridBased  planners available.
+[lifecycle_manager-11] [INFO] [1793799292.628879898] [lifecycle_manager_navigation]: [34m[1mConfiguring behavior_server[0m[0m
+[behavior_server-9] [INFO] [1793799292.628992677] [behavior_server]: Configuring
+[behavior_server-9] [INFO] [1793799292.630622120] [behavior_server]: Creating behavior plugin spin of type nav2_behaviors/Spin
+[behavior_server-9] [INFO] [1793799292.630663948] [behavior_server]: Configuring spin
+[behavior_server-9] [INFO] [1793799292.632079869] [behavior_server]: Creating behavior plugin backup of type nav2_behaviors/BackUp
+[behavior_server-9] [INFO] [1793799292.632114948] [behavior_server]: Configuring backup
+[behavior_server-9] [INFO] [1793799292.633200188] [behavior_server]: Creating behavior plugin wait of type nav2_behaviors/Wait
+[behavior_server-9] [INFO] [1793799292.633228257] [behavior_server]: Configuring wait
+[lifecycle_manager-11] [INFO] [1793799292.634764241] [lifecycle_manager_navigation]: [34m[1mConfiguring bt_navigator[0m[0m
+[planner_server-8] [INFO] [1793799292.634879938] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 150 X 42 at 0.050000 m/pix
+[bt_navigator-10] [INFO] [1793799292.634892742] [bt_navigator]: Configuring
+[lifecycle_manager-11] [INFO] [1793799292.649950076] [lifecycle_manager_navigation]: [34m[1mActivating controller_server[0m[0m
+[controller_server-7] [INFO] [1793799292.650268718] [controller_server]: Activating
+[controller_server-7] [INFO] [1793799292.650299261] [local_costmap.local_costmap]: Activating
+[controller_server-7] [INFO] [1793799292.650308680] [local_costmap.local_costmap]: Checking transform
+[controller_server-7] [INFO] [1793799292.650323750] [local_costmap.local_costmap]: Timed out waiting for transform from base_footprint to odom to become available, tf error: Could not find a connection between 'odom' and 'base_footprint' because they are not part of the same tree.Tf has two or more unconnected trees.
+[controller_server-7] [INFO] [1793799293.150437834] [local_costmap.local_costmap]: start
+[controller_server-7] [INFO] [1793799293.250848088] [controller_server]: Activating controller: FollowPath of type regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-7] [INFO] [1793799293.250874895] [controller_server]: Creating bond (controller_server) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793799293.352094857] [lifecycle_manager_navigation]: Server controller_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793799293.352127740] [lifecycle_manager_navigation]: [34m[1mActivating planner_server[0m[0m
+[planner_server-8] [INFO] [1793799293.352280074] [planner_server]: Activating
+[planner_server-8] [INFO] [1793799293.352307516] [global_costmap.global_costmap]: Activating
+[planner_server-8] [INFO] [1793799293.352317562] [global_costmap.global_costmap]: Checking transform
+[planner_server-8] [INFO] [1793799293.352387597] [global_costmap.global_costmap]: start
+[planner_server-8] [INFO] [1793799293.352632105] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793799293.354016573] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793799293.354035479] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [INFO] [1793799293.355405362] [global_costmap.global_costmap]: KeepoutFilter: Received filter mask from /keepout_mask topic.
+[planner_server-8] [INFO] [1793799293.853016991] [planner_server]: Activating plugin GridBased of type NavfnPlanner
+[planner_server-8] [INFO] [1793799293.854717128] [planner_server]: Creating bond (planner_server) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793799293.955937409] [lifecycle_manager_navigation]: Server planner_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793799293.955977961] [lifecycle_manager_navigation]: [34m[1mActivating behavior_server[0m[0m
+[behavior_server-9] [INFO] [1793799293.956157445] [behavior_server]: Activating
+[behavior_server-9] [INFO] [1793799293.956180115] [behavior_server]: Activating spin
+[behavior_server-9] [INFO] [1793799293.956189472] [behavior_server]: Activating backup
+[behavior_server-9] [INFO] [1793799293.956197166] [behavior_server]: Activating wait
+[behavior_server-9] [INFO] [1793799293.956204017] [behavior_server]: Creating bond (behavior_server) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793799294.057523097] [lifecycle_manager_navigation]: Server behavior_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793799294.057558876] [lifecycle_manager_navigation]: [34m[1mActivating bt_navigator[0m[0m
+[bt_navigator-10] [INFO] [1793799294.057721124] [bt_navigator]: Activating
+[bt_navigator-10] [INFO] [1793799294.073361428] [bt_navigator]: Creating bond (bt_navigator) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793799294.174697868] [lifecycle_manager_navigation]: Server bt_navigator connected with bond.
+[lifecycle_manager-11] [INFO] [1793799294.174729406] [lifecycle_manager_navigation]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-11] [INFO] [1793799294.174738164] [lifecycle_manager_navigation]: [34m[1mCreating bond timer...[0m[0m
+[bridge-6] [INFO] [1793799294.176354924] [picar_bridge]: nav2 active: goals taken
+[bt_navigator-10] [INFO] [1793799303.215785132] [bt_navigator]: Begin navigating from current location (-0.09, 0.04) to (0.92, -0.68)
+[controller_server-7] [INFO] [1793799303.236336067] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793799304.286525628] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793799305.336450310] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793799306.336450288] [controller_server]: Passing new path to controller.
