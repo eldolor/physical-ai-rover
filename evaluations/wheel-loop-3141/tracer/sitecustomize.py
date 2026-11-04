@@ -20,7 +20,7 @@ One JSON line per event (epoch seconds):
 | gc     | one collection over GC_MS: generation, duration, collected           |
 | vet    | `SafetyController.vet_wheel_velocity` over VET_MS                     |
 | req    | an HTTP request over REQ_MS, end to end                              |
-| heap   | every HEAP_S: gc counts, tracked objects per generation (only with TRACE_3141_HEAP_OBJECTS=1), frozen, RSS, the event loop thread's CPU (from the process's start: only diffs mean anything), GC rows dropped, the tracer's own threads' CPU and its probes' work on the loop (ms, cumulative from the tracer's start: diff two rows for a window) |
+| heap   | every HEAP_S: gc counts, tracked objects per generation (only with TRACE_3141_HEAP_OBJECTS=1), frozen, RSS, the event loop thread's CPU (from the process's start: only diffs mean anything), rows dropped from the queue, the tracer's own threads' CPU and its probes' work on the loop (ms, cumulative from the tracer's start: diff two rows for a window) |
 
 The sampler needs the GIL to look, so a C call holding it (a `json.dumps`)
 is seen only after it returns: the per-thread CPU over the stall is what
@@ -42,7 +42,7 @@ import traceback
 
 _LOG = os.environ.get("TRACE_3141_LOG", "")
 GAP_MS = float(os.environ.get("TRACE_3141_GAP_MS", "15"))
-TICK_MS = float(os.environ.get("TRACE_3141_TICK_MS", "70"))
+TICK_MS = float(os.environ.get("TRACE_3141_TICK_MS", "60"))
 STALL_MS = float(os.environ.get("TRACE_3141_STALL_MS", "25"))
 GC_MS = float(os.environ.get("TRACE_3141_GC_MS", "2"))
 VET_MS = float(os.environ.get("TRACE_3141_VET_MS", "5"))
@@ -51,25 +51,38 @@ HEAP_S = float(os.environ.get("TRACE_3141_HEAP_S", "30"))
 HEAP_OBJECTS = os.environ.get("TRACE_3141_HEAP_OBJECTS") == "1"
 CLK = os.sysconf("SC_CLK_TCK")
 
-_lock = threading.Lock()
 _PID = os.getpid()
+_rows: collections.deque = collections.deque(maxlen=100000)
+_rows_dropped = [0]
+_sampler_ticks = [0]                 # the sampler's passes: a heap row's proof it is alive
+_sampler_errors = [0]
 _fh = None
 _hb = [time.monotonic()]          # the loop's heartbeat (monotonic)
 
 
 def _write(rec: dict) -> None:
+    """Queue a row; never blocks, takes no lock, does no I/O: the event loop,
+    a vet and a GC callback call it. Only the sampler thread writes rows out
+    (`_drain`), so nothing the loop does waits on the file or on a lock the
+    sampler holds while encoding a large row."""
+    if len(_rows) == _rows.maxlen:
+        _rows_dropped[0] += 1
+    _rows.append({**rec, "pid": _PID})
+
+
+def _drain() -> None:
+    """The sampler's: every queued row out to the file, appended (a
+    restarted robot server keeps its predecessor's rows; a caller clears a
+    reused file, as steady.sh does)."""
     global _fh
-    try:
-        with _lock:
+    while _rows:
+        rec = _rows.popleft()
+        try:
             if _fh is None:
-                # Appended: a restarted robot server keeps its predecessor's
-                # rows; a caller clears a reused file (steady.sh does).
                 _fh = open(_LOG, "a", buffering=1)
-            # Every row names its process: a restarted robot server appends
-            # beside its predecessor, and counters restart with the process.
-            _fh.write(json.dumps({**rec, "pid": _PID}) + "\n")
-    except OSError:
-        pass
+            _fh.write(json.dumps(rec) + "\n")
+        except (OSError, TypeError, ValueError):
+            pass
 
 
 def _thread_cpu() -> dict:
@@ -141,28 +154,39 @@ def _sampler() -> None:
     in_stall, start_cpu, rec = False, None, None
     while True:
         time.sleep(SAMPLE_S)
-        now = time.monotonic()
-        _flush_gc()
-        age = (now - _hb[0]) * 1000
-        if not in_stall and age > STALL_MS:
-            in_stall, start_cpu = True, base
-            rec = {"k": "stall", "t": time.time(), "age_ms": round(age, 1),
-                   "baseline_age_ms": round((now - base_t) * 1000), "threads": _stacks()}
-        elif in_stall and age <= STALL_MS:
-            cpu = {}
-            for tid, (comm, ticks) in _thread_cpu().items():
-                d = ticks - start_cpu.get(tid, (comm, 0))[1]
-                if d:
-                    cpu[f"{comm}/{tid}"] = round(d * 1000 / CLK)
-            rec["cpu_ms"] = cpu
-            rec["t_end"] = time.time()
-            _write(rec)
+        try:
+            base, base_t, in_stall, start_cpu, rec = _sample(base, base_t, in_stall, start_cpu, rec)
+        except Exception:  # noqa: BLE001 -- the sampler must outlive one odd /proc read
+            _sampler_errors[0] += 1
             in_stall = False
-            base, base_t = _thread_cpu(), time.monotonic()
-        elif in_stall:
-            rec["age_ms"] = round(max(rec["age_ms"], age), 1)
-        elif now - base_t >= BASELINE_S:
-            base, base_t = _thread_cpu(), now
+
+
+def _sample(base, base_t, in_stall, start_cpu, rec):
+    """One look: drain the queue, then the heartbeat's age."""
+    now = time.monotonic()
+    _drain()
+    _sampler_ticks[0] += 1
+    age = (now - _hb[0]) * 1000
+    if not in_stall and age > STALL_MS:
+        in_stall, start_cpu = True, base
+        rec = {"k": "stall", "t": time.time(), "age_ms": round(age, 1),
+               "baseline_age_ms": round((now - base_t) * 1000), "threads": _stacks()}
+    elif in_stall and age <= STALL_MS:
+        cpu = {}
+        for tid, (comm, ticks) in _thread_cpu().items():
+            d = ticks - start_cpu.get(tid, (comm, 0))[1]
+            if d:
+                cpu[f"{comm}/{tid}"] = round(d * 1000 / CLK)
+        rec["cpu_ms"] = cpu
+        rec["t_end"] = time.time()
+        _write(rec)
+        in_stall = False
+        base, base_t = _thread_cpu(), time.monotonic()
+    elif in_stall:
+        rec["age_ms"] = round(max(rec["age_ms"], age), 1)
+    elif now - base_t >= BASELINE_S:
+        base, base_t = _thread_cpu(), now
+    return base, base_t, in_stall, start_cpu, rec
 
 
 def _heap() -> None:
@@ -187,17 +211,13 @@ def _heap() -> None:
         _write({"k": "heap", "t": time.time(), "count": gc.get_count(), "sizes": sizes,
                 "cost_ms": None if cost is None else round(cost, 1), "frozen": gc.get_freeze_count(), "rss_mb": rss,
                 "tracer_cpu_ms": _own_cpu_ms(), "probe_ms": round(_probe_s[0] * 1000),
-                "loop_cpu_ms": _cpu_ms_of(_loop_tid), "gc_dropped": _gc_dropped[0],
+                "loop_cpu_ms": _cpu_ms_of(_loop_tid), "rows_dropped": _rows_dropped[0],
+                "sampler_ticks": _sampler_ticks[0], "sampler_errors": _sampler_errors[0],
+                "tracer_tids": list(_own), "loop_tid": _loop_tid[:1],
                 "stats": gc.get_stats(), "threads": threading.active_count()})
 
 
 _gc_t0 = [0.0]
-# A collection can start inside `_write` (json.dumps allocates) with its lock
-# held; a callback that wrote there would wait on that lock for ever on its
-# own thread -- the event loop's, as like as not. So it only appends here
-# (never blocks, takes no lock), and the sampler writes the rows out.
-_gc_rows: collections.deque = collections.deque(maxlen=10000)
-_gc_dropped = [0]
 
 
 def _gc_cb(phase, info):
@@ -206,16 +226,8 @@ def _gc_cb(phase, info):
         return
     ms = (time.perf_counter() - _gc_t0[0]) * 1000
     if ms >= GC_MS:
-        if len(_gc_rows) == _gc_rows.maxlen:
-            _gc_dropped[0] += 1
-        _gc_rows.append({"k": "gc", "t": time.time(), "ms": round(ms, 2),
-                         "gen": info.get("generation"), "collected": info.get("collected"),
-                         "thread": threading.current_thread().name})
-
-
-def _flush_gc() -> None:
-    while _gc_rows:
-        _write(_gc_rows.popleft())
+        _write({"k": "gc", "t": time.time(), "ms": round(ms, 2), "gen": info.get("generation"),
+                "collected": info.get("collected"), "thread": threading.get_native_id()})
 
 
 async def _probe5():
