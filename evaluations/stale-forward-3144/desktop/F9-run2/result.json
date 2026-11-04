@@ -1,0 +1,54 @@
+{
+ "row": "F9",
+ "title": "Lidar stops (no scans)",
+ "reading": "true path from the SIGSTOP + 0.3 s (the scan's freshness bar) to the SIGCONT <= 2 cm; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-04T06:44:59-0600",
+ "recovery_s": 2.6,
+ "measures": {
+  "fault_at": 5309.241275347,
+  "cont_at": 5319.241420858,
+  "outcome": "running",
+  "end_state": null,
+  "end_reason": null,
+  "status": {
+   "running": true,
+   "outcome": "running",
+   "end_state": null,
+   "end_reason": null,
+   "cancelled_by": null,
+   "step": 15,
+   "last_action": "FORWARD",
+   "error": null
+  },
+  "refusals": {},
+  "no_feedback_refusals": 0,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 0,
+   "max_dt_s": 0.0
+  },
+  "last_refusal": null,
+  "forward_at_fault": true,
+  "wheels_zero_s": 1.885,
+  "travel_cm": 7.69,
+  "travel_stale_cm": 0.0,
+  "truth_hole_s": 0.023,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   5304.2658,
+   5324.486
+  ],
+  "mem_available_min_mb": 11939,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-04T06:45:20-0600"
+}
