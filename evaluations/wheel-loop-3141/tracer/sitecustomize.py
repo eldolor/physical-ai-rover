@@ -18,7 +18,7 @@ One JSON line per event (epoch seconds):
 | tick   | a 50 ms probe shaped as `wheel_loop()` (sleep, then dt): dt > TICK_MS |
 | stall  | the sampler thread saw the loop's heartbeat older than STALL_MS: every thread's stack at first sight, the drain's time just before it, the longest age seen and its end (no per-thread CPU: amendment 4) |
 | gc     | one collection over GC_MS: generation, duration, collected           |
-| vet    | `SafetyController.vet_wheel_velocity` over VET_MS; with TRACE_3141_VET_PARTS=1 its `parts` (ms in each sensor read and stage, 3.141.E0) |
+| vet    | `SafetyController.vet_wheel_velocity` over VET_MS; with TRACE_3141_VET_PARTS=1 its `parts`: per call path (`pivot_scale/get_scan`), [exclusive ms, calls] -- HardwareRobot's reads and SafetyController's stages, so they add up (3.141.E0) |
 | req    | an HTTP request over REQ_MS, end to end                              |
 | heap   | every HEAP_S: gc counts, tracked objects per generation (only with TRACE_3141_HEAP_OBJECTS=1), frozen, RSS, the event loop thread's CPU (from the process's start: only diffs mean anything), rows dropped from the queue, the tracer's own threads' CPU and its probes' work on the loop (ms, cumulative from the tracer's start: diff two rows for a window) |
 
@@ -300,18 +300,31 @@ SAFETY_PARTS = ("forward_clearance", "reverse_clearance", "pivot_scale")
 
 
 def _timed_part(name, fn):
-    """Inside a vet on this thread, add this call's time to the vet's parts;
-    outside one, nothing but the call. Never changes the call's result."""
+    """Inside a vet on this thread, add this call's EXCLUSIVE time (its own,
+    less the timed calls inside it) under its call path ("pivot_scale/
+    get_scan"), and count the call; outside a vet, nothing but the call. The
+    parts then add up to the time spent in timed calls, each counted once.
+    Never changes the call's result."""
     def wrapper(*a, **k):
         parts = getattr(_in_vet, "parts", None)
         if parts is None:
             return fn(*a, **k)
+        stack = _in_vet.stack
+        frame = [name, 0.0]                # [name, time in timed children]
+        stack.append(frame)
         t0 = time.perf_counter()
         try:
             return fn(*a, **k)
         finally:
             try:
-                parts[name] = parts.get(name, 0.0) + (time.perf_counter() - t0) * 1000
+                ms = (time.perf_counter() - t0) * 1000
+                key = "/".join(f[0] for f in stack)
+                stack.pop()
+                if stack:
+                    stack[-1][1] += ms
+                cell = parts.setdefault(key, [0.0, 0])
+                cell[0] += ms - frame[1]
+                cell[1] += 1
             except Exception:  # noqa: BLE001 -- a record must never change a call
                 pass
     wrapper.__wrapped__ = fn
@@ -332,7 +345,8 @@ def _timed_vet(fn):
                         "cmd": [round(float(x), 2) if x is not None and math.isfinite(float(x)) else None
                                 for x in cmd],
                         "reason": reason[:100],
-                        **({"parts": {n: round(v, 2) for n, v in parts.items()}} if parts else {})})
+                        **({"parts": {n: [round(v[0], 2), v[1]] for n, v in parts.items()}}
+                           if parts is not None else {})})
         except Exception:  # noqa: BLE001 -- a record must never change a vet
             pass
 
@@ -340,16 +354,17 @@ def _timed_vet(fn):
         t0 = time.perf_counter()
         outer = getattr(_in_vet, "parts", None)
         if VET_PARTS and outer is None:
-            _in_vet.parts = {}
+            _in_vet.parts, _in_vet.stack = {}, []
+        parts = None
         try:
             out = fn(*a, **k)              # the safety answer, untouched
         except BaseException as e:
-            record(t0, a, k, None, e)
-            raise
-        finally:
-            parts = getattr(_in_vet, "parts", None) if outer is None else None
             if outer is None:
-                _in_vet.parts = None
+                parts, _in_vet.parts = getattr(_in_vet, "parts", None), None
+            record(t0, a, k, None, e, parts)
+            raise
+        if outer is None:
+            parts, _in_vet.parts = getattr(_in_vet, "parts", None), None
         record(t0, a, k, out, None, parts)
         return out
     wrapper.__wrapped__ = fn
@@ -360,7 +375,8 @@ def _patch(name: str, mod) -> None:
     if name == "robot.safety":
         if VET_PARTS:
             for n in SAFETY_PARTS:
-                setattr(mod.SafetyController, n, _timed_part(n, getattr(mod.SafetyController, n)))
+                if hasattr(mod.SafetyController, n):
+                    setattr(mod.SafetyController, n, _timed_part(n, getattr(mod.SafetyController, n)))
         mod.SafetyController.vet_wheel_velocity = _timed_vet(mod.SafetyController.vet_wheel_velocity)
     elif name == "robot.hardware_robot" and VET_PARTS:
         for n in ROBOT_PARTS:
