@@ -1,0 +1,74 @@
+{
+ "row": "F4",
+ "title": "ROS container dies mid-goal",
+ "reading": "wheels zero <= 0.5 s after the `docker kill`; true path from the kill over the next 6 s <= 5 cm; the mission ends failed with ROS named in its reason; the robot server's last refusal (the twin's readout) is ros_unavailable (ROS DOWN); after a new container the next explore mission ends found; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T08:23:02-0600",
+ "ros_restart": true,
+ "restarted": [
+  "ros"
+ ],
+ "recovery_s": 10.57,
+ "recovery_outcome": "found",
+ "recovery_end_s": 68.1,
+ "measures": {
+  "fault_at": 19894.9625107,
+  "driver_at_fault": null,
+  "outcome": "failed",
+  "end_state": null,
+  "end_reason": "step failed: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503",
+  "end_error": "step failed: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503",
+  "status": {
+   "running": false,
+   "outcome": "failed",
+   "end_state": null,
+   "end_reason": "step failed: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503",
+   "cancelled_by": null,
+   "step": 1,
+   "last_action": "WAIT",
+   "error": "step failed: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503"
+  },
+  "refusals": {
+   "preempted": 1
+  },
+  "no_feedback_refusals": 0,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 88,
+   "max_dt_s": 0.0589
+  },
+  "last_refusal": {
+   "reason": "watchdog",
+   "detail": "no command for over 1.0s -- motors stopped",
+   "driver": "brain",
+   "at": 19896.062583651,
+   "seconds_ago": 5.12
+  },
+  "recovery_outcome": "found",
+  "forward_at_fault": true,
+  "wheels_zero_s": 1.111,
+  "travel_cm": 8.59,
+  "truth_hole_s": 0.027,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   19878.4732,
+   19990.6533
+  ],
+  "mem_available_min_mb": 2065,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "wheels zero after 1.111 s (bar 0.5)",
+   "moved 8.59 cm after the kill (bar 5)",
+   "the mission ended failed (step failed: server error '503 service unavailable' for url 'http://127.0.0.1:10350/world/goal'\nfor more information che), not failed naming ROS",
+   "no ros_unavailable refusal after the kill (last watchdog)"
+  ]
+ },
+ "ended": "2026-11-04T08:24:55-0600"
+}

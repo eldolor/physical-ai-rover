@@ -1,0 +1,13 @@
+1793802070.945 WARNING identity vision-picar robot server starting -- git=98c7facc9 executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793802072.772 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1793802080.115 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793802086.094 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1793802118.091 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793802126.352 WARNING server refused (safety_distance) for ros: forward clamped: 19.9cm <= 20cm (floor_band, aged 180 ms)
+1793802126.454 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (floor_band, aged 186 ms)
+1793802126.518 WARNING server refused (safety_distance) for brain: forward clamped: 19.6cm <= 20cm (floor_band, aged 150 ms)
+1793802126.579 WARNING server refused (safety_distance) for brain: forward clamped: 19.3cm <= 20cm (floor_band, aged 207 ms)
+1793802126.634 WARNING server refused (safety_distance) for brain: forward clamped: 19.4cm <= 20cm (floor_band, aged 167 ms)
+1793802126.690 WARNING server refused (safety_distance) for brain: forward clamped: 19.7cm <= 20cm (floor_band, aged 112 ms)
+1793802128.919 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793802179.888 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled

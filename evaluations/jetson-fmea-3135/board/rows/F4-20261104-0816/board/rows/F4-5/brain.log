@@ -1,0 +1,107 @@
+1793802187.870 WARNING identity vision-picar brain server starting -- git=98c7facc9 executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793802199.967 WARNING explore goal call failed (1 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802200.635 WARNING explore goal call failed (2 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802201.284 WARNING explore goal call failed (3 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802201.939 WARNING explore goal call failed (4 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802202.547 WARNING explore goal call failed (5 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802203.156 WARNING explore goal call failed (6 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802203.800 WARNING explore goal call failed (7 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802204.462 WARNING explore goal call failed (8 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802205.130 WARNING explore goal call failed (9 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802205.756 WARNING explore goal call failed (10 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802206.388 WARNING explore goal call failed (11 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802207.039 WARNING explore goal call failed (12 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802207.669 WARNING explore goal call failed (13 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802208.278 WARNING explore goal call failed (14 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802208.881 WARNING explore goal call failed (15 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802209.489 WARNING explore goal call failed (16 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802210.094 WARNING explore goal call failed (17 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802210.700 WARNING explore goal call failed (18 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802211.351 WARNING explore goal call failed (19 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802212.003 WARNING explore goal call failed (20 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802212.667 WARNING explore goal call failed (21 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802213.305 WARNING explore goal call failed (22 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802213.937 WARNING explore goal call failed (23 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802214.577 WARNING explore goal call failed (24 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802215.204 WARNING explore goal call failed (25 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802215.846 WARNING explore goal call failed (26 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802216.488 WARNING explore goal call failed (27 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802217.130 WARNING explore goal call failed (28 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802217.765 WARNING explore goal call failed (29 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802218.380 WARNING explore goal call failed (30 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802218.996 WARNING explore goal call failed (31 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802219.610 WARNING explore goal call failed (32 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802220.244 WARNING explore goal call failed (33 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802220.895 WARNING explore goal call failed (34 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802221.554 WARNING explore goal call failed (35 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802222.197 WARNING explore goal call failed (36 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802222.814 WARNING explore goal call failed (37 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802223.427 WARNING explore goal call failed (38 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802224.151 WARNING explore goal call failed (39 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802224.816 WARNING explore goal call failed (40 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802225.455 ERROR mission_runner mission step failed
+Traceback (most recent call last):
+  File "/home/picar/bench-3135/control/mission_runner.py", line 1016, in tick
+    result = self.agent.step()
+  File "/home/picar/bench-3135/brain/explore.py", line 371, in step
+    action, executed, detail = self._choose(frame, scene)
+  File "/home/picar/bench-3135/brain/explore.py", line 397, in _choose
+    out = self._choose_tick(frame, scene)
+  File "/home/picar/bench-3135/brain/explore.py", line 435, in _choose_tick
+    state = self._goal_state()
+  File "/home/picar/bench-3135/brain/explore.py", line 553, in _goal_state
+    self._bridge_blip(exc)
+  File "/home/picar/bench-3135/brain/explore.py", line 588, in _bridge_blip
+    raise exc
+  File "/home/picar/bench-3135/brain/explore.py", line 551, in _goal_state
+    g = (self.navigator.get_goal() or {}).get("goal") or {}
+  File "/home/picar/bench-3135/control/mission_runner.py", line 369, in get_goal
+    return self._nav.get_goal()
+  File "/home/picar/bench-3135/control/remote_navigator.py", line 71, in get_goal
+    r.raise_for_status()
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpx/_models.py", line 829, in raise_for_status
+    raise HTTPStatusError(message, request=request, response=self)
+httpx.HTTPStatusError: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793802225.474 WARNING mission_runner could not end the mission's nav2 goal: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503

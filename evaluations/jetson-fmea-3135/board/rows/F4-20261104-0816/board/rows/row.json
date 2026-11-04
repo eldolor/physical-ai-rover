@@ -1,0 +1,25 @@
+{
+ "row": "F4",
+ "plant": null,
+ "house": "scaled_house",
+ "state": "FAILED",
+ "runs_wanted": 5,
+ "runs_scored": 5,
+ "runs_total": 5,
+ "runs_failed": 5,
+ "not_scored": [],
+ "reasons": [
+  "moved 8.3 cm after the kill (bar 5)",
+  "moved 8.59 cm after the kill (bar 5)",
+  "moved 9.11 cm after the kill (bar 5)",
+  "moved 9.22 cm after the kill (bar 5)",
+  "moved 9.41 cm after the kill (bar 5)",
+  "no ros_unavailable refusal after the kill (last watchdog)",
+  "the mission ended failed (step failed: server error '503 service unavailable' for url 'http://127.0.0.1:10350/world/goal'\nfor more information che), not failed naming ROS",
+  "wheels zero after 1.076 s (bar 0.5)",
+  "wheels zero after 1.11 s (bar 0.5)",
+  "wheels zero after 1.111 s (bar 0.5)",
+  "wheels zero after 1.125 s (bar 0.5)",
+  "wheels zero after 1.144 s (bar 0.5)"
+ ]
+}

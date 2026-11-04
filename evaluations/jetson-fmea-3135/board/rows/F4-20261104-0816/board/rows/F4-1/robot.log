@@ -1,0 +1,8 @@
+1793801792.123 WARNING identity vision-picar robot server starting -- git=98c7facc9 executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793801793.944 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1793801801.286 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793801807.262 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1793801839.289 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793801840.039 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793801850.205 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793801876.020 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
