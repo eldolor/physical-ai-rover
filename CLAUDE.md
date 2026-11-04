@@ -855,6 +855,13 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   `identity`), a ledger in the shared `.git` mirrored beside the records.
   Amendment 1 gives every *reported* row a bar. Open for the user: criterion
   2 holds L4's floor walks (3.140.F) behind every L3 row.
+* **No FORWARD on a stale scan (3.144.A), merged 2026-11-04** (FMEA F9: the
+  board drove 101-105 cm with the lidar stopped and the camera ahead). A
+  body with wheels and no usable scan refuses forward `ahead_not_observed`
+  whatever the cone says, as astern (`_blind()`); a stopped move restarts
+  only on a new command; a blind clamp is never a wedge (no keepout).
+  Desktop F9 5/5 at 0.0 cm (bar 2). A car with no lidar can only turn.
+  3.144.B (F9 on the board) is owed.
 * **Older review bugs (3.64), merged 2026-10-09, deployed 2026-10-10.** Ten bugs
   from the reviewer comparison still live on `dev`, fixed red-first: the
   twin's guidance loop after Stop, a hidden page and an outage (A2, A4,
