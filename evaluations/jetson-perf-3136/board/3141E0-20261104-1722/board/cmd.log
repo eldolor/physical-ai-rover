@@ -1,0 +1,19 @@
+vlm_hold 17:25:39: was active; now inactive
+== run 17:25:51 rev d20d8eb7 image vision-picar-ros:latest house procthor:val:12
+== NV Power Mode: 15W; boot 2026-11-04 02:51:45; uptime 52446.61 s
+== desktop: inactive; twin units: inactive inactive inactive
+== MemAvailable before anything: 5913 MB
+== VE ready 17:26:01; MemAvailable 2998 MB
+== stack up 17:26:16; MemAvailable 2386 MB
+== window_start 17:27:26
+== p1_start 17:27:26
+== p1_end 17:37:26
+== p8_start 17:37:26
+== p8_end 17:46:07
+== p2_start 17:46:47
+== p2_end 17:56:47
+== window_end 17:57:26
+== MemAvailable at the end 960 MB; VE alive
+== done 17:57:26
+vlm_restore 17:57:36: active (was active)
+== torn down 17:57:36; desktop: active

@@ -178,6 +178,14 @@ No runs yet. The 3.135.A smoke (2026-11-01, F13 only, not scored) is in
 
 ## Runs
 
+### 2026-11-04, 3.141.E0: an unclamped vet split by call path, on the board (`d20d8eb7`)
+
+3.136.B's 30 min window, 15 W, the stall tracer with `TRACE_3141_VET_PARTS=1`,
+left as found. 12,652 vets over 5 ms (p90 12.0, max 61 ms): `pivot_scale`'s
+own arithmetic 82.5% of their time (p90 10.6 ms), `forward_clearance`'s
+12.8%, every sensor read ~3%. 7 late wheel ticks in 26,681 moving;
+generation-2 GC at most 19.1 ms. Records: `evaluations/jetson-perf-3136/board/3141E0-20261104-1722/`.
+
 ### 2026-11-04, 3.141.D D1 run 2: the tracer smoke again (`835deeb5`, amendment 4)
 
 15 W, left as found. Tracer CPU 0.97% of a core, the sampler alive, 0

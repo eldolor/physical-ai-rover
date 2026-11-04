@@ -1,0 +1,204 @@
+{
+ "sha": "d20d8eb72b74778987394aa74e01615ea96d4e38",
+ "stamps": {
+  "window_start": 1793834846.1159422,
+  "window_end": 1793836646.9415457,
+  "p1_start": 1793834846.1270165,
+  "p1_end": 1793835446.13692,
+  "p8_start": 1793835446.1455681,
+  "p8_end": 1793835967.1610096,
+  "p2_start": 1793836007.855703,
+  "p2_end": 1793836607.8677309
+ },
+ "window_s": 1800.8,
+ "uptime_at_start_s": 52422.01,
+ "wheel": {
+  "moving": 26240,
+  "late": 7,
+  "max_dt_s": 0.1219,
+  "max_dt_s_before": 0.075
+ },
+ "nav2_goals": {
+  "n": 54,
+  "succeeded": 28,
+  "canceled": 22,
+  "aborted": 4
+ },
+ "nav2_rule": "amendment 2 (no goal ids recorded: every abort counts)",
+ "telemetry": {
+  "samples": 1550,
+  "temps": 1550,
+  "clocks": 1550,
+  "max_temp_c": 64.375,
+  "oom_kills": 0,
+  "mem_available_min_mb": 746,
+  "cpu_below_max_samples": 562,
+  "gpu_below_max_samples": 187
+ },
+ "dmesg_oom_kills": 0,
+ "power_mode": "NV Power Mode: 15W",
+ "validity": {
+  "valid": false,
+  "reasons": [
+   "7 late wheel ticks",
+   "nav2 goals 28/32 succeeded"
+  ]
+ },
+ "desktop_load_max": 1.27,
+ "missions": {
+  "n": 3,
+  "refused_starts": 0,
+  "outcomes": {
+   "cancelled": 1,
+   "found": 2
+  },
+  "label_calls": 54
+ },
+ "cloud_calls": 0,
+ "rows": {
+  "P1": {
+   "n": 2397,
+   "p50_ms": 99,
+   "p90_ms": 167,
+   "mem_available_min_mb": 770,
+   "valid": false,
+   "reasons": [
+    "7 late wheel ticks",
+    "nav2 goals 28/32 succeeded"
+   ],
+   "met": true
+  },
+  "P2": {
+   "n": 2395,
+   "p50_ms": 104,
+   "p90_ms": 147,
+   "mem_available_min_mb": 954,
+   "valid": false,
+   "reasons": [
+    "7 late wheel ticks",
+    "nav2 goals 28/32 succeeded"
+   ],
+   "hazard_boxes_per_frame": 1.08,
+   "added_mem_mb": -184,
+   "met": true
+  },
+  "P8": {
+   "n": 299,
+   "p50": 1718.2922489955672,
+   "p90": 1968.3736539955135,
+   "max": 2127.9934289996163,
+   "statuses": {
+    "answered": 299
+   },
+   "answers_identical": true,
+   "flips": [],
+   "off": 0,
+   "missing": 0,
+   "valid": false,
+   "reasons": [
+    "7 late wheel ticks",
+    "nav2 goals 28/32 succeeded"
+   ],
+   "met": false
+  },
+  "P4": {
+   "late_ticks": 7,
+   "moving_ticks": 26240,
+   "max_dt_s_since_start": 0.1219,
+   "window_s": 1800.8,
+   "overlap": {
+    "all_spans": 0,
+    "all_s": 0,
+    "all_with_map_update": 0,
+    "per_group": {
+     "map_fetch": 1981,
+     "ve_question": 1581,
+     "perception": 7094,
+     "room_cut": 236
+    }
+   },
+   "valid": false,
+   "reasons": [
+    "7 late wheel ticks",
+    "nav2 goals 28/32 succeeded"
+   ],
+   "met": false
+  },
+  "P11": {
+   "controller": {
+    "spans": 101,
+    "intervals": 28195,
+    "executing_s": 1405.7,
+    "rate_hz": 20.058,
+    "mean_period_ms": 49.86,
+    "period_p50_ms": 49.98898506164551,
+    "period_p90_ms": 51.490068435668945
+   },
+   "ratio": 1.003,
+   "scan_lag": {
+    "n": 18008,
+    "p50_ms": 7.164955139160156,
+    "p90_ms": 13.625860214233398,
+    "max_ms": 140.75064659118652
+   },
+   "valid": false,
+   "reasons": [
+    "7 late wheel ticks",
+    "nav2 goals 28/32 succeeded"
+   ],
+   "met": true
+  },
+  "P12": {
+   "segment_by_caller": {
+    "goal_policy.py": {
+     "n": 88,
+     "p50_ms": 6.977081298828125,
+     "p90_ms": 8.04901123046875,
+     "max_ms": 13.373136520385742
+    },
+    "room_labels.py": {
+     "n": 236,
+     "p50_ms": 8.055925369262695,
+     "p90_ms": 12.054920196533203,
+     "max_ms": 18.841981887817383
+    }
+   },
+   "segment": {
+    "n": 324,
+    "p50_ms": 7.66301155090332,
+    "p90_ms": 11.616945266723633,
+    "max_ms": 18.841981887817383
+   },
+   "walk": {
+    "n": 261,
+    "p50_ms": 7.770061492919922,
+    "p90_ms": 13.077974319458008,
+    "max_ms": 29.987812042236328
+   },
+   "pause_share": 0.0027,
+   "map_reply": {
+    "n": 1716,
+    "ok": 1716,
+    "p50_ms": 25.892372999805957,
+    "p90_ms": 139.26857600017684,
+    "full_replies": 851,
+    "bytes_max": 247790
+   },
+   "explore_map_fetch": {
+    "n": 1981,
+    "p50_ms": 29.293060302734375,
+    "p90_ms": 156.4159393310547
+   },
+   "valid": false,
+   "reasons": [
+    "7 late wheel ticks",
+    "nav2 goals 28/32 succeeded"
+   ],
+   "met": true
+  }
+ },
+ "cmd_exit": 0,
+ "restore_actions": [],
+ "as_found_differences": [],
+ "left_as_found": true
+}
