@@ -1,0 +1,5 @@
+1793797858.575 WARNING identity vision-picar brain server starting -- git=ad1def4b executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793797864.955 WARNING safety Blocked FORWARD: distance=0.0cm < min=20cm (ahead_not_observed)
+1793797867.121 WARNING safety Blocked FORWARD: distance=0.0cm < min=20cm (ahead_not_observed)
+1793797869.300 WARNING safety Blocked FORWARD: distance=0.0cm < min=20cm (ahead_not_observed)
+1793797871.389 WARNING safety Blocked FORWARD: distance=0.0cm < min=20cm (ahead_not_observed)
