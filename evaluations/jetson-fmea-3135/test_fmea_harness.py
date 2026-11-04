@@ -385,14 +385,14 @@ def test_a_ve_fault_off_its_moment_is_invalid():
 
 def test_the_full_disk_case_and_its_bars():
     ok = {"outcome": "found", "write_fail_lines": 2, "mission_s": 120.0, "late_ticks": 0,
-          "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.02, "choices_picked": 4}
+          "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.02, "choices_picked": 4, "choice_fail_lines": 1}
     assert sys_rows.judge("F15", ok)["pass"]
-    assert sys_rows.judge("F15", {**ok, "write_fail_lines": 0})["valid"] is False
     assert not sys_rows.judge("F15", {**ok, "write_fail_lines": 9})["pass"]       # per frame, not per minute
     assert not sys_rows.judge("F15", {**ok, "late_ticks": 1})["pass"]
     assert not sys_rows.judge("F15", {**ok, "outcome": None})["pass"]
     assert not sys_rows.judge("F15", {**ok, "outcome": "failed"})["pass"]               # it did not go on
     assert sys_rows.judge("F15", {**ok, "choices_picked": 0})["valid"] is False
+    assert sys_rows.judge("F15", {**ok, "choice_fail_lines": 0})["valid"] is False   # the choice log never hit it
 
 
 def test_f4_reads_the_refusal_count_when_the_watchdog_has_overwritten_the_readout():
@@ -410,11 +410,16 @@ def test_the_clock_rows_stale_count_ignores_the_epoch_stamp():
     assert sys_rows.STALE_RE.search("WARNING cloud answered 503")
     line = "1795033979.614 WARNING tiered asked"
     assert not sys_rows.STALE_RE.search(line.split(" ", 1)[-1])
-    assert sys_rows.judge("F16p", {**CLOCK_GOOD, "forward_at_fault": False})["valid"] is False
+    assert sys_rows.judge("F16p", {**CLOCK_GOOD, "idle_at_fault": False})["valid"] is False
 
 
 def test_the_f3_stack_asks_the_cloud_at_arrival_and_the_plant_reads_ve_gone_as_no():
     import inspect
     assert '"SIM_ARRIVAL_CONFIRM": "cloud"' in inspect.getsource(vlm_rows.run_row)
     assert 'return {"status": "answered", "score": 0.0' in (HERE / "brain_plant.py").read_text()
-    assert vlm_rows._stamp("1793797418.68 WARNING x") == 1793797418.68 and vlm_rows._stamp("Traceback") == 0.0
+    st = {"tier": {"stats": {"local": {"absent": 2}, "local_frame": {"absent": 3, "yes": 1}}}}
+    assert vlm_rows.absent_count(st) == 5 and vlm_rows.absent_count({}) is None
+    assert "LocalVLMClient._post" in (HERE / "brain_plant.py").read_text()
+    sys.path.insert(0, str(HERE.parents[1]))
+    import brain.local_vlm as lv
+    assert hasattr(lv.LocalVLMClient, "_post")                    # the class the plant patches exists

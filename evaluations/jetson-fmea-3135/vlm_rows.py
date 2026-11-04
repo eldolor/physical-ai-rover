@@ -36,6 +36,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
+from typing import Optional
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -213,12 +214,14 @@ def ve_oom_dropin(on: bool) -> dict:
     return res
 
 
-def _stamp(line: str) -> float:
-    """A brain log line's epoch stamp (its first field), or 0."""
-    try:
-        return float(line.split(" ", 1)[0])
-    except ValueError:
-        return 0.0
+def absent_count(status: dict) -> Optional[int]:
+    """The tiers' own count of questions they found VE absent for and handed
+    on (`status.tier.stats` `local.absent` + `local_frame.absent`, 3.80), or
+    None when the status carries no tier block."""
+    stats = ((status or {}).get("tier") or {}).get("stats") or {}
+    if not stats:
+        return None
+    return int((stats.get("local") or {}).get("absent", 0)) + int((stats.get("local_frame") or {}).get("absent", 0))
 
 
 def oom_count() -> int:
@@ -307,7 +310,7 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 if pid is None:
                     raise StackError("VE's driver not found")
                 ms["killed_pid"] = pid
-                ms["fault_epoch"] = time.time()
+                ms["absent_before"] = absent_count(status(st))
                 ms["fault_at"] = time.monotonic()
                 sh("kill", "-9", str(pid))
             elif spec["fault"] == "stop":
@@ -346,9 +349,12 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                         down_seen = True
                     elif down_seen:
                         ms["ve_back_s"] = round(time.monotonic() - ms["fault_at"], 1)
-                        ms["ve_back_epoch"] = time.time()
                         break
                     time.sleep(0.5)
+                # Handed on while VE was gone: the tiers' absent count, kill to VE back (or now).
+                after = absent_count(status(st))
+                if after is not None and ms.get("absent_before") is not None:
+                    ms["handed_on"] = after - ms["absent_before"]
                 if row == "F3f":
                     watch_end = ms["fault_at"] + WATCH_AFTER_S
                     failed = False
@@ -443,17 +449,6 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
             calls = proxy_log(calls_log)
             ms["paid_after_stop"] = sum(1 for c in calls if c.get("path") == "/navigate"
                                         and stop_epoch is not None and c.get("t", 0) > stop_epoch)
-    if spec["fault"] == "kill_ve" and ms.get("fault_epoch") is not None:
-        t0, t1 = ms["fault_epoch"], ms.get("ve_back_epoch") or time.time()
-        if spec["cloud"] == "standin":
-            ms["handed_on"] = sum(1 for c in proxy_log(calls_log) if c.get("path") == "/navigate"
-                                  and t0 <= c.get("t", 0) <= t1)
-        else:                          # refused: the attempts, in the brain's log
-            text = (out / "brain.log").read_text(errors="replace").splitlines() if (out / "brain.log").exists() else []
-            ms["handed_on"] = sum(1 for line in text
-                                  if ("CloudUnavailable" in line or "cloud unreachable" in line.lower()
-                                      or "ConnectError" in line)
-                                  and t0 <= _stamp(line) <= t1)
     sp = m.span(rows)
     ms["truth_hole_s"] = m.gaps_s(rows, sp[0], sp[1]) if sp else float("inf")
     ms["contacts"] = m.contacts(rows)

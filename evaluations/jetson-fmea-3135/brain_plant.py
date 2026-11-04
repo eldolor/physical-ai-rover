@@ -66,7 +66,7 @@ if "cloud_class" in PLANTS:
 if "vlm_absent" in PLANTS:
     from brain import local_vlm
 
-    _vpost = local_vlm.LocalVLM._post
+    _vpost = local_vlm.LocalVLMClient._post
 
     def _vpost_unsorted(self, route, frame, box=False):
         try:
@@ -75,7 +75,7 @@ if "vlm_absent" in PLANTS:
             # planted (amendment 12): VE gone read as its answer "no", so nothing is handed on
             return {"status": "answered", "score": 0.0, "parsed": True}
 
-    local_vlm.LocalVLM._post = _vpost_unsorted
+    local_vlm.LocalVLMClient._post = _vpost_unsorted
 
 if "write_intolerant" in PLANTS:
     from control import mission_runner

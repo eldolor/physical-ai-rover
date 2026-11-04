@@ -88,16 +88,17 @@ def judge(row: str, ms: dict, control: str | None = "found") -> dict:
         return {"pass": not r, "valid": True, "reasons": r}
     if row == "F15":
         n, mins = ms.get("write_fail_lines"), ms.get("mission_s", 0) / 60.0
-        valid = bool(n) and (ms.get("choices_picked") or 0) >= 1
+        valid = (ms.get("choices_picked") or 0) >= 1 and (ms.get("choice_fail_lines") or 0) >= 1
         if not valid:
-            r.append(f"invalid: no failing write seen, or no goal choice made ({ms.get('choices_picked')})")
+            r.append(f"invalid: no goal choice made or none failed to write "
+                     f"({ms.get('choices_picked')} picked, {ms.get('choice_fail_lines')} failed)")
         bar(out != "failed", "the mission ended failed (it did not go on)")
         bar(n is not None and n <= int(mins) + 2, f"{n} failing-write lines in {mins:.1f} min (bar one a minute)")
         bar(ms.get("late_ticks") == 0, f"{ms.get('late_ticks')} late wheel ticks over the mission (bar 0)")
         return {"pass": not r, "valid": valid, "reasons": r}
-    valid = ms.get("stepped") is True and ms.get("forward_at_fault") is not False
+    valid = ms.get("stepped") is True and ms.get("idle_at_fault") is not False
     if not valid:
-        r.append("invalid: the clock was not stepped 0.15 s into a FORWARD")
+        r.append("invalid: the clock was not stepped between verbs (amendment 12)")
     bar(ms.get("watchdog_after_step") == 0,
         f"{ms.get('watchdog_after_step')} watchdog stops in the 3 s after the step (bar 0)")
     bar(ms.get("brain_503_lines") == 0, f"{ms.get('brain_503_lines')} 503/stale lines in the brain's log")
@@ -217,7 +218,8 @@ class FullDisk:
     def make(self) -> dict:
         self.dir.mkdir(parents=True, exist_ok=True)
         if self.kind == "devfull":
-            (self.dir / "interventions.jsonl").symlink_to("/dev/full")
+            # The desktop's stand-in (no sudo): a directory nothing can create a file in.
+            os.chmod(self.dir, 0o555)
             return {"kind": "devfull", "dir": str(self.dir)}
         r = sudo("mount", "-t", "tmpfs", "-o", f"size={FULL_MB}m,mode=0755,uid={os.getuid()},gid={os.getgid()}",
                  "tmpfs", str(self.dir))
@@ -249,6 +251,8 @@ class FullDisk:
             self.mounted = r.returncode != 0
         mounts = Path("/proc/mounts").read_text()
         res["still_mounted"] = str(self.dir) in mounts
+        if self.kind == "devfull":
+            os.chmod(self.dir, 0o755)
         if not res["still_mounted"]:
             import shutil
             shutil.rmtree(self.dir, ignore_errors=True)
@@ -316,7 +320,8 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 while time.monotonic() < end:
                     lr = (robot_health(st) or {}).get("last_refusal") or {}
                     since = time.monotonic() - ms["step_at"]
-                    if lr.get("reason") == "watchdog" and (lr.get("seconds_ago") or 1e9) <= since + 0.25:
+                    ago = lr.get("seconds_ago")
+                    if lr.get("reason") == "watchdog" and ago is not None and ago < since:   # after the step
                         seen = 1
                     samples.append(lr.get("reason"))
                     time.sleep(0.2)
@@ -364,19 +369,23 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
     ms["contacts"] = m.contacts(rows)
     ms["gap_unknown"] = sum(1 for r in rows if r.get("gap_cm") is None)
     if ms.get("step_at") is not None:
-        ms["forward_at_fault"] = m.forward_at(rows, ms["step_at"])
+        before = [r for r in rows if r["t"] <= ms["step_at"]]
+        ms["idle_at_fault"] = m.is_zero(before[-1]["sp"]) if before else None
     if mw.rows:
         ms["mem_available_min_mb"] = min(r[1] for r in mw.rows)
         ms["oom_kills"] = mw.rows[-1][2] - mw.rows[0][2]
     rec["measures"] = ms
     control = os.environ.get("FMEA_F16_CONTROL", "found")
     rec["verdict"] = judge(row, ms, control)
+    errs = [rec["error"]] if rec.get("error") else []
     if (rec.get("full_removed") or {}).get("still_mounted"):
-        rec["error"] = f"the full tmpfs is still mounted: {rec['full_removed']}"
+        errs.append(f"the full tmpfs is still mounted: {rec['full_removed']}")
     if rec.get("clock_restore", {}).get("step_back_rc") not in (None, 0):
-        rec["error"] = f"the clock's step back failed: {rec['clock_restore']}"
+        errs.append(f"the clock's step back failed: {rec['clock_restore']}")
     if rec.get("clock_restore", {}).get("ntp_synchronized") not in (None, "yes"):
-        rec["error"] = f"NTP not synchronized after the case: {rec['clock_restore']}"
+        errs.append(f"NTP not synchronized after the case: {rec['clock_restore']}")
+    if errs:
+        rec["error"] = "; ".join(errs)
     rec["ended"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
     (out / "result.json").write_text(json.dumps(rec, indent=1, default=str))
     return rec
