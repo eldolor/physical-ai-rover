@@ -1,0 +1,6 @@
+{"i": 1, "verdict": {"pass": false, "valid": true, "reasons": ["wheels zero after 3.326 s (bar 1.1)", "moved 18.54 cm after the fault (bar 15)"]}, "error": null}
+{"i": 2, "verdict": {"pass": false, "valid": true, "reasons": ["wheels zero after 3.186 s (bar 1.1)", "moved 18.25 cm after the fault (bar 15)"]}, "error": null}
+{"i": 3, "verdict": {"pass": false, "valid": true, "reasons": ["wheels zero after 3.218 s (bar 1.1)", "moved 18.49 cm after the fault (bar 15)"]}, "error": null}
+{"i": 4, "verdict": {"pass": false, "valid": true, "reasons": ["wheels zero after 2.796 s (bar 1.1)", "moved 16.89 cm after the fault (bar 15)"]}, "error": null}
+{"i": 5, "verdict": {"pass": false, "valid": true, "reasons": ["wheels zero after 3.326 s (bar 1.1)", "moved 18.45 cm after the fault (bar 15)"]}, "error": null}
+{"row": "F6g", "plant": null, "house": "scaled_house", "state": "FAILED", "runs_wanted": 5, "runs_scored": 5, "runs_total": 5, "runs_failed": 5, "not_scored": [], "reasons": ["moved 16.89 cm after the fault (bar 15)", "moved 18.25 cm after the fault (bar 15)", "moved 18.45 cm after the fault (bar 15)", "moved 18.49 cm after the fault (bar 15)", "moved 18.54 cm after the fault (bar 15)", "wheels zero after 2.796 s (bar 1.1)", "wheels zero after 3.186 s (bar 1.1)", "wheels zero after 3.218 s (bar 1.1)", "wheels zero after 3.326 s (bar 1.1)"]}

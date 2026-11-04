@@ -1,0 +1,354 @@
+{
+ "sha": "e288b6280abfa8c993a2cdbb6f88af37ed13ea30",
+ "cmd_exit": 0,
+ "cmd_s": 158.0,
+ "verdict": {
+  "row": "F6g",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "FAILED",
+  "runs_wanted": 5,
+  "runs_scored": 5,
+  "runs_total": 5,
+  "runs_failed": 5,
+  "not_scored": [],
+  "reasons": [
+   "moved 16.89 cm after the fault (bar 15)",
+   "moved 18.25 cm after the fault (bar 15)",
+   "moved 18.45 cm after the fault (bar 15)",
+   "moved 18.49 cm after the fault (bar 15)",
+   "moved 18.54 cm after the fault (bar 15)",
+   "wheels zero after 2.796 s (bar 1.1)",
+   "wheels zero after 3.186 s (bar 1.1)",
+   "wheels zero after 3.218 s (bar 1.1)",
+   "wheels zero after 3.326 s (bar 1.1)"
+  ]
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "wheels zero after 3.326 s (bar 1.1)",
+    "moved 18.54 cm after the fault (bar 15)"
+   ],
+   "error": null,
+   "recovery_s": 6.46,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 20055.048166222,
+    "driver_at_fault": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "end_error": "<urlopen error [Errno 111] Connection refused>",
+    "refusals": {
+     "preempted": 1
+    },
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 127,
+     "max_dt_s": 0.0634
+    },
+    "last_refusal": {
+     "reason": "preempted",
+     "detail": "brain is driving -- one autonomous driver at a time, so ros was refused until it lapses",
+     "driver": "ros",
+     "at": 20050.074331452,
+     "seconds_ago": 10.98
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 3.326,
+    "travel_cm": 18.54,
+    "truth_hole_s": 0.023,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     20038.2736,
+     20068.6937
+    ],
+    "mem_available_min_mb": 2109,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": null,
+    "last_action": null,
+    "error": "<urlopen error [Errno 111] Connection refused>"
+   }
+  },
+  {
+   "i": 2,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "wheels zero after 3.186 s (bar 1.1)",
+    "moved 18.25 cm after the fault (bar 15)"
+   ],
+   "error": null,
+   "recovery_s": 6.54,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 20086.218385136,
+    "driver_at_fault": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "end_error": "<urlopen error [Errno 111] Connection refused>",
+    "refusals": {
+     "preempted": 1
+    },
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 122,
+     "max_dt_s": 0.063
+    },
+    "last_refusal": {
+     "reason": "preempted",
+     "detail": "brain is driving -- one autonomous driver at a time, so ros was refused until it lapses",
+     "driver": "ros",
+     "at": 20081.392283043,
+     "seconds_ago": 10.84
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 3.186,
+    "travel_cm": 18.25,
+    "truth_hole_s": 0.027,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     20069.9046,
+     20099.8247
+    ],
+    "mem_available_min_mb": 2101,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": null,
+    "last_action": null,
+    "error": "<urlopen error [Errno 111] Connection refused>"
+   }
+  },
+  {
+   "i": 3,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "wheels zero after 3.218 s (bar 1.1)",
+    "moved 18.49 cm after the fault (bar 15)"
+   ],
+   "error": null,
+   "recovery_s": 6.52,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 20117.510600167,
+    "driver_at_fault": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "end_error": "<urlopen error [Errno 111] Connection refused>",
+    "refusals": {
+     "preempted": 1
+    },
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 125,
+     "max_dt_s": 0.0619
+    },
+    "last_refusal": {
+     "reason": "preempted",
+     "detail": "brain is driving -- one autonomous driver at a time, so ros was refused until it lapses",
+     "driver": "ros",
+     "at": 20112.72319516,
+     "seconds_ago": 10.8
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 3.218,
+    "travel_cm": 18.49,
+    "truth_hole_s": 0.025,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     20101.009,
+     20131.3291
+    ],
+    "mem_available_min_mb": 2103,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": null,
+    "last_action": null,
+    "error": "<urlopen error [Errno 111] Connection refused>"
+   }
+  },
+  {
+   "i": 4,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "wheels zero after 2.796 s (bar 1.1)",
+    "moved 16.89 cm after the fault (bar 15)"
+   ],
+   "error": null,
+   "recovery_s": 6.63,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 20149.280270694,
+    "driver_at_fault": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "end_error": "<urlopen error [Errno 111] Connection refused>",
+    "refusals": {
+     "preempted": 1
+    },
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 121,
+     "max_dt_s": 0.063
+    },
+    "last_refusal": {
+     "reason": "preempted",
+     "detail": "brain is driving -- one autonomous driver at a time, so ros was refused until it lapses",
+     "driver": "ros",
+     "at": 20144.360406266,
+     "seconds_ago": 10.93
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 2.796,
+    "travel_cm": 16.89,
+    "truth_hole_s": 0.026,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     20132.5364,
+     20163.1565
+    ],
+    "mem_available_min_mb": 2116,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": null,
+    "last_action": null,
+    "error": "<urlopen error [Errno 111] Connection refused>"
+   }
+  },
+  {
+   "i": 5,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "wheels zero after 3.326 s (bar 1.1)",
+    "moved 18.45 cm after the fault (bar 15)"
+   ],
+   "error": null,
+   "recovery_s": 6.44,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 20180.738560508,
+    "driver_at_fault": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "end_error": "<urlopen error [Errno 111] Connection refused>",
+    "refusals": {
+     "preempted": 1
+    },
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 129,
+     "max_dt_s": 0.0635
+    },
+    "last_refusal": {
+     "reason": "preempted",
+     "detail": "brain is driving -- one autonomous driver at a time, so ros was refused until it lapses",
+     "driver": "ros",
+     "at": 20175.874626276,
+     "seconds_ago": 10.87
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 3.326,
+    "travel_cm": 18.45,
+    "truth_hole_s": 0.023,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     20164.3245,
+     20194.4445
+    ],
+    "mem_available_min_mb": 2091,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": null,
+    "last_action": null,
+    "error": "<urlopen error [Errno 111] Connection refused>"
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 140,
+  "temps": 140,
+  "clocks": 140,
+  "max_temp_c": 50.906,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2097,
+  "cpu_below_max_samples": 86,
+  "gpu_below_max_samples": 140
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "harness_leftovers": {
+  "before": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  },
+  "after": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  }
+ }
+}
