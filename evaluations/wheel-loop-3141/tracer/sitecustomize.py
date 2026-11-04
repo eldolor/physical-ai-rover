@@ -20,7 +20,7 @@ One JSON line per event (epoch seconds):
 | gc     | one collection over GC_MS: generation, duration, collected           |
 | vet    | `SafetyController.vet_wheel_velocity` over VET_MS                     |
 | req    | an HTTP request over REQ_MS, end to end                              |
-| heap   | every HEAP_S: gc counts, tracked objects per generation, frozen, RSS, the tracer's own threads' CPU and its probes' work on the loop (ms, cumulative from the tracer's start: diff two rows for a window) |
+| heap   | every HEAP_S: gc counts, tracked objects per generation (only with TRACE_3141_HEAP_OBJECTS=1), frozen, RSS, the event loop thread's CPU, GC rows dropped, the tracer's own threads' CPU and its probes' work on the loop (ms, cumulative from the tracer's start: diff two rows for a window) |
 
 The sampler needs the GIL to look, so a C call holding it (a `json.dumps`)
 is seen only after it returns: the per-thread CPU over the stall is what
@@ -47,6 +47,7 @@ GC_MS = float(os.environ.get("TRACE_3141_GC_MS", "2"))
 VET_MS = float(os.environ.get("TRACE_3141_VET_MS", "5"))
 REQ_MS = float(os.environ.get("TRACE_3141_REQ_MS", "20"))
 HEAP_S = float(os.environ.get("TRACE_3141_HEAP_S", "30"))
+HEAP_OBJECTS = os.environ.get("TRACE_3141_HEAP_OBJECTS") == "1"
 CLK = os.sysconf("SC_CLK_TCK")
 
 _lock = threading.Lock()
@@ -104,9 +105,12 @@ BASELINE_S = 1.0                  # how old a stall's CPU baseline may be
 SAMPLE_S = 0.01                   # the sampler's look at the heartbeat (STALL_MS is 25)
 
 
-def _own_cpu_ms() -> int:
+_loop_tid = []                    # the event loop's thread, once it runs
+
+
+def _cpu_ms_of(tids) -> int:
     ticks = 0
-    for tid in list(_own):
+    for tid in list(tids):
         try:
             with open(f"/proc/self/task/{tid}/stat") as f:
                 st = f.read()
@@ -115,6 +119,10 @@ def _own_cpu_ms() -> int:
         fields = st[st.rindex(")") + 2:].split()
         ticks += int(fields[11]) + int(fields[12])
     return round(ticks * 1000 / CLK)
+
+
+def _own_cpu_ms() -> int:
+    return _cpu_ms_of(_own)
 
 
 def _sampler() -> None:
@@ -156,10 +164,14 @@ def _heap() -> None:
     while True:
         time.sleep(HEAP_S)
         t0 = time.perf_counter()
-        try:
-            sizes = [len(gc.get_objects(g)) for g in range(3)]
-        except Exception:  # noqa: BLE001 -- generation numbering differs by version
-            sizes = None
+        sizes = None
+        if HEAP_OBJECTS:
+            # Walks every tracked object with the GIL held: a pause of its own
+            # on a big heap, so off unless asked (TRACE_3141_HEAP_OBJECTS=1).
+            try:
+                sizes = [len(gc.get_objects(g)) for g in range(3)]
+            except Exception:  # noqa: BLE001 -- generation numbering differs by version
+                pass
         cost = (time.perf_counter() - t0) * 1000
         try:
             with open("/proc/self/statm") as f:
@@ -169,6 +181,7 @@ def _heap() -> None:
         _write({"k": "heap", "t": time.time(), "count": gc.get_count(), "sizes": sizes,
                 "cost_ms": round(cost, 1), "frozen": gc.get_freeze_count(), "rss_mb": rss,
                 "tracer_cpu_ms": _own_cpu_ms(), "probe_ms": round(_probe_s[0] * 1000),
+                "loop_cpu_ms": _cpu_ms_of(_loop_tid), "gc_dropped": _gc_dropped[0],
                 "stats": gc.get_stats(), "threads": threading.active_count()})
 
 
@@ -178,6 +191,7 @@ _gc_t0 = [0.0]
 # own thread -- the event loop's, as like as not. So it only appends here
 # (never blocks, takes no lock), and the sampler writes the rows out.
 _gc_rows: collections.deque = collections.deque(maxlen=10000)
+_gc_dropped = [0]
 
 
 def _gc_cb(phase, info):
@@ -186,6 +200,8 @@ def _gc_cb(phase, info):
         return
     ms = (time.perf_counter() - _gc_t0[0]) * 1000
     if ms >= GC_MS:
+        if len(_gc_rows) == _gc_rows.maxlen:
+            _gc_dropped[0] += 1
         _gc_rows.append({"k": "gc", "t": time.time(), "ms": round(ms, 2),
                          "gen": info.get("generation"), "collected": info.get("collected"),
                          "thread": threading.current_thread().name})
@@ -234,6 +250,7 @@ class _Traced:
             self.started = True
             loop = asyncio.get_running_loop()
             _hb[0] = time.monotonic()      # not import time: no stall before the first beat
+            _loop_tid.append(threading.get_native_id())
             loop.create_task(_probe5())
             loop.create_task(_probe50())
             threading.Thread(target=_sampler, daemon=True, name="trace-sampler").start()
@@ -262,17 +279,17 @@ class _Traced:
 def _timed_vet(fn):
     def wrapper(*a, **k):
         t0 = time.perf_counter()
-        out = None
+        out = fn(*a, **k)                  # the safety answer, untouched and first
         try:
-            out = fn(*a, **k)
-            return out
-        finally:
             ms = (time.perf_counter() - t0) * 1000
             if ms > VET_MS:
                 _write({"k": "vet", "t": time.time(), "ms": round(ms, 2),
                         "thread": threading.current_thread().name,
-                        "cmd": [round(x, 2) for x in a[1:3]],
-                        "reason": (out[2] or "")[:100] if out else "raised"})
+                        "cmd": [round(float(x), 2) for x in a[1:3]],
+                        "reason": str(out[2] or "")[:100]})
+        except Exception:  # noqa: BLE001 -- a record must never change a vet
+            pass
+        return out
     wrapper.__wrapped__ = fn
     return wrapper
 
@@ -316,8 +333,8 @@ class _Finder(importlib.abc.MetaPathFinder):
 def _chain_system_sitecustomize() -> None:
     # Only what comes AFTER this directory: 3.136's shim, first on the path,
     # chains this file, and looking before it would load the shim again.
-    here = os.path.dirname(os.path.abspath(__file__))
-    paths = [os.path.abspath(d) for d in sys.path if d]
+    here = os.path.dirname(os.path.realpath(__file__))
+    paths = [os.path.realpath(d) for d in sys.path if d]
     after = paths[paths.index(here) + 1:] if here in paths else paths
     for d in after:
         if d == here:
