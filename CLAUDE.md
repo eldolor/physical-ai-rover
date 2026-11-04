@@ -862,6 +862,29 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
   only on a new command; a blind clamp is never a wedge (no keepout).
   Desktop F9 5/5 at 0.0 cm (bar 2). A car with no lidar can only turn.
   3.144.B (F9 on the board) is owed.
+* **The soak's find rate (3.143), merged 2026-11-04; fix V on.** 3.135.C's
+  board soak found 10/19 (run 1) and 11/21 (run 2), where the in-process
+  sweep finds 39/40.
+  * **Cause:** VE said no at true-target arrivals on the simulator's rendered
+    frames: 5 of run 1's 9 misses, 8 of run 2's 10. On the board, VE said no
+    at 21 of 37 scored true-target arrivals. That is rendered frames only:
+    on real walks VE's precision is 94.9-97.2% (3.48, 3.92).
+  * **Fix V (the user's option (a)):** in the simulator, a local no is judged
+    by 3.98's geometry, both at arrival and on a frame's question (no 3.91.C
+    memory, no 3.80.F band rejection). VE is still asked and its score kept
+    (`local["no_overruled_sim"]`). Real frames are untouched.
+  * **Bars:** the ladder in process with VE on the board finds 39/40 (V1;
+    A2 38); the five class V pairs, live on the board, 4/5 with 0 contacts
+    (V3). V2 is pinned by `tests/test_sim_local_no_real.py`, a differential
+    test with and without the sim judge.
+  * **Not reproduced:** the class A and R misses (near the target with no
+    arrival, or the room never reached), 8/8 found live on the desktop.
+  * **Found, not fixed here:** K3.4's drive-off; the dining-table pocket in
+    `procthor:val:0` (3.83/3.85's line); V3's slippers miss (never within
+    0.8 m), still open.
+  * **A gap for 3.142/3.135:** the soak harness keeps no brain log beyond its
+    start line.
+  * Board arms: `evaluations/soak-find-3143/board.py`, through 3.136's lease.
 * **Older review bugs (3.64), merged 2026-10-09, deployed 2026-10-10.** Ten bugs
   from the reviewer comparison still live on `dev`, fixed red-first: the
   twin's guidance loop after Stop, a hidden page and an outage (A2, A4,
