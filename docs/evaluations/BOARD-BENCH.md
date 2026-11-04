@@ -178,6 +178,13 @@ No runs yet. The 3.135.A smoke (2026-11-01, F13 only, not scored) is in
 
 ## Runs
 
+### 2026-11-04, 3.141.D D1 run 2: the tracer smoke again (, amendment 4)
+
+15 W, left as found. Tracer CPU 0.97% of a core, the sampler alive, 0
+errors, 0 rows dropped; **FAILED on (c)**: 7 of 164 stalls (4.3%, bar 1%)
+right after a long drain of the tracer's own rows. 4 late wheel ticks;
+generation-2 GC at most 14.1 ms. Records: `evaluations/jetson-perf-3136/board/3141D-smoke2-20261104-1556/`.
+
 ### 2026-11-04, 3.141.D D1 run 1: the stall tracer's smoke on the board, `dev` `aec7fd4b` + the tracer (`503638da`)
 
 15 W, an 806 s steady window with `STEADY_TRACER=1`, left as found. The

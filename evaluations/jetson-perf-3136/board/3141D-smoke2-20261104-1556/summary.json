@@ -1,0 +1,196 @@
+{
+ "sha": "835deeb5a346272d125c4afb322cb4ae6ad44520",
+ "stamps": {
+  "window_start": 1793831212.149078,
+  "window_end": 1793832007.1601927,
+  "p1_start": 1793831212.1701195,
+  "p1_end": 1793831332.1849163,
+  "p8_start": 1793831332.1911864,
+  "p8_end": 1793831844.4654825,
+  "p2_start": 1793831887.0863202,
+  "p2_end": 1793832007.096349
+ },
+ "window_s": 795.0,
+ "uptime_at_start_s": 48758.0,
+ "wheel": {
+  "moving": 11710,
+  "late": 4,
+  "max_dt_s": 0.1257,
+  "max_dt_s_before": 0.0715
+ },
+ "nav2_goals": {
+  "n": 29,
+  "succeeded": 22,
+  "canceled": 7,
+  "aborted": 0
+ },
+ "telemetry": {
+  "samples": 682,
+  "temps": 682,
+  "clocks": 682,
+  "max_temp_c": 64.312,
+  "oom_kills": 0,
+  "mem_available_min_mb": 795,
+  "cpu_below_max_samples": 228,
+  "gpu_below_max_samples": 47
+ },
+ "dmesg_oom_kills": 0,
+ "power_mode": "NV Power Mode: 15W",
+ "validity": {
+  "valid": false,
+  "reasons": [
+   "4 late wheel ticks"
+  ]
+ },
+ "desktop_load_max": 1.88,
+ "missions": {
+  "n": 3,
+  "refused_starts": 0,
+  "outcomes": {
+   "cancelled": 1,
+   "found": 2
+  },
+  "label_calls": 53
+ },
+ "cloud_calls": 0,
+ "rows": {
+  "P1": {
+   "n": 482,
+   "p50_ms": 101,
+   "p90_ms": 172,
+   "mem_available_min_mb": 850,
+   "valid": false,
+   "reasons": [
+    "4 late wheel ticks"
+   ],
+   "met": true
+  },
+  "P2": {
+   "n": 478,
+   "p50_ms": 103,
+   "p90_ms": 146,
+   "mem_available_min_mb": 959,
+   "valid": false,
+   "reasons": [
+    "4 late wheel ticks"
+   ],
+   "hazard_boxes_per_frame": 1.092,
+   "added_mem_mb": -109,
+   "met": true
+  },
+  "P8": {
+   "n": 299,
+   "p50": 1721.2485870040837,
+   "p90": 1987.3718450035085,
+   "max": 2137.7939300000435,
+   "statuses": {
+    "answered": 299
+   },
+   "answers_identical": true,
+   "flips": [],
+   "off": 0,
+   "missing": 0,
+   "valid": false,
+   "reasons": [
+    "4 late wheel ticks"
+   ],
+   "met": false
+  },
+  "P4": {
+   "late_ticks": 4,
+   "moving_ticks": 11710,
+   "max_dt_s_since_start": 0.1257,
+   "window_s": 795.0,
+   "overlap": {
+    "all_spans": 0,
+    "all_s": 0,
+    "all_with_map_update": 0,
+    "per_group": {
+     "map_fetch": 881,
+     "ve_question": 554,
+     "perception": 3076,
+     "room_cut": 131
+    }
+   },
+   "valid": false,
+   "reasons": [
+    "4 late wheel ticks"
+   ],
+   "met": false
+  },
+  "P11": {
+   "controller": {
+    "spans": 35,
+    "intervals": 13253,
+    "executing_s": 661.7,
+    "rate_hz": 20.03,
+    "mean_period_ms": 49.93,
+    "period_p50_ms": 49.99208450317383,
+    "period_p90_ms": 51.52702331542969
+   },
+   "ratio": 1.002,
+   "scan_lag": {
+    "n": 7950,
+    "p50_ms": 8.131980895996094,
+    "p90_ms": 13.887166976928711,
+    "max_ms": 103.58142852783203
+   },
+   "valid": false,
+   "reasons": [
+    "4 late wheel ticks"
+   ],
+   "met": true
+  },
+  "P12": {
+   "segment_by_caller": {
+    "goal_policy.py": {
+     "n": 36,
+     "p50_ms": 7.46607780456543,
+     "p90_ms": 8.976936340332031,
+     "max_ms": 10.690927505493164
+    },
+    "room_labels.py": {
+     "n": 131,
+     "p50_ms": 8.321762084960938,
+     "p90_ms": 12.791872024536133,
+     "max_ms": 24.313926696777344
+    }
+   },
+   "segment": {
+    "n": 167,
+    "p50_ms": 8.149147033691406,
+    "p90_ms": 12.537956237792969,
+    "max_ms": 24.313926696777344
+   },
+   "walk": {
+    "n": 165,
+    "p50_ms": 6.903171539306641,
+    "p90_ms": 11.432170867919922,
+    "max_ms": 18.429994583129883
+   },
+   "pause_share": 0.0033,
+   "map_reply": {
+    "n": 757,
+    "ok": 757,
+    "p50_ms": 27.06977799971355,
+    "p90_ms": 138.10188900242792,
+    "full_replies": 520,
+    "bytes_max": 245495
+   },
+   "explore_map_fetch": {
+    "n": 881,
+    "p50_ms": 53.080081939697266,
+    "p90_ms": 149.72496032714844
+   },
+   "valid": false,
+   "reasons": [
+    "4 late wheel ticks"
+   ],
+   "met": true
+  }
+ },
+ "cmd_exit": 0,
+ "restore_actions": [],
+ "as_found_differences": [],
+ "left_as_found": true
+}

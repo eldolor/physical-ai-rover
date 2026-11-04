@@ -1,0 +1,2 @@
+[44605.607342] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=1760366,uid=1000
+[44605.607376] Out of memory: Killed process 1760366 (edgellm_identit) total-vm:8962532kB, anon-rss:112988kB, file-rss:28320kB, shmem-rss:0kB, UID:1000 pgtables:1828kB oom_score_adj:1000
