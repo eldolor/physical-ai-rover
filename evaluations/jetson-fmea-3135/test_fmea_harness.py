@@ -345,7 +345,8 @@ VLM_GOOD = {"fault_at": 1.0, "forward_at_fault": True, "goal_at_fault": True, "q
             "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.02, "oom_kills": 1, "killed_ve": True,
             "alive_after": {"robot": True, "brain": True, "ros": True}, "late_ticks": 0,
             "ve_back_s": 45.0, "next_answer": True, "failed_in_watch": False,
-            "wheels_zero_from_stop_s": 0.06, "cancelled_by": "stop", "paid_after_stop": 0}
+            "wheels_zero_from_stop_s": 0.06, "cancelled_by": "stop", "paid_after_stop": 0,
+            "handed_on": 2}
 
 
 @pytest.mark.parametrize("row, outcome", [("F2", "found"), ("F3f", "stopped_by_harness"), ("F3a", "found"),
@@ -362,6 +363,7 @@ def test_ve_cases_pass_inside_their_bars(row, outcome):
     ("F3f", {"ve_back_s": 61.0}, "bar 60"), ("F3f", {"next_answer": False}, "not answered"),
     ("F3f", {"failed_in_watch": True}, "failed after the kill"),
     ("F3a", {"outcome": "out_of_budget"}, "not found"), ("F3r", {"outcome": "found"}, "not arrived_unconfirmed"),
+    ("F3f", {"handed_on": 0}, "handed to the cloud"),
     ("F17g", {"wheels_zero_from_stop_s": 0.21}, "bar 0.2"),
     ("F17q", {"outcome": "running", "cancelled_by": None}, "not cancelled by stop"),
     ("F17a", {"paid_after_stop": 1}, "paid calls after"),
@@ -383,12 +385,14 @@ def test_a_ve_fault_off_its_moment_is_invalid():
 
 def test_the_full_disk_case_and_its_bars():
     ok = {"outcome": "found", "write_fail_lines": 2, "mission_s": 120.0, "late_ticks": 0,
-          "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.02}
+          "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.02, "choices_picked": 4}
     assert sys_rows.judge("F15", ok)["pass"]
     assert sys_rows.judge("F15", {**ok, "write_fail_lines": 0})["valid"] is False
     assert not sys_rows.judge("F15", {**ok, "write_fail_lines": 9})["pass"]       # per frame, not per minute
     assert not sys_rows.judge("F15", {**ok, "late_ticks": 1})["pass"]
     assert not sys_rows.judge("F15", {**ok, "outcome": None})["pass"]
+    assert not sys_rows.judge("F15", {**ok, "outcome": "failed"})["pass"]               # it did not go on
+    assert sys_rows.judge("F15", {**ok, "choices_picked": 0})["valid"] is False
 
 
 def test_f4_reads_the_refusal_count_when_the_watchdog_has_overwritten_the_readout():
@@ -407,3 +411,10 @@ def test_the_clock_rows_stale_count_ignores_the_epoch_stamp():
     line = "1795033979.614 WARNING tiered asked"
     assert not sys_rows.STALE_RE.search(line.split(" ", 1)[-1])
     assert sys_rows.judge("F16p", {**CLOCK_GOOD, "forward_at_fault": False})["valid"] is False
+
+
+def test_the_f3_stack_asks_the_cloud_at_arrival_and_the_plant_reads_ve_gone_as_no():
+    import inspect
+    assert '"SIM_ARRIVAL_CONFIRM": "cloud"' in inspect.getsource(vlm_rows.run_row)
+    assert 'return {"status": "answered", "score": 0.0' in (HERE / "brain_plant.py").read_text()
+    assert vlm_rows._stamp("1793797418.68 WARNING x") == 1793797418.68 and vlm_rows._stamp("Traceback") == 0.0

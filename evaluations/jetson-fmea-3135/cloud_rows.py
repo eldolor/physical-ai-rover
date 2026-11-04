@@ -178,6 +178,7 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 end = ms["start_at"] + SWITCH_AFTER_S
                 while time.monotonic() < end and not any(c.get("path") == "/navigate" for c in calls(calls_log)):
                     time.sleep(0.5)
+                time.sleep(1.0)            # the stand-in logs a call before answering it (amendment 12)
                 ms["answered_before_switch"] = sum(1 for c in calls(calls_log) if c.get("path") == "/navigate")
                 s0 = status(st)
                 ms["cloud_yes_before_switch"] = any(

@@ -124,6 +124,8 @@ def judge(row: str, ms: dict) -> dict:
         bar(ms.get("late_ticks") == 0, f"{ms.get('late_ticks')} late wheel ticks in the window (bar 0)")
         bar(out not in (None, "running"), f"the mission ended {out}")
     if spec["fault"] == "kill_ve":
+        h = ms.get("handed_on")
+        bar(h is not None and h >= 1, f"{h} questions handed to the cloud while VE was gone (bar >= 1)")
         b = ms.get("ve_back_s")
         bar(b is not None and b <= VE_BACK_BAR_S, f"VE ready {b} s after the kill (bar 60)")
         bar(ms.get("next_answer") is True, "the next mission's first frame question was not answered")
@@ -211,6 +213,14 @@ def ve_oom_dropin(on: bool) -> dict:
     return res
 
 
+def _stamp(line: str) -> float:
+    """A brain log line's epoch stamp (its first field), or 0."""
+    try:
+        return float(line.split(" ", 1)[0])
+    except ValueError:
+        return 0.0
+
+
 def oom_count() -> int:
     for line in Path("/proc/vmstat").read_text().splitlines():
         if line.startswith("oom_kill "):
@@ -247,7 +257,9 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                     cwd=ROOT, stdout=open(out / "stub.log", "ab"), stderr=subprocess.STDOUT, start_new_session=True)
             time.sleep(1.5)
             env = {**rosmod.ROS_ENV, "TIER_SEARCH": "explore", "LOCAL_VLM_URL": f"http://127.0.0.1:{PROXY_PORT}",
-                   "LOCAL_VLM_SECRET": secret}
+                   "LOCAL_VLM_SECRET": secret,
+                   # amendment 12: the arrival's cloud step is the cloud (stand-in), not the sim's geometry
+                   "SIM_ARRIVAL_CONFIRM": "cloud"}
             url = f"http://127.0.0.1:{STUB_PORT}" if spec["cloud"] == "standin" else f"http://127.0.0.1:{CLOSED_PORT}"
             # ve_oom0 is the unit's drop-in, not a process plant: the stack runs as shipped.
             st = Stack(out, house=house, plant="" if plant == "ve_oom0" else plant, vision_url=url,
@@ -295,6 +307,7 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 if pid is None:
                     raise StackError("VE's driver not found")
                 ms["killed_pid"] = pid
+                ms["fault_epoch"] = time.time()
                 ms["fault_at"] = time.monotonic()
                 sh("kill", "-9", str(pid))
             elif spec["fault"] == "stop":
@@ -333,6 +346,7 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                         down_seen = True
                     elif down_seen:
                         ms["ve_back_s"] = round(time.monotonic() - ms["fault_at"], 1)
+                        ms["ve_back_epoch"] = time.time()
                         break
                     time.sleep(0.5)
                 if row == "F3f":
@@ -429,6 +443,17 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
             calls = proxy_log(calls_log)
             ms["paid_after_stop"] = sum(1 for c in calls if c.get("path") == "/navigate"
                                         and stop_epoch is not None and c.get("t", 0) > stop_epoch)
+    if spec["fault"] == "kill_ve" and ms.get("fault_epoch") is not None:
+        t0, t1 = ms["fault_epoch"], ms.get("ve_back_epoch") or time.time()
+        if spec["cloud"] == "standin":
+            ms["handed_on"] = sum(1 for c in proxy_log(calls_log) if c.get("path") == "/navigate"
+                                  and t0 <= c.get("t", 0) <= t1)
+        else:                          # refused: the attempts, in the brain's log
+            text = (out / "brain.log").read_text(errors="replace").splitlines() if (out / "brain.log").exists() else []
+            ms["handed_on"] = sum(1 for line in text
+                                  if ("CloudUnavailable" in line or "cloud unreachable" in line.lower()
+                                      or "ConnectError" in line)
+                                  and t0 <= _stamp(line) <= t1)
     sp = m.span(rows)
     ms["truth_hole_s"] = m.gaps_s(rows, sp[0], sp[1]) if sp else float("inf")
     ms["contacts"] = m.contacts(rows)

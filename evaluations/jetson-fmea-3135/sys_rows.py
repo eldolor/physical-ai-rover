@@ -44,7 +44,8 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
 import measure as m  # noqa: E402
-from fmea import MOVE_WAIT_S, MemWatch, robot_health, start_mission, wait_end, wait_forward  # noqa: E402
+import ros as rosmod  # noqa: E402
+from fmea import MOVE_WAIT_S, MemWatch, robot_health, start_mission, status, wait_end, wait_forward  # noqa: E402
 from stack import Stack, StackError  # noqa: E402
 
 STEP_S = 300.0
@@ -87,9 +88,10 @@ def judge(row: str, ms: dict, control: str | None = "found") -> dict:
         return {"pass": not r, "valid": True, "reasons": r}
     if row == "F15":
         n, mins = ms.get("write_fail_lines"), ms.get("mission_s", 0) / 60.0
-        valid = bool(n)
+        valid = bool(n) and (ms.get("choices_picked") or 0) >= 1
         if not valid:
-            r.append("invalid: no failing write was seen")
+            r.append(f"invalid: no failing write seen, or no goal choice made ({ms.get('choices_picked')})")
+        bar(out != "failed", "the mission ended failed (it did not go on)")
         bar(n is not None and n <= int(mins) + 2, f"{n} failing-write lines in {mins:.1f} min (bar one a minute)")
         bar(ms.get("late_ticks") == 0, f"{ms.get('late_ticks')} late wheel ticks over the mission (bar 0)")
         return {"pass": not r, "valid": valid, "reasons": r}
@@ -171,6 +173,38 @@ FULL_MB = 20
 WRITE_FAIL = ("not saved", "not recorded", "no space", "enospc", "errno 28")
 
 
+class Picker:
+    """F15: every explore choice decided at once, as its default (the rule's pick)."""
+
+    def __init__(self, st):
+        import threading
+        self.st, self.picked = st, 0
+        self._stop = threading.Event()
+        self._t = threading.Thread(target=self._run, daemon=True)
+
+    def start(self):
+        self._t.start()
+
+    def stop(self):
+        self._stop.set()
+        self._t.join(timeout=5)
+
+    def _run(self):
+        done = None
+        while not self._stop.is_set():
+            ask = ((status(self.st).get("explore") or {}).get("ask")) or None
+            if isinstance(ask, dict) and ask.get("choice") is not None and ask.get("choice") != done:
+                try:
+                    code, _ = self.st.brain("POST", "/mission/explore/pick",
+                                            {"choice": ask["choice"], "candidate": ask["default"]})
+                    if code == 200:
+                        self.picked += 1
+                        done = ask["choice"]
+                except OSError:
+                    pass
+            self._stop.wait(0.3)
+
+
 class FullDisk:
     """F15's full recordings volume: a filled tmpfs (the board) or /dev/full (the desktop)."""
 
@@ -229,7 +263,7 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
     ms: dict = {"outcome": None, "stepped": False}
     clock = Clock(out)
     full = FullDisk(out) if row == "F15" else None
-    mw, st = MemWatch(), None
+    mw, st, ros = MemWatch(), None, None
     with mw:
         try:
             env = {"FMEA_CLOCK_OFFSET_FILE": str(clock.offset_file)}
@@ -237,39 +271,69 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 ms["full"] = full.make()
                 env.update(INVENTORY_DIR=str(full.dir), INTERVENTION_DIR=str(full.dir),
                            EXPLORE_CHOICE_DIR=str(full.dir))
+            if full is not None:
+                env.update(rosmod.ROS_ENV)            # amendment 12: explore's goal choices, on nav2
             st = Stack(out, house=house, plant=plant, extra_env=env)
             st.start()
+            if full is not None:
+                ros = rosmod.Ros(st, out)
+                ros.up()
             h_start = robot_health(st)
-            start_mission(st)
+            if full is not None:
+                code, body = st.brain("POST", "/mission/start", {"target_object": "red backpack",
+                                                                 "policy": "explore", "explore_ask": True})
+                if code != 200:
+                    raise StackError(f"mission start: {code} {str(body)[:300]}")
+                picker = Picker(st)
+                picker.start()
+            else:
+                start_mission(st)
             ms["start_at"] = time.monotonic()
             if spec["step_s"]:
+                # Amendment 12: between verbs -- after a FORWARD, the setpoints zero for 0.1 s.
                 for _ in range(10):
                     wait_forward(st, MOVE_WAIT_S)
-                    time.sleep(0.15)
-                    n = st.now()
-                    if isinstance(n, dict) and m.is_forward(n.get("sp")):
+                    end, z0 = time.monotonic() + 10.0, None
+                    while time.monotonic() < end:
+                        n = st.now()
+                        zero = isinstance(n, dict) and m.is_zero(n.get("sp"))
+                        z0 = (z0 or time.monotonic()) if zero else None
+                        if z0 is not None and time.monotonic() - z0 >= 0.1:
+                            break
+                        time.sleep(0.02)
+                    if z0 is not None and time.monotonic() - z0 >= 0.1:
                         break
                 else:
-                    raise StackError("no FORWARD lasted 0.15 s in 10 tries: the clock was not stepped")
+                    raise StackError("no idle moment after a FORWARD in 10 tries: the clock was not stepped")
                 log0 = (out / "brain.log").stat().st_size if (out / "brain.log").exists() else 0
                 ms["step_at"] = clock.step(spec["step_s"])
                 ms["stepped"] = True
                 ms["fault_at"] = ms["step_at"]
-                time.sleep(AFTER_S)
-                h1 = robot_health(st)
-                # The watchdog only writes last_refusal (never refusal_counts): a watchdog
-                # record newer than the step, by the server's own `seconds_ago`.
-                lr = h1.get("last_refusal") or {} if h1 else None
-                ms["last_refusal_after_step"] = lr
-                ms["watchdog_after_step"] = (None if lr is None else int(
-                    lr.get("reason") == "watchdog" and (lr.get("seconds_ago") or 1e9) <= AFTER_S + 0.5))
+                # The watchdog only writes last_refusal, and a later refusal replaces it:
+                # sampled every 0.2 s through the window (amendment 12).
+                seen, end = 0, time.monotonic() + AFTER_S
+                samples = []
+                while time.monotonic() < end:
+                    lr = (robot_health(st) or {}).get("last_refusal") or {}
+                    since = time.monotonic() - ms["step_at"]
+                    if lr.get("reason") == "watchdog" and (lr.get("seconds_ago") or 1e9) <= since + 0.25:
+                        seen = 1
+                    samples.append(lr.get("reason"))
+                    time.sleep(0.2)
+                ms["watchdog_after_step"] = seen
+                ms["refusals_after_step"] = sorted({x for x in samples if x})
             s1 = wait_end(st, MISSION_WAIT_S)
             ms["end_at"] = time.monotonic()
+            if full is not None:
+                picker.stop()
+                ms["choices_picked"] = picker.picked
             ms["outcome"] = s1.get("outcome") if s1.get("running") is False else None
             ms["mission_s"] = round(ms["end_at"] - ms["start_at"], 1)
             ms["status"] = {k: s1.get(k) for k in ("outcome", "end_state", "end_reason", "error", "step")}
             if full is not None:
                 time.sleep(5.0)            # the end's writes (inventory, the intervention line)
+                ms["choice_fail_lines"] = sum(1 for line in (out / "brain.log").read_text(errors="replace")
+                                              .splitlines() if "goal choice not recorded" in line)
                 h_end = robot_health(st)
                 if h_start and h_end:
                     ms["late_ticks"] = h_end["wheel_loop"]["late_ticks"] - h_start["wheel_loop"]["late_ticks"]
@@ -285,6 +349,11 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
             try:
                 rec["clock_restore"] = clock.restore()
             finally:
+                try:
+                    if ros is not None:
+                        ros.down()
+                except Exception as e:  # noqa: BLE001
+                    rec["teardown_error"] = f"ros down: {type(e).__name__}: {e}"
                 if st is not None:
                     st.stop()
                 if full is not None:
@@ -304,6 +373,8 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
     rec["verdict"] = judge(row, ms, control)
     if (rec.get("full_removed") or {}).get("still_mounted"):
         rec["error"] = f"the full tmpfs is still mounted: {rec['full_removed']}"
+    if rec.get("clock_restore", {}).get("step_back_rc") not in (None, 0):
+        rec["error"] = f"the clock's step back failed: {rec['clock_restore']}"
     if rec.get("clock_restore", {}).get("ntp_synchronized") not in (None, "yes"):
         rec["error"] = f"NTP not synchronized after the case: {rec['clock_restore']}"
     rec["ended"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")

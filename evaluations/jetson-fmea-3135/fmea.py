@@ -306,6 +306,8 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 n = st.now()
                 if goal:                   # nav2's own drive, not one of explore's verbs
                     ms["driver_at_fault"] = robot_health(st).get("authority_holder")
+                    if rosmod.goal_state(st) != "active":      # the goal ended in the wait: try again
+                        continue
                     # Under drive: ros nav2's wheel posts are the actuator's, never arbitrated:
                     # the holder lapses to None a second after the goal. A brain verb holds it.
                     if ms["driver_at_fault"] not in (None, "ros"):
