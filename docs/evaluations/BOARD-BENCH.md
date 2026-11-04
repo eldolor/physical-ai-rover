@@ -177,6 +177,23 @@ No runs yet. The 3.135.A smoke (2026-11-01, F13 only, not scored) is in
 
 ## Runs
 
+### 2026-11-04, 3.143's V3: fix V with VE, the live stack (3.143 bar V3, not a recurring test)
+
+`evaluations/soak-find-3143/board.py v3`, rev `0c35794b`, 07:40-08:10
+under `board_lock` through 3.136's `board_run` and lease. 3.135.C's soak
+stack ran the five class V pairs of its run 1, once each. 15 W, the desktop
+and the twin's units stopped, VE resident as found (MainPID 838, 0 restarts
+at every mission). `MemAvailable` 1,718 MB after setup, 2,856 MB at the end.
+The board was left as found and the lease released.
+* **4/5 found (V3 met: bar 4), 0 contacts, 0 cloud calls.**
+* At the 4 arrivals, VE said no at 3 (fix V's geometry decided them) and
+  yes at 1.
+* The miss, `complex_house` slippers, ran to its 1,200 s limit with no
+  arrival (closest 1.23 m).
+* 0 `ahead_not_observed`.
+
+Records: `evaluations/soak-find-3143/board/v3-1/`.
+
 ### 2026-11-04, 3.143's A3: fix V with VE, in process (3.143 bar V1, not a recurring test)
 
 `evaluations/soak-find-3143/board.py a3`, rev `00271a5c` (dev with

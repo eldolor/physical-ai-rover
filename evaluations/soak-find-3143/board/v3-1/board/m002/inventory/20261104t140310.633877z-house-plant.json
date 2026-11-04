@@ -1,0 +1,220 @@
+{
+ "candidates": [
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 66,
+   "hits": 1,
+   "id": 11,
+   "label": "fridge",
+   "last_step": 66,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "kitchen",
+   "votes": {
+    "fridge": 1
+   },
+   "x_m": 1.172,
+   "y_m": 13.062
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 1,
+   "id": 2,
+   "label": "garbage can",
+   "last_step": 4,
+   "misses": 0,
+   "points": 5,
+   "reported": false,
+   "room": "living room 2",
+   "votes": {
+    "garbage can": 1
+   },
+   "x_m": 8.889,
+   "y_m": 8.111
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 14,
+   "hits": 1,
+   "id": 5,
+   "label": "sofa",
+   "last_step": 14,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "living room 2",
+   "votes": {
+    "sofa": 1
+   },
+   "x_m": 7.797,
+   "y_m": 11.576
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 1,
+   "id": 3,
+   "label": "tv stand",
+   "last_step": 3,
+   "misses": 0,
+   "points": 4,
+   "reported": false,
+   "room": "living room 2",
+   "votes": {
+    "tv stand": 1
+   },
+   "x_m": 7.585,
+   "y_m": 8.542
+  },
+  {
+   "belief": 0.512,
+   "carried": false,
+   "disputed": false,
+   "first_step": 49,
+   "hits": 1,
+   "id": 9,
+   "label": "house plant",
+   "last_step": 51,
+   "misses": 2,
+   "points": 3,
+   "reported": false,
+   "room": "living room 2",
+   "votes": {
+    "house plant": 1
+   },
+   "x_m": 5.93,
+   "y_m": 14.409
+  }
+ ],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 79,
+  "landmarks": 10,
+  "no_pose": 0,
+  "observations": 133,
+  "reported": 5,
+  "unplaced": 0
+ },
+ "frame_id": null,
+ "map_id": "slam-2d4af8bf",
+ "mission": "Find the house plant.",
+ "mission_id": "20261104T140310.633877Z-house plant",
+ "outcome": "found",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 53,
+   "hits": 6,
+   "id": 10,
+   "label": "counter top",
+   "last_step": 78,
+   "misses": 0,
+   "points": 40,
+   "reported": true,
+   "room": "living room 2",
+   "votes": {
+    "counter top": 6
+   },
+   "x_m": 3.324,
+   "y_m": 14.293
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 18,
+   "hits": 5,
+   "id": 6,
+   "label": "dining table",
+   "last_step": 46,
+   "misses": 0,
+   "points": 13,
+   "reported": true,
+   "room": "living room 2",
+   "votes": {
+    "dining table": 5
+   },
+   "x_m": 8.472,
+   "y_m": 14.682
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 48,
+   "hits": 7,
+   "id": 8,
+   "label": "house plant",
+   "last_step": 78,
+   "misses": 0,
+   "points": 46,
+   "reported": true,
+   "room": "living room 2",
+   "votes": {
+    "house plant": 7
+   },
+   "x_m": 4.236,
+   "y_m": 14.643
+  },
+  {
+   "belief": 0.968,
+   "carried": false,
+   "disputed": false,
+   "first_step": 19,
+   "hits": 4,
+   "id": 7,
+   "label": "dining table",
+   "last_step": 40,
+   "misses": 0,
+   "points": 11,
+   "reported": true,
+   "room": "living room 2",
+   "votes": {
+    "dining table": 4
+   },
+   "x_m": 8.574,
+   "y_m": 13.516
+  },
+  {
+   "belief": 0.928,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 4,
+   "id": 1,
+   "label": "dog bed",
+   "last_step": 13,
+   "misses": 0,
+   "points": 9,
+   "reported": true,
+   "room": "living room 2",
+   "votes": {
+    "dog bed": 4
+   },
+   "x_m": 9.793,
+   "y_m": 9.187
+  }
+ ]
+}

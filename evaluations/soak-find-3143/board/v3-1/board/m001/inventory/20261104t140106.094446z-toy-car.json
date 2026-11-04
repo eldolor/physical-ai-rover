@@ -1,0 +1,202 @@
+{
+ "candidates": [
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 9,
+   "hits": 1,
+   "id": 5,
+   "label": "keys",
+   "last_step": 16,
+   "misses": 0,
+   "points": 6,
+   "reported": false,
+   "room": "entry",
+   "votes": {
+    "keys": 1
+   },
+   "x_m": 2.149,
+   "y_m": 12.889
+  }
+ ],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 124,
+  "landmarks": 9,
+  "no_pose": 0,
+  "observations": 115,
+  "reported": 8,
+  "unplaced": 1
+ },
+ "frame_id": null,
+ "map_id": "slam-91d5cf42",
+ "mission": "Find the toy car.",
+ "mission_id": "20261104T140106.094446Z-toy car",
+ "outcome": "found",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 7,
+   "id": 1,
+   "label": "shoe bench",
+   "last_step": 23,
+   "misses": 0,
+   "points": 22,
+   "reported": true,
+   "room": "entry",
+   "votes": {
+    "shoe bench": 7
+   },
+   "x_m": 0.935,
+   "y_m": 10.361
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 7,
+   "id": 2,
+   "label": "shoes",
+   "last_step": 98,
+   "misses": 0,
+   "points": 24,
+   "reported": true,
+   "room": "entry",
+   "votes": {
+    "shoes": 7
+   },
+   "x_m": 1.143,
+   "y_m": 8.045
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 109,
+   "hits": 5,
+   "id": 8,
+   "label": "toy car",
+   "last_step": 123,
+   "misses": 0,
+   "points": 18,
+   "reported": true,
+   "room": "hall",
+   "votes": {
+    "armchair": 1,
+    "toy car": 4
+   },
+   "x_m": 4.108,
+   "y_m": 4.792
+  },
+  {
+   "belief": 0.968,
+   "carried": false,
+   "disputed": false,
+   "first_step": 112,
+   "hits": 4,
+   "id": 9,
+   "label": "coffee table",
+   "last_step": 123,
+   "misses": 0,
+   "points": 12,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "coffee table": 4
+   },
+   "x_m": 2.74,
+   "y_m": 3.92
+  },
+  {
+   "belief": 0.928,
+   "carried": false,
+   "disputed": false,
+   "first_step": 108,
+   "hits": 3,
+   "id": 7,
+   "label": "armchair",
+   "last_step": 123,
+   "misses": 0,
+   "points": 9,
+   "reported": true,
+   "room": "hall",
+   "votes": {
+    "armchair": 3
+   },
+   "x_m": 4.732,
+   "y_m": 3.839
+  },
+  {
+   "belief": 0.928,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 3,
+   "id": 3,
+   "label": "umbrella",
+   "last_step": 28,
+   "misses": 0,
+   "points": 11,
+   "reported": true,
+   "room": "entry",
+   "votes": {
+    "umbrella": 3
+   },
+   "x_m": 2.757,
+   "y_m": 8.688
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 106,
+   "hits": 2,
+   "id": 6,
+   "label": "mug",
+   "last_step": 110,
+   "misses": 0,
+   "points": 5,
+   "reported": true,
+   "room": "hall",
+   "votes": {
+    "mug": 2
+   },
+   "x_m": 5.754,
+   "y_m": 5.379
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 113,
+   "hits": 2,
+   "id": 10,
+   "label": "sofa",
+   "last_step": 119,
+   "misses": 0,
+   "points": 7,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "sofa": 2
+   },
+   "x_m": 1.234,
+   "y_m": 4.588
+  }
+ ]
+}
