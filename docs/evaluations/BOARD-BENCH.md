@@ -178,7 +178,7 @@ No runs yet. The 3.135.A smoke (2026-11-01, F13 only, not scored) is in
 
 ## Runs
 
-### 2026-11-04, 3.141.D D1 run 2: the tracer smoke again (, amendment 4)
+### 2026-11-04, 3.141.D D1 run 2: the tracer smoke again (`835deeb5`, amendment 4)
 
 15 W, left as found. Tracer CPU 0.97% of a core, the sampler alive, 0
 errors, 0 rows dropped; **FAILED on (c)**: 7 of 164 stalls (4.3%, bar 1%)
