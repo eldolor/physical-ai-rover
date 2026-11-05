@@ -251,10 +251,16 @@ stop under `_local_flip_lock`, so a flip racing it either returned or
 started a probe that stop ends; it does not join the probe, whose
 `/health` GET is bounded by the client's `PROBE_TIMEOUT` phases (0.2 s
 connect + 0.5 s read + 0.05 s write + 0.05 s pool = `PROBE_TIMEOUT_S`,
-0.8 s; httpx's read bound is per socket read, and `/health` is one small
-reply), and a probe that returns after `close()` records and flips nothing.
-A frame that finds the tier down with no probe alive and none back starts
-one again. Without
+0.8 s; httpx bounds each phase and the read per socket read, not the whole
+request, so this holds for `/health`'s one small reply, not for a server
+that dribbles it), and a probe that returns after `close()` records and
+flips nothing. Probes start through `_start_probe()`, which logs a start
+that fails (no memory for a thread) and leaves none; a frame that finds the
+tier down with no probe alive starts one again. A frame's question re-reads
+its client with `_local_read()` before asking (a frame another, abandoned
+one overtook may have seen a flip) and stamps that generation. Known limit:
+`close()` drops the clients outside the seqlock, so an arrival read just
+before it may call a closed client; the mission has ended by then. Without
 `local_health_fn` nothing is held (an absent VE is asked again every
 question, as before 3.152). `stats.local_vlm` is `{"state": "off"}` with
 no local tier configured, `{"state": "up", "since": None, "probes": 0}`

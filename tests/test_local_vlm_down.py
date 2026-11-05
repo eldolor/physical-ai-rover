@@ -586,3 +586,59 @@ def test_review3_generations_are_even_at_rest():
         assert tier._local_gen % 2 == 0
     finally:
         tier.close()
+
+
+def test_review4_the_flip_writes_odd_while_the_state_changes():
+    """A seqlock's write order: the generation odd whenever `_local_down`
+    is assigned (review 3)."""
+    seen = []
+
+    class Watched(TieredVision):
+        def __setattr__(self, name, value):
+            if name == "_local_down" and "_local_gen" in self.__dict__:
+                seen.append(self._local_gen % 2)
+            super().__setattr__(name, value)
+    ve = StubVE(TARGET, "down")
+    tier = Watched(FrameReportedPipeline(TARGET), NoCloud(), local_identity_fn=ve,
+                   local_sighting_fn=ve.ask, local_health_fn=ve.healthy, local_probe_s=0.05)
+    try:
+        tier._note_local_error(LocalVLMAbsent("stub"), tier._local_gen)
+        tier(_frame(1))
+        ve.mode = "up"
+        assert _wait_for(lambda: tier._local_back_seen, 1.0)
+        tier(_frame(2))
+        assert seen == [1, 1]
+    finally:
+        tier.close()
+
+
+def test_review4_a_probe_that_cannot_start_is_retried_not_raised():
+    ve = StubVE(TARGET, "down")
+    tier = _tier(ve, probe_s=0.05)
+    try:
+        tier._note_local_error(LocalVLMAbsent("stub"), tier._local_gen)
+        with mock.patch.object(threading.Thread, "start",
+                               side_effect=RuntimeError("can't start new thread")):
+            tier(_frame(1))                      # must not raise
+        assert tier.stats.local_vlm["state"] == "down" and tier._local_probe is None
+        tier(_frame(2))                          # retried
+        assert tier._local_probe is not None and tier._local_probe.is_alive()
+    finally:
+        tier.close()
+
+
+def test_review4_a_frame_overtaken_by_a_flip_asks_nothing():
+    ve = StubVE(TARGET, "up")
+    tier = _tier(ve, probe_s=60)
+    try:
+        fn = tier._local_first()
+        assert fn is not None
+        tier._note_local_error(LocalVLMAbsent("stub"), tier._local_gen)
+        tier._apply_local_flip()                 # another frame flips it down
+        asked = ve.asked
+        from brain.perceive import Perception
+        tier._ask_local_first(_frame(9), Perception(status="absent"), "cold_search",
+                              tier._epoch, fn)
+        assert ve.asked == asked
+    finally:
+        tier.close()

@@ -1875,6 +1875,13 @@ class TieredVision:
             # one-shot trigger's edge, spent in _trigger_for, armed again.
             self._rearm(trigger)
             return self._local_scene(perception, note="local VLM busy with the arrival check")
+        # 3.152 (review 3): `fn` was read by `_local_first`; a frame that
+        # another, abandoned frame overtook may have seen a flip since. The
+        # client is asked only if it is still this generation's.
+        current, local_gen = self._local_read("local_sighting_fn")
+        if current is None:
+            self._rearm(trigger)
+            return self._local_scene(perception, note="local VLM held down")
         self._count("local_triggers", trigger)
         q = _Question(
             trigger=trigger, epoch=epoch,
@@ -1887,7 +1894,7 @@ class TieredVision:
             episode=self._episode,
             box_share=perception.box_share if perception.status == DETECTED else None,
             sim=self.sim_identity_fn is not None and is_sim_frame(frame),
-            local_gen=self._local_gen,
+            local_gen=local_gen,
             # An absent local tier hands this to the cloud, which an
             # out-of-vocabulary question earns only at cold_search's bar.
             # 3.80.P: a cold search asked at the local pace reaches the
@@ -2763,10 +2770,7 @@ class TieredVision:
                 logger.warning("local VLM down; its questions go as with no local "
                                "tier until /health says ready (probed every %g s)",
                                self.local_probe_s)
-                self._local_probe_stop.clear()
-                self._local_probe = threading.Thread(
-                    target=self._probe_local, name="local-vlm-probe", daemon=True)
-                self._local_probe.start()
+                self._start_probe()
             elif self._local_down and back:
                 self._local_gen += 1
                 self._local_down = False
@@ -2778,14 +2782,27 @@ class TieredVision:
                     self._local_unable = 0
                 self._local_vlm_state("up")
                 logger.info("local VLM back: its questions go to it first again")
-            elif (self._local_down and not back
-                  and (self._local_probe is None or not self._local_probe.is_alive())):
-                # Down with no probe running and none back (review 3: a probe
-                # that died): probe again, so the tier is never held for good.
-                self._local_probe_stop.clear()
-                self._local_probe = threading.Thread(
-                    target=self._probe_local, name="local-vlm-probe", daemon=True)
-                self._local_probe.start()
+            elif self._local_down and (self._local_probe is None
+                                       or not self._local_probe.is_alive()):
+                # Down with no probe running (review 3: its start failed, or it
+                # died): probe again, so the tier is never held for good.
+                logger.warning("local VLM probe not running while held down: starting it")
+                self._start_probe()
+
+    def _start_probe(self) -> None:
+        """Under `_local_flip_lock`. A start that fails (no memory for a
+        thread, as after an OOM kill) is logged and leaves no probe, so the
+        next frame tries again; it never raises out of the frame (review 3)."""
+        self._local_probe_stop.clear()
+        probe = threading.Thread(target=self._probe_local, name="local-vlm-probe",
+                                 daemon=True)
+        try:
+            probe.start()
+        except RuntimeError as e:
+            logger.warning("could not start the local VLM probe (%s); next frame retries", e)
+            self._local_probe = None
+            return
+        self._local_probe = probe
 
     def _local_read(self, name: str):
         """A local attribute and the generation it belongs to, read without
