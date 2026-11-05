@@ -630,3 +630,20 @@ def test_amendment_19_f24s_brain_floor_off_and_ves_settings_without_runtime(tmp_
             first = got
     assert got == first and "argv[]" in got["ExecStart"]
     assert not any(f in got["ExecStart"] for f in ("start_time", "stop_time", "pid=", "code=", "status="))
+
+
+def test_f14_reaches_the_production_brain_under_its_prefix():
+    """F14's first board batch (2026-11-05): every brain call went to :8001
+    and was 404, because picar-stack serves the brain under /brain."""
+    import f14_reboot as f14
+    assert f14.BRAIN.endswith(":8001/brain")
+    assert "ROUTE_PREFIX=/brain" in (HERE.parents[1] / "service/tunnel/run.sh").read_text()
+
+
+def test_f14_reads_picar_stacks_local_secret(tmp_path, monkeypatch):
+    """...and its calls were 401: run.sh's secret is LOCAL_SECRET."""
+    import f14_reboot as f14
+    monkeypatch.setenv("HOME", str(tmp_path))
+    (tmp_path / ".vision-picar-local-secrets").write_text("VISION_SECRET=v\nLOCAL_SECRET='abc123'\n")
+    assert f14._secret() == "abc123"
+    assert "LOCAL_SECRET" in (HERE.parents[1] / "service/tunnel/run.sh").read_text()

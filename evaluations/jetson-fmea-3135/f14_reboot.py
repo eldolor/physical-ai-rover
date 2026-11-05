@@ -37,7 +37,8 @@ from pathlib import Path
 BOARD_DIR = "~/vision-picar-service"          # picar-stack's worktree (3.71)
 DATA_DIRS = ("recordings/inventory", "recordings/interventions", "recordings/explore-choices")
 UNITS = ("picar-stack", "picar-ngrok", "picar-local-vlm")
-ROBOT, BRAIN, VE = "http://127.0.0.1:8000", "http://127.0.0.1:8001", "http://127.0.0.1:8005"
+# picar-stack's brain runs under ROUTE_PREFIX=/brain (service/tunnel/run.sh).
+ROBOT, BRAIN, VE = "http://127.0.0.1:8000", "http://127.0.0.1:8001/brain", "http://127.0.0.1:8005"
 BACK_BAR_S = 90.0
 BACK_WAIT_S = 300.0
 DRIVE_WAIT_S = 120.0
@@ -144,8 +145,13 @@ def _http(method: str, url: str, body=None, secret: str = "", timeout: float = 5
 
 
 def _secret() -> str:
+    """picar-stack's secret: `LOCAL_SECRET` in ~/.vision-picar-local-secrets,
+    exported as APP_SHARED_SECRET by service/tunnel/run.sh."""
     for line in Path("~/.vision-picar-local-secrets").expanduser().read_text().splitlines():
-        if line.strip().startswith("APP_SHARED_SECRET="):
+        line = line.strip()
+        if line.startswith("export "):
+            line = line[len("export "):]
+        if line.startswith("LOCAL_SECRET="):
             return line.split("=", 1)[1].strip().strip("'\"")
     return ""
 
@@ -241,6 +247,11 @@ def pre(out: Path) -> None:
     ms["before"] = on_board("state")
     ms["units_before"] = ms["before"]["units"]
     ms["files_before"] = on_board("files")
+    if ms["before"]["robot"] != 200 or ms["before"]["brain"] != 200:
+        ms["driving_at_reboot"] = False
+        ms["not_started"] = f"robot {ms['before']['robot']}, brain {ms['before']['brain']}: no mission, no reboot"
+        (out / "pre.json").write_text(json.dumps(ms, indent=1))
+        return
     s = on_board("start", timeout=DRIVE_WAIT_S + 90)
     ms["start"] = s
     ms["driving_at_reboot"] = s.get("driving") is True

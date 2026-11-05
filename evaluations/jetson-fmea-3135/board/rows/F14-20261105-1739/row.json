@@ -1,0 +1,83 @@
+{
+ "row": "F14",
+ "state": "incomplete",
+ "runs_wanted": 3,
+ "runs_scored": 0,
+ "runs_total": 6,
+ "runs_failed": 0,
+ "not_scored": [
+  {
+   "i": 1,
+   "error": null,
+   "reasons": [
+    "invalid: the boot id did not change (no reboot)",
+    "invalid: the mission was not driving at the reboot",
+    "the stack back None s after the reboot (bar 90)",
+    "the files were not read after the reboot",
+    "the next mission did not start (None)",
+    "the units not as found: None vs {'picar-stack': 'active/enabled', 'picar-ngrok': 'active/enabled', 'picar-local-vlm': 'active/enabled'}"
+   ]
+  },
+  {
+   "i": 2,
+   "error": null,
+   "reasons": [
+    "invalid: the boot id did not change (no reboot)",
+    "invalid: the mission was not driving at the reboot",
+    "the stack back None s after the reboot (bar 90)",
+    "the files were not read after the reboot",
+    "the next mission did not start (None)",
+    "the units not as found: None vs {'picar-stack': 'active/enabled', 'picar-ngrok': 'active/enabled', 'picar-local-vlm': 'active/enabled'}"
+   ]
+  },
+  {
+   "i": 3,
+   "error": null,
+   "reasons": [
+    "invalid: the boot id did not change (no reboot)",
+    "invalid: the mission was not driving at the reboot",
+    "the stack back None s after the reboot (bar 90)",
+    "the files were not read after the reboot",
+    "the next mission did not start (None)",
+    "the units not as found: None vs {'picar-stack': 'active/enabled', 'picar-ngrok': 'active/enabled', 'picar-local-vlm': 'active/enabled'}"
+   ]
+  },
+  {
+   "i": 4,
+   "error": null,
+   "reasons": [
+    "invalid: the boot id did not change (no reboot)",
+    "invalid: the mission was not driving at the reboot",
+    "the stack back None s after the reboot (bar 90)",
+    "the files were not read after the reboot",
+    "the next mission did not start (None)",
+    "the units not as found: None vs {'picar-stack': 'active/enabled', 'picar-ngrok': 'active/enabled', 'picar-local-vlm': 'active/enabled'}"
+   ]
+  },
+  {
+   "i": 5,
+   "error": null,
+   "reasons": [
+    "invalid: the boot id did not change (no reboot)",
+    "invalid: the mission was not driving at the reboot",
+    "the stack back None s after the reboot (bar 90)",
+    "the files were not read after the reboot",
+    "the next mission did not start (None)",
+    "the units not as found: None vs {'picar-stack': 'active/enabled', 'picar-ngrok': 'active/enabled', 'picar-local-vlm': 'active/enabled'}"
+   ]
+  },
+  {
+   "i": 6,
+   "error": null,
+   "reasons": [
+    "invalid: the boot id did not change (no reboot)",
+    "invalid: the mission was not driving at the reboot",
+    "the stack back None s after the reboot (bar 90)",
+    "the files were not read after the reboot",
+    "the next mission did not start (None)",
+    "the units not as found: None vs {'picar-stack': 'active/enabled', 'picar-ngrok': 'active/enabled', 'picar-local-vlm': 'active/enabled'}"
+   ]
+  }
+ ],
+ "reasons": []
+}
