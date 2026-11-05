@@ -27,10 +27,16 @@ teardown() {
   # this is the net under it, run only once it has ended.
   if [ -n "$PY_PID" ] && kill -0 "$PY_PID" 2>/dev/null; then
     kill -TERM "$PY_PID" 2>/dev/null
-    for _ in $(seq 1 240); do kill -0 "$PY_PID" 2>/dev/null || break; sleep 1; done
+    for _ in $(seq 1 480); do kill -0 "$PY_PID" 2>/dev/null || break; sleep 1; done
     kill -KILL "$PY_PID" 2>/dev/null
   fi
   pkill -KILL -f "evaluations/local-vlm-3152/hog.py" 2>/dev/null   # never left holding
+  # The soak's own processes, if python could not end them (review 3); the
+  # board lock means no other bench's are running.
+  docker rm -f "${SOAK_CONTAINER:-picar-ros-3135}" >/dev/null 2>&1
+  pkill -TERM -f "tools/jetson/perception_loop.py" 2>/dev/null
+  pkill -TERM -f "standin_cloud.py [0-9]+ $OUT" 2>/dev/null
+  sudo -n pkill -TERM -f "memory_account.py sample $OUT" 2>/dev/null
   if [ -e "$DROPIN" ]; then
     echo "== teardown: the drop-in was still there; removing it" | tee -a "$OUT/run.log"
     sudo -n rm -f "$DROPIN"; sudo -n systemctl daemon-reload

@@ -57,7 +57,9 @@ MARGIN_MB = 256
 GROW_GIVE_UP_S = 300
 LOADED_S = 60                 # amendment 2: the memory bar's window after VE is back
 MIN_KILLS = 3                 # amendment 2: fewer is no crash loop (invalid)
-RUN_CEILING_S = 50 * 60       # the whole run; the board hold's own --max is 60 min
+RUN_CEILING_S = 50 * 60
+LOADED_MIN_ROWS = 50          # amendment 3: of the loaded window's 60 s
+_LIBC = ctypes.CDLL("libc.so.6", use_errno=True)   # loaded before any fork (review 3)       # the whole run; the board hold's own --max is 60 min
 SHOW = "MainPID,NRestarts,ActiveState,SubState,Result,StartLimitIntervalUSec,StartLimitBurst,RestartUSec"
 
 
@@ -83,10 +85,11 @@ class CrashLoop(soak.Soak):
         self.t_begin = time.time()
         self.notes: list = []
         self.baseline_ok = False
-        self.mission_live = False        # from a mission seen running until it returns
+        self.mission_live = False        # from a mission seen running until its teardown
+        self.in_teardown = False
         self.main_done = threading.Event()
         self.loaded_from: float | None = None
-        self.hog_end_t: float | None = None
+        self.signalled = False
 
     # ------------------------------------------------------- guarded reads
 
@@ -130,16 +133,18 @@ class CrashLoop(soak.Soak):
     # ------------------------------------------------------------ the unit
 
     def record_as_found(self) -> None:
-        self.as_found = {"show": self.unit_show(),
+        found = {"show": self.unit_show(),
                          "cat": self.sh(["systemctl", "cat", UNIT]).stdout,
                          "dropins": self.dropins(),
                          "active": self.sh(["systemctl", "is-active", UNIT]).stdout.strip(),
                          "enabled": self.sh(["systemctl", "is-enabled", UNIT]).stdout.strip()}
-        (self.out / "unit_as_found.json").write_text(json.dumps(self.as_found, indent=1))
-        if str(DROPIN) in self.as_found["dropins"]:
+        (self.out / "unit_as_found.json").write_text(json.dumps(found, indent=1))
+        if str(DROPIN) in found["dropins"]:
             raise StackError(f"{DROPIN} exists already: a run before this one was not put back")
-        if self.as_found["active"] != "active":
-            raise StackError(f"{UNIT} is {self.as_found['active']} as found, not active")
+        if found["active"] != "active":
+            raise StackError(f"{UNIT} is {found['active']} as found, not active")
+        # Set only now (review 3): a refused run changes nothing in put_back.
+        self.as_found = found
 
     def install_dropin(self) -> None:
         body = ("# 3.152 criterion 10: a runtime crash-loop candidate; removed at the run's end.\n"
@@ -252,8 +257,21 @@ class CrashLoop(soak.Soak):
                 p.wait(5)
         if self.window["end"] is None:
             self.window["end"] = time.time()
-        if self.hog_end_t is None and p is not None:
-            self.hog_end_t = time.time()
+
+    def teardown_mission(self, mdir, st) -> None:
+        """The harness stopping a mission's stack is not an outage (review 3):
+        the servers are not sampled from here until the next mission runs."""
+        self.in_teardown = True
+        self.mission_live = False
+        super().teardown_mission(mdir, st)
+
+    @staticmethod
+    def up(url: str) -> bool:
+        """`http_ok` also for a reply cut off mid-way (review 3)."""
+        try:
+            return http_ok(url)
+        except Exception:  # noqa: BLE001 -- a server that died mid-reply is down
+            return False
 
     # --------------------------------------------------------- the sampler
 
@@ -266,15 +284,15 @@ class CrashLoop(soak.Soak):
                             if k in ("MainPID", "NRestarts", "ActiveState", "SubState")})
                 s = self.brain_status()
                 row["running"] = bool(s and s.get("running"))
-                if row["running"]:
+                if row["running"] and not self.in_teardown:
                     self.mission_live = True
                 st = getattr(self, "stack", None)
                 row["mission_live"] = self.mission_live
                 if self.mission_live and st is not None:
                     # A brain that stops answering reads as down here, never as
                     # "not running" (review 2): live until the mission returns.
-                    row["robot_ok"] = http_ok(st.urls["robot"] + "/health")
-                    row["brain_ok"] = http_ok(st.urls["brain"] + "/health")
+                    row["robot_ok"] = self.up(st.urls["robot"] + "/health")
+                    row["brain_ok"] = self.up(st.urls["brain"] + "/health")
                 if row["running"]:
                     lv = ((s.get("tier") or {}).get("stats") or {}).get("local_vlm") or {}
                     row["local_vlm"] = lv.get("state")
@@ -294,7 +312,7 @@ class CrashLoop(soak.Soak):
                    and time.time() < ceiling):
                 self.stop_all.wait(1.0)
             if self.stop_all.is_set() or self.window["end"] is None:
-                if time.time() >= ceiling:
+                if time.time() >= ceiling and "the run's ceiling came first" not in self.notes:
                     self.notes.append("the run's ceiling came first")
                 return
             end = self.window["end"] + self.delay_s + 60
@@ -338,7 +356,8 @@ class CrashLoop(soak.Soak):
             with open(self.out / "missions.jsonl", "a", buffering=1) as f:
                 while not self.finished.is_set():
                     if time.time() - self.t_begin > RUN_CEILING_S:
-                        self.notes.append("the run's ceiling came first")
+                        if "the run's ceiling came first" not in self.notes:
+                            self.notes.append("the run's ceiling came first")
                         break
                     dead = {n: p.returncode for n, p in self.helpers.items() if p.poll() is not None}
                     if dead:
@@ -346,6 +365,7 @@ class CrashLoop(soak.Soak):
                         break
                     house, target = sched[k % len(sched)]
                     self.say(f"m{k:03d} {house} / {target}; MemAvailable {mem_available_mb()} MB")
+                    self.in_teardown = False
                     rec = self.mission(k, house, target)
                     self.mission_live = False
                     f.write(json.dumps(rec, default=str) + "\n")
@@ -393,6 +413,11 @@ class CrashLoop(soak.Soak):
                           "task": (re.search(r"task=([^,]+)", x) or [None, None])[1],
                           "pid": pid, "line": x[-300:]})
         ve_kills = sum(1 for k in kills if k["ve"])
+        count_rises = [(a, b) for a, b in zip(rows, rows[1:]) if a["oom_kill"] >= 0
+                       and b["oom_kill"] > a["oom_kill"]]
+        rose_by = sum(b["oom_kill"] - a["oom_kill"] for a, b in count_rises)
+        window_kills = sum(b["oom_kill"] - a["oom_kill"] for a, b in count_rises
+                           if ws and we and ws <= b["t"] <= we)
         nr = [int(r["NRestarts"]) for r in win if str(r.get("NRestarts", "")).isdigit()]
         restarts = (max(nr) - min(nr)) if nr else 0
         after = [r for r in rows if we and r["t"] > we]
@@ -409,6 +434,8 @@ class CrashLoop(soak.Soak):
         res = {
             "delay_s": self.delay_s, "window": [ws, we], "window_s": round(we - ws, 1) if ws and we else None,
             "hog": hog, "notes": self.notes, "kills": kills, "ve_kills": ve_kills,
+            "oom_kill_rose_by": rose_by, "kills_in_window": window_kills,
+            "loaded_rows": len(loaded),
             "restarts_in_window": restarts,
             "late_wheel_ticks_overlapping": late,
             "missions_overlapping": len(overlapping),
@@ -425,7 +452,10 @@ class CrashLoop(soak.Soak):
             "local_vlm_loaded": lv_after[-10:],
         }
         res["valid"] = {   # amendment 3's complete list
-            "a_crash_loop": ve_kills >= MIN_KILLS and restarts >= MIN_KILLS,
+            "a_crash_loop": (window_kills >= MIN_KILLS and ve_kills >= MIN_KILLS
+                             and restarts >= MIN_KILLS),
+            "kill_lines_complete": len(kills) >= rose_by,
+            "loaded_window_in_a_mission": len(loaded) >= LOADED_MIN_ROWS,
             "a_full_window": res["window_s"] is not None and res["window_s"] >= WINDOW_S - 5,
             "no_errored_mission": res["errored_missions_overlapping"] == 0,
             "wheel_loop_read": res["missions_without_wheel_loop"] == 0 and bool(overlapping),
@@ -440,7 +470,9 @@ class CrashLoop(soak.Soak):
             "brain_up_after": bool(lv_after) and all(x == "up" for x in lv_after[-5:]),
         }
         # A kill of a stack process is a measured failure, never invalid (amendment 3).
-        if not res["met"]["every_kill_ve"] and kills:
+        if not res["met"]["every_kill_ve"] and kills and self.baseline_ok:
+            # Every line is this run's (the baseline was read), so the kill is
+            # real: a failure as measured, whatever else made the run invalid.
             res["valid"] = {k: True for k in res["valid"]}
             res["valid_note"] = "a process other than VE or the hog was killed: failed, as measured"
         (self.out / "result.json").write_text(json.dumps(res, indent=1) + "\n")
@@ -451,13 +483,16 @@ class CrashLoop(soak.Soak):
 def _die_with_parent() -> None:
     """In the hog's child before exec: SIGKILL when the harness dies
     (PR_SET_PDEATHSIG), so a harness killed hard never leaves memory held."""
-    ctypes.CDLL("libc.so.6", use_errno=True).prctl(1, signal.SIGKILL)
+    _LIBC.prctl(1, signal.SIGKILL)
 
 
 def main(argv) -> int:
     loop = CrashLoop(Path(argv[0]), int(argv[1]))
 
     def on_signal(signum, _frame):
+        if loop.signalled:               # review 3: a second signal never cuts the put-back short
+            return
+        loop.signalled = True
         loop.stop_all.set()              # the hog lets go first
         loop.end_hog()
         raise SystemExit(128 + signum)
