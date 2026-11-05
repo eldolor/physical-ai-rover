@@ -24,18 +24,48 @@ def answers(cls, ranges, missed, omega, lr):
 
 
 def corridor_case(rng):
-    """Returns placed on the corridor's own edges: the front edge, the side
-    margin, inside the outline, behind."""
+    """Returns placed ON the corridor's own edges (the front edge, the side
+    margin, the outline's width), and just either side of them: a beam is
+    chosen first, then the range that puts its point at the edge."""
     ranges = [None] * 360
     hl, hw = safety.FOOTPRINT_LENGTH_M * 50.0, safety.FOOTPRINT_WIDTH_M * 50.0
+    off = safety.LIDAR_X_M * 100.0
     for _ in range(rng.randrange(1, 8)):
-        x = rng.choice([hl, hl + 1e-9, hl - 1e-9, rng.uniform(-60, 60)])
-        y = rng.choice([hw + safety.FOOTPRINT_SIDE_MARGIN_CM, hw, rng.uniform(-30, 30)])
-        x -= safety.LIDAR_X_M * 100.0
-        r = math.hypot(x, y) / 100.0
-        a = round(math.degrees(math.atan2(-y, x)))
-        ranges[(a + 180) % 360] = r
+        i = rng.randrange(360)
+        a = math.radians(-180.0 + i)
+        c, sn = math.cos(a), math.sin(a)
+        nudge = rng.choice([0.0, 1e-9, -1e-9, rng.uniform(-3, 3)])
+        if rng.random() < 0.5 and abs(c) > 0.2:      # x on the front (or back) edge
+            target = rng.choice([hl, -hl]) + nudge
+            r = (target - off) / (100.0 * c)
+        elif abs(sn) > 0.2:                          # |y| on a side edge
+            target = rng.choice([hw, hw + safety.FOOTPRINT_SIDE_MARGIN_CM]) + nudge
+            r = target / (100.0 * abs(sn))
+        else:
+            r = rng.uniform(0.05, 0.6)
+        if r > 0:
+            ranges[i] = r
     return ranges, 0.0, rng.uniform(-2, 2), (rng.uniform(-8, 8), rng.uniform(-8, 8))
+
+
+def test_corridor_rooms_equals_the_scalar_rule():
+    import numpy as np
+    rng = random.Random(1)
+    hl, hw = safety.FOOTPRINT_LENGTH_M * 50.0, safety.FOOTPRINT_WIDTH_M * 50.0
+    along = [rng.choice([hl, 0.0, -1e-12, rng.uniform(-50, 50)]) + rng.choice([0, 1e-12, -1e-12])
+             for _ in range(5000)]
+    lateral = [abs(rng.choice([hw, hw + safety.FOOTPRINT_SIDE_MARGIN_CM, rng.uniform(0, 40)])
+                   + rng.choice([0, 1e-12, -1e-12])) for _ in range(5000)]
+    got = safety._corridor_rooms(np.array(along), np.array(lateral)).tolist()
+    want = [safety._corridor_room(a, b) for a, b in zip(along, lateral)]
+    assert [math.inf if w is None else w for w in want] == got
+
+
+def test_a_scan_without_ranges_still_raises():
+    import pytest
+    s = SafetyController(Body([None] * 360, 0.0))
+    with pytest.raises((KeyError, TypeError)):
+        s.footprint_clearance(+1, {"usable": True, "angle_min_deg": -180.0, "angle_increment_deg": 1.0})
 
 
 def test_same_answers_as_dev():

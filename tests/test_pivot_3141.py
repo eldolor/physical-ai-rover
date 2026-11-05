@@ -142,7 +142,7 @@ def test_no_scan_and_no_turn_unchanged():
 
 # Planted bugs in the one-pass rows (3.141.E): each must be caught.
 
-class _ArcOffByOne(safety._PivotRows):
+class _ArcShortened(safety._PivotRows):
     def __init__(self, scan, missed):
         super().__init__(scan, missed * PIVOT_AGE_SAMPLES_SHORT)
 
@@ -157,7 +157,7 @@ class _DropsNearestRows(safety._PivotRows):
         self._xs, self._ys, self._nows = self._xs[keep], self._ys[keep], self._nows[keep]
 
 
-class _FirstChunkClosesOnEqual(safety._PivotRows):
+class _RecheckClosesOnEqual(safety._PivotRows):
     def first_blocking(self, c, s):
         for x, y, now in zip(self._xs.tolist(), self._ys.tolist(), self._nows.tolist()):
             after = self._dist(c * x - s * y, s * x + c * y)
@@ -173,7 +173,7 @@ class _ReachWithoutTheChassis(safety._PivotRows):
         self._xs, self._ys, self._nows = self._xs[keep], self._ys[keep], self._nows[keep]
 
 
-class _LaterChunksFirst(safety._PivotRows):
+class _RowsOutOfOrder(safety._PivotRows):
     """Rows out of scan order."""
     def __init__(self, scan, missed):
         super().__init__(scan, missed)
@@ -191,13 +191,13 @@ def _first_beams_case():
     return ranges, 0.0, 2.5, (-5.3125, 5.3125)
 
 
-def test_first_chunk_decides_a_turn():
+def test_the_first_beams_decide_a_turn():
     c = _first_beams_case()
     assert answers(ReferenceSafety, *c) == answers(SafetyController, *c)
 
 
-@pytest.mark.parametrize("mutant", [_ArcOffByOne, _DropsNearestRows, _LaterChunksFirst,
-                                    _FirstChunkClosesOnEqual, _ReachWithoutTheChassis],
+@pytest.mark.parametrize("mutant", [_ArcShortened, _DropsNearestRows, _RowsOutOfOrder,
+                                    _RecheckClosesOnEqual, _ReachWithoutTheChassis],
                          ids=lambda m: m.__name__)
 def test_planted_bugs_are_caught(monkeypatch, mutant):
     monkeypatch.setattr(safety, "_PivotRows", mutant)
@@ -211,10 +211,10 @@ def test_rows_of_another_scan_are_not_used():
     assert s.pivot_blocked(3.0, scan_of(near), _rows=stale) is not None
 
 
-def test_first_chunk_mutant_caught_on_the_first_beams(monkeypatch):
+def test_recheck_mutant_caught_on_the_first_beams(monkeypatch):
     c = _first_beams_case()
     before = answers(SafetyController, *c)
-    monkeypatch.setattr(safety, "_PivotRows", _FirstChunkClosesOnEqual)
+    monkeypatch.setattr(safety, "_PivotRows", _RecheckClosesOnEqual)
     assert answers(SafetyController, *c) != before
 
 
@@ -224,14 +224,13 @@ def test_a_stale_points_cache_is_caught(monkeypatch):
     cls = safety._ScanPoints
 
     def of(scan):
-        key = (scan.get("angle_min_deg"), scan.get("angle_increment_deg"))
+        key = (scan["angle_min_deg"], scan["angle_increment_deg"])     # no ranges: stale
         last = cls._last
-        if last is not None and last[0] == key:
-            return last[1]
-        pts = list(safety.scan_points_cm(scan))
-        arr = np.array(pts, dtype=float).reshape(-1, 2)
-        val = (pts, arr[:, 0], arr[:, 1])
-        cls._last = (key, val)
+        if last is not None and last[2] == key:
+            return last[3]
+        arr = np.array(list(safety.scan_points_cm(scan)), dtype=float).reshape(-1, 2)
+        val = (arr[:, 0].copy(), arr[:, 1].copy())
+        cls._last = (scan, scan["ranges_m"], key, val)
         return val
     monkeypatch.setattr(cls, "of", staticmethod(of))
     monkeypatch.setattr(cls, "_last", None)

@@ -1,9 +1,12 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright (C) 2026 Anshu Gaind
-"""3.141 criterion 1 at full size: `tests/test_pivot_3141.py`'s random
-cases (scans around the chassis, aged arcs, turns and translations), the
-new turn guard against the frozen `tests/pivot_reference.py`, 200,000 cases
-over worker processes. Writes one JSON summary.
+"""3.141 criterion 1 at full size (since 3.141.E: the whole vet against
+`tests/vet_reference.py`, corridor cases mixed in): `tests/test_pivot_3141.py`'s random
+cases (scans around the chassis, aged arcs, turns and translations) and,
+since 3.141.E, 30% of `tests/test_vet_cost_3141.py`'s corridor-edge cases:
+the whole vet against the frozen `tests/vet_reference.py` (dev's corridor
+loop on `tests/pivot_reference.py`'s turn guard), 200,000 cases over
+worker processes. Writes one JSON summary.
 
     python evaluations/wheel-loop-3141/equivalence.py <out.json> [cases] [workers]
 """
@@ -20,8 +23,9 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "tools"))
 
 from robot.safety import SafetyController  # noqa: E402
-from tests.pivot_reference import ReferenceSafety  # noqa: E402
-from tests.test_pivot_3141 import answers, case  # noqa: E402
+from tests.test_pivot_3141 import case  # noqa: E402
+from tests.test_vet_cost_3141 import answers, corridor_case  # noqa: E402
+from tests.vet_reference import VetReference as ReferenceSafety  # noqa: E402
 
 BATCH = 2000
 
@@ -30,10 +34,10 @@ def batch(seed: int) -> dict:
     rng = random.Random(seed)
     out = {"cases": 0, "differences": 0, "free": 0, "scaled": 0, "stopped": 0, "first": None}
     for _ in range(BATCH):
-        c = case(rng)
+        c = case(rng) if rng.random() < 0.7 else corridor_case(rng)
         ref, new = answers(ReferenceSafety, *c), answers(SafetyController, *c)
         out["cases"] += 1
-        scale = new[0][0]
+        scale = new[5][0]                 # pivot_scale's (fraction, reason)
         out["free" if scale == 1.0 else "stopped" if scale == 0.0 else "scaled"] += 1
         if ref != new:
             out["differences"] += 1

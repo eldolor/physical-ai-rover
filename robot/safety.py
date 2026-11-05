@@ -441,30 +441,44 @@ def _corridor_room(along_cm: float, lateral_cm: float) -> Optional[float]:
     return None
 
 
+def _corridor_rooms(along, lateral):
+    """`_corridor_room()` over arrays (3.141.E): the room for each point, inf
+    where it never stops a straight move. The same products, differences
+    and comparisons, so the same numbers; `tests/test_vet_cost_3141.py` pins
+    the two equal."""
+    half_len = FOOTPRINT_LENGTH_M * 50.0
+    half_wid = FOOTPRINT_WIDTH_M * 50.0
+    ahead = (along > half_len) & (lateral <= half_wid + FOOTPRINT_SIDE_MARGIN_CM)
+    beside = (0.0 < along) & (along <= half_len) & (lateral <= half_wid)
+    return np.where(ahead, along - half_len, np.where(beside, 0.0, np.inf))
+
+
 class _ScanPoints:
     """3.141.E: a scan's returns in the body frame, computed once for every
     vet stage that reads the same scan contents (`scan_points_cm()`'s exact
     Python arithmetic, so every later answer is the per-point loop's): the
     corridor, the turn guard, and the robot server's two vets of one tick
-    (the wheel loop's and `/wheels`'). The last scan's contents are kept;
-    a different scan replaces them."""
+    (the wheel loop's and `/wheels`'). The last scan's contents are kept,
+    read-only; a different scan (or lidar offset) replaces them."""
 
-    _last = None                       # (key, points)
+    _last = None                       # (scan, ranges, key, (X, Y))
 
     @classmethod
     def of(cls, scan: dict) -> tuple:
-        """`(pts, X, Y)`: the points as a list of `(x, y)` in scan order, and
-        the same numbers as numpy arrays."""
-        key = (scan.get("angle_min_deg"), scan.get("angle_increment_deg"),
-               tuple(scan.get("ranges_m") or ()))
+        """`(X, Y)`: the points, in scan order, as read-only numpy arrays."""
+        ranges = scan["ranges_m"]          # a scan without them raises, as before
         last = cls._last
-        if last is not None and last[0] == key:
-            return last[1]
-        pts = list(scan_points_cm(scan))
-        a = np.array(pts, dtype=float).reshape(-1, 2)
-        val = (pts, a[:, 0], a[:, 1])
-        cls._last = (key, val)         # one assignment: a reader sees old or new
-        return val
+        if last is not None and last[0] is scan and last[1] is ranges:
+            return last[3]
+        key = (scan["angle_min_deg"], scan["angle_increment_deg"], LIDAR_X_M, tuple(ranges))
+        if last is not None and last[2] == key:
+            return last[3]
+        a = np.array(list(scan_points_cm(scan)), dtype=float).reshape(-1, 2)
+        xs, ys = a[:, 0].copy(), a[:, 1].copy()
+        xs.setflags(write=False)
+        ys.setflags(write=False)
+        cls._last = (scan, ranges, key, (xs, ys))  # one assignment: old or new, never half
+        return xs, ys
 
 
 class _PivotRows:
@@ -499,7 +513,7 @@ class _PivotRows:
         # A return farther from base_link than this cannot come within
         # PIVOT_NEAR_CM of the chassis at any rotation: never rotated.
         reach = PIVOT_NEAR_CM + math.hypot(self._hl, self._hw) + PIVOT_FILTER_SLACK_CM
-        _, x0, y0 = _ScanPoints.of(scan)
+        x0, y0 = _ScanPoints.of(scan)
         keep = np.hypot(x0, y0) <= reach
         x0, y0 = x0[keep], y0[keep]
         # One column per point of the arc, so a row-major flatten is the
@@ -730,19 +744,13 @@ class SafetyController:
         # 3.141.E: `_corridor_room()` over every return at once. Its steps
         # are a product, differences and comparisons -- the same IEEE
         # operations in numpy as in Python, so the same numbers.
-        _, xs, ys = _ScanPoints.of(scan)
+        xs, ys = _ScanPoints.of(scan)
         if not len(xs):
             return None, "scan_footprint_no_target"
-        half_len = FOOTPRINT_LENGTH_M * 50.0
-        half_wid = FOOTPRINT_WIDTH_M * 50.0
-        along, lateral = direction * xs, np.abs(ys)
-        ahead = (along > half_len) & (lateral <= half_wid + FOOTPRINT_SIDE_MARGIN_CM)
-        beside = ~ahead & (0.0 < along) & (along <= half_len) & (lateral <= half_wid)
-        if beside.any():
-            return 0.0, "scan_footprint"   # a room of 0.0 is every room's minimum
-        if not ahead.any():
+        best = float(_corridor_rooms(direction * xs, np.abs(ys)).min())
+        if best == math.inf:
             return None, "scan_footprint_no_target"
-        return round(float((along[ahead] - half_len).min()), 1), "scan_footprint"
+        return round(best, 1), "scan_footprint"
 
     def pivot_scale(self, omega_rad_s: float, scan: Optional[dict] = None
                     ) -> Tuple[float, Optional[str]]:
