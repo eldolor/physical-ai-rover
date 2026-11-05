@@ -1,0 +1,115 @@
+mode: sim
+drive:
+  mode: direct
+  bridge_url: http://127.0.0.1:8090
+sim_map: starter_house
+sim:
+  realtime: false
+  sensor_noise:
+    enabled: false
+    stddev_cm: 3.0
+    dropout_rate: 0.0
+    min_range_cm: 2.0
+    max_range_cm: 400.0
+    read_latency_s: 0.0
+  odom_drift:
+    enabled: false
+    left_scale: 1.0
+    right_scale: 1.03
+teleop:
+  stall_timeout_s: 15.0
+hardware:
+  track_scrub: 1.0
+world:
+  mode: sim
+safety:
+  min_distance_cm: 20
+  watchdog_timeout_s: 1.0
+  sensor_to_bumper_cm: 0.0
+battery:
+  low_v: 10.5
+  reserve_v: 10.2
+  poweroff_v: 10.0
+  reserve_max_s: 120
+  reserve_speed: 30
+  shutdown_steps: []
+  poweroff_cmd: null
+server:
+  allowed_origins:
+  - '*'
+brain:
+  robot_url: http://127.0.0.1:8000
+  vision_url: ''
+  perception_detector: ''
+  perception_clip_model: ''
+  perception_match_probability: 0.0
+  perception_match_margin: 0.0
+  perception_crop_path: ''
+  perception_floor_mask: false
+  tier_consecutive_frames: 2
+  tier_sighting_span_s: 0.25
+  tier_frame_vote: 'off'
+  tier_cold_search_after: 6
+  tier_local_cold_search_after: 1
+  tier_cold_search_after_cm: 0
+  tier_async_cloud: true
+  tier_hold_goal: true
+  tier_spin_guard_after: 8
+  tier_steer_on_sight: true
+  tier_hold_bearing: false
+  tier_hold_bearing_max_m: 1.0
+  metrics_url: ''
+  metrics_secret: ''
+  tier_stale_after: 8
+  tier_max_calls: 0
+  tier_corroboration_bar: 0.5
+  tier_local_vlm_url: ''
+  tier_local_no_below: 0.1
+  tier_local_max_unable: 2
+  tier_local_timeout_s: 3.0
+  tier_tree: {}
+  tier_local_band_low: 0.5
+  tier_local_direction: false
+  tier_steer_on_candidate: true
+  tier_remember_no: true
+  tier_reject_hold_s: 20.0
+  tier_reject_move_m: 0.5
+  tier_reject_turn_deg: 30.0
+  tier_no_box_range:
+  - 0.15
+  - 0.95
+  tier_search: cloud
+  sim_arrival_confirm: geometry
+  mission_time_limit_s: 1200
+  battery_floor_v: 0
+  vision_max_calls: 120
+  survey_time_limit_s: 1800
+  room_label_mode: spacing
+  room_label_max_calls: 60
+  room_label_source: frame
+  room_label_timeout_s: 15
+  find_room_labels: 'off'
+  find_room_label_max_calls: 20
+  min_distance_cm: 20.0
+  request_timeout_s: 10.0
+  vision_timeout_s: 20.0
+  max_vision_failures: 3
+  reconfirm_probe_s: 15.0
+  reconfirm_window_s: 600.0
+  arrival_confirm_timeout_s: 8.0
+  cloud_probe_s: 15.0
+  explore_goal_policy: rooms
+  explore_ask: false
+  explore_ask_timeout_s: 60.0
+  explore_choice_dir: recordings/explore-choices
+  intervention_dir: recordings/interventions
+  replay_timeout_s: 60.0
+  tick_timeout_s: 30.0
+  tick_interval_s: 0.25
+  allow_drills: true
+  allow_recording: true
+  recording_dir: recordings
+  inventory_dir: recordings/inventory
+  inventory_prefix: inventory
+  drill_vision_timeout_s: 2.0
+  drill_tick_timeout_s: 3.0

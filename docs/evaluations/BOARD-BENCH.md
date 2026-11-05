@@ -213,6 +213,8 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-04 | `6c56c142` | F3f VE killed, a frame question open (re-run, amendment 16) | 5/5 | met | handed on 33-44 (>= 1); VE back 41.3 s (60); not failed 5/5; the next mission's first question answered by VE; planted check caught (0 handed on) | 0 | -- | 2,095 | 0 | 56.4 °C | -- | yes |
 | 2026-11-04 | `6c56c142` | F3r VE killed at the arrival, the cloud refused (re-run, amendment 16) | 5/5 | met | `arrived_unconfirmed` 5/5; handed on 3-4; VE back 40.8-41.3 s, **57.0 s in run 1** (60); next answered 5/5 | 0 | -- | 2,052 | 0 | 55.8 °C | -- | yes |
 | 2026-11-04 | `6c56c142` | F3a2 VE killed at the arrival, a truthful stand-in (amendment 17) | 5/7 | met | `found` 5/5, the deciding verdict the cloud's yes (0.45-0.85 s); handed on 1; VE back 40.8-41.3 s; 2 runs ended `exhausted` before an arrival question (not injected, replaced); planted check caught (0 handed on, `exhausted`) | 0 | -- | 2,125 | 0 | 59.7 °C | -- | yes |
+| 2026-11-04 | `e9285f1a` | F24 Reserve then Power-off, a nav2 goal (first attempt) | 0/8 | incomplete | every run invalid: the brain's own 10.5 V floor ended the mission before Reserve (amendment 19); stub `stub` 8/8, shutdown in order, every step rc 0 | 0 | -- | 2,205 | 0 | 52.4 °C | -- | yes |
+| 2026-11-05 | `95826b9c` | F24 Reserve then Power-off, a nav2 goal (amendment 19: the brain's floor off) | 5/5 | met | 0.0 cm after Reserve (2), the mission running at Reserve 5/5; shutdown wheels, brain, ROS, VE, sync, the stub once, every step rc 0, all down at the stub; Power-off 48.9-49.5 s after Reserve; VE's unit as found | 0 | -- | 1,854 | 0 | 55.0 °C | -- | yes |
 
 ## Runs
 
@@ -400,6 +402,31 @@ cm, FAILED, 3.135.B's record). Wheels zero 2.0 s after the fault by the
 watchdog (no FORWARD starts on a stale scan); 0 contacts, 0 late ticks, 0 OOM,
 `MemAvailable` minimum 2,360 MB, max 50.1 °C; recovery 3.1 s; left as found.
 Records: `evaluations/jetson-fmea-3135/board/rows/F9-3144B-20261104-0710/`.
+
+### 2026-11-04/05, single faults (3.135.B): F24, the battery ladder
+
+On the board, at `e9285f1a` (22:33-22:58) and `95826b9c` (00:44-00:55),
+after 3.152.B's windows. The VE rows' full stack, with an explore goal. At
+the fault the pack is set to 10.35 V, draining 0.005 V/s. The power-off is
+3.137's stub, checked as `stub` before every fault.
+
+* **The first attempt: every run invalid (12 of 12, with its planted runs).**
+  * The brain's own floor (10.5 V) ended the mission at 10.33 V, ~30 s
+    before Reserve, so nothing was left for the robot server's Reserve to
+    stop.
+  * VE's unit also read as changed, but only `ExecStart`'s runtime fields.
+  * Amendment 19: the shipped brain with its floor off, as 3.137's arm R.
+    That switches off both of the brain's battery exits, so F24 measures
+    the robot server's Reserve alone.
+* **The re-run met 5/5.**
+  * The mission was running at Reserve, and the robot moved 0.0 cm after it.
+  * The shutdown ran wheels, brain, ROS, VE and sync, then the stub once,
+    every step rc 0, with all three down at the stub. Power-off came
+    48.9-49.5 s after Reserve, at 10.0 V.
+  * VE's unit was as found.
+* The planted check (`no_reserve`) is re-run separately: the queue's
+  retries ran out behind 3.152.B's windows.
+* Every run: 0 contacts. The board was left as found.
 
 ### 2026-11-04, single faults (3.135.B): F3f, F3r and F3a2 after amendments 16-17
 
