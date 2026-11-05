@@ -40,10 +40,10 @@ teardown() {
     pkill -TERM -f "standin_cloud.py [0-9]+ $OUT" 2>/dev/null
     sudo -n pkill -TERM -f "memory_account.py sample $OUT" 2>/dev/null
     # The mission stack's own servers (stack.py's PORTS), started in their own sessions.
-    for port in "${PICAR_ROBOT_PORT:-10350}" "${PICAR_BRAIN_PORT:-10351}" "${PICAR_BODY_PORT:-10352}" \
-                "${PICAR_SENSOR_PORT:-10353}" "${PICAR_SENSOR2_PORT:-10354}"; do
-      sudo -n fuser -k -TERM "$port/tcp" >/dev/null 2>&1
-    done
+    ports="${PICAR_ROBOT_PORT:-10350} ${PICAR_BRAIN_PORT:-10351} ${PICAR_BODY_PORT:-10352} ${PICAR_SENSOR_PORT:-10353} ${PICAR_SENSOR2_PORT:-10354}"
+    for port in $ports; do sudo -n fuser -k -TERM "$port/tcp" >/dev/null 2>&1; done
+    sleep 8
+    for port in $ports; do sudo -n fuser -k -KILL "$port/tcp" >/dev/null 2>&1; done
   fi
   if [ -e "$DROPIN" ]; then
     echo "== teardown: the drop-in was still there; removing it" | tee -a "$OUT/run.log"

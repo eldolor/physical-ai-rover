@@ -22,7 +22,7 @@ It dies with its parent: it sets `PR_SET_PDEATHSIG` on itself first thing
 (no `preexec_fn` in the threaded harness) and checks `getppid()` throughout,
 so a harness killed hard never leaves memory held.
 
-    python evaluations/local-vlm-3152/hog.py <out.json> <margin_mb> <give_up_s> <hold_max_s>
+    python evaluations/local-vlm-3152/hog.py <out.json> <margin_mb> <give_up_s> <hold_max_s> <parent_pid>
 """
 
 import ctypes
@@ -66,16 +66,20 @@ def chunk() -> bytearray:
     return b
 
 
-def main(out: str, margin_mb: int, give_up_s: float, hold_max_s: float) -> int:
+def main(out: str, margin_mb: int, give_up_s: float, hold_max_s: float, parent: int) -> int:
     stop = {"now": False}
 
     def on_term(*_):
         stop["now"] = True
     signal.signal(signal.SIGTERM, on_term)
     signal.signal(signal.SIGINT, on_term)
-    parent = os.getppid()
-    ctypes.CDLL("libc.so.6", use_errno=True).prctl(1, signal.SIGKILL)   # PR_SET_PDEATHSIG
-    if os.getppid() != parent:          # the parent died before the line above
+    # The harness's pid comes in argv (review 5): read here, a parent that had
+    # already died would read as init and never as gone.
+    if ctypes.CDLL("libc.so.6", use_errno=True).prctl(1, signal.SIGKILL) != 0:   # PR_SET_PDEATHSIG
+        with open(out, "w") as f:
+            json.dump({"prctl_failed": ctypes.get_errno()}, f)
+        return 6
+    if os.getppid() != parent:          # the harness died before PDEATHSIG was set
         return 6
     with open("/proc/self/oom_score_adj", "w") as f:
         f.write(str(OOM_SCORE_ADJ))
@@ -128,4 +132,5 @@ def main(out: str, margin_mb: int, give_up_s: float, hold_max_s: float) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1], int(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4])))
+    raise SystemExit(main(sys.argv[1], int(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4]),
+                          int(sys.argv[5])))

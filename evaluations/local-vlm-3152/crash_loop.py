@@ -31,6 +31,7 @@ back to back with VE as the local tier.
 from __future__ import annotations
 
 import json
+import os
 import re
 import signal
 import subprocess
@@ -57,7 +58,8 @@ GROW_GIVE_UP_S = 300
 LOADED_S = 60                 # amendment 2: the memory bar's window after VE is back
 MIN_KILLS = 3                 # amendment 2: fewer is no crash loop (invalid)
 RUN_CEILING_S = 50 * 60       # the whole run; the board hold's own --max is 60 min
-LOADED_MIN_ROWS = 30          # amendment 4: of the loaded window's 60 s       # the whole run; the board hold's own --max is 60 min
+LOADED_MIN_ROWS = 30          # amendment 4: samples of a running mission in the loaded window
+STACK_PORTS = (10350, 10351, 10352, 10353, 10354)   # stack.py's PORTS defaults       # the whole run; the board hold's own --max is 60 min
 SHOW = "MainPID,NRestarts,ActiveState,SubState,Result,StartLimitIntervalUSec,StartLimitBurst,RestartUSec"
 
 
@@ -71,6 +73,8 @@ def oom_kills() -> int:
 
 class CrashLoop(soak.Soak):
     def __init__(self, out: Path, delay_s: int):
+        if (out / "samples.jsonl").exists() or (out / "missions.jsonl").exists():
+            raise StackError(f"{out} holds an earlier run: give each run its own directory")
         super().__init__(out, WINDOW_S + 2 * soak.MISSION_CAP_S)
         self.delay_s = int(delay_s)
         self.window = {"start": None, "end": None}
@@ -88,6 +92,7 @@ class CrashLoop(soak.Soak):
         self.loaded_from: float | None = None
         self.signalled = False
         self.live_lock = threading.Lock()   # mission_live and in_teardown together (review 4)
+        self.teardowns = 0                  # bumped by each teardown: a sample across one is dropped
 
     # ------------------------------------------------------- guarded reads
 
@@ -123,19 +128,29 @@ class CrashLoop(soak.Soak):
         with their wall times (amendment 4: dmesg's ring buffer drops early
         lines after many task dumps); None if the journal could not be read."""
         try:
-            r = self.sh(["sudo", "-n", "journalctl", "-k", "-o", "short-unix", "--no-pager",
-                         "--since", f"@{int(self.t_begin)}"], timeout=60)
+            r = self.sh(["sudo", "-n", "journalctl", "-k", "-o", "json", "--no-pager",
+                         "--since", f"@{int(self.t_begin) - 5}"], timeout=60)
         except Exception:  # noqa: BLE001
             return None
         if r.returncode != 0:
             return None
+        # The kernel's own time of each line (review 5: journald's receive time
+        # lags under an OOM storm): its monotonic stamp, put on the wall clock.
+        offset = time.time() - time.clock_gettime(time.CLOCK_MONOTONIC)
         out = []
-        for line in r.stdout.splitlines():
-            if "oom-kill:" in line:
-                try:
-                    out.append((float(line.split()[0]), line))
-                except (ValueError, IndexError):
-                    out.append((None, line))
+        for raw in r.stdout.splitlines():
+            try:
+                e = json.loads(raw)
+            except ValueError:
+                continue
+            msg = e.get("MESSAGE")
+            if not isinstance(msg, str) or "oom-kill:" not in msg:
+                continue
+            try:
+                t = int(e["_SOURCE_MONOTONIC_TIMESTAMP"]) / 1e6 + offset
+            except (KeyError, ValueError, TypeError):
+                t = None
+            out.append((t, msg))
         return out
 
     # ------------------------------------------------------------ the unit
@@ -153,6 +168,16 @@ class CrashLoop(soak.Soak):
             raise StackError(f"{UNIT} is {found['active']} as found, not active")
         # Set only now (review 3): a refused run changes nothing in put_back.
         self.as_found = found
+
+    def refuse_busy(self) -> None:
+        """Soak.setup's and stack.py's refusals, made before board.sh's net is
+        armed (review 5): a container of that name, or anything on the ports
+        the soak and its mission stack use, is someone else's."""
+        if self.sh(["docker", "ps", "-aq", "-f", f"name=^{soak.CONTAINER}$"]).stdout.strip():
+            raise StackError(f"a container named {soak.CONTAINER} exists already")
+        for port in (8090, soak.STUB_PORT) + STACK_PORTS:
+            if self.sh(["ss", "-ltnH", f"sport = :{port}"]).stdout.strip():
+                raise StackError(f":{port} is already served -- someone else's service")
 
     def install_dropin(self) -> None:
         body = ("# 3.152 criterion 10: a runtime crash-loop candidate; removed at the run's end.\n"
@@ -224,7 +249,7 @@ class CrashLoop(soak.Soak):
                 return
             self.hog_proc = subprocess.Popen(
                 [sys.executable, str(HERE / "hog.py"), str(self.out / "hog.json"), str(MARGIN_MB),
-                 str(GROW_GIVE_UP_S), str(WINDOW_S + 120)],
+                 str(GROW_GIVE_UP_S), str(WINDOW_S + 120), str(os.getpid())],
                 stdout=open(self.out / "hog.log", "w"), stderr=subprocess.STDOUT)
             self.say(f"hog started (pid {self.hog_proc.pid})")
             while not self.stop_all.is_set() and self.hog_proc.poll() is None:
@@ -271,6 +296,7 @@ class CrashLoop(soak.Soak):
         with self.live_lock:
             self.in_teardown = True
             self.mission_live = False
+            self.teardowns += 1
         super().teardown_mission(mdir, st)
 
     @staticmethod
@@ -295,14 +321,20 @@ class CrashLoop(soak.Soak):
                 with self.live_lock:
                     if row["running"] and not self.in_teardown:
                         self.mission_live = True
-                    live = self.mission_live
+                    live, gen = self.mission_live, self.teardowns
                 st = getattr(self, "stack", None)
                 row["mission_live"] = live
                 if live and st is not None:
                     # A brain that stops answering reads as down here, never as
                     # "not running" (review 2): live until the mission returns.
-                    row["robot_ok"] = self.up(st.urls["robot"] + "/health")
-                    row["brain_ok"] = self.up(st.urls["brain"] + "/health")
+                    robot_ok = self.up(st.urls["robot"] + "/health")
+                    brain_ok = self.up(st.urls["brain"] + "/health")
+                    with self.live_lock:
+                        across = gen != self.teardowns   # review 5: the harness stopped it meanwhile
+                    if across:
+                        row["mission_live"] = False
+                    else:
+                        row["robot_ok"], row["brain_ok"] = robot_ok, brain_ok
                 if row["running"]:
                     lv = ((s.get("tier") or {}).get("stats") or {}).get("local_vlm") or {}
                     row["local_vlm"] = lv.get("state")
@@ -354,6 +386,7 @@ class CrashLoop(soak.Soak):
         threads = []
         try:
             self.record_as_found()
+            self.refuse_busy()
             (self.out / "setup_started").write_text(f"{time.time()}\n")   # board.sh's net may clean up
             # The journal readable now: else no kill could be attributed.
             self.baseline_ok = self.oom_events() is not None
@@ -446,8 +479,9 @@ class CrashLoop(soak.Soak):
                        and (m.get("t1") or time.time()) >= ws]
         late = sum(((m.get("wheel_loop") or {}).get("late_ticks") or 0) for m in overlapping)
         # Servers through the crash-loop window and the loaded window (amendment 4).
-        span_end = (lf + LOADED_S) if lf else we
-        live = [r for r in rows if ws and span_end and ws <= r["t"] <= span_end and r.get("mission_live")]
+        def in_windows(t):
+            return bool((ws and we and ws <= t <= we) or (lf and lf <= t <= lf + LOADED_S))
+        live = [r for r in rows if in_windows(r["t"]) and r.get("mission_live")]
         res = {
             "delay_s": self.delay_s, "window": [ws, we], "window_s": round(we - ws, 1) if ws and we else None,
             "hog": hog, "notes": self.notes, "kills": kills, "ve_kills": ve_kills,
@@ -475,6 +509,7 @@ class CrashLoop(soak.Soak):
             "kill_lines_complete": len(kills) >= rose_by,
             "loaded_window_in_a_mission": len(loaded) >= LOADED_MIN_ROWS,
             "no_kill_before_the_hog": not before_hog,
+            "every_kill_line_placed": all(k["t"] is not None for k in kills),
             "a_full_window": res["window_s"] is not None and res["window_s"] >= WINDOW_S - 5,
             "no_errored_mission": res["errored_missions_overlapping"] == 0,
             "wheel_loop_read": res["missions_without_wheel_loop"] == 0 and bool(overlapping),
@@ -489,7 +524,8 @@ class CrashLoop(soak.Soak):
             "brain_up_after": bool(lv_after) and all(x == "up" for x in lv_after[-5:]),
         }
         # A kill of a stack process is a measured failure, never invalid (amendment 3).
-        if not res["met"]["every_kill_ve"] and kills and self.baseline_ok and not before_hog:
+        if (not res["met"]["every_kill_ve"] and kills and self.baseline_ok and not before_hog
+                and all(k["t"] is not None for k in kills)):
             # Every line is this run's (the baseline was read), so the kill is
             # real: a failure as measured, whatever else made the run invalid.
             res["valid"] = {k: True for k in res["valid"]}
