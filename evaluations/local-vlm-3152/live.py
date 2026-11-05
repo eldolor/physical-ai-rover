@@ -40,7 +40,7 @@ ROBOT, BRAIN, CLOUD, VE = 10520, 10521, 10527, 10526
 HOUSE, TARGET = "scaled_house", "red backpack"
 LIMIT_S = 600
 KILL_AT_STEP = 4          # VE is stopped once the mission has run this many steps
-DOWN_FOR_S = 15           # and started again this long after the brain reads it down
+DOWN_FOR_S = 15           # and started again this long after the kill, once the brain reads it down
 
 
 def _start(cmd, log, env=None):

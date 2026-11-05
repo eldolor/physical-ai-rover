@@ -1,5 +1,5 @@
 {
- "rev": "79cfe39a",
+ "rev": "d5fd4107",
  "house": "procthor:val:2",
  "target": "basketball",
  "max_steps": 60,
@@ -53,14 +53,14 @@
  },
  "down_local_vlm": {
   "state": "down",
-  "since": 1793843194.7876542,
+  "since": 1793847184.0356781,
   "probes": 1,
-  "checked_at": 1793843199.7929552
+  "checked_at": 1793847189.0359938
  },
  "refused_ask_ms": {
   "n": 50,
-  "p50": 0.2,
-  "p90": 0.28,
-  "max": 1.1
+  "p50": 0.21,
+  "p90": 0.22,
+  "max": 1.01
  }
 }
