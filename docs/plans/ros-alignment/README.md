@@ -153,4 +153,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.149](3.149-claude-md-slim.md) | CLAUDE.md slimmed: section 3b to status lines, history to the archive |
 | [3.150](3.150-bash-guard.md) | A Bash hook refuses the gate bypasses and a branch's :latest image |
 | [3.152](3.152-local-vlm-down.md) | A dead local VLM: the brain tells unreachable from unable, and the unit restarts with a delay |
+| [3.153](3.153-frame-under-oom-squeeze.md) | The camera frame read under an OOM squeeze: a mission failed on GET /frame 503 |
 <!-- /sections -->
