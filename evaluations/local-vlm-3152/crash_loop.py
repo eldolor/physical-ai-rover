@@ -14,7 +14,7 @@ back to back with VE as the local tier.
   at boot): `StartLimitIntervalSec=0`, `RestartSec=D`. The unit as found is
   recorded first, and the drop-in is taken out and the unit put back as
   found at the end, whatever happened.
-* `hog.py`, its own process at `oom_score_adj` 900, grows until the kernel
+* `hog.py`, its own process at `oom_score_adj` 100, grows until the kernel
   kills VE, then holds 256 MB more: each VE load is killed again. The window
   is `WINDOW_S` from when it starts holding; then it is sent SIGTERM.
 * At 1 Hz: `MemAvailable`, `oom_kill`, VE's /health, the unit's
@@ -30,7 +30,6 @@ back to back with VE as the local tier.
 
 from __future__ import annotations
 
-import ctypes
 import json
 import re
 import signal
@@ -57,9 +56,8 @@ MARGIN_MB = 256
 GROW_GIVE_UP_S = 300
 LOADED_S = 60                 # amendment 2: the memory bar's window after VE is back
 MIN_KILLS = 3                 # amendment 2: fewer is no crash loop (invalid)
-RUN_CEILING_S = 50 * 60
-LOADED_MIN_ROWS = 50          # amendment 3: of the loaded window's 60 s
-_LIBC = ctypes.CDLL("libc.so.6", use_errno=True)   # loaded before any fork (review 3)       # the whole run; the board hold's own --max is 60 min
+RUN_CEILING_S = 50 * 60       # the whole run; the board hold's own --max is 60 min
+LOADED_MIN_ROWS = 30          # amendment 4: of the loaded window's 60 s       # the whole run; the board hold's own --max is 60 min
 SHOW = "MainPID,NRestarts,ActiveState,SubState,Result,StartLimitIntervalUSec,StartLimitBurst,RestartUSec"
 
 
@@ -80,7 +78,6 @@ class CrashLoop(soak.Soak):
         self.finished = threading.Event()
         self.samples = open(out / "samples.jsonl", "a", buffering=1)
         self.as_found: dict = {}
-        self.dmesg0: set = set()
         self.hog_proc: subprocess.Popen | None = None
         self.t_begin = time.time()
         self.notes: list = []
@@ -90,6 +87,7 @@ class CrashLoop(soak.Soak):
         self.main_done = threading.Event()
         self.loaded_from: float | None = None
         self.signalled = False
+        self.live_lock = threading.Lock()   # mission_live and in_teardown together (review 4)
 
     # ------------------------------------------------------- guarded reads
 
@@ -120,15 +118,25 @@ class CrashLoop(soak.Soak):
     def dropins(self) -> list:
         return sorted(str(p) for d in DROPIN_DIRS if d.exists() for p in d.glob("*"))
 
-    def oom_lines(self) -> list | None:
-        """The kernel's `oom-kill:` lines, or None if dmesg could not be read."""
+    def oom_events(self) -> list | None:
+        """The kernel's `oom-kill:` lines since the run began, from the journal
+        with their wall times (amendment 4: dmesg's ring buffer drops early
+        lines after many task dumps); None if the journal could not be read."""
         try:
-            r = self.sh(["sudo", "-n", "dmesg"], timeout=30)
+            r = self.sh(["sudo", "-n", "journalctl", "-k", "-o", "short-unix", "--no-pager",
+                         "--since", f"@{int(self.t_begin)}"], timeout=60)
         except Exception:  # noqa: BLE001
             return None
         if r.returncode != 0:
             return None
-        return [x for x in r.stdout.splitlines() if "oom-kill:" in x]
+        out = []
+        for line in r.stdout.splitlines():
+            if "oom-kill:" in line:
+                try:
+                    out.append((float(line.split()[0]), line))
+                except (ValueError, IndexError):
+                    out.append((None, line))
+        return out
 
     # ------------------------------------------------------------ the unit
 
@@ -217,8 +225,7 @@ class CrashLoop(soak.Soak):
             self.hog_proc = subprocess.Popen(
                 [sys.executable, str(HERE / "hog.py"), str(self.out / "hog.json"), str(MARGIN_MB),
                  str(GROW_GIVE_UP_S), str(WINDOW_S + 120)],
-                stdout=open(self.out / "hog.log", "w"), stderr=subprocess.STDOUT,
-                preexec_fn=_die_with_parent)
+                stdout=open(self.out / "hog.log", "w"), stderr=subprocess.STDOUT)
             self.say(f"hog started (pid {self.hog_proc.pid})")
             while not self.stop_all.is_set() and self.hog_proc.poll() is None:
                 rec = self.hog_record()
@@ -261,8 +268,9 @@ class CrashLoop(soak.Soak):
     def teardown_mission(self, mdir, st) -> None:
         """The harness stopping a mission's stack is not an outage (review 3):
         the servers are not sampled from here until the next mission runs."""
-        self.in_teardown = True
-        self.mission_live = False
+        with self.live_lock:
+            self.in_teardown = True
+            self.mission_live = False
         super().teardown_mission(mdir, st)
 
     @staticmethod
@@ -284,11 +292,13 @@ class CrashLoop(soak.Soak):
                             if k in ("MainPID", "NRestarts", "ActiveState", "SubState")})
                 s = self.brain_status()
                 row["running"] = bool(s and s.get("running"))
-                if row["running"] and not self.in_teardown:
-                    self.mission_live = True
+                with self.live_lock:
+                    if row["running"] and not self.in_teardown:
+                        self.mission_live = True
+                    live = self.mission_live
                 st = getattr(self, "stack", None)
-                row["mission_live"] = self.mission_live
-                if self.mission_live and st is not None:
+                row["mission_live"] = live
+                if live and st is not None:
                     # A brain that stops answering reads as down here, never as
                     # "not running" (review 2): live until the mission returns.
                     row["robot_ok"] = self.up(st.urls["robot"] + "/health")
@@ -344,9 +354,9 @@ class CrashLoop(soak.Soak):
         threads = []
         try:
             self.record_as_found()
-            base = self.oom_lines()
-            self.baseline_ok = base is not None
-            self.dmesg0 = set(base or [])
+            (self.out / "setup_started").write_text(f"{time.time()}\n")   # board.sh's net may clean up
+            # The journal readable now: else no kill could be attributed.
+            self.baseline_ok = self.oom_events() is not None
             self.setup()
             self.install_dropin()
             for fn in (self.sample, self.finish, self.run_hog):
@@ -365,9 +375,11 @@ class CrashLoop(soak.Soak):
                         break
                     house, target = sched[k % len(sched)]
                     self.say(f"m{k:03d} {house} / {target}; MemAvailable {mem_available_mb()} MB")
-                    self.in_teardown = False
+                    with self.live_lock:
+                        self.in_teardown = False
                     rec = self.mission(k, house, target)
-                    self.mission_live = False
+                    with self.live_lock:
+                        self.mission_live = False
                     f.write(json.dumps(rec, default=str) + "\n")
                     self.say(f"m{k:03d} -> {rec.get('outcome')} {rec.get('error') or ''}")
                     k += 1
@@ -405,14 +417,17 @@ class CrashLoop(soak.Soak):
         win = [r for r in rows if ws and we and ws <= r["t"] <= we]
         hog = self.hog_record()
         hog_pid = str(self.hog_proc.pid) if self.hog_proc else None
-        new = [x for x in (self.oom_lines() or []) if x not in self.dmesg0]
+        events = self.oom_events() or []
         kills = []
-        for x in new:
+        for t, x in events:
             pid = (re.search(r"[,\s]pid=(\d+)", x) or [None, None])[1]
-            kills.append({"ve": VE_MEMCG in x, "hog": pid is not None and pid == hog_pid,
+            kills.append({"t": t, "ve": VE_MEMCG in x, "hog": pid is not None and pid == hog_pid,
                           "task": (re.search(r"task=([^,]+)", x) or [None, None])[1],
                           "pid": pid, "line": x[-300:]})
-        ve_kills = sum(1 for k in kills if k["ve"])
+        hog_t0 = hog.get("t0")
+        before_hog = [k for k in kills if hog_t0 and k["t"] is not None and k["t"] < hog_t0]
+        ve_kills = sum(1 for k in kills if k["ve"] and ws and we and k["t"] is not None
+                       and ws - 5 <= k["t"] <= we + 5)
         count_rises = [(a, b) for a, b in zip(rows, rows[1:]) if a["oom_kill"] >= 0
                        and b["oom_kill"] > a["oom_kill"]]
         rose_by = sum(b["oom_kill"] - a["oom_kill"] for a, b in count_rises)
@@ -430,10 +445,13 @@ class CrashLoop(soak.Soak):
                        and (m.get("t0") or m.get("setup_t")) <= we
                        and (m.get("t1") or time.time()) >= ws]
         late = sum(((m.get("wheel_loop") or {}).get("late_ticks") or 0) for m in overlapping)
-        live = [r for r in win if r.get("mission_live")]
+        # Servers through the crash-loop window and the loaded window (amendment 4).
+        span_end = (lf + LOADED_S) if lf else we
+        live = [r for r in rows if ws and span_end and ws <= r["t"] <= span_end and r.get("mission_live")]
         res = {
             "delay_s": self.delay_s, "window": [ws, we], "window_s": round(we - ws, 1) if ws and we else None,
             "hog": hog, "notes": self.notes, "kills": kills, "ve_kills": ve_kills,
+            "kills_before_hog": len(before_hog),
             "oom_kill_rose_by": rose_by, "kills_in_window": window_kills,
             "loaded_rows": len(loaded),
             "restarts_in_window": restarts,
@@ -456,6 +474,7 @@ class CrashLoop(soak.Soak):
                              and restarts >= MIN_KILLS),
             "kill_lines_complete": len(kills) >= rose_by,
             "loaded_window_in_a_mission": len(loaded) >= LOADED_MIN_ROWS,
+            "no_kill_before_the_hog": not before_hog,
             "a_full_window": res["window_s"] is not None and res["window_s"] >= WINDOW_S - 5,
             "no_errored_mission": res["errored_missions_overlapping"] == 0,
             "wheel_loop_read": res["missions_without_wheel_loop"] == 0 and bool(overlapping),
@@ -470,7 +489,7 @@ class CrashLoop(soak.Soak):
             "brain_up_after": bool(lv_after) and all(x == "up" for x in lv_after[-5:]),
         }
         # A kill of a stack process is a measured failure, never invalid (amendment 3).
-        if not res["met"]["every_kill_ve"] and kills and self.baseline_ok:
+        if not res["met"]["every_kill_ve"] and kills and self.baseline_ok and not before_hog:
             # Every line is this run's (the baseline was read), so the kill is
             # real: a failure as measured, whatever else made the run invalid.
             res["valid"] = {k: True for k in res["valid"]}
@@ -478,12 +497,6 @@ class CrashLoop(soak.Soak):
         (self.out / "result.json").write_text(json.dumps(res, indent=1) + "\n")
         self.say(f"valid: {res['valid']}; met: {res['met']}")
         return res
-
-
-def _die_with_parent() -> None:
-    """In the hog's child before exec: SIGKILL when the harness dies
-    (PR_SET_PDEATHSIG), so a harness killed hard never leaves memory held."""
-    _LIBC.prctl(1, signal.SIGKILL)
 
 
 def main(argv) -> int:

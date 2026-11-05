@@ -31,12 +31,20 @@ teardown() {
     kill -KILL "$PY_PID" 2>/dev/null
   fi
   pkill -KILL -f "evaluations/local-vlm-3152/hog.py" 2>/dev/null   # never left holding
-  # The soak's own processes, if python could not end them (review 3); the
-  # board lock means no other bench's are running.
-  docker rm -f "${SOAK_CONTAINER:-picar-ros-3135}" >/dev/null 2>&1
-  pkill -TERM -f "tools/jetson/perception_loop.py" 2>/dev/null
-  pkill -TERM -f "standin_cloud.py [0-9]+ $OUT" 2>/dev/null
-  sudo -n pkill -TERM -f "memory_account.py sample $OUT" 2>/dev/null
+  # The soak's own processes, if python could not end them (reviews 3-4) --
+  # only once python's setup began, so a run refused at its checks (say, a
+  # container of that name already there) touches nothing it did not start.
+  if [ -e "$OUT/setup_started" ]; then
+    docker rm -f "${SOAK_CONTAINER:-picar-ros-3135}" >/dev/null 2>&1
+    pkill -TERM -f "tools/jetson/perception_loop.py" 2>/dev/null
+    pkill -TERM -f "standin_cloud.py [0-9]+ $OUT" 2>/dev/null
+    sudo -n pkill -TERM -f "memory_account.py sample $OUT" 2>/dev/null
+    # The mission stack's own servers (stack.py's PORTS), started in their own sessions.
+    for port in "${PICAR_ROBOT_PORT:-10350}" "${PICAR_BRAIN_PORT:-10351}" "${PICAR_BODY_PORT:-10352}" \
+                "${PICAR_SENSOR_PORT:-10353}" "${PICAR_SENSOR2_PORT:-10354}"; do
+      sudo -n fuser -k -TERM "$port/tcp" >/dev/null 2>&1
+    done
+  fi
   if [ -e "$DROPIN" ]; then
     echo "== teardown: the drop-in was still there; removing it" | tee -a "$OUT/run.log"
     sudo -n rm -f "$DROPIN"; sudo -n systemctl daemon-reload
