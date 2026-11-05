@@ -124,6 +124,12 @@ def ve_unit_settings() -> dict:
     return dict(line.split("=", 1) for line in out.splitlines() if "=" in line)
 
 
+def ladder_of(battery: object) -> dict:
+    """`GET /battery`'s ladder block (`reserve_s`, `shutdown`, `poweroff_cmd`
+    live under `ladder`, beside the top level's `v` and `level`)."""
+    return ((battery or {}).get("ladder") or {}) if isinstance(battery, dict) else {}
+
+
 def f24_env(brain_url: str) -> dict:
     """The robot server's shutdown steps and its stubbed power-off (3.137)."""
     steps = [["brain", f'curl -sf -m 20 -X POST -H "x-app-secret: $APP_SHARED_SECRET" '
@@ -409,7 +415,7 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 # The orchestrator's condition: the power-off is 3.137's logged stub on
                 # this stack (a real one runs only under mode: hardware), or no fault.
                 code, b0 = st.robot("GET", "/battery", timeout=3)
-                ms["poweroff_cmd_at_start"] = (b0 or {}).get("poweroff_cmd") if code == 200 else None
+                ms["poweroff_cmd_at_start"] = ladder_of(b0).get("poweroff_cmd") if code == 200 else None
                 if ms["poweroff_cmd_at_start"] != "stub":
                     raise StackError(f"the power-off is not the stub here ({code}, {b0}): not run")
                 ms["fault_at"] = time.monotonic()
@@ -421,6 +427,7 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                     code, b = st.robot("GET", "/battery", timeout=3)
                     now = time.monotonic()
                     if code == 200 and isinstance(b, dict):
+                        b = ladder_of(b)
                         if ms.get("reserve_at") is None and b.get("reserve_s") is not None:
                             ms["reserve_at"] = now - float(b["reserve_s"])
                             # A mission that had already ended moves nothing after Reserve:
@@ -435,7 +442,7 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                                 "vlm": sh("systemctl", "is-active", VE_UNIT).stdout.strip() == "active"}
                             time.sleep(2.0)                  # a second stub would land here
                             ms["battery_end"] = st.robot("GET", "/battery", timeout=3)[1]
-                            ms["shutdown"] = (ms["battery_end"] or {}).get("shutdown")
+                            ms["shutdown"] = ladder_of(ms["battery_end"]).get("shutdown")
                             break
                     time.sleep(0.2)
             elif spec["fault"] == "stop":

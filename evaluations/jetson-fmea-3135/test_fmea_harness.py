@@ -588,3 +588,18 @@ def test_f24_checks_the_stub_and_ves_unit_first(monkeypatch):
     monkeypatch.setattr(vlm_rows, "sh", lambda *a, **k: types.SimpleNamespace(
         returncode=0, stdout="OOMScoreAdjust=1000\nStartLimitBurst=4\n", stderr=""))
     assert vlm_rows.ve_unit_settings() == {"OOMScoreAdjust": "1000", "StartLimitBurst": "4"}
+
+
+def test_f24_reads_the_ladder_block_of_get_battery():
+    """The desktop smoke (2026-11-04) found `reserve_s`, `shutdown` and
+    `poweroff_cmd` under `/battery`'s `ladder` block; read at the top level,
+    the stub check refused every run and Reserve was never seen."""
+    reply = {"usable": True, "v": 9.83, "level": "poweroff",
+             "ladder": {"level": "poweroff", "reserve_s": 35.9, "poweroff_cmd": "stub",
+                        "shutdown": [{"step": "wheels", "rc": 0}]}}
+    assert vlm_rows.ladder_of(reply)["poweroff_cmd"] == "stub"
+    assert vlm_rows.ladder_of(reply)["reserve_s"] == 35.9
+    assert vlm_rows.ladder_of(None) == {} and vlm_rows.ladder_of({"v": 1}) == {}
+    sys.path.insert(0, str(HERE.parents[1]))
+    src = (HERE.parents[1] / "robot/server.py").read_text()
+    assert '"level": status["level"], "ladder": status}' in src           # the route's reply shape
