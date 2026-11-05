@@ -438,6 +438,25 @@ def test_the_clock_rows_stale_count_ignores_the_epoch_stamp():
     assert sys_rows.judge("F16p", {**CLOCK_GOOD, "idle_at_fault": False})["valid"] is False
 
 
+def test_amendment_16_ve_kills_wait_out_the_start_limit_and_no_stats_is_zero(monkeypatch):
+    """F3f's board run killed VE at the first frame question, before any tier
+    stats (handed-on read None), and every F2/F3 row ran into VE's start limit
+    (4 starts in 900 s) by its fourth run."""
+    assert vlm_rows.absent_count({"tier": {"model": "x"}}) == 0          # a tier block, no stats yet
+    assert vlm_rows.absent_count({"tier": None}) is None
+    assert int(900 // vlm_rows.VE_START_GAP_S) + 1 <= 4                  # <= 4 starts in any 900 s
+    ups = iter([10.0, 200.0, 301.0])
+    monkeypatch.setattr(vlm_rows, "ve_up_s", lambda: next(ups))
+    slept = []
+    assert vlm_rows.wait_start_gap(sleep=slept.append) == 60.0 and slept == [30.0, 30.0]
+    monkeypatch.setattr(vlm_rows, "ve_up_s", lambda: None)
+    with pytest.raises(stack.StackError):
+        vlm_rows.wait_start_gap(sleep=slept.append)
+    import inspect
+    src = inspect.getsource(vlm_rows.run_row)
+    assert src.index("wait_start_gap()") < src.index('raise StackError("VE is not ready at the start")')
+
+
 def test_the_f3_stack_asks_the_cloud_at_arrival_and_the_plant_reads_ve_gone_as_no():
     import inspect
     assert '"SIM_ARRIVAL_CONFIRM": "cloud"' in inspect.getsource(vlm_rows.run_row)
