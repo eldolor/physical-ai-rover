@@ -269,7 +269,9 @@ def _f(p: Path):
 
 def amended_nav_item(nav: dict) -> dict:
     """validity's nav item under amendment 5: an ABORTED frontier goal is
-    explore's to drop; every other abort counts, an unmatched goal's too.
+    explore's to drop; every other abort counts, an unmatched goal's too,
+    except one the brain had cancelled first (amendment 6: `aborted_cancelled`
+    is not in `aborted_other`).
     With none succeeded and nothing else counted, n is 0 ("no nav2 goals")."""
     return {"ok": nav["succeeded"], "n": nav["succeeded"] + nav["aborted_other"]}
 
@@ -290,9 +292,11 @@ def score_steady(out: Path, rec: dict) -> dict:
     # Amendment 5 (3.136.G): with explore's record of its sends' goal ids;
     # without one (a run from before), amendment 2's rule: every abort counts.
     sends = scorers.jsonl(b / "explore_sends.jsonl")
+    # Amendment 6: the brain's own cancels, by goal id (absent before run 3).
+    cancels = scorers.jsonl(b / "explore_cancels.jsonl") if (b / "explore_cancels.jsonl").exists() else []
     # Rows with no id at all are an older bridge's: no join happened.
     amended = any(e[0] for r in sends for e in r.get("sent") or [])
-    nav = scorers.nav_goals_amended(pace, sends, ws, we) if amended else scorers.nav_goals(pace, ws, we)
+    nav = scorers.nav_goals_amended(pace, sends, ws, we, cancel_rows=cancels) if amended else scorers.nav_goals(pace, ws, we)
     tc = validity.telemetry_counts(tele, ws, we)
     o0, o1 = _f(b / "oom_start"), _f(b / "oom_end")
     # Clipped: a ring buffer that wrapped never cancels a kill the counter saw.

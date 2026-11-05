@@ -309,6 +309,10 @@ class MissionHalted(RuntimeError):
 
 
 
+# 3.136.B amendment 6: how many of the brain's own goal cancels status keeps.
+CANCELS_KEPT = 64
+
+
 class _GatedNavigator:
     """3.76 C1/C3/C4: the explore policy's nav2 goals, gated as `_HaltGate`
     gates its moves. No goal is sent once the mission has ended, and one
@@ -329,6 +333,14 @@ class _GatedNavigator:
         # goal still on its way when the mission ended -- which must still
         # be able to cancel itself.
         self._lock = threading.Lock()
+        # 3.136.B amendment 6: every cancel this gate sends, as [n, the goal id
+        # of the mission's last accepted goal (None if unknown), wall time],
+        # recorded BEFORE it goes out -- so a goal nav2 ends ABORTED after the
+        # brain asked to cancel it reads as the brain's cancel, by id.
+        self._own_id: Optional[str] = None
+        self.cancels = collections.deque(maxlen=CANCELS_KEPT)
+        self._cancels_n = 0
+        self._cancel_lock = threading.Lock()
         self._in_flight = 0
         self._ending = False
         self._closed = False
@@ -343,10 +355,12 @@ class _GatedNavigator:
                 reply = self._nav.set_goal(x_m, y_m) or {}
             except Exception:
                 self._sent = True               # the answer is lost, not the goal
+                self._own_id = None             # its id is unknown (amendment 6)
                 raise
             if reply.get("accepted"):
                 self._sent = True
                 self._own = (x_m, y_m)
+                self._own_id = reply.get("goal_id")
                 if not self._is_running():
                     self.cancel_own()           # the mission ended while it was on its way
         finally:
@@ -373,7 +387,15 @@ class _GatedNavigator:
             # The goal on the server may be a person's by now; the
             # mission's own is ended by cancel_own().
             return {"canceled": False, "reason": "mission_ended"}
+        self._note_cancel()
         return self._nav.cancel_goal()
+
+    def _note_cancel(self) -> None:
+        """Numbered, and appended before the count rises, so a reader on
+        another thread takes entries by number (as explore's `sent`)."""
+        with self._cancel_lock:
+            self.cancels.append((self._cancels_n + 1, self._own_id, round(time.time(), 6)))
+            self._cancels_n += 1
 
     @property
     def sent_goal(self) -> bool:
@@ -390,6 +412,7 @@ class _GatedNavigator:
             if (goal.get("state") in ("pending", "active")
                     and math.hypot(goal.get("x_m", math.inf) - own[0],
                                    goal.get("y_m", math.inf) - own[1]) < OWN_GOAL_TOLERANCE_M):
+                self._note_cancel()
                 self._nav.cancel_goal()
         except Exception as e:  # noqa: BLE001 -- nothing on the way out may raise (3.55)
             logger.warning("could not end the mission's nav2 goal: %s", e)
@@ -1574,6 +1597,9 @@ class MissionRunner:
                              # Copied in one call: the mission thread appends
                              # outside this lock.
                              "sent": [list(x) for x in list(self.agent.sent)],
+                             # 3.136.B amendment 6: the cancels the brain sent, by id.
+                             "cancels": ([list(x) for x in list(self._navigator.cancels)]
+                                         if isinstance(self._navigator, _GatedNavigator) else []),
                              "goals_failed": self.agent.goals_failed,
                              "last_event": self.agent.last_event,
                              "camera_seen_m2": round(len(self.agent.seen)

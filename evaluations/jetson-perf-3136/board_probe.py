@@ -48,7 +48,10 @@ def missions(flag: str, out: str, targets: list) -> int:
     i = 0
     # Amendment 5 (3.136.G): each send's goal id and kind, from status.
     sends_path = os.path.join(os.path.dirname(out) or ".", "explore_sends.jsonl")
-    with open(out, "a", buffering=1) as f, open(sends_path, "a", buffering=1) as sends:
+    # Amendment 6 (3.136.B): the cancels the brain sent, by goal id.
+    cancels_path = os.path.join(os.path.dirname(out) or ".", "explore_cancels.jsonl")
+    with open(out, "a", buffering=1) as f, open(sends_path, "a", buffering=1) as sends, \
+            open(cancels_path, "a", buffering=1) as cancels:
         while os.path.exists(flag):
             target = targets[i % len(targets)]
             i += 1
@@ -64,7 +67,7 @@ def missions(flag: str, out: str, targets: list) -> int:
                                     "body": r.text[:300], "t0": t0}) + "\n")
                 time.sleep(5)
                 continue
-            s, stopped, seen = {}, False, 0
+            s, stopped, seen, seen_c = {}, False, 0, 0
             while True:
                 if not os.path.exists(flag) and not stopped:
                     try:
@@ -88,6 +91,13 @@ def missions(flag: str, out: str, targets: list) -> int:
                     sends.write(json.dumps({"t": round(time.time(), 3), "mission": i,
                                             "sent": [e[1:] for e in new],
                                             "missing": missing}) + "\n")
+                # The same for the cancels: [n, goal_id, wall time].
+                new_c = [e for e in ex.get("cancels") or [] if e[0] > seen_c]
+                if new_c:
+                    missing_c = new_c[0][0] - seen_c - 1
+                    seen_c = new_c[-1][0]
+                    cancels.write(json.dumps({"t": round(time.time(), 3), "mission": i,
+                                              "cancels": new_c, "missing": missing_c}) + "\n")
                 if not s.get("running") and s.get("outcome") not in (None, "idle", "running"):
                     break
                 if stopped and time.time() - t0 > 3600:

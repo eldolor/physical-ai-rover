@@ -75,3 +75,83 @@ def test_a_bridge_with_no_id_records_null():
 def test_the_record_is_bounded():
     from brain.explore import SENT_IDS_KEPT
     assert SENT_IDS_KEPT == 64
+
+
+# ---- 3.136.B amendment 6: the brain records each cancel it sends, by goal id ----
+
+class CancelNav(IdNav):
+    """IdNav that logs, at each cancel, which goal the bridge held then.
+    Every third goal never arrives (stays active), so explore's goal timeout
+    cancels it."""
+
+    def __init__(self, robot, **kw):
+        super().__init__(robot, **kw)
+        self.cancelled_ids = []
+
+    def get_goal(self):
+        if self.goal and self.goal["state"] == "active" and len(self.ids) % 3 == 0:
+            return {"goal": dict(self.goal), "plan": []}
+        return super().get_goal()
+
+    def cancel_goal(self):
+        self.cancelled_ids.append(self.ids[-1] if self.ids else None)
+        return super().cancel_goal()
+
+
+def test_each_cancel_the_brain_sends_is_recorded_with_its_goal_id_first():
+    runner, nav, grid = _run(CancelNav, max_steps=120)
+    cancels = runner.status()["explore"]["cancels"]
+    assert nav.cancelled_ids, "the mission sent no cancel: the test proves nothing"
+    assert [i for _, i, _ in cancels] == nav.cancelled_ids[-64:]
+    assert [n for n, _, _ in cancels] == list(range(len(nav.cancelled_ids) - len(cancels) + 1,
+                                                    len(nav.cancelled_ids) + 1))
+    assert all(isinstance(t, float) for _, _, t in cancels)
+
+
+def test_a_cancel_is_recorded_before_it_is_sent(monkeypatch):
+    import time as _time
+    from control.mission_runner import _GatedNavigator
+    seen = []
+
+    class Nav:
+        def set_goal(self, x, y):
+            return {"accepted": True, "goal_id": "f" * 32}
+
+        def cancel_goal(self):
+            seen.append(list(g.cancels))      # what the record held as the cancel went out
+            return {"canceled": True}
+
+        def get_goal(self):
+            return {"goal": {"state": "active", "x_m": 1.0, "y_m": 2.0}}
+
+    g = _GatedNavigator(Nav(), lambda: True)
+    g.set_goal(1.0, 2.0)
+    before = _time.time()
+    g.cancel_goal()
+    assert seen[0] and seen[0][-1][1] == "f" * 32 and seen[0][-1][2] >= round(before, 3) - 0.001
+    g.cancel_own()                            # the mission's end: the same record
+    assert len(seen) == 2 and seen[1][-1][0] == 2 and seen[1][-1][1] == "f" * 32
+
+
+def test_a_goal_whose_answer_was_lost_is_not_named_by_a_later_cancel():
+    from control.mission_runner import _GatedNavigator
+    replies = [{"accepted": True, "goal_id": "a" * 32}, OSError("lost")]
+
+    class Nav:
+        def set_goal(self, x, y):
+            r = replies.pop(0)
+            if isinstance(r, Exception):
+                raise r
+            return r
+
+        def cancel_goal(self):
+            return {"canceled": True}
+
+    g = _GatedNavigator(Nav(), lambda: True)
+    g.set_goal(1.0, 0.0)
+    try:
+        g.set_goal(2.0, 0.0)
+    except OSError:
+        pass
+    g.cancel_goal()
+    assert g.cancels[-1][1] is None

@@ -523,8 +523,12 @@ seed `[x_m, y_m, name]`), `mission`, `target_object`,
 `late_confirmation`, `last_frame_seq`, `ticks`, `seconds_since_last_tick`, `tick_rate_hz`,
 `sighting`, `explore` (null unless explore searches: `goals_sent`,
 3.136.G's `sent` -- the last `SENT_IDS_KEPT` (64) accepted sends as
-`[goal_id, kind]`, `goal_id` the bridge's id for the goal it gave nav2 or
-null from an older bridge --, `goals_failed`, `last_event`, `camera_seen_m2`, `choice_ms`, and 3.88 A's
+`[n, goal_id, kind]`, `n` the send's number, `goal_id` the bridge's id for
+the goal it gave nav2 or null from an older bridge --, 3.136.B amendment 6's
+`cancels` -- the last `CANCELS_KEPT` (64) cancels `_GatedNavigator` sent
+(`cancel_goal()`, `cancel_own()`) as `[n, goal_id, wall time]`, recorded
+before each goes out, `goal_id` that of the mission's last accepted goal
+(null if its answer was lost) --, `goals_failed`, `last_event`, `camera_seen_m2`, `choice_ms`, and 3.88 A's
 `asks`, `ask` -- the open choice, `{choice, candidates, default, picked,
 waited_s, timeout_s, remaining_s}`, or null -- and `choices`, the count
 recorded), `log_tail` (last `LOG_TAIL_LINES` = 20). `tier`/`perception`

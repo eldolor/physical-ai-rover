@@ -270,26 +270,39 @@ def nav_goals(pace_rows: list, t0=None, t1=None) -> dict:
 GOAL_ID_HEX = 12        # ros_pace.py's `_gid`: nav2's goal UUID, first 12 hex digits
 
 
-def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None) -> dict:
+def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel_rows=()) -> dict:
     """`nav_goals()` with each ABORTED end split by its goal's kind --
     amendment 5, by id (3.136.G): `aborted_frontier` (explore expects and
     drops those) and `aborted_other` (any other kind). Each nav2 goal's kind
     is what explore recorded with the id the bridge gave it
     (`status.explore.sent`, written by `board_probe.py missions` as
     `explore_sends.jsonl`); a goal no send recorded is `unmatched` and is
-    not a frontier goal. Goals that ended inside the window."""
+    not a frontier goal. Goals that ended inside the window.
+
+    Amendment 6 (3.136.B, the user): a non-frontier ABORTED goal whose id
+    the brain recorded a cancel for (`cancel_rows`, the probe's
+    `explore_cancels.jsonl` of `status.explore.cancels`) at or before the
+    first status row showing it ended is `aborted_cancelled` (counted
+    neither way, as a sender's cancel); a cancel recorded after that, for
+    another id, or none at all leaves it `aborted_other`."""
     kind = {}
     for r in sent_rows:
         for gid, k in r.get("sent") or []:
             if gid:
                 kind[gid[:GOAL_ID_HEX]] = k
+    first_cancel = {}
+    for r in cancel_rows:
+        for _n, gid, tc in r.get("cancels") or []:
+            if gid:
+                g = gid[:GOAL_ID_HEX]
+                first_cancel[g] = min(tc, first_cancel.get(g, tc))
     ended = {}
     for r in sorted((r for r in pace_rows if r.get("k") == "nav"), key=lambda r: r["t"]):
         for gid, st in r.get("goals") or []:
             if st in TERMINAL and gid not in ended:
                 ended[gid] = (r["t"], TERMINAL[st])
     out = {"n": 0, "succeeded": 0, "canceled": 0, "aborted": 0,
-           "aborted_frontier": 0, "aborted_other": 0, "unmatched": 0,
+           "aborted_frontier": 0, "aborted_other": 0, "aborted_cancelled": 0, "unmatched": 0,
            "sends_missing": sum(r.get("missing") or 0 for r in sent_rows)}
     for gid, (t, st) in ended.items():
         if (t0 is not None and t < t0) or (t1 is not None and t > t1):
@@ -299,7 +312,10 @@ def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None) -> dic
         out[st] += 1
         out["unmatched"] += k is None
         if st == "aborted":
-            out["aborted_frontier" if k == "frontier" else "aborted_other"] += 1
+            tc = first_cancel.get(gid[:GOAL_ID_HEX])
+            out["aborted_frontier" if k == "frontier"
+                else "aborted_cancelled" if tc is not None and tc <= t
+                else "aborted_other"] += 1
     return out
 
 
