@@ -322,7 +322,9 @@ def map_json(m) -> bytes:
     is not a str (which `json.dumps` converts) goes in one call, as before.
     Only a top-level list is sliced: every world's `cells` is one flat list
     (`world/interface.py`); a nested or tuple shape would be the same bytes in
-    one call."""
+    one call. Not one atomic call any more, so the map must not change while
+    it is encoded: every world hands back its own copy (`MockWorld` a fresh
+    list, `RosWorld` a dict built once per version and never written again)."""
     if not isinstance(m, dict) or not all(isinstance(k, str) for k in m):
         return _dumps(m).encode("utf-8")
     parts = ["{"]
