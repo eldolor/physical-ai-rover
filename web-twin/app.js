@@ -2164,12 +2164,15 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     return (s && s.local_vlm && s.local_vlm.state) ? s.local_vlm : null;
   }
   function renderLocalVlm(status) {
-    const lv = localVlmOf(status);
+    // Only while a mission runs (review): an ended one's state is its last,
+    // and nothing probes after it.
+    const lv = status && status.running ? localVlmOf(status) : null;
     let text = null, cls = null;
     if (lv) {
       const since = lv.since ? new Date(lv.since * 1000).toLocaleTimeString([], {
         hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "";
-      text = t("localvlm." + (lv.state === "down" ? "down" : lv.state === "up" ? "up" : "off"),
+      const key = ["down", "up", "unwatched"].includes(lv.state) ? lv.state : "off";
+      text = t("localvlm." + key,
                {since: since, probes: lv.probes || 0});
       cls = lv.state === "down" ? "warn" : lv.state === "up" ? "safe" : null;
     }

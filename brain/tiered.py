@@ -88,6 +88,7 @@ from typing import Callable, Optional
 
 from brain.arrival import is_sim_frame, run_spans
 from brain.goal_pose import GoalPose, OdomTracker, Pose, _wrap
+from brain.local_vlm import LocalVLMAbsent
 from brain.tree import SUCCESS, Action, Condition, Decorator, Fallback, Node, Sequence
 from brain.perceive import (ABSENT, DEFAULT_MATCH_PROBABILITY, DETECTED, UNAVAILABLE,
                             Perception)
@@ -1003,6 +1004,12 @@ class TieredVision:
         self._local_back_seen = False       # raised by the probe; applied by a frame
         self._local_probe_stop = threading.Event()
         self._local_probe: Optional[threading.Thread] = None
+        # Set by close() under `_local_flip_lock` (review): a flip racing a
+        # close must not start a probe the close never sees.
+        self._local_closed = False
+        # Bumped by every flip (bug pass): an absence from a call taken
+        # before the last flip is about a VE that state no longer describes.
+        self._local_gen = 0
         self.pipeline = pipeline
         # 3.91.C: a no about a candidate, remembered (see DEFAULT_REMEMBER_NO).
         # `_rejection` is {"by", "rank", "episode", "pose", "at_stamp",
@@ -1230,7 +1237,10 @@ class TieredVision:
         self._pending_error: Optional[BaseException] = None
         self.stats = TierStats()
         if local_identity_fn is not None or local_sighting_fn is not None:
-            self.stats.local_vlm = {"state": "up", "since": None, "probes": 0}
+            # Without a /health probe nothing is held down, so "up" would be
+            # a claim it cannot check (review): `unwatched`.
+            self.stats.local_vlm = ({"state": "up", "since": None, "probes": 0}
+                                    if local_health_fn is not None else {"state": "unwatched"})
         # 6.3 asks for **the detector's own name** on screen, not just its
         # output: *"swap the HEF and the name on screen changes; that is
         # the experiment loop made watchable."* Read off the backends
@@ -1938,6 +1948,7 @@ class TieredVision:
             return None
         started = time.perf_counter()
         direction = None
+        gen = self._local_gen
         try:
             got, error = (fn(frame, box=True) or {}), None
             with self._stats_lock:
@@ -1948,7 +1959,7 @@ class TieredVision:
             direction = self._ask_direction(frame, q, got)
         except Exception as e:  # noqa: BLE001 -- LocalVLMAbsent, or a fault in the client
             got, error = None, e
-            self._note_local_error(e)
+            self._note_local_error(e, gen)
             with self._stats_lock:
                 self.stats.record("local_frame_ms", (time.perf_counter() - started) * 1000)
         finally:
@@ -1990,18 +2001,20 @@ class TieredVision:
         # Only after a reply the VLM finished: a `timeout` or `busy` one is
         # still draining on the driver, and the direction would wait out its
         # own deadline behind it (review, 2026-10-16).
-        if (self.local_direction_fn is None or q.trigger not in SEARCH_TRIGGERS
+        # Read once (bug pass): a flip between a check and the call.
+        direction_fn, gen = self.local_direction_fn, self._local_gen
+        if (direction_fn is None or q.trigger not in SEARCH_TRIGGERS
                 or _local_kind(got, self.local_no_below, self.local_yes_at) == "yes"
                 or got.get("status") not in ("answered", "unparsed")
                 or q.detected or q.epoch != self._epoch or self._closed):
             return None
         started = time.perf_counter()
         try:
-            reply = self.local_direction_fn(frame)
+            reply = direction_fn(frame)
             reply = reply if isinstance(reply, dict) else {}
         except Exception as e:  # noqa: BLE001 -- LocalVLMAbsent, or a fault in the client
             logger.warning("local VLM absent for the direction (%s)", e)
-            self._note_local_error(e)
+            self._note_local_error(e, gen)
             reply = {"status": "absent"}
         with self._stats_lock:
             self.stats.record("local_direction_ms", (time.perf_counter() - started) * 1000)
@@ -2296,16 +2309,21 @@ class TieredVision:
                                                 "the previous local check is still running")}
                 self._local_done = (call_id, verdict)
                 return verdict
+            # 3.152 (review): read once. A frame may hold the tier down on
+            # another thread between the check above and here, and a down
+            # tier asks nothing -- as if no local tier were configured.
+            local_fn, gen = self.local_identity_fn, self._local_gen
+            if local_fn is None:
+                self._local_done = (call_id, None)
+                return None
             self._local_inflight = call_id
-            # 3.152: taken under the lock, with the decision to ask it.
-            local_fn = self.local_identity_fn
         started = time.perf_counter()
         try:
             got = local_fn(frame) or {}
             error = None
         except Exception as e:  # noqa: BLE001 -- LocalVLMAbsent, or a fault in the client
             got, error = None, e
-            self._note_local_error(e)
+            self._note_local_error(e, gen)
         with self._local_lock:
             if self._local_inflight == call_id:
                 self._local_inflight = None
@@ -2684,9 +2702,13 @@ class TieredVision:
             local, self.local_identity_fn = self._cfg_local_identity_fn, None
             self.local_sighting_fn = None
             self.local_direction_fn = None
-            # 3.152: the probe ends with the mission.
-            self._local_probe_stop.set()
-            probe = self._local_probe
+            # 3.152: the probe ends with the mission. It is not joined (review):
+            # a probe in its /health GET ends within PROBE_TIMEOUT_S, and a
+            # closed tier flips nothing.
+            with self._local_flip_lock:
+                self._local_closed = True
+                self._local_absent_seen = self._local_back_seen = False
+                self._local_probe_stop.set()
             if local is not None and hasattr(local, "close"):
                 try:
                     local.close()
@@ -2695,22 +2717,21 @@ class TieredVision:
             if self._executor is not None:
                 self._executor.shutdown(wait=False, cancel_futures=True)
                 self._executor = None
-        if probe is not None and probe is not threading.current_thread():
-            probe.join(timeout=1.0)
 
     # -- 3.152: a local VLM held down while absent ------------------------
 
-    def _note_local_error(self, error: BaseException) -> None:
+    def _note_local_error(self, error: BaseException, gen: int) -> None:
         """Any thread: a question found the local VLM absent (a refused or
         dropped connection, or a 503). Raised here, applied by the next frame
         (`_apply_local_flip`), so a frame never sees the tier change under
         it. Only absence: a hang is `timeout`, the unable rule's (crit. 4).
-        Without a health probe there is no way back, so nothing is held."""
-        from brain.local_vlm import LocalVLMAbsent
+        Without a health probe there is no way back, so nothing is held.
+        `gen` is `_local_gen` when the call was taken: a call from before the
+        last flip says nothing about the VE the state now describes."""
         if not isinstance(error, LocalVLMAbsent) or self._local_health_fn is None:
             return
         with self._local_flip_lock:
-            if not self._closed:
+            if not self._local_closed and gen == self._local_gen:
                 self._local_absent_seen = True
 
     def _apply_local_flip(self) -> None:
@@ -2719,20 +2740,31 @@ class TieredVision:
         with self._local_flip_lock:
             absent, self._local_absent_seen = self._local_absent_seen, False
             back, self._local_back_seen = self._local_back_seen, False
-            if self._closed:
+            if self._local_closed or self._closed:
                 return
-            if not self._local_down and absent:
-                self._local_down = True
-                self._local_vlm_state("down")
-                logger.warning("local VLM down; its questions go as with no local tier "
-                               "until /health says ready (probed every %g s)",
-                               self.local_probe_s)
-                self._local_probe_stop.clear()
-                self._local_probe = threading.Thread(
-                    target=self._probe_local, name="local-vlm-probe", daemon=True)
-                self._local_probe.start()
+            if absent:
+                # Also while down: a call taken before the flip failed after a
+                # probe said ready (review), so it is down again, probed anew.
+                if not self._local_down:
+                    self._local_down = True
+                    self._local_gen += 1
+                    self._local_vlm_state("down")
+                    logger.warning("local VLM down; its questions go as with no local "
+                                   "tier until /health says ready (probed every %g s)",
+                                   self.local_probe_s)
+                if self._local_probe is None or not self._local_probe.is_alive():
+                    self._local_probe_stop.clear()
+                    self._local_probe = threading.Thread(
+                        target=self._probe_local, name="local-vlm-probe", daemon=True)
+                    self._local_probe.start()
             elif self._local_down and back:
                 self._local_down = False
+                self._local_gen += 1
+                # A VE that is back starts afresh (bug pass): unable answers
+                # from before the outage would hand its first questions on.
+                self._frame_unable = 0
+                with self._local_lock:
+                    self._local_unable = 0
                 self._local_vlm_state("up")
                 logger.info("local VLM back: its questions go to it first again")
 
@@ -2741,6 +2773,8 @@ class TieredVision:
             lv = self.stats.local_vlm
             if lv.get("state") != state:
                 lv.update(state=state, since=time.time())
+                if state == "down":      # review: each outage counts its own
+                    lv.update(probes=0, checked_at=None)
 
     def _probe_local(self) -> None:
         """The probe's thread: VE's free /health every `local_probe_s`, from
@@ -2757,7 +2791,7 @@ class TieredVision:
                 lv["checked_at"] = time.time()
             if ready:
                 with self._local_flip_lock:
-                    if not self._closed:
+                    if not self._local_closed:
                         self._local_back_seen = True
                 return
 

@@ -34,8 +34,9 @@ logger = logging.getLogger(__name__)
 # so a healthy service is never cut off by its own client.
 TAIL_S = 2.0
 
-# 3.152: how long the policy's probe of a down VE waits for `/health`.
-PROBE_TIMEOUT_S = 2.0
+# 3.152: how long the policy's probe of a down VE waits for `/health`, under
+# a second so a closed policy's probe ends within one (amendment 1).
+PROBE_TIMEOUT_S = 0.8
 
 
 # 3.80.D: Qwen2.5-VL answers a box in the pixels of the image it was fed,

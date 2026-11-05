@@ -236,12 +236,18 @@ pace, its candidate steer, the cloud at arrival. The question that found
 it absent is answered as before (the cloud about the same frame). The
 first probe that returns True raises `_local_back_seen` and ends the
 thread; the next frame clears `_local_down` and `stats.local_vlm` reads
-`up`. `close()` stops and joins the probe (1 s) and drops the configured
-client; a probe that lands after `close()` flips nothing. Without
+`up`. An absence and a ready probe noted before one frame: the absence
+wins (still down, a new probe; a call taken before the flip failed after
+the probe). Each outage counts its own `probes`. `confirm_local()` reads
+the client once, under `_local_lock`; None (held down since the check) asks
+nothing. `close()` sets `_local_closed` and the probe's stop under
+`_local_flip_lock`, so a flip racing it starts no probe; it does not join
+the probe, whose `/health` GET ends within the client's `PROBE_TIMEOUT_S`
+(0.8 s), and a probe that lands after `close()` flips nothing. Without
 `local_health_fn` nothing is held (an absent VE is asked again every
 question, as before 3.152). `stats.local_vlm` is `{"state": "off"}` with
 no local tier configured, `{"state": "up", "since": None, "probes": 0}`
-with one.
+with one and a probe, `{"state": "unwatched"}` with one and no probe.
 
 **Every frame's question through the local tier (3.80.D).** With
 `local_sighting_fn` set (the brain sets it with `local_identity_fn`, to the

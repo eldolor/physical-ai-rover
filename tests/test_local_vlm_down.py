@@ -190,7 +190,7 @@ def test_c1_without_a_probe_nothing_is_held(clean_env, monkeypatch):
     ve = NoHealthVE(TARGET, "down")
     got, _ = _mission(monkeypatch, ve)
     assert ve.asked > 1
-    assert got["local_vlm"]["state"] == "up"
+    assert got["local_vlm"] == {"state": "unwatched"}
 
 
 # -- criterion 2: no wait ---------------------------------------------------
@@ -246,7 +246,7 @@ def test_c3_up_within_one_probe_and_asked_first_again():
     ve = StubVE(TARGET, "down")
     tier = _tier(ve, probe_s=0.2)
     try:
-        tier._note_local_error(LocalVLMAbsent("stub"))
+        tier._note_local_error(LocalVLMAbsent("stub"), tier._local_gen)
         tier(_frame(1))
         assert tier.stats.local_vlm["state"] == "down"
         assert tier.local_sighting_fn is None and tier.local_identity_fn is None
@@ -272,7 +272,7 @@ def test_c3_not_ready_or_a_raising_probe_keeps_it_down(probe):
     tier = TieredVision(FrameReportedPipeline(TARGET), NoCloud(), local_identity_fn=ve,
                         local_sighting_fn=ve.ask, local_health_fn=probe, local_probe_s=0.05)
     try:
-        tier._note_local_error(LocalVLMAbsent("stub"))
+        tier._note_local_error(LocalVLMAbsent("stub"), tier._local_gen)
         tier(_frame(1))
         time.sleep(0.3)
         tier(_frame(2))
@@ -361,7 +361,7 @@ def test_c6_hard_rules_and_trees_unchanged_by_down():
     tier = _tier(ve, probe_s=60)
     try:
         before = (tier.describe_who_tree(), tier.describe_when_tree(), tier.describe_tree())
-        tier._note_local_error(LocalVLMAbsent("stub"))
+        tier._note_local_error(LocalVLMAbsent("stub"), tier._local_gen)
         tier(_frame(1))
         assert tier.stats.local_vlm["state"] == "down"
         assert (tier.describe_who_tree(), tier.describe_when_tree(),
@@ -383,7 +383,7 @@ def test_c7_no_probes_while_up(clean_env, monkeypatch):
 def test_c7_no_probe_thread_after_close():
     ve = StubVE(TARGET, "down")
     tier = _tier(ve, probe_s=0.05)
-    tier._note_local_error(LocalVLMAbsent("stub"))
+    tier._note_local_error(LocalVLMAbsent("stub"), tier._local_gen)
     tier(_frame(1))
     probe = tier._local_probe
     assert probe is not None and probe.is_alive()
@@ -402,7 +402,7 @@ def test_c7_a_close_during_a_probe_pays_nothing_and_flips_nothing():
     ve = StubVE(TARGET, "down")
     tier = TieredVision(FrameReportedPipeline(TARGET), cloud, local_identity_fn=ve,
                         local_sighting_fn=ve.ask, local_health_fn=probe, local_probe_s=0.01)
-    tier._note_local_error(LocalVLMAbsent("stub"))
+    tier._note_local_error(LocalVLMAbsent("stub"), tier._local_gen)
     tier(_frame(1))
     assert started.wait(1)
     calls = cloud.calls
@@ -417,7 +417,7 @@ def test_c7_other_client_faults_hold_nothing():
     ve = StubVE(TARGET, "up")
     tier = _tier(ve)
     try:
-        tier._note_local_error(RuntimeError("a fault in the client"))
+        tier._note_local_error(RuntimeError("a fault in the client"), tier._local_gen)
         tier(_frame(1))
         assert tier.stats.local_vlm["state"] == "up"
     finally:
@@ -431,7 +431,7 @@ def test_c8_status_carries_the_state():
     tier = _tier(ve, probe_s=60)
     try:
         assert tier.stats.as_dict()["local_vlm"]["state"] == "up"
-        tier._note_local_error(LocalVLMAbsent("stub"))
+        tier._note_local_error(LocalVLMAbsent("stub"), tier._local_gen)
         tier(_frame(1))
         lv = tier.stats.as_dict()["local_vlm"]
         assert lv["state"] == "down" and isinstance(lv["since"], float)
@@ -440,3 +440,62 @@ def test_c8_status_carries_the_state():
     off = TieredVision(FrameReportedPipeline(TARGET), NoCloud())
     assert off.stats.as_dict()["local_vlm"] == {"state": "off"}
     off.close()
+
+
+# -- the reviews' findings (2026-11-04), red first ---------------------------
+
+def test_review_a_flip_after_close_starts_no_probe():
+    """A frame that noted an absence races a Stop: close() first, then the
+    frame's flip. No probe may start (it would poll a closed client for the
+    process's life)."""
+    ve = StubVE(TARGET, "down")
+    tier = _tier(ve, probe_s=0.05)
+    tier._note_local_error(LocalVLMAbsent("stub"), tier._local_gen)
+    tier.close()
+    tier._local_absent_seen = True          # as if noted in the race's window
+    tier._apply_local_flip()
+    assert tier._local_probe is None
+    assert tier.stats.local_vlm["state"] == "up"
+
+
+def test_review_a_stale_absence_after_the_return_holds_nothing():
+    """A call taken before VE came back fails afterwards: it is about the
+    old VE, so the tier stays up."""
+    ve = StubVE(TARGET, "down")
+    tier = _tier(ve, probe_s=0.05)
+    try:
+        before = tier._local_gen
+        tier._note_local_error(LocalVLMAbsent("stub"), before)
+        tier(_frame(1))
+        assert tier.stats.local_vlm["state"] == "down"
+        ve.mode = "up"
+        assert _wait_for(lambda: tier._local_back_seen, 1.0)
+        tier(_frame(2))
+        assert tier.stats.local_vlm["state"] == "up"
+        tier._note_local_error(LocalVLMAbsent("stale"), before)
+        tier(_frame(3))
+        assert tier.stats.local_vlm["state"] == "up"
+        tier._note_local_error(LocalVLMAbsent("fresh"), tier._local_gen)
+        tier(_frame(4))
+        assert tier.stats.local_vlm["state"] == "down"
+        assert tier.stats.local_vlm["probes"] == 0       # a new outage's own count
+    finally:
+        tier.close()
+
+
+def test_review_a_ve_that_is_back_starts_with_no_unable_answers():
+    ve = StubVE(TARGET, "down")
+    tier = _tier(ve, probe_s=0.05)
+    try:
+        tier._note_local_error(LocalVLMAbsent("stub"), tier._local_gen)
+        tier(_frame(1))
+        tier._frame_unable = tier._local_unable = 2      # spent when it went
+        ve.mode = "up"
+        assert _wait_for(lambda: tier._local_back_seen, 1.0)
+        tier._apply_local_flip()                          # the next frame's first step
+        assert tier.stats.local_vlm["state"] == "up"
+        assert tier._frame_unable == 0 and tier._local_unable == 0
+        assert tier._local_first() is not None
+        assert tier.next_confirm_is_local()
+    finally:
+        tier.close()
