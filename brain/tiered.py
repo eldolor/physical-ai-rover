@@ -2814,9 +2814,15 @@ class TieredVision:
                 logger.warning("could not start the local VLM probe (%s); each frame "
                                "retries", e)
                 self._probe_start_warned = True
+            # In the status too (review 5): a start that keeps failing holds
+            # the tier down for good, and one log line is easy to miss.
+            with self._stats_lock:
+                self.stats.local_vlm["probe_error"] = f"{type(e).__name__}: {e}"[:200]
             self._local_probe = None
             return
         self._probe_start_warned = False
+        with self._stats_lock:
+            self.stats.local_vlm.pop("probe_error", None)
         self._local_probe = probe
 
     def _local_read(self, name: str):

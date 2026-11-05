@@ -644,3 +644,26 @@ def test_review4_a_frame_overtaken_by_a_flip_asks_nothing():
         assert ve.asked == asked
     finally:
         tier.close()
+
+
+@pytest.mark.parametrize("where", ["construct", "start"])
+def test_review5_a_memory_error_anywhere_in_the_start_is_caught_and_shown(where):
+    class NoMemory(threading.Thread):
+        def __init__(self, *a, **k):
+            if where == "construct":
+                raise MemoryError("no memory")
+            super().__init__(*a, **k)
+
+        def start(self):
+            raise MemoryError("no memory")
+    ve = StubVE(TARGET, "down")
+    tier = _tier(ve, probe_s=0.05)
+    try:
+        tier._note_local_error(LocalVLMAbsent("stub"), tier._local_gen)
+        with mock.patch.object(TieredVision, "_probe_thread", NoMemory):
+            tier(_frame(1))                      # must not raise
+        assert tier.stats.as_dict()["local_vlm"]["probe_error"].startswith("MemoryError")
+        tier(_frame(2))                          # a start that succeeds clears it
+        assert "probe_error" not in tier.stats.as_dict()["local_vlm"]
+    finally:
+        tier.close()
