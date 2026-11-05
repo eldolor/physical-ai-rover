@@ -178,6 +178,9 @@ def judge(row: str, ms: dict) -> dict:
             valid = False
             r.append(f"invalid: the ladder did not reach Reserve and Power-off "
                      f"(reserve {ms.get('reserve_at')}, poweroff {ms.get('poweroff_at')})")
+        if ms.get("running_at_reserve") is not True:
+            valid = False
+            r.append("invalid: the mission was not running when Reserve latched")
         mv = ms.get("moved_after_reserve_cm")
         bar(mv is not None and mv <= F24_MOVE_BAR_CM,
             f"moved {mv} cm after Reserve (bar {F24_MOVE_BAR_CM:g})")
@@ -401,6 +404,9 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                     if code == 200 and isinstance(b, dict):
                         if ms.get("reserve_at") is None and b.get("reserve_s") is not None:
                             ms["reserve_at"] = now - float(b["reserve_s"])
+                            # A mission that had already ended moves nothing after Reserve:
+                            # no test of the guard (and the plant would slip past it).
+                            ms["running_at_reserve"] = bool(status(st).get("running"))
                         steps = b.get("shutdown") or []
                         if any(x.get("step") == "poweroff" for x in steps):
                             ms["poweroff_at"] = now

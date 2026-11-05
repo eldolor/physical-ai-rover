@@ -51,7 +51,7 @@ def check_tree(root: Path, dirs=DATA_DIRS) -> dict:
     """Every JSON file loaded and every JSONL line parsed under `dirs`
     (pure, the planted check feeds it torn copies). Other files are counted,
     not read (images)."""
-    res = {"files": 0, "json": 0, "jsonl_lines": 0, "other": 0, "bad": []}
+    res = {"files": 0, "json": 0, "jsonl_lines": 0, "other": 0, "bad": [], "index": {}}
     for d in dirs:
         base = Path(root, d)
         if not base.is_dir():
@@ -61,6 +61,7 @@ def check_tree(root: Path, dirs=DATA_DIRS) -> dict:
                 continue
             res["files"] += 1
             rel = str(p.relative_to(root))
+            res["index"][rel] = p.stat().st_size
             if p.suffix == ".json":
                 res["json"] += 1
                 try:
@@ -73,6 +74,7 @@ def check_tree(root: Path, dirs=DATA_DIRS) -> dict:
                 except UnicodeDecodeError as e:
                     res["bad"].append({"file": rel, "why": f"UnicodeDecodeError: {e}"})
                     continue
+                res["index"][rel] = sum(1 for line in lines if line.strip())      # a JSONL's lines
                 for n, line in enumerate(lines, 1):
                     if not line.strip():
                         continue
@@ -86,9 +88,21 @@ def check_tree(root: Path, dirs=DATA_DIRS) -> dict:
     return res
 
 
+def lost_or_shrunk(before: dict, after: dict) -> list:
+    """Files the reboot lost, or JSONL files it left with fewer lines (pure)."""
+    b, a = (before or {}).get("index") or {}, (after or {}).get("index") or {}
+    out = [{"file": f, "why": "gone"} for f in b if f not in a]
+    out += [{"file": f, "why": f"{b[f]} -> {a[f]} lines"} for f in b
+            if f in a and f.endswith(".jsonl") and a[f] < b[f]]
+    return out
+
+
 def judge(ms: dict) -> dict:
     r = []
-    valid = ms.get("boot_changed") is True and ms.get("driving_at_reboot") is True
+    up = all(v == "active/enabled" for v in (ms.get("units_before") or {"x": ""}).values())
+    valid = ms.get("boot_changed") is True and ms.get("driving_at_reboot") is True and up
+    if not up:
+        r.append(f"invalid: the units were not all up before the run ({ms.get('units_before')})")
     if ms.get("boot_changed") is not True:
         r.append("invalid: the boot id did not change (no reboot)")
     if ms.get("driving_at_reboot") is not True:
@@ -101,6 +115,9 @@ def judge(ms: dict) -> dict:
         r.append("the files were not read after the reboot")
     elif files["bad"]:
         r.append(f"{len(files['bad'])} unparseable: {files['bad'][:3]}")
+    gone = lost_or_shrunk(ms.get("files_before"), files)
+    if files and gone:
+        r.append(f"{len(gone)} files lost or shortened by the reboot: {gone[:3]}")
     if ms.get("next_started") is not True:
         r.append(f"the next mission did not start ({ms.get('next_start')})")
     if ms.get("units_after") != ms.get("units_before"):
@@ -178,13 +195,20 @@ def board_start(drive_wait_s: float = DRIVE_WAIT_S) -> dict:
     return res
 
 
+def board_mission() -> dict:
+    c, st = _http("GET", BRAIN + "/mission/status", secret=_secret(), timeout=3)
+    st = st if isinstance(st, dict) else {}
+    return {"code": c, "running": st.get("running"), "step": st.get("step"), "outcome": st.get("outcome")}
+
+
 def board_stop() -> dict:
     code, body = _http("POST", BRAIN + "/mission/stop", {}, secret=_secret(), timeout=30)
     return {"stop": code}
 
 
 def board_main(cmd: str) -> None:
-    fn = {"state": board_state, "files": board_files, "start": board_start, "stop": board_stop}[cmd]
+    fn = {"state": board_state, "files": board_files, "start": board_start, "stop": board_stop,
+          "mission": board_mission}[cmd]
     print(json.dumps(fn()))
 
 
@@ -198,9 +222,10 @@ SSH = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5", "picar-jetson"]
 def on_board(cmd: str, timeout: float = 180.0) -> dict:
     r = subprocess.run([*SSH, "python3", "-", "board", cmd], input=Path(__file__).read_text(),
                        capture_output=True, text=True, timeout=timeout)
-    if r.returncode != 0:
+    lines = r.stdout.strip().splitlines()
+    if r.returncode != 0 or not lines:                 # a board going down can answer 0 with nothing
         raise RuntimeError(f"board {cmd}: {r.returncode} {r.stderr.strip()[:300]}")
-    return json.loads(r.stdout.strip().splitlines()[-1])
+    return json.loads(lines[-1])
 
 
 def locked(argv: list, why: str) -> int:
@@ -222,9 +247,18 @@ def pre(out: Path) -> None:
     if ms["driving_at_reboot"]:
         time.sleep(REBOOT_AFTER_S)
         ms["before_reboot"] = on_board("state")
-        ms["reboot_epoch"] = time.time()
+        ms["mission_at_reboot"] = on_board("mission")
+        # Mid-mission means still running when the reboot goes out.
+        ms["driving_at_reboot"] = ms["mission_at_reboot"].get("running") is True
+    if ms["driving_at_reboot"]:
+        # CLOCK_MONOTONIC is one clock for every process on this host (the steps are two).
+        ms["reboot_mono"] = time.monotonic()
         r = subprocess.run([*SSH, "sudo", "-n", "systemctl", "reboot"], capture_output=True, text=True, timeout=30)
         ms["reboot_rc"] = r.returncode
+        if r.returncode not in (0, 255):           # refused (255: the board dropped the session)
+            ms["driving_at_reboot"] = False
+            ms["reboot_refused"] = r.stderr.strip()[:300]
+            on_board("stop")
     else:
         on_board("stop")
     (out / "pre.json").write_text(json.dumps(ms, indent=1))
@@ -232,18 +266,18 @@ def pre(out: Path) -> None:
 
 def back(out: Path, ms: dict) -> None:
     """Step 2 (no lock: the board is rebooting): each service timed from the
-    reboot command, by the desktop's wall clock (the board's restarts)."""
-    t0 = ms["reboot_epoch"]
+    reboot command, on the desktop's CLOCK_MONOTONIC."""
+    t0 = ms["reboot_mono"]
     seen: dict = {}
     end = t0 + BACK_WAIT_S
     old = ms["before"]["boot_id"]
-    while time.time() < end:
+    while time.monotonic() < end:
         try:
             st = on_board("state", timeout=15)
-        except (RuntimeError, subprocess.TimeoutExpired, ValueError):
+        except Exception:                  # noqa: BLE001 -- a board going down answers anything
             time.sleep(1.0)
             continue
-        dt = round(time.time() - t0, 1)
+        dt = round(time.monotonic() - t0, 1)
         if st["boot_id"] != old:
             seen.setdefault("ssh_s", dt)
             if st["robot"] == 200:
@@ -268,7 +302,7 @@ def post(out: Path) -> None:
     ms["files_after"] = on_board("files")
     nxt = on_board("start", timeout=DRIVE_WAIT_S + 90)
     ms["next_start"] = nxt
-    ms["next_started"] = nxt.get("start") == 200
+    ms["next_started"] = nxt.get("start") == 200 and nxt.get("driving") is True
     ms["next_stop"] = on_board("stop")
     ms["after"] = on_board("state")
     ms["units_after"] = ms["after"]["units"]

@@ -528,16 +528,22 @@ def test_f14_judge():
     import f14_reboot as f14
     units = {"picar-stack": "active/enabled"}
     good = {"boot_changed": True, "driving_at_reboot": True, "stack_back_s": 61.0,
-            "files_after": {"bad": []}, "next_started": True, "units_before": units, "units_after": units}
+            "files_before": {"index": {"recordings/interventions/i.jsonl": 3, "recordings/inventory/a.json": 9}},
+            "files_after": {"bad": [], "index": {"recordings/interventions/i.jsonl": 4,
+                                                 "recordings/inventory/a.json": 9}},
+            "next_started": True, "units_before": units, "units_after": units}
     assert f14.judge(good) == {"pass": True, "valid": True, "reasons": []}
     for change, why in (({"stack_back_s": 95.0}, "bar 90"), ({"stack_back_s": None}, "back None"),
                         ({"files_after": {"bad": [{"file": "x"}]}}, "1 unparseable"),
                         ({"next_started": False}, "next mission"),
-                        ({"units_after": {"picar-stack": "failed/enabled"}}, "not as found")):
+                        ({"units_after": {"picar-stack": "failed/enabled"}}, "not as found"),
+                        ({"files_after": {"bad": [], "index": {"recordings/interventions/i.jsonl": 2}}},
+                         "lost or shortened")):
         v = f14.judge({**good, **change})
         assert not v["pass"] and v["valid"] and any(why in r for r in v["reasons"]), (change, v)
     assert f14.judge({**good, "boot_changed": False})["valid"] is False
     assert f14.judge({**good, "driving_at_reboot": False})["valid"] is False
+    assert f14.judge({**good, "units_before": {"picar-stack": "inactive/enabled"}})["valid"] is False
 
 
 # ------------------------------------------------------ 3.135.B: F24 (amendment 18)
@@ -545,6 +551,7 @@ def test_f14_judge():
 def test_f24_bars_steps_and_plant():
     good = {"fault_at": 1.0, "forward_at_fault": True, "goal_at_fault": True, "contacts": 0, "gap_unknown": 0,
             "truth_hole_s": 0.03, "reserve_at": 30.0, "poweroff_at": 75.0, "moved_after_reserve_cm": 0.4,
+            "running_at_reserve": True,
             "shutdown": [{"step": s, "rc": 0 if s != "poweroff" else None} for s in vlm_rows.F24_STEPS],
             "down_at_poweroff": {"mission": False, "ros": False, "vlm": False}}
     assert vlm_rows.judge("F24", good) == {"pass": True, "valid": True, "reasons": []}
@@ -558,6 +565,7 @@ def test_f24_bars_steps_and_plant():
         v = vlm_rows.judge("F24", {**good, **change})
         assert not v["pass"] and any(why in r for r in v["reasons"]), (change, v)
     assert vlm_rows.judge("F24", {**good, "poweroff_at": None})["valid"] is False
+    assert vlm_rows.judge("F24", {**good, "running_at_reserve": False})["valid"] is False
     env = vlm_rows.f24_env("http://127.0.0.1:10351")
     assert [n for n, _ in json.loads(env["BATTERY_SHUTDOWN_CMDS"])] == ["brain", "ros", "vlm"]
     assert env["BATTERY_POWEROFF_CMD"] == ""                                 # 3.137's logged stub
