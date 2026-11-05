@@ -60,11 +60,22 @@ class Bridge:
                 else:
                     g.append(0)
         self.grid = g
+        self._encode()
+
+    def _encode(self):
+        # Encoded when the version moves, never inside a timed fetch: the real
+        # bridge is another process, so its encode is no part of the reply's
+        # cost in the robot server.
+        self.body = json.dumps({"session": self.session, "version": self.version, "resolution_m": 0.05,
+                                "width": self.n, "height": self.n,
+                                "origin_x_m": -self.n * 0.025, "origin_y_m": -self.n * 0.025,
+                                "origin_yaw_rad": 0.0, "data": self.grid}).encode()
 
     def bump(self):
         self.version += 1
         k = (self.version * 7919) % len(self.grid)
         self.grid[k] = 100 if self.grid[k] != 100 else 0
+        self._encode()
 
     def handler(self, request):
         if request.url.path == "/slam/pose":
@@ -76,11 +87,7 @@ class Bridge:
             tag = f'"{self.session}:{self.version}"'
             if request.headers.get("if-none-match") == tag:
                 return httpx.Response(304, headers={"etag": tag})
-            body = json.dumps({"session": self.session, "version": self.version, "resolution_m": 0.05,
-                               "width": self.n, "height": self.n,
-                               "origin_x_m": -self.n * 0.025, "origin_y_m": -self.n * 0.025,
-                               "origin_yaw_rad": 0.0, "data": self.grid})
-            return httpx.Response(200, content=body.encode(),
+            return httpx.Response(200, content=self.body,
                                   headers={"etag": tag, "content-type": "application/json"})
         return httpx.Response(404)
 

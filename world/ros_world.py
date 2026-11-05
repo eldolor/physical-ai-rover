@@ -25,6 +25,7 @@ never read to produce a pose -- the anchor is a frame choice, not a
 correction. A new session (the container restarted: a new map) re-anchors.
 """
 
+import json
 import logging
 import math
 import threading
@@ -103,13 +104,73 @@ def _body(r: httpx.Response):
     return body if isinstance(body, dict) else None
 
 
-def _json_object(r: httpx.Response) -> dict:
+# 3.141.F1: the bridge's grid parsed, and made an array, a slice at a time.
+MAP_PARSE_SLICE_BYTES = 32768
+MAP_ARRAY_SLICE = 8192
+_DATA_KEY = b'"data":'
+
+
+def _map_body(r: httpx.Response):
+    """`_body(r)` for `/slam/map`, exactly, with its `data` list parsed a
+    slice at a time (3.141.F1): one `json.loads` of a house's grid held the
+    GIL for its whole parse (7-20 ms on the desktop, ~3x on the board) and
+    made the wheel loop late. The body is split at its one `"data":[...]`:
+    the rest is parsed with an empty list in its place, the list's text in
+    pieces cut at commas, each `json.loads` of the same text the whole parse
+    would have read, so the values are the same and the same malformed text
+    fails. Anything else -- the key absent or twice in the text, or a list
+    holding a string, list or object -- is parsed in one call, as before."""
+    content = r.content
+    k = content.find(_DATA_KEY)
+    if k < 0 or content.find(_DATA_KEY, k + 1) >= 0:
+        return _body(r)
+    s = k + len(_DATA_KEY)
+    while s < len(content) and content[s] in b" \t\r\n":
+        s += 1
+    e = content.find(b"]", s)
+    if content[s:s + 1] != b"[" or e < 0:
+        return _body(r)
+    inner = content[s + 1:e]
+    if b"[" in inner or b"{" in inner or b'"' in inner:
+        return _body(r)
+    try:
+        body = json.loads(content[:s] + b"[]" + content[e + 1:])
+        data, pos, n = [], 0, len(inner)
+        while pos < n:
+            cut = pos + MAP_PARSE_SLICE_BYTES
+            if cut < n:
+                comma = inner.find(b",", cut)
+                cut = n if comma < 0 else comma
+            if cut == n - 1:
+                raise ValueError("a trailing comma")      # `[1,2,]`: the whole parse refuses it
+            data.extend(json.loads(b"[" + inner[pos:cut] + b"]"))
+            pos = cut + 1
+    except ValueError:
+        return None
+    if not isinstance(body, dict):
+        return None
+    body["data"] = data
+    return body
+
+
+def _as_array(data):
+    """`np.asarray(data)`, the same dtype and values, a slice at a time
+    (3.141.F1: one call over a house's grid held the GIL ~5 ms on the
+    desktop)."""
+    if len(data) <= MAP_ARRAY_SLICE:
+        return np.asarray(data)
+    return np.concatenate([np.asarray(data[i:i + MAP_ARRAY_SLICE])
+                           for i in range(0, len(data), MAP_ARRAY_SLICE)])
+
+
+def _json_object(r: httpx.Response, body=None) -> dict:
     """A bridge reply as a dict, or an httpx.HTTPError -- the one exception
     every caller already catches. Anything but a 2xx raises, naming the
     route and keeping the bridge's own `error` text (its 503 "nav2 is not
     up"); a body that is not a JSON object (a proxy's HTML page) is a
-    fault, never an answer (3.76 H, round 10's review)."""
-    body = _body(r)
+    fault, never an answer (3.76 H, round 10's review). `body`: the reply
+    already parsed (`_map_body`), else `_body(r)`."""
+    body = _body(r) if body is None else body
     where = f"{r.request.method} {r.request.url.path}"
     if not r.is_success:
         why = body.get("error") if body else None
@@ -370,7 +431,7 @@ class RosWorld(WorldInterface):
                 raise httpx.RemoteProtocolError(
                     "the ROS bridge answered 304 to GET /slam/map without a tag",
                     request=r.request)
-        m = _json_object(r)
+        m = _json_object(r, _map_body(r) if r.is_success else None)
         tag = r.headers.get("etag")
         if tag:
             self._keep_map((tag, m))
@@ -437,7 +498,7 @@ class RosWorld(WorldInterface):
         i = np.floor(gx / res).astype(np.int64).ravel()
         j = np.floor(gy / res).astype(np.int64).ravel()
         inside = (i >= 0) & (i < w) & (j >= 0) & (j < h)
-        v = np.asarray(data)[j[inside] * w + i[inside]]    # as sent: never truncated
+        v = _as_array(data)[j[inside] * w + i[inside]]    # as sent: never truncated (sliced: 3.141.F1)
         cells = np.full(out_w * out_h, CELL_UNKNOWN, dtype=np.int64)
         cells[inside] = np.where(v < 0, CELL_UNKNOWN,
                                  np.where(v >= OCCUPIED_AT, CELL_OCCUPIED,
