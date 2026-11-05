@@ -118,8 +118,8 @@ def timed(fn, n, probe, before=None):
         ms.append((time.perf_counter() - t) * 1000)
         time.sleep(0.01)                       # the probe wakes once after
         held.append(probe.take())
-    q = statistics.quantiles(ms, n=10)
-    return {"n": n, "p50_ms": round(statistics.median(ms), 2), "p90_ms": round(q[-1], 2),
+    p90 = statistics.quantiles(ms, n=10)[-1] if len(ms) > 1 else ms[0]
+    return {"n": n, "p50_ms": round(statistics.median(ms), 2), "p90_ms": round(p90, 2),
             "max_ms": round(max(ms), 2), "probe_late_max_ms": round(max(held), 2),
             "probe_late_p50_ms": round(statistics.median(held), 2)}
 
@@ -150,9 +150,10 @@ def main(argv=None):
     out["fetch_full"] = timed(world._fetch_map, a.n, probe, before=bridge.bump)
     out["fetch_304"] = timed(world._fetch_map, a.n, probe)
     out["resample"] = timed(lambda: world._resample(raw, world._anchor), a.n, probe)
-    out["encode"] = timed(lambda: JSONResponse(world.get_map()).body, a.n, probe)
+    m = world.get_map()                             # the encodes alone, on one map
+    out["encode"] = timed(lambda: JSONResponse(m).body, a.n, probe)
     from robot.server import map_json             # 3.141.F1: the route's encode since
-    out["encode_sliced"] = timed(lambda: map_json(world.get_map()), a.n, probe)
+    out["encode_sliced"] = timed(lambda: map_json(m), a.n, probe)
 
     import robot.server as server
     server.get_world = lambda *a_, **k: world       # the app's world: this RosWorld

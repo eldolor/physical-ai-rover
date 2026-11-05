@@ -53,16 +53,16 @@ def test_what_json_refuses_is_still_refused():
 
 
 def test_no_one_call_encodes_a_whole_big_list(monkeypatch):
-    sizes, real = [], json.dumps
+    lists, real = [], json.dumps
 
     def spy(obj, *a, **k):
-        out = real(obj, *a, **k)
-        sizes.append(len(out))
-        return out
+        if isinstance(obj, (list, dict)):
+            lists.append(len(obj))
+        return real(obj, *a, **k)
     monkeypatch.setattr(server.json, "dumps", spy)
     m = _map(400)
     server.map_json(m)
-    assert sizes and max(sizes) <= 4 * server.MAP_ENCODE_SLICE + 2
+    assert lists and max(lists) <= server.MAP_ENCODE_SLICE      # never the whole 160,000
 
 
 def test_the_route_sends_the_same_reply(monkeypatch):

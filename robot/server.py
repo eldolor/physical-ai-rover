@@ -319,7 +319,10 @@ def map_json(m) -> bytes:
     elements is dumped a slice at a time, so the interpreter can hand the GIL
     to the loop between slices; each piece is `json.dumps` of the same value
     with the same options, so the bytes are the same. A dict with a key that
-    is not a str (which `json.dumps` converts) goes in one call, as before."""
+    is not a str (which `json.dumps` converts) goes in one call, as before.
+    Only a top-level list is sliced: every world's `cells` is one flat list
+    (`world/interface.py`); a nested or tuple shape would be the same bytes in
+    one call."""
     if not isinstance(m, dict) or not all(isinstance(k, str) for k in m):
         return _dumps(m).encode("utf-8")
     parts = ["{"]
