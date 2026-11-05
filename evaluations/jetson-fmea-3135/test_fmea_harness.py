@@ -9,6 +9,7 @@ stack, no ssh, no locks):
 import copy
 import importlib.util
 import json
+import math
 import sys
 import types
 from pathlib import Path
@@ -456,6 +457,29 @@ def test_amendment_16_ve_kills_flush_the_start_limit_and_a_first_question_kill_i
     src = inspect.getsource(vlm_rows.run_row)
     assert src.index("reset_start_limit()") < src.index('raise StackError("VE is not ready at the start")')
     assert 'after - (ms.get("absent_before") or 0)' in src               # a None baseline is 0, a None after is not
+
+
+def test_amendment_17_the_truthful_stand_in_and_f3a2s_bar():
+    """F3a's stand-in said "not visible" to the arrival too, so no run could end
+    found (3.91.C): F3a2's stand-in answers from the body's true pose."""
+    import truth_cloud as tc
+    tx, ty = tc.TARGET_XY
+    assert (tx, ty) == (7.05, 1.65)                                         # cell (23, 5), 0.30 m
+    assert tc.answer({"x": tx - 0.52, "y": ty, "th": 0.0})[0]["target_visible"] is True   # F3a's arrivals
+    assert tc.answer({"x": tx - 0.52, "y": ty, "th": math.pi})[0]["target_visible"] is False  # facing away
+    assert tc.answer({"x": tx - 1.5, "y": ty, "th": 0.0})[0]["target_visible"] is False     # too far
+    assert tc.answer({"x": tx - 0.5, "y": ty - 0.5, "th": 0.0})[0]["target_visible"] is False  # 45 deg off
+    assert tc.answer(None)[0]["target_visible"] is False
+    good = {"fault_at": 1.0, "question_hit": True, "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.03,
+            "handed_on": 3, "ve_back_s": 41.0, "next_answer": True, "outcome": "found",
+            "status": {"arrival_verdicts": [{"tier": "cloud", "confirmed": True}]}}
+    assert vlm_rows.judge("F3a2", good)["pass"]
+    for change, why in (({"outcome": "exhausted"}, "not found"),
+                        ({"status": {"arrival_verdicts": [{"tier": "local", "confirmed": True}]}},
+                         "no arrival confirmed by the cloud")):
+        v = vlm_rows.judge("F3a2", {**good, **change})
+        assert not v["pass"] and any(why in r for r in v["reasons"]), v
+    assert rows.runner("F3a2").__name__ == "vlm_rows"
 
 
 def test_the_f3_stack_asks_the_cloud_at_arrival_and_the_plant_reads_ve_gone_as_no():

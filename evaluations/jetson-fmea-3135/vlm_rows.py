@@ -17,6 +17,7 @@ mission for the red backpack in `scaled_house`.
 | F2 | `tools/jetson/memory_hog.py` (to the first OOM kill) 0.15 s into nav2's FORWARD | `ve_oom0` (a unit drop-in; the user's yes first) |
 | F3f | SIGKILL VE's driver while a frame question is open (the proxy) | `vlm_absent` |
 | F3a | SIGKILL VE's driver while the arrival's question is open; the stand-in up | `vlm_absent` |
+| F3a2 | as F3a, the stand-in answering from the simulator's truth (`truth_cloud.py`, amendment 17) | `vlm_absent` |
 | F3r | as F3a, the cloud refused (a closed port) | `vlm_absent` |
 | F17g | a person's `/stop` 0.15 s into nav2's FORWARD | `no_latch` |
 | F17q | a person's `/stop` while a frame question is open | `no_latch` |
@@ -47,7 +48,7 @@ import ros as rosmod  # noqa: E402
 from fmea import (GOAL_MOVE_WAIT_S, MemWatch, robot_health, status, wait_end,  # noqa: E402
                   wait_forward)
 from soak import read_vlm_secret  # noqa: E402
-from stack import CLOSED_PORT, PY, Stack, StackError, http  # noqa: E402
+from stack import CLOSED_PORT, PORTS, PY, Stack, StackError, http  # noqa: E402
 
 VE_URL = "http://127.0.0.1:8005"
 VE_UNIT = "picar-local-vlm"
@@ -79,6 +80,11 @@ ROWS = {
             "when": "arrival", "cloud": "standin", "plant": "vlm_absent",
             "reading": "the mission ends found; VE back <= 60 s; the next mission's first frame "
                        "question answered; 0 contacts"},
+    "F3a2": {"title": "Local VLM crashes mid-question (the arrival's), a truthful cloud",
+             "fault": "kill_ve", "when": "arrival", "cloud": "truth", "plant": "vlm_absent",
+             "reading": "amendment 17: the mission ends found, confirmed by the cloud (an arrival "
+                        "verdict of the cloud's, confirmed); VE back <= 60 s; the next mission's first "
+                        "frame question answered; 0 contacts"},
     "F3r": {"title": "Local VLM crashes at the arrival, the cloud refused", "fault": "kill_ve",
             "when": "arrival", "cloud": "refused", "plant": "vlm_absent",
             "reading": "the mission ends arrived_unconfirmed; VE back <= 60 s; the next mission's "
@@ -135,6 +141,11 @@ def judge(row: str, ms: dict) -> dict:
             bar(ms.get("failed_in_watch") is False, f"the mission failed after the kill ({out})")
         if row == "F3a":
             bar(out == "found", f"the mission ended {out}, not found")
+        if row == "F3a2":
+            v = (ms.get("status") or {}).get("arrival_verdicts") or []
+            bar(out == "found", f"the mission ended {out}, not found")
+            bar(any(x.get("tier") == "cloud" and x.get("confirmed") is True for x in v),
+                "no arrival confirmed by the cloud")
         if row == "F3r":
             bar(out == "arrived_unconfirmed", f"the mission ended {out}, not arrived_unconfirmed")
     if spec["fault"] == "stop":
@@ -272,12 +283,20 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 helpers["stub"] = subprocess.Popen(
                     [PY, str(ROOT / "evaluations/tiered-380/E/standin_cloud.py"), str(STUB_PORT), str(calls_log)],
                     cwd=ROOT, stdout=open(out / "stub.log", "ab"), stderr=subprocess.STDOUT, start_new_session=True)
+            elif spec["cloud"] == "truth":             # amendment 17: answers from the simulator's truth
+                if house != "scaled_house":
+                    raise StackError("the truthful stand-in knows scaled_house's target only")
+                helpers["stub"] = subprocess.Popen(
+                    [PY, str(HERE / "truth_cloud.py"), str(STUB_PORT), str(calls_log),
+                     f"http://127.0.0.1:{PORTS['body']}"],
+                    cwd=ROOT, stdout=open(out / "stub.log", "ab"), stderr=subprocess.STDOUT, start_new_session=True)
             time.sleep(1.5)
             env = {**rosmod.ROS_ENV, "TIER_SEARCH": "explore", "LOCAL_VLM_URL": f"http://127.0.0.1:{PROXY_PORT}",
                    "LOCAL_VLM_SECRET": secret,
                    # amendment 12: the arrival's cloud step is the cloud (stand-in), not the sim's geometry
                    "SIM_ARRIVAL_CONFIRM": "cloud"}
-            url = f"http://127.0.0.1:{STUB_PORT}" if spec["cloud"] == "standin" else f"http://127.0.0.1:{CLOSED_PORT}"
+            url = (f"http://127.0.0.1:{STUB_PORT}" if spec["cloud"] in ("standin", "truth")
+                   else f"http://127.0.0.1:{CLOSED_PORT}")
             # ve_oom0 is the unit's drop-in, not a process plant: the stack runs as shipped.
             st = Stack(out, house=house, plant="" if plant == "ve_oom0" else plant, vision_url=url,
                        extra_env=env)
