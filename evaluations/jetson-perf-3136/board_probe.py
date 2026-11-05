@@ -72,7 +72,7 @@ def missions(flag: str, out: str, targets: list) -> int:
                                     "body": r.text[:300], "t0": t0}) + "\n")
                 time.sleep(5)
                 continue
-            s, stopped, seen, seen_c = {}, False, 0, 0
+            s, stopped, seen, seen_c, ex = {}, False, 0, 0, {}
 
             def take_cancels(ex):
                 # [n, goal_id, wall time, bridge answered cancelled], numbered as the sends are.
@@ -116,12 +116,14 @@ def missions(flag: str, out: str, targets: list) -> int:
             # after `running` turns false: read its cancels until the gate says
             # it closed (every cancel recorded), before the next start replaces
             # the runner (review); bounded, and the row says if it was seen.
-            end_seen, no_explore, explored = False, 0, False
+            # Explored if the mission's own reads saw its block (review).
+            end_seen, no_explore, explored = False, 0, bool(seen or seen_c or ex)
             for _ in range(END_CANCEL_READS):
                 time.sleep(1)
                 try:
                     st = b.get("/mission/status", timeout=5).json()
                 except (httpx.HTTPError, ValueError):
+                    no_explore = 0              # two empty reads in a row, not across a failure
                     continue
                 ex = st.get("explore") if isinstance(st, dict) else None
                 if not ex:

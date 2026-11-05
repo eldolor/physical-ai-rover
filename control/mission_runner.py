@@ -359,12 +359,14 @@ class _GatedNavigator:
                 reply = self._nav.set_goal(x_m, y_m) or {}
             except Exception:
                 self._sent = True               # the answer is lost, not the goal
-                self._own_id = None             # its id is unknown (amendment 6)
+                with self._lock:
+                    self._own_id = None         # its id is unknown (amendment 6)
                 raise
             if reply.get("accepted"):
                 self._sent = True
                 self._own = (x_m, y_m)
-                self._own_id = reply.get("goal_id")
+                with self._lock:
+                    self._own_id = reply.get("goal_id")
                 if not self._is_running():
                     self.cancel_own()           # the mission ended while it was on its way
         finally:
@@ -407,10 +409,12 @@ class _GatedNavigator:
         """The cancel, and its record (amendment 6). Numbered as it is
         appended (in the order the calls returned), so a reader on another
         thread takes entries by number (as explore's `sent`)."""
-        gid, t = self._own_id, round(time.time(), 6)
+        with self._lock:
+            gid = self._own_id
+        t = round(time.time(), 6)
         reply = self._nav.cancel_goal()
         taken = isinstance(reply, dict) and reply.get("cancelled") is True
-        with self._lock:                    # held briefly, never across a call
+        with self._lock:                    # held briefly, never across an HTTP call
             self.cancels.append((self._cancels_n + 1, gid, t, taken))
             self._cancels_n += 1
         return reply
