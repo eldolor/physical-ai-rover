@@ -617,8 +617,10 @@ def test_review4_a_probe_that_cannot_start_is_retried_not_raised():
     tier = _tier(ve, probe_s=0.05)
     try:
         tier._note_local_error(LocalVLMAbsent("stub"), tier._local_gen)
-        with mock.patch.object(threading.Thread, "start",
-                               side_effect=RuntimeError("can't start new thread")):
+        class NoStart(threading.Thread):
+            def start(self):
+                raise RuntimeError("can't start new thread")
+        with mock.patch.object(TieredVision, "_probe_thread", NoStart):
             tier(_frame(1))                      # must not raise
         assert tier.stats.local_vlm["state"] == "down" and tier._local_probe is None
         tier(_frame(2))                          # retried

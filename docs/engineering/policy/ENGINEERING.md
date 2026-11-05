@@ -254,11 +254,14 @@ connect + 0.5 s read + 0.05 s write + 0.05 s pool = `PROBE_TIMEOUT_S`,
 0.8 s; httpx bounds each phase and the read per socket read, not the whole
 request, so this holds for `/health`'s one small reply, not for a server
 that dribbles it), and a probe that returns after `close()` records and
-flips nothing. Probes start through `_start_probe()`, which logs a start
-that fails (no memory for a thread) and leaves none; a frame that finds the
-tier down with no probe alive starts one again. A frame's question re-reads
-its client with `_local_read()` before asking (a frame another, abandoned
-one overtook may have seen a flip) and stamps that generation. Known limit:
+flips nothing. Probes start through `_start_probe()` (`_probe_thread`, a
+seam for tests), which catches a start that fails (no memory for a thread),
+logs it once an outage and leaves none; a frame that finds the tier down
+with no probe alive starts one again. A frame's question re-reads its
+client with `_local_read()` before asking (a frame another, abandoned one
+overtook may have seen a flip), asks that client and stamps its
+generation; held down by then, it asks nobody that frame (a one-shot
+trigger is armed again), a known limit. Known limit:
 `close()` drops the clients outside the seqlock, so an arrival read just
 before it may call a closed client; the mission has ended by then. Without
 `local_health_fn` nothing is held (an absent VE is asked again every

@@ -39,8 +39,7 @@ TAIL_S = 2.0
 PROBE_TIMEOUT_S = 0.8
 # httpx bounds each phase, and the read per socket read, not the whole
 # request (reviews 2-3); /health is one small reply, so in practice the sum.
-# The read bound is per socket read; /health is one small reply. Most of it
-# goes to the read, where a VE busy at 15 W is slow (review 3).
+# Most of it goes to the read, where a VE busy at 15 W is slow (review 3).
 PROBE_TIMEOUT = httpx.Timeout(connect=0.2, read=0.5, write=0.05, pool=0.05)
 
 

@@ -948,6 +948,10 @@ class TieredVision:
     a second and unadvertised benefit of the trigger discipline.
     """
 
+    # 3.152: the probe's thread class, a seam for a test that makes its start
+    # fail without failing every other thread in the process (review 4).
+    _probe_thread = threading.Thread
+
     # 3.152: while the local VLM is down these read as a mission with no
     # local tier configured has them (`control/brain_server.py`).
     local_identity_fn = _local_attr("local_identity_fn")
@@ -1011,6 +1015,7 @@ class TieredVision:
         # Bumped by every flip (bug pass): an absence from a call taken
         # before the last flip is about a VE that state no longer describes.
         self._local_gen = 0
+        self._probe_start_warned = False
         self.pipeline = pipeline
         # 3.91.C: a no about a candidate, remembered (see DEFAULT_REMEMBER_NO).
         # `_rejection` is {"by", "rank", "episode", "pose", "at_stamp",
@@ -1877,11 +1882,14 @@ class TieredVision:
             return self._local_scene(perception, note="local VLM busy with the arrival check")
         # 3.152 (review 3): `fn` was read by `_local_first`; a frame that
         # another, abandoned frame overtook may have seen a flip since. The
-        # client is asked only if it is still this generation's.
-        current, local_gen = self._local_read("local_sighting_fn")
-        if current is None:
+        # client is asked only if it is still this generation's, and the one
+        # asked is the one this read returned (review 4). Known limit: such a
+        # frame asks nobody this frame (a one-shot trigger is armed again).
+        fn, local_gen = self._local_read("local_sighting_fn")
+        if fn is None:
             self._rearm(trigger)
-            return self._local_scene(perception, note="local VLM held down")
+            return self._local_scene(perception, note=("mission ended" if self._closed
+                                                       else "local VLM held down"))
         self._count("local_triggers", trigger)
         q = _Question(
             trigger=trigger, epoch=epoch,
@@ -2785,8 +2793,11 @@ class TieredVision:
             elif self._local_down and (self._local_probe is None
                                        or not self._local_probe.is_alive()):
                 # Down with no probe running (review 3: its start failed, or it
-                # died): probe again, so the tier is never held for good.
-                logger.warning("local VLM probe not running while held down: starting it")
+                # died): probe again, so the tier is never held for good. Said
+                # once an outage (review 4), not every frame.
+                if not self._probe_start_warned:
+                    logger.warning("local VLM probe not running while held down: "
+                                   "starting it")
                 self._start_probe()
 
     def _start_probe(self) -> None:
@@ -2794,14 +2805,18 @@ class TieredVision:
         thread, as after an OOM kill) is logged and leaves no probe, so the
         next frame tries again; it never raises out of the frame (review 3)."""
         self._local_probe_stop.clear()
-        probe = threading.Thread(target=self._probe_local, name="local-vlm-probe",
-                                 daemon=True)
         try:
+            probe = self._probe_thread(target=self._probe_local, name="local-vlm-probe",
+                                       daemon=True)
             probe.start()
-        except RuntimeError as e:
-            logger.warning("could not start the local VLM probe (%s); next frame retries", e)
+        except Exception as e:  # noqa: BLE001 -- RuntimeError or MemoryError (review 4)
+            if not self._probe_start_warned:
+                logger.warning("could not start the local VLM probe (%s); each frame "
+                               "retries", e)
+                self._probe_start_warned = True
             self._local_probe = None
             return
+        self._probe_start_warned = False
         self._local_probe = probe
 
     def _local_read(self, name: str):
