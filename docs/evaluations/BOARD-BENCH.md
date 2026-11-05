@@ -214,7 +214,7 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-04 | `6c56c142` | F3r VE killed at the arrival, the cloud refused (re-run, amendment 16) | 5/5 | met | `arrived_unconfirmed` 5/5; handed on 3-4; VE back 40.8-41.3 s, **57.0 s in run 1** (60); next answered 5/5 | 0 | -- | 2,052 | 0 | 55.8 °C | -- | yes |
 | 2026-11-04 | `6c56c142` | F3a2 VE killed at the arrival, a truthful stand-in (amendment 17) | 5/7 | met | `found` 5/5, the deciding verdict the cloud's yes (0.45-0.85 s); handed on 1; VE back 40.8-41.3 s; 2 runs ended `exhausted` before an arrival question (not injected, replaced); planted check caught (0 handed on, `exhausted`) | 0 | -- | 2,125 | 0 | 59.7 °C | -- | yes |
 | 2026-11-04 | `e9285f1a` | F24 Reserve then Power-off, a nav2 goal (first attempt) | 0/8 | incomplete | every run invalid: the brain's own 10.5 V floor ended the mission before Reserve (amendment 19); stub `stub` 8/8, shutdown in order, every step rc 0 | 0 | -- | 2,205 | 0 | 52.4 °C | -- | yes |
-| 2026-11-05 | `95826b9c` | F24 Reserve then Power-off, a nav2 goal (amendment 19: the brain's floor off) | 5/5 | met | 0.0 cm after Reserve (2), the mission running at Reserve 5/5; shutdown wheels, brain, ROS, VE, sync, the stub once, every step rc 0, all down at the stub; Power-off 48.9-49.5 s after Reserve; VE's unit as found | 0 | -- | 1,854 | 0 | 55.0 °C | -- | yes |
+| 2026-11-05 | `95826b9c` | F24 Reserve then Power-off, a nav2 goal (amendment 19: the brain's floor off) | 5/5 | met (provisional until the `no_reserve` plant is caught) | 0.0 cm after Reserve (2), the mission running at Reserve 5/5; shutdown wheels, brain, ROS, VE, sync, the stub once, every step rc 0, all down at the stub; Power-off 48.9-49.5 s after Reserve; VE's unit as found | 0 | -- | 1,854 | 0 | 55.0 °C | -- | yes |
 
 ## Runs
 
@@ -418,7 +418,10 @@ the fault the pack is set to 10.35 V, draining 0.005 V/s. The power-off is
   * Amendment 19: the shipped brain with its floor off, as 3.137's arm R.
     That switches off both of the brain's battery exits, so F24 measures
     the robot server's Reserve alone.
-* **The re-run met 5/5.**
+* **The re-run met 5/5: provisional** (the orchestrating session,
+  2026-11-05). It holds only if the `no_reserve` planted run is caught. If
+  the plant is not caught, the 5/5 does not discriminate and F24 reverts to
+  unscored.
   * The mission was running at Reserve, and the robot moved 0.0 cm after it.
   * The shutdown ran wheels, brain, ROS, VE and sync, then the stub once,
     every step rc 0, with all three down at the stub. Power-off came
