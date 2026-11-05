@@ -459,25 +459,26 @@ class _ScanPoints:
     Python arithmetic, so every later answer is the per-point loop's): the
     corridor, the turn guard, and the robot server's two vets of one tick
     (the wheel loop's and `/wheels`'). The last scan's contents are kept,
-    read-only; a different scan (or lidar offset) replaces them."""
+    read-only; a different scan (or lidar offset) replaces them. Only the key
+    and the arrays are held, never the caller's scan."""
 
-    _last = None                       # (scan, ranges, key, (X, Y))
+    _last = None                       # (key, (X, Y))
 
     @classmethod
     def of(cls, scan: dict) -> tuple:
-        """`(X, Y)`: the points, in scan order, as read-only numpy arrays."""
-        ranges = scan["ranges_m"]          # a scan without them raises, as before
+        """`(X, Y)`: the points, in scan order, as read-only numpy arrays.
+        Keyed by the scan's contents every time (no identity shortcut: a
+        scan changed in place must never get its old points)."""
+        key = (scan["angle_min_deg"], scan["angle_increment_deg"], LIDAR_X_M,
+               tuple(scan["ranges_m"]))   # a scan without them raises, as before
         last = cls._last
-        if last is not None and last[0] is scan and last[1] is ranges:
-            return last[3]
-        key = (scan["angle_min_deg"], scan["angle_increment_deg"], LIDAR_X_M, tuple(ranges))
-        if last is not None and last[2] == key:
-            return last[3]
+        if last is not None and last[0] == key:
+            return last[1]
         a = np.array(list(scan_points_cm(scan)), dtype=float).reshape(-1, 2)
         xs, ys = a[:, 0].copy(), a[:, 1].copy()
         xs.setflags(write=False)
         ys.setflags(write=False)
-        cls._last = (scan, ranges, key, (xs, ys))  # one assignment: old or new, never half
+        cls._last = (key, (xs, ys))    # one assignment: old or new, never half
         return xs, ys
 
 

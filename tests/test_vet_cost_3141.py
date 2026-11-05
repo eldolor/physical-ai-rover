@@ -20,7 +20,8 @@ def answers(cls, ranges, missed, omega, lr):
     scan = scan_of(ranges)
     return (s.vet_wheel_velocity(*lr), s.forward_clearance(), s.reverse_clearance(),
             s.footprint_clearance(+1, scan), s.footprint_clearance(-1, scan),
-            s.pivot_scale(omega, scan), s.pivot_blocked(omega, scan))
+            s.pivot_scale(omega, scan), s.pivot_blocked(omega, scan),
+            s.pivot_blocked(omega, scan, exact=True), s.pivot_blocked(omega * 0.37, scan, exact=True))
 
 
 def corridor_case(rng):
@@ -64,7 +65,7 @@ def test_corridor_rooms_equals_the_scalar_rule():
 def test_a_scan_without_ranges_still_raises():
     import pytest
     s = SafetyController(Body([None] * 360, 0.0))
-    with pytest.raises((KeyError, TypeError)):
+    with pytest.raises(KeyError):
         s.footprint_clearance(+1, {"usable": True, "angle_min_deg": -180.0, "angle_increment_deg": 1.0})
 
 
@@ -92,3 +93,13 @@ def test_the_scan_is_converted_once_per_scan(monkeypatch):
         calls.clear()
         SafetyController(Body(ranges, missed, lr)).vet_wheel_velocity(*lr)
         assert len(calls) <= 1, f"{len(calls)} conversions of one scan in one vet"
+
+
+def test_a_scan_changed_in_place_gets_new_points():
+    ranges = [3.0] * 360
+    scan = scan_of(ranges)
+    s = SafetyController(Body(ranges, 0.0))
+    far = s.footprint_clearance(+1, scan)
+    scan["ranges_m"][180] = 0.2                # the same dict and list, a new return ahead
+    near = s.footprint_clearance(+1, scan)
+    assert near != far and near[1] == "scan_footprint" and near[0] < far[0]

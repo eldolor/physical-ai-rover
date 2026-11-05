@@ -226,11 +226,11 @@ def test_a_stale_points_cache_is_caught(monkeypatch):
     def of(scan):
         key = (scan["angle_min_deg"], scan["angle_increment_deg"])     # no ranges: stale
         last = cls._last
-        if last is not None and last[2] == key:
-            return last[3]
+        if last is not None and last[0] == key:
+            return last[1]
         arr = np.array(list(safety.scan_points_cm(scan)), dtype=float).reshape(-1, 2)
         val = (arr[:, 0].copy(), arr[:, 1].copy())
-        cls._last = (scan, scan["ranges_m"], key, val)
+        cls._last = (key, val)
         return val
     monkeypatch.setattr(cls, "of", staticmethod(of))
     monkeypatch.setattr(cls, "_last", None)
