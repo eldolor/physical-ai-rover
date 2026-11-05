@@ -165,9 +165,12 @@ paragraph.**
 * 3.135.B (faults F2-F18), 3.137.C (a real power-off), 3.142.A.
 * 3.50.D5: criteria 6 (ten sessions) and 7 (15 cm, live).
 * 3.143: V3's slippers miss; the soak keeps no brain log.
-* 3.152.B: VE's unit with no start limit and a restart delay chosen from
-  a crash loop on the board (needs a board slot). The twin's 3.152.A
-  readout is not yet deployed.
+* The twin's 3.152.A readout (the Local VLM row, the operator line) is
+  not yet deployed.
+* 3.153: the stack's own calls time out inside a VE kill's OOM squeeze
+  while `/health` answers (found by 3.152.B: `/frame`, the bridge, the
+  actuator's `/wheels`, the brain's tick > 30 s; late wheel ticks up to
+  0.95 s). Reserved, criteria to its session.
 * 3.105: a nav2 never up holds explore to its limit.
 * 3.150 criterion 6: the first session started after it merged checks the
   Bash hook live (hooks load at session start).
@@ -235,7 +238,11 @@ paragraph.**
   the policy then exactly the no-local-tier one, and its free `/health`
   probed every `tier_local_probe_s` (5 s) until ready; a hang stays the
   unable rule's. `status.tier.stats.local_vlm` (`up`/`down`/`unwatched`/
-  `off`); the twin's Local VLM row and an operator line.
+  `off`); the twin's Local VLM row and an operator line. 3.152.B: VE's
+  unit keeps its start limit (4 in 900 s). No restart-forever delay
+  (30/60/120 s) met the stack's bars in a board OOM crash loop, and every
+  run but the shipped unit's lost a mission in a squeeze. Kept by the
+  orchestrating session; nothing installed.
 * 3.47, 3.49, 3.53, 3.56, 3.61: offline is a mode; an unreachable cloud at
   arrival ends `arrived_unconfirmed` (a late confirmation follows, never
   `found`); the confirmation's 8 s deadline (`arrival_confirm_timeout_s`).
