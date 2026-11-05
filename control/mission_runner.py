@@ -413,13 +413,14 @@ class _GatedNavigator:
                 self._cancels_in_flight -= 1
 
     def cancels_snapshot(self) -> dict:
-        """The record, the cancels still on their way, and whether the
-        mission's end has finished its own goal's cancel (`end()`)."""
+        """The record, the cancels still on their way, and whether the gate
+        has closed: `end()` ran and no goal is still on its way (whose late
+        answer would cancel itself), so no further cancel can come."""
         with self._cancel_lock:
             out = {"cancels": [list(x) for x in self.cancels],
                    "cancels_in_flight": self._cancels_in_flight}
         with self._lock:
-            out["goal_end_done"] = self._ending
+            out["goal_end_done"] = self._closed
         return out
 
     @property

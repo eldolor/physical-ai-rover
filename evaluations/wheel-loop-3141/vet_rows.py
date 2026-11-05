@@ -11,12 +11,13 @@ each. The window is the steady window's own stamps (`window_start`,
     python evaluations/wheel-loop-3141/vet_rows.py <board dir>
 """
 
+import functools
 import gzip
 import json
 import sys
 from pathlib import Path
 
-@__import__("functools").lru_cache(maxsize=1)
+@functools.lru_cache(maxsize=1)
 def _harness_percentile():
     # 3.136's scorer by path (a module named `scorers` elsewhere never shadows
     # it): one percentile rule, nearest rank.

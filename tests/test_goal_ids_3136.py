@@ -214,3 +214,38 @@ def test_the_end_reports_when_its_own_goal_cancel_is_done():
     g.end()
     assert seen == [False] and g.cancels_snapshot()["goal_end_done"] is True
     assert g.cancels_snapshot()["cancels"][-1][3] is True
+
+
+def test_a_goal_answered_after_the_end_keeps_the_end_open_until_it_cancelled_itself():
+    """`end()` ran while a goal was on its way: not done until that goal's
+    late answer has cancelled it (review)."""
+    import threading
+    from control.mission_runner import _GatedNavigator
+    running, release, reading = [True], threading.Event(), []
+
+    class Nav:
+        def set_goal(self, x, y):
+            release.wait(5)
+            return {"accepted": True, "goal_id": "f" * 32}
+
+        def get_goal(self):
+            reading.append(g.cancels_snapshot()["goal_end_done"])
+            return {"goal": {"state": "active", "x_m": 1.0, "y_m": 2.0}}
+
+        def cancel_goal(self):
+            return {"cancelled": True}
+
+    g = _GatedNavigator(Nav(), lambda: running[0])
+    t = threading.Thread(target=g.set_goal, args=(1.0, 2.0))
+    t.start()
+    import time as _time
+    while g._in_flight == 0:
+        _time.sleep(0.01)
+    running[0] = False
+    g.end()                                      # nothing accepted yet: nothing to cancel
+    assert g.cancels_snapshot()["goal_end_done"] is False
+    release.set()
+    t.join(5)
+    assert reading == [False]                    # the late cancel read the goal while still open
+    snap = g.cancels_snapshot()
+    assert snap["goal_end_done"] is True and snap["cancels"][-1][1] == "f" * 32

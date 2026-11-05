@@ -179,9 +179,11 @@ def load_json(path: Path) -> dict:
 EXECUTING = 2                       # action_msgs/GoalStatus.STATUS_EXECUTING
 TERMINAL = {4: "succeeded", 5: "canceled", 6: "aborted"}
 LIVE = {1, 2, 3}      # accepted, executing, canceling (action_msgs GoalStatus)
-# Amendment 6: an abort excused by the brain's cancel ends within this of it.
-# Run 2's two (executing -> aborted, no canceling) ended 4 and 30 ms after the
-# cancel reached nav2; a cancel that left the goal running is not its cause.
+# Amendment 6: an abort excused by the brain's cancel ends within this of it,
+# by the probe's first ended row (its lag counts against the excuse: the safe
+# side). Set after reading run 2's two (executing -> aborted, no canceling,
+# 4 and 30 ms after the cancel reached nav2), before run 3; run 2 is not
+# rescored. A cancel that left the goal running is not its cause.
 CANCEL_TO_END_MAX_S = 2.0
 
 
@@ -306,15 +308,15 @@ def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel
             if e[1] and len(e) > 3 and e[3] is True:
                 cancels_by_id.setdefault(e[1][:GOAL_ID_HEX], []).append(e[2])
     nav_rows = sorted((r for r in pace_rows if r.get("k") == "nav"), key=lambda r: r["t"])
-    history = {}            # goal id -> [(t, status)], in time order
+    times, states = {}, {}  # goal id -> its rows' times and statuses, in time order
     for r in nav_rows:
         for g, st in r.get("goals") or []:
-            history.setdefault(g, []).append((r["t"], st))
+            times.setdefault(g, []).append(r["t"])
+            states.setdefault(g, []).append(st)
 
     def live_at(gid, tc):
-        rows = history.get(gid, [])
-        i = bisect.bisect_right([t for t, _ in rows], tc)
-        return i > 0 and rows[i - 1][1] in LIVE
+        i = bisect.bisect_right(times.get(gid, []), tc)
+        return i > 0 and states[gid][i - 1] in LIVE
 
     ended = {}
     for r in nav_rows:

@@ -124,7 +124,7 @@ def missions(flag: str, out: str, targets: list) -> int:
                     continue
                 ex = (st.get("explore") if isinstance(st, dict) else None) or {}
                 take_cancels(ex)
-                if ex.get("goal_end_done", True) and not ex.get("cancels_in_flight"):
+                if ex.get("goal_end_done") is True and not ex.get("cancels_in_flight"):
                     break
             rl = s.get("room_labels") or {}
             f.write(json.dumps({"target": target, "t0": round(t0, 3), "t1": round(time.time(), 3),
