@@ -153,6 +153,7 @@ run are information only.
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 2026-11-02 | harness `51f1e6e2` on `dev` `d8be7e09` | **no** (4 late ticks; 10 of 47 nav2 goals aborted) | 153 | 153 | **1.99** | **4** / 24,711 (max 114 ms) | 20.05 | 0.17% | 645 | 0 | 65.5 °C |
 | 2026-11-04 | 3.141.C window (not run 2), `dev` `ae5cecff` | **no** (6 late ticks; 6 of 53 nav2 goals aborted, amendment 2's rule) | 166 | 150 | **1.99** | **6** / 24,925 (max 113 ms) | 20.05 | 0.32% | 648 | 0 | 64.4 °C |
+| 2026-11-04 | run 2, `dev` `d69abc56` (3.141.E1 in) | **no** (1 late tick; 2 approach goals ABORTED, amendment 5 by id) | 169 | 152 | **1.99** | **1** / 28,807 (max 106.5 ms) | 20.04 | 0.22% | 780 | 0 | 65.2 °C |
 
 Bars: P1, P2 250 ms; P2 memory +100 MB; P8 1.5 s and the same answers as
 3.78; P4 0 late; P11 >= 18 Hz; P12 pause <= 10%.
@@ -177,6 +178,28 @@ No runs yet. The 3.135.A smoke (2026-11-01, F13 only, not scored) is in
 `evaluations/jetson-fmea-3135/board/smoke/`.
 
 ## Runs
+
+### 2026-11-04, 3.136.B run 2, `dev` `d69abc56` (INVALID)
+
+The board up ~16 h (warm), 15 W, max 65.2 °C, 0 OOM kills, `MemAvailable`
+minimum 780 MB, desktop load <= 3.5; 18:57-19:30, 3.136's runner with its
+lease, left as found. The board's `vision-picar-ros:latest` rebuilt from
+`dev` `ed6875b5` just before (`561e9f553d12`; the old `748edc53d16c` kept as
+`:pre-ed6875b5-20261031`), so nav2 is read by amendment 5, by goal id: 54
+goals, 0 unmatched, 0 sends missing.
+* **Invalid on two items:** 1 late wheel tick in 28,807 moving (max
+  106.5 ms; P4 and 3.141.E criterion 4 FAILED), and 2 `approach` goals
+  ABORTED (mission 2, 38 s apart). nav2's log shows both were the CLIENT's
+  cancels that `bt_navigator` ended as aborted ("Failed to get result for
+  follow_path in node halt!", then "Aborting handle"); under the rule as
+  written they invalidate. 1 frontier goal aborted (not counted), 41
+  succeeded, 10 cancelled.
+* Rows, information only: P1 p90 169 ms, P2 152 (+-48 MB), P8 VE p90
+  1.99 s (299/299, identical answers: FAILS its 1.5 s if it repeats in a
+  valid run), P11 20.04 Hz (scan lag p90 11.7 ms), P12 pause 0.22%;
+  missions 2 `found`, 1 cancelled at the window's end; 58 room-label calls,
+  0 cloud calls.
+* Records: `evaluations/jetson-perf-3136/board/run2-20261104-1857/`.
 
 ### 2026-11-04, 3.141.E0: an unclamped vet split by call path, on the board (`d20d8eb7`)
 
