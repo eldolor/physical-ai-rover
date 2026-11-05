@@ -121,6 +121,8 @@ def judge(ms: dict) -> dict:
         r.append(f"{len(gone)} files lost or shortened by the reboot: {gone[:3]}")
     if ms.get("next_started") is not True:
         r.append(f"the next mission did not start ({ms.get('next_start')})")
+    elif (ms.get("next_stop") or {}).get("stop") != 200:
+        r.append(f"the next mission was not stopped ({ms.get('next_stop')}): left on the production stack")
     if ms.get("units_after") != ms.get("units_before"):
         r.append(f"the units not as found: {ms.get('units_after')} vs {ms.get('units_before')}")
     passed = not [x for x in r if not x.startswith("invalid")] and valid
@@ -254,6 +256,17 @@ def pre(out: Path) -> None:
         return
     s = on_board("start", timeout=DRIVE_WAIT_S + 90)
     ms["start"] = s
+    try:
+        _drive_and_reboot(out, ms, s)
+    except Exception:
+        try:                                       # never leave a mission on the production stack
+            on_board("stop")
+        except Exception:  # noqa: BLE001
+            pass
+        raise
+
+
+def _drive_and_reboot(out: Path, ms: dict, s: dict) -> None:
     ms["driving_at_reboot"] = s.get("driving") is True
     if ms["driving_at_reboot"]:
         time.sleep(REBOOT_AFTER_S)
@@ -264,11 +277,16 @@ def pre(out: Path) -> None:
     if ms["driving_at_reboot"]:
         # CLOCK_MONOTONIC is one clock for every process on this host (the steps are two).
         ms["reboot_mono"] = time.monotonic()
-        r = subprocess.run([*SSH, "sudo", "-n", "systemctl", "reboot"], capture_output=True, text=True, timeout=30)
-        ms["reboot_rc"] = r.returncode
-        if r.returncode not in (0, 255):           # refused (255: the board dropped the session)
+        try:
+            r = subprocess.run([*SSH, "sudo", "-n", "systemctl", "reboot"], capture_output=True, text=True,
+                               timeout=30)
+            rc, err = r.returncode, r.stderr
+        except subprocess.TimeoutExpired:          # a session hung as the board went down
+            rc, err = 255, "timed out"
+        ms["reboot_rc"] = rc
+        if rc not in (0, 255):                     # refused (255: the board dropped the session)
             ms["driving_at_reboot"] = False
-            ms["reboot_refused"] = r.stderr.strip()[:300]
+            ms["reboot_refused"] = err.strip()[:300]
             on_board("stop")
     else:
         on_board("stop")
@@ -311,10 +329,12 @@ def post(out: Path) -> None:
     """Step 3 (under the lock): the files, the next mission, the units."""
     ms = json.loads((out / "pre.json").read_text())
     ms["files_after"] = on_board("files")
-    nxt = on_board("start", timeout=DRIVE_WAIT_S + 90)
-    ms["next_start"] = nxt
-    ms["next_started"] = nxt.get("start") == 200 and nxt.get("driving") is True
-    ms["next_stop"] = on_board("stop")
+    try:
+        nxt = on_board("start", timeout=DRIVE_WAIT_S + 90)
+        ms["next_start"] = nxt
+        ms["next_started"] = nxt.get("start") == 200 and nxt.get("driving") is True
+    finally:
+        ms["next_stop"] = on_board("stop")
     ms["after"] = on_board("state")
     ms["units_after"] = ms["after"]["units"]
     (out / "post.json").write_text(json.dumps(ms, indent=1))

@@ -415,7 +415,9 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 if pid is None:
                     raise StackError("VE's driver not found")
                 ms["killed_pid"] = pid
-                ms["absent_before"] = absent_count(status(st))
+                s_k = status(st)
+                ms["status_read_at_kill"] = bool(s_k)          # {} is a failed read, not "no stats yet"
+                ms["absent_before"] = absent_count(s_k)
                 ms["fault_at"] = time.monotonic()
                 sh("kill", "-9", str(pid))
             elif spec["fault"] == "battery":
@@ -497,7 +499,7 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 after = absent_count(status(st))
                 # Amendment 16: no stats at the kill (its first question) is a baseline of 0;
                 # no stats after it stays unreadable (None), never 0 handed on.
-                if after is not None:
+                if after is not None and ms.get("status_read_at_kill"):
                     ms["handed_on"] = after - (ms.get("absent_before") or 0)
                 if row == "F3f":
                     watch_end = ms["fault_at"] + WATCH_AFTER_S

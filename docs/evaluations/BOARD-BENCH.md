@@ -425,6 +425,12 @@ the orchestrating session's go, with the board otherwise idle.
     or shortened.
   * The next mission started and drove within 0.5 s, and the units came
     back active and enabled, as found.
+  * *What "0 files torn" covers:* the files present before the reboot,
+    still whole after it. The interrupted mission's own records were not
+    required to exist: runs 1-2 kept 17 and 18 files, and run 3 went 19 ->
+    20. `systemctl reboot` syncs and stops the units cleanly, so a write in
+    flight is not tested. Only a power pull (the user's hand) would test
+    it.
 
 ### 2026-11-04/05, single faults (3.135.B): F24, the battery ladder
 

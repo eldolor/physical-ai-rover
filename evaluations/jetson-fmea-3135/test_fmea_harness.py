@@ -457,6 +457,7 @@ def test_amendment_16_ve_kills_flush_the_start_limit_and_a_first_question_kill_i
     src = inspect.getsource(vlm_rows.run_row)
     assert src.index("reset_start_limit()") < src.index('raise StackError("VE is not ready at the start")')
     assert 'after - (ms.get("absent_before") or 0)' in src               # a None baseline is 0, a None after is not
+    assert 'ms.get("status_read_at_kill")' in src                          # ...but a failed read is not a baseline
 
 
 def test_amendment_17_the_truthful_stand_in_and_f3a2s_bar():
@@ -531,14 +532,15 @@ def test_f14_judge():
             "files_before": {"index": {"recordings/interventions/i.jsonl": 3, "recordings/inventory/a.json": 9}},
             "files_after": {"bad": [], "index": {"recordings/interventions/i.jsonl": 4,
                                                  "recordings/inventory/a.json": 9}},
-            "next_started": True, "units_before": units, "units_after": units}
+            "next_started": True, "next_stop": {"stop": 200}, "units_before": units, "units_after": units}
     assert f14.judge(good) == {"pass": True, "valid": True, "reasons": []}
     for change, why in (({"stack_back_s": 95.0}, "bar 90"), ({"stack_back_s": None}, "back None"),
                         ({"files_after": {"bad": [{"file": "x"}]}}, "1 unparseable"),
                         ({"next_started": False}, "next mission"),
                         ({"units_after": {"picar-stack": "failed/enabled"}}, "not as found"),
                         ({"files_after": {"bad": [], "index": {"recordings/interventions/i.jsonl": 2}}},
-                         "lost or shortened")):
+                         "lost or shortened"),
+                        ({"next_stop": {"stop": 500}}, "not stopped")):
         v = f14.judge({**good, **change})
         assert not v["pass"] and v["valid"] and any(why in r for r in v["reasons"]), (change, v)
     assert f14.judge({**good, "boot_changed": False})["valid"] is False
@@ -647,3 +649,15 @@ def test_f14_reads_picar_stacks_local_secret(tmp_path, monkeypatch):
     (tmp_path / ".vision-picar-local-secrets").write_text("VISION_SECRET=v\nLOCAL_SECRET='abc123'\n")
     assert f14._secret() == "abc123"
     assert "LOCAL_SECRET" in (HERE.parents[1] / "service/tunnel/run.sh").read_text()
+
+
+def test_f14_a_hung_reboot_session_is_a_sent_reboot_and_a_failed_step_stops_the_mission():
+    """The bug pass (2026-11-05): a session hanging as the board goes down was
+    an escaped TimeoutExpired, and a raise after a start left the mission."""
+    import inspect
+    import f14_reboot as f14
+    src = inspect.getsource(f14)
+    assert "except subprocess.TimeoutExpired:          # a session hung" in src
+    pre = inspect.getsource(f14.pre)
+    assert pre.index('on_board("start"') < pre.index("except Exception:") < pre.index('on_board("stop")')
+    assert "finally:" in inspect.getsource(f14.post)
