@@ -179,6 +179,19 @@ No runs yet. The 3.135.A smoke (2026-11-01, F13 only, not scored) is in
 
 ## Runs
 
+### 2026-11-04, 3.141.F0: the P12 map poller off, then on (`dev` `ee2e897d`, traced)
+
+Two 30 min windows of 3.136.B's stack, 15 W, every vet traced, left as found.
+* **Off (21:10): 0 late wheel ticks** in 23,937 (max 94.5 ms), valid; 22 of 25
+  probe ticks over 80 ms overlap one of explore's own map fetches (chance
+  9.5%). 1 found, 1 out of budget, 1 cut. `MemAvailable` min 777 MB.
+* **On (22:01): 2 late** in 28,347 (max 108.9 ms); 54 of 55 over 80 ms and 6
+  of 6 over 100 ms overlap a map reply (chance 16-17%). INVALID also on nav2:
+  2 approach goals aborted right after the previous goal's cancel (3.154).
+  2 found, 1 out of budget, 1 cut. `MemAvailable` min 567 MB.
+* Records: `evaluations/jetson-perf-3136/board/3141F0-off-20261104-2110/`,
+  `.../3141F0-on-20261104-2201/`.
+
 ### 2026-11-04, 3.141.E1's board check: every vet traced (`dev` `d69abc56`, 3.141.E criteria 3-4)
 
 3.136.B's 30 min window, 15 W, max 64.4 °C, 0 OOM, `MemAvailable` minimum

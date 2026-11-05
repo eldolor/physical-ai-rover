@@ -1,0 +1,13 @@
+{"t": 1793848714.203, "mission": 2, "cancels": [[1, "d20918a9d34c4c8bbd6bc6aff76027bc", 1793848714.121897, true], [2, "d20918a9d34c4c8bbd6bc6aff76027bc", 1793848714.157404, false]], "missing": 0}
+{"t": 1793848933.769, "mission": 2, "cancels": [[3, "443d69611c744f6f87dd869af82aa033", 1793848933.544552, true]], "missing": 0}
+{"t": 1793848961.072, "mission": 2, "cancels": [[4, "3c567fcaba3b491ca65063bdf509154c", 1793848960.804741, true], [5, "3c567fcaba3b491ca65063bdf509154c", 1793848960.833501, false]], "missing": 0}
+{"t": 1793849407.68, "mission": 2, "cancels": [[6, "d6347f78050440728862347559508459", 1793849406.775979, true], [7, "d6347f78050440728862347559508459", 1793849406.817322, false]], "missing": 0}
+{"t": 1793849468.405, "mission": 2, "cancels": [[8, "681a5ec7759f4cf9aa98eb39feefbe42", 1793849467.57651, true], [9, "681a5ec7759f4cf9aa98eb39feefbe42", 1793849467.613822, false]], "missing": 0}
+{"t": 1793849555.535, "mission": 2, "cancels": [[10, "293a9998dbae49fea1bee5c3a06f1002", 1793849555.110956, true], [11, "293a9998dbae49fea1bee5c3a06f1002", 1793849555.179123, false]], "missing": 0}
+{"t": 1793849584.881, "mission": 2, "cancels": [[12, "fb6c229e4dbe4b34931f8a30d2be2721", 1793849583.885419, true], [13, "fb6c229e4dbe4b34931f8a30d2be2721", 1793849583.921586, true]], "missing": 0}
+{"t": 1793849680.056, "mission": 2, "cancels": [[14, "cc73ac7553a2439fb8617cec2100541e", 1793849679.289224, true], [15, "cc73ac7553a2439fb8617cec2100541e", 1793849679.32187, true]], "missing": 0}
+{"t": 1793849879.686, "mission": 2, "cancels": [[16, "838d791594ce4a1d943824e139c36784", 1793849879.405232, true]], "missing": 0}
+{"t": 1793849966.988, "mission": 3, "cancels": [[1, "538aac4ceb634f9aaa2b9ce5b0a745f8", 1793849966.916583, true]], "missing": 0}
+{"t": 1793850040.788, "mission": 3, "cancels": [[2, "8422ee248ab44f3da2f28c276baad048", 1793850040.056787, true], [3, "8422ee248ab44f3da2f28c276baad048", 1793850040.08705, false]], "missing": 0}
+{"t": 1793850135.843, "mission": 3, "cancels": [[4, "bf382080c489478fb952033f7ed3a5ae", 1793850135.704701, true], [5, "bf382080c489478fb952033f7ed3a5ae", 1793850135.729663, true]], "missing": 0}
+{"t": 1793850164.318, "mission": 3, "cancels": [[6, "9c923dbc5d5e4264be4aed33c82ad1ef", 1793850163.378631, true]], "missing": 0}
