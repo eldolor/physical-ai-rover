@@ -100,7 +100,9 @@ class CancelNav(IdNav):
 
 def test_each_cancel_the_brain_sends_is_recorded_with_its_goal_id_first():
     runner, nav, grid = _run(CancelNav, max_steps=120)
-    cancels = runner.status()["explore"]["cancels"]
+    ex = runner.status()["explore"]
+    cancels = ex["cancels"]
+    assert ex["cancels_in_flight"] == 0
     assert nav.cancelled_ids, "the mission sent no cancel: the test proves nothing"
     assert [c[1] for c in cancels] == nav.cancelled_ids[-64:]
     assert [c[0] for c in cancels] == list(range(len(nav.cancelled_ids) - len(cancels) + 1,
@@ -125,22 +127,23 @@ def test_a_cancel_is_recorded_with_the_time_before_it_went_out_once_it_returned(
             return {"cancelled": len(sent_at) == 1}    # the second finds nothing live
 
         def get_goal(self):
-            return {"goal": {"state": "active", "x_m": 1.0, "y_m": 2.0}}
+            return {"goal": {"state": "active", "x_m": 1.0, "y_m": 2.0, "goal_id": "f" * 32}}
 
     g = _GatedNavigator(Nav(), lambda: True)
     g.set_goal(1.0, 2.0)
     g.cancel_goal()
-    (n, gid, t, live), = g.cancels_snapshot()
+    (n, gid, t, live), = g.cancels_snapshot()["cancels"]
     assert (n, gid, live) == (1, "f" * 32, True) and t <= sent_at[0] + 1e-6
     g.cancel_own()                            # the mission's end: the same record
-    assert g.cancels_snapshot()[-1] [:2] == [2, "f" * 32] and g.cancels_snapshot()[-1][3] is False
+    last = g.cancels_snapshot()["cancels"][-1]
+    assert last[:2] == [2, "f" * 32] and last[3] is False
     fail[0] = True                            # a cancel that never reached the bridge
     try:
         g.cancel_goal()
     except OSError:
         pass
     g.cancel_own()                            # swallowed there, and still not recorded
-    assert len(g.cancels_snapshot()) == 2
+    assert len(g.cancels_snapshot()["cancels"]) == 2 and g.cancels_snapshot()["cancels_in_flight"] == 0
 
 
 def test_a_goal_whose_answer_was_lost_is_not_named_by_a_later_cancel():
@@ -165,3 +168,38 @@ def test_a_goal_whose_answer_was_lost_is_not_named_by_a_later_cancel():
         pass
     g.cancel_goal()
     assert g.cancels[-1][1] is None
+
+
+def _gate_reading(goal):
+    from control.mission_runner import _GatedNavigator
+
+    class Nav:
+        def set_goal(self, x, y):
+            return {"accepted": True, "goal_id": "f" * 32}
+
+        def cancel_goal(self):
+            return {"cancelled": True}
+
+        def get_goal(self):
+            return {"goal": goal}
+
+    g = _GatedNavigator(Nav(), lambda: True)
+    g.set_goal(1.0, 2.0)
+    g.cancel_goal()
+    return g.cancels_snapshot()["cancels"][-1][3]
+
+
+def test_live_needs_the_bridge_to_show_that_goal_itself_live():
+    assert _gate_reading({"state": "active", "goal_id": "f" * 32}) is True
+    assert _gate_reading({"state": "aborted", "goal_id": "f" * 32}) is False
+    assert _gate_reading({"state": "active", "goal_id": "e" * 32}) is False       # another goal
+    assert _gate_reading({"state": "active", "goal_id": "f" * 32,                  # only a superseded one
+                          "reason": "1 superseded goal(s) still being cancelled"}) is False
+
+
+def test_the_superseded_mark_is_the_bridges_own_words():
+    from pathlib import Path
+    from control.mission_runner import BRIDGE_SUPERSEDED_MARK
+    src = (Path(__file__).resolve().parents[1]
+           / "service/slam/src/picar_bridge/picar_bridge/bridge.py").read_text()
+    assert f'superseded}} {BRIDGE_SUPERSEDED_MARK}"' in src

@@ -16,8 +16,18 @@ import json
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "jetson-perf-3136"))
-from scorers import percentile as pct  # noqa: E402  (one percentile rule: nearest rank)
+def _harness_percentile():
+    # 3.136's scorer by path (a module named `scorers` elsewhere never shadows
+    # it): one percentile rule, nearest rank.
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "jetson_perf_3136_scorers", Path(__file__).resolve().parents[1] / "jetson-perf-3136" / "scorers.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod.percentile
+
+
+pct = _harness_percentile()
 
 P90_BAR_MS, MAX_BAR_MS = 3.0, 15.0
 
@@ -49,10 +59,10 @@ def score(board: Path) -> dict:
     for r in rows(board):
         if r.get("k") != "vet" or (t0 is not None and r["t"] < t0) or (t1 is not None and r["t"] > t1):
             continue
-        under_1ms += r["ms"] < 1.0
         if r.get("reason"):
             clamped += 1
             continue
+        under_1ms += r["ms"] < 1.0
         (loop if r.get("thread") == "MainThread" else pool).append(r["ms"])
         if r["ms"] > P90_BAR_MS:
             for name, (ms, _calls) in (r.get("parts") or {}).items():

@@ -311,6 +311,10 @@ class MissionHalted(RuntimeError):
 
 # 3.136.B amendment 6: how many of the brain's own goal cancels status keeps.
 CANCELS_KEPT = 64
+# The bridge's goal record reads `active` while a goal it superseded is still
+# being cancelled, and says so in its reason (bridge.py `goal_state`); such a
+# reading does not show THIS goal live (pinned against the bridge's source).
+BRIDGE_SUPERSEDED_MARK = "superseded goal(s) still being cancelled"
 
 
 class _GatedNavigator:
@@ -335,14 +339,17 @@ class _GatedNavigator:
         self._lock = threading.Lock()
         # 3.136.B amendment 6: every cancel this gate sent, as [n, the goal id
         # of the mission's last accepted goal (None if unknown), the wall time
-        # just BEFORE it went out, whether the bridge found a goal still live
-        # to cancel (its `cancelled`)] -- recorded once the call returned (one
-        # that raised never reached the bridge as a cancel) -- so a goal nav2
-        # ends ABORTED after the brain asked to cancel it while it was live
-        # reads as the brain's cancel, by id.
+        # just BEFORE it went out, `live`: the bridge's goal record showed THAT
+        # goal id pending or active just before, and the bridge answered
+        # `cancelled`] -- recorded once the call returned (one that raised is
+        # not counted: whether it reached the bridge is unknown, so an abort
+        # after it reads as nav2's, the side that invalidates) -- so a goal
+        # nav2 ends ABORTED after the brain asked to cancel it while it was
+        # live reads as the brain's cancel, by id.
         self._own_id: Optional[str] = None
         self.cancels = collections.deque(maxlen=CANCELS_KEPT)
         self._cancels_n = 0
+        self._cancels_in_flight = 0
         self._cancel_lock = threading.Lock()
         self._in_flight = 0
         self._ending = False
@@ -393,20 +400,41 @@ class _GatedNavigator:
         return self._sent_cancel()
 
     def _sent_cancel(self) -> dict:
-        """The cancel, and its record (amendment 6): numbered, and appended
-        before the count rises, so a reader on another thread takes entries
-        by number (as explore's `sent`)."""
-        gid, t = self._own_id, round(time.time(), 6)
-        reply = self._nav.cancel_goal()
-        live = isinstance(reply, dict) and reply.get("cancelled") is True
+        """The cancel, and its record (amendment 6). Numbered as it is
+        appended (in the order the calls returned), so a reader on another
+        thread takes entries by number (as explore's `sent`)."""
         with self._cancel_lock:
-            self.cancels.append((self._cancels_n + 1, gid, t, live))
-            self._cancels_n += 1
-        return reply
+            self._cancels_in_flight += 1
+        try:
+            gid = self._own_id
+            live = self._live_on_bridge(gid)
+            t = round(time.time(), 6)
+            reply = self._nav.cancel_goal()
+            live = live and isinstance(reply, dict) and reply.get("cancelled") is True
+            with self._cancel_lock:
+                self.cancels.append((self._cancels_n + 1, gid, t, live))
+                self._cancels_n += 1
+            return reply
+        finally:
+            with self._cancel_lock:
+                self._cancels_in_flight -= 1
 
-    def cancels_snapshot(self) -> list:
+    def _live_on_bridge(self, gid: Optional[str]) -> bool:
+        """Did the bridge's goal record show this goal id pending or active
+        (not only a superseded goal still cancelling)?"""
+        if not gid:
+            return False
+        try:
+            goal = (self._nav.get_goal() or {}).get("goal") or {}
+        except Exception:  # noqa: BLE001 -- unknown: not shown live
+            return False
+        return (goal.get("goal_id") == gid and goal.get("state") in ("pending", "active")
+                and BRIDGE_SUPERSEDED_MARK not in str(goal.get("reason") or ""))
+
+    def cancels_snapshot(self) -> dict:
         with self._cancel_lock:
-            return [list(x) for x in self.cancels]
+            return {"cancels": [list(x) for x in self.cancels],
+                    "cancels_in_flight": self._cancels_in_flight}
 
     @property
     def sent_goal(self) -> bool:
@@ -1608,8 +1636,9 @@ class MissionRunner:
                              # outside this lock.
                              "sent": [list(x) for x in list(self.agent.sent)],
                              # 3.136.B amendment 6: the cancels the brain sent, by id.
-                             "cancels": (self._navigator.cancels_snapshot()
-                                         if isinstance(self._navigator, _GatedNavigator) else []),
+                             **(self._navigator.cancels_snapshot()
+                                if isinstance(self._navigator, _GatedNavigator)
+                                else {"cancels": [], "cancels_in_flight": 0}),
                              "goals_failed": self.agent.goals_failed,
                              "last_event": self.agent.last_event,
                              "camera_seen_m2": round(len(self.agent.seen)
