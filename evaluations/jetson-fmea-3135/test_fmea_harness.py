@@ -576,3 +576,15 @@ def test_f24_bars_steps_and_plant():
     import robot.server as rs
     assert hasattr(rs, "RESERVE")                                          # the global the plant renames
     assert '@app.post("/fmea/battery")' in (HERE / "truth_body.py").read_text()
+
+
+def test_f24_checks_the_stub_and_ves_unit_first(monkeypatch):
+    """The orchestrator's conditions (2026-11-04): no F24 fault unless the
+    stack's power-off reads as the stub, and VE's unit read before and after."""
+    import inspect
+    src = inspect.getsource(vlm_rows.run_row)
+    assert src.index('!= "stub"') < src.index('f"/fmea/battery?v=')
+    assert "ve_unit_settings()" in src and "ve_unit_as_found" in src
+    monkeypatch.setattr(vlm_rows, "sh", lambda *a, **k: types.SimpleNamespace(
+        returncode=0, stdout="OOMScoreAdjust=1000\nStartLimitBurst=4\n", stderr=""))
+    assert vlm_rows.ve_unit_settings() == {"OOMScoreAdjust": "1000", "StartLimitBurst": "4"}

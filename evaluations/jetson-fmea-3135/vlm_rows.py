@@ -113,6 +113,17 @@ F24_MOVE_BAR_CM = 2.0
 F24_STEPS = ["wheels", "brain", "ros", "vlm", "sync", "poweroff"]
 
 
+VE_UNIT_PROPS = ("OOMScoreAdjust", "Restart", "RestartUSec", "StartLimitBurst", "StartLimitIntervalUSec",
+                 "ExecStart", "ConditionPathExists", "EnvironmentFiles", "UnitFileState", "DropInPaths")
+
+
+def ve_unit_settings() -> dict:
+    """F24 (the orchestrator's condition, 2026-11-04): VE's unit as found, read
+    before a run that stops and restarts it, and compared after."""
+    out = sh("systemctl", "show", "-p", ",".join(VE_UNIT_PROPS), VE_UNIT).stdout
+    return dict(line.split("=", 1) for line in out.splitlines() if "=" in line)
+
+
 def f24_env(brain_url: str) -> dict:
     """The robot server's shutdown steps and its stubbed power-off (3.137)."""
     steps = [["brain", f'curl -sf -m 20 -X POST -H "x-app-secret: $APP_SHARED_SECRET" '
@@ -319,6 +330,8 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 ms["plant_dropin"] = ve_oom_dropin(True)
             if spec["fault"] in ("kill_ve", "oom"):
                 reset_start_limit()
+            if spec["fault"] == "battery":
+                ms["ve_unit_before"] = ve_unit_settings()
             if not ve_ready():
                 raise StackError("VE is not ready at the start")
             ms["ve_before"] = sh("systemctl", "show", "-p", "MainPID,NRestarts", VE_UNIT).stdout.split()
@@ -393,6 +406,12 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 ms["fault_at"] = time.monotonic()
                 sh("kill", "-9", str(pid))
             elif spec["fault"] == "battery":
+                # The orchestrator's condition: the power-off is 3.137's logged stub on
+                # this stack (a real one runs only under mode: hardware), or no fault.
+                code, b0 = st.robot("GET", "/battery", timeout=3)
+                ms["poweroff_cmd_at_start"] = (b0 or {}).get("poweroff_cmd") if code == 200 else None
+                if ms["poweroff_cmd_at_start"] != "stub":
+                    raise StackError(f"the power-off is not the stub here ({code}, {b0}): not run")
                 ms["fault_at"] = time.monotonic()
                 code, _ = http("POST", st.urls["body"] + f"/fmea/battery?v={F24_V0}&drain={F24_DRAIN}", timeout=5)
                 if code != 200:
@@ -549,6 +568,9 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 time.sleep(1.0)
             ms["ve_after"] = sh("systemctl", "show", "-p", "MainPID,NRestarts", VE_UNIT).stdout.split()
             ms["ve_ready_after"] = ve_ready()
+            if ms.get("ve_unit_before") is not None:
+                ms["ve_unit_after"] = ve_unit_settings()
+                ms["ve_unit_as_found"] = ms["ve_unit_after"] == ms["ve_unit_before"]
     rows = m.read_truth(out / "truth.jsonl") if (out / "truth.jsonl").exists() else []
     plg = proxy_log(plog)
     t = ms.get("fault_at")
@@ -577,6 +599,8 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
         ms.setdefault("oom_kills_window", mw.rows[-1][2] - mw.rows[0][2])
     rec["measures"] = ms
     rec["verdict"] = judge(row, ms)
+    if ms.get("ve_unit_as_found") is False:
+        rec["error"] = rec.get("error") or "VE's unit settings changed over the run (the board not as found)"
     if not ms.get("ve_ready_after"):
         rec["error"] = rec.get("error") or "VE was not ready after the case (the board not as found)"
     rec["ended"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
