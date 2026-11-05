@@ -144,8 +144,8 @@ class Clock:
         self.ntp_off = True
 
     def step(self, s: float) -> float:
-        t = time.monotonic()
         if self.fake:
+            t = time.monotonic()
             self.stepped += s
             self.offset_file.write_text(f"{self.stepped}\n")
             return t

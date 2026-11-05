@@ -58,10 +58,7 @@ QUESTION_WAIT_S = 900.0        # a frame question opens within seconds; an arriv
 VE_BACK_BAR_S = 60.0
 WATCH_AFTER_S = 120.0          # F3f: the mission is watched this long after the kill, then stopped
 MISSION_WAIT_S = 1200 + 300
-# Amendment 16: `picar-local-vlm` allows 4 starts in 900 s (StartLimitBurst=4), and every
-# kill_ve / oom run restarts VE once. A run kills only once VE has run this long since its
-# last start, so any 900 s window holds at most 4 starts.
-VE_START_GAP_S = 300.0
+
 STOP_ZERO_BAR_S = 0.2
 CANCEL_WAIT_S = 30.0
 NEXT_ANSWER_WAIT_S = 240.0
@@ -161,30 +158,15 @@ def ve_ready() -> bool:
         return False
 
 
-def ve_up_s() -> float | None:
-    """Seconds since VE's unit last became active (systemd's monotonic clock is
-    CLOCK_MONOTONIC, as `time.monotonic()`), or None if it is not active."""
-    out = sh("systemctl", "show", "-p", "ActiveState,ActiveEnterTimestampMonotonic", VE_UNIT).stdout
-    props = dict(line.split("=", 1) for line in out.splitlines() if "=" in line)
-    usec = int(props.get("ActiveEnterTimestampMonotonic") or 0)
-    if props.get("ActiveState") != "active" or not usec:
-        return None
-    return time.monotonic() - usec / 1e6
-
-
-def wait_start_gap(gap_s: float = VE_START_GAP_S, sleep=time.sleep) -> float:
-    """Amendment 16: wait until VE has been up `gap_s` since its last start; the
-    seconds waited. A VE not active (its start limit already hit) is an error."""
-    waited = 0.0
-    while True:
-        up = ve_up_s()
-        if up is None:
-            raise StackError("VE is not active (its start limit?) before the run")
-        if up >= gap_s:
-            return waited
-        step = min(gap_s - up, 30.0)
-        sleep(step)
-        waited += step
+def reset_start_limit() -> None:
+    """Amendment 16: `picar-local-vlm` allows 4 starts in 900 s (StartLimitBurst=4),
+    and every kill_ve / oom run restarts VE (the ve_oom0 plant twice more). Before
+    each run its start-rate counter is flushed (`systemctl reset-failed`, as
+    systemd.unit documents), so a run's one restart is never refused by the
+    runs before it. A single fault restarts VE once; the limit is not under test."""
+    r = sh("sudo", "-n", "systemctl", "reset-failed", VE_UNIT)
+    if r.returncode != 0:
+        raise StackError(f"reset-failed {VE_UNIT}: {r.stderr.strip()[:200]}")
 
 
 def ve_driver_pid() -> int | None:
@@ -247,12 +229,10 @@ def ve_oom_dropin(on: bool) -> dict:
 def absent_count(status: dict) -> Optional[int]:
     """The tiers' own count of questions they found VE absent for and handed
     on (`status.tier.stats` `local.absent` + `local_frame.absent`, 3.80), or
-    None when the status carries no tier block. A tier block with no stats yet
-    (a kill at the mission's first question) is 0 (amendment 16)."""
-    tier = (status or {}).get("tier")
-    if not isinstance(tier, dict):
+    None when the status carries no stats yet."""
+    stats = ((status or {}).get("tier") or {}).get("stats") or {}
+    if not stats:
         return None
-    stats = tier.get("stats") or {}           # amendment 16: no stats yet (the first question) is 0
     return int((stats.get("local") or {}).get("absent", 0)) + int((stats.get("local_frame") or {}).get("absent", 0))
 
 
@@ -281,7 +261,7 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
             if plant == "ve_oom0":
                 ms["plant_dropin"] = ve_oom_dropin(True)
             if spec["fault"] in ("kill_ve", "oom"):
-                ms["start_gap_waited_s"] = round(wait_start_gap(), 1)
+                reset_start_limit()
             if not ve_ready():
                 raise StackError("VE is not ready at the start")
             ms["ve_before"] = sh("systemctl", "show", "-p", "MainPID,NRestarts", VE_UNIT).stdout.split()
@@ -387,8 +367,10 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                     time.sleep(0.5)
                 # Handed on while VE was gone: the tiers' absent count, kill to VE back (or now).
                 after = absent_count(status(st))
-                if after is not None and ms.get("absent_before") is not None:
-                    ms["handed_on"] = after - ms["absent_before"]
+                # Amendment 16: no stats at the kill (its first question) is a baseline of 0;
+                # no stats after it stays unreadable (None), never 0 handed on.
+                if after is not None:
+                    ms["handed_on"] = after - (ms.get("absent_before") or 0)
                 if row == "F3f":
                     watch_end = ms["fault_at"] + WATCH_AFTER_S
                     failed = False

@@ -438,23 +438,24 @@ def test_the_clock_rows_stale_count_ignores_the_epoch_stamp():
     assert sys_rows.judge("F16p", {**CLOCK_GOOD, "idle_at_fault": False})["valid"] is False
 
 
-def test_amendment_16_ve_kills_wait_out_the_start_limit_and_no_stats_is_zero(monkeypatch):
-    """F3f's board run killed VE at the first frame question, before any tier
-    stats (handed-on read None), and every F2/F3 row ran into VE's start limit
-    (4 starts in 900 s) by its fourth run."""
-    assert vlm_rows.absent_count({"tier": {"model": "x"}}) == 0          # a tier block, no stats yet
-    assert vlm_rows.absent_count({"tier": None}) is None
-    assert int(900 // vlm_rows.VE_START_GAP_S) + 1 <= 4                  # <= 4 starts in any 900 s
-    ups = iter([10.0, 200.0, 301.0])
-    monkeypatch.setattr(vlm_rows, "ve_up_s", lambda: next(ups))
-    slept = []
-    assert vlm_rows.wait_start_gap(sleep=slept.append) == 60.0 and slept == [30.0, 30.0]
-    monkeypatch.setattr(vlm_rows, "ve_up_s", lambda: None)
+def test_amendment_16_ve_kills_flush_the_start_limit_and_a_first_question_kill_is_read(monkeypatch):
+    """Every F2/F3 row ran into VE's start limit (4 starts in 900 s) by its
+    fourth run, and F3f's kill at the first frame question (no tier stats
+    yet) left handed-on unreadable."""
+    calls = []
+    monkeypatch.setattr(vlm_rows, "sh", lambda *argv, **k: calls.append(argv) or types.SimpleNamespace(
+        returncode=0, stdout="", stderr=""))
+    vlm_rows.reset_start_limit()
+    assert calls == [("sudo", "-n", "systemctl", "reset-failed", "picar-local-vlm")]
+    monkeypatch.setattr(vlm_rows, "sh", lambda *argv, **k: types.SimpleNamespace(
+        returncode=1, stdout="", stderr="no"))
     with pytest.raises(stack.StackError):
-        vlm_rows.wait_start_gap(sleep=slept.append)
+        vlm_rows.reset_start_limit()
+    assert vlm_rows.absent_count({"tier": {"model": "x"}}) is None       # no stats stays unreadable
     import inspect
     src = inspect.getsource(vlm_rows.run_row)
-    assert src.index("wait_start_gap()") < src.index('raise StackError("VE is not ready at the start")')
+    assert src.index("reset_start_limit()") < src.index('raise StackError("VE is not ready at the start")')
+    assert 'after - (ms.get("absent_before") or 0)' in src               # a None baseline is 0, a None after is not
 
 
 def test_the_f3_stack_asks_the_cloud_at_arrival_and_the_plant_reads_ve_gone_as_no():
