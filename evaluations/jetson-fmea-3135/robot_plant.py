@@ -16,6 +16,7 @@ patch is on the module, here.
 | `feedback_fresh` | 3.34: the board's feedback is called fresh once any frame came | F10 |
 | `wall_clock` | the robot server's own timers (`robot.server`'s `time.monotonic`) read the wall clock, plus `FMEA_CLOCK_OFFSET_FILE`'s seconds (the desktop's stand-in for a step) | F16 |
 | `no_latch` | 3.84 off: a person's Stop latches nothing (`goal_stop`, the dict every `create_app` closure shares, swapped for one that drops the latch) | F17 |
+| `no_reserve` | 3.137's Reserve not enforced: `robot.server`'s `RESERVE` names no level, so Reserve refuses nobody and ends no goal (Power-off still fires) | F24 |
 | `stop_waits` | SPEC-REVIEW finding 1 (2026-10-02) undone: under `drive: ros` a stop zeroes the ROS inputs first, synchronously, at the client's 2 s timeout, then the robot | F5 |
 
     FMEA_PLANT=watchdog python evaluations/jetson-fmea-3135/robot_plant.py <port>
@@ -30,7 +31,7 @@ sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 
 PLANTS = {p for p in os.environ.get("FMEA_PLANT", "").split(",") if p}
-KNOWN = {"watchdog", "lidar_fresh", "feedback_fresh", "stop_waits", "wall_clock", "no_latch"}
+KNOWN = {"watchdog", "lidar_fresh", "feedback_fresh", "stop_waits", "wall_clock", "no_latch", "no_reserve"}
 if not PLANTS or PLANTS - KNOWN:
     raise SystemExit(f"FMEA_PLANT must name one or more of {sorted(KNOWN)}, not {sorted(PLANTS)}")
 
@@ -82,6 +83,10 @@ if "no_latch" in PLANTS:
             super().__setitem__(k, v)
 
     _cell.cell_contents = _NoLatch(_cell.cell_contents)   # one cell, shared by every closure
+
+if "no_reserve" in PLANTS:
+    # Read as a module global by every comparison in create_app's closures.
+    server.RESERVE = "planted: no reserve"
 
 if "wall_clock" in PLANTS:
     import time as _time

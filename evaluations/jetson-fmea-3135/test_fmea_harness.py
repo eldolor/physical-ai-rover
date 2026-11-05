@@ -538,3 +538,33 @@ def test_f14_judge():
         assert not v["pass"] and v["valid"] and any(why in r for r in v["reasons"]), (change, v)
     assert f14.judge({**good, "boot_changed": False})["valid"] is False
     assert f14.judge({**good, "driving_at_reboot": False})["valid"] is False
+
+
+# ------------------------------------------------------ 3.135.B: F24 (amendment 18)
+
+def test_f24_bars_steps_and_plant():
+    good = {"fault_at": 1.0, "forward_at_fault": True, "goal_at_fault": True, "contacts": 0, "gap_unknown": 0,
+            "truth_hole_s": 0.03, "reserve_at": 30.0, "poweroff_at": 75.0, "moved_after_reserve_cm": 0.4,
+            "shutdown": [{"step": s, "rc": 0 if s != "poweroff" else None} for s in vlm_rows.F24_STEPS],
+            "down_at_poweroff": {"mission": False, "ros": False, "vlm": False}}
+    assert vlm_rows.judge("F24", good) == {"pass": True, "valid": True, "reasons": []}
+    two = good["shutdown"] + [{"step": "poweroff", "rc": None}]
+    for change, why in (({"moved_after_reserve_cm": 12.0}, "after Reserve"),
+                        ({"shutdown": two}, "called 2 times"),
+                        ({"shutdown": good["shutdown"][:1] + good["shutdown"][2:]}, "the shutdown order"),
+                        ({"shutdown": [{**x, "rc": 1} if x["step"] == "ros" else x for x in good["shutdown"]]},
+                         "not clean"),
+                        ({"down_at_poweroff": {"mission": False, "ros": True, "vlm": False}}, "still up")):
+        v = vlm_rows.judge("F24", {**good, **change})
+        assert not v["pass"] and any(why in r for r in v["reasons"]), (change, v)
+    assert vlm_rows.judge("F24", {**good, "poweroff_at": None})["valid"] is False
+    env = vlm_rows.f24_env("http://127.0.0.1:10351")
+    assert [n for n, _ in json.loads(env["BATTERY_SHUTDOWN_CMDS"])] == ["brain", "ros", "vlm"]
+    assert env["BATTERY_POWEROFF_CMD"] == ""                                 # 3.137's logged stub
+    assert "no_reserve" in stack.ROBOT_PLANTS and vlm_rows.ROWS["F24"]["plant"] == "no_reserve"
+    src = (HERE / "robot_plant.py").read_text()
+    assert 'server.RESERVE = "planted: no reserve"' in src
+    sys.path.insert(0, str(HERE.parents[1]))
+    import robot.server as rs
+    assert hasattr(rs, "RESERVE")                                          # the global the plant renames
+    assert '@app.post("/fmea/battery")' in (HERE / "truth_body.py").read_text()

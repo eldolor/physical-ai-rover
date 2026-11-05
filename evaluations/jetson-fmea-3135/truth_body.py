@@ -17,6 +17,7 @@ simulator's, never the code under test.
   it judges; < 1 cm is a contact, its G bar; 999 when nothing is within its
   2.5-cell look, null only if the geometry raised).
 * `GET /fmea/now`: the newest sample (the injectors wait on it for motion).
+* `POST /fmea/battery?v=10.35&drain=0.005`: the fake board's pack set now (F24).
 * `POST /fmea/silence?s=5`: the board stops sending its `T:1001` feedback
   frames for `s` seconds (the firmware copy's own `silent_until`): F10.
 * Planted bugs (criterion 4), from `FMEA_PLANT` (comma-separated):
@@ -100,6 +101,20 @@ def fmea_silence(s: float = 5.0):
     t0 = time.monotonic()
     board.silent_until = t0 + s
     return {"silent_from": t0, "silent_until": board.silent_until}
+
+
+@app.post("/fmea/battery")
+def fmea_battery(v: float, drain: float = 0.0):
+    """F24 (amendment 18): the fake board's pack set to `v` volts now, draining
+    `drain` V/s from now (the same line `SIM_BATTERY_V` / `_DRAIN_V_PER_S` draw
+    from the board's start)."""
+    if not (0 < v <= 13.0 and 0 <= drain <= 0.1):
+        raise HTTPException(status_code=422, detail="0 < v <= 13, 0 <= drain <= 0.1")
+    with board.lock:
+        b = board.battery
+        b.v0, b.drain_v_per_s, b.since = float(v), float(drain), b.clock()
+        b._held = b._held_at = None
+    return {"v": v, "drain": drain, "since": b.since}
 
 
 if __name__ == "__main__":

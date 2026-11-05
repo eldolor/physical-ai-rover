@@ -97,7 +97,29 @@ ROWS = {
              "cloud": "standin", "plant": "no_latch", "reading": "as F17g"},
     "F17a": {"title": "A person's Stop during the arrival's question", "fault": "stop",
              "when": "arrival", "cloud": "standin", "plant": "no_latch", "reading": "as F17g"},
+    "F24": {"title": "The battery reaches Reserve, then Power-off, mid-mission", "fault": "battery",
+            "when": "goal", "cloud": "standin", "plant": "no_reserve",
+            "reading": "amendment 18, 3.137 criterion 1's bars: 0 autonomous motion after Reserve (true "
+                       "path <= 2 cm from the Reserve latch to the power-off); the stub called exactly "
+                       "once, after the brain's mission, ROS and VE are down and the wheels at 0, in "
+                       "the logged order; 0 contacts"},
 }
+
+# F24 (amendment 18): the pack set at the fault, crossing Reserve (10.2 V) ~30 s later and
+# Power-off (10.0 V) ~40 s after that; the shutdown steps in 3.137's order.
+F24_V0, F24_DRAIN = 10.35, 0.005
+F24_WAIT_S = 240.0
+F24_MOVE_BAR_CM = 2.0
+F24_STEPS = ["wheels", "brain", "ros", "vlm", "sync", "poweroff"]
+
+
+def f24_env(brain_url: str) -> dict:
+    """The robot server's shutdown steps and its stubbed power-off (3.137)."""
+    steps = [["brain", f'curl -sf -m 20 -X POST -H "x-app-secret: $APP_SHARED_SECRET" '
+                       f'-H "Content-Type: application/json" -d "{{}}" {brain_url}/mission/stop'],
+             ["ros", f"docker stop -t 10 {rosmod.CONTAINER}"],
+             ["vlm", f"sudo -n systemctl stop {VE_UNIT}"]]
+    return {"BATTERY_SHUTDOWN_CMDS": json.dumps(steps), "BATTERY_POWEROFF_CMD": ""}
 
 
 def judge(row: str, ms: dict) -> dict:
@@ -151,6 +173,22 @@ def judge(row: str, ms: dict) -> dict:
                 r.append(f"invalid: the stand-in answered {ms['standin_blind']} questions with no pose")
         if row == "F3r":
             bar(out == "arrived_unconfirmed", f"the mission ended {out}, not arrived_unconfirmed")
+    if spec["fault"] == "battery":
+        if ms.get("reserve_at") is None or ms.get("poweroff_at") is None:
+            valid = False
+            r.append(f"invalid: the ladder did not reach Reserve and Power-off "
+                     f"(reserve {ms.get('reserve_at')}, poweroff {ms.get('poweroff_at')})")
+        mv = ms.get("moved_after_reserve_cm")
+        bar(mv is not None and mv <= F24_MOVE_BAR_CM,
+            f"moved {mv} cm after Reserve (bar {F24_MOVE_BAR_CM:g})")
+        steps = ms.get("shutdown") or []
+        names = [x.get("step") for x in steps]
+        bar(names.count("poweroff") == 1, f"the power-off stub called {names.count('poweroff')} times (bar 1)")
+        bar(names == F24_STEPS, f"the shutdown order {names}, not {F24_STEPS}")
+        bad = [x for x in steps if x.get("step") in ("wheels", "brain", "ros", "vlm") and x.get("rc") != 0]
+        bar(not bad, f"shutdown steps not clean: {bad}")
+        bar(ms.get("down_at_poweroff") == {"mission": False, "ros": False, "vlm": False},
+            f"still up at the power-off: {ms.get('down_at_poweroff')}")
     if spec["fault"] == "stop":
         z = ms.get("wheels_zero_from_stop_s")
         bar(z is not None and z <= STOP_ZERO_BAR_S, f"wheels zero {z} s after the /stop (bar 0.2)")
@@ -298,6 +336,8 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                    "LOCAL_VLM_SECRET": secret,
                    # amendment 12: the arrival's cloud step is the cloud (stand-in), not the sim's geometry
                    "SIM_ARRIVAL_CONFIRM": "cloud"}
+            if spec["fault"] == "battery":
+                env.update(f24_env(f"http://127.0.0.1:{PORTS['brain']}"))
             url = (f"http://127.0.0.1:{STUB_PORT}" if spec["cloud"] in ("standin", "truth")
                    else f"http://127.0.0.1:{CLOSED_PORT}")
             # ve_oom0 is the unit's drop-in, not a process plant: the stack runs as shipped.
@@ -349,6 +389,30 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                 ms["absent_before"] = absent_count(status(st))
                 ms["fault_at"] = time.monotonic()
                 sh("kill", "-9", str(pid))
+            elif spec["fault"] == "battery":
+                ms["fault_at"] = time.monotonic()
+                code, _ = http("POST", st.urls["body"] + f"/fmea/battery?v={F24_V0}&drain={F24_DRAIN}", timeout=5)
+                if code != 200:
+                    raise StackError(f"the body's battery: {code}")
+                end = ms["fault_at"] + F24_WAIT_S
+                while time.monotonic() < end:
+                    code, b = st.robot("GET", "/battery", timeout=3)
+                    now = time.monotonic()
+                    if code == 200 and isinstance(b, dict):
+                        if ms.get("reserve_at") is None and b.get("reserve_s") is not None:
+                            ms["reserve_at"] = now - float(b["reserve_s"])
+                        steps = b.get("shutdown") or []
+                        if any(x.get("step") == "poweroff" for x in steps):
+                            ms["poweroff_at"] = now
+                            ms["down_at_poweroff"] = {
+                                "mission": bool(status(st).get("running")),
+                                "ros": bool(rosmod.docker("ps", "-q", "-f", f"name=^{rosmod.CONTAINER}$").stdout.strip()),
+                                "vlm": sh("systemctl", "is-active", VE_UNIT).stdout.strip() == "active"}
+                            time.sleep(2.0)                  # a second stub would land here
+                            ms["battery_end"] = st.robot("GET", "/battery", timeout=3)[1]
+                            ms["shutdown"] = (ms["battery_end"] or {}).get("shutdown")
+                            break
+                    time.sleep(0.2)
             elif spec["fault"] == "stop":
                 stop_epoch = time.time()
                 ms["fault_at"] = ms["stop_at"] = time.monotonic()
@@ -468,6 +532,12 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                     ms["plant_removed"] = ve_oom_dropin(False)
                 except Exception as e:     # noqa: BLE001 -- never lose the run; the board check says so too
                     rec["error"] = f"the plant's removal: {type(e).__name__}: {e}"
+            if spec["fault"] == "battery" and sh("systemctl", "is-active", VE_UNIT).stdout.strip() != "active":
+                try:                                      # F24's shutdown stopped VE: put it back
+                    reset_start_limit()
+                    ms["ve_restarted"] = sh("sudo", "-n", "systemctl", "start", VE_UNIT, timeout=120).returncode
+                except Exception as e:  # noqa: BLE001 -- the VE-ready check below records it
+                    rec["teardown_error"] = f"VE restart: {type(e).__name__}: {e}"
             end = time.monotonic() + 180                  # VE as found before the next run
             while not ve_ready() and time.monotonic() < end:
                 time.sleep(1.0)
@@ -482,6 +552,8 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
             hit = [q for q in plg if q.get("kind") == spec["when"] and q["t0"] <= t <= q.get("t1", 9e18)]
             ms["question_hit"] = bool(hit)
             ms["question_at_fault"] = hit[0] if hit else None
+        if spec["fault"] == "battery" and ms.get("reserve_at") is not None:
+            ms["moved_after_reserve_cm"] = round(m.travel_cm(rows, ms["reserve_at"], ms.get("poweroff_at")), 2)
         if spec["fault"] == "stop":
             ms["wheels_zero_from_stop_s"] = m.wheels_zero_s(rows, t)
             calls = proxy_log(calls_log)
