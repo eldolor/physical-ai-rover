@@ -1,0 +1,3 @@
+1793851022.322 WARNING identity vision-picar brain server starting -- git=9dfc6d63 executable=/home/picar/bench-3152/.venv/bin/python config=(default)
+1793851051.987 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM not ready"}); asking the cloud
+1793851052.741 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)

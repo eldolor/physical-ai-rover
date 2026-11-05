@@ -1,0 +1,27 @@
+1793850235.268 WARNING identity vision-picar brain server starting -- git=9dfc6d63 executable=/home/picar/bench-3152/.venv/bin/python config=(default)
+1793850257.329 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM absent"}); asking the cloud
+1793850257.985 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)
+1793850334.362 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM absent"}); asking the cloud
+1793850335.249 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)
+1793850607.501 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM absent"}); asking the cloud
+1793850607.700 WARNING safety Blocked REVERSE: rear clearance=0.0cm < min=20cm (astern_not_observed)
+1793850608.252 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)
+1793850697.954 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM absent"}); asking the cloud
+1793850699.114 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)
+1793850779.247 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM not ready"}); asking the cloud
+1793850780.424 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)
+1793850854.013 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM absent"}); asking the cloud
+1793850854.862 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)
+1793850942.014 ERROR mission_runner mission step failed
+Traceback (most recent call last):
+  File "/home/picar/bench-3152/control/mission_runner.py", line 1070, in tick
+    result = self.agent.step()
+  File "/home/picar/bench-3152/brain/explore.py", line 373, in step
+    frame = self.robot.get_camera_frame()
+  File "/home/picar/bench-3152/control/mission_runner.py", line 565, in get_camera_frame
+    frame = self._robot.get_camera_frame()
+  File "/home/picar/bench-3152/control/remote_robot.py", line 161, in get_camera_frame
+    return self._request("GET", "/frame")
+  File "/home/picar/bench-3152/control/remote_robot.py", line 309, in _request
+    raise RobotTransportError(
+control.remote_robot.RobotTransportError: GET /frame -> HTTP 503: {"detail":"timed out"}

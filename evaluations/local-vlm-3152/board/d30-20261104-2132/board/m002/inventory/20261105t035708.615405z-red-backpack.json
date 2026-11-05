@@ -1,0 +1,353 @@
+{
+ "candidates": [
+  {
+   "belief": 0.711,
+   "carried": false,
+   "disputed": false,
+   "first_step": 159,
+   "hits": 2,
+   "id": 20,
+   "label": "counter top",
+   "last_step": 193,
+   "misses": 2,
+   "points": 2,
+   "reported": false,
+   "room": "bedroom",
+   "votes": {
+    "counter top": 2
+   },
+   "x_m": 8.788,
+   "y_m": 7.506
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 1,
+   "id": 2,
+   "label": "desk",
+   "last_step": 2,
+   "misses": 0,
+   "points": 3,
+   "reported": false,
+   "room": "bedroom",
+   "votes": {
+    "desk": 1
+   },
+   "x_m": 10.396,
+   "y_m": 0.93
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 186,
+   "hits": 1,
+   "id": 21,
+   "label": "house plant",
+   "last_step": 188,
+   "misses": 0,
+   "points": 2,
+   "reported": false,
+   "room": "bedroom",
+   "votes": {
+    "house plant": 1
+   },
+   "x_m": 10.806,
+   "y_m": 6.602
+  },
+  {
+   "belief": 0.175,
+   "carried": false,
+   "disputed": false,
+   "first_step": 60,
+   "hits": 1,
+   "id": 15,
+   "label": "tv stand",
+   "last_step": 60,
+   "misses": 6,
+   "points": 1,
+   "reported": false,
+   "room": "bedroom 2",
+   "votes": {
+    "tv stand": 1
+   },
+   "x_m": 12.77,
+   "y_m": 5.591
+  },
+  {
+   "belief": 0.087,
+   "carried": false,
+   "disputed": false,
+   "first_step": 31,
+   "hits": 1,
+   "id": 7,
+   "label": "bed",
+   "last_step": 31,
+   "misses": 8,
+   "points": 1,
+   "reported": false,
+   "room": "bedroom",
+   "votes": {
+    "bed": 1
+   },
+   "x_m": 13.134,
+   "y_m": 5.217
+  }
+ ],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 232,
+  "landmarks": 17,
+  "no_pose": 0,
+  "observations": 453,
+  "reported": 12,
+  "unplaced": 1
+ },
+ "frame_id": "map-f49c794e",
+ "map_id": "slam-e75d2da9",
+ "mission": "Find the red backpack.",
+ "mission_id": "20261105T035708.615405Z-red backpack",
+ "outcome": "cancelled",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 40,
+   "hits": 12,
+   "id": 10,
+   "label": "baseball bat",
+   "last_step": 129,
+   "misses": 0,
+   "points": 29,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "baseball bat": 12
+   },
+   "x_m": 14.578,
+   "y_m": 3.011
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 20,
+   "hits": 16,
+   "id": 6,
+   "label": "bed",
+   "last_step": 128,
+   "misses": 0,
+   "points": 101,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "bed": 16
+   },
+   "x_m": 15.908,
+   "y_m": 3.692
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 138,
+   "hits": 8,
+   "id": 17,
+   "label": "bed",
+   "last_step": 231,
+   "misses": 0,
+   "points": 30,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "bed": 8
+   },
+   "x_m": 10.487,
+   "y_m": 5.048
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 39,
+   "hits": 12,
+   "id": 9,
+   "label": "box",
+   "last_step": 128,
+   "misses": 0,
+   "points": 26,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "box": 12
+   },
+   "x_m": 15.098,
+   "y_m": 3.015
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 48,
+   "hits": 6,
+   "id": 13,
+   "label": "chair",
+   "last_step": 110,
+   "misses": 0,
+   "points": 16,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "chair": 6
+   },
+   "x_m": 16.791,
+   "y_m": 6.322
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 6,
+   "hits": 16,
+   "id": 3,
+   "label": "desk",
+   "last_step": 132,
+   "misses": 0,
+   "points": 76,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "desk": 16
+   },
+   "x_m": 15.326,
+   "y_m": 6.125
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 11,
+   "hits": 7,
+   "id": 4,
+   "label": "dresser",
+   "last_step": 190,
+   "misses": 0,
+   "points": 25,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "dresser": 7
+   },
+   "x_m": 9.336,
+   "y_m": 6.061
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 40,
+   "hits": 13,
+   "id": 12,
+   "label": "dresser",
+   "last_step": 131,
+   "misses": 0,
+   "points": 47,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "dresser": 13
+   },
+   "x_m": 13.792,
+   "y_m": 3.618
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 11,
+   "hits": 6,
+   "id": 5,
+   "label": "tv stand",
+   "last_step": 186,
+   "misses": 0,
+   "points": 57,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "tv stand": 6
+   },
+   "x_m": 11.759,
+   "y_m": 6.29
+  },
+  {
+   "belief": 0.968,
+   "carried": false,
+   "disputed": false,
+   "first_step": 189,
+   "hits": 5,
+   "id": 22,
+   "label": "house plant",
+   "last_step": 228,
+   "misses": 0,
+   "points": 14,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "house plant": 5
+   },
+   "x_m": 10.565,
+   "y_m": 8.162
+  },
+  {
+   "belief": 0.928,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 3,
+   "id": 1,
+   "label": "bed",
+   "last_step": 30,
+   "misses": 0,
+   "points": 13,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "bed": 3
+   },
+   "x_m": 11.816,
+   "y_m": 1.81
+  },
+  {
+   "belief": 0.928,
+   "carried": false,
+   "disputed": false,
+   "first_step": 155,
+   "hits": 3,
+   "id": 19,
+   "label": "counter top",
+   "last_step": 192,
+   "misses": 0,
+   "points": 9,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "counter top": 3
+   },
+   "x_m": 8.172,
+   "y_m": 7.699
+  }
+ ]
+}

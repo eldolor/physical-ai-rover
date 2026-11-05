@@ -1,0 +1,15 @@
+{
+ "t0": 1793850242.828,
+ "kills_at_start": 5,
+ "oom_score_adj": 100,
+ "mem_mb_last": 93,
+ "kills_seen": [
+  "[67949.854719] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=3652413,uid=1000"
+ ],
+ "first_kill_t": 1793850257.234,
+ "first_kill_mb": 3136,
+ "held_mb": 3392,
+ "holding_t": 1793850257.427,
+ "ended_by": "SIGTERM",
+ "released_t": 1793851159.045
+}

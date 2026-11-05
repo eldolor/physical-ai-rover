@@ -18,6 +18,11 @@ bar, amendment 3). It grows without a floor: with no swap, only an
 allocation brings the kernel to choose, so its own are what do. With no VE
 kill in `give_up_s` it gives up.
 
+While it holds (amendment 6), it watches VE's /health: if VE stays ready
+for `TOPUP_AFTER_S` (a reload that fit, as the missions' own memory moved),
+it grows again until VE's next kill and adds `margin_mb` more. Each top-up
+is recorded.
+
 It dies with its parent: it sets `PR_SET_PDEATHSIG` on itself first thing
 (no `preexec_fn` in the threaded harness) and checks `getppid()` throughout,
 so a harness killed hard never leaves memory held.
@@ -34,6 +39,8 @@ import sys
 import time
 
 CHUNK = 32 * 1024 * 1024
+TOPUP_AFTER_S = 20.0
+VE_HEALTH = "http://127.0.0.1:8005/health"
 OOM_SCORE_ADJ = 100
 VE_MEMCG = "picar-local-vlm.service"
 
@@ -58,6 +65,15 @@ def last_oom_line() -> str:
     out = subprocess.run(["sudo", "-n", "dmesg"], capture_output=True, text=True).stdout
     lines = [x for x in out.splitlines() if "oom-kill:" in x]
     return lines[-1] if lines else ""
+
+
+def ve_ready() -> bool:
+    import urllib.request
+    try:
+        with urllib.request.urlopen(VE_HEALTH, timeout=2) as r:
+            return json.loads(r.read()).get("ready") is True
+    except Exception:  # noqa: BLE001 -- down or loading: not ready
+        return False
 
 
 def chunk() -> bytearray:
@@ -121,8 +137,39 @@ def main(out: str, margin_mb: int, give_up_s: float, hold_max_s: float, parent: 
         rec["held_mb"] = len(held) * CHUNK // 2**20
         rec["holding_t"] = round(time.time(), 3)
         write()
+        ready_since, kills = None, oom_kills()
+        rec["topups"] = []
         while not stop["now"] and not orphaned() and time.time() - rec["holding_t"] < hold_max_s:
-            time.sleep(0.2)
+            now_kills = oom_kills()
+            if now_kills > kills:
+                kills, ready_since = now_kills, None
+                line = last_oom_line()
+                if VE_MEMCG not in line:
+                    rec["wrong_victim_holding"] = line[-300:]   # scored by the harness
+            if ve_ready():
+                ready_since = ready_since or time.time()
+            else:
+                ready_since = None
+            if ready_since and time.time() - ready_since >= TOPUP_AFTER_S:
+                # VE's reload fit: grow until its next kill, then the margin.
+                t, before = time.time(), len(held)
+                while (not stop["now"] and not orphaned() and oom_kills() == kills
+                       and time.time() - t < give_up_s):
+                    held.append(chunk())
+                    time.sleep(0.05)
+                got = oom_kills() > kills
+                if got:
+                    kills = oom_kills()
+                    line = last_oom_line()
+                    if VE_MEMCG not in line:
+                        rec["wrong_victim_holding"] = line[-300:]
+                    for _ in range(margin_mb * 2**20 // CHUNK):
+                        held.append(chunk())
+                rec["topups"].append({"t": round(t, 3), "added_mb": (len(held) - before) * CHUNK // 2**20,
+                                      "killed": got, "held_mb": len(held) * CHUNK // 2**20})
+                write()
+                ready_since = None
+            time.sleep(0.5)
         rec["ended_by"] = ("SIGTERM" if stop["now"] else "orphaned" if orphaned() else "hold_max_s")
         return 0
     finally:

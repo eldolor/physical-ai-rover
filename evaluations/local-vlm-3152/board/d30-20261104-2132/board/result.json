@@ -1,0 +1,130 @@
+{
+ "delay_s": 30,
+ "window": [
+  1793850257.427,
+  1793851159.109695
+ ],
+ "window_s": 901.7,
+ "hog": {
+  "t0": 1793850242.828,
+  "kills_at_start": 5,
+  "oom_score_adj": 100,
+  "mem_mb_last": 93,
+  "kills_seen": [
+   "[67949.854719] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=3652413,uid=1000"
+  ],
+  "first_kill_t": 1793850257.234,
+  "first_kill_mb": 3136,
+  "held_mb": 3392,
+  "holding_t": 1793850257.427,
+  "ended_by": "SIGTERM",
+  "released_t": 1793851159.045
+ },
+ "notes": [],
+ "kills": [
+  {
+   "t": 1793850254.7389808,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "3652413",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=3652413,uid=1000"
+  },
+  {
+   "t": 1793850332.1011798,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "3661538",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=docker-42e89a34be49c4148ec13a36a8fe083dbce8cf575e425c8cf1f7801ea2bd4467.scope,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=3661538,uid=1000"
+  },
+  {
+   "t": 1793850604.855177,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "3667888",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=3667888,uid=1000"
+  },
+  {
+   "t": 1793850695.346798,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "3687648",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=containerd.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=3687648,uid=1000"
+  },
+  {
+   "t": 1793850776.0796008,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "3694027",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=docker.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=3694027,uid=1000"
+  },
+  {
+   "t": 1793850851.727799,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "3700465",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=3700465,uid=1000"
+  },
+  {
+   "t": 1793850939.943898,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "3706690",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=containerd.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=3706690,uid=1000"
+  }
+ ],
+ "ve_kills": 7,
+ "kills_before_hog": 0,
+ "oom_kill_rose_by": 7,
+ "kills_in_window": 6,
+ "loaded_rows": 57,
+ "restarts_in_window": 8,
+ "late_wheel_ticks_overlapping": 4,
+ "missions_overlapping": 3,
+ "errored_missions_overlapping": 0,
+ "missions_without_wheel_loop": 0,
+ "live_samples_in_window": 810,
+ "robot_down_samples": 0,
+ "brain_down_samples": 0,
+ "mem_min_window_mb": 20,
+ "loaded_from": 1793851160.0360017,
+ "mem_min_loaded_mb": 1230,
+ "ve_back_s": 0.7,
+ "local_vlm_loaded": [
+  "up",
+  "up",
+  "up",
+  "up",
+  "up",
+  "up",
+  "up",
+  "up",
+  "up",
+  "up"
+ ],
+ "valid": {
+  "a_crash_loop": true,
+  "kill_lines_complete": true,
+  "loaded_window_in_a_mission": true,
+  "no_kill_before_the_hog": true,
+  "every_kill_line_placed": true,
+  "a_full_window": true,
+  "no_errored_mission": true,
+  "wheel_loop_read": true,
+  "dmesg_baseline": true
+ },
+ "met": {
+  "every_kill_ve": true,
+  "zero_late_ticks": false,
+  "servers_answered": true,
+  "mem_loaded_500": true,
+  "ve_back_within": true,
+  "brain_up_after": true
+ }
+}

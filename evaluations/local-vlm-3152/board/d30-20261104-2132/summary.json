@@ -1,0 +1,12 @@
+{
+ "sha": "9dfc6d634c16db5eefc8f91c10ce78a5a1f80133",
+ "cmd_exit": 1,
+ "cmd_s": 1044.9,
+ "restore_actions": [],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "lease": "released",
+ "left_to_lease": null,
+ "fetch_error": null
+}
