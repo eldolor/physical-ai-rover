@@ -498,3 +498,43 @@ def test_the_f3_stack_asks_the_cloud_at_arrival_and_the_plant_reads_ve_gone_as_n
     sys.path.insert(0, str(HERE.parents[1]))
     import brain.local_vlm as lv
     assert hasattr(lv.LocalVLMClient, "_post")                    # the class the plant patches exists
+
+
+# ------------------------------------------------------ 3.135.B: F14 (amendment 18)
+
+def test_f14_checker_catches_torn_files(tmp_path):
+    """F14's planted check (criterion 4): a reboot cannot be planted on the
+    desktop, so the checker is fed torn copies -- a JSONL line cut mid-record
+    and a JSON file cut in half -- and must flag both, and pass the whole ones."""
+    import f14_reboot as f14
+    inv = tmp_path / "recordings/inventory"
+    itv = tmp_path / "recordings/interventions"
+    inv.mkdir(parents=True)
+    itv.mkdir(parents=True)
+    whole = json.dumps({"mission": "m1", "landmarks": [{"label": "sofa", "x": 1.0}]})
+    (inv / "m1.json").write_text(whole)
+    (itv / "interventions.jsonl").write_text('{"a": 1}\n{"b": 2}\n')
+    (inv / "m1.jpg").write_bytes(b"\xff\xd8")
+    good = f14.check_tree(tmp_path)
+    assert good["bad"] == [] and good["json"] == 1 and good["jsonl_lines"] == 2 and good["other"] == 1
+    (inv / "m1.json").write_text(whole[: len(whole) // 2])
+    (itv / "interventions.jsonl").write_text('{"a": 1}\n{"b": 2')
+    bad = f14.check_tree(tmp_path)
+    assert {b["file"] for b in bad["bad"]} == {"recordings/inventory/m1.json",
+                                                "recordings/interventions/interventions.jsonl"}
+
+
+def test_f14_judge():
+    import f14_reboot as f14
+    units = {"picar-stack": "active/enabled"}
+    good = {"boot_changed": True, "driving_at_reboot": True, "stack_back_s": 61.0,
+            "files_after": {"bad": []}, "next_started": True, "units_before": units, "units_after": units}
+    assert f14.judge(good) == {"pass": True, "valid": True, "reasons": []}
+    for change, why in (({"stack_back_s": 95.0}, "bar 90"), ({"stack_back_s": None}, "back None"),
+                        ({"files_after": {"bad": [{"file": "x"}]}}, "1 unparseable"),
+                        ({"next_started": False}, "next mission"),
+                        ({"units_after": {"picar-stack": "failed/enabled"}}, "not as found")):
+        v = f14.judge({**good, **change})
+        assert not v["pass"] and v["valid"] and any(why in r for r in v["reasons"]), (change, v)
+    assert f14.judge({**good, "boot_changed": False})["valid"] is False
+    assert f14.judge({**good, "driving_at_reboot": False})["valid"] is False
