@@ -159,8 +159,8 @@ paragraph.**
 **Open now** (claim first)
 
 * 3.136.B-E, R: the board's steady state, latencies, heat and power; the
-  sudo revert. 3.141.D: a traced window (3.141.C: 6 late wheel ticks in
-  24,925, max 113 ms).
+  sudo revert. 3.141.E1's board checks (criteria 3-4) after 3.136.B run 2
+  (3.141.D closed unmet: `pivot_scale`'s arithmetic, inferred).
 * 3.144.B: F9 on the board.
 * 3.135.B (faults F2-F18), 3.137.C (a real power-off), 3.142.A.
 * 3.50.D5: criteria 6 (ten sessions) and 7 (15 cm, live).
@@ -260,7 +260,7 @@ paragraph.**
   until a mission starts (`POST /autonomy/resume`); a person's move ends a
   nav2 goal under every drive; a Stop during the arrival's confirmation
   ends it `cancelled`; the twin names each refusal.
-* 3.141.B: `_PivotRows`. 3.144.A: no FORWARD without a usable scan
+* 3.141.B, E1: `_PivotRows`, `_ScanPoints` (the scan's points once per scan), the corridor in numpy; exactly dev's answers (`tests/vet_reference.py`). 3.144.A: no FORWARD without a usable scan
   (`ahead_not_observed`).
 * 3.137.A-B: the battery ladder (`robot/battery_ladder.py`; 10.5 / 10.2 /
   10.0 V, placeholders) and the twin's banner. 3.74.A-B: the floor band in series with the cone and
@@ -646,7 +646,7 @@ file has the why)
   (3.130), `tests/goal_features_reference.py` (3.109),
   `tests/room_cut_reference.py` (3.118), `tests/walk_reference.py` (3.120),
   `tests/room_features_reference.py` (3.131), `tests/pivot_reference.py`
-  (3.141.B), `tests/tiered_reference.py` (3.94).
+  (3.141.B), `tests/vet_reference.py` (3.141.E), `tests/tiered_reference.py` (3.94).
 - **A sync route returning a big dict blocks the wheel loop** (3.87):
   return a built `JSONResponse`.
 - **`evaluations/goal-learn-396/train.py` `mission()` collects its cycles
