@@ -2156,6 +2156,32 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     setBrainText("brain-tel-cloud", cloud.text, cloud.cls);
   }
 
+  // 3.152: the tiered mission's local VLM (`tier.stats.local_vlm`): up, held
+  // down after it was found absent (its /health probed until ready), or off.
+  // A status without it (no tiered mission, or a brain before 3.152) is a dash.
+  function localVlmOf(status) {
+    const s = status && status.tier && status.tier.stats;
+    return (s && s.local_vlm && s.local_vlm.state) ? s.local_vlm : null;
+  }
+  function renderLocalVlm(status) {
+    const lv = localVlmOf(status);
+    let text = null, cls = null;
+    if (lv) {
+      const since = lv.since ? new Date(lv.since * 1000).toLocaleTimeString([], {
+        hour: "2-digit", minute: "2-digit", second: "2-digit" }) : "";
+      text = t("localvlm." + (lv.state === "down" ? "down" : lv.state === "up" ? "up" : "off"),
+               {since: since, probes: lv.probes || 0});
+      cls = lv.state === "down" ? "warn" : lv.state === "up" ? "safe" : null;
+    }
+    setBrainText("brain-tel-localvlm", text, cls);
+    const note = document.getElementById("mission-local-down");
+    if (note) {
+      const show = !!(state.brainConnected && status && status.running && lv && lv.state === "down");
+      note.hidden = !show;
+      if (show && note.textContent !== t("card.localDown")) note.textContent = t("card.localDown");
+    }
+  }
+
   // ---------- 3.132 Stage 3: the mission card ----------
   // The mission in one sentence, for a person at home: what it is doing,
   // for what, and how far it has got. Operator mode's (.op-only); Engineer
@@ -2184,7 +2210,11 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     const el = document.getElementById("mission-card");
     if (!el) return;
     el.hidden = !state.brainConnected;
-    if (!state.brainConnected) return;
+    if (!state.brainConnected) {
+      const note = document.getElementById("mission-local-down");   // 3.152
+      if (note) note.hidden = true;
+      return;
+    }
     const card = missionCardText(state.lastBrainStatus);
     // Only on a change: the card is read on every poll.
     if (el.textContent !== card.text) el.textContent = card.text;
@@ -2243,6 +2273,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
       status.error ? "alert" : unconfirmed ? "warn" : null);
     renderCloudRow(status);
     renderTierReadouts(status);
+    renderLocalVlm(status);
     renderMissionCard();
 
     // The mission log comes from the brain, so it is rewritten wholesale

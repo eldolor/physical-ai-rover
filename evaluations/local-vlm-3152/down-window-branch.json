@@ -1,0 +1,66 @@
+{
+ "rev": "79cfe39a",
+ "house": "procthor:val:2",
+ "target": "basketball",
+ "max_steps": 60,
+ "ve_questions_sent": 1,
+ "ve_probes": 1,
+ "down": {
+  "outcome": "out_of_budget",
+  "step": 60,
+  "ticks": 206,
+  "arrivals": [
+   [
+    "cloud",
+    false
+   ]
+  ],
+  "cloud_calls": 35,
+  "triggers": {
+   "mission_start": 1,
+   "cold_search": 32,
+   "candidate_sighting": 2
+  }
+ },
+ "no_local_tier": {
+  "outcome": "out_of_budget",
+  "step": 60,
+  "ticks": 206,
+  "arrivals": [
+   [
+    "cloud",
+    false
+   ]
+  ],
+  "cloud_calls": 35,
+  "triggers": {
+   "mission_start": 1,
+   "cold_search": 32,
+   "candidate_sighting": 2
+  }
+ },
+ "decisions_equal": true,
+ "down_local_frame": {
+  "absent": 1
+ },
+ "down_local_frame_ms": {
+  "n": 1,
+  "p50": 0,
+  "p90": 0,
+  "p99": 0,
+  "max": 0,
+  "mean": 0
+ },
+ "down_local_vlm": {
+  "state": "down",
+  "since": 1793843194.7876542,
+  "probes": 1,
+  "checked_at": 1793843199.7929552
+ },
+ "refused_ask_ms": {
+  "n": 50,
+  "p50": 0.2,
+  "p90": 0.28,
+  "max": 1.1
+ }
+}

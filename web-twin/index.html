@@ -224,6 +224,8 @@
       <!-- 3.132 Stage 3: the mission in one sentence, for a person at home.
            The telemetry rows below are Engineer mode's. -->
       <div class="mission-card op-only" id="mission-card" data-state="none" hidden></div>
+      <!-- 3.152: the local VLM held down while a mission runs, in plain words. -->
+      <div class="lede op-only" id="mission-local-down" hidden></div>
       <div class="lede op-only">
         The robot searches on its own. Once it starts you can close this page
         or open it on another phone &mdash; the robot keeps going.
@@ -307,6 +309,9 @@
              after one parks). "Reachable" says /health answered; Bedrock
              behind it can still fail. -->
         <div class="full eng-only">Cloud: <span class="val" id="brain-tel-cloud">&ndash;</span></div>
+        <!-- 3.152. Whether the tiered mission holds its local VLM down (found
+             absent; its /health probed until ready). Off: none configured. -->
+        <div class="full eng-only">Local VLM: <span class="val" id="brain-tel-localvlm">&ndash;</span></div>
         <div class="full eng-only">Robot watchdog: <span class="val" id="brain-tel-watchdog">&ndash;</span></div>
         <!-- Phase M4. Who holds the robot, and why the last command was
              refused. Both sit beside the watchdog because they answer the

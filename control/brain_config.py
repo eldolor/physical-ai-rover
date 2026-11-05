@@ -176,6 +176,8 @@ DEFAULTS = {
     "tier_tree": {},
     "tier_local_max_unable": 2,
     "tier_local_timeout_s": 3.0,
+    # 3.152: how often a local VLM held down is probed (its free /health).
+    "tier_local_probe_s": 5.0,
     "tier_local_band_low": 0.5,
     # 3.80.F (the user, 2026-10-16): with the local tier on, a search
     # trigger's question is followed by the direction question (left, right
@@ -600,6 +602,10 @@ def load_brain_config(config_path=None) -> dict:
     if float(merged["tier_local_timeout_s"]) <= 0:
         raise ValueError(f"brain.tier_local_timeout_s must be > 0; "
                          f"got {merged['tier_local_timeout_s']}")
+    probe = merged["tier_local_probe_s"]
+    if (isinstance(probe, bool) or not isinstance(probe, (int, float))
+            or not math.isfinite(probe) or probe <= 0):
+        raise ValueError(f"brain.tier_local_probe_s must be a number > 0; got {probe!r}")
     calls = merged["room_label_max_calls"]
     if isinstance(calls, bool) or not isinstance(calls, int) or calls < 0:
         raise ValueError(f"brain.room_label_max_calls must be a whole number >= 0 "

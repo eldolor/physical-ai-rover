@@ -217,6 +217,32 @@ counts `local_calls`, `local` (`yes`, `no`, `absent`, `unable_<status>`,
 `unable_band`, `unable_noscore`, `unable_runner_timeout`), `local_ms` and `escalations`. `close()` closes and drops the
 client, so 3.53's late check is the cloud's.
 
+**A local VLM held down while absent (3.152).** With `local_health_fn` set
+(the brain passes the client's `healthy`, and `local_probe_s` from
+`tier_local_probe_s`, 5 s), a `LocalVLMAbsent` from any of the three local
+calls (a frame's question in `_ask_tiers`, the direction, the arrival's
+`confirm_local`) is noted by `_note_local_error()` on whatever thread it
+lands; any other exception, or a `timeout`/unable status, notes nothing
+(the unable rule keeps a slow VE). The next frame applies it
+(`_apply_local_flip()`, first thing in `__call__`), so no frame sees the
+tier change under it: `_local_down` is set, `stats.local_vlm` reads `down`
+with `since`, and a daemon thread (`_probe_local`, `local-vlm-probe`) calls
+`local_health_fn` every `local_probe_s`, counting `probes` and
+`checked_at`. While down, `local_identity_fn`, `local_sighting_fn`,
+`local_direction_fn` and `local_cold_search_after` read None and
+`steer_on_candidate` False (`_local_attr` properties over the configured
+`_cfg_*` values), so every decision is the no-local-tier policy's: its
+pace, its candidate steer, the cloud at arrival. The question that found
+it absent is answered as before (the cloud about the same frame). The
+first probe that returns True raises `_local_back_seen` and ends the
+thread; the next frame clears `_local_down` and `stats.local_vlm` reads
+`up`. `close()` stops and joins the probe (1 s) and drops the configured
+client; a probe that lands after `close()` flips nothing. Without
+`local_health_fn` nothing is held (an absent VE is asked again every
+question, as before 3.152). `stats.local_vlm` is `{"state": "off"}` with
+no local tier configured, `{"state": "up", "since": None, "probes": 0}`
+with one.
+
 **Every frame's question through the local tier (3.80.D).** With
 `local_sighting_fn` set (the brain sets it with `local_identity_fn`, to the
 same client's `ask(frame, box=True)`), `_trigger_for()` adds two questions

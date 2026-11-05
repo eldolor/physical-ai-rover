@@ -441,6 +441,10 @@ def _tiered_vision_fn(target: str, cloud_vision_fn, config: dict,
         kwargs["local_cold_search_after"] = config["tier_local_cold_search_after"]
     try:
         kwargs["local_identity_fn"] = local
+        # 3.152: an absent VLM is held down and probed back on its /health.
+        if local is not None and hasattr(local, "healthy"):
+            kwargs["local_health_fn"] = local.healthy
+            kwargs["local_probe_s"] = config["tier_local_probe_s"]
         kwargs["local_sighting_fn"] = (functools.partial(local.ask, box=True)
                                        if local is not None else None)
         # 3.80.F: the local tier's direction, and YOLOE + CLIP's candidate steer.

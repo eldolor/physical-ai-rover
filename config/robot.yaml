@@ -372,6 +372,10 @@ brain:
   tier_local_no_below: 0.1
   tier_local_max_unable: 2
   tier_local_timeout_s: 3.0
+  # 3.152: a local VLM found absent (refused, dropped, 503) is held down --
+  # its questions go as with no local tier -- and its free /health probed
+  # this often until it says ready. Must be > 0.
+  tier_local_probe_s: 5.0
   # 3.94.D -- the tiered policy as a behavior tree: what may be reordered,
   # and its numbers. Empty is today's tree (the defaults live in the code,
   # control/brain_config.py TIER_TREE_DEFAULTS): what_rungs [steer, located,

@@ -34,6 +34,9 @@ logger = logging.getLogger(__name__)
 # so a healthy service is never cut off by its own client.
 TAIL_S = 2.0
 
+# 3.152: how long the policy's probe of a down VE waits for `/health`.
+PROBE_TIMEOUT_S = 2.0
+
 
 # 3.80.D: Qwen2.5-VL answers a box in the pixels of the image it was fed,
 # which its processor resizes ("smart_resize": each side to a multiple of 28,
@@ -168,6 +171,16 @@ class LocalVLMClient:
         return got
 
     __call__ = ask
+
+    def healthy(self, timeout_s: float = PROBE_TIMEOUT_S) -> bool:
+        """3.152: the service's free `/health` says `ready: true`. Never
+        raises: a refusal, an error, a slow reply or a reply that is not
+        ready are all False. Asked only while the policy holds VE down."""
+        try:
+            r = self._http.get(f"{self.url}/health", timeout=timeout_s)
+            return r.status_code == 200 and (r.json() or {}).get("ready") is True
+        except Exception:  # noqa: BLE001 -- any failure is "not ready"
+            return False
 
     def close(self) -> None:
         self._http.close()

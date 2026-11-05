@@ -161,6 +161,10 @@
     "card.searchingRooms": "Searching for the {target} — {n} rooms looked at so far.",
     "card.surveying": "Surveying the house.",
     "card.found": "Found the {target}.",
+    "card.localDown": "The robot's own check of what it sees is restarting, so the cloud checks for now (each check costs a little).",
+    "localvlm.up": "working",
+    "localvlm.down": "restarting since {since}",
+    "localvlm.off": "not set up",
     "mode.sim": "Simulator",
     "mode.teleop": "Phone camera",
     "mode.hardware": "Rover",
@@ -208,6 +212,9 @@
     "mission.batteryCheck": "Couldn't start: the robot is checking its battery. Try again in a moment."
   },
   "eng": {
+    "localvlm.up": "up",
+    "localvlm.down": "down since {since}: questions go as with no local tier; /health probed {probes} times",
+    "localvlm.off": "off (no tier_local_vlm_url)",
     "explore.alreadyPicked": "Already picked -- explore is on its way",
     "explore.pickTaken": "Explore will go there next",
     "explore.pickRefused": "Pick not taken: {why}",
