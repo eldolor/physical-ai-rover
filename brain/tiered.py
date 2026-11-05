@@ -2753,8 +2753,12 @@ class TieredVision:
             # down no call is made (every local client reads None), so an
             # absence is never pending while down: the two cannot meet.
             if not self._local_down and absent:
+                # A seqlock's write (review 3): odd while the state changes,
+                # even again after, so `_local_read` never pairs a new
+                # generation with the old client.
                 self._local_gen += 1
                 self._local_down = True
+                self._local_gen += 1
                 self._local_vlm_state("down")
                 logger.warning("local VLM down; its questions go as with no local "
                                "tier until /health says ready (probed every %g s)",
@@ -2766,6 +2770,7 @@ class TieredVision:
             elif self._local_down and back:
                 self._local_gen += 1
                 self._local_down = False
+                self._local_gen += 1
                 # A VE that is back starts afresh (bug pass): unable answers
                 # from before the outage would hand its first questions on.
                 self._frame_unable = 0
@@ -2773,16 +2778,27 @@ class TieredVision:
                     self._local_unable = 0
                 self._local_vlm_state("up")
                 logger.info("local VLM back: its questions go to it first again")
+            elif (self._local_down and not back
+                  and (self._local_probe is None or not self._local_probe.is_alive())):
+                # Down with no probe running and none back (review 3: a probe
+                # that died): probe again, so the tier is never held for good.
+                self._local_probe_stop.clear()
+                self._local_probe = threading.Thread(
+                    target=self._probe_local, name="local-vlm-probe", daemon=True)
+                self._local_probe.start()
 
     def _local_read(self, name: str):
         """A local attribute and the generation it belongs to, read without
-        the flip lock (review 2): generation, value, generation again; a flip
-        in between reads None, so nothing is asked of a client whose state
-        changed under the reader."""
+        the flip lock (review 2): a seqlock's read. The flip makes the
+        generation odd while it changes the state (review 3); an odd one, or
+        one that moved during the read, reads None, so nothing is asked of a
+        client whose state changed under the reader."""
         gen = self._local_gen
+        if gen % 2:
+            return None, gen
         value = getattr(self, name)
         if self._local_gen != gen:
-            return None, self._local_gen
+            return None, gen
         return value, gen
 
     def _local_vlm_state(self, state: str) -> None:

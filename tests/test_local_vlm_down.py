@@ -537,12 +537,52 @@ def test_review2_a_read_across_a_flip_reads_nothing():
         fn, gen = tier._local_read("local_identity_fn")
         assert fn is ve and gen == tier._local_gen
 
-        class Flipping:                       # a flip lands mid-read
+        # A read that lands inside a flip, as the writer orders it: the
+        # generation odd, the state not yet changed (review 3).
+        tier._local_gen += 1
+        fn, _ = tier._local_read("local_identity_fn")
+        assert fn is None
+        tier._local_gen += 1
+
+        class Flipping:                       # a whole flip lands mid-read
             def __get__(self, obj, owner):
-                obj._local_gen += 1
+                obj._local_gen += 2
                 return ve
         with mock.patch.object(TieredVision, "local_identity_fn", Flipping()):
             fn, _ = tier._local_read("local_identity_fn")
         assert fn is None
+    finally:
+        tier.close()
+
+
+def test_review3_a_down_tier_with_no_probe_alive_probes_again():
+    ve = StubVE(TARGET, "down")
+    tier = _tier(ve, probe_s=0.05)
+    try:
+        tier._note_local_error(LocalVLMAbsent("stub"), tier._local_gen)
+        tier(_frame(1))
+        tier._local_probe_stop.set()                 # the probe dies
+        assert _wait_for(lambda: not tier._local_probe.is_alive(), 1.0)
+        tier(_frame(2))
+        assert tier._local_probe.is_alive()
+        ve.mode = "up"
+        assert _wait_for(lambda: tier._local_back_seen, 1.0)
+        tier(_frame(3))
+        assert tier.stats.local_vlm["state"] == "up"
+    finally:
+        tier.close()
+
+
+def test_review3_generations_are_even_at_rest():
+    ve = StubVE(TARGET, "down")
+    tier = _tier(ve, probe_s=0.05)
+    try:
+        tier._note_local_error(LocalVLMAbsent("stub"), tier._local_gen)
+        tier(_frame(1))
+        assert tier._local_gen % 2 == 0 and tier._local_gen > 0
+        ve.mode = "up"
+        assert _wait_for(lambda: tier._local_back_seen, 1.0)
+        tier(_frame(2))
+        assert tier._local_gen % 2 == 0
     finally:
         tier.close()

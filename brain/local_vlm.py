@@ -39,7 +39,9 @@ TAIL_S = 2.0
 PROBE_TIMEOUT_S = 0.8
 # httpx applies a float to each phase, not the whole request (review 2): the
 # phases' sum is the bound.
-PROBE_TIMEOUT = httpx.Timeout(connect=0.3, read=0.3, write=0.1, pool=0.1)
+# The read bound is per socket read; /health is one small reply. Most of it
+# goes to the read, where a VE busy at 15 W is slow (review 3).
+PROBE_TIMEOUT = httpx.Timeout(connect=0.2, read=0.5, write=0.05, pool=0.05)
 
 
 # 3.80.D: Qwen2.5-VL answers a box in the pixels of the image it was fed,
