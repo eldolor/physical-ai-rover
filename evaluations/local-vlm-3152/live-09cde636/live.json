@@ -1,0 +1,98 @@
+{
+ "house": "scaled_house",
+ "target": "red backpack",
+ "outcome": "found",
+ "steps": 92,
+ "seconds": 29,
+ "local_vlm_states": [
+  [
+   0.0,
+   null
+  ],
+  [
+   0.5,
+   "up"
+  ],
+  [
+   1.7,
+   "down"
+  ],
+  [
+   21.8,
+   "up"
+  ]
+ ],
+ "local_vlm_final": {
+  "state": "up",
+  "since": 1793845826.3062165,
+  "probes": 4,
+  "checked_at": 1793845826.2979639
+ },
+ "local_frame": {
+  "no": 13,
+  "absent": 1
+ },
+ "local_answers_at_up": 4,
+ "local_answers_end": 13,
+ "stub_cloud_navigate_calls": 11,
+ "tier_cloud_calls": 11,
+ "min_gap_cm": 16.7,
+ "contact_samples": 0,
+ "inside_samples": 0,
+ "samples": 56,
+ "events": [
+  {
+   "t": 1793845803.62,
+   "what": "ve_ready",
+   "n": 1
+  },
+  {
+   "t": 1793845804.73,
+   "what": "started"
+  },
+  {
+   "t": 1793845804.74,
+   "what": "local_vlm",
+   "state": null,
+   "step": 0,
+   "local_answers": 0
+  },
+  {
+   "t": 1793845805.24,
+   "what": "local_vlm",
+   "state": "up",
+   "step": 2,
+   "local_answers": 1
+  },
+  {
+   "t": 1793845805.92,
+   "what": "ve_killed",
+   "step": 4
+  },
+  {
+   "t": 1793845806.43,
+   "what": "local_vlm",
+   "state": "down",
+   "step": 6,
+   "local_answers": 4
+  },
+  {
+   "t": 1793845821.87,
+   "what": "ve_ready",
+   "n": 2
+  },
+  {
+   "t": 1793845826.54,
+   "what": "local_vlm",
+   "state": "up",
+   "step": 71,
+   "local_answers": 4
+  }
+ ],
+ "met": {
+  "down_then_up": true,
+  "ve_answers_after_up": true,
+  "outcome": true,
+  "zero_contacts": true
+ }
+}
