@@ -150,8 +150,13 @@ touch "$OUT/missions.run" "$OUT/mappoll.run"
 IFS='|' read -ra TGT <<< "$TARGETS"
 python "$HERE/board_probe.py" missions "$OUT/missions.run" "$OUT/missions.jsonl" "${TGT[@]}" > "$OUT/missions.log" 2>&1 &
 MIS=$!
-python "$HERE/board_probe.py" mappoll "$OUT/mappoll.run" "$OUT/mappoll.jsonl" 1.0 > "$OUT/mappoll.log" 2>&1 &
-MAPP=$!
+# 3.141.F F0: STEADY_MAPPOLL=0 leaves P12's map poller out (the harness's own
+# /world/map load); P12's map_reply row is then empty for that window.
+if [ "${STEADY_MAPPOLL:-1}" = 1 ]; then
+  python "$HERE/board_probe.py" mappoll "$OUT/mappoll.run" "$OUT/mappoll.jsonl" 1.0 > "$OUT/mappoll.log" 2>&1 &
+  MAPP=$!
+fi
+echo "${STEADY_MAPPOLL:-1}" > "$OUT/mappoll_on"
 sleep 30   # the first mission under way
 # When a late tick happened (the window's verdict reads only the two ends).
 ( while true; do echo "$(date +%s.%N) $(curl -s "${H[@]}" localhost:8000/health | python3 -c 'import sys,json; w=json.load(sys.stdin)["wheel_loop"]; print(w["moving_ticks"], w["late_ticks"], w["max_dt_s"])' 2>/dev/null)"; sleep 5; done ) > "$OUT/wheel.log" &
