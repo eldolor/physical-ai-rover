@@ -1,0 +1,50 @@
+{
+ "mappoll_on": true,
+ "window": [
+  1793856027.5666885,
+  1793857828.2711189
+ ],
+ "wheel": {
+  "moving": 25837,
+  "late": 0,
+  "max_dt_s": 0.0984,
+  "max_dt_s_before": 0.0684
+ },
+ "missions": {
+  "n": 4,
+  "refused_starts": 0,
+  "outcomes": {
+   "cancelled": 1,
+   "out_of_budget": 1,
+   "found": 2
+  },
+  "label_calls": 63
+ },
+ "map_in_flight_share": 0.0757,
+ "map_replies_over_req_ms": {
+  "n": 1768,
+  "p50_ms": 94.50006484985352,
+  "p90_ms": 151.59988403320312,
+  "max_ms": 258.39996337890625,
+  "over_100_ms": 824
+ },
+ "explore_map_fetches": {
+  "n": 2046,
+  "p50_ms": 26.46493911743164,
+  "p90_ms": 150.67601203918457
+ },
+ "unclamped_vets_over_15_ms": {
+  "n": 12,
+  "overlap_map": 4
+ },
+ "probe_ticks_over_80_ms": {
+  "n": 29,
+  "overlap_map": 29,
+  "chance": 0.1448
+ },
+ "probe_ticks_over_100_ms": {
+  "n": 0,
+  "overlap_map": 0,
+  "chance": 0.1613
+ }
+}

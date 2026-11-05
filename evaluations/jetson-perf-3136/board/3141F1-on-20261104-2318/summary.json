@@ -1,0 +1,191 @@
+{
+ "sha": "016cbd978229cdcede3eea4f46dc9e7af16edda8",
+ "stamps": {
+  "window_start": 1793856027.5666885,
+  "window_end": 1793857828.2711189,
+  "p1_start": 1793856027.584754,
+  "p1_end": 1793856627.5976536,
+  "p8_start": 1793856627.6053205,
+  "p8_end": 1793857161.6525953,
+  "p2_start": 1793857202.189101,
+  "p2_end": 1793857802.2024016
+ },
+ "window_s": 1800.7,
+ "uptime_at_start_s": 73588.77,
+ "wheel": {
+  "moving": 25837,
+  "late": 0,
+  "max_dt_s": 0.0984,
+  "max_dt_s_before": 0.0684
+ },
+ "nav2_goals": {
+  "n": 61,
+  "succeeded": 37,
+  "canceled": 14,
+  "aborted": 10,
+  "aborted_frontier": 10,
+  "aborted_other": 0,
+  "aborted_cancelled": 0,
+  "unmatched": 0,
+  "cancels_missing": 0,
+  "sends_missing": 0
+ },
+ "nav2_rule": "amendment 5, by goal id",
+ "telemetry": {
+  "samples": 1551,
+  "temps": 1551,
+  "clocks": 1551,
+  "max_temp_c": 63.781,
+  "oom_kills": 0,
+  "mem_available_min_mb": 507,
+  "cpu_below_max_samples": 499,
+  "gpu_below_max_samples": 156
+ },
+ "dmesg_oom_kills": 0,
+ "power_mode": "NV Power Mode: 15W",
+ "validity": {
+  "valid": true,
+  "reasons": []
+ },
+ "desktop_load_max": 2.65,
+ "missions": {
+  "n": 4,
+  "refused_starts": 0,
+  "outcomes": {
+   "cancelled": 1,
+   "out_of_budget": 1,
+   "found": 2
+  },
+  "label_calls": 63
+ },
+ "cloud_calls": 0,
+ "rows": {
+  "P1": {
+   "n": 2397,
+   "p50_ms": 99,
+   "p90_ms": 161,
+   "mem_available_min_mb": 576,
+   "valid": true,
+   "reasons": [],
+   "met": true
+  },
+  "P2": {
+   "n": 2396,
+   "p50_ms": 103,
+   "p90_ms": 146,
+   "mem_available_min_mb": 507,
+   "valid": true,
+   "reasons": [],
+   "hazard_boxes_per_frame": 1.08,
+   "added_mem_mb": 69,
+   "met": true
+  },
+  "P8": {
+   "n": 299,
+   "p50": 1735.0205749971792,
+   "p90": 1990.6027870019898,
+   "max": 2155.7682779966854,
+   "statuses": {
+    "answered": 299
+   },
+   "answers_identical": true,
+   "flips": [],
+   "off": 0,
+   "missing": 0,
+   "valid": true,
+   "reasons": [],
+   "met": false
+  },
+  "P4": {
+   "late_ticks": 0,
+   "moving_ticks": 25837,
+   "max_dt_s_since_start": 0.0984,
+   "window_s": 1800.7,
+   "overlap": {
+    "all_spans": 0,
+    "all_s": 0,
+    "all_with_map_update": 0,
+    "per_group": {
+     "map_fetch": 2046,
+     "ve_question": 1626,
+     "perception": 7093,
+     "room_cut": 178
+    }
+   },
+   "valid": true,
+   "reasons": [],
+   "met": true
+  },
+  "P11": {
+   "controller": {
+    "spans": 84,
+    "intervals": 23835,
+    "executing_s": 1188.4,
+    "rate_hz": 20.056,
+    "mean_period_ms": 49.86,
+    "period_p50_ms": 49.98898506164551,
+    "period_p90_ms": 51.76806449890137
+   },
+   "ratio": 1.003,
+   "scan_lag": {
+    "n": 18007,
+    "p50_ms": 6.329536437988281,
+    "p90_ms": 10.883331298828125,
+    "max_ms": 132.87615776062012
+   },
+   "valid": true,
+   "reasons": [],
+   "met": true
+  },
+  "P12": {
+   "segment_by_caller": {
+    "goal_policy.py": {
+     "n": 96,
+     "p50_ms": 7.540225982666016,
+     "p90_ms": 8.522987365722656,
+     "max_ms": 17.238140106201172
+    },
+    "room_labels.py": {
+     "n": 178,
+     "p50_ms": 7.956981658935547,
+     "p90_ms": 12.53199577331543,
+     "max_ms": 27.153968811035156
+    }
+   },
+   "segment": {
+    "n": 274,
+    "p50_ms": 7.740020751953125,
+    "p90_ms": 11.530876159667969,
+    "max_ms": 27.153968811035156
+   },
+   "walk": {
+    "n": 191,
+    "p50_ms": 8.326053619384766,
+    "p90_ms": 12.382984161376953,
+    "max_ms": 20.776033401489258
+   },
+   "pause_share": 0.0022,
+   "map_reply": {
+    "n": 1725,
+    "ok": 1725,
+    "p50_ms": 22.659584996290505,
+    "p90_ms": 131.65223500982393,
+    "full_replies": 884,
+    "bytes_max": 248811
+   },
+   "mappoll_on": true,
+   "explore_map_fetch": {
+    "n": 2046,
+    "p50_ms": 26.46493911743164,
+    "p90_ms": 150.67601203918457
+   },
+   "valid": true,
+   "reasons": [],
+   "met": true
+  }
+ },
+ "cmd_exit": 0,
+ "restore_actions": [],
+ "as_found_differences": [],
+ "left_as_found": true
+}

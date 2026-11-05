@@ -179,6 +179,15 @@ No runs yet. The 3.135.A smoke (2026-11-01, F13 only, not scored) is in
 
 ## Runs
 
+### 2026-11-04, 3.141.F1: the map reply sliced, the P12 poller ON (`dev` `016cbd97`, traced)
+
+30 min of 3.136.B's stack, 15 W, every vet traced, left as found. **0 late
+wheel ticks** in 25,837 (max 98.4 ms; F0-on 2, max 108.9), valid by 3.136.B's
+rule. 29 probe ticks over 80 ms (F0-on 55), all on a map reply (chance
+14.5%); map replies as long as before (p50 95, p90 152 ms). Vets p90 2.2 ms,
+max 23-24 ms. 2 found, 1 out of budget, 1 cut. `MemAvailable` min 507 MB,
+max 63.8 °C. Records: `evaluations/jetson-perf-3136/board/3141F1-on-20261104-2318/`.
+
 ### 2026-11-04, 3.141.F0: the P12 map poller off, then on (`dev` `ee2e897d`, traced)
 
 Two 30 min windows of 3.136.B's stack, 15 W, every vet traced, left as found.
