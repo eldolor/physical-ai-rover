@@ -10,21 +10,27 @@ then grows 32 MB at a time, each chunk resident, until the kernel kills VE:
 `oom_kill` in /proc/vmstat rises, and the newest `oom-kill:` line in dmesg
 names `task_memcg=/system.slice/picar-local-vlm.service`. It adds
 `margin_mb` more, so VE's next load is killed again, and holds that until
-SIGTERM. A kill of anything else ends it at once, releasing everything, and
-the run is invalid. Below `floor_mb` of `MemAvailable` it waits for the
-kernel rather than growing; with no VE kill in `give_up_s` it gives up.
+SIGTERM, its parent's death or `hold_max_s`. A kill of anything else while
+it grows ends it at once, releasing everything (recorded: a failure of the
+bar, amendment 3). It grows without a floor: with no swap, only an
+allocation brings the kernel to choose, so its own are what do. With no VE
+kill in `give_up_s` it gives up.
 
-    python evaluations/local-vlm-3152/hog.py <out.json> <margin_mb> <give_up_s>
+It dies with its parent (`PR_SET_PDEATHSIG`, set by the harness before it
+runs, and its own check of `getppid()`), so a harness killed hard never
+leaves memory held.
+
+    python evaluations/local-vlm-3152/hog.py <out.json> <margin_mb> <give_up_s> <hold_max_s>
 """
 
 import json
+import os
 import signal
 import subprocess
 import sys
 import time
 
 CHUNK = 32 * 1024 * 1024
-FLOOR_MB = 150
 VE_MEMCG = "picar-local-vlm.service"
 
 
@@ -56,7 +62,7 @@ def chunk() -> bytearray:
     return b
 
 
-def main(out: str, margin_mb: int, give_up_s: float) -> int:
+def main(out: str, margin_mb: int, give_up_s: float, hold_max_s: float) -> int:
     stop = {"now": False}
 
     def on_term(*_):
@@ -65,6 +71,10 @@ def main(out: str, margin_mb: int, give_up_s: float) -> int:
     signal.signal(signal.SIGINT, on_term)
     with open("/proc/self/oom_score_adj", "w") as f:
         f.write("900")
+    parent = os.getppid()
+
+    def orphaned() -> bool:
+        return os.getppid() != parent
     rec = {"t0": round(time.time(), 3), "kills_at_start": oom_kills(), "oom_score_adj": 900}
     held = []
 
@@ -75,7 +85,7 @@ def main(out: str, margin_mb: int, give_up_s: float) -> int:
     write()
     try:
         kills = rec["kills_at_start"]
-        while not stop["now"]:
+        while not stop["now"] and not orphaned():
             now = oom_kills()
             if now > kills:
                 line = last_oom_line()
@@ -89,21 +99,20 @@ def main(out: str, margin_mb: int, give_up_s: float) -> int:
             if time.time() - rec["t0"] > give_up_s:
                 rec["gave_up"] = "no VE kill while growing"
                 return 4
-            if mem_available_mb() < FLOOR_MB:
-                time.sleep(0.25)
-                continue
             held.append(chunk())
+            rec["mem_mb_last"] = mem_available_mb()
             time.sleep(0.05)
-        if stop["now"]:
-            rec["stopped_while_growing"] = True
+        if stop["now"] or orphaned():
+            rec["stopped_while_growing"] = "orphaned" if orphaned() else "SIGTERM"
             return 5
         for _ in range(margin_mb * 2**20 // CHUNK):
             held.append(chunk())
         rec["held_mb"] = len(held) * CHUNK // 2**20
         rec["holding_t"] = round(time.time(), 3)
         write()
-        while not stop["now"]:
+        while not stop["now"] and not orphaned() and time.time() - rec["holding_t"] < hold_max_s:
             time.sleep(0.2)
+        rec["ended_by"] = ("SIGTERM" if stop["now"] else "orphaned" if orphaned() else "hold_max_s")
         return 0
     finally:
         held.clear()
@@ -112,4 +121,4 @@ def main(out: str, margin_mb: int, give_up_s: float) -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1], int(sys.argv[2]), float(sys.argv[3])))
+    raise SystemExit(main(sys.argv[1], int(sys.argv[2]), float(sys.argv[3]), float(sys.argv[4])))

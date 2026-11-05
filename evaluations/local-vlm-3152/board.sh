@@ -11,8 +11,8 @@
 # of the unit, and this arm measures those starts.
 #
 #   bash evaluations/local-vlm-3152/board.sh <out-dir> d30|d60|d120
-# crash_loop.py exits 0 (every bar met), 1 (valid, a bar missed) or 2 (not a
-# crash loop: invalid, re-run once); the result is result.json either way.
+# crash_loop.py exits 0 (every bar met), 1 (valid, a bar missed), 2 (invalid,
+# re-run once) or 3 (a harness error); result.json has the scoring.
 set -uo pipefail
 source tools/jetson/board_lock_check.sh
 OUT="${1:?out dir}"; ARM="${2:?d30, d60 or d120}"; mkdir -p "$OUT"; OUT="$(cd "$OUT" && pwd)"
@@ -21,8 +21,16 @@ D="${ARM#d}"
 UNIT=picar-local-vlm
 # A runtime drop-in (amendment 2): a reboot clears it whatever happens here.
 DROPIN="/run/systemd/system/$UNIT.service.d/zz-3152-crash-loop.conf"
+PY_PID=
 teardown() {
-  # crash_loop.py puts the unit back itself; this is the net under it.
+  # Python first (review 2): it lets the hog go and puts the unit back itself;
+  # this is the net under it, run only once it has ended.
+  if [ -n "$PY_PID" ] && kill -0 "$PY_PID" 2>/dev/null; then
+    kill -TERM "$PY_PID" 2>/dev/null
+    for _ in $(seq 1 240); do kill -0 "$PY_PID" 2>/dev/null || break; sleep 1; done
+    kill -KILL "$PY_PID" 2>/dev/null
+  fi
+  pkill -KILL -f "evaluations/local-vlm-3152/hog.py" 2>/dev/null   # never left holding
   if [ -e "$DROPIN" ]; then
     echo "== teardown: the drop-in was still there; removing it" | tee -a "$OUT/run.log"
     sudo -n rm -f "$DROPIN"; sudo -n systemctl daemon-reload
@@ -47,8 +55,14 @@ sudo -n systemctl stop picar-stack picar-ngrok; sleep 3
   echo "== $(sudo -n nvpmodel -q | head -1); boot $(uptime -s); systemd $(systemctl --version | head -1)"
   echo "== desktop: $(systemctl is-active gdm); twin units: $(systemctl is-active picar-stack) $(systemctl is-active picar-ngrok); vlm: $(systemctl is-active "$UNIT")"
   echo "== MemAvailable before anything: $(awk '/MemAvailable/{print int($2/1024)}' /proc/meminfo) MB"; } | tee "$OUT/run.log"
-.venv/bin/python evaluations/local-vlm-3152/crash_loop.py "$OUT" "$D" >> "$OUT/run.log" 2>&1
-rc=$?
+# In the background, so a TERM/HUP/INT to this shell reaches python (which
+# releases the hog first) before the teardown runs.
+.venv/bin/python evaluations/local-vlm-3152/crash_loop.py "$OUT" "$D" >> "$OUT/run.log" 2>&1 &
+PY_PID=$!
+trap 'kill -TERM "$PY_PID" 2>/dev/null' TERM HUP INT
+wait "$PY_PID"; rc=$?
+while kill -0 "$PY_PID" 2>/dev/null; do wait "$PY_PID"; rc=$?; done
+PY_PID=
 gzip -f "$OUT/account.jsonl" "$OUT/perception.log" "$OUT/samples.jsonl" 2>/dev/null
 echo "== $ARM exit $rc $(date +%T); MemAvailable $(awk '/MemAvailable/{print int($2/1024)}' /proc/meminfo) MB" | tee -a "$OUT/run.log"
 exit $rc
