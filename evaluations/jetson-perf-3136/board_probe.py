@@ -116,7 +116,7 @@ def missions(flag: str, out: str, targets: list) -> int:
             # after `running` turns false: read its cancels until the gate says
             # it closed (every cancel recorded), before the next start replaces
             # the runner (review); bounded, and the row says if it was seen.
-            end_seen, no_explore = None, 0
+            end_seen, no_explore, explored = False, 0, False
             for _ in range(END_CANCEL_READS):
                 time.sleep(1)
                 try:
@@ -127,9 +127,11 @@ def missions(flag: str, out: str, targets: list) -> int:
                 if not ex:
                     no_explore += 1
                     if no_explore >= 2:     # no explore search: no goals, no cancels
+                        if not explored:
+                            end_seen = None
                         break
                     continue
-                no_explore, end_seen = 0, False
+                no_explore, explored = 0, True
                 take_cancels(ex)
                 if ex.get("goal_end_done") is True:
                     end_seen = True
@@ -138,8 +140,9 @@ def missions(flag: str, out: str, targets: list) -> int:
             f.write(json.dumps({"target": target, "t0": round(t0, 3), "t1": round(time.time(), 3),
                                 "outcome": s.get("outcome"), "step": s.get("step"),
                                 "stopped_by_harness": stopped, "room_labels": rl,
-                                # Amendment 6: the gate's close seen (every cancel taken),
-                                # False if the reads ran out, None with no explore block.
+                                # Amendment 6: True, the gate's close seen (every cancel
+                                # taken); None, no explore block in any read; False otherwise
+                                # (the reads ran out or failed, or the block went away).
                                 "cancels_end_seen": end_seen,
                                 "error": s.get("error")}) + "\n")
     return 0

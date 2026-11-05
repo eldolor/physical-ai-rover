@@ -289,6 +289,9 @@ def test_an_explore_cancel_past_the_running_check_keeps_the_gate_open():
     g.end()
     assert g.cancels_snapshot()["goal_end_done"] is False and not closed
     assert g.cancel_goal()["reason"] == "mission_ended"        # none starts now
+    running[0] = True                                           # even if it still read running:
+    assert g.cancel_goal()["reason"] == "mission_ended"        # the end has begun
+    running[0] = False
     release.set()
     t.join(5)
     assert not t.is_alive() and closed == [True]

@@ -345,7 +345,6 @@ class _GatedNavigator:
         self._own_id: Optional[str] = None
         self.cancels = collections.deque(maxlen=CANCELS_KEPT)
         self._cancels_n = 0
-        self._cancel_lock = threading.Lock()
         self._in_flight = 0
         self._ending = False
         self._closed = False
@@ -411,7 +410,7 @@ class _GatedNavigator:
         gid, t = self._own_id, round(time.time(), 6)
         reply = self._nav.cancel_goal()
         taken = isinstance(reply, dict) and reply.get("cancelled") is True
-        with self._cancel_lock:
+        with self._lock:                    # held briefly, never across a call
             self.cancels.append((self._cancels_n + 1, gid, t, taken))
             self._cancels_n += 1
         return reply
@@ -421,9 +420,7 @@ class _GatedNavigator:
         goal or cancel is still on its way (a goal's late answer cancels
         itself), so no further cancel can come and every one is recorded."""
         with self._lock:
-            done = self._closed
-        with self._cancel_lock:
-            return {"cancels": [list(x) for x in self.cancels], "goal_end_done": done}
+            return {"cancels": [list(x) for x in self.cancels], "goal_end_done": self._closed}
 
     @property
     def sent_goal(self) -> bool:
