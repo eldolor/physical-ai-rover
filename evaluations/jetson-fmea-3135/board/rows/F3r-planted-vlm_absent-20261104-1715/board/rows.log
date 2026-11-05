@@ -1,0 +1,2 @@
+{"i": 1, "verdict": {"pass": false, "valid": true, "reasons": ["0 questions handed to the cloud while VE was gone (bar >= 1)", "the mission ended exhausted, not arrived_unconfirmed"]}, "error": null}
+{"row": "F3r", "plant": "vlm_absent", "house": "scaled_house", "state": "FAILED", "runs_wanted": 1, "runs_scored": 1, "runs_total": 1, "runs_failed": 1, "not_scored": [], "reasons": ["0 questions handed to the cloud while VE was gone (bar >= 1)", "the mission ended exhausted, not arrived_unconfirmed"]}

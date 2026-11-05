@@ -1,0 +1,51 @@
+{
+ "row": "F2",
+ "plant": null,
+ "house": "scaled_house",
+ "state": "FAILED",
+ "runs_wanted": 5,
+ "runs_scored": 3,
+ "runs_total": 8,
+ "runs_failed": 2,
+ "not_scored": [
+  {
+   "i": 4,
+   "error": "VE was not ready after the case (the board not as found)",
+   "reasons": [
+    "truth log has a 1.037 s hole"
+   ]
+  },
+  {
+   "i": 5,
+   "error": "StackError: VE is not ready at the start",
+   "reasons": [
+    "the fault was never injected"
+   ]
+  },
+  {
+   "i": 6,
+   "error": "StackError: VE is not ready at the start",
+   "reasons": [
+    "the fault was never injected"
+   ]
+  },
+  {
+   "i": 7,
+   "error": "StackError: VE is not ready at the start",
+   "reasons": [
+    "the fault was never injected"
+   ]
+  },
+  {
+   "i": 8,
+   "error": "StackError: VE is not ready at the start",
+   "reasons": [
+    "the fault was never injected"
+   ]
+  }
+ ],
+ "reasons": [
+  "truth log has a 0.686 s hole",
+  "truth log has a 3.009 s hole"
+ ]
+}

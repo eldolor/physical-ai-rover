@@ -1,0 +1,36 @@
+{
+ "row": "F2",
+ "title": "Memory runs out (OOM) during a mission",
+ "reading": "exactly one OOM kill in the window and it is VE's (dmesg names VE's process); the robot server, the brain and the ROS container alive after it; 0 late wheel ticks from the hog's start to 30 s after the kill; the mission ends with an outcome (within 1,500 s); 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T15:23:50-0600",
+ "error": "StackError: VE is not ready at the start",
+ "measures": {
+  "fault_at": null,
+  "ve_after": [
+   "MainPID=0",
+   "NRestarts=4"
+  ],
+  "ve_ready_after": false,
+  "truth_hole_s": Infinity,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "local_questions": {
+   "frame": 0,
+   "arrival": 0,
+   "direction": 0
+  },
+  "mem_available_min_mb": 5865,
+  "oom_kills_window": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": false,
+  "reasons": [
+   "the fault was never injected"
+  ]
+ },
+ "ended": "2026-11-04T15:26:51-0600"
+}

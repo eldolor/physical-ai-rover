@@ -1,0 +1,354 @@
+{
+ "sha": "1330ea8f2a531068ae16613eba35fcb0b2004597",
+ "cmd_exit": 0,
+ "cmd_s": 729.7,
+ "verdict": {
+  "row": "F17a",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "met",
+  "runs_wanted": 5,
+  "runs_scored": 5,
+  "runs_total": 5,
+  "runs_failed": 0,
+  "not_scored": [],
+  "reasons": []
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 57188.984804638,
+    "ve_before": [
+     "MainPID=2717968",
+     "NRestarts=0"
+    ],
+    "start_at": 57006.779149731,
+    "stop_at": 57188.984804638,
+    "stop_code": 200,
+    "stop_answer_s": 0.012,
+    "outcome": "cancelled",
+    "cancelled_by": "stop",
+    "wheel_loop": {
+     "late": 0,
+     "moving": 2516,
+     "max_dt_s": 0.0746
+    },
+    "ve_after": [
+     "MainPID=2717968",
+     "NRestarts=0"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": false,
+    "question_hit": true,
+    "question_at_fault": {
+     "i": 136,
+     "kind": "arrival",
+     "path": "/identity",
+     "t0": 57188.958941145,
+     "status": 200,
+     "t1": 57189.417383319
+    },
+    "wheels_zero_from_stop_s": 0.003,
+    "paid_after_stop": 0,
+    "truth_hole_s": 0.028,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 135,
+     "arrival": 1,
+     "direction": 0
+    },
+    "mem_available_min_mb": 2079,
+    "oom_kills_window": 0
+   },
+   "status": {
+    "outcome": "cancelled",
+    "end_state": "cancelled",
+    "end_reason": "stopped by a person: unknown pressed Stop -- autonomy stays stopped until a new mission starts, so brain was refused",
+    "cancelled_by": "stop"
+   }
+  },
+  {
+   "i": 2,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 57298.286785581,
+    "ve_before": [
+     "MainPID=2717968",
+     "NRestarts=0"
+    ],
+    "start_at": 57234.842229837,
+    "stop_at": 57298.286785581,
+    "stop_code": 200,
+    "stop_answer_s": 0.011,
+    "outcome": "cancelled",
+    "cancelled_by": "stop",
+    "wheel_loop": {
+     "late": 0,
+     "moving": 919,
+     "max_dt_s": 0.0674
+    },
+    "ve_after": [
+     "MainPID=2717968",
+     "NRestarts=0"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": false,
+    "question_hit": true,
+    "question_at_fault": {
+     "i": 47,
+     "kind": "arrival",
+     "path": "/identity",
+     "t0": 57298.227155667,
+     "status": 200,
+     "t1": 57298.874443143
+    },
+    "wheels_zero_from_stop_s": 0.003,
+    "paid_after_stop": 0,
+    "truth_hole_s": 0.029,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 46,
+     "arrival": 1,
+     "direction": 0
+    },
+    "mem_available_min_mb": 2104,
+    "oom_kills_window": 0
+   },
+   "status": {
+    "outcome": "cancelled",
+    "end_state": "cancelled",
+    "end_reason": "stopped by a person: unknown pressed Stop -- autonomy stays stopped until a new mission starts, so brain was refused",
+    "cancelled_by": "stop"
+   }
+  },
+  {
+   "i": 3,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 57435.035511443,
+    "ve_before": [
+     "MainPID=2717968",
+     "NRestarts=0"
+    ],
+    "start_at": 57343.721517745,
+    "stop_at": 57435.035511443,
+    "stop_code": 200,
+    "stop_answer_s": 0.035,
+    "outcome": "cancelled",
+    "cancelled_by": "stop",
+    "wheel_loop": {
+     "late": 0,
+     "moving": 1263,
+     "max_dt_s": 0.0659
+    },
+    "ve_after": [
+     "MainPID=2717968",
+     "NRestarts=0"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": false,
+    "question_hit": true,
+    "question_at_fault": {
+     "i": 79,
+     "kind": "arrival",
+     "path": "/identity",
+     "t0": 57434.987137455,
+     "status": 200,
+     "t1": 57435.638596283
+    },
+    "wheels_zero_from_stop_s": 0.007,
+    "paid_after_stop": 0,
+    "truth_hole_s": 0.029,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 78,
+     "arrival": 1,
+     "direction": 0
+    },
+    "mem_available_min_mb": 2087,
+    "oom_kills_window": 0
+   },
+   "status": {
+    "outcome": "cancelled",
+    "end_state": "cancelled",
+    "end_reason": "stopped by a person: unknown pressed Stop -- autonomy stays stopped until a new mission starts, so brain was refused",
+    "cancelled_by": "stop"
+   }
+  },
+  {
+   "i": 4,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 57530.905983526,
+    "ve_before": [
+     "MainPID=2717968",
+     "NRestarts=0"
+    ],
+    "start_at": 57480.759244327,
+    "stop_at": 57530.905983526,
+    "stop_code": 200,
+    "stop_answer_s": 0.016,
+    "outcome": "cancelled",
+    "cancelled_by": "stop",
+    "wheel_loop": {
+     "late": 0,
+     "moving": 707,
+     "max_dt_s": 0.0706
+    },
+    "ve_after": [
+     "MainPID=2717968",
+     "NRestarts=0"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": false,
+    "question_hit": true,
+    "question_at_fault": {
+     "i": 34,
+     "kind": "arrival",
+     "path": "/identity",
+     "t0": 57530.903926962,
+     "status": 200,
+     "t1": 57531.369296338
+    },
+    "wheels_zero_from_stop_s": 0.005,
+    "paid_after_stop": 0,
+    "truth_hole_s": 0.03,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 33,
+     "arrival": 1,
+     "direction": 0
+    },
+    "mem_available_min_mb": 2099,
+    "oom_kills_window": 0
+   },
+   "status": {
+    "outcome": "cancelled",
+    "end_state": "cancelled",
+    "end_reason": "stopped by a person: unknown pressed Stop -- autonomy stays stopped until a new mission starts, so brain was refused",
+    "cancelled_by": "stop"
+   }
+  },
+  {
+   "i": 5,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 57690.046480738,
+    "ve_before": [
+     "MainPID=2717968",
+     "NRestarts=0"
+    ],
+    "start_at": 57576.516988938,
+    "stop_at": 57690.046480738,
+    "stop_code": 200,
+    "stop_answer_s": 0.01,
+    "outcome": "cancelled",
+    "cancelled_by": "stop",
+    "wheel_loop": {
+     "late": 0,
+     "moving": 1533,
+     "max_dt_s": 0.0777
+    },
+    "ve_after": [
+     "MainPID=2717968",
+     "NRestarts=0"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": false,
+    "question_hit": true,
+    "question_at_fault": {
+     "i": 78,
+     "kind": "arrival",
+     "path": "/identity",
+     "t0": 57690.044203947,
+     "status": 200,
+     "t1": 57690.69259377
+    },
+    "wheels_zero_from_stop_s": 0.001,
+    "paid_after_stop": 0,
+    "truth_hole_s": 0.03,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 77,
+     "arrival": 1,
+     "direction": 0
+    },
+    "mem_available_min_mb": 2086,
+    "oom_kills_window": 0
+   },
+   "status": {
+    "outcome": "cancelled",
+    "end_state": "cancelled",
+    "end_reason": "stopped by a person: unknown pressed Stop -- autonomy stays stopped until a new mission starts, so brain was refused",
+    "cancelled_by": "stop"
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 646,
+  "temps": 646,
+  "clocks": 646,
+  "max_temp_c": 57.031,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2079,
+  "cpu_below_max_samples": 451,
+  "gpu_below_max_samples": 428
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "harness_leftovers": {
+  "before": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  },
+  "after": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  }
+ }
+}

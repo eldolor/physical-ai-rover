@@ -203,6 +203,13 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-04 | `5425f8ac` | F16p clock +5 min (re-run, amendment 15) | 5/5 | met | `out_of_budget` at 400.9-402.0 s (F16c's end, within 10 s of 400); 0 watchdog stops, 0 stale 503s; every step between verbs | 0 | -- | 2,196 | 0 | 49.7 °C | -- | yes |
 | 2026-11-04 | `36b6a944` | F16m clock -5 min (re-run, amendment 15) | 5/5 | met | `out_of_budget` at 401.0-402.1 s; 0 watchdog stops, 0 stale 503s; every step between verbs | 0 | -- | 2,200 | 0 | 49.7 °C | -- | yes |
 | 2026-11-04 | `53bcbe61` | F12b cloud hangs (`vision`) | 5/5 | met | `failed` at 61.4-61.5 s (300), B3.2's 3 x 20 s; open paid calls max 1; 0.0 cm | 0 | -- | 2,207 | 0 | 49.8 °C | -- | yes |
+| 2026-11-04 | `1330ea8f` | F2 memory runs out (OOM), during a nav2 goal | 3/8 | **FAILED** | VE's driver the only kill 4/4, robot server, brain and ROS alive, 0 late ticks, every mission ended; **truth log holes 0.69 s and 3.01 s** (0.2) at 15-99 MB free; runs 5-8 not started (VE's start limit) | 0 | 0 | 37 | 4 | 59.9 °C | -- | yes |
+| 2026-11-04 | `1330ea8f` | F3f VE killed, a frame question open | 2/8 | **FAILED** (harness) | VE back 40.8 s (60); not failed 2/2; handed-on read **None** (the kill before any tier stats: a harness bug); runs 4-8 not started (VE's start limit) | 0 | 0 | 2,054 | 0 | 55.4 °C | -- | yes |
+| 2026-11-04 | `1330ea8f` | F3a VE killed, the arrival's question open, the stand-in up | 5/5 | **FAILED** | handed on 41 (>= 1), VE back 41 s; **every mission `exhausted`, not `found`**: the stand-in refuses the arrival, and once the cloud has spoken the arrival is the cloud's (3.91.C) | 0 | 0 | 2,006 | 0 | 59.8 °C | -- | yes |
+| 2026-11-04 | `1330ea8f` | F3r VE killed, the arrival's question open, the cloud refused | 3/8 | incomplete | `arrived_unconfirmed` 3/3, handed on 3, VE back 40.7-40.8 s; runs 4-8: VE's start limit | 0 | 0 | 2,138 | 0 | 57.7 °C | -- | yes |
+| 2026-11-04 | `1330ea8f` | F17g a person's Stop, a nav2 goal, VE resident | 5/5 | met | wheels zero 0.016-0.037 s after the `/stop` (0.2); `cancelled`/`stop` 5/5; 0 paid calls after it | 0 | 0 | 2,136 | 0 | 52.8 °C | -- | yes |
+| 2026-11-04 | `1330ea8f` | F17q a person's Stop, a frame question open | 5/5 | met | wheels zero 0.000-0.020 s (0.2); `cancelled`/`stop` 5/5; 0 paid calls after it | 0 | 0 | 2,143 | 0 | 52.3 °C | -- | yes |
+| 2026-11-04 | `1330ea8f` | F17a a person's Stop, the arrival's question open | 5/5 | met | wheels zero 0.001-0.007 s (0.2); `cancelled`/`stop` 5/5; 0 paid calls after it | 0 | 0 | 2,079 | 0 | 57.0 °C | -- | yes |
 
 ## Runs
 
@@ -390,6 +397,49 @@ cm, FAILED, 3.135.B's record). Wheels zero 2.0 s after the fault by the
 watchdog (no FORWARD starts on a stale scan); 0 contacts, 0 late ticks, 0 OOM,
 `MemAvailable` minimum 2,360 MB, max 50.1 °C; recovery 3.1 s; left as found.
 Records: `evaluations/jetson-fmea-3135/board/rows/F9-3144B-20261104-0710/`.
+
+### 2026-11-04, single faults (3.135.B): the VE rows F2, F3, F17
+
+On the board 14:56-18:54, one hold per row, at `1330ea8f`. 15 W, the twin's
+units stopped and put back. The full stack: ROS, VE resident behind a
+recording proxy, the $0 stand-in cloud, `SIM_ARRIVAL_CONFIRM=cloud`, and the
+stack at `oom_score_adj` -900. One planted run per case on the board before
+its scored runs (amendment 8).
+
+* **F17 met in all three cases** (a nav2 goal, a frame question, the
+  arrival's question):
+  * the wheels were zero 0.000-0.037 s after a person's `/stop`;
+  * every mission ended `cancelled` by `stop`;
+  * no paid call followed the Stop.
+  * The `no_latch` plant was caught in every case: its missions ran on or
+    ended `found`, and F17g's wheels zeroed only after 2.3 s.
+* **F2 FAILED on the truth log, not on a product bar:**
+  * the guard held in all 4 runs that started: the OOM killer took only
+    VE's driver, everything else stayed up, 0 late wheel ticks;
+  * but the simulator's truth log had holes of 0.69, 1.04 and 3.01 s at
+    15-99 MB free (bar 0.2 s);
+  * the planted run (VE at OOM score 0) was caught: the kernel killed the
+    hog instead, so the guard discriminates.
+* **VE's start limit stopped every F2/F3 row after its third or fourth
+  run:**
+  * `picar-local-vlm` allows 4 starts in 15 min (`StartLimitBurst=4`,
+    `StartLimitIntervalSec=900`), and each run kills VE once;
+  * so 15 runs could not start ("VE is not ready at the start");
+  * restore put VE back (`started picar-local-vlm (was failed)`), so the
+    board was left as found.
+* **F3a FAILED 5/5:**
+  * VE's questions were handed to the cloud (41) and VE came back in 41 s;
+  * but no mission could end `found`: the stand-in says "not visible", and
+    once the cloud has spoken the arrival stays the cloud's (3.91.C);
+  * the bar assumed a later local yes could still find it.
+* **F3f** read its handed-on count as None, because the kill lands before
+  the brain publishes any tier stats (a harness bug), so its planted check
+  is not valid either.
+* **F3r incomplete:** its 3 scored runs passed (`arrived_unconfirmed`,
+  handed on 3, VE back in ~41 s).
+* Every run: 0 contacts. The board was left as found, with no harness
+  leftovers.
+* Records: `evaluations/jetson-fmea-3135/board/rows/`.
 
 ### 2026-11-04, single faults (3.135.B): F6, F11, F12a, F15, F16
 

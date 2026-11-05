@@ -1,0 +1,133 @@
+{
+ "sha": "1330ea8f2a531068ae16613eba35fcb0b2004597",
+ "cmd_exit": 0,
+ "cmd_s": 473.7,
+ "verdict": {
+  "row": "F2",
+  "plant": "ve_oom0",
+  "house": "scaled_house",
+  "state": "FAILED",
+  "runs_wanted": 1,
+  "runs_scored": 1,
+  "runs_total": 1,
+  "runs_failed": 1,
+  "not_scored": [],
+  "reasons": [
+   "the kill named [('1673732', 'python')], not VE",
+   "truth log has a 2.212 s hole"
+  ]
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "truth log has a 2.212 s hole",
+    "the kill named [('1673732', 'python')], not VE"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 43512.33471851,
+    "plant_dropin": {
+     "on": true,
+     "unit_oom_score_adjust": "0",
+     "ready": true
+    },
+    "ve_before": [
+     "MainPID=1671075",
+     "NRestarts=0"
+    ],
+    "start_at": 43506.958652196,
+    "goal_at_fault": true,
+    "holder_at_fault": null,
+    "oom_before": 0,
+    "ve_pids": [
+     1671075,
+     1671158
+    ],
+    "hog_end_at": 43563.948674036,
+    "oom_kills": 1,
+    "killed": [
+     [
+      "1673732",
+      "python"
+     ]
+    ],
+    "killed_ve": false,
+    "alive_after": {
+     "robot": true,
+     "brain": true,
+     "ros": true
+    },
+    "late_ticks": 0,
+    "outcome": "exhausted",
+    "wheel_loop": {
+     "late": 0,
+     "moving": 5597,
+     "max_dt_s": 0.0715
+    },
+    "plant_removed": {
+     "on": false,
+     "unit_oom_score_adjust": "1000",
+     "ready": true
+    },
+    "ve_after": [
+     "MainPID=1710940",
+     "NRestarts=0"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": true,
+    "truth_hole_s": 2.212,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 436,
+     "arrival": 1,
+     "direction": 0
+    },
+    "mem_available_min_mb": 49,
+    "oom_kills_window": 1
+   },
+   "status": {
+    "outcome": "exhausted",
+    "end_state": "exhausted",
+    "end_reason": "no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)",
+    "error": null
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 414,
+  "temps": 414,
+  "clocks": 414,
+  "max_temp_c": 59.562,
+  "oom_kills": 1,
+  "mem_available_min_mb": 68,
+  "cpu_below_max_samples": 258,
+  "gpu_below_max_samples": 171
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "harness_leftovers": {
+  "before": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  },
+  "after": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  }
+ }
+}

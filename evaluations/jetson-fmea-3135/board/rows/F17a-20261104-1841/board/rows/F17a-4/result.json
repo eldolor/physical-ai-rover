@@ -1,0 +1,66 @@
+{
+ "row": "F17a",
+ "title": "A person's Stop during the arrival's question",
+ "reading": "as F17g",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T18:49:31-0600",
+ "measures": {
+  "fault_at": 57530.905983526,
+  "ve_before": [
+   "MainPID=2717968",
+   "NRestarts=0"
+  ],
+  "start_at": 57480.759244327,
+  "stop_at": 57530.905983526,
+  "stop_code": 200,
+  "stop_answer_s": 0.016,
+  "outcome": "cancelled",
+  "cancelled_by": "stop",
+  "status": {
+   "outcome": "cancelled",
+   "end_state": "cancelled",
+   "end_reason": "stopped by a person: unknown pressed Stop -- autonomy stays stopped until a new mission starts, so brain was refused",
+   "cancelled_by": "stop"
+  },
+  "wheel_loop": {
+   "late": 0,
+   "moving": 707,
+   "max_dt_s": 0.0706
+  },
+  "ve_after": [
+   "MainPID=2717968",
+   "NRestarts=0"
+  ],
+  "ve_ready_after": true,
+  "forward_at_fault": false,
+  "question_hit": true,
+  "question_at_fault": {
+   "i": 34,
+   "kind": "arrival",
+   "path": "/identity",
+   "t0": 57530.903926962,
+   "status": 200,
+   "t1": 57531.369296338
+  },
+  "wheels_zero_from_stop_s": 0.005,
+  "paid_after_stop": 0,
+  "truth_hole_s": 0.03,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "local_questions": {
+   "frame": 33,
+   "arrival": 1,
+   "direction": 0
+  },
+  "mem_available_min_mb": 2099,
+  "oom_kills_window": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-04T18:51:07-0600"
+}

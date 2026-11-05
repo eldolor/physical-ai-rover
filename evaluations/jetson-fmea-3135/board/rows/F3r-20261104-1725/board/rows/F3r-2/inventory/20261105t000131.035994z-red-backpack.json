@@ -1,0 +1,48 @@
+{
+ "candidates": [
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 1,
+   "id": 1,
+   "label": "red backpack",
+   "last_step": 1,
+   "misses": 0,
+   "points": 2,
+   "reported": false,
+   "room": "kitchen",
+   "votes": {
+    "red backpack": 1
+   },
+   "x_m": 6.888,
+   "y_m": 1.586
+  }
+ ],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 2,
+  "landmarks": 1,
+  "no_pose": 0,
+  "observations": 2,
+  "reported": 0,
+  "unplaced": 0
+ },
+ "frame_id": null,
+ "map_id": "slam-178b3086",
+ "mission": "Find the red backpack.",
+ "mission_id": "20261105T000131.035994Z-red backpack",
+ "outcome": "cancelled",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": []
+}

@@ -1,0 +1,14 @@
+{
+ "row": "F3a",
+ "plant": null,
+ "house": "scaled_house",
+ "state": "FAILED",
+ "runs_wanted": 5,
+ "runs_scored": 5,
+ "runs_total": 5,
+ "runs_failed": 5,
+ "not_scored": [],
+ "reasons": [
+  "the mission ended exhausted, not found"
+ ]
+}

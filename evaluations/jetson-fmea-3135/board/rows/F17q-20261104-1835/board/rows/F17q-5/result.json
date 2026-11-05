@@ -1,0 +1,66 @@
+{
+ "row": "F17q",
+ "title": "A person's Stop during a VLM question",
+ "reading": "as F17g",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T18:38:42-0600",
+ "measures": {
+  "fault_at": 56832.066338705,
+  "ve_before": [
+   "MainPID=2717968",
+   "NRestarts=0"
+  ],
+  "start_at": 56831.882067437,
+  "stop_at": 56832.066338705,
+  "stop_code": 200,
+  "stop_answer_s": 0.031,
+  "outcome": "cancelled",
+  "cancelled_by": "stop",
+  "status": {
+   "outcome": "cancelled",
+   "end_state": "cancelled",
+   "end_reason": "stopped by a person: unknown pressed Stop -- autonomy stays stopped until a new mission starts, so brain was refused",
+   "cancelled_by": "stop"
+  },
+  "wheel_loop": {
+   "late": 0,
+   "moving": 0,
+   "max_dt_s": 0.0
+  },
+  "ve_after": [
+   "MainPID=2717968",
+   "NRestarts=0"
+  ],
+  "ve_ready_after": true,
+  "forward_at_fault": false,
+  "question_hit": true,
+  "question_at_fault": {
+   "i": 1,
+   "kind": "frame",
+   "path": "/identity",
+   "t0": 56832.036887002,
+   "status": 200,
+   "t1": 56832.471250604
+  },
+  "wheels_zero_from_stop_s": 0.009,
+  "paid_after_stop": 0,
+  "truth_hole_s": 0.025,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "local_questions": {
+   "frame": 1,
+   "arrival": 0,
+   "direction": 0
+  },
+  "mem_available_min_mb": 2155,
+  "oom_kills_window": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-04T18:39:28-0600"
+}

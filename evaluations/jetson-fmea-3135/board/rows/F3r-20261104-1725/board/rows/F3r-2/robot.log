@@ -1,0 +1,28 @@
+1793836794.300 WARNING identity vision-picar robot server starting -- git=1330ea8f2 executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793836796.119 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1793836803.981 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793836813.475 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793836844.589 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793836848.257 WARNING server refused (safety_distance) for brain: forward clamped: 17.3cm <= 20cm (depth_grid, aged 183 ms)
+1793836848.310 WARNING server refused (safety_distance) for brain: forward clamped: 18.3cm <= 20cm (depth_grid, aged 134 ms)
+1793836848.363 WARNING server refused (safety_distance) for brain: forward clamped: 17.2cm <= 20cm (depth_grid, aged 188 ms)
+1793836848.417 WARNING server refused (safety_distance) for brain: forward clamped: 18.2cm <= 20cm (depth_grid, aged 140 ms)
+1793836848.471 WARNING server refused (safety_distance) for brain: forward clamped: 17.1cm <= 20cm (depth_grid, aged 193 ms)
+1793836848.525 WARNING server refused (safety_distance) for brain: forward clamped: 18.0cm <= 20cm (depth_grid, aged 150 ms)
+1793836848.580 WARNING server refused (safety_distance) for brain: forward clamped: 19.0cm <= 20cm (depth_grid, aged 100 ms)
+1793836848.633 WARNING server refused (safety_distance) for brain: forward clamped: 16.4cm <= 20cm (depth_grid, aged 154 ms)
+1793836848.662 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)
+1793836848.706 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)
+1793836848.761 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)
+1793836848.803 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)
+1793836848.853 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)
+1793836848.903 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)
+1793836848.954 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)
+1793836849.003 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)
+1793836849.055 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)
+1793836849.108 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)
+1793836849.155 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)
+1793836849.204 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)
+1793836849.258 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)
+1793836849.303 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)
+1793836849.360 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)

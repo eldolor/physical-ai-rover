@@ -1,0 +1,4 @@
+1793825804.635 WARNING identity vision-picar brain server starting -- git=1330ea8f2 executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793825936.556 WARNING safety Blocked FORWARD: distance=18.0cm < min=20cm (depth_grid)
+1793825958.034 WARNING safety Blocked REVERSE: rear clearance=19.9cm < min=20cm (scan_footprint)
+1793826244.342 WARNING tiered local VLM absent for cold_search (local VLM unreachable: [Errno 9] Bad file descriptor); asking the cloud

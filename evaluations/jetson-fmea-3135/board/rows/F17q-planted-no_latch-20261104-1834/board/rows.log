@@ -1,0 +1,2 @@
+{"i": 1, "verdict": {"pass": false, "valid": true, "reasons": ["the mission ended running (by None), not cancelled by stop"]}, "error": null}
+{"row": "F17q", "plant": "no_latch", "house": "scaled_house", "state": "FAILED", "runs_wanted": 1, "runs_scored": 1, "runs_total": 1, "runs_failed": 1, "not_scored": [], "reasons": ["the mission ended running (by None), not cancelled by stop"]}

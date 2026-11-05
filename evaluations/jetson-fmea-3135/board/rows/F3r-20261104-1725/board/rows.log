@@ -1,0 +1,9 @@
+{"i": 1, "verdict": {"pass": true, "valid": true, "reasons": []}, "error": null}
+{"i": 2, "verdict": {"pass": true, "valid": true, "reasons": []}, "error": null}
+{"i": 3, "verdict": {"pass": true, "valid": true, "reasons": []}, "error": null}
+{"i": 4, "verdict": {"pass": false, "valid": true, "reasons": ["VE ready None s after the kill (bar 60)", "the next mission's first frame question was not answered"]}, "error": "VE was not ready after the case (the board not as found)"}
+{"i": 5, "verdict": {"pass": false, "valid": false, "reasons": ["the fault was never injected"]}, "error": "StackError: VE is not ready at the start"}
+{"i": 6, "verdict": {"pass": false, "valid": false, "reasons": ["the fault was never injected"]}, "error": "StackError: VE is not ready at the start"}
+{"i": 7, "verdict": {"pass": false, "valid": false, "reasons": ["the fault was never injected"]}, "error": "StackError: VE is not ready at the start"}
+{"i": 8, "verdict": {"pass": false, "valid": false, "reasons": ["the fault was never injected"]}, "error": "StackError: VE is not ready at the start"}
+{"row": "F3r", "plant": null, "house": "scaled_house", "state": "incomplete", "runs_wanted": 5, "runs_scored": 3, "runs_total": 8, "runs_failed": 0, "not_scored": [{"i": 4, "error": "VE was not ready after the case (the board not as found)", "reasons": ["VE ready None s after the kill (bar 60)", "the next mission's first frame question was not answered"]}, {"i": 5, "error": "StackError: VE is not ready at the start", "reasons": ["the fault was never injected"]}, {"i": 6, "error": "StackError: VE is not ready at the start", "reasons": ["the fault was never injected"]}, {"i": 7, "error": "StackError: VE is not ready at the start", "reasons": ["the fault was never injected"]}, {"i": 8, "error": "StackError: VE is not ready at the start", "reasons": ["the fault was never injected"]}], "reasons": []}

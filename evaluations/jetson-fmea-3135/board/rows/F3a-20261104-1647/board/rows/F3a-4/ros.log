@@ -1,0 +1,1137 @@
+[INFO] [launch]: All log files can be found below /root/.ros/log/2026-11-04-23-03-43-335201-picar-jetson-1
+[INFO] [launch]: Default logging verbosity is set to INFO
+[INFO] [robot_state_publisher-1]: process started with pid [32]
+[INFO] [ros2_control_node-2]: process started with pid [34]
+[INFO] [spawner-3]: process started with pid [36]
+[INFO] [spawner-4]: process started with pid [38]
+[INFO] [twist_mux-5]: process started with pid [40]
+[INFO] [bridge-6]: process started with pid [42]
+[INFO] [controller_server-7]: process started with pid [50]
+[INFO] [planner_server-8]: process started with pid [52]
+[INFO] [behavior_server-9]: process started with pid [67]
+[INFO] [bt_navigator-10]: process started with pid [77]
+[INFO] [lifecycle_manager-11]: process started with pid [79]
+[INFO] [collision_monitor-12]: process started with pid [85]
+[INFO] [lifecycle_manager-13]: process started with pid [87]
+[robot_state_publisher-1] [INFO] [1793833423.794261835] [robot_state_publisher]: got segment base_footprint
+[robot_state_publisher-1] [INFO] [1793833423.794454775] [robot_state_publisher]: got segment base_link
+[robot_state_publisher-1] [INFO] [1793833423.794481049] [robot_state_publisher]: got segment camera_link
+[robot_state_publisher-1] [INFO] [1793833423.794494426] [robot_state_publisher]: got segment camera_optical_frame
+[robot_state_publisher-1] [INFO] [1793833423.794506267] [robot_state_publisher]: got segment front_bumper
+[robot_state_publisher-1] [INFO] [1793833423.794517211] [robot_state_publisher]: got segment laser
+[robot_state_publisher-1] [INFO] [1793833423.794527292] [robot_state_publisher]: got segment left_wheel
+[robot_state_publisher-1] [INFO] [1793833423.794537533] [robot_state_publisher]: got segment pan_link
+[robot_state_publisher-1] [INFO] [1793833423.794548125] [robot_state_publisher]: got segment rear_bumper
+[robot_state_publisher-1] [INFO] [1793833423.794558814] [robot_state_publisher]: got segment right_wheel
+[twist_mux-5] [INFO] [1793833423.763924518] [twist_mux]: Topic handler 'topics.brain' subscribed to topic 'cmd_vel/brain': timeout = 0.250000s , priority = 50.
+[twist_mux-5] [INFO] [1793833423.769320322] [twist_mux]: Topic handler 'topics.nav' subscribed to topic 'cmd_vel/nav': timeout = 0.250000s , priority = 50.
+[twist_mux-5] [INFO] [1793833423.769660344] [twist_mux]: Topic handler 'topics.teleop' subscribed to topic 'cmd_vel/teleop': timeout = 0.250000s , priority = 100.
+[controller_server-7] [INFO] [1793833423.820586220] [controller_server]: 
+[controller_server-7] 	controller_server lifecycle node launched. 
+[controller_server-7] 	Waiting on external lifecycle transitions to activate
+[controller_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[ros2_control_node-2] [WARN] [1793833423.821192564] [controller_manager]: [Deprecated] Passing the robot description parameter directly to the control_manager node is deprecated. Use '~/robot_description' topic from 'robot_state_publisher' instead.
+[ros2_control_node-2] [INFO] [1793833423.821550507] [resource_manager]: Loading hardware 'picar' 
+[controller_server-7] [INFO] [1793833423.830329793] [controller_server]: Creating controller server
+[controller_server-7] [INFO] [1793833423.834740925] [local_costmap.local_costmap]: 
+[controller_server-7] 	local_costmap lifecycle node launched. 
+[controller_server-7] 	Waiting on external lifecycle transitions to activate
+[controller_server-7] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[controller_server-7] [INFO] [1793833423.836076947] [local_costmap.local_costmap]: Creating Costmap
+[behavior_server-9] [INFO] [1793833423.832077873] [behavior_server]: 
+[behavior_server-9] 	behavior_server lifecycle node launched. 
+[behavior_server-9] 	Waiting on external lifecycle transitions to activate
+[behavior_server-9] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-8] [INFO] [1793833423.863392469] [planner_server]: 
+[planner_server-8] 	planner_server lifecycle node launched. 
+[planner_server-8] 	Waiting on external lifecycle transitions to activate
+[planner_server-8] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[planner_server-8] [INFO] [1793833423.867248334] [planner_server]: Creating
+[lifecycle_manager-11] [INFO] [1793833423.874065221] [lifecycle_manager_navigation]: Creating
+[lifecycle_manager-11] [INFO] [1793833423.877589640] [lifecycle_manager_navigation]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[ros2_control_node-2] [INFO] [1793833423.895693944] [resource_manager]: Initialize hardware 'picar' 
+[ros2_control_node-2] [INFO] [1793833423.897180248] [PicarSimHardware]: robot server at http://127.0.0.1:10350
+[ros2_control_node-2] [INFO] [1793833423.897237467] [resource_manager]: Successful initialization of hardware 'picar'
+[ros2_control_node-2] [INFO] [1793833423.897352771] [resource_manager]: 'configure' hardware 'picar' 
+[ros2_control_node-2] [INFO] [1793833423.897374308] [resource_manager]: Successful 'configure' of hardware 'picar'
+[ros2_control_node-2] [INFO] [1793833423.897385381] [resource_manager]: 'activate' hardware 'picar' 
+[lifecycle_manager-13] [INFO] [1793833423.917135295] [lifecycle_manager_collision]: Creating
+[ros2_control_node-2] [INFO] [1793833423.933950779] [resource_manager]: Successful 'activate' of hardware 'picar'
+[planner_server-8] [INFO] [1793833423.941071046] [global_costmap.global_costmap]: 
+[planner_server-8] 	global_costmap lifecycle node launched. 
+[planner_server-8] 	Waiting on external lifecycle transitions to activate
+[planner_server-8] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[lifecycle_manager-13] [INFO] [1793833423.958626962] [lifecycle_manager_collision]: [34m[1mCreating and initializing lifecycle service clients[0m[0m
+[planner_server-8] [INFO] [1793833423.959774428] [global_costmap.global_costmap]: Creating Costmap
+[bt_navigator-10] [INFO] [1793833423.965838819] [bt_navigator]: 
+[bt_navigator-10] 	bt_navigator lifecycle node launched. 
+[bt_navigator-10] 	Waiting on external lifecycle transitions to activate
+[bt_navigator-10] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[bt_navigator-10] [INFO] [1793833423.970546067] [bt_navigator]: Creating
+[collision_monitor-12] [INFO] [1793833424.004246800] [collision_monitor]: 
+[collision_monitor-12] 	collision_monitor lifecycle node launched. 
+[collision_monitor-12] 	Waiting on external lifecycle transitions to activate
+[collision_monitor-12] 	See https://design.ros2.org/articles/node_lifecycle.html for more information.
+[ros2_control_node-2] [INFO] [1793833424.010524389] [controller_manager]: update rate is 20 Hz
+[ros2_control_node-2] [INFO] [1793833424.010645741] [controller_manager]: Spawning controller_manager RT thread with scheduler priority: 50
+[ros2_control_node-2] [WARN] [1793833424.011472674] [controller_manager]: Could not enable FIFO RT scheduling policy: with error number <1>(Operation not permitted). See [https://control.ros.org/master/doc/ros2_control/controller_manager/doc/userdoc.html] for details on how to enable realtime scheduling.
+[lifecycle_manager-11] [INFO] [1793833424.100625720] [lifecycle_manager_navigation]: [34m[1mStarting managed nodes bringup...[0m[0m
+[lifecycle_manager-11] [INFO] [1793833424.102650010] [lifecycle_manager_navigation]: [34m[1mConfiguring controller_server[0m[0m
+[controller_server-7] [INFO] [1793833424.103852872] [controller_server]: Configuring controller interface
+[controller_server-7] [INFO] [1793833424.104278243] [controller_server]: getting goal checker plugins..
+[controller_server-7] [INFO] [1793833424.104616025] [controller_server]: Controller frequency set to 20.0000Hz
+[controller_server-7] [INFO] [1793833424.104699935] [local_costmap.local_costmap]: Configuring
+[lifecycle_manager-13] [INFO] [1793833424.117997400] [lifecycle_manager_collision]: [34m[1mStarting managed nodes bringup...[0m[0m
+[controller_server-7] [INFO] [1793833424.122301230] [local_costmap.local_costmap]: Using plugin "obstacle_layer"
+[lifecycle_manager-13] [INFO] [1793833424.125819825] [lifecycle_manager_collision]: [34m[1mConfiguring collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1793833424.127719179] [collision_monitor]: Configuring
+[controller_server-7] [INFO] [1793833424.141350362] [local_costmap.local_costmap]: Subscribed to Topics: scan
+[controller_server-7] [INFO] [1793833424.159718299] [local_costmap.local_costmap]: Initialized plugin "obstacle_layer"
+[controller_server-7] [INFO] [1793833424.159826274] [local_costmap.local_costmap]: Using plugin "inflation_layer"
+[collision_monitor-12] [INFO] [1793833424.161010926] [collision_monitor]: [FootprintApproach]: Creating Polygon
+[controller_server-7] [INFO] [1793833424.163460652] [local_costmap.local_costmap]: Initialized plugin "inflation_layer"
+[collision_monitor-12] [INFO] [1793833424.170455023] [collision_monitor]: [PolygonSlow]: Creating Polygon
+[collision_monitor-12] [INFO] [1793833424.181208101] [collision_monitor]: [scan]: Creating Scan
+[controller_server-7] [INFO] [1793833424.187870770] [controller_server]: Created progress_checker : progress_checker of type nav2_controller::SimpleProgressChecker
+[controller_server-7] [INFO] [1793833424.194300497] [controller_server]: Created goal checker : general_goal_checker of type nav2_controller::SimpleGoalChecker
+[controller_server-7] [INFO] [1793833424.196549058] [controller_server]: Controller Server has general_goal_checker  goal checkers available.
+[lifecycle_manager-13] [INFO] [1793833424.194573987] [lifecycle_manager_collision]: [34m[1mActivating collision_monitor[0m[0m
+[collision_monitor-12] [INFO] [1793833424.197417338] [collision_monitor]: Activating
+[collision_monitor-12] [INFO] [1793833424.197510944] [collision_monitor]: Creating bond (collision_monitor) to lifecycle manager.
+[controller_server-7] [INFO] [1793833424.198038786] [controller_server]: Created controller : FollowPath of type nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-7] [INFO] [1793833424.218779740] [controller_server]: Controller Server has FollowPath  controllers available.
+[lifecycle_manager-11] [INFO] [1793833424.238783334] [lifecycle_manager_navigation]: [34m[1mConfiguring planner_server[0m[0m
+[planner_server-8] [INFO] [1793833424.239292391] [planner_server]: Configuring
+[planner_server-8] [INFO] [1793833424.239395757] [global_costmap.global_costmap]: Configuring
+[planner_server-8] [INFO] [1793833424.247468150] [global_costmap.global_costmap]: Using plugin "static_layer"
+[planner_server-8] [INFO] [1793833424.261591461] [global_costmap.global_costmap]: Subscribing to the map topic (/map) with transient local durability
+[planner_server-8] [INFO] [1793833424.265391994] [global_costmap.global_costmap]: Initialized plugin "static_layer"
+[planner_server-8] [INFO] [1793833424.265503137] [global_costmap.global_costmap]: Using plugin "obstacle_layer"
+[planner_server-8] [INFO] [1793833424.273480099] [global_costmap.global_costmap]: Subscribed to Topics: scan
+[planner_server-8] [INFO] [1793833424.296097654] [global_costmap.global_costmap]: Initialized plugin "obstacle_layer"
+[planner_server-8] [INFO] [1793833424.299260802] [global_costmap.global_costmap]: Using plugin "inflation_layer"
+[planner_server-8] [INFO] [1793833424.305946161] [global_costmap.global_costmap]: Initialized plugin "inflation_layer"
+[planner_server-8] [INFO] [1793833424.306045176] [global_costmap.global_costmap]: Using costmap filter "keepout_filter"
+[lifecycle_manager-13] [INFO] [1793833424.307848716] [lifecycle_manager_collision]: Server collision_monitor connected with bond.
+[lifecycle_manager-13] [INFO] [1793833424.307940658] [lifecycle_manager_collision]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-13] [INFO] [1793833424.307978804] [lifecycle_manager_collision]: [34m[1mCreating bond timer...[0m[0m
+[planner_server-8] [INFO] [1793833424.317415989] [global_costmap.global_costmap]: Initialized costmap filter "keepout_filter"
+[planner_server-8] [INFO] [1793833424.347030955] [planner_server]: Created global planner plugin GridBased of type nav2_navfn_planner/NavfnPlanner
+[planner_server-8] [INFO] [1793833424.347159891] [planner_server]: Configuring plugin GridBased of type NavfnPlanner
+[planner_server-8] [INFO] [1793833424.352752860] [planner_server]: Planner Server has GridBased  planners available.
+[lifecycle_manager-11] [INFO] [1793833424.376098685] [lifecycle_manager_navigation]: [34m[1mConfiguring behavior_server[0m[0m
+[behavior_server-9] [INFO] [1793833424.378134209] [behavior_server]: Configuring
+[behavior_server-9] [INFO] [1793833424.391784401] [behavior_server]: Creating behavior plugin spin of type nav2_behaviors/Spin
+[behavior_server-9] [INFO] [1793833424.397149323] [behavior_server]: Configuring spin
+[behavior_server-9] [INFO] [1793833424.418182135] [behavior_server]: Creating behavior plugin backup of type nav2_behaviors/BackUp
+[behavior_server-9] [INFO] [1793833424.420361412] [behavior_server]: Configuring backup
+[behavior_server-9] [INFO] [1793833424.438859725] [behavior_server]: Creating behavior plugin wait of type nav2_behaviors/Wait
+[behavior_server-9] [INFO] [1793833424.440673730] [behavior_server]: Configuring wait
+[lifecycle_manager-11] [INFO] [1793833424.458887065] [lifecycle_manager_navigation]: [34m[1mConfiguring bt_navigator[0m[0m
+[bt_navigator-10] [INFO] [1793833424.459500032] [bt_navigator]: Configuring
+[lifecycle_manager-11] [INFO] [1793833424.707773836] [lifecycle_manager_navigation]: [34m[1mActivating controller_server[0m[0m
+[controller_server-7] [INFO] [1793833424.708288941] [controller_server]: Activating
+[controller_server-7] [INFO] [1793833424.708420405] [local_costmap.local_costmap]: Activating
+[controller_server-7] [INFO] [1793833424.708458296] [local_costmap.local_costmap]: Checking transform
+[controller_server-7] [INFO] [1793833424.708521276] [local_costmap.local_costmap]: Timed out waiting for transform from base_footprint to odom to become available, tf error: Invalid frame ID "odom" passed to canTransform argument target_frame - frame does not exist
+[ros2_control_node-2] [INFO] [1793833424.728487555] [controller_manager]: Loading controller 'diff_drive_controller'
+[spawner-3] [INFO] [1793833424.753470031] [spawner_joint_state_broadcaster]: waiting for service /controller_manager/list_controllers to become available...
+[ros2_control_node-2] [INFO] [1793833424.821735425] [controller_manager]: Loading controller 'joint_state_broadcaster'
+[spawner-4] [INFO] [1793833424.862882559] [spawner_diff_drive_controller]: [94mLoaded [1mdiff_drive_controller[0m
+[ros2_control_node-2] [INFO] [1793833424.867190645] [controller_manager]: Configuring controller 'diff_drive_controller'
+[spawner-3] [INFO] [1793833424.872639092] [spawner_joint_state_broadcaster]: [94mLoaded [1mjoint_state_broadcaster[0m
+[ros2_control_node-2] [INFO] [1793833424.916379257] [controller_manager]: Configuring controller 'joint_state_broadcaster'
+[ros2_control_node-2] [INFO] [1793833424.916577798] [joint_state_broadcaster]: 'joints' or 'interfaces' parameter is empty. All available state interfaces will be published
+[spawner-4] [INFO] [1793833425.068188952] [spawner_diff_drive_controller]: [92mConfigured and activated [1mdiff_drive_controller[0m
+[spawner-3] [INFO] [1793833425.171545474] [spawner_joint_state_broadcaster]: [92mConfigured and activated [1mjoint_state_broadcaster[0m
+[controller_server-7] [INFO] [1793833425.208878857] [local_costmap.local_costmap]: start
+[controller_server-7] [INFO] [1793833425.260879555] [controller_server]: Activating controller: FollowPath of type regulated_pure_pursuit_controller::RegulatedPurePursuitController
+[controller_server-7] [INFO] [1793833425.261064911] [controller_server]: Creating bond (controller_server) to lifecycle manager.
+[INFO] [spawner-4]: process has finished cleanly [pid 38]
+[lifecycle_manager-11] [INFO] [1793833425.369135657] [lifecycle_manager_navigation]: Server controller_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793833425.369582150] [lifecycle_manager_navigation]: [34m[1mActivating planner_server[0m[0m
+[planner_server-8] [INFO] [1793833425.369987680] [planner_server]: Activating
+[planner_server-8] [INFO] [1793833425.370238192] [global_costmap.global_costmap]: Activating
+[planner_server-8] [INFO] [1793833425.370289972] [global_costmap.global_costmap]: Checking transform
+[planner_server-8] [INFO] [1793833425.370352184] [global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[bridge-6] [WARN] [1793833425.514833726] [picar_bridge]: no /maps: maps are not saved this session
+[bridge-6] [INFO] [1793833425.523206298] [picar_bridge]: bridge on :8090, robot at http://127.0.0.1:10350
+[INFO] [spawner-3]: process has finished cleanly [pid 36]
+[bridge-6] [INFO] [1793833425.624064067] [slam_toolbox]: Node using stack size 40000000
+[planner_server-8] [INFO] [1793833425.870440821] [global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Invalid frame ID "map" passed to canTransform argument target_frame - frame does not exist
+[bridge-6] [INFO] [1793833426.092652625] [slam_toolbox]: Using solver plugin solver_plugins::CeresSolver
+[bridge-6] [INFO] [1793833426.098296477] [slam_toolbox]: CeresSolver: Using SCHUR_JACOBI preconditioner.
+[bridge-6] [WARN] [1793833426.167027566] [slam_toolbox]: minimum laser range setting (0.0 m) exceeds the capabilities of the used Lidar (0.0 m)
+[bridge-6] Registering sensor: [Custom Described Lidar]
+[planner_server-8] [INFO] [1793833426.370571063] [global_costmap.global_costmap]: Timed out waiting for transform from base_footprint to map to become available, tf error: Lookup would require extrapolation into the past.  Requested time 1793833426.367456 but the earliest data is at time 1793833426.371469, when looking up transform from frame [base_footprint] to frame [map]
+[planner_server-8] [INFO] [1793833426.870611731] [global_costmap.global_costmap]: start
+[planner_server-8] [INFO] [1793833426.871429288] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833426.876737566] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833426.876872295] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [INFO] [1793833426.879829862] [global_costmap.global_costmap]: KeepoutFilter: Received filter mask from /keepout_mask topic.
+[planner_server-8] [INFO] [1793833427.125796607] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 150 X 42 at 0.050000 m/pix
+[planner_server-8] [INFO] [1793833427.373305884] [planner_server]: Activating plugin GridBased of type NavfnPlanner
+[planner_server-8] [INFO] [1793833427.374772667] [planner_server]: Creating bond (planner_server) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793833427.480023360] [lifecycle_manager_navigation]: Server planner_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793833427.480185834] [lifecycle_manager_navigation]: [34m[1mActivating behavior_server[0m[0m
+[behavior_server-9] [INFO] [1793833427.480794449] [behavior_server]: Activating
+[behavior_server-9] [INFO] [1793833427.480890840] [behavior_server]: Activating spin
+[behavior_server-9] [INFO] [1793833427.480943739] [behavior_server]: Activating backup
+[behavior_server-9] [INFO] [1793833427.480982110] [behavior_server]: Activating wait
+[behavior_server-9] [INFO] [1793833427.481022880] [behavior_server]: Creating bond (behavior_server) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793833427.587643038] [lifecycle_manager_navigation]: Server behavior_server connected with bond.
+[lifecycle_manager-11] [INFO] [1793833427.587809224] [lifecycle_manager_navigation]: [34m[1mActivating bt_navigator[0m[0m
+[bt_navigator-10] [INFO] [1793833427.588431536] [bt_navigator]: Activating
+[bt_navigator-10] [INFO] [1793833427.698350563] [bt_navigator]: Creating bond (bt_navigator) to lifecycle manager.
+[lifecycle_manager-11] [INFO] [1793833427.803665516] [lifecycle_manager_navigation]: Server bt_navigator connected with bond.
+[lifecycle_manager-11] [INFO] [1793833427.803787924] [lifecycle_manager_navigation]: [34m[1mManaged nodes are active[0m[0m
+[lifecycle_manager-11] [INFO] [1793833427.803816758] [lifecycle_manager_navigation]: [34m[1mCreating bond timer...[0m[0m
+[bridge-6] [INFO] [1793833427.809115019] [picar_bridge]: nav2 active: goals taken
+[bt_navigator-10] [INFO] [1793833430.037636155] [bt_navigator]: Begin navigating from current location (0.00, 0.00) to (-0.28, 0.02)
+[controller_server-7] [INFO] [1793833430.065808693] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [WARN] [1793833430.065961439] [controller_server]: No goal checker was specified in parameter 'current_goal_checker'. Server will use only plugin loaded general_goal_checker . This warning will appear once.
+[controller_server-7] [INFO] [1793833431.116099686] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833432.116119919] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833433.166120533] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833434.216121760] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833435.216116469] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833435.370823093] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 150 X 43 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833436.266113384] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833437.066691773] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793833437.100343449] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793833439.617243124] [bt_navigator]: Begin navigating from current location (-0.19, 0.04) to (3.22, 0.10)
+[controller_server-7] [INFO] [1793833439.639553396] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793833440.690604669] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833441.740611944] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833442.740609306] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833443.790906464] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833444.370978895] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 43 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833444.790630056] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833445.840610114] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833446.892381460] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833447.890608008] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833448.940623920] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833449.370813690] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 44 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833449.940605565] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833450.240606896] [controller_server]: Goal was canceled. Stopping the robot.
+[controller_server-7] [INFO] [1793833450.240737432] [controller_server]: [follow_path] [ActionServer] Client requested to cancel the goal. Cancelling.
+[bt_navigator-10] [INFO] [1793833450.242611953] [bt_navigator]: [navigate_to_pose] [ActionServer] Client requested to cancel the goal. Cancelling.
+[bt_navigator-10] [INFO] [1793833450.242975113] [bt_navigator]: Goal canceled
+[bt_navigator-10] [INFO] [1793833450.256944623] [bt_navigator]: Begin navigating from current location (1.11, -0.01) to (4.36, -0.15)
+[controller_server-7] [INFO] [1793833450.268368465] [controller_server]: Received a goal, begin computing control effort.
+[planner_server-8] [INFO] [1793833450.370814794] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 47 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833451.320088817] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833451.370790557] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 72 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833452.370100168] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833452.371472224] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 72 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833453.370095075] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833453.370797104] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 73 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833454.420091361] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833455.420078019] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833456.474785786] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833457.372471345] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 73 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833457.520120055] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833458.370804436] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 73 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833458.520091364] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833459.370806535] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 73 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833459.570377289] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833460.377478797] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 73 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833460.570092398] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833461.620079848] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833462.670114697] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833463.671749846] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833464.720115315] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833465.720087292] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833466.770094507] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833467.020555117] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793833467.057543429] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793833471.177146175] [bt_navigator]: Begin navigating from current location (4.28, -0.10) to (4.41, -0.09)
+[controller_server-7] [INFO] [1793833471.198275990] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793833471.999898842] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793833472.037745546] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793833475.406357868] [bt_navigator]: Begin navigating from current location (4.32, -0.12) to (5.46, -0.49)
+[controller_server-7] [INFO] [1793833475.427628364] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793833476.479459127] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833477.529474289] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833478.529450922] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833479.579453995] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833480.579459693] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833481.629449333] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833482.679454722] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833483.679462511] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833484.729456131] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833485.729952568] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833486.779463957] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833487.130051802] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793833487.167111225] [bt_navigator]: Goal succeeded
+[collision_monitor-12] [INFO] [1793833489.623424092] [collision_monitor]: Robot to slowdown for 50.000000 percents due to PolygonSlow polygon
+[collision_monitor-12] [INFO] [1793833493.023375170] [collision_monitor]: Robot to continue normal operation
+[bt_navigator-10] [INFO] [1793833496.634086339] [bt_navigator]: Begin navigating from current location (5.42, -0.58) to (4.91, 0.76)
+[controller_server-7] [INFO] [1793833496.655781888] [controller_server]: Received a goal, begin computing control effort.
+[collision_monitor-12] [INFO] [1793833496.669001112] [collision_monitor]: Robot to slowdown for 50.000000 percents due to PolygonSlow polygon
+[controller_server-7] [INFO] [1793833497.707140829] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833498.757151463] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833499.757140333] [controller_server]: Passing new path to controller.
+[controller_server-7] [WARN] [1793833500.707937283] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[collision_monitor-12] [INFO] [1793833500.730717863] [collision_monitor]: Robot to continue normal operation
+[controller_server-7] [WARN] [1793833500.757824771] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [INFO] [1793833500.807146142] [controller_server]: Passing new path to controller.
+[controller_server-7] [WARN] [1793833500.808238788] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833500.857885909] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833500.907833304] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833500.957928645] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [ERROR] [1793833500.958092752] [controller_server]: Controller patience exceeded
+[controller_server-7] [WARN] [1793833500.958364097] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[controller_server-7] [INFO] [1793833500.975239335] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[controller_server-7] [INFO] [1793833500.977743209] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [WARN] [1793833501.019213831] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833501.029294260] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833501.078999656] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833501.129025073] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833501.179145952] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833501.229530944] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833501.280723444] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [ERROR] [1793833501.280911489] [controller_server]: Controller patience exceeded
+[controller_server-7] [WARN] [1793833501.281202963] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[controller_server-7] [INFO] [1793833501.295063381] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[planner_server-8] [INFO] [1793833501.296338472] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833501.298339018] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833501.302669346] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833501.302760424] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833501.305847088] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[controller_server-7] [INFO] [1793833501.395775154] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [WARN] [1793833501.396750065] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833501.446715574] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833501.497300611] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833501.546792649] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833501.596928697] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833501.646958498] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833501.697260989] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [ERROR] [1793833501.697400358] [controller_server]: Controller patience exceeded
+[controller_server-7] [WARN] [1793833501.697631829] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[controller_server-7] [INFO] [1793833501.714629922] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[controller_server-7] [INFO] [1793833501.715897588] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [WARN] [1793833501.816896003] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833501.817311166] [controller_server]: Control loop missed its desired rate of 20.0000Hz
+[controller_server-7] [WARN] [1793833501.817911781] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833501.868857993] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833501.919980025] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833501.971426846] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833502.022665333] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [ERROR] [1793833502.022812959] [controller_server]: Controller patience exceeded
+[controller_server-7] [WARN] [1793833502.023051022] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833502.035793191] [behavior_server]: Running spin
+[behavior_server-9] [INFO] [1793833502.036417008] [behavior_server]: Turning 1.57 for spin behavior.
+[collision_monitor-12] [INFO] [1793833502.118057689] [collision_monitor]: Robot to slowdown for 50.000000 percents due to PolygonSlow polygon
+[collision_monitor-12] [INFO] [1793833504.868973038] [collision_monitor]: Robot to continue normal operation
+[behavior_server-9] [INFO] [1793833505.136912127] [behavior_server]: spin completed successfully
+[controller_server-7] [INFO] [1793833505.185713433] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793833506.235990928] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833507.285978040] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833508.285984252] [controller_server]: Passing new path to controller.
+[collision_monitor-12] [INFO] [1793833508.878562911] [collision_monitor]: Robot to slowdown for 50.000000 percents due to PolygonSlow polygon
+[controller_server-7] [INFO] [1793833509.335985548] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833510.335973142] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833511.385986255] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833512.435983658] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833513.435987808] [controller_server]: Passing new path to controller.
+[controller_server-7] [WARN] [1793833514.036747935] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[collision_monitor-12] [INFO] [1793833514.068341567] [collision_monitor]: Robot to continue normal operation
+[controller_server-7] [WARN] [1793833514.086658243] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833514.136703631] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833514.186637236] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833514.236842251] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833514.286707307] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833514.336866783] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [ERROR] [1793833514.337015625] [controller_server]: Controller patience exceeded
+[controller_server-7] [WARN] [1793833514.337275673] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[controller_server-7] [INFO] [1793833514.354662561] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[controller_server-7] [INFO] [1793833514.356623040] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [WARN] [1793833514.418959497] [controller_server]: Control loop missed its desired rate of 20.0000Hz
+[controller_server-7] [INFO] [1793833514.457766941] [controller_server]: Passing new path to controller.
+[collision_monitor-12] [INFO] [1793833514.471782505] [collision_monitor]: Robot to slowdown for 50.000000 percents due to PolygonSlow polygon
+[controller_server-7] [WARN] [1793833514.958889155] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833515.009075672] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[collision_monitor-12] [INFO] [1793833515.021871446] [collision_monitor]: Robot to continue normal operation
+[collision_monitor-12] [INFO] [1793833515.125769830] [collision_monitor]: Robot to slowdown for 50.000000 percents due to PolygonSlow polygon
+[collision_monitor-12] [INFO] [1793833515.229548334] [collision_monitor]: Robot to continue normal operation
+[controller_server-7] [INFO] [1793833515.507797765] [controller_server]: Passing new path to controller.
+[controller_server-7] [WARN] [1793833515.858886766] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833515.908758767] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833515.959008745] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833516.008851784] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833516.058893077] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [WARN] [1793833516.109127694] [controller_server]: RegulatedPurePursuitController detected collision ahead!
+[controller_server-7] [ERROR] [1793833516.109309785] [controller_server]: Controller patience exceeded
+[controller_server-7] [WARN] [1793833516.109580747] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833516.129638111] [behavior_server]: Running wait
+[bt_navigator-10] [ERROR] [1793833517.065441855] [bt_navigator_navigate_to_pose_rclcpp_node]: Failed to get result for wait in node halt!
+[bt_navigator-10] [INFO] [1793833517.065741267] [bt_navigator]: [navigate_to_pose] [ActionServer] Client requested to cancel the goal. Cancelling.
+[bt_navigator-10] [INFO] [1793833517.066076968] [bt_navigator]: Goal canceled
+[behavior_server-9] [INFO] [1793833517.130145154] [behavior_server]: Canceling wait
+[behavior_server-9] [INFO] [1793833517.130676549] [behavior_server]: [wait] [ActionServer] Client requested to cancel the goal. Cancelling.
+[collision_monitor-12] [INFO] [1793833517.623726693] [collision_monitor]: Robot to approach for 1.000000 seconds away from collision
+[planner_server-8] [INFO] [1793833518.370855200] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 73 at 0.050000 m/pix
+[collision_monitor-12] [INFO] [1793833518.774796688] [collision_monitor]: Robot to continue normal operation
+[collision_monitor-12] [INFO] [1793833519.918241937] [collision_monitor]: Robot to slowdown for 50.000000 percents due to PolygonSlow polygon
+[collision_monitor-12] [INFO] [1793833521.371042196] [collision_monitor]: Robot to continue normal operation
+[bt_navigator-10] [INFO] [1793833525.060927493] [bt_navigator]: Begin navigating from current location (5.40, -0.66) to (4.91, 0.76)
+[controller_server-7] [INFO] [1793833525.083281999] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793833526.133561517] [controller_server]: Passing new path to controller.
+[bt_navigator-10] [WARN] [1793833527.072601214] [BehaviorTreeEngine]: Behavior Tree tick rate 100.00 was exceeded!
+[controller_server-7] [INFO] [1793833527.183561820] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833528.183577477] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833529.234006519] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833530.233571849] [controller_server]: Passing new path to controller.
+[bt_navigator-10] [WARN] [1793833531.181652530] [BehaviorTreeEngine]: Behavior Tree tick rate 100.00 was exceeded!
+[controller_server-7] [INFO] [1793833531.283767476] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833532.334166191] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833533.333573217] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833533.370810993] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 73 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833534.383569993] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833535.384197969] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833536.433831945] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833537.433574590] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833538.184071269] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793833538.223148237] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793833546.402844250] [bt_navigator]: Begin navigating from current location (4.85, 0.69) to (4.90, 1.01)
+[planner_server-8] [ERROR] [1793833546.404841116] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833546.405196467] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833546.405261047] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833546.405290041] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[planner_server-8] [WARN] [1793833546.405316635] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833546.405346877] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (4.90, 1.01)
+[planner_server-8] [WARN] [1793833546.405372990] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833546.413923530] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833546.419593050] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833546.426273227] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833546.426392083] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833546.429529503] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833546.875583938] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833546.875853172] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833546.875893591] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833546.875917016] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[planner_server-8] [WARN] [1793833546.875938745] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833546.875966523] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (4.90, 1.01)
+[planner_server-8] [WARN] [1793833546.875996509] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[controller_server-7] [INFO] [1793833546.893428585] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[planner_server-8] [INFO] [1793833546.894905065] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833546.897303685] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833546.900073081] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833546.900153630] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833546.902761415] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833547.380128125] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833547.380407919] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833547.380450002] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833547.380475764] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[planner_server-8] [WARN] [1793833547.380497045] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833547.380519383] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (4.90, 1.01)
+[planner_server-8] [WARN] [1793833547.380543896] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833547.393594632] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833547.394997667] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833547.400144817] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833547.400279546] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833547.406209563] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833547.879752249] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833547.880000425] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833547.880062861] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833547.880108880] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[planner_server-8] [WARN] [1793833547.880149875] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833547.880189525] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (4.90, 1.01)
+[planner_server-8] [WARN] [1793833547.880231832] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833547.897497273] [behavior_server]: Running spin
+[behavior_server-9] [INFO] [1793833547.898291277] [behavior_server]: Turning 1.57 for spin behavior.
+[behavior_server-9] [INFO] [1793833549.598743560] [behavior_server]: spin completed successfully
+[planner_server-8] [ERROR] [1793833549.625654140] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833549.625926734] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833549.625986322] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833549.626024084] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[controller_server-7] [INFO] [1793833549.644759989] [controller_server]: Received a goal, begin computing control effort.
+[planner_server-8] [ERROR] [1793833550.655956124] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833550.656152393] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833550.656189836] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833550.656215213] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[planner_server-8] [WARN] [1793833550.656237743] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833550.656262128] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (4.90, 1.01)
+[planner_server-8] [WARN] [1793833550.656284306] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833550.673455149] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833550.676371690] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833550.680794282] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833550.680903729] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833550.684838928] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833550.875505391] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833550.876926411] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833550.876993552] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833550.877029554] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[planner_server-8] [WARN] [1793833550.877060276] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833550.877097495] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (4.90, 1.01)
+[planner_server-8] [WARN] [1793833550.877134809] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[controller_server-7] [INFO] [1793833550.896273940] [controller_server]: Goal was canceled. Stopping the robot.
+[controller_server-7] [INFO] [1793833550.896434846] [controller_server]: [follow_path] [ActionServer] Client requested to cancel the goal. Cancelling.
+[behavior_server-9] [INFO] [1793833550.898041575] [behavior_server]: Running wait
+[behavior_server-9] [INFO] [1793833555.898310270] [behavior_server]: wait completed successfully
+[planner_server-8] [ERROR] [1793833555.925175568] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833555.925386525] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833555.925420511] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833555.925444737] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[planner_server-8] [WARN] [1793833555.925466114] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833555.925488388] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (4.90, 1.01)
+[planner_server-8] [WARN] [1793833555.925511685] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833555.943569946] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833555.947078718] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833555.951387126] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833555.951488445] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833555.954714702] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833556.380684583] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833556.380920183] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833556.380963321] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833556.380992859] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[planner_server-8] [WARN] [1793833556.381018525] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833556.381049215] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (4.90, 1.01)
+[planner_server-8] [WARN] [1793833556.381080065] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833556.394392162] [behavior_server]: Running backup
+[behavior_server-9] [INFO] [1793833556.394796092] [behavior_server]: DriveOnHeading: no acceleration or deceleration limits set
+[behavior_server-9] [INFO] [1793833562.495074050] [behavior_server]: backup completed successfully
+[planner_server-8] [ERROR] [1793833562.524850289] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833562.525046494] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833562.525082336] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833562.525145381] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[planner_server-8] [WARN] [1793833562.525170854] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833562.525195272] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (4.90, 1.01)
+[planner_server-8] [WARN] [1793833562.525218921] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833562.543370629] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833562.545834725] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833562.548444239] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833562.548533940] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833562.551640990] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833562.879591550] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833562.879784170] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833562.879817132] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833562.879840622] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[planner_server-8] [WARN] [1793833562.879861903] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833562.879886737] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (4.90, 1.01)
+[planner_server-8] [WARN] [1793833562.879915795] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[controller_server-7] [INFO] [1793833562.893529959] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[planner_server-8] [INFO] [1793833562.894317659] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833562.897014218] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833562.899307199] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833562.899420646] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833562.902200347] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833563.380221843] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833563.380448290] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833563.380597356] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833563.380642287] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[planner_server-8] [WARN] [1793833563.380671537] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833563.380696818] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (4.90, 1.01)
+[planner_server-8] [WARN] [1793833563.380728660] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833563.393474129] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833563.395741348] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833563.401566431] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833563.401656484] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833563.404833587] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833563.875414856] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833563.875675897] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833563.875718492] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833563.875746622] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[planner_server-8] [WARN] [1793833563.875771167] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833563.875792801] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (4.90, 1.01)
+[planner_server-8] [WARN] [1793833563.875819747] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833563.894065508] [behavior_server]: Running spin
+[behavior_server-9] [INFO] [1793833563.894345174] [behavior_server]: Turning 1.57 for spin behavior.
+[behavior_server-9] [INFO] [1793833565.594793799] [behavior_server]: spin completed successfully
+[planner_server-8] [ERROR] [1793833565.624779524] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833565.624981137] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833565.625021396] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833565.625045814] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[controller_server-7] [INFO] [1793833565.634156262] [controller_server]: Received a goal, begin computing control effort.
+[planner_server-8] [ERROR] [1793833566.644575245] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833566.644782555] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833566.644825470] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833566.644850687] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[controller_server-7] [INFO] [1793833566.684468782] [controller_server]: Passing new path to controller.
+[planner_server-8] [ERROR] [1793833567.677301090] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833567.677513008] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833567.677555667] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833567.677580980] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[controller_server-7] [INFO] [1793833567.734686452] [controller_server]: Passing new path to controller.
+[planner_server-8] [ERROR] [1793833568.704999828] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833568.705237507] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833568.705289958] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833568.705327081] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[planner_server-8] [WARN] [1793833568.705357899] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833568.705390157] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (4.90, 1.01)
+[planner_server-8] [WARN] [1793833568.705423247] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833568.723409792] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833568.725958822] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833568.734270050] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833568.734377801] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833568.738108380] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833568.873959706] [planner_server]: worldToMap failed: mx,my: 130,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833568.874169320] [planner_server]: worldToMap failed: mx,my: 131,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833568.874219819] [planner_server]: worldToMap failed: mx,my: 132,73, size_x,size_y: 151,73
+[planner_server-8] [ERROR] [1793833568.874248813] [planner_server]: worldToMap failed: mx,my: 133,73, size_x,size_y: 151,73
+[planner_server-8] [WARN] [1793833568.874274127] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833568.874299216] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (4.90, 1.01)
+[planner_server-8] [WARN] [1793833568.874328722] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[controller_server-7] [INFO] [1793833568.884467365] [controller_server]: Goal was canceled. Stopping the robot.
+[controller_server-7] [INFO] [1793833568.884609679] [controller_server]: [follow_path] [ActionServer] Client requested to cancel the goal. Cancelling.
+[bt_navigator-10] [WARN] [1793833568.893209534] [bt_navigator]: [navigate_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [ERROR] [1793833568.893636825] [bt_navigator]: Goal failed
+[bt_navigator-10] [INFO] [1793833569.557641557] [bt_navigator]: Begin navigating from current location (4.70, 0.52) to (0.95, -2.04)
+[controller_server-7] [INFO] [1793833569.580516836] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793833570.630851098] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833571.680850495] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833572.680856276] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833573.370817935] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 73 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833573.730850847] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833574.370846539] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 73 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833574.730834169] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833575.780854476] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833576.370871082] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 74 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833576.830850049] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833577.830857510] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833578.880845121] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833579.880835435] [controller_server]: Passing new path to controller.
+[bt_navigator-10] [WARN] [1793833580.012420761] [BehaviorTreeEngine]: Behavior Tree tick rate 100.00 was exceeded!
+[planner_server-8] [INFO] [1793833580.371129210] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 74 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833580.930853166] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833581.370813301] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 74 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833581.980853171] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833582.980850887] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833584.030846515] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833585.030834092] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833586.080843487] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833587.130856757] [controller_server]: Passing new path to controller.
+[bt_navigator-10] [WARN] [1793833587.588721809] [BehaviorTreeEngine]: Behavior Tree tick rate 100.00 was exceeded!
+[controller_server-7] [INFO] [1793833588.130855672] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833589.180846868] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833590.181413442] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833591.230851935] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833592.230832590] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833593.280850135] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833594.330849027] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833594.370808363] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 74 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833595.330841115] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833595.831335480] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793833595.870493165] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793833598.808409956] [bt_navigator]: Begin navigating from current location (1.02, -1.98) to (-0.65, -1.66)
+[controller_server-7] [INFO] [1793833598.830704879] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793833599.880987998] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833600.930972669] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833601.930984137] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833602.981073429] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833603.981217456] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833605.030973932] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833606.030965219] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833607.080975894] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833608.130983628] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833609.130981356] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833609.881417938] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793833609.919026948] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793833612.650042541] [bt_navigator]: Begin navigating from current location (-0.58, -1.72) to (-0.65, -2.01)
+[controller_server-7] [INFO] [1793833612.671395324] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793833613.722016618] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833614.771675325] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833615.771694993] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833616.823328107] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833617.822339971] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833618.871671405] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833619.122095496] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793833619.151048742] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793833621.964880938] [bt_navigator]: Begin navigating from current location (-0.67, -1.93) to (4.90, 0.74)
+[controller_server-7] [INFO] [1793833621.986943047] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793833623.037243036] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833624.087246144] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833625.087245357] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833626.137263641] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833627.187251461] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833628.187233273] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833629.237249293] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833630.237237128] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833631.287246465] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833632.287239041] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833633.337239648] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833634.387240706] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833635.387261676] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833636.437254355] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833637.437234177] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833638.487243086] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833639.537243455] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833640.537241525] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833641.370839788] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 74 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833641.587244428] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833642.587231591] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833643.637240451] [controller_server]: Passing new path to controller.
+[bridge-6] WARNING: Logging before InitGoogleLogging() is written to STDERR
+[bridge-6] W1104 23:07:24.614126   227 preprocessor.cc:62] Specified options.num_threads: 50 exceeds maximum available from the threading model Ceres was compiled with: 6.  Bounding to maximum number available.
+[controller_server-7] [INFO] [1793833644.687238722] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833645.372449907] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 75 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833645.687236518] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833646.370825040] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 75 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833646.737238187] [controller_server]: Passing new path to controller.
+[ros2_control_node-2] [WARN] [1793833647.607420673] [PicarSimHardware]: POST /wheels to http://127.0.0.1:10350 failed (1 in a row) -- still trying; the robot server's watchdog stops the wheels meanwhile
+[ros2_control_node-2] [INFO] [1793833647.618956561] [PicarSimHardware]: robot server reachable again after 1 failed cycles
+[controller_server-7] [INFO] [1793833647.737273879] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833648.787339301] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833649.837240619] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833650.837247326] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833651.887238896] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833652.887243464] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833653.937243712] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833654.937227195] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833655.987639764] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833657.037239642] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833658.037242623] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833659.087705796] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833659.487642199] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793833659.525561057] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793833669.237048528] [bt_navigator]: Begin navigating from current location (4.83, 0.68) to (5.85, -1.86)
+[planner_server-8] [ERROR] [1793833669.238729566] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833669.238885096] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833669.238915978] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833669.238940844] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833669.238964685] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833669.257637808] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833669.260746299] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833669.266363562] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833669.266462608] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833669.269188034] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833669.376269489] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833669.376612359] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833669.376663467] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833669.376704909] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833669.376752816] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833669.378492354] [behavior_server]: Running wait
+[behavior_server-9] [INFO] [1793833674.378818213] [behavior_server]: wait completed successfully
+[planner_server-8] [ERROR] [1793833674.408423154] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833674.408604958] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833674.408632768] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833674.408653153] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833674.408675907] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833674.427701757] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833674.430192000] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833674.432602109] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833674.432682850] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833674.435028251] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833674.872442541] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833674.872691037] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833674.872723711] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833674.872755873] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833674.872781091] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833674.888034951] [behavior_server]: Running backup
+[behavior_server-9] [WARN] [1793833684.888450949] [behavior_server]: Exceeded time allowance before reaching the DriveOnHeading goal - Exiting DriveOnHeading
+[behavior_server-9] [WARN] [1793833684.888561580] [behavior_server]: backup failed
+[behavior_server-9] [WARN] [1793833684.888594542] [behavior_server]: [backup] [ActionServer] Aborting handle.
+[controller_server-7] [INFO] [1793833684.907675437] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[planner_server-8] [INFO] [1793833684.908349689] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833684.909742452] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833684.912687412] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833684.912766009] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833684.915260380] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833685.372623984] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833685.372854495] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833685.372886498] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833685.372908483] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833685.372935333] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833685.387715402] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833685.389673322] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833685.396923876] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833685.397017162] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833685.400901000] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833685.872146407] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833685.872351380] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833685.872391703] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833685.872418168] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833685.872448218] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833685.888169469] [behavior_server]: Running spin
+[behavior_server-9] [INFO] [1793833685.888391308] [behavior_server]: Turning 1.57 for spin behavior.
+[behavior_server-9] [INFO] [1793833687.588834039] [behavior_server]: spin completed successfully
+[planner_server-8] [ERROR] [1793833687.622035056] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833687.622298561] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833687.622348516] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833687.622377670] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833687.622404936] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833687.637803222] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833687.639608620] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833687.643965993] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833687.644050254] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833687.650222529] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833687.874266510] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833687.874521886] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833687.874552928] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833687.874576770] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833687.874602692] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833687.887927178] [behavior_server]: Running wait
+[bt_navigator-10] [ERROR] [1793833689.868202440] [bt_navigator_navigate_to_pose_rclcpp_node]: Failed to get result for wait in node halt!
+[bt_navigator-10] [INFO] [1793833689.868498523] [bt_navigator]: [navigate_to_pose] [ActionServer] Client requested to cancel the goal. Cancelling.
+[bt_navigator-10] [INFO] [1793833689.868832593] [bt_navigator]: Goal canceled
+[behavior_server-9] [INFO] [1793833689.888156799] [behavior_server]: Canceling wait
+[behavior_server-9] [INFO] [1793833689.888422097] [behavior_server]: [wait] [ActionServer] Client requested to cancel the goal. Cancelling.
+[bt_navigator-10] [INFO] [1793833697.748464656] [bt_navigator]: Begin navigating from current location (4.56, 0.61) to (5.85, -1.86)
+[planner_server-8] [ERROR] [1793833697.752218629] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833697.754016731] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833697.754064126] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833697.754096704] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833697.754126242] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833697.769461740] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833697.772563607] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833697.776450069] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833697.776564444] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833697.780699179] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833697.875929018] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833697.876125671] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833697.876155337] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833697.876177930] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833697.876206156] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[controller_server-7] [INFO] [1793833697.889022802] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[planner_server-8] [INFO] [1793833697.889616152] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833697.893351885] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833697.897040286] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833697.897121027] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833697.900128519] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833698.376560360] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833698.376765749] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833698.376796727] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833698.376819993] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833698.376848347] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833698.389019350] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833698.391569565] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833698.395091491] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833698.395184777] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833698.398420221] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833698.875205909] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833698.875427427] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833698.875458469] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833698.875480679] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833698.875507176] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833698.889372979] [behavior_server]: Running spin
+[behavior_server-9] [INFO] [1793833698.889593889] [behavior_server]: Turning 1.57 for spin behavior.
+[behavior_server-9] [INFO] [1793833700.589915993] [behavior_server]: spin completed successfully
+[planner_server-8] [ERROR] [1793833700.621008586] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833700.621230392] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833700.621269435] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833700.621299581] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833700.621330911] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833700.639159564] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833700.640968354] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833700.643557867] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833700.643642801] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833700.646067695] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833700.874073830] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833700.874272019] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833700.874302037] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833700.874323190] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833700.874348216] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833700.889372718] [behavior_server]: Running wait
+[behavior_server-9] [INFO] [1793833705.889698608] [behavior_server]: wait completed successfully
+[planner_server-8] [ERROR] [1793833705.921249151] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833705.921753888] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833705.921823364] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833705.921858534] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833705.921886024] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833705.939215093] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833705.940614257] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833705.946824839] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833705.946950447] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833705.952125281] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833706.373847634] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833706.374123396] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833706.374157927] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833706.374180744] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833706.374206890] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833706.389453230] [behavior_server]: Running backup
+[bt_navigator-10] [WARN] [1793833707.381550696] [BehaviorTreeEngine]: Behavior Tree tick rate 100.00 was exceeded!
+[behavior_server-9] [INFO] [1793833712.489976211] [behavior_server]: backup completed successfully
+[planner_server-8] [ERROR] [1793833712.520653641] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833712.521860632] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833712.521947389] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833712.521984928] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833712.522012994] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833712.539295948] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833712.543430426] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833712.548217139] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833712.548348924] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833712.552044781] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833712.881862635] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833712.883940883] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833712.884895313] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833712.884943252] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833712.884977911] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[controller_server-7] [INFO] [1793833712.899060304] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[planner_server-8] [INFO] [1793833712.899617076] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833712.901745855] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833712.906892784] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833712.906994966] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833712.910312911] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833713.381451847] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833713.381700887] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833713.381734585] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833713.381759291] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833713.381791613] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833713.399058342] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833713.401648303] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833713.405100561] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833713.405183222] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833713.407726045] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833713.875829038] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833713.876042268] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833713.876070717] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833713.876093023] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833713.876120929] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833713.889404869] [behavior_server]: Running spin
+[behavior_server-9] [INFO] [1793833713.889609843] [behavior_server]: Turning 1.57 for spin behavior.
+[behavior_server-9] [INFO] [1793833715.589969097] [behavior_server]: spin completed successfully
+[planner_server-8] [ERROR] [1793833715.620667809] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833715.620881391] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833715.620915569] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833715.620940819] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833715.620967284] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833715.639196701] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833715.642527830] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833715.645989561] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833715.646866098] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833715.649887160] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833715.876058462] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833715.876361042] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833715.876419542] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833715.876461176] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833715.876505499] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [WARN] [1793833715.898839056] [bt_navigator]: [navigate_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [ERROR] [1793833715.899238186] [bt_navigator]: Goal failed
+[bt_navigator-10] [INFO] [1793833716.659164906] [bt_navigator]: Begin navigating from current location (4.28, 0.48) to (3.55, -2.16)
+[controller_server-7] [INFO] [1793833716.681384503] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793833717.731664005] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833718.781655971] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833719.781663934] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833720.831666978] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833721.831650336] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833722.881674154] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833723.931672628] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833724.931660698] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833725.981675467] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833726.981663253] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833728.032126440] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833729.031652024] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833730.081698165] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833731.081660646] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833732.131674630] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833733.181665638] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833734.181662176] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833735.231666438] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833736.231654053] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833737.281667344] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833738.331664380] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833739.331958934] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833740.381662132] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833741.381707298] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833742.431664021] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833743.431661765] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833744.382102346] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793833744.419944824] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793833747.207517767] [bt_navigator]: Begin navigating from current location (3.53, -2.07) to (5.85, -1.86)
+[planner_server-8] [ERROR] [1793833747.210142675] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833747.210341696] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833747.210373730] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833747.210400708] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833747.210426470] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833747.229387359] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833747.232233529] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833747.235453292] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833747.235546162] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833747.239748229] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833747.375633605] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833747.375906871] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833747.375940441] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833747.375964059] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833747.375990940] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833747.389418955] [behavior_server]: Running wait
+[behavior_server-9] [INFO] [1793833752.389765147] [behavior_server]: wait completed successfully
+[planner_server-8] [ERROR] [1793833752.421488568] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833752.421717831] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833752.421749193] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833752.421771723] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833752.421795821] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833752.430070442] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833752.434308832] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833752.438515315] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833752.438615418] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833752.442137376] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833752.877967577] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833752.878174342] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833752.878205801] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833752.878230794] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833752.878260908] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833752.879503934] [behavior_server]: Running backup
+[behavior_server-9] [INFO] [1793833758.980118143] [behavior_server]: backup completed successfully
+[planner_server-8] [ERROR] [1793833759.010487172] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833759.010690898] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833759.010725844] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833759.010752022] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833759.010776247] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833759.028802100] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833759.031643470] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833759.036792287] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833759.036890373] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833759.040564150] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833759.377632113] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833759.377900771] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833759.377948998] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833759.377982504] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833759.378021003] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[controller_server-7] [INFO] [1793833759.380422344] [local_costmap.local_costmap]: Received request to clear entirely the local_costmap
+[planner_server-8] [INFO] [1793833759.382342982] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833759.390277965] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833759.394763955] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833759.394881851] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833759.399652179] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833759.872909157] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833759.873229594] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833759.873284158] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833759.873321280] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833759.873363107] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833759.888842745] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833759.891006151] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833759.895268670] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833759.895356739] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833759.898138906] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833760.375206758] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833760.375427669] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833760.375458295] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833760.375480216] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833760.375506682] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833760.389129814] [behavior_server]: Running spin
+[behavior_server-9] [INFO] [1793833760.389394119] [behavior_server]: Turning 1.57 for spin behavior.
+[behavior_server-9] [INFO] [1793833762.189830663] [behavior_server]: spin completed successfully
+[planner_server-8] [ERROR] [1793833762.220121063] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833762.220339925] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833762.220376727] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833762.220404665] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833762.220428443] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833762.238884628] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833762.241654985] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833762.244773717] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833762.244898557] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833762.249023564] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833762.374782521] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833762.375078220] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833762.375119567] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833762.375147857] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833762.375175410] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833762.389266829] [behavior_server]: Running wait
+[behavior_server-9] [INFO] [1793833767.389649247] [behavior_server]: wait completed successfully
+[planner_server-8] [ERROR] [1793833767.420067207] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833767.422220180] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833767.422265079] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833767.422297753] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833767.422327611] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833767.438910138] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833767.440934366] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833767.444436964] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833767.444534858] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833767.448585235] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833767.874312964] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833767.874528338] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833767.874561940] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833767.874585142] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833767.874612760] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [INFO] [1793833767.889448804] [behavior_server]: Running backup
+[behavior_server-9] [INFO] [1793833774.094144809] [behavior_server]: backup completed successfully
+[planner_server-8] [ERROR] [1793833774.119978662] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833774.120176211] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833774.120204533] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833774.120225910] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833774.120247479] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [INFO] [1793833774.138863099] [global_costmap.global_costmap]: Received request to clear entirely the global_costmap
+[planner_server-8] [INFO] [1793833774.140852862] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/costmap_filter_info" topic for filter info...
+[planner_server-8] [INFO] [1793833774.145638679] [global_costmap.global_costmap]: KeepoutFilter: Received filter info from /costmap_filter_info topic.
+[planner_server-8] [INFO] [1793833774.145722301] [global_costmap.global_costmap]: KeepoutFilter: Subscribing to "/keepout_mask" topic for filter mask...
+[planner_server-8] [WARN] [1793833774.153220008] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [ERROR] [1793833774.376772192] [planner_server]: worldToMap failed: mx,my: 151,15, size_x,size_y: 151,75
+[planner_server-8] [WARN] [1793833774.377012271] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1793833774.377049746] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1793833774.377073427] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (5.85, -1.86)
+[planner_server-8] [WARN] [1793833774.377103925] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [WARN] [1793833774.398560947] [bt_navigator]: [navigate_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [ERROR] [1793833774.399050643] [bt_navigator]: Goal failed
+[bt_navigator-10] [INFO] [1793833775.234004200] [bt_navigator]: Begin navigating from current location (3.16, -1.94) to (-0.65, 0.74)
+[controller_server-7] [INFO] [1793833775.255951110] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793833776.307495692] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833777.356234077] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833778.356229526] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833779.370780619] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 75 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833779.406220702] [controller_server]: Passing new path to controller.
+[bt_navigator-10] [WARN] [1793833780.184828398] [BehaviorTreeEngine]: Behavior Tree tick rate 100.00 was exceeded!
+[controller_server-7] [INFO] [1793833780.406229980] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833781.456372273] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833782.456238378] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833783.372482876] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 75 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833783.506221018] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833784.370837302] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 75 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833784.556228717] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833785.556696691] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833786.606226732] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833787.606232440] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833788.656231956] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833789.706223665] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833790.706227043] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833791.758418581] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833792.756370661] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833793.806221569] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833794.856232586] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833795.856229350] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833796.906219570] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833797.906268790] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833798.956231556] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833800.006229847] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833801.006216189] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833802.056219956] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833803.056236448] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833803.370875994] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 151 X 75 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833804.106226554] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833805.007143270] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793833805.044611488] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793833807.664448272] [bt_navigator]: Begin navigating from current location (-0.58, 0.67) to (-1.25, 0.11)
+[controller_server-7] [INFO] [1793833807.686223140] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793833808.736515804] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833809.786525540] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833810.786525437] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833811.836518471] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833812.836501156] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833813.886533973] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833814.886687072] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833815.936647825] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833816.370782514] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 152 X 75 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833816.986757549] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833817.986509316] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833818.786936935] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793833818.825075405] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793833821.290171417] [bt_navigator]: Begin navigating from current location (-1.17, 0.07) to (-0.66, 0.71)
+[controller_server-7] [INFO] [1793833821.311869320] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793833822.362521779] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833823.412521941] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833824.413554476] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833825.462537743] [controller_server]: Passing new path to controller.
+[planner_server-8] [INFO] [1793833826.370821891] [global_costmap.global_costmap]: StaticLayer: Resizing costmap to 152 X 75 at 0.050000 m/pix
+[controller_server-7] [INFO] [1793833826.462504164] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833827.512523407] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833828.562519195] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833829.562529976] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833830.612522184] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833831.612518952] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833831.712940871] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793833831.751169492] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1793833834.385854294] [bt_navigator]: Begin navigating from current location (-0.63, 0.63) to (-1.26, 0.11)
+[controller_server-7] [INFO] [1793833834.408047463] [controller_server]: Received a goal, begin computing control effort.
+[controller_server-7] [INFO] [1793833835.460090566] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833836.460116401] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833837.510454404] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833838.510081273] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833839.560103291] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833840.610093438] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833841.610099153] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833842.660091831] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833843.660088333] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833844.710087480] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833845.710084274] [controller_server]: Passing new path to controller.
+[controller_server-7] [INFO] [1793833845.711426250] [controller_server]: Reached the goal!
+[bt_navigator-10] [INFO] [1793833845.756641347] [bt_navigator]: Goal succeeded

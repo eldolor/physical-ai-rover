@@ -1,0 +1,79 @@
+{
+ "row": "F3a",
+ "title": "Local VLM crashes mid-question (the arrival's)",
+ "reading": "the mission ends found; VE back <= 60 s; the next mission's first frame question answered; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T17:10:51-0600",
+ "measures": {
+  "fault_at": 51672.030445115,
+  "ve_before": [
+   "MainPID=2313962",
+   "NRestarts=5"
+  ],
+  "start_at": 51561.201315241,
+  "killed_pid": 2314064,
+  "absent_before": 0,
+  "ve_back_s": 41.3,
+  "handed_on": 53,
+  "outcome": "exhausted",
+  "status": {
+   "outcome": "exhausted",
+   "end_state": "exhausted",
+   "end_reason": "no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)",
+   "error": null,
+   "arrival_verdicts": [
+    {
+     "tier": "cloud",
+     "confirmed": false,
+     "verdict_s": 0.852,
+     "local_score": null,
+     "cloud_called": true,
+     "n": 1
+    }
+   ],
+   "cancelled_by": null
+  },
+  "next_answer": true,
+  "next_answer_s": 1.2,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 3917,
+   "max_dt_s": 0.0749
+  },
+  "ve_after": [
+   "MainPID=2357702",
+   "NRestarts=6"
+  ],
+  "ve_ready_after": true,
+  "forward_at_fault": false,
+  "question_hit": true,
+  "question_at_fault": {
+   "i": 69,
+   "kind": "arrival",
+   "path": "/identity",
+   "t0": 51671.941576254,
+   "status": 503,
+   "t1": 51672.24364767
+  },
+  "truth_hole_s": 0.031,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "local_questions": {
+   "frame": 307,
+   "arrival": 1,
+   "direction": 0
+  },
+  "mem_available_min_mb": 2024,
+  "oom_kills_window": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "the mission ended exhausted, not found"
+  ]
+ },
+ "ended": "2026-11-04T17:15:50-0600"
+}

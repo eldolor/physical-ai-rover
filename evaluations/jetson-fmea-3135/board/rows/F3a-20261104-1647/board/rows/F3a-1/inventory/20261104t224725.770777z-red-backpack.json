@@ -1,0 +1,144 @@
+{
+ "candidates": [
+  {
+   "belief": 0.512,
+   "carried": false,
+   "disputed": false,
+   "first_step": 445,
+   "hits": 1,
+   "id": 6,
+   "label": "sofa",
+   "last_step": 445,
+   "misses": 2,
+   "points": 1,
+   "reported": false,
+   "room": "living room",
+   "votes": {
+    "sofa": 1
+   },
+   "x_m": 0.287,
+   "y_m": 0.451
+  },
+  {
+   "belief": 0.321,
+   "carried": false,
+   "disputed": false,
+   "first_step": 112,
+   "hits": 1,
+   "id": 4,
+   "label": "refrigerator",
+   "last_step": 112,
+   "misses": 4,
+   "points": 1,
+   "reported": false,
+   "room": "kitchen",
+   "votes": {
+    "refrigerator": 1
+   },
+   "x_m": 7.807,
+   "y_m": 0.549
+  }
+ ],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 483,
+  "landmarks": 6,
+  "no_pose": 0,
+  "observations": 242,
+  "reported": 4,
+  "unplaced": 1
+ },
+ "frame_id": null,
+ "map_id": "slam-faa1042a",
+ "mission": "Find the red backpack.",
+ "mission_id": "20261104T224725.770777Z-red backpack",
+ "outcome": "exhausted",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 196,
+   "hits": 8,
+   "id": 5,
+   "label": "bed",
+   "last_step": 383,
+   "misses": 0,
+   "points": 35,
+   "reported": true,
+   "room": "hallway",
+   "votes": {
+    "bed": 8
+   },
+   "x_m": 0.911,
+   "y_m": 3.173
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 29,
+   "hits": 26,
+   "id": 2,
+   "label": "red backpack",
+   "last_step": 302,
+   "misses": 0,
+   "points": 91,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "red backpack": 26
+   },
+   "x_m": 6.976,
+   "y_m": 1.596
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 31,
+   "hits": 22,
+   "id": 3,
+   "label": "refrigerator",
+   "last_step": 326,
+   "misses": 0,
+   "points": 67,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "refrigerator": 22
+   },
+   "x_m": 7.226,
+   "y_m": 0.815
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 7,
+   "hits": 19,
+   "id": 1,
+   "label": "sofa",
+   "last_step": 480,
+   "misses": 0,
+   "points": 46,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "sofa": 19
+   },
+   "x_m": 0.84,
+   "y_m": 0.844
+  }
+ ]
+}
