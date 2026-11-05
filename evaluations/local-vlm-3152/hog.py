@@ -117,7 +117,7 @@ def main(out: str, margin_mb: int, give_up_s: float, hold_max_s: float, parent: 
             if now > kills:
                 line = last_oom_line()
                 rec.setdefault("kills_seen", []).append(line[-300:])
-                if VE_MEMCG not in line:
+                if line and VE_MEMCG not in line:
                     rec["wrong_victim"] = line[-300:]
                     return 3
                 rec["first_kill_t"] = round(time.time(), 3)
@@ -139,34 +139,61 @@ def main(out: str, margin_mb: int, give_up_s: float, hold_max_s: float, parent: 
         write()
         ready_since, kills = None, oom_kills()
         rec["topups"] = []
-        while not stop["now"] and not orphaned() and time.time() - rec["holding_t"] < hold_max_s:
+
+        def live() -> bool:
+            return (not stop["now"] and not orphaned()
+                    and time.time() - rec["holding_t"] < hold_max_s)
+
+        def not_ve(line: str) -> bool:
+            # An unread dmesg (empty) is not a wrong victim (review 6).
+            return bool(line) and VE_MEMCG not in line
+
+        def grow_until_kill(before: int) -> str:
+            """Top-up growth: until a kill, VE gone without one, the end, or
+            no memory to allocate. Checks VE every 20 chunks."""
+            n = 0
+            while live() and oom_kills() == before:
+                try:
+                    held.append(chunk())
+                except MemoryError:
+                    return "memory_error"
+                n += 1
+                if n % 20 == 0 and not ve_ready() and oom_kills() == before:
+                    return "ve_gone"     # VE left without an OOM kill: grow no further
+                time.sleep(0.05)
+            return "killed" if oom_kills() > before else "ended"
+
+        while live():
             now_kills = oom_kills()
             if now_kills > kills:
                 kills, ready_since = now_kills, None
                 line = last_oom_line()
-                if VE_MEMCG not in line:
-                    rec["wrong_victim_holding"] = line[-300:]   # scored by the harness
+                if not_ve(line):
+                    # Review 6: anything but VE killed while holding: let go at once.
+                    rec["wrong_victim_holding"] = line[-300:]
+                    return 3
             if ve_ready():
                 ready_since = ready_since or time.time()
             else:
                 ready_since = None
-            if ready_since and time.time() - ready_since >= TOPUP_AFTER_S:
-                # VE's reload fit: grow until its next kill, then the margin.
-                t, before = time.time(), len(held)
-                while (not stop["now"] and not orphaned() and oom_kills() == kills
-                       and time.time() - t < give_up_s):
-                    held.append(chunk())
-                    time.sleep(0.05)
-                got = oom_kills() > kills
-                if got:
+            if ready_since and time.time() - ready_since >= TOPUP_AFTER_S and oom_kills() == kills:
+                t, before_mb = time.time(), len(held)
+                how = grow_until_kill(kills)
+                entry = {"t": round(t, 3), "how": how}
+                if how == "killed":
                     kills = oom_kills()
                     line = last_oom_line()
-                    if VE_MEMCG not in line:
+                    if not_ve(line):
                         rec["wrong_victim_holding"] = line[-300:]
+                        rec["topups"].append(entry)
+                        return 3
                     for _ in range(margin_mb * 2**20 // CHUNK):
+                        if not live():
+                            break
                         held.append(chunk())
-                rec["topups"].append({"t": round(t, 3), "added_mb": (len(held) - before) * CHUNK // 2**20,
-                                      "killed": got, "held_mb": len(held) * CHUNK // 2**20})
+                entry.update(added_mb=(len(held) - before_mb) * CHUNK // 2**20,
+                             held_mb=len(held) * CHUNK // 2**20)
+                rec["topups"].append(entry)
                 write()
                 ready_since = None
             time.sleep(0.5)
