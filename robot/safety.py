@@ -804,8 +804,9 @@ class SafetyController:
 
         `_rows` is `pivot_scale()`'s `_PivotRows` of this same scan (3.141):
         the returns, aged and filtered once for the whole search. Rows built
-        from another scan object are not used: this scan's are built (rows
-        are never valid for a scan changed in place after them).
+        from another scan object are not used: this scan's are built. Rows
+        live for one `pivot_scale()` call only (a new call builds new rows,
+        so a scan changed in place between calls is read afresh).
         """
         if omega_rad_s == 0:
             return None

@@ -103,3 +103,16 @@ def test_a_scan_changed_in_place_gets_new_points():
     scan["ranges_m"][180] = 0.2                # the same dict and list, a new return ahead
     near = s.footprint_clearance(+1, scan)
     assert near != far and near[1] == "scan_footprint" and near[0] < far[0]
+
+
+def test_a_scan_changed_in_place_reaches_the_turn_guard():
+    """The turn guard's rows are built per call: a return put beside the
+    chassis in the same dict and list between calls refuses the turn."""
+    ranges = [3.0] * 360
+    scan = scan_of(ranges)
+    s = SafetyController(Body(ranges, 0.0))
+    assert s.pivot_scale(2.0, scan) == (1.0, None)
+    assert s.pivot_blocked(2.0, scan) is None
+    scan["ranges_m"][20] = 0.18                # a return the left turn's corner meets
+    assert s.pivot_blocked(2.0, scan) is not None
+    assert s.pivot_scale(2.0, scan)[0] < 1.0
