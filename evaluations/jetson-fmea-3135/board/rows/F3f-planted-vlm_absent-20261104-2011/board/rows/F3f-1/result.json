@@ -1,0 +1,63 @@
+{
+ "row": "F3f",
+ "title": "Local VLM crashes mid-question (a frame's)",
+ "reading": "the mission is not failed by it over the 120 s after the kill; VE's /health ready again <= 60 s after the kill; the next mission's first frame question answered 200 by VE; 0 contacts",
+ "plant": "vlm_absent",
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T20:11:31-0600",
+ "measures": {
+  "fault_at": 62402.599781817,
+  "ve_before": [
+   "MainPID=3190119",
+   "NRestarts=0"
+  ],
+  "start_at": 62402.374805742,
+  "killed_pid": 3190589,
+  "absent_before": null,
+  "ve_back_s": 41.3,
+  "handed_on": 0,
+  "outcome": "found",
+  "failed_in_watch": false,
+  "next_answer": true,
+  "next_answer_s": 2.3,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 1252,
+   "max_dt_s": 0.0666
+  },
+  "ve_after": [
+   "MainPID=3196289",
+   "NRestarts=1"
+  ],
+  "ve_ready_after": true,
+  "forward_at_fault": false,
+  "question_hit": true,
+  "question_at_fault": {
+   "i": 1,
+   "kind": "frame",
+   "path": "/identity",
+   "t0": 62402.514478213,
+   "status": 503,
+   "t1": 62402.836832467
+  },
+  "truth_hole_s": 0.028,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "local_questions": {
+   "frame": 81,
+   "arrival": 2,
+   "direction": 0
+  },
+  "mem_available_min_mb": 2115,
+  "oom_kills_window": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "0 questions handed to the cloud while VE was gone (bar >= 1)"
+  ]
+ },
+ "ended": "2026-11-04T20:13:21-0600"
+}

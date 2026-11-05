@@ -1,0 +1,42 @@
+{
+ "row": "F3a2",
+ "title": "Local VLM crashes mid-question (the arrival's), a truthful cloud",
+ "reading": "amendment 17: the mission ends found, confirmed by the cloud (an arrival verdict of the cloud's, confirmed); VE back <= 60 s; the next mission's first frame question answered; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T20:53:44-0600",
+ "error": "StackError: the mission ended (exhausted) before a arrival question opened",
+ "measures": {
+  "fault_at": null,
+  "ve_before": [
+   "MainPID=3385553",
+   "NRestarts=0"
+  ],
+  "start_at": 64934.474932097,
+  "ve_after": [
+   "MainPID=3385553",
+   "NRestarts=0"
+  ],
+  "ve_ready_after": true,
+  "truth_hole_s": 0.032,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "local_questions": {
+   "frame": 434,
+   "arrival": 0,
+   "direction": 0
+  },
+  "standin_blind": 0,
+  "mem_available_min_mb": 2197,
+  "oom_kills_window": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": false,
+  "reasons": [
+   "the fault was never injected"
+  ]
+ },
+ "ended": "2026-11-04T21:00:45-0600"
+}

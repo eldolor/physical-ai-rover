@@ -1,0 +1,10 @@
+1793846444.743 WARNING identity vision-picar brain server starting -- git=6c56c142b executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793846499.742 WARNING safety Blocked FORWARD: distance=19.5cm < min=20cm (depth_grid)
+1793846500.607 WARNING tiered local VLM absent at arrival (local VLM not ready: {"detail":"local VLM absent"}); asking the cloud
+1793846501.051 WARNING tiered local VLM absent for staleness (local VLM not ready: {"detail":"local VLM not ready"}); asking the cloud
+1793846501.063 WARNING tiered local VLM absent at arrival (local VLM not ready: {"detail":"local VLM not ready"}); asking the cloud
+1793846501.141 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793846501.601 WARNING tiered cloud call failed (not fatal under an explore search): ConnectError: [Errno 111] Connection refused
+1793846501.617 WARNING tiered local VLM absent at arrival (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793846542.134 WARNING safety Blocked FORWARD: distance=19.5cm < min=20cm (depth_grid)
+1793846544.180 WARNING tiered local VLM absent at arrival (local VLM unreachable: [Errno 9] Bad file descriptor); asking the cloud

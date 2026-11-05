@@ -1,0 +1,364 @@
+{
+ "sha": "6c56c142b542b9dc9e409fd5587cc0fd3870f8b5",
+ "cmd_exit": 0,
+ "cmd_s": 702.7,
+ "verdict": {
+  "row": "F3r",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "met",
+  "runs_wanted": 5,
+  "runs_scored": 5,
+  "runs_total": 5,
+  "runs_failed": 0,
+  "not_scored": [],
+  "reasons": []
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 63650.908668502,
+    "ve_before": [
+     "MainPID=3251738",
+     "NRestarts=0"
+    ],
+    "start_at": 63553.881573163,
+    "killed_pid": 3251850,
+    "absent_before": 0,
+    "ve_back_s": 57.0,
+    "handed_on": 3,
+    "outcome": "arrived_unconfirmed",
+    "next_answer": true,
+    "next_answer_s": 2.3,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 1404,
+     "max_dt_s": 0.0754
+    },
+    "ve_after": [
+     "MainPID=3272111",
+     "NRestarts=1"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": false,
+    "question_hit": true,
+    "question_at_fault": {
+     "i": 99,
+     "kind": "arrival",
+     "path": "/identity",
+     "t0": 63650.851836524,
+     "status": 503,
+     "t1": 63651.180893862
+    },
+    "truth_hole_s": 0.027,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 99,
+     "arrival": 4,
+     "direction": 0
+    },
+    "mem_available_min_mb": 2052,
+    "oom_kills_window": 0
+   },
+   "status": {
+    "outcome": "arrived_unconfirmed",
+    "end_state": null,
+    "end_reason": "arrived (lidar 0.391 m, streak 4) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ConnectError: [Errno 111] Connection refused",
+    "error": null,
+    "arrival_verdicts": [],
+    "cancelled_by": null
+   }
+  },
+  {
+   "i": 2,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 63771.954800541,
+    "ve_before": [
+     "MainPID=3272111",
+     "NRestarts=0"
+    ],
+    "start_at": 63727.431691355,
+    "killed_pid": 3272194,
+    "absent_before": 0,
+    "ve_back_s": 41.2,
+    "handed_on": 3,
+    "outcome": "arrived_unconfirmed",
+    "next_answer": true,
+    "next_answer_s": 1.3,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 637,
+     "max_dt_s": 0.0734
+    },
+    "ve_after": [
+     "MainPID=3282761",
+     "NRestarts=1"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": false,
+    "question_hit": true,
+    "question_at_fault": {
+     "i": 33,
+     "kind": "arrival",
+     "path": "/identity",
+     "t0": 63771.888986623,
+     "status": 503,
+     "t1": 63772.246974642
+    },
+    "truth_hole_s": 0.026,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 34,
+     "arrival": 3,
+     "direction": 0
+    },
+    "mem_available_min_mb": 2191,
+    "oom_kills_window": 0
+   },
+   "status": {
+    "outcome": "arrived_unconfirmed",
+    "end_state": null,
+    "end_reason": "arrived (lidar 0.371 m, streak 4) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ConnectError: [Errno 111] Connection refused",
+    "error": null,
+    "arrival_verdicts": [],
+    "cancelled_by": null
+   }
+  },
+  {
+   "i": 3,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 63878.416115156,
+    "ve_before": [
+     "MainPID=3282761",
+     "NRestarts=0"
+    ],
+    "start_at": 63830.019363686,
+    "killed_pid": 3282844,
+    "absent_before": 0,
+    "ve_back_s": 40.8,
+    "handed_on": 3,
+    "outcome": "arrived_unconfirmed",
+    "next_answer": true,
+    "next_answer_s": 1.3,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 683,
+     "max_dt_s": 0.0725
+    },
+    "ve_after": [
+     "MainPID=3292475",
+     "NRestarts=1"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": false,
+    "question_hit": true,
+    "question_at_fault": {
+     "i": 36,
+     "kind": "arrival",
+     "path": "/identity",
+     "t0": 63878.374909964,
+     "status": 503,
+     "t1": 63878.728642646
+    },
+    "truth_hole_s": 0.027,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 36,
+     "arrival": 4,
+     "direction": 0
+    },
+    "mem_available_min_mb": 2173,
+    "oom_kills_window": 0
+   },
+   "status": {
+    "outcome": "arrived_unconfirmed",
+    "end_state": null,
+    "end_reason": "arrived (lidar 0.386 m, streak 4) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ConnectError: [Errno 111] Connection refused",
+    "error": null,
+    "arrival_verdicts": [],
+    "cancelled_by": null
+   }
+  },
+  {
+   "i": 4,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 64088.388534699,
+    "ve_before": [
+     "MainPID=3292475",
+     "NRestarts=0"
+    ],
+    "start_at": 63936.246925241,
+    "killed_pid": 3292640,
+    "absent_before": 0,
+    "ve_back_s": 41.3,
+    "handed_on": 3,
+    "outcome": "arrived_unconfirmed",
+    "next_answer": true,
+    "next_answer_s": 1.3,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 2018,
+     "max_dt_s": 0.0736
+    },
+    "ve_after": [
+     "MainPID=3313241",
+     "NRestarts=1"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": false,
+    "question_hit": true,
+    "question_at_fault": {
+     "i": 117,
+     "kind": "arrival",
+     "path": "/identity",
+     "t0": 64088.330507023,
+     "status": 503,
+     "t1": 64088.675928075
+    },
+    "truth_hole_s": 0.027,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 117,
+     "arrival": 4,
+     "direction": 0
+    },
+    "mem_available_min_mb": 2241,
+    "oom_kills_window": 0
+   },
+   "status": {
+    "outcome": "arrived_unconfirmed",
+    "end_state": null,
+    "end_reason": "arrived (lidar 0.359 m, streak 4) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ConnectError: [Errno 111] Connection refused",
+    "error": null,
+    "arrival_verdicts": [],
+    "cancelled_by": null
+   }
+  },
+  {
+   "i": 5,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 64195.380599013,
+    "ve_before": [
+     "MainPID=3313241",
+     "NRestarts=0"
+    ],
+    "start_at": 64147.980831815,
+    "killed_pid": 3313326,
+    "absent_before": 0,
+    "ve_back_s": 41.3,
+    "handed_on": 4,
+    "outcome": "arrived_unconfirmed",
+    "next_answer": true,
+    "next_answer_s": 2.3,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 667,
+     "max_dt_s": 0.0686
+    },
+    "ve_after": [
+     "MainPID=3323091",
+     "NRestarts=1"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": false,
+    "question_hit": true,
+    "question_at_fault": {
+     "i": 34,
+     "kind": "arrival",
+     "path": "/identity",
+     "t0": 64195.296618717,
+     "status": 503,
+     "t1": 64195.71997414
+    },
+    "truth_hole_s": 0.027,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 35,
+     "arrival": 4,
+     "direction": 0
+    },
+    "mem_available_min_mb": 2245,
+    "oom_kills_window": 0
+   },
+   "status": {
+    "outcome": "arrived_unconfirmed",
+    "end_state": null,
+    "end_reason": "arrived (lidar 0.379 m, streak 4) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ConnectError: [Errno 111] Connection refused",
+    "error": null,
+    "arrival_verdicts": [],
+    "cancelled_by": null
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 622,
+  "temps": 622,
+  "clocks": 622,
+  "max_temp_c": 55.812,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2052,
+  "cpu_below_max_samples": 389,
+  "gpu_below_max_samples": 441
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "harness_leftovers": {
+  "before": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  },
+  "after": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  }
+ }
+}

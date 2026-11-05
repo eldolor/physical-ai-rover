@@ -210,6 +210,9 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-04 | `1330ea8f` | F17g a person's Stop, a nav2 goal, VE resident | 5/5 | met | wheels zero 0.016-0.037 s after the `/stop` (0.2); `cancelled`/`stop` 5/5; 0 paid calls after it | 0 | 0 | 2,136 | 0 | 52.8 °C | -- | yes |
 | 2026-11-04 | `1330ea8f` | F17q a person's Stop, a frame question open | 5/5 | met | wheels zero 0.000-0.020 s (0.2); `cancelled`/`stop` 5/5; 0 paid calls after it | 0 | 0 | 2,143 | 0 | 52.3 °C | -- | yes |
 | 2026-11-04 | `1330ea8f` | F17a a person's Stop, the arrival's question open | 5/5 | met | wheels zero 0.001-0.007 s (0.2); `cancelled`/`stop` 5/5; 0 paid calls after it | 0 | 0 | 2,079 | 0 | 57.0 °C | -- | yes |
+| 2026-11-04 | `6c56c142` | F3f VE killed, a frame question open (re-run, amendment 16) | 5/5 | met | handed on 33-44 (>= 1); VE back 41.3 s (60); not failed 5/5; the next mission's first question answered by VE; planted check caught (0 handed on) | 0 | -- | 2,095 | 0 | 56.4 °C | -- | yes |
+| 2026-11-04 | `6c56c142` | F3r VE killed at the arrival, the cloud refused (re-run, amendment 16) | 5/5 | met | `arrived_unconfirmed` 5/5; handed on 3-4; VE back 40.8-41.3 s, **57.0 s in run 1** (60); next answered 5/5 | 0 | -- | 2,052 | 0 | 55.8 °C | -- | yes |
+| 2026-11-04 | `6c56c142` | F3a2 VE killed at the arrival, a truthful stand-in (amendment 17) | 5/7 | met | `found` 5/5, the deciding verdict the cloud's yes (0.45-0.85 s); handed on 1; VE back 40.8-41.3 s; 2 runs ended `exhausted` before an arrival question (not injected, replaced); planted check caught (0 handed on, `exhausted`) | 0 | -- | 2,125 | 0 | 59.7 °C | -- | yes |
 
 ## Runs
 
@@ -397,6 +400,33 @@ cm, FAILED, 3.135.B's record). Wheels zero 2.0 s after the fault by the
 watchdog (no FORWARD starts on a stale scan); 0 contacts, 0 late ticks, 0 OOM,
 `MemAvailable` minimum 2,360 MB, max 50.1 °C; recovery 3.1 s; left as found.
 Records: `evaluations/jetson-fmea-3135/board/rows/F9-3144B-20261104-0710/`.
+
+### 2026-11-04, single faults (3.135.B): F3f, F3r and F3a2 after amendments 16-17
+
+On the board 20:11-21:10, one hold per row, at `6c56c142`. The rest as the
+VE rows' entry below. Before each run the harness flushed VE's start-rate
+counter (amendment 16), and all 17 runs started.
+
+* **F3f met 5/5.**
+  * 33-44 questions were handed to the cloud while VE was gone, and VE was
+    back in 41.3 s.
+  * No mission failed in the 120 s watch, and the next mission's first
+    question was answered by VE.
+  * The planted check was caught (0 handed on) and is valid now.
+* **F3r met 5/5.**
+  * Every mission ended `arrived_unconfirmed`, with 3-4 questions handed on.
+  * VE was back in 40.8-41.3 s, but in **57.0 s** in run 1, 3 s inside
+    the 60 s bar.
+* **F3a2 met, 5 scored of 7 runs** (amendment 17, the truthful stand-in).
+  * Every scored mission ended `found`, confirmed by the cloud's yes in
+    0.45-0.85 s, after VE's arrival question was lost.
+  * 2 runs ended `exhausted` before an arrival question opened (no fault)
+    and were replaced.
+  * The planted check was caught: the arrival was decided by a local "no",
+    0 questions were handed on, and the mission ended `exhausted`.
+  * F3a's own FAILED record stands beside it.
+* Every run: 0 contacts. The board was left as found, with no harness
+  leftovers.
 
 ### 2026-11-04, single faults (3.135.B): the VE rows F2, F3, F17
 

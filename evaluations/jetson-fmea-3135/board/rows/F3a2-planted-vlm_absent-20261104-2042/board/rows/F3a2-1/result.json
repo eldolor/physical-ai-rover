@@ -1,0 +1,82 @@
+{
+ "row": "F3a2",
+ "title": "Local VLM crashes mid-question (the arrival's), a truthful cloud",
+ "reading": "amendment 17: the mission ends found, confirmed by the cloud (an arrival verdict of the cloud's, confirmed); VE back <= 60 s; the next mission's first frame question answered; 0 contacts",
+ "plant": "vlm_absent",
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T20:42:43-0600",
+ "measures": {
+  "fault_at": 64357.882268101,
+  "ve_before": [
+   "MainPID=3323091",
+   "NRestarts=0"
+  ],
+  "start_at": 64274.422486395,
+  "killed_pid": 3323178,
+  "absent_before": 0,
+  "ve_back_s": 41.3,
+  "handed_on": 0,
+  "outcome": "exhausted",
+  "status": {
+   "outcome": "exhausted",
+   "end_state": "exhausted",
+   "end_reason": "no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)",
+   "error": null,
+   "arrival_verdicts": [
+    {
+     "tier": "local",
+     "confirmed": false,
+     "verdict_s": 1.874,
+     "local_score": 0.0,
+     "cloud_called": false,
+     "n": 1
+    }
+   ],
+   "cancelled_by": null
+  },
+  "next_answer": true,
+  "next_answer_s": 1.2,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 4000,
+   "max_dt_s": 0.0761
+  },
+  "ve_after": [
+   "MainPID=3338420",
+   "NRestarts=1"
+  ],
+  "ve_ready_after": true,
+  "forward_at_fault": false,
+  "question_hit": true,
+  "question_at_fault": {
+   "i": 75,
+   "kind": "arrival",
+   "path": "/identity",
+   "t0": 64357.816813817,
+   "status": 503,
+   "t1": 64358.117879504
+  },
+  "truth_hole_s": 0.028,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "local_questions": {
+   "frame": 324,
+   "arrival": 1,
+   "direction": 0
+  },
+  "standin_blind": 0,
+  "mem_available_min_mb": 2127,
+  "oom_kills_window": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "0 questions handed to the cloud while VE was gone (bar >= 1)",
+   "the mission ended exhausted, not found",
+   "the deciding arrival verdict was not the cloud's yes ({'tier': 'local', 'confirmed': False, 'verdict_s': 1.874, 'local_score': 0.0, 'cloud_called': False, 'n': 1})"
+  ]
+ },
+ "ended": "2026-11-04T20:47:41-0600"
+}

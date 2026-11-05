@@ -1,0 +1,110 @@
+{
+ "sha": "6c56c142b542b9dc9e409fd5587cc0fd3870f8b5",
+ "cmd_exit": 0,
+ "cmd_s": 111.0,
+ "verdict": {
+  "row": "F3f",
+  "plant": "vlm_absent",
+  "house": "scaled_house",
+  "state": "FAILED",
+  "runs_wanted": 1,
+  "runs_scored": 1,
+  "runs_total": 1,
+  "runs_failed": 1,
+  "not_scored": [],
+  "reasons": [
+   "0 questions handed to the cloud while VE was gone (bar >= 1)"
+  ]
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "0 questions handed to the cloud while VE was gone (bar >= 1)"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 62402.599781817,
+    "ve_before": [
+     "MainPID=3190119",
+     "NRestarts=0"
+    ],
+    "start_at": 62402.374805742,
+    "killed_pid": 3190589,
+    "absent_before": null,
+    "ve_back_s": 41.3,
+    "handed_on": 0,
+    "outcome": "found",
+    "failed_in_watch": false,
+    "next_answer": true,
+    "next_answer_s": 2.3,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 1252,
+     "max_dt_s": 0.0666
+    },
+    "ve_after": [
+     "MainPID=3196289",
+     "NRestarts=1"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": false,
+    "question_hit": true,
+    "question_at_fault": {
+     "i": 1,
+     "kind": "frame",
+     "path": "/identity",
+     "t0": 62402.514478213,
+     "status": 503,
+     "t1": 62402.836832467
+    },
+    "truth_hole_s": 0.028,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 81,
+     "arrival": 2,
+     "direction": 0
+    },
+    "mem_available_min_mb": 2115,
+    "oom_kills_window": 0
+   },
+   "status": null
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 98,
+  "temps": 98,
+  "clocks": 98,
+  "max_temp_c": 54.406,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2114,
+  "cpu_below_max_samples": 59,
+  "gpu_below_max_samples": 74
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "harness_leftovers": {
+  "before": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  },
+  "after": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  }
+ }
+}

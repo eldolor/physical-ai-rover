@@ -1,0 +1,5 @@
+1793847102.792 WARNING identity vision-picar brain server starting -- git=6c56c142b executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793847179.502 WARNING safety Blocked FORWARD: distance=7.5cm < min=20cm (depth_grid)
+1793847180.691 WARNING tiered local VLM absent at arrival (local VLM not ready: {"detail":"local VLM absent"}); asking the cloud
+1793847221.999 WARNING safety Blocked FORWARD: distance=7.5cm < min=20cm (depth_grid)
+1793847222.882 WARNING tiered local VLM absent at arrival (local VLM unreachable: [Errno 9] Bad file descriptor); asking the cloud

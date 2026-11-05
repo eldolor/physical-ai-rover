@@ -1,0 +1,14 @@
+{
+ "row": "F3f",
+ "plant": "vlm_absent",
+ "house": "scaled_house",
+ "state": "FAILED",
+ "runs_wanted": 1,
+ "runs_scored": 1,
+ "runs_total": 1,
+ "runs_failed": 1,
+ "not_scored": [],
+ "reasons": [
+  "0 questions handed to the cloud while VE was gone (bar >= 1)"
+ ]
+}

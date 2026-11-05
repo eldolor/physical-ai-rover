@@ -1,0 +1,68 @@
+{
+ "row": "F3r",
+ "title": "Local VLM crashes at the arrival, the cloud refused",
+ "reading": "the mission ends arrived_unconfirmed; VE back <= 60 s; the next mission's first frame question answered; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T20:30:43-0600",
+ "measures": {
+  "fault_at": 63650.908668502,
+  "ve_before": [
+   "MainPID=3251738",
+   "NRestarts=0"
+  ],
+  "start_at": 63553.881573163,
+  "killed_pid": 3251850,
+  "absent_before": 0,
+  "ve_back_s": 57.0,
+  "handed_on": 3,
+  "outcome": "arrived_unconfirmed",
+  "status": {
+   "outcome": "arrived_unconfirmed",
+   "end_state": null,
+   "end_reason": "arrived (lidar 0.391 m, streak 4) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ConnectError: [Errno 111] Connection refused",
+   "error": null,
+   "arrival_verdicts": [],
+   "cancelled_by": null
+  },
+  "next_answer": true,
+  "next_answer_s": 2.3,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 1404,
+   "max_dt_s": 0.0754
+  },
+  "ve_after": [
+   "MainPID=3272111",
+   "NRestarts=1"
+  ],
+  "ve_ready_after": true,
+  "forward_at_fault": false,
+  "question_hit": true,
+  "question_at_fault": {
+   "i": 99,
+   "kind": "arrival",
+   "path": "/identity",
+   "t0": 63650.851836524,
+   "status": 503,
+   "t1": 63651.180893862
+  },
+  "truth_hole_s": 0.027,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "local_questions": {
+   "frame": 99,
+   "arrival": 4,
+   "direction": 0
+  },
+  "mem_available_min_mb": 2052,
+  "oom_kills_window": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-04T20:33:36-0600"
+}

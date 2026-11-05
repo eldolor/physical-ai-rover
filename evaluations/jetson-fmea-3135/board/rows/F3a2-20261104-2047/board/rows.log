@@ -1,0 +1,8 @@
+{"i": 1, "verdict": {"pass": true, "valid": true, "reasons": []}, "error": null}
+{"i": 2, "verdict": {"pass": true, "valid": true, "reasons": []}, "error": null}
+{"i": 3, "verdict": {"pass": true, "valid": true, "reasons": []}, "error": null}
+{"i": 4, "verdict": {"pass": false, "valid": false, "reasons": ["the fault was never injected"]}, "error": "StackError: the mission ended (exhausted) before a arrival question opened"}
+{"i": 5, "verdict": {"pass": true, "valid": true, "reasons": []}, "error": null}
+{"i": 6, "verdict": {"pass": false, "valid": false, "reasons": ["the fault was never injected"]}, "error": "StackError: the mission ended (exhausted) before a arrival question opened"}
+{"i": 7, "verdict": {"pass": true, "valid": true, "reasons": []}, "error": null}
+{"row": "F3a2", "plant": null, "house": "scaled_house", "state": "met", "runs_wanted": 5, "runs_scored": 5, "runs_total": 7, "runs_failed": 0, "not_scored": [{"i": 4, "error": "StackError: the mission ended (exhausted) before a arrival question opened", "reasons": ["the fault was never injected"]}, {"i": 6, "error": "StackError: the mission ended (exhausted) before a arrival question opened", "reasons": ["the fault was never injected"]}], "reasons": []}
