@@ -16,6 +16,7 @@ import json
 import sys
 from pathlib import Path
 
+@__import__("functools").lru_cache(maxsize=1)
 def _harness_percentile():
     # 3.136's scorer by path (a module named `scorers` elsewhere never shadows
     # it): one percentile rule, nearest rank.
@@ -29,7 +30,8 @@ def _harness_percentile():
     return mod.percentile
 
 
-pct = _harness_percentile()
+def pct(v, q):
+    return _harness_percentile()(v, q)
 
 P90_BAR_MS, MAX_BAR_MS = 3.0, 15.0
 

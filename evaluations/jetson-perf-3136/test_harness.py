@@ -715,7 +715,8 @@ def test_by_id_needs_one_success():
 # ---- amendment 6 (3.136.B, the user): a goal the brain cancelled that nav2 ends ABORTED ----
 
 def _cancels(*rows):
-    return [{"t": 1.0, "mission": 1, "cancels": [list(r) for r in rows]}]
+    """Cancels as the probe writes them; a row's `taken` defaults to True."""
+    return [{"t": 1.0, "mission": 1, "cancels": [list(r) + [True] * (4 - len(r)) for r in rows]}]
 
 
 def _cancelled_abort(cancel_t):
@@ -731,8 +732,8 @@ def test_amendment_6_a_cancelled_abort_counts_as_cancelled():
     assert runner.amended_nav_item(got) == {"ok": 1, "n": 1}
 
 
-@pytest.mark.parametrize("cancel_t", [None, 15.2, 10.0])
-def test_amendment_6_planted_a_real_abort_a_late_cancel_or_one_before_nav2_had_it_still_invalidates(
+@pytest.mark.parametrize("cancel_t", [None, 15.2, 10.0, 12.9])
+def test_amendment_6_planted_a_real_abort_a_late_cancel_one_before_nav2_had_it_or_long_before_still_invalidates(
         cancel_t):
     got = _cancelled_abort(cancel_t)
     assert got["aborted_cancelled"] == 0 and got["aborted_other"] == 1
@@ -754,4 +755,11 @@ def test_amendment_6_a_cancel_after_nav2_ended_the_goal_but_before_the_row_arriv
             _nav(20.3, (B[:12], 4))]
     got = scorers.nav_goals_amended(pace, _sent((A, "approach"), (B, "view")), 0, 100,
                                     cancel_rows=_cancels((1, A, 14.0)))
+    assert got["aborted_other"] == 1 and got["aborted_cancelled"] == 0
+
+
+def test_amendment_6_a_cancel_the_bridge_did_not_take_excuses_nothing():
+    pace = [_nav(10.2, (A[:12], 2)), _nav(15.0, (A[:12], 6)), _nav(20.3, (B[:12], 2)), _nav(25.0, (B[:12], 4))]
+    got = scorers.nav_goals_amended(pace, _sent((A, "approach"), (B, "view")), 0, 100,
+                                    cancel_rows=_cancels((1, A, 14.9, False)))
     assert got["aborted_other"] == 1 and got["aborted_cancelled"] == 0

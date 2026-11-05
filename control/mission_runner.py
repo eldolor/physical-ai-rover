@@ -335,11 +335,12 @@ class _GatedNavigator:
         self._lock = threading.Lock()
         # 3.136.B amendment 6: every cancel this gate sent, as [n, the goal id
         # of the mission's last accepted goal (None if unknown), the wall time
-        # just BEFORE it went out] -- recorded once the call returned (one that
-        # raised is not counted: whether it reached the bridge is unknown, so
-        # an abort after it reads as nav2's, the side that invalidates). The
-        # harness judges from nav2's own status whether that goal was still
-        # live then. Nothing here delays the cancel: no read goes first.
+        # just BEFORE it went out, whether the bridge answered `cancelled`] --
+        # recorded once the call returned (one that raised is not counted:
+        # whether it reached the bridge is unknown, so an abort after it reads
+        # as nav2's, the side that invalidates). The harness judges from
+        # nav2's own status whether that goal was still live then. Nothing
+        # here delays the cancel: no read goes first.
         self._own_id: Optional[str] = None
         self.cancels = collections.deque(maxlen=CANCELS_KEPT)
         self._cancels_n = 0
@@ -402,8 +403,9 @@ class _GatedNavigator:
         try:
             gid, t = self._own_id, round(time.time(), 6)
             reply = self._nav.cancel_goal()
+            taken = isinstance(reply, dict) and reply.get("cancelled") is True
             with self._cancel_lock:
-                self.cancels.append((self._cancels_n + 1, gid, t))
+                self.cancels.append((self._cancels_n + 1, gid, t, taken))
                 self._cancels_n += 1
             return reply
         finally:
@@ -411,9 +413,14 @@ class _GatedNavigator:
                 self._cancels_in_flight -= 1
 
     def cancels_snapshot(self) -> dict:
+        """The record, the cancels still on their way, and whether the
+        mission's end has finished its own goal's cancel (`end()`)."""
         with self._cancel_lock:
-            return {"cancels": [list(x) for x in self.cancels],
-                    "cancels_in_flight": self._cancels_in_flight}
+            out = {"cancels": [list(x) for x in self.cancels],
+                   "cancels_in_flight": self._cancels_in_flight}
+        with self._lock:
+            out["goal_end_done"] = self._ending
+        return out
 
     @property
     def sent_goal(self) -> bool:
@@ -425,10 +432,6 @@ class _GatedNavigator:
         own = self._own
         if own is None:
             return
-        # Amendment 6: in flight from here, its goal read included, so the
-        # probe never reads 0 between the end and the cancel (review).
-        with self._cancel_lock:
-            self._cancels_in_flight += 1
         try:
             goal = (self._nav.get_goal() or {}).get("goal") or {}
             if (goal.get("state") in ("pending", "active")
@@ -437,9 +440,6 @@ class _GatedNavigator:
                 self._sent_cancel()
         except Exception as e:  # noqa: BLE001 -- nothing on the way out may raise (3.55)
             logger.warning("could not end the mission's nav2 goal: %s", e)
-        finally:
-            with self._cancel_lock:
-                self._cancels_in_flight -= 1
 
     def end(self) -> None:
         """The mission ended: its own goal cancelled, then the client closed
@@ -1624,7 +1624,7 @@ class MissionRunner:
                              # 3.136.B amendment 6: the cancels the brain sent, by id.
                              **(self._navigator.cancels_snapshot()
                                 if isinstance(self._navigator, _GatedNavigator)
-                                else {"cancels": [], "cancels_in_flight": 0}),
+                                else {"cancels": [], "cancels_in_flight": 0, "goal_end_done": True}),
                              "goals_failed": self.agent.goals_failed,
                              "last_event": self.agent.last_event,
                              "camera_seen_m2": round(len(self.agent.seen)

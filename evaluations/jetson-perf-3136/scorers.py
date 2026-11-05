@@ -179,6 +179,10 @@ def load_json(path: Path) -> dict:
 EXECUTING = 2                       # action_msgs/GoalStatus.STATUS_EXECUTING
 TERMINAL = {4: "succeeded", 5: "canceled", 6: "aborted"}
 LIVE = {1, 2, 3}      # accepted, executing, canceling (action_msgs GoalStatus)
+# Amendment 6: an abort excused by the brain's cancel ends within this of it.
+# Run 2's two (executing -> aborted, no canceling) ended 4 and 30 ms after the
+# cancel reached nav2; a cancel that left the goal running is not its cause.
+CANCEL_TO_END_MAX_S = 2.0
 
 
 def jsonl(path) -> list:
@@ -283,9 +287,10 @@ def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel
     Amendment 6 (3.136.B, the user): a non-frontier ABORTED goal whose id
     the brain recorded a cancel for (`cancel_rows`, the probe's
     `explore_cancels.jsonl` of `status.explore.cancels`, the time just
-    before it went out) at or before the first status row showing it ended,
-    while nav2's own status for THAT id still read live (its last row at or
-    before the cancel shows it accepted, executing or canceling), is
+    before it went out) that the bridge answered `cancelled`, at or before
+    the first status row showing it ended and at most CANCEL_TO_END_MAX_S
+    before it, while nav2's own status for THAT id still read live (its last
+    row at or before the cancel shows it accepted, executing or canceling), is
     `aborted_cancelled` (counted neither way, as a sender's cancel); a
     cancel after the end, one sent when nav2 had not shown the goal or had
     already ended it, one for another id, or none at all leaves it
@@ -298,20 +303,18 @@ def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel
     cancels_by_id = {}
     for r in cancel_rows:
         for e in r.get("cancels") or []:
-            _n, gid, tc = e[:3]
-            if gid:
-                cancels_by_id.setdefault(gid[:GOAL_ID_HEX], []).append(tc)
+            if e[1] and len(e) > 3 and e[3] is True:
+                cancels_by_id.setdefault(e[1][:GOAL_ID_HEX], []).append(e[2])
     nav_rows = sorted((r for r in pace_rows if r.get("k") == "nav"), key=lambda r: r["t"])
+    history = {}            # goal id -> [(t, status)], in time order
+    for r in nav_rows:
+        for g, st in r.get("goals") or []:
+            history.setdefault(g, []).append((r["t"], st))
 
     def live_at(gid, tc):
-        last = None
-        for r in nav_rows:
-            if r["t"] > tc:
-                break
-            for g, st in r.get("goals") or []:
-                if g == gid:
-                    last = st
-        return last in LIVE
+        rows = history.get(gid, [])
+        i = bisect.bisect_right([t for t, _ in rows], tc)
+        return i > 0 and rows[i - 1][1] in LIVE
 
     ended = {}
     for r in nav_rows:
@@ -320,6 +323,9 @@ def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel
                 ended[gid] = (r["t"], TERMINAL[st])
     out = {"n": 0, "succeeded": 0, "canceled": 0, "aborted": 0,
            "aborted_frontier": 0, "aborted_other": 0, "aborted_cancelled": 0, "unmatched": 0,
+           # Cancels the 64-entry status window lost between polls (amendment
+           # 6): reported, never excusing (an abort they caused reads other).
+           "cancels_missing": sum(r.get("missing") or 0 for r in cancel_rows),
            "sends_missing": sum(r.get("missing") or 0 for r in sent_rows)}
     for gid, (t, st) in ended.items():
         if (t0 is not None and t < t0) or (t1 is not None and t > t1):
@@ -329,7 +335,7 @@ def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel
         out[st] += 1
         out["unmatched"] += k is None
         if st == "aborted":
-            excused = any(tc <= t and live_at(gid, tc)
+            excused = any(tc <= t <= tc + CANCEL_TO_END_MAX_S and live_at(gid, tc)
                           for tc in cancels_by_id.get(gid[:GOAL_ID_HEX], []))
             out["aborted_frontier" if k == "frontier"
                 else "aborted_cancelled" if excused
