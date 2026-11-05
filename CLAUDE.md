@@ -137,12 +137,10 @@ paragraph.**
 
 **Waiting on the user**
 
-* **Deploys:** the twin is live from `dev` `ffcef51e` (2026-11-03); 3.132
-  Stage 5 waits on the user's go.
+* **Deploys:** the twin is live from `dev` `5e88b9de` (2026-11-05, with
+  3.152's local-VLM readout); 3.132 Stage 5 waits on the user's go.
 * **The board's brain is behind `dev`** (3.88, 3.130, 3.131): update it
   only when asked (`tools/jetson/README.md`'s update step).
-* **3.91.C criterion 9:** the user's live Drive-via-brain walk on the
-  deployed twin.
 * **3.48, 3.58:** close the llama.cpp local-identity line, or load the
   model only at arrival.
 * **3.56:** re-check the 8 s arrival deadline after 500+ real calls.
