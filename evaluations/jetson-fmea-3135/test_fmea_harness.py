@@ -551,7 +551,7 @@ def test_f14_judge():
 def test_f24_bars_steps_and_plant():
     good = {"fault_at": 1.0, "forward_at_fault": True, "goal_at_fault": True, "contacts": 0, "gap_unknown": 0,
             "truth_hole_s": 0.03, "reserve_at": 30.0, "poweroff_at": 75.0, "moved_after_reserve_cm": 0.4,
-            "running_at_reserve": True,
+            "running_at_reserve": True, "brain_floor_v": None,
             "shutdown": [{"step": s, "rc": 0 if s != "poweroff" else None} for s in vlm_rows.F24_STEPS],
             "down_at_poweroff": {"mission": False, "ros": False, "vlm": False}}
     assert vlm_rows.judge("F24", good) == {"pass": True, "valid": True, "reasons": []}
@@ -566,6 +566,7 @@ def test_f24_bars_steps_and_plant():
         assert not v["pass"] and any(why in r for r in v["reasons"]), (change, v)
     assert vlm_rows.judge("F24", {**good, "poweroff_at": None})["valid"] is False
     assert vlm_rows.judge("F24", {**good, "running_at_reserve": False})["valid"] is False
+    assert vlm_rows.judge("F24", {**good, "brain_floor_v": 10.5})["valid"] is False   # the floor on
     env = vlm_rows.f24_env("http://127.0.0.1:10351")
     assert [n for n, _ in json.loads(env["BATTERY_SHUTDOWN_CMDS"])] == ["brain", "ros", "vlm"]
     assert env["BATTERY_POWEROFF_CMD"] == ""                                 # 3.137's logged stub
@@ -614,16 +615,18 @@ def test_amendment_19_f24s_brain_floor_off_and_ves_settings_without_runtime(tmp_
     assert cfg["brain"]["battery_floor_v"] == 0
     sys.path.insert(0, str(HERE.parents[1]))
     from control.brain_config import load_brain_config
-    assert load_brain_config(str(tmp_path / "robot-floor-off.yaml"))["battery_floor_v"] == 0
+    assert load_brain_config(str(next(tmp_path.glob("robot-floor-off-*.yaml"))))["battery_floor_v"] == 0
     with pytest.raises(stack.StackError):
         stack.Stack(tmp_path / "s", plant="cloud_class", brain_floor_off=True)
     run = ("{ path=/x/python ; argv[]=/x/python -m service.local_vlm.server ; ignore_errors=no ; "
            "start_time=[Wed 2026-11-04 22:41:39 CST] ; stop_time=[n/a] ; pid=1 ; code=(null) ; status=0/0 }")
-    later = run.replace("22:41:39", "22:44:07").replace("pid=1", "pid=2")
+    later = (run.replace("22:41:39", "22:44:07").replace("pid=1", "pid=2")
+             .replace("stop_time=[n/a]", "stop_time=[Wed 2026-11-04 22:43:00 CST]").replace("code=(null)", "code=exited"))
     for out in (run, later):
         monkeypatch.setattr(vlm_rows, "sh", lambda *a, _o=out, **k: types.SimpleNamespace(
             returncode=0, stdout=f"ExecStart={_o}\nOOMScoreAdjust=1000\n", stderr=""))
         got = vlm_rows.ve_unit_settings()
         if out is run:
             first = got
-    assert got == first and "start_time" not in got["ExecStart"] and "argv[]" in got["ExecStart"]
+    assert got == first and "argv[]" in got["ExecStart"]
+    assert not any(f in got["ExecStart"] for f in ("start_time", "stop_time", "pid=", "code=", "status="))

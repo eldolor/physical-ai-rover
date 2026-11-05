@@ -123,7 +123,8 @@ def ve_unit_settings() -> dict:
     out = sh("systemctl", "show", "-p", ",".join(VE_UNIT_PROPS), VE_UNIT).stdout
     props = dict(line.split("=", 1) for line in out.splitlines() if "=" in line)
     if "ExecStart" in props:            # its runtime fields change with every start, not the setting
-        props["ExecStart"] = re.sub(r" ; (start_time|stop_time|pid|code|status)=[^;}]*", "", props["ExecStart"])
+        props["ExecStart"] = re.sub(r"\s*;\s*(start_time|stop_time|pid|code|status)=[^;}]*?(?=\s*[;}])", "",
+                                    props["ExecStart"])
     return props
 
 
@@ -198,6 +199,9 @@ def judge(row: str, ms: dict) -> dict:
             valid = False
             r.append(f"invalid: the ladder did not reach Reserve and Power-off "
                      f"(reserve {ms.get('reserve_at')}, poweroff {ms.get('poweroff_at')})")
+        if ms.get("brain_floor_v", "unread") is not None:
+            valid = False
+            r.append(f"invalid: the brain's battery floor was {ms.get('brain_floor_v')}, not off (amendment 19)")
         if ms.get("running_at_reserve") is not True:
             valid = False
             r.append("invalid: the mission was not running when Reserve latched")
@@ -435,7 +439,10 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                             ms["reserve_at"] = now - float(b["reserve_s"])
                             # A mission that had already ended moves nothing after Reserve:
                             # no test of the guard (and the plant would slip past it).
-                            ms["running_at_reserve"] = bool(status(st).get("running"))
+                            s_r = status(st)
+                            ms["running_at_reserve"] = bool(s_r.get("running"))
+                            # amendment 19: the brain under test runs with its floor off
+                            ms["brain_floor_v"] = (s_r.get("budget") or {}).get("battery_floor_v", "unread")
                         steps = b.get("shutdown") or []
                         if any(x.get("step") == "poweroff" for x in steps):
                             ms["poweroff_at"] = now
