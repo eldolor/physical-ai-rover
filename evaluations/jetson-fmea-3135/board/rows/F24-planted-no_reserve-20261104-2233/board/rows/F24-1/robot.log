@@ -1,0 +1,9 @@
+1793853245.526 WARNING identity vision-picar robot server starting -- git=e9285f1af executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793853247.281 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1793853256.250 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793853333.335 WARNING server refused (battery_poweroff) for battery: battery at 9.98 V: powering off (at rest)
+1793853333.368 WARNING server battery power-off: brain -> rc 0: y at 10.33 V, under the 10.5 V floor 2 readings in a row"],"cloud":{"state":"reachable","since":1793853256.0095737,"checked_at":1793853256.0095737,"age_s":77.3492434380023,"probes":1,"probe_s":15.0}}}
+1793853343.581 WARNING server battery power-off: ros -> rc 0: picar-ros-3135
+1793853344.514 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1793853344.536 WARNING server battery power-off: vlm -> rc 0
+1793853344.538 WARNING server battery power-off: no power-off command in this mode -- stopped here (the stub)

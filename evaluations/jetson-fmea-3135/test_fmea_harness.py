@@ -603,3 +603,27 @@ def test_f24_reads_the_ladder_block_of_get_battery():
     sys.path.insert(0, str(HERE.parents[1]))
     src = (HERE.parents[1] / "robot/server.py").read_text()
     assert '"level": status["level"], "ladder": status}' in src           # the route's reply shape
+
+
+def test_amendment_19_f24s_brain_floor_off_and_ves_settings_without_runtime(tmp_path, monkeypatch):
+    """F24's first board runs (2026-11-04): the brain's 10.5 V floor ended every
+    mission before Reserve, and VE's ExecStart differed only in its start time."""
+    import brain_floor_off as bfo
+    import yaml
+    cfg = yaml.safe_load(bfo.floor_off_config(tmp_path).read_text())
+    assert cfg["brain"]["battery_floor_v"] == 0
+    sys.path.insert(0, str(HERE.parents[1]))
+    from control.brain_config import load_brain_config
+    assert load_brain_config(str(tmp_path / "robot-floor-off.yaml"))["battery_floor_v"] == 0
+    with pytest.raises(stack.StackError):
+        stack.Stack(tmp_path / "s", plant="cloud_class", brain_floor_off=True)
+    run = ("{ path=/x/python ; argv[]=/x/python -m service.local_vlm.server ; ignore_errors=no ; "
+           "start_time=[Wed 2026-11-04 22:41:39 CST] ; stop_time=[n/a] ; pid=1 ; code=(null) ; status=0/0 }")
+    later = run.replace("22:41:39", "22:44:07").replace("pid=1", "pid=2")
+    for out in (run, later):
+        monkeypatch.setattr(vlm_rows, "sh", lambda *a, _o=out, **k: types.SimpleNamespace(
+            returncode=0, stdout=f"ExecStart={_o}\nOOMScoreAdjust=1000\n", stderr=""))
+        got = vlm_rows.ve_unit_settings()
+        if out is run:
+            first = got
+    assert got == first and "start_time" not in got["ExecStart"] and "argv[]" in got["ExecStart"]

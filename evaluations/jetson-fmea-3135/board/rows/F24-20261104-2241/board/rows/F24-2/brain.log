@@ -1,0 +1,2 @@
+1793853865.384 WARNING identity vision-picar brain server starting -- git=e9285f1af executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793853881.329 WARNING tiered local VLM absent for cold_search (local VLM unreachable: [Errno 9] Bad file descriptor); asking the cloud

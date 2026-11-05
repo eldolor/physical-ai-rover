@@ -76,8 +76,12 @@ def http(method: str, url: str, body: Optional[dict] = None, secret: str = "",
 
 class Stack:
     def __init__(self, out: Path, *, house: str = "scaled_house", plant: str = "",
-                 vision_url: Optional[str] = None, extra_env: Optional[dict] = None):
+                 vision_url: Optional[str] = None, extra_env: Optional[dict] = None,
+                 brain_floor_off: bool = False):
         plants = {p for p in plant.split(",") if p}
+        if brain_floor_off and plants & BRAIN_PLANTS:
+            raise StackError("brain_floor_off runs the shipped brain: no brain plant beside it")
+        self.brain_floor_off = brain_floor_off
         if plants - ROBOT_PLANTS - BODY_PLANTS - BRAIN_PLANTS:
             raise StackError(f"unknown plant(s) {sorted(plants - ROBOT_PLANTS - BODY_PLANTS - BRAIN_PLANTS)}")
         self.out = Path(out)
@@ -173,6 +177,8 @@ class Stack:
     def start_brain(self) -> None:
         if self.plants & BRAIN_PLANTS:
             argv = [PY, str(HERE / "brain_plant.py"), str(PORTS["brain"])]
+        elif self.brain_floor_off:          # F24 (amendment 19): the shipped brain, its floor off
+            argv = [PY, str(HERE / "brain_floor_off.py"), str(PORTS["brain"])]
         else:
             argv = self._uvicorn("control.brain_server:app", PORTS["brain"])     # the shipped code
         self._spawn("brain", argv, dict(self.env, FMEA_PLANT=",".join(sorted(self.plants & BRAIN_PLANTS))))

@@ -121,7 +121,10 @@ def ve_unit_settings() -> dict:
     """F24 (the orchestrator's condition, 2026-11-04): VE's unit as found, read
     before a run that stops and restarts it, and compared after."""
     out = sh("systemctl", "show", "-p", ",".join(VE_UNIT_PROPS), VE_UNIT).stdout
-    return dict(line.split("=", 1) for line in out.splitlines() if "=" in line)
+    props = dict(line.split("=", 1) for line in out.splitlines() if "=" in line)
+    if "ExecStart" in props:            # its runtime fields change with every start, not the setting
+        props["ExecStart"] = re.sub(r" ; (start_time|stop_time|pid|code|status)=[^;}]*", "", props["ExecStart"])
+    return props
 
 
 def ladder_of(battery: object) -> dict:
@@ -364,7 +367,7 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                    else f"http://127.0.0.1:{CLOSED_PORT}")
             # ve_oom0 is the unit's drop-in, not a process plant: the stack runs as shipped.
             st = Stack(out, house=house, plant="" if plant == "ve_oom0" else plant, vision_url=url,
-                       extra_env=env)
+                       extra_env=env, brain_floor_off=spec["fault"] == "battery")
             st.start()
             for p in st.procs.values():
                 sh("sudo", "-n", "tee", f"/proc/{p.pid}/oom_score_adj", input=f"{STACK_OOM_ADJ}\n")

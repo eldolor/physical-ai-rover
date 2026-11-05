@@ -1,0 +1,172 @@
+{
+ "row": "F24",
+ "title": "The battery reaches Reserve, then Power-off, mid-mission",
+ "reading": "amendment 18, 3.137 criterion 1's bars: 0 autonomous motion after Reserve (true path <= 2 cm from the Reserve latch to the power-off); the stub called exactly once, after the brain's mission, ROS and VE are down and the wheels at 0, in the logged order; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T22:54:18-0600",
+ "measures": {
+  "fault_at": 72173.938738252,
+  "ve_unit_before": {
+   "Restart": "on-failure",
+   "RestartUSec": "30s",
+   "ExecStart": "{ path=/home/picar/vision-picar-service/.venv/bin/python ; argv[]=/home/picar/vision-picar-service/.venv/bin/python -m service.local_vlm.server ; ignore_errors=no ; start_time=[Wed 2026-11-04 22:54:08 CST] ; stop_time=[n/a] ; pid=3998697 ; code=(null) ; status=0/0 }",
+   "EnvironmentFiles": "/home/picar/.vision-picar-local-vlm.env (ignore_errors=no)",
+   "OOMScoreAdjust": "1000",
+   "DropInPaths": "",
+   "UnitFileState": "enabled",
+   "StartLimitIntervalUSec": "15min",
+   "StartLimitBurst": "4"
+  },
+  "ve_before": [
+   "MainPID=3998697",
+   "NRestarts=0"
+  ],
+  "start_at": 72168.760564176,
+  "goal_at_fault": true,
+  "holder_at_fault": null,
+  "poweroff_cmd_at_start": "stub",
+  "reserve_at": 72206.099655274,
+  "running_at_reserve": false,
+  "poweroff_at": 72257.505048977,
+  "down_at_poweroff": {
+   "mission": false,
+   "ros": false,
+   "vlm": false
+  },
+  "battery_end": {
+   "usable": true,
+   "v": 9.92,
+   "level": "poweroff",
+   "ladder": {
+    "level": "poweroff",
+    "levels_v": {
+     "low": 10.5,
+     "reserve": 10.2,
+     "poweroff": 10.0
+    },
+    "checking": null,
+    "reserve_s": 53.5,
+    "poweroff_in_s": null,
+    "poweroff_why": "at rest",
+    "samples": 2,
+    "checks": 0,
+    "sags": 0,
+    "v": 9.92,
+    "reserve_speed": 30,
+    "shutdown": [
+     {
+      "step": "wheels",
+      "t_s": 0.0,
+      "rc": 0
+     },
+     {
+      "step": "brain",
+      "t_s": 0.043,
+      "rc": 0
+     },
+     {
+      "step": "ros",
+      "t_s": 10.224,
+      "rc": 0
+     },
+     {
+      "step": "vlm",
+      "t_s": 11.125,
+      "rc": 0
+     },
+     {
+      "step": "sync",
+      "t_s": 11.127,
+      "rc": 0
+     },
+     {
+      "step": "poweroff",
+      "t_s": 11.127,
+      "rc": null,
+      "stub": true
+     }
+    ],
+    "poweroff_cmd": "stub"
+   }
+  },
+  "shutdown": [
+   {
+    "step": "wheels",
+    "t_s": 0.0,
+    "rc": 0
+   },
+   {
+    "step": "brain",
+    "t_s": 0.043,
+    "rc": 0
+   },
+   {
+    "step": "ros",
+    "t_s": 10.224,
+    "rc": 0
+   },
+   {
+    "step": "vlm",
+    "t_s": 11.125,
+    "rc": 0
+   },
+   {
+    "step": "sync",
+    "t_s": 11.127,
+    "rc": 0
+   },
+   {
+    "step": "poweroff",
+    "t_s": 11.127,
+    "rc": null,
+    "stub": true
+   }
+  ],
+  "wheel_loop": {
+   "late": 0,
+   "moving": 118,
+   "max_dt_s": 0.0635
+  },
+  "ve_restarted": 0,
+  "ve_after": [
+   "MainPID=4007939",
+   "NRestarts=0"
+  ],
+  "ve_ready_after": true,
+  "ve_unit_after": {
+   "Restart": "on-failure",
+   "RestartUSec": "30s",
+   "ExecStart": "{ path=/home/picar/vision-picar-service/.venv/bin/python ; argv[]=/home/picar/vision-picar-service/.venv/bin/python -m service.local_vlm.server ; ignore_errors=no ; start_time=[Wed 2026-11-04 22:56:05 CST] ; stop_time=[n/a] ; pid=4007939 ; code=(null) ; status=0/0 }",
+   "EnvironmentFiles": "/home/picar/.vision-picar-local-vlm.env (ignore_errors=no)",
+   "OOMScoreAdjust": "1000",
+   "DropInPaths": "",
+   "UnitFileState": "enabled",
+   "StartLimitIntervalUSec": "15min",
+   "StartLimitBurst": "4"
+  },
+  "ve_unit_as_found": false,
+  "forward_at_fault": true,
+  "moved_after_reserve_cm": 0.0,
+  "truth_hole_s": 0.027,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "local_questions": {
+   "frame": 11,
+   "arrival": 0,
+   "direction": 0
+  },
+  "mem_available_min_mb": 2250,
+  "oom_kills_window": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": false,
+  "reasons": [
+   "invalid: the mission was not running when Reserve latched"
+  ]
+ },
+ "error": "VE's unit settings changed over the run (the board not as found)",
+ "ended": "2026-11-04T22:56:15-0600"
+}
