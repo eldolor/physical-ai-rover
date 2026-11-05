@@ -215,6 +215,7 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-04 | `6c56c142` | F3a2 VE killed at the arrival, a truthful stand-in (amendment 17) | 5/7 | met | `found` 5/5, the deciding verdict the cloud's yes (0.45-0.85 s); handed on 1; VE back 40.8-41.3 s; 2 runs ended `exhausted` before an arrival question (not injected, replaced); planted check caught (0 handed on, `exhausted`) | 0 | -- | 2,125 | 0 | 59.7 °C | -- | yes |
 | 2026-11-04 | `e9285f1a` | F24 Reserve then Power-off, a nav2 goal (first attempt) | 0/8 | incomplete | every run invalid: the brain's own 10.5 V floor ended the mission before Reserve (amendment 19); stub `stub` 8/8, shutdown in order, every step rc 0 | 0 | -- | 2,205 | 0 | 52.4 °C | -- | yes |
 | 2026-11-05 | `95826b9c` | F24 Reserve then Power-off, a nav2 goal (amendment 19: the brain's floor off) | 5/5 | met (planted check caught: 167.6 cm after Reserve) | 0.0 cm after Reserve (2), the mission running at Reserve 5/5; shutdown wheels, brain, ROS, VE, sync, the stub once, every step rc 0, all down at the stub; Power-off 48.9-49.5 s after Reserve; VE's unit as found | 0 | -- | 1,854 | 0 | 55.0 °C | -- | yes |
+| 2026-11-05 | `fb12ba7f` | F14 board rebooted mid-mission (`sudo systemctl reboot`, the production units) | 3/3 | met | robot and brain back 43.9-48.5 s (90; an upper bound: ssh and the services answered at the same first poll); VE ready 48.6-51.6 s; 0 files unparseable, lost or shortened (17-20 files, 2-5 JSONL lines); the next mission drove 3/3; units as found. A first batch at `27d14d6c` was 6/6 invalid, no reboot sent (amendment 20) | -- | -- | -- | -- | -- | 43.9-48.5 s | yes |
 
 ## Runs
 
@@ -402,6 +403,28 @@ cm, FAILED, 3.135.B's record). Wheels zero 2.0 s after the fault by the
 watchdog (no FORWARD starts on a stale scan); 0 contacts, 0 late ticks, 0 OOM,
 `MemAvailable` minimum 2,360 MB, max 50.1 °C; recovery 3.1 s; left as found.
 Records: `evaluations/jetson-fmea-3135/board/rows/F9-3144B-20261104-0710/`.
+
+### 2026-11-05, single faults (3.135.B): F14, the board rebooted mid-mission
+
+From the desktop, on the twin's production units as found (sim mode), on
+the orchestrating session's go, with the board otherwise idle.
+
+* **The first batch (17:39, `27d14d6c`): 6 of 6 invalid, and no reboot was
+  sent.** The harness called the brain at `:8001` with `APP_SHARED_SECRET`.
+  picar-stack serves it under `/brain`, with `LOCAL_SECRET`, so no mission
+  started. Amendment 20 fixed both, and the path was checked on the board
+  without a reboot.
+* **The re-run (17:45-17:52, `fb12ba7f`) met 3/3.**
+  * Each reboot hit a running mission (steps 38-40).
+  * The robot's and the brain's `/health` answered 43.9-48.5 s after the
+    reboot command (bar 90; 3.71's record was 53 s). That is an upper bound:
+    ssh and the services answered at the same first poll.
+  * `picar-ngrok` was active with them, and VE was ready at 48.6-51.6 s.
+  * Every `.json` and `.jsonl` line under the stack's inventory and
+    intervention directories parsed: 17-20 files, 0 unparseable, none lost
+    or shortened.
+  * The next mission started and drove within 0.5 s, and the units came
+    back active and enabled, as found.
 
 ### 2026-11-04/05, single faults (3.135.B): F24, the battery ladder
 

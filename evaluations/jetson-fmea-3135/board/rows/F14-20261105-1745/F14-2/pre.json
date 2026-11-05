@@ -1,0 +1,83 @@
+{
+ "before": {
+  "boot_id": "5e6ee192-d475-457f-9986-73ffa978d05e",
+  "uptime_s": 87.35,
+  "robot": 200,
+  "brain": 200,
+  "ve_ready": true,
+  "units": {
+   "picar-stack": "active/enabled",
+   "picar-ngrok": "active/enabled",
+   "picar-local-vlm": "active/enabled"
+  }
+ },
+ "units_before": {
+  "picar-stack": "active/enabled",
+  "picar-ngrok": "active/enabled",
+  "picar-local-vlm": "active/enabled"
+ },
+ "files_before": {
+  "files": 18,
+  "json": 17,
+  "jsonl_lines": 3,
+  "other": 0,
+  "bad": [],
+  "index": {
+   "recordings/inventory/20261011t224942.007616z-red-backpack.json": 961,
+   "recordings/inventory/20261012t010519.963686z-red-backpack.json": 1255,
+   "recordings/inventory/20261021t210026.698522z-red-backpack.json": 376,
+   "recordings/inventory/20261021t210052.985443z-red-backpack.json": 376,
+   "recordings/inventory/20261021t213616.653965z-red-backpack.json": 373,
+   "recordings/inventory/20261021t215249.139475z-red-backpack.json": 376,
+   "recordings/inventory/20261021t215433.193988z-red-backpack.json": 376,
+   "recordings/inventory/20261022t005912.104912z-red-backpack.json": 376,
+   "recordings/inventory/20261022t005918.814266z-red-backpack.json": 376,
+   "recordings/inventory/20261022t010031.895340z-red-backpack.json": 376,
+   "recordings/inventory/20261022t014946.373622z-red-backpack.json": 376,
+   "recordings/inventory/20261022t014953.112729z-red-backpack.json": 376,
+   "recordings/inventory/20261022t015551.714556z-red-backpack.json": 376,
+   "recordings/inventory/20261022t015742.156448z-red-backpack.json": 376,
+   "recordings/inventory/20261104t021129.315506z-running-shoes.json": 505,
+   "recordings/inventory/20261105t234519.581632z-red-backpack.json": 817,
+   "recordings/inventory/20261105t234657.230530z-red-backpack.json": 817,
+   "recordings/interventions/interventions.jsonl": 3
+  }
+ },
+ "start": {
+  "start": 200,
+  "start_body": null,
+  "driving": true,
+  "driving_s": 0.5,
+  "step": 2
+ },
+ "driving_at_reboot": true,
+ "before_reboot": {
+  "boot_id": "5e6ee192-d475-457f-9986-73ffa978d05e",
+  "uptime_s": 110.25,
+  "robot": 200,
+  "brain": 200,
+  "ve_ready": true,
+  "units": {
+   "picar-stack": "active/enabled",
+   "picar-ngrok": "active/enabled",
+   "picar-local-vlm": "active/enabled"
+  }
+ },
+ "mission_at_reboot": {
+  "code": 200,
+  "running": true,
+  "step": 40,
+  "outcome": "running"
+ },
+ "reboot_mono": 131508.604899246,
+ "reboot_rc": 0,
+ "back": {
+  "ssh_s": 48.5,
+  "robot_s": 48.5,
+  "brain_s": 48.5,
+  "ngrok_s": 48.5,
+  "ve_s": 51.6
+ },
+ "boot_changed": true,
+ "stack_back_s": 48.5
+}
