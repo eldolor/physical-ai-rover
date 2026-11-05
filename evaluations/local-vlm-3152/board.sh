@@ -11,13 +11,16 @@
 # of the unit, and this arm measures those starts.
 #
 #   bash evaluations/local-vlm-3152/board.sh <out-dir> d30|d60|d120
+# crash_loop.py exits 0 (every bar met), 1 (valid, a bar missed) or 2 (not a
+# crash loop: invalid, re-run once); the result is result.json either way.
 set -uo pipefail
 source tools/jetson/board_lock_check.sh
 OUT="${1:?out dir}"; ARM="${2:?d30, d60 or d120}"; mkdir -p "$OUT"; OUT="$(cd "$OUT" && pwd)"
 case "$ARM" in d30|d60|d120) ;; *) echo "STOP: arm must be d30, d60 or d120" >&2; exit 2;; esac
 D="${ARM#d}"
 UNIT=picar-local-vlm
-DROPIN="/etc/systemd/system/$UNIT.service.d/zz-3152-crash-loop.conf"
+# A runtime drop-in (amendment 2): a reboot clears it whatever happens here.
+DROPIN="/run/systemd/system/$UNIT.service.d/zz-3152-crash-loop.conf"
 teardown() {
   # crash_loop.py puts the unit back itself; this is the net under it.
   if [ -e "$DROPIN" ]; then

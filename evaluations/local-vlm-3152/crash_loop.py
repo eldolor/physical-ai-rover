@@ -3,28 +3,27 @@
 """
 evaluations/local-vlm-3152/crash_loop.py
 
-3.152 criterion 10, ON the board (through `board.sh`, under the board lock
-and 3.136's lease): one candidate restart delay D for `picar-local-vlm`,
-measured in a 15-min OOM crash loop beside 3.135.C's live stack (`Soak`:
-the split body, the fake board and D500, the ROS container, YOLOE + CLIP,
-the $0 cloud stand-in) running tiered missions back to back with VE as the
-local tier.
+3.152 criterion 10 (as amendment 2 reads it), ON the board (through
+`board.sh`, under the board lock and 3.136's lease): one candidate restart
+delay D for `picar-local-vlm`, measured in a 15-min OOM crash loop beside
+3.135.C's live stack (`Soak`: the split body, the fake board and D500, the
+ROS container, YOLOE + CLIP, the $0 cloud stand-in) running tiered missions
+back to back with VE as the local tier.
 
-* The unit gets a temporary drop-in, `StartLimitIntervalSec=0` and
-  `RestartSec=D`. The shipped unit and any drop-ins found are recorded
-  first, and the drop-in is removed and the unit put back as found at the
-  end, whatever happened.
-* The hog grows until the kernel's first OOM kill, which names VE's driver
-  at `oom_score_adj` 1000. It then holds that size plus `MARGIN_MB`, so each
-  VE load is killed again: a crash loop at the unit's pace.
-* At 1 Hz: `MemAvailable`, the kernel's `oom_kill` count, both servers'
-  /health, VE's /health, the unit's `NRestarts` and VE's PIDs (the unit's
-  main process and its children: the service and its Edge-LLM driver).
-  Every dmesg kill line new since the start is VE's only if its PID was.
-  Each kill's moment is the sample where `oom_kill` rose.
-* After `WINDOW_S` the hog ends. VE must answer ready within D + 60 s with no
-  `reset-failed`, and the running mission's brain must read `local_vlm`
-  `up`.
+* The candidate is a runtime drop-in (`/run/systemd/system/...d/`, cleared
+  at boot): `StartLimitIntervalSec=0`, `RestartSec=D`. The unit as found is
+  recorded first, and the drop-in is taken out and the unit put back as
+  found at the end, whatever happened.
+* `hog.py`, its own process at `oom_score_adj` 900, grows until the kernel
+  kills VE, then holds 256 MB more: each VE load is killed again. The window
+  is `WINDOW_S` from when it starts holding; then it is sent SIGTERM.
+* At 1 Hz: `MemAvailable`, `oom_kill`, VE's /health, the unit's
+  `NRestarts`, and, while a mission runs, both servers' /health and the
+  brain's `local_vlm`.
+* After the window: VE must be ready within D + 60 s with no
+  `reset-failed`. The 60 s after that is the memory bar's loaded window
+  (>= 500 MB), and the running mission's brain must read `local_vlm` `up`.
+  Then the mission is stopped and the run ends.
 
     python evaluations/local-vlm-3152/crash_loop.py <out> <D seconds>
 """
@@ -48,13 +47,16 @@ from soak import http, http_ok, mem_available_mb  # noqa: E402
 from stack import StackError  # noqa: E402
 
 UNIT = "picar-local-vlm"
-DROPIN_DIR = Path(f"/etc/systemd/system/{UNIT}.service.d")
-DROPIN = DROPIN_DIR / "zz-3152-crash-loop.conf"
+VE_MEMCG = f"{UNIT}.service"
+DROPIN_DIRS = (Path(f"/etc/systemd/system/{UNIT}.service.d"),
+               Path(f"/run/systemd/system/{UNIT}.service.d"))
+DROPIN = DROPIN_DIRS[1] / "zz-3152-crash-loop.conf"
 WINDOW_S = 15 * 60
-CHUNK = 32 * 1024 * 1024
 MARGIN_MB = 256
-GROW_GIVE_UP_S = 300        # no kill by then: the hog stops (an invalid run)
-FLOOR_MB = 150              # the hog never grows past this much MemAvailable without a kill
+GROW_GIVE_UP_S = 300
+LOADED_S = 60                 # amendment 2: the memory bar's window after VE is back
+MIN_KILLS = 3                 # amendment 2: fewer is no crash loop (invalid)
+RUN_CEILING_S = 50 * 60       # the whole run; the board hold's own --max is 60 min
 SHOW = "MainPID,NRestarts,ActiveState,SubState,Result,StartLimitIntervalUSec,StartLimitBurst,RestartUSec"
 
 
@@ -72,181 +74,213 @@ class CrashLoop(soak.Soak):
         self.delay_s = int(delay_s)
         self.window = {"start": None, "end": None}
         self.stop_all = threading.Event()
-        self.samples = open(out / "samples.jsonl", "a", buffering=1)
-        self.dropin_installed = False
-        self.ve_pids: set = set()
         self.finished = threading.Event()
+        self.samples = open(out / "samples.jsonl", "a", buffering=1)
+        self.as_found: dict = {}
         self.dmesg0: set = set()
+        self.hog_proc: subprocess.Popen | None = None
+        self.t_begin = time.time()
+        self.notes: list = []
+
+    # ------------------------------------------------------- guarded reads
+
+    def ve_ready(self) -> bool:
+        try:
+            code, body = http("GET", soak.VE_URL + "/health", timeout=3)
+            return code == 200 and isinstance(body, dict) and body.get("ready") is True
+        except Exception:  # noqa: BLE001 -- refused while VE is down: not ready
+            return False
+
+    def brain_status(self) -> dict | None:
+        st = getattr(self, "stack", None)
+        if st is None:
+            return None
+        try:
+            code, s = st.brain("GET", "/mission/status", timeout=3)
+            return s if code == 200 and isinstance(s, dict) else None
+        except Exception:  # noqa: BLE001 -- a brain not up yet, or gone
+            return None
+
+    def unit_show(self) -> dict:
+        try:
+            r = self.sh(["systemctl", "show", "-p", SHOW, UNIT], timeout=20)
+            return dict(x.split("=", 1) for x in r.stdout.splitlines() if "=" in x)
+        except Exception:  # noqa: BLE001
+            return {}
+
+    def dropins(self) -> list:
+        return sorted(str(p) for d in DROPIN_DIRS if d.exists() for p in d.glob("*"))
+
+    def oom_lines(self) -> list:
+        try:
+            out = self.sh(["sudo", "-n", "dmesg"], timeout=30).stdout
+        except Exception:  # noqa: BLE001
+            return []
+        return [x for x in out.splitlines() if "oom-kill:" in x]
 
     # ------------------------------------------------------------ the unit
 
-    def unit_show(self) -> dict:
-        r = self.sh(["systemctl", "show", "-p", SHOW, UNIT])
-        return dict(x.split("=", 1) for x in r.stdout.splitlines() if "=" in x)
-
-    def ve_tree(self, main: int) -> set:
-        """The unit's main PID and every descendant, from /proc."""
-        pids, todo = set(), [main] if main > 0 else []
-        while todo:
-            p = todo.pop()
-            pids.add(p)
-            try:
-                for task in Path(f"/proc/{p}/task").iterdir():
-                    kids = (task / "children").read_text().split()
-                    todo.extend(int(k) for k in kids if int(k) not in pids)
-            except OSError:
-                pass
-        return pids
-
-    def dmesg_kills(self) -> list:
-        out = self.sh(["sudo", "-n", "dmesg"]).stdout
-        return [line for line in out.splitlines() if "Killed process" in line]
-
     def record_as_found(self) -> None:
-        found = {"show": self.unit_show(),
-                 "cat": self.sh(["systemctl", "cat", UNIT]).stdout,
-                 "dropins": sorted(p.name for p in DROPIN_DIR.glob("*")) if DROPIN_DIR.exists() else [],
-                 "active": self.sh(["systemctl", "is-active", UNIT]).stdout.strip(),
-                 "enabled": self.sh(["systemctl", "is-enabled", UNIT]).stdout.strip()}
-        (self.out / "unit_as_found.json").write_text(json.dumps(found, indent=1))
-        if DROPIN.name in found["dropins"]:
+        self.as_found = {"show": self.unit_show(),
+                         "cat": self.sh(["systemctl", "cat", UNIT]).stdout,
+                         "dropins": self.dropins(),
+                         "active": self.sh(["systemctl", "is-active", UNIT]).stdout.strip(),
+                         "enabled": self.sh(["systemctl", "is-enabled", UNIT]).stdout.strip()}
+        (self.out / "unit_as_found.json").write_text(json.dumps(self.as_found, indent=1))
+        if str(DROPIN) in self.as_found["dropins"]:
             raise StackError(f"{DROPIN} exists already: a run before this one was not put back")
-        self.as_found = found
+        if self.as_found["active"] != "active":
+            raise StackError(f"{UNIT} is {self.as_found['active']} as found, not active")
 
     def install_dropin(self) -> None:
-        body = ("# 3.152 criterion 10: a temporary crash-loop candidate; removed at the run's end.\n"
+        body = ("# 3.152 criterion 10: a runtime crash-loop candidate; removed at the run's end.\n"
                 "[Unit]\nStartLimitIntervalSec=0\n[Service]\n"
                 f"RestartSec={self.delay_s}\n")
-        r = subprocess.run(["sudo", "-n", "install", "-D", "-m", "644", "/dev/stdin", str(DROPIN)],
-                           input=body, text=True, capture_output=True)
+        self.sh(["sudo", "-n", "mkdir", "-p", str(DROPIN.parent)], check=True)
+        r = subprocess.run(["sudo", "-n", "tee", str(DROPIN)], input=body, text=True,
+                           capture_output=True, timeout=20)
         if r.returncode != 0:
-            raise StackError(f"installing the drop-in: {r.stderr.strip()[:200]}")
-        self.dropin_installed = True
+            raise StackError(f"writing the drop-in: {r.stderr.strip()[:200]}")
         self.sh(["sudo", "-n", "systemctl", "daemon-reload"], check=True)
         show = self.unit_show()
         (self.out / "unit_candidate.json").write_text(json.dumps(show, indent=1))
-        if show.get("StartLimitIntervalUSec") not in ("0", "infinity") \
-                or show.get("RestartUSec") != f"{self.delay_s}s" and \
-                show.get("RestartUSec") != f"{self.delay_s // 60}min":
+        want = {f"{self.delay_s}s", f"{self.delay_s // 60}min"}
+        if show.get("StartLimitIntervalUSec") not in ("0", "infinity") or show.get("RestartUSec") not in want:
             raise StackError(f"the candidate did not load: {show}")
         self.say(f"candidate loaded: {show}")
 
     def put_back(self) -> None:
-        """The drop-in out, the unit's counter reset and VE started again only
-        if it was active as found; then the unit read back against as found."""
-        if self.dropin_installed or DROPIN.exists():
-            self.sh(["sudo", "-n", "rm", "-f", str(DROPIN)])
-            self.sh(["sudo", "-n", "systemctl", "daemon-reload"])
-            self.dropin_installed = False
-        self.sh(["sudo", "-n", "systemctl", "reset-failed", UNIT])
-        if getattr(self, "as_found", {}).get("active") == "active":
-            if self.sh(["systemctl", "is-active", UNIT]).stdout.strip() != "active":
-                self.sh(["sudo", "-n", "systemctl", "start", UNIT])
-            end = time.time() + 180
-            while time.time() < end and not self.ve_ready():
-                time.sleep(2)
+        """Every step on its own, so one that fails never skips the rest:
+        the drop-in out, the counter reset, VE started (it was active as
+        found), then the unit read back against as found."""
+        steps = []
+        for argv in (["sudo", "-n", "rm", "-f", str(DROPIN)],
+                     ["sudo", "-n", "systemctl", "daemon-reload"],
+                     ["sudo", "-n", "systemctl", "reset-failed", UNIT]):
+            try:
+                steps.append([argv[-1], self.sh(argv, timeout=60).returncode])
+            except Exception as e:  # noqa: BLE001
+                steps.append([argv[-1], repr(e)])
+        try:
+            if self.sh(["systemctl", "is-active", UNIT], timeout=20).stdout.strip() != "active":
+                steps.append(["start", self.sh(["sudo", "-n", "systemctl", "start", UNIT],
+                                               timeout=120).returncode])
+        except Exception as e:  # noqa: BLE001
+            steps.append(["start", repr(e)])
+        end = time.time() + 180
+        while time.time() < end and not self.ve_ready():
+            time.sleep(2)
         show = self.unit_show()
-        back = {"show": show, "active": self.sh(["systemctl", "is-active", UNIT]).stdout.strip(),
-                "ve_ready": self.ve_ready(),
-                "dropins": sorted(p.name for p in DROPIN_DIR.glob("*")) if DROPIN_DIR.exists() else []}
-        found = getattr(self, "as_found", None)
-        if found:
+        back = {"steps": steps, "show": show, "dropins": self.dropins(), "ve_ready": self.ve_ready()}
+        try:
+            back["active"] = self.sh(["systemctl", "is-active", UNIT], timeout=20).stdout.strip()
+        except Exception as e:  # noqa: BLE001
+            back["active"] = repr(e)
+        if self.as_found:
             keys = ("StartLimitIntervalUSec", "StartLimitBurst", "RestartUSec")
-            back["settings_as_found"] = all(show.get(k) == found["show"].get(k) for k in keys)
-            back["dropins_as_found"] = back["dropins"] == found["dropins"]
-            back["active_as_found"] = back["active"] == found["active"]
+            back["settings_as_found"] = all(show.get(k) == self.as_found["show"].get(k) for k in keys)
+            back["dropins_as_found"] = back["dropins"] == self.as_found["dropins"]
+            back["active_as_found"] = back["active"] == self.as_found["active"]
         (self.out / "unit_put_back.json").write_text(json.dumps(back, indent=1))
         self.say(f"unit put back: {back}")
 
-    def ve_ready(self) -> bool:
-        code, body = http("GET", soak.VE_URL + "/health", timeout=3)
-        return code == 200 and isinstance(body, dict) and body.get("ready") is True
+    # ------------------------------------------------------- the hog, timed
 
-    # ------------------------------------------------------------- the hog
-
-    def hog(self) -> None:
-        held, kills0 = [], oom_kills()
-        t0 = time.time()
-        rec = {"t0": round(t0, 3), "kills_at_start": kills0}
+    def run_hog(self) -> None:
+        """Waits for a mission running, starts hog.py, waits for it to hold,
+        keeps the window, then ends it. Its process goes whatever happens."""
         try:
-            while not self.stop_all.is_set():          # grow to the first kill
-                if oom_kills() > kills0:
-                    rec["first_kill_t"] = round(time.time(), 3)
-                    rec["first_kill_mb"] = len(held) * CHUNK // 2**20
+            while not self.stop_all.is_set():
+                if (self.brain_status() or {}).get("running"):
                     break
-                if time.time() - t0 > GROW_GIVE_UP_S:
-                    rec["gave_up"] = "no OOM kill while growing"
-                    return
-                avail = mem_available_mb() or 0
-                if avail < FLOOR_MB:
-                    time.sleep(0.25)                   # at the floor: wait for the kernel
-                    continue
-                b = bytearray(CHUNK)
-                b[::4096] = b"\x01" * len(b[::4096])   # resident
-                held.append(b)
-                time.sleep(0.05)
-            for _ in range(MARGIN_MB * 2**20 // CHUNK):   # each reload killed again
-                b = bytearray(CHUNK)
-                b[::4096] = b"\x01" * len(b[::4096])
-                held.append(b)
-            rec["held_mb"] = len(held) * CHUNK // 2**20
-            self.window["start"] = time.time()
-            self.say(f"hog holding {rec['held_mb']} MB; the window runs {WINDOW_S} s")
-            self.stop_all.wait(max(0.0, WINDOW_S - (time.time() - rec["first_kill_t"])))
+                self.stop_all.wait(2.0)
+            if self.stop_all.is_set():
+                return
+            self.hog_proc = subprocess.Popen(
+                [sys.executable, str(HERE / "hog.py"), str(self.out / "hog.json"), str(MARGIN_MB),
+                 str(GROW_GIVE_UP_S)], stdout=open(self.out / "hog.log", "w"), stderr=subprocess.STDOUT)
+            self.say(f"hog started (pid {self.hog_proc.pid})")
+            while not self.stop_all.is_set() and self.hog_proc.poll() is None:
+                rec = self.hog_record()
+                if rec.get("holding_t"):
+                    self.window["start"] = rec["holding_t"]
+                    self.say(f"hog holding {rec.get('held_mb')} MB; window {WINDOW_S} s")
+                    break
+                self.stop_all.wait(1.0)
+            if self.window["start"]:
+                self.stop_all.wait(max(0.0, self.window["start"] + WINDOW_S - time.time()))
+            else:
+                self.notes.append(f"the hog never held: {self.hog_record()}")
         finally:
-            held.clear()
+            self.end_hog()
+
+    def hog_record(self) -> dict:
+        try:
+            return json.loads((self.out / "hog.json").read_text())
+        except (OSError, ValueError):
+            return {}
+
+    def end_hog(self) -> None:
+        p = self.hog_proc
+        if p is not None and p.poll() is None:
+            p.terminate()
+            try:
+                p.wait(20)
+            except subprocess.TimeoutExpired:
+                p.kill()
+                p.wait(5)
+        if self.window["end"] is None:
             self.window["end"] = time.time()
-            rec["released_t"] = round(self.window["end"], 3)
-            (self.out / "hog.json").write_text(json.dumps(rec, indent=1))
 
     # --------------------------------------------------------- the sampler
 
     def sample(self) -> None:
         while not self.stop_all.is_set():
-            st = getattr(self, "stack", None)
-            row = {"t": round(time.time(), 3), "mem_mb": mem_available_mb(), "oom_kill": oom_kills(),
-                   "ve_ready": self.ve_ready()}
             try:
+                row = {"t": round(time.time(), 3), "mem_mb": mem_available_mb(),
+                       "oom_kill": oom_kills(), "ve_ready": self.ve_ready()}
                 row.update({k: v for k, v in self.unit_show().items()
                             if k in ("MainPID", "NRestarts", "ActiveState", "SubState")})
-                tree = self.ve_tree(int(row.get("MainPID") or 0))
-                self.ve_pids |= tree
-                row["ve_pids"] = sorted(tree)
-            except (OSError, subprocess.SubprocessError, ValueError):
-                pass
-            if st is not None:
-                row["robot_ok"] = http_ok(st.urls["robot"] + "/health")
-                row["brain_ok"] = http_ok(st.urls["brain"] + "/health")
-                try:
-                    code, s = st.brain("GET", "/mission/status", timeout=3)
-                    lv = ((s or {}).get("tier") or {}).get("stats", {}).get("local_vlm") \
-                        if code == 200 else None
-                    row["local_vlm"] = (lv or {}).get("state")
-                    row["running"] = (s or {}).get("running")
-                except Exception:  # noqa: BLE001 -- a sample that fails is recorded as missing
-                    row["local_vlm"] = None
-            self.samples.write(json.dumps(row) + "\n")
+                s = self.brain_status()
+                row["running"] = bool(s and s.get("running"))
+                if row["running"]:
+                    st = self.stack
+                    row["robot_ok"] = http_ok(st.urls["robot"] + "/health")
+                    row["brain_ok"] = http_ok(st.urls["brain"] + "/health")
+                    lv = ((s.get("tier") or {}).get("stats") or {}).get("local_vlm") or {}
+                    row["local_vlm"] = lv.get("state")
+                self.samples.write(json.dumps(row) + "\n")
+            except Exception as e:  # noqa: BLE001 -- a lost sample, never a lost sampler
+                self.samples.write(json.dumps({"t": round(time.time(), 3), "error": repr(e)}) + "\n")
             self.stop_all.wait(1.0)
 
+    # --------------------------------------------------------- the finisher
+
     def finish(self) -> None:
-        """After the window: wait for VE back (at most D + 60 s), then 30 s of
-        samples for the brain's state, then stop the running mission so the
-        run ends."""
-        while not self.stop_all.is_set() and not self.window["end"]:
-            self.stop_all.wait(1.0)
-        if self.stop_all.is_set():
-            return
-        end = self.window["end"] + self.delay_s + 60
-        while time.time() < end and not self.ve_ready() and not self.stop_all.is_set():
-            time.sleep(1.0)
-        self.stop_all.wait(30.0)
-        self.finished.set()
-        st = getattr(self, "stack", None)
-        if st is not None:
-            try:
-                st.brain("POST", "/mission/stop", {}, timeout=10)
-            except Exception as e:  # noqa: BLE001 -- the mission's own cap still ends it
-                self.say(f"stopping the mission after the window: {e}")
+        """After the window: VE back (at most D + 60 s), the loaded window,
+        then the mission stopped -- asked every 5 s until no mission runs."""
+        try:
+            while not self.stop_all.is_set() and self.window["end"] is None:
+                self.stop_all.wait(1.0)
+            if self.stop_all.is_set():
+                return
+            end = self.window["end"] + self.delay_s + 60
+            while time.time() < end and not self.ve_ready() and not self.stop_all.is_set():
+                self.stop_all.wait(1.0)
+            self.stop_all.wait(LOADED_S + 5)
+        finally:
+            self.finished.set()
+        give_up = time.time() + 300
+        while not self.stop_all.is_set() and time.time() < give_up:
+            st = getattr(self, "stack", None)
+            if st is not None and (self.brain_status() or {}).get("running"):
+                try:
+                    st.brain("POST", "/mission/stop", {}, timeout=10)
+                except Exception:  # noqa: BLE001 -- asked again
+                    pass
+            elif st is None and self.finished.is_set():
+                return
+            self.stop_all.wait(5.0)
 
     # ------------------------------------------------------------- the run
 
@@ -254,46 +288,45 @@ class CrashLoop(soak.Soak):
         threads = []
         try:
             self.record_as_found()
-            self.dmesg0 = set(self.dmesg_kills())
+            self.dmesg0 = set(self.oom_lines())
             self.setup()
             self.install_dropin()
-            for fn in (self.sample, self.finish):
+            for fn in (self.sample, self.finish, self.run_hog):
                 threads.append(threading.Thread(target=fn, daemon=True))
                 threads[-1].start()
-            hog = None
-            sched = soak.schedule(64)
-            k = 0
+            sched, k, errors = soak.schedule(64), 0, 0
             with open(self.out / "missions.jsonl", "a", buffering=1) as f:
-                while True:
+                while not self.finished.is_set():
+                    if time.time() - self.t_begin > RUN_CEILING_S:
+                        self.notes.append("the run's ceiling came first")
+                        break
+                    dead = {n: p.returncode for n, p in self.helpers.items() if p.poll() is not None}
+                    if dead:
+                        self.notes.append(f"a long-lived helper ended: {dead}")
+                        break
                     house, target = sched[k % len(sched)]
-                    if hog is None:
-                        # The hog starts once this mission is running.
-                        def start_hog():
-                            end = time.time() + 900
-                            while time.time() < end and not self.stop_all.is_set():
-                                st = getattr(self, "stack", None)
-                                if st is not None:
-                                    code, s = st.brain("GET", "/mission/status", timeout=3)
-                                    if code == 200 and (s or {}).get("running"):
-                                        break
-                                time.sleep(2)
-                            self.hog()
-                        hog = threading.Thread(target=start_hog, daemon=True)
-                        hog.start()
-                        threads.append(hog)
                     self.say(f"m{k:03d} {house} / {target}; MemAvailable {mem_available_mb()} MB")
                     rec = self.mission(k, house, target)
                     f.write(json.dumps(rec, default=str) + "\n")
                     self.say(f"m{k:03d} -> {rec.get('outcome')} {rec.get('error') or ''}")
                     k += 1
-                    if self.finished.is_set():
+                    errors = errors + 1 if rec.get("error") else 0
+                    if errors >= soak.MAX_ERRORS_IN_A_ROW:
+                        self.notes.append(f"{errors} missions in a row errored")
                         break
-                    if rec.get("error"):
+                    if rec.get("error") and not self.finished.is_set():
                         time.sleep(30)
-            self.score()
-            return 0
+            self.stop_all.set()
+            for t in threads:
+                t.join(timeout=30)
+            res = self.score()
+            # 0 met, 1 valid but a bar missed, 2 invalid (amendment 2: re-run once).
+            if not all(res["valid"].values()):
+                return 2
+            return 0 if all(res["met"].values()) else 1
         finally:
             self.stop_all.set()
+            self.end_hog()               # memory back before anything else is torn down
             for t in threads:
                 t.join(timeout=5)
             try:
@@ -301,69 +334,75 @@ class CrashLoop(soak.Soak):
             finally:
                 self.teardown()
 
+    # ------------------------------------------------------------ the score
+
     def score(self) -> None:
-        rows = [json.loads(x) for x in open(self.out / "samples.jsonl")]
+        rows = [r for r in (json.loads(x) for x in open(self.out / "samples.jsonl")) if "error" not in r]
         ws, we = self.window["start"], self.window["end"]
-        hog = json.loads((self.out / "hog.json").read_text())
-        kills = self.kill_lines()
         win = [r for r in rows if ws and we and ws <= r["t"] <= we]
-        # Each kill's moment: the sample where the kernel's count rose.
         kill_ts = [b["t"] for a, b in zip(rows, rows[1:])
                    if a["oom_kill"] >= 0 and b["oom_kill"] > a["oom_kill"]]
-        outside = [r["mem_mb"] for r in win if r["mem_mb"] is not None
-                   and not any(abs(r["t"] - kt) <= 5 for kt in kill_ts)]
+        new = [x for x in self.oom_lines() if x not in self.dmesg0]
+        kills = [{"ve": VE_MEMCG in x, "task": (re.search(r"task=([^,]+)", x) or [None, None])[1],
+                  "pid": (re.search(r"pid=(\d+)", x) or [None, None])[1], "line": x[-300:]} for x in new]
+        kills_in_window = sum(1 for t in kill_ts if ws and we and ws <= t <= we)
+        nr = [int(r["NRestarts"]) for r in win if str(r.get("NRestarts", "")).isdigit()]
+        restarts = (max(nr) - min(nr)) if nr else 0
         after = [r for r in rows if we and r["t"] > we]
         back = next((r["t"] for r in after if r["ve_ready"]), None)
+        loaded = [r for r in after if back and back <= r["t"] <= back + LOADED_S]
         lv_after = [r.get("local_vlm") for r in after if back and r["t"] >= back and r.get("running")]
         missions = [json.loads(x) for x in open(self.out / "missions.jsonl")]
-        late = sum(((m.get("wheel_loop") or {}).get("late_ticks") or 0) for m in missions)
+        overlapping = [m for m in missions if ws and we and m.get("t0") and m["t0"] <= we
+                       and (m.get("t1") or time.time()) >= ws]
+        late = sum(((m.get("wheel_loop") or {}).get("late_ticks") or 0) for m in overlapping)
+        running_win = [r for r in win if r.get("running")]
+        hog = self.hog_record()
         res = {
-            "delay_s": self.delay_s, "window": [ws, we], "hog": hog,
-            "kills": kills, "kill_times": kill_ts,
-            "kills_in_window": sum(1 for t in kill_ts if ws and we and ws <= t <= we),
-            "every_kill_ve": all(k["ve"] for k in kills),
-            "late_wheel_ticks_all_missions": late,
-            "robot_down_samples": sum(1 for r in win if r.get("robot_ok") is False),
-            "brain_down_samples": sum(1 for r in win if r.get("brain_ok") is False),
-            "mem_min_outside_kills_mb": min(outside) if outside else None,
+            "delay_s": self.delay_s, "window": [ws, we], "hog": hog, "notes": self.notes,
+            "kills": kills, "kill_times": kill_ts, "kills_in_window": kills_in_window,
+            "restarts_in_window": restarts,
+            "late_wheel_ticks_overlapping": late,
+            "missions_overlapping": len(overlapping),
+            "errored_missions_overlapping": sum(1 for m in overlapping if m.get("error")),
+            "running_samples_in_window": len(running_win),
+            "robot_down_samples": sum(1 for r in running_win if r.get("robot_ok") is False),
+            "brain_down_samples": sum(1 for r in running_win if r.get("brain_ok") is False),
             "mem_min_window_mb": min((r["mem_mb"] for r in win if r["mem_mb"] is not None), default=None),
-            "nrestarts": [win[0].get("NRestarts"), win[-1].get("NRestarts")] if win else None,
+            "mem_min_loaded_mb": min((r["mem_mb"] for r in loaded if r["mem_mb"] is not None),
+                                     default=None),
             "ve_back_s": round(back - we, 1) if back and we else None,
-            "local_vlm_after_back": lv_after[-5:],
+            "local_vlm_after_back": lv_after[-10:],
+        }
+        res["valid"] = {
+            "a_crash_loop": kills_in_window >= MIN_KILLS and restarts >= MIN_KILLS,
+            "no_errored_mission": res["errored_missions_overlapping"] == 0,
+            "hog_held": bool(hog.get("holding_t")) and "wrong_victim" not in hog,
+            "missions_ran_in_window": len(running_win) >= 0.8 * len(win) if win else False,
         }
         res["met"] = {
-            "every_kill_ve": res["every_kill_ve"] and bool(kills),
+            "every_kill_ve": bool(kills) and all(k["ve"] for k in kills),
             "zero_late_ticks": late == 0,
             "servers_answered": res["robot_down_samples"] == 0 and res["brain_down_samples"] == 0,
-            "mem_floor_500": res["mem_min_outside_kills_mb"] is not None
-                             and res["mem_min_outside_kills_mb"] >= 500,
+            "mem_loaded_500": res["mem_min_loaded_mb"] is not None and res["mem_min_loaded_mb"] >= 500,
             "ve_back_within": res["ve_back_s"] is not None and res["ve_back_s"] <= self.delay_s + 60,
-            "brain_up_after": bool(lv_after) and lv_after[-1] == "up",
+            "brain_up_after": bool(lv_after) and all(x == "up" for x in lv_after[-5:]),
         }
         (self.out / "result.json").write_text(json.dumps(res, indent=1) + "\n")
-        self.say(f"result: {res['met']}")
-
-    def kill_lines(self) -> list:
-        """dmesg's kill lines new since the run began; VE's if the PID was
-        one of the unit's (main process or a descendant) at a sample."""
-        kills = []
-        for line in self.dmesg_kills():
-            if line in self.dmesg0:
-                continue
-            m = re.search(r"Killed process (\d+) \(([^)]+)\)", line)
-            if m:
-                pid = int(m.group(1))
-                kills.append({"pid": pid, "name": m.group(2), "ve": pid in self.ve_pids,
-                              "line": line[:300]})
-        return kills
+        self.say(f"valid: {res['valid']}; met: {res['met']}")
+        return res
 
 
 def main(argv) -> int:
+    loop = CrashLoop(Path(argv[0]), int(argv[1]))
+
     def on_signal(signum, _frame):
+        loop.stop_all.set()              # the hog lets go first
+        loop.end_hog()
         raise SystemExit(128 + signum)
     for s in (signal.SIGTERM, signal.SIGHUP, signal.SIGINT):
         signal.signal(s, on_signal)
-    return CrashLoop(Path(argv[0]), int(argv[1])).run()
+    return loop.run()
 
 
 if __name__ == "__main__":
