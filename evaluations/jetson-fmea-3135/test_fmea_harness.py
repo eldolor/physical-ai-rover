@@ -465,21 +465,27 @@ def test_amendment_17_the_truthful_stand_in_and_f3a2s_bar():
     import truth_cloud as tc
     tx, ty = tc.TARGET_XY
     assert (tx, ty) == (7.05, 1.65)                                         # cell (23, 5), 0.30 m
-    assert tc.answer({"x": tx - 0.52, "y": ty, "th": 0.0})[0]["target_visible"] is True   # F3a's arrivals
-    assert tc.answer({"x": tx - 0.52, "y": ty, "th": math.pi})[0]["target_visible"] is False  # facing away
-    assert tc.answer({"x": tx - 1.5, "y": ty, "th": 0.0})[0]["target_visible"] is False     # too far
-    assert tc.answer({"x": tx - 0.5, "y": ty - 0.5, "th": 0.0})[0]["target_visible"] is False  # 45 deg off
+    assert tc.answer({"x": tx - 0.52, "y": ty, "cam_th": 0.0})[0]["target_visible"] is True   # F3a's arrivals
+    assert tc.answer({"x": tx - 0.52, "y": ty, "cam_th": math.pi})[0]["target_visible"] is False  # facing away
+    assert tc.answer({"x": tx - 1.5, "y": ty, "cam_th": 0.0})[0]["target_visible"] is False     # too far
+    assert tc.answer({"x": tx - 0.5, "y": ty - 0.5, "cam_th": 0.0})[0]["target_visible"] is False  # 45 deg off
+    assert tc.answer({"x": tx - 0.52, "y": ty, "th": 0.0})[1] == {"pose": None}   # no camera heading: blind
     assert tc.answer(None)[0]["target_visible"] is False
     good = {"fault_at": 1.0, "question_hit": True, "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.03,
             "handed_on": 3, "ve_back_s": 41.0, "next_answer": True, "outcome": "found",
             "status": {"arrival_verdicts": [{"tier": "cloud", "confirmed": True}]}}
     assert vlm_rows.judge("F3a2", good)["pass"]
     for change, why in (({"outcome": "exhausted"}, "not found"),
-                        ({"status": {"arrival_verdicts": [{"tier": "local", "confirmed": True}]}},
-                         "no arrival confirmed by the cloud")):
+                        ({"status": {"arrival_verdicts": [{"tier": "cloud", "confirmed": True},
+                                                          {"tier": "local", "confirmed": True}]}},
+                         "the deciding arrival verdict was not the cloud's yes")):
         v = vlm_rows.judge("F3a2", {**good, **change})
         assert not v["pass"] and any(why in r for r in v["reasons"]), v
+    assert vlm_rows.judge("F3a2", {**good, "standin_blind": 2})["valid"] is False
     assert rows.runner("F3a2").__name__ == "vlm_rows"
+    assert "cam = grid.view_angle()" in (HERE / "truth_body.py").read_text()   # a call, not the method
+    from sim.maps.scaled_house import build_scaled_world
+    assert isinstance(build_scaled_world().view_angle(), float)
 
 
 def test_the_f3_stack_asks_the_cloud_at_arrival_and_the_plant_reads_ve_gone_as_no():

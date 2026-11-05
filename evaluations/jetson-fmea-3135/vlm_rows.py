@@ -144,8 +144,11 @@ def judge(row: str, ms: dict) -> dict:
         if row == "F3a2":
             v = (ms.get("status") or {}).get("arrival_verdicts") or []
             bar(out == "found", f"the mission ended {out}, not found")
-            bar(any(x.get("tier") == "cloud" and x.get("confirmed") is True for x in v),
-                "no arrival confirmed by the cloud")
+            bar(bool(v) and v[-1].get("tier") == "cloud" and v[-1].get("confirmed") is True,
+                f"the deciding arrival verdict was not the cloud's yes ({v[-1] if v else None})")
+            if ms.get("standin_blind"):
+                valid = False
+                r.append(f"invalid: the stand-in answered {ms['standin_blind']} questions with no pose")
         if row == "F3r":
             bar(out == "arrived_unconfirmed", f"the mission ended {out}, not arrived_unconfirmed")
     if spec["fault"] == "stop":
@@ -256,6 +259,8 @@ def oom_count() -> int:
 
 def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -> dict:
     spec = ROWS[row]
+    if spec["cloud"] == "truth" and house != "scaled_house":
+        raise SystemExit("the truthful stand-in knows scaled_house's target only (amendment 17)")
     out.mkdir(parents=True, exist_ok=True)
     rec = {"row": row, "title": spec["title"], "reading": spec["reading"], "plant": plant or None,
            "house": house, "host": os.uname().nodename, "started": time.strftime("%Y-%m-%dT%H:%M:%S%z")}
@@ -284,8 +289,6 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
                     [PY, str(ROOT / "evaluations/tiered-380/E/standin_cloud.py"), str(STUB_PORT), str(calls_log)],
                     cwd=ROOT, stdout=open(out / "stub.log", "ab"), stderr=subprocess.STDOUT, start_new_session=True)
             elif spec["cloud"] == "truth":             # amendment 17: answers from the simulator's truth
-                if house != "scaled_house":
-                    raise StackError("the truthful stand-in knows scaled_house's target only")
                 helpers["stub"] = subprocess.Popen(
                     [PY, str(HERE / "truth_cloud.py"), str(STUB_PORT), str(calls_log),
                      f"http://127.0.0.1:{PORTS['body']}"],
@@ -489,6 +492,8 @@ def run_row(row: str, out: Path, plant: str = "", house: str = "scaled_house") -
     ms["contacts"] = m.contacts(rows)
     ms["gap_unknown"] = sum(1 for r in rows if r.get("gap_cm") is None)
     ms["local_questions"] = {k: sum(1 for q in plg if q.get("kind") == k) for k in ("frame", "arrival", "direction")}
+    if spec["cloud"] == "truth":                       # amendment 17: answers given blind are the instrument's
+        ms["standin_blind"] = sum(1 for c in proxy_log(calls_log) if "pose" in c and c["pose"] is None)
     if mw.rows:
         ms["mem_available_min_mb"] = min(r[1] for r in mw.rows)
         ms.setdefault("oom_kills_window", mw.rows[-1][2] - mw.rows[0][2])

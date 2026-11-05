@@ -65,6 +65,7 @@ def recorder(path: Path) -> None:
             with board.lock:                    # one instant; held only to copy it
                 t = time.monotonic()
                 x, y, th = grid.x, grid.y, grid.theta
+                cam = grid.view_angle()           # body heading plus the pan (amendment 17)
                 sp = [round(v, 4) for v in board.setpoint]
                 solid = grid.solid_cells        # the objects of the same instant
             try:                                # the geometry outside the board's lock
@@ -73,7 +74,7 @@ def recorder(path: Path) -> None:
             except Exception:                   # noqa: BLE001 -- null: contact unjudged
                 gap = None
             row = {"t": round(t, 4), "x": round(x * CELL_M, 5), "y": round(y * CELL_M, 5),
-                   "th": round(th, 5), "sp": sp,
+                   "th": round(th, 5), "cam_th": round(cam, 5), "sp": sp,
                    # footprint_sweep looks 2.5 cells out: inf is "nothing that
                    # near", written as FAR_CM; null only when it raised.
                    "gap_cm": None if gap is None else FAR_CM if math.isinf(gap) else round(gap, 2)}
