@@ -247,6 +247,35 @@ goals, 0 unmatched, 0 sends missing.
   0 cloud calls.
 * Records: `evaluations/jetson-perf-3136/board/run2-20261104-1857/`.
 
+### 2026-11-04/05, 3.152.B: VE's unit in an OOM crash loop, six runs (criterion 10, not a recurring test)
+
+`evaluations/local-vlm-3152/board.py <arm>`: rev `9dfc6d63` (d30 and d60's
+first runs), `d463dc5f` (the re-runs), `0972c251` (d120, shipped). Each ran
+21:43-01:05 under `board_lock` through 3.136's `board_run` and lease. 15 W,
+the desktop and the twin's units off. 3.135.C's soak stack ran tiered
+missions beside a VE crash loop, which a hog drove at `oom_score_adj` 100
+with a 15-min window. The candidate unit was a runtime drop-in
+(`StartLimitIntervalSec=0`, `RestartSec=D`); "shipped" ran with none. Every
+run left the board as found; the unit was read back each time.
+
+| Arm (board run) | Hog | Valid | VE kills in window | Late wheel ticks (per kill, per hour, max) | Servers down (robot / brain, of live samples) | Missions failed in the squeeze | VE ready share |
+|---|---|---|---|---|---|---|---|
+| d30, `d30-20261104-2132` | old (fixed size) | yes | 6 (loop paused ~270 s) | 4 (0.67, 16, 0.235 s) | 0 / 0 of 810 | m000: `GET /frame` 503 | -- |
+| d60, `d60-20261104-2203` | old | **no**: 1 kill, no loop | 1 | 0 | 0 / 0 of 898 | m000: the ROS bridge timed out | -- |
+| d30 re-run, `d30-20261104-2322` | topping-up | yes | 15 | **52** (3.5, 207, 0.946 s) | 3 / 2 of 699 | m000: no `/wheels` from the actuator | -- |
+| d60 re-run, `d60-20261104-2321` | topping-up | **no** as written: an errored mission | 10 | 37 (3.7, 148, 0.267 s) | 1 / 1 of 767 | m000: the brain's loop hung (tick > 30 s) | -- |
+| d120, `d120-20261105-0014` | topping-up | yes | 5 | 8 (1.6, 32, 0.659 s) | 1 / 3 of 716 | m000: the brain's loop hung (tick > 30 s) | 3.5% |
+| shipped, `shipped-20261105-0045` | topping-up | yes (start limit hit after 4 kills, ~190 s in) | 3 (4 in all) | 20 (6.7, 80, 0.495 s) | 0 / 1 of 881 | none (m000 `found`) | 2.6% |
+
+* Every kill was VE's; no stack process was killed. The memory after VE
+  was back was >= 850 MB on every valid run.
+* 0 late ticks and the servers answering were FAILED on every valid run.
+* All but shipped lost a mission to a stack call timing out in a squeeze
+  (3.153).
+* d60 is invalid twice (see 3.152's section).
+
+Records: `evaluations/local-vlm-3152/board/`.
+
 ### 2026-11-04, 3.141.E0: an unclamped vet split by call path, on the board (`d20d8eb7`)
 
 3.136.B's 30 min window, 15 W, the stall tracer with `TRACE_3141_VET_PARTS=1`,

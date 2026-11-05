@@ -1,0 +1,661 @@
+1793860038.975 WARNING identity vision-picar robot server starting -- git=0972c251 executable=/home/picar/bench-3152/.venv/bin/python config=(default)
+1793860040.817 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1793860049.127 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793860060.353 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793860086.450 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793860097.686 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793860106.135 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793860122.123 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793860138.168 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793860146.857 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793860152.811 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793860165.559 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793860172.458 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793860210.014 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793860219.794 ERROR server wheel loop tick failed
+Traceback (most recent call last):
+  File "/home/picar/bench-3152/robot/server.py", line 941, in wheel_loop
+    robot.advance(dt)
+  File "/home/picar/bench-3152/robot/ros_drive.py", line 439, in advance
+    return self.inner.advance(dt)
+  File "/home/picar/bench-3152/robot/hardware_robot.py", line 524, in advance
+    self.set_wheel_velocity(left, right)
+  File "/home/picar/bench-3152/robot/hardware_robot.py", line 499, in set_wheel_velocity
+    raise WheelFeedbackLost(self._no_feedback())
+robot.interface.WheelFeedbackLost: no feedback from the motor board for 0.00s (> 0.25s) -- the wheels are not measured
+1793860233.746 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793860241.888 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793860307.769 WARNING server refused (safety_distance) for brain: forward clamped: 19.6cm <= 20cm (depth_grid, aged 191 ms)
+1793860307.876 WARNING server refused (safety_distance) for brain: forward clamped: 19.6cm <= 20cm (depth_grid, aged 197 ms)
+1793860307.929 WARNING server refused (safety_distance) for brain: forward clamped: 18.8cm <= 20cm (depth_grid, aged 150 ms)
+1793860307.984 WARNING server refused (safety_distance) for brain: forward clamped: 19.4cm <= 20cm (depth_grid, aged 104 ms)
+1793860308.038 WARNING server refused (safety_distance) for brain: forward clamped: 18.5cm <= 20cm (depth_grid, aged 159 ms)
+1793860308.097 WARNING server refused (safety_distance) for brain: forward clamped: 19.1cm <= 20cm (depth_grid, aged 118 ms)
+1793860308.151 WARNING server refused (safety_distance) for brain: forward clamped: 18.1cm <= 20cm (depth_grid, aged 173 ms)
+1793860308.212 WARNING server refused (safety_distance) for brain: forward clamped: 17.3cm <= 20cm (depth_grid, aged 133 ms)
+1793860308.237 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)
+1793860308.255 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)
+1793860308.329 WARNING server refused (safety_distance) for ros: forward clamped: 18.0cm <= 20cm (depth_grid)
+1793860308.384 WARNING server refused (safety_distance) for ros: forward clamped: 18.0cm <= 20cm (depth_grid)
+1793860308.406 WARNING server refused (safety_distance) for ros: forward clamped: 18.0cm <= 20cm (depth_grid)
+1793860308.458 WARNING server refused (safety_distance) for ros: forward clamped: 19.2cm <= 20cm (floor_band)
+1793860308.506 WARNING server refused (safety_distance) for ros: forward clamped: 19.1cm <= 20cm (scan_footprint)
+1793860308.558 WARNING server refused (safety_distance) for ros: forward clamped: 18.9cm <= 20cm (floor_band)
+1793860308.614 WARNING server refused (safety_distance) for ros: forward clamped: 18.9cm <= 20cm (floor_band)
+1793860308.662 WARNING server refused (safety_distance) for ros: forward clamped: 18.8cm <= 20cm (floor_band)
+1793860308.716 WARNING server refused (safety_distance) for ros: forward clamped: 18.8cm <= 20cm (floor_band)
+1793860308.753 WARNING server refused (safety_distance) for ros: forward clamped: 18.8cm <= 20cm (floor_band)
+1793860308.811 WARNING server refused (safety_distance) for ros: forward clamped: 18.6cm <= 20cm (scan_footprint)
+1793860308.853 WARNING server refused (safety_distance) for ros: forward clamped: 18.6cm <= 20cm (scan_footprint)
+1793860308.919 WARNING server refused (safety_distance) for ros: forward clamped: 18.6cm <= 20cm (scan_footprint)
+1793860308.956 WARNING server refused (safety_distance) for ros: forward clamped: 18.6cm <= 20cm (scan_footprint)
+1793860309.020 WARNING server refused (safety_distance) for ros: forward clamped: 18.5cm <= 20cm (scan_footprint)
+1793860309.055 WARNING server refused (safety_distance) for ros: forward clamped: 18.5cm <= 20cm (scan_footprint)
+1793860309.120 WARNING server refused (safety_distance) for ros: forward clamped: 18.5cm <= 20cm (scan_footprint)
+1793860309.165 WARNING server refused (safety_distance) for ros: forward clamped: 18.5cm <= 20cm (scan_footprint)
+1793860309.224 WARNING server refused (safety_distance) for ros: forward clamped: 18.5cm <= 20cm (scan_footprint)
+1793860309.268 WARNING server refused (safety_distance) for ros: forward clamped: 18.5cm <= 20cm (scan_footprint)
+1793860310.358 WARNING server refused (safety_distance) for ros: forward clamped: 15.4cm <= 20cm (floor_band)
+1793860310.408 WARNING server refused (safety_distance) for ros: forward clamped: 15.3cm <= 20cm (floor_band)
+1793860310.453 WARNING server refused (safety_distance) for ros: forward clamped: 15.3cm <= 20cm (floor_band)
+1793860310.503 WARNING server refused (safety_distance) for ros: forward clamped: 15.3cm <= 20cm (scan_footprint)
+1793860310.562 WARNING server refused (safety_distance) for ros: forward clamped: 15.3cm <= 20cm (scan_footprint)
+1793860310.611 WARNING server refused (safety_distance) for ros: forward clamped: 15.4cm <= 20cm (scan_footprint)
+1793860330.950 WARNING server refused (safety_distance) for ros: reverse clamped: 10.3cm <= 20cm (scan_footprint)
+1793860331.008 WARNING server refused (safety_distance) for ros: reverse clamped: 12.7cm <= 20cm (scan_footprint)
+1793860331.057 WARNING server refused (safety_distance) for ros: reverse clamped: 12.7cm <= 20cm (scan_footprint)
+1793860331.113 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860331.157 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860331.208 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860331.257 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860331.317 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860331.356 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860331.412 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860331.462 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860331.503 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860331.552 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860331.604 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860331.655 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860331.701 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860331.757 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860331.815 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860331.863 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860331.906 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860331.953 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.010 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.056 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.106 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.154 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.206 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.257 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.304 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.354 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.421 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.451 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.506 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.555 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.606 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.654 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.707 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.756 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.804 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.851 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.905 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860332.951 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.004 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.052 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.109 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.158 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.207 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.251 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.306 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.355 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.410 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.459 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.505 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.556 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.610 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.663 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.718 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.751 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.803 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.849 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.911 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860333.953 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.000 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.059 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.102 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.164 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.211 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.265 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.313 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.361 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.424 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.452 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.510 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.559 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.614 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.668 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.714 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.753 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.806 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.868 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.907 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860334.955 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.005 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.053 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.109 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.165 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.217 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.252 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.304 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.352 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.414 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.454 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.508 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.553 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.605 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.653 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.708 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.753 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.803 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.852 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.913 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860335.959 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.017 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.066 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.103 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.159 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.207 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.260 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.304 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.352 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.413 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.453 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.504 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.552 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.604 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.662 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.713 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.753 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.810 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.859 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860336.921 WARNING server refused (safety_distance) for ros: reverse clamped: 12.9cm <= 20cm (scan_footprint)
+1793860344.928 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793860356.810 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1793860432.850 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860433.656 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860434.419 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860435.180 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860435.965 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860436.761 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860437.524 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860438.283 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860439.072 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860439.867 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860440.643 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860441.412 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860442.196 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860442.989 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860443.770 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860444.534 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860445.319 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860446.130 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860446.930 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860447.751 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860448.563 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860449.390 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860450.183 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860450.939 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860451.713 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860452.601 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860453.413 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860454.206 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860454.987 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860455.761 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860456.539 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860457.311 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860458.120 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860458.861 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860459.634 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860460.413 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860461.196 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860461.962 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860462.707 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860463.474 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860464.264 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860465.053 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860465.831 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860466.626 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860467.417 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860468.213 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860469.029 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860469.806 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860470.557 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860471.362 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860472.144 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860472.924 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860473.720 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860474.511 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860475.267 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860476.038 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860476.824 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860477.608 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860478.416 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860479.216 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860480.043 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860480.835 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860481.616 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860482.396 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860483.239 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860484.013 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860484.768 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860485.566 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860486.341 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860487.093 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860487.860 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860488.640 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860489.398 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860490.191 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860490.976 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860491.781 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860492.621 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860493.422 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860494.220 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860495.015 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860495.800 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860496.564 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860497.360 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860498.121 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860498.892 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860499.713 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860500.463 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860501.242 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860502.028 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860502.791 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860503.553 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860504.349 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860505.128 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860505.918 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860506.729 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860507.502 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860508.291 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860509.080 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860509.920 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860510.679 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860511.466 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860512.270 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860513.048 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860513.829 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860514.640 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860515.426 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860516.218 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860517.027 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860517.822 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860518.570 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860519.341 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860520.112 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860520.912 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860521.651 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860522.438 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860523.224 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860524.014 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860524.777 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860525.597 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860526.411 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860527.214 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860527.978 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860528.763 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860529.533 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860530.336 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860531.138 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860531.944 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860532.877 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860533.685 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860534.520 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860535.320 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860536.144 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860536.956 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860537.799 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860538.729 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860539.632 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860540.408 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860545.432 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860553.657 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1793860556.906 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860557.866 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860558.713 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860559.545 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860560.310 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860561.087 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860561.919 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860562.712 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860563.515 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860564.329 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860565.136 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860565.905 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860566.664 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860567.470 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860568.270 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860569.067 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860569.870 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860570.664 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860571.440 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860572.232 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860572.985 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860573.752 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860574.493 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860575.274 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860576.048 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860576.835 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860577.642 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860578.419 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860579.220 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860580.027 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860580.826 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860581.665 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860582.454 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860583.242 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860584.062 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860584.836 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860585.635 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860586.419 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860587.221 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860587.965 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860588.775 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860589.568 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860590.343 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860591.089 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860591.846 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860592.657 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860593.470 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860594.271 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860595.055 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860595.852 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860596.617 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860597.360 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860598.147 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860598.922 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860599.717 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860600.516 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860601.255 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860602.025 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860602.811 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860603.560 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860604.363 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860605.158 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860605.929 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860606.718 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860607.526 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860608.328 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860609.082 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860609.872 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860610.656 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860611.447 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860612.223 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860613.030 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860613.801 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860614.616 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860615.355 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860616.103 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860616.922 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860617.682 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860618.435 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860619.213 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860620.029 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860620.812 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860621.613 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860622.377 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860623.162 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860623.960 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860624.732 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860625.513 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860626.271 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860627.062 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860627.860 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860628.657 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860629.440 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860630.209 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860630.960 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860631.736 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860632.536 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860633.375 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860634.162 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860634.947 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860635.731 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860636.525 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860637.305 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860638.123 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860638.934 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860639.716 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860640.476 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860641.261 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860642.029 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860642.797 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860643.568 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860644.367 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860645.142 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860645.922 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860646.716 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860647.462 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860648.220 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860649.029 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860649.840 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860650.640 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860651.462 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860652.237 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860652.982 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860653.774 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860654.525 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860655.317 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860656.099 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860656.934 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860657.719 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860658.502 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860659.269 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860660.033 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860660.793 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860661.537 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860662.287 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860663.060 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860663.815 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860664.584 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860665.355 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860666.119 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860666.861 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860667.633 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860668.393 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860669.193 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860669.966 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860670.816 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860671.582 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860672.354 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860673.117 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860673.880 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860674.663 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860675.444 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860676.224 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860677.013 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860677.773 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860678.515 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860679.278 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860680.156 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860680.987 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860681.821 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860682.594 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860683.390 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860684.229 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860685.124 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860686.003 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860686.961 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860687.733 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860690.442 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860691.277 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860692.071 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860692.855 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860693.629 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860694.436 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860695.238 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860696.030 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860696.830 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860697.595 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860698.412 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860699.225 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860700.016 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860700.819 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860701.604 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860702.353 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860703.111 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860703.871 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860704.636 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860705.387 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860706.167 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860706.939 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860707.724 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860708.525 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860709.324 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860710.084 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860710.893 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860711.667 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860712.431 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860713.215 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860713.991 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860714.766 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860715.560 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860716.370 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860717.160 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860717.921 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860718.692 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860719.469 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860720.246 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860721.027 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860721.831 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860722.618 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860723.387 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860724.156 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860724.927 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860725.689 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860726.472 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860727.227 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860728.019 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860728.766 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860729.570 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860730.360 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860731.165 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860731.960 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860732.768 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860733.541 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860734.316 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860735.074 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860735.844 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860736.595 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860737.364 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860738.153 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860738.924 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860739.708 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860740.460 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860741.276 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860742.061 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860742.829 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860743.650 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860744.416 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860745.210 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860746.003 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860746.797 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860747.560 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860748.320 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860749.077 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860749.846 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860750.611 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860751.420 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860752.199 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860753.024 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860753.813 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860754.594 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860755.381 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860756.134 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860756.886 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860757.637 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860758.387 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860759.176 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860759.955 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860760.739 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860761.512 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860762.271 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860763.055 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860763.862 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860764.612 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860765.362 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860766.133 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860766.888 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860767.647 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860768.409 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860769.169 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860769.945 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860770.724 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860771.565 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860772.343 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860773.099 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860773.876 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860774.662 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860775.412 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860776.169 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860776.951 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860777.689 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860778.468 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860779.234 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860780.025 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860780.855 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860781.632 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860782.419 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860783.153 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860783.931 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860784.717 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860785.481 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860786.256 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860787.041 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860787.797 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860788.567 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860789.358 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860790.158 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860790.944 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860791.684 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860792.438 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860793.217 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860794.021 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860794.822 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860795.615 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860796.376 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860797.171 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860797.967 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860798.747 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860799.504 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860800.289 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860801.091 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860801.895 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860802.690 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860803.478 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860804.282 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860805.078 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860805.870 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860806.679 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860807.460 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860808.246 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860809.039 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860809.822 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860810.591 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860811.416 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860812.244 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860813.019 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860813.862 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860814.791 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860815.610 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860816.374 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860817.232 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860818.023 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860818.865 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860819.776 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860820.659 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860821.487 WARNING server refused (preempted) for brain: a nav2 goal is active -- one autonomous driver at a time, so brain was refused until it ends or is cancelled
+1793860824.553 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1793860878.584 WARNING server refused (ros_unavailable) for brain: the ROS stack is down (no /wheels from the actuator for over 0.5 s) -- only a person may drive on the fallback

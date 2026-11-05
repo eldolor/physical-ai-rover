@@ -1,0 +1,23 @@
+{
+ "t0": 1793861752.466,
+ "kills_at_start": 46,
+ "oom_score_adj": 100,
+ "mem_mb_last": 76,
+ "kills_seen": [
+  "[79458.767394] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=docker-c6aaedf5b47626d3a67fd391e6296cfe1a81b15166b13cb7093695a4a40b86d8.scope,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=356256,uid=1000"
+ ],
+ "first_kill_t": 1793861766.542,
+ "first_kill_mb": 3360,
+ "held_mb": 3616,
+ "holding_t": 1793861766.8,
+ "topups": [
+  {
+   "t": 1793861831.106,
+   "how": "killed",
+   "added_mb": 512,
+   "held_mb": 4128
+  }
+ ],
+ "ended_by": "SIGTERM",
+ "released_t": 1793862667.952
+}

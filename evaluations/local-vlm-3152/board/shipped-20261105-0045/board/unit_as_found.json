@@ -1,0 +1,16 @@
+{
+ "show": {
+  "RestartUSec": "30s",
+  "MainPID": "356173",
+  "Result": "success",
+  "NRestarts": "0",
+  "ActiveState": "active",
+  "SubState": "running",
+  "StartLimitIntervalUSec": "15min",
+  "StartLimitBurst": "4"
+ },
+ "cat": "# /etc/systemd/system/picar-local-vlm.service\n[Unit]\nDescription=vision-picar local VLM (3.80.B: Qwen2.5-VL-3B VE under TensorRT Edge-LLM, :8005)\nAfter=network-online.target\n# A driver that keeps dying (an OOM kill each time it loads) is left\n# stopped after three restarts in 15 min: the VLM is then absent and the\n# cloud tier answers, rather than a 4 GB load spike every 30 s. The burst\n# counts every start, the first one too: 4 = the start + 3 restarts.\nStartLimitIntervalSec=900\n# 3.108: a bench holds the VLM off for its run with this flag (cleared at\n# every boot): tools/jetson/vlm_hold.sh.\nConditionPathExists=!/run/picar-vlm-hold\nStartLimitBurst=4\n\n[Service]\nUser=picar\nWorkingDirectory=/home/picar/vision-picar-service\n# LOCAL_VLM_ENGINES, LOCAL_VLM_EDGELLM and APP_SHARED_SECRET.\nEnvironmentFile=/home/picar/.vision-picar-local-vlm.env\nExecStart=/home/picar/vision-picar-service/.venv/bin/python -m service.local_vlm.server\n# The first process the kernel kills when memory runs out (3.80, the user's\n# floor of 2026-10-14): losing the VLM sends identity to the cloud tier;\n# losing the robot server stops the robot.\nOOMScoreAdjust=1000\n# A kernel OOM kill of the driver must not stop the unit by itself: the\n# service sees its driver gone, exits 3, and Restart= decides.\nOOMPolicy=continue\nRestart=on-failure\nRestartSec=30\nTimeoutStopSec=20\n# SIGTERM to the service only; it closes the driver's stdin itself, so a\n# stop is never mistaken for a driver death. The rest is killed after.\nKillMode=mixed\nStandardOutput=append:/home/picar/.vision-picar-local-vlm.log\nStandardError=append:/home/picar/.vision-picar-local-vlm.log\n\n[Install]\nWantedBy=multi-user.target\n",
+ "dropins": [],
+ "active": "active",
+ "enabled": "enabled"
+}

@@ -1,0 +1,12 @@
+[79458.766789] tev invoked oom-killer: gfp_mask=0x1100cca(GFP_HIGHUSER_MOVABLE), order=0, oom_score_adj=0
+[79458.767394] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=docker-c6aaedf5b47626d3a67fd391e6296cfe1a81b15166b13cb7093695a4a40b86d8.scope,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=356256,uid=1000
+[79458.767434] Out of memory: Killed process 356256 (edgellm_identit) total-vm:8962528kB, anon-rss:92532kB, file-rss:26668kB, shmem-rss:0kB, UID:1000 pgtables:1820kB oom_score_adj:1000
+[79527.848103] recvUC invoked oom-killer: gfp_mask=0x1100cca(GFP_HIGHUSER_MOVABLE), order=0, oom_score_adj=0
+[79527.860877] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=docker-c6aaedf5b47626d3a67fd391e6296cfe1a81b15166b13cb7093695a4a40b86d8.scope,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=366432,uid=1000
+[79527.860914] Out of memory: Killed process 366432 (edgellm_identit) total-vm:8962532kB, anon-rss:524120kB, file-rss:28624kB, shmem-rss:0kB, UID:1000 pgtables:1836kB oom_score_adj:1000
+[79595.439805] python3 invoked oom-killer: gfp_mask=0xcc0(GFP_KERNEL), order=0, oom_score_adj=0
+[79595.440378] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=371800,uid=1000
+[79595.440412] Out of memory: Killed process 371800 (edgellm_identit) total-vm:8762368kB, anon-rss:389964kB, file-rss:21472kB, shmem-rss:0kB, UID:1000 pgtables:1440kB oom_score_adj:1000
+[79644.880052] behavior_server invoked oom-killer: gfp_mask=0x1100cca(GFP_HIGHUSER_MOVABLE), order=0, oom_score_adj=0
+[79644.909520] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=docker-c6aaedf5b47626d3a67fd391e6296cfe1a81b15166b13cb7093695a4a40b86d8.scope,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=375227,uid=1000
+[79644.909552] Out of memory: Killed process 375227 (edgellm_identit) total-vm:8734856kB, anon-rss:374452kB, file-rss:21132kB, shmem-rss:0kB, UID:1000 pgtables:1404kB oom_score_adj:1000

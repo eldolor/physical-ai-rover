@@ -1,0 +1,258 @@
+{
+ "candidates": [
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 27,
+   "hits": 1,
+   "id": 9,
+   "label": "bed",
+   "last_step": 27,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "bedroom 2",
+   "votes": {
+    "bed": 1
+   },
+   "x_m": 15.716,
+   "y_m": 3.205
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 33,
+   "hits": 1,
+   "id": 12,
+   "label": "bed",
+   "last_step": 34,
+   "misses": 0,
+   "points": 2,
+   "reported": false,
+   "room": "bedroom 2",
+   "votes": {
+    "bed": 1
+   },
+   "x_m": 15.773,
+   "y_m": 3.866
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 1,
+   "id": 2,
+   "label": "desk",
+   "last_step": 1,
+   "misses": 0,
+   "points": 2,
+   "reported": false,
+   "room": "bedroom",
+   "votes": {
+    "desk": 1
+   },
+   "x_m": 10.412,
+   "y_m": 0.922
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 23,
+   "hits": 1,
+   "id": 7,
+   "label": "desk",
+   "last_step": 32,
+   "misses": 0,
+   "points": 8,
+   "reported": false,
+   "room": "bedroom 2",
+   "votes": {
+    "desk": 1
+   },
+   "x_m": 15.606,
+   "y_m": 5.952
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 11,
+   "hits": 1,
+   "id": 4,
+   "label": "dresser",
+   "last_step": 11,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "bedroom",
+   "votes": {
+    "dresser": 1
+   },
+   "x_m": 9.412,
+   "y_m": 6.42
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 27,
+   "hits": 1,
+   "id": 11,
+   "label": "dresser",
+   "last_step": 27,
+   "misses": 0,
+   "points": 2,
+   "reported": false,
+   "room": "bedroom 2",
+   "votes": {
+    "dresser": 1
+   },
+   "x_m": 13.477,
+   "y_m": 4.188
+  }
+ ],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 35,
+  "landmarks": 12,
+  "no_pose": 0,
+  "observations": 66,
+  "reported": 6,
+  "unplaced": 1
+ },
+ "frame_id": "map-cf20b39a",
+ "map_id": "slam-5a849852",
+ "mission": "Find the red backpack.",
+ "mission_id": "20261105T064336.436843Z-red backpack",
+ "outcome": "cancelled",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 6,
+   "hits": 5,
+   "id": 3,
+   "label": "desk",
+   "last_step": 32,
+   "misses": 0,
+   "points": 30,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "desk": 5
+   },
+   "x_m": 14.691,
+   "y_m": 6.169
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 27,
+   "hits": 2,
+   "id": 8,
+   "label": "baseball bat",
+   "last_step": 34,
+   "misses": 0,
+   "points": 2,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "baseball bat": 2
+   },
+   "x_m": 14.414,
+   "y_m": 2.99
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 2,
+   "id": 1,
+   "label": "bed",
+   "last_step": 10,
+   "misses": 0,
+   "points": 5,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "bed": 2
+   },
+   "x_m": 11.911,
+   "y_m": 1.799
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 20,
+   "hits": 2,
+   "id": 6,
+   "label": "bed",
+   "last_step": 32,
+   "misses": 0,
+   "points": 7,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "bed": 2
+   },
+   "x_m": 15.891,
+   "y_m": 4.649
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 27,
+   "hits": 2,
+   "id": 10,
+   "label": "box",
+   "last_step": 34,
+   "misses": 0,
+   "points": 2,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "box": 2
+   },
+   "x_m": 14.971,
+   "y_m": 2.971
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 11,
+   "hits": 2,
+   "id": 5,
+   "label": "tv stand",
+   "last_step": 16,
+   "misses": 0,
+   "points": 3,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "tv stand": 2
+   },
+   "x_m": 11.963,
+   "y_m": 6.293
+  }
+ ]
+}

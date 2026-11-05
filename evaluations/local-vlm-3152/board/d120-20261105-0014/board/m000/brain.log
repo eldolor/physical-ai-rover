@@ -1,0 +1,43 @@
+1793860041.153 WARNING identity vision-picar brain server starting -- git=0972c251 executable=/home/picar/bench-3152/.venv/bin/python config=(default)
+1793860061.400 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM absent"}); asking the cloud
+1793860061.954 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)
+1793860220.393 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM not ready"}); asking the cloud
+1793860221.459 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)
+1793860336.896 WARNING safety Blocked REVERSE: rear clearance=12.9cm < min=20cm (scan_footprint)
+1793860360.235 WARNING explore goal call failed (1 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793860372.130 WARNING explore goal call failed (2 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793860835.413 WARNING safety Blocked REVERSE: rear clearance=0.0cm < min=20cm (astern_not_observed)
+1793860876.409 ERROR brain_server brain loop hung: tick exceeded 30.0s
+1793860878.615 ERROR mission_runner mission step failed
+Traceback (most recent call last):
+  File "/home/picar/bench-3152/control/mission_runner.py", line 1070, in tick
+    result = self.agent.step()
+  File "/home/picar/bench-3152/brain/explore.py", line 375, in step
+    action, executed, detail = self._choose(frame, scene)
+  File "/home/picar/bench-3152/brain/explore.py", line 401, in _choose
+    out = self._choose_tick(frame, scene)
+  File "/home/picar/bench-3152/brain/explore.py", line 487, in _choose_tick
+    return self._do_pending()
+  File "/home/picar/bench-3152/brain/explore.py", line 1602, in _do_pending
+    out = self._verb(item)
+  File "/home/picar/bench-3152/brain/explore.py", line 1753, in _verb
+    out = action, True, self.safety.check_and_execute(action, **kwargs)
+  File "/home/picar/bench-3152/robot/safety.py", line 1124, in check_and_execute
+    return self._check_and_execute(action, self.required_clearance_cm(v, v <= CREEP_M_S),
+  File "/home/picar/bench-3152/robot/safety.py", line 1167, in _check_and_execute
+    result = self._dispatch(action, **kwargs)
+  File "/home/picar/bench-3152/robot/safety.py", line 1339, in _dispatch
+    return dispatch_table[action]()
+  File "/home/picar/bench-3152/robot/safety.py", line 1324, in <lambda>
+    "FORWARD": lambda: self.robot.drive_forward(
+  File "/home/picar/bench-3152/control/mission_runner.py", line 512, in drive_forward
+    return self._robot.drive_forward(speed, duration)
+  File "/home/picar/bench-3152/control/remote_robot.py", line 99, in drive_forward
+    return self._action("FORWARD", speed=speed, duration=duration)
+  File "/home/picar/bench-3152/control/remote_robot.py", line 288, in _action
+    raise RobotTransportError(f"ros_unavailable: {detail}")
+control.remote_robot.RobotTransportError: ros_unavailable: the ROS stack is down (no /wheels from the actuator for over 0.5 s) -- only a person may drive on the fallback
+1793860881.295 WARNING mission_runner could not end the mission's nav2 goal: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503

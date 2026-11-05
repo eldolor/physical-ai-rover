@@ -1,0 +1,14 @@
+00:27:14 setup done; MemAvailable 1572 MB
+00:27:14 candidate loaded: {'RestartUSec': '2min', 'MainPID': '224401', 'Result': 'success', 'NRestarts': '0', 'ActiveState': 'active', 'SubState': 'running', 'StartLimitIntervalUSec': '0', 'StartLimitBurst': '4'}
+00:27:14 m000 home_first_floor / red backpack; MemAvailable 1607 MB
+00:27:28 hog started (pid 238381)
+00:27:42 hog holding 3200 MB; window 900 s
+00:42:19 docker logs: Command '['docker', 'logs', 'picar-ros-3135']' timed out after 59.99989010801073 seconds
+00:42:44 m000 -> failed 
+00:42:44 m001 complex_house / shoes; MemAvailable 1885 MB
+00:43:23 m001 -> found 
+00:43:23 m002 procthor:val:0 / red backpack; MemAvailable 1253 MB
+00:44:06 m002 -> cancelled 
+00:44:06 valid: {'a_crash_loop': True, 'kill_lines_complete': True, 'loaded_window_in_a_mission': True, 'no_kill_before_the_hog': True, 'every_kill_line_placed': True, 'a_full_window': True, 'no_errored_mission': True, 'wheel_loop_read': True, 'dmesg_baseline': True}; met: {'every_kill_ve': True, 'zero_late_ticks': False, 'servers_answered': False, 'mem_loaded_500': True, 've_back_within': True, 'brain_up_after': True}
+00:44:07 unit put back: {'steps': [['/run/systemd/system/picar-local-vlm.service.d/zz-3152-crash-loop.conf', 0], ['daemon-reload', 0], ['picar-local-vlm', 0]], 'show': {'RestartUSec': '30s', 'MainPID': '296110', 'Result': 'success', 'NRestarts': '0', 'ActiveState': 'active', 'SubState': 'running', 'StartLimitIntervalUSec': '15min', 'StartLimitBurst': '4'}, 'dropins': [], 've_ready': True, 'active': 'active', 'settings_as_found': True, 'dropins_as_found': True, 'active_as_found': True}
+00:44:13 torn down

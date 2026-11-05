@@ -1,0 +1,116 @@
+{
+ "delay_s": null,
+ "window": [
+  1793861766.8,
+  1793862667.987672
+ ],
+ "window_s": 901.2,
+ "hog": {
+  "t0": 1793861752.466,
+  "kills_at_start": 46,
+  "oom_score_adj": 100,
+  "mem_mb_last": 76,
+  "kills_seen": [
+   "[79458.767394] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=docker-c6aaedf5b47626d3a67fd391e6296cfe1a81b15166b13cb7093695a4a40b86d8.scope,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=356256,uid=1000"
+  ],
+  "first_kill_t": 1793861766.542,
+  "first_kill_mb": 3360,
+  "held_mb": 3616,
+  "holding_t": 1793861766.8,
+  "topups": [
+   {
+    "t": 1793861831.106,
+    "how": "killed",
+    "added_mb": 512,
+    "held_mb": 4128
+   }
+  ],
+  "ended_by": "SIGTERM",
+  "released_t": 1793862667.952
+ },
+ "notes": [],
+ "kills": [
+  {
+   "t": 1793861763.651648,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "356256",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=docker-c6aaedf5b47626d3a67fd391e6296cfe1a81b15166b13cb7093695a4a40b86d8.scope,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=356256,uid=1000"
+  },
+  {
+   "t": 1793861832.745131,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "366432",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=docker-c6aaedf5b47626d3a67fd391e6296cfe1a81b15166b13cb7093695a4a40b86d8.scope,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=366432,uid=1000"
+  },
+  {
+   "t": 1793861900.324632,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "371800",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=371800,uid=1000"
+  },
+  {
+   "t": 1793861949.793774,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "375227",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=docker-c6aaedf5b47626d3a67fd391e6296cfe1a81b15166b13cb7093695a4a40b86d8.scope,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=375227,uid=1000"
+  }
+ ],
+ "ve_kills": 4,
+ "kills_before_hog": 0,
+ "oom_kill_rose_by": 4,
+ "kills_in_window": 3,
+ "loaded_rows": 58,
+ "restarts_in_window": 4,
+ "late_wheel_ticks_overlapping": 20,
+ "missions_overlapping": 2,
+ "errored_missions_overlapping": 0,
+ "missions_without_wheel_loop": 0,
+ "live_samples_in_window": 881,
+ "robot_down_samples": 0,
+ "brain_down_samples": 1,
+ "mem_min_window_mb": 20,
+ "loaded_from": 1793863028.3976448,
+ "mem_min_loaded_mb": 5038,
+ "ve_back_s": null,
+ "ve_ready_share_window": 0.026,
+ "late_per_hour": 79.9,
+ "local_vlm_loaded": [
+  "down",
+  "down",
+  "down",
+  "down",
+  "down",
+  "down",
+  "down",
+  "down",
+  "down",
+  "down"
+ ],
+ "valid": {
+  "a_crash_loop": true,
+  "kill_lines_complete": true,
+  "loaded_window_in_a_mission": true,
+  "no_kill_before_the_hog": true,
+  "every_kill_line_placed": true,
+  "a_full_window": true,
+  "no_errored_mission": true,
+  "wheel_loop_read": true,
+  "dmesg_baseline": true
+ },
+ "met": {
+  "every_kill_ve": true,
+  "zero_late_ticks": false,
+  "servers_answered": false,
+  "mem_loaded_500": true,
+  "ve_back_within": null,
+  "brain_up_after": false
+ }
+}

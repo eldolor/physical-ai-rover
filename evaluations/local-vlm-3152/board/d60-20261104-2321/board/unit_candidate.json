@@ -1,0 +1,10 @@
+{
+ "RestartUSec": "1min",
+ "MainPID": "143633",
+ "Result": "success",
+ "NRestarts": "0",
+ "ActiveState": "active",
+ "SubState": "running",
+ "StartLimitIntervalUSec": "0",
+ "StartLimitBurst": "4"
+}

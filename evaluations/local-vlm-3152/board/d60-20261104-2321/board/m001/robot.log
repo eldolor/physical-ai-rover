@@ -1,0 +1,15 @@
+1793859633.887 WARNING identity vision-picar robot server starting -- git=d463dc5f executable=/home/picar/bench-3152/.venv/bin/python config=(default)
+1793859635.659 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1793859642.793 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793859750.622 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1793859777.628 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793859817.611 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793859837.803 WARNING safety Blocked REVERSE: stopped after 0.0cm through ROS -- the wheels did not carry it out (the safety vet, or the chain, held them)
+1793859837.806 WARNING server refused (safety_distance) for brain: Blocked REVERSE: stopped after 0.0cm through ROS -- the wheels did not carry it out (the safety vet, or the chain, held them)
+1793859844.486 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793859874.334 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793859890.092 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793859907.094 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793859922.506 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793859937.501 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793859958.092 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses

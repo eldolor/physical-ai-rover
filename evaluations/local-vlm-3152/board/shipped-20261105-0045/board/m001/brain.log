@@ -1,0 +1,4 @@
+1793862516.742 WARNING identity vision-picar brain server starting -- git=0972c251 executable=/home/picar/bench-3152/.venv/bin/python config=(default)
+1793862523.395 WARNING tiered local VLM absent for mission_start (local VLM unreachable: [Errno 111] Connection refused); asking the cloud
+1793862524.293 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)
+1793862628.447 WARNING safety Blocked REVERSE: rear clearance=19.2cm < min=20cm (scan_footprint)
