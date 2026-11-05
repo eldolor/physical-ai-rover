@@ -16,14 +16,10 @@ import json
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "jetson-perf-3136"))
+from scorers import percentile as pct  # noqa: E402  (one percentile rule: nearest rank)
+
 P90_BAR_MS, MAX_BAR_MS = 3.0, 15.0
-
-
-def pct(v, q):
-    if not v:
-        return None
-    v = sorted(v)
-    return v[min(len(v) - 1, int(round(q / 100 * (len(v) - 1))))]
 
 
 def stats(v):
@@ -49,10 +45,11 @@ def score(board: Path) -> dict:
         p = board / name
         return float(p.read_text().split()[0]) if p.exists() else None
     t0, t1 = stamp("window_start"), stamp("window_end")
-    loop, pool, clamped, parts = [], [], 0, {}
+    loop, pool, clamped, parts, under_1ms = [], [], 0, {}, 0
     for r in rows(board):
-        if r.get("k") != "vet" or (t0 and r["t"] < t0) or (t1 and r["t"] > t1):
+        if r.get("k") != "vet" or (t0 is not None and r["t"] < t0) or (t1 is not None and r["t"] > t1):
             continue
+        under_1ms += r["ms"] < 1.0
         if r.get("reason"):
             clamped += 1
             continue
@@ -62,8 +59,11 @@ def score(board: Path) -> dict:
                 parts[name] = parts.get(name, 0.0) + ms
     out = {"window": [t0, t1], "loop": stats(loop), "threadpool": stats(pool),
            "all": stats(loop + pool), "clamped_rows": clamped,
+           # A trace at the tracer's default threshold (vets over 5 ms only)
+           # has no fast rows: it cannot give these numbers (amendment 5).
+           "every_vet_recorded": under_1ms > 0,
            "parts_over_bar_ms": dict(sorted(parts.items(), key=lambda kv: -kv[1])[:12])}
-    out["met"] = out["loop"]["met"] and out["threadpool"]["met"]
+    out["met"] = out["every_vet_recorded"] and out["loop"]["met"] and out["threadpool"]["met"]
     return out
 
 

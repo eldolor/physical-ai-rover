@@ -282,9 +282,11 @@ def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel
     Amendment 6 (3.136.B, the user): a non-frontier ABORTED goal whose id
     the brain recorded a cancel for (`cancel_rows`, the probe's
     `explore_cancels.jsonl` of `status.explore.cancels`) at or before the
-    first status row showing it ended is `aborted_cancelled` (counted
-    neither way, as a sender's cancel); a cancel recorded after that, for
-    another id, or none at all leaves it `aborted_other`."""
+    first status row showing it ended, and which the bridge answered with a
+    goal still live to cancel, is `aborted_cancelled` (counted neither way,
+    as a sender's cancel); a cancel recorded after that, one that found
+    nothing live (the abort had already reached the bridge), one for another
+    id, or none at all leaves it `aborted_other`."""
     kind = {}
     for r in sent_rows:
         for gid, k in r.get("sent") or []:
@@ -292,8 +294,9 @@ def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel
                 kind[gid[:GOAL_ID_HEX]] = k
     first_cancel = {}
     for r in cancel_rows:
-        for _n, gid, tc in r.get("cancels") or []:
-            if gid:
+        for e in r.get("cancels") or []:
+            _n, gid, tc = e[:3]
+            if gid and len(e) > 3 and e[3] is True:
                 g = gid[:GOAL_ID_HEX]
                 first_cancel[g] = min(tc, first_cancel.get(g, tc))
     ended = {}

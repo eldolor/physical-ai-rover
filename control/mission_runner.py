@@ -333,10 +333,13 @@ class _GatedNavigator:
         # goal still on its way when the mission ended -- which must still
         # be able to cancel itself.
         self._lock = threading.Lock()
-        # 3.136.B amendment 6: every cancel this gate sends, as [n, the goal id
-        # of the mission's last accepted goal (None if unknown), wall time],
-        # recorded BEFORE it goes out -- so a goal nav2 ends ABORTED after the
-        # brain asked to cancel it reads as the brain's cancel, by id.
+        # 3.136.B amendment 6: every cancel this gate sent, as [n, the goal id
+        # of the mission's last accepted goal (None if unknown), the wall time
+        # just BEFORE it went out, whether the bridge found a goal still live
+        # to cancel (its `cancelled`)] -- recorded once the call returned (one
+        # that raised never reached the bridge as a cancel) -- so a goal nav2
+        # ends ABORTED after the brain asked to cancel it while it was live
+        # reads as the brain's cancel, by id.
         self._own_id: Optional[str] = None
         self.cancels = collections.deque(maxlen=CANCELS_KEPT)
         self._cancels_n = 0
@@ -387,15 +390,23 @@ class _GatedNavigator:
             # The goal on the server may be a person's by now; the
             # mission's own is ended by cancel_own().
             return {"canceled": False, "reason": "mission_ended"}
-        self._note_cancel()
-        return self._nav.cancel_goal()
+        return self._sent_cancel()
 
-    def _note_cancel(self) -> None:
-        """Numbered, and appended before the count rises, so a reader on
-        another thread takes entries by number (as explore's `sent`)."""
+    def _sent_cancel(self) -> dict:
+        """The cancel, and its record (amendment 6): numbered, and appended
+        before the count rises, so a reader on another thread takes entries
+        by number (as explore's `sent`)."""
+        gid, t = self._own_id, round(time.time(), 6)
+        reply = self._nav.cancel_goal()
+        live = isinstance(reply, dict) and reply.get("cancelled") is True
         with self._cancel_lock:
-            self.cancels.append((self._cancels_n + 1, self._own_id, round(time.time(), 6)))
+            self.cancels.append((self._cancels_n + 1, gid, t, live))
             self._cancels_n += 1
+        return reply
+
+    def cancels_snapshot(self) -> list:
+        with self._cancel_lock:
+            return [list(x) for x in self.cancels]
 
     @property
     def sent_goal(self) -> bool:
@@ -412,8 +423,7 @@ class _GatedNavigator:
             if (goal.get("state") in ("pending", "active")
                     and math.hypot(goal.get("x_m", math.inf) - own[0],
                                    goal.get("y_m", math.inf) - own[1]) < OWN_GOAL_TOLERANCE_M):
-                self._note_cancel()
-                self._nav.cancel_goal()
+                self._sent_cancel()
         except Exception as e:  # noqa: BLE001 -- nothing on the way out may raise (3.55)
             logger.warning("could not end the mission's nav2 goal: %s", e)
 
@@ -1598,7 +1608,7 @@ class MissionRunner:
                              # outside this lock.
                              "sent": [list(x) for x in list(self.agent.sent)],
                              # 3.136.B amendment 6: the cancels the brain sent, by id.
-                             "cancels": ([list(x) for x in list(self._navigator.cancels)]
+                             "cancels": (self._navigator.cancels_snapshot()
                                          if isinstance(self._navigator, _GatedNavigator) else []),
                              "goals_failed": self.agent.goals_failed,
                              "last_event": self.agent.last_event,

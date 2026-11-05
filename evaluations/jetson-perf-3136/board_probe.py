@@ -38,6 +38,10 @@ BRAIN = "http://127.0.0.1:8001/brain"
 ROBOT = "http://127.0.0.1:8000"
 
 
+# Amendment 6: seconds of status reads after a mission ends, for its end's cancel.
+END_CANCEL_READS = 5
+
+
 def missions(flag: str, out: str, targets: list) -> int:
     import httpx
 
@@ -68,6 +72,16 @@ def missions(flag: str, out: str, targets: list) -> int:
                 time.sleep(5)
                 continue
             s, stopped, seen, seen_c = {}, False, 0, 0
+
+            def take_cancels(ex):
+                # [n, goal_id, wall time], numbered as the sends are.
+                nonlocal seen_c
+                new_c = [e for e in ex.get("cancels") or [] if e[0] > seen_c]
+                if new_c:
+                    missing_c = new_c[0][0] - seen_c - 1
+                    seen_c = new_c[-1][0]
+                    cancels.write(json.dumps({"t": round(time.time(), 3), "mission": i,
+                                              "cancels": new_c, "missing": missing_c}) + "\n")
             while True:
                 if not os.path.exists(flag) and not stopped:
                     try:
@@ -91,18 +105,21 @@ def missions(flag: str, out: str, targets: list) -> int:
                     sends.write(json.dumps({"t": round(time.time(), 3), "mission": i,
                                             "sent": [e[1:] for e in new],
                                             "missing": missing}) + "\n")
-                # The same for the cancels: [n, goal_id, wall time].
-                new_c = [e for e in ex.get("cancels") or [] if e[0] > seen_c]
-                if new_c:
-                    missing_c = new_c[0][0] - seen_c - 1
-                    seen_c = new_c[-1][0]
-                    cancels.write(json.dumps({"t": round(time.time(), 3), "mission": i,
-                                              "cancels": new_c, "missing": missing_c}) + "\n")
+                take_cancels(ex)
                 if not s.get("running") and s.get("outcome") not in (None, "idle", "running"):
                     break
                 if stopped and time.time() - t0 > 3600:
                     break
                 time.sleep(1)
+            # The mission's end cancels its own goal on a thread of its own,
+            # after `running` turns false: read its cancels a while longer,
+            # before the next start replaces the runner (review).
+            for _ in range(END_CANCEL_READS):
+                time.sleep(1)
+                try:
+                    take_cancels(b.get("/mission/status").json().get("explore") or {})
+                except (httpx.HTTPError, ValueError):
+                    pass
             rl = s.get("room_labels") or {}
             f.write(json.dumps({"target": target, "t0": round(t0, 3), "t1": round(time.time(), 3),
                                 "outcome": s.get("outcome"), "step": s.get("step"),

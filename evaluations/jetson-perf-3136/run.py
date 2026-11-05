@@ -293,7 +293,7 @@ def score_steady(out: Path, rec: dict) -> dict:
     # without one (a run from before), amendment 2's rule: every abort counts.
     sends = scorers.jsonl(b / "explore_sends.jsonl")
     # Amendment 6: the brain's own cancels, by goal id (absent before run 3).
-    cancels = scorers.jsonl(b / "explore_cancels.jsonl") if (b / "explore_cancels.jsonl").exists() else []
+    cancels = scorers.jsonl(b / "explore_cancels.jsonl")
     # Rows with no id at all are an older bridge's: no join happened.
     amended = any(e[0] for r in sends for e in r.get("sent") or [])
     nav = scorers.nav_goals_amended(pace, sends, ws, we, cancel_rows=cancels) if amended else scorers.nav_goals(pace, ws, we)

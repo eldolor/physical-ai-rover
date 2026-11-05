@@ -102,35 +102,45 @@ def test_each_cancel_the_brain_sends_is_recorded_with_its_goal_id_first():
     runner, nav, grid = _run(CancelNav, max_steps=120)
     cancels = runner.status()["explore"]["cancels"]
     assert nav.cancelled_ids, "the mission sent no cancel: the test proves nothing"
-    assert [i for _, i, _ in cancels] == nav.cancelled_ids[-64:]
-    assert [n for n, _, _ in cancels] == list(range(len(nav.cancelled_ids) - len(cancels) + 1,
-                                                    len(nav.cancelled_ids) + 1))
-    assert all(isinstance(t, float) for _, _, t in cancels)
+    assert [c[1] for c in cancels] == nav.cancelled_ids[-64:]
+    assert [c[0] for c in cancels] == list(range(len(nav.cancelled_ids) - len(cancels) + 1,
+                                                 len(nav.cancelled_ids) + 1))
+    assert all(isinstance(c[2], float) for c in cancels)
+    assert all(c[3] is False for c in cancels)     # FakeNav answers no bridge `cancelled`
 
 
-def test_a_cancel_is_recorded_before_it_is_sent(monkeypatch):
+def test_a_cancel_is_recorded_with_the_time_before_it_went_out_once_it_returned():
     import time as _time
     from control.mission_runner import _GatedNavigator
-    seen = []
+    sent_at, fail = [], [False]
 
     class Nav:
         def set_goal(self, x, y):
             return {"accepted": True, "goal_id": "f" * 32}
 
         def cancel_goal(self):
-            seen.append(list(g.cancels))      # what the record held as the cancel went out
-            return {"canceled": True}
+            sent_at.append(_time.time())
+            if fail[0]:
+                raise OSError("the bridge is down")
+            return {"cancelled": len(sent_at) == 1}    # the second finds nothing live
 
         def get_goal(self):
             return {"goal": {"state": "active", "x_m": 1.0, "y_m": 2.0}}
 
     g = _GatedNavigator(Nav(), lambda: True)
     g.set_goal(1.0, 2.0)
-    before = _time.time()
     g.cancel_goal()
-    assert seen[0] and seen[0][-1][1] == "f" * 32 and seen[0][-1][2] >= round(before, 3) - 0.001
+    (n, gid, t, live), = g.cancels_snapshot()
+    assert (n, gid, live) == (1, "f" * 32, True) and t <= sent_at[0] + 1e-6
     g.cancel_own()                            # the mission's end: the same record
-    assert len(seen) == 2 and seen[1][-1][0] == 2 and seen[1][-1][1] == "f" * 32
+    assert g.cancels_snapshot()[-1] [:2] == [2, "f" * 32] and g.cancels_snapshot()[-1][3] is False
+    fail[0] = True                            # a cancel that never reached the bridge
+    try:
+        g.cancel_goal()
+    except OSError:
+        pass
+    g.cancel_own()                            # swallowed there, and still not recorded
+    assert len(g.cancels_snapshot()) == 2
 
 
 def test_a_goal_whose_answer_was_lost_is_not_named_by_a_later_cancel():

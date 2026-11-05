@@ -718,11 +718,11 @@ def _cancels(*rows):
     return [{"t": 1.0, "mission": 1, "cancels": [list(r) for r in rows]}]
 
 
-def _cancelled_abort(cancel_t):
+def _cancelled_abort(cancel_t, live=True):
     pace = [_nav(10.2, (A[:12], 2)), _nav(15.0, (A[:12], 6)),
             _nav(20.3, (B[:12], 2)), _nav(25.0, (B[:12], 4))]
     return scorers.nav_goals_amended(pace, _sent((A, "approach"), (B, "view")), 0, 100,
-                                     cancel_rows=_cancels((1, A, cancel_t)) if cancel_t else [])
+                                     cancel_rows=_cancels((1, A, cancel_t, live)) if cancel_t else [])
 
 
 def test_amendment_6_a_cancelled_abort_counts_as_cancelled():
@@ -731,9 +731,10 @@ def test_amendment_6_a_cancelled_abort_counts_as_cancelled():
     assert runner.amended_nav_item(got) == {"ok": 1, "n": 1}
 
 
-@pytest.mark.parametrize("cancel_t", [None, 15.2])
-def test_amendment_6_planted_a_real_abort_or_a_late_cancel_still_invalidates(cancel_t):
-    got = _cancelled_abort(cancel_t)
+@pytest.mark.parametrize("cancel_t, live", [(None, True), (15.2, True), (14.9, False)])
+def test_amendment_6_planted_a_real_abort_a_late_cancel_or_one_that_found_it_ended_still_invalidates(
+        cancel_t, live):
+    got = _cancelled_abort(cancel_t, live)
     assert got["aborted_cancelled"] == 0 and got["aborted_other"] == 1
     item = runner.amended_nav_item(got)
     assert item["ok"] != item["n"]
@@ -742,5 +743,5 @@ def test_amendment_6_planted_a_real_abort_or_a_late_cancel_still_invalidates(can
 def test_amendment_6_a_cancel_for_another_id_does_not_excuse_an_abort():
     pace = [_nav(10.2, (A[:12], 2)), _nav(15.0, (A[:12], 6)), _nav(20.3, (B[:12], 2)), _nav(25.0, (B[:12], 4))]
     got = scorers.nav_goals_amended(pace, _sent((A, "approach"), (B, "view")), 0, 100,
-                                    cancel_rows=_cancels((1, B, 14.0), (2, None, 14.5)))
+                                    cancel_rows=_cancels((1, B, 14.0, True), (2, None, 14.5, True)))
     assert got["aborted_other"] == 1 and got["aborted_cancelled"] == 0
