@@ -179,6 +179,29 @@ No runs yet. The 3.135.A smoke (2026-11-01, F13 only, not scored) is in
 
 ## Runs
 
+### 2026-11-04, 3.141.E1's board check: every vet traced (`dev` `d69abc56`, 3.141.E criteria 3-4)
+
+3.136.B's 30 min window, 15 W, max 64.4 °C, 0 OOM, `MemAvailable` minimum
+720 MB, the board up ~16.7 h; the stall tracer with `TRACE_3141_VET_PARTS=1
+TRACE_3141_VET_MS=0` (amendment 5: every vet a row, 63,187); left as found.
+Not a 3.136.B row (the tracer runs in it).
+* **Criterion 3, half met:** unclamped vets p90 **2.38 ms** on the loop
+  (24,845), **1.91 ms** in the threadpool (34,196) -- bar 3 ms, met (E0:
+  p90 12.0 over its slow rows); max **33.4 / 39.7 ms** -- bar 15 ms,
+  FAILED (the slowest are `pivot_scale` at 26-38 ms, wall time under the
+  load).
+* **Criterion 4: FAILED, 3 late wheel ticks** in 25,005 moving (max 123 ms;
+  run 2, untraced, 1).
+* **What is still late:** a `/world/map` reply was in flight 6.2% of the
+  window, yet 33 of the tracer's 35 probe ticks over 80 ms and all 4 over
+  100 ms overlap one (113-231 ms replies, often two at once: explore's fetch
+  and the harness's P12 map poller). Inferred: the map reply's work holds
+  the GIL against the loop; not measured inside the reply.
+* Missions 2 `found`, 1 cancelled at the window's end; nav2 30 of 58
+  succeeded, 12 frontier aborts (not counted), 0 other.
+* Records: `evaluations/jetson-perf-3136/board/3141E1-20261104-1932/`
+  (`vet_rows.json`).
+
 ### 2026-11-04, 3.136.B run 2, `dev` `d69abc56` (INVALID)
 
 The board up ~16 h (warm), 15 W, max 65.2 °C, 0 OOM kills, `MemAvailable`

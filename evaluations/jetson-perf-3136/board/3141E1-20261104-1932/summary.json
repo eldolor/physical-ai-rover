@@ -1,0 +1,203 @@
+{
+ "sha": "d69abc56351cdf7d8c9ad54d606766cd437d61ca",
+ "stamps": {
+  "window_start": 1793842605.4671679,
+  "window_end": 1793844406.3784525,
+  "p1_start": 1793842605.4804611,
+  "p1_end": 1793843205.4897032,
+  "p8_start": 1793843205.4967735,
+  "p8_end": 1793843727.6560795,
+  "p2_start": 1793843768.29902,
+  "p2_end": 1793844368.3115723
+ },
+ "window_s": 1800.9,
+ "uptime_at_start_s": 60185.2,
+ "wheel": {
+  "moving": 25005,
+  "late": 3,
+  "max_dt_s": 0.1232,
+  "max_dt_s_before": 0.0738
+ },
+ "nav2_goals": {
+  "n": 58,
+  "succeeded": 30,
+  "canceled": 16,
+  "aborted": 12,
+  "aborted_frontier": 12,
+  "aborted_other": 0,
+  "aborted_cancelled": 0,
+  "unmatched": 0,
+  "cancels_missing": 0,
+  "sends_missing": 0
+ },
+ "nav2_rule": "amendment 5, by goal id",
+ "telemetry": {
+  "samples": 1551,
+  "temps": 1551,
+  "clocks": 1551,
+  "max_temp_c": 64.437,
+  "oom_kills": 0,
+  "mem_available_min_mb": 720,
+  "cpu_below_max_samples": 583,
+  "gpu_below_max_samples": 154
+ },
+ "dmesg_oom_kills": 0,
+ "power_mode": "NV Power Mode: 15W",
+ "validity": {
+  "valid": false,
+  "reasons": [
+   "3 late wheel ticks"
+  ]
+ },
+ "desktop_load_max": 3.79,
+ "missions": {
+  "n": 3,
+  "refused_starts": 0,
+  "outcomes": {
+   "cancelled": 1,
+   "found": 2
+  },
+  "label_calls": 52
+ },
+ "cloud_calls": 0,
+ "rows": {
+  "P1": {
+   "n": 2397,
+   "p50_ms": 99,
+   "p90_ms": 157,
+   "mem_available_min_mb": 769,
+   "valid": false,
+   "reasons": [
+    "3 late wheel ticks"
+   ],
+   "met": true
+  },
+  "P2": {
+   "n": 2395,
+   "p50_ms": 104,
+   "p90_ms": 159,
+   "mem_available_min_mb": 892,
+   "valid": false,
+   "reasons": [
+    "3 late wheel ticks"
+   ],
+   "hazard_boxes_per_frame": 1.079,
+   "added_mem_mb": -123,
+   "met": true
+  },
+  "P8": {
+   "n": 299,
+   "p50": 1723.0680310021853,
+   "p90": 1986.8788789972314,
+   "max": 2140.048836998176,
+   "statuses": {
+    "answered": 299
+   },
+   "answers_identical": true,
+   "flips": [],
+   "off": 0,
+   "missing": 0,
+   "valid": false,
+   "reasons": [
+    "3 late wheel ticks"
+   ],
+   "met": false
+  },
+  "P4": {
+   "late_ticks": 3,
+   "moving_ticks": 25005,
+   "max_dt_s_since_start": 0.1232,
+   "window_s": 1800.9,
+   "overlap": {
+    "all_spans": 0,
+    "all_s": 0,
+    "all_with_map_update": 0,
+    "per_group": {
+     "map_fetch": 2086,
+     "ve_question": 1661,
+     "perception": 7097,
+     "room_cut": 228
+    }
+   },
+   "valid": false,
+   "reasons": [
+    "3 late wheel ticks"
+   ],
+   "met": false
+  },
+  "P11": {
+   "controller": {
+    "spans": 109,
+    "intervals": 22139,
+    "executing_s": 1103.3,
+    "rate_hz": 20.066,
+    "mean_period_ms": 49.83,
+    "period_p50_ms": 49.99113082885742,
+    "period_p90_ms": 51.49102210998535
+   },
+   "ratio": 1.003,
+   "scan_lag": {
+    "n": 18009,
+    "p50_ms": 6.113290786743164,
+    "p90_ms": 9.948492050170898,
+    "max_ms": 129.40597534179688
+   },
+   "valid": false,
+   "reasons": [
+    "3 late wheel ticks"
+   ],
+   "met": true
+  },
+  "P12": {
+   "segment_by_caller": {
+    "goal_policy.py": {
+     "n": 93,
+     "p50_ms": 7.4100494384765625,
+     "p90_ms": 8.619070053100586,
+     "max_ms": 15.438079833984375
+    },
+    "room_labels.py": {
+     "n": 228,
+     "p50_ms": 7.829189300537109,
+     "p90_ms": 12.521982192993164,
+     "max_ms": 27.13799476623535
+    }
+   },
+   "segment": {
+    "n": 321,
+    "p50_ms": 7.652044296264648,
+    "p90_ms": 11.554956436157227,
+    "max_ms": 27.13799476623535
+   },
+   "walk": {
+    "n": 250,
+    "p50_ms": 5.642890930175781,
+    "p90_ms": 10.938882827758789,
+    "max_ms": 22.555828094482422
+   },
+   "pause_share": 0.0024,
+   "map_reply": {
+    "n": 1739,
+    "ok": 1739,
+    "p50_ms": 21.013970996136777,
+    "p90_ms": 98.2126140006585,
+    "full_replies": 808,
+    "bytes_max": 243867
+   },
+   "explore_map_fetch": {
+    "n": 2086,
+    "p50_ms": 24.090051651000977,
+    "p90_ms": 134.98187065124512
+   },
+   "valid": false,
+   "reasons": [
+    "3 late wheel ticks"
+   ],
+   "met": true
+  }
+ },
+ "cmd_exit": 0,
+ "restore_actions": [],
+ "as_found_differences": [],
+ "left_as_found": true
+}
