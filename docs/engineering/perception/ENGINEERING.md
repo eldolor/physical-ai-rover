@@ -143,7 +143,7 @@ image tokens of 28 x 28 pixels each (3.80.I); 640x480 is seen as 644x476,
 1280x720 as 840x448), clipped to [0, 1].
 `direction(frame)` (3.80.F) posts to `/direction` with the same rules, and
 returns status `unsupported` on a 404 (a service from before 3.80.F).
-`healthy(timeout_s=PROBE_TIMEOUT_S)` (3.152; 0.8 s, amendment 1) GETs the free `/health`
+`healthy(timeout=PROBE_TIMEOUT)` (3.152; httpx phases summing to `PROBE_TIMEOUT_S`, 0.8 s, amendment 1) GETs the free `/health`
 and is True only for a 200 whose `ready` is true; a refusal, an error, a
 slow reply or `ready: false` is False, and it never raises. The brain
 passes it as the policy's `local_health_fn`. The

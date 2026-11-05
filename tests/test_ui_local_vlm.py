@@ -58,6 +58,15 @@ def test_engineer_row_names_the_local_vlm_state(browser, twin_server):
     current["body"] = _status({"state": "off"})
     sync_api.expect(row).to_contain_text("off", timeout=5000)
 
+    current["body"] = _status({"state": "unwatched"})
+    sync_api.expect(row).to_contain_text("unwatched", timeout=5000)
+
+    # An ended mission's state is its last; nothing probes after it: a dash.
+    current["body"] = _status(DOWN)
+    sync_api.expect(row).to_contain_text("down since", timeout=5000)
+    current["body"] = _status(DOWN, running=False)
+    sync_api.expect(row).not_to_contain_text("down", timeout=5000)
+
     # A brain before 3.152 sends no `local_vlm`: a dash, never "up".
     current["body"] = _status(None)
     sync_api.expect(row).not_to_contain_text("up", timeout=5000)

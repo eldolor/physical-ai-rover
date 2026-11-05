@@ -499,3 +499,50 @@ def test_review_a_ve_that_is_back_starts_with_no_unable_answers():
         assert tier.next_confirm_is_local()
     finally:
         tier.close()
+
+
+# -- the second review's findings ---------------------------------------------
+
+def test_review2_the_probe_timeout_phases_sum_under_a_second():
+    from brain.local_vlm import PROBE_TIMEOUT, PROBE_TIMEOUT_S
+    phases = (PROBE_TIMEOUT.connect, PROBE_TIMEOUT.read, PROBE_TIMEOUT.write,
+              PROBE_TIMEOUT.pool)
+    assert sum(phases) == pytest.approx(PROBE_TIMEOUT_S) and PROBE_TIMEOUT_S < 1.0
+
+
+def test_review2_a_probe_returning_after_close_records_nothing():
+    started, release = threading.Event(), threading.Event()
+
+    def probe():
+        started.set()
+        release.wait(2)
+        return False
+    ve = StubVE(TARGET, "down")
+    tier = TieredVision(FrameReportedPipeline(TARGET), NoCloud(), local_identity_fn=ve,
+                        local_sighting_fn=ve.ask, local_health_fn=probe, local_probe_s=0.01)
+    tier._note_local_error(LocalVLMAbsent("stub"), tier._local_gen)
+    tier(_frame(1))
+    assert started.wait(1)
+    tier.close()
+    before = dict(tier.stats.local_vlm)
+    release.set()
+    assert _wait_for(lambda: not tier._local_probe.is_alive(), 1.0)
+    assert tier.stats.local_vlm == before
+
+
+def test_review2_a_read_across_a_flip_reads_nothing():
+    ve = StubVE(TARGET, "up")
+    tier = _tier(ve, probe_s=60)
+    try:
+        fn, gen = tier._local_read("local_identity_fn")
+        assert fn is ve and gen == tier._local_gen
+
+        class Flipping:                       # a flip lands mid-read
+            def __get__(self, obj, owner):
+                obj._local_gen += 1
+                return ve
+        with mock.patch.object(TieredVision, "local_identity_fn", Flipping()):
+            fn, _ = tier._local_read("local_identity_fn")
+        assert fn is None
+    finally:
+        tier.close()

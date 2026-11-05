@@ -37,6 +37,9 @@ TAIL_S = 2.0
 # 3.152: how long the policy's probe of a down VE waits for `/health`, under
 # a second so a closed policy's probe ends within one (amendment 1).
 PROBE_TIMEOUT_S = 0.8
+# httpx applies a float to each phase, not the whole request (review 2): the
+# phases' sum is the bound.
+PROBE_TIMEOUT = httpx.Timeout(connect=0.3, read=0.3, write=0.1, pool=0.1)
 
 
 # 3.80.D: Qwen2.5-VL answers a box in the pixels of the image it was fed,
@@ -173,12 +176,12 @@ class LocalVLMClient:
 
     __call__ = ask
 
-    def healthy(self, timeout_s: float = PROBE_TIMEOUT_S) -> bool:
+    def healthy(self, timeout=PROBE_TIMEOUT) -> bool:
         """3.152: the service's free `/health` says `ready: true`. Never
         raises: a refusal, an error, a slow reply or a reply that is not
         ready are all False. Asked only while the policy holds VE down."""
         try:
-            r = self._http.get(f"{self.url}/health", timeout=timeout_s)
+            r = self._http.get(f"{self.url}/health", timeout=timeout)
             return r.status_code == 200 and (r.json() or {}).get("ready") is True
         except Exception:  # noqa: BLE001 -- any failure is "not ready"
             return False

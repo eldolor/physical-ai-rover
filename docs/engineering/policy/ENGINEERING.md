@@ -236,14 +236,20 @@ pace, its candidate steer, the cloud at arrival. The question that found
 it absent is answered as before (the cloud about the same frame). The
 first probe that returns True raises `_local_back_seen` and ends the
 thread; the next frame clears `_local_down` and `stats.local_vlm` reads
-`up`. An absence and a ready probe noted before one frame: the absence
-wins (still down, a new probe; a call taken before the flip failed after
-the probe). Each outage counts its own `probes`. `confirm_local()` reads
-the client once, under `_local_lock`; None (held down since the check) asks
-nothing. `close()` sets `_local_closed` and the probe's stop under
-`_local_flip_lock`, so a flip racing it starts no probe; it does not join
-the probe, whose `/health` GET ends within the client's `PROBE_TIMEOUT_S`
-(0.8 s), and a probe that lands after `close()` flips nothing. Without
+`up`, and the unable counts start at 0. Every flip bumps `_local_gen`. A
+frame's question stamps the generation it took its client in
+(`_Question.local_gen`, on the frame's thread, which also applies the
+flips); the direction and the arrival read their client with
+`_local_read()` (generation, value, generation: a flip in between reads
+None, and the direction asks only its question's own generation). An
+absence is noted only with the current generation, so a call from before
+the last flip holds nothing, and none can be pending while down. Each
+outage counts its own `probes`. `close()` sets `_closed`, then the probe's
+stop under `_local_flip_lock`, so a flip racing it either returned or
+started a probe that stop ends; it does not join the probe, whose
+`/health` GET is bounded by the client's `PROBE_TIMEOUT` phases (0.3 s
+connect + 0.3 s read + 0.1 s write + 0.1 s pool = `PROBE_TIMEOUT_S`,
+0.8 s), and a probe that returns after `close()` records and flips nothing. Without
 `local_health_fn` nothing is held (an absent VE is asked again every
 question, as before 3.152). `stats.local_vlm` is `{"state": "off"}` with
 no local tier configured, `{"state": "up", "since": None, "probes": 0}`
