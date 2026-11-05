@@ -122,7 +122,9 @@ def missions(flag: str, out: str, targets: list) -> int:
                     st = b.get("/mission/status", timeout=5).json()
                 except (httpx.HTTPError, ValueError):
                     continue
-                ex = (st.get("explore") if isinstance(st, dict) else None) or {}
+                ex = st.get("explore") if isinstance(st, dict) else None
+                if not ex:
+                    break                   # no explore search: no goals, no cancels
                 take_cancels(ex)
                 if ex.get("goal_end_done") is True and not ex.get("cancels_in_flight"):
                     break

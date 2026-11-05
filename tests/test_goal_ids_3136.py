@@ -239,13 +239,53 @@ def test_a_goal_answered_after_the_end_keeps_the_end_open_until_it_cancelled_its
     t = threading.Thread(target=g.set_goal, args=(1.0, 2.0))
     t.start()
     import time as _time
+    deadline = _time.monotonic() + 5
     while g._in_flight == 0:
+        assert _time.monotonic() < deadline, "set_goal never went in flight"
         _time.sleep(0.01)
     running[0] = False
     g.end()                                      # nothing accepted yet: nothing to cancel
     assert g.cancels_snapshot()["goal_end_done"] is False
     release.set()
     t.join(5)
+    assert not t.is_alive()
     assert reading == [False]                    # the late cancel read the goal while still open
     snap = g.cancels_snapshot()
     assert snap["goal_end_done"] is True and snap["cancels"][-1][1] == "f" * 32
+
+
+def test_an_explore_cancel_past_the_running_check_keeps_the_end_open():
+    """A cancel that passed the running check as the mission ended counts
+    in flight until it returns, whatever the gate's state (review)."""
+    import threading
+    from control.mission_runner import _GatedNavigator
+    running, release = [True], threading.Event()
+
+    class Nav:
+        def set_goal(self, x, y):
+            return {"accepted": True, "goal_id": "f" * 32}
+
+        def get_goal(self):
+            return {"goal": None}
+
+        def cancel_goal(self):
+            release.wait(5)
+            return {"cancelled": True}
+
+    g = _GatedNavigator(Nav(), lambda: running[0])
+    g.set_goal(1.0, 2.0)
+    t = threading.Thread(target=g.cancel_goal)
+    t.start()
+    import time as _time
+    deadline = _time.monotonic() + 5
+    while not g.cancels_snapshot()["cancels_in_flight"]:
+        assert _time.monotonic() < deadline
+        _time.sleep(0.01)
+    running[0] = False
+    g.end()
+    snap = g.cancels_snapshot()
+    assert snap["goal_end_done"] is True and snap["cancels_in_flight"] > 0   # non-zero while out
+    release.set()
+    t.join(5)
+    assert not t.is_alive() and g.cancels_snapshot()["cancels_in_flight"] == 0
+    assert g.cancels_snapshot()["cancels"][-1][1] == "f" * 32

@@ -339,8 +339,8 @@ class _GatedNavigator:
         # recorded once the call returned (one that raised is not counted:
         # whether it reached the bridge is unknown, so an abort after it reads
         # as nav2's, the side that invalidates). The harness judges from
-        # nav2's own status whether that goal was still live then. Nothing
-        # here delays the cancel: no read goes first.
+        # nav2's own status whether that goal was still live then. The record
+        # adds no read before a cancel (cancel_own's own goal check is 3.76's).
         self._own_id: Optional[str] = None
         self.cancels = collections.deque(maxlen=CANCELS_KEPT)
         self._cancels_n = 0
@@ -388,11 +388,20 @@ class _GatedNavigator:
         return self._nav.get_goal()
 
     def cancel_goal(self) -> dict:
-        if not self._is_running():
-            # The goal on the server may be a person's by now; the
-            # mission's own is ended by cancel_own().
-            return {"canceled": False, "reason": "mission_ended"}
-        return self._sent_cancel()
+        # Amendment 6: in flight BEFORE the running check, so a cancel that
+        # passes it as the mission ends is seen by a reader who sees the gate
+        # closed (review); one that fails it sends nothing.
+        with self._cancel_lock:
+            self._cancels_in_flight += 1
+        try:
+            if not self._is_running():
+                # The goal on the server may be a person's by now; the
+                # mission's own is ended by cancel_own().
+                return {"canceled": False, "reason": "mission_ended"}
+            return self._sent_cancel()
+        finally:
+            with self._cancel_lock:
+                self._cancels_in_flight -= 1
 
     def _sent_cancel(self) -> dict:
         """The cancel, and its record (amendment 6). Numbered as it is
