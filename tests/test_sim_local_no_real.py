@@ -7,9 +7,11 @@ tests/test_sim_local_no_real.py
 tiered missions in process (A2's tiers through the brain server's own
 `_tiered_vision_fn`) on frames stamped as a real camera's are (`captured_at`,
 `seq`, no `source`), with a local tier that answers yes, no and unable from a
-hash of the frame. Each mission runs twice in this process: with the
-simulator's judge (`sim_identity_fn`, 3.98's geometry, through which fix V
-and 3.91.D act) and with none. On real frames every sim path must be a no-op,
+hash of the frame. The tier's one worker thread is replaced by
+`InPlacePool` (every dispatched job, local or cloud, runs at submit). Each
+mission runs twice in this process: with the simulator's judge
+(`sim_identity_fn`, 3.98's geometry, through which fix V and 3.91.D act)
+and with none. On real frames every sim path must be a no-op,
 so the two runs must agree on every arrival decision, every local-tier count
 and the mission's outcome. Differential, so no frozen file to go stale
 (review); the measurement against `dev` from before fix V is
@@ -20,10 +22,12 @@ import hashlib
 import json
 import logging
 import os
+from concurrent.futures import Future
 from unittest import mock
 
 import pytest
 
+from brain import tiered
 from control import brain_server
 from control.brain_config import load_brain_config
 from control.mission_runner import MissionRunner
@@ -74,6 +78,32 @@ class HashLocal:
         pass
 
 
+class InPlacePool:
+    """`ThreadPoolExecutor`'s surface for the tier's one worker: the job runs
+    at `submit()`, so its answer has always landed when the next frame
+    collects it. On a thread, whether it had depended on scheduling: a busy
+    desktop collected some answers a frame later in one run than in the
+    other, and the two runs differed with no sim path involved (3.143,
+    2026-11-04, a `ready` beside a board job; a 0-30 ms jitter in the stub
+    reproduces it). The cost: the branches that run while a call is still
+    out are not reached here, and the runner's wall-clock guards (20 s, 8 s)
+    remain. Red first again with it: both fix V plants fail both cases."""
+
+    def __init__(self, *a, **k):
+        pass
+
+    def submit(self, fn, *args, **kwargs):
+        fut = Future()
+        try:
+            fut.set_result(fn(*args, **kwargs))
+        except Exception as e:  # noqa: BLE001 -- the future carries it
+            fut.set_exception(e)
+        return fut
+
+    def shutdown(self, wait=True, cancel_futures=False):
+        pass
+
+
 class CameraRobot(MockRobot):
     """Unrendered frames stamped as a real camera stamps them (3.90 A):
     `captured_at` and `seq`, no `source`."""
@@ -96,6 +126,7 @@ def _mission(house, target, judge, monkeypatch):
     config.update(tier_search="explore", sim_arrival_confirm="geometry",
                   tier_local_vlm_url="stub://hash")
     monkeypatch.setattr(brain_server, "_local_identity_fn", lambda tg, *a, **k: HashLocal(tg))
+    monkeypatch.setattr(tiered, "ThreadPoolExecutor", InPlacePool)
     tier = brain_server._tiered_vision_fn(target, NoCloud(), config, simulated=True,
                                           confirm_vision_fn=NoCloud())
     assert tier.sim_identity_fn is not None          # the judge this test takes away
