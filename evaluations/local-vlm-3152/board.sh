@@ -10,14 +10,14 @@
 # whatever happens. vlm_hold.sh is not used: the hold flag stops every start
 # of the unit, and this arm measures those starts.
 #
-#   bash evaluations/local-vlm-3152/board.sh <out-dir> d30|d60|d120
+#   bash evaluations/local-vlm-3152/board.sh <out-dir> d30|d60|d120|shipped
 # crash_loop.py exits 0 (every bar met), 1 (valid, a bar missed), 2 (invalid,
 # re-run once) or 3 (a harness error); result.json has the scoring.
 set -uo pipefail
 source tools/jetson/board_lock_check.sh
 OUT="${1:?out dir}"; ARM="${2:?d30, d60 or d120}"; mkdir -p "$OUT"; OUT="$(cd "$OUT" && pwd)"
-case "$ARM" in d30|d60|d120) ;; *) echo "STOP: arm must be d30, d60 or d120" >&2; exit 2;; esac
-D="${ARM#d}"
+case "$ARM" in d30|d60|d120|shipped) ;; *) echo "STOP: arm must be d30, d60, d120 or shipped" >&2; exit 2;; esac
+D="${ARM#d}"   # "shipped" stays "shipped": no drop-in (amendment 7)
 UNIT=picar-local-vlm
 # A runtime drop-in (amendment 2): a reboot clears it whatever happens here.
 DROPIN="/run/systemd/system/$UNIT.service.d/zz-3152-crash-loop.conf"

@@ -1,0 +1,23 @@
+[76108.586497] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=118258,uid=1000
+[76108.586536] Out of memory: Killed process 118258 (edgellm_identit) total-vm:9956864kB, anon-rss:286204kB, file-rss:9148kB, shmem-rss:0kB, UID:1000 pgtables:1164kB oom_score_adj:1000
+[76151.194374] python3 invoked oom-killer: gfp_mask=0xcc0(GFP_KERNEL), order=0, oom_score_adj=0
+[76151.204595] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=121502,uid=1000
+[76151.204635] Out of memory: Killed process 121502 (edgellm_identit) total-vm:9956864kB, anon-rss:286224kB, file-rss:9340kB, shmem-rss:0kB, UID:1000 pgtables:1180kB oom_score_adj:1000
+[76193.785910] edgellm_identit invoked oom-killer: gfp_mask=0x2dc2(GFP_KERNEL|__GFP_HIGHMEM|__GFP_NOWARN|__GFP_ZERO), order=0, oom_score_adj=1000
+[76193.786533] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=picar-local-vlm.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=124810,uid=1000
+[76193.786562] Out of memory: Killed process 124810 (edgellm_identit) total-vm:9956864kB, anon-rss:286288kB, file-rss:9296kB, shmem-rss:0kB, UID:1000 pgtables:1164kB oom_score_adj:1000
+[76259.860057] avahi-daemon invoked oom-killer: gfp_mask=0xcc0(GFP_KERNEL), order=0, oom_score_adj=0
+[76259.860626] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=avahi-daemon.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=127924,uid=1000
+[76259.860665] Out of memory: Killed process 127924 (edgellm_identit) total-vm:9956864kB, anon-rss:286192kB, file-rss:9068kB, shmem-rss:0kB, UID:1000 pgtables:1176kB oom_score_adj:1000
+[76303.457187] python invoked oom-killer: gfp_mask=0x1100cca(GFP_HIGHUSER_MOVABLE), order=0, oom_score_adj=1000
+[76303.457788] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=picar-local-vlm.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=131164,uid=1000
+[76303.457827] Out of memory: Killed process 131164 (edgellm_identit) total-vm:9956864kB, anon-rss:286204kB, file-rss:9292kB, shmem-rss:0kB, UID:1000 pgtables:1156kB oom_score_adj:1000
+[76345.827349] edgellm_identit invoked oom-killer: gfp_mask=0x2dc2(GFP_KERNEL|__GFP_HIGHMEM|__GFP_NOWARN|__GFP_ZERO), order=0, oom_score_adj=1000
+[76345.827962] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=picar-local-vlm.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=134331,uid=1000
+[76345.827998] Out of memory: Killed process 134331 (edgellm_identit) total-vm:9956864kB, anon-rss:286244kB, file-rss:9264kB, shmem-rss:0kB, UID:1000 pgtables:1168kB oom_score_adj:1000
+[76389.570955] edgellm_identit invoked oom-killer: gfp_mask=0x2dc2(GFP_KERNEL|__GFP_HIGHMEM|__GFP_NOWARN|__GFP_ZERO), order=0, oom_score_adj=1000
+[76389.571592] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=picar-local-vlm.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=137424,uid=1000
+[76389.571625] Out of memory: Killed process 137424 (edgellm_identit) total-vm:9956864kB, anon-rss:286288kB, file-rss:9332kB, shmem-rss:0kB, UID:1000 pgtables:1172kB oom_score_adj:1000
+[76464.656540] python3 invoked oom-killer: gfp_mask=0xcc0(GFP_KERNEL), order=0, oom_score_adj=0
+[76464.657161] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=140551,uid=1000
+[76464.657200] Out of memory: Killed process 140551 (edgellm_identit) total-vm:9956864kB, anon-rss:287540kB, file-rss:9064kB, shmem-rss:0kB, UID:1000 pgtables:1172kB oom_score_adj:1000

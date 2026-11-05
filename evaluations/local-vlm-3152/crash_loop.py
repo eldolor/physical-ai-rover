@@ -25,7 +25,10 @@ back to back with VE as the local tier.
   (>= 500 MB), and the running mission's brain must read `local_vlm` `up`.
   Then the mission is stopped and the run ends.
 
-    python evaluations/local-vlm-3152/crash_loop.py <out> <D seconds>
+    python evaluations/local-vlm-3152/crash_loop.py <out> <D seconds | shipped>
+
+`shipped` (amendment 7): no drop-in; the unit as installed, its start limit
+included. VE back after the window is recorded but is not a bar for it.
 """
 
 from __future__ import annotations
@@ -72,11 +75,12 @@ def oom_kills() -> int:
 
 
 class CrashLoop(soak.Soak):
-    def __init__(self, out: Path, delay_s: int):
+    def __init__(self, out: Path, delay_s):
         if (out / "samples.jsonl").exists() or (out / "missions.jsonl").exists():
             raise StackError(f"{out} holds an earlier run: give each run its own directory")
         super().__init__(out, WINDOW_S + 2 * soak.MISSION_CAP_S)
-        self.delay_s = int(delay_s)
+        self.shipped = delay_s == "shipped"
+        self.delay_s = None if self.shipped else int(delay_s)
         self.window = {"start": None, "end": None}
         self.stop_all = threading.Event()
         self.finished = threading.Event()
@@ -180,6 +184,11 @@ class CrashLoop(soak.Soak):
                 raise StackError(f":{port} is already served -- someone else's service")
 
     def install_dropin(self) -> None:
+        if self.shipped:
+            show = self.unit_show()
+            (self.out / "unit_candidate.json").write_text(json.dumps(show, indent=1))
+            self.say(f"shipped unit, no drop-in: {show}")
+            return
         body = ("# 3.152 criterion 10: a runtime crash-loop candidate; removed at the run's end.\n"
                 "[Unit]\nStartLimitIntervalSec=0\n[Service]\n"
                 f"RestartSec={self.delay_s}\n")
@@ -315,7 +324,7 @@ class CrashLoop(soak.Soak):
                 row = {"t": round(time.time(), 3), "mem_mb": mem_available_mb(),
                        "oom_kill": oom_kills(), "ve_ready": self.ve_ready()}
                 row.update({k: v for k, v in self.unit_show().items()
-                            if k in ("MainPID", "NRestarts", "ActiveState", "SubState")})
+                            if k in ("MainPID", "NRestarts", "ActiveState", "SubState", "Result")})
                 s = self.brain_status()
                 row["running"] = bool(s and s.get("running"))
                 with self.live_lock:
@@ -357,7 +366,7 @@ class CrashLoop(soak.Soak):
                 if time.time() >= ceiling and "the run's ceiling came first" not in self.notes:
                     self.notes.append("the run's ceiling came first")
                 return
-            end = self.window["end"] + self.delay_s + 60
+            end = self.window["end"] + (self.delay_s or 0) + 60
             while time.time() < end and not self.ve_ready() and not self.stop_all.is_set():
                 self.stop_all.wait(1.0)
             # The loaded window: inside a running mission with VE ready (at
@@ -430,7 +439,7 @@ class CrashLoop(soak.Soak):
             # 0 met, 1 valid but a bar missed, 2 invalid (amendment 2: re-run once).
             if not all(res["valid"].values()):
                 return 2
-            return 0 if all(res["met"].values()) else 1
+            return 0 if all(v for v in res["met"].values() if v is not None) else 1
         finally:
             self.main_done.set()
             self.stop_all.set()
@@ -501,11 +510,19 @@ class CrashLoop(soak.Soak):
             "mem_min_loaded_mb": min((r["mem_mb"] for r in loaded if r["mem_mb"] is not None),
                                      default=None),
             "ve_back_s": round(back - we, 1) if back and we else None,
+            # Amendment 7: VE's availability, ranked after the stack's bars.
+            "ve_ready_share_window": (round(sum(1 for r in win if r.get("ve_ready")) / len(win), 3)
+                                      if win else None),
+            "late_per_hour": (round(late / ((we - ws) / 3600), 1) if ws and we and we > ws else None),
             "local_vlm_loaded": lv_after[-10:],
         }
         res["valid"] = {   # amendment 3's complete list
-            "a_crash_loop": (window_kills >= MIN_KILLS and ve_kills >= MIN_KILLS
-                             and restarts >= MIN_KILLS),
+            "a_crash_loop": ((window_kills >= MIN_KILLS and ve_kills >= MIN_KILLS
+                              and restarts >= MIN_KILLS)
+                             # Amendment 7: the shipped unit's loop is the one its
+                             # start limit allows -- valid once the limit stopped it.
+                             or (self.shipped and ve_kills >= 1 and any(
+                                 r.get("Result") == "start-limit-hit" for r in win))),
             "kill_lines_complete": len(kills) >= rose_by,
             "loaded_window_in_a_mission": len(loaded) >= LOADED_MIN_ROWS,
             "no_kill_before_the_hog": not before_hog,
@@ -520,7 +537,8 @@ class CrashLoop(soak.Soak):
             "zero_late_ticks": late == 0,
             "servers_answered": res["robot_down_samples"] == 0 and res["brain_down_samples"] == 0,
             "mem_loaded_500": res["mem_min_loaded_mb"] is not None and res["mem_min_loaded_mb"] >= 500,
-            "ve_back_within": res["ve_back_s"] is not None and res["ve_back_s"] <= self.delay_s + 60,
+            "ve_back_within": (None if self.shipped else    # amendment 7: not a bar for it
+                               res["ve_back_s"] is not None and res["ve_back_s"] <= self.delay_s + 60),
             "brain_up_after": bool(lv_after) and all(x == "up" for x in lv_after[-5:]),
         }
         # A kill of a stack process is a measured failure, never invalid (amendment 3).
@@ -536,7 +554,7 @@ class CrashLoop(soak.Soak):
 
 
 def main(argv) -> int:
-    loop = CrashLoop(Path(argv[0]), int(argv[1]))
+    loop = CrashLoop(Path(argv[0]), argv[1] if argv[1] == "shipped" else int(argv[1]))
 
     def on_signal(signum, _frame):
         if loop.signalled:               # review 3: a second signal never cuts the put-back short

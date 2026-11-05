@@ -10,6 +10,7 @@ run, the twin's units stopped and the board put back as found):
     python evaluations/local-vlm-3152/board.py d30    # RestartSec=30
     python evaluations/local-vlm-3152/board.py d60    # RestartSec=60
     python evaluations/local-vlm-3152/board.py d120   # RestartSec=120
+    python evaluations/local-vlm-3152/board.py shipped  # the unit as installed (amendment 7)
 
 The board lock waits in its queue behind another session's hold, so two
 sections taking the board in turn alternate; the desktop lock (shared: no
@@ -35,7 +36,7 @@ import run as perf_run  # noqa: E402  (3.136's board_run)
 BENCH_DIR = "bench-3152"
 # A hold's ceiling per arm: setup (~10 min), the 15-min window, D + 60 s, the
 # mission's stop and the put-back, with room.
-MAX_S = {"d30": 3600, "d60": 3600, "d120": 3600}
+MAX_S = {"d30": 3600, "d60": 3600, "d120": 3600, "shipped": 3600}
 WAIT_S = 12 * 3600                 # how long to queue for the board
 BUSY = 75                          # either lock's busy exit
 RETRY_S = 120
@@ -54,7 +55,8 @@ def inner(a) -> int:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("arm", choices=("d30", "d60", "d120", "_d30", "_d60", "_d120"))
+    ap.add_argument("arm", choices=("d30", "d60", "d120", "shipped",
+                                    "_d30", "_d60", "_d120", "_shipped"))
     ap.add_argument("--sha", default="HEAD")
     ap.add_argument("--out", default=None)
     a = ap.parse_args(argv)

@@ -1,0 +1,216 @@
+{
+ "delay_s": 30,
+ "window": [
+  1793857918.164,
+  1793858820.7454274
+ ],
+ "window_s": 902.6,
+ "hog": {
+  "t0": 1793857905.61,
+  "kills_at_start": 14,
+  "oom_score_adj": 100,
+  "mem_mb_last": 52,
+  "kills_seen": [
+   "[75610.512202] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=81969,uid=1000"
+  ],
+  "first_kill_t": 1793857917.904,
+  "first_kill_mb": 3168,
+  "held_mb": 3424,
+  "holding_t": 1793857918.164,
+  "topups": [
+   {
+    "t": 1793857980.944,
+    "how": "killed",
+    "added_mb": 832,
+    "held_mb": 4256
+   },
+   {
+    "t": 1793858283.44,
+    "how": "killed",
+    "added_mb": 288,
+    "held_mb": 4544
+   }
+  ],
+  "ended_by": "SIGTERM",
+  "released_t": 1793858820.681
+ },
+ "notes": [],
+ "kills": [
+  {
+   "t": 1793857915.396465,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "81969",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=81969,uid=1000"
+  },
+  {
+   "t": 1793857984.950025,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "90943",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=nvfancontrol.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=90943,uid=1000"
+  },
+  {
+   "t": 1793858065.900886,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "96362",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=96362,uid=1000"
+  },
+  {
+   "t": 1793858114.281007,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "99831",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=picar-local-vlm.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=99831,uid=1000"
+  },
+  {
+   "t": 1793858155.693576,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "103214",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=picar-local-vlm.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=103214,uid=1000"
+  },
+  {
+   "t": 1793858203.007626,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "106346",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=picar-local-vlm.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=106346,uid=1000"
+  },
+  {
+   "t": 1793858281.61659,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "109710",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=109710,uid=1000"
+  },
+  {
+   "t": 1793858348.426817,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "114967",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=114967,uid=1000"
+  },
+  {
+   "t": 1793858413.47076,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "118258",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=118258,uid=1000"
+  },
+  {
+   "t": 1793858456.0888581,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "121502",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=121502,uid=1000"
+  },
+  {
+   "t": 1793858498.6707962,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "124810",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=picar-local-vlm.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=124810,uid=1000"
+  },
+  {
+   "t": 1793858564.744889,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "127924",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=avahi-daemon.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=127924,uid=1000"
+  },
+  {
+   "t": 1793858608.342051,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "131164",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=picar-local-vlm.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=131164,uid=1000"
+  },
+  {
+   "t": 1793858650.712225,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "134331",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=picar-local-vlm.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=134331,uid=1000"
+  },
+  {
+   "t": 1793858694.4558551,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "137424",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=picar-local-vlm.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=137424,uid=1000"
+  },
+  {
+   "t": 1793858769.541424,
+   "ve": true,
+   "hog": false,
+   "task": "edgellm_identit",
+   "pid": "140551",
+   "line": "oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=140551,uid=1000"
+  }
+ ],
+ "ve_kills": 16,
+ "kills_before_hog": 0,
+ "oom_kill_rose_by": 16,
+ "kills_in_window": 15,
+ "loaded_rows": 57,
+ "restarts_in_window": 16,
+ "late_wheel_ticks_overlapping": 52,
+ "missions_overlapping": 2,
+ "errored_missions_overlapping": 0,
+ "missions_without_wheel_loop": 0,
+ "live_samples_in_window": 699,
+ "robot_down_samples": 3,
+ "brain_down_samples": 2,
+ "mem_min_window_mb": 25,
+ "loaded_from": 1793858823.04589,
+ "mem_min_loaded_mb": 1285,
+ "ve_back_s": 2.8,
+ "local_vlm_loaded": [
+  "up",
+  "up",
+  "up",
+  "up",
+  "up",
+  "up",
+  "up",
+  "up",
+  "up",
+  "up"
+ ],
+ "valid": {
+  "a_crash_loop": true,
+  "kill_lines_complete": true,
+  "loaded_window_in_a_mission": true,
+  "no_kill_before_the_hog": true,
+  "every_kill_line_placed": true,
+  "a_full_window": true,
+  "no_errored_mission": true,
+  "wheel_loop_read": true,
+  "dmesg_baseline": true
+ },
+ "met": {
+  "every_kill_ve": true,
+  "zero_late_ticks": false,
+  "servers_answered": false,
+  "mem_loaded_500": true,
+  "ve_back_within": true,
+  "brain_up_after": true
+ }
+}
