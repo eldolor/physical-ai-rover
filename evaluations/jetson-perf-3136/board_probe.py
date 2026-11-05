@@ -41,6 +41,7 @@ ROBOT = "http://127.0.0.1:8000"
 # Amendment 6: at most this many status reads (1 s apart) after a mission
 # ends, for its end's own goal cancel (its thread starts after `running` ends).
 END_CANCEL_READS = 30
+END_CANCEL_MIN_READS = 5
 
 
 def missions(flag: str, out: str, targets: list) -> int:
@@ -113,10 +114,11 @@ def missions(flag: str, out: str, targets: list) -> int:
                     break
                 time.sleep(1)
             # The mission's end cancels its own goal on a thread of its own,
-            # after `running` turns false: read its cancels until none is in
-            # flight (one more read after), before the next start replaces the
-            # runner (review); bounded.
-            for _ in range(END_CANCEL_READS):
+            # after `running` turns false (and after a goal read of its own):
+            # read its cancels at least END_CANCEL_MIN_READS times, then until
+            # none is in flight, before the next start replaces the runner
+            # (review); bounded.
+            for k in range(END_CANCEL_READS):
                 time.sleep(1)
                 try:
                     st = b.get("/mission/status", timeout=5).json()
@@ -124,7 +126,7 @@ def missions(flag: str, out: str, targets: list) -> int:
                     continue
                 ex = (st.get("explore") if isinstance(st, dict) else None) or {}
                 take_cancels(ex)
-                if not ex.get("cancels_in_flight"):
+                if k + 1 >= END_CANCEL_MIN_READS and not ex.get("cancels_in_flight"):
                     break
             rl = s.get("room_labels") or {}
             f.write(json.dumps({"target": target, "t0": round(t0, 3), "t1": round(time.time(), 3),

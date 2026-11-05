@@ -311,10 +311,6 @@ class MissionHalted(RuntimeError):
 
 # 3.136.B amendment 6: how many of the brain's own goal cancels status keeps.
 CANCELS_KEPT = 64
-# The bridge's goal record reads `active` while a goal it superseded is still
-# being cancelled, and says so in its reason (bridge.py `goal_state`); such a
-# reading does not show THIS goal live (pinned against the bridge's source).
-BRIDGE_SUPERSEDED_MARK = "superseded goal(s) still being cancelled"
 
 
 class _GatedNavigator:
@@ -339,13 +335,11 @@ class _GatedNavigator:
         self._lock = threading.Lock()
         # 3.136.B amendment 6: every cancel this gate sent, as [n, the goal id
         # of the mission's last accepted goal (None if unknown), the wall time
-        # just BEFORE it went out, `live`: the bridge's goal record showed THAT
-        # goal id pending or active just before, and the bridge answered
-        # `cancelled`] -- recorded once the call returned (one that raised is
-        # not counted: whether it reached the bridge is unknown, so an abort
-        # after it reads as nav2's, the side that invalidates) -- so a goal
-        # nav2 ends ABORTED after the brain asked to cancel it while it was
-        # live reads as the brain's cancel, by id.
+        # just BEFORE it went out] -- recorded once the call returned (one that
+        # raised is not counted: whether it reached the bridge is unknown, so
+        # an abort after it reads as nav2's, the side that invalidates). The
+        # harness judges from nav2's own status whether that goal was still
+        # live then. Nothing here delays the cancel: no read goes first.
         self._own_id: Optional[str] = None
         self.cancels = collections.deque(maxlen=CANCELS_KEPT)
         self._cancels_n = 0
@@ -406,30 +400,15 @@ class _GatedNavigator:
         with self._cancel_lock:
             self._cancels_in_flight += 1
         try:
-            gid = self._own_id
-            live = self._live_on_bridge(gid)
-            t = round(time.time(), 6)
+            gid, t = self._own_id, round(time.time(), 6)
             reply = self._nav.cancel_goal()
-            live = live and isinstance(reply, dict) and reply.get("cancelled") is True
             with self._cancel_lock:
-                self.cancels.append((self._cancels_n + 1, gid, t, live))
+                self.cancels.append((self._cancels_n + 1, gid, t))
                 self._cancels_n += 1
             return reply
         finally:
             with self._cancel_lock:
                 self._cancels_in_flight -= 1
-
-    def _live_on_bridge(self, gid: Optional[str]) -> bool:
-        """Did the bridge's goal record show this goal id pending or active
-        (not only a superseded goal still cancelling)?"""
-        if not gid:
-            return False
-        try:
-            goal = (self._nav.get_goal() or {}).get("goal") or {}
-        except Exception:  # noqa: BLE001 -- unknown: not shown live
-            return False
-        return (goal.get("goal_id") == gid and goal.get("state") in ("pending", "active")
-                and BRIDGE_SUPERSEDED_MARK not in str(goal.get("reason") or ""))
 
     def cancels_snapshot(self) -> dict:
         with self._cancel_lock:
@@ -446,6 +425,10 @@ class _GatedNavigator:
         own = self._own
         if own is None:
             return
+        # Amendment 6: in flight from here, its goal read included, so the
+        # probe never reads 0 between the end and the cancel (review).
+        with self._cancel_lock:
+            self._cancels_in_flight += 1
         try:
             goal = (self._nav.get_goal() or {}).get("goal") or {}
             if (goal.get("state") in ("pending", "active")
@@ -454,6 +437,9 @@ class _GatedNavigator:
                 self._sent_cancel()
         except Exception as e:  # noqa: BLE001 -- nothing on the way out may raise (3.55)
             logger.warning("could not end the mission's nav2 goal: %s", e)
+        finally:
+            with self._cancel_lock:
+                self._cancels_in_flight -= 1
 
     def end(self) -> None:
         """The mission ended: its own goal cancelled, then the client closed

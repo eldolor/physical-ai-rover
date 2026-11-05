@@ -178,6 +178,7 @@ def load_json(path: Path) -> dict:
 
 EXECUTING = 2                       # action_msgs/GoalStatus.STATUS_EXECUTING
 TERMINAL = {4: "succeeded", 5: "canceled", 6: "aborted"}
+LIVE = {1, 2, 3}      # accepted, executing, canceling (action_msgs GoalStatus)
 
 
 def jsonl(path) -> list:
@@ -281,26 +282,39 @@ def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel
 
     Amendment 6 (3.136.B, the user): a non-frontier ABORTED goal whose id
     the brain recorded a cancel for (`cancel_rows`, the probe's
-    `explore_cancels.jsonl` of `status.explore.cancels`) at or before the
-    first status row showing it ended, and which the bridge answered with a
-    goal still live to cancel, is `aborted_cancelled` (counted neither way,
-    as a sender's cancel); a cancel recorded after that, one that found
-    nothing live (the abort had already reached the bridge), one for another
-    id, or none at all leaves it `aborted_other`."""
+    `explore_cancels.jsonl` of `status.explore.cancels`, the time just
+    before it went out) at or before the first status row showing it ended,
+    while nav2's own status for THAT id still read live (its last row at or
+    before the cancel shows it accepted, executing or canceling), is
+    `aborted_cancelled` (counted neither way, as a sender's cancel); a
+    cancel after the end, one sent when nav2 had not shown the goal or had
+    already ended it, one for another id, or none at all leaves it
+    `aborted_other`."""
     kind = {}
     for r in sent_rows:
         for gid, k in r.get("sent") or []:
             if gid:
                 kind[gid[:GOAL_ID_HEX]] = k
-    first_cancel = {}
+    cancels_by_id = {}
     for r in cancel_rows:
         for e in r.get("cancels") or []:
             _n, gid, tc = e[:3]
-            if gid and len(e) > 3 and e[3] is True:
-                g = gid[:GOAL_ID_HEX]
-                first_cancel[g] = min(tc, first_cancel.get(g, tc))
+            if gid:
+                cancels_by_id.setdefault(gid[:GOAL_ID_HEX], []).append(tc)
+    nav_rows = sorted((r for r in pace_rows if r.get("k") == "nav"), key=lambda r: r["t"])
+
+    def live_at(gid, tc):
+        last = None
+        for r in nav_rows:
+            if r["t"] > tc:
+                break
+            for g, st in r.get("goals") or []:
+                if g == gid:
+                    last = st
+        return last in LIVE
+
     ended = {}
-    for r in sorted((r for r in pace_rows if r.get("k") == "nav"), key=lambda r: r["t"]):
+    for r in nav_rows:
         for gid, st in r.get("goals") or []:
             if st in TERMINAL and gid not in ended:
                 ended[gid] = (r["t"], TERMINAL[st])
@@ -315,9 +329,10 @@ def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel
         out[st] += 1
         out["unmatched"] += k is None
         if st == "aborted":
-            tc = first_cancel.get(gid[:GOAL_ID_HEX])
+            excused = any(tc <= t and live_at(gid, tc)
+                          for tc in cancels_by_id.get(gid[:GOAL_ID_HEX], []))
             out["aborted_frontier" if k == "frontier"
-                else "aborted_cancelled" if tc is not None and tc <= t
+                else "aborted_cancelled" if excused
                 else "aborted_other"] += 1
     return out
 

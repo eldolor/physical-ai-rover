@@ -526,12 +526,10 @@ seed `[x_m, y_m, name]`), `mission`, `target_object`,
 `[n, goal_id, kind]`, `n` the send's number, `goal_id` the bridge's id for
 the goal it gave nav2 or null from an older bridge --, 3.136.B amendment 6's
 `cancels` -- the last `CANCELS_KEPT` (64) cancels `_GatedNavigator` sent
-(`cancel_goal()`, `cancel_own()`) as `[n, goal_id, wall time, live]`, the
-time taken just before it went out, `live` true only if the bridge's goal
-record showed that goal id pending or active just before (not only a
-superseded goal still cancelling) and the bridge answered `cancelled`, the
-entry kept only if the call returned (`cancels_in_flight` counts those still
-out), `goal_id` that of the mission's last accepted goal
+(`cancel_goal()`, `cancel_own()`) as `[n, goal_id, wall time]`, the time
+taken just before it went out (no read goes before a cancel), the entry kept
+only if the call returned (`cancels_in_flight` counts those still out),
+`goal_id` that of the mission's last accepted goal
 (null if its answer was lost) --, `goals_failed`, `last_event`, `camera_seen_m2`, `choice_ms`, and 3.88 A's
 `asks`, `ask` -- the open choice, `{choice, candidates, default, picked,
 waited_s, timeout_s, remaining_s}`, or null -- and `choices`, the count

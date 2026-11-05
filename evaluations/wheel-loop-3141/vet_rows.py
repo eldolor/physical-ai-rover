@@ -20,8 +20,10 @@ def _harness_percentile():
     # 3.136's scorer by path (a module named `scorers` elsewhere never shadows
     # it): one percentile rule, nearest rank.
     import importlib.util
-    spec = importlib.util.spec_from_file_location(
-        "jetson_perf_3136_scorers", Path(__file__).resolve().parents[1] / "jetson-perf-3136" / "scorers.py")
+    path = Path(__file__).resolve().parents[1] / "jetson-perf-3136" / "scorers.py"
+    if not path.exists():
+        raise SystemExit(f"vet_rows needs 3.136's scorer at {path}")
+    spec = importlib.util.spec_from_file_location("jetson_perf_3136_scorers", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod.percentile
@@ -59,10 +61,10 @@ def score(board: Path) -> dict:
     for r in rows(board):
         if r.get("k") != "vet" or (t0 is not None and r["t"] < t0) or (t1 is not None and r["t"] > t1):
             continue
+        under_1ms += r["ms"] < 1.0       # any row under 1 ms: no 5 ms threshold
         if r.get("reason"):
             clamped += 1
             continue
-        under_1ms += r["ms"] < 1.0
         (loop if r.get("thread") == "MainThread" else pool).append(r["ms"])
         if r["ms"] > P90_BAR_MS:
             for name, (ms, _calls) in (r.get("parts") or {}).items():
