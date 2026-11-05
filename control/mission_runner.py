@@ -410,6 +410,9 @@ class _GatedNavigator:
         appended (in the order the calls returned), so a reader on another
         thread takes entries by number (as explore's `sent`)."""
         with self._lock:
+            # Known limit: a send accepted between this read and the bridge
+            # taking the cancel is the goal cancelled, recorded under the id
+            # before it (the plan's amendment 6).
             gid = self._own_id
         t = round(time.time(), 6)
         reply = self._nav.cancel_goal()

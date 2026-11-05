@@ -72,7 +72,7 @@ def missions(flag: str, out: str, targets: list) -> int:
                                     "body": r.text[:300], "t0": t0}) + "\n")
                 time.sleep(5)
                 continue
-            s, stopped, seen, seen_c, ex = {}, False, 0, 0, {}
+            s, stopped, seen, seen_c, ex, had_explore = {}, False, 0, 0, {}, False
 
             def take_cancels(ex):
                 # [n, goal_id, wall time, bridge answered cancelled], numbered as the sends are.
@@ -96,6 +96,7 @@ def missions(flag: str, out: str, targets: list) -> int:
                     time.sleep(1)
                     continue
                 ex = s.get("explore") or {}
+                had_explore = had_explore or bool(ex)
                 # Each entry is [n, goal_id, kind]: take those numbered past
                 # the last one written; a jump past the next number is sends
                 # the 64-entry window lost before a poll saw them.
@@ -117,7 +118,7 @@ def missions(flag: str, out: str, targets: list) -> int:
             # it closed (every cancel recorded), before the next start replaces
             # the runner (review); bounded, and the row says if it was seen.
             # Explored if the mission's own reads saw its block (review).
-            end_seen, no_explore, explored = False, 0, bool(seen or seen_c or ex)
+            end_seen, no_explore, explored = False, 0, had_explore
             for _ in range(END_CANCEL_READS):
                 time.sleep(1)
                 try:
