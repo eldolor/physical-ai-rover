@@ -373,7 +373,9 @@ def score_steady(out: Path, rec: dict) -> dict:
     rw = scorers.room_work(shim, ws, we)
     mp = [r for r in scorers.jsonl(b / "mappoll.jsonl") if ws and we and ws <= r["t"] <= we]
     fetch = scorers.durations_ms(scorers.shim_spans(shim, "map", ws, we))
-    rows["P12"] = {**rw, "map_reply": scorers.map_summary(mp),
+    # 3.141.F: a window run with STEADY_MAPPOLL=0 has no poller, on purpose.
+    mappoll_on = not (b / "mappoll_on").exists() or (b / "mappoll_on").read_text().strip() == "1"
+    rows["P12"] = {**rw, "map_reply": scorers.map_summary(mp), "mappoll_on": mappoll_on,
                    "explore_map_fetch": {"n": len(fetch), "p50_ms": scorers.percentile(fetch, 50),
                                          "p90_ms": scorers.percentile(fetch, 90)},
                    "valid": j["valid"], "reasons": j["reasons"],

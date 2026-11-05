@@ -192,9 +192,10 @@ Not a 3.136.B row (the tracer runs in it).
   load).
 * **Criterion 4: FAILED, 3 late wheel ticks** in 25,005 moving (max 123 ms;
   run 2, untraced, 1).
-* **What is still late:** a `/world/map` reply was in flight 6.2% of the
-  window, yet 33 of the tracer's 35 probe ticks over 80 ms and all 4 over
-  100 ms overlap one (113-231 ms replies, often two at once: explore's fetch
+* **What is still late:** 33 of the tracer's 35 probe ticks over 80 ms and
+  all 4 over 100 ms overlap a `/world/map` reply, where chance would give
+  12.7% / 14.2% (a reply over 20 ms in flight 6.2% of the window, each
+  widened by the tick's length; `map_overlap.py`) (113-231 ms replies, often two at once: explore's fetch
   and the harness's P12 map poller). Inferred: the map reply's work holds
   the GIL against the loop; not measured inside the reply.
 * Missions 2 `found`, 1 cancelled at the window's end; nav2 30 of 58
