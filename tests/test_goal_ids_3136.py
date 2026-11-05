@@ -102,7 +102,7 @@ def test_each_cancel_the_brain_sends_is_recorded_with_its_goal_id_first():
     runner, nav, grid = _run(CancelNav, max_steps=120)
     ex = runner.status()["explore"]
     cancels = ex["cancels"]
-    assert ex["cancels_in_flight"] == 0
+    assert ex["goal_end_done"] is True
     assert nav.cancelled_ids, "the mission sent no cancel: the test proves nothing"
     assert [c[1] for c in cancels] == nav.cancelled_ids[-64:]
     assert [c[0] for c in cancels] == list(range(len(nav.cancelled_ids) - len(cancels) + 1,
@@ -142,7 +142,7 @@ def test_a_cancel_is_recorded_with_the_time_before_it_went_out_once_it_returned(
     except OSError:
         pass
     g.cancel_own()                            # swallowed there, and still not recorded
-    assert len(g.cancels_snapshot()["cancels"]) == 2 and g.cancels_snapshot()["cancels_in_flight"] == 0
+    assert len(g.cancels_snapshot()["cancels"]) == 2
 
 
 def test_a_goal_whose_answer_was_lost_is_not_named_by_a_later_cancel():
@@ -254,12 +254,13 @@ def test_a_goal_answered_after_the_end_keeps_the_end_open_until_it_cancelled_its
     assert snap["goal_end_done"] is True and snap["cancels"][-1][1] == "f" * 32
 
 
-def test_an_explore_cancel_past_the_running_check_keeps_the_end_open():
-    """A cancel that passed the running check as the mission ended counts
-    in flight until it returns, whatever the gate's state (review)."""
+def test_an_explore_cancel_past_the_running_check_keeps_the_gate_open():
+    """A cancel already past its running check as the mission ends holds
+    the gate (and its client) open until it returns and is recorded; none
+    starts once the end has begun (review)."""
     import threading
     from control.mission_runner import _GatedNavigator
-    running, release = [True], threading.Event()
+    running, release, closed = [True], threading.Event(), []
 
     class Nav:
         def set_goal(self, x, y):
@@ -272,20 +273,24 @@ def test_an_explore_cancel_past_the_running_check_keeps_the_end_open():
             release.wait(5)
             return {"cancelled": True}
 
+        def close(self):
+            closed.append(True)
+
     g = _GatedNavigator(Nav(), lambda: running[0])
     g.set_goal(1.0, 2.0)
     t = threading.Thread(target=g.cancel_goal)
     t.start()
     import time as _time
     deadline = _time.monotonic() + 5
-    while not g.cancels_snapshot()["cancels_in_flight"]:
+    while g._in_flight == 0:
         assert _time.monotonic() < deadline
         _time.sleep(0.01)
     running[0] = False
     g.end()
-    snap = g.cancels_snapshot()
-    assert snap["goal_end_done"] is True and snap["cancels_in_flight"] > 0   # non-zero while out
+    assert g.cancels_snapshot()["goal_end_done"] is False and not closed
+    assert g.cancel_goal()["reason"] == "mission_ended"        # none starts now
     release.set()
     t.join(5)
-    assert not t.is_alive() and g.cancels_snapshot()["cancels_in_flight"] == 0
-    assert g.cancels_snapshot()["cancels"][-1][1] == "f" * 32
+    assert not t.is_alive() and closed == [True]
+    snap = g.cancels_snapshot()
+    assert snap["goal_end_done"] is True and [c[1] for c in snap["cancels"]] == ["f" * 32]

@@ -331,7 +331,8 @@ class _GatedNavigator:
         self._sent = False
         # The client is closed by whichever finishes last: `end()`, or a
         # goal still on its way when the mission ended -- which must still
-        # be able to cancel itself.
+        # be able to cancel itself -- or a cancel already past its running
+        # check (amendment 6 review: never sent on a closed client).
         self._lock = threading.Lock()
         # 3.136.B amendment 6: every cancel this gate sent, as [n, the goal id
         # of the mission's last accepted goal (None if unknown), the wall time
@@ -344,7 +345,6 @@ class _GatedNavigator:
         self._own_id: Optional[str] = None
         self.cancels = collections.deque(maxlen=CANCELS_KEPT)
         self._cancels_n = 0
-        self._cancels_in_flight = 0
         self._cancel_lock = threading.Lock()
         self._in_flight = 0
         self._ending = False
@@ -388,49 +388,42 @@ class _GatedNavigator:
         return self._nav.get_goal()
 
     def cancel_goal(self) -> dict:
-        # Amendment 6: in flight BEFORE the running check, so a cancel that
-        # passes it as the mission ends is seen by a reader who sees the gate
-        # closed (review); one that fails it sends nothing.
-        with self._cancel_lock:
-            self._cancels_in_flight += 1
-        try:
-            if not self._is_running():
+        # As set_goal: checked and counted in flight under the lock, so the
+        # gate's close (and its client's) waits for a cancel already past the
+        # check, and none starts once the mission is ending.
+        with self._lock:
+            if not self._is_running() or self._ending:
                 # The goal on the server may be a person's by now; the
                 # mission's own is ended by cancel_own().
                 return {"canceled": False, "reason": "mission_ended"}
+            self._in_flight += 1
+        try:
             return self._sent_cancel()
         finally:
-            with self._cancel_lock:
-                self._cancels_in_flight -= 1
+            with self._lock:
+                self._in_flight -= 1
+            self._close_if_done()
 
     def _sent_cancel(self) -> dict:
         """The cancel, and its record (amendment 6). Numbered as it is
         appended (in the order the calls returned), so a reader on another
         thread takes entries by number (as explore's `sent`)."""
+        gid, t = self._own_id, round(time.time(), 6)
+        reply = self._nav.cancel_goal()
+        taken = isinstance(reply, dict) and reply.get("cancelled") is True
         with self._cancel_lock:
-            self._cancels_in_flight += 1
-        try:
-            gid, t = self._own_id, round(time.time(), 6)
-            reply = self._nav.cancel_goal()
-            taken = isinstance(reply, dict) and reply.get("cancelled") is True
-            with self._cancel_lock:
-                self.cancels.append((self._cancels_n + 1, gid, t, taken))
-                self._cancels_n += 1
-            return reply
-        finally:
-            with self._cancel_lock:
-                self._cancels_in_flight -= 1
+            self.cancels.append((self._cancels_n + 1, gid, t, taken))
+            self._cancels_n += 1
+        return reply
 
     def cancels_snapshot(self) -> dict:
-        """The record, the cancels still on their way, and whether the gate
-        has closed: `end()` ran and no goal is still on its way (whose late
-        answer would cancel itself), so no further cancel can come."""
-        with self._cancel_lock:
-            out = {"cancels": [list(x) for x in self.cancels],
-                   "cancels_in_flight": self._cancels_in_flight}
+        """The record, and whether the gate has closed: `end()` ran and no
+        goal or cancel is still on its way (a goal's late answer cancels
+        itself), so no further cancel can come and every one is recorded."""
         with self._lock:
-            out["goal_end_done"] = self._closed
-        return out
+            done = self._closed
+        with self._cancel_lock:
+            return {"cancels": [list(x) for x in self.cancels], "goal_end_done": done}
 
     @property
     def sent_goal(self) -> bool:
@@ -1634,7 +1627,7 @@ class MissionRunner:
                              # 3.136.B amendment 6: the cancels the brain sent, by id.
                              **(self._navigator.cancels_snapshot()
                                 if isinstance(self._navigator, _GatedNavigator)
-                                else {"cancels": [], "cancels_in_flight": 0, "goal_end_done": True}),
+                                else {"cancels": [], "goal_end_done": True}),
                              "goals_failed": self.agent.goals_failed,
                              "last_event": self.agent.last_event,
                              "camera_seen_m2": round(len(self.agent.seen)

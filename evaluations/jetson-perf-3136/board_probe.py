@@ -113,9 +113,10 @@ def missions(flag: str, out: str, targets: list) -> int:
                     break
                 time.sleep(1)
             # The mission's end cancels its own goal on a thread of its own,
-            # after `running` turns false: read its cancels until the end says
-            # it is done and none is in flight, before the next start replaces
-            # the runner (review); bounded.
+            # after `running` turns false: read its cancels until the gate says
+            # it closed (every cancel recorded), before the next start replaces
+            # the runner (review); bounded, and the row says if it was seen.
+            end_seen, no_explore = None, 0
             for _ in range(END_CANCEL_READS):
                 time.sleep(1)
                 try:
@@ -124,14 +125,22 @@ def missions(flag: str, out: str, targets: list) -> int:
                     continue
                 ex = st.get("explore") if isinstance(st, dict) else None
                 if not ex:
-                    break                   # no explore search: no goals, no cancels
+                    no_explore += 1
+                    if no_explore >= 2:     # no explore search: no goals, no cancels
+                        break
+                    continue
+                no_explore, end_seen = 0, False
                 take_cancels(ex)
-                if ex.get("goal_end_done") is True and not ex.get("cancels_in_flight"):
+                if ex.get("goal_end_done") is True:
+                    end_seen = True
                     break
             rl = s.get("room_labels") or {}
             f.write(json.dumps({"target": target, "t0": round(t0, 3), "t1": round(time.time(), 3),
                                 "outcome": s.get("outcome"), "step": s.get("step"),
                                 "stopped_by_harness": stopped, "room_labels": rl,
+                                # Amendment 6: the gate's close seen (every cancel taken),
+                                # False if the reads ran out, None with no explore block.
+                                "cancels_end_seen": end_seen,
                                 "error": s.get("error")}) + "\n")
     return 0
 
