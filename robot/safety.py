@@ -441,49 +441,77 @@ def _corridor_room(along_cm: float, lateral_cm: float) -> Optional[float]:
     return None
 
 
+class _ScanPoints:
+    """3.141.E: a scan's returns in the body frame, computed once for every
+    vet stage that reads the same scan contents (`scan_points_cm()`'s exact
+    Python arithmetic, so every later answer is the per-point loop's): the
+    corridor, the turn guard, and the robot server's two vets of one tick
+    (the wheel loop's and `/wheels`'). The last scan's contents are kept;
+    a different scan replaces them."""
+
+    _last = None                       # (key, points)
+
+    @classmethod
+    def of(cls, scan: dict) -> tuple:
+        """`(pts, X, Y)`: the points as a list of `(x, y)` in scan order, and
+        the same numbers as numpy arrays."""
+        key = (scan.get("angle_min_deg"), scan.get("angle_increment_deg"),
+               tuple(scan.get("ranges_m") or ()))
+        last = cls._last
+        if last is not None and last[0] == key:
+            return last[1]
+        pts = list(scan_points_cm(scan))
+        a = np.array(pts, dtype=float).reshape(-1, 2)
+        val = (pts, a[:, 0], a[:, 1])
+        cls._last = (key, val)         # one assignment: a reader sees old or new
+        return val
+
+
 class _PivotRows:
     """A scan's returns as `pivot_blocked()` looks at them, built once for
-    all of `pivot_scale()`'s passes and only as far as a pass needs (3.141).
+    all of `pivot_scale()`'s passes (3.141.B), in one numpy pass from the
+    scan's exact body-frame points (3.141.E: `_ScanPoints`).
 
-    Each return is put in the body frame (`scan_points_cm()`) and across
-    the aged arc of `missed` radians (3.42: a real lidar's points are up to
-    ~150 ms old and the body may have been turning since, so each point's
-    bearing NOW lies on an arc between where the scan put it and that turn
-    later). The rows are every `(x, y)` of those whose distance to the
-    chassis rectangle now is within `PIVOT_NEAR_CM`, in scan order (point
-    by point, the arc in order) -- the ones the per-point loop before 3.141
-    went on to look ahead for.
+    Each return is rotated across the aged arc of `missed` radians (3.42: a
+    real lidar's points are up to ~150 ms old and the body may have been
+    turning since, so each point's bearing NOW lies on an arc between where
+    the scan put it and that turn later). The rows are every `(x, y)` of
+    those whose distance to the chassis rectangle now is within
+    `PIVOT_NEAR_CM`, in scan order (point by point, the arc in order) -- the
+    ones the per-point loop before 3.141 went on to look ahead for.
 
     `first_blocking(c, s)` answers one pass: the distance after the turn
     (cos `c`, sin `s`) of the first row in scan order that ends under
-    `PIVOT_MARGIN_CM` AND closes, or None. The rotations are numpy's
-    (the same IEEE products and differences as Python's), the distances
-    numpy's too, but only as a filter with `PIVOT_FILTER_SLACK_CM` to
-    spare: every row it passes is decided in order by the exact expressions
-    the loop used -- its distance now (a row the loop would not have kept
-    is skipped) and after -- so the first blocking row and its number are
-    the loop's. The scan is read in growing chunks, the first of them in
-    plain Python exactly as the loop read it (a few rows are cheaper so
-    than through numpy), so a turn blocked at the first returns costs what
-    it did."""
-
-    _FIRST_CHUNK = 2
+    `PIVOT_MARGIN_CM` AND closes, or None. The rotations are numpy's (the
+    same IEEE products and differences as Python's); the distances are
+    numpy's `hypot`, which may differ from `math.hypot` in the last bit, so
+    they are a filter only, with `PIVOT_FILTER_SLACK_CM` to spare: every row
+    it passes is decided in order by the exact expressions the loop used --
+    its distance now (a row the loop would not have kept is skipped) and
+    after -- so the first blocking row and its number are the loop's."""
 
     def __init__(self, scan: dict, missed: float):
         self.scan, self.missed = scan, missed
         arc = [missed * k / PIVOT_AGE_SAMPLES for k in range(PIVOT_AGE_SAMPLES + 1)] \
             if missed else [0.0]
-        self._rots = [(math.cos(-a), math.sin(-a)) for a in arc]
+        rots = [(math.cos(-a), math.sin(-a)) for a in arc]
         self._hl, self._hw = FOOTPRINT_LENGTH_M * 50.0, FOOTPRINT_WIDTH_M * 50.0
         # A return farther from base_link than this cannot come within
         # PIVOT_NEAR_CM of the chassis at any rotation: never rotated.
-        self._reach = PIVOT_NEAR_CM + math.hypot(self._hl, self._hw) + PIVOT_FILTER_SLACK_CM
-        self._points = scan_points_cm(scan)
-        self._chunk = self._FIRST_CHUNK
-        self._done = False
-        self._first_rows: Optional[list] = None   # the first chunk: exact (x, y, now)
-        self._built: list = []          # (X, Y, NOW) arrays, one per later chunk
-        self._all = None                # the later chunks joined, and how many
+        reach = PIVOT_NEAR_CM + math.hypot(self._hl, self._hw) + PIVOT_FILTER_SLACK_CM
+        _, x0, y0 = _ScanPoints.of(scan)
+        keep = np.hypot(x0, y0) <= reach
+        x0, y0 = x0[keep], y0[keep]
+        # One column per point of the arc, so a row-major flatten is the
+        # loop's order: point by point, the arc in order.
+        if len(x0):
+            xs = np.stack([ca * x0 - sa * y0 for ca, sa in rots], axis=1).ravel()
+            ys = np.stack([sa * x0 + ca * y0 for ca, sa in rots], axis=1).ravel()
+        else:
+            xs = ys = np.zeros(0)
+        nows = self._ndist(xs, ys)
+        near = nows <= PIVOT_NEAR_CM + PIVOT_FILTER_SLACK_CM
+        self._xs, self._ys, self._nows = xs[near], ys[near], nows[near]
 
     def _dist(self, x: float, y: float) -> float:
         return math.hypot(max(abs(x) - self._hl, 0.0), max(abs(y) - self._hw, 0.0))
@@ -492,60 +520,8 @@ class _PivotRows:
         return np.hypot(np.maximum(np.abs(xs) - self._hl, 0.0),
                         np.maximum(np.abs(ys) - self._hw, 0.0))
 
-    def _read_first(self) -> list:
-        """The first chunk's rows, in plain Python: the loop's own steps."""
-        rows = []
-        for _ in range(self._chunk):
-            p = next(self._points, None)
-            if p is None:
-                self._done = True
-                break
-            x0, y0 = p
-            if math.hypot(x0, y0) > self._reach:
-                continue
-            for ca, sa in self._rots:
-                x, y = ca * x0 - sa * y0, sa * x0 + ca * y0
-                now = self._dist(x, y)
-                if now <= PIVOT_NEAR_CM:
-                    rows.append((x, y, now))
-        self._chunk *= 2
-        return rows
-
-    def _first_exact(self, rows: list, c: float, s: float) -> Optional[float]:
-        for x, y, now in rows:
-            after = self._dist(c * x - s * y, s * x + c * y)
-            if after < PIVOT_MARGIN_CM and after < now - 1e-6:
-                return after
-        return None
-
-    def _read(self) -> Optional[tuple]:
-        """The rows of the next chunk of the scan, or None at its end."""
-        pts = []
-        for _ in range(self._chunk):
-            p = next(self._points, None)
-            if p is None:
-                self._done = True
-                break
-            pts.append(p)
-        self._chunk *= 2
-        if not pts:
-            return None
-        p = np.array(pts, dtype=float)
-        x0, y0 = p[:, 0], p[:, 1]
-        keep = np.hypot(x0, y0) <= self._reach
-        x0, y0 = x0[keep], y0[keep]
-        # One column per point of the arc, so a row-major flatten is the
-        # loop's order: point by point, the arc in order.
-        xs = np.stack([ca * x0 - sa * y0 for ca, sa in self._rots], axis=1).ravel()
-        ys = np.stack([sa * x0 + ca * y0 for ca, sa in self._rots], axis=1).ravel()
-        nows = self._ndist(xs, ys)
-        near = nows <= PIVOT_NEAR_CM + PIVOT_FILTER_SLACK_CM
-        rows = (xs[near], ys[near], nows[near])
-        self._built.append(rows)
-        return rows
-
-    def _first(self, rows: tuple, c: float, s: float) -> Optional[float]:
-        xs, ys, nows = rows
+    def first_blocking(self, c: float, s: float) -> Optional[float]:
+        xs, ys, nows = self._xs, self._ys, self._nows
         if not len(xs):
             return None
         after = self._ndist(c * xs - s * ys, s * xs + c * ys)
@@ -559,28 +535,6 @@ class _PivotRows:
             after_i = self._dist(c * x - s * y, s * x + c * y)
             if after_i < PIVOT_MARGIN_CM and after_i < now - 1e-6:
                 return after_i
-        return None
-
-    def first_blocking(self, c: float, s: float) -> Optional[float]:
-        if self._first_rows is None:
-            self._first_rows = self._read_first()
-        after = self._first_exact(self._first_rows, c, s)
-        if after is not None:
-            return after
-        if self._built:
-            if self._all is None or self._all[0] != len(self._built):
-                self._all = (len(self._built),
-                             tuple(np.concatenate(col) for col in zip(*self._built)))
-            after = self._first(self._all[1], c, s)
-            if after is not None:
-                return after
-        while not self._done:
-            rows = self._read()
-            if rows is None:
-                break
-            after = self._first(rows, c, s)
-            if after is not None:
-                return after
         return None
 
 
@@ -773,15 +727,22 @@ class SafetyController:
         scan = self._scan() if scan is None else scan
         if not scan or not scan.get("usable"):
             return None, "no_scan"
-        best = None
-        for x, y in scan_points_cm(scan):
-            room = _corridor_room(direction * x, abs(y))
-            if room is None:
-                continue
-            best = room if best is None else min(best, room)
-        if best is None:
+        # 3.141.E: `_corridor_room()` over every return at once. Its steps
+        # are a product, differences and comparisons -- the same IEEE
+        # operations in numpy as in Python, so the same numbers.
+        _, xs, ys = _ScanPoints.of(scan)
+        if not len(xs):
             return None, "scan_footprint_no_target"
-        return round(best, 1), "scan_footprint"
+        half_len = FOOTPRINT_LENGTH_M * 50.0
+        half_wid = FOOTPRINT_WIDTH_M * 50.0
+        along, lateral = direction * xs, np.abs(ys)
+        ahead = (along > half_len) & (lateral <= half_wid + FOOTPRINT_SIDE_MARGIN_CM)
+        beside = ~ahead & (0.0 < along) & (along <= half_len) & (lateral <= half_wid)
+        if beside.any():
+            return 0.0, "scan_footprint"   # a room of 0.0 is every room's minimum
+        if not ahead.any():
+            return None, "scan_footprint_no_target"
+        return round(float((along[ahead] - half_len).min()), 1), "scan_footprint"
 
     def pivot_scale(self, omega_rad_s: float, scan: Optional[dict] = None
                     ) -> Tuple[float, Optional[str]]:

@@ -140,22 +140,26 @@ def test_no_scan_and_no_turn_unchanged():
         assert s.pivot_blocked(1.0, scan_of([None] * 360)) is None
 
 
+# Planted bugs in the one-pass rows (3.141.E): each must be caught.
+
 class _ArcOffByOne(safety._PivotRows):
     def __init__(self, scan, missed):
-        super().__init__(scan, missed)
-        self._rots = self._rots[:-1] or self._rots
+        super().__init__(scan, missed * PIVOT_AGE_SAMPLES_SHORT)
+
+
+PIVOT_AGE_SAMPLES_SHORT = (safety.PIVOT_AGE_SAMPLES - 1) / safety.PIVOT_AGE_SAMPLES
 
 
 class _DropsNearestRows(safety._PivotRows):
-    def _first(self, rows, c, s):
-        xs, ys, nows = rows
-        keep = nows > 2.0
-        return super()._first((xs[keep], ys[keep], nows[keep]), c, s)
+    def __init__(self, scan, missed):
+        super().__init__(scan, missed)
+        keep = self._nows > 2.0
+        self._xs, self._ys, self._nows = self._xs[keep], self._ys[keep], self._nows[keep]
 
 
 class _FirstChunkClosesOnEqual(safety._PivotRows):
-    def _first_exact(self, rows, c, s):
-        for x, y, now in rows:
+    def first_blocking(self, c, s):
+        for x, y, now in zip(self._xs.tolist(), self._ys.tolist(), self._nows.tolist()):
             after = self._dist(c * x - s * y, s * x + c * y)
             if after < PIVOT_MARGIN_CM + 0.05 and after < now - 1e-6:
                 return after
@@ -165,21 +169,16 @@ class _FirstChunkClosesOnEqual(safety._PivotRows):
 class _ReachWithoutTheChassis(safety._PivotRows):
     def __init__(self, scan, missed):
         super().__init__(scan, missed)
-        self._reach = math.hypot(self._hl, self._hw) + 1.0
+        keep = np.hypot(self._xs, self._ys) <= math.hypot(self._hl, self._hw) + 1.0
+        self._xs, self._ys, self._nows = self._xs[keep], self._ys[keep], self._nows[keep]
 
 
 class _LaterChunksFirst(safety._PivotRows):
-    def first_blocking(self, c, s):
-        while not self._done:
-            self._read()
-        if self._built:
-            got = self._first(tuple(np.concatenate(col)[::-1].copy() for col in zip(*self._built)),
-                              c, s)
-            if got is not None:
-                return got
-        if self._first_rows is None:
-            self._first_rows = self._read_first()
-        return self._first_exact(self._first_rows, c, s)
+    """Rows out of scan order."""
+    def __init__(self, scan, missed):
+        super().__init__(scan, missed)
+        self._xs, self._ys, self._nows = self._xs[::-1].copy(), self._ys[::-1].copy(), \
+            self._nows[::-1].copy()
 
 
 def _first_beams_case():
@@ -217,3 +216,23 @@ def test_first_chunk_mutant_caught_on_the_first_beams(monkeypatch):
     before = answers(SafetyController, *c)
     monkeypatch.setattr(safety, "_PivotRows", _FirstChunkClosesOnEqual)
     assert answers(SafetyController, *c) != before
+
+
+def test_a_stale_points_cache_is_caught(monkeypatch):
+    """3.141.E: points kept for a scan whose contents changed would be a
+    stale answer; a cache keyed without the ranges is caught."""
+    cls = safety._ScanPoints
+
+    def of(scan):
+        key = (scan.get("angle_min_deg"), scan.get("angle_increment_deg"))
+        last = cls._last
+        if last is not None and last[0] == key:
+            return last[1]
+        pts = list(safety.scan_points_cm(scan))
+        arr = np.array(pts, dtype=float).reshape(-1, 2)
+        val = (pts, arr[:, 0], arr[:, 1])
+        cls._last = (key, val)
+        return val
+    monkeypatch.setattr(cls, "of", staticmethod(of))
+    monkeypatch.setattr(cls, "_last", None)
+    assert differences(300, seed=3141) > 0

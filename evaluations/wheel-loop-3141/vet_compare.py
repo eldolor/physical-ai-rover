@@ -15,7 +15,7 @@ sys.path.insert(0, ".")
 
 import vet_bench as vb  # noqa: E402
 from robot.safety import SafetyController  # noqa: E402
-from tests.pivot_reference import ReferenceSafety  # noqa: E402
+from tests.vet_reference import VetReference as ReferenceSafety  # noqa: E402  (3.141.E: the whole frozen vet)
 
 CASES = dict(vb.CASES, **{
     "corner box 0.171x0.140": (vb.box(0.171, 0.140), 0.05, (-8.0, 8.0)),
