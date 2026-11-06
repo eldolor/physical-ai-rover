@@ -1,0 +1,86 @@
+{
+ "candidates": [],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 150,
+  "landmarks": 3,
+  "no_pose": 1,
+  "observations": 103,
+  "reported": 3,
+  "unplaced": 0
+ },
+ "frame_id": "map-8081f6b4",
+ "map_id": "slam-2d51ef70",
+ "mission": "Find the red backpack.",
+ "mission_id": "20261106T033311.134579Z-red backpack",
+ "outcome": "found",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 30,
+   "hits": 16,
+   "id": 2,
+   "label": "red backpack",
+   "last_step": 150,
+   "misses": 0,
+   "points": 64,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "red backpack": 16
+   },
+   "x_m": 6.972,
+   "y_m": 1.575
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 32,
+   "hits": 12,
+   "id": 3,
+   "label": "refrigerator",
+   "last_step": 125,
+   "misses": 0,
+   "points": 31,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "refrigerator": 12
+   },
+   "x_m": 7.179,
+   "y_m": 0.779
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 7,
+   "hits": 2,
+   "id": 1,
+   "label": "sofa",
+   "last_step": 16,
+   "misses": 0,
+   "points": 8,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "sofa": 2
+   },
+   "x_m": 0.86,
+   "y_m": 0.871
+  }
+ ]
+}
