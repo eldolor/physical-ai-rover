@@ -179,7 +179,7 @@ class Stack:
     def _post_lock(self) -> dict:
         try:
             code, body = http("POST", self.urls["body"] + "/fmea/mlock", timeout=30.0)
-        except OSError as e:                    # reported, never the stack's start
+        except Exception as e:                  # noqa: BLE001 -- reported, never the stack's start
             return {"locked": False, "error": f"{type(e).__name__}: {e}"}
         return body if code == 200 and isinstance(body, dict) else {"locked": False, "error": f"HTTP {code}"}
 

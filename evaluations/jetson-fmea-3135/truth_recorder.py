@@ -14,9 +14,9 @@ evaluations/jetson-fmea-3135/truth_recorder.py
   is the only thread that writes (`stop()` lets it drain). A failed write
   is reported on stderr and that line is lost (a hole in the log, never a
   dead recorder) -- as the loop before; so is a sample that raises. The
-  backlog is capped at `BACKLOG_MAX` lines (10 min at 50 Hz), the oldest
-  dropped and counted, so a writer stalled for good cannot grow locked
-  memory without bound.
+  backlog waiting for the writer is capped at `BACKLOG_MAX` lines (10 min
+  at 50 Hz), the oldest dropped and counted; with the batch a stalled
+  writer already holds, at most twice that is resident, never unbounded.
 * `lock_memory()`: `mlockall(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT)` --
   every page the process has touched or touches stays resident (no major
   fault on its code or heap under reclaim), without populating what it
@@ -45,6 +45,7 @@ class Recorder:
         self.sample, self.file, self.period_s = sample, file, period_s
         self.latest: dict = {}
         self.dropped = 0
+        self._stopped = None                    # stop()'s answer, once
         self._lines = collections.deque()
         self._cv = threading.Condition()
         self._stop = threading.Event()
@@ -67,6 +68,8 @@ class Recorder:
             else:
                 self.latest = row               # one name rebound: a reader never sees half a row
                 with self._cv:
+                    if self._stop.is_set():     # after the end: the writer's last look is done
+                        break
                     if len(self._lines) >= BACKLOG_MAX:
                         self._lines.popleft()
                         self.dropped += 1
@@ -90,6 +93,9 @@ class Recorder:
         for line in lines:                      # one line a write: a failure loses that line only
             try:
                 self.file.write(line)
+            except ValueError as e:             # the file closed under us: nothing more can land
+                print(f"truth write failed, file closed: {e!r}", file=sys.stderr, flush=True)
+                return
             except Exception as e:              # noqa: BLE001 -- a hole in the log, never a dead writer
                 print(f"truth write failed: {e!r}", file=sys.stderr, flush=True)
         try:
@@ -108,13 +114,16 @@ class Recorder:
     def stop(self, timeout_s: float = 3.0) -> bool:
         """Stop sampling and let the writer drain what it holds; True if it
         finished within `timeout_s` (a writer still blocked keeps the file to
-        itself and finishes on its own: no second thread ever writes)."""
+        itself and finishes on its own: no second thread ever writes).
+        Once: a second call answers the first's."""
+        if self._stopped is not None:
+            return self._stopped
         self._stop.set()
         self._sampler.join(1.0)
         with self._cv:
             self._cv.notify_all()
         self._writer.join(timeout_s)
-        done = not self._writer.is_alive()
+        done = self._stopped = not self._writer.is_alive()
         print(f"truth recorder stopped: drained={done}, dropped={self.dropped}",
               file=sys.stderr, flush=True)
         return done

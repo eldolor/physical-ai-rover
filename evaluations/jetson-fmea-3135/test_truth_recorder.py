@@ -258,3 +258,24 @@ def test_sigterm_drains_the_recorder(tmp_path):
         if p.poll() is None:
             p.kill()
     assert "truth recorder stopped: drained=True" in out
+
+
+def test_stop_is_once_and_a_late_sample_is_not_appended():
+    f = BlockingFile(0)
+    rec = tr.Recorder(_sampler(), f, period_s=0.01)
+    rec.start()
+    time.sleep(0.1)
+    first = rec.stop()
+    assert rec.stop() is first is True
+    assert not rec._lines
+
+
+def test_pressure_gaps_count_a_stall_past_the_window_and_a_cut_line(tmp_path):
+    import truth_pressure as tp
+    rows = [{"t": 10.0 + 0.02 * i} for i in range(100)]            # 10.00 .. 11.98, then nothing
+    g = tp.gaps(rows, 10.5, 13.0)
+    assert g["over_bar"] == 1 and g["max_s"] >= 1.0                 # the open gap to 13.0 counts
+    assert tp.gaps(rows, 10.5, 11.5)["over_bar"] == 0
+    p = tmp_path / "truth.jsonl"
+    p.write_text('{"t": 1.0}\n{"t": 1.02}\n{"t": 1.0')
+    assert [r["t"] for r in tp.read_rows(p)] == [1.0, 1.02]
