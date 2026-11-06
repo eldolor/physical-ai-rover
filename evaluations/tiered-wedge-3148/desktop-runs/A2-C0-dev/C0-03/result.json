@@ -1,0 +1,30 @@
+{
+ "row": "C0",
+ "house": "scaled_house",
+ "started": "2026-11-05T20:29:56-0600",
+ "measures": {
+  "outcome": "found",
+  "start_at": 141203.668072979,
+  "end_at": 141315.96285936,
+  "mission_s": 112.3,
+  "status": {
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen, living room searched. Found.",
+   "error": null,
+   "step": 117,
+   "arrival_verdicts": [
+    {
+     "tier": "cloud",
+     "confirmed": true,
+     "verdict_s": 0.01,
+     "local_score": null,
+     "cloud_called": true,
+     "n": 1
+    }
+   ]
+  },
+  "contacts": 0,
+  "travel_mission_cm": 458.62,
+  "paid_calls": 23
+ }
+}

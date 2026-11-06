@@ -1,0 +1,22 @@
+1793930513.570 WARNING identity vision-picar brain server starting -- git=c1af8499 executable=/home/anshu/vision-picar/.venv/bin/python config=(default)
+1793930514.731 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930520.641 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930526.589 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930532.773 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930538.633 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930544.578 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930550.762 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930556.623 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930562.471 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930568.655 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930574.488 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930580.326 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930583.284 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930589.348 WARNING safety Blocked FORWARD: distance=19.9cm < min=20cm (scan_footprint)
+1793930589.636 WARNING safety Blocked FORWARD: distance=19.9cm < min=20cm (scan_footprint)
+1793930589.916 WARNING safety Blocked FORWARD: distance=19.9cm < min=20cm (scan_footprint)
+1793930590.195 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930590.475 WARNING safety Blocked FORWARD: distance=19.9cm < min=20cm (scan_footprint)
+1793930590.755 WARNING safety Blocked FORWARD: distance=19.9cm < min=20cm (scan_footprint)
+1793930625.042 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930660.038 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused

@@ -1,0 +1,53 @@
+{
+ "row": "F11a",
+ "title": "Cloud unreachable from the start (tiered)",
+ "reading": "the mission ends arrived_unconfirmed (no tier here could confirm, so found would be wrong, 3.47), never failed; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-05T20:11:19-0600",
+ "measures": {
+  "outcome": "arrived_unconfirmed",
+  "start_at": 140086.484979315,
+  "end_at": 140171.692152702,
+  "timed_out": false,
+  "mission_s": 85.2,
+  "status": {
+   "outcome": "arrived_unconfirmed",
+   "end_state": null,
+   "end_reason": "arrived (lidar 0.371 m, streak 4) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ConnectError: [Errno 111] Connection refused",
+   "error": null,
+   "step": 82,
+   "arrival_verdicts": [],
+   "cloud": {
+    "state": "unreachable",
+    "since": 1793931082.0170207,
+    "checked_at": 1793931157.0463336,
+    "age_s": 10.170720474998234,
+    "probes": 6,
+    "probe_s": 15.0
+   },
+   "late_confirmation": null
+  },
+  "wheel_loop": {
+   "late": 0,
+   "moving": 0,
+   "max_dt_s": 0.0
+  },
+  "paid_calls": 0,
+  "max_open_paid": 0,
+  "travel_mission_cm": 459.07,
+  "drive_after_end": 0,
+  "truth_hole_s": 0.022,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "mem_available_min_mb": 10789,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-05T20:12:58-0600"
+}

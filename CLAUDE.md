@@ -232,6 +232,12 @@ paragraph.**
   2.6.0 trees (`brain/tree.py`, `tier_tree:`).
 * 3.98, 3.143: on the simulator's frames an arrival and a local no are
   judged from geometry; real frames always ask the tiers.
+* 3.148: a tiered mission with no nav2 and no steering tier (no cloud, no
+  local VLM) can end `blocked` at a door jamb on its straight line (desktop
+  2 of 10; 0 of 10 with the cloud up). That is the designed end (routing is
+  nav2's; the pinned jamb tests stand), so 3.135.B's F11a/F11b/F12a now
+  allow it. No code change; a sidestep is kept unmerged
+  (`evaluations/tiered-wedge-3148/sidestep-option-a.patch`).
 * 3.152.A: a local VLM found absent (refused, dropped, 503) is held down,
   the policy then exactly the no-local-tier one, and its free `/health`
   probed every `tier_local_probe_s` (5 s) until ready; a hang stays the

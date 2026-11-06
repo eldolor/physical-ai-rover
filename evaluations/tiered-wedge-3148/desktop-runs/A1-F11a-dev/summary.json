@@ -1,0 +1,195 @@
+{
+ "row": "F11a",
+ "runs": [
+  {
+   "run": 0,
+   "outcome": "blocked",
+   "mission_s": 147.3,
+   "travel_cm": 377.02,
+   "contacts": 0,
+   "paid_calls": 0,
+   "max_open_paid": 0,
+   "park_s": null,
+   "end_reason": "FORWARD refused 5 times in a row by the safety layer, 3 times over -- the way ahead is obstructed. Going around it is route planning (nav2, PLAN-ros-alignment.m",
+   "end_pose": {
+    "x": 4.47635,
+    "y": 1.66198,
+    "th": 0.02089,
+    "gap_cm": 20.06
+   },
+   "error": null,
+   "verdict": null
+  },
+  {
+   "run": 1,
+   "outcome": "arrived_unconfirmed",
+   "mission_s": 86.2,
+   "travel_cm": 459.27,
+   "contacts": 0,
+   "paid_calls": 0,
+   "max_open_paid": 0,
+   "park_s": null,
+   "end_reason": "arrived (lidar 0.37 m, streak 4) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ConnectError: [Errno 111] Connectio",
+   "end_pose": {
+    "x": 6.5303,
+    "y": 1.64875,
+    "th": -0.046,
+    "gap_cm": 23.8
+   },
+   "error": null,
+   "verdict": null
+  },
+  {
+   "run": 2,
+   "outcome": "blocked",
+   "mission_s": 172.4,
+   "travel_cm": 229.0,
+   "contacts": 0,
+   "paid_calls": 0,
+   "max_open_paid": 0,
+   "park_s": null,
+   "end_reason": "FORWARD refused 5 times in a row by the safety layer, 3 times over -- the way ahead is obstructed. Going around it is route planning (nav2, PLAN-ros-alignment.m",
+   "end_pose": {
+    "x": 2.96823,
+    "y": 1.71138,
+    "th": -0.05597,
+    "gap_cm": 19.9
+   },
+   "error": null,
+   "verdict": null
+  },
+  {
+   "run": 3,
+   "outcome": "arrived_unconfirmed",
+   "mission_s": 86.2,
+   "travel_cm": 460.46,
+   "contacts": 0,
+   "paid_calls": 0,
+   "max_open_paid": 0,
+   "park_s": null,
+   "end_reason": "arrived (lidar 0.369 m, streak 4) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ConnectError: [Errno 111] Connecti",
+   "end_pose": {
+    "x": 6.53093,
+    "y": 1.65071,
+    "th": 0.03981,
+    "gap_cm": 23.81
+   },
+   "error": null,
+   "verdict": null
+  },
+  {
+   "run": 4,
+   "outcome": "arrived_unconfirmed",
+   "mission_s": 85.2,
+   "travel_cm": 459.07,
+   "contacts": 0,
+   "paid_calls": 0,
+   "max_open_paid": 0,
+   "park_s": null,
+   "end_reason": "arrived (lidar 0.371 m, streak 4) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ConnectError: [Errno 111] Connecti",
+   "end_pose": {
+    "x": 6.53008,
+    "y": 1.6269,
+    "th": 0.0446,
+    "gap_cm": 23.84
+   },
+   "error": null,
+   "verdict": null
+  },
+  {
+   "run": 5,
+   "outcome": "arrived_unconfirmed",
+   "mission_s": 86.2,
+   "travel_cm": 458.16,
+   "contacts": 0,
+   "paid_calls": 0,
+   "max_open_paid": 0,
+   "park_s": null,
+   "end_reason": "arrived (lidar 0.381 m, streak 4) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ConnectError: [Errno 111] Connecti",
+   "end_pose": {
+    "x": 6.52092,
+    "y": 1.60785,
+    "th": 0.05453,
+    "gap_cm": 24.65
+   },
+   "error": null,
+   "verdict": null
+  },
+  {
+   "run": 6,
+   "outcome": "arrived_unconfirmed",
+   "mission_s": 85.2,
+   "travel_cm": 458.43,
+   "contacts": 0,
+   "paid_calls": 0,
+   "max_open_paid": 0,
+   "park_s": null,
+   "end_reason": "arrived (lidar 0.376 m, streak 4) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ConnectError: [Errno 111] Connecti",
+   "end_pose": {
+    "x": 6.525,
+    "y": 1.61936,
+    "th": 0.06817,
+    "gap_cm": 24.09
+   },
+   "error": null,
+   "verdict": null
+  },
+  {
+   "run": 7,
+   "outcome": "arrived_unconfirmed",
+   "mission_s": 86.2,
+   "travel_cm": 460.47,
+   "contacts": 0,
+   "paid_calls": 0,
+   "max_open_paid": 0,
+   "park_s": null,
+   "end_reason": "arrived (lidar 0.37 m, streak 4) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ConnectError: [Errno 111] Connectio",
+   "end_pose": {
+    "x": 6.53107,
+    "y": 1.62383,
+    "th": 0.04087,
+    "gap_cm": 23.78
+   },
+   "error": null,
+   "verdict": null
+  },
+  {
+   "run": 8,
+   "outcome": "arrived_unconfirmed",
+   "mission_s": 86.2,
+   "travel_cm": 460.88,
+   "contacts": 0,
+   "paid_calls": 0,
+   "max_open_paid": 0,
+   "park_s": null,
+   "end_reason": "arrived (lidar 0.365 m, streak 4) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ConnectError: [Errno 111] Connecti",
+   "end_pose": {
+    "x": 6.53531,
+    "y": 1.64447,
+    "th": 0.01535,
+    "gap_cm": 23.64
+   },
+   "error": null,
+   "verdict": null
+  },
+  {
+   "run": 9,
+   "outcome": "arrived_unconfirmed",
+   "mission_s": 86.2,
+   "travel_cm": 458.11,
+   "contacts": 0,
+   "paid_calls": 0,
+   "max_open_paid": 0,
+   "park_s": null,
+   "end_reason": "arrived (lidar 0.381 m, streak 4) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ConnectError: [Errno 111] Connecti",
+   "end_pose": {
+    "x": 6.51902,
+    "y": 1.63406,
+    "th": -0.00509,
+    "gap_cm": 25.39
+   },
+   "error": null,
+   "verdict": null
+  }
+ ]
+}
