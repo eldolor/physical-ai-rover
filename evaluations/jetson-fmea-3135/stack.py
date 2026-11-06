@@ -110,6 +110,8 @@ class Stack:
             "PICAR_LOG_LEVEL": "WARNING", "FMEA_DIR": str(self.out),
             "FMEA_PLANT": ",".join(sorted(plants)),
         })
+        if "FMEA_TRUTH_LOCK" in os.environ:     # 3.151's planted check, from the shell
+            env["FMEA_TRUTH_LOCK"] = os.environ["FMEA_TRUTH_LOCK"]
         env.update(extra_env or {})
         self.env = env
 
@@ -149,6 +151,7 @@ class Stack:
             self._spawn("body", [PY, str(HERE / "truth_body.py"), str(PORTS["body"])],
                         dict(self.env, FMEA_PLANT=",".join(sorted(self.plants & BODY_PLANTS))))
             self._wait_health("body", self.urls["body"])
+            self.lock_body()
             self._spawn("sensors", self._uvicorn("sim.sensor_server:app", PORTS["sensor"]))
             self._spawn("sensors2", self._uvicorn("sim.sensor_server:app", PORTS["sensor2"]))
             self._wait_health("sensors", self.urls["sensor"])
@@ -165,6 +168,34 @@ class Stack:
             self.stop()
             raise
         return self
+
+    def _sudo(self, argv: list) -> bool:
+        """`sudo -n argv`: True if it ran and succeeded (False without sudo)."""
+        try:
+            return subprocess.run(["sudo", "-n", *argv], capture_output=True, timeout=10).returncode == 0
+        except (OSError, subprocess.TimeoutExpired):
+            return False
+
+    def _post_lock(self) -> dict:
+        code, body = http("POST", self.urls["body"] + "/fmea/mlock", timeout=30.0)
+        return body if code == 200 and isinstance(body, dict) else {"locked": False, "error": f"HTTP {code}"}
+
+    def lock_body(self) -> dict:
+        """3.151: the truth body's touched pages locked, so memory pressure
+        cannot stall the truth (3.135.B F2's holes). Its memlock limit is
+        raised first where `sudo -n` works (the board's is ~952 MB; the
+        desktop's 8 MB and no sudo: the lock is then refused, and said so).
+        `FMEA_TRUTH_LOCK=0` skips both (the planted check). The answer is
+        the run's `body_lock.json`."""
+        if self.env.get("FMEA_TRUTH_LOCK") == "0":
+            got = {"locked": False, "skipped": "FMEA_TRUTH_LOCK=0"}
+        else:
+            raised = self._sudo(["prlimit", "--pid", str(self.pid("body")),
+                                 "--memlock=unlimited:unlimited"])
+            got = {**self._post_lock(), "limit_raised": raised}
+        self.body_lock = got
+        (self.out / "body_lock.json").write_text(json.dumps(got, indent=1))
+        return got
 
     def start_robot(self) -> None:
         if self.plants & ROBOT_PLANTS:
