@@ -90,7 +90,14 @@ def main(argv=None) -> None:
     if os.environ.get("PICAR_MEMLOCK") == "0":
         got = {"locked": False, "skipped": "PICAR_MEMLOCK=0"}
     else:
-        got = lock(float(os.environ.get("PICAR_MEMLOCK_WAIT_S") or 0))
+        raw, bad = os.environ.get("PICAR_MEMLOCK_WAIT_S") or "0", None
+        try:
+            wait_s = float(raw)
+        except ValueError:                      # a bad value never stops the robot server
+            wait_s, bad = 0.0, raw
+        got = lock(wait_s)
+        if bad is not None:
+            got["wait_s_ignored"] = bad
     print("robot server memory lock: " + json.dumps(got), file=sys.stderr, flush=True)
     _serve(argv[1:])
 

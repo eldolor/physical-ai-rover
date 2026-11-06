@@ -212,7 +212,7 @@ class Stack:
         log = self.out / "robot.log"
         since = log.stat().st_size if log.exists() else 0      # this start's lines only
         self._spawn("robot", argv, dict(self.env, FMEA_PLANT=",".join(sorted(self.plants & ROBOT_PLANTS)),
-                                        PICAR_MEMLOCK_WAIT_S="10" if lock else "0",
+                                        PICAR_MEMLOCK_WAIT_S="30" if lock else "0",
                                         PICAR_MEMLOCK="1" if lock else "0"))
         raised = lock and self._sudo(["prlimit", "--pid", str(self.pid("robot")),
                                       "--memlock=unlimited:unlimited"])
@@ -234,6 +234,13 @@ class Stack:
                 except ValueError:
                     pass
         got["limit_raised"] = raised
+        try:                                    # the lock line is from before the app loaded
+            with open(f"/proc/{self.pid('robot')}/status") as f:
+                for line in f:
+                    if line.startswith(("VmLck:", "VmRSS:")):
+                        got[line.split(":")[0].lower() + "_kb_serving"] = int(line.split()[1])
+        except (OSError, KeyError, ValueError):
+            pass
         self.robot_lock = got
         (self.out / "robot_lock.json").write_text(json.dumps(got, indent=1))
         return got

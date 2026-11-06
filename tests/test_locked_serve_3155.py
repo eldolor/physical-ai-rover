@@ -92,3 +92,13 @@ def test_serve_hands_uvicorn_its_own_command_line(monkeypatch):
     monkeypatch.setattr(uvicorn.main, "main", lambda: seen.append(list(sys.argv)))
     ls._serve(["robot.server:app", "--port", "8000"])
     assert seen == [["uvicorn", "robot.server:app", "--port", "8000"]]
+
+
+def test_a_bad_wait_never_stops_the_robot_server(monkeypatch, capsys):
+    served = []
+    monkeypatch.setattr(ls, "lock", lambda wait_s=0.0: {"locked": False, "wait_s": wait_s})
+    monkeypatch.setattr(ls, "_serve", lambda argv: served.append(argv))
+    monkeypatch.setenv("PICAR_MEMLOCK_WAIT_S", "10s")
+    ls.main(["uvicorn", "robot.server:app"])
+    got = json.loads(capsys.readouterr().err.split("robot server memory lock: ")[1].splitlines()[0])
+    assert got["wait_s"] == 0.0 and got["wait_s_ignored"] == "10s" and served
