@@ -139,8 +139,9 @@ paragraph.**
 
 * **Deploys:** the twin is live from `dev` `5e88b9de` (2026-11-05, with
   3.152's local-VLM readout); 3.132 Stage 5 waits on the user's go.
-* **The board's brain is behind `dev`** (3.88, 3.130, 3.131): update it
-  only when asked (`tools/jetson/README.md`'s update step).
+* **The board's brain is `dev` `bdcf782c`** (updated 2026-11-06 for 3.155's
+  unit, the user's go): update it only when asked (`tools/jetson/README.md`'s
+  update step).
 * **3.48, 3.58:** close the llama.cpp local-identity line, or load the
   model only at arrival.
 * **3.56:** re-check the 8 s arrival deadline after 500+ real calls.
@@ -291,7 +292,7 @@ paragraph.**
 * 3.155: the robot server runs through `robot/locked_serve.py` (memory-locked,
   `MCL_ONFAULT`, only under an unlimited memlock limit); F2 on the board 0
   late wheel ticks 6/6 at 11-13 MB free. `picar-stack.service`'s
-  `LimitMEMLOCK=infinity` is not installed on the board (owed, needs a go).
+  `LimitMEMLOCK=infinity` installed on the board 2026-11-06 (its brain now `bdcf782c`).
 
 *Missions*
 

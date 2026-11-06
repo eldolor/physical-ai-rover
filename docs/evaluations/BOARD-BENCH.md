@@ -221,6 +221,14 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 
 ## Runs
 
+### 2026-11-06, 3.155: `picar-stack` installed with the robot server locked (`bdcf782c`)
+
+The user's go ("Install now"). The service worktree moved to `dev` `bdcf782c`; only
+`picar-stack.service` installed and restarted (`LimitMEMLOCK=infinity`).
+The robot server `locked: true`, `VmLck` 469 MB mapped, `VmRSS` 67 MB,
+`oom_score_adj` -900; `/health` and `/brain/health` ok locally and through
+the tunnel; `picar-ngrok` and `picar-local-vlm` untouched. No motion.
+
 ### 2026-11-06, 3.155: F2 with the robot server memory-locked (`3bec4455`)
 
 `run.py row F2 --runs 5`, then `--runs 1`; 15 W, sim mode, no motion, left
