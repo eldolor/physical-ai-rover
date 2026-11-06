@@ -1,0 +1,12 @@
+waiting for the heavy-run lock (/home/anshu/vision-picar/.git/heavy-run.lock): another job is queued ahead; holding now: shared pid 1030709 3.141 criterion 1 equivalence since Tue Nov  3 12:30:15 2026; shared pid 975120 3.143 A3n since Tue Nov  3 12:19:55 2026; shared pid 978811 3.143 tiered tests since Tue Nov  3 12:20:08 2026
+waiting for the heavy-run lock (/home/anshu/vision-picar/.git/heavy-run.lock): shared pid 1030709 3.141 criterion 1 equivalence since Tue Nov  3 12:30:15 2026; shared pid 975120 3.143 A3n since Tue Nov  3 12:19:55 2026; shared pid 978811 3.143 tiered tests since Tue Nov  3 12:20:08 2026
+waiting for the heavy-run lock (/home/anshu/vision-picar/.git/heavy-run.lock): exclusive pid 1038711 3.135.B planted checks (goal rows, F16, F15) since Tue Nov  3 12:41:00 2026
+board lock held: plan/3.142-soak-memory-trend pid 1097326 (anshu-Legion-T5-28IMB05): 3.135.C run2, since 2026-11-03T13:22:52-06:00, until 2026-11-03T19:22:54-06:00, token 552c377a5ff63ecb
+{"met": false, "run_s": 15463.1}
+a {"account_min_mb": 760.1, "sysfs_min_mb": 669, "samples": 3090, "sysfs_samples": 13449, "min_mb": 669, "met": true}
+b {"slope_mb_per_h": 31.18, "slope_missions": 14, "hour1_missions": 7, "hour4_missions": 6, "roles_not_in_both_hours": [], "over": [], "met": true, "reasons": []}
+c {"oom_kills_vmstat": 0, "oom_kills_dmesg": 0, "late_ticks": 1, "max_dt_s": 0.1081, "moving_ticks": 215038, "wheel_unread_missions": [], "late_by_mission": {"1": 1}, "oom_kills": 0, "met": false}
+d {"missions": 21, "found": 11, "share": 0.524, "contacts": 0, "truth_unjudged_missions": [], "outcomes": {"found": 11, "out_of_budget": 9, "exhausted": 1}, "by_house": {"home_first_floor": "4/5", "complex_house": "0/4", "procthor:val:0": "3/4", "procthor:val:2": "1/4", "procthor:val:3": "3/4"}, "harness_stopped": [], "errors": {}, "sweep": {"found": 39, "n": 40, "missed": ["procthor:val:3 / box (exhausted)"], "how": "in-process explore sweep (FakeNav), the 40 house/target pairs, 2026-11-02"}, "met": false}
+workload {"missions": 20, "recorded": 20, "yoloe_encoded": 20, "clip_encoded": 19, "missing": [], "not_judged": [19], "met": true}
+cmd_exit 0, left as found True
+board lock released

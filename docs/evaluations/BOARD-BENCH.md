@@ -167,6 +167,7 @@ each mission, five houses cycled, the cloud a local stub
 | Date | Rev | Length | Missions | Found | Contacts | `MemAvailable` min (MB) | Slope, last 3 h (MB/h) | Max RSS growth h1->h4 | OOM | Late ticks | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 2026-11-02/03 | `dd0a7c9f` | 14,677 s | 19 | **10 (53%)** | 0 | 700 | **-21.1** | none over 50 MB | 0 | **2** / 201,841 (max 104 ms) | **FAILED** (b, c, d; 3.142, 3.143, 3.141) |
+| 2026-11-03 | `68703567` (run 2, every target encoded: 3.142) | 15,463 s | 21 | **11 (52%)**, before fix V (3.143) | 0 | 669 | +31.2 (met) | none over 50 MB | 0 | **1** / 215,038 (max 108 ms), 3.141's baseline before its fix | **FAILED** as criterion 1 (c, d); (b) **met** (3.142) |
 
 Bars: (a) minimum >= 500 MB; (b) slope >= -10 MB/h and no process's
 per-mission minimum RSS up > 50 MB; (c) 0 OOM, 0 late ticks; (d) >= 90%
@@ -704,6 +705,46 @@ frontier mission in `scaled_house`, no ROS, no VE.
   (0 differences).
 * Records: `evaluations/jetson-fmea-3135/board/rows/`; analysis in
   `docs/plans/ros-alignment/3.135-jetson-fmea.md`.
+
+### 2026-11-03, memory soak run 2 (3.135.C, for 3.142), `dev` `68703567`
+
+On the board 13:23 -> 17:41 CST (15,463 s scored), 15 W, untraced (3.141's
+tracer withdrawn), launched detached from its Claude session. The harness
+now gives the perception loop its own text cache, emptied before each
+mission (3.142.A), so every mission encodes its new target, as criterion 1
+says. **(a) and (b) met; (c) and (d) failed, so criterion 1 as a whole
+FAILED.** Left as found (0 differences); checked again over ssh on
+2026-11-06: no container, sampler or soak process left, units active.
+
+* Workload (3.142 criterion 3): 20 of 20 judged missions encoded YOLOE's
+  prompt (CLIP's in 19: it is asked only of a box). Mission 19 ended
+  `found` in 37 s, before its encode landed, so it is not judged
+  (amendment 1). **Met.**
+* (a) `MemAvailable` minimum 669 MB (1-s sampler; 760 on the 5-s one),
+  11 s into mission 0. Bar 500: met.
+* (b) Over the 14 missions after hour 1, the per-mission minimum's slope
+  is **+31.2 MB/h** (bar >= -10): met. No role's minimum grew over 50 MB
+  hour 1 -> 4 (perception -23.0, the simulator's sensors -27.2). Reported
+  beside, no bar:
+  * the same fit on the 1-s sampler: +36.4 MB/h;
+  * the steady minimum (from 60 s in): +9.3 (5-s), +0.2 (1-s);
+  * the encoder's peak per mission (`other: python`), 884-935 MB after
+    hour 1: -17.1 MB/h (it does not grow).
+  Run 1's -21.1 was the mix of encoded and cached missions (3.142).
+* (c) 0 OOM kills; **1 late wheel tick** (mission 1, max 108 ms) of
+  215,038 moving: 3.141's baseline, before its fix.
+* (d) **11 of 21 found** (out of budget 9, exhausted 1), 0 contacts, every
+  truth log whole: before fix V (3.143). By house: `home_first_floor`
+  4/5, `complex_house` 0/4, `procthor:val:0` 3/4, `procthor:val:2` 1/4,
+  `procthor:val:3` 3/4. The truth logs stay on the board
+  (`~/bench-3135/out-run2-20261103-132254`), as does the 5-s account.
+* VE ran the whole run: PID 213172 before and after. 2 calls to the $0
+  stand-in. Max temperature 62.4 C.
+* Risk recorded, not hit: if the desktop runner dies (a crash or reboot),
+  the board's samplers keep running and `picar-stack`/`picar-ngrok` are
+  not restored (3.135.B's finding in `boardrun.py`). Records:
+  `evaluations/jetson-fmea-3135/board/run2/`; analysis in
+  `docs/plans/ros-alignment/3.142-soak-memory-trend.md`.
 
 ### 2026-11-02/03, memory soak run 1 (3.135.C), rev `dd0a7c9f`
 

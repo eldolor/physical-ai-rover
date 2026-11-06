@@ -1,0 +1,163 @@
+{
+ "candidates": [
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 1,
+   "id": 1,
+   "label": "bed",
+   "last_step": 3,
+   "misses": 0,
+   "points": 4,
+   "reported": false,
+   "room": "bedroom 2",
+   "votes": {
+    "bed": 1
+   },
+   "x_m": 3.503,
+   "y_m": 6.32
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 4,
+   "hits": 1,
+   "id": 2,
+   "label": "bed",
+   "last_step": 4,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "bedroom 2",
+   "votes": {
+    "bed": 1
+   },
+   "x_m": 3.954,
+   "y_m": 7.083
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 7,
+   "hits": 1,
+   "id": 5,
+   "label": "bed",
+   "last_step": 9,
+   "misses": 0,
+   "points": 3,
+   "reported": false,
+   "room": "bedroom 2",
+   "votes": {
+    "bed": 1
+   },
+   "x_m": 2.48,
+   "y_m": 11.226
+  }
+ ],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 32,
+  "landmarks": 7,
+  "no_pose": 0,
+  "observations": 41,
+  "reported": 4,
+  "unplaced": 0
+ },
+ "frame_id": null,
+ "map_id": "slam-fe0f6720",
+ "mission": "Find the box.",
+ "mission_id": "20261103T232020.675939Z-box",
+ "outcome": "found",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 12,
+   "hits": 5,
+   "id": 7,
+   "label": "box",
+   "last_step": 31,
+   "misses": 0,
+   "points": 18,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "box": 5
+   },
+   "x_m": 0.898,
+   "y_m": 9.422
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 12,
+   "hits": 2,
+   "id": 6,
+   "label": "bed",
+   "last_step": 19,
+   "misses": 0,
+   "points": 7,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "bed": 2
+   },
+   "x_m": 1.173,
+   "y_m": 10.427
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 5,
+   "hits": 2,
+   "id": 3,
+   "label": "dining table",
+   "last_step": 6,
+   "misses": 0,
+   "points": 2,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "dining table": 2
+   },
+   "x_m": 5.739,
+   "y_m": 11.743
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 5,
+   "hits": 2,
+   "id": 4,
+   "label": "dresser",
+   "last_step": 11,
+   "misses": 0,
+   "points": 6,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "dresser": 2
+   },
+   "x_m": 4.763,
+   "y_m": 9.598
+  }
+ ]
+}

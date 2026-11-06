@@ -1,0 +1,278 @@
+{
+ "candidates": [
+  {
+   "belief": 0.711,
+   "carried": false,
+   "disputed": false,
+   "first_step": 122,
+   "hits": 2,
+   "id": 14,
+   "label": "chair",
+   "last_step": 126,
+   "misses": 2,
+   "points": 5,
+   "reported": false,
+   "room": "living room",
+   "votes": {
+    "chair": 2
+   },
+   "x_m": 6.618,
+   "y_m": 10.276
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 69,
+   "hits": 1,
+   "id": 11,
+   "label": "armchair",
+   "last_step": 69,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "living room",
+   "votes": {
+    "armchair": 1
+   },
+   "x_m": 2.264,
+   "y_m": 8.201
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 24,
+   "hits": 1,
+   "id": 5,
+   "label": "sofa",
+   "last_step": 25,
+   "misses": 0,
+   "points": 2,
+   "reported": false,
+   "room": "living room",
+   "votes": {
+    "sofa": 1
+   },
+   "x_m": 1.216,
+   "y_m": 9.039
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 2,
+   "hits": 1,
+   "id": 3,
+   "label": "staircase",
+   "last_step": 2,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "foyer",
+   "votes": {
+    "staircase": 1
+   },
+   "x_m": 5.69,
+   "y_m": 8.573
+  }
+ ],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 192,
+  "landmarks": 13,
+  "no_pose": 0,
+  "observations": 514,
+  "reported": 9,
+  "unplaced": 1
+ },
+ "frame_id": null,
+ "map_id": "slam-03729d67",
+ "mission": "Find the chair.",
+ "mission_id": "20261103T213115.285561Z-chair",
+ "outcome": "found",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 8,
+   "id": 1,
+   "label": "armchair",
+   "last_step": 25,
+   "misses": 0,
+   "points": 50,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "armchair": 8
+   },
+   "x_m": 3.474,
+   "y_m": 8.567
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 26,
+   "hits": 16,
+   "id": 6,
+   "label": "armchair",
+   "last_step": 116,
+   "misses": 0,
+   "points": 92,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "armchair": 16
+   },
+   "x_m": 2.998,
+   "y_m": 11.211
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 122,
+   "hits": 20,
+   "id": 15,
+   "label": "chair",
+   "last_step": 191,
+   "misses": 0,
+   "points": 164,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "chair": 20
+   },
+   "x_m": 7.881,
+   "y_m": 10.593
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 3,
+   "hits": 16,
+   "id": 4,
+   "label": "coffee table",
+   "last_step": 113,
+   "misses": 0,
+   "points": 51,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "coffee table": 16
+   },
+   "x_m": 2.173,
+   "y_m": 10.022
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 124,
+   "hits": 6,
+   "id": 16,
+   "label": "dining table",
+   "last_step": 164,
+   "misses": 0,
+   "points": 31,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "dining table": 6
+   },
+   "x_m": 7.474,
+   "y_m": 11.457
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 35,
+   "hits": 10,
+   "id": 8,
+   "label": "side table",
+   "last_step": 104,
+   "misses": 0,
+   "points": 42,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "side table": 9,
+    "sofa": 1
+   },
+   "x_m": 0.902,
+   "y_m": 11.424
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 46,
+   "hits": 10,
+   "id": 10,
+   "label": "sofa",
+   "last_step": 106,
+   "misses": 0,
+   "points": 38,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "sofa": 10
+   },
+   "x_m": 1.057,
+   "y_m": 10.713
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 9,
+   "id": 2,
+   "label": "staircase",
+   "last_step": 181,
+   "misses": 0,
+   "points": 31,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "staircase": 9
+   },
+   "x_m": 6.269,
+   "y_m": 9.96
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 173,
+   "hits": 2,
+   "id": 20,
+   "label": "dining table",
+   "last_step": 177,
+   "misses": 0,
+   "points": 5,
+   "reported": true,
+   "room": "dining room",
+   "votes": {
+    "dining table": 2
+   },
+   "x_m": 7.923,
+   "y_m": 10.031
+  }
+ ]
+}

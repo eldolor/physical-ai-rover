@@ -1,0 +1,2 @@
+1793739664.727 WARNING identity vision-picar brain server starting -- git=68703567 executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793740310.244 WARNING safety Blocked FORWARD: distance=19.5cm < min=20cm (depth_grid)
