@@ -205,6 +205,7 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-04 | `53bcbe61` | F12b cloud hangs (`vision`) | 5/5 | met | `failed` at 61.4-61.5 s (300), B3.2's 3 x 20 s; open paid calls max 1; 0.0 cm | 0 | -- | 2,207 | 0 | 49.8 °C | -- | yes |
 | 2026-11-04 | `1330ea8f` | F2 memory runs out (OOM), during a nav2 goal | 3/8 | **FAILED** | VE's driver the only kill 4/4, robot server, brain and ROS alive, 0 late ticks, every mission ended; **truth log holes 0.69 s and 3.01 s** (0.2) at 15-99 MB free; runs 5-8 not started (VE's start limit) | 0 | 0 | 37 | 4 | 59.9 °C | -- | yes |
 | 2026-11-05 | `a0a5bc9e` | F2 memory runs out (OOM), during a nav2 goal -- **the new record after 3.151** (truth body locked 5/5) | 5/5 | **FAILED** | VE's driver the only kill 5/5, robot server, brain and ROS alive, every mission ended (4 `found`, 1 `exhausted`); truth holes 26-34 ms in 4 runs, **0.233 s** in run 4 (0.2); **late wheel ticks in 3 runs** (2, 2, 1; max 204-439 ms) at 10-11 MB free | 0 | **5** | 10 | 5 | 57.9 °C | -- | yes |
+| 2026-11-06 | `3bec4455` | F2 memory runs out (OOM), during a nav2 goal -- **the robot server memory-locked (3.155)** | 6 (5 counted) | met | 0 late wheel ticks in all six (max 79 ms) at 11-13 MB free (run 4 reached 35 MB: reported, not counted); VE's driver the only kill 6/6; robot server, brain, ROS and truth alive (holes <= 0.115 s); missions 1 `found`, 5 `exhausted`; robot RSS 67-72 MB | 0 | 0 | 11 | 6 | 58.3 °C | -- | yes |
 | 2026-11-04 | `1330ea8f` | F3f VE killed, a frame question open | 2/8 | **FAILED** (harness) | VE back 40.8 s (60); not failed 2/2; handed-on read **None** (the kill before any tier stats: a harness bug); runs 4-8 not started (VE's start limit) | 0 | 0 | 2,054 | 0 | 55.4 °C | -- | yes |
 | 2026-11-04 | `1330ea8f` | F3a VE killed, the arrival's question open, the stand-in up | 5/5 | **FAILED** | handed on 41 (>= 1), VE back 41 s; **every mission `exhausted`, not `found`**: the stand-in refuses the arrival, and once the cloud has spoken the arrival is the cloud's (3.91.C) | 0 | 0 | 2,006 | 0 | 59.8 °C | -- | yes |
 | 2026-11-04 | `1330ea8f` | F3r VE killed, the arrival's question open, the cloud refused | 3/8 | incomplete | `arrived_unconfirmed` 3/3, handed on 3, VE back 40.7-40.8 s; runs 4-8: VE's start limit | 0 | 0 | 2,138 | 0 | 57.7 °C | -- | yes |
@@ -219,6 +220,19 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-05 | `fb12ba7f` | F14 board rebooted mid-mission (`sudo systemctl reboot`, the production units) | 3/3 | met | robot and brain back 43.9-48.5 s (90; an upper bound: ssh and the services answered at the same first poll); VE ready 48.6-51.6 s; 0 files unparseable, lost or shortened (17-20 files, 2-5 JSONL lines); the next mission drove 3/3; units as found. A first batch at `27d14d6c` was 6/6 invalid, no reboot sent (amendment 20) | -- | -- | -- | -- | -- | 43.9-48.5 s | yes |
 
 ## Runs
+
+### 2026-11-06, 3.155: F2 with the robot server memory-locked (`3bec4455`)
+
+`run.py row F2 --runs 5`, then `--runs 1`; 15 W, sim mode, no motion, left
+as found; the robot server locked in all six (`robot_lock.json`). **Met**:
+* 0 late wheel ticks in every run (max 65-79 ms) at 11-13 MB `MemAvailable`;
+  run 4 reached only 35 MB, so it is reported and a sixth run counted;
+* VE's driver the only OOM kill 6/6; robot server, brain, ROS and the truth
+  body alive (truth holes 27-115 ms); 0 contacts; 1 `found`, 5 `exhausted`;
+* the robot server 67-72 MB resident while serving (51 MB before).
+Not installed: `picar-stack.service`'s `LimitMEMLOCK=infinity` (owed).
+Records: `evaluations/jetson-fmea-3135/board/rows/F2-20261105-2158/`,
+`F2-20261106-0151/`.
 
 ### 2026-11-05, 3.135.B F2's new record after 3.151 (`dev` `a0a5bc9e`)
 

@@ -1,0 +1,389 @@
+{
+ "sha": "3bec4455e0bbbdc26b32b563058285a50bde50ce",
+ "cmd_exit": 0,
+ "cmd_s": 1421.4,
+ "verdict": {
+  "row": "F2",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "met",
+  "runs_wanted": 5,
+  "runs_scored": 5,
+  "runs_total": 5,
+  "runs_failed": 0,
+  "not_scored": [],
+  "reasons": []
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 27370.006094859,
+    "ve_before": [
+     "MainPID=172928",
+     "NRestarts=0"
+    ],
+    "start_at": 27364.709040547,
+    "goal_at_fault": true,
+    "holder_at_fault": null,
+    "oom_before": 11,
+    "ve_pids": [
+     172928,
+     173037
+    ],
+    "hog_end_at": 27420.726208502,
+    "oom_kills": 1,
+    "killed": [
+     [
+      "173037",
+      "edgellm_identit"
+     ]
+    ],
+    "killed_ve": true,
+    "alive_after": {
+     "robot": true,
+     "brain": true,
+     "ros": true
+    },
+    "late_ticks": 0,
+    "outcome": "exhausted",
+    "wheel_loop": {
+     "late": 0,
+     "moving": 4644,
+     "max_dt_s": 0.0665
+    },
+    "ve_after": [
+     "MainPID=191254",
+     "NRestarts=1"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": true,
+    "truth_hole_s": 0.115,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 299,
+     "arrival": 0,
+     "direction": 0
+    },
+    "mem_available_min_mb": 12,
+    "oom_kills_window": 1
+   },
+   "status": {
+    "outcome": "exhausted",
+    "end_state": "exhausted",
+    "end_reason": "no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)",
+    "error": null
+   }
+  },
+  {
+   "i": 2,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 27670.670606583,
+    "ve_before": [
+     "MainPID=191254",
+     "NRestarts=0"
+    ],
+    "start_at": 27665.388142994,
+    "goal_at_fault": true,
+    "holder_at_fault": null,
+    "oom_before": 12,
+    "ve_pids": [
+     191254,
+     191378
+    ],
+    "hog_end_at": 27722.634895373,
+    "oom_kills": 1,
+    "killed": [
+     [
+      "191378",
+      "edgellm_identit"
+     ]
+    ],
+    "killed_ve": true,
+    "alive_after": {
+     "robot": true,
+     "brain": true,
+     "ros": true
+    },
+    "late_ticks": 0,
+    "outcome": "exhausted",
+    "wheel_loop": {
+     "late": 0,
+     "moving": 4332,
+     "max_dt_s": 0.0731
+    },
+    "ve_after": [
+     "MainPID=217541",
+     "NRestarts=1"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": true,
+    "truth_hole_s": 0.03,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 274,
+     "arrival": 1,
+     "direction": 0
+    },
+    "mem_available_min_mb": 11,
+    "oom_kills_window": 1
+   },
+   "status": {
+    "outcome": "exhausted",
+    "end_state": "exhausted",
+    "end_reason": "no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)",
+    "error": null
+   }
+  },
+  {
+   "i": 3,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 27961.698777973,
+    "ve_before": [
+     "MainPID=217541",
+     "NRestarts=0"
+    ],
+    "start_at": 27956.646084211,
+    "goal_at_fault": true,
+    "holder_at_fault": null,
+    "oom_before": 13,
+    "ve_pids": [
+     217541,
+     217720
+    ],
+    "hog_end_at": 28013.783351628,
+    "oom_kills": 1,
+    "killed": [
+     [
+      "217720",
+      "edgellm_identit"
+     ]
+    ],
+    "killed_ve": true,
+    "alive_after": {
+     "robot": true,
+     "brain": true,
+     "ros": true
+    },
+    "late_ticks": 0,
+    "outcome": "exhausted",
+    "wheel_loop": {
+     "late": 0,
+     "moving": 4194,
+     "max_dt_s": 0.0647
+    },
+    "ve_after": [
+     "MainPID=242941",
+     "NRestarts=1"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": true,
+    "truth_hole_s": 0.028,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 258,
+     "arrival": 1,
+     "direction": 0
+    },
+    "mem_available_min_mb": 11,
+    "oom_kills_window": 1
+   },
+   "status": {
+    "outcome": "exhausted",
+    "end_state": "exhausted",
+    "end_reason": "no reachable frontier left (6 on the map: 5 reached twice, 1 set aside or dropped)",
+    "error": null
+   }
+  },
+  {
+   "i": 4,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 28238.861740503,
+    "ve_before": [
+     "MainPID=242941",
+     "NRestarts=0"
+    ],
+    "start_at": 28233.647544734,
+    "goal_at_fault": true,
+    "holder_at_fault": null,
+    "oom_before": 14,
+    "ve_pids": [
+     242941,
+     243053
+    ],
+    "hog_end_at": 28289.518833447,
+    "oom_kills": 1,
+    "killed": [
+     [
+      "243053",
+      "edgellm_identit"
+     ]
+    ],
+    "killed_ve": true,
+    "alive_after": {
+     "robot": true,
+     "brain": true,
+     "ros": true
+    },
+    "late_ticks": 0,
+    "outcome": "exhausted",
+    "wheel_loop": {
+     "late": 0,
+     "moving": 4765,
+     "max_dt_s": 0.079
+    },
+    "ve_after": [
+     "MainPID=266988",
+     "NRestarts=1"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": true,
+    "truth_hole_s": 0.035,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 307,
+     "arrival": 0,
+     "direction": 0
+    },
+    "mem_available_min_mb": 35,
+    "oom_kills_window": 1
+   },
+   "status": {
+    "outcome": "exhausted",
+    "end_state": "exhausted",
+    "end_reason": "no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)",
+    "error": null
+   }
+  },
+  {
+   "i": 5,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 28604.91589448,
+    "ve_before": [
+     "MainPID=266988",
+     "NRestarts=0"
+    ],
+    "start_at": 28589.954841987,
+    "goal_at_fault": true,
+    "holder_at_fault": null,
+    "oom_before": 15,
+    "ve_pids": [
+     266988,
+     267181
+    ],
+    "hog_end_at": 28656.764302508,
+    "oom_kills": 1,
+    "killed": [
+     [
+      "267181",
+      "edgellm_identit"
+     ]
+    ],
+    "killed_ve": true,
+    "alive_after": {
+     "robot": true,
+     "brain": true,
+     "ros": true
+    },
+    "late_ticks": 0,
+    "outcome": "found",
+    "wheel_loop": {
+     "late": 0,
+     "moving": 2126,
+     "max_dt_s": 0.0689
+    },
+    "ve_after": [
+     "MainPID=299088",
+     "NRestarts=1"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": true,
+    "truth_hole_s": 0.028,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 125,
+     "arrival": 1,
+     "direction": 0
+    },
+    "mem_available_min_mb": 13,
+    "oom_kills_window": 1
+   },
+   "status": {
+    "outcome": "found",
+    "end_state": "found",
+    "end_reason": "Hallway, kitchen, living room searched. Found.",
+    "error": null
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 1245,
+  "temps": 1245,
+  "clocks": 1245,
+  "max_temp_c": 58.25,
+  "oom_kills": 5,
+  "mem_available_min_mb": 31,
+  "cpu_below_max_samples": 733,
+  "gpu_below_max_samples": 549
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "harness_leftovers": {
+  "before": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  },
+  "after": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  }
+ }
+}

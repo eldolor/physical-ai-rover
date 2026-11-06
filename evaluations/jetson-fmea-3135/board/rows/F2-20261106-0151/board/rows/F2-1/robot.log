@@ -1,0 +1,113 @@
+robot server memory lock: {"locked": true, "errno": null, "error": null, "limit_soft_kb": "unlimited", "limit_hard_kb": "unlimited", "vm_lck_kb": 19564, "vm_rss_kb": 9188}
+1793951495.241 WARNING identity vision-picar robot server starting -- git=3bec4455e executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793951497.062 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1793951506.007 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951515.930 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951534.241 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951560.156 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951562.618 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1793951570.725 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951587.744 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.2cm < 1.3cm (scan_footprint, aged 8.3 deg)
+1793951587.797 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.3cm < 1.3cm (scan_footprint, aged 8.1 deg)
+1793951587.846 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.3cm < 1.3cm (scan_footprint, aged 2.1 deg)
+1793951587.894 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.3cm < 1.3cm (scan_footprint, aged 2.0 deg)
+1793951587.947 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.3cm < 1.3cm (scan_footprint, aged 0.3 deg)
+1793951587.995 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.3cm < 1.3cm (scan_footprint, aged 0.3 deg)
+1793951588.056 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.3cm < 1.3cm (scan_footprint)
+1793951588.097 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.3cm < 1.3cm (scan_footprint)
+1793951588.147 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.0cm < 1.3cm (scan_footprint)
+1793951588.195 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.0cm < 1.3cm (scan_footprint, aged 0.5 deg)
+1793951588.248 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.2cm < 1.3cm (scan_footprint, aged 0.5 deg)
+1793951588.294 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.2cm < 1.3cm (scan_footprint, aged 0.5 deg)
+1793951588.344 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951588.395 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951588.444 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951588.497 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951588.547 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951588.596 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951588.647 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951588.696 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951588.747 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951588.798 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951588.846 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951588.895 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951589.696 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 0.9cm < 1.3cm (scan_footprint)
+1793951589.746 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 0.9cm < 1.3cm (scan_footprint)
+1793951589.795 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 0.9cm < 1.3cm (scan_footprint)
+1793951589.854 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 0.9cm < 1.3cm (scan_footprint)
+1793951589.895 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 0.9cm < 1.3cm (scan_footprint)
+1793951589.947 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 0.9cm < 1.3cm (scan_footprint)
+1793951589.994 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 0.9cm < 1.3cm (scan_footprint)
+1793951590.045 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 0.9cm < 1.3cm (scan_footprint)
+1793951590.092 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 0.9cm < 1.3cm (scan_footprint)
+1793951590.144 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 0.9cm < 1.3cm (scan_footprint)
+1793951590.195 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 0.9cm < 1.3cm (scan_footprint)
+1793951590.251 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 0.9cm < 1.3cm (scan_footprint)
+1793951590.294 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 0.9cm < 1.3cm (scan_footprint)
+1793951590.404 WARNING safety Blocked LEFT: stopped after 0.0deg through ROS -- the wheels did not carry it out (the safety vet, or the chain, held them)
+1793951590.404 WARNING server refused (safety_distance) for brain: Blocked LEFT: stopped after 0.0deg through ROS -- the wheels did not carry it out (the safety vet, or the chain, held them)
+1793951591.047 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951591.096 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951591.150 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951591.195 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951591.243 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951591.297 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951591.346 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951591.395 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951591.447 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951591.496 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951591.550 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951591.598 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951591.649 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951591.762 WARNING safety Blocked LEFT: stopped after 0.0deg through ROS -- the wheels did not carry it out (the safety vet, or the chain, held them)
+1793951591.762 WARNING server refused (safety_distance) for brain: Blocked LEFT: stopped after 0.0deg through ROS -- the wheels did not carry it out (the safety vet, or the chain, held them)
+1793951592.396 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951592.448 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951592.497 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951592.548 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951592.599 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951592.646 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951592.696 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951592.745 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951592.792 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951592.845 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951592.897 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951592.943 WARNING server refused (safety_distance) for ros: turn left clamped: a corner would come within 1.1cm < 1.3cm (scan_footprint)
+1793951593.087 WARNING safety Blocked LEFT: stopped after 0.0deg through ROS -- the wheels did not carry it out (the safety vet, or the chain, held them)
+1793951593.089 WARNING server refused (safety_distance) for brain: Blocked LEFT: stopped after 0.0deg through ROS -- the wheels did not carry it out (the safety vet, or the chain, held them)
+1793951594.095 WARNING server refused (safety_distance) for brain: reverse clamped: 19.1cm <= 20cm (scan_footprint, aged 168 ms)
+1793951594.149 WARNING server refused (safety_distance) for brain: reverse clamped: 17.8cm <= 20cm (scan_footprint, aged 121 ms)
+1793951594.199 WARNING server refused (safety_distance) for ros: reverse clamped: 17.8cm <= 20cm (scan_footprint, aged 173 ms)
+1793951594.247 WARNING server refused (safety_distance) for ros: reverse clamped: 18.6cm <= 20cm (scan_footprint)
+1793951594.293 WARNING server refused (safety_distance) for ros: reverse clamped: 18.6cm <= 20cm (scan_footprint)
+1793951594.346 WARNING server refused (safety_distance) for ros: reverse clamped: 18.6cm <= 20cm (scan_footprint)
+1793951594.395 WARNING server refused (safety_distance) for ros: reverse clamped: 18.6cm <= 20cm (scan_footprint)
+1793951594.447 WARNING server refused (safety_distance) for ros: reverse clamped: 18.6cm <= 20cm (scan_footprint)
+1793951594.492 WARNING server refused (safety_distance) for ros: reverse clamped: 18.6cm <= 20cm (scan_footprint)
+1793951594.547 WARNING server refused (safety_distance) for ros: reverse clamped: 18.6cm <= 20cm (scan_footprint)
+1793951594.593 WARNING server refused (safety_distance) for ros: reverse clamped: 18.6cm <= 20cm (scan_footprint)
+1793951594.643 WARNING server refused (safety_distance) for ros: reverse clamped: 18.6cm <= 20cm (scan_footprint)
+1793951594.694 WARNING server refused (safety_distance) for ros: reverse clamped: 18.6cm <= 20cm (scan_footprint)
+1793951594.745 WARNING server refused (safety_distance) for ros: reverse clamped: 18.6cm <= 20cm (scan_footprint)
+1793951594.793 WARNING server refused (safety_distance) for ros: reverse clamped: 18.6cm <= 20cm (scan_footprint)
+1793951594.843 WARNING server refused (safety_distance) for ros: reverse clamped: 18.6cm <= 20cm (scan_footprint)
+1793951594.893 WARNING server refused (safety_distance) for ros: reverse clamped: 18.6cm <= 20cm (scan_footprint)
+1793951606.393 WARNING server refused (safety_distance) for brain: forward clamped: 19.3cm <= 20cm (scan_footprint, aged 164 ms)
+1793951613.962 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951617.673 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951620.453 WARNING server refused (safety_distance) for ros: forward clamped: 20.0cm <= 20cm (floor_band)
+1793951620.501 WARNING server refused (safety_distance) for ros: forward clamped: 19.6cm <= 20cm (floor_band)
+1793951641.827 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951648.283 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951650.986 WARNING server refused (safety_distance) for brain: forward clamped: 19.2cm <= 20cm (depth_grid, aged 157 ms)
+1793951650.993 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)
+1793951672.369 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951704.356 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951732.258 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951746.074 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951751.643 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951792.368 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951798.807 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951808.968 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951821.725 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793951835.829 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses

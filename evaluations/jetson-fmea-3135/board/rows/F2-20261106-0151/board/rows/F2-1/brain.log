@@ -1,0 +1,6 @@
+1793951497.438 WARNING identity vision-picar brain server starting -- git=3bec4455e executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793951562.870 WARNING tiered local VLM absent for candidate_sighting (local VLM not ready: {"detail":"local VLM absent"}); asking the cloud
+1793951563.463 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)
+1793951598.612 WARNING safety Blocked FORWARD: distance=12.0cm < min=20cm (depth_grid)
+1793951653.614 WARNING safety Blocked FORWARD: distance=19.5cm < min=20cm (depth_grid)
+1793951848.838 WARNING tiered local VLM absent for cold_search (local VLM unreachable: [Errno 9] Bad file descriptor); asking the cloud

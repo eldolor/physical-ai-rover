@@ -1,0 +1,12 @@
+{
+ "row": "F2",
+ "plant": null,
+ "house": "scaled_house",
+ "state": "met",
+ "runs_wanted": 1,
+ "runs_scored": 1,
+ "runs_total": 1,
+ "runs_failed": 0,
+ "not_scored": [],
+ "reasons": []
+}
