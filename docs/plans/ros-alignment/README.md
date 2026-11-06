@@ -153,6 +153,6 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.148](3.148-tiered-wedge-without-cloud.md) | A tiered mission with no cloud wedges at a jamb and ends blocked (3.135.B F11, F12) |
 | [3.149](3.149-claude-md-slim.md) | CLAUDE.md slimmed: section 3b to status lines, history to the archive |
 | [3.150](3.150-bash-guard.md) | A Bash hook refuses the gate bypasses and a branch's :latest image |
-| [3.152](3.152-local-vlm-down.md) | A dead local VLM: the brain tells unreachable from unable, and the unit restarts with a delay |
 | [3.151](3.151-truth-recorder-under-memory-pressure.md) | The simulator's truth recorder holds under memory pressure (3.135.B F2) |
+| [3.152](3.152-local-vlm-down.md) | A dead local VLM: the brain tells unreachable from unable, and the unit restarts with a delay |
 <!-- /sections -->
