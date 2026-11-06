@@ -160,11 +160,14 @@ def test_a_beating_brain_keeps_its_goal(live):
         stop.set()
         t.join()
     assert _lease(client)["lapses"] == 0
-    # Released, not lapsed, when its navigator closes.
+    # Its navigator closes (the mission ended): the lease is released -- the
+    # goal, if still driving, is ended -- without a lapse or the latch.
     r = client.delete("/autonomy/heartbeat", headers=BRAIN).json()
     assert r["released"] is True, r
-    assert _watch(client, bridge, 1.5) is None
+    assert _watch(client, bridge, 1.0) is not None, "a released lease's goal drove on"
     assert _lease(client)["lapses"] == 0
+    v = client.post("/action", json={"action": "LOOK_LEFT"}, headers=BRAIN).json()
+    assert v.get("reason") != AUTONOMY_LAPSED, v
 
 
 def test_a_brain_that_never_beats_keeps_the_old_behaviour(live):
@@ -192,14 +195,57 @@ def test_a_person_or_unnamed_goal_is_never_leased(live, headers):
     assert _lease(client)["lapses"] == 0
 
 
-def test_a_brains_own_cancel_releases_its_lease(live):
+def test_a_brains_own_cancel_keeps_its_lease(live):
+    """A cancel nav2 refused, or that failed, must not free the goal: only
+    the navigator's close releases the lease."""
     client, bridge = live
     _beat(client)
     _goal(client, bridge, BRAIN)
     client.delete("/world/goal", headers=BRAIN)
-    assert _lease(client)["owner"] is None
-    time.sleep(LEASE_S + 0.4)
-    assert _lease(client)["lapses"] == 0
+    assert _lease(client)["owner"] == "brain"
+
+
+def test_another_navigator_beating_as_brain_does_not_keep_a_dead_ones_lease(live):
+    """The brain killed with its goal leased, a new brain process (systemd's
+    restart) beating as `brain` under its own lease id: the dead one's goal
+    still lapses."""
+    client, bridge = live
+    dead = {**BRAIN, "x-lease-id": "dead"}
+    _beat(client, dead)
+    last_beat = time.monotonic()
+    _goal(client, bridge, dead)
+    stop = threading.Event()
+
+    def new_brain():
+        while not stop.wait(0.25):
+            _beat(client, {**BRAIN, "x-lease-id": "new"})
+
+    t = threading.Thread(target=new_brain, daemon=True)
+    t.start()
+    try:
+        held_at = _watch(client, bridge, 3.0)
+    finally:
+        stop.set()
+        t.join()
+    assert held_at is not None, "a new brain's beats kept the dead brain's goal driving"
+    assert held_at - last_beat <= LEASE_S + JUDGE_SLACK_S + SCHED_SLACK_S
+    assert _lease(client)["lapses"] == 1
+
+
+def test_a_refused_starts_relatch_puts_a_lapse_back_as_a_lapse(live):
+    """3.76 K2's relatch after a start that lifted a lapse and was then
+    refused: the latch comes back as `autonomy_lapsed`, never as a person's
+    Stop pressed by `brain`."""
+    client, bridge = live
+    _beat(client)
+    _goal(client, bridge, BRAIN)
+    assert _watch(client, bridge, 3.0) is not None
+    time.sleep(0.2)
+    r = client.post("/autonomy/resume", headers=BRAIN).json()
+    assert r["stopped_by"] == "brain", r
+    assert client.post("/autonomy/relatch", json={"by": "brain"}).json()["latched"] is True
+    v = client.post("/action", json={"action": "LOOK_LEFT"}, headers=BRAIN).json()
+    assert v["reason"] == AUTONOMY_LAPSED, v
 
 
 def test_a_persons_stop_latch_is_kept_over_a_lapse(live):

@@ -320,6 +320,42 @@ error) began no mission, so the brain puts the latch back with
 `POST /autonomy/relatch` (3.76 K2), which only latches and keeps a latch
 a Stop during the build set since.
 
+**The brain's goal lease** (3.145; 3.135.B's F6g/F7g). Under `drive: ros`
+nav2's wheel posts feed the watchdog, so a goal the brain sent drove on to
+its end after the brain died or froze. Now a goal lives only while its
+brain does. `RemoteNavigator` names itself with `x-lease-id` (a uuid per
+navigator, so a restarted brain beating as `brain` never keeps a dead one's
+lease) and, from its first goal to its close, beats
+`POST /autonomy/heartbeat` every `HEARTBEAT_S` (0.25 s) on its own thread
+(a long tick never starves it). The route is `async` on the event loop and
+only records the beat under `goal_gen_lock`. An accepted goal from an
+autonomous driver whose `(driver, lease id)` beat within
+`watchdog_timeout_s` arms the lease (`lease`: owner, id, the goal
+generation `gen`); its reply carries `leased`, and the navigator warns on a
+goal accepted unleased. A brain that never beats (older than 3.145) arms
+nothing and keeps the old behaviour; a person's or an unnamed goal replaces
+any lease. Every watchdog wake, `lease_lapsed()` drops a lease whose
+generation moved on (a Stop, a person's move, another goal) and, when the
+owner has been silent past `watchdog_timeout_s`, ends the goal the way a
+Stop does -- the hold set at once (nav2's next post zeroed), a new
+generation for `_end_goal_after_stop` on its own thread -- without counting
+a stop (a person's command in flight is never read as overtaken), counts it
+(`/health` `goal_lease.lapses`, `last_refusal` `autonomy_lapsed`) and sets
+the autonomy latch with `lapsed: true` unless a person's Stop holds it. While
+latched so, the brain's verbs and goals are refused `autonomy_lapsed`
+(`RemoteRobot` and the runner's gated navigator raise `AutonomyLapsed`, and
+the mission ends `failed` naming it), until `POST /autonomy/resume`; a
+relatch for a start then refused puts it back as a lapse (`resumed_from`).
+`DELETE /autonomy/heartbeat` (the navigator's close) RELEASES the lease:
+the next wake ends the goal if still the brain's, with no latch and no
+lapse, so a mission's end ends its goal whatever its cancel managed; a
+`DELETE /world/goal` keeps the lease. A wake more than three periods late
+(the event loop held, the beats waiting with it) skips the judgement once,
+never twice running. Known limits: the lease proves the brain's process is
+alive, not its loop (B3.3's tick guard ends a wedged mission, whose close
+then releases the lease); after a lapse with no goal active the latch still
+holds the brain out until a start.
+
 **ROS liveness** (handoff 1d; refined by `docs-review/SPEC-REVIEW-3.md`
 V7-V9). Under ROS drive, `ros_up(now)` is true when the actuator's last
 `/wheels` post is younger than `ROS_SILENCE_S` AND `robot.bridge_up()`.
@@ -478,6 +514,7 @@ recorded as such (3.27 did this for `PIVOT_MARGIN_CM`).
 | `tests/test_authority.py` (13) | M4: ranks, lapse, stop claims nothing, reasons on the wire, preemption ends a mission |
 | `tests/test_review_376a.py` (5) | 3.76 batch A: a verb longer than the watchdog keeps its driver's authority; the wheel loop never writes over a stop; lost feedback under ROS drive is `no_feedback` and stops the robot; a second stop answers while the bridge hangs; a person taking over a ROS verb is not stopped by it, and the cut-off verb reads `preempted` |
 | `tests/test_review_376k1.py` | 3.76 K1: a person's `/action STOP` latches and ends the goal, the brain's is never refused; a brain goal or a person's tap landing inside a Stop is not accepted; a Stop whose `robot.stop()` raises still ends the goal; a brain refused on arrival lets go; the floor band never raises (bad fields, non-dict, NaN, `cols` mismatch or Infinity are `floor_band_unusable`), a blind band says so, an open-floor band reads clear; battery outside 6-30 V is no reading and one glitch frame keeps the last pack reading |
+| `tests/test_goal_lease.py` | 3.145: a beating brain's goal, once its beats stop, is held at zero within the lease plus a period and cancelled, the brain refused `autonomy_lapsed` (a verb, a goal, `RemoteRobot` raising `AutonomyLapsed`) until `/autonomy/resume`; the planted build (`evaluations/goal-lease-3145/robot_plant.py`) drives on; a beating brain keeps its goal 5 s, and its close releases it (ended, no lapse); a never-beating brain's, a person's and an unnamed goal are not leased; a `DELETE /world/goal` keeps the lease; another navigator beating as `brain` does not keep a dead one's lease; a person's latch survives a lapse; a relatch puts a lapse back as a lapse; a frozen explore mission ends `failed` naming `autonomy_lapsed` |
 | `tests/test_person_stop.py` | 3.84: a person's Stop (`twin-dpad`, unnamed, `teleop-operator`) during explore: nav2 at 0.0 rad/s for 3 s, explore's next goal never reaches the bridge, the mission ends `cancelled`/`stop`; under `drive: ros` a verb arbitrated before a Stop (held between arbitration and the hold lift) leaves its hold set, and a person's verb during the Stop's loop turns > 30 deg, then nav2 is held at 0.0 until the loop ends the goal and lifts it; a brain verb or `brain`-named goal after it is refused `person_stop`; a mission over `RemoteRobot` ends `cancelled`/`stop`; a `brain` or `ros` stop latches nothing; a person's verb and goal, and an unnamed goal, still drive; `/autonomy/resume` and a new mission lift it |
 | `tests/test_goal_arbitration.py` (9) | 3.23: a goal is an autonomous driver |
 | `tests/test_battery_ladder.py` | 3.137: the ladder's rules on planted samples (one sample never fires; a repeat inside 12 s is one sample; a sag read while driving clears at rest or on recovery; a flat pack read at rest fires; a check that times out never fires on a recovered pack; Reserve's timer; latched levels); the sim pack's sag and refresh; in process, Reserve refuses the brain by name on `/action` and `/wheels`, caps a person's speed, lets go of the brain's claim and stops the wheels; a nav2 goal ends at Reserve and no goal is taken; Power-off refuses everyone, runs its steps in order and the power-off once; Reserve's timer powers off; the stub off the car; the brain ends `out_of_budget` and refuses a start at Low |

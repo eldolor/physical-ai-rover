@@ -17,6 +17,7 @@ refuse an `explore` mission at start rather than on its first tick.
 
 import logging
 import threading
+import uuid
 from typing import Optional
 
 import httpx
@@ -51,7 +52,10 @@ class RemoteNavigator:
         self._beats_lock = threading.Lock()
         # 3.84: explore's goals name the brain, so the robot server can tell
         # them from a script's and refuse them after a person's Stop.
-        self.headers = {"x-driver": driver, **({"x-app-secret": secret} if secret else {})}
+        # 3.145: and name this navigator, whose beats lease its goals -- a
+        # restarted brain beating as `brain` never keeps a dead one's lease.
+        self.headers = {"x-driver": driver, "x-lease-id": uuid.uuid4().hex,
+                        **({"x-app-secret": secret} if secret else {})}
         # An injected client is how tests mount the app in-process.
         self._owns_client = client is None
         self._client = client or httpx.Client(base_url=self.base_url, timeout=timeout)
@@ -103,7 +107,9 @@ class RemoteNavigator:
         with self._beats_lock:
             if self.heartbeat_s is None or self._beats is not None or self._beats_stop.is_set():
                 return
-            self._beat()
+            for _ in range(3):                   # a goal sent unbeaten is not leased
+                if self._beat():
+                    break
             self._beats = threading.Thread(target=self._beat_loop, daemon=True,
                                            name="goal-lease-heartbeat")
             self._beats.start()
@@ -129,7 +135,13 @@ class RemoteNavigator:
         if r.status_code == 501:
             return {"accepted": False, "reason": "unsupported"}
         r.raise_for_status()
-        return r.json()
+        reply = r.json()
+        if self.heartbeat_s is not None and reply.get("accepted") and reply.get("leased") is False:
+            # 3.145: the robot server heard no beat in time (or predates the
+            # lease): this goal would outlive a dead brain. Said, not hidden.
+            logger.warning("nav2 goal (%s, %s) accepted WITHOUT a lease: the robot server "
+                           "heard no heartbeat from this brain", x_m, y_m)
+        return reply
 
     def get_goal(self) -> dict:
         r = self._call("GET")
