@@ -168,7 +168,7 @@ if [ "${SIM_MOTOR_BOARD:-}" = "fake" ]; then
 fi
 # 3.155: memory-locked before it serves, where the memlock limit allows
 # (picar-stack.service's LimitMEMLOCK=infinity); unlocked, and said so, elsewhere.
-python -m robot.locked_serve --port 8000 --host 127.0.0.1 --log-level warning &
+python -m robot.locked_serve uvicorn robot.server:app --port 8000 --host 127.0.0.1 --log-level warning &
 pids+=($!)
 ROUTE_PREFIX=/brain python -m uvicorn control.brain_server:app \
   --port 8001 --host 127.0.0.1 --log-level warning &

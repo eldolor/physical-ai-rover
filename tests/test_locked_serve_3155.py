@@ -73,10 +73,17 @@ def test_main_says_what_happened_then_serves_the_robot_server(monkeypatch, capsy
                                                          "wait_s": wait_s})
     monkeypatch.setattr(ls, "_serve", lambda argv: served.append(argv))
     monkeypatch.setenv("PICAR_MEMLOCK_WAIT_S", "10")
-    ls.main(["--port", "8000", "--host", "127.0.0.1"])
+    ls.main(["uvicorn", "robot.server:app", "--port", "8000", "--host", "127.0.0.1"])
     line = [x for x in capsys.readouterr().err.splitlines() if x.startswith("robot server memory lock: ")]
     assert json.loads(line[0].split(": ", 1)[1])["wait_s"] == 10.0
     assert served == [["robot.server:app", "--port", "8000", "--host", "127.0.0.1"]]
+    monkeypatch.setenv("PICAR_MEMLOCK", "0")                    # the plant: no lock at all
+    monkeypatch.setattr(ls, "lock", lambda wait_s=0.0: (_ for _ in ()).throw(AssertionError("locked")))
+    ls.main(["uvicorn", "robot.server:app"])
+    assert "PICAR_MEMLOCK=0" in capsys.readouterr().err
+    import pytest
+    with pytest.raises(SystemExit):
+        ls.main(["--port", "8000"])                              # uvicorn's own command line only
 
 
 def test_serve_hands_uvicorn_its_own_command_line(monkeypatch):

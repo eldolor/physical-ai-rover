@@ -296,9 +296,21 @@ def test_no_lock_line_or_the_plant_is_said_so(tmp_path):
     s = stack.Stack(tmp_path)
     (tmp_path / "robot.log").write_text("no line\n")
     assert s.record_robot_lock(True, False)["error"] == "no lock line in robot.log"
-    assert s.record_robot_lock(False, False)["skipped"]
+    (tmp_path / "robot.log").write_text("robot server memory lock: " + json.dumps({"locked": True}) + "\n")
+    n = (tmp_path / "robot.log").stat().st_size
+    assert s.record_robot_lock(True, True, since=n)["error"] == "no lock line in robot.log"   # an old start's
+    assert s.record_robot_lock(False, False, since=n)["skipped"]
 
 
-def test_the_stack_starts_the_shipped_robot_server_through_the_launcher():
-    text = (HERE / "stack.py").read_text()
-    assert '"-m", "robot.locked_serve"' in text and "PICAR_MEMLOCK_WAIT_S" in text
+@pytest.mark.parametrize("plant_env, wants", [({}, "1"), ({"FMEA_ROBOT_LOCK": "0"}, "0")])
+def test_the_stack_starts_the_shipped_robot_server_through_the_launcher(tmp_path, monkeypatch, plant_env, wants):
+    s = stack.Stack(tmp_path, extra_env=plant_env)
+    spawned, sudo = [], []
+    monkeypatch.setattr(s, "_spawn", lambda role, argv, env=None: spawned.append((argv, env)))
+    monkeypatch.setattr(s, "_sudo", lambda argv: sudo.append(argv) or True)
+    monkeypatch.setattr(s, "_wait_health", lambda *a, **k: None)
+    monkeypatch.setattr(s, "pid", lambda role: 777)
+    s.start_robot()
+    argv, env = spawned[0]
+    assert argv[1:5] == ["-m", "robot.locked_serve", "uvicorn", "robot.server:app"]
+    assert env["PICAR_MEMLOCK"] == wants and (sudo != []) == (wants == "1")

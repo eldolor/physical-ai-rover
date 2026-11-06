@@ -5,9 +5,11 @@ robot/locked_serve.py
 
 3.155: the robot server, memory-locked, then served.
 
-    python -m robot.locked_serve --port 8000 --host 127.0.0.1 --log-level warning
+    python -m robot.locked_serve uvicorn robot.server:app --port 8000 --host 127.0.0.1
 
-takes uvicorn's arguments for `robot.server:app`. Under an OOM squeeze the
+takes uvicorn's own command line, so the process's still names `uvicorn
+robot.server:app` (the board's tools find the robot server by it:
+`memory_account.py`, the soak's roles, F8's pid). Under an OOM squeeze the
 robot server's pages were reclaimed and faulted back, and its wheel loop ran
 late (3.135.B F2's new record: 204-439 ms ticks at 10-11 MB `MemAvailable`),
 though `oom_score_adj` -900 kept it alive. So, before serving:
@@ -18,8 +20,9 @@ touched or touches stays resident, and nothing it only maps is faulted in
 Only under an unlimited memlock limit (`LimitMEMLOCK=infinity` in
 `picar-stack.service`, or a harness's `prlimit` after the spawn, waited for
 up to `PICAR_MEMLOCK_WAIT_S`): under a finite one `MCL_FUTURE` would make a
-later thread stack or heap mapping fail mid-run, so it serves unlocked. One
-stderr line says what happened either way. `robot/server.py` is unchanged.
+later thread stack or heap mapping fail mid-run, so it serves unlocked.
+`PICAR_MEMLOCK=0` skips the lock (a harness's planted check). One stderr line
+says what happened either way. `robot/server.py` is unchanged.
 """
 
 import ctypes
@@ -31,7 +34,6 @@ import sys
 import time
 
 MCL_CURRENT, MCL_FUTURE, MCL_ONFAULT = 1, 2, 4          # <sys/mman.h> on Linux
-APP = "robot.server:app"
 
 
 def _libc():
@@ -83,9 +85,14 @@ def _serve(argv: list) -> None:
 
 def main(argv=None) -> None:
     argv = sys.argv[1:] if argv is None else argv
-    got = lock(float(os.environ.get("PICAR_MEMLOCK_WAIT_S") or 0))
+    if argv[:1] != ["uvicorn"] or len(argv) < 2:
+        raise SystemExit("usage: python -m robot.locked_serve uvicorn <app> [uvicorn's options]")
+    if os.environ.get("PICAR_MEMLOCK") == "0":
+        got = {"locked": False, "skipped": "PICAR_MEMLOCK=0"}
+    else:
+        got = lock(float(os.environ.get("PICAR_MEMLOCK_WAIT_S") or 0))
     print("robot server memory lock: " + json.dumps(got), file=sys.stderr, flush=True)
-    _serve([APP, *argv])
+    _serve(argv[1:])
 
 
 if __name__ == "__main__":

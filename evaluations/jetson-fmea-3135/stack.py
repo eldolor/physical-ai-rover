@@ -207,30 +207,33 @@ class Stack:
             argv = [PY, str(HERE / "robot_plant.py"), str(PORTS["robot"])]
         else:
             # The shipped code, started as picar-stack starts it (3.155: locked first).
-            argv = [PY, "-m", "robot.locked_serve", "--host", "127.0.0.1", "--port",
-                    str(PORTS["robot"]), "--log-level", "warning"]
+            argv = [PY, "-m", "robot.locked_serve", *self._uvicorn("robot.server:app", PORTS["robot"])[2:]]
         lock = not (self.plants & ROBOT_PLANTS) and self.env.get("FMEA_ROBOT_LOCK") != "0"
+        log = self.out / "robot.log"
+        since = log.stat().st_size if log.exists() else 0      # this start's lines only
         self._spawn("robot", argv, dict(self.env, FMEA_PLANT=",".join(sorted(self.plants & ROBOT_PLANTS)),
-                                        PICAR_MEMLOCK_WAIT_S="10" if lock else "0"))
+                                        PICAR_MEMLOCK_WAIT_S="10" if lock else "0",
+                                        PICAR_MEMLOCK="1" if lock else "0"))
         raised = lock and self._sudo(["prlimit", "--pid", str(self.pid("robot")),
                                       "--memlock=unlimited:unlimited"])
         self._wait_health("robot", self.urls["robot"])
-        self.record_robot_lock(lock, raised)
+        self.record_robot_lock(lock, raised, since)
 
-    def record_robot_lock(self, lock: bool, raised: bool) -> dict:
-        """3.155: what the robot server's launcher said about its lock (its log's
-        line), as `robot_lock.json`; `FMEA_ROBOT_LOCK=0` (the plant) skips the
-        lock, and a robot plant runs unlocked."""
-        got = {"locked": False, "skipped": "FMEA_ROBOT_LOCK=0 or a robot plant"} if not lock else \
-            {"locked": False, "error": "no lock line in robot.log"}
-        if lock:
-            for line in (self.out / "robot.log").read_text(errors="replace").splitlines():
-                if line.startswith("robot server memory lock: "):
-                    try:
-                        got = json.loads(line.split(": ", 1)[1])
-                    except ValueError:
-                        pass
-            got["limit_raised"] = raised
+    def record_robot_lock(self, lock: bool, raised: bool, since: int = 0) -> dict:
+        """3.155: what this start's launcher said about its lock (its line in
+        robot.log after byte `since`), as `robot_lock.json`; `FMEA_ROBOT_LOCK=0`
+        (the plant) makes it skip the lock, and a robot plant runs unlocked."""
+        got = {"locked": False, "error": "no lock line in robot.log"} if lock else \
+            {"locked": False, "skipped": "FMEA_ROBOT_LOCK=0 or a robot plant"}
+        path = self.out / "robot.log"
+        text = path.read_bytes()[since:].decode(errors="replace") if path.exists() else ""
+        for line in text.splitlines():
+            if line.startswith("robot server memory lock: "):
+                try:
+                    got = json.loads(line.split(": ", 1)[1])
+                except ValueError:
+                    pass
+        got["limit_raised"] = raised
         self.robot_lock = got
         (self.out / "robot_lock.json").write_text(json.dumps(got, indent=1))
         return got
