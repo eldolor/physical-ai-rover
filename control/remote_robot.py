@@ -40,8 +40,8 @@ from typing import Optional
 
 import httpx
 
-from robot.interface import (BATTERY_CHECK, BATTERY_POWEROFF, BATTERY_RESERVE, PERSON_STOP,
-                             BatteryReserve,
+from robot.interface import (AUTONOMY_LAPSED, BATTERY_CHECK, BATTERY_POWEROFF, BATTERY_RESERVE,
+                             PERSON_STOP, AutonomyLapsed, BatteryReserve,
                              Preempted, RobotInterface, StoppedByPerson,
                              unusable_battery, unusable_grid, unusable_scan,
                              unusable_wheels, unusable_odometry)
@@ -269,6 +269,10 @@ class RemoteRobot(RobotInterface):
                 # 3.84: a person's Stop latched autonomy off -- the end of
                 # the mission, `cancelled` by that Stop.
                 raise StoppedByPerson(detail)
+            if body.get("reason") == AUTONOMY_LAPSED:
+                # 3.145: this brain fell silent past its goal's lease (a
+                # freeze); the robot server ended the goal -- the mission ends.
+                raise AutonomyLapsed(f"{AUTONOMY_LAPSED}: {detail}")
             if body.get("reason") in (BATTERY_RESERVE, BATTERY_POWEROFF):
                 # 3.137: the battery ladder took autonomy away -- the end of
                 # the mission, `out_of_budget`, never a veto to retry.

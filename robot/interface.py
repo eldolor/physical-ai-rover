@@ -112,6 +112,9 @@ class Preempted(Exception):
 
 # 3.84: the refusal a person's Stop latches on autonomy, by name.
 PERSON_STOP = "person_stop"
+# 3.145: the refusal a lapsed goal lease latches on autonomy -- the brain that
+# sent a nav2 goal stopped beating (killed or frozen), so its goal was ended.
+AUTONOMY_LAPSED = "autonomy_lapsed"
 # 3.82/3.84: a command a stop overtook after it was sent, not carried out.
 STOPPED = "stopped"
 
@@ -132,6 +135,13 @@ class StoppedByPerson(Preempted):
     verb is refused `person_stop` until a new mission starts. A `Preempted`,
     so every path that ends a mission on a preemption ends it here too; the
     runner ends it `cancelled` with `cancelled_by: "stop"`, not "dpad"."""
+
+
+class AutonomyLapsed(Preempted):
+    """The robot server ended the brain's nav2 goal because the brain went
+    silent for longer than the goal's lease (3.145), and latched autonomy
+    out until a new mission starts. A brain that hears it was frozen, not
+    stopped by anyone: the runner ends the mission `failed`, naming it."""
 
 
 # 3.137: the battery ladder's refusals, by name. At Reserve every autonomous

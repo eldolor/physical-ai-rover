@@ -150,6 +150,10 @@ def check_robot(url: str, secret=None, timeout=DEFAULT_TIMEOUT_S) -> dict:
             # Drive mode and ROS liveness; ros_up false under drive: ros is
             # also a verdict input above.
             "drive": body.get("drive"),
+            # 3.145: the brain's goal lease and its lapses. Description: a
+            # lapse is a brain killed or frozen, which the brain's own check
+            # reports; the robot server did its job by ending the goal.
+            "goal_lease": body.get("goal_lease"),
         },
     }
 

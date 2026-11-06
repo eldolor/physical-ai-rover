@@ -70,9 +70,9 @@ from brain.mission_report import map_coverage
 from brain.navigate import CloudUnavailable
 from brain.room_labels import RoomLabeller, frame_room
 from brain.vision_agent import VisionAgent
-from robot.interface import (BATTERY_CHECK, BATTERY_POWEROFF, BATTERY_RESERVE, DRIVER_MANUAL,
-                             PERSON_STOP,
-                             BatteryReserve, Preempted, RobotInterface, StoppedByPerson,
+from robot.interface import (AUTONOMY_LAPSED, BATTERY_CHECK, BATTERY_POWEROFF, BATTERY_RESERVE,
+                             DRIVER_MANUAL, PERSON_STOP,
+                             AutonomyLapsed, BatteryReserve, Preempted, RobotInterface, StoppedByPerson,
                              driver_priority)
 from robot.safety import SafetyViolation
 from world.interface import NullWorld, WorldInterface
@@ -376,6 +376,9 @@ class _GatedNavigator:
         if reply.get("reason") == PERSON_STOP and not reply.get("accepted"):
             # 3.84: a person's Stop latched autonomy off; the mission ends.
             raise StoppedByPerson(reply.get("detail") or "a person pressed Stop")
+        if reply.get("reason") == AUTONOMY_LAPSED and not reply.get("accepted"):
+            # 3.145: the robot server ended this brain's goal for its silence.
+            raise AutonomyLapsed(f"{AUTONOMY_LAPSED}: {reply.get('detail') or ''}")
         if reply.get("reason") in (BATTERY_RESERVE, BATTERY_POWEROFF) and not reply.get("accepted"):
             # 3.137: the battery ladder took autonomy away; the mission ends.
             raise BatteryReserve(f"{reply['reason']}: {reply.get('detail') or ''}")
@@ -1427,6 +1430,11 @@ class MissionRunner:
             # 3.137: the robot server's battery ladder refused autonomy
             # (Reserve, or a power-off under way): the battery is the budget.
             self._finish(OUT_OF_BUDGET, f"battery: the robot server refused autonomy ({detail})")
+            return
+        if isinstance(error, AutonomyLapsed):
+            # 3.145: no person -- this brain went silent (frozen) with a goal
+            # driving, and the robot server ended it: a fault, `failed`.
+            self._finish(FAILED, f"the robot server ended autonomy: {detail}")
             return
         if isinstance(error, StoppedByPerson):
             # 3.84: the brain was refused because a person pressed Stop (the

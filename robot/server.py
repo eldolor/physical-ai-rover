@@ -118,7 +118,7 @@ from robot.identity import configure_logging, log_identity
 from robot.battery_ladder import CHECK, CLEAR, POWEROFF, RESERVE, BatteryLadder
 from robot.interface import (
     BATTERY_CHECK, BATTERY_POWEROFF, BATTERY_RESERVE, DRIVER_AUTONOMOUS, DRIVER_MANUAL,
-    DRIVER_UNKNOWN, PERSON_STOP, STOPPED, VERB_STOP_BASELINE, WheelFeedbackLost,
+    AUTONOMY_LAPSED, DRIVER_UNKNOWN, PERSON_STOP, STOPPED, VERB_STOP_BASELINE, WheelFeedbackLost,
     driver_priority)
 
 # The ROS container's driver name on POST /wheels (R2b, R4).
@@ -482,7 +482,33 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         while True:
             await asyncio.sleep(WATCHDOG_POLL_INTERVAL_S)
             now = time.monotonic()
+            # 3.145: a wake far past its period means this event loop was
+            # held up, and with it every beat waiting to be answered: judged
+            # now, a living brain's queued beats would read as its silence.
+            # The next wake, a period on, judges it with them heard.
+            loop_held = now - state["watchdog_polled_at"] > 3 * WATCHDOG_POLL_INTERVAL_S
             state["watchdog_polled_at"] = now
+            # 3.145: before the verb skip below -- a lapse is about the brain
+            # that owns a nav2 goal, not about any verb.
+            lapsed = None if loop_held else lease_lapsed(now)
+            if lapsed is not None:
+                owner, gen, quiet_s = lapsed
+                # The hold (set under the lock) zeroes nav2's next wheel post;
+                # the cancel runs on the goal-ending loop's own thread, never
+                # here on the event loop.
+                _start_goal_end(gen)
+                state["last_refusal"] = {
+                    "reason": AUTONOMY_LAPSED,
+                    "detail": (f"{owner} sent no heartbeat for {quiet_s:.2f}s with a nav2 "
+                               f"goal of its own -- the goal was ended and autonomy "
+                               f"latched off until a mission starts"),
+                    "driver": owner,
+                    "at": now,
+                }
+                state["refusal_counts"][AUTONOMY_LAPSED] = (
+                    state["refusal_counts"].get(AUTONOMY_LAPSED, 0) + 1)
+                logger.warning(f"goal lease lapsed: {owner} silent {quiet_s:.2f}s -- "
+                               f"its nav2 goal ended, autonomy latched off")
             # A verb in progress is a busy brain, not a silent one: it is
             # bounded, re-vetted every period, and /stop still ends it (3.22).
             if state["verb_active"]:
@@ -598,6 +624,15 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
     # a verb that lifted it before the newest stop does not hold its re-hold.
     goal_stop = {"gen": 0, "hold": False, "stops": 0, "autonomy_stopped": None,
                  "ending": None, "lifted": {"stops": 0, "count": 0}}
+    # 3.145: a goal the brain sent lives only while the brain does. `beats`
+    # is each autonomous driver's last `POST /autonomy/heartbeat`; `owner`
+    # the driver whose goal holds a lease, armed at the goal generation it
+    # was accepted under (`gen`) and only for a driver that beats (one older
+    # than 3.145 never does, and keeps the behaviour from before). Silent
+    # for `watchdog_timeout_s`, the watchdog loop ends the goal as a Stop
+    # does and latches autonomy out. Guarded by `goal_gen_lock`.
+    lease = {"owner": None, "gen": None, "since": 0.0, "beats": {}, "lapses": 0,
+             "last_lapse": None}
     # Serialises the bridge calls that start or end a goal: held ACROSS them.
     goal_stop_lock = threading.Lock()
     # Guards `goal_stop` itself and is never held across a bridge call, so
@@ -661,6 +696,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
     # 3.84: answers that name a fault of the robot itself, never renamed
     # `person_stop` (the mission ends `failed`, naming it).
     FAULTS = ("no_feedback", "ros_unavailable")
+    # The refusals the autonomy latch answers with: a person's Stop (3.84)
+    # and a lapsed goal lease (3.145).
+    LATCH_REASONS = (PERSON_STOP, AUTONOMY_LAPSED)
 
     def is_autonomy(driver: str) -> bool:
         """The brain (or `teleop`): an autonomous driver other than ROS's
@@ -679,11 +717,18 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         `goal_gen_lock` or not, as its own order needs."""
         if latch is None or not is_autonomy(driver):
             return None
+        reason = PERSON_STOP
         detail = (f"{latch['by']} pressed Stop -- autonomy stays stopped until a new "
                   f"mission starts, so {driver} was refused")
+        if latch.get("lapsed"):
+            # 3.145: no person -- the goal's owner fell silent past its lease.
+            reason = AUTONOMY_LAPSED
+            detail = (f"{latch['by']} went silent for over {watchdog_timeout}s with a nav2 "
+                      f"goal of its own -- the goal was ended and autonomy stays stopped "
+                      f"until a new mission starts, so {driver} was refused")
         if not record:      # a verb's refusal re-read: that refusal was already recorded
-            return {"executed": False, "reason": PERSON_STOP, "detail": detail}
-        return refuse(PERSON_STOP, detail, driver)
+            return {"executed": False, "reason": reason, "detail": detail}
+        return refuse(reason, detail, driver)
 
     # ---------- 3.137: the battery ladder ----------
     #
@@ -1224,11 +1269,11 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             latch = autonomy_latch()
             if latch is not None:
                 fault = outcome.get("reason") in FAULTS
-                if not fault and outcome.get("reason") != PERSON_STOP:
+                if not fault and outcome.get("reason") not in LATCH_REASONS:
                     # A move that ran is recorded here; a refusal already was.
                     outcome = person_stop_refusal(driver, latch,
                                                   record=bool(outcome.get("executed")))
-            if outcome.get("reason") in (PERSON_STOP, STOPPED, *BATTERY_REASONS) or (
+            if outcome.get("reason") in (*LATCH_REASONS, STOPPED, *BATTERY_REASONS) or (
                     latch is not None and not outcome.get("executed")):
                 return lapse_refused_claim(driver, outcome, stamp.get("at", now))
         return outcome
@@ -1627,6 +1672,37 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         threading.Thread(target=_end_goal_after_stop, args=(gen,), daemon=True,
                          name="stop-end-goal").start()
 
+    def lease_lapsed(now: float):
+        """3.145: if the goal lease's owner has been silent past
+        `watchdog_timeout_s`, end its goal (the hold set and a goal-ending
+        generation counted, as a Stop does) and latch autonomy out unless a
+        person's Stop already has; returns (owner, the generation for the
+        ending loop, seconds silent), else None. A lease whose goal a stop,
+        a person's move or another goal has since replaced is dropped: that
+        generation is no longer the brain's goal."""
+        with goal_gen_lock:
+            owner = lease["owner"]
+            if owner is None:
+                return None
+            if lease["gen"] != goal_stop["gen"]:
+                lease["owner"] = None
+                return None
+            quiet = now - max(lease["beats"].get(owner, 0.0), lease["since"])
+            if quiet <= watchdog_timeout:
+                return None
+            lease["owner"] = None
+            lease["lapses"] += 1
+            lease["last_lapse"] = {"owner": owner, "at": now, "quiet_s": round(quiet, 3)}
+            if goal_stop["autonomy_stopped"] is None:
+                goal_stop["autonomy_stopped"] = {"by": owner, "at": now, "lapsed": True}
+            gen = _count_goal_end()
+        return owner, gen, quiet
+
+    def lease_status() -> dict:
+        with goal_gen_lock:
+            return {"owner": lease["owner"], "lapses": lease["lapses"],
+                    "last_lapse": lease["last_lapse"], "lease_s": watchdog_timeout}
+
     def begin_goal_end(now: float) -> None:
         """3.97: end a nav2 goal for a person's move -- a Stop's goal-ending
         loop (re-cancels until nav2 reports it over; `ros` wheel posts held
@@ -1662,6 +1738,34 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             logger.info(f"autonomy resumed by {driver} (stopped by {was['by']})")
         return {"resumed": was is not None, "driver": driver,
                 "stopped_by": was["by"] if was is not None else None}
+
+    @app.post(prefix + "/autonomy/heartbeat", dependencies=[Depends(require_secret)])
+    async def autonomy_heartbeat(x_driver: str = Header(default="")):
+        """3.145: the brain says it is alive. A nav2 goal it sends holds a
+        lease that lapses `watchdog_timeout_s` after its last beat (see
+        `lease_lapsed`). Not arbitrated and moves nothing; on the event loop
+        (nothing here waits), so a busy threadpool never starves a beat.
+        `lapsed` tells a brain thawed after a freeze that its goal was ended."""
+        driver = (x_driver or "").strip() or DRIVER_UNKNOWN
+        now = time.monotonic()
+        with goal_gen_lock:
+            if is_autonomy(driver):
+                lease["beats"][driver] = now
+            latch = goal_stop["autonomy_stopped"]
+        return {"driver": driver, "lease_s": watchdog_timeout,
+                "lapsed": bool(latch and latch.get("lapsed"))}
+
+    @app.delete(prefix + "/autonomy/heartbeat", dependencies=[Depends(require_secret)])
+    async def autonomy_heartbeat_end(x_driver: str = Header(default="")):
+        """3.145: the brain's navigator closed (its mission ended): no more
+        beats, and a lease it holds is released rather than left to lapse."""
+        driver = (x_driver or "").strip() or DRIVER_UNKNOWN
+        with goal_gen_lock:
+            lease["beats"].pop(driver, None)
+            released = lease["owner"] == driver
+            if released:
+                lease["owner"] = None
+        return {"driver": driver, "released": released}
 
     @app.post(prefix + "/autonomy/relatch", dependencies=[Depends(require_secret)])
     def autonomy_relatch(req: RelatchRequest, x_driver: str = Header(default="")):
@@ -2006,6 +2110,12 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                                 goal_stop["gen"] += 1
                                 goal_stop["hold"] = False
                                 goal_stop["ending"] = None     # that loop is superseded
+                                # 3.145: a brain that beats leases its goal;
+                                # any other goal replaces a brain's lease.
+                                beat = lease["beats"].get(person) if autonomy else None
+                                armed = beat is not None and time.monotonic() - beat <= watchdog_timeout
+                                lease.update(owner=person if armed else None,
+                                             gen=goal_stop["gen"], since=time.monotonic())
                         if autonomy and latch is not None:
                             return {"accepted": False, **person_stop_refusal(person, latch)}
                         if not accepted:
@@ -2038,8 +2148,13 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         return _bridge_call(_goals().get_goal)
 
     @app.delete(prefix + "/world/goal", dependencies=[Depends(require_secret)])
-    def world_goal_cancel():
-        return _bridge_call(_goals().cancel_goal)
+    def world_goal_cancel(x_driver: str = Header(default="")):
+        reply = _bridge_call(_goals().cancel_goal)
+        # 3.145: the lease's owner cancelling its own goal gives it up.
+        with goal_gen_lock:
+            if lease["owner"] is not None and lease["owner"] == (x_driver or "").strip():
+                lease["owner"] = None
+        return reply
 
     @app.post(prefix + "/world/remap", dependencies=[Depends(require_secret)])
     def world_remap(x_driver: str = Header(default="")):
@@ -2319,6 +2434,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                                          if by_velocity and state["last_ros_post_at"] is not None
                                          else None)},
             "watchdog_timeout_s": watchdog_timeout,
+            # 3.145: the brain's goal lease -- who holds one now, how many
+            # lapsed (a brain killed or frozen with a goal driving).
+            "goal_lease": lease_status(),
             "wheel_loop": {**state["wheel_loop"], "period_s": WHEEL_LOOP_INTERVAL_S},
             # 3.34: the motor board's link -- frame age, frames, reboots --
             # for a body that has one; None otherwise. Description only

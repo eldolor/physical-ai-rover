@@ -15,6 +15,8 @@ server whose world cannot take goals answers 501; that is reported as
 refuse an `explore` mission at start rather than on its first tick.
 """
 
+import logging
+import threading
 from typing import Optional
 
 import httpx
@@ -23,6 +25,15 @@ from control.remote_robot import DEFAULT_DRIVER
 from world.bridge_faults import fault_from_headers, response_detail, setup_fault_message
 
 DEFAULT_TIMEOUT_S = 10.0
+# 3.145: a goal this navigator sends lives on the robot server only while it
+# beats (`POST /autonomy/heartbeat`): its lease lapses `watchdog_timeout_s`
+# (1.0 s) after the last beat. Four beats a lease, on a thread of their own,
+# so a long tick (a VLM call) never starves them -- only a dead or frozen
+# process does. Each beat's own timeout stays under the beat period.
+HEARTBEAT_S = 0.25
+HEARTBEAT_TIMEOUT_S = 0.2
+
+logger = logging.getLogger(__name__)
 
 
 class RemoteNavigator:
@@ -31,14 +42,22 @@ class RemoteNavigator:
 
     def __init__(self, base_url: str, secret: Optional[str] = None,
                  timeout: float = DEFAULT_TIMEOUT_S,
-                 client: Optional[httpx.Client] = None, driver: str = DEFAULT_DRIVER):
+                 client: Optional[httpx.Client] = None, driver: str = DEFAULT_DRIVER,
+                 heartbeat_s: Optional[float] = HEARTBEAT_S):
         self.base_url = base_url.rstrip("/")
+        self.heartbeat_s = heartbeat_s
+        self._beats_stop = threading.Event()
+        self._beats: Optional[threading.Thread] = None
+        self._beats_lock = threading.Lock()
         # 3.84: explore's goals name the brain, so the robot server can tell
         # them from a script's and refuse them after a person's Stop.
         self.headers = {"x-driver": driver, **({"x-app-secret": secret} if secret else {})}
         # An injected client is how tests mount the app in-process.
         self._owns_client = client is None
         self._client = client or httpx.Client(base_url=self.base_url, timeout=timeout)
+        # A beat's own short timeout, on a client this navigator owns (an
+        # injected test client takes none).
+        self._beat_kw = {"timeout": HEARTBEAT_TIMEOUT_S} if self._owns_client else {}
 
     def _call(self, method: str, json: Optional[dict] = None) -> httpx.Response:
         return self._client.request(method, "/world/goal", json=json, headers=self.headers)
@@ -57,7 +76,55 @@ class RemoteNavigator:
             raise PermissionError(setup_fault_message("the goal route", fault, response_detail(r)))
         return r.status_code == 200
 
+    def _beat(self) -> bool:
+        try:
+            r = self._client.request("POST", "/autonomy/heartbeat", headers=self.headers,
+                                     **self._beat_kw)
+            return r.status_code == 200
+        except httpx.HTTPError:
+            return False
+
+    def _beat_loop(self) -> None:
+        missed = 0
+        while not self._beats_stop.wait(self.heartbeat_s):
+            if self._beat():
+                missed = 0
+                continue
+            missed += 1
+            if missed == 1:
+                logger.warning("goal lease heartbeat not answered (retrying every %ss)",
+                               self.heartbeat_s)
+
+    def start_heartbeat(self) -> None:
+        """3.145: beat once now (the robot server arms a goal's lease only
+        for a driver it has heard within it), then every `heartbeat_s` until
+        close(). Idempotent; a navigator with `heartbeat_s=None` never beats
+        (its goals are not leased, as before 3.145)."""
+        with self._beats_lock:
+            if self.heartbeat_s is None or self._beats is not None or self._beats_stop.is_set():
+                return
+            self._beat()
+            self._beats = threading.Thread(target=self._beat_loop, daemon=True,
+                                           name="goal-lease-heartbeat")
+            self._beats.start()
+
+    def stop_heartbeat(self) -> None:
+        """Stop beating and release a lease this driver holds: a goal the
+        mission ended is not a lapse."""
+        with self._beats_lock:
+            self._beats_stop.set()
+            beats, self._beats = self._beats, None
+        if beats is None:
+            return
+        beats.join(timeout=1.0)
+        try:
+            self._client.request("DELETE", "/autonomy/heartbeat", headers=self.headers,
+                                 **self._beat_kw)
+        except httpx.HTTPError:
+            pass        # the lease then lapses; its goal was the mission's to end
+
     def set_goal(self, x_m: float, y_m: float) -> dict:
+        self.start_heartbeat()
         r = self._call("POST", {"x_m": x_m, "y_m": y_m})
         if r.status_code == 501:
             return {"accepted": False, "reason": "unsupported"}
@@ -91,5 +158,6 @@ class RemoteNavigator:
         """One client per explore mission: closed at its end (3.76), or a
         long-lived brain gathers sockets. An injected client is the
         caller's to close."""
+        self.stop_heartbeat()
         if self._owns_client:
             self._client.close()
