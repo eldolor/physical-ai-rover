@@ -16,8 +16,10 @@ In process, against 3.82's fake bridge (tests/test_refused_goal_hold.py),
 with the app's lifespan running so the watchdog loop does the judging.
 """
 
+import importlib.util
 import threading
 import time
+from pathlib import Path
 
 import pytest
 
@@ -116,6 +118,26 @@ def test_a_silent_brains_goal_ends_within_its_lease_and_latches_autonomy(live):
     r = client.post("/autonomy/resume", headers=BRAIN).json()
     assert r["resumed"] is True and r["stopped_by"] == "brain", r
     assert _beat(client)["lapsed"] is False
+
+
+def test_the_planted_build_drives_the_silent_brains_goal_on(monkeypatch):
+    """Red first, and criterion 3's plant told apart from the fix: the same
+    silent brain against the app with the lease switched off
+    (evaluations/goal-lease-3145/robot_plant.py) is 3.135.B's F6g -- nav2
+    drives the goal past a lease and well beyond, and nothing lapses."""
+    spec = importlib.util.spec_from_file_location(
+        "goal_lease_plant", Path(__file__).resolve().parents[1]
+        / "evaluations/goal-lease-3145/robot_plant.py")
+    plant = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(plant)
+    client, bridge = _server_over(monkeypatch, None)
+    plant.plant_no_lease(client.app)
+    with client:
+        _beat(client)
+        _goal(client, bridge, BRAIN)
+        assert _lease(client)["owner"] is None
+        assert _watch(client, bridge, LEASE_S + 0.8) is None, "the plant ended the goal"
+        assert _lease(client)["lapses"] == 0
 
 
 def test_a_beating_brain_keeps_its_goal(live):

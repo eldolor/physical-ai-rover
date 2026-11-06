@@ -300,9 +300,9 @@ Resources:
             # 3.72's house swap; answers 409 here, reachable to be read.
             - /teleop-robot/sim/house/random
             # 3.84: a new mission lifts a person's Stop's latch; 3.76 K2: a
-            # refused start puts it back. Five values, the rule's limit.
-            - /teleop-robot/autonomy/resume
-            - /teleop-robot/autonomy/relatch
+            # refused start puts it back; 3.145: the brain's goal-lease
+            # heartbeat. One wildcard for the three: five values is the limit.
+            - /teleop-robot/autonomy/*
       Actions:
         - Type: forward
           TargetGroupArn: !Ref AlbTargetGroup
