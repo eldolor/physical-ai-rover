@@ -1,0 +1,66 @@
+{
+ "row": "F6g",
+ "title": "Brain killed mid-move (a nav2 goal)",
+ "reading": "as F6, the robot on an explore mission's nav2 goal",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-05T21:05:51-0600",
+ "restarted": [
+  "brain"
+ ],
+ "recovery_s": 3.01,
+ "measures": {
+  "fault_at": 143368.530075682,
+  "driver_at_fault": null,
+  "outcome": null,
+  "end_state": null,
+  "end_reason": null,
+  "end_error": "<urlopen error [Errno 111] Connection refused>",
+  "status": {
+   "running": null,
+   "outcome": null,
+   "end_state": null,
+   "end_reason": null,
+   "cancelled_by": null,
+   "step": null,
+   "last_action": null,
+   "error": "<urlopen error [Errno 111] Connection refused>"
+  },
+  "refusals": {
+   "preempted": 2,
+   "autonomy_lapsed": 1
+  },
+  "no_feedback_refusals": 0,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 93,
+   "max_dt_s": 0.0522
+  },
+  "last_refusal": {
+   "reason": "autonomy_lapsed",
+   "detail": "brain sent no heartbeat for 1.07s with a nav2 goal of its own -- the goal was ended and autonomy stays stopped until a new mission starts",
+   "driver": "brain",
+   "at": 143369.36082169,
+   "seconds_ago": 5.17
+  },
+  "forward_at_fault": true,
+  "wheels_zero_s": 0.893,
+  "travel_cm": 6.45,
+  "truth_hole_s": 0.023,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   143356.5429,
+   143378.623
+  ],
+  "mem_available_min_mb": 10524,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-05T21:06:14-0600"
+}

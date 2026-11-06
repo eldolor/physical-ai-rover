@@ -1,0 +1,68 @@
+{
+ "row": "F7g",
+ "title": "Brain hung (alive, silent; a nav2 goal)",
+ "reading": "as F7, the robot on an explore mission's nav2 goal",
+ "plant": "no_lease",
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-05T21:11:45-0600",
+ "recovery_s": 1.38,
+ "measures": {
+  "fault_at": 143721.933453111,
+  "driver_at_fault": null,
+  "cont_at": 143751.93352443,
+  "outcome": "running",
+  "end_state": null,
+  "end_reason": null,
+  "end_error": null,
+  "status": {
+   "running": true,
+   "outcome": "running",
+   "end_state": null,
+   "end_reason": null,
+   "cancelled_by": null,
+   "step": 2,
+   "last_action": "WAIT",
+   "error": null
+  },
+  "refusals": {
+   "preempted": 4
+  },
+  "no_feedback_refusals": 0,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 318,
+   "max_dt_s": 0.053
+  },
+  "last_refusal": {
+   "reason": "preempted",
+   "detail": "brain is driving -- one autonomous driver at a time, so ros was refused until it lapses",
+   "driver": "ros",
+   "at": 143753.458854056,
+   "seconds_ago": 9.98
+  },
+  "forward_at_fault": true,
+  "wheels_zero_s": 2.966,
+  "travel_cm": 17.27,
+  "drive_after_cont": 389,
+  "truth_hole_s": 0.032,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   143710.2597,
+   143765.7999
+  ],
+  "mem_available_min_mb": 10465,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "wheels zero after 2.966 s (bar 1.1)",
+   "moved 17.27 cm after the fault (bar 15)",
+   "389 driving samples in the 10 s after SIGCONT (bar 0)"
+  ]
+ },
+ "ended": "2026-11-05T21:12:41-0600"
+}

@@ -1,0 +1,78 @@
+{
+ "stamp": "20261105-210959",
+ "criterion": 4,
+ "rows": [
+  {
+   "row": "F6g",
+   "plant": "no_lease",
+   "reading": "as F6, the robot on an explore mission's nav2 goal",
+   "base": {
+    "pass": true,
+    "reasons": [],
+    "error": null,
+    "recovery_s": 3.42,
+    "wheels_zero_s": 0.917,
+    "travel_cm": 6.3,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": null,
+    "driver_at_fault": null
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "wheels zero after 3.238 s (bar 1.1)",
+     "moved 18.7 cm after the fault (bar 15)"
+    ],
+    "error": null,
+    "wheels_zero_s": 3.238,
+    "travel_cm": 18.7,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": null,
+    "driver_at_fault": null
+   },
+   "caught": true,
+   "discriminates": true
+  },
+  {
+   "row": "F7g",
+   "plant": "no_lease",
+   "reading": "as F7, the robot on an explore mission's nav2 goal",
+   "base": {
+    "pass": true,
+    "reasons": [],
+    "error": null,
+    "recovery_s": 1.59,
+    "wheels_zero_s": 1.084,
+    "travel_cm": 7.88,
+    "drive_after_cont": 0,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": "failed",
+    "driver_at_fault": null
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "wheels zero after 2.966 s (bar 1.1)",
+     "moved 17.27 cm after the fault (bar 15)",
+     "389 driving samples in the 10 s after SIGCONT (bar 0)"
+    ],
+    "error": null,
+    "wheels_zero_s": 2.966,
+    "travel_cm": 17.27,
+    "drive_after_cont": 389,
+    "contacts": 0,
+    "no_feedback_refusals": 0,
+    "outcome": "running",
+    "driver_at_fault": null
+   },
+   "caught": true,
+   "discriminates": true
+  }
+ ],
+ "met": true,
+ "not_scored_until_fixed": [],
+ "base_fails_too": []
+}

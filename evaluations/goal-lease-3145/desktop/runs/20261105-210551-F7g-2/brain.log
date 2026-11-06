@@ -1,0 +1,2 @@
+1793934482.338 WARNING identity vision-picar brain server starting -- git=c4121785 executable=/home/anshu/vision-picar/.venv/bin/python config=(default)
+1793934522.057 ERROR brain_server brain loop hung: tick exceeded 30.0s
