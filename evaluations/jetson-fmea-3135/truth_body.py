@@ -125,7 +125,12 @@ if __name__ == "__main__":
     out.mkdir(parents=True, exist_ok=True)
     with open(out / "truth.jsonl", "w", buffering=1) as log:     # one stack, one log
         recorder = Recorder(sample, log, PERIOD_S).start()
+        # The drain runs in the app's shutdown: uvicorn re-raises SIGTERM (the
+        # stack's teardown) with its default action once it has shut down, so
+        # nothing after `uvicorn.run` runs then (review). Within the stack's
+        # 8 s kill.
+        app.router.on_shutdown.append(recorder.stop)
         try:
             uvicorn.run(app, host="127.0.0.1", port=int(sys.argv[1]), log_level="warning")
         finally:
-            recorder.stop()                     # what the writer holds, written
+            recorder.stop()                     # other ends (an exception, Ctrl-C's return)

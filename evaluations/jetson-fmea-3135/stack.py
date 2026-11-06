@@ -177,14 +177,18 @@ class Stack:
             return False
 
     def _post_lock(self) -> dict:
-        code, body = http("POST", self.urls["body"] + "/fmea/mlock", timeout=30.0)
+        try:
+            code, body = http("POST", self.urls["body"] + "/fmea/mlock", timeout=30.0)
+        except OSError as e:                    # reported, never the stack's start
+            return {"locked": False, "error": f"{type(e).__name__}: {e}"}
         return body if code == 200 and isinstance(body, dict) else {"locked": False, "error": f"HTTP {code}"}
 
     def lock_body(self) -> dict:
         """3.151: the truth body's touched pages locked, so memory pressure
         cannot stall the truth (3.135.B F2's holes). Its memlock limit is
         raised first where `sudo -n` works (the board's is ~952 MB; the
-        desktop's 8 MB and no sudo: the lock is then refused, and said so).
+        desktop's 8 MB and no sudo); with it not raised the body does not
+        lock (`limit_not_raised`), and says so.
         `FMEA_TRUTH_LOCK=0` skips both (the planted check). The answer is
         the run's `body_lock.json`."""
         if self.env.get("FMEA_TRUTH_LOCK") == "0":

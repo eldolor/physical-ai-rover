@@ -10,15 +10,21 @@ evaluations/jetson-fmea-3135/truth_recorder.py
 * `Recorder(sample, file, period_s)`: a sampler thread takes `sample()`
   every `period_s` and hands its JSON line to a writer thread, so a write
   that blocks (a page-cache allocation in reclaim) never delays the next
-  sample; the writer writes what it holds, in order, and `stop()` drains it.
-  A failed write is reported on stderr and those lines are lost (a hole in
-  the log, never a dead recorder) -- as the loop before.
+  sample; the writer writes what it holds, in order, one line a write, and
+  is the only thread that writes (`stop()` lets it drain). A failed write
+  is reported on stderr and that line is lost (a hole in the log, never a
+  dead recorder) -- as the loop before; so is a sample that raises. The
+  backlog is capped at `BACKLOG_MAX` lines (10 min at 50 Hz), the oldest
+  dropped and counted, so a writer stalled for good cannot grow locked
+  memory without bound.
 * `lock_memory()`: `mlockall(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT)` --
   every page the process has touched or touches stays resident (no major
   fault on its code or heap under reclaim), without populating what it
   only maps (1.1 GB of stacks and reservations against 72 MB resident;
-  `MCL_CURRENT` alone would fault all of it in). Answers what happened; a
-  refusal is reported, never retried.
+  `MCL_CURRENT` alone would fault all of it in). Only with no memlock
+  limit: under a finite one `MCL_FUTURE` would make a later thread stack or
+  heap mapping fail mid-run, so the lock is then not tried. Answers what
+  happened; a refusal is reported, never retried.
 """
 
 import collections
@@ -31,12 +37,14 @@ import threading
 import time
 
 MCL_CURRENT, MCL_FUTURE, MCL_ONFAULT = 1, 2, 4          # <sys/mman.h> on Linux
+BACKLOG_MAX = 30000
 
 
 class Recorder:
     def __init__(self, sample, file, period_s: float = 0.02):
         self.sample, self.file, self.period_s = sample, file, period_s
         self.latest: dict = {}
+        self.dropped = 0
         self._lines = collections.deque()
         self._cv = threading.Condition()
         self._stop = threading.Event()
@@ -51,45 +59,65 @@ class Recorder:
     def _sample_loop(self) -> None:
         nxt = time.monotonic()
         while not self._stop.is_set():
-            row = self.sample()
-            self.latest = row                   # one name rebound: a reader never sees half a row
-            line = json.dumps(row) + "\n"
-            with self._cv:
-                self._lines.append(line)
-                self._cv.notify()
+            try:
+                row = self.sample()
+                line = json.dumps(row) + "\n"
+            except Exception as e:              # noqa: BLE001 -- a hole, never a dead sampler
+                print(f"truth sample failed: {e!r}", file=sys.stderr, flush=True)
+            else:
+                self.latest = row               # one name rebound: a reader never sees half a row
+                with self._cv:
+                    if len(self._lines) >= BACKLOG_MAX:
+                        self._lines.popleft()
+                        self.dropped += 1
+                        if self.dropped == 1 or self.dropped % 1000 == 0:
+                            print(f"truth backlog full: {self.dropped} rows dropped",
+                                  file=sys.stderr, flush=True)
+                    self._lines.append(line)
+                    self._cv.notify()
             nxt += self.period_s
             time.sleep(max(0.0, nxt - time.monotonic()))
 
-    def _take(self) -> str:
+    def _take(self) -> list:
         with self._cv:
             while not self._lines and not self._stop.is_set():
                 self._cv.wait(0.5)
-            out = "".join(self._lines)
+            out = list(self._lines)
             self._lines.clear()
         return out
 
-    def _write(self, text: str) -> None:
-        if not text:
-            return
+    def _write(self, lines: list) -> None:
+        for line in lines:                      # one line a write: a failure loses that line only
+            try:
+                self.file.write(line)
+            except Exception as e:              # noqa: BLE001 -- a hole in the log, never a dead writer
+                print(f"truth write failed: {e!r}", file=sys.stderr, flush=True)
         try:
-            self.file.write(text)
             self.file.flush()
-        except OSError as e:                    # a hole in the log, never a dead recorder
-            print(f"truth write failed: {e}", file=sys.stderr, flush=True)
+        except Exception as e:                  # noqa: BLE001
+            print(f"truth flush failed: {e!r}", file=sys.stderr, flush=True)
 
     def _write_loop(self) -> None:
-        while not self._stop.is_set():
-            self._write(self._take())
+        while True:
+            lines = self._take()
+            self._write(lines)
+            with self._cv:
+                if self._stop.is_set() and not self._lines:
+                    return
 
-    def stop(self, timeout_s: float = 5.0) -> None:
-        """Stop sampling, then write everything taken (the writer may be in a
-        blocked write: it finishes that first)."""
+    def stop(self, timeout_s: float = 3.0) -> bool:
+        """Stop sampling and let the writer drain what it holds; True if it
+        finished within `timeout_s` (a writer still blocked keeps the file to
+        itself and finishes on its own: no second thread ever writes)."""
         self._stop.set()
-        self._sampler.join(timeout_s)
+        self._sampler.join(1.0)
         with self._cv:
             self._cv.notify_all()
         self._writer.join(timeout_s)
-        self._write(self._take())
+        done = not self._writer.is_alive()
+        print(f"truth recorder stopped: drained={done}, dropped={self.dropped}",
+              file=sys.stderr, flush=True)
+        return done
 
 
 def _libc():
@@ -97,7 +125,7 @@ def _libc():
 
 
 def _kb(v):
-    return None if v == resource.RLIM_INFINITY else v // 1024
+    return "unlimited" if v == resource.RLIM_INFINITY else v // 1024
 
 
 def _status_kb(field: str):
@@ -117,9 +145,10 @@ def lock_memory(dry: bool = False) -> dict:
     "unlimited" for no limit."""
     soft, hard = resource.getrlimit(resource.RLIMIT_MEMLOCK)
     out = {"locked": None, "errno": None, "error": None,
-           "limit_soft_kb": "unlimited" if soft == resource.RLIM_INFINITY else _kb(soft),
-           "limit_hard_kb": "unlimited" if hard == resource.RLIM_INFINITY else _kb(hard)}
-    if not dry:
+           "limit_soft_kb": _kb(soft), "limit_hard_kb": _kb(hard)}
+    if not dry and soft != resource.RLIM_INFINITY:
+        out.update(locked=False, error="limit_not_raised")   # MCL_FUTURE under a limit: not tried
+    elif not dry:
         rc = _libc().mlockall(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT)
         e = ctypes.get_errno() if rc != 0 else 0
         out.update(locked=rc == 0, errno=e or None,

@@ -97,8 +97,15 @@ def test_the_lock_reports_success_and_refusal(monkeypatch):
             calls.append(flags)
             return 0
     monkeypatch.setattr(tr, "_libc", lambda: Libc())
+    import resource
+    monkeypatch.setattr(tr.resource, "getrlimit", lambda r: (8 << 20, 8 << 20))
+    got = tr.lock_memory()                          # a finite limit: MCL_FUTURE would break mmaps
+    assert calls == [] and got["locked"] is False and got["error"] == "limit_not_raised"
+    inf = resource.RLIM_INFINITY
+    monkeypatch.setattr(tr.resource, "getrlimit", lambda r: (inf, inf))
     got = tr.lock_memory()
     assert calls == [tr.MCL_CURRENT | tr.MCL_FUTURE | tr.MCL_ONFAULT] and got["locked"] is True
+    assert got["limit_soft_kb"] == "unlimited"
     assert {"errno", "error", "limit_soft_kb", "limit_hard_kb", "vm_lck_kb", "vm_rss_kb"} <= set(got)
 
     class Refusing:
@@ -175,3 +182,79 @@ def test_a_truth_row_keeps_its_fields_order_and_rounding(tmp_path):
     time.sleep(0.05)
     rec.stop()
     assert f.lines[0] == json.dumps(row)
+
+
+def test_a_writer_blocked_past_stop_is_the_only_writer():
+    """stop() never writes beside a writer still blocked: its rows come
+    after the blocked batch, in order (review)."""
+    f = BlockingFile(1.5)
+    rec = tr.Recorder(_sampler(), f, period_s=0.01)
+    rec.start()
+    time.sleep(0.2)
+    assert rec.stop(timeout_s=0.3) is False          # still blocked
+    rec._writer.join(3)
+    rows = [json.loads(x) for x in f.lines]
+    assert [r["i"] for r in rows] == list(range(1, len(rows) + 1)) and rows[-1]["i"] == rec.latest["i"]
+
+
+def test_a_sample_that_raises_is_a_hole_not_a_dead_sampler(capsys):
+    n = [0]
+
+    def sample():
+        n[0] += 1
+        if n[0] == 3:
+            raise RuntimeError("geometry")
+        return {"t": time.monotonic(), "i": n[0]}
+    f = BlockingFile(0)
+    rec = tr.Recorder(sample, f, period_s=0.01)
+    rec.start()
+    time.sleep(0.2)
+    rec.stop()
+    got = [json.loads(x)["i"] for x in f.lines]
+    assert 3 not in got and got[:3] == [1, 2, 4] and len(got) > 8
+    assert "truth sample failed" in capsys.readouterr().err
+
+
+def test_the_backlog_is_capped_and_counted(monkeypatch):
+    monkeypatch.setattr(tr, "BACKLOG_MAX", 5)
+    f = BlockingFile(0.5)
+    rec = tr.Recorder(_sampler(), f, period_s=0.005)
+    rec.start()
+    time.sleep(0.3)
+    assert len(rec._lines) <= 5 and rec.dropped > 0
+    rec.stop()
+
+
+def test_a_lock_post_that_raises_is_reported(tmp_path, monkeypatch):
+    s = stack.Stack(tmp_path)
+    monkeypatch.setattr(stack, "http", lambda *a, **k: (_ for _ in ()).throw(TimeoutError("slow")))
+    got = s._post_lock()
+    assert got["locked"] is False and "TimeoutError" in got["error"]
+
+
+def test_sigterm_drains_the_recorder(tmp_path):
+    """The stack's teardown (SIGTERM): the recorder stops in the app's
+    shutdown, before uvicorn re-raises the signal (review)."""
+    import os
+    import signal
+    import socket
+    import subprocess
+    with socket.socket() as so:
+        so.bind(("127.0.0.1", 0))
+        port = so.getsockname()[1]
+    env = dict(os.environ, FMEA_DIR=str(tmp_path), SIM_BODY_SHM=f"picar_3151_term_{os.getpid()}",
+               PYTHONUNBUFFERED="1")
+    p = subprocess.Popen([sys.executable, str(HERE / "truth_body.py"), str(port)], env=env,
+                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                         cwd=str(HERE.parents[1]))
+    try:
+        deadline = time.monotonic() + 60
+        while not (tmp_path / "truth.jsonl").exists() or (tmp_path / "truth.jsonl").stat().st_size < 500:
+            assert time.monotonic() < deadline and p.poll() is None
+            time.sleep(0.2)
+        p.send_signal(signal.SIGTERM)
+        out, _ = p.communicate(timeout=20)
+    finally:
+        if p.poll() is None:
+            p.kill()
+    assert "truth recorder stopped: drained=True" in out
