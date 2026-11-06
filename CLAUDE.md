@@ -161,6 +161,9 @@ paragraph.**
   (3.141.D closed unmet: `pivot_scale`'s arithmetic, inferred).
 * 3.144.B: F9 on the board.
 * 3.135.B (faults F2-F18), 3.137.C (a real power-off), 3.142.A.
+  3.151 (merged 2026-11-05): F2's truth recorder holds under memory
+  pressure (sampling apart from the writes; the body memory-locked, `FMEA_TRUTH_LOCK`);
+  F2's new record is 3.135.B's.
 * 3.50.D5: criteria 6 (ten sessions) and 7 (15 cm, live).
 * 3.143: V3's slippers miss; the soak keeps no brain log.
 * The twin's 3.152.A readout (the Local VLM row, the operator line) is
