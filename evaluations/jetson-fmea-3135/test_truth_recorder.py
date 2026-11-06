@@ -279,3 +279,26 @@ def test_pressure_gaps_count_a_stall_past_the_window_and_a_cut_line(tmp_path):
     p = tmp_path / "truth.jsonl"
     p.write_text('{"t": 1.0}\n{"t": 1.02}\n{"t": 1.0')
     assert [r["t"] for r in tp.read_rows(p)] == [1.0, 1.02]
+
+
+# ---- 3.155: the robot server's lock, as the stack records it ----
+
+def test_the_stack_records_the_robot_servers_lock_line(tmp_path):
+    s = stack.Stack(tmp_path)
+    (tmp_path / "robot.log").write_text(
+        "noise\nrobot server memory lock: " + json.dumps({"locked": True, "error": None}) + "\nmore\n")
+    got = s.record_robot_lock(True, True)
+    assert got == {"locked": True, "error": None, "limit_raised": True}
+    assert json.loads((tmp_path / "robot_lock.json").read_text())["locked"] is True
+
+
+def test_no_lock_line_or_the_plant_is_said_so(tmp_path):
+    s = stack.Stack(tmp_path)
+    (tmp_path / "robot.log").write_text("no line\n")
+    assert s.record_robot_lock(True, False)["error"] == "no lock line in robot.log"
+    assert s.record_robot_lock(False, False)["skipped"]
+
+
+def test_the_stack_starts_the_shipped_robot_server_through_the_launcher():
+    text = (HERE / "stack.py").read_text()
+    assert '"-m", "robot.locked_serve"' in text and "PICAR_MEMLOCK_WAIT_S" in text
