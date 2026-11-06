@@ -1,0 +1,69 @@
+{
+ "lock": true,
+ "port": 10352,
+ "body_pid": 62804,
+ "mem_idle": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 69260
+ },
+ "lock_answer": {
+  "locked": true,
+  "errno": null,
+  "error": null,
+  "limit_soft_kb": "unlimited",
+  "limit_hard_kb": "unlimited",
+  "vm_lck_kb": 983256,
+  "vm_rss_kb": 69260,
+  "limit_raised": true
+ },
+ "mem_after_lock": {
+  "VmSize": 983268,
+  "VmLck": 983256,
+  "VmRSS": 69260
+ },
+ "mem_after_60s": {
+  "VmSize": 983268,
+  "VmLck": 983256,
+  "VmRSS": 69260
+ },
+ "oom_kills_before": 4,
+ "hog_start": 11374.677807213,
+ "hog_end": 11460.943244051,
+ "hog_rc": -9,
+ "oom_kills": 1,
+ "mem_available_min_mb": 6.0,
+ "body_alive": true,
+ "mem_end": {
+  "VmSize": 983268,
+  "VmLck": 983256,
+  "VmRSS": 69260
+ },
+ "gaps": {
+  "n_samples": 4813,
+  "max_s": 0.0207,
+  "over_bar": 0,
+  "top": [
+   [
+    0.0207,
+    11425.907
+   ],
+   [
+    0.0205,
+    11387.687
+   ],
+   [
+    0.0204,
+    11425.947
+   ],
+   [
+    0.0204,
+    11434.707
+   ],
+   [
+    0.0204,
+    11442.547
+   ]
+  ]
+ }
+}

@@ -1,0 +1,386 @@
+vlm_hold 20:46:57: was active; now inactive
+{
+ "lock": true,
+ "port": 10352,
+ "body_pid": 8853,
+ "mem_idle": {
+  "VmSize": 983548,
+  "VmLck": 0,
+  "VmRSS": 65768
+ },
+ "lock_answer": {
+  "locked": true,
+  "errno": null,
+  "error": null,
+  "limit_soft_kb": "unlimited",
+  "limit_hard_kb": "unlimited",
+  "vm_lck_kb": 983536,
+  "vm_rss_kb": 65768,
+  "limit_raised": true
+ },
+ "mem_after_lock": {
+  "VmSize": 983548,
+  "VmLck": 983536,
+  "VmRSS": 65768
+ },
+ "mem_after_60s": {
+  "VmSize": 983548,
+  "VmLck": 983536,
+  "VmRSS": 65768
+ },
+ "oom_kills_before": 0,
+ "hog_start": 10608.829516107,
+ "hog_end": 10698.228970526,
+ "hog_rc": -9,
+ "oom_kills": 1,
+ "mem_available_min_mb": 8.1,
+ "body_alive": true,
+ "mem_end": {
+  "VmSize": 983548,
+  "VmLck": 983536,
+  "VmRSS": 65768
+ },
+ "gaps": {
+  "n_samples": 4970,
+  "max_s": 0.028,
+  "over_bar": 0,
+  "top": [
+   [
+    0.028,
+    10697.195
+   ],
+   [
+    0.0204,
+    10612.995
+   ],
+   [
+    0.0204,
+    10686.535
+   ],
+   [
+    0.0203,
+    10621.315
+   ],
+   [
+    0.0203,
+    10645.594
+   ]
+  ]
+ }
+}
+{
+ "lock": false,
+ "port": 10352,
+ "body_pid": 22257,
+ "mem_idle": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 63096
+ },
+ "mem_after_lock": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 63096
+ },
+ "mem_after_60s": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 63096
+ },
+ "oom_kills_before": 1,
+ "hog_start": 10790.337635505,
+ "hog_end": 10887.995970066,
+ "hog_rc": -9,
+ "oom_kills": 1,
+ "mem_available_min_mb": 12.2,
+ "body_alive": true,
+ "mem_end": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 9788
+ },
+ "gaps": {
+  "n_samples": 5383,
+  "max_s": 8.9142,
+  "over_bar": 2,
+  "top": [
+   [
+    8.9142,
+    10878.273
+   ],
+   [
+    0.2668,
+    10877.883
+   ],
+   [
+    0.0787,
+    10878.181
+   ],
+   [
+    0.0407,
+    10877.823
+   ],
+   [
+    0.0279,
+    10877.743
+   ]
+  ]
+ }
+}
+{
+ "lock": true,
+ "port": 10352,
+ "body_pid": 35505,
+ "mem_idle": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 65236
+ },
+ "lock_answer": {
+  "locked": true,
+  "errno": null,
+  "error": null,
+  "limit_soft_kb": "unlimited",
+  "limit_hard_kb": "unlimited",
+  "vm_lck_kb": 983256,
+  "vm_rss_kb": 65236,
+  "limit_raised": true
+ },
+ "mem_after_lock": {
+  "VmSize": 983268,
+  "VmLck": 983256,
+  "VmRSS": 65236
+ },
+ "mem_after_60s": {
+  "VmSize": 983268,
+  "VmLck": 983256,
+  "VmRSS": 65236
+ },
+ "oom_kills_before": 2,
+ "hog_start": 10980.145152908,
+ "hog_end": 11067.448588068,
+ "hog_rc": -9,
+ "oom_kills": 1,
+ "mem_available_min_mb": 19.0,
+ "body_alive": true,
+ "mem_end": {
+  "VmSize": 983268,
+  "VmLck": 983256,
+  "VmRSS": 65236
+ },
+ "gaps": {
+  "n_samples": 4865,
+  "max_s": 0.0204,
+  "over_bar": 0,
+  "top": [
+   [
+    0.0204,
+    11066.674
+   ],
+   [
+    0.0204,
+    11072.514
+   ],
+   [
+    0.0204,
+    11044.034
+   ],
+   [
+    0.0204,
+    11065.495
+   ],
+   [
+    0.0204,
+    11075.495
+   ]
+  ]
+ }
+}
+{
+ "lock": false,
+ "port": 10352,
+ "body_pid": 49666,
+ "mem_idle": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 67312
+ },
+ "mem_after_lock": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 67312
+ },
+ "mem_after_60s": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 67312
+ },
+ "oom_kills_before": 3,
+ "hog_start": 11173.711872443,
+ "hog_end": 11282.578112284,
+ "hog_rc": -9,
+ "oom_kills": 1,
+ "mem_available_min_mb": 13.5,
+ "body_alive": true,
+ "mem_end": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 10772
+ },
+ "gaps": {
+  "n_samples": 5943,
+  "max_s": 0.802,
+  "over_bar": 21,
+  "top": [
+   [
+    0.802,
+    11281.035
+   ],
+   [
+    0.4552,
+    11268.232
+   ],
+   [
+    0.4165,
+    11276.619
+   ],
+   [
+    0.3681,
+    11275.307
+   ],
+   [
+    0.3305,
+    11267.902
+   ]
+  ]
+ }
+}
+{
+ "lock": true,
+ "port": 10352,
+ "body_pid": 62804,
+ "mem_idle": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 69260
+ },
+ "lock_answer": {
+  "locked": true,
+  "errno": null,
+  "error": null,
+  "limit_soft_kb": "unlimited",
+  "limit_hard_kb": "unlimited",
+  "vm_lck_kb": 983256,
+  "vm_rss_kb": 69260,
+  "limit_raised": true
+ },
+ "mem_after_lock": {
+  "VmSize": 983268,
+  "VmLck": 983256,
+  "VmRSS": 69260
+ },
+ "mem_after_60s": {
+  "VmSize": 983268,
+  "VmLck": 983256,
+  "VmRSS": 69260
+ },
+ "oom_kills_before": 4,
+ "hog_start": 11374.677807213,
+ "hog_end": 11460.943244051,
+ "hog_rc": -9,
+ "oom_kills": 1,
+ "mem_available_min_mb": 6.0,
+ "body_alive": true,
+ "mem_end": {
+  "VmSize": 983268,
+  "VmLck": 983256,
+  "VmRSS": 69260
+ },
+ "gaps": {
+  "n_samples": 4813,
+  "max_s": 0.0207,
+  "over_bar": 0,
+  "top": [
+   [
+    0.0207,
+    11425.907
+   ],
+   [
+    0.0205,
+    11387.687
+   ],
+   [
+    0.0204,
+    11425.947
+   ],
+   [
+    0.0204,
+    11434.707
+   ],
+   [
+    0.0204,
+    11442.547
+   ]
+  ]
+ }
+}
+{
+ "lock": false,
+ "port": 10352,
+ "body_pid": 75888,
+ "mem_idle": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 67216
+ },
+ "mem_after_lock": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 67216
+ },
+ "mem_after_60s": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 67216
+ },
+ "oom_kills_before": 5,
+ "hog_start": 11553.037762516,
+ "hog_end": 11641.877638162,
+ "hog_rc": -9,
+ "oom_kills": 1,
+ "mem_available_min_mb": 30.7,
+ "body_alive": true,
+ "mem_end": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 8572
+ },
+ "gaps": {
+  "n_samples": 4942,
+  "max_s": 0.071,
+  "over_bar": 0,
+  "top": [
+   [
+    0.071,
+    11640.991
+   ],
+   [
+    0.0654,
+    11640.292
+   ],
+   [
+    0.0541,
+    11639.252
+   ],
+   [
+    0.045,
+    11640.651
+   ],
+   [
+    0.0416,
+    11639.111
+   ]
+  ]
+ }
+}
+vlm_restore 21:05:43: active (was active)

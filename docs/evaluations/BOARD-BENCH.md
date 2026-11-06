@@ -219,6 +219,14 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 
 ## Runs
 
+### 2026-11-05, 3.151: the truth body locked under memory pressure (no motion)
+
+The truth body alone (sim) at `oom_score_adj` -900 and the memory hog to the
+first OOM kill (the hog the only kill in all six), 15 W, left as found.
+Locked: no gap over 0.2 s in 3 of 3 (max 28 ms) at `MemAvailable` 6-19 MB;
+unlocked: gaps of 8.9 s and 0.8 s in 2 of 3. Resident memory unchanged by the
+lock (~65 MB). Records: `evaluations/jetson-fmea-3135/board/truth-pressure-3151/20261105-2011/`.
+
 ### 2026-11-04, 3.141.F1: the map reply sliced, the P12 poller ON (`dev` `016cbd97`, traced)
 
 30 min of 3.136.B's stack, 15 W, every vet traced, left as found. **0 late
