@@ -288,6 +288,10 @@ paragraph.**
   10.0 V, placeholders) and the twin's banner. 3.74.A-B: the floor band in series with the cone and
   corridor; gap: a creep or pivot can carry a sock inside its 14 cm blind
   range. 3.99: interventions logged, local only (`control.intervention_report`).
+* 3.155: the robot server runs through `robot/locked_serve.py` (memory-locked,
+  `MCL_ONFAULT`, only under an unlimited memlock limit); F2 on the board 0
+  late wheel ticks 6/6 at 11-13 MB free. `picar-stack.service`'s
+  `LimitMEMLOCK=infinity` is not installed on the board (owed, needs a go).
 
 *Missions*
 
