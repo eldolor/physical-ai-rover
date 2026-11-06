@@ -1,0 +1,4 @@
+RestartUSec=30s
+ActiveState=active
+StartLimitIntervalUSec=15min
+StartLimitBurst=4

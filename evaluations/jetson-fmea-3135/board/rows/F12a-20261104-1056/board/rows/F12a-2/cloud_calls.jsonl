@@ -1,0 +1,31 @@
+{"t": 29316.0507, "listening": 10358}
+{"t": 29316.2085, "method": "", "path": "", "paid": false, "open_paid": 0}
+{"t": 29316.2087, "closed": true, "paid": false}
+{"t": 29322.34, "method": "GET", "path": "/health", "paid": false, "open_paid": 0}
+{"t": 29322.4484, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 29325.342, "closed": true, "paid": false}
+{"t": 29340.4146, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 29342.4573, "closed": true, "paid": true}
+{"t": 29343.4179, "closed": true, "paid": false}
+{"t": 29348.4793, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 29358.491, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 29361.4924, "closed": true, "paid": false}
+{"t": 29368.4868, "closed": true, "paid": true}
+{"t": 29374.8325, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 29376.5754, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 29379.5784, "closed": true, "paid": false}
+{"t": 29394.6508, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 29394.8522, "closed": true, "paid": true}
+{"t": 29395.9047, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 29397.6545, "closed": true, "paid": false}
+{"t": 29412.7396, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 29415.7419, "closed": true, "paid": false}
+{"t": 29415.9165, "closed": true, "paid": true}
+{"t": 29415.9885, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 29423.9936, "closed": true, "paid": true}
+{"t": 29424.7905, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 29430.8257, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 29432.7989, "closed": true, "paid": true}
+{"t": 29433.1345, "method": "GET", "path": "/health", "paid": false, "open_paid": 0}
+{"t": 29433.8294, "closed": true, "paid": false}
+{"t": 29436.1348, "closed": true, "paid": false}

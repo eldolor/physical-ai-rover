@@ -1,0 +1,279 @@
+{
+ "candidates": [
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 363,
+   "hits": 1,
+   "id": 25,
+   "label": "dining table",
+   "last_step": 363,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "dining room",
+   "votes": {
+    "dining table": 1
+   },
+   "x_m": 8.094,
+   "y_m": 12.304
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 22,
+   "hits": 1,
+   "id": 8,
+   "label": "staircase",
+   "last_step": 22,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "foyer",
+   "votes": {
+    "staircase": 1
+   },
+   "x_m": 5.938,
+   "y_m": 7.627
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 321,
+   "hits": 1,
+   "id": 24,
+   "label": "staircase",
+   "last_step": 328,
+   "misses": 0,
+   "points": 8,
+   "reported": false,
+   "room": "dining room",
+   "votes": {
+    "staircase": 1
+   },
+   "x_m": 7.869,
+   "y_m": 8.709
+  },
+  {
+   "belief": 0.512,
+   "carried": false,
+   "disputed": false,
+   "first_step": 115,
+   "hits": 1,
+   "id": 15,
+   "label": "side table",
+   "last_step": 115,
+   "misses": 2,
+   "points": 1,
+   "reported": false,
+   "room": "living room",
+   "votes": {
+    "side table": 1
+   },
+   "x_m": 0.323,
+   "y_m": 11.669
+  },
+  {
+   "belief": 0.332,
+   "carried": false,
+   "disputed": false,
+   "first_step": 177,
+   "hits": 2,
+   "id": 17,
+   "label": "chair",
+   "last_step": 361,
+   "misses": 6,
+   "points": 3,
+   "reported": false,
+   "room": "living room",
+   "votes": {
+    "chair": 2
+   },
+   "x_m": 6.784,
+   "y_m": 10.138
+  }
+ ],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 864,
+  "landmarks": 13,
+  "no_pose": 7,
+  "observations": 2920,
+  "reported": 8,
+  "unplaced": 13
+ },
+ "frame_id": "map-9eb9fde7",
+ "map_id": "slam-6a28c9da",
+ "mission": "Find the red backpack.",
+ "mission_id": "20261105T062728.490862Z-red backpack",
+ "outcome": "failed",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 15,
+   "id": 1,
+   "label": "armchair",
+   "last_step": 171,
+   "misses": 0,
+   "points": 51,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "armchair": 15
+   },
+   "x_m": 3.082,
+   "y_m": 8.579
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 123,
+   "hits": 5,
+   "id": 16,
+   "label": "armchair",
+   "last_step": 156,
+   "misses": 0,
+   "points": 23,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "armchair": 5
+   },
+   "x_m": 2.727,
+   "y_m": 11.506
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 177,
+   "hits": 70,
+   "id": 18,
+   "label": "chair",
+   "last_step": 869,
+   "misses": 0,
+   "points": 1507,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "chair": 68,
+    "dining table": 2
+   },
+   "x_m": 8.602,
+   "y_m": 11.173
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 3,
+   "hits": 21,
+   "id": 5,
+   "label": "coffee table",
+   "last_step": 170,
+   "misses": 0,
+   "points": 91,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "coffee table": 21
+   },
+   "x_m": 2.086,
+   "y_m": 9.803
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 179,
+   "hits": 15,
+   "id": 20,
+   "label": "dining table",
+   "last_step": 869,
+   "misses": 0,
+   "points": 1060,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "dining table": 15
+   },
+   "x_m": 8.344,
+   "y_m": 11.391
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 97,
+   "hits": 8,
+   "id": 14,
+   "label": "side table",
+   "last_step": 165,
+   "misses": 0,
+   "points": 21,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "side table": 8
+   },
+   "x_m": 0.928,
+   "y_m": 11.398
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 39,
+   "hits": 14,
+   "id": 9,
+   "label": "sofa",
+   "last_step": 167,
+   "misses": 0,
+   "points": 84,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "side table": 1,
+    "sofa": 13
+   },
+   "x_m": 1.139,
+   "y_m": 9.919
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 19,
+   "id": 2,
+   "label": "staircase",
+   "last_step": 360,
+   "misses": 0,
+   "points": 56,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "staircase": 19
+   },
+   "x_m": 6.416,
+   "y_m": 9.969
+  }
+ ]
+}

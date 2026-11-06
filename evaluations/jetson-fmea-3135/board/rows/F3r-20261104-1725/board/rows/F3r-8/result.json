@@ -1,0 +1,36 @@
+{
+ "row": "F3r",
+ "title": "Local VLM crashes at the arrival, the cloud refused",
+ "reading": "the mission ends arrived_unconfirmed; VE back <= 60 s; the next mission's first frame question answered; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T18:25:32-0600",
+ "error": "StackError: VE is not ready at the start",
+ "measures": {
+  "fault_at": null,
+  "ve_after": [
+   "MainPID=0",
+   "NRestarts=4"
+  ],
+  "ve_ready_after": false,
+  "truth_hole_s": Infinity,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "local_questions": {
+   "frame": 0,
+   "arrival": 0,
+   "direction": 0
+  },
+  "mem_available_min_mb": 5700,
+  "oom_kills_window": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": false,
+  "reasons": [
+   "the fault was never injected"
+  ]
+ },
+ "ended": "2026-11-04T18:28:32-0600"
+}

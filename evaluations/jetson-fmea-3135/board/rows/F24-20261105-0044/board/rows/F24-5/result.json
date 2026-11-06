@@ -1,0 +1,170 @@
+{
+ "row": "F24",
+ "title": "The battery reaches Reserve, then Power-off, mid-mission",
+ "reading": "amendment 18, 3.137 criterion 1's bars: 0 autonomous motion after Reserve (true path <= 2 cm from the Reserve latch to the power-off); the stub called exactly once, after the brain's mission, ROS and VE are down and the wheels at 0, in the logged order; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-05T00:52:49-0600",
+ "measures": {
+  "fault_at": 79285.01525179,
+  "ve_unit_before": {
+   "Restart": "on-failure",
+   "RestartUSec": "30s",
+   "ExecStart": "{ path=/home/picar/vision-picar-service/.venv/bin/python ; argv[]=/home/picar/vision-picar-service/.venv/bin/python -m service.local_vlm.server ; ignore_errors=no }",
+   "EnvironmentFiles": "/home/picar/.vision-picar-local-vlm.env (ignore_errors=no)",
+   "OOMScoreAdjust": "1000",
+   "DropInPaths": "",
+   "UnitFileState": "enabled",
+   "StartLimitIntervalUSec": "15min",
+   "StartLimitBurst": "4"
+  },
+  "ve_before": [
+   "MainPID=346518",
+   "NRestarts=0"
+  ],
+  "start_at": 79279.777659752,
+  "goal_at_fault": true,
+  "holder_at_fault": null,
+  "poweroff_cmd_at_start": "stub",
+  "reserve_at": 79319.166514987,
+  "running_at_reserve": true,
+  "brain_floor_v": null,
+  "poweroff_at": 79368.644342964,
+  "down_at_poweroff": {
+   "mission": false,
+   "ros": false,
+   "vlm": false
+  },
+  "battery_end": {
+   "usable": true,
+   "v": 9.92,
+   "level": "poweroff",
+   "ladder": {
+    "level": "poweroff",
+    "levels_v": {
+     "low": 10.5,
+     "reserve": 10.2,
+     "poweroff": 10.0
+    },
+    "checking": null,
+    "reserve_s": 51.5,
+    "poweroff_in_s": null,
+    "poweroff_why": "at rest",
+    "samples": 2,
+    "checks": 1,
+    "sags": 0,
+    "v": 9.92,
+    "reserve_speed": 30,
+    "shutdown": [
+     {
+      "step": "wheels",
+      "t_s": 0.0,
+      "rc": 0
+     },
+     {
+      "step": "brain",
+      "t_s": 0.034,
+      "rc": 0
+     },
+     {
+      "step": "ros",
+      "t_s": 10.224,
+      "rc": 0
+     },
+     {
+      "step": "vlm",
+      "t_s": 11.227,
+      "rc": 0
+     },
+     {
+      "step": "sync",
+      "t_s": 11.229,
+      "rc": 0
+     },
+     {
+      "step": "poweroff",
+      "t_s": 11.229,
+      "rc": null,
+      "stub": true
+     }
+    ],
+    "poweroff_cmd": "stub"
+   }
+  },
+  "shutdown": [
+   {
+    "step": "wheels",
+    "t_s": 0.0,
+    "rc": 0
+   },
+   {
+    "step": "brain",
+    "t_s": 0.034,
+    "rc": 0
+   },
+   {
+    "step": "ros",
+    "t_s": 10.224,
+    "rc": 0
+   },
+   {
+    "step": "vlm",
+    "t_s": 11.227,
+    "rc": 0
+   },
+   {
+    "step": "sync",
+    "t_s": 11.229,
+    "rc": 0
+   },
+   {
+    "step": "poweroff",
+    "t_s": 11.229,
+    "rc": null,
+    "stub": true
+   }
+  ],
+  "wheel_loop": {
+   "late": 0,
+   "moving": 574,
+   "max_dt_s": 0.0685
+  },
+  "ve_restarted": 0,
+  "ve_after": [
+   "MainPID=356173",
+   "NRestarts=0"
+  ],
+  "ve_ready_after": true,
+  "ve_unit_after": {
+   "Restart": "on-failure",
+   "RestartUSec": "30s",
+   "ExecStart": "{ path=/home/picar/vision-picar-service/.venv/bin/python ; argv[]=/home/picar/vision-picar-service/.venv/bin/python -m service.local_vlm.server ; ignore_errors=no }",
+   "EnvironmentFiles": "/home/picar/.vision-picar-local-vlm.env (ignore_errors=no)",
+   "OOMScoreAdjust": "1000",
+   "DropInPaths": "",
+   "UnitFileState": "enabled",
+   "StartLimitIntervalUSec": "15min",
+   "StartLimitBurst": "4"
+  },
+  "ve_unit_as_found": true,
+  "forward_at_fault": true,
+  "moved_after_reserve_cm": 0.0,
+  "truth_hole_s": 0.027,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "local_questions": {
+   "frame": 33,
+   "arrival": 0,
+   "direction": 0
+  },
+  "mem_available_min_mb": 2148,
+  "oom_kills_window": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-05T00:54:47-0600"
+}

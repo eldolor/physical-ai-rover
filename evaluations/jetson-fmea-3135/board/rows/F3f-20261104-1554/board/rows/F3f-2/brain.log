@@ -1,0 +1,45 @@
+1793829399.684 WARNING identity vision-picar brain server starting -- git=1330ea8f2 executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793829408.410 WARNING tiered local VLM absent for mission_start (local VLM not ready: {"detail":"local VLM absent"}); asking the cloud
+1793829408.876 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM not ready"}); asking the cloud
+1793829409.407 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829410.106 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829410.836 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829411.558 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829412.235 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829412.961 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829413.721 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829414.476 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829415.239 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829415.991 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829416.704 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829417.221 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829417.702 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829418.180 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829418.939 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829419.504 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829420.218 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829420.929 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829421.648 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829422.366 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829423.140 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829423.946 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829424.706 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829425.442 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829426.227 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829426.986 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829427.711 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829428.481 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829429.975 WARNING tiered local VLM absent for candidate_sighting (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829432.734 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829436.081 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829436.887 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829437.430 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829438.122 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829438.850 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829439.589 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793829441.210 WARNING tiered local VLM absent for candidate_sighting (local VLM not ready: {"detail":"local VLM not ready"}); asking the cloud
+1793829445.291 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM not ready"}); asking the cloud
+1793829446.164 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM not ready"}); asking the cloud
+1793829446.960 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM not ready"}); asking the cloud
+1793829447.721 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM not ready"}); asking the cloud
+1793829448.444 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM not ready"}); asking the cloud

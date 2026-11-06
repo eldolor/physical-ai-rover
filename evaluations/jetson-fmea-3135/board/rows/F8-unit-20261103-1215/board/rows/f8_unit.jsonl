@@ -1,0 +1,5 @@
+{"i": 1, "active_before": "active", "restarts_before": "0", "healthy_before": true, "pid": 194005, "valid": true, "back_s": 7.21, "down_seen": true, "new_pid": 217551, "restarts_after": "1", "active_after": "active", "pass": true}
+{"i": 2, "active_before": "active", "restarts_before": "1", "healthy_before": true, "pid": 217551, "valid": true, "back_s": 8.52, "down_seen": true, "new_pid": 223108, "restarts_after": "2", "active_after": "active", "pass": true}
+{"i": 3, "active_before": "active", "restarts_before": "2", "healthy_before": true, "pid": 223108, "valid": true, "back_s": 8.32, "down_seen": true, "new_pid": 228817, "restarts_after": "3", "active_after": "active", "pass": true}
+{"i": 4, "active_before": "active", "restarts_before": "3", "healthy_before": true, "pid": 228817, "valid": true, "back_s": 8.42, "down_seen": true, "new_pid": 234528, "restarts_after": "4", "active_after": "active", "pass": true}
+{"i": 5, "active_before": "active", "restarts_before": "4", "healthy_before": true, "pid": 234528, "valid": true, "back_s": 8.43, "down_seen": true, "new_pid": 240241, "restarts_after": "5", "active_after": "active", "pass": true}

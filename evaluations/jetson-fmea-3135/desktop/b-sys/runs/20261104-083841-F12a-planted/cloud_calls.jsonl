@@ -1,0 +1,19 @@
+{"t": 14946.0868, "listening": 10358}
+{"t": 14946.2714, "method": "", "path": "", "paid": false, "open_paid": 0}
+{"t": 14946.2716, "closed": true, "paid": false}
+{"t": 14948.71, "method": "GET", "path": "/health", "paid": false, "open_paid": 0}
+{"t": 14948.7344, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 14951.7125, "closed": true, "paid": false}
+{"t": 14966.7255, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 14969.7288, "closed": true, "paid": false}
+{"t": 14984.7554, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 14987.7581, "closed": true, "paid": false}
+{"t": 15002.7655, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 15005.7681, "closed": true, "paid": false}
+{"t": 15020.774, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 15023.7767, "closed": true, "paid": false}
+{"t": 15038.8027, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 15041.8052, "closed": true, "paid": false}
+{"t": 15056.8157, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 15059.8184, "closed": true, "paid": false}
+{"t": 15068.8345, "closed": true, "paid": true}

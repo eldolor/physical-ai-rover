@@ -1,0 +1,58 @@
+{
+ "row": "F11b",
+ "title": "Cloud unreachable mid-mission (tiered)",
+ "reading": "the cloud answers, then is gone; the mission ends arrived_unconfirmed or found (found only by a cloud yes landed before it went), never failed; with the cloud back, the late confirmation lands and no wheel setpoint is non-zero from the mission's end to 10 s after it; 0 contacts",
+ "plant": "cloud_class",
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-04T09:31:30-0600",
+ "measures": {
+  "outcome": "failed",
+  "start_at": 15297.559375888,
+  "answered_before_switch": 1,
+  "cloud_yes_before_switch": false,
+  "switch_at": 15299.061416758,
+  "end_at": 15383.309210012,
+  "timed_out": false,
+  "mission_s": 85.7,
+  "status": {
+   "outcome": "failed",
+   "end_state": null,
+   "end_reason": "vision unavailable 3 times in a row: arrival confirmation failed: planted: ConnectError: [Errno 111] Connection refused",
+   "error": "vision unavailable 3 times in a row: arrival confirmation failed: planted: ConnectError: [Errno 111] Connection refused",
+   "step": 84,
+   "arrival_verdicts": [],
+   "cloud": {
+    "state": "unreachable",
+    "since": 1793806308.1027842,
+    "checked_at": 1793806368.1406827,
+    "age_s": 10.69353355199928,
+    "probes": 6,
+    "probe_s": 15.0
+   },
+   "late_confirmation": null
+  },
+  "wheel_loop": {
+   "late": 0,
+   "moving": 0,
+   "max_dt_s": 0.0
+  },
+  "paid_calls": 1,
+  "max_open_paid": 1,
+  "travel_mission_cm": 458.99,
+  "drive_after_end": 0,
+  "truth_hole_s": 0.022,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "mem_available_min_mb": 11341,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "the mission ended failed"
+  ]
+ },
+ "ended": "2026-11-04T09:33:10-0600"
+}

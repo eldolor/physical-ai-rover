@@ -1,0 +1,141 @@
+{
+ "before": {
+  "boot_id": "49cb79e5-ecf9-4c39-afa3-de3d12c1187b",
+  "uptime_s": 91.01,
+  "robot": 200,
+  "brain": 200,
+  "ve_ready": true,
+  "units": {
+   "picar-stack": "active/enabled",
+   "picar-ngrok": "active/enabled",
+   "picar-local-vlm": "active/enabled"
+  }
+ },
+ "units_before": {
+  "picar-stack": "active/enabled",
+  "picar-ngrok": "active/enabled",
+  "picar-local-vlm": "active/enabled"
+ },
+ "files_before": {
+  "files": 19,
+  "json": 18,
+  "jsonl_lines": 4,
+  "other": 0,
+  "bad": [],
+  "index": {
+   "recordings/inventory/20261011t224942.007616z-red-backpack.json": 961,
+   "recordings/inventory/20261012t010519.963686z-red-backpack.json": 1255,
+   "recordings/inventory/20261021t210026.698522z-red-backpack.json": 376,
+   "recordings/inventory/20261021t210052.985443z-red-backpack.json": 376,
+   "recordings/inventory/20261021t213616.653965z-red-backpack.json": 373,
+   "recordings/inventory/20261021t215249.139475z-red-backpack.json": 376,
+   "recordings/inventory/20261021t215433.193988z-red-backpack.json": 376,
+   "recordings/inventory/20261022t005912.104912z-red-backpack.json": 376,
+   "recordings/inventory/20261022t005918.814266z-red-backpack.json": 376,
+   "recordings/inventory/20261022t010031.895340z-red-backpack.json": 376,
+   "recordings/inventory/20261022t014946.373622z-red-backpack.json": 376,
+   "recordings/inventory/20261022t014953.112729z-red-backpack.json": 376,
+   "recordings/inventory/20261022t015551.714556z-red-backpack.json": 376,
+   "recordings/inventory/20261022t015742.156448z-red-backpack.json": 376,
+   "recordings/inventory/20261104t021129.315506z-running-shoes.json": 505,
+   "recordings/inventory/20261105t234519.581632z-red-backpack.json": 817,
+   "recordings/inventory/20261105t234657.230530z-red-backpack.json": 817,
+   "recordings/inventory/20261105t234917.227477z-red-backpack.json": 817,
+   "recordings/interventions/interventions.jsonl": 4
+  }
+ },
+ "start": {
+  "start": 200,
+  "start_body": null,
+  "driving": true,
+  "driving_s": 0.5,
+  "step": 2
+ },
+ "driving_at_reboot": true,
+ "before_reboot": {
+  "boot_id": "49cb79e5-ecf9-4c39-afa3-de3d12c1187b",
+  "uptime_s": 113.5,
+  "robot": 200,
+  "brain": 200,
+  "ve_ready": true,
+  "units": {
+   "picar-stack": "active/enabled",
+   "picar-ngrok": "active/enabled",
+   "picar-local-vlm": "active/enabled"
+  }
+ },
+ "mission_at_reboot": {
+  "code": 200,
+  "running": true,
+  "step": 39,
+  "outcome": "running"
+ },
+ "reboot_mono": 131649.240280511,
+ "reboot_rc": 0,
+ "back": {
+  "ssh_s": 47.1,
+  "robot_s": 47.1,
+  "brain_s": 47.1,
+  "ngrok_s": 47.1,
+  "ve_s": 50.1
+ },
+ "boot_changed": true,
+ "stack_back_s": 47.1,
+ "files_after": {
+  "files": 20,
+  "json": 19,
+  "jsonl_lines": 5,
+  "other": 0,
+  "bad": [],
+  "index": {
+   "recordings/inventory/20261011t224942.007616z-red-backpack.json": 961,
+   "recordings/inventory/20261012t010519.963686z-red-backpack.json": 1255,
+   "recordings/inventory/20261021t210026.698522z-red-backpack.json": 376,
+   "recordings/inventory/20261021t210052.985443z-red-backpack.json": 376,
+   "recordings/inventory/20261021t213616.653965z-red-backpack.json": 373,
+   "recordings/inventory/20261021t215249.139475z-red-backpack.json": 376,
+   "recordings/inventory/20261021t215433.193988z-red-backpack.json": 376,
+   "recordings/inventory/20261022t005912.104912z-red-backpack.json": 376,
+   "recordings/inventory/20261022t005918.814266z-red-backpack.json": 376,
+   "recordings/inventory/20261022t010031.895340z-red-backpack.json": 376,
+   "recordings/inventory/20261022t014946.373622z-red-backpack.json": 376,
+   "recordings/inventory/20261022t014953.112729z-red-backpack.json": 376,
+   "recordings/inventory/20261022t015551.714556z-red-backpack.json": 376,
+   "recordings/inventory/20261022t015742.156448z-red-backpack.json": 376,
+   "recordings/inventory/20261104t021129.315506z-running-shoes.json": 505,
+   "recordings/inventory/20261105t234519.581632z-red-backpack.json": 817,
+   "recordings/inventory/20261105t234657.230530z-red-backpack.json": 817,
+   "recordings/inventory/20261105t234917.227477z-red-backpack.json": 817,
+   "recordings/inventory/20261105t235022.198813z-red-backpack.json": 1133,
+   "recordings/interventions/interventions.jsonl": 5
+  }
+ },
+ "next_start": {
+  "start": 200,
+  "start_body": null,
+  "driving": true,
+  "driving_s": 0.5,
+  "step": 2
+ },
+ "next_started": true,
+ "next_stop": {
+  "stop": 200
+ },
+ "after": {
+  "boot_id": "df18cec9-03c9-408f-ab26-0be6bdd555cf",
+  "uptime_s": 27.13,
+  "robot": 200,
+  "brain": 200,
+  "ve_ready": true,
+  "units": {
+   "picar-stack": "active/enabled",
+   "picar-ngrok": "active/enabled",
+   "picar-local-vlm": "active/enabled"
+  }
+ },
+ "units_after": {
+  "picar-stack": "active/enabled",
+  "picar-ngrok": "active/enabled",
+  "picar-local-vlm": "active/enabled"
+ }
+}

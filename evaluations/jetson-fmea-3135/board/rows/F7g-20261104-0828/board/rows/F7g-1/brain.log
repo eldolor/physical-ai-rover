@@ -1,0 +1,31 @@
+1793802547.762 WARNING identity vision-picar brain server starting -- git=e7e7a8675 executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793802589.755 ERROR brain_server brain loop hung: tick exceeded 30.0s
+1793802589.899 ERROR mission_runner mission step failed
+Traceback (most recent call last):
+  File "/home/picar/bench-3135/control/mission_runner.py", line 1016, in tick
+    result = self.agent.step()
+  File "/home/picar/bench-3135/brain/explore.py", line 371, in step
+    action, executed, detail = self._choose(frame, scene)
+  File "/home/picar/bench-3135/brain/explore.py", line 397, in _choose
+    out = self._choose_tick(frame, scene)
+  File "/home/picar/bench-3135/brain/explore.py", line 435, in _choose_tick
+    state = self._goal_state()
+  File "/home/picar/bench-3135/brain/explore.py", line 553, in _goal_state
+    self._bridge_blip(exc)
+  File "/home/picar/bench-3135/brain/explore.py", line 588, in _bridge_blip
+    raise exc
+  File "/home/picar/bench-3135/brain/explore.py", line 551, in _goal_state
+    g = (self.navigator.get_goal() or {}).get("goal") or {}
+  File "/home/picar/bench-3135/control/mission_runner.py", line 369, in get_goal
+    return self._nav.get_goal()
+  File "/home/picar/bench-3135/control/remote_navigator.py", line 68, in get_goal
+    r = self._call("GET")
+  File "/home/picar/bench-3135/control/remote_navigator.py", line 44, in _call
+    return self._client.request(method, "/world/goal", json=json, headers=self.headers)
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpx/_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+  File "/home/picar/bench-3135/.venv/lib/python3.10/site-packages/httpx/_client.py", line 901, in send
+    raise RuntimeError("Cannot send a request, as the client has been closed.")
+RuntimeError: Cannot send a request, as the client has been closed.
+1793802606.625 WARNING explore goal call failed (1 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503

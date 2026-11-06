@@ -1,0 +1,57 @@
+{
+ "row": "F12a",
+ "title": "Cloud hangs (tiered)",
+ "reading": "never two paid calls open at once (open_paid <= 1); the mission ends arrived_unconfirmed, its end <= 30 s after the last paid call was sent (the arrival parks); 0 contacts",
+ "plant": "cloud_deadline",
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-04T09:25:41-0600",
+ "measures": {
+  "outcome": "failed",
+  "start_at": 14948.704315981,
+  "end_at": 15061.040623318,
+  "timed_out": false,
+  "mission_s": 112.3,
+  "status": {
+   "outcome": "failed",
+   "end_state": null,
+   "end_reason": "brain loop hung: tick exceeded 30.0s",
+   "error": "brain loop hung: tick exceeded 30.0s",
+   "step": 83,
+   "arrival_verdicts": [],
+   "cloud": {
+    "state": "unreachable",
+    "since": 1793805947.2390184,
+    "checked_at": 1793806055.3449013,
+    "age_s": 1.2207421109997085,
+    "probes": 7,
+    "probe_s": 15.0
+   },
+   "late_confirmation": null
+  },
+  "wheel_loop": {
+   "late": 0,
+   "moving": 0,
+   "max_dt_s": 0.0
+  },
+  "paid_calls": 1,
+  "max_open_paid": 1,
+  "park_s": 112.3,
+  "travel_mission_cm": 461.19,
+  "drive_after_end": 0,
+  "truth_hole_s": 0.022,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "mem_available_min_mb": 11356,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "the mission ended failed, not arrived_unconfirmed",
+   "ended 112.3 s after the last paid call (bar 30)"
+  ]
+ },
+ "ended": "2026-11-04T09:27:48-0600"
+}

@@ -1,0 +1,44 @@
+{
+ "window": [
+  1793856027.5666885,
+  1793857828.2711189
+ ],
+ "loop": {
+  "n": 25707,
+  "p50_ms": 1.08,
+  "p90_ms": 2.18,
+  "max_ms": 23.04,
+  "met": false
+ },
+ "threadpool": {
+  "n": 34083,
+  "p50_ms": 1.09,
+  "p90_ms": 2.24,
+  "max_ms": 23.72,
+  "met": false
+ },
+ "all": {
+  "n": 59790,
+  "p50_ms": 1.08,
+  "p90_ms": 2.21,
+  "max_ms": 23.72,
+  "met": false
+ },
+ "clamped_rows": 2061,
+ "every_vet_recorded": true,
+ "parts_over_bar_ms": {
+  "forward_clearance": 5712.060000000003,
+  "pivot_scale": 3483.910000000025,
+  "reverse_clearance": 382.65999999999985,
+  "pivot_scale/turn_since_scan": 291.34000000000424,
+  "get_wheel_state": 278.360000000003,
+  "forward_clearance/get_wheel_state": 165.78000000000128,
+  "forward_clearance/sensor_age_s": 140.4800000000021,
+  "forward_clearance/get_scan": 137.9400000000011,
+  "pivot_scale/get_scan": 94.2100000000006,
+  "forward_clearance/get_depth_grid": 56.37000000000046,
+  "reverse_clearance/get_scan": 11.699999999999969,
+  "reverse_clearance/sensor_age_s": 8.230000000000002
+ },
+ "met": false
+}

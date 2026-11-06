@@ -1,0 +1,68 @@
+{
+ "row": "F17q",
+ "title": "A person's Stop during a VLM question",
+ "reading": "as F17g",
+ "plant": "no_latch",
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T18:34:33-0600",
+ "measures": {
+  "fault_at": 56583.587663894,
+  "ve_before": [
+   "MainPID=2717968",
+   "NRestarts=0"
+  ],
+  "start_at": 56583.404156722,
+  "stop_at": 56583.587663894,
+  "stop_code": 200,
+  "stop_answer_s": 0.037,
+  "outcome": "running",
+  "cancelled_by": null,
+  "status": {
+   "outcome": "running",
+   "end_state": null,
+   "end_reason": null,
+   "cancelled_by": null
+  },
+  "wheel_loop": {
+   "late": 0,
+   "moving": 463,
+   "max_dt_s": 0.0682
+  },
+  "ve_after": [
+   "MainPID=2717968",
+   "NRestarts=0"
+  ],
+  "ve_ready_after": true,
+  "forward_at_fault": false,
+  "question_hit": true,
+  "question_at_fault": {
+   "i": 1,
+   "kind": "frame",
+   "path": "/identity",
+   "t0": 56583.538682974,
+   "status": 200,
+   "t1": 56583.977792607
+  },
+  "wheels_zero_from_stop_s": 0.019,
+  "paid_after_stop": 0,
+  "truth_hole_s": 0.026,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "local_questions": {
+   "frame": 31,
+   "arrival": 0,
+   "direction": 0
+  },
+  "mem_available_min_mb": 2132,
+  "oom_kills_window": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "the mission ended running (by None), not cancelled by stop"
+  ]
+ },
+ "ended": "2026-11-04T18:35:20-0600"
+}

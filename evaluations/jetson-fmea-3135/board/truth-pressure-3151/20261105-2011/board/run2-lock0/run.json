@@ -1,0 +1,59 @@
+{
+ "lock": false,
+ "port": 10352,
+ "body_pid": 22257,
+ "mem_idle": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 63096
+ },
+ "mem_after_lock": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 63096
+ },
+ "mem_after_60s": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 63096
+ },
+ "oom_kills_before": 1,
+ "hog_start": 10790.337635505,
+ "hog_end": 10887.995970066,
+ "hog_rc": -9,
+ "oom_kills": 1,
+ "mem_available_min_mb": 12.2,
+ "body_alive": true,
+ "mem_end": {
+  "VmSize": 983088,
+  "VmLck": 0,
+  "VmRSS": 9788
+ },
+ "gaps": {
+  "n_samples": 5383,
+  "max_s": 8.9142,
+  "over_bar": 2,
+  "top": [
+   [
+    8.9142,
+    10878.273
+   ],
+   [
+    0.2668,
+    10877.883
+   ],
+   [
+    0.0787,
+    10878.181
+   ],
+   [
+    0.0407,
+    10877.823
+   ],
+   [
+    0.0279,
+    10877.743
+   ]
+  ]
+ }
+}

@@ -1,0 +1,12 @@
+1793858955.593 WARNING identity vision-picar brain server starting -- git=d463dc5f executable=/home/picar/bench-3152/.venv/bin/python config=(default)
+1793858976.791 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM absent"}); asking the cloud
+1793858977.383 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)
+1793859074.083 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM absent"}); asking the cloud
+1793859074.962 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)
+1793859154.711 WARNING explore goal call failed (1 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793859565.533 WARNING mission_runner inventory: frame not recorded: GET /scan?max_range_m=4.5 failed: timed out
+1793859582.229 ERROR brain_server brain loop hung: tick exceeded 30.0s
+1793859590.732 WARNING agent world model unreachable (GET /world/pose failed: timed out) -- exploring by the right-hand rule instead of the map
+1793859592.618 ERROR mission_runner could not stop the robot: POST /stop failed: timed out
+1793859597.560 WARNING explore goal call failed (1 in a row), waiting: [Errno 9] Bad file descriptor

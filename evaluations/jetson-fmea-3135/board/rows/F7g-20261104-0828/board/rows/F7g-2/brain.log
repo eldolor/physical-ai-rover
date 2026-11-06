@@ -1,0 +1,4 @@
+1793802613.224 WARNING identity vision-picar brain server starting -- git=e7e7a8675 executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793802655.149 ERROR brain_server brain loop hung: tick exceeded 30.0s
+1793802672.132 WARNING explore goal call failed (1 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503

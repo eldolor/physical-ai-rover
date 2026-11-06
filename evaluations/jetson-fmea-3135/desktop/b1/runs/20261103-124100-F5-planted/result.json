@@ -1,0 +1,30 @@
+{
+ "row": "F5",
+ "title": "ROS bridge hangs (alive, not answering)",
+ "reading": "a person's /stop, 1 s after the `docker pause`, answers <= 1 s; wheels zero <= 0.5 s from the /stop sent; no non-zero wheel setpoint in the 10 s after `docker unpause`; 0 contacts",
+ "plant": "stop_waits",
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-03T13:05:19-0600",
+ "error": "StackError: no FORWARD (nav2's, on a goal row) lasted 0.15 s in every try: the fault was not fired",
+ "measures": {
+  "fault_at": null,
+  "driver_at_fault": null,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   59675.3415,
+   59742.4816
+  ],
+  "mem_available_min_mb": 9907,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": false,
+  "reasons": [
+   "the fault was never injected (the robot never moved)"
+  ]
+ },
+ "ended": "2026-11-03T13:06:27-0600"
+}

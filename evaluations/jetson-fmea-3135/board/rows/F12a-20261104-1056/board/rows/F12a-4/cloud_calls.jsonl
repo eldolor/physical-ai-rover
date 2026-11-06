@@ -1,0 +1,31 @@
+{"t": 29614.8674, "listening": 10358}
+{"t": 29615.0269, "method": "", "path": "", "paid": false, "open_paid": 0}
+{"t": 29615.0271, "closed": true, "paid": false}
+{"t": 29621.155, "method": "GET", "path": "/health", "paid": false, "open_paid": 0}
+{"t": 29621.2745, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 29624.1565, "closed": true, "paid": false}
+{"t": 29639.2312, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 29641.2948, "closed": true, "paid": true}
+{"t": 29642.2325, "closed": true, "paid": false}
+{"t": 29647.3174, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 29657.3047, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 29660.308, "closed": true, "paid": false}
+{"t": 29667.3365, "closed": true, "paid": true}
+{"t": 29673.637, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 29675.3919, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 29678.3951, "closed": true, "paid": false}
+{"t": 29693.4654, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 29693.6419, "closed": true, "paid": true}
+{"t": 29694.8459, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 29696.4685, "closed": true, "paid": false}
+{"t": 29711.5516, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 29714.5523, "closed": true, "paid": false}
+{"t": 29714.8664, "closed": true, "paid": true}
+{"t": 29714.9405, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 29722.9483, "closed": true, "paid": true}
+{"t": 29723.7391, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 29729.6313, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 29731.7452, "closed": true, "paid": true}
+{"t": 29732.0908, "method": "GET", "path": "/health", "paid": false, "open_paid": 0}
+{"t": 29732.6347, "closed": true, "paid": false}
+{"t": 29735.0944, "closed": true, "paid": false}

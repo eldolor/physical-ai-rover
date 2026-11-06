@@ -1,0 +1,47 @@
+{
+ "row": "F16p",
+ "title": "Wall clock jumps +5 min",
+ "reading": "no watchdog stop in the 3 s after the step (the robot server's watchdog refusal count unchanged); no 503 or stale-frame line in the brain's log after it; the mission does not end out_of_budget, and ends as the control's runs (found); 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T13:58:08-0600",
+ "clock_restore": {
+  "step_back_rc": 0,
+  "ntp_on_rc": 0,
+  "ntp_synchronized": "yes"
+ },
+ "measures": {
+  "outcome": "out_of_budget",
+  "stepped": true,
+  "start_at": 39989.697808165,
+  "step_at": 39993.749922246,
+  "fault_at": 39993.749922246,
+  "watchdog_after_step": 0,
+  "refusals_after_step": [
+   "watchdog"
+  ],
+  "end_at": 40390.790516675,
+  "mission_s": 401.1,
+  "status": {
+   "outcome": "out_of_budget",
+   "end_state": "out_of_budget",
+   "end_reason": "time limit of 400 s reached (400.1 s)",
+   "error": null,
+   "step": 259
+  },
+  "brain_503_lines": 0,
+  "truth_hole_s": 0.023,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "idle_at_fault": true,
+  "mem_available_min_mb": 2196,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-04T14:04:59-0600"
+}

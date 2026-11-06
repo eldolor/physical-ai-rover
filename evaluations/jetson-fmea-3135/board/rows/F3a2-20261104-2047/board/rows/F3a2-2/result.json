@@ -1,0 +1,78 @@
+{
+ "row": "F3a2",
+ "title": "Local VLM crashes mid-question (the arrival's), a truthful cloud",
+ "reading": "amendment 17: the mission ends found, confirmed by the cloud (an arrival verdict of the cloud's, confirmed); VE back <= 60 s; the next mission's first frame question answered; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T20:49:47-0600",
+ "measures": {
+  "fault_at": 64746.635840644,
+  "ve_before": [
+   "MainPID=3363526",
+   "NRestarts=0"
+  ],
+  "start_at": 64697.229562609,
+  "killed_pid": 3363609,
+  "absent_before": 0,
+  "ve_back_s": 41.3,
+  "handed_on": 1,
+  "outcome": "found",
+  "status": {
+   "outcome": "found",
+   "end_state": "found",
+   "end_reason": "Hallway, kitchen, living room searched. Found.",
+   "error": null,
+   "arrival_verdicts": [
+    {
+     "tier": "cloud",
+     "confirmed": true,
+     "verdict_s": 0.462,
+     "local_score": null,
+     "cloud_called": true,
+     "n": 1
+    }
+   ],
+   "cancelled_by": null
+  },
+  "next_answer": true,
+  "next_answer_s": 1.3,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 673,
+   "max_dt_s": 0.0711
+  },
+  "ve_after": [
+   "MainPID=3373434",
+   "NRestarts=1"
+  ],
+  "ve_ready_after": true,
+  "forward_at_fault": false,
+  "question_hit": true,
+  "question_at_fault": {
+   "i": 33,
+   "kind": "arrival",
+   "path": "/identity",
+   "t0": 64746.600874402,
+   "status": 503,
+   "t1": 64746.962156738
+  },
+  "truth_hole_s": 0.026,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "local_questions": {
+   "frame": 33,
+   "arrival": 2,
+   "direction": 0
+  },
+  "standin_blind": 0,
+  "mem_available_min_mb": 2197,
+  "oom_kills_window": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-04T20:51:35-0600"
+}

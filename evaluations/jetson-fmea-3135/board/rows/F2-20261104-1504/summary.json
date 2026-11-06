@@ -1,0 +1,491 @@
+{
+ "sha": "1330ea8f2a531068ae16613eba35fcb0b2004597",
+ "cmd_exit": 0,
+ "cmd_s": 1874.3,
+ "verdict": {
+  "row": "F2",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "FAILED",
+  "runs_wanted": 5,
+  "runs_scored": 3,
+  "runs_total": 8,
+  "runs_failed": 2,
+  "not_scored": [
+   {
+    "i": 4,
+    "error": "VE was not ready after the case (the board not as found)",
+    "reasons": [
+     "truth log has a 1.037 s hole"
+    ]
+   },
+   {
+    "i": 5,
+    "error": "StackError: VE is not ready at the start",
+    "reasons": [
+     "the fault was never injected"
+    ]
+   },
+   {
+    "i": 6,
+    "error": "StackError: VE is not ready at the start",
+    "reasons": [
+     "the fault was never injected"
+    ]
+   },
+   {
+    "i": 7,
+    "error": "StackError: VE is not ready at the start",
+    "reasons": [
+     "the fault was never injected"
+    ]
+   },
+   {
+    "i": 8,
+    "error": "StackError: VE is not ready at the start",
+    "reasons": [
+     "the fault was never injected"
+    ]
+   }
+  ],
+  "reasons": [
+   "truth log has a 0.686 s hole",
+   "truth log has a 3.009 s hole"
+  ]
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "truth log has a 0.686 s hole"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 43994.80462702,
+    "ve_before": [
+     "MainPID=1710940",
+     "NRestarts=0"
+    ],
+    "start_at": 43989.356447499,
+    "goal_at_fault": true,
+    "holder_at_fault": null,
+    "oom_before": 1,
+    "ve_pids": [
+     1710940,
+     1711105
+    ],
+    "hog_end_at": 44044.844617752,
+    "oom_kills": 1,
+    "killed": [
+     [
+      "1711105",
+      "edgellm_identit"
+     ]
+    ],
+    "killed_ve": true,
+    "alive_after": {
+     "robot": true,
+     "brain": true,
+     "ros": true
+    },
+    "late_ticks": 0,
+    "outcome": "found",
+    "wheel_loop": {
+     "late": 0,
+     "moving": 649,
+     "max_dt_s": 0.0686
+    },
+    "ve_after": [
+     "MainPID=1721497",
+     "NRestarts=1"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": true,
+    "truth_hole_s": 0.686,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 32,
+     "arrival": 1,
+     "direction": 0
+    },
+    "mem_available_min_mb": 99,
+    "oom_kills_window": 1
+   },
+   "status": {
+    "outcome": "found",
+    "end_state": "found",
+    "end_reason": "Hallway, kitchen, living room searched. Found.",
+    "error": null
+   }
+  },
+  {
+   "i": 2,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 44106.587673145,
+    "ve_before": [
+     "MainPID=1721497",
+     "NRestarts=1"
+    ],
+    "start_at": 44101.275028834,
+    "goal_at_fault": true,
+    "holder_at_fault": null,
+    "oom_before": 2,
+    "ve_pids": [
+     1721497,
+     1721692
+    ],
+    "hog_end_at": 44156.949281081,
+    "oom_kills": 1,
+    "killed": [
+     [
+      "1721692",
+      "edgellm_identit"
+     ]
+    ],
+    "killed_ve": true,
+    "alive_after": {
+     "robot": true,
+     "brain": true,
+     "ros": true
+    },
+    "late_ticks": 0,
+    "outcome": "exhausted",
+    "wheel_loop": {
+     "late": 0,
+     "moving": 4436,
+     "max_dt_s": 0.0954
+    },
+    "ve_after": [
+     "MainPID=1731349",
+     "NRestarts=2"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": true,
+    "truth_hole_s": 0.036,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 345,
+     "arrival": 1,
+     "direction": 0
+    },
+    "mem_available_min_mb": 64,
+    "oom_kills_window": 1
+   },
+   "status": {
+    "outcome": "exhausted",
+    "end_state": "exhausted",
+    "end_reason": "no reachable frontier left (5 on the map: 4 reached twice, 1 set aside or dropped)",
+    "error": null
+   }
+  },
+  {
+   "i": 3,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "truth log has a 3.009 s hole"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 44441.862379692,
+    "ve_before": [
+     "MainPID=1731349",
+     "NRestarts=2"
+    ],
+    "start_at": 44435.916472702,
+    "goal_at_fault": true,
+    "holder_at_fault": null,
+    "oom_before": 3,
+    "ve_pids": [
+     1731349,
+     1731544
+    ],
+    "hog_end_at": 44494.110097521,
+    "oom_kills": 1,
+    "killed": [
+     [
+      "1731544",
+      "edgellm_identit"
+     ]
+    ],
+    "killed_ve": true,
+    "alive_after": {
+     "robot": true,
+     "brain": true,
+     "ros": true
+    },
+    "late_ticks": 0,
+    "outcome": "found",
+    "wheel_loop": {
+     "late": 0,
+     "moving": 668,
+     "max_dt_s": 0.0741
+    },
+    "ve_after": [
+     "MainPID=1760264",
+     "NRestarts=3"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": true,
+    "truth_hole_s": 3.009,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 34,
+     "arrival": 1,
+     "direction": 0
+    },
+    "mem_available_min_mb": 15,
+    "oom_kills_window": 1
+   },
+   "status": {
+    "outcome": "found",
+    "end_state": "found",
+    "end_reason": "Hallway, kitchen, living room searched. Found.",
+    "error": null
+   }
+  },
+  {
+   "i": 4,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "truth log has a 1.037 s hole"
+   ],
+   "error": "VE was not ready after the case (the board not as found)",
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 44555.90603772,
+    "ve_before": [
+     "MainPID=1760264",
+     "NRestarts=3"
+    ],
+    "start_at": 44550.671412022,
+    "goal_at_fault": true,
+    "holder_at_fault": null,
+    "oom_before": 4,
+    "ve_pids": [
+     1760264,
+     1760366
+    ],
+    "hog_end_at": 44608.321156258,
+    "oom_kills": 1,
+    "killed": [
+     [
+      "1760366",
+      "edgellm_identit"
+     ]
+    ],
+    "killed_ve": true,
+    "alive_after": {
+     "robot": true,
+     "brain": true,
+     "ros": true
+    },
+    "late_ticks": 0,
+    "outcome": "exhausted",
+    "wheel_loop": {
+     "late": 0,
+     "moving": 5387,
+     "max_dt_s": 0.0806
+    },
+    "ve_after": [
+     "MainPID=0",
+     "NRestarts=4"
+    ],
+    "ve_ready_after": false,
+    "forward_at_fault": true,
+    "truth_hole_s": 1.037,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 394,
+     "arrival": 0,
+     "direction": 0
+    },
+    "mem_available_min_mb": 17,
+    "oom_kills_window": 1
+   },
+   "status": {
+    "outcome": "exhausted",
+    "end_state": "exhausted",
+    "end_reason": "no reachable frontier left (5 on the map: 5 reached twice, 0 set aside or dropped)",
+    "error": null
+   }
+  },
+  {
+   "i": 5,
+   "pass": false,
+   "valid": false,
+   "reasons": [
+    "the fault was never injected"
+   ],
+   "error": "StackError: VE is not ready at the start",
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": null,
+    "ve_after": [
+     "MainPID=0",
+     "NRestarts=4"
+    ],
+    "ve_ready_after": false,
+    "truth_hole_s": Infinity,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 0,
+     "arrival": 0,
+     "direction": 0
+    },
+    "mem_available_min_mb": 5865,
+    "oom_kills_window": 0
+   },
+   "status": null
+  },
+  {
+   "i": 6,
+   "pass": false,
+   "valid": false,
+   "reasons": [
+    "the fault was never injected"
+   ],
+   "error": "StackError: VE is not ready at the start",
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": null,
+    "ve_after": [
+     "MainPID=0",
+     "NRestarts=4"
+    ],
+    "ve_ready_after": false,
+    "truth_hole_s": Infinity,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 0,
+     "arrival": 0,
+     "direction": 0
+    },
+    "mem_available_min_mb": 5861,
+    "oom_kills_window": 0
+   },
+   "status": null
+  },
+  {
+   "i": 7,
+   "pass": false,
+   "valid": false,
+   "reasons": [
+    "the fault was never injected"
+   ],
+   "error": "StackError: VE is not ready at the start",
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": null,
+    "ve_after": [
+     "MainPID=0",
+     "NRestarts=4"
+    ],
+    "ve_ready_after": false,
+    "truth_hole_s": Infinity,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 0,
+     "arrival": 0,
+     "direction": 0
+    },
+    "mem_available_min_mb": 5862,
+    "oom_kills_window": 0
+   },
+   "status": null
+  },
+  {
+   "i": 8,
+   "pass": false,
+   "valid": false,
+   "reasons": [
+    "the fault was never injected"
+   ],
+   "error": "StackError: VE is not ready at the start",
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": null,
+    "ve_after": [
+     "MainPID=0",
+     "NRestarts=4"
+    ],
+    "ve_ready_after": false,
+    "truth_hole_s": Infinity,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 0,
+     "arrival": 0,
+     "direction": 0
+    },
+    "mem_available_min_mb": 5863,
+    "oom_kills_window": 0
+   },
+   "status": null
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 1666,
+  "temps": 1666,
+  "clocks": 1666,
+  "max_temp_c": 59.937,
+  "oom_kills": 4,
+  "mem_available_min_mb": 37,
+  "cpu_below_max_samples": 1356,
+  "gpu_below_max_samples": 1430
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)",
+  "started picar-local-vlm (was failed)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "harness_leftovers": {
+  "before": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  },
+  "after": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  }
+ }
+}

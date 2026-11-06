@@ -1,0 +1,68 @@
+{
+ "cells": 400,
+ "reply_bytes": 366772,
+ "fetch_full": {
+  "n": 30,
+  "p50_ms": 14.68,
+  "p90_ms": 30.37,
+  "max_ms": 31.33,
+  "probe_late_max_ms": 6.61,
+  "probe_late_p50_ms": 5.49
+ },
+ "fetch_304": {
+  "n": 30,
+  "p50_ms": 0.18,
+  "p90_ms": 0.21,
+  "max_ms": 0.24,
+  "probe_late_max_ms": 0.66,
+  "probe_late_p50_ms": 0.09
+ },
+ "resample": {
+  "n": 30,
+  "p50_ms": 12.82,
+  "p90_ms": 27.55,
+  "max_ms": 38.34,
+  "probe_late_max_ms": 5.93,
+  "probe_late_p50_ms": 2.48
+ },
+ "encode": {
+  "n": 30,
+  "p50_ms": 9.26,
+  "p90_ms": 18.76,
+  "max_ms": 19.07,
+  "probe_late_max_ms": 18.65,
+  "probe_late_p50_ms": 9.0
+ },
+ "encode_sliced": {
+  "n": 30,
+  "p50_ms": 10.55,
+  "p90_ms": 21.19,
+  "max_ms": 21.54,
+  "probe_late_max_ms": 5.94,
+  "probe_late_p50_ms": 5.27
+ },
+ "route_full": {
+  "n": 30,
+  "p50_ms": 33.25,
+  "p90_ms": 63.85,
+  "max_ms": 67.34,
+  "probe_late_max_ms": 11.23,
+  "probe_late_p50_ms": 5.17
+ },
+ "route_304": {
+  "n": 30,
+  "p50_ms": 4.64,
+  "p90_ms": 12.88,
+  "max_ms": 13.26,
+  "probe_late_max_ms": 1.43,
+  "probe_late_p50_ms": 0.4
+ },
+ "route_same": {
+  "n": 30,
+  "p50_ms": 4.75,
+  "p90_ms": 13.64,
+  "max_ms": 14.07,
+  "probe_late_max_ms": 1.54,
+  "probe_late_p50_ms": 0.33
+ }
+}

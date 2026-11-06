@@ -1,0 +1,55 @@
+{
+ "row": "F11a",
+ "title": "Cloud unreachable from the start (tiered)",
+ "reading": "the mission ends arrived_unconfirmed (no tier here could confirm, so found would be wrong, 3.47), never failed; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-05T20:01:51-0600",
+ "measures": {
+  "outcome": "blocked",
+  "start_at": 139518.261265293,
+  "end_at": 139665.542046013,
+  "timed_out": false,
+  "mission_s": 147.3,
+  "status": {
+   "outcome": "blocked",
+   "end_state": null,
+   "end_reason": "FORWARD refused 5 times in a row by the safety layer, 3 times over -- the way ahead is obstructed. Going around it is route planning (nav2, PLAN-ros-alignment.md R6)",
+   "error": null,
+   "step": 98,
+   "arrival_verdicts": [],
+   "cloud": {
+    "state": "unreachable",
+    "since": 1793930513.7931507,
+    "checked_at": 1793930648.8540897,
+    "age_s": 12.21233743999619,
+    "probes": 10,
+    "probe_s": 15.0
+   },
+   "late_confirmation": null
+  },
+  "wheel_loop": {
+   "late": 0,
+   "moving": 0,
+   "max_dt_s": 0.0
+  },
+  "paid_calls": 0,
+  "max_open_paid": 0,
+  "travel_mission_cm": 377.02,
+  "drive_after_end": 0,
+  "truth_hole_s": 0.032,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "mem_available_min_mb": 10376,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "the mission ended blocked, not arrived_unconfirmed"
+  ]
+ },
+ "ended": "2026-11-05T20:04:32-0600"
+}

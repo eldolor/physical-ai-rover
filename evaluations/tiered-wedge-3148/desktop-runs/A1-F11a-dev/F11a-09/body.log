@@ -1,0 +1,4 @@
+vision-picar sim body server starting -- git=c1af8499 executable=/home/anshu/vision-picar/.venv/bin/python config=/home/anshu/vision-picar/.claude/worktrees/festive-feistel-502b6d/config/robot.yaml
+vision-picar sim body server starting -- git=c1af8499 executable=/home/anshu/vision-picar/.venv/bin/python config=/home/anshu/vision-picar/.claude/worktrees/festive-feistel-502b6d/config/robot.yaml
+/usr/lib/python3.14/multiprocessing/resource_tracker.py:396: UserWarning: resource_tracker: There appear to be 1 leaked shared_memory objects to clean up at shutdown: {'/picar_fmea_1975897'}
+  warnings.warn(

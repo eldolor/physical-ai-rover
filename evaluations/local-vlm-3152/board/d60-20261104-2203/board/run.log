@@ -1,0 +1,6 @@
+== 3.152 d60 23:00:47 rev 9dfc6d63 image vision-picar-ros:latest
+== NV Power Mode: 15W; boot 2026-11-04 02:51:45; systemd systemd 249 (249.11-0ubuntu3.15)
+== desktop: inactive; twin units: inactive inactive; vlm: active
+== MemAvailable before anything: 2923 MB
+== d60 exit 2 23:17:56; MemAvailable 2496 MB
+== torn down 23:18:05; desktop: active; vlm: active

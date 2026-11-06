@@ -1,0 +1,74 @@
+diff --git a/control/mission_runner.py b/control/mission_runner.py
+index 6b55cd4b..6ef80c31 100644
+--- a/control/mission_runner.py
++++ b/control/mission_runner.py
+@@ -203,6 +203,19 @@ OUT_OF_BUDGET = "out_of_budget"
+ # the same way, which is why this is an outcome rather than a recovery.
+ BLOCKED = "blocked"
+ DEFAULT_STUCK_AFTER = 5
++# 3.148: the back-off's sidestep. With no tier able to steer (no cloud, no
++# local VLM, no nav2) the tiered policy aims straight at the target, and a
++# line that clips a door jamb was retraced after every back-off until the
++# mission ended `blocked` (3.135.B F11a/F11b/F12a: 6 of 15 board runs). So
++# after its REVERSE the back-off turns SIDESTEP_DEG away from the nearest
++# scan return within SIDESTEP_LOOK_DEG of ahead and SIDESTEP_NEAR_M, and
++# creeps one vetted FORWARD, before the policy re-aims from the new line. A
++# return within SIDESTEP_CENTRE_DEG of dead ahead (a wall square on) or none
++# that near leaves the back-off as it was.
++SIDESTEP_DEG = 30
++SIDESTEP_LOOK_DEG = 45.0
++SIDESTEP_NEAR_M = 1.0          # past the back-off's own REVERSE (the jamb read 0.60 m after it)
++SIDESTEP_CENTRE_DEG = 5.0
+ # 3.31. The `explore` policy ran out of places to look: no reachable frontier
+ # left, nothing waiting out a cooldown and (3.70 E3) no labelled room left
+ # unentered. Not `blocked` -- it is a finding about the house ("looked
+@@ -1379,8 +1392,49 @@ class MissionRunner:
+             logger.exception("back-off failed")
+             self._finish(FAILED, f"back-off failed: {e}")
+             return
++        turn = self._sidestep_turn()
++        if turn is not None:
++            self._log_line(f"sidestep: {turn} {SIDESTEP_DEG} deg away from the obstruction, "
++                           "then one FORWARD")
++            try:
++                self.agent.safety.check_and_execute(turn, angle=SIDESTEP_DEG)
++                self.agent.safety.check_and_execute("FORWARD")
++            except SafetyViolation as e:
++                self._log_line(f"sidestep refused: {e}")     # as a refused REVERSE: fine
++            except Preempted as e:
++                self._finish_preempted(e)
++                return
++            except Exception as e:  # noqa: BLE001 -- same rule as a step that fails
++                logger.exception("sidestep failed")
++                self._finish(FAILED, f"back-off failed: {e}")
++                return
+         self._cooldown_until = self.clock() + self.retry_cooldown_s
+ 
++    def _sidestep_turn(self) -> Optional[str]:
++        """3.148: LEFT or RIGHT, away from the nearest scan return within
++        SIDESTEP_LOOK_DEG of ahead and SIDESTEP_NEAR_M; None when there is no
++        usable scan, nothing that near, or it is square ahead. Scan angles are
++        the body's, clockwise-positive (`RobotInterface.get_scan`)."""
++        try:
++            scan = self.robot.get_scan(max_range_m=SIDESTEP_NEAR_M + 0.2)
++        except Exception:  # noqa: BLE001 -- no scan: the back-off as it was
++            return None
++        if not scan or not scan.get("usable"):
++            return None
++        a0, da = scan.get("angle_min_deg"), scan.get("angle_increment_deg")
++        if a0 is None or not da:
++            return None
++        best = None
++        for i, r in enumerate(scan.get("ranges_m") or []):
++            if r is None or r > SIDESTEP_NEAR_M:
++                continue
++            a = (a0 + i * da + 180.0) % 360.0 - 180.0
++            if abs(a) <= SIDESTEP_LOOK_DEG and (best is None or r < best[0]):
++                best = (r, a)
++        if best is None or abs(best[1]) < SIDESTEP_CENTRE_DEG:
++            return None
++        return "LEFT" if best[1] > 0 else "RIGHT"
++
+     def _hear_a_person(self) -> None:
+         """3.104: the brain hears a person's Stop (3.84's latch) or take-over
+         only as a refused verb, and the arrival's confirmation sends none, so

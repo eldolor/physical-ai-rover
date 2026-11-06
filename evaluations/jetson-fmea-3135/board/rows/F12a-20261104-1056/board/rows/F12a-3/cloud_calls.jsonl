@@ -1,0 +1,30 @@
+{"t": 29444.8839, "listening": 10358}
+{"t": 29445.043, "method": "", "path": "", "paid": false, "open_paid": 0}
+{"t": 29445.0432, "closed": true, "paid": false}
+{"t": 29450.9995, "method": "GET", "path": "/health", "paid": false, "open_paid": 0}
+{"t": 29451.1172, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 29454.0016, "closed": true, "paid": false}
+{"t": 29469.0717, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 29471.1363, "closed": true, "paid": true}
+{"t": 29472.0731, "closed": true, "paid": false}
+{"t": 29477.3317, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 29487.1565, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 29490.1604, "closed": true, "paid": false}
+{"t": 29497.3482, "closed": true, "paid": true}
+{"t": 29503.3842, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 29505.2439, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 29508.2442, "closed": true, "paid": false}
+{"t": 29523.3276, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 29523.4026, "closed": true, "paid": true}
+{"t": 29524.4988, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 29526.3285, "closed": true, "paid": false}
+{"t": 29541.4121, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 29544.4147, "closed": true, "paid": false}
+{"t": 29544.5141, "closed": true, "paid": true}
+{"t": 29559.4853, "method": "GET", "path": "/health", "paid": false, "open_paid": 0}
+{"t": 29562.4881, "closed": true, "paid": false}
+{"t": 29577.571, "method": "GET", "path": "/health", "paid": false, "open_paid": 0}
+{"t": 29580.5722, "closed": true, "paid": false}
+{"t": 29595.6536, "method": "GET", "path": "/health", "paid": false, "open_paid": 0}
+{"t": 29598.6571, "closed": true, "paid": false}
+{"t": 29599.3666, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}

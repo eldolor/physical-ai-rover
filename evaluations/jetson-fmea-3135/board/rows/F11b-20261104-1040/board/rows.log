@@ -1,0 +1,6 @@
+{"i": 1, "verdict": {"pass": true, "valid": true, "reasons": []}, "error": null}
+{"i": 2, "verdict": {"pass": false, "valid": true, "reasons": ["the mission ended blocked"]}, "error": null}
+{"i": 3, "verdict": {"pass": true, "valid": true, "reasons": []}, "error": null}
+{"i": 4, "verdict": {"pass": false, "valid": true, "reasons": ["the mission ended blocked"]}, "error": null}
+{"i": 5, "verdict": {"pass": false, "valid": true, "reasons": ["the mission ended blocked"]}, "error": null}
+{"row": "F11b", "plant": null, "house": "scaled_house", "state": "FAILED", "runs_wanted": 5, "runs_scored": 5, "runs_total": 5, "runs_failed": 3, "not_scored": [], "reasons": ["the mission ended blocked"]}

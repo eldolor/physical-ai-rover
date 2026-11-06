@@ -1,0 +1,14 @@
+1793858267.769 WARNING identity vision-picar brain server starting -- git=d463dc5f executable=/home/picar/bench-3152/.venv/bin/python config=(default)
+1793858288.039 WARNING tiered local VLM absent for mission_start (local VLM unreachable: [Errno 111] Connection refused); asking the cloud
+1793858288.993 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)
+1793858345.915 WARNING agent world model unreachable (GET /world/pose failed: timed out) -- exploring by the right-hand rule instead of the map
+1793858400.398 WARNING explore goal call failed (1 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793858548.555 WARNING explore goal call failed (1 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793858742.918 WARNING explore goal call failed (1 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793858756.686 WARNING explore goal call failed (2 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
+1793858770.059 WARNING explore goal call failed (3 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503

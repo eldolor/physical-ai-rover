@@ -1,0 +1,32 @@
+{
+ "steps": [
+  [
+   "/run/systemd/system/picar-local-vlm.service.d/zz-3152-crash-loop.conf",
+   0
+  ],
+  [
+   "daemon-reload",
+   0
+  ],
+  [
+   "picar-local-vlm",
+   0
+  ]
+ ],
+ "show": {
+  "RestartUSec": "30s",
+  "MainPID": "143633",
+  "Result": "success",
+  "NRestarts": "0",
+  "ActiveState": "active",
+  "SubState": "running",
+  "StartLimitIntervalUSec": "15min",
+  "StartLimitBurst": "4"
+ },
+ "dropins": [],
+ "ve_ready": true,
+ "active": "active",
+ "settings_as_found": true,
+ "dropins_as_found": true,
+ "active_as_found": true
+}

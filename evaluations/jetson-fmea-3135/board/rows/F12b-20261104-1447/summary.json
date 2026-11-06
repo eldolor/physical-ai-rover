@@ -1,0 +1,294 @@
+{
+ "sha": "53bcbe612a1df1488d119c66ecd55223171feae0",
+ "cmd_exit": 0,
+ "cmd_s": 395.6,
+ "verdict": {
+  "row": "F12b",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "met",
+  "runs_wanted": 5,
+  "runs_scored": 5,
+  "runs_total": 5,
+  "runs_failed": 0,
+  "not_scored": [],
+  "reasons": []
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "failed",
+    "start_at": 42953.488050303,
+    "end_at": 43014.885064901,
+    "timed_out": false,
+    "mission_s": 61.4,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "paid_calls": 3,
+    "max_open_paid": 1,
+    "park_s": 20.5,
+    "travel_mission_cm": 0.0,
+    "drive_after_end": 0,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2207,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "vision unavailable 3 times in a row: vision timed out after 20.0s",
+    "error": "vision unavailable 3 times in a row: vision timed out after 20.0s",
+    "step": 0,
+    "arrival_verdicts": [],
+    "cloud": {
+     "state": "unreachable",
+     "since": 1793825261.4533827,
+     "checked_at": 1793825315.689093,
+     "age_s": 4.078765179001493,
+     "probes": 4,
+     "probe_s": 15.0
+    },
+    "late_confirmation": null
+   }
+  },
+  {
+   "i": 2,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "failed",
+    "start_at": 43032.49301157,
+    "end_at": 43093.954036839,
+    "timed_out": false,
+    "mission_s": 61.5,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "paid_calls": 3,
+    "max_open_paid": 1,
+    "park_s": 20.6,
+    "travel_mission_cm": 0.0,
+    "drive_after_end": 0,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2210,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "vision unavailable 3 times in a row: vision timed out after 20.0s",
+    "error": "vision unavailable 3 times in a row: vision timed out after 20.0s",
+    "step": 0,
+    "arrival_verdicts": [],
+    "cloud": {
+     "state": "unreachable",
+     "since": 1793825340.4517648,
+     "checked_at": 1793825394.6849918,
+     "age_s": 4.1518435800026054,
+     "probes": 4,
+     "probe_s": 15.0
+    },
+    "late_confirmation": null
+   }
+  },
+  {
+   "i": 3,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "failed",
+    "start_at": 43111.432452968,
+    "end_at": 43172.86326423,
+    "timed_out": false,
+    "mission_s": 61.4,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "paid_calls": 3,
+    "max_open_paid": 1,
+    "park_s": 20.5,
+    "travel_mission_cm": 0.0,
+    "drive_after_end": 0,
+    "truth_hole_s": 0.025,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2208,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "vision unavailable 3 times in a row: vision timed out after 20.0s",
+    "error": "vision unavailable 3 times in a row: vision timed out after 20.0s",
+    "step": 0,
+    "arrival_verdicts": [],
+    "cloud": {
+     "state": "unreachable",
+     "since": 1793825419.389739,
+     "checked_at": 1793825473.6249423,
+     "age_s": 4.1211069759956445,
+     "probes": 4,
+     "probe_s": 15.0
+    },
+    "late_confirmation": null
+   }
+  },
+  {
+   "i": 4,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "failed",
+    "start_at": 43190.3467527,
+    "end_at": 43251.765062729,
+    "timed_out": false,
+    "mission_s": 61.4,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "paid_calls": 3,
+    "max_open_paid": 1,
+    "park_s": 20.5,
+    "travel_mission_cm": 0.0,
+    "drive_after_end": 0,
+    "truth_hole_s": 0.025,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2207,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "vision unavailable 3 times in a row: vision timed out after 20.0s",
+    "error": "vision unavailable 3 times in a row: vision timed out after 20.0s",
+    "step": 0,
+    "arrival_verdicts": [],
+    "cloud": {
+     "state": "unreachable",
+     "since": 1793825498.3055537,
+     "checked_at": 1793825552.5321708,
+     "age_s": 4.115632690001803,
+     "probes": 4,
+     "probe_s": 15.0
+    },
+    "late_confirmation": null
+   }
+  },
+  {
+   "i": 5,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "failed",
+    "start_at": 43269.43575722,
+    "end_at": 43330.844895788,
+    "timed_out": false,
+    "mission_s": 61.4,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "paid_calls": 3,
+    "max_open_paid": 1,
+    "park_s": 20.4,
+    "travel_mission_cm": 0.0,
+    "drive_after_end": 0,
+    "truth_hole_s": 0.021,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2208,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "vision unavailable 3 times in a row: vision timed out after 20.0s",
+    "error": "vision unavailable 3 times in a row: vision timed out after 20.0s",
+    "step": 0,
+    "arrival_verdicts": [],
+    "cloud": {
+     "state": "unreachable",
+     "since": 1793825577.3924322,
+     "checked_at": 1793825631.6276886,
+     "age_s": 4.098957711001276,
+     "probes": 4,
+     "probe_s": 15.0
+    },
+    "late_confirmation": null
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 361,
+  "temps": 361,
+  "clocks": 361,
+  "max_temp_c": 49.75,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2207,
+  "cpu_below_max_samples": 353,
+  "gpu_below_max_samples": 361
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "harness_leftovers": {
+  "before": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  },
+  "after": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  }
+ }
+}

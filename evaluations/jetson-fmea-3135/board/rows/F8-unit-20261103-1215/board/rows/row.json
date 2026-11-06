@@ -1,0 +1,14 @@
+{
+ "row": "F8-unit",
+ "state": "met",
+ "runs_wanted": 5,
+ "runs_scored": 5,
+ "back_s": [
+  7.21,
+  8.52,
+  8.32,
+  8.42,
+  8.43
+ ],
+ "bar_s": 10.0
+}

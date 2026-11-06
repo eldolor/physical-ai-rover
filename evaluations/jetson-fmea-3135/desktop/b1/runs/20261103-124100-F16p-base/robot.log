@@ -1,0 +1,3 @@
+1793732788.404 WARNING identity vision-picar robot server starting -- git=3e3925ea executable=/home/anshu/vision-picar/.venv/bin/python config=(default)
+1793733772.932 WARNING safety FORWARD ended: the serial line to the motor board failed: [Errno 5] Input/output error
+1793733772.932 WARNING server refused (no_feedback) for brain: FORWARD ended: the serial line to the motor board failed: [Errno 5] Input/output error

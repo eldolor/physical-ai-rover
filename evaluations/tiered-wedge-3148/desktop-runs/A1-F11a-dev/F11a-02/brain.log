@@ -1,0 +1,30 @@
+1793930784.873 WARNING identity vision-picar brain server starting -- git=c1af8499 executable=/home/anshu/vision-picar/.venv/bin/python config=(default)
+1793930786.096 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930792.069 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930797.919 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930804.265 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930810.211 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930816.184 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930822.417 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930828.403 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930834.292 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930840.453 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930846.303 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930852.194 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930854.262 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930855.773 WARNING safety Blocked FORWARD: distance=19.8cm < min=20cm (scan_footprint)
+1793930856.100 WARNING safety Blocked FORWARD: distance=19.8cm < min=20cm (scan_footprint)
+1793930856.379 WARNING safety Blocked FORWARD: distance=19.8cm < min=20cm (scan_footprint)
+1793930889.543 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930895.421 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930901.291 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930905.262 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930905.855 WARNING safety Blocked FORWARD: distance=19.5cm < min=20cm (depth_grid)
+1793930906.133 WARNING safety Blocked FORWARD: distance=19.5cm < min=20cm (depth_grid)
+1793930906.410 WARNING safety Blocked FORWARD: distance=19.5cm < min=20cm (depth_grid)
+1793930906.695 WARNING safety Blocked FORWARD: distance=19.5cm < min=20cm (depth_grid)
+1793930906.972 WARNING safety Blocked FORWARD: distance=19.5cm < min=20cm (depth_grid)
+1793930941.019 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930946.864 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930952.728 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793930955.800 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused

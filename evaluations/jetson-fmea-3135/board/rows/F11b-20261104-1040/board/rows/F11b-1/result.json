@@ -1,0 +1,71 @@
+{
+ "row": "F11b",
+ "title": "Cloud unreachable mid-mission (tiered)",
+ "reading": "the cloud answers, then is gone; the mission ends arrived_unconfirmed or found (found only by a cloud yes landed before it went), never failed; with the cloud back, the late confirmation lands and no wheel setpoint is non-zero from the mission's end to 10 s after it; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T10:40:59-0600",
+ "measures": {
+  "outcome": "arrived_unconfirmed",
+  "start_at": 28160.497903263,
+  "answered_before_switch": 1,
+  "cloud_yes_before_switch": false,
+  "switch_at": 28162.010769463,
+  "end_at": 28255.852230061,
+  "timed_out": false,
+  "mission_s": 95.4,
+  "status": {
+   "outcome": "arrived_unconfirmed",
+   "end_state": null,
+   "end_reason": "arrived (lidar 0.369 m, streak 4) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ConnectError: [Errno 111] Connection refused",
+   "error": null,
+   "step": 84,
+   "arrival_verdicts": [],
+   "cloud": {
+    "state": "unreachable",
+    "since": 1793810480.540666,
+    "checked_at": 1793810560.2312012,
+    "age_s": 0.5142648080000072,
+    "probes": 8,
+    "probe_s": 15.0
+   },
+   "late_confirmation": {
+    "state": "waiting",
+    "probes": 1,
+    "paid_calls": 0,
+    "reason": "cloud unreachable; probing",
+    "at": 1793810560.2312276
+   }
+  },
+  "late_confirmation": {
+   "state": "refused",
+   "probes": 2,
+   "paid_calls": 1,
+   "reason": "the cloud does not see the target in the arrival frame",
+   "at": 1793810575.383147,
+   "confirmed": false
+  },
+  "late_at": 28270.579808231,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 0,
+   "max_dt_s": 0.0
+  },
+  "paid_calls": 2,
+  "max_open_paid": 1,
+  "travel_mission_cm": 461.52,
+  "drive_after_end": 0,
+  "truth_hole_s": 0.022,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "mem_available_min_mb": 2390,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-04T10:43:07-0600"
+}

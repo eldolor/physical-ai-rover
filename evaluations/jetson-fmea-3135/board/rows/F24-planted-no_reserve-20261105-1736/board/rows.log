@@ -1,0 +1,2 @@
+{"i": 1, "verdict": {"pass": false, "valid": true, "reasons": ["moved 167.62 cm after Reserve (bar 2)"]}, "error": null}
+{"row": "F24", "plant": "no_reserve", "house": "scaled_house", "state": "FAILED", "runs_wanted": 1, "runs_scored": 1, "runs_total": 1, "runs_failed": 1, "not_scored": [], "reasons": ["moved 167.62 cm after Reserve (bar 2)"]}

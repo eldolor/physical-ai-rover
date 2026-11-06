@@ -1,0 +1,219 @@
+{
+ "sha": "90bd1decaada36343d9ff329a06c2d0ce183dbba",
+ "cmd_exit": 0,
+ "cmd_s": 120.7,
+ "verdict": {
+  "row": "F24",
+  "plant": "no_reserve",
+  "house": "scaled_house",
+  "state": "FAILED",
+  "runs_wanted": 1,
+  "runs_scored": 1,
+  "runs_total": 1,
+  "runs_failed": 1,
+  "not_scored": [],
+  "reasons": [
+   "moved 167.62 cm after Reserve (bar 2)"
+  ]
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "moved 167.62 cm after Reserve (bar 2)"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 139511.7192009,
+    "ve_unit_before": {
+     "Restart": "on-failure",
+     "RestartUSec": "30s",
+     "ExecStart": "{ path=/home/picar/vision-picar-service/.venv/bin/python ; argv[]=/home/picar/vision-picar-service/.venv/bin/python -m service.local_vlm.server ; ignore_errors=no }",
+     "EnvironmentFiles": "/home/picar/.vision-picar-local-vlm.env (ignore_errors=no)",
+     "OOMScoreAdjust": "1000",
+     "DropInPaths": "",
+     "UnitFileState": "enabled",
+     "StartLimitIntervalUSec": "15min",
+     "StartLimitBurst": "4"
+    },
+    "ve_before": [
+     "MainPID=470304",
+     "NRestarts=0"
+    ],
+    "start_at": 139506.548992595,
+    "goal_at_fault": true,
+    "holder_at_fault": null,
+    "poweroff_cmd_at_start": "stub",
+    "reserve_at": 139545.88404147598,
+    "running_at_reserve": true,
+    "brain_floor_v": null,
+    "poweroff_at": 139597.577670654,
+    "down_at_poweroff": {
+     "mission": false,
+     "ros": false,
+     "vlm": false
+    },
+    "battery_end": {
+     "usable": true,
+     "v": 9.91,
+     "level": "poweroff",
+     "ladder": {
+      "level": "poweroff",
+      "levels_v": {
+       "low": 10.5,
+       "reserve": 10.2,
+       "poweroff": 10.0
+      },
+      "checking": null,
+      "reserve_s": 53.7,
+      "poweroff_in_s": null,
+      "poweroff_why": "at rest",
+      "samples": 2,
+      "checks": 2,
+      "sags": 0,
+      "v": 9.91,
+      "reserve_speed": 30,
+      "shutdown": [
+       {
+        "step": "wheels",
+        "t_s": 0.0,
+        "rc": 0
+       },
+       {
+        "step": "brain",
+        "t_s": 0.106,
+        "rc": 0
+       },
+       {
+        "step": "ros",
+        "t_s": 10.3,
+        "rc": 0
+       },
+       {
+        "step": "vlm",
+        "t_s": 11.281,
+        "rc": 0
+       },
+       {
+        "step": "sync",
+        "t_s": 11.283,
+        "rc": 0
+       },
+       {
+        "step": "poweroff",
+        "t_s": 11.283,
+        "rc": null,
+        "stub": true
+       }
+      ],
+      "poweroff_cmd": "stub"
+     }
+    },
+    "shutdown": [
+     {
+      "step": "wheels",
+      "t_s": 0.0,
+      "rc": 0
+     },
+     {
+      "step": "brain",
+      "t_s": 0.106,
+      "rc": 0
+     },
+     {
+      "step": "ros",
+      "t_s": 10.3,
+      "rc": 0
+     },
+     {
+      "step": "vlm",
+      "t_s": 11.281,
+      "rc": 0
+     },
+     {
+      "step": "sync",
+      "t_s": 11.283,
+      "rc": 0
+     },
+     {
+      "step": "poweroff",
+      "t_s": 11.283,
+      "rc": null,
+      "stub": true
+     }
+    ],
+    "wheel_loop": {
+     "late": 0,
+     "moving": 1005,
+     "max_dt_s": 0.0669
+    },
+    "ve_restarted": 0,
+    "ve_after": [
+     "MainPID=516018",
+     "NRestarts=0"
+    ],
+    "ve_ready_after": true,
+    "ve_unit_after": {
+     "Restart": "on-failure",
+     "RestartUSec": "30s",
+     "ExecStart": "{ path=/home/picar/vision-picar-service/.venv/bin/python ; argv[]=/home/picar/vision-picar-service/.venv/bin/python -m service.local_vlm.server ; ignore_errors=no }",
+     "EnvironmentFiles": "/home/picar/.vision-picar-local-vlm.env (ignore_errors=no)",
+     "OOMScoreAdjust": "1000",
+     "DropInPaths": "",
+     "UnitFileState": "enabled",
+     "StartLimitIntervalUSec": "15min",
+     "StartLimitBurst": "4"
+    },
+    "ve_unit_as_found": true,
+    "forward_at_fault": true,
+    "moved_after_reserve_cm": 167.62,
+    "truth_hole_s": 0.03,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 49,
+     "arrival": 0,
+     "direction": 0
+    },
+    "mem_available_min_mb": 2025,
+    "oom_kills_window": 0
+   },
+   "status": null
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 107,
+  "temps": 107,
+  "clocks": 107,
+  "max_temp_c": 53.0,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2026,
+  "cpu_below_max_samples": 76,
+  "gpu_below_max_samples": 81
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "harness_leftovers": {
+  "before": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  },
+  "after": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  }
+ }
+}

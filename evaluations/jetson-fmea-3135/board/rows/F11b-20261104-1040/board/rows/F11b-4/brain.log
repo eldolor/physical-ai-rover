@@ -1,0 +1,25 @@
+1793810924.342 WARNING identity vision-picar brain server starting -- git=affb16fdd executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793810932.086 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793810938.434 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793810945.167 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793810951.612 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793810957.925 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793810964.608 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793810970.973 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793810977.565 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793810984.454 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793810990.868 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793810997.270 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793811000.602 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793811007.988 WARNING safety Blocked FORWARD: distance=19.8cm < min=20cm (scan_footprint)
+1793811008.391 WARNING safety Blocked FORWARD: distance=19.8cm < min=20cm (scan_footprint)
+1793811008.770 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793811009.164 WARNING safety Blocked FORWARD: distance=19.8cm < min=20cm (scan_footprint)
+1793811042.678 WARNING safety Blocked FORWARD: distance=19.8cm < min=20cm (scan_footprint)
+1793811043.063 WARNING safety Blocked FORWARD: distance=19.8cm < min=20cm (scan_footprint)
+1793811043.472 WARNING safety Blocked FORWARD: distance=19.8cm < min=20cm (scan_footprint)
+1793811043.897 WARNING safety Blocked FORWARD: distance=19.8cm < min=20cm (scan_footprint)
+1793811076.608 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793811077.847 WARNING safety Blocked FORWARD: distance=19.7cm < min=20cm (scan_footprint)
+1793811078.262 WARNING safety Blocked FORWARD: distance=19.7cm < min=20cm (scan_footprint)
+1793811078.636 WARNING safety Blocked FORWARD: distance=19.7cm < min=20cm (scan_footprint)

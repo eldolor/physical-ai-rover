@@ -1,0 +1,41 @@
+{
+ "row": "F24",
+ "plant": "no_reserve",
+ "house": "scaled_house",
+ "state": "incomplete",
+ "runs_wanted": 1,
+ "runs_scored": 0,
+ "runs_total": 4,
+ "runs_failed": 0,
+ "not_scored": [
+  {
+   "i": 1,
+   "error": "VE's unit settings changed over the run (the board not as found)",
+   "reasons": [
+    "invalid: the mission was not running when Reserve latched"
+   ]
+  },
+  {
+   "i": 2,
+   "error": "VE's unit settings changed over the run (the board not as found)",
+   "reasons": [
+    "invalid: the mission was not running when Reserve latched"
+   ]
+  },
+  {
+   "i": 3,
+   "error": "VE's unit settings changed over the run (the board not as found)",
+   "reasons": [
+    "invalid: the mission was not running when Reserve latched"
+   ]
+  },
+  {
+   "i": 4,
+   "error": "VE's unit settings changed over the run (the board not as found)",
+   "reasons": [
+    "invalid: the mission was not running when Reserve latched"
+   ]
+  }
+ ],
+ "reasons": []
+}

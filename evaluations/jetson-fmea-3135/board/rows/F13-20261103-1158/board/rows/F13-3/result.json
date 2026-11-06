@@ -1,0 +1,58 @@
+{
+ "row": "F13",
+ "title": "Twin / tunnel link lost while a person drives",
+ "reading": "wheels zero <= 1.1 s after the client's SIGKILL; 0 contacts (no mission runs, so 'the brain does not take over mid-press' is not exercised here)",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-03T11:59:08-0600",
+ "recovery_s": 3.32,
+ "measures": {
+  "fault_at": 83012.457922292,
+  "outcome": "idle",
+  "end_state": null,
+  "end_reason": null,
+  "status": {
+   "running": false,
+   "outcome": "idle",
+   "end_state": null,
+   "end_reason": null,
+   "cancelled_by": null,
+   "step": 0,
+   "last_action": null,
+   "error": null
+  },
+  "refusals": {},
+  "no_feedback_refusals": 0,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 23,
+   "max_dt_s": 0.0536
+  },
+  "last_refusal": {
+   "reason": "watchdog",
+   "detail": "no command for over 1.0s -- motors stopped",
+   "driver": "twin-dpad",
+   "at": 83013.466521108,
+   "seconds_ago": 5.0
+  },
+  "forward_at_fault": true,
+  "wheels_zero_s": 1.014,
+  "travel_cm": 19.8,
+  "truth_hole_s": 0.025,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   83007.4123,
+   83023.4524
+  ],
+  "mem_available_min_mb": 2252,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-03T11:59:25-0600"
+}

@@ -1,0 +1,342 @@
+{
+ "sha": "affb16fdd3d314c6e3a924a1de1876afc53e471e",
+ "cmd_exit": 0,
+ "cmd_s": 833.2,
+ "verdict": {
+  "row": "F11b",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "FAILED",
+  "runs_wanted": 5,
+  "runs_scored": 5,
+  "runs_total": 5,
+  "runs_failed": 3,
+  "not_scored": [],
+  "reasons": [
+   "the mission ended blocked"
+  ]
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "arrived_unconfirmed",
+    "start_at": 28160.497903263,
+    "answered_before_switch": 1,
+    "cloud_yes_before_switch": false,
+    "switch_at": 28162.010769463,
+    "end_at": 28255.852230061,
+    "timed_out": false,
+    "mission_s": 95.4,
+    "late_confirmation": {
+     "state": "refused",
+     "probes": 2,
+     "paid_calls": 1,
+     "reason": "the cloud does not see the target in the arrival frame",
+     "at": 1793810575.383147,
+     "confirmed": false
+    },
+    "late_at": 28270.579808231,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "paid_calls": 2,
+    "max_open_paid": 1,
+    "travel_mission_cm": 461.52,
+    "drive_after_end": 0,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2390,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "arrived_unconfirmed",
+    "end_state": null,
+    "end_reason": "arrived (lidar 0.369 m, streak 4) but identity unconfirmed: vision unavailable 3 times in a row: arrival confirmation failed: ConnectError: [Errno 111] Connection refused",
+    "error": null,
+    "step": 84,
+    "arrival_verdicts": [],
+    "cloud": {
+     "state": "unreachable",
+     "since": 1793810480.540666,
+     "checked_at": 1793810560.2312012,
+     "age_s": 0.5142648080000072,
+     "probes": 8,
+     "probe_s": 15.0
+    },
+    "late_confirmation": {
+     "state": "waiting",
+     "probes": 1,
+     "paid_calls": 0,
+     "reason": "cloud unreachable; probing",
+     "at": 1793810560.2312276
+    }
+   }
+  },
+  {
+   "i": 2,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "the mission ended blocked"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "blocked",
+    "start_at": 28288.50558157,
+    "answered_before_switch": 1,
+    "cloud_yes_before_switch": false,
+    "switch_at": 28290.019411486,
+    "end_at": 28472.473291632,
+    "timed_out": false,
+    "mission_s": 184.0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "paid_calls": 1,
+    "max_open_paid": 1,
+    "travel_mission_cm": 227.86,
+    "drive_after_end": 0,
+    "truth_hole_s": 0.025,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2387,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "blocked",
+    "end_state": null,
+    "end_reason": "FORWARD refused 5 times in a row by the safety layer, 3 times over -- the way ahead is obstructed. Going around it is route planning (nav2, PLAN-ros-alignment.md R6)",
+    "error": null,
+    "step": 124,
+    "arrival_verdicts": [],
+    "cloud": {
+     "state": "unreachable",
+     "since": 1793810608.5474646,
+     "checked_at": 1793810774.3259878,
+     "age_s": 3.0422991549967264,
+     "probes": 13,
+     "probe_s": 15.0
+    },
+    "late_confirmation": null
+   }
+  },
+  {
+   "i": 3,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "arrived_unconfirmed",
+    "start_at": 28490.70145917,
+    "answered_before_switch": 1,
+    "cloud_yes_before_switch": false,
+    "switch_at": 28492.212642645,
+    "end_at": 28586.110241336,
+    "timed_out": false,
+    "mission_s": 95.4,
+    "late_confirmation": {
+     "state": "refused",
+     "probes": 2,
+     "paid_calls": 1,
+     "reason": "the cloud does not see the target in the arrival frame",
+     "at": 1793810906.1521518,
+     "confirmed": false
+    },
+    "late_at": 28601.857604841,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "paid_calls": 2,
+    "max_open_paid": 1,
+    "travel_mission_cm": 460.13,
+    "drive_after_end": 0,
+    "truth_hole_s": 0.023,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2387,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "arrived_unconfirmed",
+    "end_state": null,
+    "end_reason": "arrived (lidar 0.37 m, streak 3) but identity unconfirmed: vision unavailable 3 times in a row: vision call failed: ConnectError: [Errno 111] Connection refused",
+    "error": null,
+    "step": 86,
+    "arrival_verdicts": [],
+    "cloud": {
+     "state": "unreachable",
+     "since": 1793810810.7412698,
+     "checked_at": 1793810886.103578,
+     "age_s": 4.900143852999463,
+     "probes": 7,
+     "probe_s": 15.0
+    },
+    "late_confirmation": {
+     "state": "waiting",
+     "probes": 0,
+     "paid_calls": 0,
+     "reason": "cloud unreachable; probing",
+     "at": 1793810890.9325557
+    }
+   }
+  },
+  {
+   "i": 4,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "the mission ended blocked"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "blocked",
+    "start_at": 28619.934228707,
+    "answered_before_switch": 1,
+    "cloud_yes_before_switch": false,
+    "switch_at": 28621.446749231,
+    "end_at": 28773.810908251,
+    "timed_out": false,
+    "mission_s": 153.9,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "paid_calls": 1,
+    "max_open_paid": 1,
+    "travel_mission_cm": 375.27,
+    "drive_after_end": 0,
+    "truth_hole_s": 0.025,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2386,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "blocked",
+    "end_state": null,
+    "end_reason": "FORWARD refused 5 times in a row by the safety layer, 3 times over -- the way ahead is obstructed. Going around it is route planning (nav2, PLAN-ros-alignment.md R6)",
+    "error": null,
+    "step": 93,
+    "arrival_verdicts": [],
+    "cloud": {
+     "state": "unreachable",
+     "since": 1793810939.9720232,
+     "checked_at": 1793811075.603401,
+     "age_s": 3.102277560999937,
+     "probes": 11,
+     "probe_s": 15.0
+    },
+    "late_confirmation": null
+   }
+  },
+  {
+   "i": 5,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "the mission ended blocked"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "outcome": "blocked",
+    "start_at": 28792.161003701,
+    "answered_before_switch": 1,
+    "cloud_yes_before_switch": false,
+    "switch_at": 28793.672407647,
+    "end_at": 28975.206864632,
+    "timed_out": false,
+    "mission_s": 183.0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "paid_calls": 1,
+    "max_open_paid": 1,
+    "travel_mission_cm": 226.64,
+    "drive_after_end": 0,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "mem_available_min_mb": 2376,
+    "oom_kills": 0
+   },
+   "status": {
+    "outcome": "blocked",
+    "end_state": null,
+    "end_reason": "FORWARD refused 5 times in a row by the safety layer, 3 times over -- the way ahead is obstructed. Going around it is route planning (nav2, PLAN-ros-alignment.md R6)",
+    "error": null,
+    "step": 123,
+    "arrival_verdicts": [],
+    "cloud": {
+     "state": "unreachable",
+     "since": 1793811112.2028975,
+     "checked_at": 1793811277.9762163,
+     "age_s": 2.1256062049978937,
+     "probes": 13,
+     "probe_s": 15.0
+    },
+    "late_confirmation": null
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 757,
+  "temps": 757,
+  "clocks": 757,
+  "max_temp_c": 49.625,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2376,
+  "cpu_below_max_samples": 737,
+  "gpu_below_max_samples": 757
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "harness_leftovers": {
+  "before": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  },
+  "after": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  }
+ }
+}

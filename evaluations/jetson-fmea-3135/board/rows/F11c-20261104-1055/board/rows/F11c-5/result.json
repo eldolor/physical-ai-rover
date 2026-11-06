@@ -1,0 +1,53 @@
+{
+ "row": "F11c",
+ "title": "Cloud unreachable from the start (vision)",
+ "reading": "the mission ends failed; true path over the mission <= 0.5 cm (without moving); 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T10:56:26-0600",
+ "measures": {
+  "outcome": "failed",
+  "start_at": 29087.187776825,
+  "end_at": 29089.209126704,
+  "timed_out": false,
+  "mission_s": 2.0,
+  "status": {
+   "outcome": "failed",
+   "end_state": null,
+   "end_reason": "vision unavailable 3 times in a row: vision call failed: ConnectError: [Errno 111] Connection refused",
+   "error": "vision unavailable 3 times in a row: vision call failed: ConnectError: [Errno 111] Connection refused",
+   "step": 0,
+   "arrival_verdicts": [],
+   "cloud": {
+    "state": "unreachable",
+    "since": 1793811392.1553643,
+    "checked_at": 1793811392.1553643,
+    "age_s": 1.949436123999476,
+    "probes": 1,
+    "probe_s": 15.0
+   },
+   "late_confirmation": null
+  },
+  "wheel_loop": {
+   "late": 0,
+   "moving": 0,
+   "max_dt_s": 0.0
+  },
+  "paid_calls": 0,
+  "max_open_paid": 0,
+  "travel_mission_cm": 0.0,
+  "drive_after_end": 0,
+  "truth_hole_s": 0.023,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "mem_available_min_mb": 2406,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-04T10:56:45-0600"
+}

@@ -1,0 +1,28 @@
+{
+ "candidates": [],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 0,
+  "landmarks": 0,
+  "no_pose": 107,
+  "observations": 0,
+  "reported": 0,
+  "unplaced": 0
+ },
+ "frame_id": null,
+ "map_id": null,
+ "mission": "Find the red backpack.",
+ "mission_id": "20261104T164844.828312Z-red backpack",
+ "outcome": "blocked",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": []
+}

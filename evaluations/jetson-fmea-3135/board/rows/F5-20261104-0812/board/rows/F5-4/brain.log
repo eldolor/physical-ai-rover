@@ -1,0 +1,3 @@
+1793801669.225 WARNING identity vision-picar brain server starting -- git=d1d69eff2 executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793801687.403 WARNING explore goal call failed (1 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503

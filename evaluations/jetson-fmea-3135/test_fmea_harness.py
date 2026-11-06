@@ -9,7 +9,9 @@ stack, no ssh, no locks):
 import copy
 import importlib.util
 import json
+import math
 import sys
+import types
 from pathlib import Path
 
 import pytest
@@ -77,7 +79,11 @@ def test_truth_reader_skips_a_line_cut_by_the_kill(tmp_path):
 
 GOOD = {"fault_at": 10.0, "forward_at_fault": True, "truth_hole_s": 0.02, "gap_unknown": 0, "contacts": 0, "wheels_zero_s": 0.3,
         "travel_cm": 5.0, "travel_stale_cm": 0.5, "drive_after_cont": 0,
-        "no_feedback_refusals": 1, "outcome": "failed"}
+        "no_feedback_refusals": 1, "outcome": "failed",
+        # 3.135.B's goal rows
+        "end_reason": "ros_unavailable: the bridge is gone", "last_refusal": {"reason": "ros_unavailable"},
+        "recovery_outcome": "found", "stop_code": 200, "stop_answer_s": 0.05,
+        "wheels_zero_from_stop_s": 0.0, "drive_after_unpause": 0, "driver_at_fault": "ros"}
 
 
 @pytest.mark.parametrize("row", sorted(fmea.ROWS))
@@ -101,6 +107,20 @@ def test_a_run_inside_every_bar_passes(row):
     ("F13", {"forward_at_fault": False}, "invalid"),
     ("F8", {"gap_unknown": 3}, "contact unjudged"),
     ("F8", {"gap_unknown": None}, "contact unjudged"),
+    ("F4", {"wheels_zero_s": 0.51}, "bar 0.5"),
+    ("F4", {"travel_cm": 5.1}, "bar 5"),
+    ("F4", {"end_reason": "time limit"}, "not failed naming ROS"),
+    ("F4", {"outcome": "exhausted"}, "not failed naming ROS"),
+    ("F4", {"last_refusal": {"reason": "watchdog"}, "refusals": {}}, "no ros_unavailable"),
+    ("F4", {"recovery_outcome": "out_of_budget"}, "not found"),
+    ("F5", {"stop_answer_s": 1.2}, "within 1.0"),
+    ("F5", {"stop_code": "TimeoutError: x"}, "within 1.0"),
+    ("F5", {"wheels_zero_from_stop_s": None}, "bar 0.5"),
+    ("F5", {"drive_after_unpause": 4}, "after unpause"),
+    ("F6g", {"travel_cm": 15.1}, "bar 15"),
+    ("F7g", {"drive_after_cont": 1}, "after SIGCONT"),
+    ("F4", {"driver_at_fault": "brain"}, "not nav2"),
+    ("F6g", {"driver_at_fault": "twin-dpad"}, "not nav2"),
 ])
 def test_each_broken_bar_fails_its_row(row, change, reason):
     v = fmea.judge(row, {**GOOD, **change})
@@ -215,3 +235,429 @@ def test_push_checkout_refuses_a_bench_dir_that_is_not_a_plain_name():
     for bad in ("../x", "a b", "x;rm", "", "-x", "vision-picar-service", "vision-picar", "bench-a/b", "bench-378", "bench-3135x"):
         with pytest.raises(br.BoardError):
             br.push_checkout("HEAD", run=lambda *a, **k: "", bench_dir=bad)
+
+
+# ------------------------------------------------- 3.135.B: rows.py, amendment 4
+
+import rows  # noqa: E402
+
+
+def _run(i, ok, valid=True, error=None, why=()):
+    return {"i": i, "error": error, "verdict": {"pass": ok, "valid": valid, "reasons": list(why)}}
+
+
+def test_a_row_is_met_only_with_every_scored_run_passing():
+    assert rows.verdict([_run(i, True) for i in range(1, 6)], 5)["state"] == "met"
+    v = rows.verdict([_run(1, True), _run(2, False, why=["moved 3 cm"]), *[_run(i, True) for i in (3, 4, 5)]], 5)
+    assert v["state"] == "FAILED" and v["runs_failed"] == 1 and v["reasons"] == ["moved 3 cm"]
+
+
+def test_errored_and_invalid_runs_are_replaced_not_scored():
+    recs = [_run(1, False, valid=False), _run(2, True, error="StackError: x"),
+            *[_run(i, True) for i in range(3, 8)]]
+    v = rows.verdict(recs, 5)
+    assert v["state"] == "met" and v["runs_scored"] == 5 and v["runs_total"] == 7
+    assert [n["i"] for n in v["not_scored"]] == [1, 2]
+    # an errored run's verdict says fail, but it is not a guard's failure
+    assert rows.verdict([_run(1, False, error="boom")] + [_run(i, True) for i in range(2, 4)], 5)["state"] == "incomplete"
+
+
+def test_runs_past_the_wanted_count_are_not_scored():
+    recs = [_run(i, True) for i in range(1, 6)] + [_run(6, False)]
+    assert rows.verdict(recs, 5)["state"] == "met"
+
+
+def test_the_row_command_runs_rows_py_with_its_plant():
+    c = fmea_run.row_cmd("F9", 5, "lidar_fresh")
+    assert "rows.py F9 --out $OUT/rows --runs 5 --plant lidar_fresh" in c
+    assert "--house" not in c and "--plant" not in fmea_run.row_cmd("F8", 5)
+    assert c.startswith("source tools/jetson/board_lock_check.sh")      # the bench keeps the board
+
+
+# ------------------------------------------------------- 3.135.B: cloud rows
+
+import cloud_rows  # noqa: E402
+
+CLOUD_GOOD = {"outcome": "arrived_unconfirmed", "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.02,
+              "late_confirmation": {"state": "refused"}, "drive_after_end": 0, "max_open_paid": 1,
+              "park_s": 9.0, "travel_mission_cm": 0.0, "mission_s": 70.0}
+
+
+def test_cloud_cases_pass_inside_their_bars():
+    for row in ("F11a", "F11b", "F12a"):
+        assert cloud_rows.judge(row, CLOUD_GOOD)["pass"], row
+    for row in ("F11c", "F12b"):
+        assert cloud_rows.judge(row, {**CLOUD_GOOD, "outcome": "failed"})["pass"], row
+
+
+@pytest.mark.parametrize("row, change, reason", [
+    ("F11a", {"outcome": "failed"}, "not arrived_unconfirmed"),
+    ("F11a", {"outcome": "found"}, "not arrived_unconfirmed"),
+    ("F11b", {"outcome": "found"}, "no cloud yes"),
+    ("F11b", {"late_confirmation": None}, "no late confirmation"),
+    ("F11b", {"drive_after_end": 2}, "after the mission's end"),
+    ("F11c", {"outcome": "failed", "travel_mission_cm": 3.0}, "bar 0.5"),
+    ("F12a", {"max_open_paid": 2}, "open at once"),
+    ("F12a", {"park_s": 31.0}, "bar 30"),
+    ("F12b", {"outcome": "failed", "mission_s": 301.0}, "bar 300"),
+    ("F12b", {"outcome": "out_of_budget"}, "not failed"),
+    ("F11a", {"contacts": 1}, "contact"),
+])
+def test_each_broken_cloud_bar_fails(row, change, reason):
+    v = cloud_rows.judge(row, {**CLOUD_GOOD, **change})
+    assert not v["pass"] and any(reason in r for r in v["reasons"]), v
+
+
+def test_a_cloud_case_that_never_ended_is_not_scored():
+    assert cloud_rows.judge("F11a", {"outcome": None})["valid"] is False
+
+
+def test_rows_py_finds_both_kinds_of_row():
+    assert rows.runner("F9").__name__ == "fmea" and rows.runner("F12a").__name__ == "cloud_rows"
+    assert {r["plant"] for r in cloud_rows.ROWS.values()} - {""} <= stack.BRAIN_PLANTS
+
+
+# ------------------------------------------------------- 3.135.B: the clock row
+
+import sys_rows  # noqa: E402
+
+CLOCK_GOOD = {"outcome": "found", "stepped": True, "watchdog_after_step": 0, "brain_503_lines": 0, "mission_s": 400.3,
+              "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.02}
+
+
+def test_the_clock_cases_and_their_bars():
+    assert sys_rows.judge("F16p", CLOCK_GOOD)["pass"] and sys_rows.judge("F16c", CLOCK_GOOD)["pass"]
+    at_limit = {**CLOCK_GOOD, "outcome": "out_of_budget", "mission_s": 401.0}
+    assert sys_rows.judge("F16p", at_limit, "out_of_budget")["pass"]          # the control's own end
+    for change, reason in (({"watchdog_after_step": 1}, "watchdog stops"),
+                           ({"brain_503_lines": 2}, "503/stale"),
+                           ({"outcome": "out_of_budget", "mission_s": 120.0}, "budget end from the jump"),
+                           ({"outcome": "exhausted"}, "the control's found"),
+                           ({"stepped": False}, "not stepped")):
+        v = sys_rows.judge("F16m", {**CLOCK_GOOD, **change})
+        assert not v["pass"] and any(reason in r for r in v["reasons"]), (change, v)
+    assert sys_rows.judge("F16m", {**CLOCK_GOOD, "stepped": False})["valid"] is False
+    assert rows.runner("F16p").__name__ == "sys_rows"
+    assert {r["plant"] for r in sys_rows.ROWS.values()} - {""} <= stack.ROBOT_PLANTS | stack.BRAIN_PLANTS
+
+
+def test_the_clock_is_armed_before_the_idle_wait(tmp_path, monkeypatch):
+    """Amendment 15: NTP goes off in `arm()`, so the step between verbs is one
+    `date -s` -- on the board `set-ntp` outlasted the 0.38-0.5 s gap."""
+    calls = []
+    monkeypatch.delenv("FMEA_CLOCK", raising=False)
+    monkeypatch.setattr(sys_rows.subprocess, "run", lambda *a, **k: types.SimpleNamespace(
+        returncode=0, stdout="yes\n", stderr=""))
+    monkeypatch.setattr(sys_rows, "sudo", lambda *argv: calls.append(argv) or types.SimpleNamespace(
+        returncode=0, stdout="", stderr=""))
+    c = sys_rows.Clock(tmp_path)
+    c.arm()
+    assert calls == [("timedatectl", "set-ntp", "false")]
+    c.step(300)
+    assert calls[1:] == [("date", "-s", "+300 seconds")]
+    src = open(sys_rows.__file__).read()
+    assert src.index("clock.arm()") < src.index("wait_forward(st, MOVE_WAIT_S)\n                    end, z0")
+
+
+# --------------------------------------------------------- 3.135.B: VE rows
+
+import vlm_rows  # noqa: E402
+
+VLM_GOOD = {"fault_at": 1.0, "forward_at_fault": True, "goal_at_fault": True, "question_hit": True,
+            "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.02, "oom_kills": 1, "killed_ve": True,
+            "alive_after": {"robot": True, "brain": True, "ros": True}, "late_ticks": 0,
+            "ve_back_s": 45.0, "next_answer": True, "failed_in_watch": False,
+            "wheels_zero_from_stop_s": 0.06, "cancelled_by": "stop", "paid_after_stop": 0,
+            "handed_on": 2}
+
+
+@pytest.mark.parametrize("row, outcome", [("F2", "found"), ("F3f", "stopped_by_harness"), ("F3a", "found"),
+                                          ("F3r", "arrived_unconfirmed"), ("F17g", "cancelled"),
+                                          ("F17q", "cancelled"), ("F17a", "cancelled")])
+def test_ve_cases_pass_inside_their_bars(row, outcome):
+    assert vlm_rows.judge(row, {**VLM_GOOD, "outcome": outcome}) == {"pass": True, "valid": True, "reasons": []}
+
+
+@pytest.mark.parametrize("row, change, reason", [
+    ("F2", {"oom_kills": 2}, "bar 1"), ("F2", {"killed_ve": False}, "not VE"),
+    ("F2", {"alive_after": {"robot": True, "brain": False, "ros": True}}, "alive after"),
+    ("F2", {"late_ticks": 1}, "late wheel"), ("F2", {"outcome": "running"}, "ended running"),
+    ("F3f", {"ve_back_s": 61.0}, "bar 60"), ("F3f", {"next_answer": False}, "not answered"),
+    ("F3f", {"failed_in_watch": True}, "failed after the kill"),
+    ("F3a", {"outcome": "out_of_budget"}, "not found"), ("F3r", {"outcome": "found"}, "not arrived_unconfirmed"),
+    ("F3f", {"handed_on": 0}, "handed to the cloud"),
+    ("F17g", {"wheels_zero_from_stop_s": 0.21}, "bar 0.2"),
+    ("F17q", {"outcome": "running", "cancelled_by": None}, "not cancelled by stop"),
+    ("F17a", {"paid_after_stop": 1}, "paid calls after"),
+])
+def test_each_broken_ve_bar_fails(row, change, reason):
+    base = {**VLM_GOOD, "outcome": {"F2": "found", "F3f": "x", "F3a": "found", "F3r": "arrived_unconfirmed"}.get(row, "cancelled")}
+    v = vlm_rows.judge(row, {**base, **change})
+    assert not v["pass"] and any(reason in r for r in v["reasons"]), v
+
+
+def test_a_ve_fault_off_its_moment_is_invalid():
+    assert vlm_rows.judge("F3a", {**VLM_GOOD, "question_hit": False, "outcome": "found"})["valid"] is False
+    assert vlm_rows.judge("F17g", {**VLM_GOOD, "goal_at_fault": None, "outcome": "cancelled"})["valid"] is False
+    assert rows.runner("F17q").__name__ == "vlm_rows"
+    assert {r["plant"] for r in vlm_rows.ROWS.values()} - {"ve_oom0"} <= stack.ROBOT_PLANTS | stack.BRAIN_PLANTS
+    import inspect
+    assert 'plant="" if plant == "ve_oom0" else plant' in inspect.getsource(vlm_rows.run_row)
+
+
+def test_the_full_disk_case_and_its_bars():
+    ok = {"outcome": "found", "write_fail_lines": 2, "mission_s": 120.0, "late_ticks": 0,
+          "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.02, "choices_picked": 4, "choice_fail_lines": 1}
+    assert sys_rows.judge("F15", ok)["pass"]
+    assert not sys_rows.judge("F15", {**ok, "write_fail_lines": 9,
+                                      "write_fail_by_writer": {"choices": 9}})["pass"]       # per frame
+    three = {**ok, "mission_s": 59.0, "write_fail_lines": 3,
+             "write_fail_by_writer": {"choices": 1, "inventory": 1, "intervention": 1}}
+    assert sys_rows.judge("F15", three)["pass"]                     # one each, under a minute
+    assert not sys_rows.judge("F15", {**ok, "late_ticks": 1})["pass"]
+    assert not sys_rows.judge("F15", {**ok, "outcome": None})["pass"]
+    assert not sys_rows.judge("F15", {**ok, "outcome": "failed"})["pass"]               # it did not go on
+    assert sys_rows.judge("F15", {**ok, "choices_picked": 0})["valid"] is False
+    assert sys_rows.judge("F15", {**ok, "choice_fail_lines": 0})["valid"] is False   # the choice log never hit it
+
+
+def test_f4_reads_the_refusal_count_when_the_watchdog_has_overwritten_the_readout():
+    ok = {**GOOD, "last_refusal": {"reason": "watchdog"}, "refusals": {"ros_unavailable": 3}}
+    assert fmea.judge("F4", ok)["pass"]
+
+
+def test_a_cloud_mission_that_outran_its_budget_is_a_failed_row_not_a_lost_run():
+    v = cloud_rows.judge("F12b", {"outcome": None, "timed_out": True, "mission_s": 300.4})
+    assert v["valid"] is True and not v["pass"]
+
+
+def test_the_clock_rows_stale_count_ignores_the_epoch_stamp():
+    assert not sys_rows.STALE_RE.search("1793592979.614 WARNING ok".split(" ", 1)[-1].replace("503", "x"))
+    assert sys_rows.STALE_RE.search("WARNING cloud answered 503")
+    line = "1795033979.614 WARNING tiered asked"
+    assert not sys_rows.STALE_RE.search(line.split(" ", 1)[-1])
+    assert sys_rows.judge("F16p", {**CLOCK_GOOD, "idle_at_fault": False})["valid"] is False
+
+
+def test_amendment_16_ve_kills_flush_the_start_limit_and_a_first_question_kill_is_read(monkeypatch):
+    """Every F2/F3 row ran into VE's start limit (4 starts in 900 s) by its
+    fourth run, and F3f's kill at the first frame question (no tier stats
+    yet) left handed-on unreadable."""
+    calls = []
+    monkeypatch.setattr(vlm_rows, "sh", lambda *argv, **k: calls.append(argv) or types.SimpleNamespace(
+        returncode=0, stdout="", stderr=""))
+    vlm_rows.reset_start_limit()
+    assert calls == [("sudo", "-n", "systemctl", "reset-failed", "picar-local-vlm")]
+    monkeypatch.setattr(vlm_rows, "sh", lambda *argv, **k: types.SimpleNamespace(
+        returncode=1, stdout="", stderr="no"))
+    with pytest.raises(stack.StackError):
+        vlm_rows.reset_start_limit()
+    assert vlm_rows.absent_count({"tier": {"model": "x"}}) is None       # no stats stays unreadable
+    import inspect
+    src = inspect.getsource(vlm_rows.run_row)
+    assert src.index("reset_start_limit()") < src.index('raise StackError("VE is not ready at the start")')
+    assert 'after - (ms.get("absent_before") or 0)' in src               # a None baseline is 0, a None after is not
+    assert 'ms.get("status_read_at_kill")' in src                          # ...but a failed read is not a baseline
+
+
+def test_amendment_17_the_truthful_stand_in_and_f3a2s_bar():
+    """F3a's stand-in said "not visible" to the arrival too, so no run could end
+    found (3.91.C): F3a2's stand-in answers from the body's true pose."""
+    import truth_cloud as tc
+    tx, ty = tc.TARGET_XY
+    assert (tx, ty) == (7.05, 1.65)                                         # cell (23, 5), 0.30 m
+    assert tc.answer({"x": tx - 0.52, "y": ty, "cam_th": 0.0})[0]["target_visible"] is True   # F3a's arrivals
+    assert tc.answer({"x": tx - 0.52, "y": ty, "cam_th": math.pi})[0]["target_visible"] is False  # facing away
+    assert tc.answer({"x": tx - 1.5, "y": ty, "cam_th": 0.0})[0]["target_visible"] is False     # too far
+    assert tc.answer({"x": tx - 0.5, "y": ty - 0.5, "cam_th": 0.0})[0]["target_visible"] is False  # 45 deg off
+    assert tc.answer({"x": tx - 0.52, "y": ty, "th": 0.0})[1] == {"pose": None}   # no camera heading: blind
+    assert tc.answer(None)[0]["target_visible"] is False
+    good = {"fault_at": 1.0, "question_hit": True, "contacts": 0, "gap_unknown": 0, "truth_hole_s": 0.03,
+            "handed_on": 3, "ve_back_s": 41.0, "next_answer": True, "outcome": "found",
+            "status": {"arrival_verdicts": [{"tier": "cloud", "confirmed": True}]}}
+    assert vlm_rows.judge("F3a2", good)["pass"]
+    for change, why in (({"outcome": "exhausted"}, "not found"),
+                        ({"status": {"arrival_verdicts": [{"tier": "cloud", "confirmed": True},
+                                                          {"tier": "local", "confirmed": True}]}},
+                         "the deciding arrival verdict was not the cloud's yes")):
+        v = vlm_rows.judge("F3a2", {**good, **change})
+        assert not v["pass"] and any(why in r for r in v["reasons"]), v
+    assert vlm_rows.judge("F3a2", {**good, "standin_blind": 2})["valid"] is False
+    assert rows.runner("F3a2").__name__ == "vlm_rows"
+    assert "cam = grid.view_angle()" in (HERE / "truth_body.py").read_text()   # a call, not the method
+    from sim.maps.scaled_house import build_scaled_world
+    assert isinstance(build_scaled_world().view_angle(), float)
+
+
+def test_the_f3_stack_asks_the_cloud_at_arrival_and_the_plant_reads_ve_gone_as_no():
+    import inspect
+    assert '"SIM_ARRIVAL_CONFIRM": "cloud"' in inspect.getsource(vlm_rows.run_row)
+    assert 'return {"status": "answered", "score": 0.0' in (HERE / "brain_plant.py").read_text()
+    st = {"tier": {"stats": {"local": {"absent": 2}, "local_frame": {"absent": 3, "yes": 1}}}}
+    assert vlm_rows.absent_count(st) == 5 and vlm_rows.absent_count({}) is None
+    assert "LocalVLMClient._post" in (HERE / "brain_plant.py").read_text()
+    sys.path.insert(0, str(HERE.parents[1]))
+    import brain.local_vlm as lv
+    assert hasattr(lv.LocalVLMClient, "_post")                    # the class the plant patches exists
+
+
+# ------------------------------------------------------ 3.135.B: F14 (amendment 18)
+
+def test_f14_checker_catches_torn_files(tmp_path):
+    """F14's planted check (criterion 4): a reboot cannot be planted on the
+    desktop, so the checker is fed torn copies -- a JSONL line cut mid-record
+    and a JSON file cut in half -- and must flag both, and pass the whole ones."""
+    import f14_reboot as f14
+    inv = tmp_path / "recordings/inventory"
+    itv = tmp_path / "recordings/interventions"
+    inv.mkdir(parents=True)
+    itv.mkdir(parents=True)
+    whole = json.dumps({"mission": "m1", "landmarks": [{"label": "sofa", "x": 1.0}]})
+    (inv / "m1.json").write_text(whole)
+    (itv / "interventions.jsonl").write_text('{"a": 1}\n{"b": 2}\n')
+    (inv / "m1.jpg").write_bytes(b"\xff\xd8")
+    good = f14.check_tree(tmp_path)
+    assert good["bad"] == [] and good["json"] == 1 and good["jsonl_lines"] == 2 and good["other"] == 1
+    (inv / "m1.json").write_text(whole[: len(whole) // 2])
+    (itv / "interventions.jsonl").write_text('{"a": 1}\n{"b": 2')
+    bad = f14.check_tree(tmp_path)
+    assert {b["file"] for b in bad["bad"]} == {"recordings/inventory/m1.json",
+                                                "recordings/interventions/interventions.jsonl"}
+
+
+def test_f14_judge():
+    import f14_reboot as f14
+    units = {"picar-stack": "active/enabled"}
+    good = {"boot_changed": True, "driving_at_reboot": True, "stack_back_s": 61.0,
+            "files_before": {"index": {"recordings/interventions/i.jsonl": 3, "recordings/inventory/a.json": 9}},
+            "files_after": {"bad": [], "index": {"recordings/interventions/i.jsonl": 4,
+                                                 "recordings/inventory/a.json": 9}},
+            "next_started": True, "next_stop": {"stop": 200}, "units_before": units, "units_after": units}
+    assert f14.judge(good) == {"pass": True, "valid": True, "reasons": []}
+    for change, why in (({"stack_back_s": 95.0}, "bar 90"), ({"stack_back_s": None}, "back None"),
+                        ({"files_after": {"bad": [{"file": "x"}]}}, "1 unparseable"),
+                        ({"next_started": False}, "next mission"),
+                        ({"units_after": {"picar-stack": "failed/enabled"}}, "not as found"),
+                        ({"files_after": {"bad": [], "index": {"recordings/interventions/i.jsonl": 2}}},
+                         "lost or shortened"),
+                        ({"next_stop": {"stop": 500}}, "not stopped")):
+        v = f14.judge({**good, **change})
+        assert not v["pass"] and v["valid"] and any(why in r for r in v["reasons"]), (change, v)
+    assert f14.judge({**good, "boot_changed": False})["valid"] is False
+    assert f14.judge({**good, "driving_at_reboot": False})["valid"] is False
+    assert f14.judge({**good, "units_before": {"picar-stack": "inactive/enabled"}})["valid"] is False
+
+
+# ------------------------------------------------------ 3.135.B: F24 (amendment 18)
+
+def test_f24_bars_steps_and_plant():
+    good = {"fault_at": 1.0, "forward_at_fault": True, "goal_at_fault": True, "contacts": 0, "gap_unknown": 0,
+            "truth_hole_s": 0.03, "reserve_at": 30.0, "poweroff_at": 75.0, "moved_after_reserve_cm": 0.4,
+            "running_at_reserve": True, "brain_floor_v": None,
+            "shutdown": [{"step": s, "rc": 0 if s != "poweroff" else None} for s in vlm_rows.F24_STEPS],
+            "down_at_poweroff": {"mission": False, "ros": False, "vlm": False}}
+    assert vlm_rows.judge("F24", good) == {"pass": True, "valid": True, "reasons": []}
+    two = good["shutdown"] + [{"step": "poweroff", "rc": None}]
+    for change, why in (({"moved_after_reserve_cm": 12.0}, "after Reserve"),
+                        ({"shutdown": two}, "called 2 times"),
+                        ({"shutdown": good["shutdown"][:1] + good["shutdown"][2:]}, "the shutdown order"),
+                        ({"shutdown": [{**x, "rc": 1} if x["step"] == "ros" else x for x in good["shutdown"]]},
+                         "not clean"),
+                        ({"down_at_poweroff": {"mission": False, "ros": True, "vlm": False}}, "still up")):
+        v = vlm_rows.judge("F24", {**good, **change})
+        assert not v["pass"] and any(why in r for r in v["reasons"]), (change, v)
+    assert vlm_rows.judge("F24", {**good, "poweroff_at": None})["valid"] is False
+    assert vlm_rows.judge("F24", {**good, "running_at_reserve": False})["valid"] is False
+    assert vlm_rows.judge("F24", {**good, "brain_floor_v": 10.5})["valid"] is False   # the floor on
+    env = vlm_rows.f24_env("http://127.0.0.1:10351")
+    assert [n for n, _ in json.loads(env["BATTERY_SHUTDOWN_CMDS"])] == ["brain", "ros", "vlm"]
+    assert env["BATTERY_POWEROFF_CMD"] == ""                                 # 3.137's logged stub
+    assert "no_reserve" in stack.ROBOT_PLANTS and vlm_rows.ROWS["F24"]["plant"] == "no_reserve"
+    src = (HERE / "robot_plant.py").read_text()
+    assert 'server.RESERVE = "planted: no reserve"' in src
+    sys.path.insert(0, str(HERE.parents[1]))
+    import robot.server as rs
+    assert hasattr(rs, "RESERVE")                                          # the global the plant renames
+    assert '@app.post("/fmea/battery")' in (HERE / "truth_body.py").read_text()
+
+
+def test_f24_checks_the_stub_and_ves_unit_first(monkeypatch):
+    """The orchestrator's conditions (2026-11-04): no F24 fault unless the
+    stack's power-off reads as the stub, and VE's unit read before and after."""
+    import inspect
+    src = inspect.getsource(vlm_rows.run_row)
+    assert src.index('!= "stub"') < src.index('f"/fmea/battery?v=')
+    assert "ve_unit_settings()" in src and "ve_unit_as_found" in src
+    monkeypatch.setattr(vlm_rows, "sh", lambda *a, **k: types.SimpleNamespace(
+        returncode=0, stdout="OOMScoreAdjust=1000\nStartLimitBurst=4\n", stderr=""))
+    assert vlm_rows.ve_unit_settings() == {"OOMScoreAdjust": "1000", "StartLimitBurst": "4"}
+
+
+def test_f24_reads_the_ladder_block_of_get_battery():
+    """The desktop smoke (2026-11-04) found `reserve_s`, `shutdown` and
+    `poweroff_cmd` under `/battery`'s `ladder` block; read at the top level,
+    the stub check refused every run and Reserve was never seen."""
+    reply = {"usable": True, "v": 9.83, "level": "poweroff",
+             "ladder": {"level": "poweroff", "reserve_s": 35.9, "poweroff_cmd": "stub",
+                        "shutdown": [{"step": "wheels", "rc": 0}]}}
+    assert vlm_rows.ladder_of(reply)["poweroff_cmd"] == "stub"
+    assert vlm_rows.ladder_of(reply)["reserve_s"] == 35.9
+    assert vlm_rows.ladder_of(None) == {} and vlm_rows.ladder_of({"v": 1}) == {}
+    sys.path.insert(0, str(HERE.parents[1]))
+    src = (HERE.parents[1] / "robot/server.py").read_text()
+    assert '"level": status["level"], "ladder": status}' in src           # the route's reply shape
+
+
+def test_amendment_19_f24s_brain_floor_off_and_ves_settings_without_runtime(tmp_path, monkeypatch):
+    """F24's first board runs (2026-11-04): the brain's 10.5 V floor ended every
+    mission before Reserve, and VE's ExecStart differed only in its start time."""
+    import brain_floor_off as bfo
+    import yaml
+    cfg = yaml.safe_load(bfo.floor_off_config(tmp_path).read_text())
+    assert cfg["brain"]["battery_floor_v"] == 0
+    sys.path.insert(0, str(HERE.parents[1]))
+    from control.brain_config import load_brain_config
+    assert load_brain_config(str(next(tmp_path.glob("robot-floor-off-*.yaml"))))["battery_floor_v"] == 0
+    with pytest.raises(stack.StackError):
+        stack.Stack(tmp_path / "s", plant="cloud_class", brain_floor_off=True)
+    run = ("{ path=/x/python ; argv[]=/x/python -m service.local_vlm.server ; ignore_errors=no ; "
+           "start_time=[Wed 2026-11-04 22:41:39 CST] ; stop_time=[n/a] ; pid=1 ; code=(null) ; status=0/0 }")
+    later = (run.replace("22:41:39", "22:44:07").replace("pid=1", "pid=2")
+             .replace("stop_time=[n/a]", "stop_time=[Wed 2026-11-04 22:43:00 CST]").replace("code=(null)", "code=exited"))
+    for out in (run, later):
+        monkeypatch.setattr(vlm_rows, "sh", lambda *a, _o=out, **k: types.SimpleNamespace(
+            returncode=0, stdout=f"ExecStart={_o}\nOOMScoreAdjust=1000\n", stderr=""))
+        got = vlm_rows.ve_unit_settings()
+        if out is run:
+            first = got
+    assert got == first and "argv[]" in got["ExecStart"]
+    assert not any(f in got["ExecStart"] for f in ("start_time", "stop_time", "pid=", "code=", "status="))
+
+
+def test_f14_reaches_the_production_brain_under_its_prefix():
+    """F14's first board batch (2026-11-05): every brain call went to :8001
+    and was 404, because picar-stack serves the brain under /brain."""
+    import f14_reboot as f14
+    assert f14.BRAIN.endswith(":8001/brain")
+    assert "ROUTE_PREFIX=/brain" in (HERE.parents[1] / "service/tunnel/run.sh").read_text()
+
+
+def test_f14_reads_picar_stacks_local_secret(tmp_path, monkeypatch):
+    """...and its calls were 401: run.sh's secret is LOCAL_SECRET."""
+    import f14_reboot as f14
+    monkeypatch.setenv("HOME", str(tmp_path))
+    (tmp_path / ".vision-picar-local-secrets").write_text("VISION_SECRET=v\nLOCAL_SECRET='abc123'\n")
+    assert f14._secret() == "abc123"
+    assert "LOCAL_SECRET" in (HERE.parents[1] / "service/tunnel/run.sh").read_text()
+
+
+def test_f14_a_hung_reboot_session_is_a_sent_reboot_and_a_failed_step_stops_the_mission():
+    """The bug pass (2026-11-05): a session hanging as the board goes down was
+    an escaped TimeoutExpired, and a raise after a start left the mission."""
+    import inspect
+    import f14_reboot as f14
+    src = inspect.getsource(f14)
+    assert "except subprocess.TimeoutExpired:          # a session hung" in src
+    pre = inspect.getsource(f14.pre)
+    assert pre.index('on_board("start"') < pre.index("except Exception:") < pre.index('on_board("stop")')
+    assert "finally:" in inspect.getsource(f14.post)

@@ -1,0 +1,5 @@
+1793811626.496 WARNING identity vision-picar brain server starting -- git=affb16fdd executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793811647.909 WARNING tiered async cloud call failed: ReadTimeout: timed out
+1793811674.118 WARNING tiered async cloud call failed: ReadTimeout: timed out
+1793811700.328 WARNING tiered async cloud call failed: ReadTimeout: timed out
+1793811720.814 WARNING tiered async cloud call failed: ReadTimeout: timed out

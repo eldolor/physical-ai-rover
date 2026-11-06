@@ -301,6 +301,51 @@ def map_etag(m: dict, boot: str = "") -> Optional[str]:
     return f'"{boot}:{mid}:{ver}"'
 
 
+# 3.141.F1: elements per `json.dumps` call when a map's big list is encoded.
+MAP_ENCODE_SLICE = 4096
+
+
+def _dumps(obj) -> str:
+    """`json.dumps` exactly as Starlette's `JSONResponse.render` calls it."""
+    return json.dumps(obj, ensure_ascii=False, allow_nan=False, indent=None, separators=(",", ":"))
+
+
+def map_json(m) -> bytes:
+    """`JSONResponse(m).body`, byte for byte, built in slices (3.141.F1).
+    One C `json.dumps` of a house's map held the GIL for its whole encode --
+    18.7 ms on the desktop for a 400 x 400 grid, ~3x that on the board -- and
+    with the wheel loop waiting on the GIL it ran late (3.141.F0). Here a
+    dict's keys are written in order and a list over `MAP_ENCODE_SLICE`
+    elements is dumped a slice at a time, so the interpreter can hand the GIL
+    to the loop between slices; each piece is `json.dumps` of the same value
+    with the same options, so the bytes are the same. A dict with a key that
+    is not a str (which `json.dumps` converts) goes in one call, as before.
+    Only a top-level list is sliced: every world's `cells` is one flat list
+    (`world/interface.py`); a nested or tuple shape would be the same bytes in
+    one call. Not one atomic call any more, so the map must not change while
+    it is encoded: every world hands back its own copy (`MockWorld` a fresh
+    list, `RosWorld` a dict built once per version and never written again)."""
+    if not isinstance(m, dict) or not all(isinstance(k, str) for k in m):
+        return _dumps(m).encode("utf-8")
+    parts = ["{"]
+    for i, (k, v) in enumerate(m.items()):
+        if i:
+            parts.append(",")
+        parts.append(_dumps(k))
+        parts.append(":")
+        if isinstance(v, list) and len(v) > MAP_ENCODE_SLICE:
+            parts.append("[")
+            for j in range(0, len(v), MAP_ENCODE_SLICE):
+                if j:
+                    parts.append(",")
+                parts.append(_dumps(v[j:j + MAP_ENCODE_SLICE])[1:-1])
+            parts.append("]")
+        else:
+            parts.append(_dumps(v))
+    parts.append("}")
+    return "".join(parts).encode("utf-8")
+
+
 def _not_modified(header: str, tag: str) -> bool:
     """Whether an `If-None-Match` header names `tag` (weak tags as strong: a
     map is the same bytes or a new version), or is `*`, which any current
@@ -2117,9 +2162,10 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         131-218 ms for a house's map -- a late tick of the wheel loop (and
         the watchdog beside it) on every fetch. A `JSONResponse` built here
         is rendered in the threadpool and passed through as is: the same
-        bytes FastAPI's default response would have sent.
-        Its C `json.dumps` still holds the GIL while it runs (8.6-14 ms on
-        the board), well inside the 50 ms period.
+        bytes FastAPI's default response would have sent. Since 3.141.F1 the
+        body is `map_json(m)`, the same bytes built in slices, because one C
+        `json.dumps` of the whole map held the GIL long enough on the board
+        to make the wheel loop late.
 
         Sent only when it has changed (3.123): a usable map carries an ETag
         of its `map_id` and `map_version`, a request naming that tag in
@@ -2140,13 +2186,13 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 map_untagged_logged[0] = True
                 logger.warning("map %r version %r cannot be tagged: every /world/map "
                                "is sent in full (3.123)", m.get("map_id"), m.get("map_version"))
-            return JSONResponse(m)
+            return Response(content=map_json(m), media_type="application/json")
         headers = {"ETag": tag, "Cache-Control": "no-cache"}
         if if_none_match and _not_modified(if_none_match, tag):
             return Response(status_code=304, headers=headers)
         kept = map_body[0]
         if kept is None or kept[0] != tag:
-            kept = (tag, JSONResponse(m).body)
+            kept = (tag, map_json(m))
             map_body[0] = kept
         return Response(content=kept[1], media_type="application/json", headers=headers)
 

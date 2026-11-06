@@ -1,0 +1,43 @@
+{
+ "stamp": "20261104-144032",
+ "criterion": 4,
+ "rows": [
+  {
+   "row": "F12b",
+   "plant": "cloud_deadline",
+   "reading": "never two paid calls open at once; B3.2's budget ends the mission failed, within 300 s of its start; 0 contacts",
+   "base": {
+    "pass": true,
+    "reasons": [],
+    "error": null,
+    "recovery_s": null,
+    "contacts": 0,
+    "outcome": "failed",
+    "max_open_paid": 1,
+    "park_s": 20.6,
+    "mission_s": 61.1,
+    "drive_after_end": 0,
+    "travel_mission_cm": 0.0
+   },
+   "planted": {
+    "pass": false,
+    "reasons": [
+     "the mission had not ended 300.7 s after its start"
+    ],
+    "error": null,
+    "contacts": 0,
+    "outcome": null,
+    "max_open_paid": 1,
+    "park_s": 60.1,
+    "mission_s": 300.7,
+    "drive_after_end": 0,
+    "travel_mission_cm": 0.0
+   },
+   "caught": true,
+   "discriminates": true
+  }
+ ],
+ "met": true,
+ "not_scored_until_fixed": [],
+ "base_fails_too": []
+}

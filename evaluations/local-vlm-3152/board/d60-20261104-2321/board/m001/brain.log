@@ -1,0 +1,30 @@
+1793859636.089 WARNING identity vision-picar brain server starting -- git=d463dc5f executable=/home/picar/bench-3152/.venv/bin/python config=(default)
+1793859642.663 WARNING tiered local VLM absent for mission_start (local VLM unreachable: [Errno 111] Connection refused); asking the cloud
+1793859643.561 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)
+1793859973.818 ERROR mission_runner mission step failed
+Traceback (most recent call last):
+  File "/home/picar/bench-3152/control/mission_runner.py", line 1070, in tick
+    result = self.agent.step()
+  File "/home/picar/bench-3152/brain/explore.py", line 375, in step
+    action, executed, detail = self._choose(frame, scene)
+  File "/home/picar/bench-3152/brain/explore.py", line 401, in _choose
+    out = self._choose_tick(frame, scene)
+  File "/home/picar/bench-3152/brain/explore.py", line 439, in _choose_tick
+    state = self._goal_state()
+  File "/home/picar/bench-3152/brain/explore.py", line 557, in _goal_state
+    self._bridge_blip(exc)
+  File "/home/picar/bench-3152/brain/explore.py", line 592, in _bridge_blip
+    raise exc
+  File "/home/picar/bench-3152/brain/explore.py", line 555, in _goal_state
+    g = (self.navigator.get_goal() or {}).get("goal") or {}
+  File "/home/picar/bench-3152/control/mission_runner.py", line 389, in get_goal
+    return self._nav.get_goal()
+  File "/home/picar/bench-3152/control/remote_navigator.py", line 68, in get_goal
+    r = self._call("GET")
+  File "/home/picar/bench-3152/control/remote_navigator.py", line 44, in _call
+    return self._client.request(method, "/world/goal", json=json, headers=self.headers)
+  File "/home/picar/bench-3152/.venv/lib/python3.10/site-packages/httpx/_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+  File "/home/picar/bench-3152/.venv/lib/python3.10/site-packages/httpx/_client.py", line 901, in send
+    raise RuntimeError("Cannot send a request, as the client has been closed.")
+RuntimeError: Cannot send a request, as the client has been closed.

@@ -1,0 +1,23 @@
+{
+ "row": "F7g",
+ "plant": null,
+ "house": "scaled_house",
+ "state": "FAILED",
+ "runs_wanted": 5,
+ "runs_scored": 5,
+ "runs_total": 5,
+ "runs_failed": 5,
+ "not_scored": [],
+ "reasons": [
+  "moved 17.06 cm after the fault (bar 15)",
+  "moved 17.27 cm after the fault (bar 15)",
+  "moved 17.39 cm after the fault (bar 15)",
+  "moved 18.28 cm after the fault (bar 15)",
+  "moved 18.31 cm after the fault (bar 15)",
+  "wheels zero after 2.794 s (bar 1.1)",
+  "wheels zero after 2.866 s (bar 1.1)",
+  "wheels zero after 3.062 s (bar 1.1)",
+  "wheels zero after 3.12 s (bar 1.1)",
+  "wheels zero after 3.148 s (bar 1.1)"
+ ]
+}

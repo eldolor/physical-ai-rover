@@ -1,0 +1,14 @@
+{
+ "row": "F11a",
+ "plant": null,
+ "house": "scaled_house",
+ "state": "FAILED",
+ "runs_wanted": 5,
+ "runs_scored": 5,
+ "runs_total": 5,
+ "runs_failed": 1,
+ "not_scored": [],
+ "reasons": [
+  "the mission ended blocked, not arrived_unconfirmed"
+ ]
+}

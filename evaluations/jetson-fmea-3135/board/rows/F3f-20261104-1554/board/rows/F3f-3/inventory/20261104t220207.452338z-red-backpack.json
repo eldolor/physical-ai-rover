@@ -1,0 +1,105 @@
+{
+ "candidates": [],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 300,
+  "landmarks": 4,
+  "no_pose": 0,
+  "observations": 158,
+  "reported": 4,
+  "unplaced": 0
+ },
+ "frame_id": null,
+ "map_id": "slam-027557ef",
+ "mission": "Find the red backpack.",
+ "mission_id": "20261104T220207.452338Z-red backpack",
+ "outcome": "cancelled",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 91,
+   "hits": 13,
+   "id": 3,
+   "label": "red backpack",
+   "last_step": 211,
+   "misses": 0,
+   "points": 52,
+   "reported": true,
+   "room": "hallway",
+   "votes": {
+    "red backpack": 13
+   },
+   "x_m": 6.941,
+   "y_m": 1.565
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 89,
+   "hits": 14,
+   "id": 2,
+   "label": "refrigerator",
+   "last_step": 264,
+   "misses": 0,
+   "points": 45,
+   "reported": true,
+   "room": "hallway",
+   "votes": {
+    "refrigerator": 14
+   },
+   "x_m": 7.213,
+   "y_m": 0.754
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 99,
+   "hits": 13,
+   "id": 4,
+   "label": "sofa",
+   "last_step": 299,
+   "misses": 0,
+   "points": 40,
+   "reported": true,
+   "room": "hallway",
+   "votes": {
+    "sofa": 13
+   },
+   "x_m": 0.883,
+   "y_m": 0.821
+  },
+  {
+   "belief": 0.968,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 4,
+   "id": 1,
+   "label": "bed",
+   "last_step": 56,
+   "misses": 0,
+   "points": 21,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "bed": 4
+   },
+   "x_m": 0.907,
+   "y_m": 3.225
+  }
+ ]
+}

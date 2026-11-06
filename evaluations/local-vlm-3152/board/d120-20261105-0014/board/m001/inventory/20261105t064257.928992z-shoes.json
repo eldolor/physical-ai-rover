@@ -1,0 +1,86 @@
+{
+ "candidates": [],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 23,
+  "landmarks": 3,
+  "no_pose": 0,
+  "observations": 34,
+  "reported": 3,
+  "unplaced": 0
+ },
+ "frame_id": "map-cae760d9",
+ "map_id": "slam-8ee0c159",
+ "mission": "Find the shoes.",
+ "mission_id": "20261105T064257.928992Z-shoes",
+ "outcome": "found",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 6,
+   "id": 2,
+   "label": "shoes",
+   "last_step": 22,
+   "misses": 0,
+   "points": 23,
+   "reported": true,
+   "room": "entry",
+   "votes": {
+    "shoes": 6
+   },
+   "x_m": 1.104,
+   "y_m": 8.118
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 2,
+   "id": 1,
+   "label": "shoe bench",
+   "last_step": 6,
+   "misses": 0,
+   "points": 6,
+   "reported": true,
+   "room": "entry",
+   "votes": {
+    "shoe bench": 2
+   },
+   "x_m": 0.946,
+   "y_m": 9.497
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 2,
+   "id": 3,
+   "label": "umbrella",
+   "last_step": 5,
+   "misses": 0,
+   "points": 5,
+   "reported": true,
+   "room": "entry",
+   "votes": {
+    "umbrella": 2
+   },
+   "x_m": 2.764,
+   "y_m": 8.713
+  }
+ ]
+}

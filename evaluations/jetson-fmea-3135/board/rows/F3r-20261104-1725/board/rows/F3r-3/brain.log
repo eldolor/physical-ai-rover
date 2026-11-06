@@ -1,0 +1,6 @@
+1793836901.624 WARNING identity vision-picar brain server starting -- git=1330ea8f2 executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793836978.580 WARNING safety Blocked FORWARD: distance=18.0cm < min=20cm (depth_grid)
+1793836979.377 WARNING tiered local VLM absent at arrival (local VLM not ready: {"detail":"local VLM absent"}); asking the cloud
+1793836979.858 WARNING tiered local VLM absent at arrival (local VLM not ready: {"detail":"local VLM not ready"}); asking the cloud
+1793836980.289 WARNING tiered local VLM absent at arrival (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793837020.452 WARNING safety Blocked FORWARD: distance=18.0cm < min=20cm (depth_grid)

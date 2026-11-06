@@ -1,0 +1,34 @@
+1793854872.570 WARNING identity vision-picar brain server starting -- git=9dfc6d63 executable=/home/picar/bench-3152/.venv/bin/python config=(default)
+1793854897.572 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM absent"}); asking the cloud
+1793854898.537 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)
+1793854976.590 ERROR mission_runner mission step failed
+Traceback (most recent call last):
+  File "/home/picar/bench-3152/control/mission_runner.py", line 1070, in tick
+    result = self.agent.step()
+  File "/home/picar/bench-3152/brain/explore.py", line 375, in step
+    action, executed, detail = self._choose(frame, scene)
+  File "/home/picar/bench-3152/brain/explore.py", line 401, in _choose
+    out = self._choose_tick(frame, scene)
+  File "/home/picar/bench-3152/brain/explore.py", line 487, in _choose_tick
+    return self._do_pending()
+  File "/home/picar/bench-3152/brain/explore.py", line 1502, in _do_pending
+    return self._do_pending() if self._pending else ("WAIT", True, "not wedged")
+  File "/home/picar/bench-3152/brain/explore.py", line 1481, in _do_pending
+    out = self._verb(side, angle=angle)
+  File "/home/picar/bench-3152/brain/explore.py", line 1753, in _verb
+    out = action, True, self.safety.check_and_execute(action, **kwargs)
+  File "/home/picar/bench-3152/robot/safety.py", line 1121, in check_and_execute
+    return self._check_and_execute(action, None, **kwargs)
+  File "/home/picar/bench-3152/robot/safety.py", line 1167, in _check_and_execute
+    result = self._dispatch(action, **kwargs)
+  File "/home/picar/bench-3152/robot/safety.py", line 1339, in _dispatch
+    return dispatch_table[action]()
+  File "/home/picar/bench-3152/robot/safety.py", line 1330, in <lambda>
+    "LEFT": lambda: self.robot.turn_left(kwargs.get("angle", 90)),
+  File "/home/picar/bench-3152/control/mission_runner.py", line 520, in turn_left
+    return self._robot.turn_left(angle)
+  File "/home/picar/bench-3152/control/remote_robot.py", line 105, in turn_left
+    return self._action("LEFT", angle=angle)
+  File "/home/picar/bench-3152/control/remote_robot.py", line 288, in _action
+    raise RobotTransportError(f"ros_unavailable: {detail}")
+control.remote_robot.RobotTransportError: ros_unavailable: drive: ros, and the bridge failed: timed out

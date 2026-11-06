@@ -1,0 +1,59 @@
+{
+ "row": "F17g",
+ "title": "A person's Stop under full load (a nav2 goal)",
+ "reading": "wheels zero <= 0.2 s from the /stop sent; the mission ends cancelled by stop within 30 s; 0 paid calls (stand-in /navigate) after the Stop; 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T18:30:51-0600",
+ "measures": {
+  "fault_at": 56366.702726582,
+  "ve_before": [
+   "MainPID=2717968",
+   "NRestarts=0"
+  ],
+  "start_at": 56361.58313873,
+  "goal_at_fault": true,
+  "holder_at_fault": null,
+  "stop_at": 56366.702726582,
+  "stop_code": 200,
+  "stop_answer_s": 0.028,
+  "outcome": "cancelled",
+  "cancelled_by": "stop",
+  "status": {
+   "outcome": "cancelled",
+   "end_state": "cancelled",
+   "end_reason": "stopped by a person: unknown pressed Stop -- autonomy stays stopped until a new mission starts, so brain was refused",
+   "cancelled_by": "stop"
+  },
+  "wheel_loop": {
+   "late": 0,
+   "moving": 69,
+   "max_dt_s": 0.0634
+  },
+  "ve_after": [
+   "MainPID=2717968",
+   "NRestarts=0"
+  ],
+  "ve_ready_after": true,
+  "forward_at_fault": true,
+  "wheels_zero_from_stop_s": 0.037,
+  "paid_after_stop": 0,
+  "truth_hole_s": 0.025,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "local_questions": {
+   "frame": 8,
+   "arrival": 0,
+   "direction": 0
+  },
+  "mem_available_min_mb": 2136,
+  "oom_kills_window": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-04T18:31:42-0600"
+}

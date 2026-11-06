@@ -1,0 +1,15 @@
+1793837030.177 WARNING identity vision-picar brain server starting -- git=1330ea8f2 executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793837143.319 WARNING safety Blocked FORWARD: distance=16.5cm < min=20cm (depth_grid)
+1793837187.524 WARNING safety Blocked FORWARD: distance=19.5cm < min=20cm (depth_grid)
+1793837188.309 WARNING tiered local VLM absent at arrival (local VLM not ready: {"detail":"local VLM absent"}); asking the cloud
+1793837188.777 WARNING tiered local VLM absent at arrival (local VLM not ready: {"detail":"local VLM not ready"}); asking the cloud
+1793837189.203 WARNING tiered local VLM absent for staleness (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793837189.214 WARNING tiered local VLM absent at arrival (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793837189.297 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793837368.405 WARNING tiered local VLM absent for mission_start (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793837368.546 WARNING safety Blocked FORWARD: distance=19.5cm < min=20cm (depth_grid)
+1793837368.913 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1793837368.913 WARNING tiered cloud call failed (not fatal under an explore search): ConnectError: [Errno 111] Connection refused
+1793837368.926 WARNING tiered local VLM absent at arrival (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793837369.363 WARNING tiered local VLM absent at arrival (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793837369.855 WARNING tiered local VLM absent at arrival (local VLM unreachable: Server disconnected without sending a response.); asking the cloud

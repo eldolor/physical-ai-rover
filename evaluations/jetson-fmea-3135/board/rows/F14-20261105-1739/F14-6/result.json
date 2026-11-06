@@ -1,0 +1,67 @@
+{
+ "row": "F14",
+ "i": 6,
+ "started": "2026-11-05T17:44:30-0600",
+ "measures": {
+  "before": {
+   "boot_id": "0bd0f570-f33c-40e8-bc71-9ba9925be7cd",
+   "uptime_s": 139966.77,
+   "robot": 200,
+   "brain": 404,
+   "ve_ready": true,
+   "units": {
+    "picar-stack": "active/enabled",
+    "picar-ngrok": "active/enabled",
+    "picar-local-vlm": "active/enabled"
+   }
+  },
+  "units_before": {
+   "picar-stack": "active/enabled",
+   "picar-ngrok": "active/enabled",
+   "picar-local-vlm": "active/enabled"
+  },
+  "files_before": {
+   "files": 16,
+   "json": 15,
+   "jsonl_lines": 1,
+   "other": 0,
+   "bad": [],
+   "index": {
+    "recordings/inventory/20261011t224942.007616z-red-backpack.json": 961,
+    "recordings/inventory/20261012t010519.963686z-red-backpack.json": 1255,
+    "recordings/inventory/20261021t210026.698522z-red-backpack.json": 376,
+    "recordings/inventory/20261021t210052.985443z-red-backpack.json": 376,
+    "recordings/inventory/20261021t213616.653965z-red-backpack.json": 373,
+    "recordings/inventory/20261021t215249.139475z-red-backpack.json": 376,
+    "recordings/inventory/20261021t215433.193988z-red-backpack.json": 376,
+    "recordings/inventory/20261022t005912.104912z-red-backpack.json": 376,
+    "recordings/inventory/20261022t005918.814266z-red-backpack.json": 376,
+    "recordings/inventory/20261022t010031.895340z-red-backpack.json": 376,
+    "recordings/inventory/20261022t014946.373622z-red-backpack.json": 376,
+    "recordings/inventory/20261022t014953.112729z-red-backpack.json": 376,
+    "recordings/inventory/20261022t015551.714556z-red-backpack.json": 376,
+    "recordings/inventory/20261022t015742.156448z-red-backpack.json": 376,
+    "recordings/inventory/20261104t021129.315506z-running-shoes.json": 505,
+    "recordings/interventions/interventions.jsonl": 1
+   }
+  },
+  "start": {
+   "start": 404,
+   "start_body": "{\"detail\":\"Not Found\"}"
+  },
+  "driving_at_reboot": false
+ },
+ "verdict": {
+  "pass": false,
+  "valid": false,
+  "reasons": [
+   "invalid: the boot id did not change (no reboot)",
+   "invalid: the mission was not driving at the reboot",
+   "the stack back None s after the reboot (bar 90)",
+   "the files were not read after the reboot",
+   "the next mission did not start (None)",
+   "the units not as found: None vs {'picar-stack': 'active/enabled', 'picar-ngrok': 'active/enabled', 'picar-local-vlm': 'active/enabled'}"
+  ]
+ },
+ "ended": "2026-11-05T17:44:33-0600"
+}

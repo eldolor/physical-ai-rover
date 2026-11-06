@@ -1,0 +1,4 @@
+1793935982.935 WARNING identity vision-picar brain server starting -- git=a0a5bc9eb executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793936047.105 WARNING tiered local VLM absent for cold_search (local VLM not ready: {"detail":"local VLM absent"}); asking the cloud
+1793936047.725 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)
+1793936124.814 WARNING safety Blocked FORWARD: distance=4.5cm < min=20cm (scan_footprint)

@@ -1,0 +1,23 @@
+[76939.626329] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=177476,uid=1000
+[76939.626373] Out of memory: Killed process 177476 (edgellm_identit) total-vm:8708436kB, anon-rss:353880kB, file-rss:19332kB, shmem-rss:0kB, UID:1000 pgtables:1324kB oom_score_adj:1000
+[77016.138002] edgellm_identit invoked oom-killer: gfp_mask=0x2dc2(GFP_KERNEL|__GFP_HIGHMEM|__GFP_NOWARN|__GFP_ZERO), order=0, oom_score_adj=1000
+[77016.138617] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=picar-local-vlm.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=183448,uid=1000
+[77016.138652] Out of memory: Killed process 183448 (edgellm_identit) total-vm:8708436kB, anon-rss:353920kB, file-rss:19348kB, shmem-rss:0kB, UID:1000 pgtables:1344kB oom_score_adj:1000
+[77094.832622] bash invoked oom-killer: gfp_mask=0x2dc2(GFP_KERNEL|__GFP_HIGHMEM|__GFP_NOWARN|__GFP_ZERO), order=0, oom_score_adj=0
+[77094.833181] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=189430,uid=1000
+[77094.833219] Out of memory: Killed process 189430 (edgellm_identit) total-vm:8708440kB, anon-rss:353856kB, file-rss:20064kB, shmem-rss:0kB, UID:1000 pgtables:1324kB oom_score_adj:1000
+[77170.643764] edgellm_identit invoked oom-killer: gfp_mask=0x2dc2(GFP_KERNEL|__GFP_HIGHMEM|__GFP_NOWARN|__GFP_ZERO), order=0, oom_score_adj=1000
+[77170.649898] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=picar-local-vlm.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=195320,uid=1000
+[77170.649931] Out of memory: Killed process 195320 (edgellm_identit) total-vm:8708436kB, anon-rss:354356kB, file-rss:19048kB, shmem-rss:0kB, UID:1000 pgtables:1344kB oom_score_adj:1000
+[77289.270309] python invoked oom-killer: gfp_mask=0xcc0(GFP_KERNEL), order=0, oom_score_adj=-900
+[77289.270920] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=201097,uid=1000
+[77289.270956] Out of memory: Killed process 201097 (edgellm_identit) total-vm:8708472kB, anon-rss:353920kB, file-rss:18012kB, shmem-rss:0kB, UID:1000 pgtables:1352kB oom_score_adj:1000
+[77360.860593] edgellm_identit invoked oom-killer: gfp_mask=0x2dc2(GFP_KERNEL|__GFP_HIGHMEM|__GFP_NOWARN|__GFP_ZERO), order=0, oom_score_adj=1000
+[77360.861265] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=picar-local-vlm.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=207160,uid=1000
+[77360.861295] Out of memory: Killed process 207160 (edgellm_identit) total-vm:9956864kB, anon-rss:286244kB, file-rss:9208kB, shmem-rss:0kB, UID:1000 pgtables:1152kB oom_score_adj:1000
+[77445.611528] tev invoked oom-killer: gfp_mask=0xcc0(GFP_KERNEL), order=0, oom_score_adj=0
+[77445.612150] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=docker-e884b23e074af7cc4b431fbff2ff55cc1a906c1d22e52d5d81a2198b9f263909.scope,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=212992,uid=1000
+[77445.612190] Out of memory: Killed process 212992 (edgellm_identit) total-vm:8690896kB, anon-rss:338980kB, file-rss:18408kB, shmem-rss:0kB, UID:1000 pgtables:1304kB oom_score_adj:1000
+[77528.902853] python invoked oom-killer: gfp_mask=0x400dc0(GFP_KERNEL_ACCOUNT|__GFP_ZERO), order=0, oom_score_adj=0
+[77528.903459] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=218839,uid=1000
+[77528.903493] Out of memory: Killed process 218839 (edgellm_identit) total-vm:9956864kB, anon-rss:286184kB, file-rss:9108kB, shmem-rss:0kB, UID:1000 pgtables:1168kB oom_score_adj:1000

@@ -1,0 +1,76 @@
+{
+ "row": "F2",
+ "title": "Memory runs out (OOM) during a mission",
+ "reading": "exactly one OOM kill in the window and it is VE's (dmesg names VE's process); the robot server, the brain and the ROS container alive after it; 0 late wheel ticks from the hog's start to 30 s after the kill; the mission ends with an outcome (within 1,500 s); 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T15:13:59-0600",
+ "measures": {
+  "fault_at": 44555.90603772,
+  "ve_before": [
+   "MainPID=1760264",
+   "NRestarts=3"
+  ],
+  "start_at": 44550.671412022,
+  "goal_at_fault": true,
+  "holder_at_fault": null,
+  "oom_before": 4,
+  "ve_pids": [
+   1760264,
+   1760366
+  ],
+  "hog_end_at": 44608.321156258,
+  "oom_kills": 1,
+  "killed": [
+   [
+    "1760366",
+    "edgellm_identit"
+   ]
+  ],
+  "killed_ve": true,
+  "alive_after": {
+   "robot": true,
+   "brain": true,
+   "ros": true
+  },
+  "late_ticks": 0,
+  "outcome": "exhausted",
+  "status": {
+   "outcome": "exhausted",
+   "end_state": "exhausted",
+   "end_reason": "no reachable frontier left (5 on the map: 5 reached twice, 0 set aside or dropped)",
+   "error": null
+  },
+  "wheel_loop": {
+   "late": 0,
+   "moving": 5387,
+   "max_dt_s": 0.0806
+  },
+  "ve_after": [
+   "MainPID=0",
+   "NRestarts=4"
+  ],
+  "ve_ready_after": false,
+  "forward_at_fault": true,
+  "truth_hole_s": 1.037,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "local_questions": {
+   "frame": 394,
+   "arrival": 0,
+   "direction": 0
+  },
+  "mem_available_min_mb": 17,
+  "oom_kills_window": 1
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "truth log has a 1.037 s hole"
+  ]
+ },
+ "error": "VE was not ready after the case (the board not as found)",
+ "ended": "2026-11-04T15:23:50-0600"
+}

@@ -1,0 +1,16 @@
+{
+ "row": "F3a2",
+ "plant": "vlm_absent",
+ "house": "scaled_house",
+ "state": "FAILED",
+ "runs_wanted": 1,
+ "runs_scored": 1,
+ "runs_total": 1,
+ "runs_failed": 1,
+ "not_scored": [],
+ "reasons": [
+  "0 questions handed to the cloud while VE was gone (bar >= 1)",
+  "the deciding arrival verdict was not the cloud's yes ({'tier': 'local', 'confirmed': False, 'verdict_s': 1.874, 'local_score': 0.0, 'cloud_called': False, 'n': 1})",
+  "the mission ended exhausted, not found"
+ ]
+}

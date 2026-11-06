@@ -1,0 +1,14 @@
+{
+ "row": "F17a",
+ "plant": "no_latch",
+ "house": "scaled_house",
+ "state": "FAILED",
+ "runs_wanted": 1,
+ "runs_scored": 1,
+ "runs_total": 1,
+ "runs_failed": 1,
+ "not_scored": [],
+ "reasons": [
+  "the mission ended found (by None), not cancelled by stop"
+ ]
+}

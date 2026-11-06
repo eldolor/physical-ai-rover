@@ -1,0 +1,75 @@
+{
+ "row": "F2",
+ "title": "Memory runs out (OOM) during a mission",
+ "reading": "exactly one OOM kill in the window and it is VE's (dmesg names VE's process); the robot server, the brain and the ROS container alive after it; 0 late wheel ticks from the hog's start to 30 s after the kill; the mission ends with an outcome (within 1,500 s); 0 contacts",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-04T15:04:38-0600",
+ "measures": {
+  "fault_at": 43994.80462702,
+  "ve_before": [
+   "MainPID=1710940",
+   "NRestarts=0"
+  ],
+  "start_at": 43989.356447499,
+  "goal_at_fault": true,
+  "holder_at_fault": null,
+  "oom_before": 1,
+  "ve_pids": [
+   1710940,
+   1711105
+  ],
+  "hog_end_at": 44044.844617752,
+  "oom_kills": 1,
+  "killed": [
+   [
+    "1711105",
+    "edgellm_identit"
+   ]
+  ],
+  "killed_ve": true,
+  "alive_after": {
+   "robot": true,
+   "brain": true,
+   "ros": true
+  },
+  "late_ticks": 0,
+  "outcome": "found",
+  "status": {
+   "outcome": "found",
+   "end_state": "found",
+   "end_reason": "Hallway, kitchen, living room searched. Found.",
+   "error": null
+  },
+  "wheel_loop": {
+   "late": 0,
+   "moving": 649,
+   "max_dt_s": 0.0686
+  },
+  "ve_after": [
+   "MainPID=1721497",
+   "NRestarts=1"
+  ],
+  "ve_ready_after": true,
+  "forward_at_fault": true,
+  "truth_hole_s": 0.686,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "local_questions": {
+   "frame": 32,
+   "arrival": 1,
+   "direction": 0
+  },
+  "mem_available_min_mb": 99,
+  "oom_kills_window": 1
+ },
+ "verdict": {
+  "pass": false,
+  "valid": true,
+  "reasons": [
+   "truth log has a 0.686 s hole"
+  ]
+ },
+ "ended": "2026-11-04T15:06:30-0600"
+}

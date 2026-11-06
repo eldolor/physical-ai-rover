@@ -1,0 +1,37 @@
+1793832837.281 WARNING identity vision-picar robot server starting -- git=1330ea8f2 executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793832839.107 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1793832847.898 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793832857.437 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793832888.369 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793832917.197 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793832921.778 WARNING server refused (safety_distance) for ros: forward clamped: 7.9cm <= 20cm (scan_footprint)
+1793832921.838 WARNING server refused (safety_distance) for ros: forward clamped: 7.9cm <= 20cm (scan_footprint)
+1793832921.872 WARNING server refused (safety_distance) for ros: forward clamped: 7.9cm <= 20cm (scan_footprint)
+1793832921.931 WARNING server refused (safety_distance) for ros: forward clamped: 8.0cm <= 20cm (scan_footprint)
+1793832921.969 WARNING server refused (safety_distance) for ros: forward clamped: 8.0cm <= 20cm (scan_footprint)
+1793832922.017 WARNING server refused (safety_distance) for ros: forward clamped: 8.6cm <= 20cm (scan_footprint)
+1793832922.069 WARNING server refused (safety_distance) for ros: forward clamped: 9.3cm <= 20cm (scan_footprint)
+1793832922.127 WARNING server refused (safety_distance) for ros: forward clamped: 9.3cm <= 20cm (scan_footprint)
+1793832922.167 WARNING server refused (safety_distance) for ros: forward clamped: 9.3cm <= 20cm (scan_footprint)
+1793832922.222 WARNING server refused (safety_distance) for ros: forward clamped: 10.4cm <= 20cm (scan_footprint)
+1793832922.277 WARNING server refused (safety_distance) for ros: forward clamped: 11.2cm <= 20cm (scan_footprint)
+1793832922.329 WARNING server refused (safety_distance) for ros: forward clamped: 11.2cm <= 20cm (scan_footprint)
+1793832922.372 WARNING server refused (safety_distance) for ros: forward clamped: 12.1cm <= 20cm (scan_footprint)
+1793832922.421 WARNING server refused (safety_distance) for ros: forward clamped: 12.1cm <= 20cm (scan_footprint)
+1793832922.471 WARNING server refused (safety_distance) for ros: forward clamped: 12.1cm <= 20cm (scan_footprint)
+1793832922.524 WARNING server refused (safety_distance) for ros: forward clamped: 13.5cm <= 20cm (scan_footprint)
+1793832922.572 WARNING server refused (safety_distance) for ros: forward clamped: 13.5cm <= 20cm (scan_footprint)
+1793832922.630 WARNING server refused (safety_distance) for ros: forward clamped: 15.5cm <= 20cm (scan_footprint)
+1793832922.680 WARNING server refused (safety_distance) for ros: forward clamped: 18.5cm <= 20cm (scan_footprint)
+1793832922.734 WARNING server refused (safety_distance) for ros: forward clamped: 18.5cm <= 20cm (scan_footprint)
+1793832944.219 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793832949.321 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793832981.185 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793833002.648 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793833030.941 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793833039.501 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793833080.340 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793833093.284 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793833106.332 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793833121.810 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1793833122.572 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses

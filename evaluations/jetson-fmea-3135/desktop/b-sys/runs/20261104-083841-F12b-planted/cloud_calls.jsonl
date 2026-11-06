@@ -1,0 +1,8 @@
+{"t": 15147.9001, "listening": 10358}
+{"t": 15148.0842, "method": "", "path": "", "paid": false, "open_paid": 0}
+{"t": 15148.0843, "closed": true, "paid": false}
+{"t": 15150.5049, "method": "GET", "path": "/health", "paid": false, "open_paid": 0}
+{"t": 15150.5378, "method": "POST", "path": "/navigate", "paid": true, "open_paid": 1}
+{"t": 15153.5072, "closed": true, "paid": false}
+{"t": 15168.5159, "method": "GET", "path": "/health", "paid": false, "open_paid": 1}
+{"t": 15171.5182, "closed": true, "paid": false}

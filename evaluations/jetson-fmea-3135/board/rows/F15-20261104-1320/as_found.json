@@ -1,0 +1,28 @@
+{
+ "units": {
+  "picar-stack": {
+   "active": "active",
+   "enabled": "enabled"
+  },
+  "picar-ngrok": {
+   "active": "active",
+   "enabled": "enabled"
+  },
+  "picar-local-vlm": {
+   "active": "active",
+   "enabled": "enabled"
+  }
+ },
+ "hold_flag": null,
+ "vlm_env": {
+  "sha256": "ff3bc8ec763c3d3379ce4d9c3e2f164a3e10a83cbb0d26b9b538c07a25841cf9",
+  "mode": "600"
+ },
+ "containers": "",
+ "listening": "8000 8001 8005 8080 ",
+ "power_mode": "NV Power Mode: 15W",
+ "mem_available_mb": 2408,
+ "oom_kill": 0,
+ "uptime_s": 37746.88,
+ "epoch": 1793820051.77952
+}

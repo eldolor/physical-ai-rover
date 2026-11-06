@@ -1,0 +1,429 @@
+{
+ "sha": "1330ea8f2a531068ae16613eba35fcb0b2004597",
+ "cmd_exit": 0,
+ "cmd_s": 1720.7,
+ "verdict": {
+  "row": "F3a",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "FAILED",
+  "runs_wanted": 5,
+  "runs_scored": 5,
+  "runs_total": 5,
+  "runs_failed": 5,
+  "not_scored": [],
+  "reasons": [
+   "the mission ended exhausted, not found"
+  ]
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "the mission ended exhausted, not found"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 50271.965150853,
+    "ve_before": [
+     "MainPID=2186831",
+     "NRestarts=1"
+    ],
+    "start_at": 50140.892155934,
+    "killed_pid": 2187016,
+    "absent_before": 0,
+    "ve_back_s": 41.3,
+    "handed_on": 41,
+    "outcome": "exhausted",
+    "next_answer": true,
+    "next_answer_s": 1.3,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 5500,
+     "max_dt_s": 0.0772
+    },
+    "ve_after": [
+     "MainPID=2230601",
+     "NRestarts=2"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": false,
+    "question_hit": true,
+    "question_at_fault": {
+     "i": 89,
+     "kind": "arrival",
+     "path": "/identity",
+     "t0": 50271.882476364,
+     "status": 503,
+     "t1": 50272.259569513
+    },
+    "truth_hole_s": 0.032,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 406,
+     "arrival": 1,
+     "direction": 0
+    },
+    "mem_available_min_mb": 2075,
+    "oom_kills_window": 0
+   },
+   "status": {
+    "outcome": "exhausted",
+    "end_state": "exhausted",
+    "end_reason": "no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)",
+    "error": null,
+    "arrival_verdicts": [
+     {
+      "tier": "cloud",
+      "confirmed": false,
+      "verdict_s": 1.4,
+      "local_score": null,
+      "cloud_called": true,
+      "n": 1
+     }
+    ],
+    "cancelled_by": null
+   }
+  },
+  {
+   "i": 2,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "the mission ended exhausted, not found"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 50591.371624312,
+    "ve_before": [
+     "MainPID=2230601",
+     "NRestarts=2"
+    ],
+    "start_at": 50542.753077523,
+    "killed_pid": 2230705,
+    "absent_before": 0,
+    "ve_back_s": 41.3,
+    "handed_on": 39,
+    "outcome": "exhausted",
+    "next_answer": true,
+    "next_answer_s": 1.3,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 3971,
+     "max_dt_s": 0.0734
+    },
+    "ve_after": [
+     "MainPID=2259248",
+     "NRestarts=3"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": false,
+    "question_hit": true,
+    "question_at_fault": {
+     "i": 33,
+     "kind": "arrival",
+     "path": "/identity",
+     "t0": 50591.319015485,
+     "status": 503,
+     "t1": 50591.668589387
+    },
+    "truth_hole_s": 0.034,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 311,
+     "arrival": 2,
+     "direction": 0
+    },
+    "mem_available_min_mb": 2081,
+    "oom_kills_window": 0
+   },
+   "status": {
+    "outcome": "exhausted",
+    "end_state": "exhausted",
+    "end_reason": "no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)",
+    "error": null,
+    "arrival_verdicts": [
+     {
+      "tier": "cloud",
+      "confirmed": false,
+      "verdict_s": 0.453,
+      "local_score": null,
+      "cloud_called": true,
+      "n": 1
+     },
+     {
+      "tier": "cloud",
+      "confirmed": false,
+      "verdict_s": 0.14,
+      "local_score": null,
+      "cloud_called": true,
+      "n": 2
+     }
+    ],
+    "cancelled_by": null
+   }
+  },
+  {
+   "i": 3,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "the mission ended exhausted, not found"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 50899.401357927,
+    "ve_before": [
+     "MainPID=2259248",
+     "NRestarts=3"
+    ],
+    "start_at": 50833.839208022,
+    "killed_pid": 2259432,
+    "absent_before": 0,
+    "ve_back_s": 40.8,
+    "handed_on": 30,
+    "outcome": "exhausted",
+    "next_answer": true,
+    "next_answer_s": 1.2,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 3880,
+     "max_dt_s": 0.0732
+    },
+    "ve_after": [
+     "MainPID=2287282",
+     "NRestarts=4"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": false,
+    "question_hit": true,
+    "question_at_fault": {
+     "i": 49,
+     "kind": "arrival",
+     "path": "/identity",
+     "t0": 50899.35074576,
+     "status": 503,
+     "t1": 50899.703133148
+    },
+    "truth_hole_s": 0.03,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 298,
+     "arrival": 1,
+     "direction": 0
+    },
+    "mem_available_min_mb": 2088,
+    "oom_kills_window": 0
+   },
+   "status": {
+    "outcome": "exhausted",
+    "end_state": "exhausted",
+    "end_reason": "no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)",
+    "error": null,
+    "arrival_verdicts": [
+     {
+      "tier": "cloud",
+      "confirmed": false,
+      "verdict_s": 2.09,
+      "local_score": null,
+      "cloud_called": true,
+      "n": 1
+     }
+    ],
+    "cancelled_by": null
+   }
+  },
+  {
+   "i": 4,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "the mission ended exhausted, not found"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 51191.076810627,
+    "ve_before": [
+     "MainPID=2287282",
+     "NRestarts=4"
+    ],
+    "start_at": 51124.063871025,
+    "killed_pid": 2287479,
+    "absent_before": 0,
+    "ve_back_s": 40.7,
+    "handed_on": 25,
+    "outcome": "exhausted",
+    "next_answer": true,
+    "next_answer_s": 1.2,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 5452,
+     "max_dt_s": 0.0749
+    },
+    "ve_after": [
+     "MainPID=2313962",
+     "NRestarts=5"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": false,
+    "question_hit": true,
+    "question_at_fault": {
+     "i": 49,
+     "kind": "arrival",
+     "path": "/identity",
+     "t0": 51191.008871763,
+     "status": 503,
+     "t1": 51191.398207442
+    },
+    "truth_hole_s": 0.029,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 450,
+     "arrival": 1,
+     "direction": 0
+    },
+    "mem_available_min_mb": 2006,
+    "oom_kills_window": 0
+   },
+   "status": {
+    "outcome": "exhausted",
+    "end_state": "exhausted",
+    "end_reason": "no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)",
+    "error": null,
+    "arrival_verdicts": [
+     {
+      "tier": "cloud",
+      "confirmed": false,
+      "verdict_s": 2.127,
+      "local_score": null,
+      "cloud_called": true,
+      "n": 1
+     }
+    ],
+    "cancelled_by": null
+   }
+  },
+  {
+   "i": 5,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "the mission ended exhausted, not found"
+   ],
+   "error": null,
+   "recovery_s": null,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 51672.030445115,
+    "ve_before": [
+     "MainPID=2313962",
+     "NRestarts=5"
+    ],
+    "start_at": 51561.201315241,
+    "killed_pid": 2314064,
+    "absent_before": 0,
+    "ve_back_s": 41.3,
+    "handed_on": 53,
+    "outcome": "exhausted",
+    "next_answer": true,
+    "next_answer_s": 1.2,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 3917,
+     "max_dt_s": 0.0749
+    },
+    "ve_after": [
+     "MainPID=2357702",
+     "NRestarts=6"
+    ],
+    "ve_ready_after": true,
+    "forward_at_fault": false,
+    "question_hit": true,
+    "question_at_fault": {
+     "i": 69,
+     "kind": "arrival",
+     "path": "/identity",
+     "t0": 51671.941576254,
+     "status": 503,
+     "t1": 51672.24364767
+    },
+    "truth_hole_s": 0.031,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "local_questions": {
+     "frame": 307,
+     "arrival": 1,
+     "direction": 0
+    },
+    "mem_available_min_mb": 2024,
+    "oom_kills_window": 0
+   },
+   "status": {
+    "outcome": "exhausted",
+    "end_state": "exhausted",
+    "end_reason": "no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)",
+    "error": null,
+    "arrival_verdicts": [
+     {
+      "tier": "cloud",
+      "confirmed": false,
+      "verdict_s": 0.852,
+      "local_score": null,
+      "cloud_called": true,
+      "n": 1
+     }
+    ],
+    "cancelled_by": null
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 1514,
+  "temps": 1514,
+  "clocks": 1514,
+  "max_temp_c": 59.75,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2006,
+  "cpu_below_max_samples": 907,
+  "gpu_below_max_samples": 658
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "harness_leftovers": {
+  "before": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  },
+  "after": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  }
+ }
+}

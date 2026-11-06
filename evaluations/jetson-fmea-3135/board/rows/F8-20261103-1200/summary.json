@@ -1,0 +1,227 @@
+{
+ "sha": "a3382c18f7cd50c443a25e5dc7be2a6dca6f9670",
+ "cmd_exit": 0,
+ "cmd_s": 118.6,
+ "verdict": {
+  "row": "F8",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "met",
+  "runs_wanted": 5,
+  "runs_scored": 5,
+  "runs_total": 5,
+  "runs_failed": 0,
+  "not_scored": [],
+  "reasons": []
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 3.26,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83114.755651681,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: POST /action failed: Server disconnected without sending a response.",
+    "forward_at_fault": true,
+    "wheels_zero_s": 1.494,
+    "travel_cm": 44.28,
+    "truth_hole_s": 0.023,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83106.7692,
+     83129.1293
+    ],
+    "mem_available_min_mb": 2252,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: POST /action failed: Server disconnected without sending a response.",
+    "cancelled_by": null,
+    "step": 4,
+    "last_action": "RIGHT",
+    "error": "step failed: POST /action failed: Server disconnected without sending a response."
+   }
+  },
+  {
+   "i": 2,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 3.19,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83138.135555372,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: POST /action failed: Server disconnected without sending a response.",
+    "forward_at_fault": true,
+    "wheels_zero_s": 1.489,
+    "travel_cm": 44.38,
+    "truth_hole_s": 0.025,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83130.2247,
+     83152.5048
+    ],
+    "mem_available_min_mb": 2250,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: POST /action failed: Server disconnected without sending a response.",
+    "cancelled_by": null,
+    "step": 4,
+    "last_action": "RIGHT",
+    "error": "step failed: POST /action failed: Server disconnected without sending a response."
+   }
+  },
+  {
+   "i": 3,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 3.22,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83162.006027165,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: POST /action failed: Server disconnected without sending a response.",
+    "forward_at_fault": true,
+    "wheels_zero_s": 1.492,
+    "travel_cm": 44.06,
+    "truth_hole_s": 0.026,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83153.5981,
+     83176.3582
+    ],
+    "mem_available_min_mb": 2257,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: POST /action failed: Server disconnected without sending a response.",
+    "cancelled_by": null,
+    "step": 4,
+    "last_action": "RIGHT",
+    "error": "step failed: POST /action failed: Server disconnected without sending a response."
+   }
+  },
+  {
+   "i": 4,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 3.32,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83185.738069183,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: POST /action failed: Server disconnected without sending a response.",
+    "forward_at_fault": true,
+    "wheels_zero_s": 1.493,
+    "travel_cm": 44.02,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83177.4507,
+     83200.2108
+    ],
+    "mem_available_min_mb": 2250,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: POST /action failed: Server disconnected without sending a response.",
+    "cancelled_by": null,
+    "step": 4,
+    "last_action": "RIGHT",
+    "error": "step failed: POST /action failed: Server disconnected without sending a response."
+   }
+  },
+  {
+   "i": 5,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 3.32,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83209.295647156,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: POST /action failed: Server disconnected without sending a response.",
+    "forward_at_fault": true,
+    "wheels_zero_s": 1.481,
+    "travel_cm": 44.05,
+    "truth_hole_s": 0.026,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83201.2767,
+     83223.8368
+    ],
+    "mem_available_min_mb": 2249,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": false,
+    "outcome": "failed",
+    "end_state": null,
+    "end_reason": "step failed: POST /action failed: Server disconnected without sending a response.",
+    "cancelled_by": null,
+    "step": 4,
+    "last_action": "RIGHT",
+    "error": "step failed: POST /action failed: Server disconnected without sending a response."
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 107,
+  "temps": 107,
+  "clocks": 107,
+  "max_temp_c": 49.5,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2250,
+  "cpu_below_max_samples": 97,
+  "gpu_below_max_samples": 107
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true
+}

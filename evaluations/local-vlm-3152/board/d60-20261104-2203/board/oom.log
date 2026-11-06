@@ -1,0 +1,6 @@
+[72590.019977] systemd-udevd invoked oom-killer: gfp_mask=0x1100cca(GFP_HIGHUSER_MOVABLE), order=0, oom_score_adj=-1000
+[72590.020554] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=systemd-udevd.service,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=4017350,uid=1000
+[72590.020590] Out of memory: Killed process 4017350 (edgellm_identit) total-vm:8962528kB, anon-rss:80136kB, file-rss:27976kB, shmem-rss:0kB, UID:1000 pgtables:1820kB oom_score_adj:1000
+[72669.421788] python invoked oom-killer: gfp_mask=0x1100cca(GFP_HIGHUSER_MOVABLE), order=0, oom_score_adj=-900
+[72669.425163] oom-kill:constraint=CONSTRAINT_NONE,nodemask=(null),cpuset=user.slice,mems_allowed=0,global_oom,task_memcg=/system.slice/picar-local-vlm.service,task=edgellm_identit,pid=4029763,uid=1000
+[72669.425200] Out of memory: Killed process 4029763 (edgellm_identit) total-vm:8810508kB, anon-rss:423736kB, file-rss:27972kB, shmem-rss:0kB, UID:1000 pgtables:1588kB oom_score_adj:1000

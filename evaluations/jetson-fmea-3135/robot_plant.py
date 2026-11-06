@@ -14,6 +14,10 @@ patch is on the module, here.
 | `watchdog` | B3.1: `watchdog_should_stop()` never says stop | F6, F7, F13 |
 | `lidar_fresh` | 3.42: the LD19 driver calls its scan fresh once any packet came | F9 |
 | `feedback_fresh` | 3.34: the board's feedback is called fresh once any frame came | F10 |
+| `wall_clock` | the robot server's own timers (`robot.server`'s `time.monotonic`) read the wall clock, plus `FMEA_CLOCK_OFFSET_FILE`'s seconds (the desktop's stand-in for a step) | F16 |
+| `no_latch` | 3.84 off: a person's Stop latches nothing (`goal_stop`, the dict every `create_app` closure shares, swapped for one that drops the latch) | F17 |
+| `no_reserve` | 3.137's Reserve not enforced: `robot.server`'s `RESERVE` names no level, so Reserve refuses nobody and ends no goal (Power-off still fires) | F24 |
+| `stop_waits` | SPEC-REVIEW finding 1 (2026-10-02) undone: under `drive: ros` a stop zeroes the ROS inputs first, synchronously, at the client's 2 s timeout, then the robot | F5 |
 
     FMEA_PLANT=watchdog python evaluations/jetson-fmea-3135/robot_plant.py <port>
 """
@@ -27,7 +31,7 @@ sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 
 PLANTS = {p for p in os.environ.get("FMEA_PLANT", "").split(",") if p}
-KNOWN = {"watchdog", "lidar_fresh", "feedback_fresh"}
+KNOWN = {"watchdog", "lidar_fresh", "feedback_fresh", "stop_waits", "wall_clock", "no_latch", "no_reserve"}
 if not PLANTS or PLANTS - KNOWN:
     raise SystemExit(f"FMEA_PLANT must name one or more of {sorted(KNOWN)}, not {sorted(PLANTS)}")
 
@@ -48,6 +52,62 @@ if "feedback_fresh" in PLANTS:
     from robot import hardware_robot
 
     hardware_robot.HardwareRobot._fresh = lambda self: self._last_frame_at is not None
+
+if "stop_waits" in PLANTS:
+    from robot import ros_drive
+
+    def _stop_waits(self):
+        with self._gen_lock:
+            self._stops += 1
+            self._generation += 1
+            self._hold_gen = self._generation
+            self._hold_until = ros_drive.time.monotonic() + ros_drive.STOP_HOLD_S
+        for driver in ("twin-dpad", "brain", "ros"):       # planted: waits on the bridge first
+            try:
+                self._send(0.0, 0.0, driver=driver, timeout=2.0)
+            except Exception:  # noqa: BLE001
+                pass
+        return self.inner.stop()
+
+    ros_drive.RosDriveRobot.stop = _stop_waits
+
+if "no_latch" in PLANTS:
+    _stop = next(r.endpoint for r in server.app.routes
+                 if getattr(r, "path", "").endswith("/stop") and "POST" in getattr(r, "methods", ()))
+    _cell = _stop.__closure__[_stop.__code__.co_freevars.index("goal_stop")]
+
+    class _NoLatch(dict):
+        def __setitem__(self, k, v):
+            if k == "autonomy_stopped" and v is not None:
+                return                      # planted: a person's Stop latches nothing
+            super().__setitem__(k, v)
+
+    _cell.cell_contents = _NoLatch(_cell.cell_contents)   # one cell, shared by every closure
+
+if "no_reserve" in PLANTS:
+    # Read as a module global by every comparison in create_app's closures.
+    server.RESERVE = "planted: no reserve"
+
+if "wall_clock" in PLANTS:
+    import time as _time
+    import types
+
+    _off = {"file": os.environ.get("FMEA_CLOCK_OFFSET_FILE"), "s": 0.0, "read_at": 0.0}
+
+    def _wall() -> float:
+        now = _time.time()
+        if _off["file"] and now - _off["read_at"] > 0.1:
+            try:
+                _off["s"] = float(Path(_off["file"]).read_text() or 0)
+            except (OSError, ValueError):
+                pass
+            _off["read_at"] = now
+        return now + _off["s"]
+
+    shim = types.ModuleType("time")
+    shim.__dict__.update({k: v for k, v in vars(_time).items() if not k.startswith("__")})
+    shim.monotonic = _wall                 # planted: robot.server's timers on the wall clock
+    server.time = shim
 
 import uvicorn  # noqa: E402
 

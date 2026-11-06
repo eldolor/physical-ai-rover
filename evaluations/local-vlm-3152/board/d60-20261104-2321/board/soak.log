@@ -1,0 +1,11 @@
+00:09:08 setup done; MemAvailable 1719 MB
+00:09:09 candidate loaded: {'RestartUSec': '1min', 'MainPID': '143633', 'Result': 'success', 'NRestarts': '0', 'ActiveState': 'active', 'SubState': 'running', 'StartLimitIntervalUSec': '0', 'StartLimitBurst': '4'}
+00:09:09 m000 home_first_floor / red backpack; MemAvailable 1682 MB
+00:09:23 hog started (pid 157975)
+00:09:37 hog holding 3360 MB; window 900 s
+00:19:59 m000 -> failed TimeoutError: timed out
+00:20:29 m001 complex_house / shoes; MemAvailable 3103 MB
+00:26:16 m001 -> cancelled 
+00:26:17 valid: {'a_crash_loop': True, 'kill_lines_complete': True, 'loaded_window_in_a_mission': True, 'no_kill_before_the_hog': True, 'every_kill_line_placed': True, 'a_full_window': True, 'no_errored_mission': False, 'wheel_loop_read': True, 'dmesg_baseline': True}; met: {'every_kill_ve': True, 'zero_late_ticks': False, 'servers_answered': False, 'mem_loaded_500': True, 've_back_within': True, 'brain_up_after': True}
+00:26:17 unit put back: {'steps': [['/run/systemd/system/picar-local-vlm.service.d/zz-3152-crash-loop.conf', 0], ['daemon-reload', 0], ['picar-local-vlm', 0]], 'show': {'RestartUSec': '30s', 'MainPID': '224401', 'Result': 'success', 'NRestarts': '0', 'ActiveState': 'active', 'SubState': 'running', 'StartLimitIntervalUSec': '15min', 'StartLimitBurst': '4'}, 'dropins': [], 've_ready': True, 'active': 'active', 'settings_as_found': True, 'dropins_as_found': True, 'active_as_found': True}
+00:26:24 torn down

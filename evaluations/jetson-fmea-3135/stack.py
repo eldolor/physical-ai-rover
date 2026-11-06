@@ -44,8 +44,10 @@ PORTS = {"robot": int(os.environ.get("PICAR_ROBOT_PORT", 10350)),
          "sensor": int(os.environ.get("PICAR_SENSOR_PORT", 10353)),
          "sensor2": int(os.environ.get("PICAR_SENSOR2_PORT", 10354))}
 CLOSED_PORT = 9          # discard: nothing listens; a refused connection, never a paid call
-ROBOT_PLANTS = {"watchdog", "lidar_fresh", "feedback_fresh"}
+ROBOT_PLANTS = {"watchdog", "lidar_fresh", "feedback_fresh", "stop_waits", "wall_clock", "no_latch",
+                "no_reserve"}
 BODY_PLANTS = {"heartbeat"}
+BRAIN_PLANTS = {"cloud_class", "cloud_deadline", "vlm_absent", "write_intolerant"}
 KEEP_ENV = ("PATH", "HOME", "USER", "LANG", "LC_ALL", "TZ", "TMPDIR", "XDG_RUNTIME_DIR")
 
 
@@ -74,10 +76,14 @@ def http(method: str, url: str, body: Optional[dict] = None, secret: str = "",
 
 class Stack:
     def __init__(self, out: Path, *, house: str = "scaled_house", plant: str = "",
-                 vision_url: Optional[str] = None, extra_env: Optional[dict] = None):
+                 vision_url: Optional[str] = None, extra_env: Optional[dict] = None,
+                 brain_floor_off: bool = False):
         plants = {p for p in plant.split(",") if p}
-        if plants - ROBOT_PLANTS - BODY_PLANTS:
-            raise StackError(f"unknown plant(s) {sorted(plants - ROBOT_PLANTS - BODY_PLANTS)}")
+        if brain_floor_off and plants & BRAIN_PLANTS:
+            raise StackError("brain_floor_off runs the shipped brain: no brain plant beside it")
+        self.brain_floor_off = brain_floor_off
+        if plants - ROBOT_PLANTS - BODY_PLANTS - BRAIN_PLANTS:
+            raise StackError(f"unknown plant(s) {sorted(plants - ROBOT_PLANTS - BODY_PLANTS - BRAIN_PLANTS)}")
         self.out = Path(out)
         self.out.mkdir(parents=True, exist_ok=True)
         self.plants = plants
@@ -104,6 +110,8 @@ class Stack:
             "PICAR_LOG_LEVEL": "WARNING", "FMEA_DIR": str(self.out),
             "FMEA_PLANT": ",".join(sorted(plants)),
         })
+        if "FMEA_TRUTH_LOCK" in os.environ:     # 3.151's planted check, from the shell
+            env["FMEA_TRUTH_LOCK"] = os.environ["FMEA_TRUTH_LOCK"]
         env.update(extra_env or {})
         self.env = env
 
@@ -143,6 +151,7 @@ class Stack:
             self._spawn("body", [PY, str(HERE / "truth_body.py"), str(PORTS["body"])],
                         dict(self.env, FMEA_PLANT=",".join(sorted(self.plants & BODY_PLANTS))))
             self._wait_health("body", self.urls["body"])
+            self.lock_body()
             self._spawn("sensors", self._uvicorn("sim.sensor_server:app", PORTS["sensor"]))
             self._spawn("sensors2", self._uvicorn("sim.sensor_server:app", PORTS["sensor2"]))
             self._wait_health("sensors", self.urls["sensor"])
@@ -160,6 +169,38 @@ class Stack:
             raise
         return self
 
+    def _sudo(self, argv: list) -> bool:
+        """`sudo -n argv`: True if it ran and succeeded (False without sudo)."""
+        try:
+            return subprocess.run(["sudo", "-n", *argv], capture_output=True, timeout=10).returncode == 0
+        except (OSError, subprocess.TimeoutExpired):
+            return False
+
+    def _post_lock(self) -> dict:
+        try:
+            code, body = http("POST", self.urls["body"] + "/fmea/mlock", timeout=30.0)
+        except Exception as e:                  # noqa: BLE001 -- reported, never the stack's start
+            return {"locked": False, "error": f"{type(e).__name__}: {e}"}
+        return body if code == 200 and isinstance(body, dict) else {"locked": False, "error": f"HTTP {code}"}
+
+    def lock_body(self) -> dict:
+        """3.151: the truth body's touched pages locked, so memory pressure
+        cannot stall the truth (3.135.B F2's holes). Its memlock limit is
+        raised first where `sudo -n` works (the board's is ~952 MB; the
+        desktop's 8 MB and no sudo); with it not raised the body does not
+        lock (`limit_not_raised`), and says so.
+        `FMEA_TRUTH_LOCK=0` skips both (the planted check). The answer is
+        the run's `body_lock.json`."""
+        if self.env.get("FMEA_TRUTH_LOCK") == "0":
+            got = {"locked": False, "skipped": "FMEA_TRUTH_LOCK=0"}
+        else:
+            raised = self._sudo(["prlimit", "--pid", str(self.pid("body")),
+                                 "--memlock=unlimited:unlimited"])
+            got = {**self._post_lock(), "limit_raised": raised}
+        self.body_lock = got
+        (self.out / "body_lock.json").write_text(json.dumps(got, indent=1))
+        return got
+
     def start_robot(self) -> None:
         if self.plants & ROBOT_PLANTS:
             argv = [PY, str(HERE / "robot_plant.py"), str(PORTS["robot"])]
@@ -169,7 +210,13 @@ class Stack:
         self._wait_health("robot", self.urls["robot"])
 
     def start_brain(self) -> None:
-        self._spawn("brain", self._uvicorn("control.brain_server:app", PORTS["brain"]))
+        if self.plants & BRAIN_PLANTS:
+            argv = [PY, str(HERE / "brain_plant.py"), str(PORTS["brain"])]
+        elif self.brain_floor_off:          # F24 (amendment 19): the shipped brain, its floor off
+            argv = [PY, str(HERE / "brain_floor_off.py"), str(PORTS["brain"])]
+        else:
+            argv = self._uvicorn("control.brain_server:app", PORTS["brain"])     # the shipped code
+        self._spawn("brain", argv, dict(self.env, FMEA_PLANT=",".join(sorted(self.plants & BRAIN_PLANTS))))
         self._wait_health("brain", self.urls["brain"])
 
     def pid(self, role: str) -> int:

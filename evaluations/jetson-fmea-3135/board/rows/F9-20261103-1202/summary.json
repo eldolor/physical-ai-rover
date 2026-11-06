@@ -1,0 +1,323 @@
+{
+ "sha": "a3382c18f7cd50c443a25e5dc7be2a6dca6f9670",
+ "cmd_exit": 0,
+ "cmd_s": 125.2,
+ "verdict": {
+  "row": "F9",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "FAILED",
+  "runs_wanted": 5,
+  "runs_scored": 5,
+  "runs_total": 5,
+  "runs_failed": 5,
+  "not_scored": [],
+  "reasons": [
+   "moved 101.2 cm while stale (bar 2)",
+   "moved 101.3 cm while stale (bar 2)",
+   "moved 101.57 cm while stale (bar 2)",
+   "moved 104.29 cm while stale (bar 2)",
+   "moved 104.57 cm while stale (bar 2)"
+  ]
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "moved 104.57 cm while stale (bar 2)"
+   ],
+   "error": null,
+   "recovery_s": 3.19,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83496.887893898,
+    "cont_at": 83506.898289503,
+    "outcome": "running",
+    "end_state": null,
+    "end_reason": null,
+    "refusals": {},
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "last_refusal": {
+     "reason": "watchdog",
+     "detail": "no command for over 1.0s -- motors stopped",
+     "driver": null,
+     "at": 83492.737554776,
+     "seconds_ago": 15.17
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 11.055,
+    "travel_cm": 55.27,
+    "travel_stale_cm": 104.57,
+    "truth_hole_s": 0.024,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83488.7028,
+     83512.6029
+    ],
+    "mem_available_min_mb": 2253,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": true,
+    "outcome": "running",
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": 11,
+    "last_action": "FORWARD",
+    "error": null
+   }
+  },
+  {
+   "i": 2,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "moved 101.2 cm while stale (bar 2)"
+   ],
+   "error": null,
+   "recovery_s": 3.04,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83521.751910803,
+    "cont_at": 83531.760056032,
+    "outcome": "running",
+    "end_state": null,
+    "end_reason": null,
+    "refusals": {},
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "last_refusal": {
+     "reason": "watchdog",
+     "detail": "no command for over 1.0s -- motors stopped",
+     "driver": null,
+     "at": 83517.680255318,
+     "seconds_ago": 15.08
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 11.041,
+    "travel_cm": 54.26,
+    "travel_stale_cm": 101.2,
+    "truth_hole_s": 0.022,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83513.6732,
+     83537.3732
+    ],
+    "mem_available_min_mb": 2252,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": true,
+    "outcome": "running",
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": 11,
+    "last_action": "FORWARD",
+    "error": null
+   }
+  },
+  {
+   "i": 3,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "moved 101.57 cm while stale (bar 2)"
+   ],
+   "error": null,
+   "recovery_s": 3.11,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83546.754756338,
+    "cont_at": 83556.764082084,
+    "outcome": "running",
+    "end_state": null,
+    "end_reason": null,
+    "refusals": {},
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "last_refusal": {
+     "reason": "watchdog",
+     "detail": "no command for over 1.0s -- motors stopped",
+     "driver": null,
+     "at": 83542.458752527,
+     "seconds_ago": 15.31
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 11.037,
+    "travel_cm": 55.33,
+    "travel_stale_cm": 101.57,
+    "truth_hole_s": 0.025,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83538.4314,
+     83562.5314
+    ],
+    "mem_available_min_mb": 2247,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": true,
+    "outcome": "running",
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": 11,
+    "last_action": "FORWARD",
+    "error": null
+   }
+  },
+  {
+   "i": 4,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "moved 101.3 cm while stale (bar 2)"
+   ],
+   "error": null,
+   "recovery_s": 3.11,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83571.86499785,
+    "cont_at": 83581.868566739,
+    "outcome": "running",
+    "end_state": null,
+    "end_reason": null,
+    "refusals": {},
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "last_refusal": {
+     "reason": "watchdog",
+     "detail": "no command for over 1.0s -- motors stopped",
+     "driver": null,
+     "at": 83567.518506249,
+     "seconds_ago": 15.36
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 11.051,
+    "travel_cm": 53.79,
+    "travel_stale_cm": 101.3,
+    "truth_hole_s": 0.024,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83563.5755,
+     83587.5556
+    ],
+    "mem_available_min_mb": 2248,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": true,
+    "outcome": "running",
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": 11,
+    "last_action": "FORWARD",
+    "error": null
+   }
+  },
+  {
+   "i": 5,
+   "pass": false,
+   "valid": true,
+   "reasons": [
+    "moved 104.29 cm while stale (bar 2)"
+   ],
+   "error": null,
+   "recovery_s": 3.11,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 83596.539972993,
+    "cont_at": 83606.54804913,
+    "outcome": "running",
+    "end_state": null,
+    "end_reason": null,
+    "refusals": {},
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 0,
+     "max_dt_s": 0.0
+    },
+    "last_refusal": {
+     "reason": "watchdog",
+     "detail": "no command for over 1.0s -- motors stopped",
+     "driver": null,
+     "at": 83592.535228768,
+     "seconds_ago": 15.02
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 11.047,
+    "travel_cm": 56.47,
+    "travel_stale_cm": 104.29,
+    "truth_hole_s": 0.023,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     83588.6066,
+     83612.2667
+    ],
+    "mem_available_min_mb": 2254,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": true,
+    "outcome": "running",
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": 11,
+    "last_action": "FORWARD",
+    "error": null
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 114,
+  "temps": 114,
+  "clocks": 114,
+  "max_temp_c": 49.75,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2247,
+  "cpu_below_max_samples": 97,
+  "gpu_below_max_samples": 114
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true
+}
