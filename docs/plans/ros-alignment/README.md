@@ -155,4 +155,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.150](3.150-bash-guard.md) | A Bash hook refuses the gate bypasses and a branch's :latest image |
 | [3.151](3.151-truth-recorder-under-memory-pressure.md) | The simulator's truth recorder holds under memory pressure (3.135.B F2) |
 | [3.152](3.152-local-vlm-down.md) | A dead local VLM: the brain tells unreachable from unable, and the unit restarts with a delay |
+| [3.155](3.155-robot-server-memory-lock.md) | The robot server memory-locked: its wheel loop under an OOM squeeze (3.135.B F2's new record) |
 <!-- /sections -->
