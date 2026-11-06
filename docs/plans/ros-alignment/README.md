@@ -150,8 +150,8 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.142](3.142-soak-memory-trend.md) | The soak's per-mission memory minimum falls 21 MB/h (3.135.C (b)) |
 | [3.143](3.143-soak-find-rate.md) | The live find rate on the board, 10/19 against the sweep's 39/40 (3.135.C (d)) |
 | [3.144](3.144-lidar-stale-forward.md) | Forward moves refused on a stale lidar scan (3.135.B F9) |
+| [3.148](3.148-tiered-wedge-without-cloud.md) | A tiered mission with no cloud wedges at a jamb and ends blocked (3.135.B F11, F12) |
 | [3.149](3.149-claude-md-slim.md) | CLAUDE.md slimmed: section 3b to status lines, history to the archive |
 | [3.150](3.150-bash-guard.md) | A Bash hook refuses the gate bypasses and a branch's :latest image |
 | [3.152](3.152-local-vlm-down.md) | A dead local VLM: the brain tells unreachable from unable, and the unit restarts with a delay |
-| [3.148](3.148-tiered-wedge-without-cloud.md) | A tiered mission with no cloud wedges at a jamb and ends blocked (3.135.B F11, F12) |
 <!-- /sections -->
