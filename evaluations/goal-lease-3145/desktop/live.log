@@ -1,0 +1,2 @@
+waiting for the heavy-run lock (/home/anshu/vision-picar/.git/heavy-run.lock): another job is queued ahead; holding now: exclusive pid 1975870 3.148 step A (A1 F11a x10, A2 control x10) since Thu Nov  5 20:01:51 2026
+waiting for the heavy-run lock (/home/anshu/vision-picar/.git/heavy-run.lock): exclusive pid 1975870 3.148 step A (A1 F11a x10, A2 control x10) since Thu Nov  5 20:01:51 2026

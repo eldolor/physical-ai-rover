@@ -156,6 +156,13 @@ def require_secret(x_app_secret: str = Header(default="")):
         raise HTTPException(status_code=401, detail="Missing or invalid x-app-secret header.")
 
 
+async def require_secret_on_loop(x_app_secret: str = Header(default="")):
+    """`require_secret` for a route that must never wait on the threadpool
+    (3.145's heartbeat): FastAPI runs a sync dependency there, behind every
+    sync route blocked on the bridge."""
+    require_secret(x_app_secret)
+
+
 # JSON's NaN and Infinity are refused at the door (3.76 M1): on the car
 # `NaN > 2.0` is false, so the board was sent NaN, dropped it and kept its
 # previous setpoint.
@@ -1760,7 +1767,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         return {"resumed": was is not None, "driver": driver,
                 "stopped_by": was["by"] if was is not None else None}
 
-    @app.post(prefix + "/autonomy/heartbeat", dependencies=[Depends(require_secret)])
+    @app.post(prefix + "/autonomy/heartbeat", dependencies=[Depends(require_secret_on_loop)])
     async def autonomy_heartbeat(x_driver: str = Header(default=""),
                                  x_lease_id: str = Header(default="")):
         """3.145: a brain's navigator says it is alive (`x-lease-id` names
@@ -1778,7 +1785,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         return {"driver": driver, "lease_s": watchdog_timeout,
                 "lapsed": bool(latch and latch.get("lapsed"))}
 
-    @app.delete(prefix + "/autonomy/heartbeat", dependencies=[Depends(require_secret)])
+    @app.delete(prefix + "/autonomy/heartbeat", dependencies=[Depends(require_secret_on_loop)])
     async def autonomy_heartbeat_end(x_driver: str = Header(default=""),
                                      x_lease_id: str = Header(default="")):
         """3.145: the navigator closed (its mission ended): no more beats,

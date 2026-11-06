@@ -84,6 +84,11 @@ class RemoteNavigator:
         try:
             r = self._client.request("POST", "/autonomy/heartbeat", headers=self.headers,
                                      **self._beat_kw)
+            if r.status_code in (404, 405):
+                # A robot server older than 3.145: no lease to keep.
+                logger.warning("the robot server has no goal lease (HTTP %s): this brain's "
+                               "goals will outlive it, as before 3.145", r.status_code)
+                self._beats_stop.set()
             return r.status_code == 200
         except httpx.HTTPError:
             return False
@@ -108,7 +113,7 @@ class RemoteNavigator:
             if self.heartbeat_s is None or self._beats is not None or self._beats_stop.is_set():
                 return
             for _ in range(3):                   # a goal sent unbeaten is not leased
-                if self._beat():
+                if self._beat() or self._beats_stop.is_set():
                     break
             self._beats = threading.Thread(target=self._beat_loop, daemon=True,
                                            name="goal-lease-heartbeat")
