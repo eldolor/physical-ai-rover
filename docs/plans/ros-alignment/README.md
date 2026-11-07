@@ -166,6 +166,6 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.162](3.162-what-i-saw.md) | What I saw: a mission's objects with photos and places, on the twin |
 | [3.163](3.163-scheduled-missions.md) | Missions and surveys on a schedule |
 | [3.164](3.164-watchdog-keeps-stop-reason.md) | The watchdog record keeps a Stop's or fault's reason: the twin tells a hung brain from a finished mission |
-| [3.166](3.166-claim-tool-fixes.md) | Claim tools: stored Touches follow plan edits; whole-directory entries stop blocking unrelated work |
 | [3.165](3.165-inventory-landmarks-bounded.md) | Inventory landmark points bounded |
+| [3.166](3.166-claim-tool-fixes.md) | Claim tools: stored Touches follow plan edits; whole-directory entries stop blocking unrelated work |
 <!-- /sections -->
