@@ -20,8 +20,10 @@ from outside. Nothing in sim/ or in 3.135's files is edited.
   travel to contact ahead is under `clear` cm before it.
 * `POST /lat/restore` {"src", "dst"}: the object put back.
 * Criterion 3's plant (`LAT_PLANT_FILE` names a file; the word `zero` in it
-  when the board takes a command): a command that zeroes moving wheels is
-  applied 100 ms late (the end P5 measures moved by the plant's size).
+  when the board takes a command): a command that takes the forward speed
+  to zero (a stop, or the veto's pivot under `drive: ros`) is applied 100 ms
+  late, the commands after it held with it (the end P5 measures moved by
+  the plant's size).
 
     FMEA_DIR=<out> python evaluations/jetson-perf-3136/lat_body.py <port>
 """
@@ -61,15 +63,30 @@ def planted(word: str) -> bool:
 _set = fake_esp32.FakeEsp32._set_goal_speed
 
 
+FWD_ZERO_M_S = 0.005        # lat_score's forward-zero line
+_pending: dict = {}
+
+
 def _set_goal_speed(self, left, right):
-    """The plant: a zero for wheels that are moving lands PLANT_S late (on a
-    timer, under the board's lock as the firmware's own call is)."""
-    if left == 0 and right == 0 and any(v != 0 for v in self.setpoint) and planted("zero"):
-        def late():
-            with self.lock:
-                _set(self, left, right)
-        threading.Timer(PLANT_S, late).start()
-        return
+    """The plant: a command that takes the forward speed (the mean of the
+    two setpoints) from moving to zero -- an exact stop, or under `drive:
+    ros` the veto's pivot in place -- and every command after it are held
+    PLANT_S, then the newest is applied (on a timer, under the board's lock
+    as the firmware's own call is), so the wheels go on forward 100 ms
+    longer. Called with the board's lock held."""
+    if planted("zero"):
+        if _pending:                                  # a stop is being held: the newest wins
+            _pending["cmd"] = (left, right)
+            return
+        if sum(self.setpoint) / 2 > FWD_ZERO_M_S and (left + right) / 2 <= FWD_ZERO_M_S:
+            _pending["cmd"] = (left, right)
+
+            def late():
+                with self.lock:
+                    cmd = _pending.pop("cmd")
+                    _set(self, *cmd)
+            threading.Timer(PLANT_S, late).start()
+            return
     _set(self, left, right)
 
 

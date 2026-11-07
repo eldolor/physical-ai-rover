@@ -41,7 +41,7 @@ explore_sends.jsonl, explore_cancels.jsonl, person.jsonl, the logs).
 from __future__ import annotations
 
 import argparse
-import http.client
+from http.client import HTTPException
 import json
 import math
 import os
@@ -81,7 +81,7 @@ FWD_AT_DROP_M_S = 0.02    # a drop counts only if the robot was driving forward 
 POLL_GOAL_S = 0.025
 # One trial's transport failures (a reply lost under load): the trial is
 # recorded as failed and the next one tried, never the run ended.
-TRIAL_ERRORS = (OSError, http.client.HTTPException, ValueError, StackError)
+TRIAL_ERRORS = (OSError, HTTPException, ValueError, StackError)
 
 VE_STANDIN = """
 import sys, uvicorn
