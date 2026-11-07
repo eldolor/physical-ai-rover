@@ -712,7 +712,7 @@ class MissionRunner:
         find_room_labels: bool = False,
         explore_ask_timeout_s: Optional[float] = None,
         house: Optional[str] = None,
-        return_to_dock: bool = True,
+        return_to_dock: bool = False,
         return_wait_s: float = docking.RETURN_WAIT_S,
     ):
         if job not in JOBS:
@@ -850,7 +850,9 @@ class MissionRunner:
                                      if mission_time_limit_s and mission_time_limit_s > 0
                                      else None)
         self.battery_floor_v = battery_floor_v if battery_floor_v else None
-        # 3.156.B: the return to the dock (D1-D5). `_dock` is recorded at
+        # 3.156.B: the return to the dock (D1-D5). Off unless asked: D2's
+        # default-on is the brain config's (`return_to_dock`), so every
+        # in-process harness keeps today's end. `_dock` is recorded at
         # start; `_pending_end` holds the decided end while the robot drives
         # home (the outcome is decided first and never changed by the
         # return); `_return` is status's `return`.

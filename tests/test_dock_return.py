@@ -45,7 +45,7 @@ class RecNav(FakeNav):
 
 
 def mission(target="red backpack", house="scaled_house", job=None, never_ready=False,
-            battery=None, **kw):
+            battery=None, return_to_dock=True, **kw):
     grid = build_world(house)
     robot = MockRobot(grid, render=False, battery=battery)
     if battery is not None:
@@ -55,7 +55,7 @@ def mission(target="red backpack", house="scaled_house", job=None, never_ready=F
     args = {"job": "survey"} if job == "survey" else {"target_object": target}
     runner = MissionRunner(robot, policy="explore", navigator=nav, world=MockWorld(grid),
                            max_steps=kw.pop("max_steps", 200), clock=lambda: grid.sim_time,
-                           idle=robot.pass_time, **args, **kw)
+                           idle=robot.pass_time, return_to_dock=return_to_dock, **args, **kw)
     return runner, nav, grid, robot
 
 
