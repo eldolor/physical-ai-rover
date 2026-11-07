@@ -469,7 +469,7 @@ recorded as such (3.27 did this for `PIVOT_MARGIN_CM`).
 | `tests/test_lidar_safety.py` (4) | 3.42 criterion 4: the 3.18/3.19 samples with the vet reading the D500's timed scan (no depth grid): straight runs pass; pivots 0/120 within 1 cm with the rotation aged, and fail without it |
 | `tests/test_guarded_verbs.py` (8) | 3.22: verbs stop at the line; a stop ends a verb within 100 ms on the fake board. 4a judges "clear" against each speed's own bar (3.44 amendment) |
 | `tests/test_speed_clearance.py` (15) | 3.44: today's speeds keep 20 cm; the creep margin only when asked; an unasked 0.02 m/s twist and a look-ahead-slowed verb stop at 20 cm; creep sweep samples (verb instant and lidar-timed, wheel loop) never within 2 cm, and the instrument fails with no margin; 0.4/0.5 m/s sweeps; the scan hint covers the top speed's bar |
-| `tests/test_drop_guard_3159.py` (18) | 3.159: a stairwell ahead stops the robot >= 15 cm short at 0.1-0.6 m/s with the rule and makes it fall without; reverse toward floor never seen is refused, over driven floor allowed; an unusable block is never clear; a pivot carrying a corner onto an edge is refused and the other way is not; a grid with no `drop` block answers exactly as before; the sim's block is the floor seen and what ended it; a pinned sample of the sweeps; the review fixes (no pose refuses, an edge outlives a thing's end, a centre-line thing hides no edge, each controller's own margin, no extra grid astern without a drop, a fast turn looked at over 0.1 s, a first turn switches the guard on). `tests/drop_sweep.py` is the sweeps' instrument (ground truth: a fall is the centre over a `v` cell) |
+| `tests/test_drop_guard_3159.py` (20) | 3.159: a stairwell ahead stops the robot >= 15 cm short at 0.1-0.6 m/s with the rule and makes it fall without; reverse toward floor never seen is refused, over driven floor allowed; an unusable block is never clear; a pivot carrying a corner onto an edge is refused and the other way is not; a grid with no `drop` block answers exactly as before; the sim's block is the floor seen and what ended it; a pinned sample of the sweeps; the review fixes (no pose refuses, an edge outlives a thing's end, a centre-line thing hides no edge, each controller's own margin, no extra grid astern without a drop, a fast turn looked at over 0.1 s, a first turn switches the guard on, an arc with a blind lidar folds its own frame, a missing first frame does not spend the probe). `tests/drop_sweep.py` is the sweeps' instrument (ground truth: a fall is the centre over a `v` cell) |
 | `tests/test_mission_guarded_verbs.py` (3) | 3.32: in-process missions use guarded verbs through `_HaltGate` |
 | `tests/test_wheels_command.py` (8) | R2b's six criteria plus the zero-heartbeat rules |
 | `tests/test_ros_verb_safety.py` (7) | 3.24 G2: the same bars through the ROS path |
@@ -547,7 +547,13 @@ order; record the table in the plan entry.
   apart (~3 cm at 0.6 m/s, inside the margin). The turn check is
   quantised to 5 cm cells: within a cell of an edge it refuses some turns
   that open the gap (D4, failed) and let one step of a turn from under
-  1 cm cross 0.17 cm (D2, failed).
+  1 cm cross 0.17 cm (D2, failed). Round 2 adds: an edge is sticky
+  against everything but its own kind, so a wrong edge (drift, one noisy
+  frame) blocks that way until its cell is pruned; an edge remembered
+  beyond a wall still shortens a move toward the wall; the turn looks
+  0.1 s ahead, so a wheel-loop tick that is very late (3.153's 0.95 s)
+  can turn past its look; the corridor search reads every line out to
+  60 cm each tick (no early end), unmeasured on the board.
 
 - **The car only turns until its lidar driver lands**: see "Driving
   without a lidar" above. By decision.
