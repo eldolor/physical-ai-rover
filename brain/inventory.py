@@ -282,6 +282,7 @@ class Landmark:
     # 3.165: a carried landmark's saved point never folds or moves (it is
     # where the earlier mission put it); ids of the member lists.
     _anchors: set = field(default_factory=set)
+    _votes: Optional[Counter] = None                  # `votes`, until a look changes
 
     def __post_init__(self):
         given, self.points = self.points, []
@@ -373,8 +374,12 @@ class Landmark:
     @property
     def votes(self) -> Counter:
         # Carried first: on a tie `most_common` keeps the order counted, so
-        # the saved label keeps its name.
-        return self._carried_votes + Counter(self._looks.values())
+        # the saved label keeps its name. 3.165: kept until `_looks` or
+        # `_carried_votes` changes (each write clears `_votes`), as `label`
+        # reads it for every landmark on every detection; read-only.
+        if self._votes is None:
+            self._votes = self._carried_votes + Counter(self._looks.values())
+        return self._votes
 
     @property
     def x(self) -> float:
@@ -570,7 +575,7 @@ class Inventory:
                     continue
                 if name and math.isfinite(n) and n > 0:
                     votes[name] += n
-            lm._carried_votes = _bounded(votes)
+            lm._carried_votes, lm._votes = _bounded(votes), None
             self._next_id += 1
             self.landmarks.append(lm)
             carried += 1
@@ -604,7 +609,7 @@ class Inventory:
         self._absorb(lm, others)
         lm.score = deserved
         if fresh and frame not in lm._looks:
-            lm._looks[frame] = label
+            lm._looks[frame], lm._votes = label, None
         if frame in lm._looks:
             lm._hit_pose = dict(pose)
 
@@ -634,6 +639,7 @@ class Inventory:
                 # merge weighs no more than the heavier part (review 4).
                 cap = max(sum(keep._carried_votes.values()), sum(other._carried_votes.values()))
                 keep._carried_votes = _bounded(keep._carried_votes + other._carried_votes, cap)
+            keep._votes = None
             keep.carried = keep.carried or other.carried
             keep._missed |= other._missed
             keep._missed -= keep._looks.keys()   # a frame that saw a part did not miss it
