@@ -158,4 +158,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.155](3.155-robot-server-memory-lock.md) | The robot server memory-locked: its wheel loop under an OOM squeeze (3.135.B F2's new record) |
 | [3.156](3.156-return-to-dock.md) | Return to the dock: a mission or survey ends at the charger |
 | [3.157](3.157-perception-into-explore.md) | Explore sees on the car: perception's detections, ranged by the lidar, in explore's frame |
+| [3.158](3.158-autonomy-acceptance.md) | Full autonomy accepted: missions and surveys in the house, unattended |
 <!-- /sections -->
