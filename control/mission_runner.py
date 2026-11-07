@@ -58,6 +58,7 @@ from brain.agent import ObjectSearchAgent, _held_no_route, _takes_local_ok
 from brain.arrival import SOURCE_LOCAL
 from brain.explore import OWN_GOAL_TOLERANCE_M, ExploreAgent  # one tolerance for both (3.76)
 from brain.choice_log import BY_PERSON, GoalAsk
+from brain import dock as docking
 from brain.intervention_log import (VIA_BRAIN_STOP, VIA_LOOP_CANCELLED, VIA_PREEMPTED,
                                     VIA_ROBOT_STOP)
 from brain.goal_policy import coarse, goal_policy_for
@@ -711,6 +712,8 @@ class MissionRunner:
         find_room_labels: bool = False,
         explore_ask_timeout_s: Optional[float] = None,
         house: Optional[str] = None,
+        return_to_dock: bool = True,
+        return_wait_s: float = docking.RETURN_WAIT_S,
     ):
         if job not in JOBS:
             raise ValueError(f"Unknown job: {job!r}. Known: {', '.join(JOBS)}")
@@ -847,6 +850,17 @@ class MissionRunner:
                                      if mission_time_limit_s and mission_time_limit_s > 0
                                      else None)
         self.battery_floor_v = battery_floor_v if battery_floor_v else None
+        # 3.156.B: the return to the dock (D1-D5). `_dock` is recorded at
+        # start; `_pending_end` holds the decided end while the robot drives
+        # home (the outcome is decided first and never changed by the
+        # return); `_return` is status's `return`.
+        self.return_to_dock = bool(return_to_dock)
+        self.return_wait_s = return_wait_s
+        self._dock: Optional[dict] = None
+        self._home: Optional[docking.HomeBudget] = None
+        self._return: Optional[dict] = None
+        self._return_trip: Optional[docking.ReturnTrip] = None
+        self._pending_end: Optional[tuple] = None
         self.max_steps = max_steps or derived_max_steps(self.mission_time_limit_s)
         # Under `vision` every step is a paid /navigate call, and a time
         # limit is not a call limit: before 3.70 the 120-step cap bounded
@@ -1032,6 +1046,12 @@ class MissionRunner:
     # ---------- lifecycle ----------
 
     def start(self) -> None:
+        dock = None
+        if self.return_to_dock:
+            try:
+                dock = docking.dock_from_pose(self.world.get_pose())
+            except Exception as e:  # noqa: BLE001 -- no dock pose: the return is skipped, never guessed
+                logger.warning("dock pose not read at start: %s", e)
         with self._lock:
             if self._running:
                 raise RuntimeError("Mission already running")
@@ -1049,14 +1069,25 @@ class MissionRunner:
                 limits.append(f"battery floor {self.battery_floor_v:g} V")
             if self.vision_max_calls:
                 limits.append(f"cloud call cap {self.vision_max_calls}")
+            self._dock = dock
+            self._home = docking.HomeBudget(dock) if dock is not None else None
             self._log_line(f"mission started: {self.memory.mission} ({', '.join(limits)})")
 
     def tick(self) -> bool:
         """Advance the mission by one agent step. Returns True while the
-        mission is still running, so a caller can `while runner.tick():`."""
+        mission is still running, so a caller can `while runner.tick():`.
+        3.156: an end that sends the robot home leaves it running (the
+        return is the mission's last phase), so the answer is read after
+        the step, not taken from the path that decided the end."""
         if not self._running:
             return False
         self._tick_began = time.monotonic()
+        if self._pending_end is not None:
+            return self._return_tick()
+        self._step_tick()
+        return self._running
+
+    def _step_tick(self) -> bool:
 
         # The step backstop is checked at the END of a tick, below, where
         # _finish() then sets _running False -- so a duplicate check here
@@ -1312,7 +1343,28 @@ class MissionRunner:
                          f"{self.battery_floor_v:g} V floor "
                          f"{BATTERY_LOW_READINGS} readings in a row")
             return True
+        why = self._return_reserve(elapsed, paused)
+        if why:
+            self._finish(OUT_OF_BUDGET, f"return reserve -- {why}")
+            return True
         return False
+
+    def _return_reserve(self, elapsed, paused) -> Optional[str]:
+        """3.156 D3: end the search now if what is left of the time or the
+        battery is less than the trip home is predicted to cost."""
+        if self._home is None or self._navigator is None:
+            return None
+        try:
+            pose = self.world.get_pose()
+            now = self.clock()
+        except Exception:  # noqa: BLE001 -- no pose this tick: no prediction, never an end
+            return None
+        self._home.observe_pose(pose, now)
+        left = (self.mission_time_limit_s - (elapsed - paused)
+                if self.mission_time_limit_s and elapsed is not None else None)
+        v_now = self._battery_v if self.battery_floor_v else None
+        return self._home.reserve_reason(self.world.get_map, pose, now, left, v_now,
+                                         self.battery_floor_v)
 
     def _ask(self) -> Optional[GoalAsk]:
         return getattr(self.agent, "ask", None) if self.explores else None
@@ -1370,6 +1422,8 @@ class MissionRunner:
             self._battery_low = 0
             return False
         self._battery_v = float(v)
+        if self._home is not None:
+            self._home.observe_battery(self._battery_v, now)
         # 3.137: the robot server's ladder has already applied its own
         # distinct-samples rule; at Reserve or Power-off the mission ends now.
         self._battery_level = reading.get("level")
@@ -1590,10 +1644,13 @@ class MissionRunner:
                     "paused_s": round(self._paused_s(), 1),
                     "battery_floor_v": self.battery_floor_v,
                     "battery_v": self._battery_v,
+                    "home": dict(self._home.last) if self._home is not None else None,
                     "cloud_calls": self._cloud_calls if self.policy == "vision" else None,
                     "cloud_call_limit": self.vision_max_calls,
                 },
                 "error": self._error,
+                "dock": dict(self._dock) if self._dock else None,
+                "return": dict(self._return) if self._return else None,
                 "policy": self.policy,
                 "job": self.job,
                 # 3.70 S2: a survey's room labels -- how many asks, the cap,
@@ -2042,7 +2099,107 @@ class MissionRunner:
             logger.warning("reading the policy's stats failed: %s", e)
             return None
 
-    def _finish(self, outcome: str, note: str, arrival: Optional[dict] = None,
+    # 3.156 D2: the ends that go home, and the ones that never do.
+    RETURNS = (FOUND, ROOM_REACHED, EXHAUSTED, OUT_OF_BUDGET, ARRIVED_UNCONFIRMED, BLOCKED)
+
+    def _return_wanted(self, outcome: str) -> Optional[str]:
+        """"go", or why not (status's `skipped` reason). None: off."""
+        if not self.return_to_dock:
+            return None
+        if outcome == CANCELLED:
+            return "person"
+        if outcome not in self.RETURNS:
+            return "fault"
+        if outcome == OUT_OF_BUDGET and self._battery_level in (BATTERY_LEVEL_RESERVE,
+                                                                 BATTERY_LEVEL_POWEROFF):
+            return "battery_reserve"
+        if self._dock is None:
+            return "no_dock"
+        if self._navigator is None:
+            return "no_nav2"
+        return "go"
+
+    def _finish(self, outcome: str, note: str, **kw) -> None:
+        """Every end comes here. 3.156: an end D2 sends home first holds the
+        decided outcome and starts the return (the mission runs on, driving
+        home); an end that lands DURING the return (a person's Stop, B3.3's
+        abort) ends the return there, and the mission with the outcome
+        decided before it."""
+        go = False
+        with self._lock:
+            if self._ended():
+                return
+            pending = self._pending_end
+            if pending is None:
+                why = self._return_wanted(outcome)
+                if why == "go":
+                    self._pending_end = (outcome, note, kw)
+                    self._return_trip = docking.ReturnTrip(
+                        self._dock, self._navigator, self.agent.safety, self.world.get_pose,
+                        self.clock, wait_s=self.return_wait_s, idle=self.idle)
+                    self._return = {"state": "returning", "after": outcome,
+                                    "decided_at_s": self._elapsed_s(),
+                                    **self._return_trip.summary()}
+                    self._log_line(f"{outcome}: {note} -- returning to the dock")
+                    go = True
+                elif why is not None:
+                    self._return = {"state": docking.SKIPPED, "reason": why}
+            elif (self._return or {}).get("state") == "returning":
+                cancelled = outcome == CANCELLED
+                reason = (kw.get("cancelled_by") or "stop") if cancelled else note
+                self._return = {**(self._return or {}),
+                                **(self._return_trip.summary() if self._return_trip else {}),
+                                "state": docking.CANCELLED if cancelled else docking.FAILED,
+                                "reason": reason}
+                self._log_line(f"return {self._return['state']}: {reason}")
+        if go:
+            self._safe_stop()
+            return
+        if pending is not None:
+            outcome, note, kw = pending
+        self._end(outcome, note, **kw)
+
+    def _return_tick(self) -> bool:
+        """One step of the drive home (3.156 D4). A person's Stop and the
+        battery still win (D5): a refusal ends the return, never the
+        decided outcome."""
+        with self._lock:
+            self._last_tick_at = time.monotonic()
+        trip = self._return_trip
+        try:
+            got = trip.step()
+        except MissionHalted:
+            return False
+        except BatteryReserve:
+            got = (docking.FAILED, "battery_reserve")
+        except AutonomyLapsed as e:
+            got = (docking.FAILED, f"autonomy_lapsed: {e}")
+        except StoppedByPerson as e:
+            got = (docking.CANCELLED, f"stop: {e}")
+        except Preempted as e:
+            got = (docking.CANCELLED, f"preempted: {e}")
+        except Exception as e:  # noqa: BLE001 -- a fault on the way home ends the return
+            logger.exception("return step failed")
+            got = (docking.FAILED, f"error: {e}")
+        with self._lock:
+            if not self._running:
+                return False
+            self._return = {**(self._return or {}), **trip.summary()}
+            if got is None:
+                return True
+            state, reason = got
+            self._return.update(state=state, reason=reason)
+            for line in trip.log[-3:]:
+                self._log_line(f"return: {line}")
+            self._log_line(f"return {state}: {reason}")
+            outcome, note, kw = self._pending_end
+        # Not through _finish: the return has ended, the decided end is final
+        # (a Stop landing now finds `return` no longer `returning`, and ends
+        # the mission with the same decided outcome; `_end` runs once).
+        self._end(outcome, note, **kw)
+        return False
+
+    def _end(self, outcome: str, note: str, arrival: Optional[dict] = None,
                 tier_stats: Optional[dict] = None,
                 arrival_frame: Optional[dict] = None,
                 cancelled_by: Optional[str] = None, via: Optional[str] = None,
