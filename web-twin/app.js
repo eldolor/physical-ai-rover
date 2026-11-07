@@ -2317,7 +2317,10 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
   document.getElementById("saw-delete").onclick = deleteSaw;
   document.getElementById("saw-close").onclick = closeSaw;
   document.addEventListener("keydown", function (ev) {
-    if (ev.key === "Escape") closeSaw();
+    var v = document.getElementById("saw-viewer");
+    if (ev.key !== "Escape" || !v || v.hidden) return;   // only while the viewer is open
+    ev.stopPropagation();
+    closeSaw();
   });
   document.getElementById("rooms-done").onclick = closeRooms;
   document.querySelectorAll(".turn-step-btn").forEach(function (btn) {
@@ -2639,6 +2642,8 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
   }
 
   function sawClear() {
+    closeSaw();                                   // never a dead picture left on screen
+    state.sawDeleteArmed = 0;                     // an armed Delete never carries to the next report
     state.sawSeq = (state.sawSeq || 0) + 1;       // any load in flight is stale now
     var cache = state.sawCache || {};
     Object.keys(cache).forEach(function (k) { URL.revokeObjectURL(cache[k]); });
@@ -2765,7 +2770,9 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     if (!v || v.hidden) return;
     v.hidden = true;
     document.getElementById("saw-viewer-img").removeAttribute("src");
-    if (state.sawOpener && state.sawOpener.focus) state.sawOpener.focus();
+    var back = state.sawOpener && state.sawOpener.isConnected ? state.sawOpener
+      : document.getElementById("saw-open");
+    if (back && back.focus) back.focus();
     state.sawOpener = null;
   }
 

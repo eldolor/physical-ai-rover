@@ -28,7 +28,7 @@ from playwright import sync_api  # noqa: E402
 
 from brain import what_i_saw as wis  # noqa: E402
 from tests.test_ui import browser, open_twin, twin_server  # noqa: F401,E402
-from tests.test_ui_room_names import _bars, _clean  # noqa: E402
+from tests.test_ui_room_names import _bars as _bars_now, _clean  # noqa: E402
 
 BOX = [0.35, 0.30, 0.65, 0.85]
 
@@ -89,6 +89,21 @@ def _open(browser, twin_server, store, status):
     page.click("#btn-brain-connect")
     page.click('.tab-btn[data-tab="home"]')
     return page, errors, seen
+
+
+def _settled(page):
+    """The page's own animations (a toast fading in or out) finished: 3.132
+    measures M7 under reduced motion, where they do not run."""
+    page.wait_for_function("() => document.getAnimations().every(a => a.playState !== 'running')",
+                           timeout=8000)
+
+
+def _bars(page):
+    """Measured as 3.132's harness measures: reduced motion emulated (M7 is
+    what still moves then), the page settled."""
+    page.emulate_media(reduced_motion="reduce")
+    _settled(page)
+    return _bars_now(page)
 
 
 def _shot(page, name):

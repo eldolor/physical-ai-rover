@@ -191,3 +191,18 @@ def test_review_a_pruning_error_does_not_fail_a_saved_report(tmp_path, monkeypat
     monkeypatch.setattr(store, "_prune", lambda keep=None: (_ for _ in ()).throw(OSError("vanished")))
     store.save("m-1", {"outcome": "found"}, found={"jpeg": FRAME})
     assert store.get("m-1")["outcome"] == "found"
+
+
+def test_review2_clean_keeps_big_ints_and_bools_and_a_bad_belief_saves(tmp_path):
+    import numpy as np
+    assert wis._clean(2 ** 60 + 1) == 2 ** 60 + 1
+    assert wis._clean(np.int64(2 ** 60 + 1)) == 2 ** 60 + 1
+    assert wis._clean(np.bool_(True)) is True
+    assert wis._clean(10 ** 400) == 10 ** 400
+    rep = wis.ReportStore(tmp_path).save("m-1", {"outcome": "found"},
+                                         looks=[{"label": "a", "belief": "high"}, {"label": "b", "belief": 0.4}])
+    assert [m["label"] for m in rep["landmarks"]] == ["b", "a"]
+    (tmp_path / "junk").mkdir()
+    (tmp_path / "junk" / "report.json").write_text("[1, 2]")       # valid JSON, not a report
+    wis.ReportStore(tmp_path).save("m-2", {"outcome": "found"})
+    assert [r["mission_id"] for r in wis.ReportStore(tmp_path).list()] == ["m-2", "m-1"]

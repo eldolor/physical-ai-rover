@@ -115,13 +115,18 @@ def _clean(v):
         return [_clean(x) for x in v]
     if isinstance(v, bool) or v is None or isinstance(v, str):
         return v
+    kind = getattr(getattr(v, "dtype", None), "kind", "")
+    if kind == "b":
+        return bool(v)
+    if isinstance(v, int) or kind in "iu" and kind:
+        return int(v)                      # exact: never through a float
     try:
         f = float(v)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):
         return str(v)
     if f != f or f in (float("inf"), float("-inf")):
         return None
-    return int(f) if isinstance(v, int) or (hasattr(v, "dtype") and "int" in str(v.dtype)) else f
+    return f
 
 
 def _fsync_dir(d: Path) -> None:
@@ -163,7 +168,7 @@ _LOCKS_LOCK = threading.Lock()
 def _lock_for(d: Path) -> threading.Lock:
     """One lock per directory in this process: the writer's store and the
     routes' store never prune and delete over each other (review)."""
-    key = str(d.resolve()) if d.exists() else str(d.absolute())
+    key = os.path.realpath(d)              # the same key before and after the directory exists
     with _LOCKS_LOCK:
         return _LOCKS.setdefault(key, threading.Lock())
 
@@ -194,7 +199,7 @@ class ReportStore:
             if p.is_dir() and not p.name.startswith("."):
                 try:
                     top = max(top, int(json.loads((p / "report.json").read_text()).get("seq") or 0))
-                except (OSError, ValueError, TypeError):
+                except (OSError, ValueError, TypeError, AttributeError):
                     continue
         return top + 1
 
@@ -235,7 +240,10 @@ class ReportStore:
                                            "box": found.get("box"),
                                            "confirmed": bool(found.get("confirmed")),
                                            "resized": resized})
-            rows = sorted(looks or [], key=lambda r: -(_clean(r.get("belief")) or 0.0))[:MAX_ROWS]
+            def belief(r):
+                b = _clean(r.get("belief"))
+                return b if isinstance(b, (int, float)) and not isinstance(b, bool) else 0.0
+            rows = sorted(looks or [], key=lambda r: -belief(r))[:MAX_ROWS]
             marks = []
             (tmp / "thumbs").mkdir()
             for i, r in enumerate(rows):
@@ -268,11 +276,17 @@ class ReportStore:
                 _fsync_dir(tmp)
                 aside = None
                 if final.exists():
-                    # Old copy aside first, the new one in, then the old removed:
-                    # never a moment with neither (review).
+                    # Old copy aside, the new one in, then the old removed: a
+                    # reader may see no report for an instant, never half of
+                    # one; a failed swap puts the old copy back (review).
                     aside = final.with_name(f".{final.name}.replaced.{time.monotonic_ns()}")
                     os.replace(final, aside)
-                os.replace(tmp, final)
+                try:
+                    os.replace(tmp, final)
+                except BaseException:
+                    if aside is not None:
+                        os.replace(aside, final)
+                    raise
                 _fsync_dir(self.dir)
                 if aside is not None:
                     shutil.rmtree(aside, ignore_errors=True)
@@ -300,7 +314,7 @@ class ReportStore:
     def _seq_of(self, p: Path) -> int:
         try:
             return int(json.loads((p / "report.json").read_text()).get("seq") or 0)
-        except (OSError, ValueError, TypeError):
+        except (OSError, ValueError, TypeError, AttributeError):
             return 0
 
     def _prune(self, keep: Optional[Path] = None) -> None:
@@ -338,6 +352,8 @@ class ReportStore:
             try:
                 rep = json.loads((p / "report.json").read_text())
             except (OSError, ValueError):
+                continue
+            if not isinstance(rep, dict):
                 continue
             out.append({"mission_id": p.name, "job": rep.get("job"), "target": rep.get("target"),
                         "outcome": rep.get("outcome"), "end_reason": rep.get("end_reason"),
