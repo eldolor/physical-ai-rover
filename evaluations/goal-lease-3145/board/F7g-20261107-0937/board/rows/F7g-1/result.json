@@ -1,0 +1,65 @@
+{
+ "row": "F7g",
+ "title": "Brain hung (alive, silent; a nav2 goal)",
+ "reading": "as F7, the robot on an explore mission's nav2 goal",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "picar-jetson",
+ "started": "2026-11-07T09:37:09-0600",
+ "recovery_s": 5.09,
+ "measures": {
+  "fault_at": 143176.984415813,
+  "driver_at_fault": null,
+  "cont_at": 143207.013405445,
+  "outcome": "failed",
+  "end_state": null,
+  "end_reason": "brain loop hung: tick exceeded 30.0s",
+  "end_error": "brain loop hung: tick exceeded 30.0s",
+  "status": {
+   "running": false,
+   "outcome": "failed",
+   "end_state": null,
+   "end_reason": "brain loop hung: tick exceeded 30.0s",
+   "cancelled_by": null,
+   "step": 1,
+   "last_action": "WAIT",
+   "error": "brain loop hung: tick exceeded 30.0s"
+  },
+  "refusals": {
+   "preempted": 1,
+   "autonomy_lapsed": 1
+  },
+  "no_feedback_refusals": 0,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 93,
+   "max_dt_s": 0.0643
+  },
+  "last_refusal": {
+   "reason": "autonomy_lapsed",
+   "detail": "brain sent no heartbeat for 1.00s with a nav2 goal of its own -- the goal was ended and autonomy stays stopped until a new mission starts",
+   "driver": "brain",
+   "at": 143177.86092077,
+   "seconds_ago": 40.67
+  },
+  "forward_at_fault": true,
+  "wheels_zero_s": 0.889,
+  "travel_cm": 7.45,
+  "drive_after_cont": 0,
+  "truth_hole_s": 0.023,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   143160.2532,
+   143224.8933
+  ],
+  "mem_available_min_mb": 2378,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-07T09:38:15-0600"
+}

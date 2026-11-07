@@ -1,0 +1,5 @@
+1794065835.383 WARNING identity vision-picar brain server starting -- git=edafac21 executable=/home/picar/bench-3145/.venv/bin/python config=(default)
+1794065877.619 ERROR brain_server brain loop hung: tick exceeded 30.0s
+1794065877.708 WARNING explore goal call failed (1 in a row), waiting: [Errno 9] Bad file descriptor
+1794065894.512 WARNING explore goal call failed (1 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503

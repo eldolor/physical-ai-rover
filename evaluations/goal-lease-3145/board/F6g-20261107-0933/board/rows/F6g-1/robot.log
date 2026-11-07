@@ -1,0 +1,7 @@
+robot server memory lock: {"locked": true, "errno": null, "error": null, "limit_soft_kb": "unlimited", "limit_hard_kb": "unlimited", "vm_lck_kb": 19692, "vm_rss_kb": 9788}
+1794065632.248 WARNING identity vision-picar robot server starting -- git=edafac21 executable=/home/picar/bench-3145/.venv/bin/python config=(default)
+1794065634.115 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1794065642.812 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1794065648.458 WARNING server goal lease lapsed: brain sent no heartbeat for 1.03s with a nav2 goal of its own -- the goal was ended and autonomy stays stopped until a new mission starts
+1794065655.674 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1794065656.419 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses

@@ -288,7 +288,7 @@ paragraph.**
   ends it `cancelled`; the twin names each refusal.
 * 3.145: a brain's nav2 goal is leased (`POST /autonomy/heartbeat` every
   0.25 s): 1 s silent ends it and latches the brain out `autonomy_lapsed`
-  until a start; desktop F6g/F7g met, the board's re-run owed after 11-23.
+  until a start; F6g/F7g met on the desktop and the board (10/10, 0.84-1.08 s; bar 1.1).
 * 3.141.B, E1: `_PivotRows`, `_ScanPoints` (the scan's points once per scan), the corridor in numpy; exactly dev's answers (`tests/vet_reference.py`). 3.144.A: no FORWARD without a usable scan
   (`ahead_not_observed`).
 * 3.137.A-B: the battery ladder (`robot/battery_ladder.py`; 10.5 / 10.2 /
