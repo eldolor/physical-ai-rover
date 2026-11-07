@@ -1,0 +1,15 @@
+1794064835.061 WARNING identity vision-picar brain server starting -- git=eeb42287 executable=/home/anshu/vision-picar/.venv/bin/python config=(default)
+1794064836.180 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1794064842.062 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1794064847.983 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1794064854.232 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1794064860.170 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1794064866.064 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1794064872.302 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1794064878.212 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1794064884.159 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1794064890.412 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1794064896.279 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1794064902.181 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1794064905.559 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused
+1794064916.412 WARNING tiered async cloud call failed: ConnectError: [Errno 111] Connection refused

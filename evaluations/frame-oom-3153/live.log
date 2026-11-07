@@ -1,0 +1,4 @@
+waiting for the heavy-run lock (/home/anshu/vision-picar/.git/heavy-run.lock): shared pid 509364 3.153 criterion 2 sweep since Sat Nov  7 09:17:00 2026
+{"perturb": false, "camera_failures_seen": [], "error": null, "outcome": "found", "end_reason": "Hallway, kitchen, living room searched. Found.", "step": 84, "camera_failures_end": 0, "wall_s": 85.2, "log_tail": [], "camera_failures_max": null}
+{"perturb": true, "camera_failures_seen": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0], "error": null, "stopped_at_step": 3, "stop_at_s": 2.83, "cont_at_s": 6.85, "outcome": "found", "end_reason": "Hallway, kitchen, living room searched. Found.", "step": 84, "camera_failures_end": 0, "wall_s": 88.8, "log_tail": [], "camera_failures_max": 1}
+{"not_failed": true, "rose_and_reset": true, "same_outcome": true, "met": true}

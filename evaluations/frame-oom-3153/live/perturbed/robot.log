@@ -1,0 +1,2 @@
+robot server memory lock: {"locked": false, "errno": null, "error": "limit_not_raised", "limit_soft_kb": 8192, "limit_hard_kb": 8192, "vm_lck_kb": 0, "vm_rss_kb": 12864}
+1794064953.050 WARNING identity vision-picar robot server starting -- git=eeb42287 executable=/home/anshu/vision-picar/.venv/bin/python config=(default)
