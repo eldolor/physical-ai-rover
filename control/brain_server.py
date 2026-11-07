@@ -94,6 +94,8 @@ from brain.perceive import (DEFAULT_CLIP, DEFAULT_DETECTOR,
 from brain.tiered import parse_frame_vote, tiered_vision_fn_for
 from brain.choice_log import ChoiceLog
 from brain.intervention_log import FILE_NAME as INTERVENTION_FILE, InterventionLog
+from brain import room_labels as room_labels_mod
+from brain import room_names as room_names_mod
 from control import drills
 from control.brain_config import load_brain_config
 from control.inventory_store import _slug, inventory_store_from_config
@@ -190,6 +192,18 @@ class MissionStartRequest(BaseModel):
     record_walk: Optional[str] = None
 
     model_config = ConfigDict(extra="forbid")
+
+
+class RoomNamesRequest(BaseModel):
+    """3.160: one person's edit of the room names, against the map they saw."""
+    frame_id: Optional[str] = None
+    map_version: Optional[int] = None
+    op: str
+    room: Optional[str] = None       # "c<cut id>" or "s<stored index>"
+    other: Optional[str] = None
+    name: Optional[str] = None
+    line: Optional[list] = None      # [[x_m, y_m], [x_m, y_m]]
+    index: Optional[int] = None
 
 
 class GoalPickRequest(BaseModel):
@@ -1311,6 +1325,114 @@ def create_app(
         if not ok:
             raise HTTPException(status_code=409, detail=why)
         return {"accepted": True, "choice": req.choice, "candidate": req.candidate}
+
+    # ---- 3.160: rooms a person names on the saved map ----
+
+    def rooms_view(names_store) -> dict:
+        """The map's room cut with the person's names over it, the model's
+        suggestions (the current or last mission's labels), and the stored
+        rooms a re-map left unplaced. `closed` says why nothing can be named."""
+        w = world()
+        try:
+            m, pose = w.get_map(), w.get_pose()
+        except Exception as e:  # noqa: BLE001 -- the editor says so, never a 500
+            return {"frame_id": None, "closed": f"The map can't be read now ({e}).", "rooms": []}
+        frame_id = (pose or {}).get("frame_id")
+        if not m or not m.get("usable", True) or "cells" not in m:
+            return {"frame_id": frame_id, "closed": "No map yet.", "rooms": []}
+        if not frame_id:
+            return {"frame_id": None, "rooms": [],
+                    "closed": "Survey first: names are kept with the saved map."}
+        seg, _ = room_labels_mod.segment(m)
+        rooms = names_store.rooms(frame_id)
+        owner = room_names_mod.owner_cells(m, rooms)
+        placed = room_names_mod.placed(m, rooms) if rooms else []
+        matched = room_names_mod.match(m, seg, rooms) if rooms else {}
+        res, ox, oy, width = m["resolution_m"], m["origin_x_m"], m["origin_y_m"], m["width"]
+        seeds = []
+        st = state["runner"].status() if state["runner"] is not None else {}
+        for block in ("survey", "room_labels"):
+            seeds += [x for x in ((st.get(block) or {}).get("seeds") or [])
+                      if len(x) == 3 and x[2] and x[2] != room_labels_mod.UNCLEAR]
+        cells_of: dict = {}
+        flat = seg.ravel().tolist()
+        for i, r in enumerate(flat):
+            if r >= 0:
+                cells_of.setdefault(r, []).append(i)
+
+        def centre(idx):
+            xs = [i % width for i in idx]
+            ys = [i // width for i in idx]
+            return (round(ox + (sum(xs) / len(xs) + 0.5) * res, 2),
+                    round(oy + (sum(ys) / len(ys) + 0.5) * res, 2))
+        out = []
+        for i, r in enumerate(rooms):
+            if not placed[i]:
+                continue
+            idx = [k for k, o in enumerate(owner) if o == i and m["cells"][k] == 0]
+            if idx:
+                x, y = centre(idx)
+                out.append({"key": f"s{i}", "name": r.get("name", ""), "source": "person",
+                            "x_m": x, "y_m": y, "cells": len(idx)})
+        for rid, idx in sorted(cells_of.items()):
+            if rid in matched or sum(owner[k] >= 0 for k in idx) >= 0.6 * len(idx):
+                continue                  # a person's room covers it
+            votes: dict = {}
+            for sx, sy, name in seeds:
+                cx, cy = int((sx - ox) // res), int((sy - oy) // res)
+                if 0 <= cx < width and 0 <= cy < m["height"] and flat[cy * width + cx] == rid:
+                    votes[name] = votes.get(name, 0) + 1
+            x, y = centre(idx)
+            sug = max(votes, key=votes.get) if votes else ""
+            out.append({"key": f"c{rid}", "name": "", "source": "model" if sug else "none",
+                        "suggestion": sug, "x_m": x, "y_m": y, "cells": len(idx)})
+        return {"frame_id": frame_id, "closed": None,
+                "map": {k: m.get(k) for k in ("map_id", "map_version", "width", "height",
+                                              "resolution_m", "origin_x_m", "origin_y_m")},
+                "cut": flat, "owner": owner, "rooms": out,
+                "unplaced": [{"key": f"s{i}", "index": i, "name": r.get("name", "")}
+                             for i, r in enumerate(rooms) if not placed[i] and r.get("name")]}
+
+    @app.get(prefix + "/rooms", dependencies=[Depends(require_secret)])
+    def rooms_get():
+        """3.160: the rooms to name. Local only: answered to the twin, never stored elsewhere."""
+        return rooms_view(room_names_mod.default_store())
+
+    @app.post(prefix + "/rooms/names", dependencies=[Depends(require_secret)])
+    def rooms_names(req: RoomNamesRequest):
+        """3.160: one edit, on the saved map and the map version the person saw
+        (409 for another or a changed one: reload). Nothing here reaches the
+        robot server, the bridge or nav2."""
+        store = room_names_mod.default_store()
+        w = world()
+        try:
+            m, pose = w.get_map(), w.get_pose()
+        except Exception as e:  # noqa: BLE001
+            raise HTTPException(status_code=503, detail=f"the map can't be read now ({e})")
+        frame_id = (pose or {}).get("frame_id")
+        if not frame_id or req.frame_id != frame_id:
+            raise HTTPException(status_code=409, detail="Survey first: names are kept with the "
+                                "saved map." if not frame_id else "another saved map: reload")
+        if not m or "cells" not in m or req.map_version != m.get("map_version"):
+            raise HTTPException(status_code=409, detail="the map changed since it was drawn: reload")
+
+        def target(t):
+            if t is None:
+                return None
+            if isinstance(t, str) and t[:1] == "c" and t[1:].isdigit():
+                return int(t[1:])
+            if isinstance(t, str) and t[:1] == "s" and t[1:].isdigit():
+                return t
+            raise HTTPException(status_code=422, detail=f"a room is c<n> or s<n>, not {t!r}")
+        seg, _ = room_labels_mod.segment(m)
+        kw = {k: v for k, v in (("room", target(req.room)), ("other", target(req.other)),
+                                 ("name", req.name), ("line", req.line), ("index", req.index))
+              if v is not None}
+        try:
+            store.edit(frame_id, m, seg, req.op, **kw)
+        except room_names_mod.NamesRefused as e:
+            raise HTTPException(status_code=409, detail=str(e))
+        return rooms_view(store)
 
     @app.get(prefix + "/mission/inventory", dependencies=[Depends(require_secret)])
     async def mission_inventory():

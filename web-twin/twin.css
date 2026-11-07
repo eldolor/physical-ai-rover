@@ -278,6 +278,23 @@ button.is-busy { pointer-events: none; opacity: 0.8; }
 .house-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; justify-content: center; }
 .remap-row { display: flex; justify-content: center; margin-top: 6px; }
 #btn-remap.armed { outline: 2px solid var(--accent-warn); }
+/* 3.160: the room names editor, under the map. */
+.rooms-row { display: flex; flex-direction: column; align-items: center; margin-top: 6px; }
+.rooms-panel { width: 100%; box-sizing: border-box; margin-top: 6px; padding: 8px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.rooms-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.rooms-title { font-size: var(--fs-md); color: var(--text); }
+.rooms-hint, .rooms-closed { font-size: var(--fs-body); color: var(--text-dim); margin: 6px 0; }
+.rooms-list { list-style: none; margin: 0; padding: 0; }
+.rooms-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 4px 0;
+  border-top: 1px solid var(--border); }
+.rooms-list li.selected { border-left: 3px solid var(--accent-primary); padding-left: 4px; }
+.rooms-list input { flex: 1 1 140px; min-width: 0; min-height: var(--target);
+  font-size: var(--fs-input); background: var(--field-bg); color: var(--text);
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 0 8px; }
+.rooms-list button, .rooms-head button, #btn-rooms { min-height: var(--target); min-width: var(--target); }
+.rooms-list li span { flex: 1 1 100%; font-size: var(--fs-body); color: var(--text); }
+#world-map.splitting { touch-action: none; cursor: crosshair; }
 #world-map.tappable { cursor: crosshair; touch-action: manipulation; }
 #world-map {
   border-radius: 8px;
