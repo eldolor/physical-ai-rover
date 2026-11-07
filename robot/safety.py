@@ -37,7 +37,6 @@ from typing import Optional, Tuple
 
 import numpy as np
 
-from robot import drop_guard
 from robot.interface import (
     DEPTH_COLS_DEFAULT,
     RobotInterface,
@@ -1008,7 +1007,10 @@ class SafetyController:
                                        self.footprint_clearance(-1, scan),
                                        self.drop_clearance(-1)), -1)
 
-    def _drop_guard(self) -> "drop_guard.DropGuard":
+    def _drop_guard(self):
+        # Imported here: the brain process imports this module, and its
+        # allowed modules are pinned (tests/test_brain_server.py).
+        from robot import drop_guard
         return drop_guard.guard_for(self.robot, FOOTPRINT_LENGTH_M * 50.0,
                                     FOOTPRINT_WIDTH_M * 50.0, FOOTPRINT_SIDE_MARGIN_CM)
 
