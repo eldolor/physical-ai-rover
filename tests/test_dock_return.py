@@ -214,6 +214,19 @@ def test_reserve_mid_return_ends_it_failed():
     s = runner.status()
     assert s["outcome"] == EXHAUSTED
     assert s["return"] == {**s["return"], "state": "failed", "reason": "battery_reserve"}
+    assert "battery_reserve" in s["error"]
+
+
+def test_an_autonomous_takeover_mid_return_is_a_fault_not_a_dpad():
+    runner, nav, grid, robot = _returning()
+    nav.raise_on_set = Preempted("ros is driving")
+    runner._return_trip.state = "goal"
+    n = 0
+    while runner.tick() and n < 50:
+        n += 1
+    s = runner.status()
+    assert s["outcome"] == EXHAUSTED and s["return"]["state"] == "failed"
+    assert "autonomous" in s["error"]
 
 
 # -- D3: the return reserve ---------------------------------------------------
@@ -246,7 +259,7 @@ def test_home_budget_units():
         b.observe_pose({"usable": True, "x_m": 1.0 + 0.75 * k, "y_m": 1.0}, 5.0 * k)
     assert b.v_obs() == pytest.approx(0.15)
     b.observe_pose({"usable": True, "x_m": 7.1, "y_m": 1.0}, 140.0)    # a 100 s pause
-    assert b.driving_s == pytest.approx(45.0)                          # counted as 5 s
+    assert b.driving_s == pytest.approx(50.0)                          # counted as 10 s
     b.observe_battery(12.0, 0.0)
     b.observe_battery(12.0, 10.0)                   # the same reading: not a sample
     b.observe_battery(11.9, 30.0)

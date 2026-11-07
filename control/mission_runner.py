@@ -2194,10 +2194,14 @@ class MissionRunner:
             person = {"note": f"stopped by a person: {e}", "cancelled_by": "stop",
                       "via": VIA_ROBOT_STOP}
         except Preempted as e:
-            got = (docking.CANCELLED, f"preempted: {e}")
             holder = _PREEMPTED_BY.match(str(e))
-            person = {"note": str(e), "cancelled_by": "dpad", "via": VIA_PREEMPTED,
-                      "by": holder.group(1) if holder else None}
+            if holder and driver_priority(holder.group(1)) != DRIVER_MANUAL:
+                # An autonomous holder took over: a fault, as _finish_preempted reads it.
+                got = (docking.FAILED, f"error: preempted by an autonomous driver: {e}")
+            else:
+                got = (docking.CANCELLED, f"preempted: {e}")
+                person = {"note": str(e), "cancelled_by": "dpad", "via": VIA_PREEMPTED,
+                          "by": holder.group(1) if holder else None}
         except Exception as e:  # noqa: BLE001 -- a fault on the way home ends the return
             logger.exception("return step failed")
             got = (docking.FAILED, f"error: {e}")
@@ -2213,7 +2217,8 @@ class MissionRunner:
                 self._log_line(f"return: {line}")
             self._log_line(f"return {state}: {reason}")
             outcome, note, kw = self._pending_end
-            if state == docking.FAILED and reason.startswith("error"):
+            if state == docking.FAILED and reason.startswith(("error", "autonomy_lapsed",
+                                                              "battery_reserve")):
                 self._error = f"during the return: {reason}"
         if person is not None:
             kw = {**kw, "interrupt": person}

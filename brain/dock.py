@@ -38,7 +38,7 @@ BATTERY_MARGIN_V = 0.1
 REPLAN_M = 0.5
 REPLAN_S = 30.0
 MOVED_M = 0.01              # a tick that moved less did not drive
-MAX_GAP_S = 5.0             # one read's share of driving time, at most
+MAX_GAP_S = 10.0            # one read's share of driving time, at most (a verb runs <= 7 s)
 # D4. 0.30 m, not the design's 0.40 (amended before any measurement, the
 # section's B notes): the simulator's straight verbs move whole 0.30 m cells
 # (`MockRobot._speed_duration_to_cells`), so a 0.40 m creep cannot close
