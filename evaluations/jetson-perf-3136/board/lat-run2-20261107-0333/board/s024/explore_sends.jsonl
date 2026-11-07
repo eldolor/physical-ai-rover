@@ -1,0 +1,48 @@
+{"t": 1794049334.708, "mission": 1, "sent": [["db4885f7fe15437f8a402d6cf85b30df", "frontier"]], "missing": 0}
+{"t": 1794049339.159, "mission": 2, "sent": [["4c962d98ceb74304bcf08ba3c8c8d60d", "frontier"]], "missing": 0}
+{"t": 1794049343.429, "mission": 3, "sent": [["93bcdc5c8bff4c8ca326adddf0047804", "approach"]], "missing": 0}
+{"t": 1794049348.087, "mission": 4, "sent": [["ba72fcc316c0402db87a9627197af73c", "frontier"]], "missing": 0}
+{"t": 1794049352.408, "mission": 5, "sent": [["7134839fbff54003b915c85efec80bff", "approach"]], "missing": 0}
+{"t": 1794049356.787, "mission": 6, "sent": [["cab75bd632c3437caf2b227a4985e5ef", "frontier"]], "missing": 0}
+{"t": 1794049361.003, "mission": 7, "sent": [["89af1140d6a34836aa430dea5d86aff7", "frontier"]], "missing": 0}
+{"t": 1794049365.265, "mission": 8, "sent": [["6ba7139b8389486f87cb857ed0f2276e", "frontier"]], "missing": 0}
+{"t": 1794049369.411, "mission": 9, "sent": [["497c71fb7d9643089b22add0e7b323ac", "approach"]], "missing": 0}
+{"t": 1794049373.896, "mission": 10, "sent": [["c87aca3f18c24860bbc66d7a50299818", "frontier"]], "missing": 0}
+{"t": 1794049378.115, "mission": 11, "sent": [["49f64c280fb8429381e81c3712a0731d", "approach"]], "missing": 0}
+{"t": 1794049382.282, "mission": 12, "sent": [["e855ae14c4d4410a802785666dcb66c9", "frontier"]], "missing": 0}
+{"t": 1794049386.52, "mission": 13, "sent": [["51aba3021db3417fa4d6bf6d5bba625b", "frontier"]], "missing": 0}
+{"t": 1794049390.837, "mission": 14, "sent": [["214b8e9e2dfa42658f134c8527afbfc2", "approach"]], "missing": 0}
+{"t": 1794049394.967, "mission": 15, "sent": [["b81b71233cc0400182219179be8c8619", "approach"]], "missing": 0}
+{"t": 1794049399.175, "mission": 16, "sent": [["eab0d4960b504fc6a99feabbea2c33b5", "frontier"]], "missing": 0}
+{"t": 1794049403.24, "mission": 17, "sent": [["9b3abc7347f748fba70e827186026229", "approach"]], "missing": 0}
+{"t": 1794049407.339, "mission": 18, "sent": [["08069e19e2b54eaa9a692692dbde983d", "frontier"]], "missing": 0}
+{"t": 1794049411.414, "mission": 19, "sent": [["65347b445ea94d8c82171a2cd17bc560", "frontier"]], "missing": 0}
+{"t": 1794049415.467, "mission": 20, "sent": [["e9c159e248414b9fab70786a13bf55a2", "approach"]], "missing": 0}
+{"t": 1794049424.159, "mission": 21, "sent": [["1339df9699ae4d29912de3e18af1e11e", "frontier"]], "missing": 0}
+{"t": 1794049435.181, "mission": 22, "sent": [["43af4947856d4146a4e87c7c3c19d536", "frontier"]], "missing": 0}
+{"t": 1794049446.169, "mission": 23, "sent": [["0c1e682957fe47e8bf476f9022eddcbb", "frontier"]], "missing": 0}
+{"t": 1794049466.328, "mission": 24, "sent": [["20d1d5648663489ebe8fea62535cf372", "frontier"]], "missing": 0}
+{"t": 1794049477.398, "mission": 25, "sent": [["dcd48a60c1924b448b589e78f7bff76c", "approach"]], "missing": 0}
+{"t": 1794049488.416, "mission": 26, "sent": [["8fcdea38a9104a3ea7f9709ce40a232a", "frontier"]], "missing": 0}
+{"t": 1794049499.435, "mission": 27, "sent": [["2c06729aed9f44f98b52d21eb5d96e57", "frontier"]], "missing": 0}
+{"t": 1794049516.902, "mission": 28, "sent": [["a26a21dea43c402c87ed53f451c96efa", "frontier"], ["5ca1a0dfcca440769bef6aeac5bc82ab", "approach"]], "missing": 0}
+{"t": 1794049539.211, "mission": 29, "sent": [["4fb87f41f72547e291f8475083046ef4", "frontier"], ["29df89e9e174415d807786ba900ac27e", "approach"]], "missing": 0}
+{"t": 1794049556.347, "mission": 30, "sent": [["594d3b0e34ff4ac5852b6ca2fb046c86", "approach"], ["c9f111630324410ea5ff77df16aab4a8", "approach"], ["3c6eea3407304ed68d71ac1482cfb040", "approach"], ["29ff990c2758493ca168cc73b267e23a", "approach"]], "missing": 0}
+{"t": 1794049570.428, "mission": 31, "sent": [["4d421de248b0440588cddcd7548eb310", "frontier"], ["f7f322ecd82040d48d5d957cf39e15d6", "approach"]], "missing": 0}
+{"t": 1794049584.499, "mission": 32, "sent": [["462092493c024a508c9ed8e49a731dfa", "frontier"]], "missing": 0}
+{"t": 1794049595.52, "mission": 33, "sent": [["367393aa8ca348149e98089bee535211", "frontier"]], "missing": 0}
+{"t": 1794049606.563, "mission": 34, "sent": [["0eb66ed66f724be29f6edfc8eaef393f", "frontier"]], "missing": 0}
+{"t": 1794049617.529, "mission": 35, "sent": [["ea91a5f18cca428baecbdb39e30e6d2a", "frontier"], ["1ad40a34a73948c7ac05e70ee2a6bf52", "approach"]], "missing": 0}
+{"t": 1794049628.985, "mission": 36, "sent": [["b4c6dd62bf604e219a870b04861c63aa", "frontier"]], "missing": 0}
+{"t": 1794049640.119, "mission": 37, "sent": [["8a4d15bf8d3a4feea50e0a09f925e922", "approach"], ["13d615da57e84cd689aa26fc5f8194fb", "approach"]], "missing": 0}
+{"t": 1794049651.148, "mission": 38, "sent": [["97d59cf2bf844f9e954394c6a4e1fc57", "frontier"]], "missing": 0}
+{"t": 1794049662.114, "mission": 39, "sent": [["78f95015fdbc44af931a767c7eae9df7", "frontier"]], "missing": 0}
+{"t": 1794049673.128, "mission": 40, "sent": [["82ea16e630ca42a1bfc39a631cc389f4", "frontier"], ["4c5ad4948a6a4c1c9a81adae34153e1a", "approach"]], "missing": 0}
+{"t": 1794049684.597, "mission": 41, "sent": [["7157a75811134071bd98bf21ec5314f3", "frontier"], ["671f7068a2f04d299dec7398a1b71f67", "approach"]], "missing": 0}
+{"t": 1794049751.458, "mission": 41, "sent": [["67c5545688a449159d257dd916af6ea2", "frontier"]], "missing": 0}
+{"t": 1794049822.27, "mission": 41, "sent": [["d93b25103855406db261a6a81feae64f", "frontier"]], "missing": 0}
+{"t": 1794049833.356, "mission": 41, "sent": [["1932dc9923ba467fa210e85668d534a9", "approach"]], "missing": 0}
+{"t": 1794049866.425, "mission": 41, "sent": [["a912d24707ea44ffbdbc6dbc19302b56", "frontier"]], "missing": 0}
+{"t": 1794049928.89, "mission": 41, "sent": [["c42b3d11aba34b979faf44c9b286ba4f", "approach"]], "missing": 0}
+{"t": 1794049971.666, "mission": 41, "sent": [["7b2f3707a9ac45988884f2a92618df19", "frontier"]], "missing": 0}
+{"t": 1794050027.372, "mission": 41, "sent": [["ae791ea77f8e4ffb8003632a3b58eafd", "frontier"]], "missing": 0}

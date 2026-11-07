@@ -1,0 +1,53 @@
+03:38:18 setup done; MemAvailable 1914 MB
+03:38:31 stack s001 up in procthor:val:0; MemAvailable 1119 MB
+03:39:42 P7 s001 procthor:val:0/red backpack -> found, 1 verdict(s); 1/20
+03:39:57 stack s002 up in procthor:val:0; MemAvailable 1319 MB
+03:41:01 P7 s002 procthor:val:0/box -> found, 1 verdict(s); 2/20
+03:41:16 stack s003 up in procthor:val:3; MemAvailable 1704 MB
+03:41:55 P7 s003 procthor:val:3/box -> found, 1 verdict(s); 3/20
+03:42:09 stack s004 up in home_first_floor; MemAvailable 1803 MB
+03:43:09 P7 s004 home_first_floor/dining table -> found, 1 verdict(s); 4/20
+03:43:24 stack s005 up in procthor:val:0; MemAvailable 1617 MB
+03:48:11 P7 s005 procthor:val:0/dog bed -> found, 1 verdict(s); 5/20
+03:48:26 stack s006 up in procthor:val:3; MemAvailable 1655 MB
+03:49:46 P7 s006 procthor:val:3/red backpack -> found, 1 verdict(s); 6/20
+03:50:00 stack s007 up in procthor:val:0; MemAvailable 1648 MB
+03:51:01 P7 s007 procthor:val:0/red backpack -> found, 1 verdict(s); 7/20
+03:51:15 stack s008 up in procthor:val:0; MemAvailable 1643 MB
+03:52:37 P7 s008 procthor:val:0/box -> found, 1 verdict(s); 8/20
+03:52:52 stack s009 up in procthor:val:3; MemAvailable 1646 MB
+03:53:32 P7 s009 procthor:val:3/box -> found, 1 verdict(s); 9/20
+03:53:46 stack s010 up in home_first_floor; MemAvailable 1746 MB
+04:03:48 P7 s010 home_first_floor/dining table -> cancelled, 0 verdict(s); 9/20
+04:04:03 stack s011 up in procthor:val:0; MemAvailable 1520 MB
+04:06:30 P7 s011 procthor:val:0/dog bed -> found, 1 verdict(s); 10/20
+04:06:50 stack s012 up in procthor:val:3; MemAvailable 1633 MB
+04:15:12 P7 s012 procthor:val:3/red backpack -> found, 1 verdict(s); 11/20
+04:15:27 stack s013 up in procthor:val:0; MemAvailable 1666 MB
+04:16:34 P7 s013 procthor:val:0/red backpack -> found, 1 verdict(s); 12/20
+04:16:49 stack s014 up in procthor:val:0; MemAvailable 1645 MB
+04:26:51 P7 s014 procthor:val:0/box -> cancelled, 0 verdict(s); 12/20
+04:27:06 stack s015 up in procthor:val:3; MemAvailable 1677 MB
+04:27:47 P7 s015 procthor:val:3/box -> found, 1 verdict(s); 13/20
+04:28:01 stack s016 up in home_first_floor; MemAvailable 1760 MB
+04:38:03 P7 s016 home_first_floor/dining table -> cancelled, 0 verdict(s); 13/20
+04:38:18 stack s017 up in procthor:val:0; MemAvailable 1652 MB
+04:43:19 P7 s017 procthor:val:0/dog bed -> found, 1 verdict(s); 14/20
+04:43:34 stack s018 up in procthor:val:3; MemAvailable 1656 MB
+04:44:48 P7 s018 procthor:val:3/red backpack -> found, 1 verdict(s); 15/20
+04:45:03 stack s019 up in procthor:val:0; MemAvailable 1657 MB
+04:48:07 P7 s019 procthor:val:0/red backpack -> found, 1 verdict(s); 16/20
+04:48:22 stack s020 up in procthor:val:0; MemAvailable 1643 MB
+04:57:15 P7 s020 procthor:val:0/box -> found, 1 verdict(s); 17/20
+04:57:30 stack s021 up in procthor:val:3; MemAvailable 1669 MB
+04:58:12 P7 s021 procthor:val:3/box -> found, 1 verdict(s); 18/20
+04:58:26 stack s022 up in home_first_floor; MemAvailable 1760 MB
+05:00:00 P7 s022 home_first_floor/dining table -> found, 1 verdict(s); 19/20
+05:00:15 stack s023 up in procthor:val:0; MemAvailable 1662 MB
+05:01:55 P7 s023 procthor:val:0/dog bed -> found, 1 verdict(s); 20/20
+05:01:57 P7 base: 20 verdicts
+05:02:09 stack s024 up in home_first_floor; MemAvailable 1687 MB
+05:03:35 P6 goal base: 20
+05:07:55 P6 verb base: 20
+05:14:40 P5 base: 40
+05:14:47 torn down

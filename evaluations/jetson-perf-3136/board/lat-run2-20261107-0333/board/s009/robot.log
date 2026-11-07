@@ -1,0 +1,8 @@
+robot server memory lock: {"locked": true, "errno": null, "error": null, "limit_soft_kb": "unlimited", "limit_hard_kb": "unlimited", "vm_lck_kb": 19696, "vm_rss_kb": 10136}
+1794045164.378 WARNING identity vision-picar robot server starting -- git=f2baec290 executable=/home/picar/bench-3136/.venv/bin/python config=(default)
+1794045166.219 WARNING ros_drive a send to the bridge failed -- ROS marked down until it answers
+1794045173.370 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1794045189.936 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1794045201.440 WARNING server refused (preempted) for ros: brain is driving -- one autonomous driver at a time, so ros was refused until it lapses
+1794045206.062 WARNING server refused (safety_distance) for ros: forward clamped: 19.3cm <= 20cm (depth_grid, aged 117 ms)
+1794045206.111 WARNING server refused (safety_distance) for ros: forward clamped: 19.5cm <= 20cm (depth_grid)

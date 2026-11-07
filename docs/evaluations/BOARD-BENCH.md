@@ -168,8 +168,11 @@ drops counted neither way). Numbers from an invalid run are information only.
 | Date | Rev | Valid | P7 verdict p90 (ms, n) | P6 goal: wheels / goal end p99 (ms, 20) | P6 verb: wheels p99 (ms, 20) | P5 scan to zero p99 (ms, 40) | P5 drop to zero p99 (ms) | P5 contacts | Late wheel ticks | `MemAvailable` min (MB) | OOM | Max temp |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 2026-11-07 | run 1, `b5ccce0a` (`dev` `f31ad372` + the harness) | **no** (19 `approach` goals ABORTED by nav2: 3.154's race, the build predates its fix) | 837 (20) | 51 / 149.1 | 34 | 27 (25 of 40 stopped before the scan) | 162 | 0 | 0 / 121,231 (max 88.9 ms) | 474 | 0 | 59.2 °C |
+| 2026-11-07 | run 2, `f2baec29` (`dev` with 3.154; image built from `dev` `548e2545`) | **no** (11 `approach` goals ABORTED by nav2 after 0.7-6.7 s) | **2,784** (20) | 38 / 149.1 | 31 | 39 (29 of 40 stopped before the scan; sim: information) | 1,181 | 0 | 0 / 78,483 (max 83.6 ms) | 659 | 0 | 61.2 °C |
 
-Bars: P7 2.0 s; P6 wheels 150 ms, goal 250 ms; P5 100 ms, 0 contacts.
+Bars: P7 2.0 s (20 samples, amendment 8); P6 wheels 150 ms, goal 250 ms;
+P5 100 ms and 0 contacts, judged on the Rover (amendment 8: the sim's
+numbers are information).
 
 ### Memory soak, 4 h (3.135.C)
 
@@ -234,6 +237,21 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-05 | `fb12ba7f` | F14 board rebooted mid-mission (`sudo systemctl reboot`, the production units) | 3/3 | met | robot and brain back 43.9-48.5 s (90; an upper bound: ssh and the services answered at the same first poll); VE ready 48.6-51.6 s; 0 files unparseable, lost or shortened (17-20 files, 2-5 JSONL lines); the next mission drove 3/3; units as found. A first batch at `27d14d6c` was 6/6 invalid, no reboot sent (amendment 20) | -- | -- | -- | -- | -- | 43.9-48.5 s | yes |
 
 ## Runs
+
+### 2026-11-07, 3.136.C run 2, `f2baec29` (INVALID)
+
+`dev` with 3.154's fix; the ROS image `vision-picar-ros:plan-3.136C` built
+on the board from `dev` `548e2545` (`:latest` untouched). The board up 34 h,
+15 W, max 61.2 °C, 0 OOM kills, `MemAvailable` minimum 659 MB, desktop load
+<= 6.8; 03:37-05:14 (24 stacks), left as found.
+* **Invalid on nav2's item only:** 11 `approach` goals ABORTED after
+  0.7-6.7 s, no cancel by anyone (run 1's 10-30 ms race gone); 0 late wheel
+  ticks in 78,483 moving.
+* Rows, information only: P7 p90 **2,784 ms** of 20 (four over 2 s; would
+  fail 2.0 s); P6 wheels zero p99 38 ms (goal) and 31 ms (verb), the goal
+  ended p99 149.1 ms; P5 scan to forward zero p99 39 ms, drop to zero p99
+  1,181 ms (one outlier), 0 contacts.
+* Records: `evaluations/jetson-perf-3136/board/lat-run2-20261107-0333/`.
 
 ### 2026-11-07, 3.136.C run 1, `b5ccce0a` (INVALID)
 
