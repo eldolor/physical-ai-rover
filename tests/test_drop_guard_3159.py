@@ -81,7 +81,7 @@ def test_a_turn_toward_an_edge_beside_a_corner_is_refused_and_away_is_not():
     guard = drop_guard.guard_for(robot, 0, 0, 0)
     for along in (13.5, 15.0, 17.5):
         for lat in (-14.0, -11.5, -9.0):
-            guard._mark(along, lat, drop_guard.EDGE, 0.0)
+            guard._mark(along, lat, drop_guard.EDGE, 0.0, lip=True)
     w = 1.0 * 0.172 / 2 / WHEEL_RADIUS_M             # a 1 rad/s pivot's wheel speed
     left, right, reason = safety.vet_wheel_velocity(-w, w)         # CCW, a left turn
     assert left == right == 0.0 and "drop_pivot_edge" in reason, (left, right, reason)
@@ -180,17 +180,16 @@ def test_a_house_with_no_drop_reads_one_grid_per_reverse_vet_and_no_more():
 
 def test_a_fast_turn_is_looked_at_as_far_as_it_turns_in_two_periods():
     """Review: a 5-degree look ahead at any rate let a 2 rad/s turn carry a
-    corner past an edge between two looks."""
+    corner past an edge between two looks. A lip 23 cm out, 24 degrees CCW
+    of the front-left corner: its gap is 8.76 cm after 5 degrees of a left
+    turn and 7.41 cm after 11.5."""
     world, robot = _robot()
     guard = drop_guard.DropGuard(12.65, 11.55, 3.0)
     guard.update(robot, robot.get_depth_grid())
-    # An edge 8 degrees CCW of the front-left corner, floor everywhere else.
-    a, l = 12.65, 11.55
-    th = math.radians(8.0)
-    guard._mark(a * math.cos(th) - l * math.sin(th), a * math.sin(th) + l * math.cos(th),
-                drop_guard.EDGE, 0.0)
-    assert guard.pivot_blocked(0.5) is None              # 2.9 degrees in 0.1 s
-    assert guard.pivot_blocked(2.0) == "drop_pivot_edge"  # 11.5 degrees
+    ang = math.atan2(11.55, 12.65) + math.radians(24.0)
+    guard._mark(23.13 * math.cos(ang), 23.13 * math.sin(ang), drop_guard.EDGE, 0.0, lip=True)
+    assert guard.pivot_blocked(0.5) is None              # 5 degrees: 8.76 cm
+    assert guard.pivot_blocked(2.0) == "drop_pivot_edge"  # 11.5 degrees: 7.41 cm
 
 
 def test_a_thing_on_the_centre_line_hides_no_edge_beside_it():
@@ -245,3 +244,38 @@ def test_a_missing_first_frame_does_not_spend_the_probe():
     assert safety.drop_clearance(-1)[1] == "no_drop_sensor"
     robot.get_depth_grid = real
     assert safety.drop_clearance(-1)[1] == "drop_unseen_astern"
+
+
+# ---- 3.159.B2 (amendment 3), red first ----
+
+@pytest.mark.parametrize("row", [8, 16, 42, 55, 62])
+def test_a_turn_away_from_an_edge_is_never_refused(row):
+    """B's turn sweep refused these turns away (D4 failed): the 5 cm cells
+    put a corner on an edge cell while its true gap grew."""
+    from tests import drop_sweep as ds
+    out = ds.turn_run(ds.turn_args(300)[row])
+    assert out["away"] and not out["refused_first"], out
+
+
+def test_a_turn_toward_an_edge_from_under_a_centimetre_never_overhangs():
+    """B's turn sweep row 264 (D2 failed): 0.84 cm from the lip, one
+    wheel-loop step crossed it by 0.17 cm before the cell flipped."""
+    from tests import drop_sweep as ds
+    out = ds.turn_run(ds.turn_args(300)[264])
+    assert out["overhang"] == 0.0 and not out["fell"], out
+
+
+def test_drop_marks_are_one_disc_per_step_of_lip_and_outlive_nothing_but_their_session():
+    marks = drop_guard.DropMarks()
+    assert marks.add(0.0, [(1.00, 2.00), (1.02, 2.01), (1.30, 2.00)], session="s1") == 2
+    spots = marks.spots(0.0)
+    assert len(spots) == 2 and all(s["r_m"] == 0.30 and s["ttl_s"] == 3600.0 for s in spots)
+    assert marks.add(10.0, [(1.0, 2.0)], session="s1") == 0
+    assert marks.add(10.0, [(1.0, 2.0)], session="s2") == 1      # a new map: a new book
+    assert len(marks.spots(10.0)) == 1
+
+
+def test_a_lip_ahead_is_a_house_point_ahead():
+    # Facing east (90): 50 cm ahead is +x, 10 cm to the left is -y (north).
+    x, y = drop_guard.to_house(1.0, 1.0, 90.0, 50.0, 10.0)
+    assert (x, y) == pytest.approx((1.5, 0.9))

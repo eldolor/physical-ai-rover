@@ -19,9 +19,11 @@ then `advance()`, every 0.05 s.
 
 import math
 import random
+from collections import deque
 
+from robot import drop_guard
 from robot.safety import SafetyController
-from sim.grid_world import GridWorld
+from sim.grid_world import CELL_WALL, GridWorld
 from sim.mock_robot import WHEEL_RADIUS_M, MockRobot
 from tests.footprint_sweep import CELL_CM, HALF_LENGTH, HALF_WIDTH, PERIOD_S, chassis, gap, penetration, square
 
@@ -249,6 +251,13 @@ def turn_run(args):
             "turned_deg": round(math.degrees(turned), 1)}
 
 
+def turn_args(n):
+    """The turn sweep's runs, in order: each placement at a random gap, both ways."""
+    rng = random.Random("drop-turn")
+    return [p + (round(rng.uniform(1.0, 15.0), 2), sign)
+            for p in approach_placements(n, seed=1) for sign in (+1, -1)]
+
+
 def astern_run(args):
     """`seen`: approach the edge with the rule, turn about, drive 40 cm away,
     then reverse toward it over the floor just driven. Not `seen`: placed
@@ -358,13 +367,56 @@ def _vetted_nav_class():
         with the wheel loop's two calls, `vet_wheel_velocity()` then
         `advance()`, as nav2's twists reach the wheels. One poll is 1 s;
         a goal is aborted after 3 polls with no motion (the veto held it) or
-        120 polls in all."""
+        120 polls in all.
+
+        3.159.B2 (amendment 3): at a `drop_edge` refusal the robot's
+        remembered lips become discs (`DropMarks`, the robot server's own
+        book) at the true pose, and the plan avoids every cell whose centre
+        a disc covers, as nav2's keepout does. `marked_vetoes` counts the
+        drop refusal episodes that begin with a disc within MARKED_NEAR_M."""
+
+        MARKED_NEAR_M = 0.80
 
         def __init__(self, robot):
             super().__init__(robot)
             self.safety = SafetyController(robot, 20.0)
             self.stuck = self.polls = 0
             self.vetoed = 0
+            self.marks = drop_guard.DropMarks()
+            self.marks_on = True
+            self.marked_vetoes = 0
+            self.in_veto = False
+
+        def _mark(self):
+            g = self.grid
+            lips = self.safety._drop_guard().lips()
+            heading = math.degrees(g.theta) + 90.0
+            self.marks.add(0.0, [drop_guard.to_house(g.x * 0.3, g.y * 0.3, heading, a, l)
+                                 for a, l in lips])
+
+        def _covered(self, cell):
+            cx, cy = (cell[0] + 0.5) * 0.3, (cell[1] + 0.5) * 0.3
+            return any(math.hypot(cx - s["x_m"], cy - s["y_m"]) <= s["r_m"]
+                       for s in self.marks.spots(0.0))
+
+        def _path(self, a, b):
+            if not (self.marks_on and self.marks.marks):
+                return super()._path(a, b)
+            g, prev, q = self.grid, {a: None}, deque([a])
+            while q:
+                c = q.popleft()
+                if c == b:
+                    out = []
+                    while c is not None:
+                        out.append(c)
+                        c = prev[c]
+                    return out[::-1]
+                for n in ((c[0] + 1, c[1]), (c[0] - 1, c[1]), (c[0], c[1] + 1), (c[0], c[1] - 1)):
+                    if (n not in prev and g._cell(*n) != CELL_WALL and n not in g.objects
+                            and (n == b or not self._covered(n))):
+                        prev[n] = c
+                        q.append(n)
+            return None
 
         def set_goal(self, x_m, y_m):
             self.stuck = self.polls = 0
@@ -401,6 +453,14 @@ def _vetted_nav_class():
                 left, right, reason = self.safety.vet_wheel_velocity((v - half) / WHEEL_RADIUS_M,
                                                                      (v + half) / WHEEL_RADIUS_M)
                 self.vetoed += "drop" in str(reason)
+                edge = "drop_edge" in str(reason)
+                if edge and not self.in_veto:
+                    near = any(math.hypot(g.x * 0.3 - s["x_m"], g.y * 0.3 - s["y_m"])
+                               <= self.MARKED_NEAR_M for s in self.marks.spots(0.0))
+                    self.marked_vetoes += near
+                    if self.marks_on:
+                        self._mark()
+                self.in_veto = edge
                 self.robot.set_wheel_velocity(left, right)
                 self.robot.advance(PERIOD_S)
             self.robot.set_wheel_velocity(0.0, 0.0)
@@ -475,7 +535,8 @@ def mission_run(args):
             "walled": walled, "outcome": status.get("outcome"),
             "found": status.get("outcome") == "found",
             "rooms": len(state["rooms"] - {"unknown"}), "fell": state["fell"],
-            "overhang": round(state["overhang"], 2), "nav_drop_vetoes": nav.vetoed,
+            "overhang": round(state["overhang"], 2), "nav_drop_vetoes": nav.vetoed, "marked_vetoes": nav.marked_vetoes,
+            "marks": len(nav.marks.marks),
             "sim_s": round(world.sim_time, 1), "ticks": ticks, "capped": ticks >= 5000}
 
 
@@ -491,7 +552,10 @@ def mission_verdict(rows):
                         "overhang_runs": sum(r["overhang"] > 0 for r in rs),
                         "found_share": round(sum(r["found"] for r in rs) / len(rs), 3),
                         "rooms_mean": round(sum(r["rooms"] for r in rs) / len(rs), 2),
-                        "nav_drop_vetoes": sum(r["nav_drop_vetoes"] for r in rs)}
+                        "nav_drop_vetoes": sum(r["nav_drop_vetoes"] for r in rs),
+                        "marked_vetoes_max": max(r.get("marked_vetoes", 0) for r in rs),
+                        "missions_over_1_marked_veto": sum(r.get("marked_vetoes", 0) > 1 for r in rs),
+                        "marks_mean": round(sum(r.get("marks", 0) for r in rs) / len(rs), 1)}
     return out
 
 
@@ -506,9 +570,7 @@ def main(argv):
         verdict = approach_verdict
         fn = approach_run
     elif what == "turn":
-        rng = random.Random("drop-turn")
-        places = [p for p in approach_placements(n, seed=1) if p[0] == "edge" or True]
-        args = [p + (round(rng.uniform(1.0, 15.0), 2), sign) for p in places for sign in (+1, -1)]
+        args = turn_args(n)
         fn, verdict = turn_run, None
     elif what == "astern":
         places = approach_placements(n, seed=2)

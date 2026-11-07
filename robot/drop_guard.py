@@ -51,6 +51,16 @@ LATERAL_STEP_CM = 3.0
 # turn must not carry a corner past an edge between two looks.
 PIVOT_STEP_DEG = 5.0
 PIVOT_HORIZON_S = 0.1
+# A turn is refused only when it shrinks the outline's gap to a remembered
+# lip and ends under this: a corner swings at most 5.6 cm past the outline
+# (the half-diagonal 17.13 cm less the half-width 11.55), and the lip
+# samples lie up to 2.4 cm apart (amendment 3).
+PIVOT_GAP_CM = 8.0
+# 3.159.B2's mark: discs nav2 plans around, one per MARK_STEP_M of lip.
+MARK_R_M = 0.30
+MARK_STEP_M = 0.15
+MARK_TTL_S = 3600.0
+MAX_MARKS = 64
 
 FLOOR, EDGE, THING = 1, 2, 3
 # Memory is pruned of cells seen more than FORGET_M of travel ago once it
@@ -244,7 +254,7 @@ class DropGuard:
                 prev = None
                 continue
             at, kind = end
-            self._mark(*at, kind, path)
+            self._mark(*at, kind, path, lip=kind == EDGE)
             # A wall is a line, not the dots its columns end on: join two
             # neighbours' ends, so a sightline cannot slip between them.
             if kind == THING and prev is not None and math.dist(prev, at) <= 2 * CELL_CM:
@@ -253,15 +263,18 @@ class DropGuard:
                                THING, path)
             prev = at if kind == THING else None
 
-    def _mark(self, along, lateral, state, path) -> None:
-        key = _cell(*self._to_world(along, lateral))
+    def _mark(self, along, lateral, state, path, lip=False) -> None:
+        """`lip`: an edge's own ray end, kept with its cell (where in the
+        cell the floor ended) for the turn check's gap and the mark."""
+        at = self._to_world(along, lateral)
+        key = _cell(*at)
         old = self._cells.get(key)
         # An edge is sticky: nothing but an edge rewrites one (a noisy range
         # past a lip must not paint floor over a stairwell, nor a wall's end
         # or its join a thing that would hide the lip from `clearance`).
         if old is not None and old[0] == EDGE and state != EDGE:
             return
-        self._cells[key] = (state, path)
+        self._cells[key] = (state, path, at) if lip else (state, path)
 
     def _forget(self, path: float) -> None:
         if len(self._cells) < self._prune_at:
@@ -333,11 +346,13 @@ class DropGuard:
         return round(max(0.0, room - margin), 1)
 
     def pivot_blocked(self, omega_rad_s: float) -> Optional[str]:
-        """A turn that would carry an outline point from remembered floor
-        onto a remembered edge. A point already off floor may keep going
-        (turning away is never refused). Unseen floor does not refuse a
-        turn (amendment 2): a corner swings at most 5.5 cm past the outline,
-        so the worst it can do is overhang, never fall -- and the turn sweep
+        """A turn that would shrink the outline's gap to a remembered lip
+        and end under `PIVOT_GAP_CM` (amendment 3: measured on the lip
+        samples, not the 5 cm cells, which refused turns that opened the
+        gap, B's D4). A turn that opens the gap, or keeps it at 8 cm or
+        more, is never refused. Unseen floor does not refuse a turn
+        (amendment 2): a corner swings at most 5.6 cm past the outline, so
+        the worst it can do is overhang, never fall -- and the turn sweep
         judges that on truth (D2)."""
         if omega_rad_s == 0:
             return None
@@ -348,15 +363,96 @@ class DropGuard:
                 return "drop_unusable"
             reach = max(PIVOT_STEP_DEG, math.degrees(abs(omega_rad_s)) * PIVOT_HORIZON_S)
             looks = int(math.ceil(reach / PIVOT_STEP_DEG - 1e-9))
-            for along, lat in _outline(self.half_len, self.half_wid):
-                if self._state(along, lat) != FLOOR:
-                    continue
-                for k in range(1, looks + 1):
-                    step = math.radians(math.copysign(reach * k / looks, omega_rad_s))
-                    c, s = math.cos(step), math.sin(step)
-                    if self._state(along * c - lat * s, along * s + lat * c) == EDGE:
-                        return "drop_pivot_edge"
+            lips = self._lips_near(math.hypot(self.half_len, self.half_wid) + PIVOT_GAP_CM)
+            if not lips:
+                return None
+            now = min(self._gap(a, l) for a, l in lips)
+            for k in range(1, looks + 1):
+                # The body turned by `step` is the lips turned by -step.
+                step = math.radians(math.copysign(reach * k / looks, omega_rad_s))
+                c, s = math.cos(step), math.sin(step)
+                after = min(self._gap(a * c + l * s, -a * s + l * c) for a, l in lips)
+                if after < PIVOT_GAP_CM and after < now - 1e-6:
+                    return "drop_pivot_edge"
             return None
+
+    def _gap(self, along: float, lat: float) -> float:
+        """A body-frame point's distance from the chassis outline (0 on or
+        inside it)."""
+        return math.hypot(max(abs(along) - self.half_len, 0.0),
+                          max(abs(lat) - self.half_wid, 0.0))
+
+    def _lips_near(self, radius_cm: float) -> list:
+        """The remembered lip samples within `radius_cm` of the centre, in
+        the body frame (an edge cell with none: its centre)."""
+        x, y, th, _ = self._pose
+        c, s = math.cos(th), math.sin(th)
+        n = int(radius_cm // CELL_CM) + 1
+        ci, cj = _cell(x, y)
+        out = []
+        for i in range(ci - n, ci + n + 1):
+            for j in range(cj - n, cj + n + 1):
+                got = self._cells.get((i, j))
+                if not got or got[0] != EDGE:
+                    continue
+                px, py = got[2] if len(got) > 2 else ((i + 0.5) * CELL_CM, (j + 0.5) * CELL_CM)
+                dx, dy = px - x, py - y
+                if math.hypot(dx, dy) <= radius_cm:
+                    out.append((dx * c + dy * s, -dx * s + dy * c))
+        return out
+
+    def lips(self, radius_cm: float = RUN_CM + 40.0) -> list:
+        """The remembered lip samples near the robot, body frame (along
+        ahead, lateral left, cm): what the mark is made of."""
+        with self._lock:
+            if not self.active or self._pose is None:
+                return []
+            return self._lips_near(radius_cm)
+
+
+def to_house(x_m: float, y_m: float, heading_deg: float, along_cm: float, lat_cm: float) -> tuple:
+    """A body-frame point (along ahead, lateral left, cm) at a house pose
+    (x east, y south, compass heading: 0 = -y, 90 = +x) -> house metres."""
+    h = math.radians(heading_deg)
+    a, l = along_cm / 100.0, lat_cm / 100.0
+    return x_m + a * math.sin(h) - l * math.cos(h), y_m - a * math.cos(h) - l * math.sin(h)
+
+
+class DropMarks:
+    """3.159.B2: the drop discs nav2 must plan around, in the house frame.
+    One per `MARK_STEP_M` of lip (keyed on that grid), at most `MAX_MARKS`
+    (the oldest dropped), living `MARK_TTL_S` and resent with every keepout
+    post. A new SLAM session (`session`) empties the book: its discs were
+    placed on another map. Not thread safe: the caller holds its lock."""
+
+    def __init__(self, r_m: float = MARK_R_M, step_m: float = MARK_STEP_M,
+                 ttl_s: float = MARK_TTL_S, max_marks: int = MAX_MARKS):
+        self.r_m, self.step_m, self.ttl_s, self.max_marks = r_m, step_m, ttl_s, max_marks
+        self.marks = {}                  # key -> (x_m, y_m, until)
+        self.session = None
+
+    def add(self, now: float, points: list, session=None) -> int:
+        """House-frame lip points; returns how many discs are new."""
+        if session != self.session:
+            self.marks, self.session = {}, session
+        self.marks = {k: v for k, v in self.marks.items() if v[2] > now}
+        new = 0
+        for x, y in points:
+            key = (round(x / self.step_m), round(y / self.step_m))
+            if key in self.marks:
+                continue
+            self.marks[key] = (key[0] * self.step_m, key[1] * self.step_m, now + self.ttl_s)
+            new += 1
+        if len(self.marks) > self.max_marks:
+            keep = sorted(self.marks.items(), key=lambda kv: kv[1][2])[-self.max_marks:]
+            self.marks = dict(keep)
+        return new
+
+    def spots(self, now: float) -> list:
+        """The live discs as the bridge takes them (`set_keepout`)."""
+        return [{"x_m": round(x, 3), "y_m": round(y, 3), "r_m": self.r_m,
+                 "ttl_s": max(round(until - now, 1), 0.1)}
+                for x, y, until in self.marks.values() if until > now]
 
 
 def _outline(half_len, half_wid, step=3.0):
