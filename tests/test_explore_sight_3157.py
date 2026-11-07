@@ -61,11 +61,43 @@ def test_the_recorded_scores_are_pinned():
     assert d["verdicts"] == {"B1": "MET", "B2": "MET", "B3": "MET", "B4": "MET", "B5": "FAILED"}
 
 
+def _frame(walk, i, visible, perc=None, target="blue bottle"):
+    return {"key": f"{walk}/frame-{i:04d}.jpg", "walk": walk, "target": target,
+            "visible": visible, "perc": perc, "both": perc, "local": None}
+
+
+def test_windows_and_first_sightings_follow_the_written_bars():
+    s = _score()
+    # walk a: 4 in view (sighted on the 2nd only), then 5 out of view with two
+    # false sightings; walk b: target never in view, never sighted.
+    a = [_frame("a", 0, True), _frame("a", 1, True, perc=3.3), _frame("a", 2, True),
+         _frame("a", 3, True), *(_frame("a", 4 + i, False, perc=(1.0 if i in (1, 3) else None))
+                                 for i in range(5))]
+    b = [_frame("b", i, False) for i in range(3)]
+    labels = {"a/frame-0001.jpg": {"key": "a/frame-0001.jpg", "set": "S1", "centre": 0.55}}
+    r = s.score(a + b, labels)["sources"]["perc"]
+    assert r["B1_in_view_rate"] == 0.25
+    # k = 3 in-view windows of walk a: [0-2], [1-3] -> both hold frame 1
+    assert (r["B2_k3"]["windows"], r["B2_k3"]["with_sighting"]) == (2, 2)
+    assert r["B2_k5"]["windows"] == 0
+    # 0.55 -> 0.05 * 66 = 3.3 deg: no error
+    assert r["B3"]["sighted"] == 1 and r["B3"]["p50"] == 0.0
+    assert (r["B4_frame"]["false"], r["B4_frame"]["of"]) == (2, 8)
+    # out-of-view k = 5 windows: walk a's frames 4-8 only (b has 3 frames)
+    assert (r["B4_k5"]["windows"], r["B4_k5"]["two_or_more"]) == (1, 1)
+    # a's first sighting is the target, b has none: a miss by B5's wording
+    assert r["B5"]["walks"]["a"]["right"] is True and r["B5"]["walks"]["b"]["right"] is False
+    assert r["B5"]["right"] == 1
+
+
+def test_an_unlabelled_first_sighting_of_perceptions_is_refused():
+    s = _score()
+    with pytest.raises(ValueError):
+        s.score([_frame("a", 0, True, perc=1.0)], {})
+
+
 @pytest.mark.skipif(not os.environ.get("PICAR_RECORDINGS"),
                     reason="the labelled walks are not in the repo (PICAR_RECORDINGS)")
-def test_the_scores_reproduce_from_the_records(tmp_path, monkeypatch):
-    before = (HERE / "scores.json").read_text()
+def test_the_scores_reproduce_from_the_records():
     s = _score()
-    monkeypatch.setattr(s, "HERE", HERE)
-    s.main()
-    assert (HERE / "scores.json").read_text() == before
+    assert s.score(s.build_frames(), s.load_labels()) == json.loads((HERE / "scores.json").read_text())

@@ -78,9 +78,10 @@ def pct(xs, q):
     return s[min(len(s) - 1, max(0, math.ceil(q / 100 * len(s)) - 1))] if s else None
 
 
-def main():
+def build_frames():
+    """Every labelled frame, in 3.92's order, with the bearing `_hits` gives
+    from each source (None: no sighting)."""
     P, Q = load("perception.jsonl"), load("qwen-VE.jsonl")
-    labels = {r["key"]: r for r in json.loads((HERE / "labels-bearing.json").read_text())["rows"]}
     frames = []
     for key, _, target, visible in common.items():
         p, q = P[key], Q[key]
@@ -93,6 +94,15 @@ def main():
                        "perc": h_perc[0]["bearing_deg"] if h_perc else None,
                        "both": h_both[0]["bearing_deg"] if h_both else None,
                        "local": h_local[0]["bearing_deg"] if h_local else None})
+    return frames
+
+
+def load_labels():
+    return {r["key"]: r for r in json.loads((HERE / "labels-bearing.json").read_text())["rows"]}
+
+
+def score(frames, labels):
+    """Bars B1-B5 over `frames` (walk order kept), against `labels`."""
     out = {"frames": len(frames), "in_view": sum(f["visible"] for f in frames),
            "hfov_deg": HFOV, "bars": BARS, "sources": {}}
     walks = defaultdict(list)
@@ -101,7 +111,8 @@ def main():
     for src in ("perc", "both", "local"):
         r = {}
         vis = [f for f in frames if f["visible"]]
-        r["B1_in_view_rate"] = round(sum(f[src] is not None for f in vis) / len(vis), 4)
+        r["B1_in_view_rate"] = (round(sum(f[src] is not None for f in vis) / len(vis), 4)
+                                if vis else None)
         for k in KS:
             got = tot = 0
             for fs in walks.values():
@@ -126,8 +137,9 @@ def main():
                    "errors": sorted(errs)}
         # B4: out of view.
         oov = [f for f in frames if not f["visible"]]
-        r["B4_frame"] = {"false": sum(f[src] is not None for f in oov), "of": len(oov),
-                         "rate": round(sum(f[src] is not None for f in oov) / len(oov), 4)}
+        false = sum(f[src] is not None for f in oov)
+        r["B4_frame"] = {"false": false, "of": len(oov),
+                         "rate": round(false / len(oov), 4) if oov else None}
         bad = tot = 0
         for fs in walks.values():
             for i in range(len(fs) - 5 + 1):
@@ -148,7 +160,12 @@ def main():
                     row["error_deg"] = round(abs(first[src] - (lab["centre"] - 0.5) * HFOV), 2)
                     row["right"] = row["error_deg"] <= BARS["B5deg"]
                 else:
-                    row["error_deg"], row["right"] = None, None     # unlabelled: not judged
+                    # Unlabelled: not judged. Every first sighting of
+                    # perception's is labelled (A's rule), so this is the
+                    # other sources' rows only; perception's would refuse.
+                    if src == "perc":
+                        raise ValueError(f"first sighting {first['key']} has no label")
+                    row["error_deg"], row["right"] = None, None
             else:
                 row["right"] = False
             firsts[w] = row
@@ -168,14 +185,26 @@ def main():
                            for t, c in sorted(per.items())}
         out["sources"][src] = r
     p = out["sources"]["perc"]
+    def at_most(v, bar):
+        return v is not None and v <= bar
+
+    def at_least(v, bar):
+        return v is not None and v >= bar
+
     out["verdicts"] = {
-        "B1": p["B1_in_view_rate"] >= BARS["B1"],
-        "B2": p["B2_k3"]["rate"] >= BARS["B2k3"] and p["B2_k5"]["rate"] >= BARS["B2k5"],
-        "B3": p["B3"]["sighted"] > 0 and p["B3"]["p50"] <= BARS["B3p50"] and p["B3"]["p90"] <= BARS["B3p90"],
-        "B4": p["B4_frame"]["rate"] <= BARS["B4frame"] and p["B4_k5"]["rate"] <= BARS["B4k5"],
+        "B1": at_least(p["B1_in_view_rate"], BARS["B1"]),
+        "B2": at_least(p["B2_k3"]["rate"], BARS["B2k3"]) and at_least(p["B2_k5"]["rate"], BARS["B2k5"]),
+        "B3": p["B3"]["sighted"] > 0 and at_most(p["B3"]["p50"], BARS["B3p50"])
+        and at_most(p["B3"]["p90"], BARS["B3p90"]),
+        "B4": at_most(p["B4_frame"]["rate"], BARS["B4frame"]) and at_most(p["B4_k5"]["rate"], BARS["B4k5"]),
         "B5": p["B5"]["right"] >= BARS["B5"],
     }
     out["verdicts"] = {k: "MET" if v else "FAILED" for k, v in out["verdicts"].items()}
+    return out
+
+
+def main():
+    out = score(build_frames(), load_labels())
     (HERE / "scores.json").write_text(json.dumps(out, indent=1))
     for src, r in out["sources"].items():
         print(src, json.dumps({k: (v if not isinstance(v, dict) else
