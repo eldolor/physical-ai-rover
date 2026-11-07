@@ -138,20 +138,22 @@ paragraph.**
 **Waiting on the user**
 
 * **Deploys:** the twin is live from `dev` `5e88b9de` (2026-11-05, with
-  3.152's local-VLM readout); 3.132 Stage 5 waits on the user's go.
+  3.152's local-VLM readout). The user's go for 3.132 Stage 5 and the
+  twin's next deploy (2026-11-07); confirm what ships at deploy time.
 * **The board's brain is `dev` `bdcf782c`** (updated 2026-11-06 for 3.155's
   unit, the user's go): update it only when asked (`tools/jetson/README.md`'s
   update step).
-* **3.56:** re-check the 8 s arrival deadline after 500+ real calls.
-* **3.86's follow-up:** the watchdog record replaces a Stop's or fault's
-  refusal ~1 s later, so the twin cannot tell a hung brain from a finished
-  mission.
-* **3.42 / 3.76 A4:** `/scan`'s stamp is the request time; fix it before
+
+**Decided, each waiting on its trigger** (the user, 2026-11-07)
+
+* **3.86's follow-up** (queued as desktop work): the watchdog record
+  replaces a Stop's or fault's refusal ~1 s later, so the twin cannot tell
+  a hung brain from a finished mission.
+* **3.42 / 3.76 A4:** fix `/scan`'s stamp (the request time) before
   raising nav2's speed (`HANDOFF-2026-10-07-lidar-and-speed.md`).
-* **3.76 G2 (latent):** inventory landmark points grow without bound;
-  unreachable while real frames carry no detections.
-* **3.140 criterion 2** holds L4's floor walks behind every L3 row.
-* **3.83's code** stays on `plan/3.83-dining-room-trap`, off `dev`.
+* **3.56:** re-check the 8 s arrival deadline after 500+ real calls.
+* **3.76 G2 (latent):** bound the inventory's landmark points, with
+  3.157's results (unreachable while real frames carry no detections).
 
 **Open now** (claim first)
 
