@@ -47,13 +47,17 @@ numpy only: the Jetson's install has no scipy.
 from __future__ import annotations
 
 import heapq
+import logging
 import time
 from collections import Counter
 from typing import Callable, Optional
 
 import numpy as np
 
+from brain import room_names
 from world.interface import CELL_FREE, CELL_OCCUPIED
+
+logger = logging.getLogger(__name__)
 
 # Two basins of clearance are one room unless the narrowest point between
 # them (the saddle) is clearly narrower than both: saddle < NECK_RATIO x the
@@ -405,13 +409,21 @@ class RoomLabeller:
     * `rooms` -- once per room of the cut (`segment()`), from inside it; the
       answer names that whole room.
 
+    3.160: rooms a person named on the saved map (`names`, a
+    `brain.room_names.RoomNames`; the process's store by default) come first.
+    The pose's `frame_id` says which map; inside a named room nothing is
+    asked (no paid call), and in `layer()` every floor cell of a named room
+    carries the person's name, whatever a model said. No `frame_id`, or no
+    names: exactly as before.
+
     Not thread-safe: the mission loop's own."""
 
     def __init__(self, label_fn: Callable[[dict], object],
                  max_calls: Optional[int] = None, mode: str = "spacing",
                  neck_ratio: float = NECK_RATIO, spacing_m: float = SPACING_M,
                  door_m: float = DOOR_M,
-                 clock: Callable[[], float] = time.monotonic):
+                 clock: Callable[[], float] = time.monotonic,
+                 names=None):
         if mode not in MODES:
             raise ValueError(f"Unknown room-label mode {mode!r}. Known: {', '.join(MODES)}")
         self.label_fn = label_fn
@@ -432,6 +444,20 @@ class RoomLabeller:
         self._geo = None               # spacing: (cut, seeds counted, distances)
         self._retry_at: Optional[float] = None
         self._failures = 0
+        self.names = names
+        self._frame_id: Optional[str] = None
+
+    def _person_rooms(self) -> list:
+        """The person's rooms on the current saved map; [] when there is none
+        or the store cannot be read (a survey never stops for it)."""
+        if not self._frame_id:
+            return []
+        try:
+            store = self.names if self.names is not None else room_names.default_store()
+            return store.rooms(self._frame_id)
+        except Exception as e:  # noqa: BLE001 -- the names are a help, never the survey
+            logger.warning("room names unreadable for %s: %s", self._frame_id, e)
+            return []
 
     @staticmethod
     def _key(m: dict) -> tuple:
@@ -500,6 +526,10 @@ class RoomLabeller:
                 or not pose or not pose.get("usable")):
             return None
         x, y = pose["x_m"], pose["y_m"]
+        self._frame_id = pose.get("frame_id")
+        person = self._person_rooms()
+        if person and room_names.named_at(person, x, y):
+            return None                # a person named this room: nobody is asked
         if not self._wants(m, x, y):
             return None
         # An ask is due. `fits()` -- the caller's: does a paid call still end
@@ -548,10 +578,47 @@ class RoomLabeller:
 
     def layer(self, m: Optional[dict]) -> Optional[dict]:
         """The map's `room_labels` block, cut fresh from THIS map (so it
-        lines up with the cells it is saved beside). None without a usable
-        map."""
+        lines up with the cells it is saved beside), a person's names over
+        the models' (3.160). None without a usable map."""
         if not m or not m.get("usable", True) or "cells" not in m:
             return None
+        base = self._model_layer(m)
+        person = self._person_rooms()
+        if not person:
+            return base
+        try:
+            return self._with_person(m, base, person)
+        except Exception as e:  # noqa: BLE001 -- the model's layer stands without the names
+            logger.warning("room names not applied: %s", e)
+            return base
+
+    @staticmethod
+    def _with_person(m: dict, base: dict, person: list) -> dict:
+        """Every free cell of a person's named room carries that name; the
+        rest keeps the model's. Vectorised (numpy over the map's cells)."""
+        own = room_names.owner_grid(m, person, named_only=True).ravel()
+        free = np.asarray(m["cells"]) == CELL_FREE
+        names = list(base["names"])
+        idx = np.asarray(base["cells"], dtype=np.int64)
+        pnames = [r.get("name", "") for r in person]
+        used = sorted({names[c] for c in set(idx[idx >= 0].tolist())}
+                      | {pnames[o] for o in set(own[(own >= 0) & free].tolist())})
+        index = {n: k for k, n in enumerate(used)}
+        model = np.array([index.get(n, -1) for n in names] + [-1], dtype=np.int64)
+        pers = np.array([index.get(n, -1) for n in pnames] + [-1], dtype=np.int64)
+        out = np.where(idx >= 0, model[idx], -1)
+        take = (own >= 0) & free
+        out[take] = pers[own[take]]
+        kept = sorted(set(out[out >= 0].tolist()))
+        final = {k: j for j, k in enumerate(kept)}
+        lut = np.full(len(used) + 1, -1, dtype=np.int64)
+        for k, j in final.items():
+            lut[k] = j
+        out = np.where(out >= 0, lut[out], -1)
+        return {"names": [used[k] for k in kept], "cells": out.tolist(),
+                "person": sorted({pnames[o] for o in set(own[take].tolist())})}
+
+    def _model_layer(self, m: dict) -> dict:
         named = [(x, y, n) for x, y, n in self.seeds if n != UNCLEAR]
         cut = self._segments(m, fresh=True)
         if self.mode == "spacing":
@@ -587,4 +654,5 @@ class RoomLabeller:
                 "source_error": self.source_error,
                 "skipped_for_time": self.skipped_for_time,
                 "rooms_named": sorted({n for _x, _y, n in self.seeds if n != UNCLEAR}),
+                "person_named": sorted({r["name"] for r in self._person_rooms() if r.get("name")}),
                 "seeds": [list(s) for s in self.seeds]}

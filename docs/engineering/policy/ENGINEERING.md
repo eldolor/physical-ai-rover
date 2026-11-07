@@ -877,6 +877,23 @@ prior of 0, a case training saw only where the prior was 0), and the trail
 is never re-anchored, so after a loop closure or a fresh map an old point
 can mark the wrong room as stood in.
 
+**A person's room names (3.160).** `brain/room_names.py` keeps the rooms a
+person named on the twin, one file per saved map (`<ROOM_NAMES_DIR>/<frame_id>.json`,
+default `recordings/room-names`, atomic and fsynced; local only), each room
+as its cells on a fixed 0.10 m grid in the saved map's frame. `RoomLabeller`
+reads them by the pose's `frame_id`: inside a named room it asks nothing
+(no paid `/room` call), and `layer()` gives every floor cell of a named room
+the person's name, per cell, over any model's label (`layer.person` lists
+them; `status.person_named` too). Per cell, not per cut room: the cut merges
+rooms across wide doorways, and naming by cut room (a cut room 60% inside a
+stored room) kept 6 of 15 rooms of `scaled_house` after a re-map in 3.160.B's
+test, against 15 of 15 per cell. The 60% overlap is kept only for the
+editor (which stored room a cut room is) and `placed()` (a stored room whose
+floor the map no longer has is listed unplaced, never guessed onto a
+neighbour). No `frame_id` (the simulator's own world, no saved map) or no
+names: the labeller is exactly as before (`tests/test_room_names.py`).
+
+
 **Explore asks a person (3.88 A).** With `explore_ask` on (brain config,
 or a start's own `explore_ask`), `MissionRunner` gives `ExploreAgent` a
 `GoalAsk` (timeout `explore_ask_timeout_s`, 60 s) and a `choice_sink`. Then

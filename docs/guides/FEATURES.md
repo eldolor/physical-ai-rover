@@ -903,6 +903,19 @@ reconnect to another server the old request's answer is ignored. Phone
 screenshots: `docs/evaluations/twin-3.50-D4b-remap.png` and
 `twin-3.50-D4b-remap-armed.png`.
 
+**Name rooms** (3.160). Under a SLAM map with the autopilot connected, a
+"Name rooms" button opens a list of the house's rooms -- the map cut into
+rooms, outlined and numbered on the map -- with the names a person gave
+them. Type a name into a room's row and press Enter; a room the last survey
+labelled offers its label as a one-tap suggestion. "Join..." then another
+room makes one room of two; "Split..." then a line dragged across it on the
+map makes two. After the robot re-maps, a named room whose floor is gone is
+listed "wasn't found" with "Place it". The names are kept by the brain on
+the robot's own disk with the saved map (never uploaded), and from then on
+every room the robot reads is called by the person's name: a survey asks
+the cloud nothing about a named room. With no saved map yet the panel says
+"Survey first". Screenshots: `docs/evaluations/twin-3.160-*.png`.
+
 R2's `/wheels`, `/scan` and `/world/truth` are served but not drawn; they
 exist for the ROS nodes (R4) and for `/world/error` (R5).
 

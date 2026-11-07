@@ -489,6 +489,21 @@
         <div class="remap-row" style="display: none">
           <button id="btn-remap" type="button">Re-map now</button>
         </div>
+        <!-- 3.160: rooms a person names once, kept with the saved map (on the
+             robot's own disk; never uploaded). -->
+        <div class="rooms-row" style="display: none">
+          <button id="btn-rooms" type="button">Name rooms</button>
+          <section id="rooms-panel" class="rooms-panel" hidden aria-label="Room names">
+            <div class="rooms-head">
+              <span class="rooms-title">Rooms</span>
+              <button id="rooms-done" type="button">Done</button>
+            </div>
+            <p id="rooms-closed" class="rooms-closed" hidden></p>
+            <p id="rooms-hint" class="rooms-hint"></p>
+            <ul id="rooms-list" class="rooms-list"></ul>
+            <ul id="rooms-unplaced" class="rooms-list"></ul>
+          </section>
+        </div>
       </div>
       <div class="fpv-source eng-only" id="fpv-source">frame source: <span class="local">not connected</span></div>
     </div>

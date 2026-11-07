@@ -654,6 +654,10 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     var px = (ev.clientX - rect.left) * (canvas.width / rect.width);
     var py = (ev.clientY - rect.top) * (canvas.height / rect.height);
     var scale = grid ? canvas.width / grid.width : 1;
+    if (state.roomsOpen) {               // 3.160: while naming rooms a tap is about rooms only
+      roomsMapTap(px, py, scale);
+      return;
+    }
     if (state.brainAskOpen && grid && grid.usable) {
       // 3.88 A: while explore asks, a tap is a pick or nothing -- never a goal.
       var c = askCandidateAt(grid, px, py, scale);
@@ -768,10 +772,373 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     }
   }
 
+  // 3.160: rooms a person names once, kept with the saved map (the brain's
+  // GET /rooms and POST /rooms/names). Names are stored by the brain on the
+  // robot's own disk, keyed to the saved map; nothing here is uploaded. A row
+  // per room under the map: tap its name, type, Enter (2 taps); a
+  // suggestion is one tap. Join: the row's Join, then the other room (on
+  // the map or its row). Split: the row's Split, then drag a line across it
+  // on the map. Every edit names the map version the person saw; a changed
+  // map is refused (409) and the rooms reloaded.
+  function roomsOffered() {
+    return !!(state.connected && state.brainConnected && isSlamMap(state.lastMap));
+  }
+
+  function updateRoomsButton() {
+    var row = document.querySelector(".rooms-row");
+    if (!row) return;
+    row.style.display = roomsOffered() || state.roomsOpen ? "" : "none";
+  }
+
+  async function openRooms() {
+    state.roomsOpen = true;
+    state.roomsMode = null;
+    state.roomsSel = null;
+    document.getElementById("rooms-panel").hidden = false;
+    document.getElementById("btn-rooms").style.display = "none";   // button styles beat [hidden]
+    await loadRooms();
+  }
+
+  function closeRooms() {
+    state.roomsOpen = false;
+    state.roomsMode = null;
+    state.roomsDrag = null;
+    document.getElementById("rooms-panel").hidden = true;
+    document.getElementById("btn-rooms").style.display = "";
+    document.getElementById("world-map").classList.remove("splitting");
+    renderMap();
+  }
+
+  // The brain sends `cut` and `owner` run-length coded ([value, count, ...]).
+  function roomsUnrun(runs) {
+    var out = [];
+    for (var i = 0; i + 1 < (runs || []).length; i += 2) {
+      for (var n = 0; n < runs[i + 1]; n++) out.push(runs[i]);
+    }
+    return out;
+  }
+
+  // Every request is numbered; an answer that is no longer the newest one
+  // (a slow reload landing after an edit) is dropped, never shown over it.
+  function roomsTake(v, seq) {
+    if (seq !== state.roomsSeq) return;
+    if (v && v.cut) { v.cut = roomsUnrun(v.cut); v.owner = roomsUnrun(v.owner); }
+    state.roomsView = v;
+    state.roomsLoadedAt = Date.now();
+    var keys = ((v && v.rooms) || []).map(function (r) { return r.key; });
+    if (keys.indexOf(state.roomsSel) < 0) state.roomsSel = null;
+  }
+
+  async function loadRooms() {
+    var seq = state.roomsSeq = (state.roomsSeq || 0) + 1;
+    try {
+      roomsTake(await brainApi("GET", "/mission/rooms"), seq);
+    } catch (e) {
+      showToast(t("rooms.loadFailed", {why: e.message || e}), "err");
+    }
+    renderRooms();
+    renderMap();
+  }
+
+  async function roomsEdit(body) {
+    var v = state.roomsView;
+    if (!v || !v.map) return;
+    if (state.roomsBusy) { showToast(t("rooms.busy"), "info"); renderRooms(); return; }
+    state.roomsBusy = true;
+    var seq = state.roomsSeq = (state.roomsSeq || 0) + 1;
+    try {
+      // The cut and the names' revision the person saw: the map's own
+      // version moves while the robot drives, which alone refuses nothing.
+      roomsTake(await brainApi("POST", "/mission/rooms/names", Object.assign(
+        {frame_id: v.frame_id, cut_hash: v.cut_hash, rev: v.rev}, body)), seq);
+    } catch (e) {
+      showToast(t(e.status === 409 ? "rooms.refused" : "rooms.failed", {why: e.message || e}),
+                e.status === 409 ? "warn" : "err");
+      state.roomsMode = null;
+      state.roomsBusy = false;
+      await loadRooms();
+      return;
+    }
+    state.roomsMode = null;
+    state.roomsBusy = false;
+    renderRooms();
+    renderMap();
+  }
+
+  function roomLabel(r, i) {
+    return r.name || ("Room " + (i + 1));
+  }
+
+  function roomsHint() {
+    var v = state.roomsView;
+    var rooms = (v && v.rooms) || [];
+    var i = rooms.map(function (r) { return r.key; }).indexOf(state.roomsFrom);
+    if (state.roomsMode === "merge") {
+      return "Tap the room to join with " + (i >= 0 ? roomLabel(rooms[i], i) : "it") + ".";
+    }
+    if (state.roomsMode === "split") return "Drag a line across the room on the map to split it in two.";
+    if (state.roomsMode === "place") return "Tap the map where “" + state.roomsPlaceName + "” is.";
+    return "Tap a name to change it. Names stay on the robot.";
+  }
+
+  // A mode that asks for the map (join, split, place) brings it into view:
+  // the row's button may sit far below it on a phone.
+  function roomsMode(mode, from) {
+    state.roomsMode = mode;
+    state.roomsFrom = from;
+    renderRooms();
+    var canvas = document.getElementById("world-map");
+    if (canvas && canvas.scrollIntoView) canvas.scrollIntoView({block: "center"});
+  }
+
+  function roomsButton(text, label, onclick) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.textContent = text;
+    if (label) b.setAttribute("aria-label", label);
+    b.onclick = onclick;
+    return b;
+  }
+
+  function renderRooms() {
+    var v = state.roomsView;
+    var list = document.getElementById("rooms-list");
+    var lost = document.getElementById("rooms-unplaced");
+    var closed = document.getElementById("rooms-closed");
+    var hint = document.getElementById("rooms-hint");
+    if (!list) return;
+    list.textContent = "";
+    lost.textContent = "";
+    closed.hidden = !(v && v.closed);
+    closed.textContent = v && v.closed ? v.closed : "";
+    hint.textContent = v && !v.closed ? roomsHint() : "";
+    document.getElementById("world-map").classList.toggle("splitting", state.roomsMode === "split");
+    if (!v || v.closed) return;
+    (v.rooms || []).forEach(function (r, i) {
+      var li = document.createElement("li");
+      li.dataset.key = r.key;
+      li.classList.toggle("selected", state.roomsSel === r.key);
+      var input = document.createElement("input");
+      input.type = "text";
+      input.maxLength = 40;
+      input.value = r.name || "";
+      input.placeholder = "Room " + (i + 1) + ": name it";
+      input.setAttribute("aria-label", "Name for room " + (i + 1));
+      input.addEventListener("keydown", function (ev) { if (ev.key === "Enter") input.blur(); });
+      input.addEventListener("change", function () {
+        if (input.value.trim() !== (r.name || "")) roomsEdit({op: "name", room: r.key, name: input.value});
+      });
+      input.addEventListener("focus", function () { state.roomsSel = r.key; renderMap(); });
+      li.appendChild(input);
+      if (!r.name && r.suggestion) {
+        var sug = roomsButton("“" + r.suggestion + "” ✓", "Name it " + r.suggestion,
+                              function () { roomsEdit({op: "name", room: r.key, name: r.suggestion}); });
+        sug.className = "rooms-suggest";
+        li.appendChild(sug);
+      }
+      if (state.roomsMode === "merge" && state.roomsFrom !== r.key) {
+        li.appendChild(roomsButton("Join", "Join with " + roomLabel(r, i), function () {
+          roomsEdit({op: "merge", room: state.roomsFrom, other: r.key});
+        }));
+      } else if (!state.roomsMode) {
+        li.appendChild(roomsButton("Join…", "Join " + roomLabel(r, i) + " with another room",
+                                   function () { roomsMode("merge", r.key); }));
+        li.appendChild(roomsButton("Split…", "Split " + roomLabel(r, i) + " in two",
+                                   function () { roomsMode("split", r.key); }));
+      }
+      list.appendChild(li);
+    });
+    (v.unplaced || []).forEach(function (u) {
+      var li = document.createElement("li");
+      var txt = document.createElement("span");
+      txt.textContent = "“" + u.name + "” wasn’t found after the robot re-mapped.";
+      li.appendChild(txt);
+      li.appendChild(roomsButton("Place it", "Place " + u.name + " on the map", function () {
+        state.roomsPlace = u.index;
+        state.roomsPlaceName = u.name;
+        roomsMode("place", null);
+      }));
+      li.appendChild(roomsButton("Forget", "Forget " + u.name, function () {
+        roomsEdit({op: "clear", room: u.key});
+      }));
+      lost.appendChild(li);
+    });
+    if (state.roomsMode) {
+      var li2 = document.createElement("li");
+      li2.appendChild(roomsButton("Cancel", null, function () {
+        state.roomsMode = null; state.roomsDrag = null; renderRooms(); renderMap();
+      }));
+      list.appendChild(li2);
+    }
+  }
+
+  function roomsGeometry(grid) {
+    var v = state.roomsView;
+    if (!state.roomsOpen || !v || !v.map || !grid) return null;
+    var m = v.map;
+    if (m.width !== grid.width || m.height !== grid.height
+        || m.origin_x_m !== grid.origin_x_m || m.origin_y_m !== grid.origin_y_m) return null;
+    return v;
+  }
+
+  function roomKeyAt(v, cell) {
+    if (cell < 0 || cell >= v.cut.length) return null;
+    if (v.owner && v.owner[cell] >= 0) return "s" + v.owner[cell];
+    return v.cut[cell] >= 0 ? "c" + v.cut[cell] : null;
+  }
+
+  function drawRooms(ctx, grid, scale) {
+    var v = roomsGeometry(grid);
+    // The map moved on (a new version): fetch the rooms again, at most every
+    // 5 s, and never under an edit or a mode the person is in the middle of.
+    var cur = state.roomsView;
+    var typing = document.activeElement && document.activeElement.closest
+      && document.activeElement.closest("#rooms-list");
+    if (state.roomsOpen && cur && cur.map && grid && cur.map.map_version !== grid.map_version
+        && !state.roomsBusy && !state.roomsMode && !typing
+        && Date.now() - (state.roomsLoadedAt || 0) > 5000) {
+      state.roomsLoadedAt = Date.now();
+      loadRooms();
+    }
+    if (!v) return;
+    var css = getComputedStyle(document.documentElement);
+    var edge = (css.getPropertyValue("--accent-primary") || "#5B9DF5").trim();
+    var w = grid.width, h = grid.height;
+    var keys = new Array(w * h);
+    for (var i = 0; i < w * h; i++) keys[i] = roomKeyAt(v, i);
+    ctx.save();
+    if (state.roomsSel) {
+      ctx.globalAlpha = 0.35;
+      ctx.fillStyle = edge;
+      for (var j = 0; j < w * h; j++) {
+        if (keys[j] === state.roomsSel) ctx.fillRect((j % w) * scale, Math.floor(j / w) * scale, scale, scale);
+      }
+      ctx.globalAlpha = 1;
+    }
+    ctx.fillStyle = edge;
+    for (var y = 0; y < h; y++) {
+      for (var x = 0; x < w; x++) {
+        var k = keys[y * w + x];
+        if (k === null) continue;
+        if (x + 1 < w && keys[y * w + x + 1] !== null && keys[y * w + x + 1] !== k) {
+          ctx.fillRect((x + 1) * scale - 1, y * scale, 2, scale);
+        }
+        if (y + 1 < h && keys[(y + 1) * w + x] !== null && keys[(y + 1) * w + x] !== k) {
+          ctx.fillRect(x * scale, (y + 1) * scale - 1, scale, 2);
+        }
+      }
+    }
+    var ink = (css.getPropertyValue("--text") || "#E8ECEF").trim();
+    var halo = (css.getPropertyValue("--bg") || "#12151A").trim();
+    // The canvas is drawn at cell size and shown smaller: size the labels
+    // for what is on the screen (13 CSS px), not for the canvas.
+    var shown = ctx.canvas.getBoundingClientRect().width || ctx.canvas.width;
+    ctx.font = Math.round(13 * ctx.canvas.width / shown) + "px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.lineWidth = Math.max(3, Math.round(3 * ctx.canvas.width / shown));
+    (v.rooms || []).forEach(function (r, i) {
+      var px = ((r.x_m - grid.origin_x_m) / grid.resolution_m) * scale;
+      var py = ((r.y_m - grid.origin_y_m) / grid.resolution_m) * scale;
+      var label = roomLabel(r, i);
+      ctx.strokeStyle = halo;
+      ctx.strokeText(label, px, py);
+      ctx.fillStyle = ink;
+      ctx.fillText(label, px, py);
+    });
+    var d = state.roomsDrag;
+    if (d && d.x1 !== undefined) {
+      ctx.strokeStyle = (css.getPropertyValue("--accent-warn") || "#F2C94C").trim();
+      ctx.beginPath();
+      ctx.moveTo(d.x0, d.y0);
+      ctx.lineTo(d.x1, d.y1);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function roomsCanvasPoint(ev) {
+    var canvas = document.getElementById("world-map");
+    var rect = canvas.getBoundingClientRect();
+    return {x: (ev.clientX - rect.left) * (canvas.width / rect.width),
+            y: (ev.clientY - rect.top) * (canvas.height / rect.height)};
+  }
+
+  function roomsMapTap(px, py, scale) {
+    var grid = state.lastMap;
+    var v = roomsGeometry(grid);
+    if (!v || state.roomsMode === "split") return;
+    var cx = Math.floor(px / scale), cy = Math.floor(py / scale);
+    if (cx < 0 || cy < 0 || cx >= grid.width || cy >= grid.height) return;
+    var key = roomKeyAt(v, cy * grid.width + cx);
+    if (!key) return;
+    if (state.roomsMode === "merge") {
+      if (key !== state.roomsFrom) roomsEdit({op: "merge", room: state.roomsFrom, other: key});
+      return;
+    }
+    if (state.roomsMode === "place") {
+      if (key.charAt(0) !== "c") { showToast(t("rooms.placeOnUnnamed"), "info"); return; }
+      roomsEdit({op: "place", index: state.roomsPlace, room: key});
+      return;
+    }
+    state.roomsSel = key;
+    renderRooms();
+    renderMap();
+    var row = document.querySelector('#rooms-list li[data-key="' + key + '"] input');
+    if (row) row.focus();
+  }
+
+  function roomsSplitStart(ev) {
+    if (!state.roomsOpen || state.roomsMode !== "split") return;
+    var p = roomsCanvasPoint(ev);
+    state.roomsDrag = {x0: p.x, y0: p.y};
+    // Captured: a mouse drag that strays off the canvas still ends here.
+    if (ev.currentTarget && ev.currentTarget.setPointerCapture) {
+      try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) { /* not a live pointer */ }
+    }
+    ev.preventDefault();
+  }
+
+  function roomsSplitMove(ev) {
+    var d = state.roomsDrag;
+    if (!d) return;
+    var p = roomsCanvasPoint(ev);
+    d.x1 = p.x;
+    d.y1 = p.y;
+    renderMap();
+  }
+
+  function roomsSplitCancel() {
+    if (!state.roomsDrag) return;
+    state.roomsDrag = null;
+    renderMap();
+  }
+
+  function roomsSplitEnd(ev) {
+    var d = state.roomsDrag;
+    if (!d) return;
+    state.roomsDrag = null;
+    var p = roomsCanvasPoint(ev);
+    var grid = state.lastMap;
+    var canvas = document.getElementById("world-map");
+    var scale = grid ? canvas.width / grid.width : 1;
+    if (!grid || Math.hypot(p.x - d.x0, p.y - d.y0) < 2 * scale) {
+      showToast(t("rooms.splitShort"), "info");
+      renderMap();
+      return;
+    }
+    var m = function (q) {
+      return [grid.origin_x_m + (q.x / scale) * grid.resolution_m,
+              grid.origin_y_m + (q.y / scale) * grid.resolution_m];
+    };
+    roomsEdit({op: "split", room: state.roomsFrom, line: [m({x: d.x0, y: d.y0}), m(p)]});
+  }
+
   function renderMap() {
     var canvas = document.getElementById("world-map");
     var readout = document.getElementById("map-readout");
     updateRemapButton();
+    updateRoomsButton();
     if (!canvas || !readout) return;
 
     var ctx = canvas.getContext("2d");
@@ -827,6 +1194,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     }
     drawGoal(ctx, grid, SCALE);
     drawAsk(ctx, grid, SCALE);
+    drawRooms(ctx, grid, SCALE);
     drawPose(ctx, grid, SCALE, state.lastPose, "estimate");
     canvas.classList.toggle("tappable", !!state.brainAskOpen
       || (isSlamMap(grid) && !state.goalsUnsupported));
@@ -838,8 +1206,11 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     var pct = Math.round((100 * seen) / grid.cells.length);
     readout.innerHTML = "map: " + seen + "/" + grid.cells.length + " cells seen (" +
       pct + "%) \u00b7 " + Math.round(grid.resolution_m * 100) + "cm cells \u00b7 " +
-      '<span class="src">' + grid.map_id + " v" + grid.map_version + "</span>" +
-      slamErrorText(slam ? werr : null) + (state.brainAskOpen ? askText() : goalText(grid));
+      // The map's id is an engineer's readout (3.160 found it read as jargon
+      // in operator mode on a SLAM map, M5): Engineer mode only.
+      '<span class="src eng-only">' + grid.map_id + " v" + grid.map_version + "</span>" +
+      slamErrorText(slam ? werr : null) + (state.roomsOpen ? "<br>tap a room to pick it"
+        : state.brainAskOpen ? askText() : goalText(grid));
   }
 
   // "SLAM error 4.2 cm / 1.1° · odometry alone 45 cm / 39°" -- the one
@@ -1921,7 +2292,15 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
   // R6: tap the SLAM map to send the robot there.
   (function () {
     var mapCanvas = document.getElementById("world-map");
-    if (mapCanvas) mapCanvas.addEventListener("click", onMapTap);
+    if (mapCanvas) {
+      mapCanvas.addEventListener("click", onMapTap);
+      // 3.160: a split is drawn as a drag across the room.
+      mapCanvas.addEventListener("pointerdown", roomsSplitStart);
+      mapCanvas.addEventListener("pointermove", roomsSplitMove);
+      mapCanvas.addEventListener("pointerup", roomsSplitEnd);
+      mapCanvas.addEventListener("pointercancel", roomsSplitCancel);
+      mapCanvas.addEventListener("pointerleave", roomsSplitCancel);
+    }
   })();
   document.getElementById("btn-reverse").onclick = function () { manualAction("REVERSE"); };
   document.getElementById("btn-left").onclick = function () { manualAction("LEFT"); };
@@ -1932,6 +2311,8 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
   document.getElementById("btn-look-center").onclick = function () { manualAction("LOOK_CENTER"); };
   document.getElementById("btn-random-house").onclick = randomHouse;
   document.getElementById("btn-remap").onclick = remapNow;
+  document.getElementById("btn-rooms").onclick = openRooms;
+  document.getElementById("rooms-done").onclick = closeRooms;
   document.querySelectorAll(".turn-step-btn").forEach(function (btn) {
     btn.onclick = function () { setTurnStep(Number(btn.dataset.turnDeg)); };
   });

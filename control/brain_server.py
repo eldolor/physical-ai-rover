@@ -94,6 +94,8 @@ from brain.perceive import (DEFAULT_CLIP, DEFAULT_DETECTOR,
 from brain.tiered import parse_frame_vote, tiered_vision_fn_for
 from brain.choice_log import ChoiceLog
 from brain.intervention_log import FILE_NAME as INTERVENTION_FILE, InterventionLog
+from brain import room_labels as room_labels_mod
+from brain import room_names as room_names_mod
 from control import drills
 from control.brain_config import load_brain_config
 from control.inventory_store import _slug, inventory_store_from_config
@@ -190,6 +192,20 @@ class MissionStartRequest(BaseModel):
     record_walk: Optional[str] = None
 
     model_config = ConfigDict(extra="forbid")
+
+
+class RoomNamesRequest(BaseModel):
+    """3.160: one person's edit of the room names, against the map they saw."""
+    frame_id: Optional[str] = None
+    map_version: Optional[int] = None
+    op: str
+    room: Optional[str] = None       # "c<cut id>" or "s<stored index>"
+    other: Optional[str] = None
+    name: Optional[str] = None
+    line: Optional[list] = None      # [[x_m, y_m], [x_m, y_m]]
+    index: Optional[int] = None
+    cut_hash: Optional[str] = None   # the cut the edit was drawn on (preferred to map_version)
+    rev: Optional[int] = None        # the names' revision the person saw
 
 
 class GoalPickRequest(BaseModel):
@@ -1315,6 +1331,83 @@ def create_app(
         if not ok:
             raise HTTPException(status_code=409, detail=why)
         return {"accepted": True, "choice": req.choice, "candidate": req.candidate}
+
+    # ---- 3.160: rooms a person names on the saved map ----
+
+    def _read_world():
+        w = world()
+        m, pose = w.get_map(), w.get_pose()
+        return m, (pose or {}).get("frame_id")
+
+    def rooms_view(names_store, m, frame_id, seg=None) -> dict:
+        """The map's room cut with the person's names over it, the model's
+        suggestions (the current or last mission's labels), and the stored
+        rooms a re-map left unplaced. `closed` says why nothing can be named.
+        `cut` and `owner` are run-length lists; `cut_hash` and `rev` are what
+        an edit must name (the cut it was drawn on, the names it saw)."""
+        if not m or not m.get("usable", True) or "cells" not in m:
+            return {"frame_id": frame_id, "closed": "No map yet.", "rooms": []}
+        if not frame_id:
+            return {"frame_id": None, "rooms": [],
+                    "closed": "Survey first: names are kept with the saved map."}
+        seeds = []
+        st = state["runner"].status() if state["runner"] is not None else {}
+        for block in ("survey", "room_labels"):
+            seeds += [x for x in ((st.get(block) or {}).get("seeds") or [])
+                      if len(x) == 3 and x[2] and x[2] != room_labels_mod.UNCLEAR]
+        return {"frame_id": frame_id, "closed": None,
+                **room_names_mod.editor_view(names_store, m, frame_id, seg, seeds)}
+
+    @app.get(prefix + "/mission/rooms", dependencies=[Depends(require_secret)])
+    def rooms_get():
+        """3.160: the rooms to name. Local only: answered to the twin, never stored elsewhere."""
+        try:
+            m, frame_id = _read_world()
+        except Exception as e:  # noqa: BLE001 -- the editor says so, never a 500
+            return {"frame_id": None, "closed": f"The map can't be read now ({e}).", "rooms": []}
+        return rooms_view(room_names_mod.default_store(), m, frame_id)
+
+    @app.post(prefix + "/mission/rooms/names", dependencies=[Depends(require_secret)])
+    def rooms_names(req: RoomNamesRequest):
+        """3.160: one edit, on the saved map, the room cut and the names the
+        person saw (409 for another saved map, a cut that changed, or names
+        another edit changed meanwhile: reload). The map's own version moves
+        while the robot drives; only a change to the cut refuses. Nothing here
+        reaches the robot server, the bridge or nav2."""
+        store = room_names_mod.default_store()
+        try:
+            m, frame_id = _read_world()
+        except Exception as e:  # noqa: BLE001
+            raise HTTPException(status_code=503, detail=f"the map can't be read now ({e})")
+        if not frame_id or req.frame_id != frame_id:
+            raise HTTPException(status_code=409, detail="Survey first: names are kept with the "
+                                "saved map." if not frame_id else "another saved map: reload")
+        if not m or "cells" not in m:
+            raise HTTPException(status_code=409, detail="no map now: reload")
+        seg, _ = room_labels_mod.segment(m)
+        if req.cut_hash is not None:
+            if req.cut_hash != room_names_mod.cut_hash(seg):
+                raise HTTPException(status_code=409, detail="the rooms changed shape since they "
+                                    "were drawn: reload")
+        elif req.map_version != m.get("map_version"):
+            raise HTTPException(status_code=409, detail="the map changed since it was drawn: reload")
+
+        def target(t):
+            if t is None:
+                return None
+            if isinstance(t, str) and re.fullmatch(r"c[0-9]{1,6}", t):
+                return int(t[1:])
+            if isinstance(t, str) and re.fullmatch(r"s[0-9]{1,4}", t):
+                return t
+            raise HTTPException(status_code=422, detail=f"a room is c<n> or s<n>, not {t!r}")
+        kw = {k: v for k, v in (("room", target(req.room)), ("other", target(req.other)),
+                                 ("name", req.name), ("line", req.line), ("index", req.index))
+              if v is not None}
+        try:
+            store.edit(frame_id, m, seg, req.op, rev=req.rev, **kw)
+        except room_names_mod.NamesRefused as e:
+            raise HTTPException(status_code=409, detail=str(e))
+        return rooms_view(store, m, frame_id, seg)
 
     @app.get(prefix + "/mission/inventory", dependencies=[Depends(require_secret)])
     async def mission_inventory():
