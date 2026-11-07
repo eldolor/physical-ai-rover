@@ -1,0 +1,798 @@
+{
+ "summary": {
+  "mode": "switch",
+  "arm": "post",
+  "image": "vision-picar-ros:plan-3.154",
+  "trials": 30,
+  "valid": 30,
+  "b_aborted": 0,
+  "b_ran": 30,
+  "b_aborted_after_s": []
+ },
+ "rows": [
+  {
+   "trial": 0,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    1.95,
+    3.75
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    1.05,
+    2.85
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.017
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 1,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    2.25,
+    2.85
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    2.25,
+    3.75
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.008
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 2,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    0.75,
+    2.25
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    3.75,
+    1.65
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.054
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 3,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    3.75,
+    1.65
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    2.25,
+    3.4499999999999997
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.008
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 4,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    2.55,
+    3.75
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    3.15,
+    0.44999999999999996
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.009
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 5,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    2.55,
+    3.4499999999999997
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    2.55,
+    3.4499999999999997
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.006
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 6,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    0.75,
+    1.65
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    1.95,
+    2.85
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.007
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 7,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    4.35,
+    0.75
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    2.25,
+    2.85
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.018
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 8,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    2.85,
+    3.15
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    4.35,
+    1.05
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.007
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 9,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    0.44999999999999996,
+    0.75
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    1.05,
+    3.15
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.007
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 10,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    0.75,
+    1.95
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    1.65,
+    3.15
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.007
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 11,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    0.44999999999999996,
+    1.95
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    4.05,
+    0.44999999999999996
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.062
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 12,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    0.75,
+    2.25
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    4.35,
+    0.44999999999999996
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.008
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 13,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    4.05,
+    2.85
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    2.55,
+    3.15
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.045
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 14,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    4.05,
+    2.55
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    4.05,
+    1.95
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.008
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 15,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    2.55,
+    3.15
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    3.75,
+    0.44999999999999996
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.008
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 16,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    4.05,
+    0.75
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    1.3499999999999999,
+    3.4499999999999997
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.02
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 17,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    4.95,
+    1.3499999999999999
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    0.75,
+    2.85
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.008
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 18,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    4.6499999999999995,
+    0.75
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    4.35,
+    1.95
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.047
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 19,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    0.75,
+    0.44999999999999996
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    4.05,
+    2.85
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.018
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 20,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    2.85,
+    3.4499999999999997
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    1.65,
+    3.15
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.008
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 21,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    3.75,
+    2.85
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    0.44999999999999996,
+    1.65
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "pending",
+     0.044
+    ],
+    [
+     "active",
+     0.083
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 22,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    0.75,
+    2.85
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    4.35,
+    0.44999999999999996
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.008
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 23,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    0.44999999999999996,
+    0.75
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    1.3499999999999999,
+    2.85
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.009
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 24,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    3.75,
+    2.55
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    1.05,
+    3.4499999999999997
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.009
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 25,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    2.55,
+    3.4499999999999997
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    0.44999999999999996,
+    1.05
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.008
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 26,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    2.55,
+    3.75
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    2.85,
+    2.85
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.009
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 27,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    3.75,
+    2.55
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    3.15,
+    3.15
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.015
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 28,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    2.85,
+    3.4499999999999997
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    4.05,
+    1.05
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.011
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 29,
+   "mode": "switch",
+   "arm": "post",
+   "a": [
+    1.05,
+    2.85
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    4.35,
+    1.65
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.009
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  }
+ ]
+}

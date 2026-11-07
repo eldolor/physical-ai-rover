@@ -150,10 +150,25 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.142](3.142-soak-memory-trend.md) | The soak's per-mission memory minimum falls 21 MB/h (3.135.C (b)) |
 | [3.143](3.143-soak-find-rate.md) | The live find rate on the board, 10/19 against the sweep's 39/40 (3.135.C (d)) |
 | [3.144](3.144-lidar-stale-forward.md) | Forward moves refused on a stale lidar scan (3.135.B F9) |
+| [3.145](3.145-nav2-goal-outlives-brain.md) | A nav2 goal outlives a dead or hung brain (3.135.B F6g, F7g) |
 | [3.148](3.148-tiered-wedge-without-cloud.md) | A tiered mission with no cloud wedges at a jamb and ends blocked (3.135.B F11, F12) |
 | [3.149](3.149-claude-md-slim.md) | CLAUDE.md slimmed: section 3b to status lines, history to the archive |
 | [3.150](3.150-bash-guard.md) | A Bash hook refuses the gate bypasses and a branch's :latest image |
 | [3.151](3.151-truth-recorder-under-memory-pressure.md) | The simulator's truth recorder holds under memory pressure (3.135.B F2) |
 | [3.152](3.152-local-vlm-down.md) | A dead local VLM: the brain tells unreachable from unable, and the unit restarts with a delay |
 | [3.153](3.153-frame-under-oom-squeeze.md) | The camera frame read under an OOM squeeze: a mission failed on GET /frame 503 |
+| [3.154](3.154-approach-abort-on-cancel.md) | Explore's approach goal is aborted by nav2 while the previous goal's cancel is still in flight |
+| [3.155](3.155-robot-server-memory-lock.md) | The robot server memory-locked: its wheel loop under an OOM squeeze (3.135.B F2's new record) |
+| [3.156](3.156-return-to-dock.md) | Return to the dock: a mission or survey ends at the charger |
+| [3.157](3.157-perception-into-explore.md) | Explore's sightings from real perception: bearing and sighting rate on recorded walks |
+| [3.158](3.158-autonomy-acceptance.md) | Full autonomy accepted: missions and surveys in the house, unattended |
+| [3.159](3.159-drop-detection.md) | No fall at a stair: a drop ahead stops the robot |
+| [3.160](3.160-rooms-named-on-twin.md) | Rooms a person names once, on the twin, saved with the map |
+| [3.161](3.161-no-go-zones-on-twin.md) | No-go zones a person draws on the twin |
+| [3.162](3.162-what-i-saw.md) | What I saw: a mission's objects with photos and places, on the twin |
+| [3.163](3.163-scheduled-missions.md) | Missions and surveys on a schedule |
+| [3.164](3.164-watchdog-keeps-stop-reason.md) | The watchdog record keeps a Stop's or fault's reason: the twin tells a hung brain from a finished mission |
+| [3.165](3.165-inventory-landmarks-bounded.md) | Inventory landmark points bounded |
+| [3.166](3.166-claim-tool-fixes.md) | Claim tools: stored Touches follow plan edits; whole-directory entries stop blocking unrelated work |
+| [3.167](3.167-inventory-precision-regression.md) | Inventory precision fell below 3.60's bar |
 <!-- /sections -->

@@ -1,0 +1,754 @@
+{
+ "candidates": [
+  {
+   "belief": 0.711,
+   "carried": false,
+   "disputed": true,
+   "first_step": 288,
+   "hits": 2,
+   "id": 20,
+   "label": "toilet",
+   "last_step": 329,
+   "misses": 2,
+   "points": 3,
+   "reported": false,
+   "room": "hall",
+   "votes": {
+    "sectional sofa": 1,
+    "toilet": 1
+   },
+   "x_m": 2.959,
+   "y_m": 6.328
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 432,
+   "hits": 1,
+   "id": 38,
+   "label": "armchair",
+   "last_step": 432,
+   "misses": 0,
+   "points": 2,
+   "reported": false,
+   "room": "family room",
+   "votes": {
+    "armchair": 1
+   },
+   "x_m": 7.876,
+   "y_m": 3.882
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 575,
+   "hits": 1,
+   "id": 50,
+   "label": "breakfast table",
+   "last_step": 579,
+   "misses": 0,
+   "points": 4,
+   "reported": false,
+   "room": "breakfast",
+   "votes": {
+    "breakfast table": 1
+   },
+   "x_m": 11.131,
+   "y_m": 4.611
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 250,
+   "hits": 1,
+   "id": 14,
+   "label": "chair",
+   "last_step": 252,
+   "misses": 0,
+   "points": 3,
+   "reported": false,
+   "room": "living room",
+   "votes": {
+    "chair": 1
+   },
+   "x_m": 7.459,
+   "y_m": 10.977
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 377,
+   "hits": 1,
+   "id": 28,
+   "label": "chair",
+   "last_step": 378,
+   "misses": 0,
+   "points": 2,
+   "reported": false,
+   "room": "family room",
+   "votes": {
+    "chair": 1
+   },
+   "x_m": 9.9,
+   "y_m": 4.875
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 68,
+   "hits": 1,
+   "id": 10,
+   "label": "coffee table",
+   "last_step": 68,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "living room",
+   "votes": {
+    "coffee table": 1
+   },
+   "x_m": 1.707,
+   "y_m": 9.908
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 594,
+   "hits": 1,
+   "id": 53,
+   "label": "dryer",
+   "last_step": 595,
+   "misses": 0,
+   "points": 2,
+   "reported": false,
+   "room": "kitchen",
+   "votes": {
+    "dryer": 1
+   },
+   "x_m": 14.281,
+   "y_m": 7.617
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 562,
+   "hits": 1,
+   "id": 49,
+   "label": "kitchen counter",
+   "last_step": 562,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "breakfast",
+   "votes": {
+    "kitchen counter": 1
+   },
+   "x_m": 12.864,
+   "y_m": 2.687
+  }
+ ],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 613,
+  "landmarks": 38,
+  "no_pose": 0,
+  "observations": 1409,
+  "reported": 30,
+  "unplaced": 2
+ },
+ "frame_id": null,
+ "map_id": "slam-1030df61",
+ "mission": "Find the red backpack.",
+ "mission_id": "20261103T192341.957461Z-red backpack",
+ "outcome": "found",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 24,
+   "id": 1,
+   "label": "armchair",
+   "last_step": 234,
+   "misses": 0,
+   "points": 163,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "armchair": 24
+   },
+   "x_m": 2.863,
+   "y_m": 8.4
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 27,
+   "hits": 14,
+   "id": 7,
+   "label": "armchair",
+   "last_step": 244,
+   "misses": 0,
+   "points": 77,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "armchair": 14
+   },
+   "x_m": 2.949,
+   "y_m": 11.33
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 278,
+   "hits": 7,
+   "id": 19,
+   "label": "armchair",
+   "last_step": 381,
+   "misses": 0,
+   "points": 23,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "armchair": 7
+   },
+   "x_m": 7.33,
+   "y_m": 4.715
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 336,
+   "hits": 5,
+   "id": 23,
+   "label": "bookcase",
+   "last_step": 349,
+   "misses": 0,
+   "points": 13,
+   "reported": true,
+   "room": "hall",
+   "votes": {
+    "bookcase": 5
+   },
+   "x_m": 3.572,
+   "y_m": 4.246
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 424,
+   "hits": 6,
+   "id": 35,
+   "label": "breakfast table",
+   "last_step": 547,
+   "misses": 0,
+   "points": 16,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "breakfast table": 6
+   },
+   "x_m": 9.897,
+   "y_m": 3.57
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 376,
+   "hits": 17,
+   "id": 27,
+   "label": "chair",
+   "last_step": 563,
+   "misses": 0,
+   "points": 54,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "chair": 17
+   },
+   "x_m": 9.975,
+   "y_m": 3.366
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 4,
+   "hits": 21,
+   "id": 3,
+   "label": "coffee table",
+   "last_step": 241,
+   "misses": 0,
+   "points": 116,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "coffee table": 21
+   },
+   "x_m": 2.213,
+   "y_m": 9.835
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 379,
+   "hits": 6,
+   "id": 30,
+   "label": "coffee table",
+   "last_step": 422,
+   "misses": 0,
+   "points": 38,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "coffee table": 6
+   },
+   "x_m": 6.264,
+   "y_m": 3.307
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 431,
+   "hits": 7,
+   "id": 36,
+   "label": "coffee table",
+   "last_step": 529,
+   "misses": 0,
+   "points": 25,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "coffee table": 7
+   },
+   "x_m": 6.311,
+   "y_m": 2.414
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 271,
+   "hits": 5,
+   "id": 17,
+   "label": "desk chair",
+   "last_step": 354,
+   "misses": 0,
+   "points": 26,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "desk chair": 5
+   },
+   "x_m": 1.761,
+   "y_m": 3.773
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 542,
+   "hits": 7,
+   "id": 42,
+   "label": "kitchen counter",
+   "last_step": 562,
+   "misses": 0,
+   "points": 21,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "kitchen counter": 7
+   },
+   "x_m": 11.975,
+   "y_m": 2.387
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 548,
+   "hits": 10,
+   "id": 43,
+   "label": "kitchen island",
+   "last_step": 590,
+   "misses": 0,
+   "points": 62,
+   "reported": true,
+   "room": "breakfast",
+   "votes": {
+    "kitchen island": 10
+   },
+   "x_m": 12.61,
+   "y_m": 4.328
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 257,
+   "hits": 20,
+   "id": 15,
+   "label": "sectional sofa",
+   "last_step": 417,
+   "misses": 0,
+   "points": 101,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "armchair": 1,
+    "sectional sofa": 19
+   },
+   "x_m": 5.782,
+   "y_m": 4.767
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 383,
+   "hits": 17,
+   "id": 32,
+   "label": "sectional sofa",
+   "last_step": 523,
+   "misses": 0,
+   "points": 148,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "sectional sofa": 17
+   },
+   "x_m": 4.834,
+   "y_m": 1.786
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 27,
+   "hits": 13,
+   "id": 8,
+   "label": "side table",
+   "last_step": 127,
+   "misses": 0,
+   "points": 68,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "side table": 13
+   },
+   "x_m": 0.908,
+   "y_m": 11.4
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 26,
+   "hits": 25,
+   "id": 6,
+   "label": "sofa",
+   "last_step": 239,
+   "misses": 0,
+   "points": 147,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "sofa": 25
+   },
+   "x_m": 0.993,
+   "y_m": 9.461
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 21,
+   "id": 2,
+   "label": "staircase",
+   "last_step": 416,
+   "misses": 0,
+   "points": 69,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "staircase": 21
+   },
+   "x_m": 6.01,
+   "y_m": 8.538
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 382,
+   "hits": 18,
+   "id": 31,
+   "label": "tv console",
+   "last_step": 531,
+   "misses": 0,
+   "points": 95,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "tv console": 18
+   },
+   "x_m": 6.303,
+   "y_m": 0.917
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 277,
+   "hits": 6,
+   "id": 18,
+   "label": "vanity",
+   "last_step": 296,
+   "misses": 0,
+   "points": 19,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "vanity": 6
+   },
+   "x_m": 0.914,
+   "y_m": 6.897
+  },
+  {
+   "belief": 0.968,
+   "carried": false,
+   "disputed": false,
+   "first_step": 376,
+   "hits": 4,
+   "id": 26,
+   "label": "breakfast table",
+   "last_step": 563,
+   "misses": 0,
+   "points": 5,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "breakfast table": 4
+   },
+   "x_m": 9.906,
+   "y_m": 4.571
+  },
+  {
+   "belief": 0.968,
+   "carried": false,
+   "disputed": false,
+   "first_step": 338,
+   "hits": 4,
+   "id": 24,
+   "label": "desk",
+   "last_step": 353,
+   "misses": 0,
+   "points": 17,
+   "reported": true,
+   "room": "hall",
+   "votes": {
+    "desk": 4
+   },
+   "x_m": 2.142,
+   "y_m": 3.044
+  },
+  {
+   "belief": 0.968,
+   "carried": false,
+   "disputed": false,
+   "first_step": 584,
+   "hits": 4,
+   "id": 52,
+   "label": "red backpack",
+   "last_step": 612,
+   "misses": 0,
+   "points": 26,
+   "reported": true,
+   "room": "breakfast",
+   "votes": {
+    "red backpack": 4
+   },
+   "x_m": 13.807,
+   "y_m": 5.75
+  },
+  {
+   "belief": 0.928,
+   "carried": false,
+   "disputed": false,
+   "first_step": 553,
+   "hits": 3,
+   "id": 44,
+   "label": "refrigerator",
+   "last_step": 568,
+   "misses": 0,
+   "points": 7,
+   "reported": true,
+   "room": "breakfast",
+   "votes": {
+    "refrigerator": 3
+   },
+   "x_m": 14.051,
+   "y_m": 3.105
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 557,
+   "hits": 2,
+   "id": 47,
+   "label": "breakfast table",
+   "last_step": 563,
+   "misses": 0,
+   "points": 4,
+   "reported": true,
+   "room": "breakfast",
+   "votes": {
+    "breakfast table": 2
+   },
+   "x_m": 10.881,
+   "y_m": 3.541
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 375,
+   "hits": 2,
+   "id": 25,
+   "label": "chair",
+   "last_step": 378,
+   "misses": 0,
+   "points": 3,
+   "reported": true,
+   "room": "family room",
+   "votes": {
+    "chair": 2
+   },
+   "x_m": 7.929,
+   "y_m": 4.873
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 556,
+   "hits": 2,
+   "id": 45,
+   "label": "chair",
+   "last_step": 566,
+   "misses": 0,
+   "points": 9,
+   "reported": true,
+   "room": "breakfast",
+   "votes": {
+    "chair": 2
+   },
+   "x_m": 11.317,
+   "y_m": 3.831
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 584,
+   "hits": 2,
+   "id": 51,
+   "label": "dryer",
+   "last_step": 593,
+   "misses": 0,
+   "points": 10,
+   "reported": true,
+   "room": "breakfast",
+   "votes": {
+    "dryer": 2
+   },
+   "x_m": 13.498,
+   "y_m": 6.492
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 556,
+   "hits": 2,
+   "id": 46,
+   "label": "kitchen counter",
+   "last_step": 568,
+   "misses": 0,
+   "points": 4,
+   "reported": true,
+   "room": "breakfast",
+   "votes": {
+    "kitchen counter": 2
+   },
+   "x_m": 13.274,
+   "y_m": 3.455
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 595,
+   "hits": 2,
+   "id": 54,
+   "label": "kitchen counter",
+   "last_step": 610,
+   "misses": 0,
+   "points": 15,
+   "reported": true,
+   "room": "kitchen",
+   "votes": {
+    "kitchen counter": 2
+   },
+   "x_m": 14.408,
+   "y_m": 5.176
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 291,
+   "hits": 3,
+   "id": 21,
+   "label": "toilet",
+   "last_step": 295,
+   "misses": 0,
+   "points": 8,
+   "reported": true,
+   "room": "hall",
+   "votes": {
+    "toilet": 3
+   },
+   "x_m": 1.2,
+   "y_m": 6.138
+  }
+ ]
+}

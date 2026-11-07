@@ -1,0 +1,861 @@
+{
+ "summary": {
+  "mode": "switch",
+  "arm": "delete-then-post",
+  "image": "vision-picar-ros:latest",
+  "trials": 30,
+  "valid": 30,
+  "b_aborted": 14,
+  "b_ran": 28,
+  "b_aborted_after_s": [
+   0.079,
+   0.031,
+   0.02,
+   0.031,
+   0.033,
+   0.035,
+   0.073,
+   0.032,
+   0.032,
+   0.074,
+   0.041,
+   0.04,
+   0.039,
+   0.033
+  ]
+ },
+ "rows": [
+  {
+   "trial": 0,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    1.95,
+    3.75
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    1.05,
+    2.85
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.053
+    ],
+    [
+     "aborted",
+     0.079
+    ]
+   ],
+   "b_ended": "aborted",
+   "b_ended_s": 0.079,
+   "b_ran": true,
+   "cleared": "aborted"
+  },
+  {
+   "trial": 1,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    2.25,
+    2.85
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    2.25,
+    3.75
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.008
+    ],
+    [
+     "aborted",
+     0.031
+    ]
+   ],
+   "b_ended": "aborted",
+   "b_ended_s": 0.031,
+   "b_ran": true,
+   "cleared": "aborted"
+  },
+  {
+   "trial": 2,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    0.75,
+    2.25
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    3.4499999999999997,
+    1.65
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "aborted",
+     0.02
+    ]
+   ],
+   "b_ended": "aborted",
+   "b_ended_s": 0.02,
+   "b_ran": false,
+   "cleared": "aborted"
+  },
+  {
+   "trial": 3,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    3.75,
+    2.55
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    4.05,
+    1.95
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.009
+    ],
+    [
+     "aborted",
+     0.031
+    ]
+   ],
+   "b_ended": "aborted",
+   "b_ended_s": 0.031,
+   "b_ran": true,
+   "cleared": "aborted"
+  },
+  {
+   "trial": 4,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    2.25,
+    3.4499999999999997
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    2.25,
+    3.4499999999999997
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.047
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 5,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    0.75,
+    0.44999999999999996
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    1.05,
+    3.4499999999999997
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.01
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 6,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    3.15,
+    2.25
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    1.65,
+    3.15
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.009
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 7,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    3.75,
+    1.65
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    1.95,
+    3.4499999999999997
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.009
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 8,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    3.15,
+    2.85
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    0.44999999999999996,
+    1.95
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.024
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 9,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    3.75,
+    1.05
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    1.3499999999999999,
+    3.4499999999999997
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.009
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 10,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    3.4499999999999997,
+    2.85
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    0.75,
+    3.4499999999999997
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.012
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 11,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    3.75,
+    2.25
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    1.65,
+    3.15
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.011
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 12,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    3.4499999999999997,
+    2.85
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    0.44999999999999996,
+    3.15
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.01
+    ],
+    [
+     "aborted",
+     0.033
+    ]
+   ],
+   "b_ended": "aborted",
+   "b_ended_s": 0.033,
+   "b_ran": true,
+   "cleared": "aborted"
+  },
+  {
+   "trial": 13,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    3.4499999999999997,
+    1.65
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    2.55,
+    3.4499999999999997
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.011
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 14,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    1.05,
+    2.85
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    3.15,
+    0.75
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.011
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 15,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    3.4499999999999997,
+    1.65
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    3.15,
+    0.75
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.01
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 16,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    1.65,
+    3.75
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    2.85,
+    3.15
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.012
+    ],
+    [
+     "aborted",
+     0.035
+    ]
+   ],
+   "b_ended": "aborted",
+   "b_ended_s": 0.035,
+   "b_ran": true,
+   "cleared": "aborted"
+  },
+  {
+   "trial": 17,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    2.85,
+    2.85
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    3.75,
+    2.55
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.047
+    ],
+    [
+     "aborted",
+     0.073
+    ]
+   ],
+   "b_ended": "aborted",
+   "b_ended_s": 0.073,
+   "b_ran": true,
+   "cleared": "aborted"
+  },
+  {
+   "trial": 18,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    1.65,
+    3.75
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    4.05,
+    1.3499999999999999
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.01
+    ],
+    [
+     "aborted",
+     0.032
+    ]
+   ],
+   "b_ended": "aborted",
+   "b_ended_s": 0.032,
+   "b_ran": true,
+   "cleared": "aborted"
+  },
+  {
+   "trial": 19,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    2.25,
+    3.15
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    4.05,
+    0.44999999999999996
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.066
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 20,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    2.25,
+    3.4499999999999997
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    1.05,
+    2.85
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.01
+    ],
+    [
+     "aborted",
+     0.032
+    ]
+   ],
+   "b_ended": "aborted",
+   "b_ended_s": 0.032,
+   "b_ran": true,
+   "cleared": "aborted"
+  },
+  {
+   "trial": 21,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    3.75,
+    1.05
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    3.4499999999999997,
+    3.15
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.011
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 22,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    1.05,
+    2.25
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    4.35,
+    2.25
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.015
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 23,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    0.44999999999999996,
+    2.85
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    4.05,
+    2.85
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.011
+    ],
+    [
+     "aborted",
+     0.074
+    ]
+   ],
+   "b_ended": "aborted",
+   "b_ended_s": 0.074,
+   "b_ran": true,
+   "cleared": "aborted"
+  },
+  {
+   "trial": 24,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    3.4499999999999997,
+    3.15
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    2.25,
+    2.85
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.011
+    ],
+    [
+     "aborted",
+     0.041
+    ]
+   ],
+   "b_ended": "aborted",
+   "b_ended_s": 0.041,
+   "b_ran": true,
+   "cleared": "aborted"
+  },
+  {
+   "trial": 25,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    3.75,
+    2.85
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    0.44999999999999996,
+    1.65
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.015
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 26,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    0.44999999999999996,
+    1.95
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    2.55,
+    3.4499999999999997
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.054
+    ]
+   ],
+   "b_ended": null,
+   "b_ended_s": null,
+   "b_ran": true,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 27,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    4.35,
+    1.65
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    0.44999999999999996,
+    0.44999999999999996
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.016
+    ],
+    [
+     "aborted",
+     0.04
+    ]
+   ],
+   "b_ended": "aborted",
+   "b_ended_s": 0.04,
+   "b_ran": true,
+   "cleared": "aborted"
+  },
+  {
+   "trial": 28,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    4.35,
+    1.95
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    0.44999999999999996,
+    2.85
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "active",
+     0.017
+    ],
+    [
+     "aborted",
+     0.039
+    ]
+   ],
+   "b_ended": "aborted",
+   "b_ended_s": 0.039,
+   "b_ran": true,
+   "cleared": "aborted"
+  },
+  {
+   "trial": 29,
+   "mode": "switch",
+   "arm": "delete-then-post",
+   "a": [
+    2.25,
+    3.4499999999999997
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "b": [
+    4.05,
+    1.65
+   ],
+   "b_code": 200,
+   "b_states": [
+    [
+     "pending",
+     0.011
+    ],
+    [
+     "aborted",
+     0.033
+    ]
+   ],
+   "b_ended": "aborted",
+   "b_ended_s": 0.033,
+   "b_ran": false,
+   "cleared": "aborted"
+  }
+ ]
+}

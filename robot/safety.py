@@ -984,7 +984,8 @@ class SafetyController:
         cone, corridor = self.path_clearance(grid, scan), self.footprint_clearance(+1, scan)
         if cone[1] == "depth_grid_facing_away" and corridor[1] == "no_scan":
             return 0.0, "path_not_observed"
-        return self._aged(self._nearer(cone, corridor, self.floor_clearance(grid)), +1)
+        return self._aged(self._nearer(cone, corridor, self.floor_clearance(grid),
+                                       self.drop_clearance(+1, grid)), +1)
 
     def reverse_clearance(self) -> Tuple[Optional[float], str]:
         """What a reverse is vetted against: the rear cone and the swept
@@ -1003,7 +1004,59 @@ class SafetyController:
         if self._blind(scan):
             return 0.0, "astern_not_observed"
         return self._aged(self._nearer(self.rear_clearance(scan),
-                                       self.footprint_clearance(-1, scan)), -1)
+                                       self.footprint_clearance(-1, scan),
+                                       self.drop_clearance(-1)), -1)
+
+    def _drop_guard(self):
+        # Imported here: the brain process imports this module, and its
+        # allowed modules are pinned (tests/test_brain_server.py).
+        from robot import drop_guard
+        return drop_guard.guard_for(self.robot, FOOTPRINT_LENGTH_M * 50.0,
+                                    FOOTPRINT_WIDTH_M * 50.0, FOOTPRINT_SIDE_MARGIN_CM)
+
+    def drop_clearance(self, direction: int, grid: Optional[dict] = None
+                       ) -> Tuple[Optional[float], str]:
+        """Room before a drop or before floor not seen -- 3.159
+        (`robot/drop_guard.py`). The depth camera's `drop` block is folded
+        into the robot's floor memory, then the swept corridor ahead
+        (`direction` +1) or astern (-1) is followed over it: an edge is a
+        wall at the end of seen floor, and floor never seen is never clear
+        (M3). The room is less a margin (the full bar less the creep bar),
+        so no move keeps less than the full bar from a drop. `(None,
+        "no_drop_sensor")` for a backend that has never published a block:
+        every real body today, and every house without a drop."""
+        guard = self._drop_guard()
+        if grid is None:
+            # Astern too: the camera looks ahead, but a first move that is a
+            # reverse must still find the memory switched on (and refuse).
+            # A body that showed no block the first time is not asked again
+            # astern: every house without a drop senses exactly as before.
+            if guard.probed and not guard.active:
+                return None, "no_drop_sensor"
+            get_grid = getattr(self.robot, "get_depth_grid", None)
+            grid = get_grid() if get_grid is not None else None
+        # Only a grid answers the probe: a missing frame says nothing.
+        guard.probed = guard.probed or isinstance(grid, dict)
+        guard.update(self.robot, grid)
+        return guard.clearance(direction, self.min_distance_cm - CREEP_MARGIN_CM)
+
+    def drop_pivot_blocked(self, omega_rad_s: float, folded: bool = False) -> Optional[str]:
+        """A turn that would carry a corner of the chassis off remembered
+        floor or across an edge (3.159). Turning away -- a corner already off
+        floor, or one coming back -- is never refused, 3.19's rule. Kept out
+        of `pivot_scale()`, whose answers `tests/pivot_reference.py` freezes.
+        `folded`: this tick's frame is already in memory (a clearance just
+        folded it, by the guard's own count), so it is not fetched twice."""
+        guard = self._drop_guard()
+        # A first move that is a turn probes for a block too.
+        if omega_rad_s == 0 or (guard.probed and not guard.active):
+            return None
+        if not folded or not guard.active:
+            get_grid = getattr(self.robot, "get_depth_grid", None)
+            grid = get_grid() if get_grid is not None else None
+            guard.probed = guard.probed or isinstance(grid, dict)
+            guard.update(self.robot, grid)
+        return guard.pivot_blocked(omega_rad_s)
 
     def _aged(self, result: Tuple[Optional[float], str], direction: int
               ) -> Tuple[Optional[float], str]:
@@ -1079,6 +1132,7 @@ class SafetyController:
         omega = (right_rad_s - left_rad_s) * radius / track
         reason = None
         v_asked = v
+        folds = self._drop_guard().folds
         if v != 0:
             clearance, source = self.forward_clearance() if v > 0 else self.reverse_clearance()
             way = "forward" if v > 0 else "reverse"
@@ -1097,6 +1151,14 @@ class SafetyController:
         scale, pivot = self.pivot_scale(omega)
         if pivot:
             omega *= scale
+            reason = pivot if reason is None else f"{reason}; {pivot}"
+        # Folded only if a clearance really folded this tick's frame: a blind
+        # lidar returns before it, and a stale pose must not judge the turn.
+        drop = (self.drop_pivot_blocked(omega, folded=self._drop_guard().folds != folds)
+                if omega else None)
+        if drop:
+            omega = 0.0
+            pivot = f"pivot clamped ({drop})"
             reason = pivot if reason is None else f"{reason}; {pivot}"
         if reason is None and v == v_asked:
             return left_rad_s, right_rad_s, None
@@ -1246,6 +1308,9 @@ class SafetyController:
                     f"reached min={float(need)}cm ({source})")
             omega = math.copysign(math.radians(amount) / PIVOT_LOOKAHEAD_S, 1.0 if ccw else -1.0)
             scale, why = self.pivot_scale(omega)
+            drop = self.drop_pivot_blocked(omega) if scale > 0 else None
+            if drop:
+                return 0.0, f"pivot refused ({drop})"
             return amount * scale, why
 
         # 3.29: a backend whose estimate at rest is good enough asks for a

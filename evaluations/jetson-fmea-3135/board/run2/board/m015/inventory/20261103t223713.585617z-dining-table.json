@@ -1,0 +1,201 @@
+{
+ "candidates": [],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 63,
+  "landmarks": 9,
+  "no_pose": 0,
+  "observations": 121,
+  "reported": 9,
+  "unplaced": 2
+ },
+ "frame_id": null,
+ "map_id": "slam-90a7530c",
+ "mission": "Find the dining table.",
+ "mission_id": "20261103T223713.585617Z-dining table",
+ "outcome": "found",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 38,
+   "hits": 10,
+   "id": 7,
+   "label": "chair",
+   "last_step": 62,
+   "misses": 0,
+   "points": 35,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "chair": 10
+   },
+   "x_m": 7.511,
+   "y_m": 10.397
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 40,
+   "hits": 7,
+   "id": 9,
+   "label": "dining table",
+   "last_step": 58,
+   "misses": 0,
+   "points": 22,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "dining table": 7
+   },
+   "x_m": 8.712,
+   "y_m": 9.876
+  },
+  {
+   "belief": 0.968,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 5,
+   "id": 1,
+   "label": "armchair",
+   "last_step": 36,
+   "misses": 0,
+   "points": 7,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "armchair": 5
+   },
+   "x_m": 3.514,
+   "y_m": 8.629
+  },
+  {
+   "belief": 0.968,
+   "carried": false,
+   "disputed": false,
+   "first_step": 47,
+   "hits": 6,
+   "id": 10,
+   "label": "chair",
+   "last_step": 57,
+   "misses": 0,
+   "points": 22,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "chair": 6
+   },
+   "x_m": 9.042,
+   "y_m": 10.465
+  },
+  {
+   "belief": 0.968,
+   "carried": false,
+   "disputed": false,
+   "first_step": 35,
+   "hits": 4,
+   "id": 6,
+   "label": "staircase",
+   "last_step": 47,
+   "misses": 0,
+   "points": 12,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "chair": 1,
+    "staircase": 3
+   },
+   "x_m": 6.703,
+   "y_m": 10.194
+  },
+  {
+   "belief": 0.928,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 4,
+   "id": 2,
+   "label": "staircase",
+   "last_step": 39,
+   "misses": 0,
+   "points": 9,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "staircase": 4
+   },
+   "x_m": 5.945,
+   "y_m": 9.62
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 57,
+   "hits": 2,
+   "id": 12,
+   "label": "chair",
+   "last_step": 59,
+   "misses": 0,
+   "points": 5,
+   "reported": true,
+   "room": "dining room",
+   "votes": {
+    "chair": 2
+   },
+   "x_m": 8.406,
+   "y_m": 9.49
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 4,
+   "hits": 2,
+   "id": 4,
+   "label": "coffee table",
+   "last_step": 5,
+   "misses": 0,
+   "points": 2,
+   "reported": true,
+   "room": "foyer",
+   "votes": {
+    "coffee table": 2
+   },
+   "x_m": 2.325,
+   "y_m": 10.599
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 58,
+   "hits": 2,
+   "id": 13,
+   "label": "dining table",
+   "last_step": 62,
+   "misses": 0,
+   "points": 5,
+   "reported": true,
+   "room": "dining room",
+   "votes": {
+    "dining table": 2
+   },
+   "x_m": 8.015,
+   "y_m": 9.926
+  }
+ ]
+}

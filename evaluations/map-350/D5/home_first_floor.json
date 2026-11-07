@@ -1,0 +1,9268 @@
+{
+ "house": "home_first_floor",
+ "image": "vision-picar-ros:plan-3.50",
+ "sessions": [
+  {
+   "i": 1,
+   "reload": {
+    "result": "none"
+   },
+   "map_id": "map-4389b7ce",
+   "states": [
+    [
+     "starting",
+     1.51
+    ],
+    [
+     "ready",
+     2.06
+    ]
+   ],
+   "reload_s": null,
+   "mission": {
+    "outcome": "running",
+    "seconds": 900,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794026735.json",
+    "steps": 36,
+    "explore": {
+     "goals_sent": 36,
+     "sent": [
+      [
+       1,
+       "a26ab09f2ebe40398eeced200f7bfb54",
+       "frontier"
+      ],
+      [
+       2,
+       "11d77f50f3a940c79e8b4020687e9901",
+       "frontier"
+      ],
+      [
+       3,
+       "a3260f82020b42f7b6a1a9bc823f6b46",
+       "frontier"
+      ],
+      [
+       4,
+       "25fba4002cbf48ae81de5dec18b99b17",
+       "frontier"
+      ],
+      [
+       5,
+       "ff9815c422514b88bb42d8c0b2c40b7b",
+       "frontier"
+      ],
+      [
+       6,
+       "88edf3a2bd7a43a2b72a9279b9d4f595",
+       "frontier"
+      ],
+      [
+       7,
+       "f4602fea4a6f442198490311a23c8251",
+       "frontier"
+      ],
+      [
+       8,
+       "2f2f02ae66c14b66a1c6ce8c16b2932e",
+       "frontier"
+      ],
+      [
+       9,
+       "1c9b36fef3c84f54b17bbb80a2077bf2",
+       "frontier"
+      ],
+      [
+       10,
+       "642704d86e3a47aeb727c5dafaba6f9d",
+       "frontier"
+      ],
+      [
+       11,
+       "074721f24c7e4ea98600283605c0a68a",
+       "frontier"
+      ],
+      [
+       12,
+       "7e3f89ea0a41449c9d151c7decc66166",
+       "frontier"
+      ],
+      [
+       13,
+       "bd508023fce64640831cb51c26b33681",
+       "frontier"
+      ],
+      [
+       14,
+       "66b68ec34a5c47aa82103e8c8e20045c",
+       "frontier"
+      ],
+      [
+       15,
+       "2038d2a819c1411ea058e9dceef6bf3f",
+       "frontier"
+      ],
+      [
+       16,
+       "7d5d0a9efa8947f2be97533f924344d3",
+       "frontier"
+      ],
+      [
+       17,
+       "6852f4ad737b401fa6e69dd7fddf444b",
+       "frontier"
+      ],
+      [
+       18,
+       "2a83041d850f40cfaf13cf5e5e24063e",
+       "frontier"
+      ],
+      [
+       19,
+       "777581618b644bf2b510722ee337b368",
+       "frontier"
+      ],
+      [
+       20,
+       "9b28eff9b4ec4886b92184f884186917",
+       "frontier"
+      ],
+      [
+       21,
+       "f0c62d6bdc8c4090bbee9aa859adf1c4",
+       "frontier"
+      ],
+      [
+       22,
+       "e9038128cef6451fa424180ec65fc2eb",
+       "frontier"
+      ],
+      [
+       23,
+       "017031f822644aeab9fdfc43987591d7",
+       "frontier"
+      ],
+      [
+       24,
+       "b793fe4d5d6048149125380935ea15f9",
+       "frontier"
+      ],
+      [
+       25,
+       "6defa214a1754ac8a13b43154bcd1afc",
+       "frontier"
+      ],
+      [
+       26,
+       "b9c32ec7fc5243feb8e12a70a1d58317",
+       "frontier"
+      ],
+      [
+       27,
+       "d3231b67e1e04581b7b4480cc14fd1e7",
+       "frontier"
+      ],
+      [
+       28,
+       "4bbc16a48099419bb0e41e3c2ae92d00",
+       "frontier"
+      ],
+      [
+       29,
+       "9d54573d5b1145ce8c5f1b91c1e2387d",
+       "frontier"
+      ],
+      [
+       30,
+       "d439545c83b04c3598e7a119b892332b",
+       "frontier"
+      ],
+      [
+       31,
+       "20f4d9b3721c414ebf491cb53796c037",
+       "frontier"
+      ],
+      [
+       32,
+       "aee1735d50e7457d8699f8b200541fb8",
+       "frontier"
+      ],
+      [
+       33,
+       "662a9030c9d24a368b3c582212748372",
+       "frontier"
+      ],
+      [
+       34,
+       "8b2410e787c34958828d9a076e3577c8",
+       "frontier"
+      ],
+      [
+       35,
+       "e1373278b3de4108814e68a5146e1df3",
+       "frontier"
+      ],
+      [
+       36,
+       "fb8946e3a39b49fb8139cd7202c4667b",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "66b68ec34a5c47aa82103e8c8e20045c",
+       1794026995.940828,
+       true
+      ],
+      [
+       2,
+       "66b68ec34a5c47aa82103e8c8e20045c",
+       1794026995.945817,
+       true
+      ],
+      [
+       3,
+       "2038d2a819c1411ea058e9dceef6bf3f",
+       1794027041.942101,
+       true
+      ],
+      [
+       4,
+       "2038d2a819c1411ea058e9dceef6bf3f",
+       1794027041.946919,
+       true
+      ],
+      [
+       5,
+       "7d5d0a9efa8947f2be97533f924344d3",
+       1794027081.364491,
+       true
+      ],
+      [
+       6,
+       "7d5d0a9efa8947f2be97533f924344d3",
+       1794027081.369723,
+       true
+      ],
+      [
+       7,
+       "4bbc16a48099419bb0e41e3c2ae92d00",
+       1794027405.364698,
+       true
+      ],
+      [
+       8,
+       "4bbc16a48099419bb0e41e3c2ae92d00",
+       1794027405.370057,
+       true
+      ],
+      [
+       9,
+       "d439545c83b04c3598e7a119b892332b",
+       1794027479.930989,
+       true
+      ],
+      [
+       10,
+       "d439545c83b04c3598e7a119b892332b",
+       1794027479.936047,
+       true
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 5,
+     "last_event": "goal sent (frontier) to (12.86, 6.76)",
+     "camera_seen_m2": 88.69,
+     "choice_ms": {
+      "n": 76,
+      "p50_ms": 78.1,
+      "p90_ms": 103.9,
+      "max_ms": 166.8
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 100.5,
+    "min_gap_cm": 8.6,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 1740,
+    "room_labels": null,
+    "last_log": [
+     "waiting -- nav2 active: frontier -- foyer, facing ?, free space clear, sees nothing of note",
+     "waiting -- nav2 active: frontier -- family room, facing ?, free space clear, sees nothing of note",
+     "waiting -- nav2 active: frontier -- hall, facing ?, free space clear, sees nothing of note"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 248.7,
+    "mem_mb_p50": 215.3,
+    "slam_cpu_p90": 0.308,
+    "slam_cpu_p50": 0.1252,
+    "windows": 148,
+    "nodes": [
+     "async_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.5,
+   "map_health": {
+    "map_id": "map-4389b7ce",
+    "saving": false,
+    "store": true,
+    "saved": 1,
+    "failed": 0,
+    "skipped": 0,
+    "last_version": 1,
+    "last_at": 1794027636.5555801,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "mapping",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-4389b7ce",
+    "version": 1
+   },
+   "graph_mb": 54.63,
+   "store_mb": 54.63,
+   "inventory": {
+    "map_id": "slam-c4316870",
+    "frame_id": "map-4389b7ce",
+    "carried_from": null,
+    "carry_seq": 0,
+    "counts": {
+     "frames": 1459,
+     "observations": 3089,
+     "unplaced": 7,
+     "no_pose": 0,
+     "landmarks": 37,
+     "reported": 30,
+     "carried": 0
+    }
+   },
+   "seeded": {
+    "frame_id": "map-4389b7ce",
+    "carried_from": null,
+    "carry_seq": 0,
+    "counts": {
+     "frames": 206,
+     "observations": 572,
+     "unplaced": 1,
+     "no_pose": 0,
+     "landmarks": 8,
+     "reported": 3,
+     "carried": 0
+    },
+    "at_s": 120.0
+   },
+   "carried_at_seed": [],
+   "carried_at_end": [],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0115,
+    "heading_error_deg": -0.2
+   }
+  },
+  {
+   "i": 2,
+   "reload": {
+    "map_id": "map-4389b7ce",
+    "version": 1,
+    "took_s": 1.83,
+    "agreement": 1.0,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-4389b7ce",
+   "states": [
+    [
+     "checking",
+     1.61
+    ],
+    [
+     "ready",
+     3.38
+    ]
+   ],
+   "reload_s": 1.77,
+   "mission": {
+    "outcome": "running",
+    "seconds": 300,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794027649.json",
+    "steps": 15,
+    "explore": {
+     "goals_sent": 15,
+     "sent": [
+      [
+       1,
+       "216932b5583745e2aad0c53164785a52",
+       "frontier"
+      ],
+      [
+       2,
+       "f9e4f973d69144dfb5872f67a12a79b6",
+       "frontier"
+      ],
+      [
+       3,
+       "0d19f066c88e4e299c69bead153beb90",
+       "frontier"
+      ],
+      [
+       4,
+       "46fdeab2cb154a438c4c2dc32148cc5d",
+       "frontier"
+      ],
+      [
+       5,
+       "744f30e2dde94f2c958ef942b841a41d",
+       "frontier"
+      ],
+      [
+       6,
+       "508936c904f241efbdb2e774eeeb3884",
+       "frontier"
+      ],
+      [
+       7,
+       "371833a235574027932a97cb42d21774",
+       "frontier"
+      ],
+      [
+       8,
+       "cd1acc95ac4c4d84b2f0cd7e79711ac6",
+       "frontier"
+      ],
+      [
+       9,
+       "82d8902bbde4421080ff5f0916f5ec18",
+       "frontier"
+      ],
+      [
+       10,
+       "a44a7893b8434b74a9c498804ab1ef99",
+       "frontier"
+      ],
+      [
+       11,
+       "cfa0b6449edd472faf566c2ed628b059",
+       "frontier"
+      ],
+      [
+       12,
+       "3144012482c944c68a36aa5af4392c6c",
+       "frontier"
+      ],
+      [
+       13,
+       "5ecc3ebefb944b21b744a04d1efe329c",
+       "frontier"
+      ],
+      [
+       14,
+       "0ed2c457125441bd81c63c33b0ddd568",
+       "frontier"
+      ],
+      [
+       15,
+       "e525cb1dd0e04b0fb594613f9dcc9597",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "46fdeab2cb154a438c4c2dc32148cc5d",
+       1794027759.521787,
+       true
+      ],
+      [
+       2,
+       "46fdeab2cb154a438c4c2dc32148cc5d",
+       1794027759.527345,
+       true
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 1,
+     "last_event": "goal sent (frontier) to (0.82, 3.63)",
+     "camera_seen_m2": 47.83,
+     "choice_ms": {
+      "n": 33,
+      "p50_ms": 61.3,
+      "p90_ms": 71.5,
+      "max_ms": 143.6
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 32.9,
+    "min_gap_cm": 3.6,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 582,
+    "room_labels": null,
+    "last_log": [
+     "waiting -- nav2 active: frontier -- living room, facing ?, free space some, sees nothing of note",
+     "waiting -- nav2 active: frontier -- living room, facing ?, free space clear, sees armchair",
+     "waiting -- nav2 active: frontier -- living room, facing ?, free space clear, sees nothing of note"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 260.3,
+    "mem_mb_p50": 256.7,
+    "slam_cpu_p90": 0.538,
+    "slam_cpu_p50": 0.2983,
+    "windows": 48,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.5,
+   "map_health": {
+    "map_id": "map-4389b7ce",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-4389b7ce",
+    "version": 1
+   },
+   "graph_mb": 54.63,
+   "store_mb": 54.63,
+   "inventory": {
+    "map_id": "slam-39a1d4d2",
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T044535.898217Z-purple unicorn",
+    "carry_seq": 1,
+    "counts": {
+     "frames": 498,
+     "observations": 1166,
+     "unplaced": 4,
+     "no_pose": 0,
+     "landmarks": 44,
+     "reported": 36,
+     "carried": 32
+    }
+   },
+   "seeded": {
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T044535.898217Z-purple unicorn",
+    "carry_seq": 1,
+    "counts": {
+     "frames": 1,
+     "observations": 2,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 33,
+     "reported": 30,
+     "carried": 32
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "armchair",
+     "x_m": 3.463,
+     "y_m": 8.31,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.061,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.22,
+     "y_m": 11.495,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.089,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.459,
+     "y_m": 4.228,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.618,
+     "y_m": 3.548,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.545,
+     "y_m": 4.831,
+     "belief": 0.982,
+     "footprint_m": 0.257,
+     "centre_m": 0.444,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 8.421,
+     "y_m": 10.611,
+     "belief": 0.982,
+     "footprint_m": 0.609,
+     "centre_m": 0.804,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.321,
+     "y_m": 5.086,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.139,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.026,
+     "y_m": 9.998,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.092,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.168,
+     "y_m": 2.865,
+     "belief": 0.982,
+     "footprint_m": 0.068,
+     "centre_m": 0.219,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.587,
+     "y_m": 3.656,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.113,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.016,
+     "y_m": 9.752,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.066,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.893,
+     "y_m": 11.383,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.195,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.159,
+     "y_m": 9.798,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.119,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.269,
+     "y_m": 8.715,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.18,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 6.981,
+     "y_m": 11.375,
+     "belief": 0.931,
+     "footprint_m": 0.819,
+     "centre_m": 0.985,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.209,
+     "y_m": 5.853,
+     "belief": 0.928,
+     "footprint_m": 0.009,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.795,
+     "y_m": 3.183,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.056,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    },
+    {
+     "label": "toilet",
+     "x_m": 3.023,
+     "y_m": 6.203,
+     "belief": 0.512,
+     "footprint_m": 1.823,
+     "centre_m": 1.974,
+     "true_instance": false
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "armchair",
+     "x_m": 3.071,
+     "y_m": 8.554,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.079,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.103,
+     "y_m": 11.119,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.139,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.329,
+     "y_m": 4.672,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.03,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.618,
+     "y_m": 3.548,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.58,
+     "y_m": 4.975,
+     "belief": 0.982,
+     "footprint_m": 0.281,
+     "centre_m": 0.492,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.238,
+     "y_m": 5.068,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.163,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.227,
+     "y_m": 9.596,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.148,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.168,
+     "y_m": 2.865,
+     "belief": 0.982,
+     "footprint_m": 0.068,
+     "centre_m": 0.219,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.587,
+     "y_m": 3.656,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.113,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.175,
+     "y_m": 9.7,
+     "belief": 0.982,
+     "footprint_m": 0.075,
+     "centre_m": 0.23,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.907,
+     "y_m": 11.399,
+     "belief": 0.982,
+     "footprint_m": 0.007,
+     "centre_m": 0.216,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.145,
+     "y_m": 10.342,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.095,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.551,
+     "y_m": 9.458,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.101,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.209,
+     "y_m": 5.853,
+     "belief": 0.928,
+     "footprint_m": 0.009,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 6.981,
+     "y_m": 11.375,
+     "belief": 0.858,
+     "footprint_m": 0.819,
+     "centre_m": 0.985,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.795,
+     "y_m": 3.183,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.056,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    },
+    {
+     "label": "chair",
+     "x_m": 8.421,
+     "y_m": 10.611,
+     "belief": 0.69,
+     "footprint_m": 0.609,
+     "centre_m": 0.804,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 3.023,
+     "y_m": 6.203,
+     "belief": 0.512,
+     "footprint_m": 1.823,
+     "centre_m": 1.974,
+     "true_instance": false
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0037,
+    "heading_error_deg": 0.03
+   }
+  },
+  {
+   "i": 3,
+   "reload": {
+    "map_id": "map-4389b7ce",
+    "version": 1,
+    "took_s": 1.92,
+    "agreement": 1.0,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-4389b7ce",
+   "states": [
+    [
+     "checking",
+     1.51
+    ],
+    [
+     "ready",
+     3.43
+    ]
+   ],
+   "reload_s": 1.92,
+   "mission": {
+    "outcome": "running",
+    "seconds": 300,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794027963.json",
+    "steps": 15,
+    "explore": {
+     "goals_sent": 15,
+     "sent": [
+      [
+       1,
+       "bd2b8bc694b64e8699bbe5470afb067b",
+       "frontier"
+      ],
+      [
+       2,
+       "06da8a1d937a4182b8ade81ab3396827",
+       "frontier"
+      ],
+      [
+       3,
+       "b2361dd5f0af4d24be6ec2d3d974686c",
+       "frontier"
+      ],
+      [
+       4,
+       "d8d10541917f465d8ac53568ea388f7a",
+       "frontier"
+      ],
+      [
+       5,
+       "5f99746b24654cb9a86617e24669e729",
+       "frontier"
+      ],
+      [
+       6,
+       "3010a4e5c9ac474da75421d8991f9e4a",
+       "frontier"
+      ],
+      [
+       7,
+       "d4c22aba1e334a639545b96137331ad4",
+       "frontier"
+      ],
+      [
+       8,
+       "ab13495c39e541898bd5c4ec851cd3fa",
+       "frontier"
+      ],
+      [
+       9,
+       "3d8df255b55a49b0bd66194596d792ec",
+       "frontier"
+      ],
+      [
+       10,
+       "08b0cd2ee7074de8b5956e7d41a89fd2",
+       "frontier"
+      ],
+      [
+       11,
+       "a47100aa981141fcba9517eeec572d57",
+       "frontier"
+      ],
+      [
+       12,
+       "b923e1a094f04f6187b36c43fa58adba",
+       "frontier"
+      ],
+      [
+       13,
+       "4b342762b98c4e8d9564e86aa7111f47",
+       "frontier"
+      ],
+      [
+       14,
+       "955516da9a17464c922a925e8c707aab",
+       "frontier"
+      ],
+      [
+       15,
+       "b2449bc01ce74706aecd79f3026c8acc",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "ab13495c39e541898bd5c4ec851cd3fa",
+       1794028128.879924,
+       true
+      ],
+      [
+       2,
+       "ab13495c39e541898bd5c4ec851cd3fa",
+       1794028128.885808,
+       true
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 1,
+     "last_event": "goal sent (frontier) to (0.82, 3.63)",
+     "camera_seen_m2": 47.19,
+     "choice_ms": {
+      "n": 34,
+      "p50_ms": 61.3,
+      "p90_ms": 77.5,
+      "max_ms": 102.6
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 36.2,
+    "min_gap_cm": 7.0,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 582,
+    "room_labels": null,
+    "last_log": [
+     "waiting -- nav2 active: frontier -- living room, facing ?, free space clear, sees armchair",
+     "waiting -- nav2 active: frontier -- living room, facing ?, free space clear, sees nothing of note",
+     "waiting -- nav2 active: frontier -- foyer, facing ?, free space clear, sees nothing of note"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 257.6,
+    "mem_mb_p50": 252.2,
+    "slam_cpu_p90": 0.5186,
+    "slam_cpu_p50": 0.2864,
+    "windows": 48,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.0,
+   "map_health": {
+    "map_id": "map-4389b7ce",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-4389b7ce",
+    "version": 1
+   },
+   "graph_mb": 54.63,
+   "store_mb": 54.63,
+   "inventory": {
+    "map_id": "slam-1e79eef4",
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T050049.702441Z-purple unicorn",
+    "carry_seq": 2,
+    "counts": {
+     "frames": 502,
+     "observations": 1206,
+     "unplaced": 8,
+     "no_pose": 0,
+     "landmarks": 47,
+     "reported": 39,
+     "carried": 40
+    }
+   },
+   "seeded": {
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T050049.702441Z-purple unicorn",
+    "carry_seq": 2,
+    "counts": {
+     "frames": 1,
+     "observations": 2,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 42,
+     "reported": 36,
+     "carried": 40
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "armchair",
+     "x_m": 3.071,
+     "y_m": 8.554,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.079,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.103,
+     "y_m": 11.119,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.139,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.329,
+     "y_m": 4.672,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.03,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.618,
+     "y_m": 3.548,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.58,
+     "y_m": 4.975,
+     "belief": 0.982,
+     "footprint_m": 0.281,
+     "centre_m": 0.492,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.238,
+     "y_m": 5.068,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.163,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 8.797,
+     "y_m": 10.668,
+     "belief": 0.982,
+     "footprint_m": 0.242,
+     "centre_m": 0.452,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.671,
+     "y_m": 9.963,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.089,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.725,
+     "y_m": 11.003,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.092,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.227,
+     "y_m": 9.596,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.148,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.168,
+     "y_m": 2.865,
+     "belief": 0.982,
+     "footprint_m": 0.068,
+     "centre_m": 0.219,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.587,
+     "y_m": 3.656,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.113,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.175,
+     "y_m": 9.7,
+     "belief": 0.982,
+     "footprint_m": 0.075,
+     "centre_m": 0.23,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 7.984,
+     "y_m": 11.413,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.141,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.502,
+     "y_m": 5.111,
+     "belief": 0.982,
+     "footprint_m": 0.011,
+     "centre_m": 0.168,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.907,
+     "y_m": 11.399,
+     "belief": 0.982,
+     "footprint_m": 0.007,
+     "centre_m": 0.216,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.145,
+     "y_m": 10.342,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.095,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.551,
+     "y_m": 9.458,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.101,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.872,
+     "y_m": 4.752,
+     "belief": 0.968,
+     "footprint_m": 0.028,
+     "centre_m": 0.205,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.938,
+     "y_m": 8.085,
+     "belief": 0.928,
+     "footprint_m": 0.038,
+     "centre_m": 0.231,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.209,
+     "y_m": 5.853,
+     "belief": 0.928,
+     "footprint_m": 0.009,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 6.981,
+     "y_m": 11.375,
+     "belief": 0.858,
+     "footprint_m": 0.819,
+     "centre_m": 0.985,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.795,
+     "y_m": 3.183,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.056,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.355,
+     "y_m": 4.256,
+     "belief": 0.701,
+     "footprint_m": 0.056,
+     "centre_m": 0.227,
+     "true_instance": true
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    },
+    {
+     "label": "chair",
+     "x_m": 8.421,
+     "y_m": 10.611,
+     "belief": 0.69,
+     "footprint_m": 0.609,
+     "centre_m": 0.804,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 3.023,
+     "y_m": 6.203,
+     "belief": 0.512,
+     "footprint_m": 1.823,
+     "centre_m": 1.974,
+     "true_instance": false
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "armchair",
+     "x_m": 3.07,
+     "y_m": 8.56,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.081,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.118,
+     "y_m": 11.116,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.138,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.342,
+     "y_m": 4.702,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.053,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.618,
+     "y_m": 3.548,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.573,
+     "y_m": 5.117,
+     "belief": 0.982,
+     "footprint_m": 0.39,
+     "centre_m": 0.6,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.912,
+     "y_m": 4.772,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.184,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.244,
+     "y_m": 5.078,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.166,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 8.815,
+     "y_m": 10.337,
+     "belief": 0.982,
+     "footprint_m": 0.23,
+     "centre_m": 0.441,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.706,
+     "y_m": 10.057,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.056,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.705,
+     "y_m": 10.946,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.055,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.222,
+     "y_m": 9.573,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.126,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.168,
+     "y_m": 2.865,
+     "belief": 0.982,
+     "footprint_m": 0.068,
+     "centre_m": 0.219,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.587,
+     "y_m": 3.656,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.113,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.247,
+     "y_m": 9.802,
+     "belief": 0.982,
+     "footprint_m": 0.147,
+     "centre_m": 0.302,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.034,
+     "y_m": 11.423,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.152,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.386,
+     "y_m": 5.108,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.208,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.905,
+     "y_m": 11.418,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.204,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.144,
+     "y_m": 10.544,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.142,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.551,
+     "y_m": 9.458,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.101,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.926,
+     "y_m": 8.039,
+     "belief": 0.982,
+     "footprint_m": 0.026,
+     "centre_m": 0.197,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.209,
+     "y_m": 5.853,
+     "belief": 0.928,
+     "footprint_m": 0.009,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.361,
+     "y_m": 4.259,
+     "belief": 0.846,
+     "footprint_m": 0.059,
+     "centre_m": 0.227,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.795,
+     "y_m": 3.183,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.056,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 6.981,
+     "y_m": 11.375,
+     "belief": 0.731,
+     "footprint_m": 0.819,
+     "centre_m": 0.985,
+     "true_instance": true
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    },
+    {
+     "label": "toilet",
+     "x_m": 3.023,
+     "y_m": 6.203,
+     "belief": 0.512,
+     "footprint_m": 1.823,
+     "centre_m": 1.974,
+     "true_instance": false
+    },
+    {
+     "label": "chair",
+     "x_m": 8.421,
+     "y_m": 10.611,
+     "belief": 0.168,
+     "footprint_m": 0.609,
+     "centre_m": 0.804,
+     "true_instance": true
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0024,
+    "heading_error_deg": 0.2
+   }
+  },
+  {
+   "i": 4,
+   "reload": {
+    "map_id": "map-4389b7ce",
+    "version": 1,
+    "took_s": 1.83,
+    "agreement": 1.0,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-4389b7ce",
+   "states": [
+    [
+     "starting",
+     1.51
+    ],
+    [
+     "checking",
+     1.62
+    ],
+    [
+     "ready",
+     3.43
+    ]
+   ],
+   "reload_s": 1.81,
+   "mission": {
+    "outcome": "running",
+    "seconds": 300,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794028278.json",
+    "steps": 9,
+    "explore": {
+     "goals_sent": 9,
+     "sent": [
+      [
+       1,
+       "9f8911b0a36e4bb7a7950f9497060a86",
+       "frontier"
+      ],
+      [
+       2,
+       "481a65d7dc2449c3b1f8140eb17a8c88",
+       "frontier"
+      ],
+      [
+       3,
+       "cb0d2d70502b4c83bd88b3ee4517355c",
+       "frontier"
+      ],
+      [
+       4,
+       "65f88ddc16704e298c20a51e90b96e55",
+       "frontier"
+      ],
+      [
+       5,
+       "034ec46378f149e28fab3fc7cba0f8a8",
+       "frontier"
+      ],
+      [
+       6,
+       "176126f7656d4b269f01ddd57d365154",
+       "frontier"
+      ],
+      [
+       7,
+       "4f8528796c774a348b542d4189c28dc1",
+       "frontier"
+      ],
+      [
+       8,
+       "654fca1921c2474f916bf03a13000b19",
+       "frontier"
+      ],
+      [
+       9,
+       "38027222eac8439f8d12cde228d89350",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "65f88ddc16704e298c20a51e90b96e55",
+       1794028389.796374,
+       true
+      ],
+      [
+       2,
+       "65f88ddc16704e298c20a51e90b96e55",
+       1794028389.801749,
+       true
+      ],
+      [
+       3,
+       "034ec46378f149e28fab3fc7cba0f8a8",
+       1794028412.708753,
+       true
+      ],
+      [
+       4,
+       "034ec46378f149e28fab3fc7cba0f8a8",
+       1794028412.714504,
+       false
+      ],
+      [
+       5,
+       "176126f7656d4b269f01ddd57d365154",
+       1794028468.705553,
+       true
+      ],
+      [
+       6,
+       "176126f7656d4b269f01ddd57d365154",
+       1794028468.711217,
+       true
+      ],
+      [
+       7,
+       "4f8528796c774a348b542d4189c28dc1",
+       1794028519.594964,
+       true
+      ],
+      [
+       8,
+       "4f8528796c774a348b542d4189c28dc1",
+       1794028519.600624,
+       true
+      ],
+      [
+       9,
+       "654fca1921c2474f916bf03a13000b19",
+       1794028560.429337,
+       true
+      ],
+      [
+       10,
+       "654fca1921c2474f916bf03a13000b19",
+       1794028560.43534,
+       false
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 5,
+     "last_event": "goal sent (frontier) to (8.62, 11.02)",
+     "camera_seen_m2": 29.74,
+     "choice_ms": {
+      "n": 19,
+      "p50_ms": 57.3,
+      "p90_ms": 87.4,
+      "max_ms": 105.3
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 14.2,
+    "min_gap_cm": 1.3,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 584,
+    "room_labels": null,
+    "last_log": [
+     "step 8: GOAL (ok) -- goal sent (frontier) to (8.62, 11.02) -- dining room, facing ?, free space some, sees chair",
+     "waiting -- nav2 active: frontier -- dining room, facing ?, free space some, sees chair",
+     "waiting -- nav2 active: frontier -- dining room, facing ?, free space some, sees chair, chair"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 252.8,
+    "mem_mb_p50": 249.9,
+    "slam_cpu_p90": 0.4406,
+    "slam_cpu_p50": 0.1555,
+    "windows": 48,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.0,
+   "map_health": {
+    "map_id": "map-4389b7ce",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-4389b7ce",
+    "version": 1
+   },
+   "graph_mb": 54.63,
+   "store_mb": 54.63,
+   "inventory": {
+    "map_id": "slam-8f5e2c21",
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T050603.938206Z-purple unicorn",
+    "carry_seq": 3,
+    "counts": {
+     "frames": 430,
+     "observations": 1018,
+     "unplaced": 3,
+     "no_pose": 0,
+     "landmarks": 44,
+     "reported": 38,
+     "carried": 42
+    }
+   },
+   "seeded": {
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T050603.938206Z-purple unicorn",
+    "carry_seq": 3,
+    "counts": {
+     "frames": 1,
+     "observations": 2,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 43,
+     "reported": 39,
+     "carried": 42
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "armchair",
+     "x_m": 3.07,
+     "y_m": 8.56,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.081,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.118,
+     "y_m": 11.116,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.138,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.342,
+     "y_m": 4.702,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.053,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.618,
+     "y_m": 3.548,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.573,
+     "y_m": 5.117,
+     "belief": 0.982,
+     "footprint_m": 0.39,
+     "centre_m": 0.6,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.912,
+     "y_m": 4.772,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.184,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.244,
+     "y_m": 5.078,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.166,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 8.815,
+     "y_m": 10.337,
+     "belief": 0.982,
+     "footprint_m": 0.23,
+     "centre_m": 0.441,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.706,
+     "y_m": 10.057,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.056,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.705,
+     "y_m": 10.946,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.055,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.222,
+     "y_m": 9.573,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.126,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.168,
+     "y_m": 2.865,
+     "belief": 0.982,
+     "footprint_m": 0.068,
+     "centre_m": 0.219,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.587,
+     "y_m": 3.656,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.113,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.247,
+     "y_m": 9.802,
+     "belief": 0.982,
+     "footprint_m": 0.147,
+     "centre_m": 0.302,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.034,
+     "y_m": 11.423,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.152,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.797,
+     "y_m": 11.389,
+     "belief": 0.982,
+     "footprint_m": 0.011,
+     "centre_m": 0.169,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.386,
+     "y_m": 5.108,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.208,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.905,
+     "y_m": 11.418,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.204,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.144,
+     "y_m": 10.544,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.142,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.551,
+     "y_m": 9.458,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.101,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.926,
+     "y_m": 8.039,
+     "belief": 0.982,
+     "footprint_m": 0.026,
+     "centre_m": 0.197,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.145,
+     "y_m": 9.167,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.018,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.209,
+     "y_m": 5.853,
+     "belief": 0.928,
+     "footprint_m": 0.009,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.361,
+     "y_m": 4.259,
+     "belief": 0.846,
+     "footprint_m": 0.059,
+     "centre_m": 0.227,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.795,
+     "y_m": 3.183,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.056,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.158,
+     "y_m": 8.499,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.119,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 6.981,
+     "y_m": 11.375,
+     "belief": 0.731,
+     "footprint_m": 0.819,
+     "centre_m": 0.985,
+     "true_instance": true
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    },
+    {
+     "label": "toilet",
+     "x_m": 3.023,
+     "y_m": 6.203,
+     "belief": 0.512,
+     "footprint_m": 1.823,
+     "centre_m": 1.974,
+     "true_instance": false
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "armchair",
+     "x_m": 3.07,
+     "y_m": 8.56,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.081,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.118,
+     "y_m": 11.116,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.138,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.329,
+     "y_m": 4.705,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.059,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.618,
+     "y_m": 3.548,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.632,
+     "y_m": 5.068,
+     "belief": 0.982,
+     "footprint_m": 0.316,
+     "centre_m": 0.525,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.919,
+     "y_m": 4.773,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.18,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.246,
+     "y_m": 5.086,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 8.404,
+     "y_m": 9.707,
+     "belief": 0.982,
+     "footprint_m": 0.107,
+     "centre_m": 0.296,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.705,
+     "y_m": 10.946,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.055,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.222,
+     "y_m": 9.573,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.126,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.168,
+     "y_m": 2.865,
+     "belief": 0.982,
+     "footprint_m": 0.068,
+     "centre_m": 0.219,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.587,
+     "y_m": 3.656,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.113,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.119,
+     "y_m": 9.651,
+     "belief": 0.982,
+     "footprint_m": 0.019,
+     "centre_m": 0.196,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.026,
+     "y_m": 11.397,
+     "belief": 0.982,
+     "footprint_m": 0.003,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.698,
+     "y_m": 11.501,
+     "belief": 0.982,
+     "footprint_m": 0.002,
+     "centre_m": 0.16,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.467,
+     "y_m": 5.107,
+     "belief": 0.982,
+     "footprint_m": 0.007,
+     "centre_m": 0.178,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.905,
+     "y_m": 11.418,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.204,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.144,
+     "y_m": 10.544,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.142,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.918,
+     "y_m": 9.935,
+     "belief": 0.982,
+     "footprint_m": 0.018,
+     "centre_m": 0.204,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.939,
+     "y_m": 7.912,
+     "belief": 0.982,
+     "footprint_m": 0.039,
+     "centre_m": 0.193,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 5.966,
+     "y_m": 8.087,
+     "belief": 0.982,
+     "footprint_m": 0.034,
+     "centre_m": 0.229,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.406,
+     "y_m": 4.244,
+     "belief": 0.928,
+     "footprint_m": 0.044,
+     "centre_m": 0.199,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.209,
+     "y_m": 5.853,
+     "belief": 0.928,
+     "footprint_m": 0.009,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.795,
+     "y_m": 3.183,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.056,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.158,
+     "y_m": 8.499,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.119,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 6.981,
+     "y_m": 11.375,
+     "belief": 0.731,
+     "footprint_m": 0.819,
+     "centre_m": 0.985,
+     "true_instance": true
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    },
+    {
+     "label": "toilet",
+     "x_m": 3.023,
+     "y_m": 6.203,
+     "belief": 0.512,
+     "footprint_m": 1.823,
+     "centre_m": 1.974,
+     "true_instance": false
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0091,
+    "heading_error_deg": 0.681
+   }
+  },
+  {
+   "i": 5,
+   "reload": {
+    "map_id": "map-4389b7ce",
+    "version": 1,
+    "took_s": 1.78,
+    "agreement": 1.0,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-4389b7ce",
+   "states": [
+    [
+     "checking",
+     1.61
+    ],
+    [
+     "ready",
+     3.41
+    ]
+   ],
+   "reload_s": 1.8,
+   "mission": {
+    "outcome": "running",
+    "seconds": 300,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794028592.json",
+    "steps": 9,
+    "explore": {
+     "goals_sent": 9,
+     "sent": [
+      [
+       1,
+       "bf5f73445f0746bb93a5dbf1664582a6",
+       "frontier"
+      ],
+      [
+       2,
+       "85eb9a6277b84790bf8f4e60effac0bc",
+       "frontier"
+      ],
+      [
+       3,
+       "85b7844f3b0a4072b46a0d40d1038886",
+       "frontier"
+      ],
+      [
+       4,
+       "2f5a4dcd970543cbb584b83e384addfb",
+       "frontier"
+      ],
+      [
+       5,
+       "af38a40e409346858ee28d7d279e397f",
+       "frontier"
+      ],
+      [
+       6,
+       "bf4889745ce04f17853580d3ce0fbc2d",
+       "frontier"
+      ],
+      [
+       7,
+       "1f6c895ca4d84bdbb6afcb4cc27f89e9",
+       "frontier"
+      ],
+      [
+       8,
+       "bae00ea5afb74e05b9e6f79dcfd9f682",
+       "frontier"
+      ],
+      [
+       9,
+       "0ca0efa1b4d64cafb0d3fa4310d7601d",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "2f5a4dcd970543cbb584b83e384addfb",
+       1794028686.527153,
+       true
+      ],
+      [
+       2,
+       "2f5a4dcd970543cbb584b83e384addfb",
+       1794028686.533966,
+       true
+      ],
+      [
+       3,
+       "af38a40e409346858ee28d7d279e397f",
+       1794028743.229834,
+       true
+      ],
+      [
+       4,
+       "af38a40e409346858ee28d7d279e397f",
+       1794028743.234894,
+       true
+      ],
+      [
+       5,
+       "bf4889745ce04f17853580d3ce0fbc2d",
+       1794028777.182962,
+       true
+      ],
+      [
+       6,
+       "bf4889745ce04f17853580d3ce0fbc2d",
+       1794028777.188085,
+       true
+      ],
+      [
+       7,
+       "1f6c895ca4d84bdbb6afcb4cc27f89e9",
+       1794028811.956501,
+       true
+      ],
+      [
+       8,
+       "1f6c895ca4d84bdbb6afcb4cc27f89e9",
+       1794028811.961904,
+       true
+      ],
+      [
+       9,
+       "bae00ea5afb74e05b9e6f79dcfd9f682",
+       1794028872.053432,
+       true
+      ],
+      [
+       10,
+       "bae00ea5afb74e05b9e6f79dcfd9f682",
+       1794028872.066103,
+       true
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 5,
+     "last_event": "goal sent (frontier) to (8.62, 11.03)",
+     "camera_seen_m2": 31.85,
+     "choice_ms": {
+      "n": 20,
+      "p50_ms": 53.6,
+      "p90_ms": 65.9,
+      "max_ms": 66.7
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 15.5,
+    "min_gap_cm": 1.2,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 582,
+    "room_labels": null,
+    "last_log": [
+     "waiting -- nav2 active: frontier -- dining room, facing ?, free space clear, sees nothing of note",
+     "waiting -- nav2 active: frontier -- dining room, facing ?, free space clear, sees staircase",
+     "waiting -- nav2 active: frontier -- dining room, facing ?, free space clear, sees nothing of note"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 253.0,
+    "mem_mb_p50": 249.8,
+    "slam_cpu_p90": 0.4201,
+    "slam_cpu_p50": 0.1623,
+    "windows": 48,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.0,
+   "map_health": {
+    "map_id": "map-4389b7ce",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-4389b7ce",
+    "version": 1
+   },
+   "graph_mb": 54.63,
+   "store_mb": 54.63,
+   "inventory": {
+    "map_id": "slam-07c1da88",
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T051118.328948Z-purple unicorn",
+    "carry_seq": 4,
+    "counts": {
+     "frames": 403,
+     "observations": 904,
+     "unplaced": 3,
+     "no_pose": 0,
+     "landmarks": 43,
+     "reported": 39,
+     "carried": 43
+    }
+   },
+   "seeded": {
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T051118.328948Z-purple unicorn",
+    "carry_seq": 4,
+    "counts": {
+     "frames": 1,
+     "observations": 2,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 44,
+     "reported": 39,
+     "carried": 43
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "armchair",
+     "x_m": 3.07,
+     "y_m": 8.56,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.081,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.118,
+     "y_m": 11.116,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.138,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.329,
+     "y_m": 4.705,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.059,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.618,
+     "y_m": 3.548,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.632,
+     "y_m": 5.068,
+     "belief": 0.982,
+     "footprint_m": 0.316,
+     "centre_m": 0.525,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.919,
+     "y_m": 4.773,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.18,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.246,
+     "y_m": 5.086,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 8.404,
+     "y_m": 9.707,
+     "belief": 0.982,
+     "footprint_m": 0.107,
+     "centre_m": 0.296,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.705,
+     "y_m": 10.946,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.055,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.222,
+     "y_m": 9.573,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.126,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.168,
+     "y_m": 2.865,
+     "belief": 0.982,
+     "footprint_m": 0.068,
+     "centre_m": 0.219,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.587,
+     "y_m": 3.656,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.113,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.119,
+     "y_m": 9.651,
+     "belief": 0.982,
+     "footprint_m": 0.019,
+     "centre_m": 0.196,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.026,
+     "y_m": 11.397,
+     "belief": 0.982,
+     "footprint_m": 0.003,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.698,
+     "y_m": 11.501,
+     "belief": 0.982,
+     "footprint_m": 0.002,
+     "centre_m": 0.16,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.467,
+     "y_m": 5.107,
+     "belief": 0.982,
+     "footprint_m": 0.007,
+     "centre_m": 0.178,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.905,
+     "y_m": 11.418,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.204,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.144,
+     "y_m": 10.544,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.142,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.918,
+     "y_m": 9.935,
+     "belief": 0.982,
+     "footprint_m": 0.018,
+     "centre_m": 0.204,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.939,
+     "y_m": 7.912,
+     "belief": 0.982,
+     "footprint_m": 0.039,
+     "centre_m": 0.193,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 5.966,
+     "y_m": 8.087,
+     "belief": 0.982,
+     "footprint_m": 0.034,
+     "centre_m": 0.229,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.406,
+     "y_m": 4.244,
+     "belief": 0.928,
+     "footprint_m": 0.044,
+     "centre_m": 0.199,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.209,
+     "y_m": 5.853,
+     "belief": 0.928,
+     "footprint_m": 0.009,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.693,
+     "y_m": 8.283,
+     "belief": 0.846,
+     "footprint_m": 0.093,
+     "centre_m": 0.245,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.795,
+     "y_m": 3.183,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.056,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.158,
+     "y_m": 8.499,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.119,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 6.981,
+     "y_m": 11.375,
+     "belief": 0.731,
+     "footprint_m": 0.819,
+     "centre_m": 0.985,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 4.155,
+     "y_m": 9.029,
+     "belief": 0.701,
+     "footprint_m": 0.645,
+     "centre_m": 0.852,
+     "true_instance": true
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    },
+    {
+     "label": "toilet",
+     "x_m": 3.023,
+     "y_m": 6.203,
+     "belief": 0.512,
+     "footprint_m": 1.823,
+     "centre_m": 1.974,
+     "true_instance": false
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "armchair",
+     "x_m": 3.07,
+     "y_m": 8.56,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.081,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.118,
+     "y_m": 11.116,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.138,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.3,
+     "y_m": 4.701,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.071,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.618,
+     "y_m": 3.548,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.119,
+     "y_m": 4.845,
+     "belief": 0.982,
+     "footprint_m": 0.045,
+     "centre_m": 0.207,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.247,
+     "y_m": 5.064,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.154,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 8.045,
+     "y_m": 9.628,
+     "belief": 0.982,
+     "footprint_m": 0.356,
+     "centre_m": 0.535,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.557,
+     "y_m": 10.99,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.101,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.222,
+     "y_m": 9.573,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.126,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.168,
+     "y_m": 2.865,
+     "belief": 0.982,
+     "footprint_m": 0.068,
+     "centre_m": 0.219,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.587,
+     "y_m": 3.656,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.113,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.005,
+     "y_m": 9.644,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.119,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.611,
+     "y_m": 11.475,
+     "belief": 0.982,
+     "footprint_m": 0.089,
+     "centre_m": 0.25,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.447,
+     "y_m": 5.108,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.189,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.905,
+     "y_m": 11.418,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.204,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.144,
+     "y_m": 10.544,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.142,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.923,
+     "y_m": 9.899,
+     "belief": 0.982,
+     "footprint_m": 0.023,
+     "centre_m": 0.228,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.924,
+     "y_m": 8.129,
+     "belief": 0.982,
+     "footprint_m": 0.024,
+     "centre_m": 0.212,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 5.956,
+     "y_m": 8.006,
+     "belief": 0.982,
+     "footprint_m": 0.044,
+     "centre_m": 0.202,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.337,
+     "y_m": 4.208,
+     "belief": 0.968,
+     "footprint_m": 0.008,
+     "centre_m": 0.194,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.209,
+     "y_m": 5.853,
+     "belief": 0.928,
+     "footprint_m": 0.009,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.688,
+     "y_m": 8.27,
+     "belief": 0.846,
+     "footprint_m": 0.088,
+     "centre_m": 0.239,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 4.157,
+     "y_m": 9.033,
+     "belief": 0.846,
+     "footprint_m": 0.649,
+     "centre_m": 0.856,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.795,
+     "y_m": 3.183,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.056,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.158,
+     "y_m": 8.499,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.119,
+     "true_instance": true
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    },
+    {
+     "label": "toilet",
+     "x_m": 3.023,
+     "y_m": 6.203,
+     "belief": 0.512,
+     "footprint_m": 1.823,
+     "centre_m": 1.974,
+     "true_instance": false
+    },
+    {
+     "label": "dining table",
+     "x_m": 6.981,
+     "y_m": 11.375,
+     "belief": 0.354,
+     "footprint_m": 0.819,
+     "centre_m": 0.985,
+     "true_instance": true
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0055,
+    "heading_error_deg": 0.034
+   }
+  },
+  {
+   "i": 6,
+   "reload": {
+    "map_id": "map-4389b7ce",
+    "version": 1,
+    "took_s": 1.95,
+    "agreement": 1.0,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-4389b7ce",
+   "states": [
+    [
+     "checking",
+     1.51
+    ],
+    [
+     "ready",
+     3.45
+    ]
+   ],
+   "reload_s": 1.94,
+   "mission": {
+    "outcome": "running",
+    "seconds": 300,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794028906.json",
+    "steps": 15,
+    "explore": {
+     "goals_sent": 15,
+     "sent": [
+      [
+       1,
+       "3f00c02f95d04857b0833987876f0d85",
+       "frontier"
+      ],
+      [
+       2,
+       "27ab6bfafe4b4d55bd7a4578ac2720df",
+       "frontier"
+      ],
+      [
+       3,
+       "f151e5e0308b45db87bc8a348daccd87",
+       "frontier"
+      ],
+      [
+       4,
+       "c011ab0fdfa24909b22a8d9187f60286",
+       "frontier"
+      ],
+      [
+       5,
+       "bb31bb63ef194da3962df855d950ba5e",
+       "frontier"
+      ],
+      [
+       6,
+       "2b46f128629f4bc6987c484820c2cb03",
+       "frontier"
+      ],
+      [
+       7,
+       "1fd1b61b253a4c52b6ba91369272c1af",
+       "frontier"
+      ],
+      [
+       8,
+       "b9f75ea372c74ff6997c1b2d9e3c2004",
+       "frontier"
+      ],
+      [
+       9,
+       "750162e0e84743d38e51c279a138d998",
+       "frontier"
+      ],
+      [
+       10,
+       "eef8a35d1e8849f9b04456ffdeddb00f",
+       "frontier"
+      ],
+      [
+       11,
+       "d677a6388ce946179f470e21af5a582c",
+       "frontier"
+      ],
+      [
+       12,
+       "89ffe70bce52470990ad224145bdb1f6",
+       "frontier"
+      ],
+      [
+       13,
+       "18261efd04524fa9aa6abe7b2bbbb9c0",
+       "frontier"
+      ],
+      [
+       14,
+       "efa9073937844cc8917d6db45d0a914c",
+       "frontier"
+      ],
+      [
+       15,
+       "abc7d4bb4744431d98feb0a449275b71",
+       "frontier"
+      ]
+     ],
+     "cancels": [],
+     "goal_end_done": false,
+     "goals_failed": 0,
+     "last_event": "goal sent (frontier) to (2.42, 2.52)",
+     "camera_seen_m2": 56.62,
+     "choice_ms": {
+      "n": 32,
+      "p50_ms": 67.8,
+      "p90_ms": 79.5,
+      "max_ms": 113.0
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 41.6,
+    "min_gap_cm": 6.8,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 582,
+    "room_labels": null,
+    "last_log": [
+     "waiting -- nav2 active: frontier -- den, facing ?, free space clear, sees nothing of note",
+     "waiting -- nav2 active: frontier -- den, facing ?, free space some, sees nothing of note",
+     "waiting -- nav2 active: frontier -- den, facing ?, free space clear, sees nothing of note"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 258.2,
+    "mem_mb_p50": 251.9,
+    "slam_cpu_p90": 0.5207,
+    "slam_cpu_p50": 0.3479,
+    "windows": 48,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.0,
+   "map_health": {
+    "map_id": "map-4389b7ce",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-4389b7ce",
+    "version": 1
+   },
+   "graph_mb": 54.63,
+   "store_mb": 54.63,
+   "inventory": {
+    "map_id": "slam-287d4039",
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T051632.032214Z-purple unicorn",
+    "carry_seq": 5,
+    "counts": {
+     "frames": 509,
+     "observations": 1142,
+     "unplaced": 3,
+     "no_pose": 0,
+     "landmarks": 42,
+     "reported": 34,
+     "carried": 42
+    }
+   },
+   "seeded": {
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T051632.032214Z-purple unicorn",
+    "carry_seq": 5,
+    "counts": {
+     "frames": 1,
+     "observations": 2,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 43,
+     "reported": 39,
+     "carried": 42
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "armchair",
+     "x_m": 3.07,
+     "y_m": 8.56,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.081,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.118,
+     "y_m": 11.116,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.138,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.3,
+     "y_m": 4.701,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.071,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.618,
+     "y_m": 3.548,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.119,
+     "y_m": 4.845,
+     "belief": 0.982,
+     "footprint_m": 0.045,
+     "centre_m": 0.207,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.247,
+     "y_m": 5.064,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.154,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 8.045,
+     "y_m": 9.628,
+     "belief": 0.982,
+     "footprint_m": 0.356,
+     "centre_m": 0.535,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.557,
+     "y_m": 10.99,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.101,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.283,
+     "y_m": 10.79,
+     "belief": 0.982,
+     "footprint_m": 0.01,
+     "centre_m": 0.208,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.222,
+     "y_m": 9.573,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.126,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.168,
+     "y_m": 2.865,
+     "belief": 0.982,
+     "footprint_m": 0.068,
+     "centre_m": 0.219,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.587,
+     "y_m": 3.656,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.113,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.005,
+     "y_m": 9.644,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.119,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.611,
+     "y_m": 11.475,
+     "belief": 0.982,
+     "footprint_m": 0.089,
+     "centre_m": 0.25,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.447,
+     "y_m": 5.108,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.189,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.905,
+     "y_m": 11.418,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.204,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.144,
+     "y_m": 10.544,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.142,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.923,
+     "y_m": 9.899,
+     "belief": 0.982,
+     "footprint_m": 0.023,
+     "centre_m": 0.228,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.924,
+     "y_m": 8.129,
+     "belief": 0.982,
+     "footprint_m": 0.024,
+     "centre_m": 0.212,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 5.956,
+     "y_m": 8.006,
+     "belief": 0.982,
+     "footprint_m": 0.044,
+     "centre_m": 0.202,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.337,
+     "y_m": 4.208,
+     "belief": 0.968,
+     "footprint_m": 0.008,
+     "centre_m": 0.194,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.694,
+     "y_m": 8.284,
+     "belief": 0.928,
+     "footprint_m": 0.094,
+     "centre_m": 0.246,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.209,
+     "y_m": 5.853,
+     "belief": 0.928,
+     "footprint_m": 0.009,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 4.157,
+     "y_m": 9.033,
+     "belief": 0.846,
+     "footprint_m": 0.649,
+     "centre_m": 0.856,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.795,
+     "y_m": 3.183,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.056,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.158,
+     "y_m": 8.499,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.119,
+     "true_instance": true
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    },
+    {
+     "label": "dining table",
+     "x_m": 7.812,
+     "y_m": 8.669,
+     "belief": 0.525,
+     "footprint_m": 0.931,
+     "centre_m": 1.09,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 3.023,
+     "y_m": 6.203,
+     "belief": 0.512,
+     "footprint_m": 1.823,
+     "centre_m": 1.974,
+     "true_instance": false
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "armchair",
+     "x_m": 3.083,
+     "y_m": 8.554,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.067,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.098,
+     "y_m": 11.118,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.142,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.296,
+     "y_m": 4.732,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.098,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.568,
+     "y_m": 3.917,
+     "belief": 0.982,
+     "footprint_m": 0.032,
+     "centre_m": 0.225,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.131,
+     "y_m": 4.866,
+     "belief": 0.982,
+     "footprint_m": 0.066,
+     "centre_m": 0.231,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.217,
+     "y_m": 5.048,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.165,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 8.583,
+     "y_m": 10.161,
+     "belief": 0.982,
+     "footprint_m": 0.417,
+     "centre_m": 0.578,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.741,
+     "y_m": 11.006,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.107,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.363,
+     "y_m": 4.205,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.178,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.238,
+     "y_m": 9.608,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.143,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.14,
+     "y_m": 3.123,
+     "belief": 0.982,
+     "footprint_m": 0.04,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.886,
+     "y_m": 3.32,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.218,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.545,
+     "y_m": 3.725,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.108,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.064,
+     "y_m": 9.697,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.126,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.542,
+     "y_m": 11.493,
+     "belief": 0.982,
+     "footprint_m": 0.158,
+     "centre_m": 0.313,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.267,
+     "y_m": 5.112,
+     "belief": 0.982,
+     "footprint_m": 0.012,
+     "centre_m": 0.163,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.905,
+     "y_m": 11.386,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.206,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.145,
+     "y_m": 10.281,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.117,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.324,
+     "y_m": 9.129,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.128,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.939,
+     "y_m": 8.045,
+     "belief": 0.982,
+     "footprint_m": 0.039,
+     "centre_m": 0.212,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.208,
+     "y_m": 5.967,
+     "belief": 0.968,
+     "footprint_m": 0.008,
+     "centre_m": 0.197,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 7.823,
+     "y_m": 8.671,
+     "belief": 0.741,
+     "footprint_m": 0.929,
+     "centre_m": 1.086,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 4.16,
+     "y_m": 9.041,
+     "belief": 0.722,
+     "footprint_m": 0.656,
+     "centre_m": 0.863,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 2.901,
+     "y_m": 6.297,
+     "belief": 0.711,
+     "footprint_m": 1.701,
+     "centre_m": 1.857,
+     "true_instance": false
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0198,
+    "heading_error_deg": -0.229
+   }
+  },
+  {
+   "i": 7,
+   "reload": {
+    "map_id": "map-4389b7ce",
+    "version": 1,
+    "took_s": 1.84,
+    "agreement": 1.0,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-4389b7ce",
+   "states": [
+    [
+     "checking",
+     1.51
+    ],
+    [
+     "ready",
+     3.45
+    ]
+   ],
+   "reload_s": 1.94,
+   "mission": {
+    "outcome": "running",
+    "seconds": 301,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794029220.json",
+    "steps": 8,
+    "explore": {
+     "goals_sent": 8,
+     "sent": [
+      [
+       1,
+       "e9b9e2a1a789464d92ef0a8bf57822e1",
+       "frontier"
+      ],
+      [
+       2,
+       "f55675e0e51e426584bb9abf79ef5af9",
+       "frontier"
+      ],
+      [
+       3,
+       "31a8a08c1a7d4f3da03b3ac8e11ffdca",
+       "frontier"
+      ],
+      [
+       4,
+       "248f2a7766744bb983a48884a3dc8a4c",
+       "frontier"
+      ],
+      [
+       5,
+       "8fce64d989584b38bc4a2987c37f9e6a",
+       "frontier"
+      ],
+      [
+       6,
+       "bb6e2e9a5fe64d41890796fed403245e",
+       "frontier"
+      ],
+      [
+       7,
+       "68fcbb0b312f4ed39ab962f571076a74",
+       "frontier"
+      ],
+      [
+       8,
+       "167f6ee6bdf048cc99ddc5effc5bdddb",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "248f2a7766744bb983a48884a3dc8a4c",
+       1794029356.075022,
+       true
+      ],
+      [
+       2,
+       "248f2a7766744bb983a48884a3dc8a4c",
+       1794029356.080464,
+       true
+      ],
+      [
+       3,
+       "8fce64d989584b38bc4a2987c37f9e6a",
+       1794029387.69108,
+       true
+      ],
+      [
+       4,
+       "8fce64d989584b38bc4a2987c37f9e6a",
+       1794029387.698563,
+       true
+      ],
+      [
+       5,
+       "bb6e2e9a5fe64d41890796fed403245e",
+       1794029427.892026,
+       true
+      ],
+      [
+       6,
+       "bb6e2e9a5fe64d41890796fed403245e",
+       1794029427.899549,
+       true
+      ],
+      [
+       7,
+       "68fcbb0b312f4ed39ab962f571076a74",
+       1794029467.598412,
+       true
+      ],
+      [
+       8,
+       "68fcbb0b312f4ed39ab962f571076a74",
+       1794029467.603711,
+       true
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 4,
+     "last_event": "goal sent (frontier) to (8.62, 10.22)",
+     "camera_seen_m2": 30.06,
+     "choice_ms": {
+      "n": 17,
+      "p50_ms": 54.6,
+      "p90_ms": 70.6,
+      "max_ms": 113.5
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 15.0,
+    "min_gap_cm": 1.3,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 583,
+    "room_labels": null,
+    "last_log": [
+     "waiting -- nav2 active: frontier -- dining room, facing ?, free space none, sees chair",
+     "waiting -- nav2 active: frontier -- dining room, facing ?, free space none, sees nothing of note",
+     "waiting -- nav2 active: frontier -- dining room, facing ?, free space none, sees dining table"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 253.8,
+    "mem_mb_p50": 251.1,
+    "slam_cpu_p90": 0.4268,
+    "slam_cpu_p50": 0.1656,
+    "windows": 48,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.0,
+   "map_health": {
+    "map_id": "map-4389b7ce",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-4389b7ce",
+    "version": 1
+   },
+   "graph_mb": 54.63,
+   "store_mb": 54.63,
+   "inventory": {
+    "map_id": "slam-6c0a1dd7",
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T052146.336732Z-purple unicorn",
+    "carry_seq": 6,
+    "counts": {
+     "frames": 430,
+     "observations": 1149,
+     "unplaced": 6,
+     "no_pose": 0,
+     "landmarks": 44,
+     "reported": 37,
+     "carried": 41
+    }
+   },
+   "seeded": {
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T052146.336732Z-purple unicorn",
+    "carry_seq": 6,
+    "counts": {
+     "frames": 1,
+     "observations": 2,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 42,
+     "reported": 34,
+     "carried": 41
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "armchair",
+     "x_m": 3.083,
+     "y_m": 8.554,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.067,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.098,
+     "y_m": 11.118,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.142,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.296,
+     "y_m": 4.732,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.098,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.568,
+     "y_m": 3.917,
+     "belief": 0.982,
+     "footprint_m": 0.032,
+     "centre_m": 0.225,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.131,
+     "y_m": 4.866,
+     "belief": 0.982,
+     "footprint_m": 0.066,
+     "centre_m": 0.231,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.217,
+     "y_m": 5.048,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.165,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 8.583,
+     "y_m": 10.161,
+     "belief": 0.982,
+     "footprint_m": 0.417,
+     "centre_m": 0.578,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.741,
+     "y_m": 11.006,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.107,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.363,
+     "y_m": 4.205,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.178,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.238,
+     "y_m": 9.608,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.143,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.14,
+     "y_m": 3.123,
+     "belief": 0.982,
+     "footprint_m": 0.04,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.886,
+     "y_m": 3.32,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.218,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.545,
+     "y_m": 3.725,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.108,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.064,
+     "y_m": 9.697,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.126,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.542,
+     "y_m": 11.493,
+     "belief": 0.982,
+     "footprint_m": 0.158,
+     "centre_m": 0.313,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.267,
+     "y_m": 5.112,
+     "belief": 0.982,
+     "footprint_m": 0.012,
+     "centre_m": 0.163,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.905,
+     "y_m": 11.386,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.206,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.145,
+     "y_m": 10.281,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.117,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.133,
+     "y_m": 9.129,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.027,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.939,
+     "y_m": 8.045,
+     "belief": 0.982,
+     "footprint_m": 0.039,
+     "centre_m": 0.212,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.208,
+     "y_m": 5.967,
+     "belief": 0.968,
+     "footprint_m": 0.008,
+     "centre_m": 0.197,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 7.823,
+     "y_m": 8.671,
+     "belief": 0.741,
+     "footprint_m": 0.929,
+     "centre_m": 1.086,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 4.16,
+     "y_m": 9.041,
+     "belief": 0.722,
+     "footprint_m": 0.656,
+     "centre_m": 0.863,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 2.901,
+     "y_m": 6.297,
+     "belief": 0.711,
+     "footprint_m": 1.701,
+     "centre_m": 1.857,
+     "true_instance": false
+    },
+    {
+     "label": "chair",
+     "x_m": 8.481,
+     "y_m": 12.286,
+     "belief": 0.701,
+     "footprint_m": 0.286,
+     "centre_m": 0.441,
+     "true_instance": true
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    },
+    {
+     "label": "desk chair",
+     "x_m": 3.019,
+     "y_m": 5.102,
+     "belief": 0.537,
+     "footprint_m": 1.712,
+     "centre_m": 1.924,
+     "true_instance": false
+    },
+    {
+     "label": "sofa",
+     "x_m": 2.414,
+     "y_m": 10.554,
+     "belief": 0.512,
+     "footprint_m": 1.214,
+     "centre_m": 1.367,
+     "true_instance": false
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "armchair",
+     "x_m": 3.083,
+     "y_m": 8.554,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.067,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.098,
+     "y_m": 11.118,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.142,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.34,
+     "y_m": 4.703,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.054,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.568,
+     "y_m": 3.917,
+     "belief": 0.982,
+     "footprint_m": 0.032,
+     "centre_m": 0.225,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.013,
+     "y_m": 4.834,
+     "belief": 0.982,
+     "footprint_m": 0.034,
+     "centre_m": 0.188,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.228,
+     "y_m": 5.071,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.172,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 8.213,
+     "y_m": 9.648,
+     "belief": 0.982,
+     "footprint_m": 0.193,
+     "centre_m": 0.391,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.741,
+     "y_m": 11.006,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.107,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.387,
+     "y_m": 4.237,
+     "belief": 0.982,
+     "footprint_m": 0.037,
+     "centre_m": 0.197,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.238,
+     "y_m": 9.608,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.143,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.14,
+     "y_m": 3.123,
+     "belief": 0.982,
+     "footprint_m": 0.04,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.886,
+     "y_m": 3.32,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.218,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.545,
+     "y_m": 3.725,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.108,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.163,
+     "y_m": 9.67,
+     "belief": 0.982,
+     "footprint_m": 0.063,
+     "centre_m": 0.228,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.768,
+     "y_m": 11.38,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.189,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.464,
+     "y_m": 5.111,
+     "belief": 0.982,
+     "footprint_m": 0.011,
+     "centre_m": 0.183,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.905,
+     "y_m": 11.386,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.206,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.145,
+     "y_m": 10.281,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.117,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 5.968,
+     "y_m": 8.033,
+     "belief": 0.982,
+     "footprint_m": 0.032,
+     "centre_m": 0.2,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.938,
+     "y_m": 8.065,
+     "belief": 0.982,
+     "footprint_m": 0.038,
+     "centre_m": 0.22,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.208,
+     "y_m": 5.967,
+     "belief": 0.968,
+     "footprint_m": 0.008,
+     "centre_m": 0.197,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 4.167,
+     "y_m": 9.049,
+     "belief": 0.859,
+     "footprint_m": 0.666,
+     "centre_m": 0.874,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 7.822,
+     "y_m": 8.687,
+     "belief": 0.76,
+     "footprint_m": 0.913,
+     "centre_m": 1.071,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 2.901,
+     "y_m": 6.297,
+     "belief": 0.711,
+     "footprint_m": 1.701,
+     "centre_m": 1.857,
+     "true_instance": false
+    },
+    {
+     "label": "chair",
+     "x_m": 8.481,
+     "y_m": 12.286,
+     "belief": 0.701,
+     "footprint_m": 0.286,
+     "centre_m": 0.441,
+     "true_instance": true
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    },
+    {
+     "label": "desk chair",
+     "x_m": 3.019,
+     "y_m": 5.102,
+     "belief": 0.537,
+     "footprint_m": 1.712,
+     "centre_m": 1.924,
+     "true_instance": false
+    },
+    {
+     "label": "sofa",
+     "x_m": 2.414,
+     "y_m": 10.554,
+     "belief": 0.512,
+     "footprint_m": 1.214,
+     "centre_m": 1.367,
+     "true_instance": false
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.011,
+    "heading_error_deg": 0.503
+   }
+  },
+  {
+   "i": 8,
+   "reload": {
+    "map_id": "map-4389b7ce",
+    "version": 1,
+    "took_s": 1.82,
+    "agreement": 1.0,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-4389b7ce",
+   "states": [
+    [
+     "checking",
+     1.61
+    ],
+    [
+     "ready",
+     3.51
+    ]
+   ],
+   "reload_s": 1.9,
+   "mission": {
+    "outcome": "running",
+    "seconds": 300,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794029534.json",
+    "steps": 8,
+    "explore": {
+     "goals_sent": 8,
+     "sent": [
+      [
+       1,
+       "d016cf03fdc44920b9aee8a1c2daae27",
+       "frontier"
+      ],
+      [
+       2,
+       "6fe91b918b574d2bbef5d3bb201a13a1",
+       "frontier"
+      ],
+      [
+       3,
+       "ef82ad6360af49358b0dfc27a58805ef",
+       "frontier"
+      ],
+      [
+       4,
+       "f15cc61196904d78a3f0cfe9e9bdcd13",
+       "frontier"
+      ],
+      [
+       5,
+       "d95052adff7a487d81cf72a11ca41428",
+       "frontier"
+      ],
+      [
+       6,
+       "b1309075dc4147c7be64b6f006b106f7",
+       "frontier"
+      ],
+      [
+       7,
+       "ef8d1c3122154ced817f3375621f2f49",
+       "frontier"
+      ],
+      [
+       8,
+       "9a3d57f208774d3f953b536d738cdebc",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "f15cc61196904d78a3f0cfe9e9bdcd13",
+       1794029670.624026,
+       true
+      ],
+      [
+       2,
+       "f15cc61196904d78a3f0cfe9e9bdcd13",
+       1794029670.628944,
+       true
+      ],
+      [
+       3,
+       "d95052adff7a487d81cf72a11ca41428",
+       1794029706.101452,
+       true
+      ],
+      [
+       4,
+       "d95052adff7a487d81cf72a11ca41428",
+       1794029706.107076,
+       true
+      ],
+      [
+       5,
+       "b1309075dc4147c7be64b6f006b106f7",
+       1794029766.594637,
+       true
+      ],
+      [
+       6,
+       "b1309075dc4147c7be64b6f006b106f7",
+       1794029766.600491,
+       true
+      ],
+      [
+       7,
+       "ef8d1c3122154ced817f3375621f2f49",
+       1794029793.374625,
+       true
+      ],
+      [
+       8,
+       "ef8d1c3122154ced817f3375621f2f49",
+       1794029793.380619,
+       true
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 4,
+     "last_event": "goal sent (frontier) to (8.62, 10.23)",
+     "camera_seen_m2": 31.06,
+     "choice_ms": {
+      "n": 19,
+      "p50_ms": 55.0,
+      "p90_ms": 69.0,
+      "max_ms": 77.1
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 15.4,
+    "min_gap_cm": 3.7,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 583,
+    "room_labels": null,
+    "last_log": [
+     "waiting -- nav2 active: frontier -- dining room, facing ?, free space none, sees nothing of note",
+     "waiting -- nav2 active: frontier -- dining room, facing ?, free space some, sees nothing of note",
+     "waiting -- nav2 active: frontier -- dining room, facing ?, free space some, sees staircase"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 255.9,
+    "mem_mb_p50": 252.8,
+    "slam_cpu_p90": 0.4159,
+    "slam_cpu_p50": 0.1756,
+    "windows": 48,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.0,
+   "map_health": {
+    "map_id": "map-4389b7ce",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-4389b7ce",
+    "version": 1
+   },
+   "graph_mb": 54.63,
+   "store_mb": 54.63,
+   "inventory": {
+    "map_id": "slam-e1f73c73",
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T052700.204600Z-purple unicorn",
+    "carry_seq": 7,
+    "counts": {
+     "frames": 452,
+     "observations": 1177,
+     "unplaced": 7,
+     "no_pose": 0,
+     "landmarks": 45,
+     "reported": 40,
+     "carried": 44
+    }
+   },
+   "seeded": {
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T052700.204600Z-purple unicorn",
+    "carry_seq": 7,
+    "counts": {
+     "frames": 1,
+     "observations": 2,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 45,
+     "reported": 38,
+     "carried": 44
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "armchair",
+     "x_m": 3.083,
+     "y_m": 8.554,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.067,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.098,
+     "y_m": 11.118,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.142,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.34,
+     "y_m": 4.703,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.054,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.568,
+     "y_m": 3.917,
+     "belief": 0.982,
+     "footprint_m": 0.032,
+     "centre_m": 0.225,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.013,
+     "y_m": 4.834,
+     "belief": 0.982,
+     "footprint_m": 0.034,
+     "centre_m": 0.188,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.228,
+     "y_m": 5.071,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.172,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 8.213,
+     "y_m": 9.648,
+     "belief": 0.982,
+     "footprint_m": 0.193,
+     "centre_m": 0.391,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.741,
+     "y_m": 11.006,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.107,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.387,
+     "y_m": 4.237,
+     "belief": 0.982,
+     "footprint_m": 0.037,
+     "centre_m": 0.197,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.119,
+     "y_m": 10.981,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.044,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.238,
+     "y_m": 9.608,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.143,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.14,
+     "y_m": 3.123,
+     "belief": 0.982,
+     "footprint_m": 0.04,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.886,
+     "y_m": 3.32,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.218,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.545,
+     "y_m": 3.725,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.108,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.163,
+     "y_m": 9.67,
+     "belief": 0.982,
+     "footprint_m": 0.063,
+     "centre_m": 0.228,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.768,
+     "y_m": 11.38,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.189,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.464,
+     "y_m": 5.111,
+     "belief": 0.982,
+     "footprint_m": 0.011,
+     "centre_m": 0.183,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.905,
+     "y_m": 11.386,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.206,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.145,
+     "y_m": 10.281,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.117,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 5.968,
+     "y_m": 8.033,
+     "belief": 0.982,
+     "footprint_m": 0.032,
+     "centre_m": 0.2,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.938,
+     "y_m": 8.065,
+     "belief": 0.982,
+     "footprint_m": 0.038,
+     "centre_m": 0.22,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.928,
+     "y_m": 9.971,
+     "belief": 0.982,
+     "footprint_m": 0.028,
+     "centre_m": 0.195,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.208,
+     "y_m": 5.967,
+     "belief": 0.968,
+     "footprint_m": 0.008,
+     "centre_m": 0.197,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 4.167,
+     "y_m": 9.049,
+     "belief": 0.859,
+     "footprint_m": 0.666,
+     "centre_m": 0.874,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.693,
+     "y_m": 8.282,
+     "belief": 0.846,
+     "footprint_m": 0.093,
+     "centre_m": 0.245,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 7.822,
+     "y_m": 8.687,
+     "belief": 0.76,
+     "footprint_m": 0.913,
+     "centre_m": 1.071,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 2.901,
+     "y_m": 6.297,
+     "belief": 0.711,
+     "footprint_m": 1.701,
+     "centre_m": 1.857,
+     "true_instance": false
+    },
+    {
+     "label": "chair",
+     "x_m": 8.481,
+     "y_m": 12.286,
+     "belief": 0.701,
+     "footprint_m": 0.286,
+     "centre_m": 0.441,
+     "true_instance": true
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    },
+    {
+     "label": "desk chair",
+     "x_m": 3.019,
+     "y_m": 5.102,
+     "belief": 0.537,
+     "footprint_m": 1.712,
+     "centre_m": 1.924,
+     "true_instance": false
+    },
+    {
+     "label": "sofa",
+     "x_m": 2.414,
+     "y_m": 10.554,
+     "belief": 0.512,
+     "footprint_m": 1.214,
+     "centre_m": 1.367,
+     "true_instance": false
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "armchair",
+     "x_m": 3.083,
+     "y_m": 8.554,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.067,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.098,
+     "y_m": 11.118,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.142,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.364,
+     "y_m": 4.724,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.568,
+     "y_m": 3.917,
+     "belief": 0.982,
+     "footprint_m": 0.032,
+     "centre_m": 0.225,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.927,
+     "y_m": 4.78,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.179,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.332,
+     "y_m": 5.107,
+     "belief": 0.982,
+     "footprint_m": 0.007,
+     "centre_m": 0.158,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 8.239,
+     "y_m": 9.513,
+     "belief": 0.982,
+     "footprint_m": 0.161,
+     "centre_m": 0.317,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.611,
+     "y_m": 10.906,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.059,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.349,
+     "y_m": 4.223,
+     "belief": 0.982,
+     "footprint_m": 0.023,
+     "centre_m": 0.2,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.079,
+     "y_m": 11.015,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.096,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.238,
+     "y_m": 9.608,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.143,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.14,
+     "y_m": 3.123,
+     "belief": 0.982,
+     "footprint_m": 0.04,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.886,
+     "y_m": 3.32,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.218,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.545,
+     "y_m": 3.725,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.108,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.184,
+     "y_m": 9.663,
+     "belief": 0.982,
+     "footprint_m": 0.084,
+     "centre_m": 0.25,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.817,
+     "y_m": 11.376,
+     "belief": 0.982,
+     "footprint_m": 0.024,
+     "centre_m": 0.177,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.493,
+     "y_m": 5.11,
+     "belief": 0.982,
+     "footprint_m": 0.01,
+     "centre_m": 0.17,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.905,
+     "y_m": 11.386,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.206,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.145,
+     "y_m": 10.281,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.117,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 5.955,
+     "y_m": 8.083,
+     "belief": 0.982,
+     "footprint_m": 0.045,
+     "centre_m": 0.236,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.927,
+     "y_m": 8.082,
+     "belief": 0.982,
+     "footprint_m": 0.027,
+     "centre_m": 0.221,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.922,
+     "y_m": 9.926,
+     "belief": 0.982,
+     "footprint_m": 0.022,
+     "centre_m": 0.212,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.208,
+     "y_m": 5.967,
+     "belief": 0.968,
+     "footprint_m": 0.008,
+     "centre_m": 0.197,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 4.161,
+     "y_m": 9.045,
+     "belief": 0.934,
+     "footprint_m": 0.659,
+     "centre_m": 0.866,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 7.817,
+     "y_m": 8.672,
+     "belief": 0.891,
+     "footprint_m": 0.928,
+     "centre_m": 1.086,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.683,
+     "y_m": 8.265,
+     "belief": 0.846,
+     "footprint_m": 0.083,
+     "centre_m": 0.233,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 2.901,
+     "y_m": 6.297,
+     "belief": 0.711,
+     "footprint_m": 1.701,
+     "centre_m": 1.857,
+     "true_instance": false
+    },
+    {
+     "label": "chair",
+     "x_m": 8.481,
+     "y_m": 12.286,
+     "belief": 0.701,
+     "footprint_m": 0.286,
+     "centre_m": 0.441,
+     "true_instance": true
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    },
+    {
+     "label": "desk chair",
+     "x_m": 3.019,
+     "y_m": 5.102,
+     "belief": 0.537,
+     "footprint_m": 1.712,
+     "centre_m": 1.924,
+     "true_instance": false
+    },
+    {
+     "label": "sofa",
+     "x_m": 2.414,
+     "y_m": 10.554,
+     "belief": 0.512,
+     "footprint_m": 1.214,
+     "centre_m": 1.367,
+     "true_instance": false
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0107,
+    "heading_error_deg": 0.277
+   }
+  },
+  {
+   "i": 9,
+   "reload": {
+    "map_id": "map-4389b7ce",
+    "version": 1,
+    "took_s": 1.84,
+    "agreement": 1.0,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-4389b7ce",
+   "states": [
+    [
+     "checking",
+     1.61
+    ],
+    [
+     "ready",
+     3.43
+    ]
+   ],
+   "reload_s": 1.82,
+   "mission": {
+    "outcome": "running",
+    "seconds": 301,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794029847.json",
+    "steps": 10,
+    "explore": {
+     "goals_sent": 10,
+     "sent": [
+      [
+       1,
+       "55215b1cdff34266b8fb2c7f7f076415",
+       "frontier"
+      ],
+      [
+       2,
+       "ec67d3f7fdd647d99253665c25307814",
+       "frontier"
+      ],
+      [
+       3,
+       "68373023729b4b9da2696d15cead6360",
+       "frontier"
+      ],
+      [
+       4,
+       "93036aae0bf8465e8e15327b096498b8",
+       "frontier"
+      ],
+      [
+       5,
+       "1e75cf3d32b64716b0571529da0babc7",
+       "frontier"
+      ],
+      [
+       6,
+       "97f2d6a81e804779aa2cb4a054d52a35",
+       "frontier"
+      ],
+      [
+       7,
+       "c7b6a776f1634b33a9eea67af0ce53f7",
+       "frontier"
+      ],
+      [
+       8,
+       "55a592de2a3f477c8e8784f2f9fb4cb7",
+       "frontier"
+      ],
+      [
+       9,
+       "cecb567013ab47bf844e91b7258f4d15",
+       "frontier"
+      ],
+      [
+       10,
+       "8ce31950c1354534b2eb7bc32d823a1f",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "93036aae0bf8465e8e15327b096498b8",
+       1794029944.583797,
+       true
+      ],
+      [
+       2,
+       "93036aae0bf8465e8e15327b096498b8",
+       1794029944.590255,
+       true
+      ],
+      [
+       3,
+       "1e75cf3d32b64716b0571529da0babc7",
+       1794029992.27066,
+       true
+      ],
+      [
+       4,
+       "1e75cf3d32b64716b0571529da0babc7",
+       1794029992.276056,
+       true
+      ],
+      [
+       5,
+       "97f2d6a81e804779aa2cb4a054d52a35",
+       1794030022.064346,
+       true
+      ],
+      [
+       6,
+       "97f2d6a81e804779aa2cb4a054d52a35",
+       1794030022.069493,
+       true
+      ],
+      [
+       7,
+       "c7b6a776f1634b33a9eea67af0ce53f7",
+       1794030060.320169,
+       true
+      ],
+      [
+       8,
+       "c7b6a776f1634b33a9eea67af0ce53f7",
+       1794030060.326397,
+       true
+      ],
+      [
+       9,
+       "55a592de2a3f477c8e8784f2f9fb4cb7",
+       1794030088.800641,
+       true
+      ],
+      [
+       10,
+       "55a592de2a3f477c8e8784f2f9fb4cb7",
+       1794030088.805349,
+       true
+      ],
+      [
+       11,
+       "cecb567013ab47bf844e91b7258f4d15",
+       1794030122.081979,
+       true
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 6,
+     "last_event": "goal sent (frontier) to (2.32, 7.83)",
+     "camera_seen_m2": 32.33,
+     "choice_ms": {
+      "n": 22,
+      "p50_ms": 53.7,
+      "p90_ms": 66.0,
+      "max_ms": 72.0
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 15.8,
+    "min_gap_cm": 1.3,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 581,
+    "room_labels": null,
+    "last_log": [
+     "waiting -- nav2 active: frontier -- dining room, facing ?, free space clear, sees nothing of note",
+     "waiting -- nav2 active: frontier -- dining room, facing ?, free space clear, sees chair",
+     "waiting -- nav2 active: frontier -- dining room, facing ?, free space clear, sees nothing of note"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 253.9,
+    "mem_mb_p50": 250.8,
+    "slam_cpu_p90": 0.4239,
+    "slam_cpu_p50": 0.2037,
+    "windows": 48,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.0,
+   "map_health": {
+    "map_id": "map-4389b7ce",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-4389b7ce",
+    "version": 1
+   },
+   "graph_mb": 54.63,
+   "store_mb": 54.63,
+   "inventory": {
+    "map_id": "slam-2ed30167",
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T053214.117384Z-purple unicorn",
+    "carry_seq": 8,
+    "counts": {
+     "frames": 424,
+     "observations": 973,
+     "unplaced": 1,
+     "no_pose": 0,
+     "landmarks": 46,
+     "reported": 41,
+     "carried": 45
+    }
+   },
+   "seeded": {
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T053214.117384Z-purple unicorn",
+    "carry_seq": 8,
+    "counts": {
+     "frames": 1,
+     "observations": 2,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 46,
+     "reported": 40,
+     "carried": 45
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "armchair",
+     "x_m": 3.083,
+     "y_m": 8.554,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.067,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.098,
+     "y_m": 11.118,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.142,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.364,
+     "y_m": 4.724,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.568,
+     "y_m": 3.917,
+     "belief": 0.982,
+     "footprint_m": 0.032,
+     "centre_m": 0.225,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.927,
+     "y_m": 4.78,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.179,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.332,
+     "y_m": 5.107,
+     "belief": 0.982,
+     "footprint_m": 0.007,
+     "centre_m": 0.158,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 8.239,
+     "y_m": 9.513,
+     "belief": 0.982,
+     "footprint_m": 0.161,
+     "centre_m": 0.317,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.611,
+     "y_m": 10.906,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.059,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.349,
+     "y_m": 4.223,
+     "belief": 0.982,
+     "footprint_m": 0.023,
+     "centre_m": 0.2,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.079,
+     "y_m": 11.015,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.096,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.238,
+     "y_m": 9.608,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.143,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.14,
+     "y_m": 3.123,
+     "belief": 0.982,
+     "footprint_m": 0.04,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.886,
+     "y_m": 3.32,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.218,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.545,
+     "y_m": 3.725,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.108,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.184,
+     "y_m": 9.663,
+     "belief": 0.982,
+     "footprint_m": 0.084,
+     "centre_m": 0.25,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.817,
+     "y_m": 11.376,
+     "belief": 0.982,
+     "footprint_m": 0.024,
+     "centre_m": 0.177,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.493,
+     "y_m": 5.11,
+     "belief": 0.982,
+     "footprint_m": 0.01,
+     "centre_m": 0.17,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.905,
+     "y_m": 11.386,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.206,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.145,
+     "y_m": 10.281,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.117,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 5.955,
+     "y_m": 8.083,
+     "belief": 0.982,
+     "footprint_m": 0.045,
+     "centre_m": 0.236,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.927,
+     "y_m": 8.082,
+     "belief": 0.982,
+     "footprint_m": 0.027,
+     "centre_m": 0.221,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.922,
+     "y_m": 9.926,
+     "belief": 0.982,
+     "footprint_m": 0.022,
+     "centre_m": 0.212,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.208,
+     "y_m": 5.967,
+     "belief": 0.968,
+     "footprint_m": 0.008,
+     "centre_m": 0.197,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 4.161,
+     "y_m": 9.045,
+     "belief": 0.934,
+     "footprint_m": 0.659,
+     "centre_m": 0.866,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.692,
+     "y_m": 8.281,
+     "belief": 0.928,
+     "footprint_m": 0.092,
+     "centre_m": 0.244,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.008,
+     "y_m": 11.382,
+     "belief": 0.928,
+     "footprint_m": 0.018,
+     "centre_m": 0.178,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 7.817,
+     "y_m": 8.672,
+     "belief": 0.891,
+     "footprint_m": 0.928,
+     "centre_m": 1.086,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 2.901,
+     "y_m": 6.297,
+     "belief": 0.711,
+     "footprint_m": 1.701,
+     "centre_m": 1.857,
+     "true_instance": false
+    },
+    {
+     "label": "chair",
+     "x_m": 8.481,
+     "y_m": 12.286,
+     "belief": 0.701,
+     "footprint_m": 0.286,
+     "centre_m": 0.441,
+     "true_instance": true
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    },
+    {
+     "label": "desk chair",
+     "x_m": 3.019,
+     "y_m": 5.102,
+     "belief": 0.537,
+     "footprint_m": 1.712,
+     "centre_m": 1.924,
+     "true_instance": false
+    },
+    {
+     "label": "sofa",
+     "x_m": 2.414,
+     "y_m": 10.554,
+     "belief": 0.512,
+     "footprint_m": 1.214,
+     "centre_m": 1.367,
+     "true_instance": false
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "armchair",
+     "x_m": 3.083,
+     "y_m": 8.554,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.067,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.098,
+     "y_m": 11.118,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.142,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.352,
+     "y_m": 4.724,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.074,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.568,
+     "y_m": 3.917,
+     "belief": 0.982,
+     "footprint_m": 0.032,
+     "centre_m": 0.225,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.894,
+     "y_m": 4.769,
+     "belief": 0.982,
+     "footprint_m": 0.006,
+     "centre_m": 0.196,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.225,
+     "y_m": 5.072,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.175,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 8.129,
+     "y_m": 9.578,
+     "belief": 0.982,
+     "footprint_m": 0.271,
+     "centre_m": 0.44,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.514,
+     "y_m": 11.05,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.169,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.305,
+     "y_m": 4.193,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.204,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.118,
+     "y_m": 10.953,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.032,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.238,
+     "y_m": 9.608,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.143,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.14,
+     "y_m": 3.123,
+     "belief": 0.982,
+     "footprint_m": 0.04,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.886,
+     "y_m": 3.32,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.218,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.545,
+     "y_m": 3.725,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.108,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.11,
+     "y_m": 9.645,
+     "belief": 0.982,
+     "footprint_m": 0.01,
+     "centre_m": 0.191,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.835,
+     "y_m": 11.378,
+     "belief": 0.982,
+     "footprint_m": 0.022,
+     "centre_m": 0.173,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.512,
+     "y_m": 5.112,
+     "belief": 0.982,
+     "footprint_m": 0.012,
+     "centre_m": 0.166,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.905,
+     "y_m": 11.386,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.206,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.145,
+     "y_m": 10.281,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.117,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 5.951,
+     "y_m": 8.06,
+     "belief": 0.982,
+     "footprint_m": 0.049,
+     "centre_m": 0.227,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.929,
+     "y_m": 8.041,
+     "belief": 0.982,
+     "footprint_m": 0.029,
+     "centre_m": 0.201,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.92,
+     "y_m": 9.967,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.189,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 4.167,
+     "y_m": 9.054,
+     "belief": 0.971,
+     "footprint_m": 0.668,
+     "centre_m": 0.876,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.025,
+     "y_m": 11.383,
+     "belief": 0.968,
+     "footprint_m": 0.017,
+     "centre_m": 0.183,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.208,
+     "y_m": 5.967,
+     "belief": 0.968,
+     "footprint_m": 0.008,
+     "centre_m": 0.197,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.683,
+     "y_m": 8.264,
+     "belief": 0.928,
+     "footprint_m": 0.083,
+     "centre_m": 0.233,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 7.819,
+     "y_m": 8.662,
+     "belief": 0.9,
+     "footprint_m": 0.938,
+     "centre_m": 1.096,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 2.901,
+     "y_m": 6.297,
+     "belief": 0.711,
+     "footprint_m": 1.701,
+     "centre_m": 1.857,
+     "true_instance": false
+    },
+    {
+     "label": "chair",
+     "x_m": 8.481,
+     "y_m": 12.286,
+     "belief": 0.701,
+     "footprint_m": 0.286,
+     "centre_m": 0.441,
+     "true_instance": true
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    },
+    {
+     "label": "desk chair",
+     "x_m": 3.019,
+     "y_m": 5.102,
+     "belief": 0.537,
+     "footprint_m": 1.712,
+     "centre_m": 1.924,
+     "true_instance": false
+    },
+    {
+     "label": "sofa",
+     "x_m": 2.414,
+     "y_m": 10.554,
+     "belief": 0.512,
+     "footprint_m": 1.214,
+     "centre_m": 1.367,
+     "true_instance": false
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0084,
+    "heading_error_deg": -0.131
+   }
+  },
+  {
+   "i": 10,
+   "reload": {
+    "map_id": "map-4389b7ce",
+    "version": 1,
+    "took_s": 1.89,
+    "agreement": 1.0,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-4389b7ce",
+   "states": [
+    [
+     "starting",
+     1.52
+    ],
+    [
+     "checking",
+     1.63
+    ],
+    [
+     "ready",
+     3.44
+    ]
+   ],
+   "reload_s": 1.81,
+   "mission": {
+    "outcome": "running",
+    "seconds": 300,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794030162.json",
+    "steps": 15,
+    "explore": {
+     "goals_sent": 15,
+     "sent": [
+      [
+       1,
+       "5f2e14bd7d1241639344d58238f7672b",
+       "frontier"
+      ],
+      [
+       2,
+       "cde626e0d5b744b09273a2eb1762cc0e",
+       "frontier"
+      ],
+      [
+       3,
+       "223309e3e0954080b73b333d60ba34be",
+       "frontier"
+      ],
+      [
+       4,
+       "98b7f35d9c2f44eeb03336e858a6159b",
+       "frontier"
+      ],
+      [
+       5,
+       "60f3e40fc18b49409916800fb0f4ca23",
+       "frontier"
+      ],
+      [
+       6,
+       "6994ced9498b4c3a82af181e0c32f22e",
+       "frontier"
+      ],
+      [
+       7,
+       "9376ec7ab8c844afa88b23be3539ef0b",
+       "frontier"
+      ],
+      [
+       8,
+       "2fae074e78e5493c87995e31fddea34c",
+       "frontier"
+      ],
+      [
+       9,
+       "eae9c0b079bd49c38cab931246381d10",
+       "frontier"
+      ],
+      [
+       10,
+       "6e6183ddce9c421ca417cbe2c4d23ffe",
+       "frontier"
+      ],
+      [
+       11,
+       "adc8a3c8591244a1b01ceaaa4f03df68",
+       "frontier"
+      ],
+      [
+       12,
+       "42c946640fc44c00b81b394c4ed52f9c",
+       "frontier"
+      ],
+      [
+       13,
+       "0dc28735aa1d414c935e672b43f65177",
+       "frontier"
+      ],
+      [
+       14,
+       "5123c21d6e97451dad1e3ba070f27bd5",
+       "frontier"
+      ],
+      [
+       15,
+       "f4cc01f3706a484d837bedaf19539bc8",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "98b7f35d9c2f44eeb03336e858a6159b",
+       1794030256.089453,
+       true
+      ],
+      [
+       2,
+       "98b7f35d9c2f44eeb03336e858a6159b",
+       1794030256.094423,
+       true
+      ],
+      [
+       3,
+       "60f3e40fc18b49409916800fb0f4ca23",
+       1794030294.028978,
+       true
+      ],
+      [
+       4,
+       "60f3e40fc18b49409916800fb0f4ca23",
+       1794030294.034019,
+       true
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 2,
+     "last_event": "reached frontier goal",
+     "camera_seen_m2": 47.01,
+     "choice_ms": {
+      "n": 33,
+      "p50_ms": 58.1,
+      "p90_ms": 70.4,
+      "max_ms": 97.5
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 28.8,
+    "min_gap_cm": 2.8,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 581,
+    "room_labels": null,
+    "last_log": [
+     "waiting -- nav2 active: frontier -- living room, facing ?, free space some, sees sofa, sofa",
+     "step 15: LOOK_LEFT (ok) -- {'action': 'look_left', 'pan': -1} -- living room, facing ?, free space some, sees sofa, sofa",
+     "step 15: LOOK_RIGHT (ok) -- {'action': 'look_right', 'pan': 1} -- living room, facing ?, free space some, sees side table, side table"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 253.7,
+    "mem_mb_p50": 251.0,
+    "slam_cpu_p90": 0.507,
+    "slam_cpu_p50": 0.255,
+    "windows": 48,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.5,
+   "map_health": {
+    "map_id": "map-4389b7ce",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-4389b7ce",
+    "version": 1
+   },
+   "graph_mb": 54.63,
+   "store_mb": 54.63,
+   "inventory": {
+    "map_id": "slam-083e63c8",
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T053727.815136Z-purple unicorn",
+    "carry_seq": 9,
+    "counts": {
+     "frames": 480,
+     "observations": 1084,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 46,
+     "reported": 38,
+     "carried": 46
+    }
+   },
+   "seeded": {
+    "frame_id": "map-4389b7ce",
+    "carried_from": "20261107T053727.815136Z-purple unicorn",
+    "carry_seq": 9,
+    "counts": {
+     "frames": 1,
+     "observations": 2,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 47,
+     "reported": 41,
+     "carried": 46
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "armchair",
+     "x_m": 3.083,
+     "y_m": 8.554,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.067,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.098,
+     "y_m": 11.118,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.142,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.352,
+     "y_m": 4.724,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.074,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.568,
+     "y_m": 3.917,
+     "belief": 0.982,
+     "footprint_m": 0.032,
+     "centre_m": 0.225,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.894,
+     "y_m": 4.769,
+     "belief": 0.982,
+     "footprint_m": 0.006,
+     "centre_m": 0.196,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.225,
+     "y_m": 5.072,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.175,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 8.129,
+     "y_m": 9.578,
+     "belief": 0.982,
+     "footprint_m": 0.271,
+     "centre_m": 0.44,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.514,
+     "y_m": 11.05,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.169,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.305,
+     "y_m": 4.193,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.204,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.118,
+     "y_m": 10.953,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.032,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.238,
+     "y_m": 9.608,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.143,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.14,
+     "y_m": 3.123,
+     "belief": 0.982,
+     "footprint_m": 0.04,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.886,
+     "y_m": 3.32,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.218,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.545,
+     "y_m": 3.725,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.108,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.11,
+     "y_m": 9.645,
+     "belief": 0.982,
+     "footprint_m": 0.01,
+     "centre_m": 0.191,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.835,
+     "y_m": 11.378,
+     "belief": 0.982,
+     "footprint_m": 0.022,
+     "centre_m": 0.173,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.512,
+     "y_m": 5.112,
+     "belief": 0.982,
+     "footprint_m": 0.012,
+     "centre_m": 0.166,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.905,
+     "y_m": 11.386,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.206,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.145,
+     "y_m": 10.281,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.117,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 5.951,
+     "y_m": 8.06,
+     "belief": 0.982,
+     "footprint_m": 0.049,
+     "centre_m": 0.227,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.929,
+     "y_m": 8.041,
+     "belief": 0.982,
+     "footprint_m": 0.029,
+     "centre_m": 0.201,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.92,
+     "y_m": 9.967,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.189,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 4.167,
+     "y_m": 9.054,
+     "belief": 0.971,
+     "footprint_m": 0.668,
+     "centre_m": 0.876,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.692,
+     "y_m": 8.281,
+     "belief": 0.968,
+     "footprint_m": 0.092,
+     "centre_m": 0.244,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.025,
+     "y_m": 11.383,
+     "belief": 0.968,
+     "footprint_m": 0.017,
+     "centre_m": 0.183,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.208,
+     "y_m": 5.967,
+     "belief": 0.968,
+     "footprint_m": 0.008,
+     "centre_m": 0.197,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.613,
+     "y_m": 5.024,
+     "belief": 0.928,
+     "footprint_m": 0.292,
+     "centre_m": 0.503,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 7.819,
+     "y_m": 8.662,
+     "belief": 0.9,
+     "footprint_m": 0.938,
+     "centre_m": 1.096,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 2.901,
+     "y_m": 6.297,
+     "belief": 0.711,
+     "footprint_m": 1.701,
+     "centre_m": 1.857,
+     "true_instance": false
+    },
+    {
+     "label": "chair",
+     "x_m": 8.481,
+     "y_m": 12.286,
+     "belief": 0.701,
+     "footprint_m": 0.286,
+     "centre_m": 0.441,
+     "true_instance": true
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    },
+    {
+     "label": "desk chair",
+     "x_m": 3.019,
+     "y_m": 5.102,
+     "belief": 0.537,
+     "footprint_m": 1.712,
+     "centre_m": 1.924,
+     "true_instance": false
+    },
+    {
+     "label": "sofa",
+     "x_m": 2.414,
+     "y_m": 10.554,
+     "belief": 0.512,
+     "footprint_m": 1.214,
+     "centre_m": 1.367,
+     "true_instance": false
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "armchair",
+     "x_m": 3.044,
+     "y_m": 8.534,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.107,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 3.173,
+     "y_m": 11.085,
+     "belief": 0.982,
+     "footprint_m": 0.015,
+     "centre_m": 0.167,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 7.332,
+     "y_m": 4.724,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.076,
+     "true_instance": true
+    },
+    {
+     "label": "armchair",
+     "x_m": 4.166,
+     "y_m": 9.034,
+     "belief": 0.982,
+     "footprint_m": 0.657,
+     "centre_m": 0.864,
+     "true_instance": true
+    },
+    {
+     "label": "bookcase",
+     "x_m": 3.568,
+     "y_m": 3.917,
+     "belief": 0.982,
+     "footprint_m": 0.032,
+     "centre_m": 0.225,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.175,
+     "y_m": 4.874,
+     "belief": 0.982,
+     "footprint_m": 0.074,
+     "centre_m": 0.257,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 10.239,
+     "y_m": 5.079,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.17,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.761,
+     "y_m": 3.735,
+     "belief": 0.982,
+     "footprint_m": 0.165,
+     "centre_m": 0.315,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 11.404,
+     "y_m": 4.165,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 8.468,
+     "y_m": 10.204,
+     "belief": 0.982,
+     "footprint_m": 0.532,
+     "centre_m": 0.699,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 7.649,
+     "y_m": 10.946,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.004,
+     "true_instance": true
+    },
+    {
+     "label": "chair",
+     "x_m": 9.363,
+     "y_m": 4.227,
+     "belief": 0.982,
+     "footprint_m": 0.027,
+     "centre_m": 0.197,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 6.441,
+     "y_m": 2.556,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.011,
+     "true_instance": true
+    },
+    {
+     "label": "coffee table",
+     "x_m": 2.264,
+     "y_m": 9.512,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.064,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 2.14,
+     "y_m": 3.123,
+     "belief": 0.982,
+     "footprint_m": 0.04,
+     "centre_m": 0.192,
+     "true_instance": true
+    },
+    {
+     "label": "desk",
+     "x_m": 0.886,
+     "y_m": 3.32,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.218,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 1.545,
+     "y_m": 3.725,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.108,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.219,
+     "y_m": 9.715,
+     "belief": 0.982,
+     "footprint_m": 0.119,
+     "centre_m": 0.271,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.802,
+     "y_m": 11.393,
+     "belief": 0.982,
+     "footprint_m": 0.007,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "dining table",
+     "x_m": 8.061,
+     "y_m": 11.421,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.17,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 12.432,
+     "y_m": 2.708,
+     "belief": 0.982,
+     "footprint_m": 0.008,
+     "centre_m": 0.159,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen island",
+     "x_m": 12.647,
+     "y_m": 4.611,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.11,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.805,
+     "y_m": 4.59,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 4.977,
+     "y_m": 2.009,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.065,
+     "true_instance": true
+    },
+    {
+     "label": "sectional sofa",
+     "x_m": 5.481,
+     "y_m": 5.107,
+     "belief": 0.982,
+     "footprint_m": 0.007,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "side table",
+     "x_m": 0.902,
+     "y_m": 11.399,
+     "belief": 0.982,
+     "footprint_m": 0.002,
+     "centre_m": 0.213,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 1.149,
+     "y_m": 10.483,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.166,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 5.948,
+     "y_m": 8.063,
+     "belief": 0.982,
+     "footprint_m": 0.052,
+     "centre_m": 0.231,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.918,
+     "y_m": 8.073,
+     "belief": 0.982,
+     "footprint_m": 0.018,
+     "centre_m": 0.208,
+     "true_instance": true
+    },
+    {
+     "label": "staircase",
+     "x_m": 6.805,
+     "y_m": 10.075,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.06,
+     "true_instance": true
+    },
+    {
+     "label": "tv console",
+     "x_m": 6.568,
+     "y_m": 0.85,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "vanity",
+     "x_m": 0.92,
+     "y_m": 6.771,
+     "belief": 0.982,
+     "footprint_m": 0.02,
+     "centre_m": 0.171,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 9.917,
+     "y_m": 3.626,
+     "belief": 0.968,
+     "footprint_m": 0.0,
+     "centre_m": 0.182,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 1.208,
+     "y_m": 5.967,
+     "belief": 0.968,
+     "footprint_m": 0.008,
+     "centre_m": 0.197,
+     "true_instance": true
+    },
+    {
+     "label": "breakfast table",
+     "x_m": 10.817,
+     "y_m": 3.691,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.145,
+     "true_instance": true
+    },
+    {
+     "label": "kitchen counter",
+     "x_m": 14.417,
+     "y_m": 5.154,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.164,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 13.814,
+     "y_m": 5.793,
+     "belief": 0.846,
+     "footprint_m": 0.0,
+     "centre_m": 0.147,
+     "true_instance": true
+    },
+    {
+     "label": "toilet",
+     "x_m": 2.901,
+     "y_m": 6.297,
+     "belief": 0.711,
+     "footprint_m": 1.701,
+     "centre_m": 1.857,
+     "true_instance": false
+    },
+    {
+     "label": "chair",
+     "x_m": 8.481,
+     "y_m": 12.286,
+     "belief": 0.701,
+     "footprint_m": 0.286,
+     "centre_m": 0.441,
+     "true_instance": true
+    },
+    {
+     "label": "dryer",
+     "x_m": 12.625,
+     "y_m": 5.986,
+     "belief": 0.701,
+     "footprint_m": 2.15,
+     "centre_m": 2.359,
+     "true_instance": false
+    },
+    {
+     "label": "dining table",
+     "x_m": 7.813,
+     "y_m": 8.666,
+     "belief": 0.656,
+     "footprint_m": 0.934,
+     "centre_m": 1.093,
+     "true_instance": true
+    },
+    {
+     "label": "desk chair",
+     "x_m": 3.019,
+     "y_m": 5.102,
+     "belief": 0.537,
+     "footprint_m": 1.712,
+     "centre_m": 1.924,
+     "true_instance": false
+    },
+    {
+     "label": "sofa",
+     "x_m": 2.416,
+     "y_m": 10.554,
+     "belief": 0.524,
+     "footprint_m": 1.216,
+     "centre_m": 1.369,
+     "true_instance": false
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0112,
+    "heading_error_deg": 0.026
+   }
+  }
+ ],
+ "fall_back": {
+  "first_reload": {
+   "map_id": "map-4389b7ce",
+   "version": 1,
+   "took_s": 1.83,
+   "agreement": 1.0,
+   "dock_error_m": 0.0,
+   "dock_error_deg": 0.0,
+   "ok": true,
+   "reason": "matched",
+   "result": "matched"
+  },
+  "from_dock_m": 1.19,
+  "from_dock_deg": 59.7,
+  "reload": {
+   "map_id": "map-4389b7ce",
+   "version": 1,
+   "took_s": 1.83,
+   "agreement": 0.325,
+   "dock_error_m": 0.262,
+   "dock_error_deg": 19.6,
+   "ok": false,
+   "reason": "scans agree with the saved map 32% (< 60%)",
+   "result": "fell_back"
+  },
+  "map_id": "map-68d08805",
+  "mission": {
+   "outcome": "running",
+   "seconds": 60,
+   "target_at": [],
+   "status_file": "explore_status_explore-purple_unicorn-1794030497.json",
+   "steps": 3,
+   "explore": {
+    "goals_sent": 3,
+    "sent": [
+     [
+      1,
+      "e414c580ba0b403694092f5d17d10a7d",
+      "frontier"
+     ],
+     [
+      2,
+      "5377f479ddfe474dbe856bb6ede3d3fd",
+      "frontier"
+     ],
+     [
+      3,
+      "9105ac0fae67465c878a3c756355a810",
+      "frontier"
+     ]
+    ],
+    "cancels": [],
+    "goal_end_done": false,
+    "goals_failed": 0,
+    "last_event": "goal sent (frontier) to (6.39, 4.71)",
+    "camera_seen_m2": 22.71,
+    "choice_ms": {
+     "n": 9,
+     "p50_ms": 21.0,
+     "p90_ms": 41.1,
+     "max_ms": 41.1
+    },
+    "asks": false,
+    "ask": null,
+    "choices": 0
+   },
+   "stuck_episodes": 0,
+   "travel_m": 6.5,
+   "min_gap_cm": 31.8,
+   "contact_samples": 0,
+   "inside_samples": 0,
+   "samples": 117,
+   "room_labels": null,
+   "last_log": [
+    "waiting -- nav2 active: frontier -- family room, facing ?, free space none, sees sectional sofa, sectional sofa",
+    "waiting -- nav2 active: frontier -- family room, facing ?, free space some, sees sectional sofa",
+    "waiting -- nav2 active: frontier -- family room, facing ?, free space clear, sees nothing of note"
+   ]
+  },
+  "inventory": {
+   "map_id": "slam-ae4697ab",
+   "frame_id": "map-68d08805",
+   "carried_from": null,
+   "carry_seq": 0,
+   "counts": {
+    "frames": 101,
+    "observations": 275,
+    "unplaced": 0,
+    "no_pose": 0,
+    "landmarks": 10,
+    "reported": 7,
+    "carried": 0
+   }
+  },
+  "old_landmarks_used": 0,
+  "ok": true
+ },
+ "verdicts": {
+  "7-carry": "FAILED",
+  "7-fallback": "MET",
+  "6-scan": "FAILED",
+  "6-memory": "MET",
+  "6-graph": "FAILED"
+ },
+ "sessions_asked": 10
+}

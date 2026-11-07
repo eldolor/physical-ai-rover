@@ -138,21 +138,20 @@ paragraph.**
 **Waiting on the user**
 
 * **Deploys:** the twin is live from `dev` `5e88b9de` (2026-11-05, with
-  3.152's local-VLM readout); 3.132 Stage 5 waits on the user's go.
-* **The board's brain is behind `dev`** (3.88, 3.130, 3.131): update it
-  only when asked (`tools/jetson/README.md`'s update step).
-* **3.48, 3.58:** close the llama.cpp local-identity line, or load the
-  model only at arrival.
-* **3.56:** re-check the 8 s arrival deadline after 500+ real calls.
-* **3.86's follow-up:** the watchdog record replaces a Stop's or fault's
-  refusal ~1 s later, so the twin cannot tell a hung brain from a finished
-  mission.
-* **3.42 / 3.76 A4:** `/scan`'s stamp is the request time; fix it before
+  3.152's local-VLM readout). The user's go for 3.132 Stage 5 and the
+  twin's next deploy (2026-11-07); confirm what ships at deploy time.
+* **The board's brain is `dev` `bdcf782c`** (updated 2026-11-06 for 3.155's
+  unit, the user's go): update it only when asked (`tools/jetson/README.md`'s
+  update step).
+
+**Decided, each waiting on its trigger** (the user, 2026-11-07)
+
+* **3.86's follow-up** (queued as desktop work): the watchdog record
+  replaces a Stop's or fault's refusal ~1 s later, so the twin cannot tell
+  a hung brain from a finished mission.
+* **3.42 / 3.76 A4:** fix `/scan`'s stamp (the request time) before
   raising nav2's speed (`HANDOFF-2026-10-07-lidar-and-speed.md`).
-* **3.76 G2 (latent):** inventory landmark points grow without bound;
-  unreachable while real frames carry no detections.
-* **3.140 criterion 2** holds L4's floor walks behind every L3 row.
-* **3.83's code** stays on `plan/3.83-dining-room-trap`, off `dev`.
+* **3.56:** re-check the 8 s arrival deadline after 500+ real calls.
 
 **Open now** (claim first)
 
@@ -164,7 +163,6 @@ paragraph.**
   3.151 (merged 2026-11-05): F2's truth recorder holds under memory
   pressure (sampling apart from the writes; the body memory-locked, `FMEA_TRUTH_LOCK`);
   F2's new record is 3.135.B's.
-* 3.50.D5: criteria 6 (ten sessions) and 7 (15 cm, live).
 * 3.143: V3's slippers miss; the soak keeps no brain log.
 * The twin's 3.152.A readout (the Local VLM row, the operator line) is
   not yet deployed.
@@ -256,6 +254,12 @@ paragraph.**
 * 3.90: `robot/camera_stream.py`; `tier_frame_vote` off.
 * 3.46, 3.55, 3.60: missions record an inventory; nothing reads it. 3.51, 3.54: rooms from
   CLIP, not wired. 3.41: TensorRT not adopted.
+* 3.165 (3.76 G2): a landmark holds at most 32 weighted members (`FOLD_M`
+  0.05 m), its position still the mean of every observation; the sweep is
+  `dev`'s to the number; criterion 2 FAILED as written (1.56x, bar 1.5x).
+* 3.167: the sweep's seed-3463 precision 97.1% -> 93.8% is 3.74 B's floor
+  band moving the robot (`fc5c2122`), one seed's variance (four seeds pooled
+  96.5% -> 96.9%); a pooled 3.60 bar is proposed to the user.
 
 *Explore and goal choice*
 
@@ -278,16 +282,27 @@ paragraph.**
 *Safety, stops and arbitration*
 
 * 3.76: the pre-rule review is done.
+* 3.159.B: a drop is a wall at the end of seen floor (`robot/drop_guard.py`,
+  the depth grid's `drop` block, sim `v` cells, `*_stairs` houses); 0 falls
+  in every sweep and 160 missions; D2/D4 (turns within a cell of an edge)
+  failed, B2 (the costmap mark, after 3.145) open. Off on every real body.
 * 3.82, 3.84, 3.86, 3.97, 3.104: a person's Stop latches the brain out
   until a mission starts (`POST /autonomy/resume`); a person's move ends a
   nav2 goal under every drive; a Stop during the arrival's confirmation
   ends it `cancelled`; the twin names each refusal.
+* 3.145: a brain's nav2 goal is leased (`POST /autonomy/heartbeat` every
+  0.25 s): 1 s silent ends it and latches the brain out `autonomy_lapsed`
+  until a start; desktop F6g/F7g met, the board's re-run owed after 11-23.
 * 3.141.B, E1: `_PivotRows`, `_ScanPoints` (the scan's points once per scan), the corridor in numpy; exactly dev's answers (`tests/vet_reference.py`). 3.144.A: no FORWARD without a usable scan
   (`ahead_not_observed`).
 * 3.137.A-B: the battery ladder (`robot/battery_ladder.py`; 10.5 / 10.2 /
   10.0 V, placeholders) and the twin's banner. 3.74.A-B: the floor band in series with the cone and
   corridor; gap: a creep or pivot can carry a sock inside its 14 cm blind
   range. 3.99: interventions logged, local only (`control.intervention_report`).
+* 3.155: the robot server runs through `robot/locked_serve.py` (memory-locked,
+  `MCL_ONFAULT`, only under an unlimited memlock limit); F2 on the board 0
+  late wheel ticks 6/6 at 11-13 MB free. `picar-stack.service`'s
+  `LimitMEMLOCK=infinity` installed on the board 2026-11-06 (its brain now `bdcf782c`).
 
 *Missions*
 
@@ -304,6 +319,15 @@ paragraph.**
   fresh map; re-maps on entering unknown or on request (`POST /world/remap`);
   the scan-contradiction trigger is off (`PICAR_REMAP_CONTRADICTION=1`);
   `PICAR_MAP_RELOAD=0` maps from empty.
+  D5 (done 2026-11-07): carried landmarks keyed by the saved map; ten
+  sessions held memory (1.05x), Jetson reload 2.04 s, fall-backs carry 0;
+  FAILED as written: scan time (localisation node 1.8x the mapping node),
+  `home_first_floor`'s graph (54.6 MB after one session), its carry (4 of 30
+  over 15 cm: session 1's placements among the dining chairs).
+* 3.154: a new nav2 goal supersedes the live one with no cancel first (the
+  bridge defers the old one's cancel 2 s; a Stop clears it); explore sends
+  no DELETE before an approach. Desktop: approach aborted 14/30 -> 0/30.
+  The board's 3.136.B run 3 owed.
 * 3.105, 3.127, 3.133, 3.134: goals wait for nav2 and SLAM; a 503 names
   its `hold`. 3.136.G: nav2's goal id comes back in `POST /goal`'s reply
   (`status.explore.sent`); the desktop's image rebuilt from `dev`

@@ -1,0 +1,152 @@
+{
+ "summary": {
+  "mode": "stop",
+  "arm": "delete",
+  "image": "vision-picar-ros:plan-3.154",
+  "trials": 10,
+  "valid": 10,
+  "canceled_within_2s": 10
+ },
+ "rows": [
+  {
+   "trial": 0,
+   "mode": "stop",
+   "arm": "delete",
+   "a": [
+    1.95,
+    3.75
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "stop_state": "canceled",
+   "stop_s": 0.058,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 1,
+   "mode": "stop",
+   "arm": "delete",
+   "a": [
+    1.05,
+    2.85
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "stop_state": "canceled",
+   "stop_s": 0.06,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 2,
+   "mode": "stop",
+   "arm": "delete",
+   "a": [
+    2.25,
+    2.85
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "stop_state": "canceled",
+   "stop_s": 0.059,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 3,
+   "mode": "stop",
+   "arm": "delete",
+   "a": [
+    2.25,
+    3.75
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "stop_state": "canceled",
+   "stop_s": 0.07,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 4,
+   "mode": "stop",
+   "arm": "delete",
+   "a": [
+    0.75,
+    2.25
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "stop_state": "canceled",
+   "stop_s": 0.059,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 5,
+   "mode": "stop",
+   "arm": "delete",
+   "a": [
+    3.4499999999999997,
+    1.65
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "stop_state": "canceled",
+   "stop_s": 0.061,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 6,
+   "mode": "stop",
+   "arm": "delete",
+   "a": [
+    3.75,
+    2.55
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "stop_state": "canceled",
+   "stop_s": 0.06,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 7,
+   "mode": "stop",
+   "arm": "delete",
+   "a": [
+    4.05,
+    1.95
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "stop_state": "canceled",
+   "stop_s": 0.092,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 8,
+   "mode": "stop",
+   "arm": "delete",
+   "a": [
+    2.25,
+    3.4499999999999997
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "stop_state": "canceled",
+   "stop_s": 0.074,
+   "cleared": "canceled"
+  },
+  {
+   "trial": 9,
+   "mode": "stop",
+   "arm": "delete",
+   "a": [
+    2.25,
+    3.4499999999999997
+   ],
+   "a_code": 200,
+   "a_running": true,
+   "stop_state": "canceled",
+   "stop_s": 0.058,
+   "cleared": "canceled"
+  }
+ ]
+}

@@ -72,7 +72,17 @@ stays one landmark), and bridges any other same-label landmark it is also
 that close to (3.46 sweep 1: without the bridge a bed seen from two ends
 stayed two beds), else any landmark with a member within
 `RELABEL_M` (a wrong label at the same place is a vote, not a new object),
-else it starts a new one. The position is the mean of the member points.
+else it starts a new one. The position is the mean of every observation
+it took.
+
+Members are bounded (3.165; 3.76 G2: one point per observation for the
+whole mission, every detection scanning them all). A member is a weighted
+point; an observation within `FOLD_M` of a member of its own label folds
+into it (the weighted centroid), and past `MAX_POINTS` the two closest
+members of one label fold (or, with no two of one label, the two closest,
+under the heavier's label). A fold conserves the weighted sum, so the
+position, kept as running sums, is still the mean of every observation;
+only `near()` reads a folded observation where its member now is.
 
 ## Where detections come from
 
@@ -115,6 +125,8 @@ NEW_VIEW_M = 0.5
 NEW_VIEW_DEG = 30.0
 MERGE_M = 0.5
 RELABEL_M = 0.3
+FOLD_M = 0.05           # 3.165: an observation this close to a member of its label folds in
+MAX_POINTS = 32         # 3.165: members a landmark at most
 DISPUTE_SHARE = 1 / 3
 RANGE_GATE_DEG = 2.0
 MAX_RANGE_M = 4.0
@@ -219,6 +231,15 @@ def _bounded(votes: Counter, total: float = None) -> Counter:
     return Counter({k: v * total / have for k, v in votes.items()})
 
 
+def _fold(keep: list, m: list) -> None:
+    """Member `m` folded into member `keep`: the weighted centroid, the
+    weights summed, `keep`'s label (3.165)."""
+    w = keep[3] + m[3]
+    keep[0] = (keep[0] * keep[3] + m[0] * m[3]) / w
+    keep[1] = (keep[1] * keep[3] + m[1] * m[3]) / w
+    keep[3] = w
+
+
 def carry_seq_of(report) -> int:
     """3.50.D5: a saved report's place in the chain -- an integral number at
     least 0, else 0. One rule for the store's head choice and the next seq."""
@@ -235,7 +256,10 @@ class Landmark:
     id: int
     room: str
     first_step: Optional[int]
-    points: list = field(default_factory=list)       # (x, y, label)
+    # 3.165: members, [x, y, label, weight]; built from (x, y, label)
+    # tuples, each weight 1. `_sx`, `_sy`, `_n`: the weighted sums of every
+    # observation folded in, so the position never re-reads the members.
+    points: list = field(default_factory=list)
     score: float = 0.0
     last_step: Optional[int] = None
     # 3.60: looks are kept by the frame that made them, so a merge can union
@@ -252,6 +276,92 @@ class Landmark:
     # writes them to 3 decimals).
     carried: bool = False
     _carried_votes: Counter = field(default_factory=Counter)
+    _sx: float = 0.0
+    _sy: float = 0.0
+    _n: int = 0
+    # 3.165: a carried landmark's saved point never folds or moves (it is
+    # where the earlier mission put it); ids of the member lists, so a copy
+    # of a Landmark (deepcopy, pickle) loses them -- nothing copies one.
+    _anchors: set = field(default_factory=set)
+    _votes: Optional[Counter] = None                  # `votes`, until a look changes
+
+    def __post_init__(self):
+        given, self.points = self.points, []
+        for p in given:
+            self.add(float(p[0]), float(p[1]), p[2])
+        if self.carried:
+            self._anchors = {id(m) for m in self.points}
+
+    def add(self, x: float, y: float, label: str) -> None:
+        """One observation's point (3.165): folded into a member of its
+        label within `FOLD_M`, else a member of its own, then the cap."""
+        self._sx += x
+        self._sy += y
+        self._n += 1
+        self._place([x, y, label, 1])
+
+    def take(self, other: "Landmark") -> None:
+        """Every observation of `other` (a merge): its sums, then its members
+        placed as `add` places a point -- the same lists, so a member keeps
+        its identity until it folds."""
+        self._sx += other._sx
+        self._sy += other._sy
+        self._n += other._n
+        self._anchors |= other._anchors
+        for m in other.points:
+            self._place(m)
+
+    def _place(self, m: list) -> None:
+        if id(m) not in self._anchors:
+            for have in self.points:
+                if id(have) in self._anchors or have[2] != m[2]:
+                    continue
+                if math.hypot(have[0] - m[0], have[1] - m[1]) <= FOLD_M:
+                    _fold(have, m)
+                    return
+        self.points.append(m)
+        # Anchors never fold, so the cap can only be kept down to them.
+        while len(self.points) > MAX_POINTS:
+            if not (self._fold_closest_same() or self._fold_closest_any()):
+                break
+
+    def _closest(self, same_label: bool):
+        best = None
+        pts = self.points
+        for i in range(len(pts)):
+            a = pts[i]
+            if id(a) in self._anchors:
+                continue
+            for j in range(i + 1, len(pts)):
+                b = pts[j]
+                if id(b) in self._anchors or (same_label and a[2] != b[2]):
+                    continue
+                d = (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2
+                if best is None or d < best[0]:
+                    best = (d, i, j)
+        return best
+
+    def _fold_pair(self, i: int, j: int) -> None:
+        """Fold members i and j into the heavier (the earlier on a tie),
+        under its label; the lighter leaves the list."""
+        if self.points[i][3] < self.points[j][3]:
+            i, j = j, i
+        _fold(self.points[i], self.points[j])
+        del self.points[j]          # by place: an equal list may be another member
+
+    def _fold_closest_same(self) -> bool:
+        best = self._closest(same_label=True)
+        if best is None:
+            return False
+        self._fold_pair(best[1], best[2])
+        return True
+
+    def _fold_closest_any(self) -> bool:
+        best = self._closest(same_label=False)
+        if best is None:
+            return False
+        self._fold_pair(best[1], best[2])
+        return True
 
     @property
     def hits(self) -> int:
@@ -265,22 +375,29 @@ class Landmark:
     @property
     def votes(self) -> Counter:
         # Carried first: on a tie `most_common` keeps the order counted, so
-        # the saved label keeps its name.
-        return self._carried_votes + Counter(self._looks.values())
+        # the saved label keeps its name. 3.165: kept until `_looks` or
+        # `_carried_votes` changes (each write clears `_votes`), as `label`
+        # reads it for every landmark on every detection; read-only.
+        if self._votes is None:
+            self._votes = self._carried_votes + Counter(self._looks.values())
+        return self._votes
 
     @property
     def x(self) -> float:
-        return sum(p[0] for p in self.points) / len(self.points)
+        return self._sx / self._n
 
     @property
     def y(self) -> float:
-        return sum(p[1] for p in self.points) / len(self.points)
+        return self._sy / self._n
 
     @property
     def label(self) -> str:
         if self.votes:
             return self.votes.most_common(1)[0][0]
-        return Counter(p[2] for p in self.points).most_common(1)[0][0]
+        by_weight = Counter()
+        for p in self.points:
+            by_weight[p[2]] += p[3]
+        return by_weight.most_common(1)[0][0]
 
     @property
     def belief(self) -> float:
@@ -294,7 +411,7 @@ class Landmark:
         return second / (first + second) >= DISPUTE_SHARE
 
     def near(self, x: float, y: float, within: float) -> bool:
-        return any(math.hypot(px - x, py - y) <= within for px, py, _ in self.points)
+        return any(math.hypot(p[0] - x, p[1] - y) <= within for p in self.points)
 
     def as_dict(self) -> dict:
         return {"id": self.id, "label": self.label, "x_m": round(self.x, 3),
@@ -304,7 +421,7 @@ class Landmark:
                 "votes": {k: round(v, 3) if isinstance(v, float) else v
                           for k, v in self.votes.items()},
                 "room": self.room, "first_step": self.first_step,
-                "last_step": self.last_step, "points": len(self.points),
+                "last_step": self.last_step, "points": self._n,
                 "carried": self.carried}
 
 
@@ -382,7 +499,7 @@ class Inventory:
                 self._next_id += 1
                 self.landmarks.append(lm)
             else:
-                lm.points.append((x, y, label))
+                lm.add(x, y, label)
             lm.last_step = step
             if lm.first_step is None:
                 lm.first_step = step      # 3.50.D5: a carried landmark's first sighting here
@@ -459,7 +576,7 @@ class Inventory:
                     continue
                 if name and math.isfinite(n) and n > 0:
                     votes[name] += n
-            lm._carried_votes = _bounded(votes)
+            lm._carried_votes, lm._votes = _bounded(votes), None
             self._next_id += 1
             self.landmarks.append(lm)
             carried += 1
@@ -493,7 +610,7 @@ class Inventory:
         self._absorb(lm, others)
         lm.score = deserved
         if fresh and frame not in lm._looks:
-            lm._looks[frame] = label
+            lm._looks[frame], lm._votes = label, None
         if frame in lm._looks:
             lm._hit_pose = dict(pose)
 
@@ -513,7 +630,7 @@ class Inventory:
         are unions by frame, and the viewpoints are whichever part's are
         newest (3.60: the absorbed part's were dropped)."""
         for other in others:
-            keep.points.extend(other.points)
+            keep.take(other)
             if other._looks and max(other._looks) > max(keep._looks, default=0):
                 keep._hit_pose = other._hit_pose
             for frame, voted in other._looks.items():
@@ -523,6 +640,7 @@ class Inventory:
                 # merge weighs no more than the heavier part (review 4).
                 cap = max(sum(keep._carried_votes.values()), sum(other._carried_votes.values()))
                 keep._carried_votes = _bounded(keep._carried_votes + other._carried_votes, cap)
+            keep._votes = None
             keep.carried = keep.carried or other.carried
             keep._missed |= other._missed
             keep._missed -= keep._looks.keys()   # a frame that saw a part did not miss it

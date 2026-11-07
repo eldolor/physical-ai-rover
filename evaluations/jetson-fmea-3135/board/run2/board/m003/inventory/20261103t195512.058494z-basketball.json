@@ -1,0 +1,1181 @@
+{
+ "candidates": [
+  {
+   "belief": 0.741,
+   "carried": false,
+   "disputed": true,
+   "first_step": 1083,
+   "hits": 5,
+   "id": 69,
+   "label": "red backpack",
+   "last_step": 1313,
+   "misses": 8,
+   "points": 9,
+   "reported": false,
+   "room": "bedroom",
+   "votes": {
+    "dining table": 2,
+    "garbage can": 1,
+    "red backpack": 2
+   },
+   "x_m": 2.149,
+   "y_m": 6.093
+  },
+  {
+   "belief": 0.721,
+   "carried": false,
+   "disputed": false,
+   "first_step": 862,
+   "hits": 3,
+   "id": 62,
+   "label": "plunger",
+   "last_step": 880,
+   "misses": 4,
+   "points": 5,
+   "reported": false,
+   "room": "bedroom 3",
+   "votes": {
+    "plunger": 3
+   },
+   "x_m": 6.774,
+   "y_m": 2.166
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 67,
+   "hits": 1,
+   "id": 11,
+   "label": "dining table",
+   "last_step": 67,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "kitchen",
+   "votes": {
+    "dining table": 1
+   },
+   "x_m": 9.268,
+   "y_m": 14.888
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 480,
+   "hits": 1,
+   "id": 28,
+   "label": "dining table",
+   "last_step": 480,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "kitchen",
+   "votes": {
+    "dining table": 1
+   },
+   "x_m": 5.902,
+   "y_m": 14.282
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 802,
+   "hits": 1,
+   "id": 52,
+   "label": "dresser",
+   "last_step": 805,
+   "misses": 0,
+   "points": 4,
+   "reported": false,
+   "room": "bedroom 3",
+   "votes": {
+    "dresser": 1
+   },
+   "x_m": 8.436,
+   "y_m": 7.257
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 806,
+   "hits": 1,
+   "id": 53,
+   "label": "dresser",
+   "last_step": 806,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "bedroom 3",
+   "votes": {
+    "dresser": 1
+   },
+   "x_m": 7.867,
+   "y_m": 7.281
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 1282,
+   "hits": 1,
+   "id": 76,
+   "label": "house plant",
+   "last_step": 1282,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "bedroom",
+   "votes": {
+    "house plant": 1
+   },
+   "x_m": 0.77,
+   "y_m": 5.838
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 1,
+   "id": 3,
+   "label": "tv stand",
+   "last_step": 2,
+   "misses": 0,
+   "points": 3,
+   "reported": false,
+   "room": "living room 2",
+   "votes": {
+    "tv stand": 1
+   },
+   "x_m": 7.573,
+   "y_m": 8.535
+  },
+  {
+   "belief": 0.512,
+   "carried": false,
+   "disputed": false,
+   "first_step": 391,
+   "hits": 1,
+   "id": 27,
+   "label": "fridge",
+   "last_step": 391,
+   "misses": 2,
+   "points": 1,
+   "reported": false,
+   "room": "living room",
+   "votes": {
+    "fridge": 1
+   },
+   "x_m": 3.625,
+   "y_m": 11.348
+  },
+  {
+   "belief": 0.512,
+   "carried": false,
+   "disputed": false,
+   "first_step": 1261,
+   "hits": 1,
+   "id": 75,
+   "label": "plunger",
+   "last_step": 1261,
+   "misses": 2,
+   "points": 1,
+   "reported": false,
+   "room": "bedroom",
+   "votes": {
+    "plunger": 1
+   },
+   "x_m": 2.038,
+   "y_m": 5.859
+  },
+  {
+   "belief": 0.512,
+   "carried": false,
+   "disputed": false,
+   "first_step": 270,
+   "hits": 1,
+   "id": 25,
+   "label": "stool",
+   "last_step": 313,
+   "misses": 2,
+   "points": 2,
+   "reported": false,
+   "room": "living room",
+   "votes": {
+    "stool": 1
+   },
+   "x_m": 5.042,
+   "y_m": 11.153
+  },
+  {
+   "belief": 0.043,
+   "carried": false,
+   "disputed": true,
+   "first_step": 845,
+   "hits": 2,
+   "id": 60,
+   "label": "basketball",
+   "last_step": 1075,
+   "misses": 12,
+   "points": 4,
+   "reported": false,
+   "room": "bedroom",
+   "votes": {
+    "basketball": 1,
+    "dining table": 1
+   },
+   "x_m": 3.907,
+   "y_m": 3.528
+  },
+  {
+   "belief": 0.041,
+   "carried": false,
+   "disputed": false,
+   "first_step": 1027,
+   "hits": 1,
+   "id": 68,
+   "label": "dining table",
+   "last_step": 1027,
+   "misses": 10,
+   "points": 1,
+   "reported": false,
+   "room": "bedroom",
+   "votes": {
+    "dining table": 1
+   },
+   "x_m": 1.43,
+   "y_m": 5.924
+  }
+ ],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 1377,
+  "landmarks": 60,
+  "no_pose": 0,
+  "observations": 2920,
+  "reported": 47,
+  "unplaced": 8
+ },
+ "frame_id": null,
+ "map_id": "slam-a0e5e8f0",
+ "mission": "Find the basketball.",
+ "mission_id": "20261103T195512.058494Z-basketball",
+ "outcome": "out_of_budget",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 151,
+   "hits": 25,
+   "id": 17,
+   "label": "arm chair",
+   "last_step": 379,
+   "misses": 0,
+   "points": 60,
+   "reported": true,
+   "room": "kitchen",
+   "votes": {
+    "arm chair": 25
+   },
+   "x_m": 3.632,
+   "y_m": 8.374
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 772,
+   "hits": 31,
+   "id": 45,
+   "label": "basketball",
+   "last_step": 1309,
+   "misses": 0,
+   "points": 107,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "basketball": 30,
+    "bed": 1
+   },
+   "x_m": 6.341,
+   "y_m": 3.778
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 613,
+   "hits": 13,
+   "id": 34,
+   "label": "bed",
+   "last_step": 764,
+   "misses": 0,
+   "points": 105,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "bed": 13
+   },
+   "x_m": 10.864,
+   "y_m": 2.864
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 797,
+   "hits": 5,
+   "id": 49,
+   "label": "bed",
+   "last_step": 996,
+   "misses": 0,
+   "points": 27,
+   "reported": true,
+   "room": "bedroom 3",
+   "votes": {
+    "bed": 5
+   },
+   "x_m": 5.278,
+   "y_m": 6.325
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 830,
+   "hits": 42,
+   "id": 59,
+   "label": "bed",
+   "last_step": 1365,
+   "misses": 0,
+   "points": 246,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "bed": 42
+   },
+   "x_m": 1.884,
+   "y_m": 1.994
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 154,
+   "hits": 30,
+   "id": 19,
+   "label": "chair",
+   "last_step": 344,
+   "misses": 0,
+   "points": 176,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "chair": 30
+   },
+   "x_m": 1.73,
+   "y_m": 8.956
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 817,
+   "hits": 70,
+   "id": 54,
+   "label": "chair",
+   "last_step": 1376,
+   "misses": 0,
+   "points": 314,
+   "reported": true,
+   "room": "bedroom 3",
+   "votes": {
+    "bed": 2,
+    "chair": 67,
+    "dining table": 1
+   },
+   "x_m": 1.837,
+   "y_m": 3.616
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 57,
+   "hits": 31,
+   "id": 10,
+   "label": "counter top",
+   "last_step": 489,
+   "misses": 0,
+   "points": 209,
+   "reported": true,
+   "room": "living room 2",
+   "votes": {
+    "counter top": 31
+   },
+   "x_m": 2.683,
+   "y_m": 13.901
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 17,
+   "hits": 7,
+   "id": 6,
+   "label": "dining table",
+   "last_step": 508,
+   "misses": 0,
+   "points": 16,
+   "reported": true,
+   "room": "living room 2",
+   "votes": {
+    "dining table": 7
+   },
+   "x_m": 8.41,
+   "y_m": 13.601
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 155,
+   "hits": 22,
+   "id": 21,
+   "label": "dining table",
+   "last_step": 330,
+   "misses": 0,
+   "points": 55,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "chair": 1,
+    "dining table": 21
+   },
+   "x_m": 1.773,
+   "y_m": 9.21
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 535,
+   "hits": 10,
+   "id": 29,
+   "label": "dining table",
+   "last_step": 589,
+   "misses": 0,
+   "points": 22,
+   "reported": true,
+   "room": "living room 2",
+   "votes": {
+    "dining table": 10
+   },
+   "x_m": 13.219,
+   "y_m": 8.59
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 543,
+   "hits": 6,
+   "id": 31,
+   "label": "dining table",
+   "last_step": 592,
+   "misses": 0,
+   "points": 12,
+   "reported": true,
+   "room": "living room 2",
+   "votes": {
+    "dining table": 6
+   },
+   "x_m": 14.677,
+   "y_m": 8.613
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 774,
+   "hits": 41,
+   "id": 46,
+   "label": "dining table",
+   "last_step": 1376,
+   "misses": 0,
+   "points": 199,
+   "reported": true,
+   "room": "bedroom 3",
+   "votes": {
+    "bed": 2,
+    "chair": 5,
+    "dining table": 34
+   },
+   "x_m": 4.87,
+   "y_m": 4.904
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 828,
+   "hits": 54,
+   "id": 58,
+   "label": "dining table",
+   "last_step": 1364,
+   "misses": 0,
+   "points": 222,
+   "reported": true,
+   "room": "bedroom 3",
+   "votes": {
+    "dining table": 54
+   },
+   "x_m": 1.709,
+   "y_m": 3.329
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 10,
+   "id": 1,
+   "label": "dog bed",
+   "last_step": 533,
+   "misses": 0,
+   "points": 26,
+   "reported": true,
+   "room": "living room 2",
+   "votes": {
+    "dog bed": 10
+   },
+   "x_m": 9.809,
+   "y_m": 9.278
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 76,
+   "hits": 18,
+   "id": 12,
+   "label": "fridge",
+   "last_step": 489,
+   "misses": 0,
+   "points": 84,
+   "reported": true,
+   "room": "kitchen",
+   "votes": {
+    "fridge": 18
+   },
+   "x_m": 1.212,
+   "y_m": 12.395
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 611,
+   "hits": 7,
+   "id": 33,
+   "label": "garbage can",
+   "last_step": 632,
+   "misses": 0,
+   "points": 13,
+   "reported": true,
+   "room": "living room 3",
+   "votes": {
+    "garbage can": 7
+   },
+   "x_m": 12.64,
+   "y_m": 4.523
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 635,
+   "hits": 6,
+   "id": 36,
+   "label": "garbage can",
+   "last_step": 690,
+   "misses": 0,
+   "points": 13,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "garbage can": 6
+   },
+   "x_m": 14.766,
+   "y_m": 7.111
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 874,
+   "hits": 9,
+   "id": 63,
+   "label": "garbage can",
+   "last_step": 1070,
+   "misses": 0,
+   "points": 27,
+   "reported": true,
+   "room": "bedroom 3",
+   "votes": {
+    "garbage can": 9
+   },
+   "x_m": 6.673,
+   "y_m": 0.936
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 51,
+   "hits": 24,
+   "id": 9,
+   "label": "house plant",
+   "last_step": 493,
+   "misses": 0,
+   "points": 76,
+   "reported": true,
+   "room": "living room 2",
+   "votes": {
+    "house plant": 24
+   },
+   "x_m": 4.13,
+   "y_m": 14.598
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 152,
+   "hits": 25,
+   "id": 18,
+   "label": "house plant",
+   "last_step": 379,
+   "misses": 0,
+   "points": 63,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "house plant": 25
+   },
+   "x_m": 2.932,
+   "y_m": 8.101
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 582,
+   "hits": 5,
+   "id": 32,
+   "label": "house plant",
+   "last_step": 598,
+   "misses": 0,
+   "points": 6,
+   "reported": true,
+   "room": "living room 3",
+   "votes": {
+    "house plant": 5
+   },
+   "x_m": 12.322,
+   "y_m": 10.806
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 825,
+   "hits": 20,
+   "id": 56,
+   "label": "house plant",
+   "last_step": 1315,
+   "misses": 0,
+   "points": 40,
+   "reported": true,
+   "room": "bedroom 3",
+   "votes": {
+    "house plant": 20
+   },
+   "x_m": 0.884,
+   "y_m": 5.08
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 901,
+   "hits": 10,
+   "id": 65,
+   "label": "laundry hamper",
+   "last_step": 950,
+   "misses": 0,
+   "points": 22,
+   "reported": true,
+   "room": "bathroom 3",
+   "votes": {
+    "laundry hamper": 10
+   },
+   "x_m": 8.106,
+   "y_m": 1.877
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 860,
+   "hits": 11,
+   "id": 61,
+   "label": "plunger",
+   "last_step": 952,
+   "misses": 0,
+   "points": 24,
+   "reported": true,
+   "room": "bedroom 3",
+   "votes": {
+    "plunger": 11
+   },
+   "x_m": 7.954,
+   "y_m": 0.864
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 1097,
+   "hits": 6,
+   "id": 71,
+   "label": "plunger",
+   "last_step": 1263,
+   "misses": 0,
+   "points": 23,
+   "reported": true,
+   "room": "bathroom",
+   "votes": {
+    "plunger": 5,
+    "sink": 1
+   },
+   "x_m": 3.632,
+   "y_m": 7.405
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 1084,
+   "hits": 7,
+   "id": 70,
+   "label": "red backpack",
+   "last_step": 1145,
+   "misses": 0,
+   "points": 26,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "red backpack": 7
+   },
+   "x_m": 1.54,
+   "y_m": 7.185
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 140,
+   "hits": 21,
+   "id": 15,
+   "label": "safe",
+   "last_step": 384,
+   "misses": 0,
+   "points": 81,
+   "reported": true,
+   "room": "kitchen",
+   "votes": {
+    "safe": 21
+   },
+   "x_m": 5.141,
+   "y_m": 9.607
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 641,
+   "hits": 5,
+   "id": 38,
+   "label": "side table",
+   "last_step": 697,
+   "misses": 0,
+   "points": 14,
+   "reported": true,
+   "room": "bathroom 2",
+   "votes": {
+    "side table": 5
+   },
+   "x_m": 13.364,
+   "y_m": 2.674
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 632,
+   "hits": 15,
+   "id": 35,
+   "label": "sink",
+   "last_step": 696,
+   "misses": 0,
+   "points": 51,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "sink": 15
+   },
+   "x_m": 14.511,
+   "y_m": 5.491
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 902,
+   "hits": 9,
+   "id": 66,
+   "label": "sink",
+   "last_step": 939,
+   "misses": 0,
+   "points": 22,
+   "reported": true,
+   "room": "bathroom 3",
+   "votes": {
+    "sink": 9
+   },
+   "x_m": 8.607,
+   "y_m": 1.125
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 1103,
+   "hits": 6,
+   "id": 72,
+   "label": "sink",
+   "last_step": 1264,
+   "misses": 0,
+   "points": 31,
+   "reported": true,
+   "room": "bathroom",
+   "votes": {
+    "sink": 6
+   },
+   "x_m": 3.321,
+   "y_m": 6.522
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 13,
+   "hits": 10,
+   "id": 5,
+   "label": "sofa",
+   "last_step": 518,
+   "misses": 0,
+   "points": 44,
+   "reported": true,
+   "room": "living room 2",
+   "votes": {
+    "sofa": 10
+   },
+   "x_m": 7.031,
+   "y_m": 11.716
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 155,
+   "hits": 26,
+   "id": 20,
+   "label": "sofa",
+   "last_step": 390,
+   "misses": 0,
+   "points": 107,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "chair": 1,
+    "sofa": 25
+   },
+   "x_m": 2.133,
+   "y_m": 10.505
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 538,
+   "hits": 12,
+   "id": 30,
+   "label": "sofa",
+   "last_step": 596,
+   "misses": 0,
+   "points": 57,
+   "reported": true,
+   "room": "living room 2",
+   "votes": {
+    "sofa": 12
+   },
+   "x_m": 14.213,
+   "y_m": 9.56
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 137,
+   "hits": 5,
+   "id": 14,
+   "label": "stool",
+   "last_step": 462,
+   "misses": 0,
+   "points": 10,
+   "reported": true,
+   "room": "kitchen",
+   "votes": {
+    "stool": 5
+   },
+   "x_m": 5.449,
+   "y_m": 12.219
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 640,
+   "hits": 5,
+   "id": 37,
+   "label": "toilet",
+   "last_step": 663,
+   "misses": 0,
+   "points": 16,
+   "reported": true,
+   "room": "bathroom 2",
+   "votes": {
+    "toilet": 5
+   },
+   "x_m": 14.407,
+   "y_m": 2.95
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 884,
+   "hits": 7,
+   "id": 64,
+   "label": "toilet",
+   "last_step": 959,
+   "misses": 0,
+   "points": 21,
+   "reported": true,
+   "room": "bathroom 3",
+   "votes": {
+    "toilet": 7
+   },
+   "x_m": 4.43,
+   "y_m": 1.054
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 143,
+   "hits": 26,
+   "id": 16,
+   "label": "tv stand",
+   "last_step": 379,
+   "misses": 0,
+   "points": 130,
+   "reported": true,
+   "room": "kitchen",
+   "votes": {
+    "tv stand": 26
+   },
+   "x_m": 4.798,
+   "y_m": 8.537
+  },
+  {
+   "belief": 0.968,
+   "carried": false,
+   "disputed": false,
+   "first_step": 194,
+   "hits": 4,
+   "id": 23,
+   "label": "chair",
+   "last_step": 327,
+   "misses": 0,
+   "points": 13,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "chair": 4
+   },
+   "x_m": 0.913,
+   "y_m": 8.495
+  },
+  {
+   "belief": 0.968,
+   "carried": false,
+   "disputed": false,
+   "first_step": 646,
+   "hits": 4,
+   "id": 39,
+   "label": "dresser",
+   "last_step": 769,
+   "misses": 0,
+   "points": 8,
+   "reported": true,
+   "room": "bathroom 2",
+   "votes": {
+    "dresser": 4
+   },
+   "x_m": 10.316,
+   "y_m": 7.194
+  },
+  {
+   "belief": 0.968,
+   "carried": false,
+   "disputed": false,
+   "first_step": 1112,
+   "hits": 4,
+   "id": 73,
+   "label": "garbage can",
+   "last_step": 1151,
+   "misses": 0,
+   "points": 24,
+   "reported": true,
+   "room": "bathroom",
+   "votes": {
+    "garbage can": 4
+   },
+   "x_m": 1.583,
+   "y_m": 6.509
+  },
+  {
+   "belief": 0.968,
+   "carried": false,
+   "disputed": false,
+   "first_step": 676,
+   "hits": 4,
+   "id": 41,
+   "label": "plunger",
+   "last_step": 690,
+   "misses": 0,
+   "points": 8,
+   "reported": true,
+   "room": "bathroom 2",
+   "votes": {
+    "plunger": 4
+   },
+   "x_m": 14.24,
+   "y_m": 7.132
+  },
+  {
+   "belief": 0.928,
+   "carried": false,
+   "disputed": false,
+   "first_step": 43,
+   "hits": 3,
+   "id": 8,
+   "label": "dining table",
+   "last_step": 506,
+   "misses": 0,
+   "points": 6,
+   "reported": true,
+   "room": "living room 2",
+   "votes": {
+    "dining table": 3
+   },
+   "x_m": 8.353,
+   "y_m": 14.81
+  },
+  {
+   "belief": 0.928,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 3,
+   "id": 2,
+   "label": "garbage can",
+   "last_step": 527,
+   "misses": 0,
+   "points": 9,
+   "reported": true,
+   "room": "living room 2",
+   "votes": {
+    "garbage can": 3
+   },
+   "x_m": 8.823,
+   "y_m": 8.107
+  },
+  {
+   "belief": 0.928,
+   "carried": false,
+   "disputed": false,
+   "first_step": 1112,
+   "hits": 3,
+   "id": 74,
+   "label": "toilet",
+   "last_step": 1149,
+   "misses": 0,
+   "points": 11,
+   "reported": true,
+   "room": "bathroom",
+   "votes": {
+    "toilet": 3
+   },
+   "x_m": 0.934,
+   "y_m": 6.527
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 277,
+   "hits": 2,
+   "id": 26,
+   "label": "dining table",
+   "last_step": 344,
+   "misses": 0,
+   "points": 2,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "dining table": 2
+   },
+   "x_m": 0.664,
+   "y_m": 9.262
+  }
+ ]
+}

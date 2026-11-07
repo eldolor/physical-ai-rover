@@ -17,6 +17,10 @@ KillMode=mixed
 # 3.80.B: below everything else when memory runs out, the local VLM
 # (+1000) first. Not -1000: a stack that is itself the leak stays killable.
 OOMScoreAdjust=-900
+# 3.155: the robot server locks its touched pages (robot/locked_serve.py), so
+# a squeeze cannot stall its wheel loop on page faults; it locks only under
+# an unlimited memlock limit (systemd's default is 64 KB).
+LimitMEMLOCK=infinity
 TimeoutStopSec=20
 StandardOutput=append:/home/picar/.vision-picar-tunnel.log
 StandardError=append:/home/picar/.vision-picar-tunnel.log

@@ -337,3 +337,24 @@ def test_run1_on_the_board_scores_as_recorded(tmp_path):
     assert s["d"]["by_house"] == {"home_first_floor": "4/4", "complex_house": "1/4",
                                   "procthor:val:0": "3/4", "procthor:val:2": "0/4",
                                   "procthor:val:3": "2/3"}
+
+
+def test_run2_on_the_board_scores_as_recorded(tmp_path):
+    """3.135.C run 2 (2026-11-03, `dev` 68703567, 3.142.B): every target
+    encoded in the soak's own cache; (a) and (b) met, (c) and (d) failed."""
+    import shutil
+    out = tmp_path / "run2"
+    shutil.copytree(HERE / "board" / "run2", out,
+                    ignore=shutil.ignore_patterns("summary.json"))
+    assert ss.main([str(out)]) == 0
+    s = json.loads((out / "summary.json").read_text())
+    assert s["complete"] and s["run_s"] == 15463.1 and not s["met"]
+    assert s["a"]["met"] and s["a"]["min_mb"] == 669 and s["a"]["account_min_mb"] == 760.1
+    assert s["b"]["met"] and s["b"]["slope_mb_per_h"] == 31.18 and s["b"]["slope_missions"] == 14
+    assert s["b"]["over"] == []
+    assert s["workload"] == {"missions": 20, "recorded": 20, "yoloe_encoded": 20,
+                             "clip_encoded": 19, "missing": [], "not_judged": [19], "met": True}
+    assert not s["c"]["met"] and s["c"]["late_ticks"] == 1 and s["c"]["oom_kills"] == 0
+    assert s["c"]["moving_ticks"] == 215038
+    assert not s["d"]["met"] and (s["d"]["found"], s["d"]["missions"]) == (11, 21)
+    assert s["d"]["contacts"] == 0

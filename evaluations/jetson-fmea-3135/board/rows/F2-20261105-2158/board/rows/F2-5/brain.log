@@ -1,0 +1,5 @@
+1793951222.263 WARNING identity vision-picar brain server starting -- git=3bec4455e executable=/home/picar/bench-3135/.venv/bin/python config=(default)
+1793951330.304 WARNING tiered local VLM absent for cold_search (local VLM unreachable: Server disconnected without sending a response.); asking the cloud
+1793951330.987 WARNING tiered local VLM down; its questions go as with no local tier until /health says ready (probed every 5 s)
+1793951353.004 WARNING safety Blocked FORWARD: distance=16.5cm < min=20cm (depth_grid)
+1793951415.106 WARNING safety Blocked REVERSE: rear clearance=17.1cm < min=20cm (scan_footprint)

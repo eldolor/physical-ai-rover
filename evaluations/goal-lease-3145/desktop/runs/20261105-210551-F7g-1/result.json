@@ -1,0 +1,65 @@
+{
+ "row": "F7g",
+ "title": "Brain hung (alive, silent; a nav2 goal)",
+ "reading": "as F7, the robot on an explore mission's nav2 goal",
+ "plant": null,
+ "house": "scaled_house",
+ "host": "anshu-Legion-T5-28IMB05",
+ "started": "2026-11-05T21:07:00-0600",
+ "recovery_s": 4.84,
+ "measures": {
+  "fault_at": 143437.031617933,
+  "driver_at_fault": null,
+  "cont_at": 143467.031690321,
+  "outcome": "failed",
+  "end_state": null,
+  "end_reason": "the robot server ended autonomy: autonomy_lapsed: brain sent no heartbeat for 1.02s with a nav2 goal of its own -- the goal was ended and autonomy stays stopped until a new mission starts, so brain was refused",
+  "end_error": "the robot server ended autonomy: autonomy_lapsed: brain sent no heartbeat for 1.02s with a nav2 goal of its own -- the goal was ended and autonomy stays stopped until a new mission starts, so brain was refused",
+  "status": {
+   "running": false,
+   "outcome": "failed",
+   "end_state": null,
+   "end_reason": "the robot server ended autonomy: autonomy_lapsed: brain sent no heartbeat for 1.02s with a nav2 goal of its own -- the goal was ended and autonomy stays stopped until a new mission starts, so brain was refused",
+   "cancelled_by": null,
+   "step": 1,
+   "last_action": "WAIT",
+   "error": "the robot server ended autonomy: autonomy_lapsed: brain sent no heartbeat for 1.02s with a nav2 goal of its own -- the goal was ended and autonomy stays stopped until a new mission starts, so brain was refused"
+  },
+  "refusals": {
+   "preempted": 2,
+   "autonomy_lapsed": 2
+  },
+  "no_feedback_refusals": 0,
+  "wheel_loop": {
+   "late": 0,
+   "moving": 95,
+   "max_dt_s": 0.0526
+  },
+  "last_refusal": {
+   "reason": "autonomy_lapsed",
+   "detail": "brain sent no heartbeat for 1.02s with a nav2 goal of its own -- the goal was ended and autonomy stays stopped until a new mission starts, so brain was refused",
+   "driver": "brain",
+   "at": 143467.085936549,
+   "seconds_ago": 11.45
+  },
+  "forward_at_fault": true,
+  "wheels_zero_s": 0.97,
+  "travel_cm": 7.2,
+  "drive_after_cont": 0,
+  "truth_hole_s": 0.022,
+  "contacts": 0,
+  "gap_unknown": 0,
+  "truth_span": [
+   143425.2612,
+   143484.3213
+  ],
+  "mem_available_min_mb": 10563,
+  "oom_kills": 0
+ },
+ "verdict": {
+  "pass": true,
+  "valid": true,
+  "reasons": []
+ },
+ "ended": "2026-11-05T21:07:59-0600"
+}

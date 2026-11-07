@@ -159,25 +159,35 @@ def _nearest_of_class(lm: dict) -> tuple:
 
 
 class _LookCounter:
-    """3.60 criterion 4, measured from OUTSIDE the inventory: every point a
-    frame adds is tagged with that frame (by object identity -- `_absorb`
-    moves the same tuples between landmarks, so a tag survives a merge).
-    After each frame, a landmark holding more hits than distinct frames
-    among its points has counted a look twice. `violations` counts
-    landmark-frames in that state."""
+    """3.60 criterion 4, measured from OUTSIDE the inventory: every member
+    is tagged with each frame in which its weight grew (by object identity
+    -- `_absorb` moves the same member lists between landmarks, so a tag
+    survives a merge). After each frame, a landmark holding more hits than
+    distinct frames among its members has counted a look twice.
+    `violations` counts landmark-frames in that state.
+
+    3.165: a member folded into another keeps only the survivor's tags, so
+    frames can only be undercounted -- violations over-reported, never
+    hidden; a 0 is still a real 0. Every tagged member is held, so a
+    folded-away member's id is never reused by a new one."""
 
     def __init__(self, inventory):
-        self.inv, self.frame, self.frame_of, self.violations = inventory, 0, {}, 0
+        self.inv, self.frame, self.violations = inventory, 0, 0
+        self.frames_of, self.weight_of, self.held = {}, {}, []
         real = inventory.observe
 
         def observe(*a, **kw):
             real(*a, **kw)
             self.frame += 1
             for lm in self.inv.landmarks:
-                for pt in lm.points:
-                    self.frame_of.setdefault(id(pt), self.frame)
+                for m in lm.points:
+                    if id(m) not in self.weight_of:
+                        self.held.append(m)
+                    if m[3] != self.weight_of.get(id(m)):
+                        self.weight_of[id(m)] = m[3]
+                        self.frames_of.setdefault(id(m), set()).add(self.frame)
             for lm in self.inv.landmarks:
-                if lm.hits > len({self.frame_of[id(pt)] for pt in lm.points}):
+                if lm.hits > len(set().union(*(self.frames_of[id(m)] for m in lm.points))):
                     self.violations += 1
         inventory.observe = observe
 

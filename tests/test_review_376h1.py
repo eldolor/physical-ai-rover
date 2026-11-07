@@ -267,11 +267,11 @@ def test_h1_1_a_new_goal_does_not_keep_the_old_handle(bridge_mod):
     a cancel must not be aimed at the superseded one's handle alone."""
     b = _bridge(bridge_mod)
     old = _accepted_goal(b)
-    b.send_goal({"x_m": 2.0, "y_m": 0.0})          # supersedes; old is cancelled once
-    assert old.cancels == 1
+    b.send_goal({"x_m": 2.0, "y_m": 0.0})          # supersedes; 3.154: no cancel at the switch
+    assert old.cancels == 0
     new = _Handle()
     b.nav.futures[-1].complete(new)
-    b.cancel_goal()
+    b.cancel_goal()                                # a Stop reaches both at once (3.154)
     assert new.cancels == 1 and old.cancels == 1
     old.result_future.complete(types.SimpleNamespace(status=5))   # the old one's late result
     assert b.goal_state()[1]["goal"]["state"] == "active", "the old result must not end the new goal"
@@ -440,6 +440,9 @@ def test_q3_a_goal_superseded_while_pending_is_cancelled_until_its_result(bridge
     b.send_goal({"x_m": 2.0, "y_m": 0.0})
     late = _Handle()
     first.complete(late)                                 # accepted after it was superseded
+    assert late.cancels == 0                             # 3.154: after the grace, not mid-switch
+    _later(b)
+    b._resend_cancels()
     assert late.cancels == 1
     _later(b)
     b._resend_cancels()
@@ -1170,13 +1173,12 @@ def test_round10_a_stop_reaches_a_superseded_goal_aged_6_s_at_once(bridge_mod):
     one schedule for every entry, whoever asks. Red on cca386b: not sent."""
     b = _bridge(bridge_mod)
     old = _accepted_goal(b)
-    b.send_goal({"x_m": 2.0, "y_m": 0.0})                # old superseded: one cancel
+    b.send_goal({"x_m": 2.0, "y_m": 0.0})                # old superseded (3.154: its cancel deferred)
     b.nav.futures[-1].complete(_Handle())
     entry = b.cancelling[id(old)]
     entry["since"] -= 6.0
-    entry["last"] = time.monotonic() - 0.3
     b.cancel_goal()
-    assert old.cancels == 2
+    assert old.cancels == 1
 
 
 def test_round10_a_409_whose_body_is_not_an_object_does_not_raise():

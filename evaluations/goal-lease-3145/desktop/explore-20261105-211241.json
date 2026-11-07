@@ -1,0 +1,49 @@
+{
+ "stamp": "20261105-211241",
+ "criterion": 4,
+ "runs": [
+  {
+   "run": 1,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen, living room searched. Found.",
+   "mission_s": 38.2,
+   "goal_lease": {
+    "owner": null,
+    "lapses": 0,
+    "last_lapse": null,
+    "lease_s": 1.0
+   },
+   "contacts": 0,
+   "met": true
+  },
+  {
+   "run": 2,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen, living room searched. Found.",
+   "mission_s": 60.1,
+   "goal_lease": {
+    "owner": null,
+    "lapses": 0,
+    "last_lapse": null,
+    "lease_s": 1.0
+   },
+   "contacts": 0,
+   "met": true
+  },
+  {
+   "run": 3,
+   "outcome": "found",
+   "end_reason": "Hallway, kitchen, living room searched. Found.",
+   "mission_s": 37.1,
+   "goal_lease": {
+    "owner": null,
+    "lapses": 0,
+    "last_lapse": null,
+    "lease_s": 1.0
+   },
+   "contacts": 0,
+   "met": true
+  }
+ ],
+ "met": true
+}

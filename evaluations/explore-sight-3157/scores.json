@@ -1,0 +1,778 @@
+{
+ "frames": 2261,
+ "in_view": 535,
+ "hfov_deg": 66.0,
+ "bars": {
+  "B1": 0.7,
+  "B2k3": 0.9,
+  "B2k5": 0.95,
+  "B3p50": 3.0,
+  "B3p90": 6.0,
+  "B4frame": 0.02,
+  "B4k5": 0.01,
+  "B5": 19,
+  "B5deg": 6.0
+ },
+ "sources": {
+  "perc": {
+   "B1_in_view_rate": 0.7963,
+   "B2_k3": {
+    "windows": 455,
+    "with_sighting": 432,
+    "rate": 0.9495
+   },
+   "B2_k5": {
+    "windows": 395,
+    "with_sighting": 390,
+    "rate": 0.9873
+   },
+   "B3": {
+    "sighted": 49,
+    "of": 60,
+    "p50": 0.12,
+    "p90": 1.19,
+    "max": 13.2,
+    "errors": [
+     0.01,
+     0.01,
+     0.02,
+     0.02,
+     0.02,
+     0.02,
+     0.03,
+     0.03,
+     0.03,
+     0.04,
+     0.04,
+     0.06,
+     0.07,
+     0.07,
+     0.07,
+     0.08,
+     0.08,
+     0.09,
+     0.09,
+     0.1,
+     0.1,
+     0.1,
+     0.1,
+     0.11,
+     0.12,
+     0.12,
+     0.12,
+     0.12,
+     0.13,
+     0.15,
+     0.15,
+     0.15,
+     0.15,
+     0.16,
+     0.22,
+     0.27,
+     0.3,
+     0.32,
+     0.43,
+     0.45,
+     0.46,
+     0.57,
+     0.76,
+     0.86,
+     1.19,
+     1.84,
+     2.51,
+     4.46,
+     13.2
+    ]
+   },
+   "B4_frame": {
+    "false": 5,
+    "of": 1726,
+    "rate": 0.0029
+   },
+   "B4_k5": {
+    "windows": 1567,
+    "two_or_more": 1,
+    "rate": 0.0006
+   },
+   "B5": {
+    "right": 14,
+    "unlabelled": 0,
+    "of": 21,
+    "walks": {
+     "a-white-phone-charger-ca-20260921-203250": {
+      "frame": "frame-0009.jpg",
+      "in_view": true,
+      "error_deg": 0.33,
+      "right": true
+     },
+     "a-white-phone-charger-ca-20260921-203355": {
+      "frame": "frame-0002.jpg",
+      "in_view": true,
+      "error_deg": 0.09,
+      "right": true
+     },
+     "blue-bottle-20260907-142454": {
+      "frame": "frame-0004.jpg",
+      "in_view": true,
+      "error_deg": 0.18,
+      "right": true
+     },
+     "blue-bottle-20260907-185007": {
+      "frame": "frame-0208.jpg",
+      "in_view": true,
+      "error_deg": 0.02,
+      "right": true
+     },
+     "blue-shoes-20260907-152528": {
+      "frame": "frame-0004.jpg",
+      "in_view": true,
+      "error_deg": 0.04,
+      "right": true
+     },
+     "blue-shoes-20260908-210511": {
+      "frame": "frame-0023.jpg",
+      "in_view": true,
+      "error_deg": 0.55,
+      "right": true
+     },
+     "grey-backpack-20260921-203627": {
+      "frame": "frame-0000.jpg",
+      "in_view": false,
+      "right": false
+     },
+     "grey-backpack-20260921-203748": {
+      "frame": "frame-0000.jpg",
+      "in_view": true,
+      "error_deg": 0.32,
+      "right": true
+     },
+     "grey-backpack-opus-4-5-20260921-210743": {
+      "frame": "frame-0004.jpg",
+      "in_view": true,
+      "error_deg": 0.13,
+      "right": true
+     },
+     "red-backpack-20260907-144856": {
+      "frame": "frame-0003.jpg",
+      "in_view": true,
+      "error_deg": 0.03,
+      "right": true
+     },
+     "red-backpack-20260912-224429": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "red-backpack-20260912-224646": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "red-backpack-20260912-224822": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "red-backpack-20260912-225001": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "red-backpack-20260921-203152": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "woven-laundry-basket-20260908-215140": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "woven-laundry-basket-20260908-215252": {
+      "frame": "frame-0008.jpg",
+      "in_view": true,
+      "error_deg": 0.12,
+      "right": true
+     },
+     "woven-laundry-basket-20260908-215351": {
+      "frame": "frame-0000.jpg",
+      "in_view": true,
+      "error_deg": 0.05,
+      "right": true
+     },
+     "woven-laundry-basket-20260912-231358": {
+      "frame": "frame-0005.jpg",
+      "in_view": true,
+      "error_deg": 0.17,
+      "right": true
+     },
+     "woven-laundry-basket-20260913-115414": {
+      "frame": "frame-0196.jpg",
+      "in_view": true,
+      "error_deg": 0.05,
+      "right": true
+     },
+     "woven-laundry-basket-20260913-115703": {
+      "frame": "frame-0008.jpg",
+      "in_view": true,
+      "error_deg": 0.04,
+      "right": true
+     }
+    }
+   },
+   "per_object": {
+    "Grey backpack": {
+     "in_view": 94,
+     "sighted": 85,
+     "out_of_view": 117,
+     "false": 3
+    },
+    "a white phone charger cable": {
+     "in_view": 118,
+     "sighted": 90,
+     "out_of_view": 58,
+     "false": 0
+    },
+    "blue and yellow running shoes": {
+     "in_view": 38,
+     "sighted": 25,
+     "out_of_view": 25,
+     "false": 1
+    },
+    "blue bottle": {
+     "in_view": 28,
+     "sighted": 20,
+     "out_of_view": 214,
+     "false": 0
+    },
+    "burgundy backpack": {
+     "in_view": 33,
+     "sighted": 33,
+     "out_of_view": 5,
+     "false": 0
+    },
+    "red backpack": {
+     "in_view": 0,
+     "sighted": 0,
+     "out_of_view": 640,
+     "false": 0
+    },
+    "woven laundry basket": {
+     "in_view": 224,
+     "sighted": 173,
+     "out_of_view": 667,
+     "false": 1
+    }
+   }
+  },
+  "both": {
+   "B1_in_view_rate": 0.9103,
+   "B2_k3": {
+    "windows": 455,
+    "with_sighting": 449,
+    "rate": 0.9868
+   },
+   "B2_k5": {
+    "windows": 395,
+    "with_sighting": 394,
+    "rate": 0.9975
+   },
+   "B3": {
+    "sighted": 55,
+    "of": 60,
+    "p50": 0.12,
+    "p90": 0.86,
+    "max": 13.2,
+    "errors": [
+     0.0,
+     0.01,
+     0.01,
+     0.02,
+     0.02,
+     0.02,
+     0.02,
+     0.02,
+     0.03,
+     0.03,
+     0.03,
+     0.04,
+     0.04,
+     0.06,
+     0.07,
+     0.07,
+     0.07,
+     0.08,
+     0.08,
+     0.09,
+     0.09,
+     0.09,
+     0.1,
+     0.1,
+     0.1,
+     0.1,
+     0.11,
+     0.12,
+     0.12,
+     0.12,
+     0.12,
+     0.13,
+     0.14,
+     0.15,
+     0.15,
+     0.15,
+     0.15,
+     0.16,
+     0.22,
+     0.27,
+     0.3,
+     0.32,
+     0.36,
+     0.43,
+     0.45,
+     0.46,
+     0.56,
+     0.57,
+     0.76,
+     0.86,
+     1.19,
+     1.84,
+     2.51,
+     4.46,
+     13.2
+    ]
+   },
+   "B4_frame": {
+    "false": 29,
+    "of": 1726,
+    "rate": 0.0168
+   },
+   "B4_k5": {
+    "windows": 1567,
+    "two_or_more": 12,
+    "rate": 0.0077
+   },
+   "B5": {
+    "right": 9,
+    "unlabelled": 4,
+    "of": 21,
+    "walks": {
+     "a-white-phone-charger-ca-20260921-203250": {
+      "frame": "frame-0009.jpg",
+      "in_view": true,
+      "error_deg": 0.33,
+      "right": true
+     },
+     "a-white-phone-charger-ca-20260921-203355": {
+      "frame": "frame-0000.jpg",
+      "in_view": true,
+      "error_deg": null,
+      "right": null
+     },
+     "blue-bottle-20260907-142454": {
+      "frame": "frame-0004.jpg",
+      "in_view": true,
+      "error_deg": 0.18,
+      "right": true
+     },
+     "blue-bottle-20260907-185007": {
+      "frame": "frame-0019.jpg",
+      "in_view": false,
+      "right": false
+     },
+     "blue-shoes-20260907-152528": {
+      "frame": "frame-0004.jpg",
+      "in_view": true,
+      "error_deg": 0.04,
+      "right": true
+     },
+     "blue-shoes-20260908-210511": {
+      "frame": "frame-0020.jpg",
+      "in_view": true,
+      "error_deg": null,
+      "right": null
+     },
+     "grey-backpack-20260921-203627": {
+      "frame": "frame-0000.jpg",
+      "in_view": false,
+      "right": false
+     },
+     "grey-backpack-20260921-203748": {
+      "frame": "frame-0000.jpg",
+      "in_view": true,
+      "error_deg": 0.32,
+      "right": true
+     },
+     "grey-backpack-opus-4-5-20260921-210743": {
+      "frame": "frame-0004.jpg",
+      "in_view": true,
+      "error_deg": 0.13,
+      "right": true
+     },
+     "red-backpack-20260907-144856": {
+      "frame": "frame-0003.jpg",
+      "in_view": true,
+      "error_deg": 0.03,
+      "right": true
+     },
+     "red-backpack-20260912-224429": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "red-backpack-20260912-224646": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "red-backpack-20260912-224822": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "red-backpack-20260912-225001": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "red-backpack-20260921-203152": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "woven-laundry-basket-20260908-215140": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "woven-laundry-basket-20260908-215252": {
+      "frame": "frame-0007.jpg",
+      "in_view": true,
+      "error_deg": null,
+      "right": null
+     },
+     "woven-laundry-basket-20260908-215351": {
+      "frame": "frame-0000.jpg",
+      "in_view": true,
+      "error_deg": 0.05,
+      "right": true
+     },
+     "woven-laundry-basket-20260912-231358": {
+      "frame": "frame-0005.jpg",
+      "in_view": true,
+      "error_deg": 0.17,
+      "right": true
+     },
+     "woven-laundry-basket-20260913-115414": {
+      "frame": "frame-0158.jpg",
+      "in_view": true,
+      "error_deg": null,
+      "right": null
+     },
+     "woven-laundry-basket-20260913-115703": {
+      "frame": "frame-0008.jpg",
+      "in_view": true,
+      "error_deg": 0.04,
+      "right": true
+     }
+    }
+   },
+   "per_object": {
+    "Grey backpack": {
+     "in_view": 94,
+     "sighted": 91,
+     "out_of_view": 117,
+     "false": 15
+    },
+    "a white phone charger cable": {
+     "in_view": 118,
+     "sighted": 115,
+     "out_of_view": 58,
+     "false": 11
+    },
+    "blue and yellow running shoes": {
+     "in_view": 38,
+     "sighted": 32,
+     "out_of_view": 25,
+     "false": 1
+    },
+    "blue bottle": {
+     "in_view": 28,
+     "sighted": 27,
+     "out_of_view": 214,
+     "false": 1
+    },
+    "burgundy backpack": {
+     "in_view": 33,
+     "sighted": 33,
+     "out_of_view": 5,
+     "false": 0
+    },
+    "red backpack": {
+     "in_view": 0,
+     "sighted": 0,
+     "out_of_view": 640,
+     "false": 0
+    },
+    "woven laundry basket": {
+     "in_view": 224,
+     "sighted": 189,
+     "out_of_view": 667,
+     "false": 1
+    }
+   }
+  },
+  "local": {
+   "B1_in_view_rate": 0.8224,
+   "B2_k3": {
+    "windows": 455,
+    "with_sighting": 442,
+    "rate": 0.9714
+   },
+   "B2_k5": {
+    "windows": 395,
+    "with_sighting": 394,
+    "rate": 0.9975
+   },
+   "B3": {
+    "sighted": 46,
+    "of": 60,
+    "p50": 0.13,
+    "p90": 0.56,
+    "max": 13.14,
+    "errors": [
+     0.0,
+     0.0,
+     0.0,
+     0.01,
+     0.02,
+     0.02,
+     0.04,
+     0.04,
+     0.05,
+     0.06,
+     0.06,
+     0.06,
+     0.07,
+     0.08,
+     0.09,
+     0.09,
+     0.09,
+     0.09,
+     0.11,
+     0.12,
+     0.13,
+     0.13,
+     0.13,
+     0.13,
+     0.14,
+     0.14,
+     0.15,
+     0.16,
+     0.16,
+     0.18,
+     0.18,
+     0.18,
+     0.19,
+     0.26,
+     0.34,
+     0.36,
+     0.4,
+     0.42,
+     0.48,
+     0.5,
+     0.55,
+     0.56,
+     0.9,
+     1.02,
+     2.31,
+     13.14
+    ]
+   },
+   "B4_frame": {
+    "false": 25,
+    "of": 1726,
+    "rate": 0.0145
+   },
+   "B4_k5": {
+    "windows": 1567,
+    "two_or_more": 11,
+    "rate": 0.007
+   },
+   "B5": {
+    "right": 7,
+    "unlabelled": 5,
+    "of": 21,
+    "walks": {
+     "a-white-phone-charger-ca-20260921-203250": {
+      "frame": "frame-0011.jpg",
+      "in_view": true,
+      "error_deg": null,
+      "right": null
+     },
+     "a-white-phone-charger-ca-20260921-203355": {
+      "frame": "frame-0000.jpg",
+      "in_view": true,
+      "error_deg": null,
+      "right": null
+     },
+     "blue-bottle-20260907-142454": {
+      "frame": "frame-0004.jpg",
+      "in_view": true,
+      "error_deg": 0.13,
+      "right": true
+     },
+     "blue-bottle-20260907-185007": {
+      "frame": "frame-0019.jpg",
+      "in_view": false,
+      "right": false
+     },
+     "blue-shoes-20260907-152528": {
+      "frame": "frame-0004.jpg",
+      "in_view": true,
+      "error_deg": 0.04,
+      "right": true
+     },
+     "blue-shoes-20260908-210511": {
+      "frame": "frame-0020.jpg",
+      "in_view": true,
+      "error_deg": null,
+      "right": null
+     },
+     "grey-backpack-20260921-203627": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "grey-backpack-20260921-203748": {
+      "frame": "frame-0004.jpg",
+      "in_view": false,
+      "right": false
+     },
+     "grey-backpack-opus-4-5-20260921-210743": {
+      "frame": "frame-0004.jpg",
+      "in_view": true,
+      "error_deg": 0.07,
+      "right": true
+     },
+     "red-backpack-20260907-144856": {
+      "frame": "frame-0003.jpg",
+      "in_view": true,
+      "error_deg": 0.02,
+      "right": true
+     },
+     "red-backpack-20260912-224429": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "red-backpack-20260912-224646": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "red-backpack-20260912-224822": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "red-backpack-20260912-225001": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "red-backpack-20260921-203152": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "woven-laundry-basket-20260908-215140": {
+      "frame": null,
+      "in_view": null,
+      "right": false
+     },
+     "woven-laundry-basket-20260908-215252": {
+      "frame": "frame-0007.jpg",
+      "in_view": true,
+      "error_deg": null,
+      "right": null
+     },
+     "woven-laundry-basket-20260908-215351": {
+      "frame": "frame-0000.jpg",
+      "in_view": true,
+      "error_deg": 0.05,
+      "right": true
+     },
+     "woven-laundry-basket-20260912-231358": {
+      "frame": "frame-0005.jpg",
+      "in_view": true,
+      "error_deg": 0.19,
+      "right": true
+     },
+     "woven-laundry-basket-20260913-115414": {
+      "frame": "frame-0158.jpg",
+      "in_view": true,
+      "error_deg": null,
+      "right": null
+     },
+     "woven-laundry-basket-20260913-115703": {
+      "frame": "frame-0008.jpg",
+      "in_view": true,
+      "error_deg": 0.09,
+      "right": true
+     }
+    }
+   },
+   "per_object": {
+    "Grey backpack": {
+     "in_view": 94,
+     "sighted": 79,
+     "out_of_view": 117,
+     "false": 12
+    },
+    "a white phone charger cable": {
+     "in_view": 118,
+     "sighted": 113,
+     "out_of_view": 58,
+     "false": 11
+    },
+    "blue and yellow running shoes": {
+     "in_view": 38,
+     "sighted": 31,
+     "out_of_view": 25,
+     "false": 1
+    },
+    "blue bottle": {
+     "in_view": 28,
+     "sighted": 27,
+     "out_of_view": 214,
+     "false": 1
+    },
+    "burgundy backpack": {
+     "in_view": 33,
+     "sighted": 29,
+     "out_of_view": 5,
+     "false": 0
+    },
+    "red backpack": {
+     "in_view": 0,
+     "sighted": 0,
+     "out_of_view": 640,
+     "false": 0
+    },
+    "woven laundry basket": {
+     "in_view": 224,
+     "sighted": 161,
+     "out_of_view": 667,
+     "false": 0
+    }
+   }
+  }
+ },
+ "verdicts": {
+  "B1": "MET",
+  "B2": "MET",
+  "B3": "MET",
+  "B4": "MET",
+  "B5": "FAILED"
+ }
+}

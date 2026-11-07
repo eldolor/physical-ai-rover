@@ -1,0 +1,125 @@
+{
+ "candidates": [
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 267,
+   "hits": 1,
+   "id": 6,
+   "label": "sofa",
+   "last_step": 267,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "living room",
+   "votes": {
+    "sofa": 1
+   },
+   "x_m": 0.289,
+   "y_m": 0.463
+  }
+ ],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 348,
+  "landmarks": 5,
+  "no_pose": 1,
+  "observations": 183,
+  "reported": 4,
+  "unplaced": 2
+ },
+ "frame_id": "map-a4ee1101",
+ "map_id": "slam-c28b3ef4",
+ "mission": "Find the red backpack.",
+ "mission_id": "20261106T073707.246494Z-red backpack",
+ "outcome": "exhausted",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 136,
+   "hits": 11,
+   "id": 5,
+   "label": "bed",
+   "last_step": 348,
+   "misses": 0,
+   "points": 52,
+   "reported": true,
+   "room": "hallway",
+   "votes": {
+    "bed": 11
+   },
+   "x_m": 0.903,
+   "y_m": 3.171
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 29,
+   "hits": 13,
+   "id": 2,
+   "label": "red backpack",
+   "last_step": 312,
+   "misses": 0,
+   "points": 49,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "red backpack": 13
+   },
+   "x_m": 6.912,
+   "y_m": 1.592
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 31,
+   "hits": 12,
+   "id": 3,
+   "label": "refrigerator",
+   "last_step": 311,
+   "misses": 0,
+   "points": 29,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "refrigerator": 12
+   },
+   "x_m": 7.186,
+   "y_m": 0.772
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 6,
+   "hits": 18,
+   "id": 1,
+   "label": "sofa",
+   "last_step": 290,
+   "misses": 0,
+   "points": 50,
+   "reported": true,
+   "room": "living room",
+   "votes": {
+    "sofa": 18
+   },
+   "x_m": 0.87,
+   "y_m": 0.787
+  }
+ ]
+}

@@ -211,14 +211,15 @@ def test_a_nav2_reset_during_the_wait_leaves_the_live_goal_alone(bridge_mod):
 
 def test_a_change_during_the_cancel_sends_nothing(bridge_mod):
     """The last read, under the lock before the send (3.50.D4's guarantee
-    for a re-map, and 3.105's for nav2): a change during cancel_goal()
+    for a re-map, and 3.105's for nav2): a change while the live goal is
+    superseded (3.154: `_supersede_live`, which replaced the cancel there)
     sends no goal."""
     for change in ("remap", "nav2"):
         m = _Manager()
         b = _bridge(bridge_mod, m)
         b._poll_nav2()
         m.answer(True)
-        cancel = b.cancel_goal
+        supersede = b._supersede_live
 
         def change_meanwhile(*a, **kw):
             if change == "remap":
@@ -226,8 +227,8 @@ def test_a_change_during_the_cancel_sends_nothing(bridge_mod):
             else:
                 b._poll_nav2()
                 m.answer(False)
-            return cancel(*a, **kw)
-        b.cancel_goal = change_meanwhile
+            return supersede(*a, **kw)
+        b._supersede_live = change_meanwhile
         code, _ = b.send_goal({"x_m": 2.0, "y_m": 0.0})
         assert code == 503 and b.nav.futures == [], change
 

@@ -1,0 +1,156 @@
+{
+ "house": "home_first_floor_stairs",
+ "image": "vision-picar-ros:latest",
+ "mission": {
+  "outcome": "found",
+  "seconds": 310,
+  "target_at": [
+   [
+    46,
+    19
+   ]
+  ],
+  "status_file": "explore_status_explore-red_backpack-1794057666.json",
+  "steps": 19,
+  "explore": {
+   "goals_sent": 19,
+   "sent": [
+    [
+     1,
+     "b3685ca3f2844909b0b50ef88a0891bc",
+     "frontier"
+    ],
+    [
+     2,
+     "d3da08fd9ae34bdf9bd24a817ad5c04f",
+     "frontier"
+    ],
+    [
+     3,
+     "e9333a9b9c464d9f8bcf97d90c3c28da",
+     "frontier"
+    ],
+    [
+     4,
+     "30fdb926e2e342638117dd628a97eb4c",
+     "frontier"
+    ],
+    [
+     5,
+     "635da346d6e04494aeeb3cd929d11d4f",
+     "frontier"
+    ],
+    [
+     6,
+     "656aed6c05cf43d5ace88e42762ea19b",
+     "frontier"
+    ],
+    [
+     7,
+     "79ed39fefa024d069c58fa6f9e776a01",
+     "frontier"
+    ],
+    [
+     8,
+     "9fcaaf3ef58f48e5bc87cb858a2277ea",
+     "frontier"
+    ],
+    [
+     9,
+     "50d2d4aae6274ad99f6341fd1dd168ba",
+     "frontier"
+    ],
+    [
+     10,
+     "66cf806c59da4cfcbe55d04de9d16a6e",
+     "frontier"
+    ],
+    [
+     11,
+     "fbe4f1c81c594da38978c9a85b156c32",
+     "frontier"
+    ],
+    [
+     12,
+     "beb94156c00e470982d3879f6d7c96f8",
+     "frontier"
+    ],
+    [
+     13,
+     "34d28255986e482bb2925953cbe2368d",
+     "frontier"
+    ],
+    [
+     14,
+     "4c14932381a546249ec383aa14494344",
+     "frontier"
+    ],
+    [
+     15,
+     "647355415249417db298d3f15afb21e7",
+     "approach"
+    ],
+    [
+     16,
+     "9eb70f457de944daa932d48cf40b2982",
+     "frontier"
+    ],
+    [
+     17,
+     "3791b31842fe4ed197e2ff5c8e9824db",
+     "frontier"
+    ],
+    [
+     18,
+     "e9e3f32835194607be7726021b9d232f",
+     "approach"
+    ],
+    [
+     19,
+     "fea2274498d0456696f04b6887265815",
+     "approach"
+    ]
+   ],
+   "cancels": [
+    [
+     1,
+     "fea2274498d0456696f04b6887265815",
+     1794057976.169511,
+     true
+    ]
+   ],
+   "goal_end_done": true,
+   "goals_failed": 2,
+   "last_event": "goal sent (approach) to (13.25, 5.95)",
+   "camera_seen_m2": 59.91,
+   "choice_ms": {
+    "n": 34,
+    "p50_ms": 49.4,
+    "p90_ms": 65.5,
+    "max_ms": 118.8
+   },
+   "asks": false,
+   "ask": null,
+   "choices": 0
+  },
+  "stuck_episodes": 0,
+  "travel_m": 28.4,
+  "min_gap_cm": 8.6,
+  "contact_samples": 0,
+  "inside_samples": 0,
+  "samples": 596,
+  "room_labels": null,
+  "last_log": [
+   "waiting -- nav2 active: approach -- garage hall, facing ?, free space clear, sees red backpack",
+   "inventory: 27 reported, 12 candidates from 472 frames -- chair x5, breakfast table x3, kitchen counter x3, staircase x3, dining table x2, dryer x2, armchair, coffee table, kitchen island, red backpack, sectional sofa, tv console, refrigerator, car, pantry shelves",
+   "mission ended (found): Breakfast, dining room, family room, foyer, garage hall, hall, kitchen searched. Found."
+  ]
+ },
+ "drop_truth": {
+  "samples": 1488,
+  "fell": false,
+  "overhang_cm": 0.0,
+  "min_gap_cm": 90.0
+ },
+ "run_dir": "/tmp/vision-picar-3.159/run-20261107-072057"
+}

@@ -47,6 +47,7 @@ from typing import Optional
 
 from robot import interface
 from sim.grid_world import (
+    CELL_DROP,
     MAX_SUBSTEP_CELLS,
     MAX_SUBSTEP_RAD,
     ROBOT_HALF_CELL,
@@ -134,6 +135,14 @@ FLOOR_BAND_RAYS_PER_COL = 1
 FLOOR_BAND_ORIGIN_X_CM = 6.5
 FLOOR_BAND_MIN_CM = 20.0
 FLOOR_BAND_MAX_CM = 150.0
+# 3.159's drop block: the same camera (lens, field, columns), floor seen
+# from its MinZ out to 1 m -- the grazing floor's reach is step C's to
+# measure on the car (D4).
+DROP_FOV_DEG = FLOOR_BAND_FOV_DEG
+DROP_COLS = FLOOR_BAND_COLS
+DROP_ORIGIN_X_CM = FLOOR_BAND_ORIGIN_X_CM
+DROP_NEAR_CM = FLOOR_BAND_MIN_CM
+DROP_FAR_CM = 100.0
 
 WHEEL_MAX_RAD_S = (
     CELLS_PER_SECOND_AT_FULL_SPEED * DEFAULT_CELL_M / WHEEL_RADIUS_M
@@ -164,8 +173,15 @@ class MockRobot(RobotInterface):
         render_height: int = renderer.DEFAULT_HEIGHT,
         encoder_scale: tuple = (1.0, 1.0),
         battery=None,
+        drop_sensor: Optional[bool] = None,
     ):
         self.world = world
+        # 3.159: whether the depth grid carries the `drop` block. None (the
+        # default) means "when the house has a drop cell", so every house
+        # without one senses exactly what it did (`tests/test_sim_fingerprint.py`);
+        # a sweep on flat floor turns it on to cost what it costs there.
+        self.drop_sensor = (any(CELL_DROP in row for row in world.layout)
+                            if drop_sensor is None else bool(drop_sensor))
         # 3.137: a `sim/battery.py` pack on the simulator's clock, or None
         # (the default): no battery to report, as before. The factory gives
         # one only when SIM_BATTERY_V is set, so the plain simulator can run
@@ -702,7 +718,8 @@ class MockRobot(RobotInterface):
         pan_deg = math.degrees(renderer.normalize_angle(base_angle - self.world.theta))
         return {"rows": 1, "cols": cols, "pan_deg": round(pan_deg, 4),
                 "fov_deg": math.degrees(renderer.FPV_FOV), "zones": zones,
-                "floor": self._floor_band(FLOOR_BAND_COLS, cell_cm)}
+                "floor": self._floor_band(FLOOR_BAND_COLS, cell_cm),
+                **({"drop": self._drop_block(cell_cm)} if self.drop_sensor else {})}
 
     def _floor_sensor(self):
         """S5's sensor model for the floor band, with its OWN random stream
@@ -765,6 +782,51 @@ class MockRobot(RobotInterface):
                               "bearing_deg": round(math.degrees(rel), 3) + 0.0})   # never -0.0 (ARM)
         return {"cols": cols, "fov_deg": FLOOR_BAND_FOV_DEG, "pan_deg": 0.0,
                 "origin_x_cm": FLOOR_BAND_ORIGIN_X_CM, "min_range_cm": FLOOR_BAND_MIN_CM, "max_range_cm": FLOOR_BAND_MAX_CM,
+                "zones": zones}
+
+    def _drop_sensor_model(self):
+        """S5's sensor model for the drop block, on its own seeded stream
+        (as `_floor_sensor()`, 3.74 review): drawing from another block's
+        would shift every later reading of that block."""
+        if getattr(self, "_drop_model", None) is None:
+            import dataclasses
+            import random
+            self._drop_model = dataclasses.replace(self.sensor, rng=random.Random(3159))
+        return self._drop_model
+
+    def _drop_block(self, cell_cm: float) -> dict:
+        """The depth camera's `drop` block (3.159 D1): per column, how far
+        from the lens the floor is seen without a break, and what ended it
+        -- `kind: "edge"` (the floor drops away: a `v` cell) or `"thing"` (a
+        wall or an object, the other blocks' business). Floor to the reach
+        is NO_TARGET; an end inside the stereo's MinZ, or a dropout, is
+        UNUSABLE (M3). The floor band's lens, field and columns: one camera."""
+        fov = math.radians(DROP_FOV_DEG)
+        theta = self.world.theta
+        off = DROP_ORIGIN_X_CM / cell_cm
+        px = self.world.x + off * math.cos(theta)
+        py = self.world.y + off * math.sin(theta)
+        max_cells = DROP_FAR_CM / cell_cm + 0.01
+        zones = []
+        for i in range(DROP_COLS):
+            rel = -fov / 2 + fov * (i + 0.5) / DROP_COLS
+            kind, dist_cells = renderer.cast_ray_drop(self.world.layout, px, py, theta + rel,
+                                                      solid=self.world.solid_cells,
+                                                      max_dist=max_cells)
+            end = dist_cells * cell_cm
+            if kind is None or end > DROP_FAR_CM:
+                zones.append({"status": interface.ZONE_NO_TARGET, "distance_cm": None})
+                continue
+            reading = end if self.sensor is None else self._drop_sensor_model().read_zone_cm(end)
+            if reading is not None and reading > DROP_FAR_CM:
+                zones.append({"status": interface.ZONE_NO_TARGET, "distance_cm": None})
+            elif reading is None or reading < DROP_NEAR_CM:
+                zones.append({"status": interface.ZONE_UNUSABLE, "distance_cm": None})
+            else:
+                zones.append({"status": interface.ZONE_RANGE, "distance_cm": round(reading, 1),
+                              "kind": kind})
+        return {"cols": DROP_COLS, "fov_deg": DROP_FOV_DEG, "pan_deg": 0.0,
+                "origin_x_cm": DROP_ORIGIN_X_CM, "near_cm": DROP_NEAR_CM, "far_cm": DROP_FAR_CM,
                 "zones": zones}
 
     def get_scan(self, max_range_m: Optional[float] = None) -> dict:

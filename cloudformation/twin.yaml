@@ -268,7 +268,8 @@ Resources:
           TargetGroupArn: !Ref AlbTargetGroup
 
   # 3.84: a new mission lifts a person's Stop's latch (the brain calls it);
-  # 3.76 K2: a refused start puts it back. Rule 13 is full.
+  # 3.76 K2: a refused start puts it back; 3.145: the brain's goal-lease
+  # heartbeat (one wildcard for the three). Rule 13 is full.
   AlbListenerRuleAutonomy:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
@@ -278,8 +279,7 @@ Resources:
       Conditions:
         - Field: path-pattern
           Values:
-            - /autonomy/resume
-            - /autonomy/relatch
+            - /autonomy/*
             # 3.132 Stage 1: the twin's two stylesheets, out of index.html.
             # A page whose CSS 404s still loads -- unstyled and unusable.
             - /ui.css

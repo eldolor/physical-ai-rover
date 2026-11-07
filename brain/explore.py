@@ -813,8 +813,27 @@ class ExploreAgent(MissionAgent):
                 return closed
             return "WAIT", True, "at the target; looking"
         gx, gy = self._approach_point(pose, tx, ty, d)
-        self._cancel()
-        out = self._send(gx, gy, "approach", now)
+        # 3.154: no cancel before the approach -- the new goal supersedes the
+        # live one (the bridge holds it live until nav2 ends it). A DELETE
+        # right before the send halted nav2's tree and nav2 ended the
+        # approach itself ABORTED. The ownership check still runs.
+        prev = self._goal
+        self._cancel(send=False)
+        try:
+            out = self._send(gx, gy, "approach", now)
+        except BaseException:
+            if self._goal is None:
+                self._goal = prev          # review 2: still tracked, never left untracked
+            raise
+        if out[0] != "GOAL" and prev is not None:
+            # Review: no goal superseded the old one, so it is tracked again.
+            # Refused by an answer (a hold, authority): end it now, through
+            # the ownership check. A failed call may have reached the bridge
+            # with its answer lost, and a cancel would end that approach in
+            # the switch (review 2): kept tracked only, as on any blip.
+            self._goal = prev
+            if self.last_event.startswith("goal refused"):
+                self._cancel()
         if out[0] == "GOAL":
             # Only an approach nav2 took counts as made (3.85): one refused
             # `preempted` and recorded anyway kept every later sighting of
@@ -829,8 +848,8 @@ class ExploreAgent(MissionAgent):
             # is not re-sent every frame. (Its CLOSE_IN_REFUSED bounds it.)
             self._approach = (tx, ty)
         else:
-            # Nor does an older one stay on record: _cancel() above ended
-            # its goal, so a sighting back near it must be approached again.
+            # Nor does an older one stay on record: its goal was ended above
+            # (the send failed), so a sighting back near it must be approached again.
             self._approach = None
         return out
 
@@ -1426,7 +1445,10 @@ class ExploreAgent(MissionAgent):
         if g.get("room"):
             self._room_goals_failed[g["room"]] = self._room_goals_failed.get(g["room"], 0) + 1
 
-    def _cancel(self) -> None:
+    def _cancel(self, send: bool = True) -> None:
+        """End the mission's own live goal. `send=False` (3.154): only check
+        it is still the mission's own and forget it, because a new goal is
+        about to supersede it."""
         if self._goal is not None:
             # 3.76: only the mission's own -- DELETE is not arbitrated, and
             # the live goal may be a person's tap that replaced it.
@@ -1438,10 +1460,11 @@ class ExploreAgent(MissionAgent):
                 self._goal = None
                 raise Preempted(f"a nav2 goal set by someone else replaced the mission's "
                                 f"({live.get('x_m')}, {live.get('y_m')})")
-            try:
-                self.navigator.cancel_goal()
-            except Exception:  # noqa: BLE001 -- best effort; the goal times out anyway
-                logger.warning("goal cancel failed", exc_info=True)
+            if send:
+                try:
+                    self.navigator.cancel_goal()
+                except Exception:  # noqa: BLE001 -- best effort; the goal times out anyway
+                    logger.warning("goal cancel failed", exc_info=True)
             self._goal = None
 
     def _queue_escape(self, why: str, charged: bool = True, **info) -> None:

@@ -1,0 +1,5 @@
+vision-picar sim body server starting -- git=25339c3a executable=/home/anshu/vision-picar/.venv/bin/python config=/home/anshu/vision-picar/.claude/worktrees/nervous-noether-5c16c5/config/robot.yaml
+vision-picar sim body server starting -- git=25339c3a executable=/home/anshu/vision-picar/.venv/bin/python config=/home/anshu/vision-picar/.claude/worktrees/nervous-noether-5c16c5/config/robot.yaml
+truth recorder stopped: drained=True, dropped=0
+/usr/lib/python3.14/multiprocessing/resource_tracker.py:396: UserWarning: resource_tracker: There appear to be 1 leaked shared_memory objects to clean up at shutdown: {'/picar_fmea_3063668'}
+  warnings.warn(

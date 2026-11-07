@@ -50,9 +50,11 @@ within range, never "unknown".
 | `footprint_clearance(+1 / -1)` | `scan_footprint`, `scan_footprint_no_target`, `no_scan` | Returns in the body frame within half-width + 3 cm of the centre-line and beyond the leading edge: distance past the edge. A return inside the outline reads 0.0 |
 | `rear_clearance()` | `scan_rear`, `scan_rear_no_target`, `no_rear_sensor` | Beams within `PATH_HALF_ANGLE_DEG` of astern, minus `LIDAR_TO_REAR_BUMPER_CM` |
 | `floor_clearance(grid)` | `floor_band`, `floor_band_no_target`, `floor_band_unusable`, `no_floor_band` | 3.74. The depth grid's `floor` block (the depth camera's floor band: body-fixed, `origin_x_cm` ahead of `base_link`, `fov_deg`, `min_range_cm`, zones of `{status, distance_cm, bearing_deg?}`; fields in `RobotInterface.get_depth_grid()`). Each `ZONE_RANGE` zone is a point in the body frame -- range from the origin along the zone's `bearing_deg` (null or absent: its centre) -- judged by `_corridor_room()`, the one corridor rule the scan's `footprint_clearance()` uses too: ahead of the front edge within half-width + 3 cm, the room past the edge; beside the body only within the half-width (0.0). Inside the band's minimum range nothing is seen or carried (Known gaps). Unusable zones never compared. `no_floor_band` for a grid without the block or with no usable `fov_deg` (every real body today). `floor_band_unusable` (3.76 K1) when no zone could be read (blind is not clear) or the band itself cannot be: a field that does not parse, or zones that disagree with its `cols`; a malformed zone is skipped as unusable, never raised out of the check (a raise made every FORWARD a 400 and skipped the wheel loop's re-vet) |
-| `forward_clearance()` | `ahead_not_observed` (0.0), `path_not_observed` (0.0), or the least of cone, corridor and floor band; then aged (below) | The cone and the band read ONE depth grid, the corridor and the band ONE scan. `(0.0, "ahead_not_observed")` when the scan is missing or unusable **and** `_has_wheels()`, whatever the cone says (3.144, FMEA F9: the lidar stopped and the cone alone let the board drive 101-105 cm). Both directions ask one `_blind(scan)`. Otherwise `path_not_observed` when the grid faces away and there is no scan (a body without wheels); the band does not lift either |
-| `reverse_clearance()` | `astern_not_observed` (0.0), or the lesser of rear and corridor astern, off one scan; then aged (below) | `(0.0, "astern_not_observed")` when the scan is missing or unusable **and** `_has_wheels()` (the body's `get_wheel_state()` reports `usable: true`; a body without the method, or whose call raises, has none). Otherwise, with no scan, `(None, "no_rear_sensor")` and the reverse proceeds. The rule and its reasons: [architecture spec](../../safety/ARCHITECTURE.md), "A body that cannot see astern does not reverse" |
+| `forward_clearance()` | `ahead_not_observed` (0.0), `path_not_observed` (0.0), or the least of cone, corridor, floor band and drop; then aged (below) | The cone and the band read ONE depth grid, the corridor and the band ONE scan. `(0.0, "ahead_not_observed")` when the scan is missing or unusable **and** `_has_wheels()`, whatever the cone says (3.144, FMEA F9: the lidar stopped and the cone alone let the board drive 101-105 cm). Both directions ask one `_blind(scan)`. Otherwise `path_not_observed` when the grid faces away and there is no scan (a body without wheels); the band does not lift either |
+| `reverse_clearance()` | `astern_not_observed` (0.0), or the least of rear, corridor astern and drop astern, off one scan; then aged (below) | `(0.0, "astern_not_observed")` when the scan is missing or unusable **and** `_has_wheels()` (the body's `get_wheel_state()` reports `usable: true`; a body without the method, or whose call raises, has none). Otherwise, with no scan, `(None, "no_rear_sensor")` and the reverse proceeds. The rule and its reasons: [architecture spec](../../safety/ARCHITECTURE.md), "A body that cannot see astern does not reverse" |
 | `pivot_blocked(omega)` / `pivot_scale(omega)` | reason string or None / `(fraction, reason)` | A return whose distance to the rectangle would end under `PIVOT_MARGIN_CM` **and** shrink. Binary search to 1/64 of the turn rate. No usable scan: never blocked. **Aged rotation** (3.42): `_turn_since_scan()` is the turn the scan has missed -- the body's own answer (`turn_since_scan()`, `HardwareRobot` from its encoder heading history) or else yaw rate x `sensor_age_s()` -- and the check runs from `PIVOT_AGE_SAMPLES` + 1 rotations across that arc. Zero for a body whose readings have no age. **One set of rows for the search** (3.141): `pivot_scale()` builds a `_PivotRows` once -- the returns in the body frame across the aged arc, those within `PIVOT_NEAR_CM` of the chassis now, built in one numpy pass from the scan's exact body-frame points (3.141.E: `_ScanPoints`, below) -- and every pass of its search uses it, so `_turn_since_scan()` is read once per search. Each pass looks ahead in numpy as a filter only (`PIVOT_FILTER_SLACK_CM`); every row it passes is decided in scan order by the exact per-point expressions, so the first blocking return and its reason are the old loop's (`tests/pivot_reference.py`, `tests/test_pivot_3141.py`). Before, a turn clamped beside furniture cost ~22 ms on the board, on the wheel loop's event loop. **One conversion per scan** (3.141.E): `_ScanPoints.of(scan)` keeps the last scan's body-frame points (`scan_points_cm()`'s exact arithmetic, as read-only numpy arrays), keyed every call by the scan's angles, `LIDAR_X_M` and its ranges (no identity shortcut: a scan changed in place gets new points), so the corridor, the turn guard and a tick's two vets (the wheel loop's and `/wheels`') convert a scan once. `footprint_clearance()` is `_corridor_rooms()`, `_corridor_room()`'s rule over every return in numpy (a test pins the two equal; `floor_clearance()` keeps the scalar one) -- a product, differences and comparisons, the same IEEE operations as Python's, so the same numbers (`tests/vet_reference.py`, `tests/test_vet_cost_3141.py`). On the board an unclamped vet's turn guard was 82.5% of its time (3.141.E0) |
+| `drop_clearance(direction, grid)` | `drop_edge`, `drop_unseen`, `drop_unseen_astern`, `drop_unusable`, `drop_floor_seen`, `no_drop_sensor` | 3.159 (`robot/drop_guard.py`). The depth grid's `drop` block (`cols`, `fov_deg`, `pan_deg`, `origin_x_cm`, `near_cm`, `far_cm`, zones of `{status, distance_cm, kind: edge|thing}`: how far floor runs from the lens and what ended it) is folded into the robot's floor memory (`guard_for(robot)`: one per robot, a `WeakKeyDictionary`), then the swept corridor (half-width + 3 cm, sampled every 3 cm across and 2.5 cm along, out to `RUN_CM` 60) is followed ahead or astern. Memory: 5 cm cells, `floor`/`edge`/`thing`, in the body's dead-reckoned frame (wheel travel, odometry heading); seeded with a 30 cm disc at the first reading (the dock); the body's own outline is floor every update; an edge is sticky (nothing but an edge rewrites one); cells seen more than 3 m of travel ago are pruned once 4,000 are held. Per frame, floor first, then the ends (an edge or a thing), and two neighbouring columns' thing ends within 10 cm are joined into a line. When every corridor column sees floor at the MinZ ring, the band from the bumper to the ring (half a cell wider) is floor. In the search a thing excuses unseen floor on its line and every line outward of it on that side, and an unseen cell whose sightline from the lens crosses a thing is the thing's shadow; a remembered edge on any line is always the answer. An edge or an unseen cell returns its room past the front edge **less** `min_distance_cm - CREEP_MARGIN_CM` (17 cm), so a creep keeps the full bar from a drop. Each caller passes its own margin. `no_drop_sensor` until a block has been seen: every real body today, every house without a `v` cell; `drop_unusable` (0 cm) once on with no pose (no usable wheels or odometry yet). Astern, and for a turn, the grid is fetched until the first answer (`probed`), so a first move that is a reverse or a turn finds the memory switched on; a body that showed no block then is not asked again (a house without a drop senses exactly as before) |
+| `drop_pivot_blocked(omega)` | `drop_pivot_edge` or None | 3.159: a turn that carries an outline point (3 cm spacing) from remembered floor onto a remembered edge, looked at in 5-degree steps out to the larger of 5 degrees and `PIVOT_HORIZON_S` (0.1 s) of the turn; `drop_unusable` once on with no pose. Unseen floor does not refuse a turn (a corner swings 5.5 cm at most). Outside `pivot_scale()`, whose answers `tests/pivot_reference.py` freezes; `vet_wheel_velocity()` zeroes omega on it, `run_verb()` refuses the step. Off (None) until the memory is active |
 
 **Aged readings** (`_aged(result, direction)`, `PLAN-ros-alignment.md`
 3.36). The look-ahead (3.24 G2) stops a move AT the line only if the
@@ -318,6 +320,42 @@ error) began no mission, so the brain puts the latch back with
 `POST /autonomy/relatch` (3.76 K2), which only latches and keeps a latch
 a Stop during the build set since.
 
+**The brain's goal lease** (3.145; 3.135.B's F6g/F7g). Under `drive: ros`
+nav2's wheel posts feed the watchdog, so a goal the brain sent drove on to
+its end after the brain died or froze. Now a goal lives only while its
+brain does. `RemoteNavigator` names itself with `x-lease-id` (a uuid per
+navigator, so a restarted brain beating as `brain` never keeps a dead one's
+lease) and, from its first goal to its close, beats
+`POST /autonomy/heartbeat` every `HEARTBEAT_S` (0.25 s) on its own thread
+(a long tick never starves it). The route is `async` on the event loop and
+only records the beat under `goal_gen_lock`. An accepted goal from an
+autonomous driver whose `(driver, lease id)` beat within
+`watchdog_timeout_s` arms the lease (`lease`: owner, id, the goal
+generation `gen`); its reply carries `leased`, and the navigator warns on a
+goal accepted unleased. A brain that never beats (older than 3.145) arms
+nothing and keeps the old behaviour; a person's or an unnamed goal replaces
+any lease. Every watchdog wake, `lease_lapsed()` drops a lease whose
+generation moved on (a Stop, a person's move, another goal) and, when the
+owner has been silent past `watchdog_timeout_s`, ends the goal the way a
+Stop does -- the hold set at once (nav2's next post zeroed), a new
+generation for `_end_goal_after_stop` on its own thread -- without counting
+a stop (a person's command in flight is never read as overtaken), counts it
+(`/health` `goal_lease.lapses`, `last_refusal` `autonomy_lapsed`) and sets
+the autonomy latch with `lapsed: true` unless a person's Stop holds it. While
+latched so, the brain's verbs and goals are refused `autonomy_lapsed`
+(`RemoteRobot` and the runner's gated navigator raise `AutonomyLapsed`, and
+the mission ends `failed` naming it), until `POST /autonomy/resume`; a
+relatch for a start then refused puts it back as a lapse (`resumed_from`).
+`DELETE /autonomy/heartbeat` (the navigator's close) RELEASES the lease:
+the next wake ends the goal if still the brain's, with no latch and no
+lapse, so a mission's end ends its goal whatever its cancel managed; a
+`DELETE /world/goal` keeps the lease. A wake more than three periods late
+(the event loop held, the beats waiting with it) skips the judgement once,
+never twice running. Known limits: the lease proves the brain's process is
+alive, not its loop (B3.3's tick guard ends a wedged mission, whose close
+then releases the lease); after a lapse with no goal active the latch still
+holds the brain out until a start.
+
 **ROS liveness** (handoff 1d; refined by `docs-review/SPEC-REVIEW-3.md`
 V7-V9). Under ROS drive, `ros_up(now)` is true when the actuator's last
 `/wheels` post is younger than `ROS_SILENCE_S` AND `robot.bridge_up()`.
@@ -467,6 +505,7 @@ recorded as such (3.27 did this for `PIVOT_MARGIN_CM`).
 | `tests/test_lidar_safety.py` (4) | 3.42 criterion 4: the 3.18/3.19 samples with the vet reading the D500's timed scan (no depth grid): straight runs pass; pivots 0/120 within 1 cm with the rotation aged, and fail without it |
 | `tests/test_guarded_verbs.py` (8) | 3.22: verbs stop at the line; a stop ends a verb within 100 ms on the fake board. 4a judges "clear" against each speed's own bar (3.44 amendment) |
 | `tests/test_speed_clearance.py` (15) | 3.44: today's speeds keep 20 cm; the creep margin only when asked; an unasked 0.02 m/s twist and a look-ahead-slowed verb stop at 20 cm; creep sweep samples (verb instant and lidar-timed, wheel loop) never within 2 cm, and the instrument fails with no margin; 0.4/0.5 m/s sweeps; the scan hint covers the top speed's bar |
+| `tests/test_drop_guard_3159.py` (20) | 3.159: a stairwell ahead stops the robot >= 15 cm short at 0.1-0.6 m/s with the rule and makes it fall without; reverse toward floor never seen is refused, over driven floor allowed; an unusable block is never clear; a pivot carrying a corner onto an edge is refused and the other way is not; a grid with no `drop` block answers exactly as before; the sim's block is the floor seen and what ended it; a pinned sample of the sweeps; the review fixes (no pose refuses, an edge outlives a thing's end, a centre-line thing hides no edge, each controller's own margin, no extra grid astern without a drop, a fast turn looked at over 0.1 s, a first turn switches the guard on, an arc with a blind lidar folds its own frame, a missing first frame does not spend the probe). `tests/drop_sweep.py` is the sweeps' instrument (ground truth: a fall is the centre over a `v` cell) |
 | `tests/test_mission_guarded_verbs.py` (3) | 3.32: in-process missions use guarded verbs through `_HaltGate` |
 | `tests/test_wheels_command.py` (8) | R2b's six criteria plus the zero-heartbeat rules |
 | `tests/test_ros_verb_safety.py` (7) | 3.24 G2: the same bars through the ROS path |
@@ -475,6 +514,7 @@ recorded as such (3.27 did this for `PIVOT_MARGIN_CM`).
 | `tests/test_authority.py` (13) | M4: ranks, lapse, stop claims nothing, reasons on the wire, preemption ends a mission |
 | `tests/test_review_376a.py` (5) | 3.76 batch A: a verb longer than the watchdog keeps its driver's authority; the wheel loop never writes over a stop; lost feedback under ROS drive is `no_feedback` and stops the robot; a second stop answers while the bridge hangs; a person taking over a ROS verb is not stopped by it, and the cut-off verb reads `preempted` |
 | `tests/test_review_376k1.py` | 3.76 K1: a person's `/action STOP` latches and ends the goal, the brain's is never refused; a brain goal or a person's tap landing inside a Stop is not accepted; a Stop whose `robot.stop()` raises still ends the goal; a brain refused on arrival lets go; the floor band never raises (bad fields, non-dict, NaN, `cols` mismatch or Infinity are `floor_band_unusable`), a blind band says so, an open-floor band reads clear; battery outside 6-30 V is no reading and one glitch frame keeps the last pack reading |
+| `tests/test_goal_lease.py` | 3.145: a beating brain's goal, once its beats stop, is held at zero within the lease plus a period and cancelled, the brain refused `autonomy_lapsed` (a verb, a goal, `RemoteRobot` raising `AutonomyLapsed`) until `/autonomy/resume`; the planted build (`evaluations/goal-lease-3145/robot_plant.py`) drives on; a beating brain keeps its goal 5 s, and its close releases it (ended, no lapse); a never-beating brain's, a person's and an unnamed goal are not leased; a `DELETE /world/goal` keeps the lease; another navigator beating as `brain` does not keep a dead one's lease; a person's latch survives a lapse; a relatch puts a lapse back as a lapse; a frozen explore mission ends `failed` naming `autonomy_lapsed` |
 | `tests/test_person_stop.py` | 3.84: a person's Stop (`twin-dpad`, unnamed, `teleop-operator`) during explore: nav2 at 0.0 rad/s for 3 s, explore's next goal never reaches the bridge, the mission ends `cancelled`/`stop`; under `drive: ros` a verb arbitrated before a Stop (held between arbitration and the hold lift) leaves its hold set, and a person's verb during the Stop's loop turns > 30 deg, then nav2 is held at 0.0 until the loop ends the goal and lifts it; a brain verb or `brain`-named goal after it is refused `person_stop`; a mission over `RemoteRobot` ends `cancelled`/`stop`; a `brain` or `ros` stop latches nothing; a person's verb and goal, and an unnamed goal, still drive; `/autonomy/resume` and a new mission lift it |
 | `tests/test_goal_arbitration.py` (9) | 3.23: a goal is an autonomous driver |
 | `tests/test_battery_ladder.py` | 3.137: the ladder's rules on planted samples (one sample never fires; a repeat inside 12 s is one sample; a sag read while driving clears at rest or on recovery; a flat pack read at rest fires; a check that times out never fires on a recovered pack; Reserve's timer; latched levels); the sim pack's sag and refresh; in process, Reserve refuses the brain by name on `/action` and `/wheels`, caps a person's speed, lets go of the brain's claim and stops the wheels; a nav2 goal ends at Reserve and no goal is taken; Power-off refuses everyone, runs its steps in order and the power-off once; Reserve's timer powers off; the stub off the car; the brain ends `out_of_budget` and refuses a start at Low |
@@ -525,6 +565,32 @@ order; record the table in the plan entry.
   robot server's two controllers and the brain's own kept a separate one,
   `/depth` raced it, and it failed open on a feedback blip. Options are in
   `PLAN-ros-alignment.md` 3.74.
+
+- **Drops (3.159).** The mark is not built: a seen edge does not reach
+  nav2's keepout until step B2 (after 3.145 frees `robot/server.py`), so
+  nav2 keeps planning through a stairwell and the veto keeps refusing.
+  The memory dead-reckons, so its floor drifts with distance (pruned at
+  3 m of travel). The blind band's fill and the wall shadows are geometric
+  inferences (a straight edge; a wall stops the body first). Seeding
+  assumes the dock is at least 30 cm from any drop. Rugs and thresholds,
+  and the real camera's reach on a grazing floor, are the Rover's (3.159.C).
+  From B's reviews, left open on purpose: a cell's age is not checked when
+  it is read (only pruned), so old floor can drift over a lip until the
+  prune; a remembered thing that has left still excuses unseen floor
+  behind it (never an edge); an arc is judged as the straight corridor
+  plus a pivot in place, not its swept curve; a noisy range that overreads
+  paints floor up to the noise past a lip (the margin covers it: S5's
+  smallest stop 16.62 cm); the grid and the wheel reading are a period
+  apart (~3 cm at 0.6 m/s, inside the margin). The turn check is
+  quantised to 5 cm cells: within a cell of an edge it refuses some turns
+  that open the gap (D4, failed) and let one step of a turn from under
+  1 cm cross 0.17 cm (D2, failed). Round 2 adds: an edge is sticky
+  against everything but its own kind, so a wrong edge (drift, one noisy
+  frame) blocks that way until its cell is pruned; an edge remembered
+  beyond a wall still shortens a move toward the wall; the turn looks
+  0.1 s ahead, so a wheel-loop tick that is very late (3.153's 0.95 s)
+  can turn past its look; the corridor search reads every line out to
+  60 cm each tick (no early end), unmeasured on the board.
 
 - **The car only turns until its lidar driver lands**: see "Driving
   without a lidar" above. By decision.

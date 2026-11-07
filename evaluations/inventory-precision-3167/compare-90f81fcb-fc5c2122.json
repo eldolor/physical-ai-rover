@@ -1,0 +1,256 @@
+{
+ "missions": 20,
+ "same_actions": 9,
+ "first_divergence": [
+  {
+   "mission": 2,
+   "step": 85,
+   "a": [
+    "FORWARD",
+    "RIGHT",
+    "FORWARD"
+   ],
+   "b": [
+    "LEFT",
+    "FORWARD",
+    "RIGHT"
+   ]
+  },
+  {
+   "mission": 3,
+   "step": 64,
+   "a": [
+    "FORWARD",
+    "FORWARD",
+    "FORWARD"
+   ],
+   "b": [
+    "RIGHT",
+    "FORWARD",
+    "LEFT"
+   ]
+  },
+  {
+   "mission": 5,
+   "step": 85,
+   "a": [
+    "FORWARD",
+    "FORWARD",
+    "FORWARD"
+   ],
+   "b": [
+    "RIGHT",
+    "FORWARD",
+    "FORWARD"
+   ]
+  },
+  {
+   "mission": 10,
+   "step": 82,
+   "a": [
+    "LEFT",
+    "FORWARD",
+    "FORWARD"
+   ],
+   "b": [
+    "FORWARD",
+    "LEFT",
+    "FORWARD"
+   ]
+  },
+  {
+   "mission": 11,
+   "step": 46,
+   "a": [
+    "FORWARD",
+    "RIGHT",
+    "FORWARD"
+   ],
+   "b": [
+    "RIGHT",
+    "FORWARD",
+    "FORWARD"
+   ]
+  },
+  {
+   "mission": 12,
+   "step": 73,
+   "a": [
+    "FORWARD",
+    "FORWARD",
+    "RIGHT"
+   ],
+   "b": [
+    "LEFT",
+    "FORWARD",
+    "RIGHT"
+   ]
+  },
+  {
+   "mission": 14,
+   "step": 77,
+   "a": [
+    "FORWARD",
+    "FORWARD",
+    "FORWARD"
+   ],
+   "b": [
+    "LEFT",
+    "FORWARD",
+    "FORWARD"
+   ]
+  },
+  {
+   "mission": 15,
+   "step": 111,
+   "a": [
+    "FORWARD",
+    "FORWARD",
+    "RIGHT"
+   ],
+   "b": [
+    "RIGHT",
+    "FORWARD",
+    "FORWARD"
+   ]
+  },
+  {
+   "mission": 17,
+   "step": 38,
+   "a": [
+    "FORWARD",
+    "RIGHT",
+    "FORWARD"
+   ],
+   "b": [
+    "RIGHT",
+    "FORWARD",
+    "RIGHT"
+   ]
+  },
+  {
+   "mission": 18,
+   "step": 19,
+   "a": [
+    "FORWARD",
+    "FORWARD",
+    "RIGHT"
+   ],
+   "b": [
+    "RIGHT",
+    "FORWARD",
+    "LEFT"
+   ]
+  },
+  {
+   "mission": 20,
+   "step": 21,
+   "a": [
+    "FORWARD",
+    "RIGHT",
+    "FORWARD"
+   ],
+   "b": [
+    "RIGHT",
+    "FORWARD",
+    "RIGHT"
+   ]
+  }
+ ],
+ "wrong_reported": {
+  "a": [
+   {
+    "mission": 1,
+    "label": "kitchen counter",
+    "x_m": 14.037,
+    "y_m": 9.728,
+    "reported": true,
+    "belief": 0.846,
+    "right": false,
+    "nearest": "kitchen counter"
+   },
+   {
+    "mission": 3,
+    "label": "pet bowl",
+    "x_m": 14.994,
+    "y_m": 11.391,
+    "reported": true,
+    "belief": 0.846,
+    "right": false,
+    "nearest": "pet bowl"
+   },
+   {
+    "mission": 18,
+    "label": "bed",
+    "x_m": 17.088,
+    "y_m": 10.091,
+    "reported": true,
+    "belief": 0.846,
+    "right": false,
+    "nearest": "bed"
+   }
+  ],
+  "b": [
+   {
+    "mission": 2,
+    "label": "slippers",
+    "x_m": 4.823,
+    "y_m": 10.562,
+    "reported": true,
+    "belief": 0.846,
+    "right": false,
+    "nearest": "slippers"
+   },
+   {
+    "mission": 10,
+    "label": "tv remote",
+    "x_m": 2.753,
+    "y_m": 3.836,
+    "reported": true,
+    "belief": 0.846,
+    "right": false,
+    "nearest": "tv remote"
+   },
+   {
+    "mission": 12,
+    "label": "sideboard",
+    "x_m": 15.585,
+    "y_m": 4.129,
+    "reported": true,
+    "belief": 0.846,
+    "right": false,
+    "nearest": "sideboard"
+   },
+   {
+    "mission": 18,
+    "label": "dresser",
+    "x_m": 16.521,
+    "y_m": 9.951,
+    "reported": true,
+    "belief": 0.934,
+    "right": false,
+    "nearest": "dresser"
+   },
+   {
+    "mission": 18,
+    "label": "book",
+    "x_m": 15.067,
+    "y_m": 8.207,
+    "reported": true,
+    "belief": 0.846,
+    "right": false,
+    "nearest": "book"
+   },
+   {
+    "mission": 20,
+    "label": "shoes",
+    "x_m": 3.371,
+    "y_m": 7.48,
+    "reported": true,
+    "belief": 0.852,
+    "right": false,
+    "nearest": "shoes"
+   }
+  ]
+ }
+}

@@ -1,0 +1,40 @@
+1794049323.988 WARNING identity vision-picar brain server starting -- git=f2baec290 executable=/home/picar/bench-3136/.venv/bin/python config=(default)
+1794049337.589 WARNING tiered local VLM absent for cold_search (local VLM unreachable: [Errno 9] Bad file descriptor); asking the cloud
+1794049355.507 WARNING tiered local VLM absent for cold_search (local VLM unreachable: [Errno 9] Bad file descriptor); asking the cloud
+1794049359.608 WARNING tiered local VLM absent for cold_search (local VLM unreachable: [Errno 9] Bad file descriptor); asking the cloud
+1794049363.899 WARNING tiered local VLM absent for cold_search (local VLM unreachable: [Errno 9] Bad file descriptor); asking the cloud
+1794049372.397 WARNING tiered local VLM absent for cold_search (local VLM unreachable: [Errno 9] Bad file descriptor); asking the cloud
+1794049381.033 WARNING tiered local VLM absent for cold_search (local VLM unreachable: [Errno 9] Bad file descriptor); asking the cloud
+1794049385.147 WARNING tiered local VLM absent for cold_search (local VLM unreachable: [Errno 9] Bad file descriptor); asking the cloud
+1794049397.807 WARNING tiered local VLM absent for cold_search (local VLM unreachable: [Errno 9] Bad file descriptor); asking the cloud
+1794049406.020 WARNING tiered local VLM absent for cold_search (local VLM unreachable: [Errno 9] Bad file descriptor); asking the cloud
+1794049410.077 WARNING tiered local VLM absent for cold_search (local VLM unreachable: [Errno 9] Bad file descriptor); asking the cloud
+1794049424.158 ERROR mission_runner mission step failed
+Traceback (most recent call last):
+  File "/home/picar/bench-3136/control/mission_runner.py", line 1070, in tick
+    result = self.agent.step()
+  File "/home/picar/bench-3136/brain/explore.py", line 375, in step
+    action, executed, detail = self._choose(frame, scene)
+  File "/home/picar/bench-3136/brain/explore.py", line 401, in _choose
+    out = self._choose_tick(frame, scene)
+  File "/home/picar/bench-3136/brain/explore.py", line 439, in _choose_tick
+    state = self._goal_state()
+  File "/home/picar/bench-3136/brain/explore.py", line 557, in _goal_state
+    self._bridge_blip(exc)
+  File "/home/picar/bench-3136/brain/explore.py", line 592, in _bridge_blip
+    raise exc
+  File "/home/picar/bench-3136/brain/explore.py", line 555, in _goal_state
+    g = (self.navigator.get_goal() or {}).get("goal") or {}
+  File "/home/picar/bench-3136/control/mission_runner.py", line 389, in get_goal
+    return self._nav.get_goal()
+  File "/home/picar/bench-3136/control/remote_navigator.py", line 68, in get_goal
+    r = self._call("GET")
+  File "/home/picar/bench-3136/control/remote_navigator.py", line 44, in _call
+    return self._client.request(method, "/world/goal", json=json, headers=self.headers)
+  File "/home/picar/bench-3136/.venv/lib/python3.10/site-packages/httpx/_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+  File "/home/picar/bench-3136/.venv/lib/python3.10/site-packages/httpx/_client.py", line 901, in send
+    raise RuntimeError("Cannot send a request, as the client has been closed.")
+RuntimeError: Cannot send a request, as the client has been closed.
+1794049539.215 WARNING explore goal call failed (1 in a row), waiting: [Errno 9] Bad file descriptor
+1794049595.625 WARNING tiered local VLM absent for cold_search (local VLM unreachable: [Errno 9] Bad file descriptor); asking the cloud

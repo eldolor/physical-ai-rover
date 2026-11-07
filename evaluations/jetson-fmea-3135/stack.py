@@ -110,8 +110,9 @@ class Stack:
             "PICAR_LOG_LEVEL": "WARNING", "FMEA_DIR": str(self.out),
             "FMEA_PLANT": ",".join(sorted(plants)),
         })
-        if "FMEA_TRUTH_LOCK" in os.environ:     # 3.151's planted check, from the shell
-            env["FMEA_TRUTH_LOCK"] = os.environ["FMEA_TRUTH_LOCK"]
+        for k in ("FMEA_TRUTH_LOCK", "FMEA_ROBOT_LOCK"):   # 3.151's and 3.155's plants, from the shell
+            if k in os.environ:
+                env[k] = os.environ[k]
         env.update(extra_env or {})
         self.env = env
 
@@ -205,9 +206,44 @@ class Stack:
         if self.plants & ROBOT_PLANTS:
             argv = [PY, str(HERE / "robot_plant.py"), str(PORTS["robot"])]
         else:
-            argv = self._uvicorn("robot.server:app", PORTS["robot"])     # the shipped code
-        self._spawn("robot", argv, dict(self.env, FMEA_PLANT=",".join(sorted(self.plants & ROBOT_PLANTS))))
+            # The shipped code, started as picar-stack starts it (3.155: locked first).
+            argv = [PY, "-m", "robot.locked_serve", *self._uvicorn("robot.server:app", PORTS["robot"])[2:]]
+        lock = not (self.plants & ROBOT_PLANTS) and self.env.get("FMEA_ROBOT_LOCK") != "0"
+        log = self.out / "robot.log"
+        since = log.stat().st_size if log.exists() else 0      # this start's lines only
+        self._spawn("robot", argv, dict(self.env, FMEA_PLANT=",".join(sorted(self.plants & ROBOT_PLANTS)),
+                                        PICAR_MEMLOCK_WAIT_S="30" if lock else "0",
+                                        PICAR_MEMLOCK="1" if lock else "0"))
+        raised = lock and self._sudo(["prlimit", "--pid", str(self.pid("robot")),
+                                      "--memlock=unlimited:unlimited"])
         self._wait_health("robot", self.urls["robot"])
+        self.record_robot_lock(lock, raised, since)
+
+    def record_robot_lock(self, lock: bool, raised: bool, since: int = 0) -> dict:
+        """3.155: what this start's launcher said about its lock (its line in
+        robot.log after byte `since`), as `robot_lock.json`; `FMEA_ROBOT_LOCK=0`
+        (the plant) makes it skip the lock, and a robot plant runs unlocked."""
+        got = {"locked": False, "error": "no lock line in robot.log"} if lock else \
+            {"locked": False, "skipped": "FMEA_ROBOT_LOCK=0 or a robot plant"}
+        path = self.out / "robot.log"
+        text = path.read_bytes()[since:].decode(errors="replace") if path.exists() else ""
+        for line in text.splitlines():
+            if line.startswith("robot server memory lock: "):
+                try:
+                    got = json.loads(line.split(": ", 1)[1])
+                except ValueError:
+                    pass
+        got["limit_raised"] = raised
+        try:                                    # the lock line is from before the app loaded
+            with open(f"/proc/{self.pid('robot')}/status") as f:
+                for line in f:
+                    if line.startswith(("VmLck:", "VmRSS:")):
+                        got[line.split(":")[0].lower() + "_kb_serving"] = int(line.split()[1])
+        except (OSError, KeyError, ValueError):
+            pass
+        self.robot_lock = got
+        (self.out / "robot_lock.json").write_text(json.dumps(got, indent=1))
+        return got
 
     def start_brain(self) -> None:
         if self.plants & BRAIN_PLANTS:

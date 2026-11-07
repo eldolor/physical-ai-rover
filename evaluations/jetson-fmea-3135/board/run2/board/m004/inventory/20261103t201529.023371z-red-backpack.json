@@ -1,0 +1,372 @@
+{
+ "candidates": [
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 4,
+   "hits": 1,
+   "id": 2,
+   "label": "bed",
+   "last_step": 4,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "bedroom 2",
+   "votes": {
+    "bed": 1
+   },
+   "x_m": 3.952,
+   "y_m": 7.191
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 7,
+   "hits": 1,
+   "id": 5,
+   "label": "bed",
+   "last_step": 9,
+   "misses": 0,
+   "points": 3,
+   "reported": false,
+   "room": "bedroom 2",
+   "votes": {
+    "bed": 1
+   },
+   "x_m": 2.464,
+   "y_m": 11.343
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 12,
+   "hits": 1,
+   "id": 6,
+   "label": "bed",
+   "last_step": 12,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "bedroom 2",
+   "votes": {
+    "bed": 1
+   },
+   "x_m": 2.206,
+   "y_m": 10.455
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 12,
+   "hits": 1,
+   "id": 7,
+   "label": "bed",
+   "last_step": 12,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "bedroom 2",
+   "votes": {
+    "bed": 1
+   },
+   "x_m": 1.47,
+   "y_m": 10.387
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 92,
+   "hits": 1,
+   "id": 20,
+   "label": "bed",
+   "last_step": 97,
+   "misses": 0,
+   "points": 6,
+   "reported": false,
+   "room": "bedroom",
+   "votes": {
+    "bed": 1
+   },
+   "x_m": 2.79,
+   "y_m": 0.998
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 12,
+   "hits": 1,
+   "id": 8,
+   "label": "box",
+   "last_step": 12,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "bedroom 2",
+   "votes": {
+    "box": 1
+   },
+   "x_m": 0.892,
+   "y_m": 9.464
+  },
+  {
+   "belief": 0.701,
+   "carried": false,
+   "disputed": false,
+   "first_step": 88,
+   "hits": 1,
+   "id": 19,
+   "label": "chair",
+   "last_step": 88,
+   "misses": 0,
+   "points": 1,
+   "reported": false,
+   "room": "bedroom",
+   "votes": {
+    "chair": 1
+   },
+   "x_m": 3.618,
+   "y_m": 2.421
+  }
+ ],
+ "carried_from": null,
+ "carry_seq": 0,
+ "counts": {
+  "carried": 0,
+  "frames": 98,
+  "landmarks": 18,
+  "no_pose": 0,
+  "observations": 299,
+  "reported": 11,
+  "unplaced": 0
+ },
+ "frame_id": null,
+ "map_id": "slam-d706eccd",
+ "mission": "Find the red backpack.",
+ "mission_id": "20261103T201529.023371Z-red backpack",
+ "outcome": "found",
+ "params": {
+  "l_hit": 0.85,
+  "l_miss": -0.4,
+  "merge_m": 0.5,
+  "new_view_deg": 30.0,
+  "new_view_m": 0.5,
+  "report_belief": 0.8
+ },
+ "reported": [
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 0,
+   "hits": 7,
+   "id": 1,
+   "label": "bed",
+   "last_step": 53,
+   "misses": 0,
+   "points": 26,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "bed": 7
+   },
+   "x_m": 3.365,
+   "y_m": 5.795
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 38,
+   "hits": 11,
+   "id": 15,
+   "label": "bed",
+   "last_step": 86,
+   "misses": 0,
+   "points": 48,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "bed": 11
+   },
+   "x_m": 2.052,
+   "y_m": 2.109
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 27,
+   "hits": 12,
+   "id": 9,
+   "label": "chair",
+   "last_step": 74,
+   "misses": 0,
+   "points": 52,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "chair": 12
+   },
+   "x_m": 1.603,
+   "y_m": 4.179
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 30,
+   "hits": 7,
+   "id": 14,
+   "label": "chair",
+   "last_step": 76,
+   "misses": 0,
+   "points": 23,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "chair": 7
+   },
+   "x_m": 3.009,
+   "y_m": 3.572
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 28,
+   "hits": 9,
+   "id": 10,
+   "label": "desk",
+   "last_step": 70,
+   "misses": 0,
+   "points": 35,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "desk": 9
+   },
+   "x_m": 0.914,
+   "y_m": 4.311
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 28,
+   "hits": 6,
+   "id": 11,
+   "label": "dining table",
+   "last_step": 73,
+   "misses": 0,
+   "points": 17,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "dining table": 6
+   },
+   "x_m": 3.315,
+   "y_m": 3.878
+  },
+  {
+   "belief": 0.982,
+   "carried": false,
+   "disputed": false,
+   "first_step": 52,
+   "hits": 8,
+   "id": 18,
+   "label": "red backpack",
+   "last_step": 97,
+   "misses": 0,
+   "points": 35,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "red backpack": 8
+   },
+   "x_m": 3.172,
+   "y_m": 1.528
+  },
+  {
+   "belief": 0.968,
+   "carried": false,
+   "disputed": false,
+   "first_step": 5,
+   "hits": 4,
+   "id": 4,
+   "label": "dresser",
+   "last_step": 18,
+   "misses": 0,
+   "points": 8,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "dresser": 4
+   },
+   "x_m": 4.778,
+   "y_m": 9.464
+  },
+  {
+   "belief": 0.928,
+   "carried": false,
+   "disputed": false,
+   "first_step": 5,
+   "hits": 3,
+   "id": 3,
+   "label": "dining table",
+   "last_step": 17,
+   "misses": 0,
+   "points": 8,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "dining table": 3
+   },
+   "x_m": 5.572,
+   "y_m": 11.433
+  },
+  {
+   "belief": 0.928,
+   "carried": false,
+   "disputed": false,
+   "first_step": 29,
+   "hits": 3,
+   "id": 12,
+   "label": "dresser",
+   "last_step": 69,
+   "misses": 0,
+   "points": 25,
+   "reported": true,
+   "room": "bedroom 2",
+   "votes": {
+    "dresser": 3
+   },
+   "x_m": 0.914,
+   "y_m": 5.761
+  },
+  {
+   "belief": 0.846,
+   "carried": false,
+   "disputed": false,
+   "first_step": 44,
+   "hits": 2,
+   "id": 17,
+   "label": "chair",
+   "last_step": 54,
+   "misses": 0,
+   "points": 8,
+   "reported": true,
+   "room": "bedroom",
+   "votes": {
+    "chair": 2
+   },
+   "x_m": 3.763,
+   "y_m": 4.231
+  }
+ ]
+}

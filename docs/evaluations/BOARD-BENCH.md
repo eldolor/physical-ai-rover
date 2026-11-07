@@ -158,6 +158,22 @@ run are information only.
 Bars: P1, P2 250 ms; P2 memory +100 MB; P8 1.5 s and the same answers as
 3.78; P4 0 late; P11 >= 18 Hz; P12 pause <= 10%.
 
+### Latencies (3.136.C)
+
+P5, P6 and P7 on 3.135.C's full stack with missions
+(`evaluations/jetson-perf-3136/lat.py`, amendment 7). Valid only under the
+section's rule (nav2's item by amendments 5-6, a person's acts and P5's
+drops counted neither way). Numbers from an invalid run are information only.
+
+| Date | Rev | Valid | P7 verdict p90 (ms, n) | P6 goal: wheels / goal end p99 (ms, 20) | P6 verb: wheels p99 (ms, 20) | P5 scan to zero p99 (ms, 40) | P5 drop to zero p99 (ms) | P5 contacts | Late wheel ticks | `MemAvailable` min (MB) | OOM | Max temp |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-11-07 | run 1, `b5ccce0a` (`dev` `f31ad372` + the harness) | **no** (19 `approach` goals ABORTED by nav2: 3.154's race, the build predates its fix) | 837 (20) | 51 / 149.1 | 34 | 27 (25 of 40 stopped before the scan) | 162 | 0 | 0 / 121,231 (max 88.9 ms) | 474 | 0 | 59.2 °C |
+| 2026-11-07 | run 2, `f2baec29` (`dev` with 3.154; image built from `dev` `548e2545`) | **no** (11 `approach` goals ABORTED by nav2 after 0.7-6.7 s) | **2,784** (20) | 38 / 149.1 | 31 | 39 (29 of 40 stopped before the scan; sim: information) | 1,181 | 0 | 0 / 78,483 (max 83.6 ms) | 659 | 0 | 61.2 °C |
+
+Bars: P7 2.0 s (20 samples, amendment 8); P6 wheels 150 ms, goal 250 ms;
+P5 100 ms and 0 contacts, judged on the Rover (amendment 8: the sim's
+numbers are information).
+
 ### Memory soak, 4 h (3.135.C)
 
 Back-to-back tiered explore missions for 4 h, VE resident, a new target
@@ -167,6 +183,7 @@ each mission, five houses cycled, the cloud a local stub
 | Date | Rev | Length | Missions | Found | Contacts | `MemAvailable` min (MB) | Slope, last 3 h (MB/h) | Max RSS growth h1->h4 | OOM | Late ticks | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | 2026-11-02/03 | `dd0a7c9f` | 14,677 s | 19 | **10 (53%)** | 0 | 700 | **-21.1** | none over 50 MB | 0 | **2** / 201,841 (max 104 ms) | **FAILED** (b, c, d; 3.142, 3.143, 3.141) |
+| 2026-11-03 | `68703567` (run 2, every target encoded: 3.142) | 15,463 s | 21 | **11 (52%)**, before fix V (3.143) | 0 | 669 | +31.2 (met) | none over 50 MB | 0 | **1** / 215,038 (max 108 ms), 3.141's baseline before its fix | **FAILED** as criterion 1 (c, d); (b) **met** (3.142) |
 
 Bars: (a) minimum >= 500 MB; (b) slope >= -10 MB/h and no process's
 per-mission minimum RSS up > 50 MB; (c) 0 OOM, 0 late ticks; (d) >= 90%
@@ -205,6 +222,7 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-04 | `53bcbe61` | F12b cloud hangs (`vision`) | 5/5 | met | `failed` at 61.4-61.5 s (300), B3.2's 3 x 20 s; open paid calls max 1; 0.0 cm | 0 | -- | 2,207 | 0 | 49.8 °C | -- | yes |
 | 2026-11-04 | `1330ea8f` | F2 memory runs out (OOM), during a nav2 goal | 3/8 | **FAILED** | VE's driver the only kill 4/4, robot server, brain and ROS alive, 0 late ticks, every mission ended; **truth log holes 0.69 s and 3.01 s** (0.2) at 15-99 MB free; runs 5-8 not started (VE's start limit) | 0 | 0 | 37 | 4 | 59.9 °C | -- | yes |
 | 2026-11-05 | `a0a5bc9e` | F2 memory runs out (OOM), during a nav2 goal -- **the new record after 3.151** (truth body locked 5/5) | 5/5 | **FAILED** | VE's driver the only kill 5/5, robot server, brain and ROS alive, every mission ended (4 `found`, 1 `exhausted`); truth holes 26-34 ms in 4 runs, **0.233 s** in run 4 (0.2); **late wheel ticks in 3 runs** (2, 2, 1; max 204-439 ms) at 10-11 MB free | 0 | **5** | 10 | 5 | 57.9 °C | -- | yes |
+| 2026-11-06 | `3bec4455` | F2 memory runs out (OOM), during a nav2 goal -- **the robot server memory-locked (3.155)** | 6 (5 counted) | met | 0 late wheel ticks in all six (max 79 ms) at 11-13 MB free (run 4 reached 35 MB: reported, not counted); VE's driver the only kill 6/6; robot server, brain, ROS and truth alive (holes <= 0.115 s); missions 1 `found`, 5 `exhausted`; robot RSS 67-72 MB | 0 | 0 | 11 | 6 | 58.3 °C | -- | yes |
 | 2026-11-04 | `1330ea8f` | F3f VE killed, a frame question open | 2/8 | **FAILED** (harness) | VE back 40.8 s (60); not failed 2/2; handed-on read **None** (the kill before any tier stats: a harness bug); runs 4-8 not started (VE's start limit) | 0 | 0 | 2,054 | 0 | 55.4 °C | -- | yes |
 | 2026-11-04 | `1330ea8f` | F3a VE killed, the arrival's question open, the stand-in up | 5/5 | **FAILED** | handed on 41 (>= 1), VE back 41 s; **every mission `exhausted`, not `found`**: the stand-in refuses the arrival, and once the cloud has spoken the arrival is the cloud's (3.91.C) | 0 | 0 | 2,006 | 0 | 59.8 °C | -- | yes |
 | 2026-11-04 | `1330ea8f` | F3r VE killed, the arrival's question open, the cloud refused | 3/8 | incomplete | `arrived_unconfirmed` 3/3, handed on 3, VE back 40.7-40.8 s; runs 4-8: VE's start limit | 0 | 0 | 2,138 | 0 | 57.7 °C | -- | yes |
@@ -219,6 +237,59 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-05 | `fb12ba7f` | F14 board rebooted mid-mission (`sudo systemctl reboot`, the production units) | 3/3 | met | robot and brain back 43.9-48.5 s (90; an upper bound: ssh and the services answered at the same first poll); VE ready 48.6-51.6 s; 0 files unparseable, lost or shortened (17-20 files, 2-5 JSONL lines); the next mission drove 3/3; units as found. A first batch at `27d14d6c` was 6/6 invalid, no reboot sent (amendment 20) | -- | -- | -- | -- | -- | 43.9-48.5 s | yes |
 
 ## Runs
+
+### 2026-11-07, 3.136.C run 2, `f2baec29` (INVALID)
+
+`dev` with 3.154's fix; the ROS image `vision-picar-ros:plan-3.136C` built
+on the board from `dev` `548e2545` (`:latest` untouched). The board up 34 h,
+15 W, max 61.2 °C, 0 OOM kills, `MemAvailable` minimum 659 MB, desktop load
+<= 6.8; 03:37-05:14 (24 stacks), left as found.
+* **Invalid on nav2's item only:** 11 `approach` goals ABORTED after
+  0.7-6.7 s, no cancel by anyone (run 1's 10-30 ms race gone); 0 late wheel
+  ticks in 78,483 moving.
+* Rows, information only: P7 p90 **2,784 ms** of 20 (four over 2 s; would
+  fail 2.0 s); P6 wheels zero p99 38 ms (goal) and 31 ms (verb), the goal
+  ended p99 149.1 ms; P5 scan to forward zero p99 39 ms, drop to zero p99
+  1,181 ms (one outlier), 0 contacts.
+* Records: `evaluations/jetson-perf-3136/board/lat-run2-20261107-0333/`.
+
+### 2026-11-07, 3.136.C run 1, `b5ccce0a` (INVALID)
+
+The board up 31 h, 15 W, max 59.2 °C, 0 OOM kills, `MemAvailable` minimum
+474 MB, desktop load <= 3.1; 00:51-03:16 (26 stacks), 3.136's runner with
+its lease, left as found.
+* **Invalid on nav2's item only:** 19 non-frontier goals ABORTED, all seen
+  `approach` goals nav2 ended 10-30 ms after accepting them (8 with the
+  target `dining table`): 3.154's race (a goal aborted while the previous
+  one's cancel is in flight), fixed at `311ef4d5`, after this build; 0 late
+  wheel ticks in 121,231 moving.
+* Rows, information only (every one under its bar): P7 p90 837 ms of 20;
+  P6 wheels zero p99 51 ms (goal) and 34 ms (verb), the goal ended p99
+  149.1 ms; P5 scan to forward zero p99 27 ms of 40, drop to zero p99
+  162 ms, 0 contacts.
+* Records: `evaluations/jetson-perf-3136/board/lat-run1-20261107-0044/`.
+
+
+### 2026-11-06, 3.155: `picar-stack` installed with the robot server locked (`bdcf782c`)
+
+The user's go ("Install now"). The service worktree moved to `dev` `bdcf782c`; only
+`picar-stack.service` installed and restarted (`LimitMEMLOCK=infinity`).
+The robot server `locked: true`, `VmLck` 469 MB mapped, `VmRSS` 67 MB,
+`oom_score_adj` -900; `/health` and `/brain/health` ok locally and through
+the tunnel; `picar-ngrok` and `picar-local-vlm` untouched. No motion.
+
+### 2026-11-06, 3.155: F2 with the robot server memory-locked (`3bec4455`)
+
+`run.py row F2 --runs 5`, then `--runs 1`; 15 W, sim mode, no motion, left
+as found; the robot server locked in all six (`robot_lock.json`). **Met**:
+* 0 late wheel ticks in every run (max 65-79 ms) at 11-13 MB `MemAvailable`;
+  run 4 reached only 35 MB, so it is reported and a sixth run counted;
+* VE's driver the only OOM kill 6/6; robot server, brain, ROS and the truth
+  body alive (truth holes 27-115 ms); 0 contacts; 1 `found`, 5 `exhausted`;
+* the robot server 67-72 MB resident while serving (51 MB before).
+Not installed: `picar-stack.service`'s `LimitMEMLOCK=infinity` (owed).
+Records: `evaluations/jetson-fmea-3135/board/rows/F2-20261105-2158/`,
+`F2-20261106-0151/`.
 
 ### 2026-11-05, 3.135.B F2's new record after 3.151 (`dev` `a0a5bc9e`)
 
@@ -682,6 +753,46 @@ frontier mission in `scaled_house`, no ROS, no VE.
   (0 differences).
 * Records: `evaluations/jetson-fmea-3135/board/rows/`; analysis in
   `docs/plans/ros-alignment/3.135-jetson-fmea.md`.
+
+### 2026-11-03, memory soak run 2 (3.135.C, for 3.142), `dev` `68703567`
+
+On the board 13:23 -> 17:41 CST (15,463 s scored), 15 W, untraced (3.141's
+tracer withdrawn), launched detached from its Claude session. The harness
+now gives the perception loop its own text cache, emptied before each
+mission (3.142.A), so every mission encodes its new target, as criterion 1
+says. **(a) and (b) met; (c) and (d) failed, so criterion 1 as a whole
+FAILED.** Left as found (0 differences); checked again over ssh on
+2026-11-06: no container, sampler or soak process left, units active.
+
+* Workload (3.142 criterion 3): 20 of 20 judged missions encoded YOLOE's
+  prompt (CLIP's in 19: it is asked only of a box). Mission 19 ended
+  `found` in 37 s, before its encode landed, so it is not judged
+  (amendment 1). **Met.**
+* (a) `MemAvailable` minimum 669 MB (1-s sampler; 760 on the 5-s one),
+  11 s into mission 0. Bar 500: met.
+* (b) Over the 14 missions after hour 1, the per-mission minimum's slope
+  is **+31.2 MB/h** (bar >= -10): met. No role's minimum grew over 50 MB
+  hour 1 -> 4 (perception -23.0, the simulator's sensors -27.2). Reported
+  beside, no bar:
+  * the same fit on the 1-s sampler: +36.4 MB/h;
+  * the steady minimum (from 60 s in): +9.3 (5-s), +0.2 (1-s);
+  * the encoder's peak per mission (`other: python`), 884-935 MB after
+    hour 1: -17.1 MB/h (it does not grow).
+  Run 1's -21.1 was the mix of encoded and cached missions (3.142).
+* (c) 0 OOM kills; **1 late wheel tick** (mission 1, max 108 ms) of
+  215,038 moving: 3.141's baseline, before its fix.
+* (d) **11 of 21 found** (out of budget 9, exhausted 1), 0 contacts, every
+  truth log whole: before fix V (3.143). By house: `home_first_floor`
+  4/5, `complex_house` 0/4, `procthor:val:0` 3/4, `procthor:val:2` 1/4,
+  `procthor:val:3` 3/4. The truth logs stay on the board
+  (`~/bench-3135/out-run2-20261103-132254`), as does the 5-s account.
+* VE ran the whole run: PID 213172 before and after. 2 calls to the $0
+  stand-in. Max temperature 62.4 C.
+* Risk recorded, not hit: if the desktop runner dies (a crash or reboot),
+  the board's samplers keep running and `picar-stack`/`picar-ngrok` are
+  not restored (3.135.B's finding in `boardrun.py`). Records:
+  `evaluations/jetson-fmea-3135/board/run2/`; analysis in
+  `docs/plans/ros-alignment/3.142-soak-memory-trend.md`.
 
 ### 2026-11-02/03, memory soak run 1 (3.135.C), rev `dd0a7c9f`
 

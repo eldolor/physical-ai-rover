@@ -1,0 +1,6 @@
+== soak 13:23:13 rev 68703567 image vision-picar-ros:latest
+== NV Power Mode: 15W; boot 2026-11-02 12:55:42; uptime 88051.37 s
+== desktop: inactive; twin units: inactive inactive; vlm: active
+== MemAvailable before anything: 2743 MB
+== soak.py exit 0 17:41:23; MemAvailable 2730 MB
+== torn down 17:41:23; desktop: active; vlm: active

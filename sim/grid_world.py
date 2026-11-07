@@ -118,6 +118,13 @@ class Heading(Enum):
 CELL_WALL = "#"
 CELL_FLOOR = "."
 CELL_DOOR = "D"
+# 3.159: a drop -- a stairwell or a sunken floor. Open space to the lidar,
+# the discovered map and nav2 (they see no wall, as on the car), never
+# solid, and never floor: `translate()` lets the chassis roll over one, as
+# the car would, and only the depth camera's `drop` block sees it
+# (`MockRobot._drop_block()`). Not passable, so no object or mover stands
+# on one.
+CELL_DROP = "v"
 
 # How far the robot's own body reaches ahead of its centre, in cells. The
 # grid world's robot occupies its cell, so a move is capped where the
