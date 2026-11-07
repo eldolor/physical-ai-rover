@@ -180,6 +180,14 @@ CANCEL_TIMER_S = 0.5
 # ends `aborted` (3.76 R6): otherwise it read `active` for the session, the
 # stop held `ros` at zero and every autonomous driver was refused for good.
 CANCEL_RESULT_TIMEOUT_S = 10.0
+# 3.154: a goal superseded by a new one is not cancelled first -- nav2's
+# navigator preempts it. A cancel sent just before the new goal halted the
+# tree for the old one, and nav2 ended the NEW goal ABORTED (an approach
+# lost 6-10 ms after it began executing, 3.136.B). The old goal is still
+# registered as cancelling, so it reads live until nav2 reports its result
+# (3.76 Q3), but its first cancel waits this long, past nav2's switch; a
+# Stop meanwhile cancels it at once.
+SUPERSEDE_GRACE_S = 2.0
 # 3.50.D: where saved maps live -- a Docker volume in the sim, the NVMe on
 # the car. A container without it saves nothing, as before 3.50 (every
 # other session's stack mounts none).
@@ -562,7 +570,7 @@ class Bridge(Node):
             refusal = self._goal_refusal()
         if refusal is not None:
             return 503, refusal
-        self.cancel_goal()
+        self._supersede_live()
         ps = PoseStamped()
         ps.header.frame_id = "map"
         ps.header.stamp = self.get_clock().now().to_msg()
@@ -581,9 +589,9 @@ class Bridge(Node):
             if refusal is not None:
                 return 503, refusal
             self.plan = []
-            # The superseded goal was sent its cancel above, and nav2's
-            # navigator preempts it for this one anyway; its handle must not
-            # stand in for the new goal's.
+            # nav2's navigator preempts the superseded goal for this one; it
+            # was registered above (its cancel deferred, 3.154), and its
+            # handle must not stand in for the new goal's.
             self.goal_handle = None
             # 3.136.G: the goal's UUID is made here, not by rclpy, so the
             # reply can name it before nav2 answers: nav2's status reports
@@ -854,6 +862,25 @@ class Bridge(Node):
         one, with no result yet."""
         return sum(1 for e in self.cancelling.values() if e["record"] is not self.goal)
 
+    def _supersede_live(self):
+        """3.154: the live goal is about to be superseded. Registered as
+        cancelling -- it reads live until nav2's result (3.76 Q3), and the
+        timer re-sends its cancel if none comes -- but its first cancel is
+        due only SUPERSEDE_GRACE_S from now, so none reaches nav2 while it
+        switches to the new goal. A pending goal with no handle yet is
+        cancelled when nav2 accepts it (`_on_goal_response`)."""
+        with self.lock:
+            self._expire_pending()
+            if self.goal_handle is None or not self.goal or self.goal["state"] not in (
+                    "pending", "active"):
+                return
+            self.goal.setdefault("cancel_reason", "superseded")
+            now = time.monotonic()
+            entry = self._register(self.goal_handle, self.goal, now)
+            if entry["last"] == -math.inf:      # never sent: hold the first one back
+                entry["last"] = now + SUPERSEDE_GRACE_S - CANCEL_RESEND_S
+                entry["grace"] = True
+
     def cancel_goal(self, why="cancelled"):
         """Ask nav2 to cancel the live goal AND every superseded goal still
         cancelling, each on the one schedule (round 10), until nav2 reports
@@ -871,6 +898,9 @@ class Bridge(Node):
             now = time.monotonic()
             if self.goal_handle is not None:
                 self._register(self.goal_handle, self.goal, now)
+            for entry in self.cancelling.values():
+                if entry.pop("grace", False):    # 3.154: a Stop does not wait out the grace
+                    entry["last"] = -math.inf
             due = self._due_handles(now)         # the live goal and every superseded one
             superseded = self._superseded_live()
         for handle in due:
