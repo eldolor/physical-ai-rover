@@ -819,14 +819,21 @@ class ExploreAgent(MissionAgent):
         # approach itself ABORTED. The ownership check still runs.
         prev = self._goal
         self._cancel(send=False)
-        out = self._send(gx, gy, "approach", now)
+        try:
+            out = self._send(gx, gy, "approach", now)
+        except BaseException:
+            if self._goal is None:
+                self._goal = prev          # review 2: still tracked, never left untracked
+            raise
         if out[0] != "GOAL" and prev is not None:
-            # Review: no goal superseded the old one (refused, a 503 hold, a
-            # failed call), so it would drive on untracked: end it now.
-            try:
-                self.navigator.cancel_goal()
-            except Exception:  # noqa: BLE001 -- best effort; the goal times out anyway
-                logger.warning("goal cancel failed", exc_info=True)
+            # Review: no goal superseded the old one, so it is tracked again.
+            # Refused by an answer (a hold, authority): end it now, through
+            # the ownership check. A failed call may have reached the bridge
+            # with its answer lost, and a cancel would end that approach in
+            # the switch (review 2): kept tracked only, as on any blip.
+            self._goal = prev
+            if self.last_event.startswith("goal refused"):
+                self._cancel()
         if out[0] == "GOAL":
             # Only an approach nav2 took counts as made (3.85): one refused
             # `preempted` and recorded anyway kept every later sighting of

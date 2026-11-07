@@ -89,7 +89,11 @@ def main():
             else:
                 time.sleep(0.5)
                 if mode == "switch":
-                    b = pick(robot, reach, rng) or a
+                    b = pick(robot, reach, rng)
+                    if b is None:
+                        row["skipped"] = "no reachable second point"
+                        rows.append(row)
+                        continue
                     t0 = time.monotonic()
                     if arm == "delete-then-post":
                         robot.delete("/world/goal", headers=H)

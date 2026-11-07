@@ -309,6 +309,10 @@ paragraph.**
   fresh map; re-maps on entering unknown or on request (`POST /world/remap`);
   the scan-contradiction trigger is off (`PICAR_REMAP_CONTRADICTION=1`);
   `PICAR_MAP_RELOAD=0` maps from empty.
+* 3.154: a new nav2 goal supersedes the live one with no cancel first (the
+  bridge defers the old one's cancel 2 s; a Stop clears it); explore sends
+  no DELETE before an approach. Desktop: approach aborted 14/30 -> 0/30.
+  The board's 3.136.B run 3 owed.
 * 3.105, 3.127, 3.133, 3.134: goals wait for nav2 and SLAM; a 503 names
   its `hold`. 3.136.G: nav2's goal id comes back in `POST /goal`'s reply
   (`status.explore.sent`); the desktop's image rebuilt from `dev`

@@ -74,6 +74,7 @@ class _RefuseApproach(WalkingNav):
         if any(f.function == "_send" and f.frame.f_locals.get("kind") == "approach"
                for f in inspect.stack()[1:4]) and self.goal and self.goal["state"] == "active":
             self.calls.append(("set", round(x_m, 2), round(y_m, 2)))
+            self.calls.append(("refused",))
             self.refused_approach = True
             return {"accepted": False, "reason": "preempted"}
         return super().set_goal(x_m, y_m)
@@ -84,8 +85,12 @@ def test_a_refused_approach_still_ends_the_goal_it_would_have_superseded():
     is cancelled -- never left driving untracked."""
     runner, nav, grid = _run(_RefuseApproach)
     assert getattr(nav, "refused_approach", False), "no approach was refused: the test proves nothing"
-    i = max(i for i, c in enumerate(nav.calls) if c[0] == "set")
-    assert any(c[0] == "cancel" for c in nav.calls[i:]) or nav.goal["state"] != "active"
+    for i, c in enumerate(nav.calls):
+        if c == ("refused",):
+            after = [x[0] for x in nav.calls[i + 1:] if x[0] in ("cancel", "set")]
+            assert after and after[0] == "cancel", (
+                f"the goal the refused approach would have superseded was not ended: "
+                f"{nav.calls[i - 2:i + 4]}")
 
 
 def test_a_goal_superseded_while_pending_gets_the_grace_too(bridge_mod):
@@ -99,4 +104,16 @@ def test_a_goal_superseded_while_pending_gets_the_grace_too(bridge_mod):
     assert a.cancels == 0
     _later(b, bridge_mod.SUPERSEDE_GRACE_S + 0.5)
     b._resend_cancels()
+    assert a.cancels == 1
+
+
+def test_a_stop_before_a_late_accept_cancels_the_superseded_goal_at_once(bridge_mod):
+    """Review 2: A pending, B supersedes it, a Stop, then nav2 accepts A: no
+    grace for A -- the Stop came after its supersede."""
+    b = _bridge(bridge_mod)
+    b.send_goal({"x_m": 1.0, "y_m": 0.0})          # A, pending
+    b.send_goal({"x_m": 2.0, "y_m": 0.0})          # B
+    b.cancel_goal()                                # a Stop
+    a = _Handle()
+    b.nav.futures[0].complete(a)
     assert a.cancels == 1

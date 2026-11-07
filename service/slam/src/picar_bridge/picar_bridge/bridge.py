@@ -292,6 +292,7 @@ class Bridge(Node):
         # yet answered with a result: id(handle) -> {handle, record, since,
         # last} (3.76 Q3). Re-sent by a timer until the result arrives.
         self.cancelling = {}
+        self._stops = 0          # 3.154: cancel_goal() calls, so a pending supersede sees a Stop
         self._nav_ready = True           # refreshed by _resend_cancels, outside the lock
         # ---- 3.105: whether nav2's nodes are active; send_goal reads it ----
         self.nav2_cli = self.create_client(Trigger, NAV2_MANAGER,
@@ -635,10 +636,9 @@ class Bridge(Node):
                 record.setdefault("cancel_reason", "superseded")
                 now = time.monotonic()
                 entry = self._register(handle, record, now)
-                if entry["last"] == -math.inf and record["cancel_reason"] == "superseded":
-                    entry["last"] = now + SUPERSEDE_GRACE_S - CANCEL_RESEND_S
-                    entry["grace"] = True
-                else:
+                if record.get("_superseded_at_stop") == self._stops:
+                    self._defer_first_cancel(entry, now)
+                else:                      # a Stop since: cancelled at once (review 2)
                     send = self._ask_cancel(handle, record)
             else:
                 if record["state"] != "pending":
@@ -879,6 +879,11 @@ class Bridge(Node):
         cancelled when nav2 accepts it (`_on_goal_response`)."""
         with self.lock:
             self._expire_pending()
+            if self.goal and self.goal["state"] == "pending" and self.goal_handle is None:
+                # Its accept comes later: the grace applies then only if no
+                # Stop came in between (review 2).
+                self.goal["_superseded_at_stop"] = self._stops
+                return
             if self.goal_handle is None or not self.goal or self.goal["state"] not in (
                     "pending", "active"):
                 return
@@ -886,8 +891,14 @@ class Bridge(Node):
             now = time.monotonic()
             entry = self._register(self.goal_handle, self.goal, now)
             if entry["last"] == -math.inf:      # never sent: hold the first one back
-                entry["last"] = now + SUPERSEDE_GRACE_S - CANCEL_RESEND_S
-                entry["grace"] = True
+                self._defer_first_cancel(entry, now)
+
+    @staticmethod
+    def _defer_first_cancel(entry, now):
+        """Under self.lock. 3.154: the entry's first cancel due only
+        SUPERSEDE_GRACE_S from now; `cancel_goal()` (a Stop) clears it."""
+        entry["last"] = now + SUPERSEDE_GRACE_S - CANCEL_RESEND_S
+        entry["grace"] = True
 
     def cancel_goal(self, why="cancelled"):
         """Ask nav2 to cancel the live goal AND every superseded goal still
@@ -906,6 +917,7 @@ class Bridge(Node):
             now = time.monotonic()
             if self.goal_handle is not None:
                 self._register(self.goal_handle, self.goal, now)
+            self._stops += 1                     # 3.154 review 2: a pending supersede sees it
             for entry in self.cancelling.values():
                 if entry.pop("grace", False):    # 3.154: a Stop does not wait out the grace
                     entry["last"] = -math.inf
