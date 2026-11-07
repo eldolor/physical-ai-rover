@@ -165,4 +165,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.161](3.161-no-go-zones-on-twin.md) | No-go zones a person draws on the twin |
 | [3.162](3.162-what-i-saw.md) | What I saw: a mission's objects with photos and places, on the twin |
 | [3.163](3.163-scheduled-missions.md) | Missions and surveys on a schedule |
+| [3.164](3.164-watchdog-keeps-stop-reason.md) | The watchdog record keeps a Stop's or fault's reason: the twin tells a hung brain from a finished mission |
 <!-- /sections -->
