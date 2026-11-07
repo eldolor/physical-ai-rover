@@ -108,6 +108,30 @@ def test_the_cap_holds_with_alternating_labels():
     assert lm._n == 3 * inv.MAX_POINTS
 
 
+def test_the_recorded_numbers_are_pinned():
+    """3.165.B's records (evaluations/inventory-3165/), as the plan states them."""
+    import json
+    from pathlib import Path
+    rec = Path(__file__).resolve().parents[1] / "evaluations" / "inventory-3165"
+    load = lambda name: json.loads((rec / name).read_text())   # noqa: E731
+    assert load("build-check.json")["most_members"] == inv.MAX_POINTS
+    assert load("build-check.json")["max_mean_error_m"] <= 1e-9
+    assert load("dev-check.json")["most_members"] == 6095
+    assert load("build-timing.json")["ratio"] == pytest.approx(1.558)    # bar 1.5: FAILED
+    assert load("dev-timing.json")["ratio"] == pytest.approx(14.464)
+    assert load("build-memory.json")["bytes_at"]["4800"] \
+        <= 0.25 * load("dev-memory.json")["bytes_at"]["4800"]
+    dev, build = load("dev-sweep.json"), load("build-sweep.json")
+    assert build["score"] == dev["score"]
+    # Every field of every landmark agrees but the id on 10 of 170: ids
+    # number creations, and a fold moved when some intermediate landmark
+    # was made (all merged away by the end).
+    pairs = [(a, b) for ra, rb in zip(dev["reports"], build["reports"]) for a, b in zip(ra, rb)]
+    assert len(pairs) == 170 and sum(a["id"] != b["id"] for a, b in pairs) == 10
+    assert all({**a, "id": 0} == {**b, "id": 0} for a, b in pairs)
+    assert (dev["most_members"], build["most_members"]) == (162, inv.MAX_POINTS)
+
+
 def test_a_carried_point_never_folds_or_moves():
     """3.50.D5: a carried landmark's saved point stays where the earlier
     mission put it, however many sightings land on it."""

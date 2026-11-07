@@ -19,6 +19,7 @@ inventory (wrapping `_count_look` and `_absorb`, as running sums by landmark id)
 frame, each landmark's position against the mean of its points, and
 records the most members any landmark held.
 """
+import collections
 import json
 import math
 import random
@@ -126,7 +127,10 @@ def run_timing():
 def run_memory():
     tracemalloc.start()
     i, out = inv.Inventory(), {}
-    flt = [tracemalloc.Filter(True, str(ROOT / "brain" / "inventory.py"))]
+    # The Counters the inventory keeps (the build's cached votes) are
+    # allocated inside collections, so its traces count too (review).
+    flt = [tracemalloc.Filter(True, str(ROOT / "brain" / "inventory.py")),
+           tracemalloc.Filter(True, collections.__file__)]
     for f, pose, dets, scan in frames():
         i.observe(dets, pose, scan, fov_deg=FOV_DEG, step=f)
         if f in CHECKPOINTS:

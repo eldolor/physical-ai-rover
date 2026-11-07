@@ -280,7 +280,8 @@ class Landmark:
     _sy: float = 0.0
     _n: int = 0
     # 3.165: a carried landmark's saved point never folds or moves (it is
-    # where the earlier mission put it); ids of the member lists.
+    # where the earlier mission put it); ids of the member lists, so a copy
+    # of a Landmark (deepcopy, pickle) loses them -- nothing copies one.
     _anchors: set = field(default_factory=set)
     _votes: Optional[Counter] = None                  # `votes`, until a look changes
 
