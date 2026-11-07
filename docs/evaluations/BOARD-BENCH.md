@@ -167,7 +167,7 @@ drops counted neither way). Numbers from an invalid run are information only.
 
 | Date | Rev | Valid | P7 verdict p90 (ms, n) | P6 goal: wheels / goal end p99 (ms, 20) | P6 verb: wheels p99 (ms, 20) | P5 scan to zero p99 (ms, 40) | P5 drop to zero p99 (ms) | P5 contacts | Late wheel ticks | `MemAvailable` min (MB) | OOM | Max temp |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 2026-11-07 | run 1, `b5ccce0a` (`dev` `f31ad372` + the harness) | **no** (19 `approach` goals ABORTED by nav2) | 837 (20) | 51 / 149.1 | 34 | 27 (25 of 40 stopped before the scan) | 162 | 0 | 0 / 121,231 (max 88.9 ms) | 474 | 0 | 59.2 °C |
+| 2026-11-07 | run 1, `b5ccce0a` (`dev` `f31ad372` + the harness) | **no** (19 `approach` goals ABORTED by nav2: 3.154's race, the build predates its fix) | 837 (20) | 51 / 149.1 | 34 | 27 (25 of 40 stopped before the scan) | 162 | 0 | 0 / 121,231 (max 88.9 ms) | 474 | 0 | 59.2 °C |
 
 Bars: P7 2.0 s; P6 wheels 150 ms, goal 250 ms; P5 100 ms, 0 contacts.
 
@@ -242,7 +242,9 @@ The board up 31 h, 15 W, max 59.2 °C, 0 OOM kills, `MemAvailable` minimum
 its lease, left as found.
 * **Invalid on nav2's item only:** 19 non-frontier goals ABORTED, all seen
   `approach` goals nav2 ended 10-30 ms after accepting them (8 with the
-  target `dining table`); 0 late wheel ticks in 121,231 moving.
+  target `dining table`): 3.154's race (a goal aborted while the previous
+  one's cancel is in flight), fixed at `311ef4d5`, after this build; 0 late
+  wheel ticks in 121,231 moving.
 * Rows, information only (every one under its bar): P7 p90 837 ms of 20;
   P6 wheels zero p99 51 ms (goal) and 34 ms (verb), the goal ended p99
   149.1 ms; P5 scan to forward zero p99 27 ms of 40, drop to zero p99
