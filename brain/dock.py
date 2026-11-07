@@ -300,6 +300,7 @@ class ReturnTrip:
         return None
 
     def _driving(self):
+        self._pose()                    # metres home are counted on nav2's leg too (C4)
         goal = (self.nav.get_goal() or {}).get("goal") or {}
         st = goal.get("state")
         if st in ("pending", "active", None) and goal:
