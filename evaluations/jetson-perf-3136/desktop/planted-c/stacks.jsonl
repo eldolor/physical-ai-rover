@@ -1,0 +1,2 @@
+{"k": 1, "dir": "s001", "phase": "p7", "house": "procthor:val:0", "t0": 1794031227.4885843, "t1": 1794031524.85, "wheel_loop": {"moving_ticks": 2967, "late_ticks": 0, "max_dt_s": 0.0563, "period_s": 0.05}, "perception_alive": null, "ve_ready": true}
+{"k": 2, "dir": "s002", "phase": "p65", "house": "home_first_floor", "t0": 1794031526.9595075, "t1": 1794033110.267, "wheel_loop": {"moving_ticks": 20330, "late_ticks": 0, "max_dt_s": 0.0574, "period_s": 0.05}, "perception_alive": null, "ve_ready": true}
