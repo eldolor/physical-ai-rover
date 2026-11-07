@@ -34,15 +34,70 @@ BRAIN = {"x-driver": "brain"}
 LEASE_S = 1.0            # config/robot.yaml's watchdog_timeout_s
 JUDGE_SLACK_S = 0.1      # the watchdog loop's period: criterion 1's bar
 SCHED_SLACK_S = 0.25     # a busy test host's thread scheduling, beside it
+# 3.160 found the fast tier hung for good in this fixture's close: a
+# MissionRunner's daemon threads (the goal's end, its report, its
+# intervention log) and the navigator's beats call the robot server through
+# this TestClient, and one still calling as the client closed left its
+# portal's join waiting forever. A test that runs a mission ends its brain
+# side itself (`_end_brain`); the fixture then waits out any thread left,
+# and bounds the close, so a recurrence fails here within 40 s.
+BRAIN_THREADS = ("mission-", "goal-lease-heartbeat")
+THREADS_S = 10.0
+CLOSE_S = 30.0
+
+
+def _join_brain_threads(before, timeout):
+    """Join the brain-side threads this test started, re-scanning for any a
+    finishing one starts; the names still alive at `timeout`."""
+    end = time.monotonic() + timeout
+    while True:
+        mine = [t for t in threading.enumerate()
+                if t not in before and t.name.startswith(BRAIN_THREADS) and t.is_alive()]
+        if not mine or time.monotonic() >= end:
+            return [t.name for t in mine]
+        mine[0].join(max(0.0, min(0.5, end - time.monotonic())))
+
+
+def _end_brain(runner, nav, timeout=THREADS_S):
+    """A mission's own end, deterministically: its beats stopped and its
+    lease released, its report and intervention log landed."""
+    nav.stop_heartbeat()
+    for ev in (runner.report_done, runner.intervention_done):
+        ev.wait(timeout)
+
+
+def _close_bounded(client, timeout):
+    """`client.__exit__` on a thread of its own, given `timeout` seconds."""
+    done, err = threading.Event(), []
+
+    def close():
+        try:
+            client.__exit__(None, None, None)
+        except BaseException as e:  # noqa: BLE001 -- re-raised below
+            err.append(e)
+        finally:
+            done.set()
+
+    threading.Thread(target=close, daemon=True, name="goal-lease-client-close").start()
+    if not done.wait(timeout):
+        pytest.fail(f"the TestClient did not close within {timeout:.0f} s (3.160's hang)")
+    if err:
+        raise err[0]
 
 
 @pytest.fixture
 def live(monkeypatch):
     """The robot server over the fake bridge, its lifespan (watchdog) running."""
     client, bridge = _server_over(monkeypatch, None)
-    with client:
+    before = set(threading.enumerate())
+    client.__enter__()
+    try:
         assert client.get("/health").json()["watchdog_timeout_s"] == LEASE_S
         yield client, bridge
+    finally:
+        stuck = _join_brain_threads(before, THREADS_S)
+        _close_bounded(client, CLOSE_S)
+    assert not stuck, f"brain threads still calling the robot server: {stuck}"
 
 
 def _beat(client, headers=BRAIN):
@@ -271,17 +326,22 @@ def test_a_frozen_explore_mission_ends_failed_naming_the_lapse(live):
     runner = _explore_over_http(client)
     nav = runner._navigator._nav
     runner.start()
-    for _ in range(400):
-        assert runner.tick(), runner.status()
-        if _active(bridge):
-            break
-    assert _active(bridge), "explore never sent a goal"
-    assert _lease(client)["owner"] == "brain", "explore's goal was not leased"
-    nav._beats_stop.set()                        # frozen: no beat, no goodbye
-    assert _watch(client, bridge, 3.0) is not None
-    for _ in range(200):
-        if not runner.tick():
-            break
+    try:
+        for _ in range(400):
+            assert runner.tick(), runner.status()
+            if _active(bridge):
+                break
+        assert _active(bridge), "explore never sent a goal"
+        assert _lease(client)["owner"] == "brain", "explore's goal was not leased"
+        nav._beats_stop.set()                    # frozen: no beat, no goodbye
+        assert _watch(client, bridge, 3.0) is not None
+        for _ in range(200):
+            if not runner.tick():
+                break
+    finally:
+        if runner.status().get("outcome") is None:
+            runner.stop()
+        _end_brain(runner, nav)
     status = runner.status()
     assert status["outcome"] == FAILED, status
     assert AUTONOMY_LAPSED in str(status.get("end_reason")), status
