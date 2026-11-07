@@ -213,3 +213,35 @@ def test_a_first_move_that_is_a_turn_switches_the_guard_on():
     safety = SafetyController(robot, 20.0)
     safety.drop_pivot_blocked(1.0)
     assert safety._drop_guard().active
+
+
+def test_an_arc_with_a_blind_lidar_still_folds_the_frame_for_its_turn():
+    """Review 2 (both): an arc whose straight vet returned before the fold
+    (`ahead_not_observed`) skipped the pivot's fetch, and a stale pose
+    judged the turn."""
+    world, robot = _robot()
+    safety = SafetyController(robot, 20.0)
+    safety.forward_clearance()                                   # the guard is on
+    calls = {"n": 0}
+    real = robot.get_depth_grid
+
+    def counted(*a, **k):
+        calls["n"] += 1
+        return real(*a, **k)
+    robot.get_depth_grid = counted
+    safety.forward_clearance = lambda grid=None: (0.0, "ahead_not_observed")
+    w = 1.0 * 0.172 / 2 / WHEEL_RADIUS_M
+    safety.vet_wheel_velocity(0.5 * w, 1.5 * w)                 # forward and CCW
+    assert calls["n"] == 1, "the turn was judged on the last tick's pose"
+
+
+def test_a_missing_first_frame_does_not_spend_the_probe():
+    """Review 2 (both): a first reverse with no frame at all switched the
+    astern probe off for good."""
+    world, robot = _robot(y=3.0, theta=-DOWN)
+    real = robot.get_depth_grid
+    robot.get_depth_grid = lambda *a, **k: None
+    safety = SafetyController(robot, 20.0)
+    assert safety.drop_clearance(-1)[1] == "no_drop_sensor"
+    robot.get_depth_grid = real
+    assert safety.drop_clearance(-1)[1] == "drop_unseen_astern"

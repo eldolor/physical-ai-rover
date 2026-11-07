@@ -61,8 +61,8 @@ _GUARDS: "weakref.WeakKeyDictionary" = weakref.WeakKeyDictionary()
 _GUARDS_LOCK = threading.Lock()
 
 
-def guard_for(robot, half_len_cm: float, half_wid_cm: float, side_margin_cm: float,
-              margin_cm: float = 0.0) -> "DropGuard":
+def guard_for(robot, half_len_cm: float, half_wid_cm: float, side_margin_cm: float
+              ) -> "DropGuard":
     """The one floor memory of `robot`, shared by every `SafetyController`
     over it (the wheel loop's, the verbs', the drills'). Two memories dead-
     reckoning apart would disagree about where remembered floor lies, and
@@ -71,9 +71,9 @@ def guard_for(robot, half_len_cm: float, half_wid_cm: float, side_margin_cm: flo
         try:
             guard = _GUARDS.get(robot)
         except TypeError:                     # unhashable or no weakref: its own
-            return DropGuard(half_len_cm, half_wid_cm, side_margin_cm, margin_cm)
+            return DropGuard(half_len_cm, half_wid_cm, side_margin_cm)
         if guard is None:
-            guard = DropGuard(half_len_cm, half_wid_cm, side_margin_cm, margin_cm)
+            guard = DropGuard(half_len_cm, half_wid_cm, side_margin_cm)
             try:
                 _GUARDS[robot] = guard
             except TypeError:
@@ -86,15 +86,13 @@ class DropGuard:
     (`guard_for`), shared by its `SafetyController`s; the wheel loop and a
     verb read it from two threads, so every read and write holds `_lock`."""
 
-    def __init__(self, half_len_cm: float, half_wid_cm: float, side_margin_cm: float,
-                 margin_cm: float = 0.0):
+    def __init__(self, half_len_cm: float, half_wid_cm: float, side_margin_cm: float):
         self.half_len = half_len_cm
         self.half_wid = half_wid_cm
         self.side_margin = side_margin_cm
         # Taken off the room before an edge or unseen floor, so that the
         # bar a straight move keeps from a drop is never below the full
         # one: a creep (3.44's 3 cm) may nose up to a sock, not to a stair.
-        self.margin = margin_cm
         self._lock = threading.Lock()
         self._cells: dict = {}          # (i, j) -> (state, path_m when seen)
         self._pose = None               # (x_cm, y_cm, theta_rad, path_m)
@@ -104,6 +102,7 @@ class DropGuard:
         self.active = False
         self.probed = False             # a grid has been asked for once
         self.ring_seen = False          # the last frame saw floor at MinZ
+        self.folds = 0                  # updates that advanced the pose
 
     # -- the body's own frame -------------------------------------------------
 
@@ -166,6 +165,7 @@ class DropGuard:
             self.active = True
             if self._advance(robot) is None:
                 return "drop_unusable"
+            self.folds += 1
             path = self._pose[3]
             # The body stands on what is under it.
             for along in _steps(-self.half_len, self.half_len, CELL_CM):
@@ -271,15 +271,15 @@ class DropGuard:
 
     # -- the questions ---------------------------------------------------------
 
-    def clearance(self, direction: int, margin_cm: Optional[float] = None
+    def clearance(self, direction: int, margin_cm: float = 0.0
                   ) -> Tuple[Optional[float], str]:
         """Room along the swept corridor before floor that is not
         remembered (`drop_unseen`) or an edge (`drop_edge`), less
-        `margin_cm` (the caller's; the guard's own when None); None when the
+        `margin_cm` (the caller's: the memory is shared); None when the
         corridor is remembered floor out to `RUN_CM` (or a thing ends it:
         the cone's and the corridor's). On, with no pose to read memory
         from (no usable wheels or odometry yet): 0, `drop_unusable` (M3)."""
-        margin = self.margin if margin_cm is None else margin_cm
+        margin = margin_cm
         with self._lock:
             if not self.active:
                 return None, "no_drop_sensor"

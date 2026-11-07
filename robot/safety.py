@@ -1010,8 +1010,7 @@ class SafetyController:
 
     def _drop_guard(self) -> "drop_guard.DropGuard":
         return drop_guard.guard_for(self.robot, FOOTPRINT_LENGTH_M * 50.0,
-                                    FOOTPRINT_WIDTH_M * 50.0, FOOTPRINT_SIDE_MARGIN_CM,
-                                    margin_cm=self.min_distance_cm - CREEP_MARGIN_CM)
+                                    FOOTPRINT_WIDTH_M * 50.0, FOOTPRINT_SIDE_MARGIN_CM)
 
     def drop_clearance(self, direction: int, grid: Optional[dict] = None
                        ) -> Tuple[Optional[float], str]:
@@ -1034,7 +1033,8 @@ class SafetyController:
                 return None, "no_drop_sensor"
             get_grid = getattr(self.robot, "get_depth_grid", None)
             grid = get_grid() if get_grid is not None else None
-        guard.probed = True
+        # Only a grid answers the probe: a missing frame says nothing.
+        guard.probed = guard.probed or isinstance(grid, dict)
         guard.update(self.robot, grid)
         return guard.clearance(direction, self.min_distance_cm - CREEP_MARGIN_CM)
 
@@ -1044,15 +1044,16 @@ class SafetyController:
         floor, or one coming back -- is never refused, 3.19's rule. Kept out
         of `pivot_scale()`, whose answers `tests/pivot_reference.py` freezes.
         `folded`: this tick's frame is already in memory (a clearance just
-        read it), so it is not fetched and folded twice."""
+        folded it, by the guard's own count), so it is not fetched twice."""
         guard = self._drop_guard()
         # A first move that is a turn probes for a block too.
         if omega_rad_s == 0 or (guard.probed and not guard.active):
             return None
-        guard.probed = True
         if not folded or not guard.active:
             get_grid = getattr(self.robot, "get_depth_grid", None)
-            guard.update(self.robot, get_grid() if get_grid is not None else None)
+            grid = get_grid() if get_grid is not None else None
+            guard.probed = guard.probed or isinstance(grid, dict)
+            guard.update(self.robot, grid)
         return guard.pivot_blocked(omega_rad_s)
 
     def _aged(self, result: Tuple[Optional[float], str], direction: int
@@ -1129,6 +1130,7 @@ class SafetyController:
         omega = (right_rad_s - left_rad_s) * radius / track
         reason = None
         v_asked = v
+        folds = self._drop_guard().folds
         if v != 0:
             clearance, source = self.forward_clearance() if v > 0 else self.reverse_clearance()
             way = "forward" if v > 0 else "reverse"
@@ -1148,7 +1150,10 @@ class SafetyController:
         if pivot:
             omega *= scale
             reason = pivot if reason is None else f"{reason}; {pivot}"
-        drop = self.drop_pivot_blocked(omega, folded=v_asked != 0) if omega else None
+        # Folded only if a clearance really folded this tick's frame: a blind
+        # lidar returns before it, and a stale pose must not judge the turn.
+        drop = (self.drop_pivot_blocked(omega, folded=self._drop_guard().folds != folds)
+                if omega else None)
         if drop:
             omega = 0.0
             pivot = f"pivot clamped ({drop})"
