@@ -799,6 +799,10 @@ def create_app(
             explore_goal_policy=config["explore_goal_policy"],
             tier_search=tier_search,
             explore_ask_timeout_s=config["explore_ask_timeout_s"] if asks else None,
+            # 3.156.B (D2): home to the dock after the end; a mission with no
+            # navigator (no explore search) records `skipped`, `no_nav2`.
+            return_to_dock=config["return_to_dock"],
+            return_wait_s=config["return_wait_s"],
         )
         # 3.88 A, 3.99: which house each recorded choice and mission end was
         # in -- the simulator's, from the robot server; None on the car.
