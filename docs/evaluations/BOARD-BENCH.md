@@ -154,6 +154,7 @@ run are information only.
 | 2026-11-02 | harness `51f1e6e2` on `dev` `d8be7e09` | **no** (4 late ticks; 10 of 47 nav2 goals aborted) | 153 | 153 | **1.99** | **4** / 24,711 (max 114 ms) | 20.05 | 0.17% | 645 | 0 | 65.5 °C |
 | 2026-11-04 | 3.141.C window (not run 2), `dev` `ae5cecff` | **no** (6 late ticks; 6 of 53 nav2 goals aborted, amendment 2's rule) | 166 | 150 | **1.99** | **6** / 24,925 (max 113 ms) | 20.05 | 0.32% | 648 | 0 | 64.4 °C |
 | 2026-11-04 | run 2, `dev` `d69abc56` (3.141.E1 in) | **no** (1 late tick; 2 approach goals ABORTED, amendment 5 by id) | 169 | 152 | **1.99** | **1** / 28,807 (max 106.5 ms) | 20.04 | 0.22% | 780 | 0 | 65.2 °C |
+| 2026-11-07 | run 3, `dev` `418ba187` (3.154 in; image `plan-3.145`) | **no** as written (6 `approach` goals ABORTED, each superseded by explore's next goal; valid read under amendment 9) | 170 | 150 | **1.96** | 0 / 28,441 (max 98.8 ms) | 20.08 | 0.34% | 804 | 0 | 64.4 °C |
 
 Bars: P1, P2 250 ms; P2 memory +100 MB; P8 1.5 s and the same answers as
 3.78; P4 0 late; P11 >= 18 Hz; P12 pause <= 10%.
@@ -239,6 +240,28 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-05 | `fb12ba7f` | F14 board rebooted mid-mission (`sudo systemctl reboot`, the production units) | 3/3 | met | robot and brain back 43.9-48.5 s (90; an upper bound: ssh and the services answered at the same first poll); VE ready 48.6-51.6 s; 0 files unparseable, lost or shortened (17-20 files, 2-5 JSONL lines); the next mission drove 3/3; units as found. A first batch at `27d14d6c` was 6/6 invalid, no reboot sent (amendment 20) | -- | -- | -- | -- | -- | 43.9-48.5 s | yes |
 
 ## Runs
+
+### 2026-11-07, 3.136.B run 3, `dev` `418ba187` (INVALID as written)
+
+`run.py steady --label run3 --env IMAGE=vision-picar-ros:plan-3.145` (the
+image built on the board from `dev` with 3.154's bridge; `:latest`
+untouched). The board up 41 h, 15 W, 10:44-11:16, max 64.4 °C, 0 OOM,
+`MemAvailable` minimum 804 MB, desktop load <= 3.8; left as found, the
+three units active after.
+* **Invalid as written on nav2 only:** 61 goals by id (0 unmatched, 0
+  sends or cancels missing): 38 succeeded, 12 cancelled, 5 frontier aborts
+  (not counted), **6 `approach` aborts**, no cancel recorded for any. Each
+  ended within 0.4 s of nav2's "Received goal preemption request" for
+  explore's next goal (`ros.log`): 3.154's supersession (no cancel first)
+  ends the old goal ABORTED. Amendment 9 (from runs on 11-08) reads them
+  as frontier ones: valid, 38/38.
+* **0 late wheel ticks** in 28,441 moving (max 98.8 ms): P4 met, the
+  first window with none (run 1 4, 3.141.C 6, run 2 1).
+* Rows: P1 p90 170 ms, P2 150 ms (memory -82 MB), **P8 VE p90 1.96 s**
+  (299/299, answers identical; FAILS 1.5 s for the third time), P11
+  20.08 Hz (scan lag p90 10.2 ms), P12 pause 0.34%. Missions 4 `found`,
+  1 cancelled at the window's end; 86 room-label calls, 0 cloud calls.
+* Records: `evaluations/jetson-perf-3136/board/run3-20261107-1020/`.
 
 ### 2026-11-07, 3.145 criterion 6: F6g and F7g on the goal lease (`dev` `edafac21`)
 

@@ -255,7 +255,8 @@ paragraph.**
   `dev`'s to the number; criterion 2 FAILED as written (1.56x, bar 1.5x).
 * 3.167: the sweep's seed-3463 precision 97.1% -> 93.8% is 3.74 B's floor
   band moving the robot (`fc5c2122`), one seed's variance (four seeds pooled
-  96.5% -> 96.9%); a pooled 3.60 bar is proposed to the user.
+  96.5% -> 96.9%). 3.60's precision bar is judged on seeds 346, 3461,
+  3462, 3463 pooled (the user, 2026-11-07); `dev` `b45c949d` 96.85%, met.
 
 *Explore and goal choice*
 
