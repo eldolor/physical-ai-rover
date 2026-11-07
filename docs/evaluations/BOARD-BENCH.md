@@ -158,6 +158,19 @@ run are information only.
 Bars: P1, P2 250 ms; P2 memory +100 MB; P8 1.5 s and the same answers as
 3.78; P4 0 late; P11 >= 18 Hz; P12 pause <= 10%.
 
+### Latencies (3.136.C)
+
+P5, P6 and P7 on 3.135.C's full stack with missions
+(`evaluations/jetson-perf-3136/lat.py`, amendment 7). Valid only under the
+section's rule (nav2's item by amendments 5-6, a person's acts and P5's
+drops counted neither way). Numbers from an invalid run are information only.
+
+| Date | Rev | Valid | P7 verdict p90 (ms, n) | P6 goal: wheels / goal end p99 (ms, 20) | P6 verb: wheels p99 (ms, 20) | P5 scan to zero p99 (ms, 40) | P5 drop to zero p99 (ms) | P5 contacts | Late wheel ticks | `MemAvailable` min (MB) | OOM | Max temp |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 2026-11-07 | run 1, `b5ccce0a` (`dev` `f31ad372` + the harness) | **no** (19 `approach` goals ABORTED by nav2) | 837 (20) | 51 / 149.1 | 34 | 27 (25 of 40 stopped before the scan) | 162 | 0 | 0 / 121,231 (max 88.9 ms) | 474 | 0 | 59.2 °C |
+
+Bars: P7 2.0 s; P6 wheels 150 ms, goal 250 ms; P5 100 ms, 0 contacts.
+
 ### Memory soak, 4 h (3.135.C)
 
 Back-to-back tiered explore missions for 4 h, VE resident, a new target
@@ -221,6 +234,21 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-05 | `fb12ba7f` | F14 board rebooted mid-mission (`sudo systemctl reboot`, the production units) | 3/3 | met | robot and brain back 43.9-48.5 s (90; an upper bound: ssh and the services answered at the same first poll); VE ready 48.6-51.6 s; 0 files unparseable, lost or shortened (17-20 files, 2-5 JSONL lines); the next mission drove 3/3; units as found. A first batch at `27d14d6c` was 6/6 invalid, no reboot sent (amendment 20) | -- | -- | -- | -- | -- | 43.9-48.5 s | yes |
 
 ## Runs
+
+### 2026-11-07, 3.136.C run 1, `b5ccce0a` (INVALID)
+
+The board up 31 h, 15 W, max 59.2 °C, 0 OOM kills, `MemAvailable` minimum
+474 MB, desktop load <= 3.1; 00:51-03:16 (26 stacks), 3.136's runner with
+its lease, left as found.
+* **Invalid on nav2's item only:** 19 non-frontier goals ABORTED, all seen
+  `approach` goals nav2 ended 10-30 ms after accepting them (8 with the
+  target `dining table`); 0 late wheel ticks in 121,231 moving.
+* Rows, information only (every one under its bar): P7 p90 837 ms of 20;
+  P6 wheels zero p99 51 ms (goal) and 34 ms (verb), the goal ended p99
+  149.1 ms; P5 scan to forward zero p99 27 ms of 40, drop to zero p99
+  162 ms, 0 contacts.
+* Records: `evaluations/jetson-perf-3136/board/lat-run1-20261107-0044/`.
+
 
 ### 2026-11-06, 3.155: `picar-stack` installed with the robot server locked (`bdcf782c`)
 

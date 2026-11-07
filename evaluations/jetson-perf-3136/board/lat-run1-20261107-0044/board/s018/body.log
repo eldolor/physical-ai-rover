@@ -1,0 +1,9 @@
+vision-picar sim body server starting -- git=b5ccce0a2 executable=/home/picar/bench-3136/.venv/bin/python config=/home/picar/bench-3136/config/robot.yaml
+vision-picar sim body server starting -- git=b5ccce0a2 executable=/home/picar/bench-3136/.venv/bin/python config=/home/picar/bench-3136/config/robot.yaml
+Traceback (most recent call last):
+  File "/usr/lib/python3.10/multiprocessing/resource_tracker.py", line 209, in main
+    cache[rtype].remove(name)
+KeyError: '/picar_fmea_389178'
+truth recorder stopped: drained=True, dropped=0
+/usr/lib/python3.10/multiprocessing/resource_tracker.py:224: UserWarning: resource_tracker: There appear to be 1 leaked shared_memory objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

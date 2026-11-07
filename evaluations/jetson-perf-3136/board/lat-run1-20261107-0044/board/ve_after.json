@@ -1,0 +1,15 @@
+{
+ "MainPID": "316741",
+ "NRestarts": "1",
+ "ActiveState": "active",
+ "ActiveEnterTimestamp": "Fri 2026-11-06 01:53:13 CST",
+ "health": {
+  "service": "local_vlm",
+  "ready": true,
+  "alive": true,
+  "load_s": 8.436665797999012,
+  "served": 8466,
+  "engines": "/home/picar/bench-378/ws91/q25VE/engines",
+  "pid": 316741
+ }
+}
