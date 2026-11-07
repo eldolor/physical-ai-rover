@@ -243,27 +243,27 @@ def _client(monkeypatch, tmp_path, world):
 def test_the_routes_name_a_room_and_refuse_a_stale_cut(monkeypatch, tmp_path):
     m = _two_rooms()
     c = _client(monkeypatch, tmp_path, _World(m))
-    got = c.get("/rooms").json()
+    got = c.get("/mission/rooms").json()
     assert got["frame_id"] == FRAME and len(got["rooms"]) == 2
     assert all(r["name"] == "" and r["source"] == "none" for r in got["rooms"])
     rid = got["rooms"][0]["key"]
-    r = c.post("/rooms/names", json={"frame_id": FRAME, "map_version": m["map_version"],
+    r = c.post("/mission/rooms/names", json={"frame_id": FRAME, "map_version": m["map_version"],
                                      "op": "name", "room": rid, "name": "Hall"})
     assert r.status_code == 200, r.text
     assert [x["name"] for x in r.json()["rooms"] if x["source"] == "person"] == ["Hall"]
-    stale = c.post("/rooms/names", json={"frame_id": FRAME, "map_version": 0, "op": "name",
+    stale = c.post("/mission/rooms/names", json={"frame_id": FRAME, "map_version": 0, "op": "name",
                                          "room": rid, "name": "x"})
     assert stale.status_code == 409
-    other = c.post("/rooms/names", json={"frame_id": "map-ffffffff", "map_version": 1,
+    other = c.post("/mission/rooms/names", json={"frame_id": "map-ffffffff", "map_version": 1,
                                          "op": "name", "room": rid, "name": "x"})
     assert other.status_code == 409
 
 
 def test_with_no_saved_map_the_editor_says_survey_first(monkeypatch, tmp_path):
     c = _client(monkeypatch, tmp_path, _World(_two_rooms(), frame_id=None))
-    got = c.get("/rooms").json()
+    got = c.get("/mission/rooms").json()
     assert got["frame_id"] is None and "Survey first" in got["closed"]
-    r = c.post("/rooms/names", json={"frame_id": None, "map_version": 1, "op": "name",
+    r = c.post("/mission/rooms/names", json={"frame_id": None, "map_version": 1, "op": "name",
                                      "room": "c0", "name": "x"})
     assert r.status_code == 409
 
@@ -339,15 +339,15 @@ def test_review_an_edit_is_judged_on_the_cut_not_the_map_version(monkeypatch, tm
     m = _two_rooms()
     world = _World(m)
     c = _client(monkeypatch, tmp_path, world)
-    got = c.get("/rooms").json()
+    got = c.get("/mission/rooms").json()
     world.m = dict(m, map_version=m["map_version"] + 7)            # the map moved on, same cut
-    r = c.post("/rooms/names", json={"frame_id": FRAME, "cut_hash": got["cut_hash"], "rev": got["rev"],
+    r = c.post("/mission/rooms/names", json={"frame_id": FRAME, "cut_hash": got["cut_hash"], "rev": got["rev"],
                                      "op": "name", "room": got["rooms"][0]["key"], "name": "Hall"})
     assert r.status_code == 200, r.text
-    r = c.post("/rooms/names", json={"frame_id": FRAME, "cut_hash": "0" * 16, "rev": 1,
+    r = c.post("/mission/rooms/names", json={"frame_id": FRAME, "cut_hash": "0" * 16, "rev": 1,
                                      "op": "name", "room": got["rooms"][1]["key"], "name": "Den"})
     assert r.status_code == 409
-    bad = c.post("/rooms/names", json={"frame_id": FRAME, "cut_hash": got["cut_hash"], "rev": 1,
+    bad = c.post("/mission/rooms/names", json={"frame_id": FRAME, "cut_hash": got["cut_hash"], "rev": 1,
                                        "op": "name", "room": "s\u00b2", "name": "x"})
     assert bad.status_code == 422
 

@@ -74,7 +74,6 @@ import asyncio
 import base64
 import binascii
 import functools
-import hashlib
 import json
 import logging
 import os
@@ -84,7 +83,6 @@ from datetime import datetime, timezone
 from typing import Callable, Optional
 
 import httpx
-import numpy as np
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field
@@ -1332,20 +1330,6 @@ def create_app(
 
     # ---- 3.160: rooms a person names on the saved map ----
 
-    def _runs(a) -> list:
-        """A per-cell list as [value, count, value, count, ...] (most of a
-        map is one value: the reply stays small over the tunnel)."""
-        a = np.asarray(a).ravel()
-        if not a.size:
-            return []
-        edges = np.flatnonzero(np.diff(a)) + 1
-        starts = np.concatenate(([0], edges))
-        counts = np.diff(np.concatenate((starts, [a.size])))
-        return np.column_stack((a[starts], counts)).ravel().tolist()
-
-    def _cut_hash(seg) -> str:
-        return hashlib.sha256(np.ascontiguousarray(seg, dtype=np.int32).tobytes()).hexdigest()[:16]
-
     def _read_world():
         w = world()
         m, pose = w.get_map(), w.get_pose()
@@ -1362,64 +1346,15 @@ def create_app(
         if not frame_id:
             return {"frame_id": None, "rooms": [],
                     "closed": "Survey first: names are kept with the saved map."}
-        if seg is None:
-            seg, _ = room_labels_mod.segment(m)
-        doc = names_store.load(frame_id)
-        if doc.get("unreadable"):
-            return {"frame_id": frame_id, "rooms": [],
-                    "closed": "The saved room names can't be read, so they can't be changed here."}
-        rooms = doc["rooms"]
-        placed = room_names_mod.placed(m, rooms) if rooms else []
-        # Only rooms on this map own cells (an unplaced one is not tappable).
-        shown = [r if placed[i] else {"_keys": set(), "name": r.get("name", "")}
-                 for i, r in enumerate(rooms)]
-        own = room_names_mod.owner_grid(m, shown).ravel()
-        free = np.asarray(m["cells"]) == 0
-        flat = seg.ravel()
-        res, ox, oy, width = m["resolution_m"], m["origin_x_m"], m["origin_y_m"], m["width"]
         seeds = []
         st = state["runner"].status() if state["runner"] is not None else {}
         for block in ("survey", "room_labels"):
             seeds += [x for x in ((st.get(block) or {}).get("seeds") or [])
                       if len(x) == 3 and x[2] and x[2] != room_labels_mod.UNCLEAR]
+        return {"frame_id": frame_id, "closed": None,
+                **room_names_mod.editor_view(names_store, m, frame_id, seg, seeds)}
 
-        def centre(idx):
-            return (round(float(ox + ((idx % width).mean() + 0.5) * res), 2),
-                    round(float(oy + ((idx // width).mean() + 0.5) * res), 2))
-        out = []
-        for i, r in enumerate(rooms):
-            idx = np.flatnonzero((own == i) & free) if placed[i] else np.array([], dtype=np.int64)
-            if idx.size:
-                x, y = centre(idx)
-                out.append({"key": f"s{i}", "name": r.get("name", ""), "source": "person",
-                            "x_m": x, "y_m": y, "cells": int(idx.size)})
-        order = np.argsort(flat, kind="stable")
-        vals, first = np.unique(flat[order], return_index=True)
-        bounds = list(first) + [flat.size]
-        for n, rid in enumerate(vals.tolist()):
-            if rid < 0:
-                continue
-            idx = order[bounds[n]:bounds[n + 1]]
-            if (own[idx] >= 0).sum() >= 0.6 * idx.size:
-                continue                  # a person's room covers it
-            votes: dict = {}
-            for sx, sy, name in seeds:
-                cx, cy = int((sx - ox) // res), int((sy - oy) // res)
-                if 0 <= cx < width and 0 <= cy < m["height"] and flat[cy * width + cx] == rid:
-                    votes[name] = votes.get(name, 0) + 1
-            x, y = centre(idx)
-            sug = max(votes, key=votes.get) if votes else ""
-            out.append({"key": f"c{rid}", "name": "", "source": "model" if sug else "none",
-                        "suggestion": sug, "x_m": x, "y_m": y, "cells": int(idx.size)})
-        return {"frame_id": frame_id, "closed": None, "rev": doc.get("rev", 0),
-                "cut_hash": _cut_hash(seg),
-                "map": {k: m.get(k) for k in ("map_id", "map_version", "width", "height",
-                                              "resolution_m", "origin_x_m", "origin_y_m")},
-                "cut": _runs(flat), "owner": _runs(own), "rooms": out,
-                "unplaced": [{"key": f"s{i}", "index": i, "name": r.get("name", "")}
-                             for i, r in enumerate(rooms) if not placed[i] and r.get("name")]}
-
-    @app.get(prefix + "/rooms", dependencies=[Depends(require_secret)])
+    @app.get(prefix + "/mission/rooms", dependencies=[Depends(require_secret)])
     def rooms_get():
         """3.160: the rooms to name. Local only: answered to the twin, never stored elsewhere."""
         try:
@@ -1428,7 +1363,7 @@ def create_app(
             return {"frame_id": None, "closed": f"The map can't be read now ({e}).", "rooms": []}
         return rooms_view(room_names_mod.default_store(), m, frame_id)
 
-    @app.post(prefix + "/rooms/names", dependencies=[Depends(require_secret)])
+    @app.post(prefix + "/mission/rooms/names", dependencies=[Depends(require_secret)])
     def rooms_names(req: RoomNamesRequest):
         """3.160: one edit, on the saved map, the room cut and the names the
         person saw (409 for another saved map, a cut that changed, or names
@@ -1447,7 +1382,7 @@ def create_app(
             raise HTTPException(status_code=409, detail="no map now: reload")
         seg, _ = room_labels_mod.segment(m)
         if req.cut_hash is not None:
-            if req.cut_hash != _cut_hash(seg):
+            if req.cut_hash != room_names_mod.cut_hash(seg):
                 raise HTTPException(status_code=409, detail="the rooms changed shape since they "
                                     "were drawn: reload")
         elif req.map_version != m.get("map_version"):

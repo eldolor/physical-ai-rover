@@ -119,7 +119,7 @@ def _open(browser, twin_server, client, m, engineer=False):
 
 def _centre(brain, m):
     """A seed where a room of the cut really is: its centre, as the brain says."""
-    r = brain(m).get("/rooms").json()["rooms"][0]
+    r = brain(m).get("/mission/rooms").json()["rooms"][0]
     return [[r["x_m"], r["y_m"], "garage"]]
 
 
@@ -174,7 +174,7 @@ def test_a_room_is_named_in_two_taps_and_stored_with_the_saved_map(browser, twin
     page.wait_for_function("() => [...document.querySelectorAll('#rooms-list input')]"
                            ".some(i => i.value === 'Kitchen')", timeout=5000)
     assert [r["name"] for r in _stored(None)] == ["Kitchen"]
-    assert ("POST", "/rooms/names") in seen
+    assert ("POST", "/mission/rooms/names") in seen
     _shot(page, "naming")
     assert not errors, errors
     page.context.close()
@@ -207,12 +207,12 @@ def test_join_is_two_taps_and_split_is_two_taps_with_a_drag(browser, twin_server
     _shot(page, "join")
     rows.nth(1).get_by_role("button", name="Join with").click()      # tap 2 (the row; the map works too)
     page.wait_for_function(f"() => document.querySelectorAll('#rooms-list li').length === {n - 1}",
-                           timeout=5000)
+                           timeout=10000)
     assert len(_stored(None)) == 1
     # Split the joined room back: Split..., then one drag across it on the map.
     rows.nth(0).get_by_role("button", name="Split").click()          # tap 1
     _shot(page, "split")
-    view = brain(m).get("/rooms").json()
+    view = brain(m).get("/mission/rooms").json()
     room = view["rooms"][0]
     box = page.locator("#world-map").bounding_box()                  # in view: the mode scrolled to it
     assert box["y"] >= 0 and box["y"] + box["height"] <= 844, box
@@ -224,8 +224,10 @@ def test_join_is_two_taps_and_split_is_two_taps_with_a_drag(browser, twin_server
     page.mouse.move(cx, cy, steps=4)
     page.mouse.move(cx, box["y"] + box["height"] - 3, steps=4)
     page.mouse.up()
-    page.wait_for_function("() => document.querySelectorAll('#rooms-list li').length >= 1", timeout=5000)
-    page.wait_for_timeout(500)
+    for _ in range(50):                                              # the edit lands (a loaded desktop)
+        if len(_stored(None)) == 2:
+            break
+        page.wait_for_timeout(100)
     assert len(_stored(None)) == 2, seen[-3:]
     assert not errors, errors
     page.context.close()

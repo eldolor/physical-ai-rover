@@ -31,6 +31,7 @@ nothing to key a name to, and every edit is refused.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import os
@@ -424,3 +425,79 @@ def default_store() -> RoomNames:
     if _DEFAULT is None:
         _DEFAULT = RoomNames()
     return _DEFAULT
+
+
+# ---------- the twin's editor (3.160.B: here, so control/ imports no numpy) ----------
+
+def runs(a) -> list:
+    """A per-cell list as [value, count, value, count, ...] (most of a map
+    is one value: the reply stays small over the tunnel)."""
+    a = np.asarray(a).ravel()
+    if not a.size:
+        return []
+    edges = np.flatnonzero(np.diff(a)) + 1
+    starts = np.concatenate(([0], edges))
+    counts = np.diff(np.concatenate((starts, [a.size])))
+    return np.column_stack((a[starts], counts)).ravel().tolist()
+
+
+def cut_hash(seg) -> str:
+    return hashlib.sha256(np.ascontiguousarray(seg, dtype=np.int32).tobytes()).hexdigest()[:16]
+
+
+def editor_view(store: "RoomNames", m: dict, frame_id: str, seg=None, seeds=()) -> dict:
+    """What the editor draws: the cut with the person's rooms over it, one
+    row per room (`s<n>` a person's room on this map, `c<n>` an unnamed cut
+    room with the model's `suggestion` from `seeds` [x, y, name]), the stored
+    rooms a re-map left unplaced, and the `cut_hash` and `rev` an edit names.
+    `cut` and `owner` are run-length lists."""
+    from brain.room_labels import segment     # a cycle at import time otherwise
+    if seg is None:
+        seg, _ = segment(m)
+    doc = store.load(frame_id)
+    if doc.get("unreadable"):
+        return {"closed": "The saved room names can't be read, so they can't be changed here.",
+                "rooms": []}
+    rooms = doc["rooms"]
+    on_map = placed(m, rooms) if rooms else []
+    shown = [r if on_map[i] else {"_keys": set(), "name": r.get("name", "")}
+             for i, r in enumerate(rooms)]
+    own = owner_grid(m, shown).ravel()
+    free = np.asarray(m["cells"]) == 0
+    flat = seg.ravel()
+    res, ox, oy, width = m["resolution_m"], m["origin_x_m"], m["origin_y_m"], m["width"]
+
+    def centre(idx):
+        return (round(float(ox + ((idx % width).mean() + 0.5) * res), 2),
+                round(float(oy + ((idx // width).mean() + 0.5) * res), 2))
+    out = []
+    for i, r in enumerate(rooms):
+        idx = np.flatnonzero((own == i) & free) if on_map[i] else np.array([], dtype=np.int64)
+        if idx.size:
+            x, y = centre(idx)
+            out.append({"key": f"s{i}", "name": r.get("name", ""), "source": "person",
+                        "x_m": x, "y_m": y, "cells": int(idx.size)})
+    order = np.argsort(flat, kind="stable")
+    vals, first = np.unique(flat[order], return_index=True)
+    bounds = list(first) + [flat.size]
+    for n, rid in enumerate(vals.tolist()):
+        if rid < 0:
+            continue
+        idx = order[bounds[n]:bounds[n + 1]]
+        if (own[idx] >= 0).sum() >= 0.6 * idx.size:
+            continue                  # a person's room covers it
+        votes: dict = {}
+        for sx, sy, name in seeds:
+            cx, cy = int((sx - ox) // res), int((sy - oy) // res)
+            if 0 <= cx < width and 0 <= cy < m["height"] and flat[cy * width + cx] == rid:
+                votes[name] = votes.get(name, 0) + 1
+        x, y = centre(idx)
+        sug = max(votes, key=votes.get) if votes else ""
+        out.append({"key": f"c{rid}", "name": "", "source": "model" if sug else "none",
+                    "suggestion": sug, "x_m": x, "y_m": y, "cells": int(idx.size)})
+    return {"rev": doc.get("rev", 0), "cut_hash": cut_hash(seg),
+            "map": {k: m.get(k) for k in ("map_id", "map_version", "width", "height",
+                                          "resolution_m", "origin_x_m", "origin_y_m")},
+            "cut": runs(flat), "owner": runs(own), "rooms": out,
+            "unplaced": [{"key": f"s{i}", "index": i, "name": r.get("name", "")}
+                         for i, r in enumerate(rooms) if not on_map[i] and r.get("name")]}

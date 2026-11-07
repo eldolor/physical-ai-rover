@@ -832,7 +832,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
   async function loadRooms() {
     var seq = state.roomsSeq = (state.roomsSeq || 0) + 1;
     try {
-      roomsTake(await brainApi("GET", "/rooms"), seq);
+      roomsTake(await brainApi("GET", "/mission/rooms"), seq);
     } catch (e) {
       showToast(t("rooms.loadFailed", {why: e.message || e}), "err");
     }
@@ -849,7 +849,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     try {
       // The cut and the names' revision the person saw: the map's own
       // version moves while the robot drives, which alone refuses nothing.
-      roomsTake(await brainApi("POST", "/rooms/names", Object.assign(
+      roomsTake(await brainApi("POST", "/mission/rooms/names", Object.assign(
         {frame_id: v.frame_id, cut_hash: v.cut_hash, rev: v.rev}, body)), seq);
     } catch (e) {
       showToast(t(e.status === 409 ? "rooms.refused" : "rooms.failed", {why: e.message || e}),
