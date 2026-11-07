@@ -160,4 +160,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.157](3.157-perception-into-explore.md) | Explore's sightings from real perception: bearing and sighting rate on recorded walks |
 | [3.158](3.158-autonomy-acceptance.md) | Full autonomy accepted: missions and surveys in the house, unattended |
 | [3.159](3.159-drop-detection.md) | No fall at a stair: a drop ahead stops the robot |
+| [3.160](3.160-rooms-named-on-twin.md) | Rooms a person names once, on the twin, saved with the map |
 <!-- /sections -->
