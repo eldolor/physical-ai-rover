@@ -242,9 +242,11 @@ def test_home_budget_units():
     dock = {"x_m": 1.0, "y_m": 1.0, "theta": 90.0, "source": "start"}
     b = HomeBudget(dock)
     assert b.v_obs() == 0.10                        # before 30 s of driving
-    b.observe_pose({"usable": True, "x_m": 1.0, "y_m": 1.0}, 0.0)
-    b.observe_pose({"usable": True, "x_m": 7.0, "y_m": 1.0}, 40.0)
+    for k in range(9):                              # 6 m in 40 s, read every 5 s
+        b.observe_pose({"usable": True, "x_m": 1.0 + 0.75 * k, "y_m": 1.0}, 5.0 * k)
     assert b.v_obs() == pytest.approx(0.15)
+    b.observe_pose({"usable": True, "x_m": 7.1, "y_m": 1.0}, 140.0)    # a 100 s pause
+    assert b.driving_s == pytest.approx(45.0)                          # counted as 5 s
     b.observe_battery(12.0, 0.0)
     b.observe_battery(12.0, 10.0)                   # the same reading: not a sample
     b.observe_battery(11.9, 30.0)
@@ -282,3 +284,74 @@ def test_the_config_turns_the_return_on_and_refuses_a_bad_wait(tmp_path):
         p.write_text(yaml.safe_dump({"brain": bad}))
         with pytest.raises(ValueError):
             load_brain_config(p)
+
+
+# -- review round 1 ------------------------------------------------------------
+
+def test_the_search_goal_is_cancelled_when_the_return_starts():
+    runner, nav, grid, robot = mission()
+    runner.start()
+    for _ in range(4):
+        runner.tick()
+    nav.goal = {"state": "active", "x_m": 3.0, "y_m": 0.75}
+    nav.get_goal = lambda: {"goal": nav.goal, "plan": []}     # still driving
+    runner._navigator._own = (3.0, 0.75)
+    runner._finish(EXHAUSTED, "decided")
+    assert ("cancel",) in nav.calls, "the brain's stop spares its own goal: ended here"
+
+
+def test_a_stop_during_the_return_is_an_intervention():
+    lines = []
+
+    class Sink:
+        def append(self, line):
+            lines.append(line)
+    runner, nav, grid, robot = _returning()
+    runner.intervention_log = Sink()
+    runner.stop("a person pressed Stop")
+    runner._intervention_writer.join(5)
+    assert lines and lines[0]["outcome"] == EXHAUSTED and lines[0]["return"] == "cancelled"
+    assert lines[0]["intervention"]["kind"] == "stop"
+
+
+def test_an_abort_during_the_return_is_visible():
+    runner, nav, grid, robot = _returning()
+    runner.abort("brain tick hung")
+    s = runner.status()
+    assert s["outcome"] == EXHAUSTED and s["return"]["state"] == "failed"
+    assert "brain tick hung" in s["error"]
+
+
+def test_no_reserve_at_the_dock():
+    """A short limit is not a reason to end at once: at the dock there is
+    nothing to drive home."""
+    runner, nav, grid, robot = mission(target="unicorn", mission_time_limit_s=20.0)
+    runner.start()
+    assert runner.tick() and runner.is_running()
+    assert runner.status()["budget"]["home"].get("at_dock") is True
+
+
+def test_an_approach_that_cannot_close_ends_and_never_spins():
+    """Review round 1: a creep stopped short (the next verb would overshoot)
+    with the robot still outside the tolerance looped turn -> creep -> final
+    with no verb, until the 600 s cap."""
+    from brain.dock import ReturnTrip
+    state = {"x": 0.0, "y": 0.42, "h": 0.0, "t": 0.0}
+
+    class Safety:
+        def check_and_execute(self, action, **kw):
+            if action == "FORWARD":
+                state["y"] -= 0.30
+            elif action == "REVERSE":
+                state["y"] += 0.30
+            return {}
+    trip = ReturnTrip({"x_m": 0.0, "y_m": 0.0, "theta": 0.0, "source": "start"}, object(),
+                      Safety(), lambda: {"usable": True, "x_m": state["x"], "y_m": state["y"],
+                                         "heading_deg": state["h"]}, lambda: state["t"])
+    trip.state = "turn"
+    got = None
+    for _ in range(500):
+        got = trip.step()
+        if got is not None:
+            break
+    assert got is not None and got[0] == "failed" and "not_aligned" in got[1], got

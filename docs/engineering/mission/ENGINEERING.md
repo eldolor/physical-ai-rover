@@ -393,8 +393,9 @@ ship one metrics row if `metrics_url` is set (kept as `_metrics_row`).
 * **How:** `_finish` stores the decided end in `_pending_end`, builds a
   `ReturnTrip` (the dock, the gated navigator, the agent's `SafetyController`,
   the world's pose and map, the clock and `idle`), logs `<outcome>: <note> --
-  returning to the dock`, stops the wheels and returns with the mission still
-  running. Each `tick()` then runs one `_return_tick()` (before the budget:
+  returning to the dock`, stops the wheels, cancels the search's own nav2
+  goal (`cancel_own()`: the brain's stop spares it) and returns with the
+  mission still running. Each `tick()` then runs one `_return_tick()` (before the budget:
   the return is the end's, bounded by the trip's own `RETURN_MAX_S`, 600 s)
   and returns `self._running`. The trip: a nav2 goal to a staging point
   `STAGING_M` (0.30 m) back along the dock's heading -- or the dock itself
@@ -407,19 +408,27 @@ ship one metrics row if `metrics_url` is set (kept as `_metrics_row`).
   `GOAL_RETRY_S` (1 s) for `return_wait_s` (30 s), then `skipped`,
   `no_nav2`. Docked: the pose within `DOCK_TOL_M` (0.10) and `DOCK_TOL_DEG`
   (10); else `failed` with the reason (`not_aligned`, `vetoed`,
-  `nav2_<state>`, `timeout`). Then `_end` with the decided outcome.
+  `nav2_<state>`, `timeout`); an approach that takes `3 * MAX_ACTIONS` steps,
+  acting or not, ends `not_aligned` (review 1: it could loop with no verb).
+  A goal under way is polled every `POLL_S` (0.5 s). Then `_end` with the
+  decided outcome.
 * **Who still wins:** an end landing during the return (`stop()`, `abort()`)
   ends the return `cancelled` (by `stop`/`dpad`) or `failed` and the mission
   with the decided outcome and note. In `_return_tick`: `BatteryReserve` ->
   `failed`, `battery_reserve`; `AutonomyLapsed` -> `failed`;
   `StoppedByPerson` -> `cancelled`, `stop: ...`; another `Preempted` ->
   `cancelled`, `preempted: ...`; `MissionHalted` returns; any other error ->
-  `failed`, `error: ...`.
+  `failed`, `error: ...`. A person's end (a Stop, a D-pad) still writes its
+  3.99 intervention line (`interrupt`): the line keeps the decided outcome,
+  with `return: cancelled` and the person's `intervention`; an abort or a
+  fault during the return sets `status.error` (`during the return: ...`).
 * **The return reserve** (D3, `_return_reserve` in `_out_of_budget`, every
   tick, only with a dock and a navigator): `HomeBudget` keeps this mission's
   driving speed (metres over seconds of ticks that moved 1 cm or more; 0.10
   m/s before 30 s of driving, never under 0.05) and drain rate (distinct
-  battery samples 60 s or more apart). `T_home = 1.5 * L_home / v + 30 s`,
+  battery samples 60 s or more apart; a gap between reads counts 5 s at
+  most). Within 0.5 m of the dock there is no reserve (`at_dock`): nothing to
+  drive home, so a short limit is not ended at once. `T_home = 1.5 * L_home / v + 30 s`,
   `L_home` the path home on the brain's map (`reach` from the dock at
   `PASS_CLEARANCE_M`, recomputed after 0.5 m or 30 s; 1.5 x the straight line
   when the map does not connect them). The search ends `out_of_budget`,
@@ -822,7 +831,7 @@ tests/test_mission_guarded_verbs.py -q`.
 | `tests/test_mission_runner.py` (32) | tick-driven equals blocking `run_mission()` step for step; outcomes and idempotent `_finish`; the gate refuses after stop; a stop landing mid-tick records no step; tiered readouts reach status and survive a scene with no tier; the tick keeps advancing while an async call is in flight |
 | `tests/test_brain_server.py` (78) | **the import boundary, by mechanism:** a subprocess imports the brain app and lists `sys.modules`, so a forbidden import fails the suite and does not depend on review; two-hop mission completes; 409 on a second start; stop with no mission stops the car; secret gating; `ROUTE_PREFIX`; **the brain process loads no `sim`, and from `robot`/`world` only `robot.interface`, `robot.safety`, `robot.identity`, `world.interface`**; model and wording validation (refused at start, outage tolerated, one round trip); unknown field is 422; tiered start refusals and sim-vs-real perception choice; a survey's room source (3.70 S2): the frame's by default, the cloud's `/room` with the vision URL, secret and a timeout held to half the tick's, refused at start with no vision URL, never built for a find, reported on `/health`; a bad source or timeout refused at load |
 | `tests/test_tick_within.py` (6) | the mission loop's tick await: a cancel landing as the tick ends is raised, not lost, and a tick failing in that turn is logged (red only on Python 3.10 with `wait_for`), a cancel mid-tick and a deadline cancel the wait, results and errors come back, and `brain_server` never calls `asyncio.wait_for` |
-| `tests/test_dock_return.py` (19) | 3.156.B (C8's red-first): a return after `found`, a survey's end, `exhausted`, `out_of_budget`, `arrived_unconfirmed`, `blocked`, docked on the true pose; none after a person or a fault or at Reserve; `no_nav2` skipped with no straight-line verbs; off is today's end; a Stop / D-pad / Reserve during the return keeps the outcome; the time and battery reserves end the search early and dock; `HomeBudget`'s units; `exact_verbs`; the config's keys |
+| `tests/test_dock_return.py` (24) | 3.156.B (C8's red-first): a return after `found`, a survey's end, `exhausted`, `out_of_budget`, `arrived_unconfirmed`, `blocked`, docked on the true pose; none after a person or a fault or at Reserve; `no_nav2` skipped with no straight-line verbs; off is today's end; a Stop / D-pad / Reserve during the return keeps the outcome; the time and battery reserves end the search early and dock; `HomeBudget`'s units; `exact_verbs`; the config's keys; review 1: the search goal cancelled at the switch, a Stop during the return an intervention, an abort visible, no reserve at the dock, an approach that cannot close ends |
 | `tests/test_camera_budget_3153.py` (6) | 3.153: one failed frame read mid-mission keeps the outcome (red before), the car stopped on that tick and the count reset; a camera never back ends `failed` after exactly 3 with no move; only consecutive failures count; any other robot error still ends at once; a Stop during a failed read is unchanged; a read failing at once waits `CAMERA_RETRY_S` between tries |
 | `tests/test_failsafes.py` (15) | B3.2 budget and hang; one failure survivable; no movement after stop; B3.3 dead-man; every drill ends `failed` with the robot stopped; no-fault builds the ordinary mission; drills can be switched off |
 | `tests/test_camera_centred_start.py` (11) | 3.20's four criteria: centred first decision under `frontier` and `vision` (tiered is not parametrised), no step or vision call spent, centred start unchanged against `tests/data/frontier_trace_centred.json`, a refused centring ends the mission like any refused move |

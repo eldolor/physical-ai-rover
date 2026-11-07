@@ -2128,6 +2128,7 @@ class MissionRunner:
         abort) ends the return there, and the mission with the outcome
         decided before it."""
         go = False
+        interrupt = None
         with self._lock:
             if self._ended():
                 return
@@ -2155,11 +2156,21 @@ class MissionRunner:
                                 "state": docking.CANCELLED if cancelled else docking.FAILED,
                                 "reason": reason}
                 self._log_line(f"return {self._return['state']}: {reason}")
+                if cancelled:
+                    interrupt = {"note": note, **{k: kw.get(k) for k in ("cancelled_by", "via", "by")}}
+                else:
+                    self._error = f"during the return: {note}"     # B3.3's abort stays visible
         if go:
             self._safe_stop()
+            if self._navigator is not None:
+                # The search's own goal, which the brain's stop spares: ended
+                # now, not when the return's first goal replaces it.
+                self._navigator.cancel_own()
             return
         if pending is not None:
             outcome, note, kw = pending
+            if interrupt is not None:
+                kw = {**kw, "interrupt": interrupt}
         self._end(outcome, note, **kw)
 
     def _return_tick(self) -> bool:
@@ -2169,6 +2180,7 @@ class MissionRunner:
         with self._lock:
             self._last_tick_at = time.monotonic()
         trip = self._return_trip
+        person = None
         try:
             got = trip.step()
         except MissionHalted:
@@ -2179,8 +2191,13 @@ class MissionRunner:
             got = (docking.FAILED, f"autonomy_lapsed: {e}")
         except StoppedByPerson as e:
             got = (docking.CANCELLED, f"stop: {e}")
+            person = {"note": f"stopped by a person: {e}", "cancelled_by": "stop",
+                      "via": VIA_ROBOT_STOP}
         except Preempted as e:
             got = (docking.CANCELLED, f"preempted: {e}")
+            holder = _PREEMPTED_BY.match(str(e))
+            person = {"note": str(e), "cancelled_by": "dpad", "via": VIA_PREEMPTED,
+                      "by": holder.group(1) if holder else None}
         except Exception as e:  # noqa: BLE001 -- a fault on the way home ends the return
             logger.exception("return step failed")
             got = (docking.FAILED, f"error: {e}")
@@ -2196,6 +2213,10 @@ class MissionRunner:
                 self._log_line(f"return: {line}")
             self._log_line(f"return {state}: {reason}")
             outcome, note, kw = self._pending_end
+            if state == docking.FAILED and reason.startswith("error"):
+                self._error = f"during the return: {reason}"
+        if person is not None:
+            kw = {**kw, "interrupt": person}
         # Not through _finish: the return has ended, the decided end is final
         # (a Stop landing now finds `return` no longer `returning`, and ends
         # the mission with the same decided outcome; `_end` runs once).
@@ -2206,7 +2227,7 @@ class MissionRunner:
                 tier_stats: Optional[dict] = None,
                 arrival_frame: Optional[dict] = None,
                 cancelled_by: Optional[str] = None, via: Optional[str] = None,
-                by: Optional[str] = None) -> None:
+                by: Optional[str] = None, interrupt: Optional[dict] = None) -> None:
         line = None     # 3.99: this end's intervention line, built below
         with self._lock:
             if self._ended():
@@ -2246,6 +2267,14 @@ class MissionRunner:
             # Nothing here may raise before the stop (3.55).
             try:
                 line = self._intervention_line(outcome, note, cancelled_by, via, by)
+                if interrupt is not None and line is not None:
+                    # 3.156: a person's Stop or D-pad that ended the RETURN is
+                    # an intervention all the same; the decided outcome stays.
+                    own = self._intervention_line(CANCELLED, interrupt["note"],
+                                                  interrupt.get("cancelled_by"),
+                                                  interrupt.get("via"), interrupt.get("by"))
+                    line["intervention"] = (own or {}).get("intervention")
+                    line["return"] = "cancelled"
             except Exception as e:  # noqa: BLE001
                 logger.warning("intervention line not built: %s", e)
             # 3.46: before the end line, which stays the log's last word --

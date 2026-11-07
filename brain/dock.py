@@ -38,6 +38,7 @@ BATTERY_MARGIN_V = 0.1
 REPLAN_M = 0.5
 REPLAN_S = 30.0
 MOVED_M = 0.01              # a tick that moved less did not drive
+MAX_GAP_S = 5.0             # one read's share of driving time, at most
 # D4. 0.30 m, not the design's 0.40 (amended before any measurement, the
 # section's B notes): the simulator's straight verbs move whole 0.30 m cells
 # (`MockRobot._speed_duration_to_cells`), so a 0.40 m creep cannot close
@@ -56,6 +57,7 @@ GOAL_TRIES = 2              # nav2 goals per target (staging, then the dock), a 
 BACK_OFF_S = 0.75           # the back-off: one guarded REVERSE at creep speed
 RETURN_WAIT_S = 30.0        # D2: nav2's hold never clears -> skipped, no_nav2
 GOAL_RETRY_S = 1.0          # between refused goals (through the runner's idle)
+POLL_S = 0.5                # between polls of a goal under way
 RETURN_MAX_S = 600.0        # a return that never ends is a failed one
 
 DOCKED, FAILED, CANCELLED, SKIPPED = "docked", "failed", "cancelled", "skipped"
@@ -143,7 +145,8 @@ class HomeBudget:
             d = math.hypot(x - self._last[0], y - self._last[1])
             if d >= MOVED_M:
                 self.metres += d
-                self.driving_s += max(0.0, t - self._last[2])
+                # A pause between reads (a cooldown, a pick) is not driving.
+                self.driving_s += min(MAX_GAP_S, max(0.0, t - self._last[2]))
         self._last = (x, y, t)
 
     def observe_battery(self, v: float, t: float) -> None:
@@ -192,6 +195,9 @@ class HomeBudget:
         if not pose or not pose.get("usable"):
             return None
         L = self.path_m(get_map, pose, t)
+        if math.hypot(pose["x_m"] - self.dock["x_m"], pose["y_m"] - self.dock["y_m"]) < REPLAN_M:
+            self.last = {"l_home_m": round(L, 2), "at_dock": True}
+            return None     # at the dock: nothing to drive home (a short limit is not a reserve)
         th = self.t_home(L)
         r = self.drain_v_s()
         self.last = {"l_home_m": round(L, 2), "t_home_s": round(th, 1),
@@ -236,6 +242,7 @@ class ReturnTrip:
         self._last_xy = None
         self.goal_id = None
         self.log = []
+        self.steps = 0                  # approach steps, acting or not (a loop with no verb ends)
         self._last_along = None         # the creep's remaining distance before its last verb
         self._step_m = None             # what that verb closed
 
@@ -296,6 +303,8 @@ class ReturnTrip:
         goal = (self.nav.get_goal() or {}).get("goal") or {}
         st = goal.get("state")
         if st in ("pending", "active", None) and goal:
+            if self.idle is not None:
+                self.idle(POLL_S)
             return None
         if st == "succeeded":
             self.state = "turn"
@@ -338,7 +347,8 @@ class ReturnTrip:
         return True
 
     def _approach(self):
-        if self.actions >= MAX_ACTIONS:
+        self.steps += 1
+        if self.actions >= MAX_ACTIONS or self.steps >= 3 * MAX_ACTIONS:
             return FAILED, "not_aligned"
         if self.refused >= MAX_REFUSED:
             if not self.direct:
