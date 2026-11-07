@@ -84,9 +84,9 @@ def test_the_store_keeps_the_newest_and_is_bounded(tmp_path, monkeypatch):
         (tmp_path / f"m-{i}" / "report.json").touch()
     assert [r["mission_id"] for r in store.list()][:3] and len(store.list()) == 3
     assert not (tmp_path / "m-0").exists() and (tmp_path / "m-4").exists()
-    monkeypatch.setattr(wis, "STORE_MAX_BYTES", 1)          # over the byte bound: all but none kept
+    monkeypatch.setattr(wis, "STORE_MAX_BYTES", 1)          # over the byte bound: only the newest kept
     store.save("m-9", {"outcome": "found"}, found={"jpeg": FRAME})
-    assert [p.name for p in tmp_path.iterdir() if not p.name.startswith(".")] == []
+    assert [p.name for p in tmp_path.iterdir() if not p.name.startswith(".")] == ["m-9"]
 
 
 def test_a_delete_leaves_no_file_and_names_outside_a_report_are_refused(tmp_path):
@@ -134,3 +134,60 @@ def test_frames_stay_local_no_upload_path_reads_the_store():
                           "--", "*.py"], cwd=ROOT, capture_output=True, text=True).stdout.split()
     assert sorted(out) == ["brain/what_i_saw.py", "tests/test_ui_what_i_saw.py", "tests/test_what_i_saw.py"]
     assert "jpeg" not in (ROOT / "control" / "inventory_store.py").read_text().lower()
+
+
+# ---------- review fixes (code-review + Thermos, round 1) ----------
+
+def test_review_pruning_follows_the_stores_order_not_the_clock(tmp_path, monkeypatch):
+    """A board with no RTC can set its clock back: the report just written is
+    never the one pruned."""
+    import os
+    monkeypatch.setattr(wis, "KEEP", 2)
+    store = wis.ReportStore(tmp_path)
+    store.save("m-a", {"outcome": "found"})
+    store.save("m-b", {"outcome": "found"})
+    os.utime(tmp_path / "m-a" / "report.json", (4e9, 4e9))     # an older report, a clock in the future
+    store.save("m-c", {"outcome": "found"})                    # written with the clock set back
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["m-b", "m-c"]
+    assert [r["mission_id"] for r in store.list()] == ["m-c", "m-b"]
+
+
+def test_review_orphans_are_swept_and_a_failed_person_delete_is_not_called_done(tmp_path, monkeypatch):
+    import os
+    store = wis.ReportStore(tmp_path)
+    orphan = tmp_path / ".m-x.abc123"
+    (orphan / "thumbs").mkdir(parents=True)
+    (orphan / "found.jpg").write_bytes(FRAME)
+    os.utime(orphan, (1, 1))
+    store.save("m-1", {"outcome": "found"})
+    assert not orphan.exists()
+    monkeypatch.setattr(wis.shutil, "rmtree", lambda *a, **k: (_ for _ in ()).throw(OSError("busy")))
+    with pytest.raises(OSError):
+        store.delete("m-1")
+
+
+def test_review_report_json_is_capped_and_clean(tmp_path):
+    import numpy as np
+    looks = [{"label": "x" * 40 + str(i), "x_m": np.float32(1.5), "y_m": float("nan"),
+              "room": "kitchen", "belief": np.float64(0.5), "looks": np.int64(2)} for i in range(500)]
+    store = wis.ReportStore(tmp_path)
+    rep = store.save("m-1", {"outcome": "found", "step": np.int64(4)}, looks=looks)
+    body = (tmp_path / "m-1" / "report.json").read_bytes()
+    assert len(body) <= wis.REPORT_MAX_BYTES
+    assert len(rep["landmarks"]) <= wis.MAX_ROWS
+    got = json.loads(body)                                       # strict JSON: no NaN
+    assert got["landmarks"][0]["y_m"] is None and got["landmarks"][0]["x_m"] == 1.5
+    assert got["step"] == 4
+
+
+def test_review_a_damaged_found_frame_loses_itself_only(tmp_path):
+    rep = wis.ReportStore(tmp_path).save("m-1", {"outcome": "found"},
+                                         found={"jpeg": b"\x00" * 200_000}, looks=_looks(2))
+    assert rep["found"] is None and len(rep["landmarks"]) == 2
+
+
+def test_review_a_pruning_error_does_not_fail_a_saved_report(tmp_path, monkeypatch):
+    store = wis.ReportStore(tmp_path)
+    monkeypatch.setattr(store, "_prune", lambda keep=None: (_ for _ in ()).throw(OSError("vanished")))
+    store.save("m-1", {"outcome": "found"}, found={"jpeg": FRAME})
+    assert store.get("m-1")["outcome"] == "found"

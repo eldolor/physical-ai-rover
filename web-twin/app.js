@@ -2315,9 +2315,10 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
   document.getElementById("saw-found").onclick = showSawFound;
   document.getElementById("saw-open").onclick = openSawList;
   document.getElementById("saw-delete").onclick = deleteSaw;
-  document.getElementById("saw-close").onclick = function () {
-    document.getElementById("saw-viewer").hidden = true;
-  };
+  document.getElementById("saw-close").onclick = closeSaw;
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape") closeSaw();
+  });
   document.getElementById("rooms-done").onclick = closeRooms;
   document.querySelectorAll(".turn-step-btn").forEach(function (btn) {
     btn.onclick = function () { setTurnStep(Number(btn.dataset.turnDeg)); };
@@ -2609,43 +2610,75 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     if (!status || status.running) return null;
     var r = readOutcome(status).outcome;
     if (!r || r === "idle") return null;
-    return [r, status.end_reason || "", status.step || 0, status.target_object || ""].join("|");
+    return [status.mission_id || "", r, status.end_reason || "", status.step || 0,
+            status.target_object || ""].join("|");
+  }
+
+  // Is this report the mission that just ended? By its id when the status
+  // names one; else by its end (outcome, target, step). The writer saves on
+  // its own thread, so right after an end the newest report may still be
+  // the last mission's: never shown as this one's.
+  function sawMatches(row, status) {
+    if (!row || !status) return false;
+    if (status.mission_id) return row.mission_id === status.mission_id;
+    return row.outcome === readOutcome(status).outcome
+      && (row.target || "") === (status.target_object || "")
+      && (row.step == null || status.step == null || row.step === status.step);
   }
 
   async function sawImage(id, name) {
+    var key = id + "/" + name;
+    state.sawCache = state.sawCache || {};
+    if (state.sawCache[key]) return state.sawCache[key];
     var res = await fetch(state.brainUrl + "/mission/reports/" + encodeURIComponent(id) + "/" + name,
                           {headers: brainAuthHeaders({})});
     if (!res.ok) throw new Error("HTTP " + res.status);
     var url = URL.createObjectURL(await res.blob());
-    (state.sawUrls = state.sawUrls || []).push(url);
+    state.sawCache[key] = url;
     return url;
   }
 
   function sawClear() {
-    (state.sawUrls || []).forEach(function (u) { URL.revokeObjectURL(u); });
-    state.sawUrls = [];
+    state.sawSeq = (state.sawSeq || 0) + 1;       // any load in flight is stale now
+    var cache = state.sawCache || {};
+    Object.keys(cache).forEach(function (k) { URL.revokeObjectURL(cache[k]); });
+    state.sawCache = {};
     state.sawReport = null;
+    state.sawListing = false;
     var el = document.getElementById("saw");
     if (el) el.hidden = true;
+    var items = document.getElementById("saw-items");
+    if (items) { items.textContent = ""; items.hidden = true; }
   }
 
   async function loadSaw(status) {
     var key = sawKey(status);
-    if (!state.brainConnected || !key) { if (!key) state.sawFor = null; return; }
-    if (key === state.sawFor) return;
-    state.sawFor = key;
-    var seq = state.sawSeq = (state.sawSeq || 0) + 1;
+    if (!state.brainConnected || !key) {
+      if (state.sawFor) { state.sawFor = null; sawClear(); }   // a new mission: the old pictures go
+      return;
+    }
+    if (key !== state.sawFor) {
+      state.sawFor = key;
+      state.sawDone = false;
+      state.sawSince = Date.now();
+      state.sawTried = 0;
+      sawClear();
+    }
+    // Asked again (at most every 3 s, for 2 min) until this mission's report is there.
+    if (state.sawDone || Date.now() - state.sawTried < 3000 || Date.now() - state.sawSince > 120000) return;
+    state.sawTried = Date.now();
+    var seq = state.sawSeq;
     try {
       var list = await brainApi("GET", "/mission/reports");
       var rows = (list && list.reports) || [];
-      if (!rows.length || seq !== state.sawSeq) return;
+      if (seq !== state.sawSeq || !sawMatches(rows[0], status)) return;
       var rep = await brainApi("GET", "/mission/reports/" + encodeURIComponent(rows[0].mission_id));
       if (seq !== state.sawSeq) return;
-      sawClear();
+      state.sawDone = true;
       state.sawReport = rep;
       await renderSaw(rep, seq);
     } catch (e) {
-      // No routes on this brain (404), or none answered: say nothing, show nothing.
+      // No routes on this brain (404), or none answered: show nothing; asked again.
     }
   }
 
@@ -2676,9 +2709,10 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
   async function openSawList() {
     var rep = state.sawReport;
     var items = document.getElementById("saw-items");
-    if (!rep || !items) return;
+    if (!rep || !items || state.sawListing) return;         // one load at a time
     if (!items.hidden) { items.hidden = true; return; }
-    items.textContent = "";
+    if (items.childElementCount) { items.hidden = false; return; }   // already built
+    state.sawListing = true;
     var seq = state.sawSeq;
     for (var i = 0; i < (rep.landmarks || []).length; i++) {
       var m = rep.landmarks[i];
@@ -2704,6 +2738,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
       li.appendChild(b);
       items.appendChild(li);
     }
+    state.sawListing = false;
     items.hidden = false;
   }
 
@@ -2720,8 +2755,18 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
       bx.style.height = (100 * (box[3] - box[1])) + "%";
     }
     document.getElementById("saw-caption").textContent = caption || "";
+    state.sawOpener = document.activeElement;
     v.hidden = false;
     document.getElementById("saw-close").focus();
+  }
+
+  function closeSaw() {
+    var v = document.getElementById("saw-viewer");
+    if (!v || v.hidden) return;
+    v.hidden = true;
+    document.getElementById("saw-viewer-img").removeAttribute("src");
+    if (state.sawOpener && state.sawOpener.focus) state.sawOpener.focus();
+    state.sawOpener = null;
   }
 
   function showSawFound() {
@@ -2738,6 +2783,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     if (!rep || !btn) return;
     var now = Date.now();
     if (now >= (state.sawDeleteArmed || 0)) {
+      state.sawDeleteArmedAt = now;
       state.sawDeleteArmed = now + SAW_DELETE_ARM_MS;
       btn.textContent = "Tap again to delete";
       setTimeout(function () {
@@ -2745,6 +2791,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
       }, SAW_DELETE_ARM_MS + 50);
       return;
     }
+    if (now - (state.sawDeleteArmedAt || 0) < 400) return;   // a double-tap is one tap
     state.sawDeleteArmed = 0;
     btn.textContent = "Delete these pictures";
     try {
@@ -2752,6 +2799,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
       sawClear();
       showToast(t("saw.deleted"), "ok");
     } catch (e) {
+      if (e.status === 404) { sawClear(); return; }   // already gone
       showToast(t("saw.deleteFailed", {why: e.message || e}), "err");
     }
   }

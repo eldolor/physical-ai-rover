@@ -194,3 +194,28 @@ def test_whats_shown_meets_3132s_bars(browser, twin_server, report):
     assert not bad, bad
     assert not errors, errors
     page.context.close()
+
+
+# ---------- review fixes (round 1) ----------
+
+def test_review_the_last_missions_report_is_never_shown_as_this_ones(browser, twin_server, report):
+    """The writer saves on its own thread: right after a mission ends the
+    newest report may be the previous mission's."""
+    other = dict(_status(), target_object="blue mug")            # this mission looked for a mug
+    page, errors, seen = _open(browser, twin_server, report, other)
+    page.wait_for_timeout(2500)
+    sync_api.expect(page.locator("#saw")).to_be_hidden()
+    assert ("GET", "/mission/reports/m-162") not in seen
+    assert not errors, errors
+    page.context.close()
+
+
+def test_review_escape_closes_the_viewer(browser, twin_server, report):
+    page, errors, _ = _open(browser, twin_server, report, _status())
+    sync_api.expect(page.locator("#saw-found")).to_be_visible(timeout=8000)
+    page.click("#saw-found")
+    sync_api.expect(page.locator("#saw-viewer")).to_be_visible()
+    page.keyboard.press("Escape")
+    sync_api.expect(page.locator("#saw-viewer")).to_be_hidden()
+    assert not errors, errors
+    page.context.close()

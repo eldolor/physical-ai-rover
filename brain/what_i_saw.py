@@ -58,6 +58,9 @@ FOUND_MAX_BYTES = 150_000
 MISSION_MAX_BYTES = 1_000_000
 KEEP = 50
 STORE_MAX_BYTES = 50_000_000
+MAX_ROWS = 200                   # landmark rows in report.json (the likeliest first)
+REPORT_MAX_BYTES = 20_000        # report.json's share of a mission's bytes
+ORPHAN_S = 600.0                 # a hidden temp or half-deleted directory older than this is swept
 ID_RE = re.compile(r"[A-Za-z0-9_.-]{1,80}")
 THUMB_RE = re.compile(r"thumbs/([0-9]{1,3})\.jpg")
 DEFAULT_DIR = Path(__file__).resolve().parents[1] / "recordings" / "what-i-saw"
@@ -103,9 +106,47 @@ def thumbnail(jpeg: bytes, box=None) -> bytes:
     return _jpeg(img, THUMB_MAX_BYTES)
 
 
+def _clean(v):
+    """A value as JSON can hold it: numpy numbers as plain ones, NaN and
+    infinities as None, anything else unknown as its string."""
+    if isinstance(v, dict):
+        return {str(k): _clean(x) for k, x in v.items()}
+    if isinstance(v, (list, tuple)):
+        return [_clean(x) for x in v]
+    if isinstance(v, bool) or v is None or isinstance(v, str):
+        return v
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return str(v)
+    if f != f or f in (float("inf"), float("-inf")):
+        return None
+    return int(f) if isinstance(v, int) or (hasattr(v, "dtype") and "int" in str(v.dtype)) else f
+
+
+def _fsync_dir(d: Path) -> None:
+    try:
+        fd = os.open(str(d), os.O_RDONLY)
+        try:
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+    except OSError:
+        pass
+
+
+def _write(path: Path, data: bytes) -> None:
+    with open(path, "wb") as fh:
+        fh.write(data)
+        fh.flush()
+        os.fsync(fh.fileno())
+
+
 def _found_bytes(jpeg: bytes) -> tuple:
-    """(bytes to store, re-encoded?) for the judged frame."""
-    if len(jpeg) <= FOUND_MAX_BYTES:
+    """(bytes to store, re-encoded?) for the judged frame: as sent when it
+    is a JPEG of at most FOUND_MAX_BYTES, else re-encoded (the hash recorded
+    is always the sent frame's)."""
+    if len(jpeg) <= FOUND_MAX_BYTES and jpeg[:3] == b"\xff\xd8\xff":
         return jpeg, False
     from PIL import Image
     return _jpeg(Image.open(io.BytesIO(jpeg)).convert("RGB"), FOUND_MAX_BYTES), True
@@ -115,10 +156,47 @@ def _size(d: Path) -> int:
     return sum(p.stat().st_size for p in d.rglob("*") if p.is_file())
 
 
+_LOCKS: dict = {}
+_LOCKS_LOCK = threading.Lock()
+
+
+def _lock_for(d: Path) -> threading.Lock:
+    """One lock per directory in this process: the writer's store and the
+    routes' store never prune and delete over each other (review)."""
+    key = str(d.resolve()) if d.exists() else str(d.absolute())
+    with _LOCKS_LOCK:
+        return _LOCKS.setdefault(key, threading.Lock())
+
+
 class ReportStore:
     def __init__(self, directory=None):
         self.dir = Path(directory) if directory else default_dir()
-        self._lock = threading.Lock()
+        self._lock = _lock_for(self.dir)
+
+    def _sweep(self) -> None:
+        """Hidden directories a crashed save or a failed delete left (a kill,
+        a power cut): older than ORPHAN_S, removed. Never a live save's."""
+        now = time.time()
+        for p in self.dir.iterdir():
+            if p.is_dir() and p.name.startswith("."):
+                try:
+                    if now - p.stat().st_mtime > ORPHAN_S:
+                        shutil.rmtree(p)
+                except OSError as e:
+                    logger.warning("could not sweep %s: %s", p, e)
+
+    def _next_seq(self) -> int:
+        """A number every save takes, one more than any report holds: the
+        store's order, by which it prunes -- not the clock, which a board
+        with no RTC can set back."""
+        top = 0
+        for p in self.dir.iterdir():
+            if p.is_dir() and not p.name.startswith("."):
+                try:
+                    top = max(top, int(json.loads((p / "report.json").read_text()).get("seq") or 0))
+                except (OSError, ValueError, TypeError):
+                    continue
+        return top + 1
 
     def _mission_dir(self, mission_id: str) -> Path:
         if not isinstance(mission_id, str) or not ID_RE.fullmatch(mission_id) or mission_id[0] == ".":
@@ -134,28 +212,34 @@ class ReportStore:
         per landmark, {"label", "x_m", "y_m", "room", "belief", "looks",
         "jpeg", "box"}. Returns the saved report.json."""
         final = self._mission_dir(mission_id)
-        rep = {k: v for k, v in (report or {}).items() if k not in ("found", "landmarks")}
+        rep = _clean({k: v for k, v in (report or {}).items() if k not in ("found", "landmarks")})
         rep["mission_id"] = mission_id
         rep["saved_at"] = time.strftime("%Y-%m-%dT%H:%M:%S%z")
         self.dir.mkdir(parents=True, exist_ok=True)
         tmp = Path(tempfile.mkdtemp(prefix=f".{mission_id}.", dir=str(self.dir)))
         try:
-            budget = MISSION_MAX_BYTES - 20_000          # room for report.json
+            budget = MISSION_MAX_BYTES - REPORT_MAX_BYTES
+            rep["found"] = None
             if found and found.get("jpeg"):
                 raw = found["jpeg"]
-                data, resized = _found_bytes(raw)
-                (tmp / "found.jpg").write_bytes(data)
-                budget -= len(data)
-                rep["found"] = {"file": "found.jpg", "sha256": hashlib.sha256(raw).hexdigest(),
-                                "box": found.get("box"), "confirmed": bool(found.get("confirmed")),
-                                "resized": resized}
-            else:
-                rep["found"] = None
-            rows = sorted(looks or [], key=lambda r: -(r.get("belief") or 0.0))
+                try:
+                    data, resized = _found_bytes(raw)
+                except Exception as e:  # noqa: BLE001 -- a damaged frame loses itself only
+                    logger.warning("report %s: the judged frame not kept (%s)", mission_id, e)
+                    data = None
+                if data is not None:
+                    _write(tmp / "found.jpg", data)
+                    budget -= len(data)
+                    rep["found"] = _clean({"file": "found.jpg",
+                                           "sha256": hashlib.sha256(raw).hexdigest(),
+                                           "box": found.get("box"),
+                                           "confirmed": bool(found.get("confirmed")),
+                                           "resized": resized})
+            rows = sorted(looks or [], key=lambda r: -(_clean(r.get("belief")) or 0.0))[:MAX_ROWS]
             marks = []
             (tmp / "thumbs").mkdir()
             for i, r in enumerate(rows):
-                row = {k: r.get(k) for k in ("label", "x_m", "y_m", "room", "belief", "looks")}
+                row = _clean({k: r.get(k) for k in ("label", "x_m", "y_m", "room", "belief", "looks")})
                 row["thumb"] = None
                 if r.get("jpeg") and len([m for m in marks if m["thumb"]]) < MAX_THUMBS:
                     try:
@@ -165,39 +249,71 @@ class ReportStore:
                         t = None
                     if t is not None and len(t) <= budget:
                         name = f"thumbs/{len([m for m in marks if m['thumb']])}.jpg"
-                        (tmp / name).write_bytes(t)
+                        _write(tmp / name, t)
                         budget -= len(t)
                         row["thumb"] = name
                 marks.append(row)
-            rep["landmarks"] = marks
-            with open(tmp / "report.json", "w") as fh:
-                json.dump(rep, fh, indent=1)
-                fh.flush()
-                os.fsync(fh.fileno())
             with self._lock:
+                rep["seq"] = self._next_seq()
+                rep["landmarks"] = marks
+                body = json.dumps(rep, separators=(",", ":"), allow_nan=False).encode()
+                while len(body) > REPORT_MAX_BYTES and rep["landmarks"]:
+                    # Over its share: the least likely rows go (their thumbnails too).
+                    gone = rep["landmarks"].pop()
+                    if gone.get("thumb"):
+                        (tmp / gone["thumb"]).unlink(missing_ok=True)
+                    body = json.dumps(rep, separators=(",", ":"), allow_nan=False).encode()
+                _write(tmp / "report.json", body)
+                _fsync_dir(tmp / "thumbs")
+                _fsync_dir(tmp)
+                aside = None
                 if final.exists():
-                    self._remove(final)
+                    # Old copy aside first, the new one in, then the old removed:
+                    # never a moment with neither (review).
+                    aside = final.with_name(f".{final.name}.replaced.{time.monotonic_ns()}")
+                    os.replace(final, aside)
                 os.replace(tmp, final)
-                self._prune()
+                _fsync_dir(self.dir)
+                if aside is not None:
+                    shutil.rmtree(aside, ignore_errors=True)
+                try:
+                    self._sweep()
+                    self._prune(keep=final)
+                except Exception as e:  # noqa: BLE001 -- the report is saved; pruning tries again next time
+                    logger.warning("report store not pruned: %s", e)
         except BaseException:
             shutil.rmtree(tmp, ignore_errors=True)
             raise
         return rep
 
-    def _remove(self, d: Path) -> None:
-        """Whole or not at all: renamed aside first, so no reader sees half."""
+    def _remove(self, d: Path, strict: bool = False) -> None:
+        """Whole or not at all: renamed aside first, so no reader sees half.
+        `strict` (a person's delete): a remove that cannot finish raises, so
+        it is never reported done with frames left on disk."""
         gone = d.with_name(f".{d.name}.deleting.{os.getpid()}.{time.monotonic_ns()}")
         os.replace(d, gone)
-        shutil.rmtree(gone, ignore_errors=True)
+        if strict:
+            shutil.rmtree(gone)
+        else:
+            shutil.rmtree(gone, ignore_errors=True)
 
-    def _prune(self) -> None:
+    def _seq_of(self, p: Path) -> int:
+        try:
+            return int(json.loads((p / "report.json").read_text()).get("seq") or 0)
+        except (OSError, ValueError, TypeError):
+            return 0
+
+    def _prune(self, keep: Optional[Path] = None) -> None:
+        """Oldest first by the store's own sequence, never `keep` (the report
+        just written), until within KEEP and STORE_MAX_BYTES."""
         missions = sorted((p for p in self.dir.iterdir() if p.is_dir() and not p.name.startswith(".")),
-                          key=lambda p: (p / "report.json").stat().st_mtime
-                          if (p / "report.json").exists() else 0.0)
+                          key=self._seq_of)
         sizes = {p: _size(p) for p in missions}
         total = sum(sizes.values())
-        while missions and (len(missions) > KEEP or total > STORE_MAX_BYTES):
-            old = missions.pop(0)
+        for old in [p for p in missions if p != keep]:
+            if len(missions) <= KEEP and total <= STORE_MAX_BYTES:
+                break
+            missions.remove(old)
             total -= sizes[old]
             self._remove(old)
 
@@ -206,7 +322,7 @@ class ReportStore:
         with self._lock:
             if not d.is_dir():
                 return False
-            self._remove(d)
+            self._remove(d, strict=True)
         return True
 
     # ---- reading ----
@@ -224,11 +340,12 @@ class ReportStore:
             except (OSError, ValueError):
                 continue
             out.append({"mission_id": p.name, "job": rep.get("job"), "target": rep.get("target"),
-                        "outcome": rep.get("outcome"), "ended": rep.get("ended"),
+                        "outcome": rep.get("outcome"), "end_reason": rep.get("end_reason"),
+                        "step": rep.get("step"), "ended": rep.get("ended"),
                         "found": bool(rep.get("found")),
                         "things": len(rep.get("landmarks") or []),
-                        "saved_at": rep.get("saved_at")})
-        return sorted(out, key=lambda r: r.get("saved_at") or "", reverse=True)
+                        "saved_at": rep.get("saved_at"), "seq": rep.get("seq") or 0})
+        return sorted(out, key=lambda r: r["seq"], reverse=True)
 
     def get(self, mission_id: str) -> dict:
         try:
@@ -252,8 +369,10 @@ class ReportWriter:
     mission and never raises; a failed save is logged (once per mission)."""
 
     def __init__(self, store: Optional[ReportStore] = None):
-        self.store = store or ReportStore()
-        self._q: "queue.Queue" = queue.Queue(maxsize=8)
+        self.store = store or ReportStore()     # the routes' store shares its lock (one per directory)
+        # Two at most: each holds its frames (the judged one and every look's)
+        # in the brain's memory until written; the board's floor is 0.5 GB.
+        self._q: "queue.Queue" = queue.Queue(maxsize=2)
         self._t = threading.Thread(target=self._run, daemon=True, name="mission-report-writer")
         self._t.start()
         self.saved = 0
