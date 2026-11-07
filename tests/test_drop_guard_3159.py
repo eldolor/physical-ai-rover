@@ -294,10 +294,20 @@ def test_a_lip_the_turn_opens_does_not_excuse_one_it_closes():
     assert guard.pivot_blocked(1.0) == "drop_pivot_edge"
 
 
-def test_a_disc_never_covers_the_robots_own_centre():
+def test_a_disc_never_covers_the_robots_own_centre_yet_covers_its_lip():
     """B2 review (Thermos): discs within r of the centre put the robot in
-    lethal keepout, where nav2 cannot plan from."""
+    lethal keepout, where nav2 cannot plan from. Round 2 (both): skipping
+    them left a turn's own lip, ~20 cm out, unmarked: it is moved out."""
     marks = drop_guard.DropMarks()
-    assert marks.add(0.0, [(1.2, 1.0), (1.6, 1.0)], at=(1.0, 1.0)) == 1
+    assert marks.add(0.0, [(1.2, 1.0)], at=(1.0, 1.0)) == 1
     (s,) = marks.spots(0.0)
-    assert math.hypot(s["x_m"] - 1.0, s["y_m"] - 1.0) >= drop_guard.MARK_R_M
+    d = math.hypot(s["x_m"] - 1.0, s["y_m"] - 1.0)
+    assert d > drop_guard.MARK_R_M, "the robot's centre is clear"
+    assert math.hypot(s["x_m"] - 1.2, s["y_m"] - 1.0) <= drop_guard.MARK_R_M, "the lip is covered"
+
+
+def test_an_old_disc_the_robot_now_stands_in_is_not_sent():
+    """B2 review round 2: an old disc reached by a pose shift was resent."""
+    marks = drop_guard.DropMarks()
+    marks.add(0.0, [(2.0, 1.0)], at=(1.0, 1.0))
+    assert marks.spots(0.0) and not marks.spots(0.0, at=(2.0, 1.1))

@@ -113,5 +113,8 @@ def test_a_refusal_every_tick_reads_the_pose_once_a_second(drop_server, monkeypa
             starts.append(1)
         return real(*a, **k)
     monkeypatch.setattr(server.threading, "Thread", counted)
+    import time
+    t0 = time.monotonic()
     _post(client, 20)
-    assert len(starts) == 1
+    # One a second at most, however long 20 posts took on a loaded machine.
+    assert 1 <= len(starts) <= 1 + int(time.monotonic() - t0)

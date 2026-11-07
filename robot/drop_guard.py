@@ -455,9 +455,9 @@ def to_house(x_m: float, y_m: float, heading_deg: float, along_cm: float, lat_cm
 
 class DropMarks:
     """3.159.B2: the drop discs nav2 must plan around, in the house frame.
-    One per `MARK_STEP_M` of lip (keyed on that grid), at most `MAX_MARKS`
-    (the oldest dropped), living `MARK_TTL_S` and resent with every keepout
-    post. A new SLAM session (`session`) empties the book: its discs were
+    One per `MARK_STEP_M` grid square of lip (at its first lip point), at
+    most `MAX_MARKS` (the oldest dropped), living `MARK_TTL_S` and resent
+    with every keepout post. A new SLAM session (`session`) empties the book: its discs were
     placed on another map. Not thread safe: the caller holds its lock."""
 
     def __init__(self, r_m: float = MARK_R_M, step_m: float = MARK_STEP_M,
@@ -468,32 +468,39 @@ class DropMarks:
 
     def add(self, now: float, points: list, session=None, at=None) -> int:
         """House-frame lip points; returns how many discs are new. `at`: the
-        robot's centre (x, y); a disc that would cover it is not made. A
-        disc seen again lives on from now."""
+        robot's centre (x, y). A lip nearer it than `MARK_CLEAR_M` (the one
+        a turn was just refused at) is marked by a disc moved out along the
+        line from the centre, so it still covers the lip but not the robot."""
         if session != self.session:
             self.marks, self.session = {}, session
         self.marks = {k: v for k, v in self.marks.items() if v[2] > now}
         new = 0
+        out_to = MARK_CLEAR_M
         for x, y in points:
+            if at is not None:
+                d = math.hypot(x - at[0], y - at[1])
+                if 0 < d < out_to:
+                    x, y = at[0] + (x - at[0]) * out_to / d, at[1] + (y - at[1]) * out_to / d
+            # One disc per grid square of lip, centred where its first lip
+            # point fell (a grid centre could round back toward the robot).
             key = (round(x / self.step_m), round(y / self.step_m))
-            cx, cy = key[0] * self.step_m, key[1] * self.step_m
-            if at is not None and math.hypot(cx - at[0], cy - at[1]) < MARK_CLEAR_M:
-                continue
             if key in self.marks:
-                self.marks[key] = (cx, cy, now + self.ttl_s)
                 continue
-            self.marks[key] = (cx, cy, now + self.ttl_s)
+            self.marks[key] = (x, y, now + self.ttl_s)
             new += 1
         if len(self.marks) > self.max_marks:
             keep = sorted(self.marks.items(), key=lambda kv: kv[1][2])[-self.max_marks:]
             self.marks = dict(keep)
         return new
 
-    def spots(self, now: float) -> list:
-        """The live discs as the bridge takes them (`set_keepout`)."""
+    def spots(self, now: float, at=None) -> list:
+        """The live discs as the bridge takes them (`set_keepout`), less any
+        that covers `at` (the robot's centre now, if known): nav2 cannot
+        plan from inside a keepout."""
         return [{"x_m": round(x, 3), "y_m": round(y, 3), "r_m": self.r_m,
                  "ttl_s": max(round(until - now, 1), 0.1)}
-                for x, y, until in self.marks.values() if until > now]
+                for x, y, until in self.marks.values()
+                if until > now and (at is None or math.hypot(x - at[0], y - at[1]) > self.r_m)]
 
 
 def _outline(half_len, half_wid, step=3.0):

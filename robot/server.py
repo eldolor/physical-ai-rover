@@ -668,10 +668,11 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
     DROP_MARK_EVERY_S = 1.0
     drop_mark_at = [0.0]
 
-    def keepout_set(now, wedge_spots, session):
+    def keepout_set(now, wedge_spots, session, at=None):
         """The whole set the bridge takes: the wedge spots, and the drop
-        discs placed on the same SLAM session."""
-        drops = drop_marks.spots(now) if drop_marks.session == session else []
+        discs placed on the same SLAM session, less any over `at` (the
+        robot's centre, when the caller read the pose)."""
+        drops = drop_marks.spots(now, at) if drop_marks.session == session else []
         return list(wedge_spots) + drops
 
     def mark_drop():
@@ -699,8 +700,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                     return
                 wedge_spots = spot_book.live(now) if spot_book.session == map_id else []
                 try:
-                    reply = world_model.set_keepout(keepout_set(now, wedge_spots, map_id),
-                                                     map_id=map_id)
+                    reply = world_model.set_keepout(
+                        keepout_set(now, wedge_spots, map_id, at=(pose["x_m"], pose["y_m"])),
+                        map_id=map_id)
                 except Exception:
                     drop_marks.marks, drop_marks.session = before
                     raise
@@ -744,8 +746,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 if spots is None:
                     return          # 3.83: this spot is already marked
                 try:
-                    reply = world_model.set_keepout(keepout_set(now, spots, map_id),
-                                                     map_id=map_id)
+                    reply = world_model.set_keepout(
+                        keepout_set(now, spots, map_id, at=(pose["x_m"], pose["y_m"])),
+                        map_id=map_id)
                 except Exception:
                     spot_book.drop_last()
                     raise
