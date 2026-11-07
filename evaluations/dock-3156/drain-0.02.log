@@ -1,0 +1,15 @@
+{
+ "C4": {
+  "trips": 28,
+  "metres_ratio_max": 0.3,
+  "metres_over_1.5": 0,
+  "time_within_pred": 1.0
+ },
+ "C5 drain-0.02": {
+  "runs": 30,
+  "reserve_crossed": 18,
+  "docked": 28,
+  "by_limit": 1.0,
+  "worst_over_s": -1144.6
+ }
+}

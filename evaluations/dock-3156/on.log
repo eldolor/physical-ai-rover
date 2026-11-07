@@ -1,0 +1,139 @@
+{
+ "C1": {
+  "returns": 90,
+  "docked": 49,
+  "share": 0.544,
+  "not_docked": [
+   [
+    "home_first_floor",
+    "find",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "home_first_floor",
+    "survey",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "home_first_floor",
+    "find",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "home_first_floor",
+    "survey",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "home_first_floor",
+    "survey",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "home_first_floor",
+    "find",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "home_first_floor",
+    "find",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "home_first_floor",
+    "survey",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "home_first_floor",
+    "survey",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "home_first_floor",
+    "find",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "home_first_floor",
+    "survey",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "home_first_floor",
+    "find",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "home_first_floor",
+    "find",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "home_first_floor",
+    "survey",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "home_first_floor",
+    "survey",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "home_first_floor",
+    "survey",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "complex_house",
+    "find",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "complex_house",
+    "survey",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "complex_house",
+    "find",
+    "failed",
+    "nav2_aborted"
+   ],
+   [
+    "complex_house",
+    "survey",
+    "failed",
+    "nav2_aborted"
+   ]
+  ]
+ },
+ "C4": {
+  "trips": 48,
+  "metres_ratio_max": 0.6,
+  "metres_over_1.5": 0,
+  "time_within_pred": 1.0
+ },
+ "C5 time (on)": {
+  "by_limit": 1.0,
+  "worst_over_s": -25.5
+ }
+}
