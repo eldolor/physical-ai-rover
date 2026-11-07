@@ -818,15 +818,21 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     return out;
   }
 
-  function roomsTake(v) {
+  // Every request is numbered; an answer that is no longer the newest one
+  // (a slow reload landing after an edit) is dropped, never shown over it.
+  function roomsTake(v, seq) {
+    if (seq !== state.roomsSeq) return;
     if (v && v.cut) { v.cut = roomsUnrun(v.cut); v.owner = roomsUnrun(v.owner); }
     state.roomsView = v;
     state.roomsLoadedAt = Date.now();
+    var keys = ((v && v.rooms) || []).map(function (r) { return r.key; });
+    if (keys.indexOf(state.roomsSel) < 0) state.roomsSel = null;
   }
 
   async function loadRooms() {
+    var seq = state.roomsSeq = (state.roomsSeq || 0) + 1;
     try {
-      roomsTake(await brainApi("GET", "/rooms"));
+      roomsTake(await brainApi("GET", "/rooms"), seq);
     } catch (e) {
       showToast(t("rooms.loadFailed", {why: e.message || e}), "err");
     }
@@ -839,11 +845,12 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     if (!v || !v.map) return;
     if (state.roomsBusy) { showToast(t("rooms.busy"), "info"); renderRooms(); return; }
     state.roomsBusy = true;
+    var seq = state.roomsSeq = (state.roomsSeq || 0) + 1;
     try {
       // The cut and the names' revision the person saw: the map's own
       // version moves while the robot drives, which alone refuses nothing.
       roomsTake(await brainApi("POST", "/rooms/names", Object.assign(
-        {frame_id: v.frame_id, cut_hash: v.cut_hash, rev: v.rev}, body)));
+        {frame_id: v.frame_id, cut_hash: v.cut_hash, rev: v.rev}, body)), seq);
     } catch (e) {
       showToast(t(e.status === 409 ? "rooms.refused" : "rooms.failed", {why: e.message || e}),
                 e.status === 409 ? "warn" : "err");
@@ -951,6 +958,9 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
         state.roomsPlaceName = u.name;
         roomsMode("place", null);
       }));
+      li.appendChild(roomsButton("Forget", "Forget " + u.name, function () {
+        roomsEdit({op: "clear", room: u.key});
+      }));
       lost.appendChild(li);
     });
     if (state.roomsMode) {
@@ -982,8 +992,11 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     // The map moved on (a new version): fetch the rooms again, at most every
     // 5 s, and never under an edit or a mode the person is in the middle of.
     var cur = state.roomsView;
+    var typing = document.activeElement && document.activeElement.closest
+      && document.activeElement.closest("#rooms-list");
     if (state.roomsOpen && cur && cur.map && grid && cur.map.map_version !== grid.map_version
-        && !state.roomsBusy && !state.roomsMode && Date.now() - (state.roomsLoadedAt || 0) > 5000) {
+        && !state.roomsBusy && !state.roomsMode && !typing
+        && Date.now() - (state.roomsLoadedAt || 0) > 5000) {
       state.roomsLoadedAt = Date.now();
       loadRooms();
     }
@@ -1079,6 +1092,10 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     if (!state.roomsOpen || state.roomsMode !== "split") return;
     var p = roomsCanvasPoint(ev);
     state.roomsDrag = {x0: p.x, y0: p.y};
+    // Captured: a mouse drag that strays off the canvas still ends here.
+    if (ev.currentTarget && ev.currentTarget.setPointerCapture) {
+      try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) { /* not a live pointer */ }
+    }
     ev.preventDefault();
   }
 

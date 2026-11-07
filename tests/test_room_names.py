@@ -4,6 +4,7 @@
 (docs/plans/ros-alignment/3.160-rooms-named-on-twin.md, N3-N6 and N8; the
 twin's N1, N2 and N7 are tests/test_ui_room_names.py)."""
 
+import json
 import os
 import random
 import subprocess
@@ -362,3 +363,28 @@ def test_review_the_layer_with_names_is_the_slow_one_vectorised():
     g = rn.owner_grid(m, rooms)
     assert time.perf_counter() - t0 < 0.5
     assert g.shape == (400, 400) and (g >= 0).any()
+
+
+# ---------- review round 2 ----------
+
+def test_review2_a_lost_room_can_be_forgotten_but_never_matched(tmp_path):
+    m, store = _two_rooms(), rn.RoomNames(tmp_path)
+    seg = _cut(m)
+    a = int(seg[16, 15])
+    # A stored room mostly off this map (under 40% of it on free floor) yet
+    # covering the left room: it is not what the left room "is".
+    keys = rn.cut_cells(m, seg)[a] | {(x, 2000) for x in range(0, 2000)}
+    store._save(FRAME, {"version": 1, "frame_id": FRAME, "history": [], "rev": 0,
+                        "rooms": [{"id": "lost", "by": "person", "name": "Old", "runs": rn.to_runs(keys)}]})
+    store.edit(FRAME, m, seg, "name", room=a, name="New", rev=0)
+    names = sorted(r["name"] for r in store.rooms(FRAME))
+    assert names == ["New", "Old"]                     # a new room, the lost one untouched
+    store.edit(FRAME, m, seg, "clear", room="s0", rev=1)
+    assert [r["name"] for r in store.rooms(FRAME)] == ["New"]
+
+
+def test_review2_coordinates_far_outside_a_house_mark_the_file_damaged(tmp_path):
+    (tmp_path / f"{FRAME}.json").write_text(json.dumps(
+        {"rooms": [{"name": "x", "runs": [[10 ** 9, 0, 0], [-(10 ** 9), 0, 0]]}]}))
+    doc = rn.RoomNames(tmp_path).load(FRAME)
+    assert doc.get("unreadable") and doc["rooms"] == []

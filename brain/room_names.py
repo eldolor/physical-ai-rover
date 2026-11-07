@@ -56,6 +56,7 @@ HISTORY_KEPT = 200
 FRAME_ID_RE = re.compile(r"[A-Za-z0-9_.:-]{1,64}")
 STORED_RE = re.compile(r"s([0-9]{1,4})")
 MAX_KEYS = 2_000_000             # cells a file may hold in all (a damaged file is refused)
+MAX_CELL = 100_000               # |x|, |y| in store cells: 10 km from the map's origin
 DEFAULT_DIR = Path(__file__).resolve().parents[1] / "recordings" / "room-names"
 
 
@@ -119,6 +120,8 @@ def from_runs(runs) -> set:
     for iy, a, b in runs:
         if int(b) < int(a):
             raise ValueError("a run ends before it starts")
+        if max(abs(int(iy)), abs(int(a)), abs(int(b))) > MAX_CELL:
+            raise ValueError("a run far outside any house")
         total += int(b) - int(a) + 1
     if total > MAX_KEYS:
         raise ValueError(f"{total} cells: more than any map holds")
@@ -311,7 +314,11 @@ class RoomNames:
             for r in rooms:
                 r["_keys"] = from_runs(r.get("runs", []))
             cells = cut_cells(m, seg)
-            matched = match(m, seg, rooms, cells)
+            # Only rooms on this map can be what a cut room is (the view hides
+            # the others: an edit must agree with what the person saw).
+            on_map = placed(m, rooms) if rooms else []
+            live = [i for i, ok in enumerate(on_map) if ok]
+            matched = {r: live[j] for r, j in match(m, seg, [rooms[i] for i in live], cells).items()}
 
             def is_stored(t) -> bool:
                 return isinstance(t, str) and bool(STORED_RE.fullmatch(t))
@@ -321,7 +328,7 @@ class RoomNames:
                     i = int(room[1:])
                     if i >= len(rooms):
                         raise NamesRefused(f"no stored room {room!r} (reload)")
-                    if not placed(m, [rooms[i]])[0]:
+                    if not on_map[i] and op != "clear":   # a lost room may still be forgotten
                         raise NamesRefused("that room isn't on this map: place it first")
                     return rooms[i]["_keys"]
                 if not isinstance(room, int) or room not in cells:
