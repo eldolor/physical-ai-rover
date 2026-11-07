@@ -159,6 +159,13 @@ def mission(robot, brain, truth, body, wall_s=WALL_S, drill=None):
 def main(argv):
     out = Path(argv[0]) if argv else Path(__file__).with_name("live.jsonl")
     rows = []
+    # Resumable: a run stopped part-way (the desktop wanted elsewhere) skips
+    # every mission already recorded in `out`.
+    done = set()
+    if out.exists():
+        for line in out.read_text().splitlines():
+            r = json.loads(line)
+            done.add((r["kind"], r["house"], tuple(r["start_cell"])))
 
     def emit(r):
         rows.append(r)
@@ -168,12 +175,19 @@ def main(argv):
 
     for house in HOUSES + ("drills",):
         h = "scaled_house" if house == "drills" else house
+        kind = "c7" if house == "drills" else "c1"
+        cells = (spread_cells(h, DRILLS, seed=1) if house == "drills"
+                 else spread_cells(h, PER_HOUSE))
+        if all((kind, h, tuple(c)) in done for c in cells):
+            continue
         robot = de.stack(h)
         try:
             brain = httpx.Client(base_url=f"http://127.0.0.1:{de.BRAIN}", timeout=60)
             truth = Truth(robot, h)
             if house != "drills":
-                for i, c in enumerate(spread_cells(h, PER_HOUSE)):
+                for i, c in enumerate(cells):
+                    if (kind, h, tuple(c)) in done:
+                        continue
                     arrived = goto(robot, (c[0] + 0.5) * 0.3, (c[1] + 0.5) * 0.3)
                     time.sleep(3.0)          # the person's authority lapses
                     body = ({"job": "survey", "policy": "explore"} if i % 2
@@ -182,9 +196,10 @@ def main(argv):
                     emit({"kind": "c1", "house": h, "start_cell": c, "start_goal": arrived,
                           **mission(robot, brain, truth, body)})
             else:
-                cells = spread_cells(h, DRILLS, seed=1)
                 for i in range(DRILLS):
                     c = cells[i]
+                    if (kind, h, tuple(c)) in done:
+                        continue
                     arrived = goto(robot, (c[0] + 0.5) * 0.3, (c[1] + 0.5) * 0.3)
                     time.sleep(3.0)
                     body = {"job": "survey", "policy": "explore", "max_steps": 400,
