@@ -48,6 +48,10 @@ CARRY_BAR_M = 0.15          # criterion 7
 ASSOC_M = 1.0               # 3.46 criterion 4's "a true instance" radius
 GROWTH_X, GRAPH_MB = 1.5, 50.0   # criterion 6
 SAMPLE_S = 5.0
+if os.environ.get("D5_SMOKE") == "1":        # a harness check only: never a result
+    FIRST_S = {h: 90 for h in FIRST_S}
+    LATER_S = {h: 60 for h in LATER_S}
+    OUT = os.path.join(HERE, "D5", "smoke")
 
 
 def servers(house, inv_dir):
