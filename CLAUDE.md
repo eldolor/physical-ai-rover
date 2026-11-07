@@ -165,7 +165,6 @@ paragraph.**
   3.151 (merged 2026-11-05): F2's truth recorder holds under memory
   pressure (sampling apart from the writes; the body memory-locked, `FMEA_TRUTH_LOCK`);
   F2's new record is 3.135.B's.
-* 3.50.D5: criteria 6 (ten sessions) and 7 (15 cm, live).
 * 3.143: V3's slippers miss; the soak keeps no brain log.
 * The twin's 3.152.A readout (the Local VLM row, the operator line) is
   not yet deployed.
@@ -309,6 +308,11 @@ paragraph.**
   fresh map; re-maps on entering unknown or on request (`POST /world/remap`);
   the scan-contradiction trigger is off (`PICAR_REMAP_CONTRADICTION=1`);
   `PICAR_MAP_RELOAD=0` maps from empty.
+  D5 (done 2026-11-07): carried landmarks keyed by the saved map; ten
+  sessions held memory (1.05x), Jetson reload 2.04 s, fall-backs carry 0;
+  FAILED as written: scan time (localisation node 1.8x the mapping node),
+  `home_first_floor`'s graph (54.6 MB after one session), its carry (4 of 30
+  over 15 cm: session 1's placements among the dining chairs).
 * 3.154: a new nav2 goal supersedes the live one with no cancel first (the
   bridge defers the old one's cancel 2 s; a Stop clears it); explore sends
   no DELETE before an approach. Desktop: approach aborted 14/30 -> 0/30.

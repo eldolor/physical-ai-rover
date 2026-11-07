@@ -1,0 +1,3143 @@
+{
+ "house": "scaled_house",
+ "image": "vision-picar-ros:plan-3.50",
+ "sessions": [
+  {
+   "i": 1,
+   "reload": {
+    "result": "none"
+   },
+   "map_id": "map-b63ec192",
+   "states": [
+    [
+     "starting",
+     1.51
+    ],
+    [
+     "ready",
+     2.24
+    ]
+   ],
+   "reload_s": null,
+   "mission": {
+    "outcome": "running",
+    "seconds": 421,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794023924.json",
+    "steps": 17,
+    "explore": {
+     "goals_sent": 17,
+     "sent": [
+      [
+       1,
+       "477d5a4115e544559b110f1987035f07",
+       "frontier"
+      ],
+      [
+       2,
+       "51558f3e440d465fab2fe4e4be169f1d",
+       "frontier"
+      ],
+      [
+       3,
+       "c7bf5c13e727427f8ec9f266a0fdf8c3",
+       "frontier"
+      ],
+      [
+       4,
+       "45237018d0d74548bcd1bce57f5716e9",
+       "frontier"
+      ],
+      [
+       5,
+       "19685671465d42bb8d8e9fe8ba66f3b7",
+       "frontier"
+      ],
+      [
+       6,
+       "8458c048e6db4fa89953e2402396f336",
+       "frontier"
+      ],
+      [
+       7,
+       "130127b9a3fb4c3db1851176ce0ffaf0",
+       "frontier"
+      ],
+      [
+       8,
+       "9b076cd4458144b6bd8b46191903ca02",
+       "frontier"
+      ],
+      [
+       9,
+       "665c4c60be57485d950a20f3e1bac7cf",
+       "frontier"
+      ],
+      [
+       10,
+       "b3ec30fec434419399cbe57e298f0209",
+       "frontier"
+      ],
+      [
+       11,
+       "bc090a1d91ec40f7b088d86ff20644a3",
+       "frontier"
+      ],
+      [
+       12,
+       "d95b11f980664d408671af35e5ce23f1",
+       "frontier"
+      ],
+      [
+       13,
+       "7d20f6a1b9854fb2b8b8ee473d933ebd",
+       "frontier"
+      ],
+      [
+       14,
+       "2372bb7842064aa4ac65414faf463fab",
+       "frontier"
+      ],
+      [
+       15,
+       "3477a6c3f115460cae3877ec3a693ea5",
+       "frontier"
+      ],
+      [
+       16,
+       "4c5938d1b56b47f9b969f092aa9e5093",
+       "frontier"
+      ],
+      [
+       17,
+       "43f90d6f44a24d5dbef3102aa021f5ad",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "c7bf5c13e727427f8ec9f266a0fdf8c3",
+       1794023994.813192,
+       true
+      ],
+      [
+       2,
+       "c7bf5c13e727427f8ec9f266a0fdf8c3",
+       1794023994.818022,
+       true
+      ],
+      [
+       3,
+       "bc090a1d91ec40f7b088d86ff20644a3",
+       1794024186.376577,
+       true
+      ],
+      [
+       4,
+       "bc090a1d91ec40f7b088d86ff20644a3",
+       1794024186.381879,
+       true
+      ],
+      [
+       5,
+       "7d20f6a1b9854fb2b8b8ee473d933ebd",
+       1794024254.576959,
+       true
+      ],
+      [
+       6,
+       "7d20f6a1b9854fb2b8b8ee473d933ebd",
+       1794024254.590816,
+       true
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 5,
+     "last_event": "goal sent (frontier) to (7.79, 1.29)",
+     "camera_seen_m2": 22.25,
+     "choice_ms": {
+      "n": 46,
+      "p50_ms": 19.8,
+      "p90_ms": 30.7,
+      "max_ms": 89.7
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 39.9,
+    "min_gap_cm": 2.3,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 829,
+    "room_labels": null,
+    "last_log": [
+     "waiting -- goal refused: preempted -- study, facing ?, free space some, sees nothing of note",
+     "step 16: GOAL (ok) -- goal sent (frontier) to (7.79, 1.29) -- study, facing ?, free space some, sees nothing of note",
+     "waiting -- nav2 active: frontier -- study, facing ?, free space some, sees nothing of note"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 187.5,
+    "mem_mb_p50": 174.8,
+    "slam_cpu_p90": 0.2535,
+    "slam_cpu_p50": 0.0611,
+    "windows": 68,
+    "nodes": [
+     "async_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.5,
+   "map_health": {
+    "map_id": "map-b63ec192",
+    "saving": false,
+    "store": true,
+    "saved": 1,
+    "failed": 0,
+    "skipped": 0,
+    "last_version": 1,
+    "last_at": 1794024345.1211057,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "mapping",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-b63ec192",
+    "version": 1
+   },
+   "graph_mb": 26.14,
+   "store_mb": 26.14,
+   "inventory": {
+    "map_id": "slam-456beae1",
+    "frame_id": "map-b63ec192",
+    "carried_from": null,
+    "carry_seq": 0,
+    "counts": {
+     "frames": 727,
+     "observations": 321,
+     "unplaced": 2,
+     "no_pose": 0,
+     "landmarks": 4,
+     "reported": 4,
+     "carried": 0
+    }
+   },
+   "seeded": {
+    "frame_id": "map-b63ec192",
+    "carried_from": null,
+    "carry_seq": 0,
+    "counts": {
+     "frames": 203,
+     "observations": 116,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 3,
+     "reported": 2,
+     "carried": 0
+    },
+    "at_s": 119.9
+   },
+   "carried_at_seed": [],
+   "carried_at_end": [],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.037,
+    "heading_error_deg": 0.057
+   }
+  },
+  {
+   "i": 2,
+   "reload": {
+    "map_id": "map-b63ec192",
+    "version": 1,
+    "took_s": 1.67,
+    "agreement": 0.975,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-b63ec192",
+   "states": [
+    [
+     "checking",
+     2.11
+    ],
+    [
+     "ready",
+     3.79
+    ]
+   ],
+   "reload_s": 1.68,
+   "mission": {
+    "outcome": "running",
+    "seconds": 240,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794024359.json",
+    "steps": 12,
+    "explore": {
+     "goals_sent": 12,
+     "sent": [
+      [
+       1,
+       "8be5199d4919404f9d40806e2ece5621",
+       "frontier"
+      ],
+      [
+       2,
+       "10c239b43c7a4ac0a2ccc6bb25471780",
+       "frontier"
+      ],
+      [
+       3,
+       "e05ee5d923b143daaf9ca5786b014120",
+       "frontier"
+      ],
+      [
+       4,
+       "2c05c7466bad48c5a565b19dd1bc4c14",
+       "frontier"
+      ],
+      [
+       5,
+       "0a95b4e1c4814a47aed2ed70dfefd444",
+       "frontier"
+      ],
+      [
+       6,
+       "c072ee171a254f7aa4d69387f2ea4703",
+       "frontier"
+      ],
+      [
+       7,
+       "9ccb0ef3aa454acd95c10647e76d7c00",
+       "frontier"
+      ],
+      [
+       8,
+       "9d870ee772bb4470af4aca780dbde968",
+       "frontier"
+      ],
+      [
+       9,
+       "1d9279b13af24190b971f2feb7cd3f8f",
+       "frontier"
+      ],
+      [
+       10,
+       "2057d152832c4a7fa57460240408aac4",
+       "frontier"
+      ],
+      [
+       11,
+       "1dc83bd0a1d94b76aab85c6fc9088912",
+       "frontier"
+      ],
+      [
+       12,
+       "4097e905371242629160429e8dcc525f",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "0a95b4e1c4814a47aed2ed70dfefd444",
+       1794024429.921897,
+       true
+      ],
+      [
+       2,
+       "0a95b4e1c4814a47aed2ed70dfefd444",
+       1794024429.927091,
+       true
+      ],
+      [
+       3,
+       "2057d152832c4a7fa57460240408aac4",
+       1794024549.824407,
+       true
+      ],
+      [
+       4,
+       "2057d152832c4a7fa57460240408aac4",
+       1794024549.829639,
+       true
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 5,
+     "last_event": "goal sent (frontier) to (7.79, 2.09)",
+     "camera_seen_m2": 13.33,
+     "choice_ms": {
+      "n": 30,
+      "p50_ms": 16.0,
+      "p90_ms": 26.2,
+      "max_ms": 27.3
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 12.4,
+    "min_gap_cm": 7.1,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 475,
+    "room_labels": null,
+    "last_log": [
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space none, sees nothing of note",
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space some, sees nothing of note",
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space clear, sees nothing of note"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 194.5,
+    "mem_mb_p50": 189.9,
+    "slam_cpu_p90": 0.2385,
+    "slam_cpu_p50": 0.0745,
+    "windows": 38,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.0,
+   "map_health": {
+    "map_id": "map-b63ec192",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-b63ec192",
+    "version": 1
+   },
+   "graph_mb": 26.14,
+   "store_mb": 26.14,
+   "inventory": {
+    "map_id": "slam-16208d75",
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T035844.276527Z-purple unicorn",
+    "carry_seq": 1,
+    "counts": {
+     "frames": 425,
+     "observations": 199,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 4,
+     "reported": 4,
+     "carried": 4
+    }
+   },
+   "seeded": {
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T035844.276527Z-purple unicorn",
+    "carry_seq": 1,
+    "counts": {
+     "frames": 1,
+     "observations": 0,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 4,
+     "reported": 4,
+     "carried": 4
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "bed",
+     "x_m": 0.89,
+     "y_m": 3.14,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.14,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 7.048,
+     "y_m": 1.682,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.032,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.249,
+     "y_m": 0.853,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.144,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.915,
+     "y_m": 0.773,
+     "belief": 0.846,
+     "footprint_m": 0.015,
+     "centre_m": 0.167,
+     "true_instance": true
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "bed",
+     "x_m": 0.89,
+     "y_m": 3.14,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.14,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 6.984,
+     "y_m": 1.606,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.079,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.197,
+     "y_m": 0.758,
+     "belief": 0.982,
+     "footprint_m": 0.003,
+     "centre_m": 0.153,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.821,
+     "y_m": 0.824,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.103,
+     "true_instance": true
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0325,
+    "heading_error_deg": 0.292
+   }
+  },
+  {
+   "i": 3,
+   "reload": {
+    "map_id": "map-b63ec192",
+    "version": 1,
+    "took_s": 1.82,
+    "agreement": 0.975,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-b63ec192",
+   "states": [
+    [
+     "checking",
+     1.61
+    ],
+    [
+     "ready",
+     3.49
+    ]
+   ],
+   "reload_s": 1.88,
+   "mission": {
+    "outcome": "running",
+    "seconds": 240,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794024613.json",
+    "steps": 13,
+    "explore": {
+     "goals_sent": 13,
+     "sent": [
+      [
+       1,
+       "d1a297d028d647cd82679378c4a9a554",
+       "frontier"
+      ],
+      [
+       2,
+       "6fe0b68f941a49a89e868f3b304e748b",
+       "frontier"
+      ],
+      [
+       3,
+       "87756a6beb254c958a180eaeaf7b5bc1",
+       "frontier"
+      ],
+      [
+       4,
+       "e6a9de495fc54003af7c2ed718b8d774",
+       "frontier"
+      ],
+      [
+       5,
+       "f67c5e8db7304acda77e64a1b49e836c",
+       "frontier"
+      ],
+      [
+       6,
+       "c3447ad1e94f43ef90c6b172d6735e1d",
+       "frontier"
+      ],
+      [
+       7,
+       "849ca9cfb8ff4a7ab49b2c835a7dfcef",
+       "frontier"
+      ],
+      [
+       8,
+       "4d17de3aad5c4d678f45bd71154a53ad",
+       "frontier"
+      ],
+      [
+       9,
+       "556a5e8b0e6b4bab8581617ddd49c213",
+       "frontier"
+      ],
+      [
+       10,
+       "6773cc7f34d645468a8536426f8b9fb2",
+       "frontier"
+      ],
+      [
+       11,
+       "70cadd8a2e2640f887024ba017bc27e0",
+       "frontier"
+      ],
+      [
+       12,
+       "f36f77167fb2407ba9cc537cfc715cd4",
+       "frontier"
+      ],
+      [
+       13,
+       "ec4e8217501c4229bce490f98f69ab0c",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "f67c5e8db7304acda77e64a1b49e836c",
+       1794024683.77308,
+       true
+      ],
+      [
+       2,
+       "f67c5e8db7304acda77e64a1b49e836c",
+       1794024683.780237,
+       false
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 4,
+     "last_event": "goal sent (frontier) to (7.79, 3.04)",
+     "camera_seen_m2": 18.69,
+     "choice_ms": {
+      "n": 33,
+      "p50_ms": 17.2,
+      "p90_ms": 27.7,
+      "max_ms": 54.2
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 18.8,
+    "min_gap_cm": 3.7,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 473,
+    "room_labels": null,
+    "last_log": [
+     "waiting -- goal refused: preempted -- bedroom, facing ?, free space some, sees nothing of note",
+     "step 12: GOAL (ok) -- goal sent (frontier) to (7.79, 3.04) -- bedroom, facing ?, free space some, sees nothing of note",
+     "waiting -- nav2 active: frontier -- bedroom, facing ?, free space some, sees nothing of note"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 194.3,
+    "mem_mb_p50": 190.6,
+    "slam_cpu_p90": 0.4417,
+    "slam_cpu_p50": 0.111,
+    "windows": 38,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.5,
+   "map_health": {
+    "map_id": "map-b63ec192",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-b63ec192",
+    "version": 1
+   },
+   "graph_mb": 26.14,
+   "store_mb": 26.14,
+   "inventory": {
+    "map_id": "slam-3846aad1",
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T040559.057765Z-purple unicorn",
+    "carry_seq": 2,
+    "counts": {
+     "frames": 432,
+     "observations": 186,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 4,
+     "reported": 4,
+     "carried": 4
+    }
+   },
+   "seeded": {
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T040559.057765Z-purple unicorn",
+    "carry_seq": 2,
+    "counts": {
+     "frames": 1,
+     "observations": 0,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 4,
+     "reported": 4,
+     "carried": 4
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "bed",
+     "x_m": 0.89,
+     "y_m": 3.14,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.14,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 6.984,
+     "y_m": 1.606,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.079,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.197,
+     "y_m": 0.758,
+     "belief": 0.982,
+     "footprint_m": 0.003,
+     "centre_m": 0.153,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.821,
+     "y_m": 0.824,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.103,
+     "true_instance": true
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "bed",
+     "x_m": 0.888,
+     "y_m": 3.165,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.139,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 6.901,
+     "y_m": 1.648,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.149,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.195,
+     "y_m": 0.753,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.816,
+     "y_m": 0.823,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.098,
+     "true_instance": true
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0156,
+    "heading_error_deg": 0.066
+   }
+  },
+  {
+   "i": 4,
+   "reload": {
+    "map_id": "map-b63ec192",
+    "version": 1,
+    "took_s": 1.83,
+    "agreement": 0.975,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-b63ec192",
+   "states": [
+    [
+     "checking",
+     1.53
+    ],
+    [
+     "ready",
+     3.38
+    ]
+   ],
+   "reload_s": 1.85,
+   "mission": {
+    "outcome": "running",
+    "seconds": 240,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794024867.json",
+    "steps": 12,
+    "explore": {
+     "goals_sent": 12,
+     "sent": [
+      [
+       1,
+       "0f4ebc28e9844779af9e6cc584a7255e",
+       "frontier"
+      ],
+      [
+       2,
+       "856e9c9e393242fa9421da40d8719291",
+       "frontier"
+      ],
+      [
+       3,
+       "6d020ae42a344eaeb96a89538b217bda",
+       "frontier"
+      ],
+      [
+       4,
+       "17733b988f7a43088edfab8b0dc85eda",
+       "frontier"
+      ],
+      [
+       5,
+       "61ee6c0da8cf4ac2adf38d585874a41e",
+       "frontier"
+      ],
+      [
+       6,
+       "600a69eea15841b4ac9e9248e1fefa89",
+       "frontier"
+      ],
+      [
+       7,
+       "d32e6f7552da40828f9665306529b6a9",
+       "frontier"
+      ],
+      [
+       8,
+       "102e8171e5f8464fa84f852596cd1415",
+       "frontier"
+      ],
+      [
+       9,
+       "7aa8801f39124f7080f5e2445194886a",
+       "frontier"
+      ],
+      [
+       10,
+       "f0df9c5e4e7e47fc9e9aca4a2de0506b",
+       "frontier"
+      ],
+      [
+       11,
+       "c3205061be7946c09e5455ee2163cbb6",
+       "frontier"
+      ],
+      [
+       12,
+       "ac126213cb4843cb84a9b3fe305e3fe5",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "61ee6c0da8cf4ac2adf38d585874a41e",
+       1794024938.679505,
+       true
+      ],
+      [
+       2,
+       "61ee6c0da8cf4ac2adf38d585874a41e",
+       1794024938.684862,
+       true
+      ],
+      [
+       3,
+       "c3205061be7946c09e5455ee2163cbb6",
+       1794025093.183847,
+       true
+      ],
+      [
+       4,
+       "c3205061be7946c09e5455ee2163cbb6",
+       1794025093.18936,
+       true
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 5,
+     "last_event": "goal sent (frontier) to (1.24, 3.24)",
+     "camera_seen_m2": 13.64,
+     "choice_ms": {
+      "n": 29,
+      "p50_ms": 15.5,
+      "p90_ms": 35.8,
+      "max_ms": 66.5
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 13.1,
+    "min_gap_cm": 1.2,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 472,
+    "room_labels": null,
+    "last_log": [
+     "waiting -- goal refused: preempted -- kitchen, facing ?, free space clear, sees nothing of note",
+     "step 11: GOAL (ok) -- goal sent (frontier) to (1.24, 3.24) -- kitchen, facing ?, free space clear, sees nothing of note",
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space clear, sees nothing of note"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 194.1,
+    "mem_mb_p50": 190.8,
+    "slam_cpu_p90": 0.2762,
+    "slam_cpu_p50": 0.0928,
+    "windows": 38,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.5,
+   "map_health": {
+    "map_id": "map-b63ec192",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-b63ec192",
+    "version": 1
+   },
+   "graph_mb": 26.14,
+   "store_mb": 26.14,
+   "inventory": {
+    "map_id": "slam-b73b4169",
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T041013.322569Z-purple unicorn",
+    "carry_seq": 3,
+    "counts": {
+     "frames": 420,
+     "observations": 157,
+     "unplaced": 1,
+     "no_pose": 0,
+     "landmarks": 5,
+     "reported": 4,
+     "carried": 4
+    }
+   },
+   "seeded": {
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T041013.322569Z-purple unicorn",
+    "carry_seq": 3,
+    "counts": {
+     "frames": 1,
+     "observations": 0,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 4,
+     "reported": 4,
+     "carried": 4
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "bed",
+     "x_m": 0.888,
+     "y_m": 3.165,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.139,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 6.901,
+     "y_m": 1.648,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.149,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.195,
+     "y_m": 0.753,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.816,
+     "y_m": 0.823,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.098,
+     "true_instance": true
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "bed",
+     "x_m": 0.888,
+     "y_m": 3.165,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.139,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 6.895,
+     "y_m": 1.648,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.195,
+     "y_m": 0.748,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.827,
+     "y_m": 0.809,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.097,
+     "true_instance": true
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0293,
+    "heading_error_deg": 0.304
+   }
+  },
+  {
+   "i": 5,
+   "reload": {
+    "map_id": "map-b63ec192",
+    "version": 1,
+    "took_s": 1.72,
+    "agreement": 0.975,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-b63ec192",
+   "states": [
+    [
+     "checking",
+     1.51
+    ],
+    [
+     "ready",
+     3.21
+    ]
+   ],
+   "reload_s": 1.7,
+   "mission": {
+    "outcome": "running",
+    "seconds": 240,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794025121.json",
+    "steps": 12,
+    "explore": {
+     "goals_sent": 12,
+     "sent": [
+      [
+       1,
+       "a2fce9ef8bd24562b097b5d4fa01986d",
+       "frontier"
+      ],
+      [
+       2,
+       "e5654f5ff0364c7096b45a80b0ce124e",
+       "frontier"
+      ],
+      [
+       3,
+       "03be723fa7564cf88021fc7f3ccaef0b",
+       "frontier"
+      ],
+      [
+       4,
+       "0b03704132bc4df685b60763b16ae5ae",
+       "frontier"
+      ],
+      [
+       5,
+       "edb3dae1f6bf4dc8b63ae2769b6636c4",
+       "frontier"
+      ],
+      [
+       6,
+       "57d7262fe47a4b44ad9e035739bb36fa",
+       "frontier"
+      ],
+      [
+       7,
+       "6642726c9f584a40a80fc2e3811e22a5",
+       "frontier"
+      ],
+      [
+       8,
+       "9b97d5d1714c44a099481b329be22489",
+       "frontier"
+      ],
+      [
+       9,
+       "54e64926c16c4ba9b60a68b7fc08780b",
+       "frontier"
+      ],
+      [
+       10,
+       "af968ae153a247ed91f4473b5570fffb",
+       "frontier"
+      ],
+      [
+       11,
+       "cc0cd88ef15746a3b98a9554c897987c",
+       "frontier"
+      ],
+      [
+       12,
+       "7a1974526ab444118e7dd278bcd8ff88",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "edb3dae1f6bf4dc8b63ae2769b6636c4",
+       1794025193.364446,
+       true
+      ],
+      [
+       2,
+       "edb3dae1f6bf4dc8b63ae2769b6636c4",
+       1794025193.376604,
+       true
+      ],
+      [
+       3,
+       "af968ae153a247ed91f4473b5570fffb",
+       1794025312.966478,
+       true
+      ],
+      [
+       4,
+       "af968ae153a247ed91f4473b5570fffb",
+       1794025312.971421,
+       true
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 5,
+     "last_event": "goal sent (frontier) to (7.79, 2.09)",
+     "camera_seen_m2": 13.38,
+     "choice_ms": {
+      "n": 29,
+      "p50_ms": 17.2,
+      "p90_ms": 21.2,
+      "max_ms": 34.2
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 12.4,
+    "min_gap_cm": 22.3,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 472,
+    "room_labels": null,
+    "last_log": [
+     "step 11: GOAL (ok) -- frontier goal aborted; set aside (failure 3); goal sent (frontier) to (7.79, 2.09) -- kitchen, facing ?, free space some, sees nothing of note",
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space some, sees nothing of note",
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space clear, sees nothing of note"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 195.8,
+    "mem_mb_p50": 191.6,
+    "slam_cpu_p90": 0.2286,
+    "slam_cpu_p50": 0.0742,
+    "windows": 38,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.5,
+   "map_health": {
+    "map_id": "map-b63ec192",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-b63ec192",
+    "version": 1
+   },
+   "graph_mb": 26.14,
+   "store_mb": 26.14,
+   "inventory": {
+    "map_id": "slam-f74fd50c",
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T041427.231766Z-purple unicorn",
+    "carry_seq": 4,
+    "counts": {
+     "frames": 425,
+     "observations": 188,
+     "unplaced": 2,
+     "no_pose": 0,
+     "landmarks": 5,
+     "reported": 4,
+     "carried": 5
+    }
+   },
+   "seeded": {
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T041427.231766Z-purple unicorn",
+    "carry_seq": 4,
+    "counts": {
+     "frames": 1,
+     "observations": 0,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 5,
+     "reported": 4,
+     "carried": 5
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "bed",
+     "x_m": 0.888,
+     "y_m": 3.165,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.139,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 6.895,
+     "y_m": 1.648,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.195,
+     "y_m": 0.748,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.827,
+     "y_m": 0.809,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.097,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.708,
+     "y_m": 0.435,
+     "belief": 0.701,
+     "footprint_m": 0.265,
+     "centre_m": 0.477,
+     "true_instance": true
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "bed",
+     "x_m": 0.888,
+     "y_m": 3.165,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.139,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 6.909,
+     "y_m": 1.621,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.144,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.193,
+     "y_m": 0.759,
+     "belief": 0.982,
+     "footprint_m": 0.007,
+     "centre_m": 0.157,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.815,
+     "y_m": 0.822,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.097,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.708,
+     "y_m": 0.435,
+     "belief": 0.513,
+     "footprint_m": 0.265,
+     "centre_m": 0.477,
+     "true_instance": true
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0348,
+    "heading_error_deg": 0.189
+   }
+  },
+  {
+   "i": 6,
+   "reload": {
+    "map_id": "map-b63ec192",
+    "version": 1,
+    "took_s": 1.83,
+    "agreement": 0.975,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-b63ec192",
+   "states": [
+    [
+     "checking",
+     1.51
+    ],
+    [
+     "ready",
+     3.32
+    ]
+   ],
+   "reload_s": 1.81,
+   "mission": {
+    "outcome": "running",
+    "seconds": 240,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794025374.json",
+    "steps": 12,
+    "explore": {
+     "goals_sent": 12,
+     "sent": [
+      [
+       1,
+       "da5aceb8ecc84e129134d017fcf978f8",
+       "frontier"
+      ],
+      [
+       2,
+       "90b1432cba64419497e169d3e4750a7b",
+       "frontier"
+      ],
+      [
+       3,
+       "91c64c593cdb441b9d0dba9e56cf7c16",
+       "frontier"
+      ],
+      [
+       4,
+       "5a43626a6ed444d9aa90857988543e3f",
+       "frontier"
+      ],
+      [
+       5,
+       "b5d1379307c0483dbf5d77ec18f39cab",
+       "frontier"
+      ],
+      [
+       6,
+       "73144b265e6047e5925eeed658ff11a3",
+       "frontier"
+      ],
+      [
+       7,
+       "767d86153db24381b93d0aef9291d306",
+       "frontier"
+      ],
+      [
+       8,
+       "51d181fad3e94d9bbc963fa824761eca",
+       "frontier"
+      ],
+      [
+       9,
+       "16a3baa23ca9483487820f879fe89078",
+       "frontier"
+      ],
+      [
+       10,
+       "1353b2421887476192ebcad02f2a146d",
+       "frontier"
+      ],
+      [
+       11,
+       "6d0c538f56444226a4662dd0da92b787",
+       "frontier"
+      ],
+      [
+       12,
+       "597c37631fd44af4a2e1cefad16ace79",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "b5d1379307c0483dbf5d77ec18f39cab",
+       1794025446.339061,
+       true
+      ],
+      [
+       2,
+       "b5d1379307c0483dbf5d77ec18f39cab",
+       1794025446.344315,
+       true
+      ],
+      [
+       3,
+       "1353b2421887476192ebcad02f2a146d",
+       1794025569.673624,
+       true
+      ],
+      [
+       4,
+       "1353b2421887476192ebcad02f2a146d",
+       1794025569.67812,
+       true
+      ],
+      [
+       5,
+       "6d0c538f56444226a4662dd0da92b787",
+       1794025596.865426,
+       true
+      ],
+      [
+       6,
+       "6d0c538f56444226a4662dd0da92b787",
+       1794025596.87082,
+       true
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 5,
+     "last_event": "goal sent (frontier) to (7.79, 2.09)",
+     "camera_seen_m2": 13.35,
+     "choice_ms": {
+      "n": 30,
+      "p50_ms": 16.3,
+      "p90_ms": 40.2,
+      "max_ms": 60.9
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 12.6,
+    "min_gap_cm": 10.7,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 471,
+    "room_labels": null,
+    "last_log": [
+     "step 11: GOAL (ok) -- goal sent (frontier) to (7.79, 2.09) -- kitchen, facing ?, free space clear, sees nothing of note",
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space clear, sees nothing of note",
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space some, sees nothing of note"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 195.5,
+    "mem_mb_p50": 192.0,
+    "slam_cpu_p90": 0.2529,
+    "slam_cpu_p50": 0.0878,
+    "windows": 38,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.5,
+   "map_health": {
+    "map_id": "map-b63ec192",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-b63ec192",
+    "version": 1
+   },
+   "graph_mb": 26.14,
+   "store_mb": 26.14,
+   "inventory": {
+    "map_id": "slam-2baf8e31",
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T041841.033538Z-purple unicorn",
+    "carry_seq": 5,
+    "counts": {
+     "frames": 410,
+     "observations": 232,
+     "unplaced": 1,
+     "no_pose": 0,
+     "landmarks": 5,
+     "reported": 4,
+     "carried": 5
+    }
+   },
+   "seeded": {
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T041841.033538Z-purple unicorn",
+    "carry_seq": 5,
+    "counts": {
+     "frames": 1,
+     "observations": 0,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 5,
+     "reported": 4,
+     "carried": 5
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "bed",
+     "x_m": 0.888,
+     "y_m": 3.165,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.139,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 6.909,
+     "y_m": 1.621,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.144,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.193,
+     "y_m": 0.759,
+     "belief": 0.982,
+     "footprint_m": 0.007,
+     "centre_m": 0.157,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.815,
+     "y_m": 0.822,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.097,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.708,
+     "y_m": 0.435,
+     "belief": 0.513,
+     "footprint_m": 0.265,
+     "centre_m": 0.477,
+     "true_instance": true
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "bed",
+     "x_m": 0.888,
+     "y_m": 3.165,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.139,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 6.992,
+     "y_m": 1.594,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.081,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.196,
+     "y_m": 0.761,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.154,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.821,
+     "y_m": 0.809,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.092,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.766,
+     "y_m": 0.485,
+     "belief": 0.711,
+     "footprint_m": 0.29,
+     "centre_m": 0.493,
+     "true_instance": true
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0311,
+    "heading_error_deg": 0.306
+   }
+  },
+  {
+   "i": 7,
+   "reload": {
+    "map_id": "map-b63ec192",
+    "version": 1,
+    "took_s": 1.72,
+    "agreement": 0.975,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-b63ec192",
+   "states": [
+    [
+     "starting",
+     1.51
+    ],
+    [
+     "checking",
+     1.61
+    ],
+    [
+     "ready",
+     3.28
+    ]
+   ],
+   "reload_s": 1.67,
+   "mission": {
+    "outcome": "running",
+    "seconds": 241,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794025628.json",
+    "steps": 12,
+    "explore": {
+     "goals_sent": 12,
+     "sent": [
+      [
+       1,
+       "22f205d642884c2aa519baa80d3baf71",
+       "frontier"
+      ],
+      [
+       2,
+       "44f9ddb4199a471993d00c282e57dc87",
+       "frontier"
+      ],
+      [
+       3,
+       "e95b000557af4e6ba86f41d95e9dfb03",
+       "frontier"
+      ],
+      [
+       4,
+       "46bba3055471486f9609a343f86c786d",
+       "frontier"
+      ],
+      [
+       5,
+       "2ed5232829684770b34c3cc059e50c9e",
+       "frontier"
+      ],
+      [
+       6,
+       "70915db6d55549a2919160e282a7b663",
+       "frontier"
+      ],
+      [
+       7,
+       "cd121892c15d46ab8977203a269e8c9f",
+       "frontier"
+      ],
+      [
+       8,
+       "55f7c65ebfc44420b552cd27c030bca1",
+       "frontier"
+      ],
+      [
+       9,
+       "78fec692b12845518375edcec56222e3",
+       "frontier"
+      ],
+      [
+       10,
+       "3e69b10af624496d9231792f91bd0cec",
+       "frontier"
+      ],
+      [
+       11,
+       "cae5d4f18f7244068e85e27a3867b9e1",
+       "frontier"
+      ],
+      [
+       12,
+       "fda55b81c2f3491da0284c5a4d1ec420",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "2ed5232829684770b34c3cc059e50c9e",
+       1794025699.567933,
+       true
+      ],
+      [
+       2,
+       "2ed5232829684770b34c3cc059e50c9e",
+       1794025699.572477,
+       true
+      ],
+      [
+       3,
+       "3e69b10af624496d9231792f91bd0cec",
+       1794025816.879411,
+       true
+      ],
+      [
+       4,
+       "3e69b10af624496d9231792f91bd0cec",
+       1794025816.884016,
+       true
+      ],
+      [
+       5,
+       "cae5d4f18f7244068e85e27a3867b9e1",
+       1794025844.562555,
+       true
+      ],
+      [
+       6,
+       "cae5d4f18f7244068e85e27a3867b9e1",
+       1794025844.567676,
+       true
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 5,
+     "last_event": "goal sent (frontier) to (7.79, 2.09)",
+     "camera_seen_m2": 13.37,
+     "choice_ms": {
+      "n": 31,
+      "p50_ms": 16.2,
+      "p90_ms": 30.7,
+      "max_ms": 41.4
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 12.1,
+    "min_gap_cm": 12.7,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 472,
+    "room_labels": null,
+    "last_log": [
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space some, sees nothing of note",
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space clear, sees nothing of note",
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space some, sees nothing of note"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 195.0,
+    "mem_mb_p50": 190.3,
+    "slam_cpu_p90": 0.1871,
+    "slam_cpu_p50": 0.0829,
+    "windows": 38,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.0,
+   "map_health": {
+    "map_id": "map-b63ec192",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-b63ec192",
+    "version": 1
+   },
+   "graph_mb": 26.14,
+   "store_mb": 26.14,
+   "inventory": {
+    "map_id": "slam-d5e60c5a",
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T042254.838337Z-purple unicorn",
+    "carry_seq": 6,
+    "counts": {
+     "frames": 418,
+     "observations": 256,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 5,
+     "reported": 4,
+     "carried": 5
+    }
+   },
+   "seeded": {
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T042254.838337Z-purple unicorn",
+    "carry_seq": 6,
+    "counts": {
+     "frames": 1,
+     "observations": 0,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 5,
+     "reported": 4,
+     "carried": 5
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "bed",
+     "x_m": 0.888,
+     "y_m": 3.165,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.139,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 6.992,
+     "y_m": 1.594,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.081,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.196,
+     "y_m": 0.761,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.154,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.821,
+     "y_m": 0.809,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.092,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.766,
+     "y_m": 0.485,
+     "belief": 0.711,
+     "footprint_m": 0.29,
+     "centre_m": 0.493,
+     "true_instance": true
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "bed",
+     "x_m": 0.888,
+     "y_m": 3.165,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.139,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 7.027,
+     "y_m": 1.579,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.196,
+     "y_m": 0.749,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.154,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.782,
+     "y_m": 0.799,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.059,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.766,
+     "y_m": 0.485,
+     "belief": 0.525,
+     "footprint_m": 0.29,
+     "centre_m": 0.493,
+     "true_instance": true
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0343,
+    "heading_error_deg": 0.253
+   }
+  },
+  {
+   "i": 8,
+   "reload": {
+    "map_id": "map-b63ec192",
+    "version": 1,
+    "took_s": 1.73,
+    "agreement": 0.975,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-b63ec192",
+   "states": [
+    [
+     "checking",
+     1.52
+    ],
+    [
+     "ready",
+     3.23
+    ]
+   ],
+   "reload_s": 1.71,
+   "mission": {
+    "outcome": "running",
+    "seconds": 240,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794025882.json",
+    "steps": 11,
+    "explore": {
+     "goals_sent": 11,
+     "sent": [
+      [
+       1,
+       "2550867e9a1f462fa3bff05d13fba1a6",
+       "frontier"
+      ],
+      [
+       2,
+       "b22677e7299e4fd78625d5962cf4a575",
+       "frontier"
+      ],
+      [
+       3,
+       "e29a19ccfe6f441e9664e6cffa4256b5",
+       "frontier"
+      ],
+      [
+       4,
+       "b86314b7cc4a40d3bba42a814b9217f1",
+       "frontier"
+      ],
+      [
+       5,
+       "6d8077deb4a34589b5087e0d7a0fd848",
+       "frontier"
+      ],
+      [
+       6,
+       "d11d8204b1ba41e5b80418c60e6c0a7d",
+       "frontier"
+      ],
+      [
+       7,
+       "bba7ecac7ec34197822267b4d8d00aa9",
+       "frontier"
+      ],
+      [
+       8,
+       "cc699fcc6d054b5e9e3d1d9f5c8fad01",
+       "frontier"
+      ],
+      [
+       9,
+       "407e60aba00c44a59ca34180ad64dc20",
+       "frontier"
+      ],
+      [
+       10,
+       "9da0adfba3d749d896293d083c3d8317",
+       "frontier"
+      ],
+      [
+       11,
+       "61e975be71a74cb9897a19b132dc3e22",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "6d8077deb4a34589b5087e0d7a0fd848",
+       1794025953.903177,
+       true
+      ],
+      [
+       2,
+       "6d8077deb4a34589b5087e0d7a0fd848",
+       1794025953.908694,
+       true
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 3,
+     "last_event": "goal sent (frontier) to (7.79, 1.29)",
+     "camera_seen_m2": 20.85,
+     "choice_ms": {
+      "n": 28,
+      "p50_ms": 16.1,
+      "p90_ms": 25.3,
+      "max_ms": 46.3
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 19.0,
+    "min_gap_cm": 3.7,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 471,
+    "room_labels": null,
+    "last_log": [
+     "step 10: GOAL (ok) -- goal sent (frontier) to (7.79, 1.29) -- kitchen, facing ?, free space some, sees nothing of note",
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space some, sees nothing of note",
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space clear, sees nothing of note"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 194.3,
+    "mem_mb_p50": 191.4,
+    "slam_cpu_p90": 0.4541,
+    "slam_cpu_p50": 0.1092,
+    "windows": 38,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.5,
+   "map_health": {
+    "map_id": "map-b63ec192",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-b63ec192",
+    "version": 1
+   },
+   "graph_mb": 26.14,
+   "store_mb": 26.14,
+   "inventory": {
+    "map_id": "slam-5ea8c135",
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T042708.571206Z-purple unicorn",
+    "carry_seq": 7,
+    "counts": {
+     "frames": 425,
+     "observations": 139,
+     "unplaced": 2,
+     "no_pose": 0,
+     "landmarks": 5,
+     "reported": 4,
+     "carried": 5
+    }
+   },
+   "seeded": {
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T042708.571206Z-purple unicorn",
+    "carry_seq": 7,
+    "counts": {
+     "frames": 1,
+     "observations": 0,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 5,
+     "reported": 4,
+     "carried": 5
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "bed",
+     "x_m": 0.888,
+     "y_m": 3.165,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.139,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 7.027,
+     "y_m": 1.579,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.075,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.196,
+     "y_m": 0.749,
+     "belief": 0.982,
+     "footprint_m": 0.004,
+     "centre_m": 0.154,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.782,
+     "y_m": 0.799,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.059,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.766,
+     "y_m": 0.485,
+     "belief": 0.525,
+     "footprint_m": 0.29,
+     "centre_m": 0.493,
+     "true_instance": true
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "bed",
+     "x_m": 0.891,
+     "y_m": 3.169,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.142,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 6.901,
+     "y_m": 1.647,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.149,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.188,
+     "y_m": 0.786,
+     "belief": 0.982,
+     "footprint_m": 0.012,
+     "centre_m": 0.166,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.809,
+     "y_m": 0.828,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.098,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.766,
+     "y_m": 0.485,
+     "belief": 0.525,
+     "footprint_m": 0.29,
+     "centre_m": 0.493,
+     "true_instance": true
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0386,
+    "heading_error_deg": 0.086
+   }
+  },
+  {
+   "i": 9,
+   "reload": {
+    "map_id": "map-b63ec192",
+    "version": 1,
+    "took_s": 1.82,
+    "agreement": 0.975,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-b63ec192",
+   "states": [
+    [
+     "checking",
+     1.51
+    ],
+    [
+     "ready",
+     3.32
+    ]
+   ],
+   "reload_s": 1.81,
+   "mission": {
+    "outcome": "running",
+    "seconds": 240,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794026136.json",
+    "steps": 11,
+    "explore": {
+     "goals_sent": 11,
+     "sent": [
+      [
+       1,
+       "e2829a4438ea4824b9bd00572bf40bfb",
+       "frontier"
+      ],
+      [
+       2,
+       "b7db6426ec1948a9973bfe723a115958",
+       "frontier"
+      ],
+      [
+       3,
+       "bd7c4a1c33de4e39ac9063a5865ffd03",
+       "frontier"
+      ],
+      [
+       4,
+       "8476d816ae764768beb8500b5c575741",
+       "frontier"
+      ],
+      [
+       5,
+       "3faf5c5edb65464d8f026e354743b118",
+       "frontier"
+      ],
+      [
+       6,
+       "61db01e28ea5437c8ce31b8aad10e2ff",
+       "frontier"
+      ],
+      [
+       7,
+       "df261af9f9a6485db8612101743ce6a4",
+       "frontier"
+      ],
+      [
+       8,
+       "99e864e6af824f3b8a96949d30ac5726",
+       "frontier"
+      ],
+      [
+       9,
+       "836a13b8bb7443d0b96eb2ae1fd4d7fe",
+       "frontier"
+      ],
+      [
+       10,
+       "8e9ec7ccc9d6402e812ee71b690f7060",
+       "frontier"
+      ],
+      [
+       11,
+       "9f00ef27fa9a447e904229d66efbd05e",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "3faf5c5edb65464d8f026e354743b118",
+       1794026208.594104,
+       true
+      ],
+      [
+       2,
+       "3faf5c5edb65464d8f026e354743b118",
+       1794026208.599868,
+       true
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 3,
+     "last_event": "goal sent (frontier) to (7.79, 1.29)",
+     "camera_seen_m2": 20.9,
+     "choice_ms": {
+      "n": 29,
+      "p50_ms": 15.4,
+      "p90_ms": 38.4,
+      "max_ms": 60.8
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 19.0,
+    "min_gap_cm": 4.3,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 471,
+    "room_labels": null,
+    "last_log": [
+     "step 10: GOAL (ok) -- goal sent (frontier) to (7.79, 1.29) -- kitchen, facing ?, free space some, sees nothing of note",
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space some, sees nothing of note",
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space clear, sees nothing of note"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 194.9,
+    "mem_mb_p50": 192.3,
+    "slam_cpu_p90": 0.4583,
+    "slam_cpu_p50": 0.0911,
+    "windows": 38,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.5,
+   "map_health": {
+    "map_id": "map-b63ec192",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-b63ec192",
+    "version": 1
+   },
+   "graph_mb": 26.14,
+   "store_mb": 26.14,
+   "inventory": {
+    "map_id": "slam-50061431",
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T043122.152371Z-purple unicorn",
+    "carry_seq": 8,
+    "counts": {
+     "frames": 431,
+     "observations": 152,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 5,
+     "reported": 4,
+     "carried": 5
+    }
+   },
+   "seeded": {
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T043122.152371Z-purple unicorn",
+    "carry_seq": 8,
+    "counts": {
+     "frames": 1,
+     "observations": 0,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 5,
+     "reported": 4,
+     "carried": 5
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "bed",
+     "x_m": 0.891,
+     "y_m": 3.169,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.142,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 6.901,
+     "y_m": 1.647,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.149,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.188,
+     "y_m": 0.786,
+     "belief": 0.982,
+     "footprint_m": 0.012,
+     "centre_m": 0.166,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.809,
+     "y_m": 0.828,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.098,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.766,
+     "y_m": 0.485,
+     "belief": 0.525,
+     "footprint_m": 0.29,
+     "centre_m": 0.493,
+     "true_instance": true
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "bed",
+     "x_m": 0.89,
+     "y_m": 3.167,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.141,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 6.895,
+     "y_m": 1.656,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.19,
+     "y_m": 0.791,
+     "belief": 0.982,
+     "footprint_m": 0.01,
+     "centre_m": 0.165,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.799,
+     "y_m": 0.82,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.085,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.766,
+     "y_m": 0.485,
+     "belief": 0.525,
+     "footprint_m": 0.29,
+     "centre_m": 0.493,
+     "true_instance": true
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0364,
+    "heading_error_deg": 0.237
+   }
+  },
+  {
+   "i": 10,
+   "reload": {
+    "map_id": "map-b63ec192",
+    "version": 1,
+    "took_s": 1.83,
+    "agreement": 0.975,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-b63ec192",
+   "states": [
+    [
+     "checking",
+     1.52
+    ],
+    [
+     "ready",
+     3.46
+    ]
+   ],
+   "reload_s": 1.94,
+   "mission": {
+    "outcome": "running",
+    "seconds": 240,
+    "target_at": [],
+    "status_file": "explore_status_explore-purple_unicorn-1794026390.json",
+    "steps": 12,
+    "explore": {
+     "goals_sent": 12,
+     "sent": [
+      [
+       1,
+       "1d0a80f31ad2437e8a8372d2a38d93fe",
+       "frontier"
+      ],
+      [
+       2,
+       "2338245266304ec98b02b0fe05c097a6",
+       "frontier"
+      ],
+      [
+       3,
+       "a0a8af443c074a4bb938eec7ac430253",
+       "frontier"
+      ],
+      [
+       4,
+       "2ebd6451fcc9424ca87d927773ff2006",
+       "frontier"
+      ],
+      [
+       5,
+       "61d6ba0e78a64d0b8e12e046c15c1adb",
+       "frontier"
+      ],
+      [
+       6,
+       "69f6b61b54404c738d034a9e1fa70496",
+       "frontier"
+      ],
+      [
+       7,
+       "0fb71ff4aa3449dfb88137c1edd803f1",
+       "frontier"
+      ],
+      [
+       8,
+       "d432b4d56a5949efa206756cba477f21",
+       "frontier"
+      ],
+      [
+       9,
+       "f609b307df3d494da3743298fd0c2ac9",
+       "frontier"
+      ],
+      [
+       10,
+       "13a9fe5aea78420483fc1101b46c7342",
+       "frontier"
+      ],
+      [
+       11,
+       "8c2d5c633ea749b780c3c1240fb512d1",
+       "frontier"
+      ],
+      [
+       12,
+       "5ca7f6b10a824ee1a3e486874fe70d93",
+       "frontier"
+      ]
+     ],
+     "cancels": [
+      [
+       1,
+       "61d6ba0e78a64d0b8e12e046c15c1adb",
+       1794026461.41047,
+       true
+      ],
+      [
+       2,
+       "61d6ba0e78a64d0b8e12e046c15c1adb",
+       1794026461.415147,
+       true
+      ],
+      [
+       3,
+       "13a9fe5aea78420483fc1101b46c7342",
+       1794026580.149451,
+       true
+      ],
+      [
+       4,
+       "13a9fe5aea78420483fc1101b46c7342",
+       1794026580.153985,
+       true
+      ],
+      [
+       5,
+       "8c2d5c633ea749b780c3c1240fb512d1",
+       1794026607.808924,
+       true
+      ],
+      [
+       6,
+       "8c2d5c633ea749b780c3c1240fb512d1",
+       1794026607.813825,
+       true
+      ]
+     ],
+     "goal_end_done": false,
+     "goals_failed": 5,
+     "last_event": "goal sent (frontier) to (7.79, 2.09)",
+     "camera_seen_m2": 13.35,
+     "choice_ms": {
+      "n": 32,
+      "p50_ms": 15.6,
+      "p90_ms": 19.5,
+      "max_ms": 30.0
+     },
+     "asks": false,
+     "ask": null,
+     "choices": 0
+    },
+    "stuck_episodes": 0,
+    "travel_m": 12.2,
+    "min_gap_cm": 8.4,
+    "contact_samples": 0,
+    "inside_samples": 0,
+    "samples": 472,
+    "room_labels": null,
+    "last_log": [
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space clear, sees nothing of note",
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space some, sees nothing of note",
+     "waiting -- nav2 active: frontier -- kitchen, facing ?, free space clear, sees nothing of note"
+    ]
+   },
+   "monitor": {
+    "mem_mb_max": 193.5,
+    "mem_mb_p50": 189.5,
+    "slam_cpu_p90": 0.212,
+    "slam_cpu_p50": 0.0762,
+    "windows": 38,
+    "nodes": [
+     "localization_slam_toolbox_node"
+    ]
+   },
+   "started": true,
+   "settled_s": 0.5,
+   "map_health": {
+    "map_id": "map-b63ec192",
+    "saving": false,
+    "store": true,
+    "saved": 0,
+    "failed": 0,
+    "skipped": 1,
+    "last_version": null,
+    "last_at": null,
+    "last_error": null
+   },
+   "slam": {
+    "state": "ready",
+    "mode": "localisation",
+    "starts": 1,
+    "remap": {
+     "result": "none"
+    }
+   },
+   "graph": {
+    "map_id": "map-b63ec192",
+    "version": 1
+   },
+   "graph_mb": 26.14,
+   "store_mb": 26.14,
+   "inventory": {
+    "map_id": "slam-5b6fc33b",
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T043536.115517Z-purple unicorn",
+    "carry_seq": 9,
+    "counts": {
+     "frames": 417,
+     "observations": 248,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 5,
+     "reported": 4,
+     "carried": 5
+    }
+   },
+   "seeded": {
+    "frame_id": "map-b63ec192",
+    "carried_from": "20261107T043536.115517Z-purple unicorn",
+    "carry_seq": 9,
+    "counts": {
+     "frames": 1,
+     "observations": 0,
+     "unplaced": 0,
+     "no_pose": 0,
+     "landmarks": 5,
+     "reported": 4,
+     "carried": 5
+    },
+    "at_s": 0.3
+   },
+   "carried_at_seed": [
+    {
+     "label": "bed",
+     "x_m": 0.89,
+     "y_m": 3.167,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.141,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 6.895,
+     "y_m": 1.656,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.19,
+     "y_m": 0.791,
+     "belief": 0.982,
+     "footprint_m": 0.01,
+     "centre_m": 0.165,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.799,
+     "y_m": 0.82,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.085,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.766,
+     "y_m": 0.485,
+     "belief": 0.525,
+     "footprint_m": 0.29,
+     "centre_m": 0.493,
+     "true_instance": true
+    }
+   ],
+   "carried_at_end": [
+    {
+     "label": "bed",
+     "x_m": 0.89,
+     "y_m": 3.167,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.141,
+     "true_instance": true
+    },
+    {
+     "label": "red backpack",
+     "x_m": 7.035,
+     "y_m": 1.581,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.071,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.195,
+     "y_m": 0.762,
+     "belief": 0.982,
+     "footprint_m": 0.005,
+     "centre_m": 0.155,
+     "true_instance": true
+    },
+    {
+     "label": "sofa",
+     "x_m": 0.818,
+     "y_m": 0.81,
+     "belief": 0.982,
+     "footprint_m": 0.0,
+     "centre_m": 0.091,
+     "true_instance": true
+    },
+    {
+     "label": "refrigerator",
+     "x_m": 7.766,
+     "y_m": 0.485,
+     "belief": 0.332,
+     "footprint_m": 0.29,
+     "centre_m": 0.493,
+     "true_instance": true
+    }
+   ],
+   "final_error": {
+    "usable": true,
+    "position_error_m": 0.0316,
+    "heading_error_deg": 0.241
+   }
+  }
+ ],
+ "fall_back": {
+  "first_reload": {
+   "map_id": "map-b63ec192",
+   "version": 1,
+   "took_s": 1.72,
+   "agreement": 0.975,
+   "dock_error_m": 0.0,
+   "dock_error_deg": 0.0,
+   "ok": true,
+   "reason": "matched",
+   "result": "matched"
+  },
+  "from_dock_m": 1.19,
+  "from_dock_deg": 59.9,
+  "reload": {
+   "map_id": "map-b63ec192",
+   "version": 1,
+   "took_s": 1.69,
+   "agreement": 0.436,
+   "dock_error_m": 0.221,
+   "dock_error_deg": 4.4,
+   "ok": false,
+   "reason": "scans agree with the saved map 44% (< 60%)",
+   "result": "fell_back"
+  },
+  "map_id": "map-d079ff08",
+  "mission": {
+   "outcome": "running",
+   "seconds": 60,
+   "target_at": [],
+   "status_file": "explore_status_explore-purple_unicorn-1794026663.json",
+   "steps": 3,
+   "explore": {
+    "goals_sent": 3,
+    "sent": [
+     [
+      1,
+      "8b006e79c3e7424dbf9a757985e40732",
+      "frontier"
+     ],
+     [
+      2,
+      "f61ba7ef029e4d8ea14677cd6fef2285",
+      "frontier"
+     ],
+     [
+      3,
+      "055e21400a484fe0bfdd9245f65d691a",
+      "frontier"
+     ]
+    ],
+    "cancels": [],
+    "goal_end_done": false,
+    "goals_failed": 0,
+    "last_event": "goal sent (frontier) to (7.36, 1.85)",
+    "camera_seen_m2": 12.69,
+    "choice_ms": {
+     "n": 8,
+     "p50_ms": 17.3,
+     "p90_ms": 41.2,
+     "max_ms": 41.2
+    },
+    "asks": false,
+    "ask": null,
+    "choices": 0
+   },
+   "stuck_episodes": 0,
+   "travel_m": 5.5,
+   "min_gap_cm": 2.0,
+   "contact_samples": 0,
+   "inside_samples": 0,
+   "samples": 118,
+   "room_labels": null,
+   "last_log": [
+    "waiting -- nav2 active: frontier -- kitchen, facing ?, free space clear, sees nothing of note",
+    "waiting -- nav2 active: frontier -- kitchen, facing ?, free space some, sees nothing of note",
+    "waiting -- nav2 active: frontier -- kitchen, facing ?, free space none, sees nothing of note"
+   ]
+  },
+  "inventory": {
+   "map_id": "slam-4544fcb6",
+   "frame_id": "map-d079ff08",
+   "carried_from": null,
+   "carry_seq": 0,
+   "counts": {
+    "frames": 110,
+    "observations": 104,
+    "unplaced": 0,
+    "no_pose": 0,
+    "landmarks": 3,
+    "reported": 3,
+    "carried": 0
+   }
+  },
+  "old_landmarks_used": 0,
+  "ok": true
+ },
+ "verdicts": {
+  "7-carry": "MET",
+  "7-fallback": "MET",
+  "6-scan": "FAILED",
+  "6-memory": "MET",
+  "6-graph": "MET"
+ },
+ "sessions_asked": 10
+}

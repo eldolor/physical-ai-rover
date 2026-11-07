@@ -1,0 +1,98 @@
+{
+ "image": "vision-picar-ros:latest",
+ "house": "home_first_floor",
+ "store": {
+  "map_id": "map-4389b7ce",
+  "version": 1
+ },
+ "graph_mb": 54.63,
+ "trials": [
+  {
+   "states": [
+    [
+     "checking",
+     4.49
+    ],
+    [
+     "ready",
+     6.41
+    ]
+   ],
+   "reload": {
+    "map_id": "map-4389b7ce",
+    "version": 1,
+    "took_s": 1.83,
+    "agreement": 1.0,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-4389b7ce",
+   "reload_s": 1.92,
+   "start_to_ready_s": 6.41
+  },
+  {
+   "states": [
+    [
+     "starting",
+     3.82
+    ],
+    [
+     "checking",
+     3.92
+    ],
+    [
+     "ready",
+     5.95
+    ]
+   ],
+   "reload": {
+    "map_id": "map-4389b7ce",
+    "version": 1,
+    "took_s": 2.07,
+    "agreement": 1.0,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-4389b7ce",
+   "reload_s": 2.03,
+   "start_to_ready_s": 5.95
+  },
+  {
+   "states": [
+    [
+     "starting",
+     3.82
+    ],
+    [
+     "checking",
+     3.92
+    ],
+    [
+     "ready",
+     5.96
+    ]
+   ],
+   "reload": {
+    "map_id": "map-4389b7ce",
+    "version": 1,
+    "took_s": 1.99,
+    "agreement": 1.0,
+    "dock_error_m": 0.0,
+    "dock_error_deg": 0.0,
+    "ok": true,
+    "reason": "matched",
+    "result": "matched"
+   },
+   "map_id": "map-4389b7ce",
+   "reload_s": 2.04,
+   "start_to_ready_s": 5.96
+  }
+ ],
+ "verdict": "MET"
+}
