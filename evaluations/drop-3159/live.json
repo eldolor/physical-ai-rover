@@ -3,166 +3,124 @@
  "image": "vision-picar-ros:latest",
  "mission": {
   "outcome": "found",
-  "seconds": 373,
+  "seconds": 196,
   "target_at": [
    [
     46,
     19
    ]
   ],
-  "status_file": "explore_status_explore-red_backpack-1794061930.json",
-  "steps": 19,
+  "status_file": "explore_status_explore-red_backpack-1794076961.json",
+  "steps": 12,
   "explore": {
-   "goals_sent": 19,
+   "goals_sent": 12,
    "sent": [
     [
      1,
-     "247afb324a2b44bbad0fbd637e7f0d87",
+     "9c2ee65772dd49dea19d11ed6d05354f",
      "frontier"
     ],
     [
      2,
-     "f1167df742134a56aaf54184ab787155",
+     "58f41de046804f21827d9d90dc552ef6",
      "frontier"
     ],
     [
      3,
-     "9ada77f2b216427e9f8ea33d3f48d9ef",
+     "8eca1cce4d944e6092a43099246b61dd",
      "frontier"
     ],
     [
      4,
-     "19d9b02cbf414e03b206ed4a2f4f7541",
+     "316ac50dd79b44b5b256906c361c4bcc",
      "frontier"
     ],
     [
      5,
-     "c260d9be7f614394bb1c7b43efce3dc6",
+     "4887f22064884d93868a3865ed2b6281",
      "frontier"
     ],
     [
      6,
-     "09436ce8a8d24917ac904ad3569b0c66",
+     "f9cee79de372428982a409095bfdacc1",
      "frontier"
     ],
     [
      7,
-     "4b99773d04574f338563867b5e3f1ea3",
+     "7b5ef2854c4c404db3e034e0c4552e50",
      "frontier"
     ],
     [
      8,
-     "e4bca904f2b2416dac029b5d70f4a9da",
+     "93c21e34da8c41e9b86f42e27c9c6c15",
      "frontier"
     ],
     [
      9,
-     "2564ede52309459080207dc3eae61afd",
+     "2e90334d34b045ef9a46726bfe85569e",
      "frontier"
     ],
     [
      10,
-     "4b0dcff1ae70443f9beb10d4b06b9207",
+     "244938839c6e4c56a0ccfdbfd5deb3a1",
      "frontier"
     ],
     [
      11,
-     "e73b0052bee740a08a63daffeb217481",
+     "071d27a1b1eb4c759d039ea2a636a822",
      "frontier"
     ],
     [
      12,
-     "2cc210ee76b14023b8ec58e09742c7d5",
-     "frontier"
-    ],
-    [
-     13,
-     "d855bb22965e45ad90f7715157791ffb",
-     "frontier"
-    ],
-    [
-     14,
-     "b9f2cf000f5442169397e29e3c4d7c16",
-     "frontier"
-    ],
-    [
-     15,
-     "5d2e9794a24e4e5da49ca10eb9368ee4",
-     "frontier"
-    ],
-    [
-     16,
-     "53fc29f770834ee7bbaea71254007a63",
-     "frontier"
-    ],
-    [
-     17,
-     "aa530116e7484701bb799ddfb1f2d5f5",
-     "frontier"
-    ],
-    [
-     18,
-     "c029e933d358425c9f777e1de45d8f11",
-     "frontier"
-    ],
-    [
-     19,
-     "3932b793c010438db78a6a50528c77e2",
+     "50fce83290c04f498ab93ac47e670cba",
      "approach"
     ]
    ],
    "cancels": [
     [
      1,
-     "4b99773d04574f338563867b5e3f1ea3",
-     1794062040.549623,
-     true
-    ],
-    [
-     2,
-     "4b99773d04574f338563867b5e3f1ea3",
-     1794062040.554963,
-     true
-    ],
-    [
-     3,
-     "3932b793c010438db78a6a50528c77e2",
-     1794062302.602411,
+     "50fce83290c04f498ab93ac47e670cba",
+     1794077156.191171,
      true
     ]
    ],
    "goal_end_done": true,
-   "goals_failed": 1,
-   "last_event": "goal sent (approach) to (13.42, 5.52)",
-   "camera_seen_m2": 60.42,
+   "goals_failed": 0,
+   "last_event": "goal sent (approach) to (13.19, 5.53)",
+   "camera_seen_m2": 33.12,
    "choice_ms": {
-    "n": 39,
-    "p50_ms": 48.8,
-    "p90_ms": 75.2,
-    "max_ms": 143.6
+    "n": 24,
+    "p50_ms": 38.5,
+    "p90_ms": 52.6,
+    "max_ms": 79.1
    },
    "asks": false,
    "ask": null,
    "choices": 0
   },
   "stuck_episodes": 0,
-  "travel_m": 34.1,
-  "min_gap_cm": 8.7,
+  "travel_m": 17.4,
+  "min_gap_cm": 7.2,
   "contact_samples": 0,
   "inside_samples": 0,
-  "samples": 717,
+  "samples": 373,
   "room_labels": null,
   "last_log": [
-   "waiting -- nav2 active: approach -- kitchen, facing ?, free space clear, sees red backpack",
-   "inventory: 23 reported, 9 candidates from 583 frames -- chair x5, breakfast table x3, staircase x3, kitchen counter x2, dryer x2, armchair, coffee table, dining table, kitchen island, refrigerator, sectional sofa, red backpack, tv console",
-   "mission ended (found): Breakfast, dining room, family room, foyer, hall, kitchen searched. Found."
+   "waiting -- nav2 active: approach -- kitchen, facing ?, free space some, sees red backpack",
+   "inventory: 18 reported, 5 candidates from 307 frames -- chair x4, staircase x3, breakfast table x2, dining table x2, kitchen counter x2, kitchen island x2, armchair, red backpack, sectional sofa",
+   "mission ended (found): Breakfast, dining room, foyer, hall, kitchen searched. Found."
   ]
  },
  "drop_truth": {
-  "samples": 1784,
+  "samples": 932,
   "fell": false,
   "overhang_cm": 0.0,
   "min_gap_cm": 90.0
  },
- "run_dir": "/tmp/vision-picar-3.159/run-20261107-083201"
+ "run_dir": "/tmp/run-20261107-124232",
+ "load_at_start": [
+  1.52,
+  1.92,
+  3.33
+ ]
 }

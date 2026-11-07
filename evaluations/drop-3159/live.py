@@ -38,6 +38,9 @@ def main():
     truth = {"samples": 0, "fell": False, "overhang_cm": 0.0, "min_gap_cm": math.inf}
     done = threading.Event()
     robot = de.stack(HOUSE)
+    # 3.79: a live run at load above ~4 is invalid; read once the exclusive
+    # lock is held and the stack is up.
+    load = os.getloadavg()
 
     def watch():
         import httpx
@@ -67,7 +70,8 @@ def main():
         de._kill_ports()
         os.system(f"docker rm -f {de.CONTAINER} >/dev/null 2>&1")
     row = {"house": HOUSE, "image": os.environ.get("ROS_IMAGE", "vision-picar-ros:latest"),
-           "mission": result, "drop_truth": truth, "run_dir": de.RUN_DIR}
+           "mission": result, "drop_truth": truth, "run_dir": de.RUN_DIR,
+           "load_at_start": [round(v, 2) for v in load]}
     out.write_text(json.dumps(row, indent=1) + "\n")
     print(json.dumps(row))
 
