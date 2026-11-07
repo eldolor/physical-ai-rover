@@ -170,5 +170,4 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.165](3.165-inventory-landmarks-bounded.md) | Inventory landmark points bounded |
 | [3.166](3.166-claim-tool-fixes.md) | Claim tools: stored Touches follow plan edits; whole-directory entries stop blocking unrelated work |
 | [3.167](3.167-inventory-precision-regression.md) | Inventory precision fell below 3.60's bar |
-| [3.145](3.145-nav2-goal-outlives-brain.md) | A nav2 goal outlives a dead or hung brain (3.135.B F6g, F7g) |
 <!-- /sections -->
