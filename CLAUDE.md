@@ -142,8 +142,6 @@ paragraph.**
 * **The board's brain is `dev` `bdcf782c`** (updated 2026-11-06 for 3.155's
   unit, the user's go): update it only when asked (`tools/jetson/README.md`'s
   update step).
-* **3.48, 3.58:** close the llama.cpp local-identity line, or load the
-  model only at arrival.
 * **3.56:** re-check the 8 s arrival deadline after 500+ real calls.
 * **3.86's follow-up:** the watchdog record replaces a Stop's or fault's
   refusal ~1 s later, so the twin cannot tell a hung brain from a finished
