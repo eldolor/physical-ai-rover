@@ -158,7 +158,7 @@ class SeedWatch(threading.Thread):
 
     def run(self):
         t0 = time.time()
-        while not self.stop_ev.wait(1.0) and time.time() - t0 < 120:
+        while not self.stop_ev.wait(0.25) and time.time() - t0 < 120:
             try:
                 inv = self.brain.get("/mission/inventory").json().get("inventory")
             except Exception:  # noqa: BLE001 -- the mission may not be up yet
@@ -218,17 +218,23 @@ def session(i, house, maps, inv_dir, bridge, saved_id, limit_s):
     de.MISSION_LIMIT_S = limit_s
     out["mission"] = de.run_mission(robot, house, policy="explore", target=ABSENT,
                                     max_steps=100000)
+    out["monitor"] = mon.result()             # the mission's window only (review)
     seed.stop_ev.set()
+    out["started"] = "start" not in out["mission"]
+    # The mission's end: a save (mapping or a re-map) or a skip (localisation)
+    # must land, and no re-map may still be running, before the next session's
+    # restart (review: the store read could be the version before).
     t_end = time.time()
     saved0 = None
-    while time.time() - t_end < 20:
+    while time.time() - t_end < 120:
         h = bridge.get("/health").json()
         saved0 = h["map"]
-        if not h["map"].get("saving") and (saved_id is not None or h["map"]["saved"] >= 1):
+        settled = h["map"]["saved"] + h["map"].get("skipped", 0) + h["map"].get("failed", 0) >= 1
+        if settled and not h["map"].get("saving") and h["slam"]["state"] != "remapping":
             break
         time.sleep(0.5)
+    out["settled_s"] = round(time.time() - t_end, 1)
     time.sleep(3)                             # the inventory's save thread
-    out["monitor"] = mon.result()
     out["map_health"] = saved0
     out["slam"] = {k: bridge.get("/health").json()["slam"].get(k)
                    for k in ("state", "mode", "starts", "remap")}
@@ -253,14 +259,16 @@ def fall_back(house, maps, inv_dir, bridge, saved_id):
     """Criterion 7's second half: off the dock, a fall-back carries nothing."""
     robot, brain = servers(house, inv_dir)
     dock = d3.truth(robot)
+    w = d3.container(maps, bridge)            # drive needs the bridge (review)
+    out0 = {"first_reload": w["health"]["slam"]["reload"]}
     for _ in range(4):
         x, y, h = d3.truth(robot)
         if math.hypot(x - dock[0], y - dock[1]) >= 1.0 and abs((h - dock[2] + 180) % 360 - 180) >= 30:
             break
         d3.drive(robot, 1.0, 60)
     x, y, h = d3.truth(robot)
-    out = {"from_dock_m": round(math.hypot(x - dock[0], y - dock[1]), 2),
-           "from_dock_deg": round(abs((h - dock[2] + 180) % 360 - 180), 1)}
+    out = dict(out0, from_dock_m=round(math.hypot(x - dock[0], y - dock[1]), 2),
+               from_dock_deg=round(abs((h - dock[2] + 180) % 360 - 180), 1))
     w = d3.container(maps, bridge)
     out["reload"] = w["health"]["slam"]["reload"]
     out["map_id"] = w["health"]["map"]["map_id"]
@@ -276,7 +284,9 @@ def fall_back(house, maps, inv_dir, bridge, saved_id):
                                                 "carry_seq", "counts")}
     out["old_landmarks_used"] = sum(1 for lm in inv.get("reported", []) + inv.get("candidates", [])
                                     if lm.get("carried"))
-    out["ok"] = (out["reload"].get("result") == "fell_back" and out["map_id"] != saved_id
+    out["ok"] = (out["from_dock_m"] >= 1.0 and out["from_dock_deg"] >= 30
+                 and "start" not in out["mission"]
+                 and out["reload"].get("result") == "fell_back" and out["map_id"] != saved_id
                  and out["old_landmarks_used"] == 0 and not (inv.get("counts") or {}).get("carried"))
     return out
 
@@ -291,13 +301,17 @@ def verdicts(res):
     v["7-carry"] = bool(true_rows) and all(r["footprint_m"] <= CARRY_BAR_M for r in true_rows)
     v["7-fallback"] = bool(res.get("fall_back", {}).get("ok"))
     last = s[-1]
-    ok = len(s) >= 10 and all(x.get("monitor") for x in s)
-    if ok:
-        base_cpu, base_mem = s1["monitor"]["slam_cpu_p90"], s1["monitor"]["mem_mb_max"]
+    ok = len(s) >= 10 and all(x.get("monitor") and x.get("started") for x in s)
+    base_cpu = s1.get("monitor", {}).get("slam_cpu_p90")
+    base_mem = s1.get("monitor", {}).get("mem_mb_max")
+    if ok and base_cpu and base_mem:
         v["6-scan"] = all(x["monitor"]["slam_cpu_p90"] is not None
                           and x["monitor"]["slam_cpu_p90"] <= GROWTH_X * base_cpu for x in s)
-        v["6-memory"] = all(x["monitor"]["mem_mb_max"] <= GROWTH_X * base_mem for x in s)
+        v["6-memory"] = all(x["monitor"]["mem_mb_max"] is not None
+                            and x["monitor"]["mem_mb_max"] <= GROWTH_X * base_mem for x in s)
         v["6-graph"] = last["graph_mb"] is not None and last["graph_mb"] <= GRAPH_MB
+    else:
+        v["6-unmeasured"] = False
     return {k: "MET" if x else "FAILED" for k, x in v.items()}
 
 
@@ -318,6 +332,7 @@ def house_runs(house, n):
               json.dumps(s.get("monitor")), flush=True)
         _dump(house, res)
     res["fall_back"] = fall_back(house, maps, inv_dir, bridge, saved_id)
+    _dump(house, res)
     res["verdicts"] = verdicts(res)
     return res
 
