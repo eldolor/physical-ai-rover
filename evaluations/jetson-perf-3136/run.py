@@ -413,6 +413,23 @@ def steady_inner(a) -> int:
     return 0 if rec.get("cmd_exit") == 0 and rec.get("left_as_found") else 1
 
 
+def lat_inner(a) -> int:
+    """3.136.C on the board (amendment 7): lat.sh through board_run, the
+    twin's units stopped (sudo), the board put back after."""
+    out = Path(a.out)
+    args = " ".join(shlex.quote(x) for x in (a.lat_args or []))
+    rec = board_run(a.label, f"bash evaluations/jetson-perf-3136/lat.sh $OUT {args}", out,
+                    sha=a.sha, allow_sudo=True, stop_twin=True)
+    import lat_score
+    summary = lat_score.score(out / "board")
+    summary["record"] = {k: rec.get(k) for k in ("sha", "cmd_exit", "cmd_s", "left_as_found",
+                                                 "as_found_differences", "lease", "desktop_load")}
+    (out / "summary.json").write_text(json.dumps(summary, indent=1))
+    print(json.dumps({k: v for k, v in summary.items() if k != "validity"}, indent=1)[:4000])
+    print(json.dumps(summary["validity"], indent=1)[:2000])
+    return 0 if rec.get("cmd_exit") == 0 and rec.get("left_as_found") else 1
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -433,6 +450,17 @@ def main(argv=None) -> int:
         t.add_argument("--out", default=None)
         t.add_argument("--env", action="append", help="KEY=VALUE for steady.sh (a smoke's short window)")
         t.add_argument("--wait", action="store_true", help="wait for the desktop lock")
+    for name in ("lat", "_lat"):
+        t = sub.add_parser(name)
+        t.add_argument("--sha", default="HEAD")
+        t.add_argument("--label", default="lat")
+        t.add_argument("--out", default=None)
+        t.add_argument("--wait", action="store_true", help="wait for the desktop lock")
+        t.add_argument("lat_args", nargs="*", help="lat.py's own arguments, after --")
+    lp = sub.add_parser("latplant")
+    lp.add_argument("--wait", action="store_true", help="wait for the desktop lock")
+    lp.add_argument("--out", default=str(HERE / "desktop" / "planted-c"))
+    lp.add_argument("lat_args", nargs="*", help="lat.py's own arguments, after --")
     sc = sub.add_parser("score")
     sc.add_argument("out")
     a = ap.parse_args(argv)
@@ -459,6 +487,25 @@ def main(argv=None) -> int:
                          f"3.136.B {a.label}", desktop_mode="exclusive", desktop_wait=a.wait)
     if a.cmd == "_steady":
         return steady_inner(a)
+    if a.cmd == "lat":
+        sha = subprocess.run(["git", "rev-parse", a.sha], cwd=ROOT, capture_output=True, text=True,
+                             check=True).stdout.strip()
+        out = a.out or str(HERE / "board" / f"{a.label}-{time.strftime('%Y%m%d-%H%M')}")
+        # Timed: the exclusive desktop lock, then the board lock.
+        return br.locked([PY, str(Path(__file__).resolve()), "_lat", "--sha", sha,
+                          "--label", a.label, "--out", out, "--", *(a.lat_args or [])],
+                         f"3.136.C {a.label}", desktop_mode="exclusive", desktop_wait=a.wait)
+    if a.cmd == "_lat":
+        return lat_inner(a)
+    if a.cmd == "latplant":
+        # Criterion 3 for P5-P7 (amendment 7): the desktop's own stack, exclusive.
+        rc = subprocess.call([PY, str(ROOT / "tools/desktop_lock.py"), "exclusive",
+                              *([] if a.wait else ["--no-wait"]), "--why", "3.136.C planted delay",
+                              "--", PY, str(HERE / "lat.py"), a.out, "--desktop", "--plant",
+                              *(a.lat_args or [])], cwd=ROOT)
+        import lat_score
+        print(json.dumps(lat_score.score(Path(a.out), plant=True)["planted"], indent=1))
+        return rc
     if a.cmd == "score":
         out = Path(a.out)
         summary = score_steady(out, json.loads((out / "record.json").read_text()))
