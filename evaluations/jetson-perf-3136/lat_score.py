@@ -44,6 +44,10 @@ import scorers  # noqa: E402
 SCAN_SEEN_M = 0.40
 PERSON_END_S = 3.0         # amendment 7: a goal nav2 ends this soon after a person's act is theirs
 CONTACT_WINDOW_S = 3.0
+# Amendment 9 (the user, 2026-11-07): from the next run on, an `approach`
+# goal nav2 aborts counts as amendment 5 counts a frontier goal's. Runs that
+# started before this instant (runs 1-2) are read without it.
+AMENDMENT_9_FROM = 1794117600.0          # 2026-11-08 00:00 CST
 TERMINAL = {"SUCCEEDED": "succeeded", "CANCELED": "canceled", "ABORTED": "aborted",
             4: "succeeded", 5: "canceled", 6: "aborted"}
 
@@ -165,7 +169,7 @@ def p5(run: Path) -> dict:
                   "trials": ts} for tag, ts in res.items()}
 
 
-def nav(d: Path) -> dict:
+def nav(d: Path, approach_as_frontier: bool = False) -> dict:
     """Amendments 5-6 for one stack, with amendment 7: a goal nav2 ended
     ABORTED or CANCELED within PERSON_END_S after a person's act (a Stop, a
     verb, a D-pad hold) is the person's, counted neither way."""
@@ -180,8 +184,11 @@ def nav(d: Path) -> dict:
     person = {g for g, t in ended.items() if any(a0 <= t <= a1 + PERSON_END_S for a0, a1 in acts)}
     kept = [dict(r, goals=[g for g in r.get("goals") or [] if g[0] not in person])
             if r.get("k") == "nav" else r for r in pace]
-    out = scorers.nav_goals_amended(kept, rows(d / "explore_sends.jsonl"),
-                                    cancel_rows=rows(d / "explore_cancels.jsonl"))
+    sends = rows(d / "explore_sends.jsonl")
+    if approach_as_frontier:              # amendment 9
+        sends = [dict(r, sent=[[g, "frontier" if k == "approach" else k] for g, k in r.get("sent") or []])
+                 for r in sends]
+    out = scorers.nav_goals_amended(kept, sends, cancel_rows=rows(d / "explore_cancels.jsonl"))
     out["person"] = len(person)
     return out
 
@@ -190,7 +197,9 @@ def validity(run: Path) -> dict:
     stacks = rows(run / "stacks.jsonl")
     late = sum(((s.get("wheel_loop") or {}).get("late_ticks") or 0) for s in stacks)
     no_wheel = [s["dir"] for s in stacks if not s.get("wheel_loop")]
-    navs = {s["dir"]: nav(run / s["dir"]) for s in stacks}
+    started = (run / "run_start").read_text().strip() if (run / "run_start").exists() else ""
+    am9 = bool(started) and float(started) >= AMENDMENT_9_FROM
+    navs = {s["dir"]: nav(run / s["dir"], approach_as_frontier=am9) for s in stacks}
     succeeded = sum(n["succeeded"] for n in navs.values())
     aborted_other = sum(n["aborted_other"] for n in navs.values())
     f = lambda p: (run / p).read_text().strip() if (run / p).exists() else None  # noqa: E731
@@ -217,7 +226,7 @@ def validity(run: Path) -> dict:
     return {"valid": not reasons, "reasons": reasons, "late_ticks": late,
             "max_dt_s": max((((s.get("wheel_loop") or {}).get("max_dt_s")) or 0 for s in stacks), default=None),
             "moving_ticks": sum(((s.get("wheel_loop") or {}).get("moving_ticks") or 0) for s in stacks),
-            "oom_kills": oom, "power": power, "stacks": len(stacks),
+            "oom_kills": oom, "power": power, "stacks": len(stacks), "amendment_9": am9,
             "nav": {"succeeded": succeeded, "aborted_other": aborted_other,
                     "per_stack": navs}}
 
