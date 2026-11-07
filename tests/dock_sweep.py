@@ -223,13 +223,31 @@ def verdict(rows):
     return out
 
 
+def _key(r):
+    return json.dumps([r["house"], r["start"], r["job"]])
+
+
 def main(argv):
+    """Each mission is appended to `<out>.rows.jsonl` as it ends, so a sweep
+    stopped part-way (the desktop lock wanted elsewhere) resumes where it was:
+    finished missions are not run again."""
     import multiprocessing as mp
     arm, out_path = argv[0], argv[1]
     workers = int(argv[2]) if len(argv) > 2 else 4
-    args = [(arm,) + c for c in cases(arm)]
-    with mp.Pool(workers) as pool:
-        rows = pool.map(run_one, args, chunksize=1)
+    part = Path(out_path + ".rows.jsonl")
+    done = {}
+    if part.exists():
+        for line in part.read_text().splitlines():
+            r = json.loads(line)
+            done[_key(r)] = r
+    args = [(arm,) + c for c in cases(arm)
+            if json.dumps([c[0], list(c[1]) if c[1] else None, c[2]]) not in done]
+    with mp.Pool(workers) as pool, open(part, "a") as f:
+        for r in pool.imap_unordered(run_one, args, chunksize=1):
+            done[_key(r)] = r
+            f.write(json.dumps(r) + "\n")
+            f.flush()
+    rows = list(done.values())
     summary = verdict(rows)
     Path(out_path).write_text(json.dumps({"arm": arm, "summary": summary, "rows": rows}) + "\n")
     print(json.dumps(summary, indent=1))
