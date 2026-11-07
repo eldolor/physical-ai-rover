@@ -267,3 +267,18 @@ def test_exact_verbs_move_the_asked_distance_and_are_opt_in():
         dur = 0.4 / (0.2 * CELLS_PER_SECOND_AT_FULL_SPEED)     # 0.4 cells at speed 20
         plan = robot.verb_plan("FORWARD", speed=20, duration=dur)
         assert plan["target"] == pytest.approx(want_cells * CELL), exact
+
+
+def test_the_config_turns_the_return_on_and_refuses_a_bad_wait(tmp_path):
+    """D2: on by default in the brain's config; a wait that is not a finite
+    number > 0 is refused at load, as the other timeouts are."""
+    import yaml
+    from control.brain_config import load_brain_config
+    c = load_brain_config()
+    assert c["return_to_dock"] is True and c["return_wait_s"] == 30.0
+    for bad in ({"return_wait_s": 0}, {"return_wait_s": float("inf")},
+                {"return_wait_s": True}, {"return_to_dock": "yes"}):
+        p = tmp_path / "robot.yaml"
+        p.write_text(yaml.safe_dump({"brain": bad}))
+        with pytest.raises(ValueError):
+            load_brain_config(p)

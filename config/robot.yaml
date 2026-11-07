@@ -437,6 +437,14 @@ brain:
   # re-measured on the car. 0 switches either off.
   mission_time_limit_s: 1200
   battery_floor_v: 10.5
+  # 3.156.B (D2): after found, exhausted, out_of_budget, a survey's end,
+  # arrived_unconfirmed or blocked, the robot drives back to the dock (the
+  # start pose) on nav2; never after a person's Stop or D-pad, a fault, or
+  # the battery at Reserve. The search ends early (`return reserve`) while
+  # the time or the battery left still covers the trip home. A return goal
+  # nav2 does not take for return_wait_s is skipped (`no_nav2`).
+  return_to_dock: true
+  return_wait_s: 30.0
   # A `vision` mission's paid /navigate calls (one a step); reaching it ends
   # `out_of_budget`. 120 is what the old 120-step cap allowed (the user,
   # 2026-10-12). `tiered` has tier_max_calls. 0 = no cap.

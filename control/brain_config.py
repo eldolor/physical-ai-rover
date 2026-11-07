@@ -222,6 +222,11 @@ DEFAULTS = {
     # Both are re-measured on the Rover. 0 switches either off.
     "mission_time_limit_s": 1200.0,
     "battery_floor_v": 10.5,
+    # 3.156.B (D2): after an end that is not a person's or a fault's, drive
+    # back to the dock (the start pose); a goal not taken for return_wait_s
+    # (nav2's hold never clears) skips the return.
+    "return_to_dock": True,
+    "return_wait_s": 30.0,
     # A `vision` mission's paid /navigate calls (one per step), counted per
     # call sent; reaching it ends `out_of_budget`. The user's call 2026-10-12:
     # 120, what the 120-step cap allowed before 3.70. `tiered` has its own
@@ -639,6 +644,13 @@ def load_brain_config(config_path=None) -> dict:
     if float(merged["cloud_probe_s"]) < 0:
         raise ValueError(f"brain.cloud_probe_s must be >= 0 (0 = off); "
                          f"got {merged['cloud_probe_s']}")
+    if not isinstance(merged["return_to_dock"], bool):
+        raise ValueError(f"brain.return_to_dock must be true or false; "
+                         f"got {merged['return_to_dock']!r}")
+    wait = merged["return_wait_s"]
+    if (isinstance(wait, bool) or not isinstance(wait, (int, float))
+            or not 0 < wait < float("inf")):
+        raise ValueError(f"brain.return_wait_s must be a number > 0; got {wait!r}")
     if not isinstance(merged["explore_ask"], bool):
         raise ValueError(f"brain.explore_ask must be true or false; got {merged['explore_ask']!r}")
     ask_s = merged["explore_ask_timeout_s"]
