@@ -15,8 +15,8 @@ from outside. Nothing in sim/ or in 3.135's files is edited.
   mover, not low, not named `avoid`; the farthest from the robot) onto the
   floor cell that puts the true travel to contact ahead in [lo, hi] cm and
   nearer than anything before it, through the sim's own `move_object`.
-  Answers its monotonic stamp (the truth log's clock), the cells and the
-  true T and gap; 409 when no cell fits this instant, or when the true
+  Answers its monotonic stamp (the truth log's clock), the board's
+  setpoints then, the cells and the true T and gap; 409 when no cell fits this instant, or when the true
   travel to contact ahead is under `clear` cm before it.
 * `POST /lat/restore` {"src", "dst"}: the object put back.
 * Criterion 3's plant (`LAT_PLANT_FILE` names a file; the word `zero` in it
@@ -125,7 +125,8 @@ def lat_drop(lo: float = 8.0, hi: float = 16.0, avoid: str = "", clear: float = 
         except ValueError as e:
             raise HTTPException(status_code=409, detail=str(e))
         t = time.monotonic()
-    return {"t": round(t, 4), "src": list(src), "dst": list(dst), "name": grid.objects[dst],
+        sp = [round(v, 4) for v in board.setpoint]      # what the wheels did in the drop's instant
+    return {"t": round(t, 4), "sp": sp, "src": list(src), "dst": list(dst), "name": grid.objects[dst],
             "T_cm": round(T, 2), "G_cm": round(G, 2),
             "T_before_cm": None if math.isinf(T0) else round(T0, 2)}
 

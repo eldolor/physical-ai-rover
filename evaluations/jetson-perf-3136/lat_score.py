@@ -81,18 +81,22 @@ def truth(d: Path) -> list:
 
 
 def pct(vals, q):
-    v = [x for x in vals if x is not None]
+    """A missing reading (the wheels never held zero, the goal never read
+    ended) is the worst, not dropped: it counts as infinitely late."""
+    v = [float("inf") if x is None else x for x in vals]
     return scorers.percentile(v, q) if v else None
 
 
 def ms(x):
-    return None if x is None else round(1000 * x, 1)
+    if x is None:
+        return None
+    return "inf" if x == float("inf") else round(1000 * x, 1)
 
 
 def summary(vals_s: list, q: float) -> dict:
     v = [x for x in vals_s if x is not None]
-    return {"n": len(vals_s), "n_measured": len(v), f"p{int(q)}_ms": ms(pct(v, q)),
-            "p50_ms": ms(pct(v, 50)), "max_ms": ms(max(v)) if v else None}
+    return {"n": len(vals_s), "n_measured": len(v), f"p{int(q)}_ms": ms(pct(vals_s, q)),
+            "p50_ms": ms(pct(vals_s, 50)), "max_ms": ms(max(v)) if v else None}
 
 
 def p7(run: Path) -> dict:
@@ -128,6 +132,8 @@ def p5(run: Path) -> dict:
     res = {}
     cache = {}
     for r in rows(run / "p5.jsonl"):
+        if r.get("moving") is False:      # not driving forward at the drop: retried, not a trial
+            continue
         d = run / f"s{r['stack']:03d}"
         if d not in cache:
             cache[d] = (truth(d), sorted((x for x in rows(d / "lat_shim.jsonl") if x.get("k") == "scan"),
@@ -221,7 +227,7 @@ def planted(res: dict) -> dict:
     out = {}
 
     def judge(name, base, plant):
-        if base is None or plant is None:
+        if not isinstance(base, (int, float)) or not isinstance(plant, (int, float)):
             out[name] = {"base_ms": base, "plant_ms": plant, "met": None}
             return
         d = plant - base

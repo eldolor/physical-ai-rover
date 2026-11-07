@@ -41,6 +41,7 @@ explore_sends.jsonl, explore_cancels.jsonl, person.jsonl, the logs).
 from __future__ import annotations
 
 import argparse
+import http.client
 import json
 import math
 import os
@@ -49,6 +50,7 @@ import subprocess
 import sys
 import threading
 import time
+import urllib.parse
 from pathlib import Path
 from typing import Optional
 
@@ -75,8 +77,11 @@ ROS_DOMAIN = os.environ.get("ROS_DOMAIN_ID", "")
 VE_PORT = 8005
 CLEAR_CM = 74.0          # a trial starts with nothing in true travel ahead (footprint truth looks 75 cm out)
 DROP_LO, DROP_HI = 8.0, 16.0
+FWD_AT_DROP_M_S = 0.02    # a drop counts only if the robot was driving forward then
 POLL_GOAL_S = 0.025
-TERMINAL = {"canceled", "cancelled", "succeeded", "aborted", "failed", None}
+# One trial's transport failures (a reply lost under load): the trial is
+# recorded as failed and the next one tried, never the run ended.
+TRIAL_ERRORS = (OSError, http.client.HTTPException, ValueError, StackError)
 
 VE_STANDIN = """
 import sys, uvicorn
@@ -240,8 +245,11 @@ class Lat(Soak):
             rec["wheel_loop_error"] = str(e)
         rec["perception_alive"] = (self.helpers["perception"].poll() is None
                                    if "perception" in self.helpers else None)
-        rec["ve_ready"] = bool((http("GET", f"http://127.0.0.1:{VE_PORT}/health", timeout=5)[1]
-                                or {}).get("ready"))
+        try:
+            ve = http("GET", f"http://127.0.0.1:{VE_PORT}/health", timeout=5)[1]
+            rec["ve_ready"] = bool(ve.get("ready")) if isinstance(ve, dict) else False
+        except TRIAL_ERRORS as e:
+            rec["ve_ready"], rec["ve_error"] = False, str(e)
         try:
             self.sh(["docker", "exec", CONTAINER, "pkill", "-f", "ros_pace.py"])
             time.sleep(1)
@@ -290,8 +298,11 @@ class Lat(Soak):
         while True:
             time.sleep(1.0)
             if time.time() - t0 > limit_s and not stopped:
-                self.stack.brain("POST", "/mission/stop", {}, timeout=10)
-                stopped = True
+                try:
+                    self.stack.brain("POST", "/mission/stop", {}, timeout=10)
+                    stopped = True
+                except TRIAL_ERRORS as e:          # tried again on the next pass
+                    self.say(f"the cap's Stop: {e}")
             if time.time() - t0 > limit_s + 120:
                 raise StackError("the mission did not end 120 s after its stop")
             s = self.status()
@@ -306,10 +317,37 @@ class Lat(Soak):
         return {"t0": round(t0, 3), "t1": round(time.time(), 3), "outcome": s.get("outcome"),
                 "stopped_by_harness": stopped, "verdicts": s.get("arrival_verdicts") or []}
 
-    def ensure_mission(self, i: int) -> None:
+    def ensure_mission(self, i: int) -> bool:
+        """A mission running (started if none is); False if the status read
+        failed or the start was refused (the trial is skipped, not the run)."""
         s = self.status()
+        if not s:
+            return False
         if not s.get("running"):
-            self.start(P65_TARGETS[i % len(P65_TARGETS)])
+            try:
+                self.start(P65_TARGETS[i % len(P65_TARGETS)])
+            except TRIAL_ERRORS as e:
+                self.say(f"mission start: {e}")
+                return False
+        return True
+
+    def end_mission(self) -> bool:
+        """The mission stopped and ended (P6's verb is a person's alone)."""
+        try:
+            self.stack.brain("POST", "/mission/stop", {}, timeout=10)
+        except TRIAL_ERRORS:
+            pass
+        end = time.monotonic() + 30
+        while time.monotonic() < end:
+            s = self.status()
+            if s and not s.get("running"):
+                return True
+            time.sleep(0.5)
+        return False
+
+    @staticmethod
+    def counted(verdicts: list) -> list:
+        return [v for v in verdicts if isinstance(v.get("verdict_s"), (int, float))]
 
     # ------------------------------------------------------------------- P7
 
@@ -321,8 +359,12 @@ class Lat(Soak):
                 self.up(st_house)
             while got < n and m < self.p7_missions:
                 m += 1
-                rec = self.run_mission(target, self.p7_limit_s)
-                for v in rec["verdicts"]:
+                try:
+                    rec = self.run_mission(target, self.p7_limit_s)
+                except TRIAL_ERRORS as e:
+                    self.say(f"P7 desktop mission {m}: {e}")
+                    continue
+                for v in self.counted(rec["verdicts"]):
                     f.write(json.dumps({"tag": tag, "stack": self.k, "house": st_house,
                                         "target": target, **v, "outcome": rec["outcome"]}) + "\n")
                     got += 1
@@ -333,13 +375,13 @@ class Lat(Soak):
             try:
                 self.up(house)
                 rec = self.run_mission(target, self.p7_limit_s)
-                for v in rec["verdicts"]:
+                for v in self.counted(rec["verdicts"]):
                     f.write(json.dumps({"tag": tag, "stack": self.k, "house": house,
                                         "target": target, **v, "outcome": rec["outcome"]}) + "\n")
                     got += 1
                 self.say(f"P7 s{self.k:03d} {house}/{target} -> {rec['outcome']}, "
                          f"{len(rec['verdicts'])} verdict(s); {got}/{n}")
-            except StackError as e:
+            except TRIAL_ERRORS as e:
                 self.say(f"P7 s{self.k:03d}: {e}")
             finally:
                 if self.stack is not None:
@@ -349,7 +391,11 @@ class Lat(Soak):
     # ------------------------------------------------------------- P6 / P5
 
     def now(self) -> dict:
-        return self.stack.now() or {}
+        try:
+            got = self.stack.now()
+        except TRIAL_ERRORS:
+            return {}
+        return got if isinstance(got, dict) else {}
 
     def moving_forward(self, hold_s: float = 0.3, within_s: float = 5.0) -> bool:
         end, since = time.monotonic() + within_s, None
@@ -365,8 +411,14 @@ class Lat(Soak):
         return False
 
     def ahead_cm(self) -> float:
-        _, a = http("GET", self.stack.urls["body"] + "/lat/ahead", timeout=3)
-        return math.inf if (a or {}).get("T_cm") is None else a["T_cm"]
+        """The true travel to contact ahead; 0 when it cannot be read (not clear)."""
+        try:
+            code, a = http("GET", self.stack.urls["body"] + "/lat/ahead", timeout=3)
+        except TRIAL_ERRORS:
+            return 0.0
+        if code != 200 or not isinstance(a, dict):
+            return 0.0
+        return math.inf if a.get("T_cm") is None else a["T_cm"]
 
     def face_clear(self) -> bool:
         """Turn in place (a person's 45 deg LEFT) until CLEAR_CM is free ahead."""
@@ -374,8 +426,11 @@ class Lat(Soak):
             if self.ahead_cm() >= CLEAR_CM:
                 return True
             self.act("verb", action="LEFT")
-            self.stack.robot("POST", "/action", {"action": "LEFT", "angle": 45},
-                             driver="twin-dpad", timeout=15)
+            try:
+                self.stack.robot("POST", "/action", {"action": "LEFT", "angle": 45},
+                                 driver="twin-dpad", timeout=15)
+            except TRIAL_ERRORS:
+                pass
             time.sleep(0.5)
         return self.ahead_cm() >= CLEAR_CM
 
@@ -385,114 +440,186 @@ class Lat(Soak):
         except Exception:  # noqa: BLE001
             return {}
 
-    def stop_now(self) -> dict:
-        tm, tw = time.monotonic(), time.time()
+    def stop_now(self, tm: Optional[float] = None) -> dict:
+        """A person's Stop. A reply lost or late is a reading (the trial
+        stands: its wheels and goal are read from the truth and the poller)."""
+        tm, tw = tm or time.monotonic(), time.time()
         self.act("stop")
-        code, body = self.stack.robot("POST", "/stop", {}, timeout=10)
+        try:
+            code, _ = self.stack.robot("POST", "/stop", {}, timeout=10)
+        except TRIAL_ERRORS as e:
+            code = f"error: {e}"
         return {"t_stop_m": round(tm, 4), "t_stop_w": round(tw, 4),
                 "stop_reply_s": round(time.monotonic() - tm, 4), "stop_status": code}
 
     def p6_goal(self, f, n: int, tag: str) -> int:
+        """A person's Stop while the mission's nav2 goal is active and the
+        wheels turn. The 25 ms poller runs first and must have read the goal
+        active; the setpoints are read just before the Stop goes out; a trial
+        that is not so is retried, not counted."""
         got, tries = 0, 0
         while got < n and tries < 4 * n:
             tries += 1
-            self.ensure_mission(tries)
-            end = time.monotonic() + 120
-            ready = False
-            while time.monotonic() < end:
-                g = self.goal()
-                sp = self.now().get("sp") or [0, 0]
-                if g.get("state") == "active" and any(abs(v) > 0.02 for v in sp):
-                    ready = True
-                    break
-                time.sleep(0.1)
-            if not ready:
-                continue
-            gid = self.goal().get("goal_id") or self.goal().get("id")
-            seen, done = {}, threading.Event()
+            try:
+                if not self.ensure_mission(tries):
+                    time.sleep(2.0)
+                    continue
+                end = time.monotonic() + 120
+                ready = False
+                while time.monotonic() < end:
+                    g = self.goal()
+                    sp = self.now().get("sp") or [0, 0]
+                    if g.get("state") == "active" and any(abs(v) > 0.02 for v in sp):
+                        ready = True
+                        break
+                    time.sleep(0.1)
+                if not ready:
+                    continue
+                seen, done, t_ref = {}, threading.Event(), {}
+                active_read = threading.Event()
 
-            def poll(t0):
-                while not done.is_set() and time.monotonic() - t0 < 5:
-                    st = self.goal().get("state")
-                    seen.setdefault(str(st), round(time.monotonic() - t0, 4))
-                    if st != "active":
-                        return
-                    time.sleep(POLL_GOAL_S)
-            row = self.stop_now()
-            th = threading.Thread(target=poll, args=(row["t_stop_m"],))
-            th.start()
-            th.join(6)
-            done.set()
-            ended = min((v for k, v in seen.items() if k != "active"), default=None)
-            f.write(json.dumps({"tag": tag, "kind": "goal", "stack": self.k, "goal_id": gid,
-                                **row, "goal_states": seen, "goal_end_s": ended}) + "\n")
-            got += 1
-            time.sleep(2.0)
+                def poll():
+                    while not done.is_set():
+                        g = self.goal()
+                        st = g.get("state") if g else None
+                        t = time.monotonic()
+                        if st is None:            # a failed read says nothing
+                            time.sleep(POLL_GOAL_S)
+                            continue
+                        if st == "active":
+                            active_read.set()
+                            t_ref.setdefault("gid", g.get("goal_id") or g.get("id"))
+                        if "t" in t_ref:
+                            seen.setdefault(str(st), round(t - t_ref["t"], 4))
+                            if st != "active":
+                                return
+                            if t - t_ref["t"] > 5:
+                                return
+                        time.sleep(POLL_GOAL_S)
+                th = threading.Thread(target=poll, daemon=True)
+                th.start()
+                if not active_read.wait(3.0):
+                    done.set()
+                    continue
+                sp = self.now().get("sp")
+                if not sp or not any(abs(v) > 0.02 for v in sp):
+                    done.set()
+                    continue
+                t_ref["t"] = time.monotonic()           # the poller times from here
+                row = self.stop_now(t_ref["t"])
+                th.join(7)
+                done.set()
+                ended = min((v for k, v in seen.items() if k != "active"), default=None)
+                f.write(json.dumps({"tag": tag, "kind": "goal", "stack": self.k,
+                                    "goal_id": t_ref.get("gid"), "sp_at_stop": sp, **row,
+                                    "goal_states": seen, "goal_end_s": ended}) + "\n")
+                got += 1
+                time.sleep(2.0)
+            except TRIAL_ERRORS as e:
+                self.say(f"P6 goal try {tries}: {e}")
+                time.sleep(2.0)
         return got
 
     def p6_verb(self, f, n: int, tag: str) -> int:
+        """A person's Stop during a person's FORWARD: the mission is stopped
+        first, so the wheels turning are the verb's alone."""
         got, tries = 0, 0
         while got < n and tries < 4 * n:
             tries += 1
-            self.ensure_mission(tries)
-            time.sleep(8.0)
-            if not self.face_clear():
-                continue
-            box: dict = {}
+            try:
+                if not self.ensure_mission(tries):
+                    time.sleep(2.0)
+                    continue
+                time.sleep(8.0)                      # the mission's load under way
+                self.act("mission_stop")
+                if not self.end_mission():
+                    continue
+                if not self.face_clear():
+                    continue
+                if any(abs(v) > 0.02 for v in self.now().get("sp") or [1]):
+                    continue                         # something else still drives
+                box: dict = {}
 
-            def verb():
-                box["reply"] = self.stack.robot("POST", "/action",
-                                                {"action": "FORWARD", "speed": 50, "duration": 3.0},
-                                                driver="twin-dpad", timeout=15)
-            self.act("verb", action="FORWARD")
-            th = threading.Thread(target=verb)
-            th.start()
-            if not self.moving_forward():
+                def verb():
+                    try:
+                        box["reply"] = self.stack.robot(
+                            "POST", "/action", {"action": "FORWARD", "speed": 50, "duration": 3.0},
+                            driver="twin-dpad", timeout=15)
+                    except TRIAL_ERRORS as e:
+                        box["reply"] = (None, str(e))
+                self.act("verb", action="FORWARD")
+                th = threading.Thread(target=verb, daemon=True)
+                th.start()
+                if not self.moving_forward():
+                    th.join(15)
+                    continue
+                sp = self.now().get("sp")
+                row = self.stop_now()
                 th.join(15)
-                continue
-            row = self.stop_now()
-            th.join(15)
-            reply = box.get("reply") or (None, None)
-            f.write(json.dumps({"tag": tag, "kind": "verb", "stack": self.k, **row,
-                                "verb_status": reply[0],
-                                "verb_reason": (reply[1] or {}).get("reason")
-                                if isinstance(reply[1], dict) else str(reply[1])[:200]}) + "\n")
-            got += 1
-            time.sleep(2.0)
+                reply = box.get("reply") or (None, None)
+                f.write(json.dumps({"tag": tag, "kind": "verb", "stack": self.k, "sp_at_stop": sp,
+                                    **row, "verb_status": reply[0],
+                                    "verb_reason": (reply[1] or {}).get("reason")
+                                    if isinstance(reply[1], dict) else str(reply[1])[:200]}) + "\n")
+                got += 1
+                time.sleep(2.0)
+            except TRIAL_ERRORS as e:
+                self.say(f"P6 verb try {tries}: {e}")
+                time.sleep(2.0)
         return got
 
     def p5(self, f, n: int, tag: str) -> int:
         """The mission's own nav2 drive is the moving robot (under `drive:
-        ros` only `ros` writes the wheels: a person's `/wheels` is refused)."""
+        ros` only `ros` writes the wheels: a person's `/wheels` is refused).
+        A drop whose setpoints (read in the drop's own instant) were not
+        forward is put back and retried, not counted."""
         got, tries = 0, 0
         while got < n and tries < 4 * n:
             tries += 1
-            self.ensure_mission(tries)
-            drop, why = None, ""
-            end = time.monotonic() + 120
-            while time.monotonic() < end and drop is None:
-                if not self.moving_forward(hold_s=0.5, within_s=10.0):
-                    why = "never moving forward"
-                    self.ensure_mission(tries)
+            try:
+                if not self.ensure_mission(tries):
+                    time.sleep(2.0)
                     continue
-                code, body = http("POST", self.stack.urls["body"] + f"/lat/drop?lo={DROP_LO}&hi={DROP_HI}"
-                                  f"&clear={CLEAR_CM}&avoid={self.target}", timeout=3)
-                if code == 200:
-                    drop = body
-                else:
-                    why = str(body)[:120]
-                    time.sleep(0.03)
-            if drop is None:
-                self.say(f"P5 try {tries}: no drop ({why})")
-                continue
-            self.act("drop", until=round(time.time() + 2.5, 3))
-            time.sleep(2.5)
-            code, _ = http("POST", self.stack.urls["body"] + "/lat/restore",
-                           {"src": drop["src"], "dst": drop["dst"]}, timeout=5)
-            f.write(json.dumps({"tag": tag, "stack": self.k, "drop": drop,
-                                "restored": code == 200}) + "\n")
-            got += 1
-            time.sleep(3.0)
+                drop, why = None, ""
+                q = urllib.parse.urlencode({"lo": DROP_LO, "hi": DROP_HI, "clear": CLEAR_CM,
+                                            "avoid": self.target})
+                end = time.monotonic() + 120
+                while time.monotonic() < end and drop is None:
+                    if not self.moving_forward(hold_s=0.5, within_s=10.0):
+                        why = "never moving forward"
+                        self.ensure_mission(tries)
+                        continue
+                    code, body = http("POST", self.stack.urls["body"] + "/lat/drop?" + q, timeout=3)
+                    if code == 200 and isinstance(body, dict):
+                        drop = body
+                    else:
+                        why = str(body)[:120]
+                        time.sleep(0.03)
+                if drop is None:
+                    self.say(f"P5 try {tries}: no drop ({why})")
+                    continue
+                self.act("drop", until=round(time.time() + 2.5, 3))
+                time.sleep(2.5)
+                restored = False
+                for _ in range(5):
+                    code, _ = http("POST", self.stack.urls["body"] + "/lat/restore",
+                                   {"src": drop["src"], "dst": drop["dst"]}, timeout=5)
+                    if code == 200:
+                        restored = True
+                        break
+                    time.sleep(1.0)
+                moving = (sum(drop.get("sp") or [0, 0]) / 2) > FWD_AT_DROP_M_S
+                f.write(json.dumps({"tag": tag, "stack": self.k, "drop": drop, "moving": moving,
+                                    "restored": restored}) + "\n")
+                if not restored:
+                    raise StackError(f"the dropped object at {drop['dst']} could not be put back")
+                got += moving
+                time.sleep(3.0)
+            except TRIAL_ERRORS as e:
+                self.say(f"P5 try {tries}: {e}")
+                if "could not be put back" in str(e):
+                    raise
+                time.sleep(2.0)
         return got
 
     # ------------------------------------------------------------------ run
@@ -525,7 +652,10 @@ class Lat(Soak):
                             self.say(f"P5 {tag}: {self.p5(f5, self.n5, tag)}")
                         self.set_plant("")
                 finally:
-                    self.stack.brain("POST", "/mission/stop", {}, timeout=10)
+                    try:
+                        self.stack.brain("POST", "/mission/stop", {}, timeout=10)
+                    except TRIAL_ERRORS:
+                        pass
                     time.sleep(3)
                     self.down("p65")
             (self.out / "run_end").write_text(f"{time.time()}\n")

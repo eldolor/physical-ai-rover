@@ -62,3 +62,8 @@ def test_p5_reads_the_first_scan_that_shows_the_object(tmp_path):
     assert t["drop_to_scan_s"] == 0.08
     assert t["scan_to_zero_s"] == 0.02 and t["drop_to_zero_s"] == 0.1
     assert t["clear_before"] is True and t["contacts"] == 0
+
+
+def test_a_missing_reading_is_the_worst_not_dropped():
+    s = ls.summary([0.01] * 39 + [None], 99)
+    assert s["n_measured"] == 39 and s["p99_ms"] == "inf"

@@ -84,13 +84,22 @@ def _patch_lidar(mod) -> None:
 def _patch_server(mod) -> None:
     import asyncio
 
-    @mod.app.middleware("http")
-    async def lat_stop(request, call_next):
-        if request.method == "POST" and request.url.path.endswith("/stop"):
-            _write({"k": "stop_in", "t": round(time.monotonic(), 4)})
-            if _planted("stop"):
-                await asyncio.sleep(_PLANT_S)
-        return await call_next(request)
+    class _Stop:
+        """Pure ASGI: every other request passes straight through (no task,
+        no body wrapping), so the 20 Hz traffic is not slowed by the shim."""
+
+        def __init__(self, app):
+            self.app = app
+
+        async def __call__(self, scope, receive, send):
+            if (scope.get("type") == "http" and scope.get("method") == "POST"
+                    and scope.get("path", "").endswith("/stop")):
+                _write({"k": "stop_in", "t": round(time.monotonic(), 4)})
+                if _planted("stop"):
+                    await asyncio.sleep(_PLANT_S)
+            await self.app(scope, receive, send)
+
+    mod.app.add_middleware(_Stop)
 
 
 def _patch_tiered(mod) -> None:

@@ -14,6 +14,11 @@ source tools/jetson/board_lock_check.sh
 OUT="${1:?out dir}"; shift; mkdir -p "$OUT"; OUT="$(cd "$OUT" && pwd)"
 oom() { sudo -n dmesg | grep -ciE "killed process" || true; }
 teardown() {
+  # lat.py's own teardown removes these; this is for a lat.py killed hard.
+  docker rm -f "${LAT_CONTAINER:-picar-ros-3136}" >/dev/null 2>&1
+  pids="$(for p in ${PICAR_ROBOT_PORT:-10350} ${PICAR_BRAIN_PORT:-10351} ${PICAR_BODY_PORT:-10352} ${PICAR_SENSOR_PORT:-10353} ${PICAR_SENSOR2_PORT:-10354} 8099; do lsof -nP -tiTCP:$p -sTCP:LISTEN; done)"
+  [ -n "$pids" ] && { kill $pids 2>/dev/null; sleep 3; kill -9 $pids 2>/dev/null; }
+  pkill -f "jetson-perf-3136/lat_body.py|sim.fake_lidar --link $OUT|tools/jetson/perception_loop.py" 2>/dev/null
   echo "$(oom)" > "$OUT/oom_end"
   sudo -n dmesg | grep -iE "killed process|oom-kill|invoked oom-killer" > "$OUT/oom.log"
   sudo -n systemctl isolate "$FOUND_TARGET"
