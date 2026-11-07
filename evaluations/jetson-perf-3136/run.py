@@ -418,7 +418,8 @@ def lat_inner(a) -> int:
     twin's units stopped (sudo), the board put back after."""
     out = Path(a.out)
     args = " ".join(shlex.quote(x) for x in (a.lat_args or []))
-    rec = board_run(a.label, f"bash evaluations/jetson-perf-3136/lat.sh $OUT {args}", out,
+    env = " ".join(f"{k}={shlex.quote(v)}" for k, v in (x.split("=", 1) for x in a.env or []))
+    rec = board_run(a.label, f"{env} bash evaluations/jetson-perf-3136/lat.sh $OUT {args}", out,
                     sha=a.sha, allow_sudo=True, stop_twin=True)
     import lat_score
     summary = lat_score.score(out / "board")
@@ -455,6 +456,7 @@ def main(argv=None) -> int:
         t.add_argument("--sha", default="HEAD")
         t.add_argument("--label", default="lat")
         t.add_argument("--out", default=None)
+        t.add_argument("--env", action="append", help="KEY=VALUE for lat.sh (e.g. LAT_IMAGE=...)")
         t.add_argument("--wait", action="store_true", help="wait for the desktop lock")
         t.add_argument("lat_args", nargs="*", help="lat.py's own arguments, after --")
     lp = sub.add_parser("latplant")
@@ -493,7 +495,8 @@ def main(argv=None) -> int:
         out = a.out or str(HERE / "board" / f"{a.label}-{time.strftime('%Y%m%d-%H%M')}")
         # Timed: the exclusive desktop lock, then the board lock.
         return br.locked([PY, str(Path(__file__).resolve()), "_lat", "--sha", sha,
-                          "--label", a.label, "--out", out, "--", *(a.lat_args or [])],
+                          "--label", a.label, "--out", out,
+                          *[x for e in (a.env or []) for x in ("--env", e)], "--", *(a.lat_args or [])],
                          f"3.136.C {a.label}", desktop_mode="exclusive", desktop_wait=a.wait)
     if a.cmd == "_lat":
         return lat_inner(a)
