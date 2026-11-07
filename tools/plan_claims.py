@@ -752,8 +752,12 @@ def assess(step: dict, steps: list, live: list, me, branches: dict, here_branch:
                            "session per section, which owns its worktree, ports and ROS domain")
     act = active_branches(branches, now)
     mine_here = any(claim_section(c) == step["section"] for c in live if same_owner(c, me))
+    busy = step["section"] in act and not mine_here and here_branch not in act[step["section"]]
+    if busy and accepted is not None:             # 3.166 F6: checked by hand (--accept-overlap)
+        accepted += [f"{b}: active, unclaimed, same section" for b in act[step["section"]]]
+        busy = False
     if step.get("whole"):                         # a whole section: nobody else in it, nor active
-        if step["section"] in act and not mine_here and here_branch not in act[step["section"]]:
+        if busy:
             return "active", f"{', '.join(act[step['section']])} worked on in the last 2 h (no claim)"
         return "free", ""
     if step["state"] != "open":                   # after the claims: a held step stays its holder's
@@ -763,8 +767,9 @@ def assess(step: dict, steps: list, live: list, me, branches: dict, here_branch:
                            "tick every path, one per comma")
     if step["waits"].startswith("?"):
         return "unknown", f"Waits `{step['waits'][1:41]}` is not user, rover or --"
-    if step["section"] in act and not mine_here and here_branch not in act[step["section"]]:
-        return "active", f"{', '.join(act[step['section']])} worked on in the last 2 h (no claim)"
+    if busy:
+        return "active", (f"{', '.join(act[step['section']])} worked on in the last 2 h (no claim): "
+                          "checked by hand? claim --accept-overlap")
     own = here_branch in [b for b, _, _, _ in branches.get(step["section"], [])]
     if step.get("implicit") and step["section"] not in act and not own:
         return "idle", "unmerged branch, idle over 2 h, no step table"
@@ -820,7 +825,11 @@ class Board:
         for c in self.remote:
             loc = next((x for x in self.claims if x["step"] == c["step"]
                         and x.get("sha") == c["sha"]), None)
-            c["touches"] = (loc or {}).get("touches") or touches.get(c["step"], [])
+            c["touches"] = (touches[c["step"]] if c["step"] in touches      # 3.166 F1: the row now
+                            else (loc or {}).get("touches", []))
+        for c in self.claims:
+            if c["step"] in touches:
+                c["touches"] = touches[c["step"]]
         local = [c for c in self.claims if held(c, self.procs, self.me)]
         remote = [c for c in self.remote if held(c, self.procs, self.me)]
         self.stale = [c for c in self.remote if not held(c, self.procs, self.me)]
@@ -839,6 +848,8 @@ class Board:
         if not SECTION_ID_RE.fullmatch(sid):
             return None
         known = (any(s["section"] == sid for s in self.steps) or sid in self.times
+                 or any(FILE_RE.match(f) and FILE_RE.match(f).group(1) == sid for f in git(   # 3.166 F4
+                     "ls-tree", "--name-only", f"origin/dev:{DIR}", cwd=self.top, check=False).splitlines())
                  or any(BRANCH_RE.match(b) and BRANCH_RE.match(b).group(1) == sid for b in git(
                      "for-each-ref", "--format=%(refname:short)", "refs/heads/plan/",
                      cwd=self.top, check=False).splitlines()))
@@ -931,6 +942,14 @@ def claim(sid: str, cwd=None, me=None, accept_overlap=False) -> dict:
         b.split()                                     # started since the board is alive
         accepted = [] if accept_overlap else None
         st, why = b.status(s, accepted)
+        m = BRANCH_RE.match(b.here or "")
+        if st == "done" and m and m.group(1) == s["section"]:
+            # 3.166 F3: done only in this branch's own table, still open on dev --
+            # the push that would make it done has not landed.
+            dev = next((x for x in quick_steps(b.top, here=False) if x["id"] == sid), None)
+            if dev and dev["state"] == "open":
+                s = dict(s, state="open")
+                st, why = b.status(s, accepted)
         if st not in ("free", "mine"):
             raise ClaimRefused(f"claim refused: {sid} is {st}" + (f" -- {why}" if why else ""))
         c = {"step": sid, "section": s["section"], "title": s["title"],
@@ -1000,7 +1019,13 @@ def _write_claim(path: str, c: dict):
     os.replace(tmp, path)
 
 
-def release(sid=None, cwd=None, me=None, force=False) -> list:
+def unpushed_files(top: str) -> list:
+    """Files this checkout's commits change that origin/dev lacks (3.166 F3)."""
+    base = git("merge-base", "origin/dev", "HEAD", cwd=top, check=False)
+    return git("diff", "--name-only", base, "HEAD", cwd=top, check=False).splitlines() if base else []
+
+
+def release(sid=None, cwd=None, me=None, force=False, unpushed=False) -> list:
     """Give back this session's claims (or one), on origin first, then the
     local file. Without a step only this session's own (3.139: no longer
     every claim of the same process, nor every one whose process reads
@@ -1015,6 +1040,9 @@ def release(sid=None, cwd=None, me=None, force=False) -> list:
         raise SystemExit("release --force names one step")
     top, common = rp
     gone = []
+    m = BRANCH_RE.match(git("rev-parse", "--abbrev-ref", "HEAD", cwd=top, check=False))
+    pending = unpushed_files(top) if m and not (force or unpushed) else []
+    steps = quick_steps(top) if pending else []
     with _Lock(common):
         procs = processes()           # under the lock: an owner started since is alive (J7)
         me = me or owner(procs)
@@ -1034,6 +1062,18 @@ def release(sid=None, cwd=None, me=None, force=False) -> list:
                     h = rem or loc[0]
                     raise ClaimRefused(f"release refused: {sid} is held by {who(h)}. Only the user "
                                        f"frees another session's claim (release --force {sid})")
+            if pending and (ok_r or ok_l) and section_of(step) == m.group(1):
+                c0 = ok_r or ok_l[0]
+                hit = [f for f in pending
+                       if any(matches(f, t) for t in current_touches(c0, steps))
+                       or (FILE_RE.match(os.path.basename(f)) and os.path.dirname(f) == DIR
+                           and FILE_RE.match(os.path.basename(f)).group(1) == m.group(1))]
+                if hit:                           # 3.166 F3: the work has not reached dev
+                    raise SystemExit(
+                        f"release refused: {step} -- this branch has commits not on origin/dev "
+                        f"({', '.join(hit[:3])}{', ...' if len(hit) > 3 else ''}): push first, or "
+                        f"`release --unpushed {step}` to give the claim back anyway; released so "
+                        f"far: {', '.join(gone) or 'nothing'}")
             if ok_r:
                 done, rejected, e = _push_delete(top, step, ok_r["sha"])
                 if not done and not rejected:
@@ -1051,13 +1091,23 @@ def release(sid=None, cwd=None, me=None, force=False) -> list:
 
 # ---------- hooks ----------
 
-def foreign_claims_on(rel: str, common: str, procs: dict, me) -> list:
+def foreign_claims_on(rel: str, common: str, procs: dict, me, steps=None) -> list:
     """Live claims of other sessions covering rel, minus those whose owner the
-    user let this session edit (`allow`)."""
+    user let this session edit (`allow`). With `steps`, a claim's Touches are
+    its row's as it reads now (3.166 F1)."""
     return [c for c in read_claims(common)
             if held(c, procs, me) and not same_owner(c, me)
             and not any(same_owner(a, me) for a in c.get("allowed", []))
-            and any(matches(rel, t) for t in c.get("touches", []))]
+            and any(matches(rel, t) for t in current_touches(c, steps))]
+
+
+def ident(me) -> str:
+    """How `allow --session` names a session (3.166 F5): its id, or its process."""
+    return (me or {}).get("session") or f"pid:{(me or {}).get('pid', '?')}"
+
+
+def allow_cmd(step: str, me) -> str:
+    return f"python3 tools/plan_claims.py allow {step} --session {ident(me)}"
 
 
 def quick_steps(top: str, ref: str = "origin/dev", here: bool = True) -> list:
@@ -1087,7 +1137,25 @@ def quick_steps(top: str, ref: str = "origin/dev", here: bool = True) -> list:
 SHARED = ("CLAUDE.md", "docs/ARCHITECTURE.md", INDEX, "docs/plans/PLAN-ros-alignment.md")
 
 
-def tracked(rel: str, steps: list):
+def current_touches(c: dict, steps) -> list:
+    """3.166 F1: a claim's Touches as its step's row reads now (a narrowing
+    or widening on dev counts at once); the Touches stored when it was
+    taken only when the row is gone. Older claim files read the same way."""
+    s = next((x for x in steps or () if x["id"] == c.get("step")), None)
+    return s["touches"] if s is not None else c.get("touches", [])
+
+
+def _top_dir(t: str) -> bool:
+    """3.166 F2: a whole top-level directory entry (`tests/`, `brain/`)."""
+    return t.endswith("/") and "/" not in t[:-1] and not _is_glob(t)
+
+
+def held_steps(common: str, procs: dict, me) -> set:
+    """The steps live local claims hold (any session's, this one's too)."""
+    return {c["step"] for c in read_claims(common) if held(c, procs, me)}
+
+
+def tracked(rel: str, steps: list, held=None):
     """(sections, step to claim) a path belongs to: a section's own file,
     or a path in an open step's Touches. ({}, "") for any other path, and
     for the shared status files (SHARED)."""
@@ -1100,9 +1168,15 @@ def tracked(rel: str, steps: list):
     # Only a step someone could be working on fences: open, waiting on no
     # one, its Needs done (review: waiting and blocked steps fenced tests/,
     # control/ and web-twin/ while nobody could claim them).
+    # 3.166 F2: a whole top-level directory fences only while someone holds
+    # its step (unclaimed, `tests/` or `brain/` fenced every other section).
+    held = held or set()
     hits = [s for s in steps if s["state"] not in CLOSED and not s["waits"]
-            and all(n in done for n in s["needs"]) and any(matches(rel, t) for t in s["touches"])]
-    return {s["section"] for s in hits}, (hits[0]["id"] if hits else "")
+            and all(n in done for n in s["needs"])
+            and any(matches(rel, t) for t in s["touches"] if s["id"] in held or not _top_dir(t))]
+    # The step to name: one nobody holds first (a held step is not claimable).
+    free = [s for s in hits if s["id"] not in held]
+    return {s["section"] for s in hits}, ((free or hits)[0]["id"] if hits else "")
 
 
 def covered(rel: str, secs: set, mine: list, steps=()) -> bool:
@@ -1111,7 +1185,7 @@ def covered(rel: str, secs: set, mine: list, steps=()) -> bool:
     a section it holds (`steps`: two sections both declare the file)."""
     held_secs = {claim_section(c) for c in mine}
     return (bool(held_secs & secs)
-            or any(matches(rel, t) for c in mine for t in c.get("touches", []))
+            or any(matches(rel, t) for c in mine for t in current_touches(c, steps))
             or any(matches(rel, t) for s in steps if s["section"] in held_secs for t in s["touches"]))
 
 
@@ -1123,9 +1197,11 @@ def _refusal(rel: str, secs: set, hint: str) -> str:
             f"claim is refused, stop and report it (PARALLEL-SESSIONS.md rule 12).")
 
 
-def allow(sid: str, cwd=None, me=None) -> dict:
+def allow(sid: str, cwd=None, me=None, session: str = "") -> dict:
     """The user agreed this session may edit inside another session's claim:
-    recorded in that claim, for as long as it lives."""
+    recorded in that claim, for as long as it lives. `session` (3.166 F5)
+    names the session to let in -- its id, or `pid:<n>` -- so the user can
+    run this from any shell; without it, the Claude process above."""
     if not (STEP_ID_RE.fullmatch(sid) or SECTION_ID_RE.fullmatch(sid)):
         raise SystemExit(f"allow: {sid!r} is not a step id")
     rp = repo(cwd)
@@ -1134,14 +1210,22 @@ def allow(sid: str, cwd=None, me=None) -> dict:
     path = os.path.join(claims_dir(rp[1]), f"{sid}.json")
     with _Lock(rp[1]):
         procs = processes()           # under the lock, as claim() and release()
+        if session.startswith("pid:"):
+            n = session[4:]
+            me = owner_of(int(n), procs) if n.isdigit() else None
+            if not me:
+                raise SystemExit(f"allow: no process {n!r} on this host")
+        elif session:
+            me = {"session": session, "host": host(), "pid": None, "start": None}
         me = me or owner(procs)
         if not me:
-            raise SystemExit("allow: no Claude Code process above this one")
+            raise SystemExit("allow: no Claude Code process above this one (name it: --session <id>)")
         try:
             with open(path) as fh:
                 c = json.load(fh)
         except (OSError, ValueError):
-            raise SystemExit(f"allow: no claim on {sid}")
+            raise SystemExit(f"allow: no claim on {sid} on this host (a claim held on another "
+                             "machine is allowed there)")
         if not alive(c, procs):
             raise SystemExit(f"allow: {sid}'s owner has exited; the claim is free")
         if not any(same_owner(a, me) for a in c.get("allowed", [])):
@@ -1185,7 +1269,8 @@ def hook_edit(stdin_text: str) -> str:
             return ""
         procs = processes()
         me = owner(procs)
-        hits = foreign_claims_on(rel, rp[1], procs, me)
+        steps = quick_steps(rp[0])
+        hits = foreign_claims_on(rel, rp[1], procs, me, steps)
         if hits:
             c = hits[0]
             reason = (f"{rel} is inside step {c['step']} ({c.get('title', '')[:60]}), claimed by "
@@ -1193,12 +1278,11 @@ def hook_edit(stdin_text: str) -> str:
                       "Editing it here may collide with that session (PARALLEL-SESSIONS.md rule 8).")
             if data.get("permission_mode", "") in ASK_MODES:
                 return _decision("ask", reason)
-            return _decision("deny", reason + " Ask the user before going on; only if they agree, run "
-                             f"`python3 tools/plan_claims.py allow {c['step']}` and retry.")
+            return _decision("deny", reason + " Ask the user before going on; only the user, if they "
+                             f"agree, runs `{allow_cmd(c['step'], me)}`; then retry.")
         if bypassed():
             return ""
-        steps = quick_steps(rp[0])
-        secs, hint = tracked(rel, steps)
+        secs, hint = tracked(rel, steps, held_steps(rp[1], procs, me))
         if not secs:
             return ""
         mine = [c for c in read_claims(rp[1]) if same_owner(c, me)
@@ -1223,8 +1307,9 @@ def commit_check(cwd=None):
         me = owner(procs)
         out = []
         if os.path.isdir(os.path.join(rp[1], "plan-claims")):
+            steps = quick_steps(rp[0])
             for f in git("diff", "--cached", "--name-only", cwd=rp[0], check=False).splitlines():
-                for c in foreign_claims_on(f, rp[1], procs, me):
+                for c in foreign_claims_on(f, rp[1], procs, me, steps):
                     out.append(f"pre-commit: WARNING {f} is inside step {c['step']}, claimed by "
                                f"{who(c)}")
         if bypassed():
@@ -1273,19 +1358,26 @@ def push_refusals(base: str, sha: str, cwd=None, me=None) -> list:
     procs = processes()
     me = me or owner(procs)
     steps = quick_steps(top, ref=base, here=False)
-    fenced = [(f, *tracked(f, steps)) for f in files]
-    fenced = [x for x in fenced if x[1]]
-    if not fenced:
-        return []
     # A claim counts only while origin still holds it as this session's
     # (review: a claim freed with --force, or taken over, kept passing).
     remote, err = remote_claims(top)
     if err:
         return [f"cannot read the claims on origin ({err}), so this session's claims cannot be "
                 "checked; push again"]
+    holders = {c["step"]: c for c in remote}            # 3.166 F2/F5: who holds what, on origin
+    fenced = [(f, *tracked(f, steps, set(holders))) for f in files]
+    fenced = [x for x in fenced if x[1]]
+    if not fenced:
+        return []
     on_origin = {(c["step"], c["sha"]) for c in remote}
-    local = [c for c in read_claims(common) if same_owner(c, me)]
+    claims = read_claims(common)
+    local = [c for c in claims if same_owner(c, me)]
     mine = [c for c in local if (c["step"], c.get("sha")) in on_origin]
+    # 3.166 F5: a claim whose holder the user let this session into (`allow`), still
+    # on origin, counts as the edit hook counts it.
+    let_in = [c for c in claims if not same_owner(c, me) and (c["step"], c.get("sha")) in on_origin
+              and any(same_owner(a, me) for a in c.get("allowed", []))]
+    mine_or_let = mine + let_in
     pushed = quick_steps(top, ref=sha, here=False)      # the pusher's own tables, as pushed
     out = []
     for c in local:
@@ -1293,7 +1385,16 @@ def push_refusals(base: str, sha: str, cwd=None, me=None) -> list:
             out.append(f"this session's claim of {c['step']} is not on origin (made before 3.139, "
                        f"or freed there): re-run `{CLAIM_CMD} {c['step']}`")
     for f, secs, hint in fenced:
-        if not covered(f, secs, mine, pushed):
+        if not covered(f, secs, mine_or_let, pushed):
+            # 3.166 F5: inside another session's held claim -- name that claim, never
+            # "claim" a step (claiming another that lists the file would still collide).
+            h = next((c for c in remote if not same_owner(c, me)
+                      and c["step"] not in {x["step"] for x in let_in}
+                      and any(matches(f, t) for t in current_touches(c, steps))), None)
+            if h:
+                out.append(f"{f}: inside step {h['step']}, claimed by {who(h)}. Ask the user; only "
+                           f"the user, if they agree, runs `{allow_cmd(h['step'], me)}`")
+                continue
             out.append(f"{f}: section {', '.join(sorted(secs))}"
                        + (f" (open step {hint})" if STEP_ID_RE.fullmatch(hint) else " (its file)")
                        + f" -- claim it: {CLAIM_CMD} {hint}")
@@ -1344,13 +1445,15 @@ def main(argv):
               f"  on origin: claim/{c['step']} ({c.get('sha', '')[:9]})\n"
               f"  touches: {', '.join(c['touches']) or '--'}"
               + "".join(f"\n  accepted overlap: {x}" for x in c.get("accepted_overlap", [])))
-    elif cmd == "release" and len([a for a in args if a != "--force"]) <= 1:
-        rest = [a for a in args if a != "--force"]
-        gone = release(rest[0] if rest else None, force="--force" in args)
+    elif cmd == "release" and len([a for a in args if a not in ("--force", "--unpushed")]) <= 1:
+        rest = [a for a in args if a not in ("--force", "--unpushed")]
+        gone = release(rest[0] if rest else None, force="--force" in args,
+                       unpushed="--unpushed" in args)
         print("released " + (", ".join(gone) if gone else "nothing"))
-    elif cmd == "allow" and len(args) == 1:
-        allow(args[0])
-        print(f"this session may now edit inside {args[0]} (recorded in its claim)")
+    elif cmd == "allow" and (len(args) == 1 or (len(args) == 3 and args[1] == "--session")):
+        allow(args[0], session=args[2] if len(args) == 3 else "")
+        print(f"{'session ' + args[2] if len(args) == 3 else 'this session'} may now edit inside "
+              f"{args[0]} (recorded in its claim)")
     elif cmd == "hook-edit":
         out = hook_edit(sys.stdin.read())
         if out:

@@ -230,13 +230,29 @@ Continuing an existing section: work in its worktree
      the last 2 hours. A branch with no claim yet counts as active from its
      last commit or its newest uncommitted edit. Against such a branch,
      and only such a branch, `claim --accept-overlap` takes the step after
-     you have checked the shared file by hand. The claim records it.
+     you have checked the shared file by hand -- also when the branch is
+     of the step's own section (3.166). The claim records it. Another
+     session's claim is never overridden by the flag.
+   * Since 3.166:
+     * A claim's Touches are its row as it reads now: a row narrowed or
+       widened on dev counts at once, with no release and re-claim.
+     * A whole top-level directory in an unclaimed step (`tests/`,
+       `brain/`) fences nothing until someone claims that step.
+     * A step marked done only on your own branch (its push not landed)
+       can be claimed again.
+     * A section with no `## Steps` table is claimed whole (`claim 3.N`).
+     * `release` refuses while your section's branch holds commits that
+       are not on origin/dev and touch the step: push first, or
+       `release --unpushed <step>`.
    * Guards: before editing a path inside another session's claim, Claude
      Code asks the user (a `PreToolUse` hook on Edit/Write). In auto or
      bypass mode no one would see that question, so the edit is denied with
      the reason. Since 3.139 the hooks also refuse unclaimed work (rule 12). Only if the user agrees, `python3 tools/plan_claims.py
-     allow <step>` lets this session edit inside that claim; the claim
-     records it. **This is on trust:** nothing can check that the user was
+     allow <step> --session <id>` lets the named session edit (and push)
+     inside that claim; the claim records it. Every refusal prints the
+     command with the holding claim's step and the asking session's id, so
+     the user can run it from any shell (without `--session`, it names the
+     Claude process above). **This is on trust:** nothing can check that the user was
      asked, so a session that runs `allow` without asking breaks this rule. A commit
      touching one prints a warning from `tools/hooks/pre-commit`, which
      catches edits made through Bash. Every local session
