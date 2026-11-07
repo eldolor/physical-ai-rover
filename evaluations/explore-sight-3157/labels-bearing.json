@@ -1,0 +1,644 @@
+{
+ "how": "Labelled 2026-11-07 by viewing each frame (760 px wide tiles, a 10% grid drawn, no detection or VLM box shown), before score.py first ran. x0/x1: the target's horizontal extent as fractions of the width; centre = their mean (3.80.I's rule: the middle of its horizontal extent). wide: the target spans more than half the frame. cut: it runs off an edge (its centre is then the visible part's). S1: 3.80.I's 60 frames (sets.json, seed 380). first: the in-view frames of perception's first sighting per walk not already in S1 (11). No frame was dropped.",
+ "rows": [
+  {
+   "key": "a-white-phone-charger-ca-20260921-203250/frame-0010.jpg",
+   "set": "S1",
+   "x0": 0.87,
+   "x1": 0.97,
+   "centre": 0.92,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "a-white-phone-charger-ca-20260921-203250/frame-0015.jpg",
+   "set": "S1",
+   "x0": 0.65,
+   "x1": 0.77,
+   "centre": 0.71,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "a-white-phone-charger-ca-20260921-203250/frame-0016.jpg",
+   "set": "S1",
+   "x0": 0.63,
+   "x1": 0.74,
+   "centre": 0.685,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "a-white-phone-charger-ca-20260921-203250/frame-0025.jpg",
+   "set": "S1",
+   "x0": 0.49,
+   "x1": 0.62,
+   "centre": 0.555,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "a-white-phone-charger-ca-20260921-203250/frame-0049.jpg",
+   "set": "S1",
+   "x0": 0.15,
+   "x1": 0.96,
+   "centre": 0.555,
+   "wide": true,
+   "cut": false
+  },
+  {
+   "key": "a-white-phone-charger-ca-20260921-203355/frame-0006.jpg",
+   "set": "S1",
+   "x0": 0.18,
+   "x1": 0.34,
+   "centre": 0.26,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "a-white-phone-charger-ca-20260921-203355/frame-0009.jpg",
+   "set": "S1",
+   "x0": 0.24,
+   "x1": 0.39,
+   "centre": 0.315,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "a-white-phone-charger-ca-20260921-203355/frame-0019.jpg",
+   "set": "S1",
+   "x0": 0.52,
+   "x1": 0.68,
+   "centre": 0.6,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "a-white-phone-charger-ca-20260921-203355/frame-0033.jpg",
+   "set": "S1",
+   "x0": 0.38,
+   "x1": 0.63,
+   "centre": 0.505,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "a-white-phone-charger-ca-20260921-203355/frame-0039.jpg",
+   "set": "S1",
+   "x0": 0.4,
+   "x1": 0.78,
+   "centre": 0.59,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "a-white-phone-charger-ca-20260921-203355/frame-0053.jpg",
+   "set": "S1",
+   "x0": 0.4,
+   "x1": 1.0,
+   "centre": 0.7,
+   "wide": true,
+   "cut": true
+  },
+  {
+   "key": "a-white-phone-charger-ca-20260921-203355/frame-0054.jpg",
+   "set": "S1",
+   "x0": 0.5,
+   "x1": 1.0,
+   "centre": 0.75,
+   "wide": false,
+   "cut": true
+  },
+  {
+   "key": "blue-bottle-20260907-142454/frame-0025.jpg",
+   "set": "S1",
+   "x0": 0.51,
+   "x1": 0.57,
+   "centre": 0.54,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "blue-bottle-20260907-142454/frame-0027.jpg",
+   "set": "S1",
+   "x0": 0.465,
+   "x1": 0.56,
+   "centre": 0.5125,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "blue-bottle-20260907-185007/frame-0204.jpg",
+   "set": "S1",
+   "x0": 0.355,
+   "x1": 0.38,
+   "centre": 0.3675,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "blue-bottle-20260907-185007/frame-0208.jpg",
+   "set": "S1",
+   "x0": 0.5,
+   "x1": 0.535,
+   "centre": 0.5175,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "blue-bottle-20260907-185007/frame-0209.jpg",
+   "set": "S1",
+   "x0": 0.5,
+   "x1": 0.565,
+   "centre": 0.5325,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "blue-shoes-20260907-152528/frame-0004.jpg",
+   "set": "S1",
+   "x0": 0.7,
+   "x1": 0.84,
+   "centre": 0.77,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "blue-shoes-20260907-152528/frame-0010.jpg",
+   "set": "S1",
+   "x0": 0.33,
+   "x1": 0.46,
+   "centre": 0.395,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "blue-shoes-20260908-210511/frame-0018.jpg",
+   "set": "S1",
+   "x0": 0.74,
+   "x1": 0.83,
+   "centre": 0.785,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "blue-shoes-20260908-210511/frame-0028.jpg",
+   "set": "S1",
+   "x0": 0.65,
+   "x1": 0.77,
+   "centre": 0.71,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "blue-shoes-20260908-210511/frame-0029.jpg",
+   "set": "S1",
+   "x0": 0.7,
+   "x1": 0.79,
+   "centre": 0.745,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "blue-shoes-20260908-210511/frame-0039.jpg",
+   "set": "S1",
+   "x0": 0.64,
+   "x1": 1.0,
+   "centre": 0.82,
+   "wide": false,
+   "cut": true
+  },
+  {
+   "key": "blue-shoes-20260908-210511/frame-0041.jpg",
+   "set": "S1",
+   "x0": 0.125,
+   "x1": 0.51,
+   "centre": 0.3175,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "grey-backpack-20260921-203748/frame-0000.jpg",
+   "set": "S1",
+   "x0": 0.465,
+   "x1": 0.64,
+   "centre": 0.5525,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "grey-backpack-20260921-203748/frame-0001.jpg",
+   "set": "S1",
+   "x0": 0.46,
+   "x1": 0.63,
+   "centre": 0.545,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "grey-backpack-20260921-203748/frame-0007.jpg",
+   "set": "S1",
+   "x0": 0.46,
+   "x1": 0.7,
+   "centre": 0.58,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "grey-backpack-20260921-203748/frame-0029.jpg",
+   "set": "S1",
+   "x0": 0.16,
+   "x1": 0.88,
+   "centre": 0.52,
+   "wide": true,
+   "cut": false
+  },
+  {
+   "key": "grey-backpack-20260921-203748/frame-0039.jpg",
+   "set": "S1",
+   "x0": 0,
+   "x1": 1.0,
+   "centre": 0.5,
+   "wide": true,
+   "cut": true
+  },
+  {
+   "key": "grey-backpack-20260921-203748/frame-0044.jpg",
+   "set": "S1",
+   "x0": 0,
+   "x1": 0.93,
+   "centre": 0.465,
+   "wide": true,
+   "cut": true
+  },
+  {
+   "key": "grey-backpack-20260921-203748/frame-0045.jpg",
+   "set": "S1",
+   "x0": 0,
+   "x1": 1.0,
+   "centre": 0.5,
+   "wide": true,
+   "cut": true
+  },
+  {
+   "key": "grey-backpack-20260921-203748/frame-0063.jpg",
+   "set": "S1",
+   "x0": 0,
+   "x1": 1.0,
+   "centre": 0.5,
+   "wide": true,
+   "cut": true
+  },
+  {
+   "key": "grey-backpack-opus-4-5-20260921-210743/frame-0010.jpg",
+   "set": "S1",
+   "x0": 0.4,
+   "x1": 0.61,
+   "centre": 0.505,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "red-backpack-20260907-144856/frame-0020.jpg",
+   "set": "S1",
+   "x0": 0.41,
+   "x1": 0.63,
+   "centre": 0.52,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "red-backpack-20260907-144856/frame-0027.jpg",
+   "set": "S1",
+   "x0": 0.34,
+   "x1": 0.645,
+   "centre": 0.4925,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "red-backpack-20260907-144856/frame-0029.jpg",
+   "set": "S1",
+   "x0": 0.545,
+   "x1": 0.85,
+   "centre": 0.6975,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "red-backpack-20260907-144856/frame-0033.jpg",
+   "set": "S1",
+   "x0": 0,
+   "x1": 0.665,
+   "centre": 0.3325,
+   "wide": true,
+   "cut": true
+  },
+  {
+   "key": "woven-laundry-basket-20260908-215252/frame-0005.jpg",
+   "set": "S1",
+   "x0": 0.925,
+   "x1": 0.985,
+   "centre": 0.955,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260908-215252/frame-0015.jpg",
+   "set": "S1",
+   "x0": 0.385,
+   "x1": 0.43,
+   "centre": 0.4075,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260908-215351/frame-0006.jpg",
+   "set": "S1",
+   "x0": 0.81,
+   "x1": 0.915,
+   "centre": 0.8625,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260908-215351/frame-0009.jpg",
+   "set": "S1",
+   "x0": 0.74,
+   "x1": 0.83,
+   "centre": 0.785,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260908-215351/frame-0013.jpg",
+   "set": "S1",
+   "x0": 0.56,
+   "x1": 0.64,
+   "centre": 0.6,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260908-215351/frame-0075.jpg",
+   "set": "S1",
+   "x0": 0.79,
+   "x1": 0.915,
+   "centre": 0.8525,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260908-215351/frame-0081.jpg",
+   "set": "S1",
+   "x0": 0.385,
+   "x1": 0.485,
+   "centre": 0.435,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260908-215351/frame-0083.jpg",
+   "set": "S1",
+   "x0": 0.27,
+   "x1": 0.385,
+   "centre": 0.3275,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260912-231358/frame-0016.jpg",
+   "set": "S1",
+   "x0": 0.21,
+   "x1": 0.355,
+   "centre": 0.2825,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260912-231358/frame-0051.jpg",
+   "set": "S1",
+   "x0": 0,
+   "x1": 0.11,
+   "centre": 0.055,
+   "wide": false,
+   "cut": true
+  },
+  {
+   "key": "woven-laundry-basket-20260912-231358/frame-0053.jpg",
+   "set": "S1",
+   "x0": 0,
+   "x1": 0.07,
+   "centre": 0.035,
+   "wide": false,
+   "cut": true
+  },
+  {
+   "key": "woven-laundry-basket-20260912-231358/frame-0140.jpg",
+   "set": "S1",
+   "x0": 0.935,
+   "x1": 1.0,
+   "centre": 0.9675,
+   "wide": false,
+   "cut": true
+  },
+  {
+   "key": "woven-laundry-basket-20260912-231358/frame-0145.jpg",
+   "set": "S1",
+   "x0": 0.6,
+   "x1": 0.755,
+   "centre": 0.6775,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260913-115414/frame-0222.jpg",
+   "set": "S1",
+   "x0": 0.12,
+   "x1": 0.195,
+   "centre": 0.1575,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260913-115414/frame-0225.jpg",
+   "set": "S1",
+   "x0": 0.38,
+   "x1": 0.45,
+   "centre": 0.415,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260913-115703/frame-0016.jpg",
+   "set": "S1",
+   "x0": 0.505,
+   "x1": 0.555,
+   "centre": 0.53,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260913-115703/frame-0020.jpg",
+   "set": "S1",
+   "x0": 0.3,
+   "x1": 0.36,
+   "centre": 0.33,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260913-115703/frame-0133.jpg",
+   "set": "S1",
+   "x0": 0,
+   "x1": 0.245,
+   "centre": 0.1225,
+   "wide": false,
+   "cut": true
+  },
+  {
+   "key": "woven-laundry-basket-20260913-115703/frame-0148.jpg",
+   "set": "S1",
+   "x0": 0.565,
+   "x1": 0.77,
+   "centre": 0.6675,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260913-115703/frame-0159.jpg",
+   "set": "S1",
+   "x0": 0.54,
+   "x1": 0.88,
+   "centre": 0.71,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260913-115703/frame-0173.jpg",
+   "set": "S1",
+   "x0": 0.63,
+   "x1": 1.0,
+   "centre": 0.815,
+   "wide": false,
+   "cut": true
+  },
+  {
+   "key": "woven-laundry-basket-20260913-115703/frame-0184.jpg",
+   "set": "S1",
+   "x0": 0.1,
+   "x1": 0.62,
+   "centre": 0.36,
+   "wide": true,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260913-115703/frame-0190.jpg",
+   "set": "S1",
+   "x0": 0.605,
+   "x1": 1.0,
+   "centre": 0.8025,
+   "wide": false,
+   "cut": true
+  },
+  {
+   "key": "a-white-phone-charger-ca-20260921-203250/frame-0009.jpg",
+   "set": "first",
+   "x0": 0.93,
+   "x1": 0.99,
+   "centre": 0.96,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "a-white-phone-charger-ca-20260921-203355/frame-0002.jpg",
+   "set": "first",
+   "x0": 0.435,
+   "x1": 0.565,
+   "centre": 0.5,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "blue-bottle-20260907-142454/frame-0004.jpg",
+   "set": "first",
+   "x0": 0.93,
+   "x1": 0.965,
+   "centre": 0.9475,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "blue-shoes-20260908-210511/frame-0023.jpg",
+   "set": "first",
+   "x0": 0.38,
+   "x1": 0.46,
+   "centre": 0.42,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "grey-backpack-opus-4-5-20260921-210743/frame-0004.jpg",
+   "set": "first",
+   "x0": 0.735,
+   "x1": 0.96,
+   "centre": 0.8475,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "red-backpack-20260907-144856/frame-0003.jpg",
+   "set": "first",
+   "x0": 0.83,
+   "x1": 1.0,
+   "centre": 0.915,
+   "wide": false,
+   "cut": true
+  },
+  {
+   "key": "woven-laundry-basket-20260908-215252/frame-0008.jpg",
+   "set": "first",
+   "x0": 0.735,
+   "x1": 0.79,
+   "centre": 0.7625,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260908-215351/frame-0000.jpg",
+   "set": "first",
+   "x0": 0.96,
+   "x1": 1.0,
+   "centre": 0.98,
+   "wide": false,
+   "cut": true
+  },
+  {
+   "key": "woven-laundry-basket-20260912-231358/frame-0005.jpg",
+   "set": "first",
+   "x0": 0.87,
+   "x1": 1.0,
+   "centre": 0.935,
+   "wide": false,
+   "cut": true
+  },
+  {
+   "key": "woven-laundry-basket-20260913-115414/frame-0196.jpg",
+   "set": "first",
+   "x0": 0.56,
+   "x1": 0.6,
+   "centre": 0.58,
+   "wide": false,
+   "cut": false
+  },
+  {
+   "key": "woven-laundry-basket-20260913-115703/frame-0008.jpg",
+   "set": "first",
+   "x0": 0.895,
+   "x1": 0.965,
+   "centre": 0.93,
+   "wide": false,
+   "cut": false
+  }
+ ]
+}
