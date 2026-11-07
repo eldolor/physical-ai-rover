@@ -282,6 +282,10 @@ paragraph.**
 *Safety, stops and arbitration*
 
 * 3.76: the pre-rule review is done.
+* 3.159.B: a drop is a wall at the end of seen floor (`robot/drop_guard.py`,
+  the depth grid's `drop` block, sim `v` cells, `*_stairs` houses); 0 falls
+  in every sweep and 160 missions; D2/D4 (turns within a cell of an edge)
+  failed, B2 (the costmap mark, after 3.145) open. Off on every real body.
 * 3.82, 3.84, 3.86, 3.97, 3.104: a person's Stop latches the brain out
   until a mission starts (`POST /autonomy/resume`); a person's move ends a
   nav2 goal under every drive; a Stop during the arrival's confirmation
