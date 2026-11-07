@@ -162,4 +162,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.159](3.159-drop-detection.md) | No fall at a stair: a drop ahead stops the robot |
 | [3.160](3.160-rooms-named-on-twin.md) | Rooms a person names once, on the twin, saved with the map |
 | [3.161](3.161-no-go-zones-on-twin.md) | No-go zones a person draws on the twin |
+| [3.162](3.162-what-i-saw.md) | What I saw: a mission's objects with photos and places, on the twin |
 <!-- /sections -->
