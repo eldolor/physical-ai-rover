@@ -124,7 +124,6 @@ from robot.interface import (
 # The ROS container's driver name on POST /wheels (R2b, R4).
 DRIVER_ROS = "ros"
 from robot.safety import SafetyController, SafetyViolation, path_zone_indices
-from robot.drop_guard import DropMarks, to_house
 from robot.wedge_watch import HOLD_S, SPOT_R_M, SpotBook, WedgeWatch, spot_ahead
 from world.bridge_faults import classify as bridge_fault, headers_for, hold_reason
 from world.factory import get_world
@@ -659,66 +658,6 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
     wedge = WedgeWatch()
     spot_book = SpotBook()
     spot_lock = threading.Lock()
-    # 3.159.B2: the drop discs, kept past a mission's end and sent with the
-    # wedge spots (the bridge replaces its whole set on every post).
-    drop_marks = DropMarks()
-    drop_mark_busy = threading.Lock()
-    # At most one mark a second: each reads the pose over HTTP, and a 20 Hz
-    # refusal must not become a 20 Hz stream of bridge reads.
-    DROP_MARK_EVERY_S = 1.0
-    drop_mark_at = [0.0]
-
-    def keepout_set(now, wedge_spots, session, at=None):
-        """The whole set the bridge takes: the wedge spots, and the drop
-        discs placed on the same SLAM session, less any over `at` (the
-        robot's centre, when the caller read the pose)."""
-        drops = drop_marks.spots(now, at) if drop_marks.session == session else []
-        return list(wedge_spots) + drops
-
-    def mark_drop():
-        """3.159.B2: a drop edge refused a nav2 twist, so the edges the
-        robot remembers go into nav2's keepout and its planner routes
-        around them, not into the veto again (D6)."""
-        if not drop_mark_busy.acquire(blocking=False):
-            return                   # one at a time: the next refusal marks again
-        try:
-            if not hasattr(world_model, "set_keepout") or goal_in_progress() is None:
-                return
-            lips = safety._drop_guard().lips()
-            pose = world_model.get_pose()
-            if not lips or not pose.get("usable") or pose.get("heading_deg") is None:
-                return
-            points = [to_house(pose["x_m"], pose["y_m"], pose["heading_deg"], a, l)
-                      for a, l in lips]
-            map_id = pose.get("map_id") or getattr(world_model, "map_id", None)
-            with spot_lock:
-                now = time.monotonic()
-                before = (dict(drop_marks.marks), drop_marks.session)
-                new = drop_marks.add(now, points, session=map_id,
-                                     at=(pose["x_m"], pose["y_m"]))
-                if not new:
-                    return
-                wedge_spots = spot_book.live(now) if spot_book.session == map_id else []
-                try:
-                    reply = world_model.set_keepout(
-                        keepout_set(now, wedge_spots, map_id, at=(pose["x_m"], pose["y_m"])),
-                        map_id=map_id)
-                except Exception:
-                    drop_marks.marks, drop_marks.session = before
-                    raise
-                if not reply.get("accepted"):
-                    drop_marks.marks, drop_marks.session = before
-        except Exception as e:  # noqa: BLE001 -- a lost mark costs a replan, not safety
-            logger.warning(f"keepout: drop not marked ({e})")
-            return
-        finally:
-            drop_mark_busy.release()
-        if not reply.get("accepted"):
-            logger.warning(f"keepout: drop not marked ({reply.get('reason')})")
-            return
-        logger.warning(f"keepout: drop marked, {new} new disc(s), {len(drop_marks.marks)} "
-                       f"live; robot at ({pose['x_m']:.2f}, {pose['y_m']:.2f}) heading "
-                       f"{pose['heading_deg']:.0f}")
 
     def mark_wedge():
         if not hasattr(world_model, "set_keepout") or goal_in_progress() is None:
@@ -741,14 +680,11 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 # one, made under its finished goal, must not outlive them.
                 if goal_in_progress() is None:
                     return
-                now = time.monotonic()
-                spots = spot_book.add(now, x, y, session=map_id)
+                spots = spot_book.add(time.monotonic(), x, y, session=map_id)
                 if spots is None:
                     return          # 3.83: this spot is already marked
                 try:
-                    reply = world_model.set_keepout(
-                        keepout_set(now, spots, map_id, at=(pose["x_m"], pose["y_m"])),
-                        map_id=map_id)
+                    reply = world_model.set_keepout(spots, map_id=map_id)
                 except Exception:
                     spot_book.drop_last()
                     raise
@@ -1671,19 +1607,10 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             # counted on a post that then failed and marked nothing.
             wedged = driver == DRIVER_ROS and wedge.wheel(now, req.left_rad_s,
                                                           req.right_rad_s, reason)
-            # An edge refused this twist, straight (drop_edge) or turning
-            # (drop_pivot_edge): mark it, at most once a second.
-            dropped = (driver == DRIVER_ROS and ("drop_edge" in str(reason or "")
-                                                 or "drop_pivot_edge" in str(reason or ""))
-                       and now - drop_mark_at[0] >= DROP_MARK_EVERY_S)
-            if dropped:
-                drop_mark_at[0] = now
         if reason:
             refuse("safety_distance", reason, driver)
         if wedged:
             threading.Thread(target=mark_wedge, daemon=True, name="keepout").start()
-        if dropped and not drop_mark_busy.locked():
-            threading.Thread(target=mark_drop, daemon=True, name="keepout-drop").start()
         return {"executed": True, "driver": driver,
                 "applied": {"left_rad_s": left, "right_rad_s": right},
                 "clamped": reason}
@@ -2304,10 +2231,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             if not live or not hasattr(world_model, "set_keepout"):
                 return {"cleared": 0, "sent": False}
             try:
-                # 3.159.B2: a drop's discs outlive the mission (a stairwell
-                # stays where it is): resent, never cleared here.
-                reply = world_model.set_keepout(keepout_set(time.monotonic(), [], session),
-                                                 map_id=session)
+                reply = world_model.set_keepout([], map_id=session)
             except Exception as e:  # noqa: BLE001 -- see the docstring
                 logger.warning(f"keepout: clearing not sent ({e})")
                 return {"cleared": len(live), "sent": False, "detail": str(e)}

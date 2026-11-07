@@ -566,21 +566,12 @@ order; record the table in the plan entry.
   `/depth` raced it, and it failed open on a feedback blip. Options are in
   `PLAN-ros-alignment.md` 3.74.
 
-- **Drops (3.159).** The mark (B2): a `drop_edge` or `drop_pivot_edge`
-  refusal of a nav2 twist during a goal, at most once a second, sends the
-  remembered lips within 1 m as keepout discs (`DropMarks`: r 0.30 m, one
-  per 0.15 m grid square of lip at its first lip point, a lip nearer the
-  centre than 0.35 m moved out along the line from it so the disc covers
-  the lip and not the robot, at most 64, 3,600 s from first marked) with
-  the wedge spots in one `set_keepout()`, less any disc over the robot's
-  centre at that send; `DELETE /world/keepout` clears the wedge spots and
-  resends the discs. Its gaps: no route clears a disc (a false edge
-  blocks its spot until the TTL, a new SLAM session or a restart); the
-  lips (dead-reckoned) and the pose (SLAM, read after) are paired as if
-  at one instant, so a correction between them moves the discs; a bridge
-  that lost its set on the same session is not resent until a new disc;
-  past 64 discs the oldest go, a second stairwell's can push out a
-  first's.
+- **Drops (3.159).** The mark is held back (B2 measured it and it failed
+  its own bar; 3.159.B3): a seen edge does not reach nav2's keepout, so
+  nav2 keeps planning through a stairwell and the veto keeps refusing.
+  `DropMarks` and `to_house` in `robot/drop_guard.py` are the held mark's
+  book, used only by the sweep harness's `missions-marked`; the robot
+  server's wiring is `evaluations/drop-3159/mark-held.patch`.
   The memory dead-reckons, so its floor drifts with distance (pruned at
   3 m of travel). The blind band's fill and the wall shadows are geometric
   inferences (a straight edge; a wall stops the body first). Seeding

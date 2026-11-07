@@ -455,6 +455,9 @@ def to_house(x_m: float, y_m: float, heading_deg: float, along_cm: float, lat_cm
 
 class DropMarks:
     """3.159.B2: the drop discs nav2 must plan around, in the house frame.
+    Held back until 3.159.B3: the robot server does not send them
+    (`evaluations/drop-3159/mark-held.patch` is the wiring); the sweep
+    harness's `missions-marked` uses this book.
     One per `MARK_STEP_M` grid square of lip (at its first lip point), at
     most `MAX_MARKS` (the oldest dropped), living `MARK_TTL_S` and resent
     with every keepout post. A new SLAM session (`session`) empties the book: its discs were

@@ -369,21 +369,23 @@ def _vetted_nav_class():
         a goal is aborted after 3 polls with no motion (the veto held it) or
         120 polls in all.
 
-        3.159.B2 (amendment 3): at a `drop_edge` refusal the robot's
-        remembered lips become discs (`DropMarks`, the robot server's own
-        book) at the true pose, and the plan avoids every cell whose centre
-        a disc covers, as nav2's keepout does. `marked_vetoes` counts the
-        drop refusal episodes that begin with a disc within MARKED_NEAR_M."""
+        3.159.B2 (amendment 3), with `marks_on`: at a drop refusal the
+        robot's remembered lips become discs (`DropMarks`, the book the held
+        mark used, `evaluations/drop-3159/mark-held.patch`) at the true pose,
+        and the plan avoids every cell whose centre a disc covers, as nav2's
+        keepout does. `marked_vetoes` counts the drop refusal episodes that
+        begin with a disc within MARKED_NEAR_M. Off by default: the mark is
+        held back until 3.159.B3 (the robot server does not mark)."""
 
         MARKED_NEAR_M = 0.80
 
-        def __init__(self, robot):
+        def __init__(self, robot, marks_on=False):
             super().__init__(robot)
             self.safety = SafetyController(robot, 20.0)
             self.stuck = self.polls = 0
             self.vetoed = 0
             self.marks = drop_guard.DropMarks()
-            self.marks_on = True
+            self.marks_on = marks_on
             self.marked_vetoes = 0
             self.in_veto = False
             self.covered = set()
@@ -508,11 +510,13 @@ def mission_run(args):
     """One explore mission (`job` find or survey) through `MissionRunner`,
     nav2 stood in for by VettedNav, every motion through the safety layer;
     the truth checked after every integration step. `walled`: the same
-    house with its stairwell a wall."""
+    house with its stairwell a wall. An eighth field, True, turns the held
+    mark on in the harness (`missions-marked`)."""
     from control.mission_runner import MissionRunner
     from sim.maps import build_world
     from sim.mock_world import MockWorld
-    house, x, y, heading, target, job, walled = args
+    house, x, y, heading, target, job, walled = args[:7]
+    marks_on = len(args) > 7 and args[7]
     world = build_world(house)
     if walled:
         world.layout = [row.replace(DROP, "#") for row in world.layout]
@@ -531,7 +535,7 @@ def mission_run(args):
             state["overhang"] = max(state["overhang"], o)
         return result
     robot.step = checked
-    nav = _vetted_nav_class()(robot)
+    nav = _vetted_nav_class()(robot, marks_on=marks_on)
     kw = {"job": "survey"} if job == "survey" else {"target_object": target}
     runner = MissionRunner(robot, policy="explore", navigator=nav, world=MockWorld(world),
                            mission_time_limit_s=MISSION_LIMIT_S, clock=lambda: world.sim_time,
@@ -586,8 +590,9 @@ def main(argv):
         places = approach_placements(n, seed=2)
         args = [p + (seen,) for p in places for seen in (True, False)]
         fn, verdict = astern_run, None
-    elif what == "missions":
-        args = [(house,) + st + (job, walled) for house in STAIRS_HOUSES
+    elif what in ("missions", "missions-marked"):
+        args = [(house,) + st + (job, walled, what == "missions-marked")
+                for house in STAIRS_HOUSES
                 for st in mission_starts(house, n) for job in ("find", "survey")
                 for walled in (False, True)]
         fn, verdict = mission_run, mission_verdict
