@@ -114,7 +114,16 @@ end at `_finish`, and the status's `explore` block). With no
    `_tier.stats` from the policy's own counters (`_policy_stats()`, read
    outside the lock, never raising), in the same locked step as the outcome.
    A failure that lands after `stop()`/`abort()` returns at once: not
-   counted, not logged, nothing written. Otherwise `failed`; `Preempted` ->
+   counted, not logged, nothing written. Otherwise `failed`;
+   `CameraUnavailable` (3.153: `_HaltGate.get_camera_frame()` wraps any
+   error of the frame read but `MissionHalted`/`Preempted`, the original as
+   `__cause__`; every policy reads its frame first, so the tick has taken no
+   action) -> `_handle_camera_failure()`: under the lock count
+   `camera_failures` and log `camera unavailable n/budget: <error>`, then
+   `_safe_stop()`; `max_camera_failures` (`DEFAULT_MAX_CAMERA_FAILURES`, 3)
+   in a row end `failed` (`camera unavailable 3 times in a row: <error>`);
+   one landing after `stop()`/`abort()` does nothing. Every other robot
+   error still ends the mission at once; `Preempted` ->
    `_finish_preempted()` (3.70 E5): `cancelled` with `cancelled_by: "dpad"`;
    a `StoppedByPerson` (the robot server refused the brain `person_stop`: a
    person pressed Stop, the D-pad's included; 3.84) ends `cancelled` with
@@ -130,7 +139,7 @@ end at `_finish`, and the status's `explore` block). With no
    `brain_stop`, or `loop_cancelled` when the brain server set
    `runner.loop_cancelled` because its loop was cancelled without a
    person's Stop -- no intervention), for 3.99's intervention line.
-4. Under the lock: bump `ticks`, reset `vision_failures`, record the action,
+4. Under the lock: bump `ticks`, reset `vision_failures` and `camera_failures`, record the action,
    the turn counters, and copy `_tier`, `_perception` and `_arrival` off the
    scene (held, not overwritten with None); `last_frame_seq` is read from
    `result.frame`'s `metadata.seq`, not from the scene.
@@ -519,7 +528,7 @@ seed `[x_m, y_m, name]`), `mission`, `target_object`,
 `target_room`, `step`, `max_steps`, `found`, `room_reached`, `complete`,
 `last_action`, `turns` (`count`, `reversals`, `last_turn_deg`, `share`,
 `spinning`), `last_reasoning`, `rooms_visited`, `rooms_searched`,
-`vision_failures`, `tier`, `perception`, `arrival`, `arrival_verdicts`,
+`vision_failures`, `camera_failures` (3.153), `tier`, `perception`, `arrival`, `arrival_verdicts`,
 `late_confirmation`, `last_frame_seq`, `ticks`, `seconds_since_last_tick`, `tick_rate_hz`,
 `sighting`, `explore` (null unless explore searches: `goals_sent`,
 3.136.G's `sent` -- the last `SENT_IDS_KEPT` (64) accepted sends as
@@ -558,7 +567,7 @@ cancelled_by)` (`stopped` -> `cancelled`/`stop`, `preempted` ->
 
 ### In-process
 
-- `MissionRunner(robot, target_object=None, target_room=None, mission=None, max_steps=None, min_distance_cm=20.0, policy="frontier", vision_fn=None, vision_timeout_s=20.0, max_vision_failures=3, world=None, stuck_after=5, ..., inventory=True, detections_fn=None, mission_time_limit_s=None, battery_floor_v=None)` (3.70: with no time limit -- the in-process harnesses -- the backstop is 120 and no clock limit applies; the brain server always passes the config's) (3.46: the object inventory, recorded and reported only; `runner.inventory_sink` is set by the brain server like the metrics fields);
+- `MissionRunner(robot, target_object=None, target_room=None, mission=None, max_steps=None, min_distance_cm=20.0, policy="frontier", vision_fn=None, vision_timeout_s=20.0, max_vision_failures=3, max_camera_failures=3, world=None, stuck_after=5, ..., inventory=True, detections_fn=None, mission_time_limit_s=None, battery_floor_v=None)` (3.70: with no time limit -- the in-process harnesses -- the backstop is 120 and no clock limit applies; the brain server always passes the config's) (3.46: the object inventory, recorded and reported only; `runner.inventory_sink` is set by the brain server like the metrics fields);
   `start()`, `tick() -> bool`, `stop(reason)`, `abort(reason)`,
   `is_running()`, `status()`. `start()` on a used runner raises.
 - `vision_fn(frame: dict) -> dict` -- the scene schema (policy domain).
@@ -634,6 +643,7 @@ The `brain:` block of `config/robot.yaml`, read by
 | `request_timeout_s` | 10.0 | 10.0 | s | robot and world clients, allow-list check | |
 | `vision_timeout_s` | 20.0 | 20.0 | s | B3.2 per-call timeout | `load_brain_config()` refuses one that is not a finite number > 0, as it does `tick_timeout_s`, `request_timeout_s` and the two drill deadlines (3.76 N1: 0 timed out every call, or aborted every mission on its first tick); `arrival_confirm_timeout_s` must be finite too |
 | `max_vision_failures` | 3 | 3 | calls | B3.2 budget | B3 plan's suggestion; three abandoned threads at most |
+| `max_camera_failures` | 3 | -- (constructor only) | ticks | 3.153: consecutive failed frame reads | one 503 in a VE kill's OOM squeeze ended a mission (3.152.B); a camera gone for three ticks still ends it |
 | `reconfirm_probe_s` | 15.0 | 15.0 | s | `start_reconfirm` | 3.53: one free `/health` probe this often after an `arrived_unconfirmed` ending |
 | `reconfirm_window_s` | 600.0 | 600.0 | s | `start_reconfirm` | 3.53: give up (`expired`) after this; 0 turns the late check off. Worst case 41 probes and 2 paid calls per arrival |
 | `tick_timeout_s` | 30.0 | 30.0 | s | B3.3 dead-man | must stay above `teleop.stall_timeout_s` (15 s) so the specific teleop error fires first. **Not** above two `vision_timeout_s` (40 s): under a SYNCHRONOUS tier a tick that judges an arrival holds the vision call and the confirmation, each up to 20 s, so a slow pair is ended by B3.3 as "loop hung" rather than counted by B3.2. The shipped asynchronous tier has only the confirmation in the tick (review 3, fix 18; left as is, recorded) |
@@ -753,6 +763,7 @@ tests/test_mission_guarded_verbs.py -q`.
 | `tests/test_mission_runner.py` (32) | tick-driven equals blocking `run_mission()` step for step; outcomes and idempotent `_finish`; the gate refuses after stop; a stop landing mid-tick records no step; tiered readouts reach status and survive a scene with no tier; the tick keeps advancing while an async call is in flight |
 | `tests/test_brain_server.py` (78) | **the import boundary, by mechanism:** a subprocess imports the brain app and lists `sys.modules`, so a forbidden import fails the suite and does not depend on review; two-hop mission completes; 409 on a second start; stop with no mission stops the car; secret gating; `ROUTE_PREFIX`; **the brain process loads no `sim`, and from `robot`/`world` only `robot.interface`, `robot.safety`, `robot.identity`, `world.interface`**; model and wording validation (refused at start, outage tolerated, one round trip); unknown field is 422; tiered start refusals and sim-vs-real perception choice; a survey's room source (3.70 S2): the frame's by default, the cloud's `/room` with the vision URL, secret and a timeout held to half the tick's, refused at start with no vision URL, never built for a find, reported on `/health`; a bad source or timeout refused at load |
 | `tests/test_tick_within.py` (6) | the mission loop's tick await: a cancel landing as the tick ends is raised, not lost, and a tick failing in that turn is logged (red only on Python 3.10 with `wait_for`), a cancel mid-tick and a deadline cancel the wait, results and errors come back, and `brain_server` never calls `asyncio.wait_for` |
+| `tests/test_camera_budget_3153.py` (5) | 3.153: one failed frame read mid-mission keeps the outcome (red before), the car stopped on that tick and the count reset; a camera never back ends `failed` after exactly 3 with no move; only consecutive failures count; any other robot error still ends at once; a Stop during a failed read is unchanged |
 | `tests/test_failsafes.py` (15) | B3.2 budget and hang; one failure survivable; no movement after stop; B3.3 dead-man; every drill ends `failed` with the robot stopped; no-fault builds the ordinary mission; drills can be switched off |
 | `tests/test_camera_centred_start.py` (11) | 3.20's four criteria: centred first decision under `frontier` and `vision` (tiered is not parametrised), no step or vision call spent, centred start unchanged against `tests/data/frontier_trace_centred.json`, a refused centring ends the mission like any refused move |
 | `tests/test_mission_guarded_verbs.py` (3) | 3.32: a mission's verbs go through the safety layer's guarded plan; the gate forwards plan and stop count; a finished mission refuses a plan |

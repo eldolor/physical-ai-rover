@@ -145,6 +145,10 @@ DEFAULT_ARRIVAL_CONFIRM_TIMEOUT_S = 8.0
 # the rare backstop: a quarter of the deadline, at most 2 s.
 CONFIRM_GUARD_GRACE_MAX_S = 2.0
 DEFAULT_MAX_VISION_FAILURES = 3
+# 3.153: a camera read that fails (the robot server's /frame 503, a backend
+# that stalled in a memory squeeze) is a transient fault with its own budget,
+# like vision's (B3.2): this many consecutive failed ticks end the mission.
+DEFAULT_MAX_CAMERA_FAILURES = 3
 
 LOG_TAIL_LINES = 20
 
@@ -300,6 +304,11 @@ class LateCallFailed(Exception):
     """A late call that outlived its guard has since ended in an error
     (3.76 G1). Already counted as a failed attempt when it timed out; this
     carries the real error, as `__cause__`."""
+
+
+class CameraUnavailable(RuntimeError):
+    """3.153: a frame read through the mission's gate raised. Counted against
+    the camera's failure budget by tick(); the error read is `__cause__`."""
 
 
 class MissionHalted(RuntimeError):
@@ -565,7 +574,12 @@ class _HaltGate(RobotInterface):
         return self._robot.stop()
 
     def get_camera_frame(self) -> dict:
-        frame = self._robot.get_camera_frame()
+        try:
+            frame = self._robot.get_camera_frame()
+        except (MissionHalted, Preempted):
+            raise
+        except Exception as e:  # noqa: BLE001 -- 3.153: a failed read is a budgeted fault
+            raise CameraUnavailable(str(e)) from e
         if self._on_frame is not None:
             self._on_frame(frame)
         return frame
@@ -670,6 +684,7 @@ class MissionRunner:
         vision_timeout_s: float = DEFAULT_VISION_TIMEOUT_S,
         arrival_confirm_timeout_s: float = DEFAULT_ARRIVAL_CONFIRM_TIMEOUT_S,
         max_vision_failures: int = DEFAULT_MAX_VISION_FAILURES,
+        max_camera_failures: int = DEFAULT_MAX_CAMERA_FAILURES,
         world: Optional[WorldInterface] = None,
         stuck_after: Optional[int] = DEFAULT_STUCK_AFTER,
         navigator=None,
@@ -860,6 +875,7 @@ class MissionRunner:
         # paying again.
         self._late_box: Optional[dict] = None
         self.max_vision_failures = max_vision_failures
+        self.max_camera_failures = max_camera_failures
         # 3.88 A: who and where, on every recorded choice; the file is set by
         # the brain server (`choice_log`), and the records kept here as well.
         self.mission_id: Optional[str] = None
@@ -958,6 +974,7 @@ class MissionRunner:
         self._started_at = None
         self._error: Optional[str] = None
         self._vision_failures = 0
+        self._camera_failures = 0
         self._failed_arrival: Optional[dict] = None
         # 3.53: the frame that arrival was judged on, held with it, and kept
         # by _finish for a late confirmation (control/reconfirm.py).
@@ -1077,6 +1094,8 @@ class MissionRunner:
             return False
         except VisionUnavailable as e:
             return self._handle_vision_failure(e)
+        except CameraUnavailable as e:
+            return self._handle_camera_failure(e)
         except Preempted as e:
             # Phase M4. Not counted against any budget and not retried:
             # a preemption is not a transient fault, it is the answer to
@@ -1107,6 +1126,7 @@ class MissionRunner:
             self._last_tick_at = time.monotonic()
             self._ticks += 1
             self._vision_failures = 0
+            self._camera_failures = 0
             self._failed_arrival = None
             self._failed_arrival_frame = None
             self._last_action = result.action
@@ -1596,6 +1616,7 @@ class MissionRunner:
                 "rooms_visited": sorted(self.memory.visited_rooms),
                 "rooms_searched": sorted(self.memory.searched_rooms),
                 "vision_failures": self._vision_failures,
+                "camera_failures": self._camera_failures,
                 # Phase P2 / 6.3. `tier` carries the deliberation-call
                 # counter -- *"that single number makes the whole
                 # architecture watchable"* -- and the model names beside
@@ -1978,6 +1999,26 @@ class MissionRunner:
                 tier_stats=self._policy_stats(), arrival_frame=pending_frame)
             return False
         self._finish(FAILED, f"vision unavailable {failures} times in a row: {error}")
+        return False
+
+    def _handle_camera_failure(self, error: CameraUnavailable) -> bool:
+        """3.153: a failed frame read. The tick took no action (every policy
+        reads its frame first); the car is stopped, as on a blind vision
+        tick, and `max_camera_failures` in a row end the mission `failed`.
+        A failure after stop()/abort() ended it does nothing, for the reason
+        _handle_vision_failure gives."""
+        with self._lock:
+            running = self._running
+            if running:
+                self._camera_failures += 1
+                failures, budget = self._camera_failures, self.max_camera_failures
+                self._log_line(f"camera unavailable {failures}/{budget}: {error}")
+        if not running:
+            return False
+        self._safe_stop()
+        if failures < budget:
+            return self._running
+        self._finish(FAILED, f"camera unavailable {failures} times in a row: {error}")
         return False
 
     def _policy_stats(self) -> Optional[dict]:
