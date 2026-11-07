@@ -46,8 +46,11 @@ FORGET_M = 3.0
 RUN_CM = 60.0
 STEP_CM = 2.5
 LATERAL_STEP_CM = 3.0
-# A turn is looked at this far ahead of where the outline is now.
+# A turn is looked at in steps of this, out to the larger of one step and
+# the angle it covers in PIVOT_HORIZON_S (two wheel-loop periods): a fast
+# turn must not carry a corner past an edge between two looks.
 PIVOT_STEP_DEG = 5.0
+PIVOT_HORIZON_S = 0.1
 
 FLOOR, EDGE, THING = 1, 2, 3
 # Memory is pruned of cells seen more than FORGET_M of travel ago once it
@@ -79,9 +82,9 @@ def guard_for(robot, half_len_cm: float, half_wid_cm: float, side_margin_cm: flo
 
 
 class DropGuard:
-    """The floor memory and the three questions asked of it. One per
-    `SafetyController`; the wheel loop and a verb read it from two threads,
-    so every read and write holds `_lock`."""
+    """The floor memory and the three questions asked of it. One per robot
+    (`guard_for`), shared by its `SafetyController`s; the wheel loop and a
+    verb read it from two threads, so every read and write holds `_lock`."""
 
     def __init__(self, half_len_cm: float, half_wid_cm: float, side_margin_cm: float,
                  margin_cm: float = 0.0):
@@ -99,6 +102,8 @@ class DropGuard:
         self._prune_at = PRUNE_AT
         self.lens_x = 0.0               # the block's origin_x_cm, as last read
         self.active = False
+        self.probed = False             # a grid has been asked for once
+        self.ring_seen = False          # the last frame saw floor at MinZ
 
     # -- the body's own frame -------------------------------------------------
 
@@ -239,7 +244,7 @@ class DropGuard:
                 prev = None
                 continue
             at, kind = end
-            self._mark(*at, kind, path, force=True)
+            self._mark(*at, kind, path)
             # A wall is a line, not the dots its columns end on: join two
             # neighbours' ends, so a sightline cannot slip between them.
             if kind == THING and prev is not None and math.dist(prev, at) <= 2 * CELL_CM:
@@ -248,12 +253,13 @@ class DropGuard:
                                THING, path)
             prev = at if kind == THING else None
 
-    def _mark(self, along, lateral, state, path, force=False) -> None:
+    def _mark(self, along, lateral, state, path) -> None:
         key = _cell(*self._to_world(along, lateral))
         old = self._cells.get(key)
-        # An edge is sticky: a floor reading never clears one (a noisy
-        # range past a lip must not paint floor over a stairwell).
-        if old is not None and old[0] == EDGE and state == FLOOR and not force:
+        # An edge is sticky: nothing but an edge rewrites one (a noisy range
+        # past a lip must not paint floor over a stairwell, nor a wall's end
+        # or its join a thing that would hide the lip from `clearance`).
+        if old is not None and old[0] == EDGE and state != EDGE:
             return
         self._cells[key] = (state, path)
 
@@ -265,43 +271,50 @@ class DropGuard:
 
     # -- the questions ---------------------------------------------------------
 
-    def clearance(self, direction: int) -> Tuple[Optional[float], str]:
+    def clearance(self, direction: int, margin_cm: Optional[float] = None
+                  ) -> Tuple[Optional[float], str]:
         """Room along the swept corridor before floor that is not
-        remembered (`drop_unseen`) or an edge (`drop_edge`); None when the
+        remembered (`drop_unseen`) or an edge (`drop_edge`), less
+        `margin_cm` (the caller's; the guard's own when None); None when the
         corridor is remembered floor out to `RUN_CM` (or a thing ends it:
-        the cone's and the corridor's)."""
+        the cone's and the corridor's). On, with no pose to read memory
+        from (no usable wheels or odometry yet): 0, `drop_unusable` (M3)."""
+        margin = self.margin if margin_cm is None else margin_cm
         with self._lock:
-            if not self.active or self._pose is None:
+            if not self.active:
                 return None, "no_drop_sensor"
+            if self._pose is None:
+                return 0.0, "drop_unusable"
             reach = self.half_wid + self.side_margin
             lats = list(_steps(-reach, reach, LATERAL_STEP_CM))
             ended = [False] * len(lats)
-            # Lines from the centre outward, so a thing met on one ends every
-            # line beyond it on that side too: behind a wall is floor the
-            # camera cannot see and the body cannot reach (the cone, the
-            # corridor and the floor band stop it at the wall).
+            # Lines from the centre outward, so a thing met on one excuses
+            # unseen floor on every line beyond it on that side too: behind
+            # a wall is floor the camera cannot see and the body cannot
+            # reach (the cone, the corridor and the floor band stop it at
+            # the wall). A thing never hides a remembered edge: an edge on
+            # any line is the answer, however many things lie before it
+            # (a remembered thing may have walked away).
             order = sorted(range(len(lats)), key=lambda n: abs(lats[n]))
             for room in _steps(0.0, RUN_CM, STEP_CM):
                 along = direction * (self.half_len + room)
                 for n in order:
                     lat = lats[n]
+                    st = self._state(along, lat)
+                    if st == EDGE:
+                        return self._room(room, margin), "drop_edge"
                     if ended[n]:
                         continue
-                    st = self._state(along, lat)
                     if st == THING:
                         for m, other in enumerate(lats):
                             if abs(other) >= abs(lat) and (other * lat > 0 or lat == 0):
                                 ended[m] = True
-                    elif st == EDGE:
-                        return self._room(room), "drop_edge"
                     elif st is None:
                         if direction > 0 and self._shadowed(along, lat):
                             ended[n] = True          # behind a thing: as the thing
                             continue
-                        return self._room(room), ("drop_unseen" if direction > 0
-                                                  else "drop_unseen_astern")
-                if all(ended):
-                    break
+                        return self._room(room, margin), ("drop_unseen" if direction > 0
+                                                          else "drop_unseen_astern")
             return None, "drop_floor_seen"
 
     def _shadowed(self, along: float, lat: float) -> bool:
@@ -315,8 +328,9 @@ class DropGuard:
                 return True
         return False
 
-    def _room(self, room: float) -> float:
-        return round(max(0.0, room - self.margin), 1)
+    @staticmethod
+    def _room(room: float, margin: float) -> float:
+        return round(max(0.0, room - margin), 1)
 
     def pivot_blocked(self, omega_rad_s: float) -> Optional[str]:
         """A turn that would carry an outline point from remembered floor
@@ -328,17 +342,20 @@ class DropGuard:
         if omega_rad_s == 0:
             return None
         with self._lock:
-            if not self.active or self._pose is None:
+            if not self.active:
                 return None
-            step = math.radians(math.copysign(PIVOT_STEP_DEG, omega_rad_s))
-            c, s = math.cos(step), math.sin(step)
+            if self._pose is None:
+                return "drop_unusable"
+            reach = max(PIVOT_STEP_DEG, math.degrees(abs(omega_rad_s)) * PIVOT_HORIZON_S)
+            looks = int(math.ceil(reach / PIVOT_STEP_DEG - 1e-9))
             for along, lat in _outline(self.half_len, self.half_wid):
                 if self._state(along, lat) != FLOOR:
                     continue
-                a2, l2 = along * c - lat * s, along * s + lat * c
-                st = self._state(a2, l2)
-                if st == EDGE:
-                    return "drop_pivot_edge"
+                for k in range(1, looks + 1):
+                    step = math.radians(math.copysign(reach * k / looks, omega_rad_s))
+                    c, s = math.cos(step), math.sin(step)
+                    if self._state(along * c - lat * s, along * s + lat * c) == EDGE:
+                        return "drop_pivot_edge"
             return None
 
 

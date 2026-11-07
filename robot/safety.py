@@ -1024,25 +1024,35 @@ class SafetyController:
         so no move keeps less than the full bar from a drop. `(None,
         "no_drop_sensor")` for a backend that has never published a block:
         every real body today, and every house without a drop."""
+        guard = self._drop_guard()
         if grid is None:
             # Astern too: the camera looks ahead, but a first move that is a
             # reverse must still find the memory switched on (and refuse).
+            # A body that showed no block the first time is not asked again
+            # astern: every house without a drop senses exactly as before.
+            if guard.probed and not guard.active:
+                return None, "no_drop_sensor"
             get_grid = getattr(self.robot, "get_depth_grid", None)
             grid = get_grid() if get_grid is not None else None
-        guard = self._drop_guard()
+        guard.probed = True
         guard.update(self.robot, grid)
-        return guard.clearance(direction)
+        return guard.clearance(direction, self.min_distance_cm - CREEP_MARGIN_CM)
 
-    def drop_pivot_blocked(self, omega_rad_s: float) -> Optional[str]:
+    def drop_pivot_blocked(self, omega_rad_s: float, folded: bool = False) -> Optional[str]:
         """A turn that would carry a corner of the chassis off remembered
         floor or across an edge (3.159). Turning away -- a corner already off
         floor, or one coming back -- is never refused, 3.19's rule. Kept out
-        of `pivot_scale()`, whose answers `tests/pivot_reference.py` freezes."""
+        of `pivot_scale()`, whose answers `tests/pivot_reference.py` freezes.
+        `folded`: this tick's frame is already in memory (a clearance just
+        read it), so it is not fetched and folded twice."""
         guard = self._drop_guard()
-        if not guard.active or omega_rad_s == 0:
+        # A first move that is a turn probes for a block too.
+        if omega_rad_s == 0 or (guard.probed and not guard.active):
             return None
-        get_grid = getattr(self.robot, "get_depth_grid", None)
-        guard.update(self.robot, get_grid() if get_grid is not None else None)
+        guard.probed = True
+        if not folded or not guard.active:
+            get_grid = getattr(self.robot, "get_depth_grid", None)
+            guard.update(self.robot, get_grid() if get_grid is not None else None)
         return guard.pivot_blocked(omega_rad_s)
 
     def _aged(self, result: Tuple[Optional[float], str], direction: int
@@ -1138,7 +1148,7 @@ class SafetyController:
         if pivot:
             omega *= scale
             reason = pivot if reason is None else f"{reason}; {pivot}"
-        drop = self.drop_pivot_blocked(omega) if omega else None
+        drop = self.drop_pivot_blocked(omega, folded=v_asked != 0) if omega else None
         if drop:
             omega = 0.0
             pivot = f"pivot clamped ({drop})"
