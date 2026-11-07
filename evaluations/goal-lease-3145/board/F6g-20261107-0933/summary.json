@@ -1,0 +1,334 @@
+{
+ "sha": "edafac218f381179b56a7457c6b9c4385b10e489",
+ "cmd_exit": 0,
+ "cmd_s": 163.0,
+ "verdict": {
+  "row": "F6g",
+  "plant": null,
+  "house": "scaled_house",
+  "state": "met",
+  "runs_wanted": 5,
+  "runs_scored": 5,
+  "runs_total": 5,
+  "runs_failed": 0,
+  "not_scored": [],
+  "reasons": []
+ },
+ "runs": [
+  {
+   "i": 1,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 7.57,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 142976.999259945,
+    "driver_at_fault": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "end_error": "<urlopen error [Errno 111] Connection refused>",
+    "refusals": {
+     "preempted": 1,
+     "autonomy_lapsed": 1
+    },
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 89,
+     "max_dt_s": 0.0613
+    },
+    "last_refusal": {
+     "reason": "autonomy_lapsed",
+     "detail": "brain sent no heartbeat for 1.03s with a nav2 goal of its own -- the goal was ended and autonomy stays stopped until a new mission starts",
+     "driver": "brain",
+     "at": 142977.851529033,
+     "seconds_ago": 5.16
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 0.885,
+    "travel_cm": 6.58,
+    "truth_hole_s": 0.024,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     142958.9841,
+     142991.7042
+    ],
+    "mem_available_min_mb": 2394,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": null,
+    "last_action": null,
+    "error": "<urlopen error [Errno 111] Connection refused>"
+   }
+  },
+  {
+   "i": 2,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 6.64,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 143009.770642858,
+    "driver_at_fault": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "end_error": "<urlopen error [Errno 111] Connection refused>",
+    "refusals": {
+     "preempted": 1,
+     "autonomy_lapsed": 1
+    },
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 94,
+     "max_dt_s": 0.0592
+    },
+    "last_refusal": {
+     "reason": "autonomy_lapsed",
+     "detail": "brain sent no heartbeat for 1.03s with a nav2 goal of its own -- the goal was ended and autonomy stays stopped until a new mission starts",
+     "driver": "brain",
+     "at": 143010.712487318,
+     "seconds_ago": 5.07
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 0.983,
+    "travel_cm": 6.74,
+    "truth_hole_s": 0.024,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     142992.9736,
+     143023.6736
+    ],
+    "mem_available_min_mb": 2372,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": null,
+    "last_action": null,
+    "error": "<urlopen error [Errno 111] Connection refused>"
+   }
+  },
+  {
+   "i": 3,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 7.45,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 143041.700910623,
+    "driver_at_fault": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "end_error": "<urlopen error [Errno 111] Connection refused>",
+    "refusals": {
+     "preempted": 1,
+     "autonomy_lapsed": 1
+    },
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 89,
+     "max_dt_s": 0.0606
+    },
+    "last_refusal": {
+     "reason": "autonomy_lapsed",
+     "detail": "brain sent no heartbeat for 1.03s with a nav2 goal of its own -- the goal was ended and autonomy stays stopped until a new mission starts",
+     "driver": "brain",
+     "at": 143042.55508201,
+     "seconds_ago": 5.16
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 0.883,
+    "travel_cm": 6.48,
+    "truth_hole_s": 0.025,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     143024.9438,
+     143056.3638
+    ],
+    "mem_available_min_mb": 2366,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": null,
+    "last_action": null,
+    "error": "<urlopen error [Errno 111] Connection refused>"
+   }
+  },
+  {
+   "i": 4,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 6.68,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 143074.285351939,
+    "driver_at_fault": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "end_error": "<urlopen error [Errno 111] Connection refused>",
+    "refusals": {
+     "preempted": 1,
+     "autonomy_lapsed": 1
+    },
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 96,
+     "max_dt_s": 0.0601
+    },
+    "last_refusal": {
+     "reason": "autonomy_lapsed",
+     "detail": "brain sent no heartbeat for 1.04s with a nav2 goal of its own -- the goal was ended and autonomy stays stopped until a new mission starts",
+     "driver": "brain",
+     "at": 143075.315902703,
+     "seconds_ago": 4.98
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 1.082,
+    "travel_cm": 7.83,
+    "truth_hole_s": 0.025,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     143057.5867,
+     143088.3268
+    ],
+    "mem_available_min_mb": 2369,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": null,
+    "last_action": null,
+    "error": "<urlopen error [Errno 111] Connection refused>"
+   }
+  },
+  {
+   "i": 5,
+   "pass": true,
+   "valid": true,
+   "reasons": [],
+   "error": null,
+   "recovery_s": 6.64,
+   "recovery_error": null,
+   "host": "picar-jetson",
+   "measures": {
+    "fault_at": 143106.167277105,
+    "driver_at_fault": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "end_error": "<urlopen error [Errno 111] Connection refused>",
+    "refusals": {
+     "preempted": 1,
+     "autonomy_lapsed": 1
+    },
+    "no_feedback_refusals": 0,
+    "wheel_loop": {
+     "late": 0,
+     "moving": 90,
+     "max_dt_s": 0.0604
+    },
+    "last_refusal": {
+     "reason": "autonomy_lapsed",
+     "detail": "brain sent no heartbeat for 1.06s with a nav2 goal of its own -- the goal was ended and autonomy stays stopped until a new mission starts",
+     "driver": "brain",
+     "at": 143107.041051878,
+     "seconds_ago": 5.13
+    },
+    "forward_at_fault": true,
+    "wheels_zero_s": 0.898,
+    "travel_cm": 6.47,
+    "truth_hole_s": 0.025,
+    "contacts": 0,
+    "gap_unknown": 0,
+    "truth_span": [
+     143089.6046,
+     143120.0447
+    ],
+    "mem_available_min_mb": 2380,
+    "oom_kills": 0
+   },
+   "status": {
+    "running": null,
+    "outcome": null,
+    "end_state": null,
+    "end_reason": null,
+    "cancelled_by": null,
+    "step": null,
+    "last_action": null,
+    "error": "<urlopen error [Errno 111] Connection refused>"
+   }
+  }
+ ],
+ "power_mode": "NV Power Mode: 15W",
+ "telemetry": {
+  "samples": 145,
+  "temps": 145,
+  "clocks": 145,
+  "max_temp_c": 50.031,
+  "oom_kills": 0,
+  "mem_available_min_mb": 2367,
+  "cpu_below_max_samples": 83,
+  "gpu_below_max_samples": 145
+ },
+ "restore_actions": [
+  "started picar-stack (was inactive)",
+  "started picar-ngrok (was inactive)"
+ ],
+ "restore_error": null,
+ "as_found_differences": [],
+ "left_as_found": true,
+ "harness_leftovers": {
+  "before": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  },
+  "after": {
+   "dropin": "no",
+   "tmpfs": "0",
+   "ntp": "yes"
+  }
+ }
+}

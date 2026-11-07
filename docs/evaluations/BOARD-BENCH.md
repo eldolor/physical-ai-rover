@@ -208,6 +208,8 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-04 | `d1d69eff` | F4 ROS container killed | 5/5 | **FAILED** | **zero 1.08-1.14 s (0.5), 8.3-9.4 cm (5)**; ROS not named, readout `watchdog` | 0 | 0 | 2,070 | 0 | 51.3 °C | a new container, then `found`, 5/5 | yes |
 | 2026-11-04 | `d1d69eff` | F6g brain killed, a nav2 goal | 5/5 | **FAILED** | **zero 2.80-3.33 s (1.1), 16.9-18.5 cm (15)** | 0 | 0 | 2,097 | 0 | 50.9 °C | 6.4-6.6 s | yes |
 | 2026-11-04 | `d1d69eff` | F7g brain hung 30 s, a nav2 goal | 5/5 | **FAILED** | **zero 2.79-3.15 s (1.1), 17.1-18.3 cm (15)**; 0 driving after SIGCONT (met) | 0 | 0 | 2,082 | 0 | 50.7 °C | 4.9-5.7 s | yes |
+| 2026-11-07 | `edafac21` | F6g brain killed, a nav2 goal (3.145, the goal lease) | 5/5 | met | zero 0.88-1.08 s (1.1), 6.5-7.8 cm (15) | 0 | 0 | 2,366 | 0 | 50.0 °C | 6.6-7.6 s | yes |
+| 2026-11-07 | `edafac21` | F7g brain hung 30 s, a nav2 goal (3.145, the goal lease) | 5/5 | met | zero 0.84-1.07 s (1.1), 6.3-8.0 cm (15); 0 driving after SIGCONT | 0 | 0 | 2,368 | 0 | 50.3 °C | 1.5-5.1 s | yes |
 | 2026-11-04 | `affb16fd` | F6 brain killed, a FORWARD | 5/5 | **FAILED** | zero 0.82-0.85 s (1.1); **23.8-24.8 cm (15)** | 0 | 0 | 2,463 | 0 | 55.9 °C | 4.4-4.8 s | yes |
 | 2026-11-04 | `affb16fd` | F11a cloud refused from the start (tiered) | 5/5 | **FAILED** | 4 `arrived_unconfirmed`, **1 `blocked`** (any other end fails); 0 paid calls | 0 | 0 | 2,415 | 0 | 51.9 °C | -- | yes |
 | 2026-11-04 | `affb16fd` | F11b cloud lost mid-mission (tiered) | 5/5 | **FAILED** | 2 `arrived_unconfirmed` (late confirmation final: `refused`), **3 `blocked`**; open paid calls max 1 | 0 | 0 | 2,376 | 0 | 49.6 °C | -- | yes |
@@ -237,6 +239,20 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 | 2026-11-05 | `fb12ba7f` | F14 board rebooted mid-mission (`sudo systemctl reboot`, the production units) | 3/3 | met | robot and brain back 43.9-48.5 s (90; an upper bound: ssh and the services answered at the same first poll); VE ready 48.6-51.6 s; 0 files unparseable, lost or shortened (17-20 files, 2-5 JSONL lines); the next mission drove 3/3; units as found. A first batch at `27d14d6c` was 6/6 invalid, no reboot sent (amendment 20) | -- | -- | -- | -- | -- | 43.9-48.5 s | yes |
 
 ## Runs
+
+### 2026-11-07, 3.145 criterion 6: F6g and F7g on the goal lease (`dev` `edafac21`)
+
+`evaluations/goal-lease-3145/board.py F6g|F7g --runs 5` (3.135's `run.py
+row`, the bench in `~/bench-3145`, the ROS image `vision-picar-ros:plan-3.145`
+built on the board from `dev`; `:latest` untouched), 15 W, 09:33-09:43, one
+board hold a row. **Both met 5/5** (shipped build on 2026-11-04: FAILED,
+2.8-3.3 s, 17-18.5 cm). F6g wheels zero 0.88-1.08 s, 6.5-7.8 cm; F7g
+0.84-1.07 s, 6.3-8.0 cm, 0 driving after SIGCONT. `autonomy_lapsed` after
+1.00-1.07 s of silence each run; 0 contacts, 0 late wheel ticks (923
+moving), 0 OOM, `MemAvailable` minimum 2,366 MB, max 50.3 °C; left as
+found, `picar-stack`, `picar-ngrok`, `picar-local-vlm` active after each.
+The margin is thin: F6g run 4 1.082 s, F7g run 3 1.068 s against 1.1.
+Records: `evaluations/goal-lease-3145/board/`.
 
 ### 2026-11-07, 3.136.C run 2, `f2baec29` (INVALID)
 

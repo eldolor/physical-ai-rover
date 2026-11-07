@@ -1,0 +1,10 @@
+{
+ "locked": true,
+ "errno": null,
+ "error": null,
+ "limit_soft_kb": "unlimited",
+ "limit_hard_kb": "unlimited",
+ "vm_lck_kb": 983304,
+ "vm_rss_kb": 65404,
+ "limit_raised": true
+}

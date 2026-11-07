@@ -1,0 +1,6 @@
+{"i": 1, "verdict": {"pass": true, "valid": true, "reasons": []}, "error": null}
+{"i": 2, "verdict": {"pass": true, "valid": true, "reasons": []}, "error": null}
+{"i": 3, "verdict": {"pass": true, "valid": true, "reasons": []}, "error": null}
+{"i": 4, "verdict": {"pass": true, "valid": true, "reasons": []}, "error": null}
+{"i": 5, "verdict": {"pass": true, "valid": true, "reasons": []}, "error": null}
+{"row": "F6g", "plant": null, "house": "scaled_house", "state": "met", "runs_wanted": 5, "runs_scored": 5, "runs_total": 5, "runs_failed": 0, "not_scored": [], "reasons": []}

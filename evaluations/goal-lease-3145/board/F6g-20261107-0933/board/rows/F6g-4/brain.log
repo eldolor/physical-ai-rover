@@ -1,0 +1,4 @@
+1794065732.955 WARNING identity vision-picar brain server starting -- git=edafac21 executable=/home/picar/bench-3145/.venv/bin/python config=(default)
+1794065752.055 WARNING identity vision-picar brain server starting -- git=edafac21 executable=/home/picar/bench-3145/.venv/bin/python config=(default)
+1794065757.884 WARNING explore goal call failed (1 in a row), waiting: Server error '503 Service Unavailable' for url 'http://127.0.0.1:10350/world/goal'
+For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503
