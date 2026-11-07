@@ -138,6 +138,29 @@ nothing (3.74 review). **Rejected:** letting a detector's
 "hazard" veto motion. A camera can be wrong; recognition steers
 (3.74 part C), measurement vetoes.
 
+### A drop is a wall at the end of seen floor, and unseen floor is not clear (3.159)
+
+The lidar and the cone see a stairwell as open space; the floor band looks
+for things, not for missing floor. The depth camera's `drop` block says,
+per column, how far floor runs and what ended it: an edge (the floor
+falls away) or a thing. It is a fourth check in series. Because the camera
+is blind under the bumper and astern, a frame alone cannot answer, so the
+robot keeps a **floor memory** in its own dead-reckoned frame (odometry,
+egocentric: body state), one per robot, shared by every controller over it.
+A straight move may go only as far as remembered floor reaches along the
+swept corridor; an edge, or floor never seen, is a wall. Reversing onto
+floor the robot has not driven or seen is refused. A turn is refused when
+a corner would swing onto a remembered edge; turning away never is. The
+room before a drop is the full bar from it at every speed, a creep's
+included: a creep may nose up to a sock, never to a stair. Where the
+camera cannot see (the band from the bumper to its minimum range, floor
+behind a wall) the memory's rules are inferences from geometry, judged
+on ground truth (3.159.B). **Rejected:** the lidar's open space as
+"clear" (it is 12 cm up). **Rejected:** a frame-only rule: under the
+bumper nothing would ever be clear, or everything would. Whether the
+Rover also needs IR cliff sensors is decided on its own stair edge
+(3.159.C).
+
 ### A turn is refused only when it closes on something
 
 A rectangle's corners swing beyond its sides when it pivots, so rotation is

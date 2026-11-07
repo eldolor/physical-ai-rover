@@ -211,6 +211,38 @@ def cast_ray_exact(layout, px: float, py: float, angle: float, solid=None,
             return t
 
 
+def cast_ray_drop(layout, px: float, py: float, angle: float, solid=None,
+                  max_dist: float = FPV_MAX_DIST):
+    """3.159: how far along the ray the floor runs, in cells, and what ends
+    it -- `("edge", t)` at a drop cell (`v`), `("thing", t)` at a wall or a
+    `solid` cell, `(None, max_dist)` when floor runs to the reach.
+    `cast_ray_exact()`'s traversal, so a range is never overstated; a ray
+    starting over a drop sees no floor at all (0.0, an edge)."""
+    cx, cy = math.floor(px), math.floor(py)
+    if _cell_at(layout, cx, cy) == "v":
+        return "edge", 0.0
+    dx, dy = math.cos(angle), math.sin(angle)
+    own = (cx, cy)
+    step_x = 1 if dx > 0 else -1
+    step_y = 1 if dy > 0 else -1
+    t_max_x = ((cx + 1 - px) / dx if dx > 0 else (px - cx) / -dx) if dx != 0 else math.inf
+    t_max_y = ((cy + 1 - py) / dy if dy > 0 else (py - cy) / -dy) if dy != 0 else math.inf
+    t_dx = abs(1 / dx) if dx != 0 else math.inf
+    t_dy = abs(1 / dy) if dy != 0 else math.inf
+    while True:
+        if t_max_x < t_max_y:
+            t, cx, t_max_x = t_max_x, cx + step_x, t_max_x + t_dx
+        else:
+            t, cy, t_max_y = t_max_y, cy + step_y, t_max_y + t_dy
+        if t >= max_dist:
+            return None, max_dist
+        cell = _cell_at(layout, cx, cy)
+        if cell == "v":
+            return "edge", t
+        if cell == CELL_WALL or (solid and (cx, cy) in solid and (cx, cy) != own):
+            return "thing", t
+
+
 def wall_profile(layout, px: float, py: float, base_angle: float, width=DEFAULT_WIDTH,
                  height=DEFAULT_HEIGHT):
     """The per-column geometry, before anything is painted.
