@@ -279,3 +279,25 @@ def test_a_lip_ahead_is_a_house_point_ahead():
     # Facing east (90): 50 cm ahead is +x, 10 cm to the left is -y (north).
     x, y = drop_guard.to_house(1.0, 1.0, 90.0, 50.0, 10.0)
     assert (x, y) == pytest.approx((1.5, 0.9))
+
+
+def test_a_lip_the_turn_opens_does_not_excuse_one_it_closes():
+    """B2 review (both): the check compared the smallest gap only, so a lip
+    already inside the outline (gap 0) let every turn through, and one the
+    turn opened hid another it closed."""
+    world, robot = _robot()
+    guard = drop_guard.DropGuard(12.65, 11.55, 3.0)
+    guard.update(robot, robot.get_depth_grid())
+    guard._mark(5.0, 0.0, drop_guard.EDGE, 0.0, lip=True)          # inside the outline
+    ang = math.atan2(11.55, 12.65) + math.radians(8.0)              # 8 degrees CCW of a corner
+    guard._mark(17.13 * math.cos(ang), 17.13 * math.sin(ang), drop_guard.EDGE, 0.0, lip=True)
+    assert guard.pivot_blocked(1.0) == "drop_pivot_edge"
+
+
+def test_a_disc_never_covers_the_robots_own_centre():
+    """B2 review (Thermos): discs within r of the centre put the robot in
+    lethal keepout, where nav2 cannot plan from."""
+    marks = drop_guard.DropMarks()
+    assert marks.add(0.0, [(1.2, 1.0), (1.6, 1.0)], at=(1.0, 1.0)) == 1
+    (s,) = marks.spots(0.0)
+    assert math.hypot(s["x_m"] - 1.0, s["y_m"] - 1.0) >= drop_guard.MARK_R_M

@@ -386,18 +386,23 @@ def _vetted_nav_class():
             self.marks_on = True
             self.marked_vetoes = 0
             self.in_veto = False
+            self.covered = set()
 
         def _mark(self):
+            """As the robot server's `mark_drop`, at the true pose."""
             g = self.grid
             lips = self.safety._drop_guard().lips()
             heading = math.degrees(g.theta) + 90.0
-            self.marks.add(0.0, [drop_guard.to_house(g.x * 0.3, g.y * 0.3, heading, a, l)
-                                 for a, l in lips])
+            if self.marks.add(0.0, [drop_guard.to_house(g.x * 0.3, g.y * 0.3, heading, a, l)
+                                    for a, l in lips], at=(g.x * 0.3, g.y * 0.3)):
+                spots = self.marks.spots(0.0)
+                h, w = len(g.layout), len(g.layout[0])
+                self.covered = {(i, j) for j in range(h) for i in range(w)
+                                if any(math.hypot((i + 0.5) * 0.3 - s["x_m"], (j + 0.5) * 0.3 - s["y_m"])
+                                       <= s["r_m"] for s in spots)}
 
         def _covered(self, cell):
-            cx, cy = (cell[0] + 0.5) * 0.3, (cell[1] + 0.5) * 0.3
-            return any(math.hypot(cx - s["x_m"], cy - s["y_m"]) <= s["r_m"]
-                       for s in self.marks.spots(0.0))
+            return cell in self.covered
 
         def _path(self, a, b):
             if not (self.marks_on and self.marks.marks):
@@ -413,13 +418,14 @@ def _vetted_nav_class():
                     return out[::-1]
                 for n in ((c[0] + 1, c[1]), (c[0] - 1, c[1]), (c[0], c[1] + 1), (c[0], c[1] - 1)):
                     if (n not in prev and g._cell(*n) != CELL_WALL and n not in g.objects
-                            and (n == b or not self._covered(n))):
+                            and not self._covered(n)):
                         prev[n] = c
                         q.append(n)
             return None
 
         def set_goal(self, x_m, y_m):
             self.stuck = self.polls = 0
+            self.in_veto = False
             return super().set_goal(x_m, y_m)
 
         def get_goal(self):
@@ -428,12 +434,15 @@ def _vetted_nav_class():
                 return {"goal": self.goal, "plan": []}
             g = self.grid
             to = (math.floor(self.goal["x_m"] / 0.3), math.floor(self.goal["y_m"] / 0.3))
-            path = None if to in g.objects else self._path((g.robot_x, g.robot_y), to)
+            # A goal inside a disc is lethal to nav2's planner: no path.
+            path = (None if to in g.objects or self._covered(to)
+                    else self._path((g.robot_x, g.robot_y), to))
             if path is None:
                 self.robot.pass_time(1.0)
                 self.goal["state"] = "aborted"
                 return {"goal": self.goal, "plan": []}
             x0, y0, th0 = g.x, g.y, g.theta
+            marked_this_poll = False
             tx, ty = self.goal["x_m"] / 0.3, self.goal["y_m"] / 0.3
             for _ in range(int(1.0 / PERIOD_S)):
                 if math.hypot(tx - g.x, ty - g.y) <= 0.4:
@@ -453,13 +462,14 @@ def _vetted_nav_class():
                 left, right, reason = self.safety.vet_wheel_velocity((v - half) / WHEEL_RADIUS_M,
                                                                      (v + half) / WHEEL_RADIUS_M)
                 self.vetoed += "drop" in str(reason)
-                edge = "drop_edge" in str(reason)
+                edge = "drop_edge" in str(reason) or "drop_pivot_edge" in str(reason)
                 if edge and not self.in_veto:
                     near = any(math.hypot(g.x * 0.3 - s["x_m"], g.y * 0.3 - s["y_m"])
                                <= self.MARKED_NEAR_M for s in self.marks.spots(0.0))
                     self.marked_vetoes += near
-                    if self.marks_on:
-                        self._mark()
+                if edge and self.marks_on and not marked_this_poll:
+                    self._mark()              # at most once a poll (1 s), as the server
+                    marked_this_poll = True
                 self.in_veto = edge
                 self.robot.set_wheel_velocity(left, right)
                 self.robot.advance(PERIOD_S)

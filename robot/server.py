@@ -663,6 +663,10 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
     # wedge spots (the bridge replaces its whole set on every post).
     drop_marks = DropMarks()
     drop_mark_busy = threading.Lock()
+    # At most one mark a second: each reads the pose over HTTP, and a 20 Hz
+    # refusal must not become a 20 Hz stream of bridge reads.
+    DROP_MARK_EVERY_S = 1.0
+    drop_mark_at = [0.0]
 
     def keepout_set(now, wedge_spots, session):
         """The whole set the bridge takes: the wedge spots, and the drop
@@ -689,7 +693,8 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             with spot_lock:
                 now = time.monotonic()
                 before = (dict(drop_marks.marks), drop_marks.session)
-                new = drop_marks.add(now, points, session=map_id)
+                new = drop_marks.add(now, points, session=map_id,
+                                     at=(pose["x_m"], pose["y_m"]))
                 if not new:
                     return
                 wedge_spots = spot_book.live(now) if spot_book.session == map_id else []
@@ -1663,7 +1668,13 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             # counted on a post that then failed and marked nothing.
             wedged = driver == DRIVER_ROS and wedge.wheel(now, req.left_rad_s,
                                                           req.right_rad_s, reason)
-            dropped = driver == DRIVER_ROS and "drop_edge" in str(reason or "")
+            # An edge refused this twist, straight (drop_edge) or turning
+            # (drop_pivot_edge): mark it, at most once a second.
+            dropped = (driver == DRIVER_ROS and ("drop_edge" in str(reason or "")
+                                                 or "drop_pivot_edge" in str(reason or ""))
+                       and now - drop_mark_at[0] >= DROP_MARK_EVERY_S)
+            if dropped:
+                drop_mark_at[0] = now
         if reason:
             refuse("safety_distance", reason, driver)
         if wedged:

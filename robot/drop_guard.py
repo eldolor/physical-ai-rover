@@ -59,6 +59,9 @@ PIVOT_GAP_CM = 8.0
 # 3.159.B2's mark: discs nav2 plans around, one per MARK_STEP_M of lip.
 MARK_R_M = 0.30
 MARK_STEP_M = 0.15
+# A lip nearer the centre than this is not marked: its disc would cover the
+# robot's own centre, and nav2 cannot plan from inside a keepout.
+MARK_CLEAR_M = MARK_R_M + 0.05
 MARK_TTL_S = 3600.0
 MAX_MARKS = 64
 
@@ -366,14 +369,21 @@ class DropGuard:
             lips = self._lips_near(math.hypot(self.half_len, self.half_wid) + PIVOT_GAP_CM)
             if not lips:
                 return None
-            now = min(self._gap(a, l) for a, l in lips)
+            # Edge by edge (a run of touching edge cells is one lip): the gap
+            # to each is its nearest sample's, as the truth's is to its
+            # nearest drop. A lip the turn opens, or one already inside the
+            # outline, must not excuse another the turn closes; within one
+            # lip a corner sliding along it keeps its gap.
+            groups = _groups(lips)
+            now = [min(self._gap(a, l) for a, l, _ in g) for g in groups]
             for k in range(1, looks + 1):
                 # The body turned by `step` is the lips turned by -step.
                 step = math.radians(math.copysign(reach * k / looks, omega_rad_s))
                 c, s = math.cos(step), math.sin(step)
-                after = min(self._gap(a * c + l * s, -a * s + l * c) for a, l in lips)
-                if after < PIVOT_GAP_CM and after < now - 1e-6:
-                    return "drop_pivot_edge"
+                for g, g0 in zip(groups, now):
+                    after = min(self._gap(a * c + l * s, -a * s + l * c) for a, l, _ in g)
+                    if after < PIVOT_GAP_CM and after < g0 - 1e-6:
+                        return "drop_pivot_edge"
             return None
 
     def _gap(self, along: float, lat: float) -> float:
@@ -398,7 +408,7 @@ class DropGuard:
                 px, py = got[2] if len(got) > 2 else ((i + 0.5) * CELL_CM, (j + 0.5) * CELL_CM)
                 dx, dy = px - x, py - y
                 if math.hypot(dx, dy) <= radius_cm:
-                    out.append((dx * c + dy * s, -dx * s + dy * c))
+                    out.append((dx * c + dy * s, -dx * s + dy * c, (i, j)))
         return out
 
     def lips(self, radius_cm: float = RUN_CM + 40.0) -> list:
@@ -407,7 +417,32 @@ class DropGuard:
         with self._lock:
             if not self.active or self._pose is None:
                 return []
-            return self._lips_near(radius_cm)
+            return [(a, l) for a, l, _ in self._lips_near(radius_cm)]
+
+
+def _groups(lips: list) -> list:
+    """Lip samples (along, lateral, cell) grouped by touching edge cells
+    (8-neighbours): one group per lip."""
+    by_cell = {}
+    for lip in lips:
+        by_cell.setdefault(lip[2], []).append(lip)
+    seen, out = set(), []
+    for start in by_cell:
+        if start in seen:
+            continue
+        seen.add(start)
+        stack, group = [start], []
+        while stack:
+            i, j = stack.pop()
+            group.extend(by_cell[(i, j)])
+            for di in (-1, 0, 1):
+                for dj in (-1, 0, 1):
+                    n = (i + di, j + dj)
+                    if n in by_cell and n not in seen:
+                        seen.add(n)
+                        stack.append(n)
+        out.append(group)
+    return out
 
 
 def to_house(x_m: float, y_m: float, heading_deg: float, along_cm: float, lat_cm: float) -> tuple:
@@ -431,17 +466,23 @@ class DropMarks:
         self.marks = {}                  # key -> (x_m, y_m, until)
         self.session = None
 
-    def add(self, now: float, points: list, session=None) -> int:
-        """House-frame lip points; returns how many discs are new."""
+    def add(self, now: float, points: list, session=None, at=None) -> int:
+        """House-frame lip points; returns how many discs are new. `at`: the
+        robot's centre (x, y); a disc that would cover it is not made. A
+        disc seen again lives on from now."""
         if session != self.session:
             self.marks, self.session = {}, session
         self.marks = {k: v for k, v in self.marks.items() if v[2] > now}
         new = 0
         for x, y in points:
             key = (round(x / self.step_m), round(y / self.step_m))
-            if key in self.marks:
+            cx, cy = key[0] * self.step_m, key[1] * self.step_m
+            if at is not None and math.hypot(cx - at[0], cy - at[1]) < MARK_CLEAR_M:
                 continue
-            self.marks[key] = (key[0] * self.step_m, key[1] * self.step_m, now + self.ttl_s)
+            if key in self.marks:
+                self.marks[key] = (cx, cy, now + self.ttl_s)
+                continue
+            self.marks[key] = (cx, cy, now + self.ttl_s)
             new += 1
         if len(self.marks) > self.max_marks:
             keep = sorted(self.marks.items(), key=lambda kv: kv[1][2])[-self.max_marks:]

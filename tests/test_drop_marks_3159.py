@@ -51,7 +51,9 @@ def _post(client, n=3):
 def test_a_drop_refusal_during_a_goal_marks_the_lip(drop_server):
     client, bridge, _ = drop_server
     _post(client)
-    assert bridge.keepout is None, "no goal: nothing to plan around, nothing marked"
+    assert not wait_for(lambda: bridge.keepout, timeout=0.3), "no goal: nothing marked"
+    import time
+    time.sleep(1.05)                          # past the once-a-second mark limit
     assert client.post("/world/goal", json={"x_m": 3.0, "y_m": 1.0}).json()["accepted"]
     _post(client)
     assert wait_for(lambda: bridge.keepout)
@@ -88,3 +90,28 @@ def test_a_wedge_mark_carries_the_drop_and_a_missions_end_keeps_it(drop_server):
     assert reply["cleared"] == 1 and reply["sent"]
     assert [s["r_m"] for s in bridge.keepout] == [drop_guard.MARK_R_M], (
         "a stairwell stays where it is: its discs outlive the mission")
+
+
+def test_a_turn_refused_at_an_edge_marks_it_too(drop_server):
+    """B2 review: a `drop_pivot_edge` refusal never marked the edge."""
+    client, bridge, why = drop_server
+    why["reason"] = "pivot clamped (drop_pivot_edge)"
+    assert client.post("/world/goal", json={"x_m": 3.0, "y_m": 1.0}).json()["accepted"]
+    _post(client)
+    assert wait_for(lambda: bridge.keepout)
+
+
+def test_a_refusal_every_tick_reads_the_pose_once_a_second(drop_server, monkeypatch):
+    """B2 review: every 20 Hz refusal started a mark and its pose read."""
+    client, bridge, _ = drop_server
+    assert client.post("/world/goal", json={"x_m": 3.0, "y_m": 1.0}).json()["accepted"]
+    starts = []
+    real = server.threading.Thread
+
+    def counted(*a, **k):
+        if k.get("name") == "keepout-drop":
+            starts.append(1)
+        return real(*a, **k)
+    monkeypatch.setattr(server.threading, "Thread", counted)
+    _post(client, 20)
+    assert len(starts) == 1
