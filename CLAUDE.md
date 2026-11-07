@@ -152,8 +152,6 @@ paragraph.**
 * **3.42 / 3.76 A4:** fix `/scan`'s stamp (the request time) before
   raising nav2's speed (`HANDOFF-2026-10-07-lidar-and-speed.md`).
 * **3.56:** re-check the 8 s arrival deadline after 500+ real calls.
-* **3.76 G2 (latent):** bound the inventory's landmark points, with
-  3.157's results (unreachable while real frames carry no detections).
 
 **Open now** (claim first)
 
@@ -256,6 +254,9 @@ paragraph.**
 * 3.90: `robot/camera_stream.py`; `tier_frame_vote` off.
 * 3.46, 3.55, 3.60: missions record an inventory; nothing reads it. 3.51, 3.54: rooms from
   CLIP, not wired. 3.41: TensorRT not adopted.
+* 3.165 (3.76 G2): a landmark holds at most 32 weighted members (`FOLD_M`
+  0.05 m), its position still the mean of every observation; the sweep is
+  `dev`'s to the number; criterion 2 FAILED as written (1.56x, bar 1.5x).
 
 *Explore and goal choice*
 
