@@ -155,6 +155,7 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.150](3.150-bash-guard.md) | A Bash hook refuses the gate bypasses and a branch's :latest image |
 | [3.151](3.151-truth-recorder-under-memory-pressure.md) | The simulator's truth recorder holds under memory pressure (3.135.B F2) |
 | [3.152](3.152-local-vlm-down.md) | A dead local VLM: the brain tells unreachable from unable, and the unit restarts with a delay |
+| [3.154](3.154-approach-abort-on-cancel.md) | Explore's approach goal is aborted by nav2 while the previous goal's cancel is still in flight |
 | [3.155](3.155-robot-server-memory-lock.md) | The robot server memory-locked: its wheel loop under an OOM squeeze (3.135.B F2's new record) |
 | [3.156](3.156-return-to-dock.md) | Return to the dock: a mission or survey ends at the charger |
 | [3.157](3.157-perception-into-explore.md) | Explore's sightings from real perception: bearing and sighting rate on recorded walks |
@@ -164,5 +165,4 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.161](3.161-no-go-zones-on-twin.md) | No-go zones a person draws on the twin |
 | [3.162](3.162-what-i-saw.md) | What I saw: a mission's objects with photos and places, on the twin |
 | [3.163](3.163-scheduled-missions.md) | Missions and surveys on a schedule |
-| [3.154](3.154-approach-abort-on-cancel.md) | Explore's approach goal is aborted by nav2 while the previous goal's cancel is still in flight |
 <!-- /sections -->
