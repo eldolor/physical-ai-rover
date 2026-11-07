@@ -949,6 +949,7 @@ def claim(sid: str, cwd=None, me=None, accept_overlap=False) -> dict:
             dev = next((x for x in quick_steps(b.top, here=False) if x["id"] == sid), None)
             if dev and dev["state"] == "open":
                 s = dict(s, state="open")
+                accepted = [] if accept_overlap else None
                 st, why = b.status(s, accepted)
         if st not in ("free", "mine"):
             raise ClaimRefused(f"claim refused: {sid} is {st}" + (f" -- {why}" if why else ""))
@@ -1065,7 +1066,8 @@ def release(sid=None, cwd=None, me=None, force=False, unpushed=False) -> list:
             if pending and (ok_r or ok_l) and section_of(step) == m.group(1):
                 c0 = ok_r or ok_l[0]
                 hit = [f for f in pending
-                       if any(matches(f, t) for t in current_touches(c0, steps))
+                       if SECTION_ID_RE.fullmatch(step)       # a whole section: all its work
+                       or any(matches(f, t) for t in current_touches(c0, steps))
                        or (FILE_RE.match(os.path.basename(f)) and os.path.dirname(f) == DIR
                            and FILE_RE.match(os.path.basename(f)).group(1) == m.group(1))]
                 if hit:                           # 3.166 F3: the work has not reached dev
@@ -1142,12 +1144,24 @@ def current_touches(c: dict, steps) -> list:
     or widening on dev counts at once); the Touches stored when it was
     taken only when the row is gone. Older claim files read the same way."""
     s = next((x for x in steps or () if x["id"] == c.get("step")), None)
-    return s["touches"] if s is not None else c.get("touches", [])
+    if s is None or s.get("stray"):        # gone, or a row that does not parse: what was stored
+        return c.get("touches", [])
+    return s["touches"]
 
 
 def _top_dir(t: str) -> bool:
     """3.166 F2: a whole top-level directory entry (`tests/`, `brain/`)."""
     return t.endswith("/") and "/" not in t[:-1] and not _is_glob(t)
+
+
+def safe_steps(top: str) -> list:
+    """quick_steps, or [] when the tables cannot be read: the foreign-claim
+    check then falls back to the stored Touches instead of falling silent
+    (review, 3.166)."""
+    try:
+        return quick_steps(top)
+    except Exception:  # noqa: BLE001 -- a guard never breaks on a bad table
+        return []
 
 
 def held_steps(common: str, procs: dict, me) -> set:
@@ -1212,7 +1226,7 @@ def allow(sid: str, cwd=None, me=None, session: str = "") -> dict:
         procs = processes()           # under the lock, as claim() and release()
         if session.startswith("pid:"):
             n = session[4:]
-            me = owner_of(int(n), procs) if n.isdigit() else None
+            me = owner_of(int(n), procs) if n.isascii() and n.isdigit() else None
             if not me:
                 raise SystemExit(f"allow: no process {n!r} on this host")
         elif session:
@@ -1269,7 +1283,7 @@ def hook_edit(stdin_text: str) -> str:
             return ""
         procs = processes()
         me = owner(procs)
-        steps = quick_steps(rp[0])
+        steps = safe_steps(rp[0])
         hits = foreign_claims_on(rel, rp[1], procs, me, steps)
         if hits:
             c = hits[0]
@@ -1307,7 +1321,7 @@ def commit_check(cwd=None):
         me = owner(procs)
         out = []
         if os.path.isdir(os.path.join(rp[1], "plan-claims")):
-            steps = quick_steps(rp[0])
+            steps = safe_steps(rp[0])
             for f in git("diff", "--cached", "--name-only", cwd=rp[0], check=False).splitlines():
                 for c in foreign_claims_on(f, rp[1], procs, me, steps):
                     out.append(f"pre-commit: WARNING {f} is inside step {c['step']}, claimed by "
@@ -1358,6 +1372,10 @@ def push_refusals(base: str, sha: str, cwd=None, me=None) -> list:
     procs = processes()
     me = me or owner(procs)
     steps = quick_steps(top, ref=base, here=False)
+    # Nothing fenced even under the old, wider rule (every step counted as held):
+    # no claim is read, so an unreadable origin never blocks such a push (review).
+    if not any(tracked(f, steps, {s["id"] for s in steps})[0] for f in files):
+        return []
     # A claim counts only while origin still holds it as this session's
     # (review: a claim freed with --force, or taken over, kept passing).
     remote, err = remote_claims(top)
@@ -1376,7 +1394,7 @@ def push_refusals(base: str, sha: str, cwd=None, me=None) -> list:
     # 3.166 F5: a claim whose holder the user let this session into (`allow`), still
     # on origin, counts as the edit hook counts it.
     let_in = [c for c in claims if not same_owner(c, me) and (c["step"], c.get("sha")) in on_origin
-              and any(same_owner(a, me) for a in c.get("allowed", []))]
+              and held(c, procs, me) and any(same_owner(a, me) for a in c.get("allowed", []))]
     mine_or_let = mine + let_in
     pushed = quick_steps(top, ref=sha, here=False)      # the pusher's own tables, as pushed
     out = []

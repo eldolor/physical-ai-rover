@@ -171,3 +171,46 @@ def test_k3_a_claim_file_written_by_devs_code_is_read_fenced_and_released(repo, 
     d = _edit_hook(repo, "brain/a.py", b["pid"])
     assert d and d["permissionDecision"] == "deny"
     assert pc.release("3.90.A", cwd=repo, me=a) == ["3.90.A"]
+
+
+# ---------- review fixes (Thermos + code-review, round 1) ----------
+
+def test_review_a_push_with_nothing_fenced_never_reads_origins_claims(repo, owners, monkeypatch):
+    _, a = owners()
+    base = _out(repo, "rev-parse", "HEAD")
+    _work(repo, "free/notes.txt")
+    monkeypatch.setattr(pc, "remote_claims", lambda top, timeout=0: ([], "origin unreadable"))
+    assert pc.push_refusals(base, _out(repo, "rev-parse", "HEAD"), cwd=repo, me=a) == []
+
+
+def test_review_unreadable_tables_keep_the_foreign_claim_check(repo, owners, monkeypatch):
+    _, a = owners()
+    _, b = owners()
+    pc.claim("3.90.A", cwd=repo, me=a)
+    monkeypatch.setattr(pc, "quick_steps", lambda *a_, **k: (_ for _ in ()).throw(ValueError("bad")))
+    procs = pc.processes()
+    assert pc.safe_steps(repo) == []
+    hits = pc.foreign_claims_on("brain/a.py", pc.repo(repo)[1], procs, b, pc.safe_steps(repo))
+    assert [c["step"] for c in hits] == ["3.90.A"]                 # the stored Touches
+
+
+def test_review_a_row_that_does_not_parse_keeps_the_stored_touches():
+    c = {"step": "3.90.A", "touches": ["brain/a.py"]}
+    assert pc.current_touches(c, [{"id": "3.90.A", "touches": [], "stray": "oops"}]) == ["brain/a.py"]
+    assert pc.current_touches(c, [{"id": "3.90.A", "touches": ["x/"], "stray": ""}]) == ["x/"]
+
+
+def test_review_a_whole_section_claim_keeps_unpushed_code(repo, owners):
+    _, a = owners()
+    _git(repo, "checkout", "-q", "-b", "plan/3.90-test")
+    pc.claim("3.90", cwd=repo, me=a)
+    _work(repo, "anywhere/code.py")
+    with pytest.raises(SystemExit, match="--unpushed"):
+        pc.release("3.90", cwd=repo, me=a)
+
+
+def test_review_allow_refuses_a_non_ascii_pid(repo, owners):
+    _, a = owners()
+    pc.claim("3.90.A", cwd=repo, me=a)
+    with pytest.raises(SystemExit, match="no process"):
+        pc.allow("3.90.A", cwd=repo, session="pid:\u00b2")
