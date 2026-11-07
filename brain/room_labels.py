@@ -586,17 +586,37 @@ class RoomLabeller:
         person = self._person_rooms()
         if not person:
             return base
-        by_cell = room_names.name_cells(m, person)
-        names = base["names"]
-        out = [names[c] if c >= 0 else "" for c in base["cells"]]
-        mc = m["cells"]
-        for i, n in enumerate(by_cell):
-            if n and mc[i] == CELL_FREE:
-                out[i] = n
-        used = sorted({n for n in out if n})
+        try:
+            return self._with_person(m, base, person)
+        except Exception as e:  # noqa: BLE001 -- the model's layer stands without the names
+            logger.warning("room names not applied: %s", e)
+            return base
+
+    @staticmethod
+    def _with_person(m: dict, base: dict, person: list) -> dict:
+        """Every free cell of a person's named room carries that name; the
+        rest keeps the model's. Vectorised (numpy over the map's cells)."""
+        own = room_names.owner_grid(m, person, named_only=True).ravel()
+        free = np.asarray(m["cells"]) == CELL_FREE
+        names = list(base["names"])
+        idx = np.asarray(base["cells"], dtype=np.int64)
+        pnames = [r.get("name", "") for r in person]
+        used = sorted({names[c] for c in set(idx[idx >= 0].tolist())}
+                      | {pnames[o] for o in set(own[(own >= 0) & free].tolist())})
         index = {n: k for k, n in enumerate(used)}
-        return {"names": used, "cells": [index[n] if n else -1 for n in out],
-                "person": sorted({n for n in by_cell if n} & set(used))}
+        model = np.array([index.get(n, -1) for n in names] + [-1], dtype=np.int64)
+        pers = np.array([index.get(n, -1) for n in pnames] + [-1], dtype=np.int64)
+        out = np.where(idx >= 0, model[idx], -1)
+        take = (own >= 0) & free
+        out[take] = pers[own[take]]
+        kept = sorted(set(out[out >= 0].tolist()))
+        final = {k: j for j, k in enumerate(kept)}
+        lut = np.full(len(used) + 1, -1, dtype=np.int64)
+        for k, j in final.items():
+            lut[k] = j
+        out = np.where(out >= 0, lut[out], -1)
+        return {"names": [used[k] for k in kept], "cells": out.tolist(),
+                "person": sorted({pnames[o] for o in set(own[take].tolist())})}
 
     def _model_layer(self, m: dict) -> dict:
         named = [(x, y, n) for x, y, n in self.seeds if n != UNCLEAR]

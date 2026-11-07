@@ -42,7 +42,11 @@ import uuid
 from pathlib import Path
 from typing import Optional
 
+import logging
+
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 STORE_RES_M = 0.10
 MATCH_FRACTION = 0.60
@@ -50,6 +54,8 @@ MAX_ROOMS = 64
 MAX_NAME = 40
 HISTORY_KEPT = 200
 FRAME_ID_RE = re.compile(r"[A-Za-z0-9_.:-]{1,64}")
+STORED_RE = re.compile(r"s([0-9]{1,4})")
+MAX_KEYS = 2_000_000             # cells a file may hold in all (a damaged file is refused)
 DEFAULT_DIR = Path(__file__).resolve().parents[1] / "recordings" / "room-names"
 
 
@@ -107,6 +113,15 @@ def to_runs(keys) -> list:
 
 
 def from_runs(runs) -> set:
+    """Inverse of to_runs. Raises ValueError on runs no edit could have
+    written (more than MAX_KEYS cells, a run backwards): a damaged file."""
+    total = 0
+    for iy, a, b in runs:
+        if int(b) < int(a):
+            raise ValueError("a run ends before it starts")
+        total += int(b) - int(a) + 1
+    if total > MAX_KEYS:
+        raise ValueError(f"{total} cells: more than any map holds")
     return {(x, int(iy)) for iy, a, b in runs for x in range(int(a), int(b) + 1)}
 
 
@@ -127,21 +142,36 @@ def match(m: dict, seg: np.ndarray, rooms: list, cells: Optional[dict] = None) -
     return out
 
 
-def owner_cells(m: dict, rooms: list, named_only: bool = False) -> list:
-    """The index of the stored room each of the map's cells lies in,
-    row-major (-1 in none; the first room wins where two overlap)."""
-    owner = {}
-    for i, r in enumerate(rooms):
-        if r.get("name") or not named_only:
-            for k in r["_keys"]:
-                owner.setdefault(k, i)
+def owner_grid(m: dict, rooms: list, named_only: bool = False) -> np.ndarray:
+    """The index of the stored room each of the map's cells lies in, as a
+    (height, width) int array (-1 in none; the first room wins where two
+    overlap). Vectorised: the rooms are painted on the store grid once, and
+    the map's cells look themselves up there."""
     w, h, res = int(m["width"]), int(m["height"]), float(m["resolution_m"])
+    out = np.full((h, w), -1, dtype=np.int32)
+    keys = [(i, r["_keys"]) for i, r in enumerate(rooms) if r["_keys"] and (r.get("name") or not named_only)]
+    if not keys or not w or not h:
+        return out
+    xs = [k[0] for _, ks in keys for k in ks]
+    ys = [k[1] for _, ks in keys for k in ks]
+    x0, y0 = min(xs), min(ys)
+    paint = np.full((max(ys) - y0 + 1, max(xs) - x0 + 1), -1, dtype=np.int32)
+    for i, ks in reversed(keys):              # the first room painted last: it wins
+        a = np.array(list(ks), dtype=np.int64)
+        paint[a[:, 1] - y0, a[:, 0] - x0] = i
     ox, oy = float(m["origin_x_m"]), float(m["origin_y_m"])
-    if not owner:
-        return [-1] * (w * h)
-    kx = np.floor((ox + (np.arange(w) + 0.5) * res) / STORE_RES_M).astype(int).tolist()
-    ky = np.floor((oy + (np.arange(h) + 0.5) * res) / STORE_RES_M).astype(int).tolist()
-    return [owner.get((kx[x], ky[y]), -1) for y in range(h) for x in range(w)]
+    kx = np.floor((ox + (np.arange(w) + 0.5) * res) / STORE_RES_M).astype(np.int64) - x0
+    ky = np.floor((oy + (np.arange(h) + 0.5) * res) / STORE_RES_M).astype(np.int64) - y0
+    okx = (kx >= 0) & (kx < paint.shape[1])
+    oky = (ky >= 0) & (ky < paint.shape[0])
+    sub = paint[np.clip(ky, 0, paint.shape[0] - 1)][:, np.clip(kx, 0, paint.shape[1] - 1)]
+    out[:] = np.where(oky[:, None] & okx[None, :], sub, -1)
+    return out
+
+
+def owner_cells(m: dict, rooms: list, named_only: bool = False) -> list:
+    """owner_grid() as a row-major list."""
+    return owner_grid(m, rooms, named_only).ravel().tolist()
 
 
 def name_cells(m: dict, rooms: list) -> list:
@@ -198,8 +228,11 @@ class RoomNames:
 
     def load(self, frame_id: Optional[str]) -> dict:
         """The doc for a saved map; an empty one when nothing is stored. Each
-        room carries `_keys` (its cells as a set) for the readers; never saved."""
-        empty = {"version": 1, "frame_id": frame_id, "rooms": [], "history": []}
+        room carries `_keys` (its cells as a set) for the readers; never saved.
+        A file that exists but cannot be read as one is `unreadable` (no
+        rooms): readers go on without names, and every edit is refused, so
+        the file is never overwritten with less than it held (review)."""
+        empty = {"version": 1, "frame_id": frame_id, "rooms": [], "history": [], "rev": 0}
         if not frame_id:
             return empty
         try:
@@ -212,10 +245,14 @@ class RoomNames:
             return hit[1]
         try:
             doc = json.loads(p.read_text())
+            if not isinstance(doc, dict) or not isinstance(doc.get("rooms", []), list):
+                raise ValueError("not a room-names file")
             for r in doc.get("rooms", []):
                 r["_keys"] = from_runs(r.get("runs", []))
-        except (OSError, ValueError, TypeError, KeyError):
-            return empty                  # unreadable: as if nothing was named (logged by the caller)
+            doc.setdefault("rev", len(doc.get("history", [])))
+        except Exception as e:  # noqa: BLE001 -- any damage: no names, and no edits
+            logger.warning("room names file %s unreadable: %s", p, e)
+            return dict(empty, unreadable=str(e)[:200])
         self._cache[frame_id] = (mt, doc)
         return doc
 
@@ -250,7 +287,7 @@ class RoomNames:
             pass
         self._cache.pop(frame_id, None)
 
-    def edit(self, frame_id: str, m: dict, seg: np.ndarray, op: str, **kw) -> dict:
+    def edit(self, frame_id: str, m: dict, seg: np.ndarray, op: str, rev=None, **kw) -> dict:
         """Apply one person's edit against THIS cut (`m`, `seg`), save, and
         return the new doc. Ops:
         A target (`room`, `other`) is a cut room's id (an int) or a stored
@@ -263,8 +300,13 @@ class RoomNames:
         """
         self._path(frame_id)
         with self._lock:
-            doc = json.loads(json.dumps({k: v for k, v in self.load(frame_id).items()},
-                                        default=lambda o: None))
+            cur = self.load(frame_id)
+            if cur.get("unreadable"):
+                raise NamesRefused("the saved room names can't be read, so nothing is changed: "
+                                   f"{cur['unreadable']}")
+            if rev is not None and rev != cur.get("rev", 0):
+                raise NamesRefused("the room names changed since this list was drawn: reload")
+            doc = json.loads(json.dumps({k: v for k, v in cur.items()}, default=lambda o: None))
             rooms = doc["rooms"]
             for r in rooms:
                 r["_keys"] = from_runs(r.get("runs", []))
@@ -272,13 +314,15 @@ class RoomNames:
             matched = match(m, seg, rooms, cells)
 
             def is_stored(t) -> bool:
-                return isinstance(t, str) and t[:1] == "s" and t[1:].isdigit()
+                return isinstance(t, str) and bool(STORED_RE.fullmatch(t))
 
             def cut(room) -> set:
                 if is_stored(room):
                     i = int(room[1:])
                     if i >= len(rooms):
                         raise NamesRefused(f"no stored room {room!r} (reload)")
+                    if not placed(m, [rooms[i]])[0]:
+                        raise NamesRefused("that room isn't on this map: place it first")
                     return rooms[i]["_keys"]
                 if not isinstance(room, int) or room not in cells:
                     raise NamesRefused(f"no room {room!r} in this map's cut (the map changed: reload)")
@@ -302,8 +346,12 @@ class RoomNames:
 
             room = kw.get("room")
             if op == "name":
+                name = clean_name(kw.get("name"))
+                if not name:
+                    raise NamesRefused("a name is needed (to forget one, clear it)")
+                kw["name"] = name
                 keys, s = cut(room), stored(room)
-                put(s["_keys"] | keys if s else keys, clean_name(kw.get("name")), s)
+                put(s["_keys"] | keys if s else keys, name, s)
             elif op == "merge":
                 other = kw.get("other")
                 a, b = cut(room), cut(other)
@@ -320,7 +368,7 @@ class RoomNames:
                 line = kw.get("line")
                 try:
                     (x0, y0), (x1, y1) = [(float(p[0]), float(p[1])) for p in line]
-                except (TypeError, ValueError, IndexError):
+                except Exception:  # noqa: BLE001 -- any malformed line is the caller's
                     raise NamesRefused("split needs a line [[x, y], [x, y]] in metres")
                 if not all(map(math.isfinite, (x0, y0, x1, y1))) or (x0, y0) == (x1, y1):
                     raise NamesRefused("split needs a line of two different points")
@@ -342,7 +390,7 @@ class RoomNames:
                     rooms.remove(s)
             elif op == "place":
                 i = kw.get("index")
-                if not isinstance(i, int) or not 0 <= i < len(rooms):
+                if isinstance(i, bool) or not isinstance(i, int) or not 0 <= i < len(rooms):
                     raise NamesRefused(f"no stored room {i!r}")
                 if is_stored(room):
                     raise NamesRefused("place a stored room on a room of the cut")
@@ -352,6 +400,7 @@ class RoomNames:
                 put(keys, rooms[i].get("name", ""), rooms[i])
             else:
                 raise NamesRefused(f"unknown edit {op!r}")
+            doc["rev"] = cur.get("rev", 0) + 1
             doc["history"] = doc.get("history", []) + [
                 {"at": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "op": op,
                  **{k: v for k, v in kw.items() if k in ("room", "other", "name", "index")}}]

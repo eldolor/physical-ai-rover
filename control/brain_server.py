@@ -74,6 +74,7 @@ import asyncio
 import base64
 import binascii
 import functools
+import hashlib
 import json
 import logging
 import os
@@ -83,6 +84,7 @@ from datetime import datetime, timezone
 from typing import Callable, Optional
 
 import httpx
+import numpy as np
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field
@@ -204,6 +206,8 @@ class RoomNamesRequest(BaseModel):
     name: Optional[str] = None
     line: Optional[list] = None      # [[x_m, y_m], [x_m, y_m]]
     index: Optional[int] = None
+    cut_hash: Optional[str] = None   # the cut the edit was drawn on (preferred to map_version)
+    rev: Optional[int] = None        # the names' revision the person saw
 
 
 class GoalPickRequest(BaseModel):
@@ -1328,54 +1332,75 @@ def create_app(
 
     # ---- 3.160: rooms a person names on the saved map ----
 
-    def rooms_view(names_store) -> dict:
+    def _runs(a) -> list:
+        """A per-cell list as [value, count, value, count, ...] (most of a
+        map is one value: the reply stays small over the tunnel)."""
+        a = np.asarray(a).ravel()
+        if not a.size:
+            return []
+        edges = np.flatnonzero(np.diff(a)) + 1
+        starts = np.concatenate(([0], edges))
+        counts = np.diff(np.concatenate((starts, [a.size])))
+        return np.column_stack((a[starts], counts)).ravel().tolist()
+
+    def _cut_hash(seg) -> str:
+        return hashlib.sha256(np.ascontiguousarray(seg, dtype=np.int32).tobytes()).hexdigest()[:16]
+
+    def _read_world():
+        w = world()
+        m, pose = w.get_map(), w.get_pose()
+        return m, (pose or {}).get("frame_id")
+
+    def rooms_view(names_store, m, frame_id, seg=None) -> dict:
         """The map's room cut with the person's names over it, the model's
         suggestions (the current or last mission's labels), and the stored
-        rooms a re-map left unplaced. `closed` says why nothing can be named."""
-        w = world()
-        try:
-            m, pose = w.get_map(), w.get_pose()
-        except Exception as e:  # noqa: BLE001 -- the editor says so, never a 500
-            return {"frame_id": None, "closed": f"The map can't be read now ({e}).", "rooms": []}
-        frame_id = (pose or {}).get("frame_id")
+        rooms a re-map left unplaced. `closed` says why nothing can be named.
+        `cut` and `owner` are run-length lists; `cut_hash` and `rev` are what
+        an edit must name (the cut it was drawn on, the names it saw)."""
         if not m or not m.get("usable", True) or "cells" not in m:
             return {"frame_id": frame_id, "closed": "No map yet.", "rooms": []}
         if not frame_id:
             return {"frame_id": None, "rooms": [],
                     "closed": "Survey first: names are kept with the saved map."}
-        seg, _ = room_labels_mod.segment(m)
-        rooms = names_store.rooms(frame_id)
-        owner = room_names_mod.owner_cells(m, rooms)
+        if seg is None:
+            seg, _ = room_labels_mod.segment(m)
+        doc = names_store.load(frame_id)
+        if doc.get("unreadable"):
+            return {"frame_id": frame_id, "rooms": [],
+                    "closed": "The saved room names can't be read, so they can't be changed here."}
+        rooms = doc["rooms"]
         placed = room_names_mod.placed(m, rooms) if rooms else []
-        matched = room_names_mod.match(m, seg, rooms) if rooms else {}
+        # Only rooms on this map own cells (an unplaced one is not tappable).
+        shown = [r if placed[i] else {"_keys": set(), "name": r.get("name", "")}
+                 for i, r in enumerate(rooms)]
+        own = room_names_mod.owner_grid(m, shown).ravel()
+        free = np.asarray(m["cells"]) == 0
+        flat = seg.ravel()
         res, ox, oy, width = m["resolution_m"], m["origin_x_m"], m["origin_y_m"], m["width"]
         seeds = []
         st = state["runner"].status() if state["runner"] is not None else {}
         for block in ("survey", "room_labels"):
             seeds += [x for x in ((st.get(block) or {}).get("seeds") or [])
                       if len(x) == 3 and x[2] and x[2] != room_labels_mod.UNCLEAR]
-        cells_of: dict = {}
-        flat = seg.ravel().tolist()
-        for i, r in enumerate(flat):
-            if r >= 0:
-                cells_of.setdefault(r, []).append(i)
 
         def centre(idx):
-            xs = [i % width for i in idx]
-            ys = [i // width for i in idx]
-            return (round(ox + (sum(xs) / len(xs) + 0.5) * res, 2),
-                    round(oy + (sum(ys) / len(ys) + 0.5) * res, 2))
+            return (round(float(ox + ((idx % width).mean() + 0.5) * res), 2),
+                    round(float(oy + ((idx // width).mean() + 0.5) * res), 2))
         out = []
         for i, r in enumerate(rooms):
-            if not placed[i]:
-                continue
-            idx = [k for k, o in enumerate(owner) if o == i and m["cells"][k] == 0]
-            if idx:
+            idx = np.flatnonzero((own == i) & free) if placed[i] else np.array([], dtype=np.int64)
+            if idx.size:
                 x, y = centre(idx)
                 out.append({"key": f"s{i}", "name": r.get("name", ""), "source": "person",
-                            "x_m": x, "y_m": y, "cells": len(idx)})
-        for rid, idx in sorted(cells_of.items()):
-            if rid in matched or sum(owner[k] >= 0 for k in idx) >= 0.6 * len(idx):
+                            "x_m": x, "y_m": y, "cells": int(idx.size)})
+        order = np.argsort(flat, kind="stable")
+        vals, first = np.unique(flat[order], return_index=True)
+        bounds = list(first) + [flat.size]
+        for n, rid in enumerate(vals.tolist()):
+            if rid < 0:
+                continue
+            idx = order[bounds[n]:bounds[n + 1]]
+            if (own[idx] >= 0).sum() >= 0.6 * idx.size:
                 continue                  # a person's room covers it
             votes: dict = {}
             for sx, sy, name in seeds:
@@ -1385,54 +1410,65 @@ def create_app(
             x, y = centre(idx)
             sug = max(votes, key=votes.get) if votes else ""
             out.append({"key": f"c{rid}", "name": "", "source": "model" if sug else "none",
-                        "suggestion": sug, "x_m": x, "y_m": y, "cells": len(idx)})
-        return {"frame_id": frame_id, "closed": None,
+                        "suggestion": sug, "x_m": x, "y_m": y, "cells": int(idx.size)})
+        return {"frame_id": frame_id, "closed": None, "rev": doc.get("rev", 0),
+                "cut_hash": _cut_hash(seg),
                 "map": {k: m.get(k) for k in ("map_id", "map_version", "width", "height",
                                               "resolution_m", "origin_x_m", "origin_y_m")},
-                "cut": flat, "owner": owner, "rooms": out,
+                "cut": _runs(flat), "owner": _runs(own), "rooms": out,
                 "unplaced": [{"key": f"s{i}", "index": i, "name": r.get("name", "")}
                              for i, r in enumerate(rooms) if not placed[i] and r.get("name")]}
 
     @app.get(prefix + "/rooms", dependencies=[Depends(require_secret)])
     def rooms_get():
         """3.160: the rooms to name. Local only: answered to the twin, never stored elsewhere."""
-        return rooms_view(room_names_mod.default_store())
+        try:
+            m, frame_id = _read_world()
+        except Exception as e:  # noqa: BLE001 -- the editor says so, never a 500
+            return {"frame_id": None, "closed": f"The map can't be read now ({e}).", "rooms": []}
+        return rooms_view(room_names_mod.default_store(), m, frame_id)
 
     @app.post(prefix + "/rooms/names", dependencies=[Depends(require_secret)])
     def rooms_names(req: RoomNamesRequest):
-        """3.160: one edit, on the saved map and the map version the person saw
-        (409 for another or a changed one: reload). Nothing here reaches the
-        robot server, the bridge or nav2."""
+        """3.160: one edit, on the saved map, the room cut and the names the
+        person saw (409 for another saved map, a cut that changed, or names
+        another edit changed meanwhile: reload). The map's own version moves
+        while the robot drives; only a change to the cut refuses. Nothing here
+        reaches the robot server, the bridge or nav2."""
         store = room_names_mod.default_store()
-        w = world()
         try:
-            m, pose = w.get_map(), w.get_pose()
+            m, frame_id = _read_world()
         except Exception as e:  # noqa: BLE001
             raise HTTPException(status_code=503, detail=f"the map can't be read now ({e})")
-        frame_id = (pose or {}).get("frame_id")
         if not frame_id or req.frame_id != frame_id:
             raise HTTPException(status_code=409, detail="Survey first: names are kept with the "
                                 "saved map." if not frame_id else "another saved map: reload")
-        if not m or "cells" not in m or req.map_version != m.get("map_version"):
+        if not m or "cells" not in m:
+            raise HTTPException(status_code=409, detail="no map now: reload")
+        seg, _ = room_labels_mod.segment(m)
+        if req.cut_hash is not None:
+            if req.cut_hash != _cut_hash(seg):
+                raise HTTPException(status_code=409, detail="the rooms changed shape since they "
+                                    "were drawn: reload")
+        elif req.map_version != m.get("map_version"):
             raise HTTPException(status_code=409, detail="the map changed since it was drawn: reload")
 
         def target(t):
             if t is None:
                 return None
-            if isinstance(t, str) and t[:1] == "c" and t[1:].isdigit():
+            if isinstance(t, str) and re.fullmatch(r"c[0-9]{1,6}", t):
                 return int(t[1:])
-            if isinstance(t, str) and t[:1] == "s" and t[1:].isdigit():
+            if isinstance(t, str) and re.fullmatch(r"s[0-9]{1,4}", t):
                 return t
             raise HTTPException(status_code=422, detail=f"a room is c<n> or s<n>, not {t!r}")
-        seg, _ = room_labels_mod.segment(m)
         kw = {k: v for k, v in (("room", target(req.room)), ("other", target(req.other)),
                                  ("name", req.name), ("line", req.line), ("index", req.index))
               if v is not None}
         try:
-            store.edit(frame_id, m, seg, req.op, **kw)
+            store.edit(frame_id, m, seg, req.op, rev=req.rev, **kw)
         except room_names_mod.NamesRefused as e:
             raise HTTPException(status_code=409, detail=str(e))
-        return rooms_view(store)
+        return rooms_view(store, m, frame_id, seg)
 
     @app.get(prefix + "/mission/inventory", dependencies=[Depends(require_secret)])
     async def mission_inventory():

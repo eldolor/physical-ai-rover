@@ -809,9 +809,24 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     renderMap();
   }
 
+  // The brain sends `cut` and `owner` run-length coded ([value, count, ...]).
+  function roomsUnrun(runs) {
+    var out = [];
+    for (var i = 0; i + 1 < (runs || []).length; i += 2) {
+      for (var n = 0; n < runs[i + 1]; n++) out.push(runs[i]);
+    }
+    return out;
+  }
+
+  function roomsTake(v) {
+    if (v && v.cut) { v.cut = roomsUnrun(v.cut); v.owner = roomsUnrun(v.owner); }
+    state.roomsView = v;
+    state.roomsLoadedAt = Date.now();
+  }
+
   async function loadRooms() {
     try {
-      state.roomsView = await brainApi("GET", "/rooms");
+      roomsTake(await brainApi("GET", "/rooms"));
     } catch (e) {
       showToast(t("rooms.loadFailed", {why: e.message || e}), "err");
     }
@@ -821,11 +836,14 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
 
   async function roomsEdit(body) {
     var v = state.roomsView;
-    if (state.roomsBusy || !v || !v.map) return;
+    if (!v || !v.map) return;
+    if (state.roomsBusy) { showToast(t("rooms.busy"), "info"); renderRooms(); return; }
     state.roomsBusy = true;
     try {
-      state.roomsView = await brainApi("POST", "/rooms/names", Object.assign(
-        {frame_id: v.frame_id, map_version: v.map.map_version}, body));
+      // The cut and the names' revision the person saw: the map's own
+      // version moves while the robot drives, which alone refuses nothing.
+      roomsTake(await brainApi("POST", "/rooms/names", Object.assign(
+        {frame_id: v.frame_id, cut_hash: v.cut_hash, rev: v.rev}, body)));
     } catch (e) {
       showToast(t(e.status === 409 ? "rooms.refused" : "rooms.failed", {why: e.message || e}),
                 e.status === 409 ? "warn" : "err");
@@ -961,6 +979,14 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
 
   function drawRooms(ctx, grid, scale) {
     var v = roomsGeometry(grid);
+    // The map moved on (a new version): fetch the rooms again, at most every
+    // 5 s, and never under an edit or a mode the person is in the middle of.
+    var cur = state.roomsView;
+    if (state.roomsOpen && cur && cur.map && grid && cur.map.map_version !== grid.map_version
+        && !state.roomsBusy && !state.roomsMode && Date.now() - (state.roomsLoadedAt || 0) > 5000) {
+      state.roomsLoadedAt = Date.now();
+      loadRooms();
+    }
     if (!v) return;
     var css = getComputedStyle(document.documentElement);
     var edge = (css.getPropertyValue("--accent-primary") || "#5B9DF5").trim();
@@ -1062,6 +1088,12 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     var p = roomsCanvasPoint(ev);
     d.x1 = p.x;
     d.y1 = p.y;
+    renderMap();
+  }
+
+  function roomsSplitCancel() {
+    if (!state.roomsDrag) return;
+    state.roomsDrag = null;
     renderMap();
   }
 
@@ -2249,6 +2281,8 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
       mapCanvas.addEventListener("pointerdown", roomsSplitStart);
       mapCanvas.addEventListener("pointermove", roomsSplitMove);
       mapCanvas.addEventListener("pointerup", roomsSplitEnd);
+      mapCanvas.addEventListener("pointercancel", roomsSplitCancel);
+      mapCanvas.addEventListener("pointerleave", roomsSplitCancel);
     }
   })();
   document.getElementById("btn-reverse").onclick = function () { manualAction("REVERSE"); };

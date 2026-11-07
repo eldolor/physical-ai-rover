@@ -276,5 +276,89 @@ def test_names_stay_local_no_other_module_reads_the_store():
                           "-e", "room_names as", "-e", "ROOM_NAMES_DIR", "--", "*.py"],
                          cwd=ROOT, capture_output=True, text=True).stdout.split()
     assert sorted(out) == ["brain/room_labels.py", "brain/room_names.py",
-                           "control/brain_server.py", "tests/test_room_names.py"]
+                           "control/brain_server.py", "tests/test_room_names.py",
+                           "tests/test_ui_room_names.py"]
     assert "recordings/" in (ROOT / ".gitignore").read_text()
+
+
+# ---------- review fixes (code-review + Thermos, round 1) ----------
+
+def _names_file(tmp_path):
+    return tmp_path / f"{FRAME}.json"
+
+
+def test_review_an_edit_on_an_older_revision_is_refused(tmp_path):
+    """Two phones: one clears a room; the other, on the old list, would
+    otherwise change whatever room now sits at that position."""
+    m, store = _two_rooms(), rn.RoomNames(tmp_path)
+    seg = _cut(m)
+    a, b = int(seg[16, 15]), int(seg[16, 47])
+    store.edit(FRAME, m, seg, "name", room=a, name="A", rev=0)
+    store.edit(FRAME, m, seg, "name", room=b, name="B", rev=1)
+    store.edit(FRAME, m, seg, "clear", room="s0", rev=2)
+    with pytest.raises(rn.NamesRefused, match="changed"):
+        store.edit(FRAME, m, seg, "clear", room="s0", rev=2)        # the second phone, stale
+    assert [r["name"] for r in store.rooms(FRAME)] == ["B"]
+
+
+@pytest.mark.parametrize("body", ["{not json", "[1, 2]", '{"rooms": [{"runs": [[0, 0, 100000000]]}]}'])
+def test_review_a_damaged_file_is_never_overwritten(tmp_path, body):
+    m = _two_rooms()
+    _names_file(tmp_path).write_text(body)
+    store = rn.RoomNames(tmp_path)
+    assert store.rooms(FRAME) == []                                   # readers go on without names
+    with pytest.raises(rn.NamesRefused, match="can't be read"):
+        store.edit(FRAME, m, _cut(m), "name", room=int(_cut(m)[16, 15]), name="X")
+    assert _names_file(tmp_path).read_text() == body
+
+
+def test_review_bad_inputs_are_refused_not_raised(tmp_path):
+    m, store = _two_rooms(), rn.RoomNames(tmp_path)
+    seg = _cut(m)
+    a = int(seg[16, 15])
+    for kw in (dict(op="name", room=a, name="   "), dict(op="name", room="s\u00b2", name="x"),
+               dict(op="split", room=a, line=[{"x": 1}, {"y": 2}]),
+               dict(op="place", room=a, index=True)):
+        with pytest.raises(rn.NamesRefused):
+            store.edit(FRAME, m, seg, **kw)
+    assert not _names_file(tmp_path).exists()
+
+
+def test_review_an_unplaced_room_cannot_be_a_target(tmp_path):
+    m, store = _two_rooms(), rn.RoomNames(tmp_path)
+    far = {"id": "far", "by": "person", "name": "Attic", "runs": [[900, 900, 905]]}
+    store._save(FRAME, {"version": 1, "frame_id": FRAME, "rooms": [far], "history": [], "rev": 0})
+    seg = _cut(m)
+    with pytest.raises(rn.NamesRefused, match="place it"):
+        store.edit(FRAME, m, seg, "merge", room=int(seg[16, 15]), other="s0")
+
+
+def test_review_an_edit_is_judged_on_the_cut_not_the_map_version(monkeypatch, tmp_path):
+    """SLAM bumps map_version while the robot drives; the cut is what an edit names."""
+    m = _two_rooms()
+    world = _World(m)
+    c = _client(monkeypatch, tmp_path, world)
+    got = c.get("/rooms").json()
+    world.m = dict(m, map_version=m["map_version"] + 7)            # the map moved on, same cut
+    r = c.post("/rooms/names", json={"frame_id": FRAME, "cut_hash": got["cut_hash"], "rev": got["rev"],
+                                     "op": "name", "room": got["rooms"][0]["key"], "name": "Hall"})
+    assert r.status_code == 200, r.text
+    r = c.post("/rooms/names", json={"frame_id": FRAME, "cut_hash": "0" * 16, "rev": 1,
+                                     "op": "name", "room": got["rooms"][1]["key"], "name": "Den"})
+    assert r.status_code == 409
+    bad = c.post("/rooms/names", json={"frame_id": FRAME, "cut_hash": got["cut_hash"], "rev": 1,
+                                       "op": "name", "room": "s\u00b2", "name": "x"})
+    assert bad.status_code == 422
+
+
+def test_review_the_layer_with_names_is_the_slow_one_vectorised():
+    """owner_grid() on a 400 x 400 map with 20 named rooms stays well under a tick."""
+    import time
+    m = {"width": 400, "height": 400, "resolution_m": 0.05, "origin_x_m": -3.3, "origin_y_m": 2.1,
+         "cells": [0] * 160000}
+    rooms = [{"name": f"r{i}", "_keys": {(x, y) for x in range(-30 + i * 9, -21 + i * 9)
+                                          for y in range(20, 220)}} for i in range(20)]
+    t0 = time.perf_counter()
+    g = rn.owner_grid(m, rooms)
+    assert time.perf_counter() - t0 < 0.5
+    assert g.shape == (400, 400) and (g >= 0).any()
