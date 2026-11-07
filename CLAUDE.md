@@ -257,6 +257,9 @@ paragraph.**
 * 3.165 (3.76 G2): a landmark holds at most 32 weighted members (`FOLD_M`
   0.05 m), its position still the mean of every observation; the sweep is
   `dev`'s to the number; criterion 2 FAILED as written (1.56x, bar 1.5x).
+* 3.167: the sweep's seed-3463 precision 97.1% -> 93.8% is 3.74 B's floor
+  band moving the robot (`fc5c2122`), one seed's variance (four seeds pooled
+  96.5% -> 96.9%); a pooled 3.60 bar is proposed to the user.
 
 *Explore and goal choice*
 
