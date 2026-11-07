@@ -63,6 +63,9 @@ def test_the_recorded_bisect_and_seeds_are_pinned():
     assert round(pooled("90f81fcb"), 3) == 0.965 and round(pooled("fc5c2122"), 3) == 0.969
     parent_346 = next(s for s in seeds if s["commit"] == "90f81fcb" and s["seed"] == 346)
     assert parent_346["score"]["precision_reported"] < 0.95
+    # 3.60 amendment 1 (the user, 2026-11-07): the bar is the four seeds pooled.
+    seeds += [json.loads(l) for l in (rec / "dev-pooled.jsonl").read_text().splitlines() if l]
+    assert round(pooled("b45c949d"), 4) == 0.9685 and pooled("b45c949d") >= 0.95
 
 
 def test_the_floor_band_shortens_a_forward_in_the_sweeps_first_mission(monkeypatch):
