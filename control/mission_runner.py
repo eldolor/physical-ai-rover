@@ -2138,7 +2138,8 @@ class MissionRunner:
                     self._pending_end = (outcome, note, kw)
                     self._return_trip = docking.ReturnTrip(
                         self._dock, self._navigator, self.agent.safety, self.world.get_pose,
-                        self.clock, wait_s=self.return_wait_s, idle=self.idle)
+                        self.clock, wait_s=self.return_wait_s, idle=self.idle,
+                        get_map=self.world.get_map)
                     self._return = {"state": "returning", "after": outcome,
                                     "decided_at_s": self._elapsed_s(),
                                     **self._return_trip.summary()}

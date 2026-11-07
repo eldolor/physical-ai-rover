@@ -255,3 +255,15 @@ def test_home_budget_units():
     fx, fy = ahead(90.0)
     assert (fx, fy) == pytest.approx((1.0, 0.0))
     assert (sx, sy) == pytest.approx((0.7, 1.0))    # 0.30 m behind, facing east
+
+
+def test_exact_verbs_move_the_asked_distance_and_are_opt_in():
+    """The sweep's body (`exact_verbs`) moves a straight verb's own distance,
+    as the car's verbs do; every other MockRobot keeps whole cells."""
+    from sim.mock_robot import CELLS_PER_SECOND_AT_FULL_SPEED
+    for exact, want_cells in ((True, 0.4), (False, 1.0)):
+        grid = build_world("scaled_house")
+        robot = MockRobot(grid, render=False, exact_verbs=exact)
+        dur = 0.4 / (0.2 * CELLS_PER_SECOND_AT_FULL_SPEED)     # 0.4 cells at speed 20
+        plan = robot.verb_plan("FORWARD", speed=20, duration=dur)
+        assert plan["target"] == pytest.approx(want_cells * CELL), exact

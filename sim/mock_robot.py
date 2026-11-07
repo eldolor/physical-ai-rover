@@ -174,6 +174,7 @@ class MockRobot(RobotInterface):
         encoder_scale: tuple = (1.0, 1.0),
         battery=None,
         drop_sensor: Optional[bool] = None,
+        exact_verbs: bool = False,
     ):
         self.world = world
         # 3.159: whether the depth grid carries the `drop` block. None (the
@@ -187,6 +188,10 @@ class MockRobot(RobotInterface):
         # one only when SIM_BATTERY_V is set, so the plain simulator can run
         # the battery ladder in process.
         self.battery = battery
+        # 3.156.B: a straight verb moves the distance its speed and duration
+        # ask for, as the car's do, not whole cells (the legacy rounding every
+        # other harness keeps): a final approach closes on centimetres.
+        self.exact_verbs = exact_verbs
         self.realtime = realtime
         # R5's opt-in odometry drift (`sim.odom_drift`): what each ENCODER
         # reports, as a multiple of what its wheel actually turned. The robot
@@ -486,7 +491,11 @@ class MockRobot(RobotInterface):
     def verb_plan(self, action: str, speed: int = 50, duration: float = 0.5,
                   angle: int = 90) -> Optional[dict]:
         if action in ("FORWARD", "REVERSE"):
-            cells = self._speed_duration_to_cells(speed, duration)
+            if self.exact_verbs:
+                cells = (max(0, min(100, speed)) / 100.0 * CELLS_PER_SECOND_AT_FULL_SPEED
+                         * duration if speed > 0 and duration > 0 else 0)
+            else:
+                cells = self._speed_duration_to_cells(speed, duration)
             if cells == 0:
                 return None
             w = max(1, min(100, speed)) / 100.0 * WHEEL_MAX_RAD_S

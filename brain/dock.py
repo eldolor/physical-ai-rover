@@ -25,7 +25,7 @@ Headings are compass bearings (clockwise from north, `get_pose()`'s
 import math
 from typing import Callable, Optional
 
-from brain.frontier import PASS_CLEARANCE_M, _cell_of, reach
+from brain.frontier import CELL_FREE, PASS_CLEARANCE_M, _cell_of, _grid, reach
 
 # D3's design constants (held to the data by C4/C5).
 K = 1.5
@@ -43,6 +43,7 @@ MOVED_M = 0.01              # a tick that moved less did not drive
 # (`MockRobot._speed_duration_to_cells`), so a 0.40 m creep cannot close
 # there; on the car the verbs are continuous and step C may restore it.
 STAGING_M = 0.30
+STAGING_CLEAR_M = 0.25      # free map around the staging point, or straight to the dock
 DOCK_TOL_M = 0.10
 DOCK_TOL_DEG = 10.0
 TURN_TOL_DEG = 3.0
@@ -51,6 +52,8 @@ CREEP_SPEED = 20            # a straight verb's 0-100 speed for the creep
 CREEP_VERB_MAX_S = 1.5
 MAX_ACTIONS = 40            # verbs in the final approach, then `not_aligned`
 MAX_REFUSED = 3             # consecutive vetoed verbs, then `vetoed`
+GOAL_TRIES = 2              # nav2 goals per target (staging, then the dock), a back-off between
+BACK_OFF_S = 0.75           # the back-off: one guarded REVERSE at creep speed
 RETURN_WAIT_S = 30.0        # D2: nav2's hold never clears -> skipped, no_nav2
 GOAL_RETRY_S = 1.0          # between refused goals (through the runner's idle)
 RETURN_MAX_S = 600.0        # a return that never ends is a failed one
@@ -86,6 +89,19 @@ def pose_error(dock: dict, pose: dict) -> tuple:
     """(metres, degrees) between a pose and the dock."""
     return (math.hypot(pose["x_m"] - dock["x_m"], pose["y_m"] - dock["y_m"]),
             abs(wrap_deg(pose["heading_deg"] - dock["theta"])))
+
+
+def clear_on_map(m: dict, x_m: float, y_m: float, radius_m: float = STAGING_CLEAR_M) -> bool:
+    """Every map cell within `radius_m` of (x, y) is known free."""
+    if not m or not m.get("usable") or not m.get("resolution_m"):
+        return False
+    cells = _grid(m)
+    cx, cy = _cell_of(m, x_m, y_m)
+    r = int(math.ceil(radius_m / m["resolution_m"]))
+    h, w = cells.shape
+    if not (r <= cx < w - r and r <= cy < h - r):
+        return False
+    return bool((cells[cy - r:cy + r + 1, cx - r:cx + r + 1] == CELL_FREE).all())
 
 
 def home_path_m(m: dict, dock: dict, x_m: float, y_m: float) -> Optional[float]:
@@ -199,15 +215,19 @@ class ReturnTrip:
 
     def __init__(self, dock: dict, navigator, safety, get_pose: Callable[[], dict],
                  clock: Callable[[], float], wait_s: float = RETURN_WAIT_S,
-                 max_s: float = RETURN_MAX_S, idle: Optional[Callable[[float], None]] = None):
+                 max_s: float = RETURN_MAX_S, idle: Optional[Callable[[float], None]] = None,
+                 get_map: Optional[Callable[[], dict]] = None):
         self.dock, self.nav, self.safety = dock, navigator, safety
         self.get_pose, self.clock = get_pose, clock
         self.wait_s, self.max_s = wait_s, max_s
         self.idle = idle
+        self.get_map = get_map
+        self._staging_checked = False
         self.t0 = clock()
         self.state = "goal"
         self.target = staging_point(dock)
         self.direct = False             # the staging point refused: a goal to the dock itself
+        self.tries = 0                  # goals sent to the current target
         self.goal_sent_at = None
         self.actions = 0
         self.refused = 0
@@ -245,6 +265,14 @@ class ReturnTrip:
         return self._approach()
 
     def _goal(self):
+        if not self.direct and not self._staging_checked:
+            self._staging_checked = True
+            try:
+                tight = self.get_map is not None and not clear_on_map(self.get_map(), *self.target)
+            except Exception:  # noqa: BLE001 -- no map: the staging point is tried as planned
+                tight = False
+            if tight:
+                self._to_dock("the staging point is tight on the map")
         try:
             reply = self.nav.set_goal(*self.target) or {}
         except Exception as e:  # noqa: BLE001 -- a hold or a lost answer; re-raised below if not
@@ -253,6 +281,7 @@ class ReturnTrip:
                 raise
             reply = {"accepted": False, "reason": f"error: {e}"}
         if reply.get("accepted"):
+            self.tries += 1
             self.goal_id = reply.get("goal_id")
             self.state, self.goal_sent_at = "driving", self.clock()
             self.log.append(f"goal to ({self.target[0]:.2f}, {self.target[1]:.2f}) accepted")
@@ -271,12 +300,24 @@ class ReturnTrip:
         if st == "succeeded":
             self.state = "turn"
             return None
-        # aborted, canceled or gone: once more, straight to the dock.
-        if not self.direct:
-            self.direct, self.target, self.state = True, (self.dock["x_m"], self.dock["y_m"]), "goal"
-            self.log.append(f"staging goal {st}; a goal to the dock itself")
-            return None
-        return FAILED, f"nav2_{st or 'lost'}"
+        # aborted, canceled or gone: back off (the runner's 3.31 move, as
+        # nav2's own recovery would) and try again; the staging point twice,
+        # then the dock itself twice.
+        if self.tries >= GOAL_TRIES:
+            if self.direct:
+                return FAILED, f"nav2_{st or 'lost'}"
+            self._to_dock(f"staging goal {st}")
+        else:
+            self.log.append(f"goal {st}; backing off and trying again")
+            self.state = "goal"
+        self._act("REVERSE", speed=CREEP_SPEED, duration=BACK_OFF_S)
+        self.reversals += 1
+        return None
+
+    def _to_dock(self, why: str) -> None:
+        self.direct, self.tries, self.refused = True, 0, 0
+        self.target, self.state = (self.dock["x_m"], self.dock["y_m"]), "goal"
+        self.log.append(f"{why}; a goal to the dock itself")
 
     def _act(self, action: str, **kw) -> None:
         from robot.safety import SafetyViolation
@@ -300,6 +341,12 @@ class ReturnTrip:
         if self.actions >= MAX_ACTIONS:
             return FAILED, "not_aligned"
         if self.refused >= MAX_REFUSED:
+            if not self.direct:
+                # The staging point is too tight to turn in (the pivot guard
+                # refused): nav2 goals to the dock itself, where the robot
+                # started and so has turned before, then the final turn there.
+                self._to_dock("turns refused at the staging point")
+                return None
             return FAILED, "vetoed"
         pose = self._pose()
         if not pose.get("usable"):
