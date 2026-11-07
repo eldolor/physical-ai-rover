@@ -27,6 +27,8 @@
     "rooms.placeOnUnnamed": "Tap a room that has no name yet.",
     "rooms.splitShort": "Drag a longer line across the room.",
     "rooms.busy": "Still saving the last change — try again in a moment.",
+    "saw.deleted": "Those pictures are deleted from the robot.",
+    "saw.deleteFailed": "Couldn't delete the pictures: {why}",
     "explore.pickTaken": "The robot will go there next.",
     "explore.pickRefused": "That choice wasn't taken: {why}",
     "explore.pickLost": "Your choice may not have arrived: {why}",

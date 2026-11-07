@@ -2312,6 +2312,12 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
   document.getElementById("btn-random-house").onclick = randomHouse;
   document.getElementById("btn-remap").onclick = remapNow;
   document.getElementById("btn-rooms").onclick = openRooms;
+  document.getElementById("saw-found").onclick = showSawFound;
+  document.getElementById("saw-open").onclick = openSawList;
+  document.getElementById("saw-delete").onclick = deleteSaw;
+  document.getElementById("saw-close").onclick = function () {
+    document.getElementById("saw-viewer").hidden = true;
+  };
   document.getElementById("rooms-done").onclick = closeRooms;
   document.querySelectorAll(".turn-step-btn").forEach(function (btn) {
     btn.onclick = function () { setTurnStep(Number(btn.dataset.turnDeg)); };
@@ -2590,6 +2596,166 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     const cls = BRAIN_OUTCOME_CLASS[r.outcome];
     return { text: words + ".", kind: cls === "safe" ? "found" : cls ? "warn" : "idle" };
   }
+  // ---------- 3.162: what the last mission saw ----------
+  // After a mission ends, the brain's newest report (GET /mission/reports):
+  // the frame its identity check judged, shown on the card (1 tap opens it,
+  // its box drawn), and "What it saw": each thing it placed, with a
+  // thumbnail and its room (a second tap opens the picture). Images come
+  // through the brain's secret-guarded routes as blobs; nothing is uploaded.
+  // A brain without the routes (404) leaves the section hidden.
+  var SAW_DELETE_ARM_MS = 4000;
+
+  function sawKey(status) {
+    if (!status || status.running) return null;
+    var r = readOutcome(status).outcome;
+    if (!r || r === "idle") return null;
+    return [r, status.end_reason || "", status.step || 0, status.target_object || ""].join("|");
+  }
+
+  async function sawImage(id, name) {
+    var res = await fetch(state.brainUrl + "/mission/reports/" + encodeURIComponent(id) + "/" + name,
+                          {headers: brainAuthHeaders({})});
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    var url = URL.createObjectURL(await res.blob());
+    (state.sawUrls = state.sawUrls || []).push(url);
+    return url;
+  }
+
+  function sawClear() {
+    (state.sawUrls || []).forEach(function (u) { URL.revokeObjectURL(u); });
+    state.sawUrls = [];
+    state.sawReport = null;
+    var el = document.getElementById("saw");
+    if (el) el.hidden = true;
+  }
+
+  async function loadSaw(status) {
+    var key = sawKey(status);
+    if (!state.brainConnected || !key) { if (!key) state.sawFor = null; return; }
+    if (key === state.sawFor) return;
+    state.sawFor = key;
+    var seq = state.sawSeq = (state.sawSeq || 0) + 1;
+    try {
+      var list = await brainApi("GET", "/mission/reports");
+      var rows = (list && list.reports) || [];
+      if (!rows.length || seq !== state.sawSeq) return;
+      var rep = await brainApi("GET", "/mission/reports/" + encodeURIComponent(rows[0].mission_id));
+      if (seq !== state.sawSeq) return;
+      sawClear();
+      state.sawReport = rep;
+      await renderSaw(rep, seq);
+    } catch (e) {
+      // No routes on this brain (404), or none answered: say nothing, show nothing.
+    }
+  }
+
+  async function renderSaw(rep, seq) {
+    var el = document.getElementById("saw");
+    var found = document.getElementById("saw-found");
+    var items = document.getElementById("saw-items");
+    if (!el || !rep) return;
+    items.textContent = "";
+    items.hidden = true;
+    found.hidden = true;
+    if (rep.found) {
+      var url = await sawImage(rep.mission_id, "found.jpg");
+      if (seq !== state.sawSeq) return;
+      document.getElementById("saw-found-img").src = url;
+      found.setAttribute("aria-label", rep.found.confirmed
+        ? "See the picture it judged to be the " + (rep.target || "target")
+        : "See the picture it stopped at (not confirmed)");
+      found.hidden = false;
+    }
+    var marks = rep.landmarks || [];
+    var open = document.getElementById("saw-open");
+    open.textContent = marks.length ? "What it saw (" + marks.length + ")" : "What it saw";
+    open.hidden = !marks.length;
+    el.hidden = !rep.found && !marks.length;
+  }
+
+  async function openSawList() {
+    var rep = state.sawReport;
+    var items = document.getElementById("saw-items");
+    if (!rep || !items) return;
+    if (!items.hidden) { items.hidden = true; return; }
+    items.textContent = "";
+    var seq = state.sawSeq;
+    for (var i = 0; i < (rep.landmarks || []).length; i++) {
+      var m = rep.landmarks[i];
+      var li = document.createElement("li");
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "saw-item";
+      var where = m.room ? " · " + m.room : "";
+      b.setAttribute("aria-label", "See " + m.label + where);
+      if (m.thumb) {
+        var img = document.createElement("img");
+        img.alt = "";
+        try { img.src = await sawImage(rep.mission_id, m.thumb); } catch (e) { img.hidden = true; }
+        if (seq !== state.sawSeq) return;
+        b.appendChild(img);
+      }
+      var txt = document.createElement("span");
+      txt.textContent = m.label + where;
+      b.appendChild(txt);
+      (function (mark, im) {
+        b.onclick = function () { showSaw(im ? im.src : null, null, mark.label + (mark.room ? " · " + mark.room : "")); };
+      })(m, b.querySelector("img"));
+      li.appendChild(b);
+      items.appendChild(li);
+    }
+    items.hidden = false;
+  }
+
+  function showSaw(src, box, caption) {
+    var v = document.getElementById("saw-viewer");
+    if (!v || !src) return;
+    document.getElementById("saw-viewer-img").src = src;
+    var bx = document.getElementById("saw-box");
+    bx.hidden = !box;
+    if (box) {
+      bx.style.left = (100 * box[0]) + "%";
+      bx.style.top = (100 * box[1]) + "%";
+      bx.style.width = (100 * (box[2] - box[0])) + "%";
+      bx.style.height = (100 * (box[3] - box[1])) + "%";
+    }
+    document.getElementById("saw-caption").textContent = caption || "";
+    v.hidden = false;
+    document.getElementById("saw-close").focus();
+  }
+
+  function showSawFound() {
+    var rep = state.sawReport;
+    if (!rep || !rep.found) return;
+    showSaw(document.getElementById("saw-found-img").src, rep.found.box,
+            rep.found.confirmed ? "It judged this to be the " + (rep.target || "target") + "."
+                                : "It stopped here, but couldn't confirm it was the " + (rep.target || "target") + ".");
+  }
+
+  async function deleteSaw() {
+    var rep = state.sawReport;
+    var btn = document.getElementById("saw-delete");
+    if (!rep || !btn) return;
+    var now = Date.now();
+    if (now >= (state.sawDeleteArmed || 0)) {
+      state.sawDeleteArmed = now + SAW_DELETE_ARM_MS;
+      btn.textContent = "Tap again to delete";
+      setTimeout(function () {
+        if (Date.now() >= (state.sawDeleteArmed || 0)) btn.textContent = "Delete these pictures";
+      }, SAW_DELETE_ARM_MS + 50);
+      return;
+    }
+    state.sawDeleteArmed = 0;
+    btn.textContent = "Delete these pictures";
+    try {
+      await brainApi("DELETE", "/mission/reports/" + encodeURIComponent(rep.mission_id));
+      sawClear();
+      showToast(t("saw.deleted"), "ok");
+    } catch (e) {
+      showToast(t("saw.deleteFailed", {why: e.message || e}), "err");
+    }
+  }
+
   function renderMissionCard() {
     const el = document.getElementById("mission-card");
     if (!el) return;
@@ -2600,6 +2766,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
       return;
     }
     const card = missionCardText(state.lastBrainStatus);
+    loadSaw(state.lastBrainStatus);      // 3.162: once per ended mission
     // Only on a change: the card is read on every poll.
     if (el.textContent !== card.text) el.textContent = card.text;
     el.dataset.state = card.kind;

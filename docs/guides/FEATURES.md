@@ -916,6 +916,17 @@ every room the robot reads is called by the person's name: a survey asks
 the cloud nothing about a named room. With no saved map yet the panel says
 "Survey first". Screenshots: `docs/evaluations/twin-3.160-*.png`.
 
+**What it saw** (3.162; shown once the autopilot keeps reports, 3.162.C).
+After a mission ends, Home shows the picture the robot judged to be the
+target, under the one-sentence card: one tap opens it full size with the
+box it judged drawn on it, and says whether the identity was confirmed.
+"What it saw" lists each thing it placed on the map, with a small picture
+and the room (a person's room names where given); a tap opens the picture.
+"Delete these pictures" (two taps) removes that mission's pictures from the
+robot. The pictures stay on the robot (a mission at most 1 MB, the last 50
+missions); they come to the phone only through the autopilot's secret-guarded
+link and are never uploaded. Screenshots: `docs/evaluations/twin-3.162-*.png`.
+
 R2's `/wheels`, `/scan` and `/world/truth` are served but not drawn; they
 exist for the ROS nodes (R4) and for `/world/error` (R5).
 
