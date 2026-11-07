@@ -817,8 +817,16 @@ class ExploreAgent(MissionAgent):
         # live one (the bridge holds it live until nav2 ends it). A DELETE
         # right before the send halted nav2's tree and nav2 ended the
         # approach itself ABORTED. The ownership check still runs.
+        prev = self._goal
         self._cancel(send=False)
         out = self._send(gx, gy, "approach", now)
+        if out[0] != "GOAL" and prev is not None:
+            # Review: no goal superseded the old one (refused, a 503 hold, a
+            # failed call), so it would drive on untracked: end it now.
+            try:
+                self.navigator.cancel_goal()
+            except Exception:  # noqa: BLE001 -- best effort; the goal times out anyway
+                logger.warning("goal cancel failed", exc_info=True)
         if out[0] == "GOAL":
             # Only an approach nav2 took counts as made (3.85): one refused
             # `preempted` and recorded anyway kept every later sighting of
@@ -833,8 +841,8 @@ class ExploreAgent(MissionAgent):
             # is not re-sent every frame. (Its CLOSE_IN_REFUSED bounds it.)
             self._approach = (tx, ty)
         else:
-            # Nor does an older one stay on record: _cancel() above ended
-            # its goal, so a sighting back near it must be approached again.
+            # Nor does an older one stay on record: its goal was ended above
+            # (the send failed), so a sighting back near it must be approached again.
             self._approach = None
         return out
 

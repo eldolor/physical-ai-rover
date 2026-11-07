@@ -77,6 +77,10 @@ def main():
         for i in range(n):
             row = {"trial": i, "mode": mode, "arm": arm}
             a = pick(robot, reach, rng)
+            if a is None:
+                row["skipped"] = "no reachable point 1.5-2.5 m away"
+                rows.append(row)
+                continue
             code, aid = post(robot, a)
             ga, t_run = wait_state(robot, aid, ("active",), 8.0)
             row.update(a=a, a_code=code, a_running=t_run is not None)
@@ -85,7 +89,7 @@ def main():
             else:
                 time.sleep(0.5)
                 if mode == "switch":
-                    b = pick(robot, reach, rng)
+                    b = pick(robot, reach, rng) or a
                     t0 = time.monotonic()
                     if arm == "delete-then-post":
                         robot.delete("/world/goal", headers=H)

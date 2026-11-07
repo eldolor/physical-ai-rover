@@ -629,9 +629,17 @@ class Bridge(Node):
                 return
             if record is not self.goal:
                 # Superseded while pending: nav2 preempts it for the new one,
-                # and it is cancelled until its result says so (3.76 Q3).
+                # and it is cancelled until its result says so (3.76 Q3) --
+                # after the same grace as a live goal superseded (3.154), so
+                # no cancel lands while nav2 switches. A Stop clears it.
                 record.setdefault("cancel_reason", "superseded")
-                send = self._ask_cancel(handle, record)
+                now = time.monotonic()
+                entry = self._register(handle, record, now)
+                if entry["last"] == -math.inf and record["cancel_reason"] == "superseded":
+                    entry["last"] = now + SUPERSEDE_GRACE_S - CANCEL_RESEND_S
+                    entry["grace"] = True
+                else:
+                    send = self._ask_cancel(handle, record)
             else:
                 if record["state"] != "pending":
                     # Given up on (H1-2) and accepted after all (3.76 R2): it is

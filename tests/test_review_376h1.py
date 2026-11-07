@@ -440,6 +440,9 @@ def test_q3_a_goal_superseded_while_pending_is_cancelled_until_its_result(bridge
     b.send_goal({"x_m": 2.0, "y_m": 0.0})
     late = _Handle()
     first.complete(late)                                 # accepted after it was superseded
+    assert late.cancels == 0                             # 3.154: after the grace, not mid-switch
+    _later(b)
+    b._resend_cancels()
     assert late.cancels == 1
     _later(b)
     b._resend_cancels()

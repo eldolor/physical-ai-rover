@@ -46,16 +46,57 @@ def test_a_stop_inside_the_grace_cancels_the_superseded_goal_at_once(bridge_mod)
 
 
 class _CallNav(WalkingNav):
-    """A goal stays live while the robot walks it, so an approach can find
-    one to supersede (FakeNav's goals end at the next poll)."""
+    """Records which `set` calls are approaches (explore's own kind, read
+    from the call stack), so a refused send can never shift the pairing."""
+
+    def set_goal(self, x_m, y_m):
+        import inspect
+        kind = next((f.frame.f_locals.get("kind") for f in inspect.stack()[1:4]
+                     if f.function == "_send"), None)
+        self.calls.append(("kind", kind))
+        return super().set_goal(x_m, y_m)
 
 
 def test_explore_sends_no_cancel_right_before_an_approach():
     runner, nav, grid = _run(_CallNav)
-    kinds = [e["kind"] for e in runner.agent.events if e["event"] == "goal_sent"]
-    assert "approach" in kinds, "the mission never sent an approach: the test proves nothing"
-    sets = [i for i, c in enumerate(nav.calls) if c[0] == "set"]
-    for n, i in enumerate(sets):
-        if n < len(kinds) and kinds[n] == "approach":
-            assert i == 0 or nav.calls[i - 1][0] != "cancel", (
-                f"a cancel right before approach send {n}: {nav.calls[max(0, i - 3):i + 1]}")
+    calls = nav.calls
+    approaches = [i for i, c in enumerate(calls) if c == ("kind", "approach")]
+    assert approaches, "the mission never sent an approach: the test proves nothing"
+    for i in approaches:
+        before = [c for c in calls[:i] if c[0] in ("cancel", "set", "kind")]
+        assert not before or before[-1][0] != "cancel", (
+            f"a cancel right before an approach send: {calls[max(0, i - 4):i + 1]}")
+
+
+class _RefuseApproach(WalkingNav):
+    def set_goal(self, x_m, y_m):
+        import inspect
+        if any(f.function == "_send" and f.frame.f_locals.get("kind") == "approach"
+               for f in inspect.stack()[1:4]) and self.goal and self.goal["state"] == "active":
+            self.calls.append(("set", round(x_m, 2), round(y_m, 2)))
+            self.refused_approach = True
+            return {"accepted": False, "reason": "preempted"}
+        return super().set_goal(x_m, y_m)
+
+
+def test_a_refused_approach_still_ends_the_goal_it_would_have_superseded():
+    """Review: with no goal delivered, nothing supersedes the old one, so it
+    is cancelled -- never left driving untracked."""
+    runner, nav, grid = _run(_RefuseApproach)
+    assert getattr(nav, "refused_approach", False), "no approach was refused: the test proves nothing"
+    i = max(i for i, c in enumerate(nav.calls) if c[0] == "set")
+    assert any(c[0] == "cancel" for c in nav.calls[i:]) or nav.goal["state"] != "active"
+
+
+def test_a_goal_superseded_while_pending_gets_the_grace_too(bridge_mod):
+    """Review: an old goal still pending when superseded was cancelled the
+    moment nav2 accepted it -- the same mid-switch cancel."""
+    b = _bridge(bridge_mod)
+    b.send_goal({"x_m": 1.0, "y_m": 0.0})          # A, pending
+    b.send_goal({"x_m": 2.0, "y_m": 0.0})          # B supersedes it
+    a = _Handle()
+    b.nav.futures[0].complete(a)                   # nav2 accepts A late
+    assert a.cancels == 0
+    _later(b, bridge_mod.SUPERSEDE_GRACE_S + 0.5)
+    b._resend_cancels()
+    assert a.cancels == 1

@@ -1943,8 +1943,8 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 return {"accepted": False, **refused}
         # A person re-sending a goal after a stop: it supersedes the stop's
         # ending loop, which must never cancel this new goal -- but only once
-        # the bridge has taken it with no stop pressed since it arrived (3.82; nav2 may still reject it, and the
-        # bridge cancelled the old goal before sending it). A refused goal
+        # the bridge has taken it with no stop pressed since it arrived (3.82; nav2 may still reject it, and since
+        # 3.154 the bridge supersedes the old goal, its cancel deferred, rather than cancelling it first). A refused goal
         # never existed, so the stop's loop keeps ending the goal the stop
         # was for, and keeps its hold.
         def give_back():
