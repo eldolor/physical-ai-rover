@@ -149,6 +149,10 @@ DEFAULT_MAX_VISION_FAILURES = 3
 # that stalled in a memory squeeze) is a transient fault with its own budget,
 # like vision's (B3.2): this many consecutive failed ticks end the mission.
 DEFAULT_MAX_CAMERA_FAILURES = 3
+# ...and a failed read waits this long before the next tick (through
+# `idle`), so a read that fails at once (the car's stale-frame 503,
+# robot/camera_stream.py) cannot spend the budget in milliseconds.
+CAMERA_RETRY_S = 0.5
 
 LOG_TAIL_LINES = 20
 
@@ -2004,7 +2008,8 @@ class MissionRunner:
     def _handle_camera_failure(self, error: CameraUnavailable) -> bool:
         """3.153: a failed frame read. The tick took no action (every policy
         reads its frame first); the car is stopped, as on a blind vision
-        tick, and `max_camera_failures` in a row end the mission `failed`.
+        tick, waits `CAMERA_RETRY_S` before the next one, and
+        `max_camera_failures` in a row end the mission `failed`.
         A failure after stop()/abort() ended it does nothing, for the reason
         _handle_vision_failure gives."""
         with self._lock:
@@ -2017,6 +2022,7 @@ class MissionRunner:
             return False
         self._safe_stop()
         if failures < budget:
+            self.idle(CAMERA_RETRY_S)
             return self._running
         self._finish(FAILED, f"camera unavailable {failures} times in a row: {error}")
         return False

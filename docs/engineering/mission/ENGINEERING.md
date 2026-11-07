@@ -120,8 +120,10 @@ end at `_finish`, and the status's `explore` block). With no
    `__cause__`; every policy reads its frame first, so the tick has taken no
    action) -> `_handle_camera_failure()`: under the lock count
    `camera_failures` and log `camera unavailable n/budget: <error>`, then
-   `_safe_stop()`; `max_camera_failures` (`DEFAULT_MAX_CAMERA_FAILURES`, 3)
-   in a row end `failed` (`camera unavailable 3 times in a row: <error>`);
+   `_safe_stop()` (as on a blind vision tick, a brain stop does not end an
+   active nav2 goal), then `idle(CAMERA_RETRY_S)` (0.5 s: a read that fails
+   at once cannot spend the budget in milliseconds); `max_camera_failures`
+   (`DEFAULT_MAX_CAMERA_FAILURES`, 3) in a row end `failed` (`camera unavailable 3 times in a row: <error>`);
    one landing after `stop()`/`abort()` does nothing. Every other robot
    error still ends the mission at once; `Preempted` ->
    `_finish_preempted()` (3.70 E5): `cancelled` with `cancelled_by: "dpad"`;
@@ -763,7 +765,7 @@ tests/test_mission_guarded_verbs.py -q`.
 | `tests/test_mission_runner.py` (32) | tick-driven equals blocking `run_mission()` step for step; outcomes and idempotent `_finish`; the gate refuses after stop; a stop landing mid-tick records no step; tiered readouts reach status and survive a scene with no tier; the tick keeps advancing while an async call is in flight |
 | `tests/test_brain_server.py` (78) | **the import boundary, by mechanism:** a subprocess imports the brain app and lists `sys.modules`, so a forbidden import fails the suite and does not depend on review; two-hop mission completes; 409 on a second start; stop with no mission stops the car; secret gating; `ROUTE_PREFIX`; **the brain process loads no `sim`, and from `robot`/`world` only `robot.interface`, `robot.safety`, `robot.identity`, `world.interface`**; model and wording validation (refused at start, outage tolerated, one round trip); unknown field is 422; tiered start refusals and sim-vs-real perception choice; a survey's room source (3.70 S2): the frame's by default, the cloud's `/room` with the vision URL, secret and a timeout held to half the tick's, refused at start with no vision URL, never built for a find, reported on `/health`; a bad source or timeout refused at load |
 | `tests/test_tick_within.py` (6) | the mission loop's tick await: a cancel landing as the tick ends is raised, not lost, and a tick failing in that turn is logged (red only on Python 3.10 with `wait_for`), a cancel mid-tick and a deadline cancel the wait, results and errors come back, and `brain_server` never calls `asyncio.wait_for` |
-| `tests/test_camera_budget_3153.py` (5) | 3.153: one failed frame read mid-mission keeps the outcome (red before), the car stopped on that tick and the count reset; a camera never back ends `failed` after exactly 3 with no move; only consecutive failures count; any other robot error still ends at once; a Stop during a failed read is unchanged |
+| `tests/test_camera_budget_3153.py` (6) | 3.153: one failed frame read mid-mission keeps the outcome (red before), the car stopped on that tick and the count reset; a camera never back ends `failed` after exactly 3 with no move; only consecutive failures count; any other robot error still ends at once; a Stop during a failed read is unchanged; a read failing at once waits `CAMERA_RETRY_S` between tries |
 | `tests/test_failsafes.py` (15) | B3.2 budget and hang; one failure survivable; no movement after stop; B3.3 dead-man; every drill ends `failed` with the robot stopped; no-fault builds the ordinary mission; drills can be switched off |
 | `tests/test_camera_centred_start.py` (11) | 3.20's four criteria: centred first decision under `frontier` and `vision` (tiered is not parametrised), no step or vision call spent, centred start unchanged against `tests/data/frontier_trace_centred.json`, a refused centring ends the mission like any refused move |
 | `tests/test_mission_guarded_verbs.py` (3) | 3.32: a mission's verbs go through the safety layer's guarded plan; the gate forwards plan and stop count; a finished mission refuses a plan |

@@ -12,7 +12,7 @@ the count (`status.camera_failures`). Every other robot error still ends it
 at once."""
 
 from control.mission_runner import (
-    DEFAULT_MAX_CAMERA_FAILURES, FAILED, FOUND, MissionRunner,
+    CAMERA_RETRY_S, DEFAULT_MAX_CAMERA_FAILURES, FAILED, FOUND, MissionRunner,
 )
 from control.remote_robot import RobotTransportError
 from tests.conftest import RecordingRobot, fresh_mock_robot, mock_world_for
@@ -137,3 +137,15 @@ def test_a_stop_during_a_failed_read_is_unchanged():
     assert status["camera_failures"] == 0
     i = robot.calls.index("frame_failed")
     assert robot.calls[i + 1:].count("stop") == 1, "only stop()'s own stop"
+
+
+def test_a_read_that_fails_at_once_waits_between_tries():
+    """The car's stale-frame 503 answers at once: each failed tick under the
+    budget idles CAMERA_RETRY_S, so three failures span at least 1 s."""
+    robot = FlakyCamera(fresh_mock_robot(), forever_from=2)
+    waits = []
+    runner = runner_for(robot, idle=waits.append)
+    runner.start()
+    status = drive(runner)
+    assert status["outcome"] == FAILED
+    assert waits.count(CAMERA_RETRY_S) == DEFAULT_MAX_CAMERA_FAILURES - 1
