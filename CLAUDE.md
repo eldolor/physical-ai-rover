@@ -166,10 +166,6 @@ paragraph.**
 * 3.143: V3's slippers miss; the soak keeps no brain log.
 * The twin's 3.152.A readout (the Local VLM row, the operator line) is
   not yet deployed.
-* 3.153: the stack's own calls time out inside a VE kill's OOM squeeze
-  while `/health` answers (found by 3.152.B: `/frame`, the bridge, the
-  actuator's `/wheels`, the brain's tick > 30 s; late wheel ticks up to
-  0.95 s). Reserved, criteria to its session.
 * 3.105: a nav2 never up holds explore to its limit.
 * 3.150 criterion 6: the first session started after it merged checks the
   Bash hook live (hooks load at session start).
@@ -303,6 +299,10 @@ paragraph.**
   `MCL_ONFAULT`, only under an unlimited memlock limit); F2 on the board 0
   late wheel ticks 6/6 at 11-13 MB free. `picar-stack.service`'s
   `LimitMEMLOCK=infinity` installed on the board 2026-11-06 (its brain now `bdcf782c`).
+* 3.153: a failed camera read is a budgeted transient fault
+  (`CameraUnavailable`, 3 in a row end `failed`, 0.5 s between,
+  `status.camera_failures`); one 503 no longer fails a mission (27/27 in
+  process; live, sensors stopped 4 s: `found` as the reference).
 
 *Missions*
 
