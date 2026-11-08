@@ -314,6 +314,10 @@ paragraph.**
   the config, off in the runner); the dock is the start pose; a Stop or D-pad
   ends the return. Live 10/10 docked (median 0.032 m), 0 contacts, C7 20/20;
   FAILED in process C1 49/90 (stand-in nav), C5 at 0.01-0.02 V/s, C6.
+* 3.156.D: a battery end charges at the dock and resumes with what it kept
+  (`recharge_resume`, off; simulator stand-in only, 3.156.F on the Rover);
+  in process 45/45 charges resumed, E3-E8 met; FAILED E1 live (a return ended
+  `not_aligned`, cause open) and E2 (rooms 78%, finds 79% of no-drain).
 * 3.70: four end states (`found`, `exhausted`, `out_of_budget`,
   `cancelled`), read through `read_outcome()`; the budget is
   `mission_time_limit_s` (1200 s), `battery_floor_v` and, for `vision`,
