@@ -1,0 +1,28 @@
+{
+ "E1": {
+  "battery_ends": 0,
+  "docked": 0,
+  "resumed": 0,
+  "states": []
+ },
+ "E4": {
+  "over_limit": 0,
+  "charges_not_from_the_battery": 0
+ },
+ "E5": {
+  "at_or_under_reserve": 0,
+  "n": 0,
+  "worst_v": null
+ },
+ "E6": {
+  "max_charges": 0
+ },
+ "arms": {
+  "base": {
+   "finds": 14,
+   "survey_rooms": 95,
+   "n": 30,
+   "capped": 0
+  }
+ }
+}

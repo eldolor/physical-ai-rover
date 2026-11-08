@@ -71,7 +71,7 @@ CELLS_PER_SECOND_AT_FULL_SPEED = 2.0  # at speed=100
 # wall.
 DEFAULT_CELL_CM = 30.0
 DEFAULT_CELL_M = DEFAULT_CELL_CM / 100.0
-CHARGE_PAD_M = 0.15            # 3.156.D: the charge stand-in's pad radius
+CHARGE_PAD_M = 0.30            # 3.156.D: the charge stand-in's pad radius
 
 # ---------- the chassis, phase R0 (PLAN-ros-alignment.md) ----------
 #
