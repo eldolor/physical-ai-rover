@@ -433,14 +433,21 @@ R4-R7 made several hardware-day steps necessary that this checklist did not
 have. Detail is in `HARDWARE-BOM.md` (section 4.2 and correction 5 for the
 board, section 6 for power) and `PLAN-ros-alignment.md` 3.16.
 
-- **Flash the ESP32 firmware to `mainType` 3 with this chassis' constants.**
-  `HardwareRobot` sends `T=1` as wheel speeds in m/s, which is what
-  closed-loop `mainType` 3 means. In the stock `mainType` 2, `T=1` is
-  open-loop PWM (`L x 512`), so a command of 0.5 is full power. The wheel
-  diameter, counts per revolution and track width are compiled into the
-  firmware, not sent at run time (`HARDWARE-BOM.md` correction 5). And
-  `HardwareRobot` never sends `T=900` itself, so the board must already be
-  in `mainType` 3 when the robot server starts.
+- **Confirm which driver board this is, then that it is in `mainType` 2.**
+  *Corrected 2026-11-08 against `ugv_base_ros` @ `2e7df97` and 3.25; this
+  item used to ask for `mainType` 3.*
+  * **ROS Driver for Robots** (`ugv_base_ros`, what the Rover ships with):
+    `T=1` is closed-loop wheel speed in m/s in every `mainType`
+    (`setGoalSpeed()` sets `usePIDCompute`). `mainType` 2 is the UGV Rover
+    and the firmware's default (0.0800 m wheels, 660 pulses/rev, 0.172 m
+    track). `mainType` 3 is the UGV Beast (0.0523 m, 1092, 0.141), so it
+    would be wrong here. No firmware change is needed for closed loop.
+  * **General Driver** (`ugv_base_general`, which R7 was first written
+    against): `T=1` is open-loop PWM (`L x 512`) in `mainType` 1 and 2, so
+    a command of 0.5 is full power. If the board in the box is this one, no
+    motion until the backend is re-checked (the arrival runbook's hard stop).
+  * `HardwareRobot` never sends `T=900`, so the board must already be in the
+    right `mainType` when the robot server starts.
 - **Give the robot server the serial port.** `mode: hardware` refuses to
   start without `ROBOT_SERIAL` (or `hardware.serial_port` in
   `config/robot.yaml`) -- `robot/factory.py`. Pin the device with a udev
