@@ -5,7 +5,8 @@ over ssh; you do what needs hands. Written 2026-11-08 (3.169).
 
 The days: today is Sunday 11-08 (delivery, afternoon). You are home Monday
 11-09 and Tuesday 11-10, then away 11-11 to the week of 11-23. The Amazon
-return window closes **2026-12-08**.
+return window closes **2026-12-08**. The Jetson comes out of the car at the end
+of Tuesday (U9 to U12) and goes back in first thing on your return (R1).
 
 Row numbers such as L0.3 are from `docs/plans/ros-alignment/3.140-rover-live-checks.md`.
 Its bars are the bars here. Claude records each result there.
@@ -65,12 +66,17 @@ checks. A bad result on any of them is a reason to think about returning it.
 | The stock firmware is dumped | Monday |
 | 15 W stress with motors on the stand | Tuesday |
 | The charger check | Tuesday, in part; finish on your return |
+| Re-mount and re-wire, then the serial route and the board compare again (R1, R2) | **first, on your return** |
 | Odometry over a measured metre (floor) | **on your return** |
 | The safety sweep against the real lidar (floor) | **on your return** |
 | Flash our firmware fork, only after all of the above | **on your return** |
 
 You are back the week of 11-23 and Thanksgiving is 11-26. That leaves about
-two weeks. Do the two floor checks first when you get back.
+two weeks, less the day R1 and R2 take. Nothing is wired when you get back, so
+do those first, then the two floor checks.
+
+From 11-11 until you are back and R1 is done, the motor board cannot be reached.
+None of these checks can move ahead while you are away.
 
 ## Where every L0 and L1 row goes
 
@@ -100,8 +106,8 @@ two weeks. Do the two floor checks first when you get back.
 | L1.8 | `T:0` is never sent | Claude, no hands | any time |
 | L1.9 | Gyro against pivots | **does not fit** | Floor |
 
-What needs you on your return: the rest of L0 and all of L1's floor rows. Plan
-on several days for those.
+What needs you on your return: R1 and R2 first, then the rest of L0 and all of
+L1's floor rows. Plan on several days for those.
 
 ## Who runs the serial tools
 
@@ -403,7 +409,7 @@ Read back: the pack voltage from Claude.
 ## Tuesday: first motion, on the stand, with you there
 
 A full day. Do the steps in order. U1 to U5 are the ones that matter. Stop
-adding when you need the last hour for U9.
+adding when you need the last two hours for U9 to U12.
 
 ### U1. First wheels (L0.4, third part)
 
@@ -498,32 +504,118 @@ Bar: healthy within 120 s, 5 of 5.
 
 Stop if: a boot does not come back in 5 minutes.
 
-### U9. Leave it safe for the away period
+### U9. Clear the board and shut the Jetson down
 
-Allow an hour. By your hand:
+The Jetson comes out of the car tonight and sits on the desk while you are away.
+U9 to U12 are that job. Allow two hours.
 
-1. Tell Claude to stop the stack. Shut the Jetson down yourself.
-2. UPS off. Power switch off.
-3. Unplug the kit's DC5525 lead from the Jetson.
-4. Pull the ribbon from the 40-pin header.
-5. Take the three cells out. Store them somewhere cool and non-flammable.
-6. Plug in the Jetson's stock 19 V adapter, and keep Ethernet in. Check that
-   the kit's lead is out first, so the two supplies are never joined.
-7. Power the Jetson on. Tell Claude. Claude confirms it can reach it, and that
-   nothing can reach the motors.
+Do: tell Claude "clear the board". Claude checks that no session holds the board
+lock, takes the lock so none can start, stops `picar-stack`, `picar-ngrok` and
+`picar-local-vlm` cleanly, and tells you when that is done. Wait for that. Then
+shut the Jetson down yourself. When its light is out, UPS off, then power switch
+off.
 
-Left powered: the Jetson on the wall adapter. Not the pack. No motion is
-possible, because the motor supply has no cells behind it, and no work while you
-are away may ask for any.
+Read back: that the Jetson, the UPS and the power switch are all off.
 
-Read back: each of the seven, done.
+Stop if: Claude says someone still holds the board, or a service will not stop.
+Wait. Do not cut power to hurry it.
+
+### U10. Take the Jetson out
+
+Do, all power off:
+1. Ribbon off the 40-pin header. Pull it straight, never at an angle.
+2. DC5525 lead out of the Jetson's barrel jack. The lead stays with the car.
+3. The three USB leads out of the Jetson: driver board, USB camera, OAK-D Lite.
+4. Ethernet out.
+5. Unmount it, M2 in reverse: top plate and copper pillars off, then the Jetson
+   off the silver pillars. If the Jetson sat beside the car (T5), skip this one.
+6. Refit the top plate, so the D500 and the OAK-D Lite are not hanging by their
+   leads.
+7. Put every screw, washer and standoff you have left over in one bag, and keep
+   the bag with the car.
+
+Read back: each lead off, the Jetson out, and the hardware in the bag.
+
+Stop if: the carrier board bends or a screw forces. Back off.
+
+### U11. Back on the desk
+
+Do: set the Jetson on the desk. Plug in its stock 19 V adapter. Check that the
+kit's lead is nowhere near it, so the two supplies are never joined. Connect it
+to its usual network. Power it on.
+
+Read back: that it is up.
+
+Claude reports: ssh reaches it, the three services are running as they were
+before Monday (simulator, no hardware mode), and `/health` answers. Claude
+starts any that did not come up at boot.
 
 Stop if: Claude cannot reach it. Fix that before you leave.
 
-If you would rather keep the motor board and lidar live for remote work, the
-only route is the 12.6 V charger with the cells in. That means lithium cells on
-a charger for two weeks with nobody home. Do not do that unless U5 passed and
-you decide to.
+### U12. Leave the Rover unpowered
+
+Do:
+1. Check that the UPS and the power switch are off.
+2. Open the bay (four M3\*6 screws). Take the three cells out, and close it.
+3. Store all four cells somewhere cool and non-flammable, where nothing metal
+   can touch their ends.
+4. Unplug the charger from the wall and from the car.
+
+Read back: the cells out and where they are, and the charger unplugged at both
+ends.
+
+Stop if: a cell is warm, or its wrap is torn or dented. Set it apart on something
+non-flammable and tell Claude.
+
+Left powered: the Jetson on the desk, on its own adapter. Nothing on the car, and
+nothing charging while you are away. No motion is possible. From 11-11 until you
+are back and R1 is done, the motor board cannot be reached, nor can the lidar,
+the cameras or the pan-tilt, and no work while you are away may ask for them.
+
+---
+
+## On your return: re-mount first
+
+Before the two floor checks. Everything was disconnected, so nothing from
+Monday's wiring carries over. Allow a day, charging included.
+
+### R1. Re-mount and re-wire
+
+Do, in this order, each as its own step says:
+1. M1: tell Claude "clear the board", shut the Jetson down, unplug the 19 V
+   adapter and bring it over.
+2. M2: mount it, with the hardware from the bag and the same span as before.
+3. M3: wire it, with no cells in the car yet. Use the same USB ports if you can.
+4. T3 and T4: inspect and fit the cells, then charge. Unplug the charger when
+   done.
+5. T7: the car on the stand, all six wheels clear.
+6. M4: first power, hand on the switch.
+
+Read back: what each of those steps asks for.
+
+Stop if: what each of those steps says. M4's stands: anything moves, smoke or a
+smell, or Claude cannot reach it after 3 minutes. Power switch off.
+
+### R2. The serial route and the board compare again
+
+Do: nothing with your hands until Claude says start. Then, as in M6, turn each
+wheel by hand on both sides, and press the driver board's reset button once,
+about halfway through. Motors are not driven in this step.
+
+Claude runs `tools.rover.serial_route` and `tools.rover.board_compare` again, as
+in M5 and M6.
+
+Read back: that you turned wheels on both sides, and when you pressed reset.
+
+Claude reports: the route is the same as Monday's, both devices open by name,
+`T:1001` has `odl` and `odr`, the battery reads about 12 V, and any difference
+from Monday's capture.
+
+Stop if: the board does not answer on any port, the route has changed, or there
+is no `odl` or `odr`. Power off and check the ribbon. No motor motion until this
+is explained.
+
+Then the two floor checks in the table at the top.
 
 ---
 
