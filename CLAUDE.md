@@ -348,6 +348,7 @@ paragraph.**
 
 *The twin, consoles and tooling*
 
+* 3.162: what a mission saw: a report written once at `MissionRunner._end`, kept on the robot's disk, on Home (the judged frame, each thing's thumbnail); room labels 81 of 123 (bar 95%: FAILED), the Jetson's RSS owed; not deployed.
 * 3.132 Stages 0-4: tokens in `web-shared/ui.css`, Engineer mode, every
   string in `web-twin/strings.js`, ES modules in `web-twin/js/`, four tabs
   with a STOP bar on each, one Lab console (`control/lab.html`) that

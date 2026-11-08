@@ -593,6 +593,9 @@ otherwise). CORS allows any origin.
 | `GET /mission/status` | none | `MissionRunner.status()` plus `fault`; before any mission `{"running": false, "outcome": "idle", "step": 0, "log_tail": [], "fault": "none"}` | -- |
 | `POST /mission/explore/pick` | `GoalPickRequest` (`extra="forbid"`): `choice` int >= 1, `candidate` str 1-32 chars, as `status.explore.ask` publishes them (3.88 A) | `{"accepted": true, "choice", "candidate"}` -- `runner.pick_goal()` stores it under the runner's and the ask's locks; the next tick sends it to nav2 through the gated navigator. Never `/world/goal` | 409 with the reason, nothing sent: no mission, a mission that does not ask, a choice that is not the open one, an id not offered, a second pick, a pick at or after the timeout; 422 a bad body |
 | `GET /mission/inventory` | none | `{"inventory": null}` before any mission; else the current or last mission's object inventory (3.46; shape in the [perception engineering spec](../perception/ENGINEERING.md), "Inventory"). On mission end the report is also saved by `control/inventory_store.py` on a daemon thread | -- |
+| `GET /mission/reports`, `GET /mission/reports/{id}` | none | 3.162: what each kept mission saw (`brain/what_i_saw.py`, local only, the newest 50); one line each, or one report; 404 for none. `status.mission_id` is the name of this mission's report |
+| `GET /mission/reports/{id}/found.jpg`, `/thumbs/{n}.jpg` | none | 3.162: the frame the identity check judged, or a thing's thumbnail; `image/jpeg`, `nosniff`; nothing else in the directory is served |
+| `DELETE /mission/reports/{id}` | none | 3.162: every file of one report; `{"deleted": false}` for none; a delete that cannot finish is a 500 |
 | `GET /health` | none | liveness and configuration description; the verdict rules are the operations domain's | -- |
 | `POST /recording/frame`, `POST /recording/finish` | mounted from `control/recording_routes.py` | owned by the recordings domain | -- |
 
