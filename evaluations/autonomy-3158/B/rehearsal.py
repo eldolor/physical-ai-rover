@@ -159,8 +159,7 @@ class Truth:
 
 
 def volts(robot):
-    b = robot.get("/battery").json()
-    return b.get("voltage_v", b.get("voltage"))
+    return robot.get("/battery").json().get("v")
 
 
 def target_m(pose, world, target):
