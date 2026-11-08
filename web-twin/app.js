@@ -1447,10 +1447,9 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
   // (the warning colour) for a fault of the robot, a press that never reached
   // it or was answered an error (a lost STOP must stand out, 3.76 D), a reason
   // the twin does not know. "watchdog" keeps the alarm colour every refusal
-  // had before 3.86, without the flash: the server records it after any
-  // silence under the last driver's name, so the twin cannot tell a brain
-  // that hung mid-mission (B3.1) from one whose mission ended (3.86 rounds
-  // 5-8; open).
+  // had before 3.86, without the flash, and only a server older than 3.164
+  // shows it: that server records it after any silence, so a hang cannot be
+  // told from an end. Since 3.164 the watchdog row says which.
   const CALM_REFUSALS = { stopped: true, person_stop: true, preempted: true };
   // The colour class of each kind, the same name on the readout and the log.
   const REFUSAL_KIND_CLASS = { veto: "alert", watchdog: "alert", fault: "warn", calm: null };
@@ -3197,12 +3196,18 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
       }
       // 3.132 Stage 3: a fired watchdog with nothing running is the robot at
       // rest, drawn neutral. During a mission it is a fault, amber -- only a
-      // safety veto takes the alarm colour (3.86).
-      const resting = fired && !state.brainMissionRunning && !driveViaBrainMoving();
+      // safety veto takes the alarm colour (3.86). 3.164: the robot server
+      // says whether a mission is live, which holds with the brain dead; a
+      // server older than that leaves it to this page's own view.
+      const wd = health.watchdog;
+      const live = wd ? wd.mission_live : (state.brainMissionRunning || driveViaBrainMoving());
+      const resting = fired && !live;
+      const trip = wd && wd.trip;
       setBrainText("brain-tel-watchdog",
         "quiet " + age.toFixed(1) + "s / " + timeout + "s " +
-          (resting ? "\u2014 motors stopped (at rest)" : fired ? "\u2014 motors stopped" : "\u2014 armed"),
-        resting ? null : fired ? "warn" : "safe");
+          (resting ? "\u2014 motors stopped (at rest)" : fired ? "\u2014 motors stopped" : "\u2014 armed") +
+          (trip ? " \u00b7 " + t("watchdog.trip", {driver: driverWords(trip.driver), ago: trip.seconds_ago.toFixed(0)}) : ""),
+        trip ? "warn" : resting ? null : fired ? "warn" : "safe");
       renderAuthority(health);
     } catch (e) {
       setBrainText("brain-tel-watchdog", /^HTTP \d/.test(e.message || "") ? e.message : "unreachable", "warn");
@@ -3328,7 +3333,10 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
         : (health.driver ? t("driver.lapsed", {driver: driverWords(health.driver)}) : t("driver.nobody")),
       holder ? "safe" : null);
 
-    const refusal = health.last_refusal;
+    // 3.164: the last Stop, veto or fault, which the watchdog's record no
+    // longer hides (the watchdog has its own row). An older server has only
+    // `last_refusal`.
+    const refusal = health.watchdog ? health.last_stop_reason : health.last_refusal;
     if (!refusal) { setBrainText("brain-tel-refusal", "none"); return; }
     const label = refusalLabel(refusal.reason);
     // A watchdog stop can happen before anyone has driven, so there may be

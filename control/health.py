@@ -136,6 +136,11 @@ def check_robot(url: str, secret=None, timeout=DEFAULT_TIMEOUT_S) -> dict:
             "driver": body.get("driver"),
             "authority_holder": body.get("authority_holder"),
             "last_refusal": body.get("last_refusal"),
+            # 3.164: why it last stopped, and a hang the watchdog caught.
+            # Description, not a verdict input: a brain that hung is that
+            # run's story, not this release's health.
+            "last_stop_reason": body.get("last_stop_reason"),
+            "watchdog": body.get("watchdog"),
             "env_label": body.get("env_label") or None,
             # 3.34: the motor board's link. Description, not a verdict input:
             # a board goes quiet for reasons no release is to blame for (a

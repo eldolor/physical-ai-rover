@@ -205,6 +205,11 @@ class TeleopFrameRequest(BaseModel):
 # server's own poll, and hardcoding a second copy of 0.1 in control/health.py
 # is how the two would drift apart.
 WATCHDOG_POLL_INTERVAL_S = 0.1
+# 3.164: the share of the brain's `tick_timeout_s` a mission must be silent
+# for to read as hung: above every healthy wait (the longest, a cloud call, is
+# 20 s of 30), and below B3.3's deadline by more than a tick's work before a
+# hang. A record only: it moves nothing.
+TRIP_FRACTION = 0.8
 # R2b: how often a standing wheel-velocity command is vetted and, in the sim,
 # integrated. 20Hz is the rate nav2's local controller emits cmd_vel at, so
 # the loop never runs slower than the thing feeding it.
@@ -371,6 +376,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
     ident = log_identity("vision-picar robot server", config_path)
     config = load_config(config_path) if config_path else load_config()
     watchdog_timeout = config.get("safety", {}).get("watchdog_timeout_s", 1.0)
+    trip_after_s = TRIP_FRACTION * float(config.get("brain", {}).get("tick_timeout_s", 30.0))
     min_distance = config.get("safety", {}).get("min_distance_cm", 20.0)
     sensor_to_bumper = config.get("safety", {}).get("sensor_to_bumper_cm", 0.0)
     # Same resolution get_robot() uses internally -- reported in /health so
@@ -427,6 +433,16 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         # `driver_at`), so a house swap can refuse a mission between moves.
         "autonomous_at": None,
         "last_refusal": None,
+        # 3.164: the last refusal that was not the watchdog, or a person's
+        # Stop. The watchdog's record replaces `last_refusal` about a second
+        # after whatever really stopped the robot; it never replaces this.
+        "last_stop_reason": None,
+        # 3.164: the mission the brain opened at its Start (see
+        # `mission_live`), the watchdog's last firing (once per silence) and
+        # the last time it caught the brain hung. Guarded by `goal_gen_lock`.
+        "mission": None,
+        "last_fired": None,
+        "watchdog_trip": None,
         # 3.18 part 2: the wheel loop's own timing, while the wheels turn.
         # A vet covers the travel until the NEXT vet, so a late period is a
         # period the robot moved unvetted -- this is how a live run says
@@ -480,10 +496,49 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             "driver": driver,
             "at": time.monotonic(),
         }
+        state["last_stop_reason"] = state["last_refusal"]    # 3.164
         # R6's criterion 6: how often each collar acted, not only the last time.
         state["refusal_counts"][reason] = state["refusal_counts"].get(reason, 0) + 1
         logger.warning(f"refused ({reason}) for {driver}: {detail}")
         return {"executed": False, "reason": reason, "detail": detail}
+
+    def mission_live() -> bool:
+        """3.164, under goal_gen_lock: is the brain mid-mission? Opened by
+        its Start (`/autonomy/resume`), and live once it has moved since its
+        last `/stop`: a Start then refused never moves, and the brain's own
+        stop is on every blind step as well as at a mission's end."""
+        m = state["mission"]
+        return bool(m and m["open"] and m["moved_at"] is not None
+                    and (m["stopped_at"] is None or m["moved_at"] > m["stopped_at"]))
+
+    def mission_moved(driver: str, now: float) -> None:
+        """3.164, under goal_gen_lock: `driver`'s command was accepted."""
+        m = state["mission"]
+        if m and m["open"] and m["by"] == driver:
+            m["moved_at"] = now
+
+    def note_watchdog_fired(now: float) -> None:
+        """3.164: what was live when the watchdog fired. Once per silence."""
+        with goal_gen_lock:
+            during = "goal" if lease["owner"] is not None else "mission" if mission_live() else None
+            state["last_fired"] = {"during": during, "driver": state["driver"], "at": now}
+
+    def note_hang(now: float) -> None:
+        """3.164: a mission silent for `trip_after_s` is a hung brain. B3.1
+        fires in every cloud wait, so firing alone says nothing; this is a
+        silence no healthy tick can make. A navigator still beating is a
+        living brain, whatever nav2 is doing. Reports only: the motors were
+        stopped when the watchdog first fired."""
+        with goal_gen_lock:
+            quiet = now - state["last_command_at"]
+            beat = max(lease["beats"].values(), default=0.0)
+            if (state["watchdog_trip"] is not None or quiet < trip_after_s
+                    or now - beat <= watchdog_timeout or not mission_live()):
+                return
+            by = state["mission"]["by"]
+            state["watchdog_trip"] = {"how": "silence", "driver": by,
+                                      "quiet_s": round(quiet, 3), "at": now}
+        logger.warning(f"watchdog trip: {by} silent for {quiet:.1f}s mid-mission")
 
     async def watchdog_loop():
         while True:
@@ -511,6 +566,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                     state["last_refusal"] = {"reason": AUTONOMY_LAPSED,
                                              "detail": lapse_detail(owner, quiet_s),
                                              "driver": owner, "at": now}
+                    state["last_stop_reason"] = state["last_refusal"]    # 3.164
                     state["refusal_counts"][AUTONOMY_LAPSED] = (
                         state["refusal_counts"].get(AUTONOMY_LAPSED, 0) + 1)
                     logger.warning(f"goal lease lapsed: {lapse_detail(owner, quiet_s)}")
@@ -538,6 +594,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                         "driver": state["driver"],
                         "at": now,
                     }
+                    note_watchdog_fired(now)    # 3.164
+                if not held:
+                    note_hang(now)
 
     def ros_up(now: float) -> bool:
         """Is the ROS stack alive? Its actuator plugin posts /wheels at
@@ -1250,6 +1309,8 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         state["driver_at"] = now
         if driver_priority(driver) == DRIVER_AUTONOMOUS:
             state["autonomous_at"] = now
+        with goal_gen_lock:
+            mission_moved(driver, now)      # 3.164
         stamp = {}
         # 3.137: a verb that moves the body keeps every battery reading off
         # "at rest" while it runs, and for BATTERY_REST_S after (a pan never).
@@ -1570,6 +1631,8 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             state["driver_at"] = now
             if driver_priority(driver) == DRIVER_AUTONOMOUS:
                 state["autonomous_at"] = now
+            with goal_gen_lock:
+                mission_moved(driver, now)      # 3.164
         brain = is_autonomy(driver)
         with motion_lock:
             # 3.84: the stop count before the latch, read at execution; a
@@ -1652,6 +1715,14 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 # so one arbitrated before it does not move after it; lifted
                 # only when a mission starts (POST /autonomy/resume).
                 goal_stop["autonomy_stopped"] = {"by": driver, "at": time.monotonic()}
+                # 3.164: why it stopped, and a mission a person ended is no hang.
+                state["last_stop_reason"] = {"reason": PERSON_STOP,
+                                             "detail": f"{driver} pressed Stop",
+                                             "driver": driver, "at": time.monotonic()}
+                if state["mission"]:
+                    state["mission"]["open"] = False
+            elif state["mission"] and state["mission"]["by"] == driver:
+                state["mission"]["stopped_at"] = time.monotonic()   # 3.164
             if driver_priority(driver) == DRIVER_MANUAL:
                 # ...and the brain lets go now (3.76 K1): a brain waiting on a
                 # cloud call, or whose tick died, sends nothing that could
@@ -1717,6 +1788,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 if goal_stop["autonomy_stopped"] is None:
                     goal_stop["autonomy_stopped"] = {"by": owner, "at": now, "lapsed": True,
                                                      "quiet_s": round(quiet, 3)}
+                if state["watchdog_trip"] is None:     # 3.164
+                    state["watchdog_trip"] = {"how": "lease", "driver": owner,
+                                              "quiet_s": round(quiet, 3), "at": now}
             goal_stop["gen"] += 1
             goal_stop["hold"] = True
             goal_stop["ending"] = goal_stop["gen"]
@@ -1727,6 +1801,17 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         with goal_gen_lock:
             return {"owner": lease["owner"], "lapses": lease["lapses"],
                     "last_lapse": lease["last_lapse"], "lease_s": watchdog_timeout}
+
+    def aged(record):
+        """A record for /health: its age beside its monotonic `at`."""
+        return {**record, "seconds_ago": round(time.monotonic() - record["at"], 2)} if record else None
+
+    def watchdog_status() -> dict:
+        """3.164: whether a mission is live, the watchdog's last firing, and
+        the last hang it caught (kept until the next mission's Start)."""
+        with goal_gen_lock:
+            return {"mission_live": mission_live(), "last_fired": aged(state["last_fired"]),
+                    "trip": aged(state["watchdog_trip"]), "trip_after_s": trip_after_s}
 
     def begin_goal_end(now: float) -> None:
         """3.97: end a nav2 goal for a person's move -- a Stop's goal-ending
@@ -1762,6 +1847,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             # 3.145: what a relatch for a start that then fails puts back,
             # a lapse as a lapse (not as a person's Stop by `brain`).
             goal_stop["resumed_from"] = was
+            if is_autonomy(driver):     # 3.164: a Start: the last trip was the last mission's
+                state["mission"] = {"by": driver, "open": True, "moved_at": None, "stopped_at": None}
+                state["watchdog_trip"] = None
         if was is not None:
             logger.info(f"autonomy resumed by {driver} (stopped by {was['by']})")
         return {"resumed": was is not None, "driver": driver,
@@ -1809,6 +1897,8 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         set since (a Stop during the build) is kept as it is."""
         driver = (x_driver or "").strip() or DRIVER_UNKNOWN
         with goal_gen_lock:
+            if state["mission"]:        # 3.164: that Start never became a mission
+                state["mission"]["open"] = False
             latched = goal_stop["autonomy_stopped"] is None
             if latched:
                 was = goal_stop.get("resumed_from")
@@ -2156,6 +2246,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                                 lease.update(owner=person if armed else None, id=lid,
                                              gen=goal_stop["gen"], since=time.monotonic(),
                                              released=False)
+                                mission_moved(person, time.monotonic())     # 3.164
                         if autonomy and latch is not None:
                             return {"accepted": False, **person_stop_refusal(person, latch)}
                         if not accepted:
@@ -2539,6 +2630,10 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                  "seconds_ago": round(time.monotonic() - state["last_refusal"]["at"], 2)}
                 if state["last_refusal"] else None
             ),
+            # 3.164: why it last stopped, kept beside the watchdog's record,
+            # and whether the watchdog caught the brain hung mid-mission.
+            "last_stop_reason": aged(state["last_stop_reason"]),
+            "watchdog": watchdog_status(),
             # Which deployment this is, for the twin's environment banner.
             # Unset (production) means the banner never renders, so the
             # same image is safe everywhere -- an environment marks itself

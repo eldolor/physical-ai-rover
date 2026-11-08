@@ -107,6 +107,7 @@ a board: `fresh`, `age_s`, `stale_after_s`, `frames`, `board_reboots`,
 `stale_zeroed`, `fork_firmware`, `link_error`; 3.34), `min_distance_cm`, `mode`, `sim_map`, `identity`,
 `seconds_since_watchdog_poll`, `watchdog_poll_interval_s`, `driver`,
 `authority_holder`, `refusal_counts`, `last_refusal` (with `seconds_ago`),
+`last_stop_reason` and `watchdog` (3.164; [safety engineering](../safety/ENGINEERING.md)),
 `env_label`. `sim_map` is `robot.world.map_name`, the name
 `sim/maps/__init__.py`'s `build_world()` stamps on the house it built, read
 through the wrappers' attribute forwarding. It names that house for any body

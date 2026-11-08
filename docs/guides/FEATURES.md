@@ -686,7 +686,10 @@ progress ("Searching for the red backpack -- 2 rooms looked at so far.",
 telemetry rows are Engineer mode's, except "Where it looked", shown once
 an ending has one. **Drive** holds Manual control and What the robot
 senses. The watchdog row draws a robot at rest (fired, nothing running)
-neutral and a fired watchdog during a mission amber; only a safety veto
+neutral and a fired watchdog during a mission amber (3.164: the robot
+server says whether a mission is live, and a brain that hung mid-mission
+stays amber with the words until the next Start; Last refusal keeps the
+last Stop, veto or fault, not the watchdog's record); only a safety veto
 takes the alarm colour (3.86).
 
 **Two views (3.132 Stage 2A).** By default the page speaks to a person at

@@ -392,6 +392,23 @@ it refuses to move them; from driver `ros` on `/wheels` it is answered
 unlogged, as `ros_unavailable` is), and `watchdog` (recorded in
 `last_refusal` only, once per silence).
 
+**The watchdog's record beside the reason (3.164).** `last_refusal` is
+replaced by the watchdog's record about a second after whatever stopped the
+robot, so `/health` also carries:
+
+* `last_stop_reason`: the last refusal that was not the watchdog, or a
+  person's Stop (`person_stop`). Same fields as `last_refusal`.
+* `watchdog`: `mission_live`, `last_fired` (`during`: `goal`, `mission` or
+  null; once per silence), `trip`, `trip_after_s`. A mission is opened by a
+  brain's `/autonomy/resume` and closed by `/autonomy/relatch` or a person's
+  Stop; it is live once the brain has moved since its last `/stop` (its stop
+  runs on blind steps too). **B3.1 firing mid-mission is not a hang: it fires
+  in every cloud wait.** `trip` is set once per mission, and kept until the next
+  Start, when a live mission is silent for `trip_after_s` (0.8 x
+  `brain.tick_timeout_s`, `how: "silence"`, unless a navigator beat inside
+  `watchdog_timeout_s`) or when its goal lease lapses (`how: "lease"`). Records
+  only: the watchdog's timing and who drives are untouched.
+
 ## Parameters and configuration
 
 | Key / constant | Value | Unit | Read in | Why |
@@ -463,7 +480,8 @@ which are the readings the vet itself used.
 
 **Diagnose "why is the robot not moving"** from `GET /health`:
 `authority_holder` (who holds it, or null once lapsed), `last_refusal`
-(`reason`, `detail`, `driver`, `seconds_ago`), `refusal_counts`,
+(`reason`, `detail`, `driver`, `seconds_ago`), `last_stop_reason` and
+`watchdog.trip` (3.164: the real reason, and a hung brain), `refusal_counts`,
 `seconds_since_last_command`, `drive.ros_up`. Then `GET /depth`'s `path`
 gives `blocked`, `veto_cm`, `veto_source` and `clearance_cm`.
 
