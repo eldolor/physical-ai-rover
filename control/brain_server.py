@@ -78,12 +78,14 @@ import json
 import logging
 import os
 import re
+import threading
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Callable, Optional
 
 import httpx
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -96,6 +98,7 @@ from brain.choice_log import ChoiceLog
 from brain.intervention_log import FILE_NAME as INTERVENTION_FILE, InterventionLog
 from brain import room_labels as room_labels_mod
 from brain import room_names as room_names_mod
+from brain import what_i_saw as what_i_saw_mod
 from control import drills
 from control.brain_config import load_brain_config
 from control.inventory_store import _slug, inventory_store_from_config
@@ -540,6 +543,52 @@ def _close_quietly(obj) -> None:
             logger.warning("could not close a policy the start let go: %s", e)
 
 
+def _person_room(rooms: list, x_m: float, y_m: float) -> Optional[str]:
+    """3.160's name for the place (x, y) on the saved map, or None: its cell,
+    else the nearest named cell within 0.3 m (an object stands against a
+    wall, and walls are in no room)."""
+    cell = room_names_mod.STORE_RES_M
+    for reach in range(4):
+        for dx in range(-reach, reach + 1):
+            for dy in range(-reach, reach + 1):
+                if max(abs(dx), abs(dy)) == reach:
+                    name = room_names_mod.named_at(rooms, x_m + dx * cell, y_m + dy * cell)
+                    if name:
+                        return name
+    return None
+
+
+def _write_saw(writer, mission_id: str, payload: dict) -> None:
+    """3.162, on its own thread: the frames decoded, 3.160's room names put
+    in, and the report handed to the writer. Logged, never a mission's fault."""
+    def jpeg(b64):
+        try:
+            return base64.b64decode(b64, validate=True)
+        except (binascii.Error, TypeError, ValueError):
+            return None
+    try:
+        report, found = payload["report"], payload["found"]
+        frame_id = report.get("frame_id")
+        rooms = room_names_mod.default_store().rooms(frame_id) if frame_id else []
+        looks = []
+        for row in payload["looks"]:
+            row = dict(row)
+            row["jpeg"] = jpeg(row.pop("image_base64", None))
+            if rooms:
+                row["room"] = _person_room(rooms, row["x_m"], row["y_m"]) or row["room"]
+            looks.append(row)
+        if found:
+            found = {**found, "jpeg": jpeg(found["image_base64"])}
+        writer().submit(mission_id, report, found=found, looks=looks)
+    except Exception as e:  # noqa: BLE001
+        logger.warning("report %s not handed to the writer: %s", mission_id, e)
+
+
+def _hand_saw(writer, mission_id: str, payload: dict) -> None:
+    threading.Thread(target=_write_saw, args=(writer, mission_id, payload), daemon=True,
+                     name="mission-saw").start()
+
+
 def create_app(
     config_path: Optional[str] = None,
     robot_factory: Optional[Callable[[], RobotInterface]] = None,
@@ -555,6 +604,21 @@ def create_app(
     configure_logging()                # PLAN 3.45: PICAR_LOG_LEVEL, unset = unchanged
     ident = log_identity("vision-picar brain server", config_path)
     config = load_brain_config(config_path)
+    # 3.162: beside the inventory unless named. Made at first use: an app that
+    # never runs a mission starts no writer thread.
+    saw = {}
+
+    def _saw_store() -> what_i_saw_mod.ReportStore:
+        if "store" not in saw:
+            named = os.environ.get("WHAT_I_SAW_DIR")
+            saw["store"] = what_i_saw_mod.ReportStore(
+                named or Path(config["inventory_dir"]).parent / "what-i-saw")
+        return saw["store"]
+
+    def _saw_writer() -> what_i_saw_mod.ReportWriter:
+        if "writer" not in saw:
+            saw["writer"] = what_i_saw_mod.ReportWriter(_saw_store())
+        return saw["writer"]
     # 3.99: built once, so every mission's writer shares its lock.
     intervention_log = InterventionLog(os.path.join(config["intervention_dir"],
                                                     INTERVENTION_FILE))
@@ -875,6 +939,8 @@ def create_app(
         # saved on it (local files only).
         runner.inventory_prior = store.latest_for
         runner.mission_id = mission_id
+        # 3.162: the frames and the list stay on this disk (local only).
+        runner.saw_sink = functools.partial(_hand_saw, _saw_writer, _slug(mission_id))
         # 3.99: one log, one file, for every mission's end line.
         runner.intervention_log = intervention_log
         if asks:
@@ -1413,6 +1479,42 @@ def create_app(
         except room_names_mod.NamesRefused as e:
             raise HTTPException(status_code=409, detail=str(e))
         return rooms_view(store, m, frame_id, seg)
+
+    def saw_call(fn, *args):
+        """3.162: one read or delete of the report store; a refused id or file is a 404."""
+        try:
+            return fn(*args)
+        except what_i_saw_mod.ReportRefused as e:
+            raise HTTPException(status_code=404, detail=str(e))
+
+    def saw_image(mission_id: str, name: str) -> Response:
+        return Response(saw_call(_saw_store().image, mission_id, name), media_type="image/jpeg",
+                        headers={"X-Content-Type-Options": "nosniff", "Cache-Control": "private, no-store"})
+
+    @app.get(prefix + "/mission/reports", dependencies=[Depends(require_secret)])
+    def mission_reports():
+        """3.162: one line for each kept mission, the newest first (no images)."""
+        return {"reports": _saw_store().list()}
+
+    @app.get(prefix + "/mission/reports/{mission_id}", dependencies=[Depends(require_secret)])
+    def mission_report(mission_id: str):
+        return saw_call(_saw_store().get, mission_id)
+
+    @app.get(prefix + "/mission/reports/{mission_id}/found.jpg", dependencies=[Depends(require_secret)])
+    def mission_report_found(mission_id: str):
+        return saw_image(mission_id, "found.jpg")
+
+    @app.get(prefix + "/mission/reports/{mission_id}/thumbs/{name}", dependencies=[Depends(require_secret)])
+    def mission_report_thumb(mission_id: str, name: str):
+        return saw_image(mission_id, f"thumbs/{name}")
+
+    @app.delete(prefix + "/mission/reports/{mission_id}", dependencies=[Depends(require_secret)])
+    def mission_report_delete(mission_id: str):
+        """3.162: every file of one report. One that cannot finish is an error, never a yes."""
+        try:
+            return {"deleted": saw_call(_saw_store().delete, mission_id)}
+        except OSError as e:
+            raise HTTPException(status_code=500, detail=f"not deleted: {e}")
 
     @app.get(prefix + "/mission/inventory", dependencies=[Depends(require_secret)])
     async def mission_inventory():

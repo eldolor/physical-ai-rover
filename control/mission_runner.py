@@ -65,7 +65,8 @@ from brain.goal_policy import coarse, goal_policy_for
 from brain.goal_policy import rooms_prior_informative as flat_prior_ok
 from brain.frontier import RETRY_COOLDOWN_S, RETRY_LIMIT
 from brain.inventory import MAX_RANGE_M as INVENTORY_RANGE_M
-from brain.inventory import DEFAULT_FOV_DEG, Inventory, frame_detections
+from brain.what_i_saw import MAX_THUMBS
+from brain.inventory import DEFAULT_FOV_DEG, Inventory, _bearing_to, frame_detections
 from brain.memory import MissionMemory
 from brain.mission_report import map_coverage
 from brain.navigate import CloudUnavailable
@@ -673,6 +674,20 @@ SPIN_TURN_SHARE = 0.75
 SPIN_MAX_REVERSAL_SHARE = 0.1
 
 
+def _wrap_deg(deg: float) -> float:
+    return (deg + 180.0) % 360.0 - 180.0
+
+
+def _look_box(bearing_deg: float, dist_m: float, fov_deg: float) -> list:
+    """3.162: the part of a frame to crop for a landmark: fractions of the
+    image around its camera bearing, as wide as a 0.5 m thing at its range
+    and full height (the inventory has a bearing and a range, no box)."""
+    span = 2 * math.tan(math.radians(fov_deg) / 2)
+    cx = 0.5 + math.tan(math.radians(bearing_deg)) / span
+    half = min(0.4, max(0.08, 0.25 / max(dist_m, 0.2) / span))
+    return [round(max(0.0, cx - half), 4), 0.0, round(min(1.0, cx + half), 4), 1.0]
+
+
 class MissionRunner:
     """One mission's lifecycle, driven a tick at a time from outside."""
 
@@ -992,7 +1007,7 @@ class MissionRunner:
             vision_fn=self._guarded_vision,
             # Handoff 2026-10-02 1a: identity at arrival, under the same
             # B3.2 timeout and failure budget as every other cloud call.
-            arrival_confirm_fn=self._guarded_confirm,
+            arrival_confirm_fn=self._judged_confirm,
             world=self.world,
         )
         if self.vision_fn is None:
@@ -1018,6 +1033,14 @@ class MissionRunner:
         # by _finish for a late confirmation (control/reconfirm.py).
         self._failed_arrival_frame: Optional[dict] = None
         self._arrival_frame: Optional[dict] = None
+        # 3.162: what the mission saw, for its report. `saw_sink` is set by the
+        # brain server and called once, at `_end`; unset (every in-process
+        # harness) nothing is held. Frames are held by reference, MAX_THUMBS
+        # at most: the best look at each landmark.
+        self.saw_sink: Optional[Callable[[dict], None]] = None
+        self._judged_frame: Optional[dict] = None
+        self._last_seen_frame: Optional[dict] = None
+        self._saw_looks: dict = {}
         self._late: Optional[dict] = None
         self._metrics_row: Optional[dict] = None
         self._metrics_thread: Optional[threading.Thread] = None
@@ -1889,6 +1912,13 @@ class MissionRunner:
             return only()
         return functools.partial(confirm, local_ok=False) if _takes_local_ok(confirm) else None
 
+    def _judged_confirm(self, frame: dict, local_ok: bool = True) -> dict:
+        """3.162: `_guarded_confirm`, remembering the frame a yes was given on."""
+        verdict = self._guarded_confirm(frame, local_ok)
+        if isinstance(verdict, dict) and verdict.get("confirmed"):
+            self._judged_frame = frame
+        return verdict
+
     def _guarded_confirm(self, frame: dict, local_ok: bool = True) -> dict:
         """The policy's `confirm_arrival` (brain/tiered.py), wrapped in
         B3.2's timeout like `_guarded_vision`. A policy without one cannot
@@ -2518,6 +2548,7 @@ class MissionRunner:
             except Exception as e:  # noqa: BLE001
                 logger.warning("closing the vision policy failed: %s", e)
         self._finish_inventory()
+        self._finish_saw(outcome, note)
         # One metrics row per mission, on a daemon thread. Last, and
         # after the policy is closed, so the latency samples are complete.
         # It can never fail a mission -- control/metrics_client.py holds
@@ -2882,6 +2913,8 @@ class MissionRunner:
         (HTTP calls on a remote robot). A frame that lands after the
         mission ended is dropped: the report has already been saved."""
         try:
+            if self.saw_sink is not None and not self._ended():
+                self._last_seen_frame = frame
             detections = self.detections_fn(frame)
             if self._ended():
                 return                        # no reads once the mission has ended
@@ -2907,6 +2940,8 @@ class MissionRunner:
                     pan_deg=float(frame.get("pan_deg") or 0.0),
                     fov_deg=float(frame.get("fov_deg") or DEFAULT_FOV_DEG),
                     room=frame.get("room", "unknown"), step=self._ticks)
+                if self.saw_sink is not None:
+                    self._keep_looks(frame, pose)
         except Exception as e:  # noqa: BLE001
             if not self._inventory_error_logged:
                 self._inventory_error_logged = True
@@ -2957,6 +2992,72 @@ class MissionRunner:
             report["mission_id"] = self.mission_id      # 3.50.D5: carried_from
             report["outcome"] = self._outcome
         return report
+
+    def _keep_looks(self, frame: dict, pose: dict) -> None:
+        """3.162: this frame, by reference, as the best look at each landmark
+        it was just seen in, under `_lock`. At MAX_THUMBS held, a merged-away
+        landmark's look goes first, then the least likely."""
+        image = frame.get("image_base64")
+        if not image:
+            return
+        pan, fov = float(frame.get("pan_deg") or 0.0), float(frame.get("fov_deg") or DEFAULT_FOV_DEG)
+        looks, landmarks = self._saw_looks, self.inventory.landmarks
+        for lm in landmarks:
+            if lm.first_step is None or lm.last_step != self._ticks:
+                continue
+            bearing, dist = _bearing_to(pose, lm.x, lm.y)
+            off = abs(_wrap_deg(bearing - pan))
+            if off > fov / 2:
+                continue                      # placed out of this frame's view: no crop of it
+            belief = lm.belief
+            have = looks.get(lm.id)
+            if have is not None and (belief, -off) <= (have["belief"], -have["off"]):
+                continue                      # beliefs saturate: then the most centred look
+            if have is None and len(looks) >= MAX_THUMBS:
+                live = {o.id for o in landmarks}
+                for gone in [k for k in looks if k not in live]:
+                    del looks[gone]
+                if len(looks) >= MAX_THUMBS:
+                    least = min(looks, key=lambda k: looks[k]["belief"])
+                    if looks[least]["belief"] >= belief:
+                        continue
+                    del looks[least]
+            looks[lm.id] = {"image_base64": image, "belief": belief, "off": off,
+                            "box": _look_box(_wrap_deg(bearing - pan), dist, fov)}
+
+    def _finish_saw(self, outcome: str, note: str) -> None:
+        """3.162: what the mission saw, handed once to `saw_sink`. Here because
+        `_end` runs once, whichever way the mission ended: straight, after
+        the return, or with a charge interrupted. Nothing here may raise, or
+        wait: a Stop runs this on the brain's event loop."""
+        if self.saw_sink is None or self._started_clock is None:
+            return
+        try:
+            with self._lock:
+                seen = self._last_seen_frame
+                judged = self._arrival_frame if outcome == ARRIVED_UNCONFIRMED else self._judged_frame
+                looks, self._saw_looks = self._saw_looks, {}
+                self._last_seen_frame = self._judged_frame = None
+                rooms = set(self.memory.visited_rooms)
+                rooms.update(getattr(self.agent, "rooms_entered", ()) or ())
+                report = {"outcome": outcome, "end_reason": note, "job": self.job,
+                          "target": self.memory.target_object,
+                          "step": len(self.agent.history), "ended": round(time.time(), 3),
+                          "rooms_entered": sorted(rooms), "rooms_source": "model"}
+                inventory = self.inventory_report() or {}
+            found = None
+            frame = judged or seen
+            if outcome in (FOUND, ARRIVED_UNCONFIRMED) and frame and frame.get("image_base64"):
+                found = {"image_base64": frame["image_base64"], "box": None,
+                         "confirmed": outcome == FOUND}
+            rows = [{"label": d["label"], "x_m": d["x_m"], "y_m": d["y_m"], "room": d["room"],
+                     "belief": d["belief"], "looks": d["hits"],
+                     **{k: v for k, v in looks.get(d["id"], {}).items() if k in ("image_base64", "box")},
+                     } for d in inventory.get("reported", []) if d.get("first_step") is not None]
+            report["frame_id"] = inventory.get("frame_id")
+            self.saw_sink({"report": report, "found": found, "looks": rows})
+        except Exception as e:  # noqa: BLE001 -- a report lost, never the mission
+            logger.warning("what it saw not saved: %s", e)
 
     def _finish_inventory(self) -> None:
         if self.inventory is None or self.inventory_sink is None:
