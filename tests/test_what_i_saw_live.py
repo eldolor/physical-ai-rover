@@ -162,6 +162,7 @@ class _LM:
     def __init__(self, i, belief, step=5):
         self.id, self.belief, self.first_step, self.last_step, self.x, self.y = i, belief, 1, step, 1.0, 0.0
         self.label = "chair"
+        self.votes = {"chair": 2.0, "stool": 1.0}
 
 
 def test_at_most_max_thumbs_looks_are_held_the_likeliest_kept():
@@ -207,6 +208,16 @@ def test_a_frame_that_does_not_show_a_landmark_is_no_look_at_it():
     assert runner._saw_looks == {}
     runner._keep_looks({"image_base64": "CCCC", "pan_deg": 40.0}, pose, [{"label": "chair", "bearing_deg": -40.0}])
     assert runner._saw_looks[1]["image_base64"] == "CCCC"
+
+
+def test_a_look_under_a_minority_name_still_counts():
+    """Review round 2: a relabel joins a landmark voted another name."""
+    runner, _ = _rendered()
+    runner._ticks = 5
+    runner.inventory.landmarks = [_LM(1, 0.9)]
+    runner._keep_looks({"image_base64": "AAAA"}, {"x_m": 0.0, "y_m": 0.0, "heading_deg": 90.0},
+                       [{"label": "stool", "bearing_deg": 0.0}])
+    assert runner._saw_looks[1]["image_base64"] == "AAAA"
 
 
 def test_an_abandoned_ticks_late_answer_holds_no_frame():

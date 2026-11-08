@@ -3016,9 +3016,11 @@ class MissionRunner:
             if lm.first_step is None or lm.last_step != self._ticks:
                 continue
             bearing, dist = _bearing_to(pose, lm.x, lm.y)
-            # A tick can hold several frames: only one that shows this thing.
+            # A tick can hold several frames: only one that shows this thing,
+            # under any name it has been voted (a relabel joins a landmark).
+            votes = lm.votes
             seen = [float(d["bearing_deg"]) for d in detections
-                    if d.get("bearing_deg") is not None and str(d.get("label", "")).strip().lower() == lm.label
+                    if d.get("bearing_deg") is not None and str(d.get("label", "")).strip().lower() in votes
                     and abs(_wrap_deg(pan + float(d["bearing_deg"]) - bearing)) <= LOOK_MATCH_DEG]
             if not seen:
                 continue
