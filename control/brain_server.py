@@ -624,8 +624,8 @@ def create_app(
         the shutdown below waits, so a restart straight after an end keeps it."""
         thread = threading.Thread(target=_write_saw, args=(_saw_writer, report_id, payload),
                                   name="mission-saw")
-        saw["hand"] = thread
         thread.start()
+        saw["hand"] = thread                      # started: shutdown may join it
     # 3.99: built once, so every mission's writer shares its lock.
     intervention_log = InterventionLog(os.path.join(config["intervention_dir"],
                                                     INTERVENTION_FILE))

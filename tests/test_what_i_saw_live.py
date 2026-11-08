@@ -19,7 +19,6 @@ import pytest
 from fastapi.testclient import TestClient
 from PIL import Image
 
-from brain import room_names as rn
 from brain import what_i_saw as wis
 from brain.inventory import REPORT_BELIEF
 from control import brain_server
@@ -306,9 +305,7 @@ def test_a_charge_and_resume_reports_once_at_the_real_end():
 @pytest.fixture
 def app_client(tmp_path, monkeypatch):
     monkeypatch.setenv("WHAT_I_SAW_DIR", str(tmp_path / "saw"))
-    monkeypatch.setenv("ROOM_NAMES_DIR", str(tmp_path / "names"))
     monkeypatch.delenv("APP_SHARED_SECRET", raising=False)
-    monkeypatch.setattr(rn, "_DEFAULT", None)
     app = brain_server.create_app(robot_factory=lambda: object(), world_factory=lambda robot: None)
     return TestClient(app), wis.ReportStore(tmp_path / "saw"), tmp_path
 
@@ -344,12 +341,15 @@ def test_the_judged_frames_hash_is_the_sent_frames(app_client):
     assert [m["thumb"] is not None for m in rep["landmarks"]] == [True, False]
 
 
-def test_a_persons_room_name_replaces_the_models(app_client):
-    _, store, tmp = app_client
-    names = rn.default_store()
-    keys = sorted({(x, y) for x in range(10, 15) for y in range(20, 25)})
-    names._save("map-1", {"version": 1, "frame_id": "map-1", "history": [],
-                          "rooms": [{"id": "a", "by": "person", "name": "Den", "runs": rn.to_runs(set(keys))}]})
+class _Names:
+    def rooms(self, frame_id):
+        keys = {(x, y) for x in range(10, 15) for y in range(20, 25)}
+        return [{"name": "Den", "_keys": keys}] if frame_id == "map-1" else []
+
+
+def test_a_persons_room_name_replaces_the_models(app_client, monkeypatch):
+    _, store, _ = app_client
+    monkeypatch.setattr(brain_server.room_names_mod, "default_store", lambda: _Names())
     writer = _Writer(store)
     brain_server._write_saw(writer, "m-2", _payload("map-1"))
     assert writer.w.flush()
