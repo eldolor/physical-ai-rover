@@ -516,6 +516,14 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         m = state["mission"]
         if m and m["open"] and m["by"] == driver:
             m["moved_at"] = now
+            m["heard_at"] = max(m["heard_at"], now)
+
+    def mission_heard(driver: str, now: float) -> None:
+        """3.164, under goal_gen_lock: `driver` is alive (a verb's end, a
+        beat), which is not a move: it never makes a mission live."""
+        m = state["mission"]
+        if m and m["open"] and m["by"] == driver:
+            m["heard_at"] = max(m["heard_at"], now)
 
     def note_watchdog_fired(now: float) -> None:
         """3.164: what was live when the watchdog fired. Once per silence."""
@@ -527,18 +535,17 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             state["last_fired"] = {"during": during, "driver": state["driver"], "at": now}
 
     def note_hang(now: float) -> None:
-        """3.164: a mission whose brain has sent nothing for `trip_after_s`
+        """3.164: a mission whose brain has said nothing for `trip_after_s`
         is a hung brain. B3.1 fires in every cloud wait, so firing alone says
         nothing; this is a silence no healthy tick can make. Counted from the
-        brain's own last move, because under `drive: ros` the actuator's
-        posts keep `last_command_at` fresh and B3.1 never fires. A navigator
-        still beating is a living brain, whatever nav2 is doing. Reports only."""
+        brain's own last word (a move, a verb's end, a navigator's beat),
+        because under `drive: ros` the actuator's posts keep
+        `last_command_at` fresh and B3.1 never fires. Reports only."""
         with goal_gen_lock:
             if state["watchdog_trip"] is not None or not mission_live():
                 return
-            quiet = now - state["mission"]["moved_at"]
-            beat = max(lease["beats"].values(), default=0.0)
-            if quiet < trip_after_s or now - beat <= watchdog_timeout:
+            quiet = now - state["mission"]["heard_at"]
+            if quiet < trip_after_s:
                 return
             by = state["mission"]["by"]
             state["watchdog_trip"] = {"how": "silence", "driver": by,
@@ -1380,6 +1387,8 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                     if stamped is not None:
                         stamped["at"] = state["driver_at"]
                 state["verbs_running"] -= 1
+            with goal_gen_lock:     # 3.164: the end is the driver's last word here too
+                mission_heard(driver, time.monotonic())
 
     def lapse_refused_claim(driver: str, refused: dict, stamped: float) -> dict:
         """3.84: a brain command refused at execution (`person_stop`,
@@ -1853,7 +1862,8 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             # a lapse as a lapse (not as a person's Stop by `brain`).
             goal_stop["resumed_from"] = was
             if is_autonomy(driver):     # 3.164: a Start: the last trip was the last mission's
-                state["mission"] = {"by": driver, "open": True, "moved_at": None, "stopped_at": None}
+                state["mission"] = {"by": driver, "open": True, "moved_at": None,
+                                    "stopped_at": None, "heard_at": 0.0}
                 state["watchdog_trip"] = None
         if was is not None:
             logger.info(f"autonomy resumed by {driver} (stopped by {was['by']})")
@@ -1874,6 +1884,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         with goal_gen_lock:
             if is_autonomy(driver):
                 lease["beats"][(driver, x_lease_id.strip())] = now
+                mission_heard(driver, now)      # 3.164
             latch = goal_stop["autonomy_stopped"]
         return {"driver": driver, "lease_s": watchdog_timeout,
                 "lapsed": bool(latch and latch.get("lapsed"))}
@@ -1889,6 +1900,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         key = (driver, x_lease_id.strip())
         with goal_gen_lock:
             lease["beats"].pop(key, None)
+            mission_heard(driver, time.monotonic())     # 3.164
             released = lease["owner"] is not None and (lease["owner"], lease["id"]) == key
             if released:
                 lease["released"] = True
@@ -2254,6 +2266,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                                 # 3.164: as it arrived, so a goal in flight over the
                                 # mission's last stop is not a move after it.
                                 mission_moved(person, now)
+                                mission_heard(person, time.monotonic())
                         if autonomy and latch is not None:
                             return {"accepted": False, **person_stop_refusal(person, latch)}
                         if not accepted:

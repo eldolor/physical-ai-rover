@@ -3198,7 +3198,8 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
       // rest, drawn neutral. During a mission it is a fault, amber -- only a
       // safety veto takes the alarm colour (3.86). 3.164: the robot server
       // says whether a mission is live, which holds with the brain dead; a
-      // server older than that leaves it to this page's own view.
+      // server older than that leaves it to this page's own view. Drive via
+      // brain's guided walk is this page's own: no server knows of it.
       const wd = health.watchdog;
       const live = (wd ? wd.mission_live : state.brainMissionRunning) || driveViaBrainMoving();
       const resting = fired && !live;

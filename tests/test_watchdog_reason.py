@@ -119,6 +119,31 @@ def test_a_hang_is_caught_while_the_actuator_keeps_the_watchdog_fed(url):
                headers={"x-driver": "ros"})
 
 
+def test_a_verbs_end_is_the_brains_last_word(url):
+    """A long verb then a long wait is no longer than the wait."""
+    _start(url)
+    began = time.monotonic()
+    r = httpx.post(f"{url}/action", json={"action": "LEFT", "angle": 90}, headers=BRAIN).json()
+    took = time.monotonic() - began
+    assert r["executed"] is True and took > 0.6, (r, took)
+    time.sleep(TRIP_AFTER_S - 0.6)
+    assert time.monotonic() - began > TRIP_AFTER_S, "the verb and the wait were too short"
+    assert _wd(url)["trip"] is None
+    _stop(url)
+
+
+def test_the_watchdog_records_one_firing_per_silence(url):
+    """A refusal inside a silence replaces `last_refusal`; it is no new firing."""
+    _start(url)
+    _move(url)
+    _stop(url, PERSON)
+    time.sleep(WATCHDOG_S + SLACK_S)
+    first = _wd(url)["last_fired"]["seconds_ago"]
+    assert _move(url)["reason"] == "person_stop"
+    time.sleep(0.4)
+    assert _wd(url)["last_fired"]["seconds_ago"] >= first + 0.3
+
+
 def test_a_trip_outlives_the_quiet_record_after_it_and_goes_at_the_next_start(url):
     """B3.3 ends a hung tick with the brain's own /stop; the watchdog then
     fires again over a mission that is over. That must not erase the hang."""
@@ -187,6 +212,7 @@ def test_a_navigator_still_beating_is_a_living_brain(url):
         httpx.post(f"{url}/autonomy/heartbeat", headers=beat)
         time.sleep(WATCHDOG_S / 3)
     assert _wd(url)["trip"] is None
+    assert _wd(url)["mission_live"] is True, "a beat must not end or start a mission"
     httpx.delete(f"{url}/autonomy/heartbeat", headers=beat)
     _stop(url)
 
