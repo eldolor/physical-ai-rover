@@ -350,6 +350,7 @@ paragraph.**
   serves the deployed twin (`picar-stack`, `picar-ngrok`).
 * 3.93, 3.128, 3.129, 3.139, 3.121, 3.113: locks, claims and the fast tier
   (section 3c; 3.113 in section 6).
+* 3.168: `tools/rover/`: read-only bring-up tools for L0.3-L0.6, L0.8 (udev rules, board compare, lidar capture and score, stock firmware dump, camera check), dry-run on the fakes; nothing can write to the board.
 * 3.150: `tools/bash_guard.py`, a PreToolUse hook on Bash, refuses
   `PICAR_SKIP_GATE=1` / `PICAR_CLAIM_BYPASS=1`, `--no-verify` or a
   `core.hooksPath` skip on a commit or a push that can reach `dev`, and
