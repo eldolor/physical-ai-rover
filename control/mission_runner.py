@@ -2329,7 +2329,8 @@ class MissionRunner:
                 self._charge["history"].append({
                     "from_v": charge.from_v, "to_v": charge.v,
                     "seconds": round(now - charge.t0, 1),
-                    "at_s": round(self._elapsed_s(), 1)})
+                    "at_s": round(self._elapsed_s(), 1),
+                    "after": self._pending_end[1][:120]})
                 self._charge_ended(state, reason)
                 self._pending_end = None
                 self._return_trip = None

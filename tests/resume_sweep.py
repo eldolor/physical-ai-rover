@@ -83,8 +83,8 @@ def verdict(rows):
                  "states": sorted({str(r["charge"]) for r in charged})}
     limit = ds.LIMIT_S + 60.0
     out["E4"] = {"over_limit": sum(r["elapsed_s"] - r["paused_s"] > limit for r in rows),
-                 "time_end_charged": sum(bool(r["history"]) and "time:" in r["end_reason"]
-                                         and not r["charge"] for r in rows)}
+                 "charges_not_from_the_battery": sum("battery" not in h["after"] for r in rows
+                                                     for h in r["history"])}
     out["E5"] = {"at_or_under_reserve": sum(r["min_v"] <= RESERVE_V for r in charged),
                  "n": len(charged), "worst_v": min((r["min_v"] for r in charged), default=None)}
     out["E6"] = {"max_charges": max((len(r["history"]) for r in rows), default=0)}
