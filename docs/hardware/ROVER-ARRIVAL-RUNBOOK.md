@@ -42,7 +42,8 @@ Read these first. They hold on every step.
 * A stand that lifts **all six wheels** clear and does not tip. Sturdy boxes
   work. The body is 253 x 231 mm.
 * Masking tape and a marker.
-* A cardboard box about 20 cm tall, for the lidar and camera targets.
+* A narrow cardboard box, **15 cm wide or less** and about 20 cm tall, for the
+  lidar and camera targets. A wider box reads wrong at the lidar.
 * Small screwdrivers and hex keys (M2.5, M3, M4).
 * Spare M2.5 and M3 screws, nylon or steel washers, and M2.5 standoffs.
 * A multimeter.
@@ -84,7 +85,7 @@ two weeks. Do the two floor checks first when you get back.
 | L0.5 | The protocol matches the fake | Mon | M6 |
 | L0.6 | The D500: capture, rate, wall, box | Mon | M8 |
 | L0.7 | Lidar against real rooms | **part** | U7, one room if time. The whole survey is 3 or more spots in every room the missions use: on your return |
-| L0.8 | Both cameras stream | Mon on; Claude finishes | M10 |
+| L0.8 | Both cameras stream | Mon | M10 |
 | L0.9 | Camera field of view | Tue, if time | U6 |
 | L0.10 | Starts at boot, 5 cold boots | Tue, if time | U8 |
 | L0.11 | The charger | **part** | U5. The row wants a full tiered mission running. That needs SLAM and nav2 on the car, which are L3 |
@@ -102,8 +103,20 @@ two weeks. Do the two floor checks first when you get back.
 What needs you on your return: the rest of L0 and all of L1's floor rows. Plan
 on several days for those.
 
-Tools marked **being built** are coming from another session (3.168, under
-tools/rover/). If one is not ready at its step, skip the step and tell Claude.
+## Who runs the serial tools
+
+The tools are in `tools/rover/` (`tools/rover/README.md`). Each serial tool only
+listens: none can send the board a wheel or servo command.
+
+Claude runs them on the Jetson over ssh, from the repository root, under
+`tools/jetson/board_lock.py`, with `picar-stack` stopped first. On real ports
+they must run under `sudo`, so a program holding a port cannot hide. Your
+account on the Jetson has passwordless sudo for development, so Claude uses
+`sudo -n` and **nobody types a password**.
+
+If `sudo -n` ever asks for a password, Claude stops. Then you run that one
+command yourself, in a terminal on the Jetson, and paste back the output. Never
+the password.
 
 ---
 
@@ -259,52 +272,81 @@ Do: nothing with your hands unless Claude asks. You say go for each of the
 three reboots.
 
 Our Jetson runs our own image, so Waveshare's app should not be there. Claude
-checks anyway. Claude sets up the stable names. Tool: udev rules, **being
-built**.
+checks anyway.
 
-Read back: "go" for each reboot.
+Tools, run by Claude:
+* `python -m tools.rover.serial_route --out r.json --rules-out 99-picar-rover.rules`
+  listens on each port and says which is the board and which the lidar.
+* `bash tools/rover/install_udev.sh 99-picar-rover.rules` shows what it would
+  install and changes nothing.
+* The same command with `--yes` installs the names and adds the user to
+  `dialout`. Claude shows you the first output and waits for your go.
 
-Claude reports: nothing but our code can hold the port, and both devices open
-by name after 3 reboots. Expected serial route: `/dev/ttyTHS1`.
+Read back: "go" for the install, and for each reboot.
+
+Claude reports: nothing but our code can hold the port, whether the D500 shows
+up as its own USB serial device, and both devices open by name after 3 reboots.
+Expected serial route: `/dev/ttyTHS1`.
 
 Stop if: the board does not answer on any port. Check the ribbon, power off
 first.
 
 ### M6. Protocol against our fake (L0.5)
 
-Do: press the driver board's reset button once when Claude asks. Tool:
-protocol compare, **being built**.
+Claude runs `python -m tools.rover.board_compare --port /dev/ttyTHS1 --seconds 60
+--out c.json`, a 60 second capture. During those 60 seconds, when Claude says
+start:
 
-Read back: that you pressed it.
+1. **Turn each wheel by hand**, a few turns, left side and right side. Motors
+   are not driven in this step. If you skip this, the speeds and odometers read
+   `not_exercised` and the row is not met.
+2. Press the driver board's reset button once, about halfway through.
 
-Claude reports: `T:1001` has `odl` and `odr`, the battery reads about 12 V, and
-how many seconds the board is deaf after a reset.
+Read back: that you turned wheels on both sides, and when you pressed reset.
+
+Claude reports: `T:1001` has `odl` and `odr`, the battery reads about 12 V, how
+long the board is silent after a reset, and each difference from our fake. The
+tool only listens, so it cannot tell whether the board's input stays deaf for
+longer than its output is silent.
 
 Stop if: there is no `odl` or `odr` in the frames. It means the wrong board or
 firmware. No motor motion until this is explained.
 
 ### M7. Dump the stock firmware (L0.4, first half)
 
-Do: plug in the USB lead Claude names, and press what Claude asks. Tool:
-firmware dump, **being built**.
+Claude first runs `python -m tools.rover.dump_firmware --check`, which touches
+nothing. Then `python -m tools.rover.dump_firmware --port /dev/ttyTHS1`, with
+`--before no_reset` on the 40-pin UART.
 
-Read back: done.
+Do: on the 40-pin UART, when Claude says, **hold BOOT and tap EN** on the driver
+board, then let go of BOOT. The tool only reads the chip.
 
-Claude reports: the dump's size, a matching second read, and that it is kept.
+Read back: that you did it, and any light that changed.
+
+Claude reports: the dump's size, a matching second read, and that it is kept in
+`~/rover-firmware/` on the Jetson. The `--before no_reset` option has not been
+tried against a real esptool, so Claude checks esptool's own help first.
 
 Stop if: the two reads differ. Do not flash anything, now or later.
 
 ### M8. The lidar (L0.6)
 
 Do: car still on the stand.
-1. Tape a mark on a plain wall in front of the car. Measure the distance from
-   the lidar's spin axis to the wall, about 1 m. Write it down.
-2. Put the box dead ahead, on the car's centreline, at the lidar's height.
-3. Note which way the D500's zero mark faces. Waveshare's drawing says left.
+1. Set the car with a plain wall **to one side**, about 1 m away. Measure from
+   the lidar's centre to the wall, square to the wall. Write it down.
+2. Put the narrow box dead ahead, about 0.6 m away, on the car's centreline, at
+   the lidar's height, with its face square to the lidar. Measure from the
+   lidar's centre to its face.
+3. Clear the front: nothing nearer than the box within 30 degrees either side
+   of it.
+4. Note which way the D500's zero mark faces. Waveshare's drawing says left.
 
-Tool: lidar capture, **being built**.
+Claude runs `python -m tools.rover.lidar_check capture --port /dev/picar-lidar
+--out cap.bin`, then `python -m tools.rover.lidar_check score cap.bin
+--wall-bearing B --wall-m M --box-m M` with your numbers.
 
-Read back: the wall distance, the box's distance, and the zero's direction.
+Read back: which side the wall is on, the wall distance, the box's distance, and
+the zero's direction.
 
 Claude reports, against the bars: under 0.1% bad packets, 10 Hz within 10%, the
 wall within 2 cm, the box at 0 degrees within 2.
@@ -320,12 +362,16 @@ Read back: the whole part.
 
 Stop if: a repeat differs by more than 2 mm. Measure again.
 
-### M10. Start the camera check (L0.8)
+### M10. The camera check (L0.8)
 
-Do: nothing. Tool: camera check, **being built**. Claude runs it and can finish
-it while you are away.
+Do: nothing with your hands. Claude runs `python -m tools.rover.camera_check
+--device /dev/videoN --seconds 620`, one camera at a time, **10 minutes each**,
+so about 20 minutes for both. It runs beside the stack, with the stack's own
+camera unset, because the tool opens the device itself. Other no-hands work can
+go on meanwhile, but not on that camera.
 
-Claude reports: frames from both cameras, frame age, no stale frames served.
+Claude reports: for each camera, frame age p90 (bar 100 ms) and no stale frames
+served.
 
 Stop if: a camera is not seen. Check its USB lead with the power off.
 
