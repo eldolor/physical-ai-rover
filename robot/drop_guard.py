@@ -376,12 +376,13 @@ class DropGuard:
             # Lip by lip: a lip the turn opens, or one already inside the
             # outline, must not excuse another the turn closes; along one
             # lip a corner sliding by keeps its gap, and a part of it may
-            # close only as far as its nearest part already is. Now is
-            # measured without the crossing test: a chord across a bend,
-            # its two samples outside the outline, is not a gap of 0 that
-            # nothing can close on.
-            lines = _lines(lips)
-            now = [self._line_gap(line, 1.0, 0.0, crossing=False) for line in lines]
+            # close only as far as its nearest part already is. A chord
+            # across a bend that clips the outline, its samples outside it,
+            # is not a gap of 0 that nothing can close on: that lip is
+            # judged on its samples alone, which cannot cross.
+            lines = [line if self._line_gap(line, 1.0, 0.0) > 0 else _samples_of(line)
+                     for line in _lines(lips)]
+            now = [self._line_gap(line, 1.0, 0.0) for line in lines]
             for k in range(1, looks + 1):
                 # The body turned by `step` is the lips turned by -step.
                 step = math.radians(math.copysign(reach * k / looks, omega_rad_s))
@@ -392,17 +393,17 @@ class DropGuard:
                         return "drop_pivot_edge"
             return None
 
-    def _line_gap(self, line: list, c: float, s: float, crossing: bool = True) -> float:
+    def _line_gap(self, line: list, c: float, s: float) -> float:
         """The outline's distance from a lip's segments (`_lines`), the lip
         turned by the rotation (c, s) about the centre."""
         return min(self._segment_gap(a0 * c + l0 * s, -a0 * s + l0 * c,
-                                     a1 * c + l1 * s, -a1 * s + l1 * c, crossing)
+                                     a1 * c + l1 * s, -a1 * s + l1 * c)
                    for a0, l0, a1, l1 in line)
 
-    def _segment_gap(self, a0, l0, a1, l1, crossing: bool = True) -> float:
-        """A body-frame segment's distance from the chassis outline, at a
-        segment's end or an outline corner; `crossing`: 0 if it crosses."""
-        if crossing and _crosses_box(a0, l0, a1, l1, self.half_len, self.half_wid):
+    def _segment_gap(self, a0, l0, a1, l1) -> float:
+        """A body-frame segment's distance from the chassis outline: 0 if it
+        crosses it, else at a segment's end or an outline corner."""
+        if _crosses_box(a0, l0, a1, l1, self.half_len, self.half_wid):
             return 0.0
         corners = [(sa * self.half_len, sl * self.half_wid) for sa in (-1, 1) for sl in (-1, 1)]
         return min(self._gap(a0, l0), self._gap(a1, l1),
@@ -476,6 +477,11 @@ def _lines(lips: list) -> list:
                     line.append(lips[i] + lips[j])
         out.append(line)
     return out
+
+
+def _samples_of(line: list) -> list:
+    """A lip's segments as its samples alone, each a segment of no length."""
+    return [q for a0, l0, a1, l1 in line for q in ((a0, l0, a0, l0), (a1, l1, a1, l1))]
 
 
 def _crosses_box(a0, l0, a1, l1, half_a, half_l) -> bool:

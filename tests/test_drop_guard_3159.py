@@ -363,7 +363,8 @@ def test_a_chord_across_a_bend_does_not_excuse_the_turn():
     """B3 review (Thermos): two real samples outside the outline, their chord
     clipping a corner, read as a gap of 0, and nothing closes on 0."""
     g = _guard_with_lips([(14.0, 13.0), (20.0, 8.0)])
-    assert g.pivot_blocked(1.0) == "drop_pivot_edge"
+    assert {g.pivot_blocked(1.0), g.pivot_blocked(-1.0)} == {"drop_pivot_edge", None}, (
+        "B3 review round 2: the chord must not refuse the turn that opens it either")
 
 
 def test_only_a_lip_a_disc_already_covers_grows():
