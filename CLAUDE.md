@@ -282,10 +282,10 @@ paragraph.**
 * 3.159.B: a drop is a wall at the end of seen floor (`robot/drop_guard.py`,
   the depth grid's `drop` block, sim `v` cells, `*_stairs` houses); 0 falls
   in every sweep and 160 missions; D2/D4 (turns within a cell of an edge)
-  failed in B. 3.159.B2: the turn check measures the gap to remembered lip
-  samples (D2 met, D4 failed: 23 of 315 turns away refused); the costmap
-  mark held for B3 (`evaluations/drop-3159/mark-held.patch`). Off on every
-  real body.
+  failed in B. 3.159.B2-B3: the turn check measures the gap to a lip's line
+  (D2 met, D4 failed: 6 of 315 turns away refused); the costmap mark failed
+  its bar twice and is held (`evaluations/drop-3159/mark-held.patch`). Off
+  on every real body.
 * 3.82, 3.84, 3.86, 3.97, 3.104: a person's Stop latches the brain out
   until a mission starts (`POST /autonomy/resume`); a person's move ends a
   nav2 goal under every drive; a Stop during the arrival's confirmation

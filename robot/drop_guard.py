@@ -56,6 +56,10 @@ PIVOT_HORIZON_S = 0.1
 # (the half-diagonal 17.13 cm less the half-width 11.55), and the lip
 # samples lie up to 2.4 cm apart (amendment 3).
 PIVOT_GAP_CM = 8.0
+# Two lip samples this close are one lip, and the floor ends on the line
+# between them (amendment 4: at most one sample per cell, so they lie 2-7 cm
+# apart, and a corner's nearest point on a lip is usually between two).
+LIP_LINK_CM = 2 * CELL_CM
 # 3.159.B2's mark: discs nav2 plans around, one per MARK_STEP_M of lip.
 MARK_R_M = 0.30
 MARK_STEP_M = 0.15
@@ -351,8 +355,8 @@ class DropGuard:
     def pivot_blocked(self, omega_rad_s: float) -> Optional[str]:
         """A turn that would shrink the outline's gap to a remembered lip
         and end under `PIVOT_GAP_CM` (amendment 3: measured on the lip
-        samples, not the 5 cm cells, which refused turns that opened the
-        gap, B's D4). A turn that opens the gap, or keeps it at 8 cm or
+        samples' line (amendment 4), not the 5 cm cells, which refused turns
+        that opened the gap, B's D4). A turn that opens the gap, or keeps it at 8 cm or
         more, is never refused. Unseen floor does not refuse a turn
         (amendment 2): a corner swings at most 5.6 cm past the outline, so
         the worst it can do is overhang, never fall -- and the turn sweep
@@ -369,22 +373,41 @@ class DropGuard:
             lips = self._lips_near(math.hypot(self.half_len, self.half_wid) + PIVOT_GAP_CM)
             if not lips:
                 return None
-            # Edge by edge (a run of touching edge cells is one lip): the gap
-            # to each is its nearest sample's, as the truth's is to its
-            # nearest drop. A lip the turn opens, or one already inside the
-            # outline, must not excuse another the turn closes; within one
-            # lip a corner sliding along it keeps its gap.
-            groups = _groups(lips)
-            now = [min(self._gap(a, l) for a, l, _ in g) for g in groups]
+            # Lip by lip: a lip the turn opens, or one already inside the
+            # outline, must not excuse another the turn closes; along one
+            # lip a corner sliding by keeps its gap, and a part of it may
+            # close only as far as its nearest part already is. A chord
+            # across a bend that clips the outline, its samples outside it,
+            # is not a gap of 0 that nothing can close on: that lip is
+            # judged on its samples alone, which cannot cross.
+            lines = [line if self._line_gap(line, 1.0, 0.0) > 0 else _samples_of(line)
+                     for line in _lines(lips)]
+            now = [self._line_gap(line, 1.0, 0.0) for line in lines]
             for k in range(1, looks + 1):
                 # The body turned by `step` is the lips turned by -step.
                 step = math.radians(math.copysign(reach * k / looks, omega_rad_s))
                 c, s = math.cos(step), math.sin(step)
-                for g, g0 in zip(groups, now):
-                    after = min(self._gap(a * c + l * s, -a * s + l * c) for a, l, _ in g)
+                for line, g0 in zip(lines, now):
+                    after = self._line_gap(line, c, s)
                     if after < PIVOT_GAP_CM and after < g0 - 1e-6:
                         return "drop_pivot_edge"
             return None
+
+    def _line_gap(self, line: list, c: float, s: float) -> float:
+        """The outline's distance from a lip's segments (`_lines`), the lip
+        turned by the rotation (c, s) about the centre."""
+        return min(self._segment_gap(a0 * c + l0 * s, -a0 * s + l0 * c,
+                                     a1 * c + l1 * s, -a1 * s + l1 * c)
+                   for a0, l0, a1, l1 in line)
+
+    def _segment_gap(self, a0, l0, a1, l1) -> float:
+        """A body-frame segment's distance from the chassis outline: 0 if it
+        crosses it, else at a segment's end or an outline corner."""
+        if _crosses_box(a0, l0, a1, l1, self.half_len, self.half_wid):
+            return 0.0
+        corners = [(sa * self.half_len, sl * self.half_wid) for sa in (-1, 1) for sl in (-1, 1)]
+        return min(self._gap(a0, l0), self._gap(a1, l1),
+                   *(_to_segment(ca, cl, a0, l0, a1, l1) for ca, cl in corners))
 
     def _gap(self, along: float, lat: float) -> float:
         """A body-frame point's distance from the chassis outline (0 on or
@@ -394,7 +417,7 @@ class DropGuard:
 
     def _lips_near(self, radius_cm: float) -> list:
         """The remembered lip samples within `radius_cm` of the centre, in
-        the body frame (an edge cell with none: its centre)."""
+        the body frame, (along, lateral) (an edge cell with none: its centre)."""
         x, y, th, _ = self._pose
         c, s = math.cos(th), math.sin(th)
         n = int(radius_cm // CELL_CM) + 1
@@ -408,7 +431,7 @@ class DropGuard:
                 px, py = got[2] if len(got) > 2 else ((i + 0.5) * CELL_CM, (j + 0.5) * CELL_CM)
                 dx, dy = px - x, py - y
                 if math.hypot(dx, dy) <= radius_cm:
-                    out.append((dx * c + dy * s, -dx * s + dy * c, (i, j)))
+                    out.append((dx * c + dy * s, -dx * s + dy * c))
         return out
 
     def lips(self, radius_cm: float = RUN_CM + 40.0) -> list:
@@ -417,32 +440,71 @@ class DropGuard:
         with self._lock:
             if not self.active or self._pose is None:
                 return []
-            return [(a, l) for a, l, _ in self._lips_near(radius_cm)]
+            return self._lips_near(radius_cm)
 
 
-def _groups(lips: list) -> list:
-    """Lip samples (along, lateral, cell) grouped by touching edge cells
-    (8-neighbours): one group per lip."""
-    by_cell = {}
-    for lip in lips:
-        by_cell.setdefault(lip[2], []).append(lip)
+def _linked(points: list, link: float) -> tuple:
+    """Each point's neighbours within `link`, by index."""
+    near = [[] for _ in points]
+    for i, p in enumerate(points):
+        for j in range(i + 1, len(points)):
+            if math.dist(p, points[j]) <= link:
+                near[i].append(j)
+                near[j].append(i)
+    return near
+
+
+def _lines(lips: list) -> list:
+    """Lip samples (along, lateral) as lips: one list of segments
+    (a0, l0, a1, l1) per set of samples chained within `LIP_LINK_CM`; a
+    sample with no neighbour is a segment of no length."""
+    near = _linked(lips, LIP_LINK_CM)
     seen, out = set(), []
-    for start in by_cell:
+    for start in range(len(lips)):
         if start in seen:
             continue
         seen.add(start)
-        stack, group = [start], []
+        stack, line = [start], []
         while stack:
-            i, j = stack.pop()
-            group.extend(by_cell[(i, j)])
-            for di in (-1, 0, 1):
-                for dj in (-1, 0, 1):
-                    n = (i + di, j + dj)
-                    if n in by_cell and n not in seen:
-                        seen.add(n)
-                        stack.append(n)
-        out.append(group)
+            i = stack.pop()
+            if not near[i]:
+                line.append(lips[i] + lips[i])
+            for j in near[i]:
+                if j not in seen:
+                    seen.add(j)
+                    stack.append(j)
+                if i < j:
+                    line.append(lips[i] + lips[j])
+        out.append(line)
     return out
+
+
+def _samples_of(line: list) -> list:
+    """A lip's segments as its samples alone, each a segment of no length."""
+    return [q for a0, l0, a1, l1 in line for q in ((a0, l0, a0, l0), (a1, l1, a1, l1))]
+
+
+def _crosses_box(a0, l0, a1, l1, half_a, half_l) -> bool:
+    """Whether a segment enters the box of these half-sizes about the origin."""
+    lo, hi = 0.0, 1.0
+    for p, d, h in ((a0, a1 - a0, half_a), (l0, l1 - l0, half_l)):
+        if d == 0.0:
+            if abs(p) > h:
+                return False
+            continue
+        t0, t1 = sorted(((-h - p) / d, (h - p) / d))
+        lo, hi = max(lo, t0), min(hi, t1)
+        if lo > hi:
+            return False
+    return True
+
+
+def _to_segment(x, y, a0, l0, a1, l1) -> float:
+    """A point's distance to a segment."""
+    da, dl = a1 - a0, l1 - l0
+    length2 = da * da + dl * dl
+    t = 0.0 if length2 == 0.0 else max(0.0, min(1.0, ((x - a0) * da + (y - l0) * dl) / length2))
+    return math.hypot(x - (a0 + t * da), y - (l0 + t * dl))
 
 
 def to_house(x_m: float, y_m: float, heading_deg: float, along_cm: float, lat_cm: float) -> tuple:
@@ -455,7 +517,7 @@ def to_house(x_m: float, y_m: float, heading_deg: float, along_cm: float, lat_cm
 
 class DropMarks:
     """3.159.B2: the drop discs nav2 must plan around, in the house frame.
-    Held back until 3.159.B3: the robot server does not send them
+    Held back (3.159.B3 missed its bar too): the robot server does not send them
     (`evaluations/drop-3159/mark-held.patch` is the wiring); the sweep
     harness's `missions-marked` uses this book.
     One per `MARK_STEP_M` grid square of lip (at its first lip point), at
@@ -495,6 +557,22 @@ class DropMarks:
             keep = sorted(self.marks.items(), key=lambda kv: kv[1][2])[-self.max_marks:]
             self.marks = dict(keep)
         return new
+
+    def on_marked(self, points: list) -> list:
+        """Those of these house-frame lip points on a lip a disc already
+        covers: chained within `LIP_LINK_CM` to one inside a disc
+        (amendment 4: the next piece of a marked lip is the same lip)."""
+        near = _linked(points, LIP_LINK_CM / 100.0)
+        stack = [i for i, p in enumerate(points)
+                 if any(math.hypot(p[0] - x, p[1] - y) <= self.r_m
+                        for x, y, _ in self.marks.values())]
+        seen = set(stack)
+        while stack:
+            for j in near[stack.pop()]:
+                if j not in seen:
+                    seen.add(j)
+                    stack.append(j)
+        return [points[i] for i in sorted(seen)]
 
     def spots(self, now: float, at=None) -> list:
         """The live discs as the bridge takes them (`set_keepout`), less any
