@@ -1,0 +1,357 @@
+{
+ "house": "home_first_floor_stairs",
+ "rooms": [
+  "breakfast",
+  "den",
+  "dining room",
+  "family room",
+  "foyer",
+  "garage",
+  "garage hall",
+  "half bath",
+  "hall",
+  "kitchen",
+  "laundry",
+  "living room",
+  "pantry"
+ ],
+ "dock_cell": [
+  17,
+  37
+ ],
+ "dock_room": "foyer",
+ "targets": [
+  {
+   "name": "red backpack",
+   "rooms": [
+    "kitchen"
+   ],
+   "cells": 1
+  },
+  {
+   "name": "side table",
+   "rooms": [
+    "living room"
+   ],
+   "cells": 2
+  },
+  {
+   "name": "toilet",
+   "rooms": [
+    "half bath"
+   ],
+   "cells": 6
+  },
+  {
+   "name": "vanity",
+   "rooms": [
+    "half bath"
+   ],
+   "cells": 4
+  },
+  {
+   "name": "washer",
+   "rooms": [
+    "laundry"
+   ],
+   "cells": 4
+  },
+  {
+   "name": "refrigerator",
+   "rooms": [
+    "kitchen"
+   ],
+   "cells": 9
+  },
+  {
+   "name": "bookcase",
+   "rooms": [
+    "den"
+   ],
+   "cells": 6
+  },
+  {
+   "name": "tv console",
+   "rooms": [
+    "family room"
+   ],
+   "cells": 16
+  },
+  {
+   "name": "dining table",
+   "rooms": [
+    "dining room"
+   ],
+   "cells": 4
+  },
+  {
+   "name": "breakfast table",
+   "rooms": [
+    "breakfast"
+   ],
+   "cells": 4
+  }
+ ],
+ "absent": [
+  "unicorn",
+  "blue bicycle"
+ ],
+ "schedule": [
+  {
+   "job": "survey",
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "breakfast table",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "blue bicycle",
+   "present": false,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "red backpack",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "red backpack",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "toilet",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "dining table",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "unicorn",
+   "present": false,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "breakfast table",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "survey",
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "vanity",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "survey",
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "washer",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "side table",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "side table",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "unicorn",
+   "present": false,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "toilet",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "toilet",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "washer",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "refrigerator",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "refrigerator",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "tv console",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "vanity",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "vanity",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "washer",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "bookcase",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "tv console",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "red backpack",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "survey",
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "refrigerator",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "bookcase",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "side table",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "blue bicycle",
+   "present": false,
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "dining table",
+   "present": true,
+   "phase": "counted"
+  },
+  {
+   "job": "survey",
+   "phase": "counted"
+  },
+  {
+   "job": "find",
+   "target": "tv console",
+   "present": true,
+   "phase": "stretch"
+  },
+  {
+   "job": "survey",
+   "phase": "stretch"
+  },
+  {
+   "job": "find",
+   "target": "vanity",
+   "present": true,
+   "phase": "stretch"
+  },
+  {
+   "job": "find",
+   "target": "breakfast table",
+   "present": true,
+   "phase": "stretch"
+  },
+  {
+   "job": "find",
+   "target": "bookcase",
+   "present": true,
+   "phase": "stretch"
+  },
+  {
+   "job": "find",
+   "target": "side table",
+   "present": true,
+   "phase": "stretch"
+  },
+  {
+   "job": "find",
+   "target": "toilet",
+   "present": true,
+   "phase": "stretch"
+  },
+  {
+   "job": "find",
+   "target": "refrigerator",
+   "present": true,
+   "phase": "stretch"
+  },
+  {
+   "job": "survey",
+   "phase": "stretch"
+  },
+  {
+   "job": "find",
+   "target": "red backpack",
+   "present": true,
+   "phase": "stretch"
+  }
+ ]
+}
