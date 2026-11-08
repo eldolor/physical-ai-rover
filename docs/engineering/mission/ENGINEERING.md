@@ -440,6 +440,39 @@ ship one metrics row if `metrics_url` is set (kept as `_metrics_row`).
   `phase`, `actions`, `reversals`, `metres`, `elapsed_s`, `goal_id`,
   `direct`.
 
+### Recharge and resume (3.156.D, simulator only, off by default)
+
+`recharge_resume` false is B's end exactly. On:
+* **Only a battery end charges**: the floor or the reserve's `battery:`
+  reason (`_want_charge()`). Time, calls, the step backstop and Reserve never
+  do. The decided `out_of_budget` stays in `_pending_end` as the fallback;
+  only reaching `resume_v` drops it.
+* **At the dock** `_return_tick` starts a `brain/dock.py` `Charge`, unless
+  the return did not dock (`not_docked`), `MAX_CHARGES` (3) are used, or under
+  `RESUME_MIN_S` (120 s) of the limit is left (`no_time`).
+* **While charging** `tick()` goes to `_charge_tick()`: the limit is paused
+  (`_paused_s`), and only `mission_wall_limit_s` (a total) still runs. Leaves
+  at `resume_v`, two distinct samples at or over it. Other ends: `no_charge`
+  (no 0.05 V rise in `charge_stall_s`), `left_dock` (over 0.25 m),
+  `wall_limit`.
+* **A person.** Nothing moves while charging, so nothing would be refused:
+  every 2 s (`CHARGE_PROBE_S`) a `LOOK_CENTER` under the brain's driver name
+  is arbitrated like any brain command. A Stop's latch or a D-pad's hold
+  refuses it: `cancelled`, the decided end. Reserve on the probe is ignored
+  (on the charger it passes); other probe errors are logged.
+* **Resuming** calls the agent's `set_aside()` (explore only: recharge needs
+  a navigator), which forgets the goal in flight, the approach, what was
+  pending and the ask, uncounted. Everything learned stays. The next goal is
+  the drive back. `HomeBudget.recharged()` keeps the prior drain rate until a
+  new 60 s span exists.
+* `status.charge`: `state` (`charging`, `resumed`, `not_docked`, `no_time`,
+  `no_charge`, `left_dock`, `wall_limit`, `cancelled`), `reason`, `cycles`,
+  `resume_v`, `v`, `from_v`, `charging_s`, and `history` (one row a completed
+  charge: `from_v`, `to_v`, `seconds`, `at_s`, `after`).
+* **The stand-in**: `SimBattery(charge_v_per_s)` (`SIM_BATTERY_CHARGE_V_PER_S`),
+  rising only while `MockRobot` is at rest within `CHARGE_PAD_M` (0.30 m) of
+  its start pose. The server has no new route; `robot/` is unchanged.
+
 ### Asking again after `arrived_unconfirmed` (3.53)
 
 The failed confirmation's error also carries the frame (`arrival_frame`,
@@ -594,7 +627,7 @@ seed `[x_m, y_m, name]`), `mission`, `target_object`,
 `target_room`, `step`, `max_steps`, `found`, `room_reached`, `complete`,
 `last_action`, `turns` (`count`, `reversals`, `last_turn_deg`, `share`,
 `spinning`), `last_reasoning`, `rooms_visited`, `rooms_searched`,
-`vision_failures`, `camera_failures` (3.153), `dock` and `return` (3.156), `tier`, `perception`, `arrival`, `arrival_verdicts`,
+`vision_failures`, `camera_failures` (3.153), `dock`, `return` and `charge` (3.156), `tier`, `perception`, `arrival`, `arrival_verdicts`,
 `late_confirmation`, `last_frame_seq`, `ticks`, `seconds_since_last_tick`, `tick_rate_hz`,
 `sighting`, `explore` (null unless explore searches: `goals_sent`,
 3.136.G's `sent` -- the last `SENT_IDS_KEPT` (64) accepted sends as
@@ -711,6 +744,10 @@ The `brain:` block of `config/robot.yaml`, read by
 | `max_vision_failures` | 3 | 3 | calls | B3.2 budget | B3 plan's suggestion; three abandoned threads at most |
 | `return_to_dock` | False | true | -- | 3.156 D2: drive home after the end | the runner's own default is off so the in-process harnesses keep today's end; the brain config turns it on |
 | `return_wait_s` | 30.0 | 30.0 | s | 3.156 D2: a return goal nav2 never takes is `skipped` | refused at load unless a finite number > 0 |
+| `recharge_resume` | False | false | -- | 3.156 D7a: a battery end charges at the dock and resumes | off until the Rover; `RECHARGE_RESUME=1` |
+| `resume_v` | 11.8 | 11.8 | V | 3.156 D7d: leave the charger | a placeholder until 3.137.E |
+| `mission_wall_limit_s` | 14400 | 14400 | s | 3.156 D7d: the total a charged mission may last | the time limit is paused while charging; this is not |
+| `charge_stall_s` | 300 | 300 | s | 3.156 D7d: no 0.05 V rise in this long is `no_charge` | |
 | `max_camera_failures` | 3 | -- (constructor only) | ticks | 3.153: consecutive failed frame reads | one 503 in a VE kill's OOM squeeze ended a mission (3.152.B); a camera gone for three ticks still ends it |
 | `reconfirm_probe_s` | 15.0 | 15.0 | s | `start_reconfirm` | 3.53: one free `/health` probe this often after an `arrived_unconfirmed` ending |
 | `reconfirm_window_s` | 600.0 | 600.0 | s | `start_reconfirm` | 3.53: give up (`expired`) after this; 0 turns the late check off. Worst case 41 probes and 2 paid calls per arrival |
@@ -832,6 +869,7 @@ tests/test_mission_guarded_verbs.py -q`.
 | `tests/test_brain_server.py` (78) | **the import boundary, by mechanism:** a subprocess imports the brain app and lists `sys.modules`, so a forbidden import fails the suite and does not depend on review; two-hop mission completes; 409 on a second start; stop with no mission stops the car; secret gating; `ROUTE_PREFIX`; **the brain process loads no `sim`, and from `robot`/`world` only `robot.interface`, `robot.safety`, `robot.identity`, `world.interface`**; model and wording validation (refused at start, outage tolerated, one round trip); unknown field is 422; tiered start refusals and sim-vs-real perception choice; a survey's room source (3.70 S2): the frame's by default, the cloud's `/room` with the vision URL, secret and a timeout held to half the tick's, refused at start with no vision URL, never built for a find, reported on `/health`; a bad source or timeout refused at load |
 | `tests/test_tick_within.py` (6) | the mission loop's tick await: a cancel landing as the tick ends is raised, not lost, and a tick failing in that turn is logged (red only on Python 3.10 with `wait_for`), a cancel mid-tick and a deadline cancel the wait, results and errors come back, and `brain_server` never calls `asyncio.wait_for` |
 | `tests/test_dock_return.py` (25) | 3.156.B (C8's red-first): a return after `found`, a survey's end, `exhausted`, `out_of_budget`, `arrived_unconfirmed`, `blocked`, docked on the true pose; none after a person or a fault or at Reserve; `no_nav2` skipped with no straight-line verbs; off is today's end; a Stop / D-pad / Reserve during the return keeps the outcome; the time and battery reserves end the search early and dock; `HomeBudget`'s units; `exact_verbs`; the config's keys; review 1: the search goal cancelled at the switch, a Stop during the return an intervention, an abort visible, no reserve at the dock, an approach that cannot close ends; review 2: an autonomous takeover mid-return a fault, not a D-pad |
+| `tests/test_resume_recharge.py` (28) | 3.156.D (red first): a battery end charges and resumes with what it kept; time never charges; `no_charge`, `left_dock`, `no_time`, the wall limit, a failed return, the fourth charge; a Stop and a D-pad while charging; off is off; a never-charged `SimBattery` exact |
 | `tests/test_camera_budget_3153.py` (6) | 3.153: one failed frame read mid-mission keeps the outcome (red before), the car stopped on that tick and the count reset; a camera never back ends `failed` after exactly 3 with no move; only consecutive failures count; any other robot error still ends at once; a Stop during a failed read is unchanged; a read failing at once waits `CAMERA_RETRY_S` between tries |
 | `tests/test_failsafes.py` (15) | B3.2 budget and hang; one failure survivable; no movement after stop; B3.3 dead-man; every drill ends `failed` with the robot stopped; no-fault builds the ordinary mission; drills can be switched off |
 | `tests/test_camera_centred_start.py` (11) | 3.20's four criteria: centred first decision under `frontier` and `vision` (tiered is not parametrised), no step or vision call spent, centred start unchanged against `tests/data/frontier_trace_centred.json`, a refused centring ends the mission like any refused move |
