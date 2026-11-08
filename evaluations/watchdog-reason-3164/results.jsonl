@@ -1,0 +1,82 @@
+{"crit": 1, "kind": "tick_hang", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.412, "at": 365880.720456238, "seconds_ago": 0.0}, "after_signal_s": 2.45, "ok": true, "outcome": "failed", "trip_5s_after_end": {"how": "silence", "driver": "brain", "quiet_s": 2.412, "at": 365880.720456238, "seconds_ago": 5.85}, "during_after": null}
+{"crit": 1, "kind": "tick_hang", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.426, "at": 365890.371158386, "seconds_ago": 0.0}, "after_signal_s": 2.47, "ok": true, "outcome": "failed", "trip_5s_after_end": {"how": "silence", "driver": "brain", "quiet_s": 2.426, "at": 365890.371158386, "seconds_ago": 5.84}, "during_after": null}
+{"crit": 1, "kind": "tick_hang", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.487, "at": 365900.007346307, "seconds_ago": 0.02}, "after_signal_s": 2.55, "ok": true, "outcome": "failed", "trip_5s_after_end": {"how": "silence", "driver": "brain", "quiet_s": 2.487, "at": 365900.007346307, "seconds_ago": 5.73}, "during_after": null}
+{"crit": 1, "kind": "tick_hang", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.456, "at": 365909.456597826, "seconds_ago": 0.02}, "after_signal_s": 2.52, "ok": true, "outcome": "failed", "trip_5s_after_end": {"how": "silence", "driver": "brain", "quiet_s": 2.456, "at": 365909.456597826, "seconds_ago": 5.79}, "during_after": null}
+{"crit": 1, "kind": "tick_hang", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.448, "at": 365919.046271108, "seconds_ago": 0.03}, "after_signal_s": 2.52, "ok": true, "outcome": "failed", "trip_5s_after_end": {"how": "silence", "driver": "brain", "quiet_s": 2.448, "at": 365919.046271108, "seconds_ago": 5.8}, "during_after": null}
+{"crit": 1, "kind": "tick_hang", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.487, "at": 365928.583753955, "seconds_ago": 0.05}, "after_signal_s": 2.59, "ok": true, "outcome": "failed", "trip_5s_after_end": {"how": "silence", "driver": "brain", "quiet_s": 2.487, "at": 365928.583753955, "seconds_ago": 5.73}, "during_after": null}
+{"crit": 1, "kind": "tick_hang", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.407, "at": 365937.984360947, "seconds_ago": 0.07}, "after_signal_s": 2.53, "ok": true, "outcome": "failed", "trip_5s_after_end": {"how": "silence", "driver": "brain", "quiet_s": 2.407, "at": 365937.984360947, "seconds_ago": 5.85}, "during_after": null}
+{"crit": 1, "kind": "tick_hang", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.492, "at": 365947.747132945, "seconds_ago": 0.05}, "after_signal_s": 2.58, "ok": true, "outcome": "failed", "trip_5s_after_end": {"how": "silence", "driver": "brain", "quiet_s": 2.492, "at": 365947.747132945, "seconds_ago": 5.75}, "during_after": null}
+{"crit": 1, "kind": "tick_hang", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.478, "at": 365957.256092484, "seconds_ago": 0.05}, "after_signal_s": 2.6, "ok": true, "outcome": "failed", "trip_5s_after_end": {"how": "silence", "driver": "brain", "quiet_s": 2.478, "at": 365957.256092484, "seconds_ago": 5.75}, "during_after": null}
+{"crit": 1, "kind": "tick_hang", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.484, "at": 365966.749199098, "seconds_ago": 0.04}, "after_signal_s": 2.56, "ok": true, "outcome": "failed", "trip_5s_after_end": {"how": "silence", "driver": "brain", "quiet_s": 2.484, "at": 365966.749199098, "seconds_ago": 5.8}, "during_after": null}
+{"crit": 1, "kind": "sigstop", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.487, "at": 365976.875224158, "seconds_ago": 0.03}, "after_signal_s": 2.5, "ok": true}
+{"crit": 1, "kind": "sigstop", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.442, "at": 365981.152415073, "seconds_ago": 0.03}, "after_signal_s": 2.4, "ok": true}
+{"crit": 1, "kind": "sigstop", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.455, "at": 365985.377246398, "seconds_ago": 0.01}, "after_signal_s": 2.45, "ok": true}
+{"crit": 1, "kind": "sigstop", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.421, "at": 365989.639273491, "seconds_ago": 0.04}, "after_signal_s": 2.46, "ok": true}
+{"crit": 1, "kind": "sigstop", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.443, "at": 365993.915743935, "seconds_ago": 0.02}, "after_signal_s": 2.46, "ok": true}
+{"crit": 1, "kind": "sigstop", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.451, "at": 365998.08253092, "seconds_ago": 0.02}, "after_signal_s": 2.47, "ok": true}
+{"crit": 1, "kind": "sigstop", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.444, "at": 366002.422361825, "seconds_ago": 0.05}, "after_signal_s": 2.45, "ok": true}
+{"crit": 1, "kind": "sigstop", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.494, "at": 366006.838597184, "seconds_ago": 0.02}, "after_signal_s": 2.51, "ok": true}
+{"crit": 1, "kind": "sigstop", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.413, "at": 366010.999338934, "seconds_ago": 0.03}, "after_signal_s": 2.42, "ok": true}
+{"crit": 1, "kind": "sigstop", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.406, "at": 366015.211597175, "seconds_ago": 0.04}, "after_signal_s": 2.42, "ok": true}
+{"crit": 1, "kind": "sigkill", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.462, "at": 366019.504282603, "seconds_ago": 0.05}, "after_signal_s": 2.49, "ok": true}
+{"crit": 1, "kind": "sigkill", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.493, "at": 366023.739491649, "seconds_ago": 0.04}, "after_signal_s": 2.51, "ok": true}
+{"crit": 1, "kind": "sigkill", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.414, "at": 366027.917488418, "seconds_ago": 0.01}, "after_signal_s": 2.39, "ok": true}
+{"crit": 1, "kind": "sigkill", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.406, "at": 366032.200434987, "seconds_ago": 0.04}, "after_signal_s": 2.4, "ok": true}
+{"crit": 1, "kind": "sigkill", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.49, "at": 366036.41472318, "seconds_ago": 0.01}, "after_signal_s": 2.5, "ok": true}
+{"crit": 1, "kind": "sigkill", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.471, "at": 366040.596902034, "seconds_ago": 0.03}, "after_signal_s": 2.48, "ok": true}
+{"crit": 1, "kind": "sigkill", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.444, "at": 366044.973984065, "seconds_ago": 0.01}, "after_signal_s": 2.41, "ok": true}
+{"crit": 1, "kind": "sigkill", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.415, "at": 366049.244198346, "seconds_ago": 0.05}, "after_signal_s": 2.44, "ok": true}
+{"crit": 1, "kind": "sigkill", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.449, "at": 366053.587622538, "seconds_ago": 0.05}, "after_signal_s": 2.48, "ok": true}
+{"crit": 1, "kind": "sigkill", "tick_timeout_s": 3.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 2.482, "at": 366057.987033207, "seconds_ago": 0.08}, "after_signal_s": 2.53, "ok": true}
+{"crit": 1, "kind": "sigstop", "tick_timeout_s": 30.0, "trip": {"how": "silence", "driver": "brain", "quiet_s": 24.088, "at": 366083.908176349, "seconds_ago": 0.03}, "after_signal_s": 24.08, "ok": true}
+{"crit": 2, "how": "found", "outcome": "found", "steps": 61, "trip": null, "live": false, "during": null, "last_stop_reason": null, "ok": true}
+{"crit": 2, "how": "found", "outcome": "found", "steps": 61, "trip": null, "live": false, "during": null, "last_stop_reason": null, "ok": true}
+{"crit": 2, "how": "found", "outcome": "found", "steps": 61, "trip": null, "live": false, "during": null, "last_stop_reason": null, "ok": true}
+{"crit": 2, "how": "found", "outcome": "found", "steps": 61, "trip": null, "live": false, "during": null, "last_stop_reason": null, "ok": true}
+{"crit": 2, "how": "found", "outcome": "found", "steps": 61, "trip": null, "live": false, "during": null, "last_stop_reason": null, "ok": true}
+{"crit": 2, "how": "budget", "outcome": "out_of_budget", "steps": 8, "trip": null, "live": false, "during": null, "last_stop_reason": null, "ok": true}
+{"crit": 2, "how": "budget", "outcome": "out_of_budget", "steps": 8, "trip": null, "live": false, "during": null, "last_stop_reason": null, "ok": true}
+{"crit": 2, "how": "budget", "outcome": "out_of_budget", "steps": 8, "trip": null, "live": false, "during": null, "last_stop_reason": null, "ok": true}
+{"crit": 2, "how": "budget", "outcome": "out_of_budget", "steps": 8, "trip": null, "live": false, "during": null, "last_stop_reason": null, "ok": true}
+{"crit": 2, "how": "budget", "outcome": "out_of_budget", "steps": 8, "trip": null, "live": false, "during": null, "last_stop_reason": null, "ok": true}
+{"crit": 2, "how": "brain_stop", "outcome": "cancelled", "steps": 3, "trip": null, "live": false, "during": null, "last_stop_reason": null, "ok": true}
+{"crit": 2, "how": "brain_stop", "outcome": "cancelled", "steps": 3, "trip": null, "live": false, "during": null, "last_stop_reason": null, "ok": true}
+{"crit": 2, "how": "brain_stop", "outcome": "cancelled", "steps": 3, "trip": null, "live": false, "during": null, "last_stop_reason": null, "ok": true}
+{"crit": 2, "how": "brain_stop", "outcome": "cancelled", "steps": 3, "trip": null, "live": false, "during": null, "last_stop_reason": null, "ok": true}
+{"crit": 2, "how": "brain_stop", "outcome": "cancelled", "steps": 3, "trip": null, "live": false, "during": null, "last_stop_reason": null, "ok": true}
+{"crit": 2, "how": "person_stop", "outcome": "cancelled", "steps": 3, "trip": null, "live": false, "during": null, "last_stop_reason": "person_stop", "ok": true}
+{"crit": 2, "how": "person_stop", "outcome": "cancelled", "steps": 3, "trip": null, "live": false, "during": null, "last_stop_reason": "person_stop", "ok": true}
+{"crit": 2, "how": "person_stop", "outcome": "cancelled", "steps": 3, "trip": null, "live": false, "during": null, "last_stop_reason": "person_stop", "ok": true}
+{"crit": 2, "how": "person_stop", "outcome": "cancelled", "steps": 3, "trip": null, "live": false, "during": null, "last_stop_reason": "person_stop", "ok": true}
+{"crit": 2, "how": "person_stop", "outcome": "cancelled", "steps": 3, "trip": null, "live": false, "during": null, "last_stop_reason": "person_stop", "ok": true}
+{"crit": 2, "how": "healthy_wait", "outcome": "out_of_budget", "steps": 8, "fired_mission": 42, "trip": null, "live": false, "ok": true}
+{"crit": 3, "how": "person_stop", "last_refusal": "watchdog", "last_stop_reason": "person_stop", "ago": 11.07, "ok": true}
+{"crit": 3, "how": "person_stop", "last_refusal": "watchdog", "last_stop_reason": "person_stop", "ago": 11.09, "ok": true}
+{"crit": 3, "how": "person_stop", "last_refusal": "watchdog", "last_stop_reason": "person_stop", "ago": 11.11, "ok": true}
+{"crit": 3, "how": "person_stop", "last_refusal": "watchdog", "last_stop_reason": "person_stop", "ago": 11.13, "ok": true}
+{"crit": 3, "how": "person_stop", "last_refusal": "watchdog", "last_stop_reason": "person_stop", "ago": 11.12, "ok": true}
+{"crit": 3, "how": "person_stop", "last_refusal": "watchdog", "last_stop_reason": "person_stop", "ago": 11.09, "ok": true}
+{"crit": 3, "how": "person_stop", "last_refusal": "watchdog", "last_stop_reason": "person_stop", "ago": 11.13, "ok": true}
+{"crit": 3, "how": "person_stop", "last_refusal": "watchdog", "last_stop_reason": "person_stop", "ago": 11.06, "ok": true}
+{"crit": 3, "how": "person_stop", "last_refusal": "watchdog", "last_stop_reason": "person_stop", "ago": 11.16, "ok": true}
+{"crit": 3, "how": "person_stop", "last_refusal": "watchdog", "last_stop_reason": "person_stop", "ago": 11.13, "ok": true}
+{"crit": 3, "how": "veto", "last_refusal": "watchdog", "last_stop_reason": "safety_distance", "ago": 11.13, "ok": true}
+{"crit": 3, "how": "veto", "last_refusal": "watchdog", "last_stop_reason": "safety_distance", "ago": 11.09, "ok": true}
+{"crit": 3, "how": "veto", "last_refusal": "watchdog", "last_stop_reason": "safety_distance", "ago": 11.12, "ok": true}
+{"crit": 3, "how": "veto", "last_refusal": "watchdog", "last_stop_reason": "safety_distance", "ago": 11.1, "ok": true}
+{"crit": 3, "how": "veto", "last_refusal": "watchdog", "last_stop_reason": "safety_distance", "ago": 11.17, "ok": true}
+{"crit": 3, "how": "veto", "last_refusal": "watchdog", "last_stop_reason": "safety_distance", "ago": 11.13, "ok": true}
+{"crit": 3, "how": "veto", "last_refusal": "watchdog", "last_stop_reason": "safety_distance", "ago": 11.12, "ok": true}
+{"crit": 3, "how": "veto", "last_refusal": "watchdog", "last_stop_reason": "safety_distance", "ago": 11.05, "ok": true}
+{"crit": 3, "how": "veto", "last_refusal": "watchdog", "last_stop_reason": "safety_distance", "ago": 11.05, "ok": true}
+{"crit": 3, "how": "veto", "last_refusal": "watchdog", "last_stop_reason": "safety_distance", "ago": 11.05, "ok": true}
+{"crit": 3, "how": "lapse", "ok": true}
+{"crit": 3, "how": "lapse", "ok": true}
+{"crit": 3, "how": "lapse", "ok": true}
+{"crit": 3, "how": "lapse", "ok": true}
+{"crit": 3, "how": "lapse", "ok": true}
+{"crit": 3, "how": "lapse", "ok": true}
+{"crit": 3, "how": "lapse", "ok": true}
+{"crit": 3, "how": "lapse", "ok": true}
+{"crit": 3, "how": "lapse", "ok": true}
+{"crit": 3, "how": "lapse", "ok": true}

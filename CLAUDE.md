@@ -146,9 +146,6 @@ paragraph.**
 
 **Decided, each waiting on its trigger** (the user, 2026-11-07)
 
-* **3.86's follow-up** (queued as desktop work): the watchdog record
-  replaces a Stop's or fault's refusal ~1 s later, so the twin cannot tell
-  a hung brain from a finished mission.
 * **3.42 / 3.76 A4:** fix `/scan`'s stamp (the request time) before
   raising nav2's speed (`HANDOFF-2026-10-07-lidar-and-speed.md`).
 * **3.56:** re-check the 8 s arrival deadline after 500+ real calls.
@@ -286,6 +283,10 @@ paragraph.**
   (D2 met, D4 failed: 6 of 315 turns away refused); the costmap mark failed
   its bar twice and is held (`evaluations/drop-3159/mark-held.patch`). Off
   on every real body.
+* 3.164: `/health` keeps `last_stop_reason` beside the watchdog's record and
+  `watchdog.trip` (a brain silent for 0.8 x `tick_timeout_s` mid-mission, kept
+  until the next Start); live 30/30 hangs, 0 trips in 20 ends. The twin's rows
+  are not yet deployed.
 * 3.82, 3.84, 3.86, 3.97, 3.104: a person's Stop latches the brain out
   until a mission starts (`POST /autonomy/resume`); a person's move ends a
   nav2 goal under every drive; a Stop during the arrival's confirmation

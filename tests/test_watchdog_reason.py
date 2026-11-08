@@ -12,6 +12,7 @@ A live `uvicorn` robot server with a real event loop, as
 tests/test_watchdog_integration.py: the judging is the watchdog loop's.
 """
 
+import json
 import os
 import subprocess
 import sys
@@ -22,7 +23,9 @@ import pytest
 import yaml
 
 from control.health import check_robot
-from tests.conftest import REPO_ROOT, SERVER_START_TIMEOUT_S, free_port
+from robot import server
+from robot.safety import SafetyController
+from tests.conftest import REPO_ROOT, SERVER_START_TIMEOUT_S, asgi_client, free_port
 from tests.test_goal_lease import _beat, _goal, live  # noqa: F401
 
 WATCHDOG_S = 0.3
@@ -119,17 +122,32 @@ def test_a_hang_is_caught_while_the_actuator_keeps_the_watchdog_fed(url):
                headers={"x-driver": "ros"})
 
 
-def test_a_verbs_end_is_the_brains_last_word(url):
-    """A long verb then a long wait is no longer than the wait."""
-    _start(url)
-    began = time.monotonic()
-    r = httpx.post(f"{url}/action", json={"action": "LEFT", "angle": 90}, headers=BRAIN).json()
-    took = time.monotonic() - began
-    assert r["executed"] is True and took > 0.6, (r, took)
-    time.sleep(TRIP_AFTER_S - 0.6)
-    assert time.monotonic() - began > TRIP_AFTER_S, "the verb and the wait were too short"
-    assert _wd(url)["trip"] is None
-    _stop(url)
+def test_a_verbs_end_is_the_brains_last_word(tmp_path, monkeypatch):
+    """A long verb then a long wait is no longer than the wait. In process,
+    with a verb that takes a second: the simulator's take no time."""
+    base = yaml.safe_load((REPO_ROOT / "config" / "robot.yaml").read_text())
+    base["safety"]["watchdog_timeout_s"] = WATCHDOG_S
+    base.setdefault("brain", {})["tick_timeout_s"] = TICK_TIMEOUT_S
+    config = tmp_path / "robot.yaml"
+    config.write_text(yaml.safe_dump(base))
+    vet = SafetyController.check_and_execute
+
+    def slow_verb(self, *args, **kwargs):
+        time.sleep(1.0)
+        return vet(self, *args, **kwargs)
+
+    monkeypatch.setattr(SafetyController, "check_and_execute", slow_verb)
+    monkeypatch.delenv("APP_SHARED_SECRET", raising=False)
+    client = asgi_client(server.create_app(str(config)))
+    with client:
+        assert client.post("/autonomy/resume", headers=BRAIN).status_code == 200
+        began = time.monotonic()
+        r = client.post("/action", json={"action": "LEFT", "angle": 90}, headers=BRAIN).json()
+        assert r["executed"] is True and time.monotonic() - began >= 1.0, r
+        time.sleep(TRIP_AFTER_S - 0.5)
+        assert time.monotonic() - began > TRIP_AFTER_S, "the verb and the wait were too short"
+        assert client.get("/health").json()["watchdog"]["trip"] is None
+        client.post("/stop", headers=BRAIN)
 
 
 def test_the_watchdog_records_one_firing_per_silence(url):
@@ -263,6 +281,16 @@ def test_a_lapse_is_a_trip_at_once_and_its_reason_is_kept(live):  # noqa: F811
     assert health["watchdog"]["trip"]["how"] == "lease", health["watchdog"]
     assert health["last_refusal"]["reason"] == "watchdog", health["last_refusal"]
     assert health["last_stop_reason"]["reason"] == "autonomy_lapsed", health["last_stop_reason"]
+
+
+def test_the_recorded_runs_are_pinned():
+    """Criteria 1-3, as measured (`evaluations/watchdog-reason-3164/`)."""
+    summary = json.loads((REPO_ROOT / "evaluations" / "watchdog-reason-3164" / "summary.json").read_text())
+    assert all(row["ok"] == row["n"] for row in summary.values()), summary
+    for run in ("c1:tick_hang", "c1:sigstop", "c1:sigkill", "c3:person_stop", "c3:veto", "c3:lapse"):
+        assert summary[run]["n"] == 10, run
+    assert sum(summary[f"c2:{how}"]["n"] for how in
+               ("found", "budget", "brain_stop", "person_stop")) == 20
 
 
 def test_health_describes_the_new_fields_and_never_judges_them(url):

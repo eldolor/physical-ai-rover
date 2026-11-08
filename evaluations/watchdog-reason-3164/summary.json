@@ -1,0 +1,74 @@
+{
+ "c1:tick_hang": {
+  "n": 10,
+  "ok": 10,
+  "outcomes": {
+   "failed": 10
+  }
+ },
+ "c1:sigstop": {
+  "n": 10,
+  "ok": 10,
+  "outcomes": {}
+ },
+ "c1:sigkill": {
+  "n": 10,
+  "ok": 10,
+  "outcomes": {}
+ },
+ "c1:sigstop:shipped": {
+  "n": 1,
+  "ok": 1,
+  "outcomes": {}
+ },
+ "c2:found": {
+  "n": 5,
+  "ok": 5,
+  "outcomes": {
+   "found": 5
+  }
+ },
+ "c2:budget": {
+  "n": 5,
+  "ok": 5,
+  "outcomes": {
+   "out_of_budget": 5
+  }
+ },
+ "c2:brain_stop": {
+  "n": 5,
+  "ok": 5,
+  "outcomes": {
+   "cancelled": 5
+  }
+ },
+ "c2:person_stop": {
+  "n": 5,
+  "ok": 5,
+  "outcomes": {
+   "cancelled": 5
+  }
+ },
+ "c2:healthy_wait": {
+  "n": 1,
+  "ok": 1,
+  "outcomes": {
+   "out_of_budget": 1
+  }
+ },
+ "c3:person_stop": {
+  "n": 10,
+  "ok": 10,
+  "outcomes": {}
+ },
+ "c3:veto": {
+  "n": 10,
+  "ok": 10,
+  "outcomes": {}
+ },
+ "c3:lapse": {
+  "n": 10,
+  "ok": 10,
+  "outcomes": {}
+ }
+}
