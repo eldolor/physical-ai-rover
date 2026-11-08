@@ -2298,7 +2298,9 @@ class MissionRunner:
                 self._gated.look_center()
             except MissionHalted:
                 return False
-            except (BatteryReserve, AutonomyLapsed, StoppedByPerson, Preempted) as e:
+            except BatteryReserve:
+                pass        # the ladder at Reserve on the charger: what charging is for
+            except (AutonomyLapsed, StoppedByPerson, Preempted) as e:
                 got, person = self._refusal(e)
             except Exception as e:  # noqa: BLE001 -- see docstring
                 logger.warning("charge probe failed: %s", e)

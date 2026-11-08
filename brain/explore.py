@@ -1359,6 +1359,7 @@ class ExploreAgent(MissionAgent):
         was on was ended by that, not by the place: forgotten, uncounted;
         everything learned stays."""
         self._goal = None
+        self._approach = None           # or a re-sighting there sends no approach goal
         self._pending = []
         self._local_wait_since = None
         self._withdraw_ask("superseded: the robot went to charge")

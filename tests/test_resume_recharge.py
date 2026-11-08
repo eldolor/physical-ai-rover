@@ -208,12 +208,13 @@ def test_the_goal_in_flight_costs_its_place_nothing():
     a = runner.agent
     a._goal = {"x_m": 1.0, "y_m": 1.0, "kind": "frontier", "sent_at": 0.0, "from": (0.0, 0.0)}
     a._pending = ["REVERSE"]
+    a._approach = (1.0, 1.0)
     fails = []
     a.retry.fail = lambda *x, **k: fails.append(x)
     n = 0
     while state(runner) == "charging" and runner.tick() and n < 5000:
         n += 1
-    assert a._goal is None and a._pending == [] and fails == []
+    assert a._goal is None and a._pending == [] and a._approach is None and fails == []
 
 
 def test_a_resumed_mission_goes_on_and_ends_home():
@@ -248,6 +249,20 @@ def test_the_brains_stop_while_charging():
     s = runner.status()
     assert not runner.is_running()
     assert s["outcome"] == OUT_OF_BUDGET and s["charge"]["state"] == "cancelled"
+
+
+def test_reserve_on_the_charger_does_not_end_the_charge():
+    from robot.interface import BatteryReserve
+    runner, nav, grid, robot, bat = mission(v0=11.0)
+    to_charging(runner)
+
+    def refused():
+        raise BatteryReserve("battery_reserve: 10.15 V")
+    robot.look_center = refused
+    n = 0
+    while state(runner) == "charging" and runner.tick() and n < 5000:
+        n += 1
+    assert state(runner) == "resumed" and runner.is_running()
 
 
 def test_an_autonomous_takeover_while_charging_is_a_fault():
@@ -294,6 +309,16 @@ def test_the_pad_is_the_start_pose():
     assert bat.is_charging
     grid.x += 2.0
     robot.get_battery()
+    assert not bat.is_charging
+
+
+def test_driving_off_the_pad_stops_the_charge_at_once():
+    grid = build_world("scaled_house")
+    bat = SimBattery(v0=11.0, charge_v_per_s=0.1, clock=lambda: grid.sim_time)
+    robot = MockRobot(grid, render=False, battery=bat)
+    robot.get_battery()
+    assert bat.is_charging
+    robot.set_wheel_velocity(1.0, 1.0)
     assert not bat.is_charging
 
 

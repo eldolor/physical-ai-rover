@@ -289,6 +289,7 @@ class MockRobot(RobotInterface):
         self._cmd_right_rad_s = right
         if self.battery is not None:
             self.battery.driving(left != 0 or right != 0)
+            self._update_charge()
         return self.get_wheel_state()
 
     def get_battery(self) -> dict:
@@ -568,6 +569,7 @@ class MockRobot(RobotInterface):
         self._cmd_right_rad_s = 0.0
         if self.battery is not None:
             self.battery.driving(False)
+            self._update_charge()
         self.stop_count += 1
         self.world._record("STOP")
         return {"action": "stop"}
