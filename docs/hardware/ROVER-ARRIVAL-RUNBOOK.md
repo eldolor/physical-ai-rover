@@ -108,11 +108,18 @@ on several days for those.
 The tools are in `tools/rover/` (`tools/rover/README.md`). Each serial tool only
 listens: none can send the board a wheel or servo command.
 
-Claude runs them on the Jetson over ssh, from the repository root, under
-`tools/jetson/board_lock.py`, with `picar-stack` stopped first. On real ports
-they must run under `sudo`, so a program holding a port cannot hide. Your
-account on the Jetson has passwordless sudo for development, so Claude uses
-`sudo -n` and **nobody types a password**.
+These are Claude's steps. You type nothing for them.
+
+1. `tools/rover/` is not on the Jetson yet. On the day, Claude copies it, with
+   the code it imports, to a scratch directory there. The stack's own checkout
+   stays as it is.
+2. Claude runs each tool over ssh from the root of that copy, as
+   `python -m tools.rover.<name>`. Run directly, they fail on import.
+3. Each run is under `tools/jetson/board_lock.py`, with `picar-stack` stopped
+   first.
+4. On real ports they run under `sudo`, so a program holding a port cannot hide.
+   Your account on the Jetson has passwordless sudo for development, so Claude
+   uses `sudo -n` and **nobody types a password**.
 
 If `sudo -n` ever asks for a password, Claude stops. Then you run that one
 command yourself, in a terminal on the Jetson, and paste back the output. Never
@@ -280,7 +287,8 @@ Tools, run by Claude:
 * `bash tools/rover/install_udev.sh 99-picar-rover.rules` shows what it would
   install and changes nothing.
 * The same command with `--yes` installs the names and adds the user to
-  `dialout`. Claude shows you the first output and waits for your go.
+  `dialout`. The stack's user is not in that group yet, so this step is needed.
+  Claude shows you the first output and waits for your go.
 
 Read back: "go" for the install, and for each reboot.
 
@@ -314,18 +322,27 @@ firmware. No motor motion until this is explained.
 
 ### M7. Dump the stock firmware (L0.4, first half)
 
-Claude first runs `python -m tools.rover.dump_firmware --check`, which touches
-nothing. Then `python -m tools.rover.dump_firmware --port /dev/ttyTHS1`, with
-`--before no_reset` on the 40-pin UART.
+Claude first runs `python -m tools.rover.dump_firmware --check --esptool
+~/esptool-venv/bin/esptool`, which touches nothing. esptool 5.6.0 has its own
+environment on the Jetson, apart from the stack's. Then Claude runs the dump
+with `--port` and `--esptool`, adding `--before no_reset` if the route needs it.
 
-Do: on the 40-pin UART, when Claude says, **hold BOOT and tap EN** on the driver
-board, then let go of BOOT. The tool only reads the chip.
+**How the chip gets into its bootloader is unverified.** The 40-pin UART may
+have no auto-reset lines. Claude looks at the board with you and says which of
+these to do:
+* **The 40-pin UART:** when Claude says, **hold BOOT, tap RESET** (it may be
+  labelled EN), then let go of BOOT.
+* **The board's own USB port, if it has one:** plug in the lead Claude names.
+  The port name then changes.
 
-Read back: that you did it, and any light that changed.
+The tool only reads the chip.
+
+Read back: whether the board has a USB port for the ESP32, what you did, and any
+light that changed.
 
 Claude reports: the dump's size, a matching second read, and that it is kept in
-`~/rover-firmware/` on the Jetson. The `--before no_reset` option has not been
-tried against a real esptool, so Claude checks esptool's own help first.
+`~/rover-firmware/` on the Jetson. `--before no_reset` has not been tried against
+a real esptool. esptool 5.6 still accepts `read_flash`, though it is deprecated.
 
 Stop if: the two reads differ. Do not flash anything, now or later.
 
