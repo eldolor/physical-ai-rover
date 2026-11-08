@@ -58,14 +58,14 @@ def w1_one(store, writer, i, start, down):
     robot = MockRobot(grid, render=True)
     tier = TieredVision(FrameReportedPipeline(TARGET), _quiet_cloud, steer_on_sight=True, hold_goal=True)
     sent = []
-    real = tier.confirm_arrival
+    real = tier.confirm_cloud
 
-    def confirm(frame):
+    def confirm(frame, **kw):
         sent.append(hashlib.sha256(base64.b64decode(frame["image_base64"])).hexdigest())
         if down:
             raise CloudUnavailable("cloud down")
-        return real(frame)
-    tier.confirm_arrival = confirm
+        return real(frame, **kw)
+    tier.confirm_cloud = confirm
     runner = MissionRunner(robot, target_object=TARGET, max_steps=120, policy="tiered", vision_fn=tier,
                            world=mock_world_for(robot))
     mid = f"w1-{i}-{int(down)}"
@@ -154,6 +154,7 @@ def main(path):
            "w4": {"rows": len(rows), "no_such_label": sum(1 for r in rows if r["err_m"] is None),
                   "err_p90_m": p90(placed) if len(placed) > 1 else None,
                   "room_right": sum(1 for r in roomed if r["room"] == r["truth_room"]), "roomed": len(roomed),
+                  "room_unknown": sum(1 for r in roomed if r["room"] == "unknown"),
                   "thumbs": sum(1 for r in rows if r["thumb"])},
            "w7": {"tick_p90_ms_on": round(p90(on_t), 2), "tick_p90_ms_off": round(p90(off_t), 2),
                   "ticks_on": len(on_t), "ticks_off": len(off_t),
