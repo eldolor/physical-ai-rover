@@ -520,20 +520,25 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
     def note_watchdog_fired(now: float) -> None:
         """3.164: what was live when the watchdog fired. Once per silence."""
         with goal_gen_lock:
+            fired = state["last_fired"]
+            if fired and fired["at"] >= state["last_command_at"]:
+                return
             during = "goal" if lease["owner"] is not None else "mission" if mission_live() else None
             state["last_fired"] = {"during": during, "driver": state["driver"], "at": now}
 
     def note_hang(now: float) -> None:
-        """3.164: a mission silent for `trip_after_s` is a hung brain. B3.1
-        fires in every cloud wait, so firing alone says nothing; this is a
-        silence no healthy tick can make. A navigator still beating is a
-        living brain, whatever nav2 is doing. Reports only: the motors were
-        stopped when the watchdog first fired."""
+        """3.164: a mission whose brain has sent nothing for `trip_after_s`
+        is a hung brain. B3.1 fires in every cloud wait, so firing alone says
+        nothing; this is a silence no healthy tick can make. Counted from the
+        brain's own last move, because under `drive: ros` the actuator's
+        posts keep `last_command_at` fresh and B3.1 never fires. A navigator
+        still beating is a living brain, whatever nav2 is doing. Reports only."""
         with goal_gen_lock:
-            quiet = now - state["last_command_at"]
+            if state["watchdog_trip"] is not None or not mission_live():
+                return
+            quiet = now - state["mission"]["moved_at"]
             beat = max(lease["beats"].values(), default=0.0)
-            if (state["watchdog_trip"] is not None or quiet < trip_after_s
-                    or now - beat <= watchdog_timeout or not mission_live()):
+            if quiet < trip_after_s or now - beat <= watchdog_timeout:
                 return
             by = state["mission"]["by"]
             state["watchdog_trip"] = {"how": "silence", "driver": by,
@@ -573,6 +578,8 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 else:
                     logger.info(f"goal lease released by {owner}: its goal, if still "
                                 f"driving, is ended")
+            if not held:
+                note_hang(now)      # 3.164
             # A verb in progress is a busy brain, not a silent one: it is
             # bounded, re-vetted every period, and /stop still ends it (3.22).
             if state["verb_active"]:
@@ -594,9 +601,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                         "driver": state["driver"],
                         "at": now,
                     }
-                    note_watchdog_fired(now)    # 3.164
-                if not held:
-                    note_hang(now)
+                note_watchdog_fired(now)    # 3.164
 
     def ros_up(now: float) -> bool:
         """Is the ROS stack alive? Its actuator plugin posts /wheels at
@@ -2246,7 +2251,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                                 lease.update(owner=person if armed else None, id=lid,
                                              gen=goal_stop["gen"], since=time.monotonic(),
                                              released=False)
-                                mission_moved(person, time.monotonic())     # 3.164
+                                # 3.164: as it arrived, so a goal in flight over the
+                                # mission's last stop is not a move after it.
+                                mission_moved(person, now)
                         if autonomy and latch is not None:
                             return {"accepted": False, **person_stop_refusal(person, latch)}
                         if not accepted:
@@ -2625,11 +2632,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             "driver": state["driver"],
             "authority_holder": authority_holder(time.monotonic()),
             "refusal_counts": dict(state["refusal_counts"]),
-            "last_refusal": (
-                {**state["last_refusal"],
-                 "seconds_ago": round(time.monotonic() - state["last_refusal"]["at"], 2)}
-                if state["last_refusal"] else None
-            ),
+            "last_refusal": aged(state["last_refusal"]),
             # 3.164: why it last stopped, kept beside the watchdog's record,
             # and whether the watchdog caught the brain hung mid-mission.
             "last_stop_reason": aged(state["last_stop_reason"]),

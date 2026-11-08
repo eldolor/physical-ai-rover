@@ -3200,7 +3200,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
       // says whether a mission is live, which holds with the brain dead; a
       // server older than that leaves it to this page's own view.
       const wd = health.watchdog;
-      const live = wd ? wd.mission_live : (state.brainMissionRunning || driveViaBrainMoving());
+      const live = (wd ? wd.mission_live : state.brainMissionRunning) || driveViaBrainMoving();
       const resting = fired && !live;
       const trip = wd && wd.trip;
       setBrainText("brain-tel-watchdog",

@@ -100,6 +100,25 @@ def test_a_brain_that_goes_silent_mid_mission_is_a_trip(url):
     assert wd["trip_after_s"] == pytest.approx(TRIP_AFTER_S)
 
 
+def test_a_hang_is_caught_while_the_actuator_keeps_the_watchdog_fed(url):
+    """Under `drive: ros` the plugin's posts refresh `last_command_at`, so
+    B3.1 never fires; the brain's own silence is what counts."""
+    _start(url)
+    _move(url)
+    time.sleep(WATCHDOG_S + 0.1)        # the brain's claim lapses, so ros may post
+    end = time.monotonic() + TRIP_AFTER_S + SLACK_S
+    while time.monotonic() < end:
+        r = httpx.post(f"{url}/wheels", json={"left_rad_s": 0.01, "right_rad_s": 0.01},
+                       headers={"x-driver": "ros"}).json()
+        assert r.get("executed") is True, r
+        time.sleep(WATCHDOG_S / 3)
+    health = _health(url)
+    assert health["seconds_since_last_command"] < WATCHDOG_S, "the watchdog was not kept fed"
+    assert health["watchdog"]["trip"]["how"] == "silence", health["watchdog"]
+    httpx.post(f"{url}/wheels", json={"left_rad_s": 0.0, "right_rad_s": 0.0},
+               headers={"x-driver": "ros"})
+
+
 def test_a_trip_outlives_the_quiet_record_after_it_and_goes_at_the_next_start(url):
     """B3.3 ends a hung tick with the brain's own /stop; the watchdog then
     fires again over a mission that is over. That must not erase the hang."""

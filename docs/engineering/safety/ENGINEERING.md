@@ -404,7 +404,7 @@ robot, so `/health` also carries:
   Stop; it is live once the brain has moved since its last `/stop` (its stop
   runs on blind steps too). **B3.1 firing mid-mission is not a hang: it fires
   in every cloud wait.** `trip` is set once per mission, and kept until the next
-  Start, when a live mission is silent for `trip_after_s` (0.8 x
+  Start, when a live mission's brain has sent nothing for `trip_after_s` (0.8 x
   `brain.tick_timeout_s`, `how: "silence"`, unless a navigator beat inside
   `watchdog_timeout_s`) or when its goal lease lapses (`how: "lease"`). Records
   only: the watchdog's timing and who drives are untouched.
