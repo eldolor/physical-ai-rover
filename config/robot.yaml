@@ -445,6 +445,13 @@ brain:
   # nav2 does not take for return_wait_s is skipped (`no_nav2`).
   return_to_dock: true
   return_wait_s: 30.0
+  # 3.156.D: a battery end goes home, charges to resume_v (a placeholder
+  # until 3.137.E) and resumes, the limit paused on the charger, under the
+  # wall limit. Off until the Rover: nothing sees a charger yet.
+  recharge_resume: false
+  resume_v: 11.8
+  mission_wall_limit_s: 14400.0
+  charge_stall_s: 300.0
   # A `vision` mission's paid /navigate calls (one a step); reaching it ends
   # `out_of_budget`. 120 is what the old 120-step cap allowed (the user,
   # 2026-10-12). `tiered` has tier_max_calls. 0 = no cap.

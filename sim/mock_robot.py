@@ -71,6 +71,7 @@ CELLS_PER_SECOND_AT_FULL_SPEED = 2.0  # at speed=100
 # wall.
 DEFAULT_CELL_CM = 30.0
 DEFAULT_CELL_M = DEFAULT_CELL_CM / 100.0
+CHARGE_PAD_M = 0.15            # 3.156.D: the charge stand-in's pad radius
 
 # ---------- the chassis, phase R0 (PLAN-ros-alignment.md) ----------
 #
@@ -188,6 +189,8 @@ class MockRobot(RobotInterface):
         # one only when SIM_BATTERY_V is set, so the plain simulator can run
         # the battery ladder in process.
         self.battery = battery
+        # 3.156.D: the charge stand-in's pad, where this body began (D7h).
+        self._charge_pad = (world.x, world.y)
         # 3.156.B: a straight verb moves the distance its speed and duration
         # ask for, as the car's do, not whole cells (the legacy rounding every
         # other harness keeps): a final approach closes on centimetres.
@@ -292,7 +295,15 @@ class MockRobot(RobotInterface):
         """The simulated pack (3.137), when this body was given one."""
         if self.battery is None:
             return super().get_battery()
+        self._update_charge()
         return {"usable": True, "v": round(self.battery.read(), 2)}
+
+    def _update_charge(self) -> None:
+        b = self.battery
+        if b is None or not getattr(b, "charge_v_per_s", 0):
+            return
+        off = math.hypot(self.world.x - self._charge_pad[0], self.world.y - self._charge_pad[1])
+        b.charging(off * DEFAULT_CELL_M <= CHARGE_PAD_M and not b.is_driving)
 
     def step(self, dt: float) -> dict:
         """Integrate the standing wheel command for `dt` seconds.

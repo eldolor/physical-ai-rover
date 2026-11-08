@@ -17,6 +17,7 @@ brain/dock.py -- 3.156.B: the return to the dock
   the dock, a creep on guarded verbs (every one through `robot/safety.py`),
   and a final turn to the dock's heading. Docked: the pose within
   `DOCK_TOL_M` and `DOCK_TOL_DEG`.
+* `Charge`: 3.156.D's wait on the dock (D7d): rising to `resume_v`, or why not.
 
 Headings are compass bearings (clockwise from north, `get_pose()`'s
 `heading_deg`); a robot facing `h` moves along (sin h, -cos h) in (x_m, y_m).
@@ -59,6 +60,17 @@ RETURN_WAIT_S = 30.0        # D2: nav2's hold never clears -> skipped, no_nav2
 GOAL_RETRY_S = 1.0          # between refused goals (through the runner's idle)
 POLL_S = 0.5                # between polls of a goal under way
 RETURN_MAX_S = 600.0        # a return that never ends is a failed one
+# 3.156.D (D7d). `RESUME_V` is a placeholder until 3.137.E.
+RESUME_V = 11.8
+WALL_LIMIT_S = 4 * 3600.0   # the whole mission, charges and all
+CHARGE_STALL_S = 300.0      # no rise of CHARGE_RISE_V in this long: no charger
+CHARGE_RISE_V = 0.05
+CHARGE_SAMPLE_S = 10.0      # a repeated reading this old is a new sample (3.137)
+LEFT_DOCK_M = 0.25
+RESUME_MIN_S = 120.0        # less of the limit left on arrival: not worth a charge
+MAX_CHARGES = 3
+CHARGE_POLL_S = 1.0
+CHARGE_PROBE_S = 2.0        # D7f: how often a person's Stop or D-pad is looked for
 
 DOCKED, FAILED, CANCELLED, SKIPPED = "docked", "failed", "cancelled", "skipped"
 
@@ -136,6 +148,7 @@ class HomeBudget:
         self._samples = []              # distinct (t, v) battery samples
         self._path = None               # (L_home, x, y, t)
         self.last = {}
+        self._prior_r = 0.0             # 3.156.D: the rate known before a charge
 
     def observe_pose(self, pose: dict, t: float) -> None:
         if not pose or not pose.get("usable"):
@@ -162,13 +175,22 @@ class HomeBudget:
         return max(V_FLOOR_M_S, self.metres / self.driving_s)
 
     def drain_v_s(self) -> float:
-        """V/s over distinct samples at least DRAIN_SPAN_S apart; 0 before."""
+        """V/s over distinct samples at least DRAIN_SPAN_S apart; before
+        that the rate known before the last charge (none: 0)."""
         if len(self._samples) < 2:
-            return 0.0
+            return self._prior_r
         (t0, v0), (t1, v1) = self._samples[0], self._samples[-1]
         if t1 - t0 < DRAIN_SPAN_S:
-            return 0.0
+            return self._prior_r
         return max(0.0, (v0 - v1) / (t1 - t0))
+
+    def recharged(self) -> None:
+        """3.156.D7g: the charge is not a drain; the rate stands until a new
+        span exists. The drive so far and its speed are kept."""
+        self._prior_r = self.drain_v_s()
+        self._samples = []
+        self._last = None
+        self._path = None
 
     def path_m(self, get_map: Callable[[], dict], pose: dict, t: float) -> float:
         x, y = pose["x_m"], pose["y_m"]
@@ -210,6 +232,36 @@ class HomeBudget:
             if at_dock < floor_v + BATTERY_MARGIN_V:
                 return (f"battery: {v_now:.2f} V now, {at_dock:.2f} V predicted at the "
                         f"dock (floor {floor_v:g} V + {BATTERY_MARGIN_V:g})")
+        return None
+
+
+class Charge:
+    """3.156.D7d: waiting on the dock. `observe()` returns None while
+    charging, else (state, reason): `resumed`, `no_charge` or `left_dock`."""
+
+    def __init__(self, dock: dict, resume_v: float, t0: float, stall_s: float = CHARGE_STALL_S):
+        self.dock, self.resume_v, self.t0, self.stall_s = dock, resume_v, t0, stall_s
+        self.from_v = None
+        self.v = None
+        self._at = None
+        self._anchor_v = None
+        self._rose_at = t0
+        self.over = 0
+
+    def observe(self, v: Optional[float], pose: Optional[dict], now: float) -> Optional[tuple]:
+        if pose and pose.get("usable") and pose_error(self.dock, pose)[0] > LEFT_DOCK_M:
+            return "left_dock", f"moved {pose_error(self.dock, pose)[0]:.2f} m from the dock"
+        if v is not None and (v != self.v or now - self._at >= CHARGE_SAMPLE_S):
+            self.v, self._at = v, now
+            if self.from_v is None:
+                self.from_v = self._anchor_v = v
+            if v >= self._anchor_v + CHARGE_RISE_V:
+                self._anchor_v, self._rose_at = v, now
+            self.over = self.over + 1 if v >= self.resume_v else 0
+            if self.over >= 2:
+                return "resumed", f"{v:.2f} V, resume at {self.resume_v:g} V"
+        if now - self._rose_at >= self.stall_s:
+            return "no_charge", f"no rise of {CHARGE_RISE_V:g} V in {self.stall_s:.0f} s"
         return None
 
 

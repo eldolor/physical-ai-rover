@@ -227,6 +227,13 @@ DEFAULTS = {
     # (nav2's hold never clears) skips the return.
     "return_to_dock": True,
     "return_wait_s": 30.0,
+    # 3.156.D: a battery end goes home, charges to resume_v (a placeholder
+    # until 3.137.E) and resumes; the limit is paused on the charger, under
+    # mission_wall_limit_s. Off: nothing sees a charger before the Rover.
+    "recharge_resume": False,
+    "resume_v": 11.8,
+    "mission_wall_limit_s": 14400.0,
+    "charge_stall_s": 300.0,
     # A `vision` mission's paid /navigate calls (one per step), counted per
     # call sent; reaching it ends `out_of_budget`. The user's call 2026-10-12:
     # 120, what the 120-step cap allowed before 3.70. `tiered` has its own
@@ -465,6 +472,8 @@ def load_brain_config(config_path=None) -> dict:
         merged["vision_url"] = os.environ["VISION_URL"]
     if "LOCAL_VLM_URL" in os.environ:
         merged["tier_local_vlm_url"] = os.environ["LOCAL_VLM_URL"].strip()
+    if os.environ.get("RECHARGE_RESUME", "").strip():      # 3.156.D's live run
+        merged["recharge_resume"] = os.environ["RECHARGE_RESUME"].strip() == "1"
     if os.environ.get("TIER_SEARCH", "").strip():
         merged["tier_search"] = os.environ["TIER_SEARCH"].strip()
     if os.environ.get("SIM_ARRIVAL_CONFIRM", "").strip():
@@ -651,6 +660,14 @@ def load_brain_config(config_path=None) -> dict:
     if (isinstance(wait, bool) or not isinstance(wait, (int, float))
             or not 0 < wait < float("inf")):
         raise ValueError(f"brain.return_wait_s must be a number > 0; got {wait!r}")
+    if not isinstance(merged["recharge_resume"], bool):
+        raise ValueError(f"brain.recharge_resume must be true or false; "
+                         f"got {merged['recharge_resume']!r}")
+    for key in ("resume_v", "mission_wall_limit_s", "charge_stall_s"):
+        n = merged[key]
+        if (isinstance(n, bool) or not isinstance(n, (int, float))
+                or not 0 < n < float("inf")):
+            raise ValueError(f"brain.{key} must be a number > 0; got {n!r}")
     if not isinstance(merged["explore_ask"], bool):
         raise ValueError(f"brain.explore_ask must be true or false; got {merged['explore_ask']!r}")
     ask_s = merged["explore_ask_timeout_s"]

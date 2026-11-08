@@ -1354,6 +1354,15 @@ class ExploreAgent(MissionAgent):
             return False
         return now - anchor[2] >= STALL_S
 
+    def set_aside(self) -> None:
+        """3.156.D7e: the mission went to charge and comes back. The goal it
+        was on was ended by that, not by the place: forgotten, uncounted;
+        everything learned stays."""
+        self._goal = None
+        self._pending = []
+        self._local_wait_since = None
+        self._withdraw_ask("superseded: the robot went to charge")
+
     def _goal_ended(self, state: str, now: float) -> None:
         g, self._goal = self._goal, None
         pose = self._pose()

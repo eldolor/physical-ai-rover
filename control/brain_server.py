@@ -819,6 +819,11 @@ def create_app(
             # navigator (no explore search) records `skipped`, `no_nav2`.
             return_to_dock=config["return_to_dock"],
             return_wait_s=config["return_wait_s"],
+            # 3.156.D: a battery end charges and resumes (off until the Rover).
+            recharge_resume=config["recharge_resume"],
+            resume_v=config["resume_v"],
+            mission_wall_limit_s=config["mission_wall_limit_s"],
+            charge_stall_s=config["charge_stall_s"],
         )
         # 3.88 A, 3.99: which house each recorded choice and mission end was
         # in -- the simulator's, from the robot server; None on the car.

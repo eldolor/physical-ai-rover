@@ -702,6 +702,10 @@ class MissionRunner:
         inventory: bool = True,
         detections_fn: Optional[Callable[[dict], Optional[list]]] = None,
         mission_time_limit_s: Optional[float] = None,
+        recharge_resume: bool = False,
+        resume_v: float = docking.RESUME_V,
+        mission_wall_limit_s: float = docking.WALL_LIMIT_S,
+        charge_stall_s: float = docking.CHARGE_STALL_S,
         battery_floor_v: Optional[float] = None,
         vision_max_calls: Optional[int] = None,
         job: str = "find",
@@ -863,6 +867,20 @@ class MissionRunner:
         self._return: Optional[dict] = None
         self._return_trip: Optional[docking.ReturnTrip] = None
         self._pending_end: Optional[tuple] = None
+        # 3.156.D (D7): recharge and resume. Off unless asked (the config's
+        # too). `_charging` is the wait on the dock; the decided end stays
+        # in `_pending_end` until the pack reaches `resume_v`.
+        self.recharge_resume = bool(recharge_resume)
+        self.resume_v = resume_v
+        self.mission_wall_limit_s = mission_wall_limit_s
+        self.charge_stall_s = charge_stall_s
+        self._charge_wanted = False
+        self._charging: Optional[docking.Charge] = None
+        self._charge: Optional[dict] = None     # status's `charge`
+        self._charges = 0
+        self._charged_s = 0.0
+        self._charge_from: Optional[float] = None
+        self._charge_probed_at: Optional[float] = None
         self.max_steps = max_steps or derived_max_steps(self.mission_time_limit_s)
         # Under `vision` every step is a paid /navigate call, and a time
         # limit is not a call limit: before 3.70 the 120-step cap bounded
@@ -1084,6 +1102,8 @@ class MissionRunner:
         if not self._running:
             return False
         self._tick_began = time.monotonic()
+        if self._charging is not None:
+            return self._charge_tick()
         if self._pending_end is not None:
             return self._return_tick()
         self._step_tick()
@@ -1332,6 +1352,9 @@ class MissionRunner:
                          f"reached ({elapsed - paused:.1f} s"
                          + (f", plus {paused:.1f} s paused on picks)" if paused else ")"))
             return True
+        if self._charges and elapsed is not None and elapsed >= self.mission_wall_limit_s:
+            self._finish(OUT_OF_BUDGET, f"wall limit of {self.mission_wall_limit_s:g} s reached")
+            return True
         if self.vision_max_calls and self._cloud_calls >= self.vision_max_calls:
             self._finish(OUT_OF_BUDGET, f"cloud call cap of {self.vision_max_calls} "
                          f"reached ({self._cloud_calls} calls)")
@@ -1341,12 +1364,15 @@ class MissionRunner:
                 self._finish(OUT_OF_BUDGET, f"battery at {self._battery_level} "
                              f"({self._battery_v:.2f} V), as the robot server reads it")
                 return True
+            self._want_charge()
             self._finish(OUT_OF_BUDGET, f"battery at {self._battery_v:.2f} V, under the "
                          f"{self.battery_floor_v:g} V floor "
                          f"{BATTERY_LOW_READINGS} readings in a row")
             return True
         why = self._return_reserve(elapsed, paused)
         if why:
+            if why.startswith("battery"):
+                self._want_charge()
             self._finish(OUT_OF_BUDGET, f"return reserve -- {why}")
             return True
         return False
@@ -1373,7 +1399,10 @@ class MissionRunner:
 
     def _paused_s(self) -> float:
         ask = self._ask()
-        return ask.paused_s() if ask is not None else 0.0
+        asked = ask.paused_s() if ask is not None else 0.0
+        # 3.156.D7d: time on the charger is not the search's either.
+        charging = max(0.0, self.clock() - self._charge_from) if self._charge_from is not None else 0.0
+        return asked + self._charged_s + charging
 
     def pick_goal(self, choice, candidate_id) -> tuple:
         """3.88 A: a person's pick among the open choice's candidates, from
@@ -1653,6 +1682,8 @@ class MissionRunner:
                 "error": self._error,
                 "dock": dict(self._dock) if self._dock else None,
                 "return": dict(self._return) if self._return else None,
+                "charge": ({**self._charge, "history": list(self._charge["history"])}
+                           if self._charge else None),
                 "policy": self.policy,
                 "job": self.job,
                 # 3.70 S2: a survey's room labels -- how many asks, the cap,
@@ -2148,6 +2179,15 @@ class MissionRunner:
                     go = True
                 elif why is not None:
                     self._return = {"state": docking.SKIPPED, "reason": why}
+            elif self._charging is not None:
+                # 3.156.D7f: a person's end, or B3.3's abort, on the charger.
+                cancelled = outcome == CANCELLED
+                self._charge_ended(docking.CANCELLED if cancelled else docking.FAILED,
+                                   (kw.get("cancelled_by") or "stop") if cancelled else note)
+                if cancelled:
+                    interrupt = {"note": note, **{k: kw.get(k) for k in ("cancelled_by", "via", "by")}}
+                else:
+                    self._error = f"while charging: {note}"
             elif (self._return or {}).get("state") == "returning":
                 cancelled = outcome == CANCELLED
                 reason = (kw.get("cancelled_by") or "stop") if cancelled else note
@@ -2173,6 +2213,150 @@ class MissionRunner:
                 kw = {**kw, "interrupt": interrupt}
         self._end(outcome, note, **kw)
 
+    def _refusal(self, e: Exception) -> tuple:
+        """What a refusal on the way home or on the charger means: the
+        (state, reason) that ends the phase, and a person's intervention."""
+        if isinstance(e, BatteryReserve):
+            return (docking.FAILED, "battery_reserve"), None
+        if isinstance(e, AutonomyLapsed):
+            return (docking.FAILED, f"autonomy_lapsed: {e}"), None
+        if isinstance(e, StoppedByPerson):
+            return (docking.CANCELLED, f"stop: {e}"), {
+                "note": f"stopped by a person: {e}", "cancelled_by": "stop", "via": VIA_ROBOT_STOP}
+        holder = _PREEMPTED_BY.match(str(e))
+        if holder and driver_priority(holder.group(1)) != DRIVER_MANUAL:
+            # An autonomous holder took over: a fault, as _finish_preempted reads it.
+            return (docking.FAILED, f"error: preempted by an autonomous driver: {e}"), None
+        return (docking.CANCELLED, f"preempted: {e}"), {
+            "note": str(e), "cancelled_by": "dpad", "via": VIA_PREEMPTED,
+            "by": holder.group(1) if holder else None}
+
+    # -- 3.156.D: recharge and resume (D7) --------------------------------
+
+    def _want_charge(self) -> None:
+        if self.recharge_resume and self._charges < docking.MAX_CHARGES:
+            self._charge_wanted = True
+
+    def _charge_record(self) -> dict:
+        return self._charge or {"state": None, "reason": None, "cycles": 0,
+                                "resume_v": self.resume_v, "v": None, "history": []}
+
+    def _charge_refused(self, state: str, reason: str) -> Optional[dict]:
+        """Why a docked (or not) return does not charge; None: it does."""
+        if state != docking.DOCKED:
+            return {"state": "not_docked", "reason": f"return {state}: {reason}"}
+        if self.mission_time_limit_s:
+            left = self.mission_time_limit_s - (self._elapsed_s() - self._paused_s())
+            if left < docking.RESUME_MIN_S:
+                return {"state": "no_time", "reason": f"{left:.0f} s of the limit left"}
+        return None
+
+    def _start_charge(self) -> None:
+        now = self.clock()
+        self._charges += 1
+        self._charge_from, self._charge_probed_at = now, None
+        self._charging = docking.Charge(self._dock, self.resume_v, now, self.charge_stall_s)
+        self._charge = {**self._charge_record(), "state": "charging", "reason": None,
+                        "cycles": self._charges}
+        self._log_line(f"charging on the dock ({self._charges} of at most "
+                       f"{docking.MAX_CHARGES}), resuming at {self.resume_v:g} V")
+
+    def _charge_ended(self, state: str, reason: str) -> None:
+        """Under the lock: the wait is over, the time on it counted."""
+        self._charged_s += max(0.0, self.clock() - self._charge_from)
+        self._charge_from = None
+        self._charging = None
+        self._charge = {**self._charge, "state": state, "reason": reason}
+        self._log_line(f"charge {state}: {reason}")
+
+    def _read_charge_v(self) -> Optional[float]:
+        try:
+            reading = self.robot.get_battery() or {}
+        except Exception:  # noqa: BLE001 -- a lost reading; no rise, so the stall rule answers
+            return None
+        v = reading.get("v") if reading.get("usable") else None
+        if not isinstance(v, (int, float)):
+            return None
+        self._battery_v = float(v)
+        self._battery_level = reading.get("level")
+        return float(v)
+
+    def _charge_tick(self) -> bool:
+        """One look at the charger. Nothing moves, so a person's Stop or
+        D-pad has nothing to refuse: D7f's probe asks. A link lost for a
+        moment is not an end (the stall rule bounds it)."""
+        with self._lock:
+            self._last_tick_at = time.monotonic()
+        charge = self._charging
+        if charge is None:
+            return self._running
+        got = person = None
+        now = self.clock()
+        if self._charge_probed_at is None or now - self._charge_probed_at >= docking.CHARGE_PROBE_S:
+            self._charge_probed_at = now
+            try:
+                self._gated.look_center()
+            except MissionHalted:
+                return False
+            except (BatteryReserve, AutonomyLapsed, StoppedByPerson, Preempted) as e:
+                got, person = self._refusal(e)
+            except Exception as e:  # noqa: BLE001 -- see docstring
+                logger.warning("charge probe failed: %s", e)
+        if got is None:
+            elapsed = self._elapsed_s()
+            if elapsed is not None and elapsed >= self.mission_wall_limit_s:
+                got = ("wall_limit", f"{self.mission_wall_limit_s:g} s, charges and all")
+            else:
+                v = self._read_charge_v()
+                try:
+                    pose = self.world.get_pose()
+                except Exception:  # noqa: BLE001 -- no pose this tick decides nothing
+                    pose = None
+                got = charge.observe(v, pose, now)
+        if got is None:
+            with self._lock:
+                if self._charging is not charge:
+                    return self._running
+                self._charge = {**self._charge, "v": charge.v, "from_v": charge.from_v,
+                                "charging_s": round(now - charge.t0, 1)}
+            self.idle(docking.CHARGE_POLL_S)
+            return self._running
+        state, reason = got
+        with self._lock:
+            if self._charging is not charge:
+                return self._running            # a Stop landed first and ended it
+            if state == "resumed":
+                self._charge["history"].append({
+                    "from_v": charge.from_v, "to_v": charge.v,
+                    "seconds": round(now - charge.t0, 1),
+                    "at_s": round(self._elapsed_s(), 1)})
+                self._charge_ended(state, reason)
+                self._pending_end = None
+                self._return_trip = None
+                self._return = None
+                self._battery_low = 0
+                self._battery_checked_at = None
+                self._cooldown_until = None
+                self._home.recharged()
+                self._log_line("resuming the mission")
+                resumed = True
+            else:
+                resumed = False
+                self._charge_ended(state, reason)
+                if state == docking.FAILED and reason.startswith(("error", "autonomy_lapsed",
+                                                                  "battery_reserve")):
+                    self._error = f"while charging: {reason}"
+                outcome, note, kw = self._pending_end
+        if resumed:
+            set_aside = getattr(self.agent, "set_aside", None)
+            if set_aside is not None:
+                set_aside()
+            return self._running
+        if person is not None:
+            kw = {**kw, "interrupt": person}
+        self._end(outcome, note, **kw)
+        return False
+
     def _return_tick(self) -> bool:
         """One step of the drive home (3.156 D4). A person's Stop and the
         battery still win (D5): a refusal ends the return, never the
@@ -2185,23 +2369,8 @@ class MissionRunner:
             got = trip.step()
         except MissionHalted:
             return False
-        except BatteryReserve:
-            got = (docking.FAILED, "battery_reserve")
-        except AutonomyLapsed as e:
-            got = (docking.FAILED, f"autonomy_lapsed: {e}")
-        except StoppedByPerson as e:
-            got = (docking.CANCELLED, f"stop: {e}")
-            person = {"note": f"stopped by a person: {e}", "cancelled_by": "stop",
-                      "via": VIA_ROBOT_STOP}
-        except Preempted as e:
-            holder = _PREEMPTED_BY.match(str(e))
-            if holder and driver_priority(holder.group(1)) != DRIVER_MANUAL:
-                # An autonomous holder took over: a fault, as _finish_preempted reads it.
-                got = (docking.FAILED, f"error: preempted by an autonomous driver: {e}")
-            else:
-                got = (docking.CANCELLED, f"preempted: {e}")
-                person = {"note": str(e), "cancelled_by": "dpad", "via": VIA_PREEMPTED,
-                          "by": holder.group(1) if holder else None}
+        except (BatteryReserve, AutonomyLapsed, StoppedByPerson, Preempted) as e:
+            got, person = self._refusal(e)
         except Exception as e:  # noqa: BLE001 -- a fault on the way home ends the return
             logger.exception("return step failed")
             got = (docking.FAILED, f"error: {e}")
@@ -2216,6 +2385,14 @@ class MissionRunner:
             for line in trip.log[-3:]:
                 self._log_line(f"return: {line}")
             self._log_line(f"return {state}: {reason}")
+            if self._charge_wanted:
+                self._charge_wanted = False
+                why = self._charge_refused(state, reason)
+                if why is None:
+                    self._start_charge()
+                    return True
+                self._charge = {**self._charge_record(), **why}
+                self._log_line(f"no charge: {why['state']}: {why['reason']}")
             outcome, note, kw = self._pending_end
             if state == docking.FAILED and reason.startswith(("error", "autonomy_lapsed",
                                                               "battery_reserve")):
