@@ -12,6 +12,7 @@ import base64
 import hashlib
 import io
 import os
+import time
 from pathlib import Path
 
 import pytest
@@ -160,20 +161,22 @@ def test_a_carried_landmark_not_seen_again_is_not_in_the_list():
 class _LM:
     def __init__(self, i, belief, step=5):
         self.id, self.belief, self.first_step, self.last_step, self.x, self.y = i, belief, 1, step, 1.0, 0.0
+        self.label = "chair"
 
 
 def test_at_most_max_thumbs_looks_are_held_the_likeliest_kept():
     runner, _ = _rendered()
     runner._ticks = 5
     pose = {"x_m": 0.0, "y_m": 0.0, "heading_deg": 90.0}
+    seen = [{"label": "chair", "bearing_deg": 0.0}]
     frame = {"image_base64": "QUJD", "fov_deg": 60.0}
     runner.inventory.landmarks = [_LM(i, 0.5 + i * 1e-4) for i in range(wis.MAX_THUMBS + 25)]
-    runner._keep_looks(frame, pose)
+    runner._keep_looks(frame, pose, seen)
     assert len(runner._saw_looks) == wis.MAX_THUMBS
     assert min(runner._saw_looks) == 25
     # A merged-away landmark's slot goes before a live one's.
     runner.inventory.landmarks = [_LM(i, 0.5 + i * 1e-4, step=0) for i in range(26, wis.MAX_THUMBS + 25)] + [_LM(999, 0.1)]
-    runner._keep_looks(frame, pose)
+    runner._keep_looks(frame, pose, seen)
     assert 999 in runner._saw_looks and 25 not in runner._saw_looks
 
 
@@ -181,15 +184,49 @@ def test_the_best_look_stands_until_a_likelier_one():
     runner, _ = _rendered()
     runner._ticks = 5
     pose = {"x_m": 0.0, "y_m": 0.0, "heading_deg": 90.0}
+    seen = [{"label": "chair", "bearing_deg": 0.0}]
     lm = _LM(1, 0.9)
     runner.inventory.landmarks = [lm]
-    runner._keep_looks({"image_base64": "AAAA"}, pose)
+    runner._keep_looks({"image_base64": "AAAA"}, pose, seen)
     lm.belief = 0.7
-    runner._keep_looks({"image_base64": "BBBB"}, pose)
+    runner._keep_looks({"image_base64": "BBBB"}, pose, seen)
     assert runner._saw_looks[1]["image_base64"] == "AAAA"
     lm.belief = 0.95
-    runner._keep_looks({"image_base64": "CCCC"}, pose)
+    runner._keep_looks({"image_base64": "CCCC"}, pose, seen)
     assert runner._saw_looks[1]["image_base64"] == "CCCC"
+
+
+def test_a_frame_that_does_not_show_a_landmark_is_no_look_at_it():
+    """Review: a tick can hold several frames; `last_step` matches them all."""
+    runner, _ = _rendered()
+    runner._ticks = 5
+    pose = {"x_m": 0.0, "y_m": 0.0, "heading_deg": 90.0}
+    runner.inventory.landmarks = [_LM(1, 0.9)]
+    runner._keep_looks({"image_base64": "AAAA", "pan_deg": 0.0}, pose, [{"label": "sofa", "bearing_deg": 0.0}])
+    runner._keep_looks({"image_base64": "BBBB", "pan_deg": 0.0}, pose, [{"label": "chair", "bearing_deg": 40.0}])
+    assert runner._saw_looks == {}
+    runner._keep_looks({"image_base64": "CCCC", "pan_deg": 40.0}, pose, [{"label": "chair", "bearing_deg": -40.0}])
+    assert runner._saw_looks[1]["image_base64"] == "CCCC"
+
+
+def test_an_abandoned_ticks_late_answer_holds_no_frame():
+    """Review: B3.3 can abandon a tick that comes back after the end."""
+    runner, _ = _rendered()
+    _sink(runner)
+    runner.start()
+    runner._finish(CANCELLED, "abort")
+    runner._guarded_confirm = lambda f, local_ok=True: {"confirmed": True}
+    runner._judged_confirm({"image_base64": "WUVT"})
+    runner._observe({"image_base64": "TEFURVI="})
+    assert runner._judged_frame is None and runner._last_seen_frame is None
+
+
+def test_the_status_names_the_report_the_twin_should_show():
+    """Review: without it two like missions' reports read as one another."""
+    runner, _ = _rendered()
+    assert runner.status()["mission_id"] is None
+    runner.report_id = "m-7"
+    assert runner.status()["mission_id"] == "m-7"
 
 
 def test_look_box_follows_the_bearing():
@@ -346,6 +383,40 @@ def test_the_routes(app_client):
     assert client.get("/mission/reports/m-4/thumbs/9.jpg").status_code == 404
     assert client.delete("/mission/reports/m-4").json() == {"deleted": True}
     assert client.get("/mission/reports").json() == {"reports": []}
+
+
+def test_a_phone_may_delete_across_origins(app_client):
+    """Thermos: the deployed twin is another origin; its DELETE is preflighted."""
+    client, _, _ = app_client
+    r = client.options("/mission/reports/x", headers={"origin": "https://example.cloudfront.net",
+                                                      "access-control-request-method": "DELETE",
+                                                      "access-control-request-headers": "x-app-secret"})
+    assert r.status_code == 200 and "DELETE" in r.headers["access-control-allow-methods"]
+
+
+def test_a_real_start_hands_its_report_under_the_name_in_status(tmp_path, monkeypatch):
+    """The wiring: a started mission's sink writes to the store the routes read."""
+    monkeypatch.setenv("WHAT_I_SAW_DIR", str(tmp_path / "saw"))
+    monkeypatch.delenv("APP_SHARED_SECRET", raising=False)
+    grid = build_world("scaled_house")
+    robot = MockRobot(grid, render=True)
+    with TestClient(brain_server.create_app(robot_factory=lambda: robot,
+                                            world_factory=lambda r: MockWorld(grid))) as client:
+        assert client.post("/mission/start", json={"target_object": "unicorn", "policy": "frontier",
+                                                   "max_steps": 4}).status_code == 200
+        for _ in range(400):
+            st = client.get("/mission/status").json()
+            if not st["running"] and st.get("outcome") not in (None, "idle", "running"):
+                break
+            time.sleep(0.05)
+        rows = []
+        for _ in range(200):
+            rows = client.get("/mission/reports").json()["reports"]
+            if rows:
+                break
+            time.sleep(0.05)
+        assert [r["mission_id"] for r in rows] == [st["mission_id"]]
+        assert rows[0]["outcome"] == st["outcome"] and rows[0]["step"] == st["step"]
 
 
 def test_the_routes_are_behind_the_secret(tmp_path, monkeypatch):

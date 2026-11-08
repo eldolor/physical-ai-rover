@@ -584,11 +584,6 @@ def _write_saw(writer, mission_id: str, payload: dict) -> None:
         logger.warning("report %s not handed to the writer: %s", mission_id, e)
 
 
-def _hand_saw(writer, mission_id: str, payload: dict) -> None:
-    threading.Thread(target=_write_saw, args=(writer, mission_id, payload), daemon=True,
-                     name="mission-saw").start()
-
-
 def create_app(
     config_path: Optional[str] = None,
     robot_factory: Optional[Callable[[], RobotInterface]] = None,
@@ -607,18 +602,30 @@ def create_app(
     # 3.162: beside the inventory unless named. Made at first use: an app that
     # never runs a mission starts no writer thread.
     saw = {}
+    saw_lock = threading.Lock()
 
     def _saw_store() -> what_i_saw_mod.ReportStore:
-        if "store" not in saw:
-            named = os.environ.get("WHAT_I_SAW_DIR")
-            saw["store"] = what_i_saw_mod.ReportStore(
-                named or Path(config["inventory_dir"]).parent / "what-i-saw")
-        return saw["store"]
+        with saw_lock:
+            if "store" not in saw:
+                named = os.environ.get("WHAT_I_SAW_DIR")
+                saw["store"] = what_i_saw_mod.ReportStore(
+                    named or Path(config["inventory_dir"]).parent / "what-i-saw")
+            return saw["store"]
 
     def _saw_writer() -> what_i_saw_mod.ReportWriter:
-        if "writer" not in saw:
-            saw["writer"] = what_i_saw_mod.ReportWriter(_saw_store())
-        return saw["writer"]
+        store = _saw_store()
+        with saw_lock:
+            if "writer" not in saw:
+                saw["writer"] = what_i_saw_mod.ReportWriter(store)
+            return saw["writer"]
+
+    def _hand_saw(report_id: str, payload: dict) -> None:
+        """Off the event loop (a Stop ends a mission there); not a daemon, and
+        the shutdown below waits, so a restart straight after an end keeps it."""
+        thread = threading.Thread(target=_write_saw, args=(_saw_writer, report_id, payload),
+                                  name="mission-saw")
+        saw["hand"] = thread
+        thread.start()
     # 3.99: built once, so every mission's writer shares its lock.
     intervention_log = InterventionLog(os.path.join(config["intervention_dir"],
                                                     INTERVENTION_FILE))
@@ -940,7 +947,8 @@ def create_app(
         runner.inventory_prior = store.latest_for
         runner.mission_id = mission_id
         # 3.162: the frames and the list stay on this disk (local only).
-        runner.saw_sink = functools.partial(_hand_saw, _saw_writer, _slug(mission_id))
+        runner.report_id = _slug(mission_id)
+        runner.saw_sink = functools.partial(_hand_saw, runner.report_id)
         # 3.99: one log, one file, for every mission's end line.
         runner.intervention_log = intervention_log
         if asks:
@@ -1121,6 +1129,14 @@ def create_app(
         if cloud_watch is not None:
             cloud_watch.stop()
 
+    @app.on_event("shutdown")
+    def _finish_saw_writes():
+        """3.162: a report handed over just before a restart is still written."""
+        if "hand" in saw:
+            saw["hand"].join(5.0)
+        if "writer" in saw:
+            saw["writer"].flush(5.0)
+
     # See module docstring. "" (the default) reproduces every route exactly
     # as before this existed.
     prefix = os.environ.get("ROUTE_PREFIX", "").rstrip("/")
@@ -1131,7 +1147,7 @@ def create_app(
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
-        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
         allow_headers=["*"],
     )
 

@@ -674,6 +674,9 @@ SPIN_TURN_SHARE = 0.75
 SPIN_MAX_REVERSAL_SHARE = 0.1
 
 
+LOOK_MATCH_DEG = 15.0    # 3.162: a detection this close to a landmark's bearing is a look at it
+
+
 def _wrap_deg(deg: float) -> float:
     return (deg + 180.0) % 360.0 - 180.0
 
@@ -1038,6 +1041,7 @@ class MissionRunner:
         # harness) nothing is held. Frames are held by reference, MAX_THUMBS
         # at most: the best look at each landmark.
         self.saw_sink: Optional[Callable[[dict], None]] = None
+        self.report_id: Optional[str] = None
         self._judged_frame: Optional[dict] = None
         self._last_seen_frame: Optional[dict] = None
         self._saw_looks: dict = {}
@@ -1719,6 +1723,8 @@ class MissionRunner:
                                 if self._labels_skipped
                                 else self.room_labeller.status() if self.find_room_labels
                                 else None),
+                # 3.162: the name its report is kept under (the twin's match).
+                "mission_id": self.report_id,
                 "mission": self.memory.mission,
                 "target_object": self.memory.target_object,
                 "target_room": self.memory.target_room,
@@ -1916,7 +1922,9 @@ class MissionRunner:
         """3.162: `_guarded_confirm`, remembering the frame a yes was given on."""
         verdict = self._guarded_confirm(frame, local_ok)
         if isinstance(verdict, dict) and verdict.get("confirmed"):
-            self._judged_frame = frame
+            with self._lock:
+                if not self._ended():         # an abandoned tick's answer holds nothing
+                    self._judged_frame = frame
         return verdict
 
     def _guarded_confirm(self, frame: dict, local_ok: bool = True) -> dict:
@@ -2913,8 +2921,10 @@ class MissionRunner:
         (HTTP calls on a remote robot). A frame that lands after the
         mission ended is dropped: the report has already been saved."""
         try:
-            if self.saw_sink is not None and not self._ended():
-                self._last_seen_frame = frame
+            if self.saw_sink is not None:
+                with self._lock:
+                    if not self._ended():
+                        self._last_seen_frame = frame
             detections = self.detections_fn(frame)
             if self._ended():
                 return                        # no reads once the mission has ended
@@ -2941,7 +2951,7 @@ class MissionRunner:
                     fov_deg=float(frame.get("fov_deg") or DEFAULT_FOV_DEG),
                     room=frame.get("room", "unknown"), step=self._ticks)
                 if self.saw_sink is not None:
-                    self._keep_looks(frame, pose)
+                    self._keep_looks(frame, pose, detections)
         except Exception as e:  # noqa: BLE001
             if not self._inventory_error_logged:
                 self._inventory_error_logged = True
@@ -2993,10 +3003,10 @@ class MissionRunner:
             report["outcome"] = self._outcome
         return report
 
-    def _keep_looks(self, frame: dict, pose: dict) -> None:
+    def _keep_looks(self, frame: dict, pose: dict, detections: list) -> None:
         """3.162: this frame, by reference, as the best look at each landmark
-        it was just seen in, under `_lock`. At MAX_THUMBS held, a merged-away
-        landmark's look goes first, then the least likely."""
+        a detection in it matches, under `_lock`. At MAX_THUMBS held, a
+        merged-away landmark's look goes first, then the least likely."""
         image = frame.get("image_base64")
         if not image:
             return
@@ -3006,9 +3016,14 @@ class MissionRunner:
             if lm.first_step is None or lm.last_step != self._ticks:
                 continue
             bearing, dist = _bearing_to(pose, lm.x, lm.y)
-            off = abs(_wrap_deg(bearing - pan))
-            if off > fov / 2:
-                continue                      # placed out of this frame's view: no crop of it
+            # A tick can hold several frames: only one that shows this thing.
+            seen = [float(d["bearing_deg"]) for d in detections
+                    if d.get("bearing_deg") is not None and str(d.get("label", "")).strip().lower() == lm.label
+                    and abs(_wrap_deg(pan + float(d["bearing_deg"]) - bearing)) <= LOOK_MATCH_DEG]
+            if not seen:
+                continue
+            at = min(seen, key=abs)
+            off = abs(at)
             belief = lm.belief
             have = looks.get(lm.id)
             if have is not None and (belief, -off) <= (have["belief"], -have["off"]):
@@ -3023,7 +3038,7 @@ class MissionRunner:
                         continue
                     del looks[least]
             looks[lm.id] = {"image_base64": image, "belief": belief, "off": off,
-                            "box": _look_box(_wrap_deg(bearing - pan), dist, fov)}
+                            "box": _look_box(at, dist, fov)}
 
     def _finish_saw(self, outcome: str, note: str) -> None:
         """3.162: what the mission saw, handed once to `saw_sink`. Here because

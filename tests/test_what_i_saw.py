@@ -128,11 +128,14 @@ def test_the_writer_never_raises_and_never_blocks(tmp_path):
 
 
 def test_frames_stay_local_no_upload_path_reads_the_store():
-    """W6: only this module (and its tests and the twin's) name the store; the
-    inventory's S3 copy (control/inventory_store.py) carries no image."""
+    """W6: only this module, the brain's routes and hook (3.162.C) and their
+    tests name the store; the inventory's S3 copy
+    (control/inventory_store.py) carries no image."""
     out = subprocess.run(["git", "grep", "--untracked", "-l", "-e", "what_i_saw", "-e", "WHAT_I_SAW_DIR",
                           "--", "*.py"], cwd=ROOT, capture_output=True, text=True).stdout.split()
-    assert sorted(out) == ["brain/what_i_saw.py", "tests/test_ui_what_i_saw.py", "tests/test_what_i_saw.py"]
+    assert sorted(out) == ["brain/what_i_saw.py", "control/brain_server.py", "control/mission_runner.py",
+                           "tests/test_ui_what_i_saw.py", "tests/test_what_i_saw.py",
+                           "tests/test_what_i_saw_live.py", "tests/test_what_i_saw_sweep.py"]
     assert "jpeg" not in (ROOT / "control" / "inventory_store.py").read_text().lower()
 
 
