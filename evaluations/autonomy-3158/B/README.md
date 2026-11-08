@@ -22,8 +22,8 @@
   eight are furniture, so C1 here is easier than C's rule intends.
 * **C1's denominator is the 26 present finds:** A's "(>= 24 of 30)" assumes 30
   present; the protocol's 30 finds include 4 absent. 80% of 26 is 21.
-* **Truth.** `found` is right when the robot ends within 0.9 m of a cell of
-  that object (3.80.G2). C7: `tests/footprint_sweep.py`'s chassis under 1.0 cm
+* **Truth.** `found` is right when the robot, as it reports `found`, is
+  within 0.9 m of the centre of a cell of that object (3.80.G2). C7: `tests/footprint_sweep.py`'s chassis under 1.0 cm
   of a wall or object, one contact per unbroken touch, sampled at 2 Hz (a
   shorter touch is unseen). C8: `tests/drop_sweep.py`'s `drop_truth`. C10:
   `return` docked and the true pose within 0.10 m / 10 deg of that mission's
@@ -40,3 +40,7 @@
   fall (A's D5, D7, D2); the rows say which.
 * **Harness shakedown:** before the first counted mission, one find to a scratch
   file. Not counted, and not in this directory.
+* **Restart before any row:** the first start was stopped while still queued for
+  the lock (no mission ran) when review found the stand-in's box scaled for the
+  wrong frame size, and the harness scoring `found` at the dock after the drive
+  home. Fixed before mission 0.

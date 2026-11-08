@@ -15,6 +15,8 @@ robot back). Exit 0: the schedule is finished; 3: run another batch.
 """
 
 import argparse
+import base64
+import io
 import json
 import math
 import os
@@ -26,6 +28,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import httpx
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
@@ -69,7 +72,11 @@ ROBOT = None
 
 def seen(target):
     """The target in the simulator's report now: (bearing_deg or None)."""
-    for d in httpx.get(f"http://127.0.0.1:{de.ROBOT}/frame", timeout=10).json().get("detections") or ():
+    try:
+        report = httpx.get(f"http://127.0.0.1:{de.ROBOT}/frame", timeout=10).json().get("detections") or ()
+    except (httpx.HTTPError, ValueError):
+        return None                    # a stand-in's hiccup is not a local-tier fault
+    for d in report:
         if target.lower() in str(d.get("label", "")).lower():
             return float(d.get("bearing_deg") or 0.0)
     return None
@@ -102,7 +109,7 @@ class Standins(BaseHTTPRequestHandler):
             b = seen(req.get("target") or "")
             if b is None:
                 return self._send({"status": "answered", "score": 0.0, "parsed": True, "box": None, "ms": 1.0})
-            w, h = model_size(640, 480)
+            w, h = model_size(*Image.open(io.BytesIO(base64.b64decode(req["image_b64"]))).size)
             x = b / HFOV + 0.5
             return self._send({"status": "answered", "score": 0.95, "parsed": True, "ms": 1.0,
                                "box": [max(0.0, (x - 0.02) * w), 0.4 * h, min(w, (x + 0.02) * w), 0.6 * h]
@@ -180,8 +187,9 @@ def mission(robot, brain, house, m):
         time.sleep(3)
     if r.status_code != 200:
         return {"start": r.status_code, "detail": r.text[:300]}
+    Standins.calls.update(local=0, cloud=0)
     tr, t0, s, vmin = Truth(house, robot), time.time(), {}, math.inf
-    start, pose = None, None
+    start, pose, found_m = None, None, None
     v0 = volts(robot)
     while time.time() - t0 < limit + OVER_S:
         pose = tr.sample()
@@ -189,11 +197,20 @@ def mission(robot, brain, house, m):
         v = volts(robot)
         vmin = min(vmin, v if v is not None else math.inf)
         s = brain.get("/mission/status").json()
+        if found_m is None and m.get("target") and (
+                s.get("outcome") == "found" or (s.get("return") or {}).get("after") == "found"):
+            # Where it reported `found`, before the drive home moves it.
+            found_m = target_m(pose, tr.world, m["target"])
         if not s.get("running") and s.get("outcome") not in (None, "idle", "running"):
             break
         time.sleep(0.5)
     else:
         brain.post("/mission/stop")
+        for _ in range(60):
+            s = brain.get("/mission/status").json()
+            if not s.get("running"):
+                break
+            time.sleep(0.5)
     secs = round(time.time() - t0)
     pose = tr.sample()
     err = math.hypot(pose["x_m"] - start["x_m"], pose["y_m"] - start["y_m"])
@@ -207,6 +224,7 @@ def mission(robot, brain, house, m):
             "ret_reason": ret.get("reason"), "ret_seconds": ret.get("elapsed_s"),
             "dock_err_m": round(err, 3), "dock_err_deg": round(deg, 1),
             "docked": ret.get("state") == "docked" and err <= DOCK_M and deg <= DOCK_DEG,
+            "found_target_m": None if found_m is None else round(found_m, 2),
             "end_target_m": None if dist is None else round(dist, 2),
             "contacts": tr.contacts, "inside_samples": tr.inside, "samples": tr.samples,
             "min_gap_cm": round(tr.min_gap, 1), "fell": tr.fell, "overhang_cm": tr.overhang,
@@ -249,6 +267,9 @@ def main():
             m = sched[i]
             load = os.getloadavg()[0]
             rec = {"i": i, **m, "load": round(load, 2), **mission(robot, brain, sheet["house"], m)}
+            if "start" in rec:             # never started: not a mission, and not to be skipped
+                print("start refused", rec["start"], rec["detail"], flush=True)
+                return 4
             if m["phase"] == "stretch":
                 rec["stretch_ended"] = bool(not rec.get("docked") or rec.get("outcome") == "failed"
                                             or rec.get("contacts") or rec.get("fell"))
