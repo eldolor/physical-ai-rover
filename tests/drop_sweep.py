@@ -375,7 +375,7 @@ def _vetted_nav_class():
         and the plan avoids every cell whose centre a disc covers, as nav2's
         keepout does. `marked_vetoes` counts the drop refusal episodes that
         begin with a disc within MARKED_NEAR_M. Off by default: the mark is
-        held back until 3.159.B3 (the robot server does not mark)."""
+        held back (3.159.B3 missed its bar too; the robot server does not mark)."""
 
         MARKED_NEAR_M = 0.80
 

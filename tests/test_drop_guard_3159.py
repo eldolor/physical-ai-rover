@@ -344,11 +344,26 @@ def test_samples_past_the_link_distance_are_two_lips():
     assert len(drop_guard._lines([(30.0, 0.0), (30.0, far / 2), (30.0, far)])) == 1
 
 
-def test_a_line_through_the_outline_is_a_gap_of_nothing():
-    """No endpoint inside, none near a corner: it still crosses the body."""
+def test_a_segment_cutting_a_corner_is_a_gap_of_nothing():
+    """Both ends outside the outline (B3 review: the first version's were
+    inside, so the crossing went untested)."""
     g = _guard_with_lips([])
-    (group,) = drop_guard._lines([(0.0, 16.0), (0.0, 6.0), (0.0, -3.0), (0.0, -12.0)])
-    assert g._line_gap(group, 1.0, 0.0) == 0.0
+    (line,) = drop_guard._lines([(14.0, 13.0), (20.0, 8.0)])
+    assert g._gap(14.0, 13.0) > 0 and g._gap(20.0, 8.0) > 0
+    assert g._line_gap(line, 1.0, 0.0) == 0.0
+
+
+def test_a_segment_clear_of_the_outline_is_its_distance():
+    g = _guard_with_lips([])
+    (line,) = drop_guard._lines([(30.0, -3.0), (30.0, 3.0)])
+    assert g._line_gap(line, 1.0, 0.0) == pytest.approx(13.0)
+
+
+def test_a_chord_across_a_bend_does_not_excuse_the_turn():
+    """B3 review (Thermos): two real samples outside the outline, their chord
+    clipping a corner, read as a gap of 0, and nothing closes on 0."""
+    g = _guard_with_lips([(14.0, 13.0), (20.0, 8.0)])
+    assert g.pivot_blocked(1.0) == "drop_pivot_edge"
 
 
 def test_only_a_lip_a_disc_already_covers_grows():

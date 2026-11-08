@@ -355,8 +355,8 @@ class DropGuard:
     def pivot_blocked(self, omega_rad_s: float) -> Optional[str]:
         """A turn that would shrink the outline's gap to a remembered lip
         and end under `PIVOT_GAP_CM` (amendment 3: measured on the lip
-        samples, not the 5 cm cells, which refused turns that opened the
-        gap, B's D4). A turn that opens the gap, or keeps it at 8 cm or
+        samples' line (amendment 4), not the 5 cm cells, which refused turns
+        that opened the gap, B's D4). A turn that opens the gap, or keeps it at 8 cm or
         more, is never refused. Unseen floor does not refuse a turn
         (amendment 2): a corner swings at most 5.6 cm past the outline, so
         the worst it can do is overhang, never fall -- and the turn sweep
@@ -375,9 +375,13 @@ class DropGuard:
                 return None
             # Lip by lip: a lip the turn opens, or one already inside the
             # outline, must not excuse another the turn closes; along one
-            # lip a corner sliding by keeps its gap.
+            # lip a corner sliding by keeps its gap, and a part of it may
+            # close only as far as its nearest part already is. Now is
+            # measured without the crossing test: a chord across a bend,
+            # its two samples outside the outline, is not a gap of 0 that
+            # nothing can close on.
             lines = _lines(lips)
-            now = [self._line_gap(line, 1.0, 0.0) for line in lines]
+            now = [self._line_gap(line, 1.0, 0.0, crossing=False) for line in lines]
             for k in range(1, looks + 1):
                 # The body turned by `step` is the lips turned by -step.
                 step = math.radians(math.copysign(reach * k / looks, omega_rad_s))
@@ -388,17 +392,17 @@ class DropGuard:
                         return "drop_pivot_edge"
             return None
 
-    def _line_gap(self, line: list, c: float, s: float) -> float:
+    def _line_gap(self, line: list, c: float, s: float, crossing: bool = True) -> float:
         """The outline's distance from a lip's segments (`_lines`), the lip
         turned by the rotation (c, s) about the centre."""
         return min(self._segment_gap(a0 * c + l0 * s, -a0 * s + l0 * c,
-                                     a1 * c + l1 * s, -a1 * s + l1 * c)
+                                     a1 * c + l1 * s, -a1 * s + l1 * c, crossing)
                    for a0, l0, a1, l1 in line)
 
-    def _segment_gap(self, a0, l0, a1, l1) -> float:
-        """A body-frame segment's distance from the chassis outline: 0 if it
-        crosses it, else at a segment's end or an outline corner."""
-        if _crosses_box(a0, l0, a1, l1, self.half_len, self.half_wid):
+    def _segment_gap(self, a0, l0, a1, l1, crossing: bool = True) -> float:
+        """A body-frame segment's distance from the chassis outline, at a
+        segment's end or an outline corner; `crossing`: 0 if it crosses."""
+        if crossing and _crosses_box(a0, l0, a1, l1, self.half_len, self.half_wid):
             return 0.0
         corners = [(sa * self.half_len, sl * self.half_wid) for sa in (-1, 1) for sl in (-1, 1)]
         return min(self._gap(a0, l0), self._gap(a1, l1),
@@ -507,7 +511,7 @@ def to_house(x_m: float, y_m: float, heading_deg: float, along_cm: float, lat_cm
 
 class DropMarks:
     """3.159.B2: the drop discs nav2 must plan around, in the house frame.
-    Held back until 3.159.B3: the robot server does not send them
+    Held back (3.159.B3 missed its bar too): the robot server does not send them
     (`evaluations/drop-3159/mark-held.patch` is the wiring); the sweep
     harness's `missions-marked` uses this book.
     One per `MARK_STEP_M` grid square of lip (at its first lip point), at
