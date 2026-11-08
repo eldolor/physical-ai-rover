@@ -311,3 +311,51 @@ def test_an_old_disc_the_robot_now_stands_in_is_not_sent():
     marks = drop_guard.DropMarks()
     marks.add(0.0, [(2.0, 1.0)], at=(1.0, 1.0))
     assert marks.spots(0.0) and not marks.spots(0.0, at=(2.0, 1.1))
+
+
+@pytest.mark.parametrize("row", [43, 72, 105, 126, 148, 151, 165, 170])
+def test_a_turn_away_from_a_lip_between_its_samples_is_never_refused(row):
+    """3.159.B3 (amendment 4): B2's sweep refused these; each was one lip,
+    its samples sparse enough that a turn opening the gap neared the next."""
+    from tests import drop_sweep as ds
+    out = ds.turn_run(ds.turn_args(300)[row])
+    assert out["away"] and not out["refused_first"], out
+
+
+def _guard_with_lips(points):
+    g = drop_guard.DropGuard(17.0, 11.55, 0.0)
+    g.active, g._pose = True, (0.0, 0.0, 0.0, 0.0)
+    for x, y in points:
+        g._mark(x, y, drop_guard.EDGE, 0.0, lip=True)
+    return g
+
+
+def test_a_straight_lip_is_measured_between_its_samples():
+    """A corner off a lip's midpoint: the gap is to the line, not to the
+    two samples 8 cm either side of it."""
+    g = _guard_with_lips([])
+    (group,) = drop_guard._lines([(17.0 + 4.0, 11.55 + 2.0), (17.0 - 4.0, 11.55 + 2.0)])
+    assert g._line_gap(group, 1.0, 0.0) == pytest.approx(2.0)
+
+
+def test_samples_past_the_link_distance_are_two_lips():
+    far = drop_guard.LIP_LINK_CM + 1.0
+    assert len(drop_guard._lines([(30.0, 0.0), (30.0, far)])) == 2
+    assert len(drop_guard._lines([(30.0, 0.0), (30.0, far / 2), (30.0, far)])) == 1
+
+
+def test_a_line_through_the_outline_is_a_gap_of_nothing():
+    """No endpoint inside, none near a corner: it still crosses the body."""
+    g = _guard_with_lips([])
+    (group,) = drop_guard._lines([(0.0, 16.0), (0.0, 6.0), (0.0, -3.0), (0.0, -12.0)])
+    assert g._line_gap(group, 1.0, 0.0) == 0.0
+
+
+def test_only_a_lip_a_disc_already_covers_grows():
+    """Amendment 4: the next piece of a marked lip is marked as it is seen;
+    a lip across the room waits for a refusal of its own."""
+    m = drop_guard.DropMarks()
+    m.add(0.0, [(1.0, 1.0)])
+    chain = [(1.0 + 0.09 * k, 1.0) for k in range(1, 10)]     # runs well past the disc
+    other = [(5.0, 5.0)]
+    assert sorted(m.on_marked(chain + other)) == sorted(chain)

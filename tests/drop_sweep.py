@@ -390,13 +390,16 @@ def _vetted_nav_class():
             self.in_veto = False
             self.covered = set()
 
-        def _mark(self):
-            """As the robot server's `mark_drop`, at the true pose."""
+        def _mark(self, grow=False):
+            """As the robot server's `mark_drop`, at the true pose. `grow`:
+            only the lips a disc already covers (amendment 4)."""
             g = self.grid
             lips = self.safety._drop_guard().lips()
             heading = math.degrees(g.theta) + 90.0
-            if self.marks.add(0.0, [drop_guard.to_house(g.x * 0.3, g.y * 0.3, heading, a, l)
-                                    for a, l in lips], at=(g.x * 0.3, g.y * 0.3)):
+            points = [drop_guard.to_house(g.x * 0.3, g.y * 0.3, heading, a, l) for a, l in lips]
+            if grow:
+                points = self.marks.on_marked(points)
+            if self.marks.add(0.0, points, at=(g.x * 0.3, g.y * 0.3)):
                 spots = self.marks.spots(0.0)
                 h, w = len(g.layout), len(g.layout[0])
                 self.covered = {(i, j) for j in range(h) for i in range(w)
@@ -476,6 +479,8 @@ def _vetted_nav_class():
                 self.robot.set_wheel_velocity(left, right)
                 self.robot.advance(PERIOD_S)
             self.robot.set_wheel_velocity(0.0, 0.0)
+            if self.marks_on and self.marks.marks:
+                self._mark(grow=True)         # once a poll (1 s), as the server
             self.polls += 1
             moved = math.hypot(g.x - x0, g.y - y0) * 30.0 + abs(g.theta - th0) * 10.0
             self.stuck = self.stuck + 1 if moved < 1.0 else 0
