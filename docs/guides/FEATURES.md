@@ -919,10 +919,11 @@ every room the robot reads is called by the person's name: a survey asks
 the cloud nothing about a named room. With no saved map yet the panel says
 "Survey first". Screenshots: `docs/evaluations/twin-3.160-*.png`.
 
-**What it saw** (3.162; shown once the autopilot keeps reports, 3.162.C).
+**What it saw** (3.162).
 After a mission ends, Home shows the picture the robot judged to be the
-target, under the one-sentence card: one tap opens it full size with the
-box it judged drawn on it, and says whether the identity was confirmed.
+target, under the one-sentence card: one tap opens it full size and says
+whether the identity was confirmed. No box is drawn on that picture: the
+report's `box` is `null` today, because perception's report does not expose it.
 "What it saw" lists each thing it placed on the map, with a small picture
 and the room (a person's room names where given); a tap opens the picture.
 "Delete these pictures" (two taps) removes that mission's pictures from the
