@@ -559,7 +559,8 @@ Wait. Do not cut power to hurry it.
 ### U10. Take the Jetson out
 
 Do, all power off:
-1. Ribbon off the 40-pin header. Pull it straight, never at an angle.
+1. The 10-wire cable's 2x5 end off the Jetson. Pull it straight, never at an
+   angle.
 2. DC5525 lead out of the Jetson's barrel jack. The lead stays with the car.
 3. The three USB leads out of the Jetson: driver board, USB camera, OAK-D Lite.
 4. Ethernet out.
