@@ -287,6 +287,7 @@ paragraph.**
   `watchdog.trip` (a brain silent for 0.8 x `tick_timeout_s` mid-mission, kept
   until the next Start); live 30/30 hangs, 0 trips in 20 ends. The twin's rows
   are not yet deployed.
+* 3.170: Settings' Shut down (`POST /power/shutdown`: a person's Stop, then 3.137's power-off, once; 403 with no secret wherever it could really power off); stub only so far, 3.137.C owes the polkit rule and `shutdown_steps`; not deployed.
 * 3.82, 3.84, 3.86, 3.97, 3.104: a person's Stop latches the brain out
   until a mission starts (`POST /autonomy/resume`); a person's move ends a
   nav2 goal under every drive; a Stop during the arrival's confirmation

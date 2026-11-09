@@ -1,0 +1,50 @@
+{"crit": 3, "how": "burst_and_retry", "started": 1, "retry": false, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "burst_and_retry", "started": 1, "retry": false, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "burst_and_retry", "started": 1, "retry": false, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "burst_and_retry", "started": 1, "retry": false, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "burst_and_retry", "started": 1, "retry": false, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "burst_and_retry", "started": 1, "retry": false, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "burst_and_retry", "started": 1, "retry": false, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "burst_and_retry", "started": 1, "retry": false, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "burst_and_retry", "started": 1, "retry": false, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "burst_and_retry", "started": 1, "retry": false, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "ladder_during", "started": true, "ladder_during_run": true, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "ladder_during", "started": true, "ladder_during_run": true, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "ladder_during", "started": true, "ladder_during_run": true, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "ladder_during", "started": true, "ladder_during_run": true, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "ladder_during", "started": true, "ladder_during_run": true, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "ladder_during", "started": true, "ladder_during_run": true, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "ladder_during", "started": true, "ladder_during_run": true, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "ladder_during", "started": true, "ladder_during_run": true, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "ladder_during", "started": true, "ladder_during_run": true, "poweroff_ran": 1, "ok": true}
+{"crit": 3, "how": "ladder_during", "started": true, "ladder_during_run": true, "poweroff_ran": 1, "ok": true}
+{"crit": 4, "how": "mid_mission", "outcome": "cancelled", "steps": 3, "marks": ["brain", "poweroff"], "still": true, "phase": "powering_off", "ok": true}
+{"crit": 4, "how": "mid_mission", "outcome": "cancelled", "steps": 3, "marks": ["brain", "poweroff"], "still": true, "phase": "powering_off", "ok": true}
+{"crit": 4, "how": "mid_mission", "outcome": "cancelled", "steps": 3, "marks": ["brain", "poweroff"], "still": true, "phase": "powering_off", "ok": true}
+{"crit": 4, "how": "mid_mission", "outcome": "cancelled", "steps": 3, "marks": ["brain", "poweroff"], "still": true, "phase": "powering_off", "ok": true}
+{"crit": 4, "how": "mid_mission", "outcome": "cancelled", "steps": 3, "marks": ["brain", "poweroff"], "still": true, "phase": "powering_off", "ok": true}
+{"crit": 4, "how": "mid_mission", "outcome": "cancelled", "steps": 3, "marks": ["brain", "poweroff"], "still": true, "phase": "powering_off", "ok": true}
+{"crit": 4, "how": "mid_mission", "outcome": "cancelled", "steps": 3, "marks": ["brain", "poweroff"], "still": true, "phase": "powering_off", "ok": true}
+{"crit": 4, "how": "mid_mission", "outcome": "cancelled", "steps": 3, "marks": ["brain", "poweroff"], "still": true, "phase": "powering_off", "ok": true}
+{"crit": 4, "how": "mid_mission", "outcome": "cancelled", "steps": 3, "marks": ["brain", "poweroff"], "still": true, "phase": "powering_off", "ok": true}
+{"crit": 4, "how": "mid_mission", "outcome": "cancelled", "steps": 3, "marks": ["brain", "poweroff"], "still": true, "phase": "powering_off", "ok": true}
+{"crit": 4, "how": "brain_down", "status": 200, "brain_rc": [1], "marks": ["poweroff"], "ok": true}
+{"crit": 4, "how": "brain_down", "status": 200, "brain_rc": [1], "marks": ["poweroff"], "ok": true}
+{"crit": 4, "how": "brain_down", "status": 200, "brain_rc": [1], "marks": ["poweroff"], "ok": true}
+{"crit": 4, "how": "brain_down", "status": 200, "brain_rc": [1], "marks": ["poweroff"], "ok": true}
+{"crit": 4, "how": "brain_down", "status": 200, "brain_rc": [1], "marks": ["poweroff"], "ok": true}
+{"crit": 4, "how": "brain_down", "status": 200, "brain_rc": [1], "marks": ["poweroff"], "ok": true}
+{"crit": 4, "how": "brain_down", "status": 200, "brain_rc": [1], "marks": ["poweroff"], "ok": true}
+{"crit": 4, "how": "brain_down", "status": 200, "brain_rc": [1], "marks": ["poweroff"], "ok": true}
+{"crit": 4, "how": "brain_down", "status": 200, "brain_rc": [1], "marks": ["poweroff"], "ok": true}
+{"crit": 4, "how": "brain_down", "status": 200, "brain_rc": [1], "marks": ["poweroff"], "ok": true}
+{"crit": 7, "how": "phases", "idle": null, "wrong_secret": 401, "phase": "powering_off", "gone": true, "marks": ["poweroff"], "ok": true}
+{"crit": 7, "how": "phases", "idle": null, "wrong_secret": 401, "phase": "powering_off", "gone": true, "marks": ["poweroff"], "ok": true}
+{"crit": 7, "how": "phases", "idle": null, "wrong_secret": 401, "phase": "powering_off", "gone": true, "marks": ["poweroff"], "ok": true}
+{"crit": 7, "how": "phases", "idle": null, "wrong_secret": 401, "phase": "powering_off", "gone": true, "marks": ["poweroff"], "ok": true}
+{"crit": 7, "how": "phases", "idle": null, "wrong_secret": 401, "phase": "powering_off", "gone": true, "marks": ["poweroff"], "ok": true}
+{"crit": 7, "how": "phases", "idle": null, "wrong_secret": 401, "phase": "powering_off", "gone": true, "marks": ["poweroff"], "ok": true}
+{"crit": 7, "how": "phases", "idle": null, "wrong_secret": 401, "phase": "powering_off", "gone": true, "marks": ["poweroff"], "ok": true}
+{"crit": 7, "how": "phases", "idle": null, "wrong_secret": 401, "phase": "powering_off", "gone": true, "marks": ["poweroff"], "ok": true}
+{"crit": 7, "how": "phases", "idle": null, "wrong_secret": 401, "phase": "powering_off", "gone": true, "marks": ["poweroff"], "ok": true}
+{"crit": 7, "how": "phases", "idle": null, "wrong_secret": 401, "phase": "powering_off", "gone": true, "marks": ["poweroff"], "ok": true}

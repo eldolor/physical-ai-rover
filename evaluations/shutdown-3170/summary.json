@@ -1,0 +1,29 @@
+{
+ "c3:burst_and_retry": {
+  "n": 10,
+  "ok": 10,
+  "outcomes": {}
+ },
+ "c3:ladder_during": {
+  "n": 10,
+  "ok": 10,
+  "outcomes": {}
+ },
+ "c4:mid_mission": {
+  "n": 10,
+  "ok": 10,
+  "outcomes": {
+   "cancelled": 10
+  }
+ },
+ "c4:brain_down": {
+  "n": 10,
+  "ok": 10,
+  "outcomes": {}
+ },
+ "c7:phases": {
+  "n": 10,
+  "ok": 10,
+  "outcomes": {}
+ }
+}
