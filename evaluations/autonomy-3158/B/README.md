@@ -44,3 +44,12 @@
   the lock (no mission ran) when review found the stand-in's box scaled for the
   wrong frame size, and the harness scoring `found` at the dock after the drive
   home. Fixed before mission 0.
+* **Mission 11 ran twice; one row.** The kill of a batch on 11-08 cut mission 11 (a
+  survey) off with no row; it re-ran on 11-09 in a new stack and that run is its row.
+  The cut-off run is not counted, and the harness' resume did not drop a row.
+* **Stacks.** The 45 ran in 11 stacks (the batch rule, and a stack ended after each
+  mission off the dock). The stretch (35-44) ran in 3 of them, so a fresh robot server
+  sat between its missions, which D's "no harness action" does not allow on the car.
+  Its missions total 2.97 h; D's 4 hours is not in B's protocol.
+* **Results:** `score.py`, `DIAGNOSIS.md`; `rows.jsonl` is the row record. Volume
+  `picar-maps-3158` removed after scoring (2026-11-09).
