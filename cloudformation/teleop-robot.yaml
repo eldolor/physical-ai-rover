@@ -322,6 +322,8 @@ Resources:
             - /teleop-robot/twin.css
             # 3.132 Stage 2A: the page's words, loaded before app.js.
             - /teleop-robot/strings.js
+            # 3.170: a person's clean shutdown.
+            - /teleop-robot/power/shutdown
       Actions:
         - Type: forward
           TargetGroupArn: !Ref AlbTargetGroup
