@@ -175,4 +175,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.169](3.169-rover-arrival-runbook.md) | The hands-on runbook for the Rover's arrival |
 | [3.170](3.170-twin-shutdown-button.md) | A Shut down button on the twin: a clean power-off before the Rover's hard power button |
 | [3.171](3.171-small-stop-defects.md) | Three recorded defects: a local brain at Power-off, a lost final stop, the found frame's box |
+| [3.172](3.172-autonomy-rehearsal-fixes.md) | Rehearsal fixes: leave the trap, come home, drop stalled goals, go to what is remembered, end a survey |
 <!-- /sections -->
