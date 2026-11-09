@@ -305,3 +305,27 @@ def test_a_refusal_before_the_goal_does_not_count_against_the_turns_after():
     _until(trip, lambda: len(safety.asked) >= 2)
     trip.step()
     assert nav.sent == 2 and trip.refused == 0
+
+
+def test_a_goal_refused_just_after_a_move_is_not_nav2_being_away():
+    """A6, live: the creep made the brain the driver, the next goal came back
+    `preempted`, and the 30 s measured from the start of the return had run
+    out, so the return ended `skipped` a body length from the find."""
+    nav, safety = _Nav(), _Safety()
+    trip, clock = _trip(nav, safety, lambda: _STILL)
+    trip.step()                                     # goal accepted
+    clock.t += dock.RETURN_WAIT_S + 5.0
+    nav.goal = {"state": "aborted"}
+    trip.step()                                     # back-off refused, creep queued
+    trip.step()                                     # the creep
+    accept, refusals = nav.set_goal, [0]
+
+    def refused_then_taken(x, y):
+        if refusals[0] < 3:
+            refusals[0] += 1
+            return {"accepted": False, "reason": "preempted"}
+        return accept(x, y)
+    nav.set_goal = refused_then_taken
+    for _ in range(4):
+        assert trip.step() is None
+    assert nav.sent == 2

@@ -312,6 +312,7 @@ class ReturnTrip:
         self._moves = []                # 3.172: "back" or "nudge", one a step
         self._nudged = []               # where each creep was made from
         self._holds = 0                 # polls in a row the cancelled goal held a move
+        self._wait_from = self.t0       # 3.172: when this wait for nav2 to take a goal began
         self._still = None              # (xy, t) the pose last moved from
         self._stuck_at = None           # where the current run of stalls began
         self.stuck_rounds = 0
@@ -367,10 +368,10 @@ class ReturnTrip:
             self.goal_id = reply.get("goal_id")
             self.state, self.goal_sent_at = "driving", self.clock()
             # 3.172: this goal's own stall clock; a refusal before it says nothing of the turns after.
-            self._still, self.refused = None, 0
+            self._still, self.refused, self._holds, self._wait_from = None, 0, 0, self.clock()
             self.log.append(f"goal to ({self.target[0]:.2f}, {self.target[1]:.2f}) accepted")
             return None
-        if self.clock() - self.t0 >= self.wait_s:
+        if self.clock() - self._wait_from >= self.wait_s:
             return SKIPPED, f"no_nav2: goal not taken in {self.wait_s:.0f} s ({reply.get('reason')})"
         if self.idle is not None:
             self.idle(GOAL_RETRY_S)
@@ -416,6 +417,9 @@ class ReturnTrip:
         person's preemption and not a refusal; the move is queued again, for a while."""
         from brain.explore import is_own_goal_refusal
         from robot.interface import Preempted
+        # After a verb the brain holds the robot until it lapses, so nav2's
+        # next goal can come back `preempted`: that wait starts here (A6, live).
+        self._wait_from = self.clock()
         try:
             self._act(action, **kw)
         except Preempted as e:
