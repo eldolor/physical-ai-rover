@@ -374,8 +374,11 @@ is a refusal and never a B3.2 vision failure three ticks in.
 Every terminal path is `_finish(outcome, note)`, which since 3.156 decides
 first whether the robot goes home, then `_end(outcome, note)`: set
 not-running (closing the gate), record the outcome (first one wins),
-`_safe_stop()` (logs, never raises), `vision_fn.close()` if present, then
-ship one metrics row if `metrics_url` is set (kept as `_metrics_row`).
+`_safe_stop()` (logs, never raises), `_close_mission()` (3.171: the Start's
+`mission_id`, read when the runner is built, sent to the robot server on a daemon
+thread; a lost final stop is then no false watchdog trip), `vision_fn.close()` if
+present, then ship one metrics row if `metrics_url` is set (kept as
+`_metrics_row`).
 
 ### The return to the dock (3.156.B)
 

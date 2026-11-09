@@ -194,6 +194,11 @@ class RelatchRequest(BaseModel):
     by: str
 
 
+class MissionClosedRequest(BaseModel):
+    """3.171: which Start's mission is over (`/autonomy/resume`'s `mission_id`)."""
+    mission_id: int
+
+
 class TeleopFrameRequest(BaseModel):
     # 3.90 E: bounded, now that the body keeps 16 of them (review): the
     # recording routes' own 4 MB a frame, as base64.
@@ -447,6 +452,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         # `mission_live`), the watchdog's last firing (once per silence) and
         # the last time it caught the brain hung. Guarded by `goal_gen_lock`.
         "mission": None,
+        "mission_starts": 0,    # 3.171: each Start's `mission_id`
         "last_fired": None,
         "watchdog_trip": None,
         # 3.18 part 2: the wheel loop's own timing, while the wheels turn.
@@ -1658,12 +1664,13 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 # nav2 still driving a goal a stop is ending: a zero command.
                 # 3.137: or the battery ladder refuses autonomy.
                 req = WheelsRequest(left_rad_s=0.0, right_rad_s=0.0)
-            elif batt["requested"] and not is_autonomy(driver) and (req.left_rad_s or req.right_rad_s):
-                return battery_refusal(driver)      # 3.170: a person, or a local brain
-            elif driver_priority(driver) == DRIVER_MANUAL and (req.left_rad_s or req.right_rad_s):
-                if ladder.level == POWEROFF:
-                    return battery_refusal(driver)
-                if ladder.level == RESERVE:
+            elif not is_autonomy(driver) and (req.left_rad_s or req.right_rad_s):
+                # 3.137, 3.170, 3.171: a person or a local brain; the brain's
+                # own refusal is below, with its latch.
+                refused = battery_refusal(driver)
+                if refused:
+                    return refused
+                if driver_priority(driver) == DRIVER_MANUAL and ladder.level == RESERVE:
                     # A person drives on at Reserve, slowly (the user's call).
                     k = battery_cfg["reserve_speed"] / 100.0
                     req = WheelsRequest(left_rad_s=req.left_rad_s * k,
@@ -1709,6 +1716,11 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                                  or battery_refusal(driver))
             if refused:
                 return lapse_refused_claim(driver, refused, now)
+            # 3.171: a level latched since the arrival check moves nothing.
+            refused = (not brain and driver != DRIVER_ROS and (req.left_rad_s or req.right_rad_s)
+                       and battery_refusal(driver))
+            if refused:
+                return refused
             if driver == DRIVER_ROS and (ros_battery_hold() if by_velocity
                                          else battery_refusal(driver, record=False)):
                 req = WheelsRequest(left_rad_s=0.0, right_rad_s=0.0)   # 3.137, at execution
@@ -1931,7 +1943,8 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         next drives."""
         driver = (x_driver or "").strip() or DRIVER_UNKNOWN
         if batt["requested"]:      # 3.170: a Start cannot undo a shutdown's Stop
-            return {"resumed": False, "driver": driver, "stopped_by": None}
+            return {"resumed": False, "driver": driver, "stopped_by": None, "mission_id": None}
+        mission_id = None
         with goal_gen_lock:
             was = goal_stop["autonomy_stopped"]
             goal_stop["autonomy_stopped"] = None
@@ -1939,13 +1952,31 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             # a lapse as a lapse (not as a person's Stop by `brain`).
             goal_stop["resumed_from"] = was
             if is_autonomy(driver):     # 3.164: a Start: the last trip was the last mission's
+                state["mission_starts"] += 1
+                mission_id = state["mission_starts"]
                 state["mission"] = {"by": driver, "open": True, "moved_at": None,
-                                    "stopped_at": None, "heard_at": 0.0}
+                                    "stopped_at": None, "heard_at": 0.0, "id": mission_id}
                 state["watchdog_trip"] = None
         if was is not None:
             logger.info(f"autonomy resumed by {driver} (stopped by {was['by']})")
         return {"resumed": was is not None, "driver": driver,
-                "stopped_by": was["by"] if was is not None else None}
+                "stopped_by": was["by"] if was is not None else None,
+                "mission_id": mission_id}
+
+    @app.post(prefix + "/autonomy/mission-closed", dependencies=[Depends(require_secret_on_loop)])
+    async def autonomy_mission_closed(req: MissionClosedRequest, x_driver: str = Header(default="")):
+        """3.171: the brain says its mission is over, so a final `/stop` lost
+        on the way is no hung brain. Reports only: no wheel, latch, lease,
+        authority or watchdog clock, and a trip already recorded stays. Only
+        the open mission's own driver, by that Start's id, so a late close
+        never ends the next mission. On the event loop: nothing here waits."""
+        driver = (x_driver or "").strip() or DRIVER_UNKNOWN
+        with goal_gen_lock:
+            m = state["mission"]
+            closed = bool(m and m["open"] and m["by"] == driver and m["id"] == req.mission_id)
+            if closed:
+                m["open"] = False
+        return {"closed": closed, "driver": driver}
 
     @app.post(prefix + "/autonomy/heartbeat", dependencies=[Depends(require_secret_on_loop)])
     async def autonomy_heartbeat(x_driver: str = Header(default=""),

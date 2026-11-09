@@ -16,13 +16,18 @@ import json
 import os
 import subprocess
 import sys
+import threading
 import time
 
 import httpx
 import pytest
 import yaml
 
+from control import remote_robot
 from control.health import check_robot
+from control.mission_runner import MissionRunner
+from control.remote_robot import RemoteRobot, RobotTransportError
+from control.remote_world import RemoteWorld
 from robot import server
 from robot.safety import SafetyController
 from tests.conftest import REPO_ROOT, SERVER_START_TIMEOUT_S, asgi_client, free_port
@@ -302,3 +307,227 @@ def test_health_describes_the_new_fields_and_never_judges_them(url):
     assert report["description"]["watchdog"]["trip"]["how"] == "silence", report
     assert report["description"]["last_stop_reason"] is not None
     assert report["problems"] == [] and report["status"] == "ok", report
+
+
+# ---------- 3.171.B: a mission's explicit close ----------
+
+# Criterion 1's 10 of 10 is one run with MISSION_CLOSE_REPEATS=10 (amendment,
+# 3.171); the suite keeps two.
+CLOSE_REPEATS = int(os.environ.get("MISSION_CLOSE_REPEATS", "2"))
+
+
+def _begin(url, headers=BRAIN):
+    time.sleep(WATCHDOG_S + SLACK_S)
+    r = httpx.post(f"{url}/autonomy/resume", headers=headers)
+    assert r.status_code == 200
+    return r.json()["mission_id"]
+
+
+def _close(url, mission_id, headers=BRAIN):
+    r = httpx.post(f"{url}/autonomy/mission-closed", json={"mission_id": mission_id},
+                   headers=headers)
+    assert r.status_code == 200, r.text
+    return r.json()
+
+
+def test_a_closed_mission_with_no_final_stop_reads_calm(url):
+    mission = _begin(url)
+    assert _move(url)["executed"] is True
+    assert _wd(url)["mission_live"] is True
+    assert _close(url, mission)["closed"] is True
+    time.sleep(TRIP_AFTER_S + SLACK_S)
+    wd = _wd(url)
+    assert wd["mission_live"] is False and wd["trip"] is None, wd
+
+
+def test_a_close_for_an_earlier_mission_leaves_the_next_one_open(url):
+    earlier = _begin(url)
+    current = _begin(url)
+    assert current != earlier
+    assert _move(url)["executed"] is True
+    assert _close(url, earlier)["closed"] is False
+    assert _wd(url)["mission_live"] is True
+    time.sleep(TRIP_AFTER_S + SLACK_S)
+    assert _wd(url)["trip"]["how"] == "silence"
+
+
+def test_another_drivers_close_does_nothing(url):
+    mission = _begin(url)
+    assert _move(url)["executed"] is True
+    for headers in (PERSON, {"x-driver": "teleop"}):
+        assert _close(url, mission, headers)["closed"] is False
+    assert _wd(url)["mission_live"] is True
+    _stop(url)
+
+
+def test_a_close_keeps_a_trip_already_recorded(url):
+    mission = _begin(url)
+    assert _move(url)["executed"] is True
+    time.sleep(TRIP_AFTER_S + SLACK_S)
+    assert _wd(url)["trip"] is not None
+    assert _close(url, mission)["closed"] is True
+    assert _wd(url)["trip"] is not None, "a close erased a hang"
+
+
+def test_a_close_only_reports(monkeypatch):
+    """No wheel, no stop, no latch lifted, no authority taken."""
+    monkeypatch.delenv("APP_SHARED_SECRET", raising=False)
+    app = server.create_app()
+    body = app.state.battery["robot"]
+    moved = []
+    monkeypatch.setattr(body, "set_wheel_velocity", lambda *a: moved.append(a))
+    with asgi_client(app) as client:
+        mission = client.post("/autonomy/resume", headers=BRAIN).json()["mission_id"]
+        client.post("/stop", headers=PERSON)
+        latched = client.post("/action", json={"action": "FORWARD"}, headers=BRAIN).json()
+        assert latched["reason"] == "person_stop", latched
+        stops = body.stop_count
+        before = client.get("/health").json()
+        client.post("/autonomy/mission-closed", json={"mission_id": mission}, headers=BRAIN)
+        after = client.get("/health").json()
+        assert client.post("/action", json={"action": "FORWARD"},
+                           headers=BRAIN).json()["reason"] == "person_stop"
+    assert body.stop_count == stops and moved == []
+    assert (before["last_stop_reason"]["reason"], before["last_stop_reason"]["driver"]) == (
+        after["last_stop_reason"]["reason"], after["last_stop_reason"]["driver"])
+
+
+def _mission(url, robot):
+    runner = MissionRunner(robot, target_object="red backpack", max_steps=400,
+                           world=RemoteWorld(url))
+    runner.start()
+    for _ in range(40):
+        assert runner.tick(), runner.status()
+        if _wd(url)["mission_live"]:
+            return runner
+    raise AssertionError("the mission never moved")
+
+
+class LosesItsFinalStop(RemoteRobot):
+    lose = False
+
+    def stop(self):
+        if self.lose:
+            raise RobotTransportError("POST /stop failed: connection reset")
+        return super().stop()
+
+
+def test_a_lost_final_stop_is_no_false_trip(url):
+    """The defect, through `MissionRunner` over `RemoteRobot`."""
+    for _ in range(CLOSE_REPEATS):
+        time.sleep(WATCHDOG_S + SLACK_S)
+        robot = LosesItsFinalStop(url)
+        robot.resume_autonomy()
+        runner = _mission(url, robot)
+        robot.lose = True
+        runner.stop("the test's end")
+        assert runner.status()["step"] > 0, runner.status()
+        time.sleep(TRIP_AFTER_S + SLACK_S)
+        wd = _wd(url)
+        assert wd["mission_live"] is False and wd["trip"] is None, wd
+
+
+def _counting_robot(answers):
+    """A RemoteRobot over a server that answers `/autonomy/mission-closed`
+    from `answers` (a status per call; the last repeats)."""
+    calls = []
+
+    def handler(request):
+        if request.url.path != "/autonomy/mission-closed":
+            return httpx.Response(200, json={"resumed": False, "mission_id": 7, "result": {}})
+        calls.append(json.loads(request.content))
+        status = answers[min(len(calls), len(answers)) - 1]
+        if status == "drop":
+            raise httpx.ConnectError("connection reset")
+        return httpx.Response(status, json={"closed": status == 200})
+    return RemoteRobot("http://brain.test",
+                       client=httpx.Client(transport=httpx.MockTransport(handler))), calls
+
+
+@pytest.fixture
+def quick_close(monkeypatch):
+    monkeypatch.setattr(remote_robot, "MISSION_CLOSE_EVERY_S", 0.01)
+    monkeypatch.setattr(remote_robot, "MISSION_CLOSE_RETRY_S", 0.2)
+
+
+def test_a_lost_close_is_sent_again(quick_close):
+    robot, calls = _counting_robot(["drop", 503, 200])
+    robot.close_mission(7)
+    assert calls == [{"mission_id": 7}] * 3
+
+
+def test_a_close_stops_retrying_at_its_window(quick_close):
+    robot, calls = _counting_robot(["drop"])
+    began = time.monotonic()
+    robot.close_mission(7)
+    assert len(calls) > 1 and time.monotonic() - began < 2.0
+
+
+@pytest.mark.parametrize("status", [404, 401])
+def test_a_refused_close_is_one_attempt(quick_close, status):
+    robot, calls = _counting_robot([status])
+    robot.close_mission(7)
+    assert len(calls) == 1
+
+
+def test_a_close_on_a_closed_client_does_not_raise(quick_close):
+    robot, _ = _counting_robot([200])
+    robot._client.close()
+    robot.close_mission(7)
+
+
+def test_a_start_keeps_its_mission_id_and_forgets_the_last_one():
+    robot, _ = _counting_robot([200])
+    robot.resume_autonomy()
+    assert robot.mission_id == 7
+
+    def refused(_request):
+        raise httpx.ConnectError("connection reset")
+    robot._client = httpx.Client(transport=httpx.MockTransport(refused))
+    with pytest.raises(RobotTransportError):
+        robot.resume_autonomy()
+    assert robot.mission_id is None
+
+
+class CountsCloses(RemoteRobot):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.closes = []
+        self.closed = threading.Event()
+
+    def close_mission(self, mission_id):
+        self.closes.append(mission_id)
+        super().close_mission(mission_id)
+        self.closed.set()
+
+
+def test_a_normal_end_sends_exactly_one_close(url):
+    time.sleep(WATCHDOG_S + SLACK_S)
+    robot = CountsCloses(url)
+    robot.resume_autonomy()
+    mission = robot.mission_id
+    runner = _mission(url, robot)
+    runner.stop("the test's end")
+    runner.stop("and again")
+    assert robot.closed.wait(5.0)
+    assert robot.closes == [mission]
+    assert runner.status()["step"] > 0
+    wd = _wd(url)
+    assert wd["mission_live"] is False and wd["trip"] is None, wd
+
+
+def test_a_mission_whose_start_had_no_id_sends_no_close(url):
+    time.sleep(WATCHDOG_S + SLACK_S)
+    robot = CountsCloses(url)
+    runner = _mission_unstarted(url, robot)
+    runner.stop("the test's end")
+    time.sleep(0.2)
+    assert robot.closes == []
+
+
+def _mission_unstarted(url, robot):
+    runner = MissionRunner(robot, target_object="red backpack", max_steps=400,
+                           world=RemoteWorld(url))
+    runner.start()
+    assert runner.tick(), runner.status()
+    return runner

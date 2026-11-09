@@ -36,6 +36,8 @@ Two details are load-bearing for that transparency:
 """
 
 import logging
+import re
+import time
 from typing import Optional
 
 import httpx
@@ -50,6 +52,10 @@ from robot.safety import SafetyViolation
 logger = logging.getLogger("remote_robot")
 
 DEFAULT_TIMEOUT_S = 10.0
+# 3.171: under the robot server's 24 s (0.8 x `tick_timeout_s`) before a
+# silence reads as a hang.
+MISSION_CLOSE_RETRY_S = 20.0
+MISSION_CLOSE_EVERY_S = 2.0
 
 # Phase M4. Every command names its driver so `robot/server.py` can apply a
 # decided priority order rather than letting the last writer win. "brain" is
@@ -92,6 +98,7 @@ class RemoteRobot(RobotInterface):
         # nothing and gets a plain pooled client.
         self._client = client or httpx.Client(base_url=self.base_url, timeout=timeout)
         self._owns_client = client is None
+        self.mission_id: Optional[int] = None   # 3.171: the last Start's
 
     # ---------- driving ----------
 
@@ -114,17 +121,43 @@ class RemoteRobot(RobotInterface):
         body = self._request("POST", "/stop")
         return body.get("result", {})
 
+    def close_mission(self, mission_id: int) -> None:
+        """3.171: tell the robot server this mission is over, so a final
+        `/stop` lost on the way reads as no hung brain. Blocks, so it runs on
+        its own thread. Sent again while the link is down, inside the time
+        the server waits before calling a silence a hang; a 4xx (an older
+        server, a refused secret) is an answer. Reports only, so it logs and
+        never raises."""
+        deadline = time.monotonic() + MISSION_CLOSE_RETRY_S
+        while True:
+            try:
+                self._request("POST", "/autonomy/mission-closed", json={"mission_id": mission_id})
+                return
+            except RobotTransportError as e:
+                if re.search(r"HTTP 4\d\d", str(e)):
+                    logger.info("mission close not taken: %s", e)
+                    return
+                if time.monotonic() + MISSION_CLOSE_EVERY_S > deadline:
+                    logger.warning("mission close never reached the robot server: %s", e)
+                    return
+            except Exception as e:  # noqa: BLE001 -- a closed client, a malformed reply
+                logger.warning("mission close failed: %s", e)
+                return
+            time.sleep(MISSION_CLOSE_EVERY_S)
+
     def resume_autonomy(self) -> Optional[str]:
         """3.84: lift a person's Stop's latch. The brain calls it when a
         mission STARTS, never otherwise. Who set the latch it lifted, else
         None; a robot server older than 3.84 has no such route and nothing
-        to lift."""
+        to lift. 3.171: keeps this Start's `mission_id`."""
+        self.mission_id = None
         try:
             reply = self._request("POST", "/autonomy/resume")
         except RobotTransportError as e:
             if "HTTP 404" in str(e):
                 return None
             raise
+        self.mission_id = reply.get("mission_id")
         if not reply.get("resumed"):
             return None
         return reply.get("stopped_by") or "unknown"

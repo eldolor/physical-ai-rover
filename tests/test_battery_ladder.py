@@ -602,3 +602,107 @@ def test_a_fresh_robot_server_still_refuses_a_start_under_the_floor(served):
     r = brain.post("/mission/start", json={"target_object": "purple elephant",
                                            "policy": "frontier"})
     assert r.status_code == 409 and r.json()["detail"].startswith("battery_low"), r.text
+
+
+# ---------- 3.171.A: a local brain's /wheels, under the ladder ----------
+
+LOCAL = {"x-driver": "twin-local-brain"}
+SPIN = {"left_rad_s": 2.0, "right_rad_s": 2.0}
+
+
+def motors(monkeypatch, body):
+    """Every wheel command that reaches the body, from here on."""
+    seen = []
+    real = body.set_wheel_velocity
+
+    def record(left, right):
+        seen.append((left, right))
+        return real(left, right)
+    monkeypatch.setattr(body, "set_wheel_velocity", record)
+    return seen
+
+
+def latch_poweroff_at_execution(monkeypatch, bat, body):
+    """The ladder reaches Power-off after /wheels' arrival checks: the stop
+    count is read first thing under the motion lock."""
+    count = {"n": body.stop_count}
+
+    def read(_self):
+        bat["ladder"].level = POWEROFF
+        return count["n"]
+
+    def write(_self, value):
+        count["n"] = value
+    monkeypatch.setattr(type(body), "stop_count", property(read, write))
+
+
+def test_a_local_brains_wheels_do_nothing_at_power_off(served, monkeypatch):
+    client, bat, body, reading, _ = served
+    drive_to(reading, 9.95)
+    assert bat["ladder"].level == POWEROFF
+    assert bat["batt"]["shutdown_done"].wait(10.0)
+    seen = motors(monkeypatch, body)
+    for _ in range(20):
+        r = client.post("/wheels", json=SPIN, headers=LOCAL).json()
+        assert r["executed"] is False and r["reason"] == BATTERY_POWEROFF, r
+    assert not any(left or right for left, right in seen), seen
+
+
+def test_a_local_brains_wheels_are_refused_at_reserve(served, monkeypatch):
+    client, bat, body, reading, _ = served
+    drive_to(reading, 10.15)
+    assert bat["ladder"].level == RESERVE
+    seen = motors(monkeypatch, body)
+    r = client.post("/wheels", json=SPIN, headers=LOCAL).json()
+    assert r["executed"] is False and r["reason"] == BATTERY_RESERVE, r
+    assert not any(left or right for left, right in seen), seen
+
+
+def test_a_local_brains_wheels_wait_for_a_check_at_rest(served, monkeypatch):
+    client, bat, body, _, _ = served
+    _check_open(bat, body)
+    body.set_wheel_velocity(0.0, 0.0)
+    seen = motors(monkeypatch, body)
+    r = client.post("/wheels", json=SPIN, headers=LOCAL).json()
+    assert r["executed"] is False and r["reason"] == BATTERY_CHECK, r
+    assert not any(left or right for left, right in seen), seen
+
+
+@pytest.mark.parametrize("headers", [LOCAL, {"x-driver": "twin-dpad"}])
+def test_a_power_off_latched_after_arrival_moves_nothing(served, monkeypatch, headers):
+    client, bat, body, _, _ = served
+    seen = motors(monkeypatch, body)
+    latch_poweroff_at_execution(monkeypatch, bat, body)
+    r = client.post("/wheels", json=SPIN, headers=headers).json()
+    assert r["executed"] is False and r["reason"] == BATTERY_POWEROFF, r
+    assert not any(left or right for left, right in seen), seen
+
+
+def test_a_local_brain_still_drives_while_the_pack_is_ok(served, monkeypatch):
+    client, bat, body, _, _ = served
+    assert bat["ladder"].level == OK
+    seen = motors(monkeypatch, body)
+    r = client.post("/wheels", json=SPIN, headers=LOCAL).json()
+    assert r["executed"] is True, r
+    assert any(left and right for left, right in seen), seen
+
+
+def test_a_zero_wheel_command_is_never_refused_at_power_off(served):
+    client, bat, body, reading, _ = served
+    drive_to(reading, 9.95)
+    assert bat["ladder"].level == POWEROFF
+    r = client.post("/wheels", json={"left_rad_s": 0.0, "right_rad_s": 0.0},
+                    headers=LOCAL).json()
+    assert r["executed"] is True, r
+    assert r.get("reason") is None, r
+
+
+def test_a_person_still_drives_at_reserve_scaled(served, monkeypatch):
+    client, bat, body, reading, _ = served
+    drive_to(reading, 10.15)
+    assert bat["ladder"].level == RESERVE
+    seen = motors(monkeypatch, body)
+    r = client.post("/wheels", json=SPIN, headers={"x-driver": "twin-dpad"}).json()
+    assert r["executed"] is True, r
+    expected = SPIN["left_rad_s"] * bat["settings"]["reserve_speed"] / 100.0
+    assert seen[-1] == pytest.approx((expected, expected)), seen

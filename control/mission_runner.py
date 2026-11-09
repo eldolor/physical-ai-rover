@@ -768,6 +768,9 @@ class MissionRunner:
             )
 
         self.robot = robot
+        # 3.171: the Start this runner was built for (`resume_autonomy()` runs
+        # first). Read now: by this mission's end the next Start may have set it.
+        self._mission_id = getattr(robot, "mission_id", None)
         self.job = job
         # 3.70 S2: a survey names rooms as it goes -- an ask every 2 m and
         # through every doorway (`spacing`), or one per room (`rooms`), at
@@ -2520,6 +2523,7 @@ class MissionRunner:
                              name="mission-goal-end").start()
         # Outside the lock: this is an HTTP call when the robot is remote.
         self._safe_stop()
+        self._close_mission()
         # 3.99: on a thread of its own, like the report below: the pose is an
         # HTTP read, and a Stop runs this on the brain's event loop.
         if line is not None and self.intervention_log is not None:
@@ -2907,6 +2911,16 @@ class MissionRunner:
             # A failsafe that raises is not a failsafe.
             logger.error(f"could not stop the robot: {e}")
             self._log_line(f"WARNING: stop command failed: {e}")
+
+    def _close_mission(self) -> None:
+        """3.171: the robot server's record that this mission is over, on a
+        thread, because a Stop runs `_end` on the brain's event loop and the
+        close retries. Reports only: nothing here touches the failsafes."""
+        close = getattr(self.robot, "close_mission", None)
+        if close is None or self._mission_id is None:
+            return
+        threading.Thread(target=close, args=(self._mission_id,), daemon=True,
+                         name="mission-close").start()
 
     def _observe(self, frame: dict) -> None:
         """3.46: one frame into the inventory, with the pose and scan read
