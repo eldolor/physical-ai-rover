@@ -298,6 +298,15 @@ def test_the_recorded_runs_are_pinned():
                ("found", "budget", "brain_stop", "person_stop")) == 20
 
 
+def test_the_live_runs_of_3171_are_pinned():
+    """3.171.D, as measured (`evaluations/small-stop-3171/`)."""
+    summary = json.loads((REPO_ROOT / "evaluations" / "small-stop-3171" / "summary.json").read_text())
+    assert all(row["ok"] == row["n"] for row in summary.values()), summary
+    assert {run: summary[run]["n"] for run in summary} == {
+        "local_brain_power_off": 10, "lost_final_stop": 10,
+        "normal_end": 3, "control_close_lost_too": 3}
+
+
 def test_health_describes_the_new_fields_and_never_judges_them(url):
     """M5: only what a release can be blamed for reaches a verdict."""
     _start(url)
