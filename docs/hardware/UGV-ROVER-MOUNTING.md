@@ -135,7 +135,21 @@ carry the top plate too, not just the Jetson.
 
 - **Serial route: the 40-pin header.** 1:35, a "double row cable from the
   Jetson Nano adapter" carries host-to-board communication -> expect
-  `/dev/ttyTHS1`. Check the ribbon reaches the Developer Kit's header.
+  `/dev/ttyTHS1`. Waveshare's own ROS driver opens that port at 115200 on a
+  Jetson (`ugv_ws`, `ugv_driver.py`). Expected only: on the first night
+  (2026-11-08) the board sent nothing on it (3.140's status).
+- **The cable, corrected from the user's photos (2026-11-08).** The kit has no
+  ribbon. The Waveshare "Jetson Nano Adapter (B)" plugs into the driver board's
+  40-pin socket, at the 3V3/5V end; only the 10-wire cable's 2x5 end goes on
+  the Jetson. The cable carries 5 V.
+  - **Jetson end:** the first 5 columns of the header, at the end next to the
+    mounting hole, marked by a printed triangle and "2". Pin 1 is in the row
+    nearest the board's edge.
+  - **Colours, read from photos, some wires partly hidden:** even row
+    2/4/6/8/10 = red, red, black, purple, white (5V, 5V, GND, TX, RX); odd row
+    1/3/5/7/9 = yellow, green, blue, orange, black.
+- **Firmware update:** Waveshare's wiki uses a USB port in the middle of the
+  driver board, which requires opening the robot.
 - **USB:** the D500 plugs into a port on the driver board (1:37), not the
   Jetson; the driver board, the USB camera and the OAK-D Lite take three
   USB-A ports on the Jetson (1:47). The Developer Kit has four.

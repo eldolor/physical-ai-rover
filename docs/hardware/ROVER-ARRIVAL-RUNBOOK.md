@@ -51,6 +51,23 @@ Read these first. They hold on every step.
 * An Ethernet cable long enough to reach the bench.
 * A phone with slow-motion video.
 * Your four Molicel P26A cells, and the Jetson's stock 19 V adapter.
+* A female-to-female jumper wire, for a loopback across the Jetson's pins 8 and
+  10. Only when Claude asks, with the power off and the 10-wire cable off: pins
+  2 and 4 in the same row carry 5 V.
+
+## What the first night showed (2026-11-08)
+
+Results for the rows are in 3.140's status, and none is met yet.
+
+* **The Jetson's clock resets to 1969 when power is removed**, until it reaches
+  a time server. Inference: until then its timestamps cannot be compared with
+  anything, so a log taken with no network has no real date.
+* **The journal is not persistent across boots.** Inference: whatever a fault
+  wrote there is gone after a power cycle, so Claude reads it before the power
+  goes off.
+* **It dropped off Wi-Fi within minutes once on Rover power**, and held for 10
+  minutes on the 19 V adapter. One run, not proof, and the cause is not known.
+  Keep the Ethernet cable on at the bench.
 
 ## What must be settled before 2026-12-08
 
@@ -146,7 +163,8 @@ Look for:
 * The chassis, the ROS Driver board and the UPS.
 * The D500 lidar, the OAK-D Lite and the pan-tilt camera.
 * The 12.6 V charger.
-* The double-row ribbon cable for the 40-pin header.
+* The Waveshare "Jetson Nano Adapter (B)" and its 10-wire cable, with a 2x5
+  connector for the Jetson. There is no ribbon in the kit.
 * The DC5525 Jetson power lead.
 * The USB leads.
 * The hardware bag: silver M2.5\*8 pillars, copper pillars, M2.5\*8 countersunk,
@@ -157,7 +175,7 @@ Look for:
 
 Read back: anything missing or damaged, and whether there is a wireless card.
 
-Stop if: there is damage, or the ribbon or charger is missing. Do not power it.
+Stop if: there is damage, or the cable or charger is missing. Do not power it.
 Tell Claude.
 
 ### T2. Read the board's name
@@ -204,7 +222,7 @@ holes still mount with washers.
 Stop if: neither span matches. That is not a reason to return the car. The
 Jetson also carries the top plate, so an adapter must carry that too. Claude
 will draw the plate. Until then the Jetson sits beside the car for Monday's
-steps, if the ribbon reaches.
+steps, if the 10-wire cable reaches.
 
 ### T6. Measure part A
 
@@ -256,17 +274,31 @@ Stop if: the carrier board bends or a screw forces. Back off.
 ### M3. Wire it, all power off
 
 Do:
-1. Ribbon from the Jetson's 40-pin header to the driver board. Check pin 1 at
-   both ends.
-2. DC5525 lead into the Jetson's barrel jack. The stock 19 V adapter stays out.
-3. D500 into the port on the driver board.
-4. Driver board, USB camera and OAK-D Lite into three USB-A ports on the
+1. Plug the Waveshare "Jetson Nano Adapter (B)" into the driver board's 40-pin
+   socket, at the 3V3/5V end.
+2. Put only the 10-wire cable's 2x5 end on the Jetson: the first 5 columns of
+   the header, at the end next to the mounting hole, marked by a printed
+   triangle and "2". Pin 1 is in the row nearest the board's edge. This cable
+   carries 5 V.
+3. DC5525 lead into the Jetson's barrel jack. The stock 19 V adapter stays out.
+4. D500 into the port on the driver board.
+5. Driver board, USB camera and OAK-D Lite into three USB-A ports on the
    Jetson.
-5. Ethernet to the bench.
+6. Ethernet to the bench.
 
-Read back: that the ribbon reaches without strain, and which ports you used.
+Colours as read from the user's photos, some wires partly hidden, so check them
+against your cable:
 
-Stop if: the ribbon does not reach or fit. Do not force it.
+| Jetson pins | Colours | Signals |
+|---|---|---|
+| 2, 4, 6, 8, 10 | red, red, black, purple, white | 5V, 5V, GND, TX, RX |
+| 1, 3, 5, 7, 9 | yellow, green, blue, orange, black | |
+
+Read back: that the cable reaches without strain, the colours on pins 2 to 10,
+and which ports you used.
+
+Stop if: the cable does not reach or fit, or red is not on pins 2 and 4. Do not
+force it, and do not power it.
 
 ### M4. First power, on the stand
 
@@ -300,9 +332,11 @@ Read back: "go" for the install, and for each reboot.
 
 Claude reports: nothing but our code can hold the port, whether the D500 shows
 up as its own USB serial device, and both devices open by name after 3 reboots.
-Expected serial route: `/dev/ttyTHS1`.
+Expected serial route: `/dev/ttyTHS1`, because Waveshare's own ROS driver opens
+it at 115200 on a Jetson (`ugv_ws`, `ugv_driver.py`). That is an expectation:
+on 2026-11-08 the board sent nothing on it (3.140's status).
 
-Stop if: the board does not answer on any port. Check the ribbon, power off
+Stop if: the board does not answer on any port. Check the cable, power off
 first.
 
 ### M6. Protocol against our fake (L0.5)
@@ -338,8 +372,9 @@ have no auto-reset lines. Claude looks at the board with you and says which of
 these to do:
 * **The 40-pin UART:** when Claude says, **hold BOOT, tap RESET** (it may be
   labelled EN), then let go of BOOT.
-* **The board's own USB port, if it has one:** plug in the lead Claude names.
-  The port name then changes.
+* **The board's own USB port:** plug in the lead Claude names. The port name
+  then changes. Waveshare's wiki does its firmware update through a USB port in
+  the middle of the driver board, which requires opening the robot.
 
 The tool only reads the chip.
 
@@ -438,10 +473,11 @@ Stop if: it strains against the cable.
 ### U3. The heartbeat, cable pulled (L1.7)
 
 Do: start slow-motion video of your hand and the wheels. Say go. With the wheels
-spinning slowly, pull the ribbon straight off, in one motion, by your own hand.
+spinning slowly, pull the 10-wire cable's 2x5 end straight off the Jetson, in
+one motion, by your own hand.
 
-The ribbon carries the serial lines beside power pins. Pull it straight, never
-at an angle. If you would rather not pull it live, say so. Claude can test
+The cable carries the serial lines beside 5 V pins. Pull it straight, never at
+an angle. If you would rather not pull it live, say so. Claude can test
 silence by stopping the host instead, and the row is recorded as not done by
 cable.
 
@@ -451,7 +487,7 @@ Bar: stops within 1.5 s, plus one frame.
 
 Stop if: the wheels do not stop within 3 s. Power switch off. No more motion.
 
-Reseat the ribbon with the power off.
+Reseat the cable as M3 says, with the power off.
 
 ### U4. 15 W stress with motors (L0.12)
 
@@ -612,7 +648,7 @@ Claude reports: the route is the same as Monday's, both devices open by name,
 from Monday's capture.
 
 Stop if: the board does not answer on any port, the route has changed, or there
-is no `odl` or `odr`. Power off and check the ribbon. No motor motion until this
+is no `odl` or `odr`. Power off and check the cable. No motor motion until this
 is explained.
 
 Then the two floor checks in the table at the top.
