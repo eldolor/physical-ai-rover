@@ -313,6 +313,7 @@ paragraph.**
 
 *Missions*
 
+* 3.158.B: the simulator rehearsal (45 missions, drop guard on, stand-in tiers) FAILED C1 (13 of 26), C4 (0 of 5), C5, C10 (33 of 35), C12, C13, C14 and D4; 0 wrong found, 0 contacts, 0 falls. One chair aisle took 49.7% of mission time. Fixes: 3.172.
 * 3.156.B: a mission's end goes home (`brain/dock.py`; `return_to_dock` on in
   the config, off in the runner); the dock is the start pose; a Stop or D-pad
   ends the return. Live 10/10 docked (median 0.032 m), 0 contacts, C7 20/20;
