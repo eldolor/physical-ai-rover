@@ -2132,7 +2132,8 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
   function shutdownLoad(url) {
     try {
       const s = JSON.parse(prefGet(PREF.shutdown) || "null");
-      return s && s.url === url ? s : null;
+      // A request in flight did not survive the reload that brought us here.
+      return s && s.url === url ? Object.assign(s, { sending: false }) : null;
     } catch (e) { return null; }
   }
 
@@ -2247,11 +2248,12 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
                                    r ? { phase: r.phase, settleS: r.settle_s } : {}));
       }
     } catch (e) {
-      if (e.status) {
+      if (e.status >= 400 && e.status < 500) {
         shutdownSave(null);
         document.getElementById("shutdown-error").textContent = shutdownRefusedWords(e);
       } else if (state.shutdown && state.shutdown.url === url) {
-        // It may or may not have landed: the next reading says which.
+        // No answer, or a tunnel's 5xx: it may or may not have landed. The
+        // next reading says which.
         shutdownSave(Object.assign({}, state.shutdown, { sending: false }));
       }
     } finally {

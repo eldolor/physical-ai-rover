@@ -1658,8 +1658,10 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 # nav2 still driving a goal a stop is ending: a zero command.
                 # 3.137: or the battery ladder refuses autonomy.
                 req = WheelsRequest(left_rad_s=0.0, right_rad_s=0.0)
+            elif batt["requested"] and not is_autonomy(driver) and (req.left_rad_s or req.right_rad_s):
+                return battery_refusal(driver)      # 3.170: a person, or a local brain
             elif driver_priority(driver) == DRIVER_MANUAL and (req.left_rad_s or req.right_rad_s):
-                if ladder.level == POWEROFF or batt["requested"]:
+                if ladder.level == POWEROFF:
                     return battery_refusal(driver)
                 if ladder.level == RESERVE:
                     # A person drives on at Reserve, slowly (the user's call).

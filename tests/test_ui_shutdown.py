@@ -216,6 +216,36 @@ def test_a_fresh_boot_clears_it(browser, twin_server):  # noqa: F811
     page.context.close()
 
 
+def test_a_reload_during_the_request_does_not_stick(browser, twin_server):  # noqa: F811
+    """Review: the phone slept mid-POST. The robot says no shutdown (or a fresh
+    boot), and the record saved as still sending must not hold the banner."""
+    page, errors, _ = _page(browser, twin_server)
+    url = page.input_value("#cfg-server-url")
+    page.evaluate("""(url) => localStorage.setItem('vp_shutdown', JSON.stringify({
+        url: url, phase: 'stopping', settleS: 30, quietAt: null, confirmed: true,
+        sending: true, steps: []}))""", url)
+    page.reload(wait_until="networkidle")
+    page.click("#btn-settings")
+    sync_api.expect(page.locator("#battery-banner")).to_be_hidden(timeout=6000)
+    sync_api.expect(page.locator("#btn-shutdown")).to_be_enabled(timeout=3000)
+    assert not errors, errors
+    page.context.close()
+
+
+def test_a_tunnel_error_is_not_a_refusal(browser, twin_server):  # noqa: F811
+    """Review: a 502 may come after the request reached the robot; the phone
+    keeps watching, and then cannot know."""
+    page, errors, posts = _page(browser, twin_server, status=502, detail="bad gateway")
+    page.click("#btn-shutdown")
+    _route_battery(page, None)
+    page.click("#btn-shutdown-yes")
+    text = _banner(page, "Can't tell")
+    _not_safe(text)
+    sync_api.expect(page.locator("#shutdown-error")).to_have_text("")
+    assert len(posts) == 1 and not errors, (posts, errors)
+    page.context.close()
+
+
 @pytest.mark.parametrize("status,detail,words", [
     (401, "Missing or invalid x-app-secret header.", "access code"),
     (403, "shutdown_no_secret: set APP_SHARED_SECRET on this robot", "access code"),

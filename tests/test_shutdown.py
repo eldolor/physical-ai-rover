@@ -206,6 +206,9 @@ def test_after_the_press_nothing_moves_and_a_stop_still_answers(served):  # noqa
     assert r["executed"] is False and r["reason"] == SHUTTING_DOWN
     r = client.post("/wheels", json={"left_rad_s": 2.0, "right_rad_s": 2.0}, headers=PERSON).json()
     assert r["reason"] == SHUTTING_DOWN
+    r = client.post("/wheels", json={"left_rad_s": 2.0, "right_rad_s": 2.0},
+                    headers={"x-driver": "twin-local-brain"}).json()
+    assert r["reason"] == SHUTTING_DOWN, r
     r = client.post("/action", json={"action": "FORWARD"}, headers={"x-driver": "brain"}).json()
     assert r["executed"] is False and r["reason"] == PERSON_STOP
     assert client.post("/stop", headers=PERSON).status_code == 200
