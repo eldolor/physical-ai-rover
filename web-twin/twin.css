@@ -66,6 +66,7 @@ body:has(#guide-fullscreen.active) .battery-banner[data-level="poweroff"] {
   left: var(--space-2); right: var(--space-2);
 }
 .battery-banner[data-level="reserve"] { border-left-color: var(--accent-alert); }
+.battery-banner[data-shutdown="safe"] { border-left-color: var(--accent-safe); }
 .battery-banner[data-level="poweroff"] {
   background: var(--accent-alert); color: var(--accent-alert-ink);
   border-color: var(--accent-alert);

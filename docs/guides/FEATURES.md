@@ -1066,6 +1066,26 @@ its level at the top of every tab, from `GET /battery`, read every 5 s
 Engineer mode adds the volts, the levels and, at Power-off, why and the
 shutdown steps. Screenshots: `docs/evaluations/battery-3137B-*-live-2026-11-02.png`.
 
+**Shut down (3.170).** The Rover's power button cuts the Jetson with no clean
+shutdown, so Settings has a **Shut down** button that needs only the robot, not
+the brain. It asks first, naming any search it would end. Then the banner says
+how far it got, on every tab and across a reload:
+
+* **Don't press the power button yet** -- it is stopping and saving, or
+  powering off.
+* **Powering off: wait N s** -- the robot has gone quiet, as expected.
+* **Safe to press the power button once the light is out** -- it finished and
+  went quiet. The phone cannot see the power, and a lost connection looks the
+  same, so the light on the robot's computer has the last word.
+* **Can't tell if the robot has shut down** -- the connection dropped before the
+  power-off began.
+* **The robot couldn't power itself off** -- it stopped and saved its work, but
+  it is still on, and the button is a hard cut.
+* **Nothing was powered off** -- a simulator.
+
+The route refuses without the robot's access code; a robot with no access code
+set refuses it outright wherever it could really power off.
+
 ### 5.1 The vision proximity veto -- deleted
 
 `brain/agent.py` once had a `vision_proximity_veto` that stopped a

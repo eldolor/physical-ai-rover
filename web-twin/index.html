@@ -662,6 +662,24 @@
       </details>
     </div>
 
+    <!-- 3.170: a clean shutdown before the Rover's power button. Needs only
+         the robot server; its words are set from strings.js (renderShutdownPanel). -->
+    <div class="panel" id="shutdown-panel">
+      <div class="section-label" id="shutdown-label"></div>
+      <div class="lede" id="shutdown-lede"></div>
+      <div class="btn-row">
+        <button id="btn-shutdown" class="danger" style="flex:1;" disabled></button>
+      </div>
+      <div id="shutdown-confirm" hidden>
+        <div class="lede" id="shutdown-confirm-text"></div>
+        <div class="btn-row">
+          <button id="btn-shutdown-cancel" class="ghost" style="flex:1;"></button>
+          <button id="btn-shutdown-yes" class="danger" style="flex:1;"></button>
+        </div>
+      </div>
+      <div class="hint" id="shutdown-error" role="status" aria-live="polite"></div>
+    </div>
+
     <div class="panel">
       <div class="section-label"><span class="op-only">Autopilot connection</span><span class="eng-only">Brain service connection</span></div>
       <div class="lede op-only">Optional. Lets the robot search on its own.</div>

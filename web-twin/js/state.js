@@ -54,6 +54,9 @@ export const state = {
   // readAt, answeredAt}, or null when unknown), and its poll and countdown
   // timers (app.js, "the battery ladder, shown").
   battery: null, batteryTimerId: null, batteryTickId: null,
+  // 3.170: a shutdown under way ({url, phase, settleS, quietAt, ...}), and
+  // whether the robot server knows of a live mission (its /health).
+  shutdown: null, robotMissionLive: false,
   // Remote brain (phase B4): this page observes a mission it does not run.
   brainUrl: "", brainSecret: "", brainConnected: false, brainConnecting: false,
   brainMissionRunning: false, brainPollTimerId: null, brainLogSignature: "",

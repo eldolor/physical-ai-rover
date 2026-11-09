@@ -116,6 +116,19 @@ and sampled at the poll; unusable wheel state counts as turning.
 | Power-off, `poweroff_v` 10.0, or Reserve held `reserve_max_s` (120 s) | As Reserve; latched | Everything Reserve does, then `power_off()` on its own thread, once: the wheels at rest (up to 2 s), each `shutdown_steps` command in order (60 s each), `os.sync()`, `poweroff_cmd`. Every step is recorded (`/battery` `ladder.shutdown`) | `battery_poweroff` (everyone; `/stop` still answers) |
 | CHECK (a crossing read with the wheels turning) | -- | `robot.stop()`; autonomy held, and under `drive: ros` every `ros` wheel post zeroed (nav2's goal held still, not ended), until the next distinct sample: over every level clears it (a sag), under one and at rest fires the highest level the last two distinct samples are both under (one glitch at rest is not two); `check_max_s` (15 s) without a sample at rest fires if the last two are still under | `battery_check` (autonomy only, and never a camera pan; the brain reads it as a veto it does not count toward `stuck_after`) |
 
+**A person's shutdown (3.170).** `POST /power/shutdown` sets `batt["requested"]`,
+calls `stop()` under the person's name, then starts the same `power_off()`; a lock
+around its guard makes one run whoever asks (the phone, a retry, the ladder). The
+ladder's level does not move. While it runs, a person's and ROS's commands are
+refused `shutting_down`, the brain's by the Stop's latch (so its mission ends
+`cancelled`), `POST /autonomy/resume` lifts nothing, and `POST /stop` answers.
+`/battery`'s `ladder.request` is null or `{by, seconds_ago, phase, settle_s}`:
+`stopping`, `powering_off` (`poweroff_begun` set before the command runs, because
+`systemctl poweroff` may kill the server before its result is read), `failed`
+(non-zero or timed out; the robot stays latched and on until it is restarted) or
+`stub`. `SHUTDOWN_SETTLE_S` (30 s) is a placeholder until 3.137.C. The Rover's
+hardware power button is a hard cut and nothing here touches it.
+
 `battery_refusal()` is checked where `person_stop_refusal()` is: before
 arbitration, and again at execution after the verb's stop baseline is set,
 so a level latched in between stops the robot and ends the verb. The brain

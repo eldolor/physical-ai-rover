@@ -151,6 +151,9 @@ class AutonomyLapsed(Preempted):
 BATTERY_RESERVE = "battery_reserve"
 BATTERY_POWEROFF = "battery_poweroff"
 BATTERY_CHECK = "battery_check"
+# 3.170: a person asked for a shutdown: a person's and ROS's commands are
+# refused by this name, the brain's by the Stop's latch that came with it.
+SHUTTING_DOWN = "shutting_down"
 
 
 class BatteryReserve(Preempted):

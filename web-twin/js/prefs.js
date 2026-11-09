@@ -34,6 +34,9 @@ export const PREF = {
   // 3.137.B: the robot server whose battery last read Power-off, so its
   // "unplug the battery" survives a reload against a robot that is off.
   batteryPoweroff: "vp_battery_poweroff",
+  // 3.170: a shutdown under way (JSON), so what the phone knew survives a
+  // reload against a robot that has gone quiet.
+  shutdown: "vp_shutdown",
 };
 export function prefGet(key) {
   try { return localStorage.getItem(key); } catch (e) { return null; }

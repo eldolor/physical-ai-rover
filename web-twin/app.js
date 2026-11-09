@@ -1429,6 +1429,8 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     battery_reserve: "BATTERY RESERVE",
     battery_poweroff: "POWERING OFF",
     battery_check: "BATTERY CHECK",
+    // 3.170: a person asked for a shutdown.
+    shutting_down: "SHUTTING DOWN",
   };
 
   // 3.86: what a refusal is called. A reason the twin does not know is shown
@@ -1524,6 +1526,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     });
     updateHouseButton();
     updateRemapButton();
+    renderShutdownPanel();
   }
 
   // 3.72: "Random house" -- the robot server puts the sim robot in one of
@@ -2029,6 +2032,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
   let batteryGen = 0, batteryInFlight = false, batteryAnnounced = "ok";
 
   function batteryInterval() {
+    if (shutdownCurrent()) return BATTERY_POLL_NEAR_MS;
     const b = state.battery;
     if (!b) return BATTERY_POLL_UNANSWERED_MS;
     return b.level === "reserve" || b.level === "poweroff" ? BATTERY_POLL_NEAR_MS
@@ -2048,12 +2052,13 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     clearTimeout(state.batteryTimerId);
     state.batteryTimerId = null;
     const url = state.serverUrl;
+    if (!state.shutdown || state.shutdown.url !== url) state.shutdown = shutdownLoad(url);
     // What is known before the first answer: this server's remembered
     // Power-off, or nothing (another server's level is not this one's).
     if (!state.battery || state.battery.url !== url) {
       state.battery = url && prefGet(PREF.batteryPoweroff) === url ? remembered(url) : null;
-      renderBattery();
     }
+    renderBattery();
     pollBattery();
   }
 
@@ -2111,12 +2116,170 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
                       v: typeof body.v === "number" && body.usable !== false ? body.v : null };
     if (level === "poweroff") prefSet(PREF.batteryPoweroff, url);
     else if (prefGet(PREF.batteryPoweroff) === url) prefSet(PREF.batteryPoweroff, "");
+    shutdownAnswered(url, ladder);
     renderBattery();
   }
+
+  // ---------- 3.170: Shut down, before the Rover's power button ----------
+  //
+  // The robot server runs the sequence; `GET /battery`'s `ladder.request`
+  // says how far it got. The phone cannot see the power: a robot that goes
+  // quiet may be off or may be out of reach, so even the best case names the
+  // light. `quietAt` is the wall clock, so a reload keeps counting.
+  const SHUTDOWN_POST_TIMEOUT_MS = 10000;
+  let shutdownSending = false;
+
+  function shutdownLoad(url) {
+    try {
+      const s = JSON.parse(prefGet(PREF.shutdown) || "null");
+      return s && s.url === url ? s : null;
+    } catch (e) { return null; }
+  }
+
+  function shutdownSave(s) {
+    state.shutdown = s;
+    prefSet(PREF.shutdown, s ? JSON.stringify(s) : "");
+  }
+
+  function shutdownCurrent() {
+    const s = state.shutdown;
+    return s && s.url === state.serverUrl ? s : null;
+  }
+
+  function shutdownAnswered(url, ladder) {
+    // A server before 3.170 says nothing about it.
+    if (!Object.prototype.hasOwnProperty.call(ladder, "request")) return;
+    const s = state.shutdown && state.shutdown.url === url ? state.shutdown : null;
+    const r = ladder.request;
+    if (r) {
+      shutdownSave({ url: url, phase: r.phase, settleS: r.settle_s, quietAt: null, confirmed: true,
+                     sending: !!(s && s.sending), steps: ladder.shutdown || [] });
+    } else if (s && !s.sending) {
+      // Never heard of it: the request was lost. Heard, and now no record of
+      // it: this is a fresh boot.
+      if (!s.confirmed) document.getElementById("shutdown-error").textContent = t("shutdown.notReceived");
+      shutdownSave(null);
+    }
+  }
+
+  function shutdownQuiet(url) {
+    const s = state.shutdown && state.shutdown.url === url ? state.shutdown : null;
+    if (s && s.quietAt == null) shutdownSave(Object.assign({}, s, { quietAt: Date.now() }));
+  }
+
+  // Which of the banner's states this is, and the seconds left to wait.
+  function shutdownView(s) {
+    if (s.phase === "failed" || s.phase === "stub") return { view: s.phase };
+    if (s.quietAt == null) return { view: s.phase === "powering_off" ? "powering" : "stopping" };
+    if (s.phase !== "powering_off") return { view: "unknown" };
+    const left = Math.ceil(s.settleS - (Date.now() - s.quietAt) / 1000);
+    return left > 0 ? { view: "settling", left: left } : { view: "safe" };
+  }
+
+  function renderShutdown(el, s) {
+    const v = shutdownView(s);
+    el.hidden = false;
+    el.dataset.level = v.view === "failed" ? "poweroff" : "reserve";
+    el.dataset.shutdown = v.view;
+    const title = t("shutdown." + v.view + "Title", {s: v.left});
+    document.getElementById("battery-title").textContent = title;
+    document.getElementById("battery-body").textContent = t("shutdown." + v.view + "Body");
+    document.getElementById("battery-detail").textContent = t("shutdown.detail", {
+      phase: s.phase, steps: (s.steps || []).map(batteryStep).join(", ") || "none yet"});
+    if (v.view === "settling") state.batteryTickId = setTimeout(renderBattery, 1000);
+    // Announced once a state, never each second of the wait.
+    if (batteryAnnounced !== "shutdown:" + v.view) {
+      batteryAnnounced = "shutdown:" + v.view;
+      document.getElementById("battery-announce").textContent = v.view === "settling"
+        ? t("shutdown.settlingBody") : title;
+    }
+  }
+
+  function renderShutdownPanel() {
+    const btn = document.getElementById("btn-shutdown");
+    if (!btn) return;
+    document.getElementById("shutdown-label").textContent = t("shutdown.label");
+    document.getElementById("shutdown-lede").textContent = t("shutdown.lede");
+    btn.textContent = t("shutdown.button");
+    document.getElementById("btn-shutdown-yes").textContent = t("shutdown.yes");
+    document.getElementById("btn-shutdown-cancel").textContent = t("shutdown.cancel");
+    const busy = !!shutdownCurrent() || shutdownSending;
+    btn.disabled = !state.connected || busy;
+    if (btn.disabled) document.getElementById("shutdown-confirm").hidden = true;
+  }
+
+  function shutdownConfirmWords() {
+    if (state.brainMissionRunning && state.brainTarget) {
+      return t("shutdown.confirmTarget", {target: state.brainTarget});
+    }
+    return state.brainMissionRunning || state.robotMissionLive
+      ? t("shutdown.confirmMission") : t("shutdown.confirm");
+  }
+
+  function shutdownRefusedWords(e) {
+    if (e.status === 401) return t("shutdown.badCode");
+    if (e.status === 403 && /shutdown_no_secret/.test(e.message || "")) return t("shutdown.noSecret");
+    if (e.status === 404) return t("shutdown.unsupported");
+    return t("shutdown.refused", {status: e.status});
+  }
+
+  async function shutdownSend() {
+    const url = state.serverUrl;
+    if (!url || shutdownSending || shutdownCurrent()) return;
+    shutdownSending = true;
+    document.getElementById("shutdown-error").textContent = "";
+    // Best effort, not waited on: the robot's own Stop ends the mission too,
+    // and a brain that is down must not hold this up.
+    if (state.brainConnected && state.brainMissionRunning) {
+      Promise.resolve(stopBrainMission()).catch(function () {});
+    }
+    if (driveViaBrainMoving()) stopGuidance();
+    shutdownSave({ url: url, phase: "stopping", settleS: null, quietAt: null, confirmed: false,
+                   sending: true, steps: [] });
+    renderBattery();
+    const ctl = new AbortController();
+    const timer = setTimeout(function () { ctl.abort(); }, SHUTDOWN_POST_TIMEOUT_MS);
+    try {
+      const reply = await apiPost("/power/shutdown", {}, {"x-driver": DRIVER_DPAD}, ctl.signal);
+      const r = reply.request;
+      if (state.shutdown && state.shutdown.url === url) {
+        shutdownSave(Object.assign({}, state.shutdown, { sending: false, confirmed: true },
+                                   r ? { phase: r.phase, settleS: r.settle_s } : {}));
+      }
+    } catch (e) {
+      if (e.status) {
+        shutdownSave(null);
+        document.getElementById("shutdown-error").textContent = shutdownRefusedWords(e);
+      } else if (state.shutdown && state.shutdown.url === url) {
+        // It may or may not have landed: the next reading says which.
+        shutdownSave(Object.assign({}, state.shutdown, { sending: false }));
+      }
+    } finally {
+      clearTimeout(timer);
+      shutdownSending = false;
+      renderBattery();
+      // Drops a read begun before the request, which would say "none".
+      if (state.serverUrl === url) restartBatteryPoll();
+    }
+  }
+
+  document.getElementById("btn-shutdown").onclick = function () {
+    document.getElementById("shutdown-confirm-text").textContent = shutdownConfirmWords();
+    document.getElementById("shutdown-error").textContent = "";
+    document.getElementById("shutdown-confirm").hidden = false;
+  };
+  document.getElementById("btn-shutdown-cancel").onclick = function () {
+    document.getElementById("shutdown-confirm").hidden = true;
+  };
+  document.getElementById("btn-shutdown-yes").onclick = function () {
+    document.getElementById("shutdown-confirm").hidden = true;
+    shutdownSend();
+  };
 
   // No reading: the robot is off, out of reach, or answered something else
   // (a wrong secret, an error). See the rules above.
   function batteryUnanswered(url) {
+    shutdownQuiet(url);
     const b = state.battery && state.battery.url === url ? state.battery : null;
     if (prefGet(PREF.batteryPoweroff) === url && (!b || b.level !== "poweroff")) {
       state.battery = remembered(url);
@@ -2168,6 +2331,12 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     const level = b ? b.level : "ok";
     clearTimeout(state.batteryTickId);
     state.batteryTickId = null;
+    renderShutdownPanel();
+    // 3.170: a shutdown under way is the banner's whole message.
+    const shutdown = shutdownCurrent();
+    if (shutdown) { renderShutdown(el, shutdown); return; }
+    delete el.dataset.shutdown;
+    if (batteryAnnounced.indexOf("shutdown:") === 0) batteryAnnounced = "ok";
     el.dataset.level = level;
     el.hidden = level === "ok";
     let title = "", body = "", say = "";
@@ -3188,6 +3357,9 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
       // R1 a simulated robot gets synthetic detections and NO model runs,
       // so naming the brain's detector there would describe a different
       // mission from the one Start is about to launch.
+      // 3.170: a mission the robot knows of, for the Shut down confirmation
+      // when the brain is out of this page's reach.
+      state.robotMissionLive = !!(health.watchdog && health.watchdog.mission_live);
       const mode = health.mode || null;
       if (mode !== state.robotMode) {
         state.robotMode = mode;

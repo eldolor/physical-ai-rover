@@ -92,6 +92,7 @@ README), not in the automated unit suite.
 """
 
 import gc
+import hmac
 import json
 import re
 import os
@@ -118,8 +119,8 @@ from robot.identity import configure_logging, log_identity
 from robot.battery_ladder import CHECK, CLEAR, POWEROFF, RESERVE, BatteryLadder
 from robot.interface import (
     BATTERY_CHECK, BATTERY_POWEROFF, BATTERY_RESERVE, DRIVER_AUTONOMOUS, DRIVER_MANUAL,
-    AUTONOMY_LAPSED, DRIVER_UNKNOWN, PERSON_STOP, STOPPED, VERB_STOP_BASELINE, WheelFeedbackLost,
-    driver_priority)
+    AUTONOMY_LAPSED, DRIVER_UNKNOWN, PERSON_STOP, SHUTTING_DOWN, STOPPED, VERB_STOP_BASELINE,
+    WheelFeedbackLost, driver_priority)
 
 # The ROS container's driver name on POST /wheels (R2b, R4).
 DRIVER_ROS = "ros"
@@ -242,9 +243,14 @@ BATTERY_REST_S = 0.5
 # Each shutdown step's limit, and how long the power-off waits for the wheels.
 BATTERY_STEP_TIMEOUT_S = 60.0
 BATTERY_WHEELS_WAIT_S = 2.0
-# The refusals a battery level answers with (3.137): the brain ends its
-# mission on the first two; the third holds it for a reading at rest.
-BATTERY_REASONS = (BATTERY_RESERVE, BATTERY_POWEROFF, BATTERY_CHECK)
+# 3.170: how long the phone waits, after the robot goes quiet in its power-off,
+# before calling the power button safe. A placeholder until 3.137.C measures a
+# real power-off on the board.
+SHUTDOWN_SETTLE_S = 30.0
+# The refusals a power-off level answers with (3.137): the brain ends its
+# mission on the first two; the third holds it for a reading at rest. 3.170's
+# never reaches the brain.
+BATTERY_REASONS = (BATTERY_RESERVE, BATTERY_POWEROFF, BATTERY_CHECK, SHUTTING_DOWN)
 # Refusals a verb gets before it moves at all: no motion to stamp. (A safety
 # veto is a pre-check, or a guarded verb that covered under 1 cm.)
 REFUSED_UNMOVED = (*BATTERY_REASONS, "safety_distance")
@@ -855,7 +861,26 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             "body_verbs": 0,
             # The power-off's steps as they ran: name, seconds from its
             # start, return code (3.137 criterion 1c's order).
-            "shutdown": [], "poweroff_calls": 0, "shutdown_done": threading.Event()}
+            "shutdown": [], "poweroff_calls": 0, "shutdown_done": threading.Event(),
+            # 3.170: a person's shutdown: who and when, and whether the
+            # power-off command has been started (before it returns: the
+            # server may be killed by it before anyone reads its result).
+            "requested": None, "poweroff_begun": False}
+    # 3.170: power_off() has more than one caller now; a run starts once.
+    poweroff_lock = threading.Lock()
+
+    def require_shutdown_secret(x_app_secret: str = Header(default="")):
+        """3.170: stricter than `require_secret()`, which is inert with no
+        secret. This route can power off the robot through a public tunnel, so
+        with no secret it answers only where nothing can power off (the stub:
+        local dev and the suite)."""
+        expected = os.environ.get("APP_SHARED_SECRET")
+        if expected:
+            if not hmac.compare_digest(x_app_secret.encode(), expected.encode()):
+                raise HTTPException(status_code=401, detail="Missing or invalid x-app-secret header.")
+        elif battery_cfg["poweroff_cmd"]:
+            raise HTTPException(status_code=403,
+                                detail="shutdown_no_secret: set APP_SHARED_SECRET on this robot")
 
     def wheels_turning() -> bool:
         """Whether the wheels may be turning now. Unreadable or unusable
@@ -879,7 +904,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         the ladder. At Power-off, always; during a check, unless the posts
         are a person's verb in progress (the brain's are refused, and nav2's
         goal is held still). At Reserve they carry only a person's verbs."""
-        if ladder.level == POWEROFF:
+        if ladder.level == POWEROFF or batt["requested"]:
             return True
         if ladder.check_level is None:
             return False
@@ -980,10 +1005,12 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         """The clean power-off, in order, once: the wheels at rest, each
         shutdown step (the brain's mission, ROS, the local VLM), a flush,
         then the power-off command. Nobody may override it: every command
-        that moves the robot is refused `battery_poweroff` from here on."""
-        if batt["poweroff_calls"]:
-            return
-        batt["poweroff_calls"] += 1
+        that moves the robot is refused from here on (`battery_poweroff`, or
+        3.170's `shutting_down` when a person asked for it)."""
+        with poweroff_lock:
+            if batt["poweroff_calls"]:
+                return
+            batt["poweroff_calls"] += 1
         t0 = time.monotonic()
         deadline = t0 + BATTERY_WHEELS_WAIT_S
 
@@ -1012,6 +1039,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                                      "rc": None})
         cmd = battery_cfg["poweroff_cmd"]
         if cmd:
+            batt["poweroff_begun"] = True
             run_step("poweroff", cmd, t0)
         else:
             batt["shutdown"].append({"step": "poweroff", "t_s": round(time.monotonic() - t0, 3),
@@ -1030,6 +1058,11 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         if level == POWEROFF:
             reason = BATTERY_POWEROFF
             detail = "the robot is powering off: the battery is spent -- nothing may drive"
+        elif batt["requested"] and not is_autonomy(driver):
+            # 3.170. The brain falls through to the Stop's latch, which ends
+            # its mission `cancelled` as any person's Stop does.
+            reason = SHUTTING_DOWN
+            detail = "the robot is shutting down: a person asked for it -- nothing may drive"
         elif autonomous and level == RESERVE:
             reason = BATTERY_RESERVE
             detail = (f"the battery is at reserve -- autonomy is refused, so {driver} was "
@@ -1049,7 +1082,23 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         return {**ladder.status(now), "v": batt["v"],
                 "reserve_speed": battery_cfg["reserve_speed"],
                 "shutdown": list(batt["shutdown"]),
-                "poweroff_cmd": "set" if battery_cfg["poweroff_cmd"] else "stub"}
+                "poweroff_cmd": "set" if battery_cfg["poweroff_cmd"] else "stub",
+                "request": shutdown_request()}
+
+    def shutdown_request() -> Optional[dict]:
+        """3.170: a person's shutdown as the phone reads it, or None."""
+        asked = batt["requested"]
+        if asked is None:
+            return None
+        ran = next((s for s in batt["shutdown"] if s["step"] == "poweroff"), None)
+        if ran is None:
+            phase = "powering_off" if batt["poweroff_begun"] else "stopping"
+        elif ran.get("stub"):
+            phase = "stub"
+        else:
+            phase = "powering_off" if ran["rc"] == 0 else "failed"
+        return {"by": asked["by"], "seconds_ago": round(time.monotonic() - asked["at"], 1),
+                "phase": phase, "settle_s": SHUTDOWN_SETTLE_S}
 
     async def wheel_loop():
         """Vet and (in the sim) integrate a standing wheel command -- R2b.
@@ -1279,7 +1328,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         # 3.137: the battery ladder, before anything else may move. Power-off
         # refuses everyone; at Reserve a person drives on, slowly.
         route_poll()
-        if ladder.level == POWEROFF:
+        if ladder.level == POWEROFF or (batt["requested"] and not is_autonomy(driver)):
             return battery_refusal(driver)
         if ladder.level == RESERVE and driver_priority(driver) == DRIVER_MANUAL:
             req = req.model_copy(update={"speed": min(req.speed, battery_cfg["reserve_speed"])})
@@ -1610,7 +1659,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 # 3.137: or the battery ladder refuses autonomy.
                 req = WheelsRequest(left_rad_s=0.0, right_rad_s=0.0)
             elif driver_priority(driver) == DRIVER_MANUAL and (req.left_rad_s or req.right_rad_s):
-                if ladder.level == POWEROFF:
+                if ladder.level == POWEROFF or batt["requested"]:
                     return battery_refusal(driver)
                 if ladder.level == RESERVE:
                     # A person drives on at Reserve, slowly (the user's call).
@@ -1759,6 +1808,30 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 _start_goal_end(gen)
         return {"executed": True, "result": result, "driver": driver}
 
+    @app.post(prefix + "/power/shutdown", dependencies=[Depends(require_shutdown_secret)])
+    def power_shutdown(x_driver: str = Header(default="")):
+        """3.170: a person's clean shutdown, before the Rover's power button
+        (which stays a hard cut). A person's Stop, then 3.137's `power_off()`.
+
+        Exactly once: a second tap or a retry answers the same run's state,
+        `started: false`. The phone reads the rest from `GET /battery`'s
+        `ladder.request`."""
+        driver = (x_driver or "").strip() or DRIVER_UNKNOWN
+        if driver_priority(driver) != DRIVER_MANUAL:
+            raise HTTPException(status_code=403, detail="shutdown_not_a_person: only a person may ask")
+        with poweroff_lock:
+            first = batt["requested"] is None
+            if first:
+                # Before the Stop: nothing a person sends may move after it.
+                batt["requested"] = {"by": driver, "at": time.monotonic()}
+        if first:
+            try:
+                stop(x_driver=driver)
+            except Exception as e:  # noqa: BLE001 -- as in power_off, which stops the wheels again
+                logger.warning(f"shutdown: the Stop raised: {e}")
+            threading.Thread(target=power_off, daemon=True, name="battery-poweroff").start()
+        return {"started": first, "request": shutdown_request()}
+
     def _count_goal_end() -> int:
         """Under goal_gen_lock: a stop counted, the hold set, and a new
         generation of the goal-ending loop (superseding any older one)."""
@@ -1855,6 +1928,8 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         mission the Stop interrupted must end, not resume when the person
         next drives."""
         driver = (x_driver or "").strip() or DRIVER_UNKNOWN
+        if batt["requested"]:      # 3.170: a Start cannot undo a shutdown's Stop
+            return {"resumed": False, "driver": driver, "stopped_by": None}
         with goal_gen_lock:
             was = goal_stop["autonomy_stopped"]
             goal_stop["autonomy_stopped"] = None
