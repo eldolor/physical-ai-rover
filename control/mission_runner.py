@@ -63,7 +63,7 @@ from brain.intervention_log import (VIA_BRAIN_STOP, VIA_LOOP_CANCELLED, VIA_PREE
                                     VIA_ROBOT_STOP)
 from brain.goal_policy import coarse, goal_policy_for
 from brain.goal_policy import rooms_prior_informative as flat_prior_ok
-from brain.frontier import RETRY_COOLDOWN_S, RETRY_LIMIT
+from brain.frontier import RETRY_COOLDOWN_S, RETRY_LIMIT, SET_ASIDE_MIN_FAILURES, SET_ASIDE_MISSIONS
 from brain.inventory import MAX_RANGE_M as INVENTORY_RANGE_M
 from brain.what_i_saw import MAX_THUMBS
 from brain.inventory import DEFAULT_FOV_DEG, Inventory, _bearing_to, frame_detections
@@ -3005,9 +3005,26 @@ class MissionRunner:
                 self.inventory.detach()
             n = self.inventory.seed(frame_id, prior) if prior else 0
             source = self.inventory.carried_from
+            aside = self._carry_set_aside(frame_id, prior)
         if n:
             self._log_line(f"inventory: {n} landmarks carried from "
                            f"{source or 'an earlier mission'} on {frame_id}")
+        if aside:
+            self._log_line(f"explore: {aside} stalled places set aside from earlier missions on {frame_id}")
+
+    def _carry_set_aside(self, frame_id, prior) -> int:
+        """3.172 F3: the places earlier missions on this saved map could not
+        reach, under `_lock`. A by-product: bad rows are skipped."""
+        book = getattr(self.agent, "retry", None)
+        if book is None or not isinstance(prior, dict) or prior.get("frame_id") != frame_id:
+            return 0
+        rows = prior.get("set_aside")
+        for r in rows if isinstance(rows, list) else []:
+            try:
+                book.set_aside.append((float(r["x_m"]), float(r["y_m"]), int(r["age"])))
+            except (KeyError, TypeError, ValueError):
+                continue
+        return len(book.set_aside)
 
     def inventory_report(self) -> Optional[dict]:
         if self.inventory is None:
@@ -3017,6 +3034,9 @@ class MissionRunner:
             report["mission"] = self.memory.mission
             report["mission_id"] = self.mission_id      # 3.50.D5: carried_from
             report["outcome"] = self._outcome
+            book = getattr(self.agent, "retry", None)
+            if book is not None:
+                report["set_aside"] = book.carry_out(SET_ASIDE_MIN_FAILURES, SET_ASIDE_MISSIONS)
         return report
 
     def _keep_looks(self, frame: dict, pose: dict, detections: list) -> None:

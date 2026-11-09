@@ -37,6 +37,10 @@ from world.interface import CELL_FREE, CELL_OCCUPIED, CELL_UNKNOWN
 # 3.31's numbers, confirmed by the user before building.
 RETRY_COOLDOWN_S = 30.0
 RETRY_LIMIT = 3
+# 3.172 F3: failures at a place before later missions on the saved map set it
+# aside, and for how many missions (a person in the way, a chair since moved).
+SET_ASIDE_MIN_FAILURES = 2
+SET_ASIDE_MISSIONS = 3
 # A failure at one place covers its neighbourhood: nav2 aborting on a
 # doorway says nothing about a frontier 3 m away, and everything about one
 # 20 cm along the same edge.
@@ -557,6 +561,9 @@ class RetryBook:
     radius_m: float = RETRY_RADIUS_M
     early_growth: float = 0.25
     entries: list = field(default_factory=list)
+    # 3.172 F3: places carried from earlier missions on this saved map, [(x, y, age)]:
+    # no frontier, view or room goal there. `available(approach=True)` ignores them.
+    set_aside: list = field(default_factory=list)
 
     def _near(self, x_m: float, y_m: float) -> Optional[_Entry]:
         for e in self.entries:
@@ -583,8 +590,12 @@ class RetryBook:
         return e is not None and e.failures >= self.limit
 
     def available(self, x_m: float, y_m: float, now: float,
-                  known_now: Optional[Callable[[float, float], int]] = None) -> bool:
-        """May this place be tried now?"""
+                  known_now: Optional[Callable[[float, float], int]] = None,
+                  approach: bool = False) -> bool:
+        """May this place be tried now? `approach`: a target the robot has
+        sighted, which a place set aside by an earlier mission never refuses."""
+        if not approach and self.is_set_aside(x_m, y_m):
+            return False
         e = self._near(x_m, y_m)
         if e is None:
             return True
@@ -596,6 +607,21 @@ class RetryBook:
             grown = known_now(e.x_m, e.y_m) - e.known_at_failure
             return grown >= self.early_growth * e.known_at_failure
         return False
+
+    def is_set_aside(self, x_m: float, y_m: float) -> bool:
+        return any(math.hypot(x - x_m, y - y_m) <= self.radius_m for x, y, _ in self.set_aside)
+
+    def carry_out(self, min_failures: int, missions: int) -> list:
+        """3.172 F3: what the next mission on this map sets aside, each with
+        its age in missions. Failing here restarts a place's age; one carried
+        in and not tried ages, and is let go at `missions`."""
+        out = [{"x_m": e.x_m, "y_m": e.y_m, "age": 0}
+               for e in self.entries if e.failures >= min_failures]
+        for x, y, age in self.set_aside:
+            if age + 1 < missions and not any(
+                    math.hypot(x - o["x_m"], y - o["y_m"]) <= self.radius_m for o in out):
+                out.append({"x_m": x, "y_m": y, "age": age + 1})
+        return out
 
     def failures_near(self, x_m: float, y_m: float) -> int:
         """How often a goal near this place has failed (0 if never)."""

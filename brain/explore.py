@@ -500,10 +500,10 @@ class ExploreAgent(MissionAgent):
             self._last_seen = (tx, ty)
             moved = (self._approach is None
                      or math.hypot(tx - self._approach[0], ty - self._approach[1]) > APPROACH_MOVED_M)
-            if moved and self.retry.available(tx, ty, now):
+            if moved and self.retry.available(tx, ty, now, approach=True):
                 return self._send_approach(tx, ty, now, scene)
             if (self._goal is None and self._at_target(tx, ty)
-                    and self.retry.available(tx, ty, now)):
+                    and self.retry.available(tx, ty, now, approach=True)):
                 # 3.80.G: here already, and still in sight -- close in.
                 closed = self._close_in(scene, (tx, ty))
                 if closed is not None:
@@ -871,7 +871,7 @@ class ExploreAgent(MissionAgent):
         if self.retry.dropped(tx, ty):
             self._last_seen = None
             return None
-        if not self.retry.available(tx, ty, now):
+        if not self.retry.available(tx, ty, now, approach=True):
             return None
         pose = self._pose()
         # "Here" is anywhere an approach could have stood it (3.69 B): a
