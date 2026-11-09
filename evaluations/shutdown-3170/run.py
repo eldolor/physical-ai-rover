@@ -54,7 +54,7 @@ def _up(url):
 
 
 @contextlib.contextmanager
-def stack(with_brain=True, brain_step=True):
+def stack(with_brain=True, brain_step=True, slow_step_s=None, env_extra=None):
     """A robot server and (optionally) a brain of this run's own. Yields the
     two URLs, the robot's process and the file the steps append to."""
     with tempfile.TemporaryDirectory() as tmp:
@@ -71,8 +71,10 @@ def stack(with_brain=True, brain_step=True):
                "BRAIN_CONFIG": str(tmp / "robot.yaml"), "ROBOT_URL": f"http://127.0.0.1:{rp}",
                "VISION_URL": "http://127.0.0.1:9", "INTERVENTION_DIR": str(tmp / "iv"),
                "APP_SHARED_SECRET": SECRET, "ROBOT_SHARED_SECRET": SECRET,
-               "BATTERY_SHUTDOWN_CMDS": json.dumps([["brain", stop_brain]] if brain_step else []),
-               "BATTERY_POWEROFF_CMD": f"echo poweroff >> {marks}"}
+               "BATTERY_SHUTDOWN_CMDS": json.dumps(
+                   [["slow", f"sleep {slow_step_s}"]] if slow_step_s
+                   else [["brain", stop_brain]] if brain_step else []),
+               "BATTERY_POWEROFF_CMD": f"echo poweroff >> {marks}", **(env_extra or {})}
         log = open(tmp / "log", "w")
         robot = _serve(["robot.server:app", "--host", "127.0.0.1", "--port", str(rp)], env, REPO, log)
         brain = None
@@ -175,6 +177,25 @@ def once(out):
               and lad["level"] == "ok"}, out)
 
 
+def ladder_during(out):
+    """Criterion 3: the pack crosses Power-off while the person's run is in its
+    slow step (1.0 V to lose at 0.1 V/s; the step lasts past that)."""
+    with stack(with_brain=False, slow_step_s=16,
+               env_extra={"SIM_BATTERY_V": "11.0", "SIM_BATTERY_DRAIN_V_PER_S": "0.1"}) as (robot, _, _, marks):
+        started = press(robot).json()["started"]
+        end = time.monotonic() + 30
+        fired_early = False
+        while time.monotonic() < end and request_of(robot)["level"] != "poweroff":
+            time.sleep(0.1)
+        lad = request_of(robot)
+        fired_early = lad["level"] == "poweroff" and not any(s["step"] == "poweroff" for s in lad["shutdown"])
+        lad = wait_done(robot, 40)
+        time.sleep(0.5)
+        off = marks_of(marks).count("poweroff")
+        emit({"crit": 3, "how": "ladder_during", "started": started, "ladder_during_run": fired_early,
+              "poweroff_ran": off, "ok": started is True and fired_early and off == 1}, out)
+
+
 def mission(out):
     """Criterion 4: pressed mid-mission. `cancelled` first, then the power-off."""
     with stack() as (robot, brain, _, marks):
@@ -229,7 +250,7 @@ def phases(out):
 
 def main():
     with open(OUT / "results.jsonl", "w") as out:
-        for fn in (once, mission, brain_down, phases):
+        for fn in (once, ladder_during, mission, brain_down, phases):
             for _ in range(N):
                 fn(out)
     rows = [json.loads(line) for line in (OUT / "results.jsonl").read_text().splitlines()]

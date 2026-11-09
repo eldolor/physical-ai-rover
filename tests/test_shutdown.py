@@ -6,6 +6,7 @@ The live runs are evaluations/shutdown-3170/run.py; the phone is
 tests/test_ui_shutdown.py.
 """
 
+import json
 import threading
 import time
 
@@ -15,6 +16,7 @@ from fastapi.testclient import TestClient
 import robot.server as server
 from robot.battery_ladder import OK, POWEROFF
 from robot.interface import PERSON_STOP, SHUTTING_DOWN
+from tests.conftest import REPO_ROOT
 from tests.test_battery_ladder import (Pack, drive_to, served as _battery_served,  # noqa: F401
                                        served_goals)
 
@@ -54,6 +56,15 @@ def app_with(monkeypatch, poweroff_cmd, steps='[]', secret=None):
     app = server.create_app()
     app.state.battery["robot"].battery = Pack(12.0)
     return TestClient(app), app.state.battery
+
+
+def test_the_recorded_runs_are_pinned():
+    """Criteria 3, 4 and 7, as measured (`evaluations/shutdown-3170/`)."""
+    summary = json.loads((REPO_ROOT / "evaluations" / "shutdown-3170" / "summary.json").read_text())
+    assert all(row["ok"] == row["n"] for row in summary.values()), summary
+    for run in ("c3:burst_and_retry", "c3:ladder_during", "c4:mid_mission", "c4:brain_down", "c7:phases"):
+        assert summary[run]["n"] == 10, run
+    assert summary["c4:mid_mission"]["outcomes"] == {"cancelled": 10}
 
 
 # ---------- criterion 1: the gate ----------
