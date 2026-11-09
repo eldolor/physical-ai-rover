@@ -329,3 +329,18 @@ def test_a_goal_refused_just_after_a_move_is_not_nav2_being_away():
     for _ in range(4):
         assert trip.step() is None
     assert nav.sent == 2
+
+
+def test_a_goal_to_the_dock_after_refused_turns_gets_its_own_wait():
+    """Review of the goal-wait fix: the turns at the staging point can outlast
+    `RETURN_WAIT_S`, and the goal to the dock itself must not start out of time."""
+    nav, safety = _Nav(), _Safety(refuse=("LEFT", "RIGHT"))
+    trip, clock = _trip(nav, safety, lambda: _STILL)
+    trip.step()                                     # the staging goal accepted
+    nav.goal = {"state": "succeeded"}
+    trip.step()                                     # on to the turn
+    clock.t += dock.RETURN_WAIT_S + 5.0
+    while trip.state == "turn":
+        assert trip.step() is None                  # refused turns, then `_to_dock`
+    nav.set_goal = lambda x, y: {"accepted": False, "reason": "preempted"}
+    assert trip.step() is None

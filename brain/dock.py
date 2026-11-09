@@ -481,6 +481,7 @@ class ReturnTrip:
 
     def _to_dock(self, why: str) -> None:
         self.direct, self.tries, self.refused = True, 0, 0
+        self._wait_from = self.clock()  # the turns before it can outlast the wait
         self.target, self.state = (self.dock["x_m"], self.dock["y_m"]), "goal"
         self.log.append(f"{why}; a goal to the dock itself")
 
