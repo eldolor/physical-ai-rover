@@ -53,7 +53,8 @@ logger = logging.getLogger("remote_robot")
 
 DEFAULT_TIMEOUT_S = 10.0
 # 3.171: under the robot server's 24 s (0.8 x `tick_timeout_s`) before a
-# silence reads as a hang.
+# silence reads as a hang. That runs from the brain's last word, so a close
+# that needs all 20 s can still land after it.
 MISSION_CLOSE_RETRY_S = 20.0
 MISSION_CLOSE_EVERY_S = 2.0
 

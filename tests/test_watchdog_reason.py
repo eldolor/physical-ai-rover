@@ -516,6 +516,29 @@ def test_a_normal_end_sends_exactly_one_close(url):
     assert wd["mission_live"] is False and wd["trip"] is None, wd
 
 
+class SlowFinalStop(CountsCloses):
+    """A link so bad the final stop runs out its timeout."""
+    slow = False
+    close_landed_first = None
+
+    def stop(self):
+        if self.slow:
+            self.close_landed_first = self.closed.wait(3.0)
+        return super().stop()
+
+
+def test_the_close_does_not_wait_for_a_slow_final_stop(url):
+    """Review of 3.171: the server's silence runs from the brain's last word,
+    so a close sent after a 10 s stop could arrive past the trip."""
+    time.sleep(WATCHDOG_S + SLACK_S)
+    robot = SlowFinalStop(url)
+    robot.resume_autonomy()
+    runner = _mission(url, robot)
+    robot.slow = True
+    runner.stop("the test's end")
+    assert robot.close_landed_first is True
+
+
 def test_a_mission_whose_start_had_no_id_sends_no_close(url):
     time.sleep(WATCHDOG_S + SLACK_S)
     robot = CountsCloses(url)

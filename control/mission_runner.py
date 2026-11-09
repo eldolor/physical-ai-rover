@@ -2521,9 +2521,11 @@ class MissionRunner:
             # and these are calls through to the ROS bridge.
             threading.Thread(target=self._navigator.end, daemon=True,
                              name="mission-goal-end").start()
+        # 3.171: first, so a stop that runs out its timeout cannot hold it past
+        # the server's hang bar. On its own thread, and it reports only.
+        self._close_mission()
         # Outside the lock: this is an HTTP call when the robot is remote.
         self._safe_stop()
-        self._close_mission()
         # 3.99: on a thread of its own, like the report below: the pose is an
         # HTTP read, and a Stop runs this on the brain's event loop.
         if line is not None and self.intervention_log is not None:

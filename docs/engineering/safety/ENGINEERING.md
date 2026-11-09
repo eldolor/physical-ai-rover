@@ -417,7 +417,7 @@ robot, so `/health` also carries:
   null; once per silence), `trip`, `trip_after_s`. A mission is opened by a
   brain's `/autonomy/resume` and closed by `/autonomy/relatch`, a person's
   Stop or the brain's `/autonomy/mission-closed` at its end (3.171: named by the
-  Start's `mission_id`, sent after the final stop and retried for up to 20 s, so
+  Start's `mission_id`, sent beside the final stop and retried for up to 20 s, so
   a lost final `/stop` is no false trip; it reports only); it is live once the brain has moved since its last `/stop` (its stop
   runs on blind steps too). **B3.1 firing mid-mission is not a hang: it fires
   in every cloud wait.** `trip` is set once per mission, and kept until the next
