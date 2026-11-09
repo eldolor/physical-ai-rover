@@ -120,6 +120,12 @@ OPEN_ANGLES = (90, 45, 20, 10, 5)
 CREEP_SPEED = 5
 CREEP_PIECES = 3
 CREEP_ROOM_CM = 1.0
+# 3.172 F1: the REVERSE refused and the front not open enough for 3.85's
+# FORWARD: one creep forward of about 10 cm (0.03 m/s), under the same vet.
+# Bounded on purpose: at 3.158.B's trap 3-15 cm freed a full swing and 20 cm
+# or more closed it again. Once per NUDGE_PLACE_M of the mission's track.
+NUDGE_S = 3.3
+NUDGE_PLACE_M = 0.30
 # "Boxed in": fewer reachable stopping places than this around the robot.
 BOXED_CELLS = 40
 # 3.70 E3: a room goal aims at least this far inside the room's label where
@@ -316,6 +322,8 @@ class ExploreAgent(MissionAgent):
         self.seen: set = set()
         self._looked: list = []        # view-gap centres already visited
         self._backed_off: list = []    # targets a refused face has backed off from (3.69)
+        self._nudged: list = []             # 3.172: where the robot stood at each nudge
+        self._reverse_refused = False       # 3.172: this escape's REVERSE was refused
         self._glimpse_backoffs: list = []   # where the robot stood when a glimpse did
         self._glimpse_spent: list = []      # where a glimpse's turns were given up (3.80.O)
         # Frontier goals already reached, with how often. A frontier still
@@ -1482,6 +1490,7 @@ class ExploreAgent(MissionAgent):
         if charged:
             self.escapes_charged += 1
         self._event("escape", why=why, n=self.escapes, **info)
+        self._reverse_refused = False
         self._pending = ["REVERSE", ("CREEP",), ("OPEN",)]
 
     def _do_pending(self):
@@ -1531,10 +1540,17 @@ class ExploreAgent(MissionAgent):
             # far end and changes what the corners can swing past.
             ends = item[1] if len(item) > 1 else self._creep_ends()
             piece = item[2] if len(item) > 2 else 1
+            if len(item) == 1 and not ends and self._reverse_refused and NUDGE_S > 0 and self._nudge_here():
+                # 3.172 F1: too little in front for 3.85's FORWARD, too much
+                # for _creep_ends: a short creep, then the turns from there.
+                ends, item = ["FORWARD"], ("CREEP", ["FORWARD"], CREEP_PIECES, NUDGE_S)
+                piece = CREEP_PIECES           # one creep: a piece more would pass the bound
+            self._reverse_refused = False
             if not ends:                 # the reverse freed it: on to the turn
                 return self._do_pending() if self._pending else ("WAIT", True, "not wedged")
             seen = self._creep_readings()
-            out = self._verb(ends[0], speed=CREEP_SPEED)
+            timed = {"duration": item[3]} if len(item) > 3 else {}
+            out = self._verb(ends[0], speed=CREEP_SPEED, **timed)
             # 3.74: how often a creep runs, and whether the depth camera's
             # floor band had something ahead just before -- the car's numbers
             # decide whether the band's blind range needs closing (a forward
@@ -1545,13 +1561,14 @@ class ExploreAgent(MissionAgent):
                    and out[2].get("stopped_short") == "timeout"
                    and VERB_MAX_TAG in str(out[2].get("reason") or ""))
             self._event("creep", way=ends[0], executed=bool(out[1]),
-                        waited=out[0] == "WAIT", piece=piece, cut_by_time=cut, **seen)
+                        waited=out[0] == "WAIT", piece=piece, cut_by_time=cut,
+                        nudge=bool(timed), **seen)
             if out[0] == "WAIT":
-                self._requeue(ends[0], ("CREEP", ends, piece))
+                self._requeue(ends[0], ("CREEP", ends, piece, *item[3:]))
             elif cut and piece < CREEP_PIECES and self._creep_room(ends[0]):
                 # 3.89: its time ran out short of the line -- on, the same way
                 # (only that way: the other end would give back what it gained).
-                self._pending.insert(0, ("CREEP", ends[:1], piece + 1))
+                self._pending.insert(0, ("CREEP", ends[:1], piece + 1, *item[3:]))
             elif not out[1] and len(ends) > 1:
                 self._pending.insert(0, ("CREEP", ends[1:], piece))
             return out
@@ -1634,12 +1651,28 @@ class ExploreAgent(MissionAgent):
             return out
         out = self._verb(item)
         if (item == "REVERSE" and out[0] != "WAIT" and not out[1]
-                and self._pending and self._pending[0] == ("CREEP",) and self._front_open()):
-            # 3.85: the escape's REVERSE refused with the front open -- drive
-            # out ahead first. 3.83's breakfast pocket left 1.3 cm behind and
-            # about 30 cm ahead, and REVERSE, CREEP, OPEN never tried ahead.
-            self._pending.insert(0, "FORWARD")
+                and self._pending and self._pending[0] == ("CREEP",)):
+            if self._front_open():
+                # 3.85: the escape's REVERSE refused with the front open -- drive
+                # out ahead first. 3.83's breakfast pocket left 1.3 cm behind and
+                # about 30 cm ahead, and REVERSE, CREEP, OPEN never tried ahead.
+                self._pending.insert(0, "FORWARD")
+            else:
+                self._reverse_refused = True   # 3.172 F1: the CREEP below may nudge
         return out
+
+    def _nudge_here(self) -> bool:
+        """3.172 F1: room for a creep ahead, and none made from this place
+        yet (a refused or useless one must not walk the robot on, 10 cm a
+        round, into the far end of the gap)."""
+        pose = self._pose()
+        if not pose.get("usable") or not self._creep_room("FORWARD"):
+            return False
+        here = (pose["x_m"], pose["y_m"])
+        if any(math.hypot(here[0] - x, here[1] - y) < NUDGE_PLACE_M for x, y in self._nudged):
+            return False
+        self._nudged.append(here)
+        return True
 
     def _front_open(self) -> bool:
         """Room ahead for the escape's FORWARD to gain at least

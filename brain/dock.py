@@ -60,6 +60,18 @@ RETURN_WAIT_S = 30.0        # D2: nav2's hold never clears -> skipped, no_nav2
 GOAL_RETRY_S = 1.0          # between refused goals (through the runner's idle)
 POLL_S = 0.5                # between polls of a goal under way
 RETURN_MAX_S = 600.0        # a return that never ends is a failed one
+# 3.172 F2. nav2 driving less than STUCK_M in STUCK_S is a stall: cancel, back
+# off (a refused back-off: explore's bounded creep forward), send the goal again.
+# STUCK_ROUNDS shifts that leave it within STUCK_PLACE_M end the return at the next
+# stall, 3.158.B's trap having waited out RETURN_MAX_S. One creep per STUCK_PLACE_M.
+STUCK_S = 45.0
+STUCK_M = 0.05
+STUCK_PLACE_M = 0.30
+STUCK_ROUNDS = 3
+NUDGE_SPEED = 5             # 0.03 m/s: the creep bar
+NUDGE_S = 3.3               # about 10 cm: brain/explore.py's NUDGE_S, and why
+MAX_HOLDS = 20              # polls a move waits for the mission's own cancelled goal to let go
+_NOT_OURS = ("StoppedByPerson", "AutonomyLapsed", "BatteryReserve", "Preempted", "MissionHalted")
 # 3.156.D (D7d). `RESUME_V` is a placeholder until 3.137.E.
 RESUME_V = 11.8
 WALL_LIMIT_S = 4 * 3600.0   # the whole mission, charges and all
@@ -297,6 +309,12 @@ class ReturnTrip:
         self.steps = 0                  # approach steps, acting or not (a loop with no verb ends)
         self._last_along = None         # the creep's remaining distance before its last verb
         self._step_m = None             # what that verb closed
+        self._moves = []                # 3.172: "back" or "nudge", one a step
+        self._nudged = []               # where each creep was made from
+        self._holds = 0                 # polls in a row the cancelled goal held a move
+        self._still = None              # (xy, t) the pose last moved from
+        self._stuck_at = None           # where the current run of stalls began
+        self.stuck_rounds = 0
 
     def summary(self) -> dict:
         return {"phase": self.state, "actions": self.actions, "reversals": self.reversals,
@@ -317,6 +335,12 @@ class ReturnTrip:
             return FAILED, f"timeout: not docked in {self.max_s:.0f} s"
         if self.nav is None:
             return SKIPPED, "no_nav2"
+        if self._moves:
+            if self._moves.pop(0) == "back":
+                self._back_off()
+            else:
+                self._move("nudge", "FORWARD", speed=NUDGE_SPEED, duration=NUDGE_S)
+            return None
         if self.state == "goal":
             return self._goal()
         if self.state == "driving":
@@ -335,14 +359,15 @@ class ReturnTrip:
         try:
             reply = self.nav.set_goal(*self.target) or {}
         except Exception as e:  # noqa: BLE001 -- a hold or a lost answer; re-raised below if not
-            if type(e).__name__ in ("StoppedByPerson", "AutonomyLapsed", "BatteryReserve",
-                                    "Preempted", "MissionHalted"):
+            if type(e).__name__ in _NOT_OURS:
                 raise
             reply = {"accepted": False, "reason": f"error: {e}"}
         if reply.get("accepted"):
             self.tries += 1
             self.goal_id = reply.get("goal_id")
             self.state, self.goal_sent_at = "driving", self.clock()
+            # 3.172: this goal's own stall clock; a refusal before it says nothing of the turns after.
+            self._still, self.refused = None, 0
             self.log.append(f"goal to ({self.target[0]:.2f}, {self.target[1]:.2f}) accepted")
             return None
         if self.clock() - self.t0 >= self.wait_s:
@@ -352,10 +377,12 @@ class ReturnTrip:
         return None
 
     def _driving(self):
-        self._pose()                    # metres home are counted on nav2's leg too (C4)
+        pose = self._pose()             # metres home are counted on nav2's leg too (C4)
         goal = (self.nav.get_goal() or {}).get("goal") or {}
         st = goal.get("state")
         if st in ("pending", "active", None) and goal:
+            if self._stalled(pose):
+                return self._unstick(pose)
             if self.idle is not None:
                 self.idle(POLL_S)
             return None
@@ -372,8 +399,80 @@ class ReturnTrip:
         else:
             self.log.append(f"goal {st}; backing off and trying again")
             self.state = "goal"
-        self._act("REVERSE", speed=CREEP_SPEED, duration=BACK_OFF_S)
+        self._back_off()
+        return None
+
+    def _back_off(self) -> None:
+        before = self.refused
+        if not self._move("back", "REVERSE", speed=CREEP_SPEED, duration=BACK_OFF_S):
+            return
         self.reversals += 1
+        if NUDGE_S > 0 and self.refused > before and self._nudge_here():
+            self._moves.append("nudge")
+
+    def _move(self, name: str, action: str, **kw) -> bool:
+        """False when the mission's own just-cancelled goal still holds the
+        robot: that is a wait (`is_own_goal_refusal`, as explore's `_verb`), not a
+        person's preemption and not a refusal; the move is queued again, for a while."""
+        from brain.explore import is_own_goal_refusal
+        from robot.interface import Preempted
+        try:
+            self._act(action, **kw)
+        except Preempted as e:
+            if not is_own_goal_refusal(e):
+                raise
+            self.actions -= 1
+            self._holds += 1
+            if self._holds <= MAX_HOLDS:
+                self._moves.insert(0, name)
+                if self.idle is not None:
+                    self.idle(POLL_S)
+            return False
+        self._holds = 0
+        return True
+
+    def _nudge_here(self) -> bool:
+        """One creep per place: repeated, it would walk the robot on into
+        the far end of the gap (brain/explore.py's `_nudge_here`)."""
+        p = self._pose()
+        if not p.get("usable"):
+            return False
+        xy = (p["x_m"], p["y_m"])
+        if any(math.hypot(xy[0] - x, xy[1] - y) < STUCK_PLACE_M for x, y in self._nudged):
+            return False
+        self._nudged.append(xy)
+        return True
+
+    def _stalled(self, pose: dict) -> bool:
+        """3.172 F2: nav2 has held a goal for STUCK_S with the robot not
+        going anywhere. Translation only: a pivot that swings and is refused
+        (3.158.B's trap) looks busy."""
+        if STUCK_S <= 0 or not pose.get("usable"):
+            self._still = None
+            return False
+        xy, now = (pose["x_m"], pose["y_m"]), self.clock()
+        if self._still is None or math.hypot(xy[0] - self._still[0][0], xy[1] - self._still[0][1]) > STUCK_M:
+            self._still = (xy, now)
+            return False
+        return now - self._still[1] >= STUCK_S
+
+    def _unstick(self, pose: dict) -> Optional[tuple]:
+        """Give up the goal and shift the robot, or end the return."""
+        xy = (pose["x_m"], pose["y_m"])
+        if (self._stuck_at is None
+                or math.hypot(xy[0] - self._stuck_at[0], xy[1] - self._stuck_at[1]) > STUCK_PLACE_M):
+            self._stuck_at, self.stuck_rounds = xy, 0
+        self.stuck_rounds += 1
+        if self.stuck_rounds > STUCK_ROUNDS:
+            return FAILED, f"no_motion: still stalled at one place after {STUCK_ROUNDS} shifts"
+        try:
+            self.nav.cancel_goal()
+        except Exception as e:  # noqa: BLE001 -- the back-off is refused while it holds; the next round retries
+            if type(e).__name__ in _NOT_OURS:
+                raise
+        self.log.append(f"stalled {STUCK_S:.0f} s at ({xy[0]:.2f}, {xy[1]:.2f}); shifting and trying again")
+        self.state, self.tries, self._still = "goal", 0, None
+        self._back_off()
         return None
 
     def _to_dock(self, why: str) -> None:

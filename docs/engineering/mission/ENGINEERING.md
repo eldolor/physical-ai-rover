@@ -384,6 +384,18 @@ present, then ship one metrics row if `metrics_url` is set (kept as
 ### The return to the dock (3.156.B)
 
 `brain/dock.py` holds the trip; the runner holds when it runs.
+
+**A stall on the way home (3.172 F2).** Under a live nav2 goal, `ReturnTrip`
+counts `STUCK_S` (45 s) of travel under `STUCK_M` (5 cm) as a stall: translation
+only, because a pivot that swings and is refused looks busy. It cancels its own
+goal, backs off with the guarded REVERSE, and if that is refused queues one
+bounded creep forward (`NUDGE_S`, the escape's), then sends the goal again.
+A creep is made once per `STUCK_PLACE_M` (0.30 m). `STUCK_ROUNDS` (3) shifts that
+leave the robot within that of where the stalls began end the return `failed`,
+reason `no_motion`, at the next stall, instead of waiting out `RETURN_MAX_S`. A
+refusal because the just-cancelled goal still holds the robot is a wait
+(`MAX_HOLDS` polls), not a person's preemption. Every move goes through the agent's `SafetyController`; a person's Stop, a preemption
+or Reserve still propagates from the cancel and from each verb.
 * **The dock** (`status.dock`, `{x_m, y_m, theta, source}`) is the world's
   pose read at `start()`, `source: start` (3.156.E brings the saved map's).
   None when the pose was not usable: the return is then `skipped`, `no_dock`.
