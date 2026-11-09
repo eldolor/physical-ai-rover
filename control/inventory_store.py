@@ -97,7 +97,7 @@ def _sweep_stale_tmp(directory: Path) -> None:
 # 3.50.D5, the user's call (2026-10-31, G12/G13): the S3 copy holds what it
 # held before D5 -- this mission's own landmarks, none of the chain's fields.
 # The local file keeps everything; the chain reads only that.
-_LOCAL_ONLY_KEYS = ("frame_id", "carried_from", "carry_seq", "mission_id")
+_LOCAL_ONLY_KEYS = ("frame_id", "carried_from", "carry_seq", "mission_id", "set_aside")
 
 
 def _for_s3(report: dict) -> dict:

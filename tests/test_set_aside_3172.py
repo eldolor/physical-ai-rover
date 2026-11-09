@@ -86,3 +86,21 @@ def test_the_report_carries_what_this_mission_learned():
     for _ in range(SET_ASIDE_MIN_FAILURES):
         runner.agent.retry.fail(5.0, 5.0, 0.0)
     assert runner.inventory_report()["set_aside"] == [{"x_m": 5.0, "y_m": 5.0, "age": 0}]
+
+
+def test_a_mission_with_only_places_set_aside_left_tries_them_rather_than_end():
+    """Review: a place a person blocked last mission must not end this one
+    `exhausted` with the target unlooked-for: it is tried last, not never."""
+    runner = _runner()
+    runner.agent.retry = RetryBook(radius_m=100.0, set_aside=[(0.0, 0.0, 0)])
+    for _ in range(200):
+        runner.tick()
+        if not runner.agent.retry.set_aside or runner.agent.exhausted:
+            break
+    assert runner.agent.retry.set_aside == [] and not runner.agent.exhausted
+
+
+def test_set_aside_stays_off_s3():
+    """The chain's fields are local (the user, 2026-10-31): these are places on a floor plan."""
+    from control.inventory_store import _for_s3
+    assert "set_aside" not in _for_s3({"landmarks": [], "set_aside": [{"x_m": 1.0, "y_m": 2.0, "age": 0}]})

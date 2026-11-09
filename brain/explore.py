@@ -1033,6 +1033,12 @@ class ExploreAgent(MissionAgent):
         if self.retry.cooling(now):
             return "WAIT", True, (f"no frontier ready; retrying in "
                                   f"{self.retry.next_ready_in(now):.0f} s")
+        if self.retry.set_aside:
+            # 3.172 F3 review: tried last, not never. Nothing else is left, and a
+            # place set aside may have cleared since (a person in a doorway).
+            self._event("set_aside_released", places=len(self.retry.set_aside))
+            self.retry.set_aside = []
+            return "WAIT", True, "nothing else left; trying the places set aside"
         self.exhausted = True
         self.last_event = (f"no reachable frontier left ({len(frontiers)} on the map: "
                            f"{skipped['reached twice']} reached twice, "

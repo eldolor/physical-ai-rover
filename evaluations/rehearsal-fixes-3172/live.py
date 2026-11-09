@@ -23,5 +23,5 @@ sheet["schedule"] = [{"job": "survey", "phase": "counted"} if j == "survey"
                      else {"job": "find", "target": j.split(":", 1)[1], "present": True, "phase": "counted"}
                      for j in jobs]
 R.json = SimpleNamespace(loads=lambda s: sheet if isinstance(s, str) and '"schedule"' in s else json.loads(s), dumps=json.dumps)
-sys.argv = [sys.argv[0], out, "--batch-s", "100000"]
+sys.argv = [sys.argv[0], out, "--batch-s", os.environ.get("LIVE_BATCH_S", "4500")]
 sys.exit(R.main())
