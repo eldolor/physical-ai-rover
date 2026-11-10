@@ -174,8 +174,9 @@ paragraph.**
   perception on real frames is built.
 * Not built: `brain/planner.py`, S7 (chaos and soak), a Stage 1 vision
   re-run against the lit renderer.
-* 3.173: surveys never enter laundry or pantry (0 of 9; unreachable at the goal
-  clearance); steps and bars written, not built, waiting to be scheduled.
+* 3.173: surveys never enter laundry or pantry (0 of 9); A: no survey sends a room
+  goal, and on SLAM's map those rooms likely hold no cell a goal may stand on
+  (truth: 0.366 m, the goal needs 0.35 m); B and C not built.
 
 **Waiting on the Rover** (due Oct 19 - Nov 11)
 
