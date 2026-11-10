@@ -314,6 +314,7 @@ paragraph.**
 *Missions*
 
 * 3.172.A: an escape whose REVERSE is refused and whose front is over the bar creeps forward 10 cm, once a place; the return treats 45 s of no travel as a stall, shifts, re-sends, and ends `no_motion` after 3 shifts (was 600 s). 20 of 20 reproduced traps, 0 contacts; not reproduced live. F4 held.
+* 3.172.B: frontier places that stalled twice are set aside for the next 3 missions on the saved map (never for an approach; tried last, not never; local only). Live, 13 missions: aisle median 0 s (was 453), finds 8 of 11, 13 of 13 docked, 0 contacts; FAILED B4 (a survey 10 of 13 rooms, cause open).
 * 3.158.B: the simulator rehearsal (45 missions, drop guard on, stand-in tiers) FAILED C1 (13 of 26), C4 (0 of 5), C5, C10 (33 of 35), C12, C13, C14 and D4; 0 wrong found, 0 contacts, 0 falls. One chair aisle took 49.7% of mission time. Fixes: 3.172.
 * 3.156.B: a mission's end goes home (`brain/dock.py`; `return_to_dock` on in
   the config, off in the runner); the dock is the start pose; a Stop or D-pad
