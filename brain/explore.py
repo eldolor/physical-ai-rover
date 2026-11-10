@@ -43,6 +43,7 @@ import logging
 import math
 
 import httpx
+import numpy as np
 import time
 from typing import Callable, Optional, Protocol, Union
 
@@ -53,6 +54,7 @@ from brain.tiered import STEER_BAND_DEG, located_local_bearing, turn_for
 from brain.tiered import candidate_refused as _refused
 from brain.frontier import (RetryBook, camera_seen, find_frontiers, find_view_gaps,
                             known_near, reach, reachable)
+from brain.room_labels import segment
 from brain.choice_log import BY_RULE_TIMEOUT, GoalAsk
 from brain.goal_policy import FEATURES as GOAL_FEATURES
 from brain.goal_policy import LinearGoalPolicy
@@ -129,6 +131,17 @@ NUDGE_PLACE_M = 0.30
 # 3.172 F5: a find goes first to where earlier missions on the saved map put
 # the target -- at most this many carried landmarks, one goal each.
 RECALL_MAX = 3
+# 3.173.B: a survey's goal into a room of its map that holds no cell at the
+# goal clearance (laundry and pantry: 0.366 m on truth, the goal's 0.35 m on
+# SLAM's map) may stand at this clearance -- over the chassis' 0.181 m, at which
+# it touches nothing at any heading. The cut runs at most every SMALL_ROOM_S.
+SMALL_ROOM_CLEARANCE_M = 0.25
+SMALL_ROOM_S = 5.0
+# A piece of the cut smaller than this is a gap between furniture, not a room:
+# in-process (0.30 m cells) the pantry's piece is 0.72-0.90 m2 and the laundry's
+# 1.08, the dining chairs' and kitchen's gaps 0.09-0.63 (on truth: 1.53, 1.98).
+SMALL_ROOM_MIN_M2 = 0.7
+STOOD_M = 0.10                      # the grid the robot's own track is kept on
 # 3.172.D: a goal_sent names at most this many of the places a choice skipped
 # because earlier missions set them aside (so a rehearsal can say where).
 SET_ASIDE_LOGGED = 20
@@ -342,6 +355,9 @@ class ExploreAgent(MissionAgent):
         self._recall_refused_at = None      # when that row began
         self._recall_refused_last = None    # its latest refusal
         self._aside_at: list = []           # 3.172.D: this choice's skips for a carried set-aside
+        self._stood: set = set()            # 3.173.B: where the robot has stood, STOOD_M squares
+        self._small_tried: list = []        # 3.173.B: small-room goals sent
+        self._small_at: Optional[float] = None
         self._glimpse_backoffs: list = []   # where the robot stood when a glimpse did
         self._glimpse_spent: list = []      # where a glimpse's turns were given up (3.80.O)
         # Frontier goals already reached, with how often. A frontier still
@@ -456,6 +472,7 @@ class ExploreAgent(MissionAgent):
         pose = self._pose()
         if pose.get("usable"):
             self._note_room(pose)
+            self._stood.add((round(pose["x_m"] / STOOD_M), round(pose["y_m"] / STOOD_M)))
             # 3.80.O: a place where a glimpse's turns were given up stays given
             # up only while the robot is still there (review).
             self._glimpse_spent = [
@@ -1059,6 +1076,9 @@ class ExploreAgent(MissionAgent):
         frontiers = find_frontiers(m, pose["x_m"], pose["y_m"], clearance_m=leave,
                                    reach_map=rch)
         skipped = {"reached twice": 0, "set aside": 0}
+        small = self._small_room_goal(m, pose, rch, now)
+        if small is not None:
+            return small
         pooled = self.goal_policy is not None or self.ask is not None
         if self.ask is not None:
             out = self._open_ask(m, pose, frontiers, leave, known, now, skipped, rch)
@@ -1131,6 +1151,59 @@ class ExploreAgent(MissionAgent):
         self._event("exhausted", frontiers=len(frontiers), skipped=skipped,
                     rooms_entered=sorted(self.rooms_entered))
         return "STOP", True, self.last_event
+
+    def _survey(self) -> bool:
+        return not (self.memory.target_object or self.memory.target_room)
+
+    def _small_room_goal(self, m: dict, pose: dict, rch, now: float):
+        """3.173.B: a survey's goal into a room of the map (`segment`'s cut)
+        the robot has not stood in and where no goal at the goal clearance can
+        stand (no stop of `rch` in it), at the most open cell in it that keeps
+        SMALL_ROOM_CLEARANCE_M and that passes reach; the nearest such room
+        first, each once. Only a goal: nav2 plans it and the robot server
+        vets every move."""
+        if not self._survey() or SMALL_ROOM_CLEARANCE_M <= 0:
+            return None
+        t = self.clock()
+        if self._small_at is not None and t - self._small_at < SMALL_ROOM_S:
+            return None
+        self._small_at = t
+        seg, d = segment(m)
+        flat_seg = seg.ravel()
+        w, res = m["width"], m["resolution_m"]
+        x0, y0 = m["origin_x_m"], m["origin_y_m"]
+        have_goal = set(flat_seg[rch.order].tolist()) if len(rch) else set()
+        stood = set()
+        for kx, ky in self._stood:
+            i, j = self._to_cell(m, (kx * STOOD_M, ky * STOOD_M))
+            if 0 <= i < w and 0 <= j < m["height"]:
+                stood.add(int(seg[j, i]))
+        tried = set()
+        for gx, gy in self._small_tried:
+            i, j = self._to_cell(m, (gx, gy))
+            if 0 <= i < w and 0 <= j < m["height"]:
+                tried.add(int(seg[j, i]))
+        small = reach(m, pose["x_m"], pose["y_m"], clearance_m=SMALL_ROOM_CLEARANCE_M)
+        best = {}
+        flat_d = d.ravel()
+        area = np.bincount(flat_seg[flat_seg >= 0]) * res * res
+        for cell, n in zip(small.order.tolist(), small.dist.tolist()):
+            r = int(flat_seg[cell])
+            if r < 0 or r in have_goal or r in stood or r in tried or area[r] < SMALL_ROOM_MIN_M2:
+                continue
+            key = (-flat_d[cell], n)                 # the most open cell, then the nearer
+            if r not in best or key < best[r][0]:
+                best[r] = (key, n, cell)
+        if not best:
+            return None
+        r = min(best, key=lambda k: best[k][1])      # the nearest room by path
+        cell = best[r][2]
+        gx, gy = x0 + (cell % w + 0.5) * res, y0 + (cell // w + 0.5) * res
+        out = self._send(gx, gy, "small_room", now, open_m=round(float(flat_d[cell]) * res, 2),
+                         area_m2=round(float(area[r]), 2), rooms=len(best))
+        if out[0] == "GOAL":
+            self._small_tried.append((gx, gy))
+        return out
 
     def _view_allowed(self, g) -> bool:
         return not (any(math.hypot(g.centre[0] - lx, g.centre[1] - ly) < self.retry.radius_m
@@ -1496,6 +1569,8 @@ class ExploreAgent(MissionAgent):
             if g["kind"] == "frontier":
                 self._reached.append((g["x_m"], g["y_m"]))
                 self._pending = list(LOOK_AROUND)
+            elif g["kind"] == "small_room":
+                self._pending = list(LOOK_AROUND)       # 3.173.B: looked at as a frontier is
             elif g["kind"] == "approach" and g.get("target"):
                 # nav2 takes no heading: turn to face what we came for. And if
                 # that still does not settle it, the next sighting may send
