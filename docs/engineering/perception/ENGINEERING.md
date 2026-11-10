@@ -226,7 +226,10 @@ every `SEED_EVERY_S` (2 s on either the wall clock, `seed_wall_clock`, or the
 mission clock: a simulated clock can stand still or run fast); a frame with
 detections reads
 the pose anyway. Without `inventory_prior` (sweeps, harnesses) nothing extra
-is read. `MissionRunner(..., inventory=True, detections_fn=None)`:
+is read. Since 3.172 F5, right after the seed (`_recall_carried()`, under the
+lock) the carried landmarks named as the target (`MissionMemory.names_target`)
+with belief at least `REPORT_BELIEF` go to explore's `recall_from()`, best first;
+none for a survey. `MissionRunner(..., inventory=True, detections_fn=None)`:
 `detections_fn(frame) -> [{label, bearing_deg}] | None`, bearings off the
 camera axis; None means the detector did not run on that frame, so no
 miss is inferred from it.

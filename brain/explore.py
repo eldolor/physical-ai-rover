@@ -126,6 +126,9 @@ CREEP_ROOM_CM = 1.0
 # or more closed it again. Once per NUDGE_PLACE_M of the mission's track.
 NUDGE_S = 3.3
 NUDGE_PLACE_M = 0.30
+# 3.172 F5: a find goes first to where earlier missions on the saved map put
+# the target -- at most this many carried landmarks, one goal each.
+RECALL_MAX = 3
 # "Boxed in": fewer reachable stopping places than this around the robot.
 BOXED_CELLS = 40
 # 3.70 E3: a room goal aims at least this far inside the room's label where
@@ -324,6 +327,7 @@ class ExploreAgent(MissionAgent):
         self._backed_off: list = []    # targets a refused face has backed off from (3.69)
         self._nudged: list = []             # 3.172: where the robot stood at each nudge
         self._reverse_refused = False       # 3.172: this escape's REVERSE was refused
+        self.recall: list = []              # 3.172 F5: carried places of the target, best first
         self._glimpse_backoffs: list = []   # where the robot stood when a glimpse did
         self._glimpse_spent: list = []      # where a glimpse's turns were given up (3.80.O)
         # Frontier goals already reached, with how often. A frontier still
@@ -546,6 +550,8 @@ class ExploreAgent(MissionAgent):
             return "WAIT", True, "closing in: waiting for the local tier's next answer"
 
         remembered = self._back_to_sighting(now)
+        if remembered is None:
+            remembered = self._recall_goal(now)
         if remembered is not None:
             action, executed, detail = remembered
         else:
@@ -887,6 +893,37 @@ class ExploreAgent(MissionAgent):
         out = self._send_approach(tx, ty, now)
         if out[0] == "GOAL":
             out = (out[0], out[1], f"back to the last sighting; {out[2]}")
+        return out
+
+    def recall_from(self, places) -> None:
+        """3.172 F5: where earlier missions on this saved map put the target
+        (the runner's carried landmarks of its name, best first)."""
+        self.recall = [(float(x), float(y)) for x, y in places][:RECALL_MAX]
+        if self.recall:
+            self._event("recall_set", places=[[round(x, 2), round(y, 2)] for x, y in self.recall])
+
+    def _recall_goal(self, now: float):
+        """3.172 F5: with nothing of this mission's in sight or remembered, go
+        to the first carried place of the target and face it: one try each,
+        dropped once a goal to it is taken, reached or not. A place set aside
+        never blocks it (it is where the target was, as an approach)."""
+        if not self.recall:
+            return None
+        pose = self._pose()
+        if not pose.get("usable"):
+            return None
+        tx, ty = self.recall[0]
+        if self._at_target(tx, ty):
+            self.recall.pop(0)
+            self._pending = [("FACE", (tx, ty))]
+            self._event("recall", pose=pose, at=[round(tx, 2), round(ty, 2)], here=True)
+            return self._do_pending()
+        d = math.hypot(tx - pose["x_m"], ty - pose["y_m"])
+        gx, gy = self._approach_point(pose, tx, ty, d)
+        out = self._send(gx, gy, "recall", now, at=[round(tx, 2), round(ty, 2)])
+        if out[0] == "GOAL":
+            self.recall.pop(0)
+            self._goal["recall"] = (tx, ty)
         return out
 
     def _approach_point(self, pose: dict, tx: float, ty: float, d: float) -> tuple:
@@ -1408,6 +1445,10 @@ class ExploreAgent(MissionAgent):
                 # another approach from here.
                 self._pending = [("FACE", g["target"], 90, False, True)]
                 self._approach = None
+            elif g.get("recall"):
+                # 3.172 F5: a remembered place, not a sighting: a refused turn
+                # gives up the look, never counts against the place.
+                self._pending = [("FACE", g["recall"])]
             elif g.get("look_at"):
                 self._pending = [("FACE", g.get("face") or g["look_at"])]
             return

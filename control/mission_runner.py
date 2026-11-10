@@ -66,7 +66,7 @@ from brain.goal_policy import rooms_prior_informative as flat_prior_ok
 from brain.frontier import RETRY_COOLDOWN_S, RETRY_LIMIT, SET_ASIDE_MIN_FAILURES, SET_ASIDE_MISSIONS
 from brain.inventory import MAX_RANGE_M as INVENTORY_RANGE_M
 from brain.what_i_saw import MAX_THUMBS
-from brain.inventory import DEFAULT_FOV_DEG, Inventory, _bearing_to, frame_detections
+from brain.inventory import DEFAULT_FOV_DEG, REPORT_BELIEF, Inventory, _bearing_to, frame_detections
 from brain.memory import MissionMemory
 from brain.mission_report import map_coverage
 from brain.navigate import CloudUnavailable
@@ -3006,11 +3006,29 @@ class MissionRunner:
             n = self.inventory.seed(frame_id, prior) if prior else 0
             source = self.inventory.carried_from
             aside = self._carry_set_aside(frame_id, prior)
+            recalled = self._recall_carried() if n else 0
         if n:
             self._log_line(f"inventory: {n} landmarks carried from "
                            f"{source or 'an earlier mission'} on {frame_id}")
         if aside:
             self._log_line(f"explore: {aside} stalled places set aside from earlier missions on {frame_id}")
+        if recalled:
+            self._log_line(f"explore: going first to {recalled} place(s) where earlier missions "
+                           f"on {frame_id} saw the {self.memory.target_object}")
+
+    def _recall_carried(self) -> int:
+        """3.172 F5: the carried landmarks named as the target (the found
+        rule's match), believed at least `REPORT_BELIEF`, best first, to
+        explore -- under `_lock`, just seeded. None for a survey."""
+        fn = getattr(self.agent, "recall_from", None)
+        if fn is None or not self.memory.target_object:
+            return 0
+        lms = sorted((lm for lm in self.inventory.landmarks
+                      if lm.carried and lm.belief >= REPORT_BELIEF
+                      and self.memory.names_target(lm.label)),
+                     key=lambda lm: -lm.belief)
+        fn([(lm.x, lm.y) for lm in lms])
+        return len(self.agent.recall)
 
     def _carry_set_aside(self, frame_id, prior) -> int:
         """3.172 F3: the places earlier missions on this saved map could not
