@@ -137,6 +137,8 @@ SET_ASIDE_LOGGED = 20
 # way to frontiers.
 RECALL_REFUSED = 5
 RECALL_REFUSED_S = 10.0
+# Review 3: a refusal more than this after the last one starts the row again.
+RECALL_REFUSED_GAP_S = 3.0
 # "Boxed in": fewer reachable stopping places than this around the robot.
 BOXED_CELLS = 40
 # 3.70 E3: a room goal aims at least this far inside the room's label where
@@ -338,6 +340,7 @@ class ExploreAgent(MissionAgent):
         self.recall: list = []              # 3.172 F5: carried places of the target, best first
         self._recall_refused = 0            # refusals in a row of recall[0]
         self._recall_refused_at = None      # when that row began
+        self._recall_refused_last = None    # its latest refusal
         self._aside_at: list = []           # 3.172.D: this choice's skips for a carried set-aside
         self._glimpse_backoffs: list = []   # where the robot stood when a glimpse did
         self._glimpse_spent: list = []      # where a glimpse's turns were given up (3.80.O)
@@ -944,17 +947,19 @@ class ExploreAgent(MissionAgent):
             self._recall_refused, self._recall_refused_at = 0, None
             self._goal["recall"] = (tx, ty)
         else:
+            last, self._recall_refused_last = self._recall_refused_last, now
+            if self._recall_refused_at is None or (
+                    last is not None and now - last > RECALL_REFUSED_GAP_S):
+                self._recall_refused, self._recall_refused_at = 0, now   # a new row
             self._recall_refused += 1
-            if self._recall_refused_at is None:
-                self._recall_refused_at = now
-            if (self._recall_refused >= RECALL_REFUSED
-                    and now - self._recall_refused_at >= RECALL_REFUSED_S):
+            span = now - self._recall_refused_at
+            if self._recall_refused >= RECALL_REFUSED and span >= RECALL_REFUSED_S:
                 # Review: refused again and again, it gives way (frontiers too
                 # would be refused by a hold, but never forever by one place).
                 self.recall.pop(0)
-                self._recall_refused, self._recall_refused_at = 0, None
                 self._event("recall_dropped", at=[round(tx, 2), round(ty, 2)],
-                            refused=RECALL_REFUSED)
+                            refused=self._recall_refused, span_s=round(span, 1))
+                self._recall_refused, self._recall_refused_at = 0, None
         return out
 
     def _band_point(self, pose: dict, tx: float, ty: float) -> Optional[tuple]:
@@ -1087,7 +1092,9 @@ class ExploreAgent(MissionAgent):
             if any(math.hypot(g.goal[0] - vx, g.goal[1] - vy) < self.retry.radius_m
                    for vx, vy in self._view_goals):
                 continue
-            if self.retry.available(g.goal[0], g.goal[1], now, known):
+            if not self.retry.available(g.goal[0], g.goal[1], now, known):
+                self._note_aside(g.goal)          # review 3: view gaps too
+            else:
                 out = self._send(g.goal[0], g.goal[1], "view", now,
                                  look_at=[round(g.centre[0], 2), round(g.centre[1], 2)],
                                  area_m2=round(g.area_m2, 2), path_m=round(g.distance_m, 2))
@@ -1163,8 +1170,10 @@ class ExploreAgent(MissionAgent):
                                        reached=reached, goals_sent=self.goals_sent, ctx=ctx))
         for g in find_view_gaps(m, pose["x_m"], pose["y_m"], seen_cells, clearance_m=leave,
                                 reach_map=rch):
-            if not self._view_allowed(g) or not self.retry.available(g.goal[0], g.goal[1],
-                                                                      now, known):
+            if not self._view_allowed(g):
+                continue
+            if not self.retry.available(g.goal[0], g.goal[1], now, known):
+                self._note_aside(g.goal)          # review 3: view gaps too
                 continue
             pool.append(("view", g, None))
             feats.append(goal_features(m, pose, g.goal, kind="view", path_m=g.distance_m,

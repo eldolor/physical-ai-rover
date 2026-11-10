@@ -153,3 +153,20 @@ def test_review_2_a_momentary_hold_does_not_spend_the_place():
     for _ in range(RECALL_REFUSED + 1):
         agent._recall_goal(agent.clock())          # simulated time stands still
     assert agent.recall == [(lx, ly)]
+
+
+def test_review_3_refusals_far_apart_are_not_a_row():
+    """Review 3: a refusal, a long quiet, then four more gave the place away;
+    a gap over RECALL_REFUSED_GAP_S starts the row again."""
+    from brain.explore import RECALL_REFUSED, RECALL_REFUSED_GAP_S
+    runner, grid, nav = _runner("washer")
+    lx, ly = _far_floor(grid, nav)
+    agent = runner.agent
+    agent.recall_from([(lx, ly)])
+    nav.refuse = RECALL_REFUSED + 1
+    agent._recall_goal(0.0)
+    t = 20.0
+    for _ in range(RECALL_REFUSED - 1):
+        agent._recall_goal(t)
+        t += RECALL_REFUSED_GAP_S / 2
+    assert agent.recall == [(lx, ly)]

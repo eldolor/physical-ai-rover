@@ -130,4 +130,6 @@ def test_d_this_missions_own_cooldown_is_not_named():
     runner = _runner()
     first = _first_goal(_runner())
     runner.agent.retry.fail(first["goal"][0], first["goal"][1], 0.0)
-    assert "set_aside_at" not in _first_goal(runner)
+    sent = _first_goal(runner)
+    assert sent["goal"] != first["goal"]          # review: the cooldown did skip it
+    assert "set_aside_at" not in sent
