@@ -176,6 +176,7 @@ def test_explore_waits_on_a_held_goal_and_fails_no_place():
     # Only what _send reads before the refusal is answered.
     agent.navigator = _HeldNav()
     agent._choice_t0 = None
+    agent._aside_at = []                # 3.172.D: a choice's set-aside skips
     agent._attempts = []
     agent.events = []
     agent._event = lambda name, **kw: agent.events.append((name, kw))
