@@ -38,9 +38,11 @@ def _map():
 def _agent(target=None):
     grid = build_world("scaled_house")
     robot = MockRobot(grid, render=False)
-    runner = MissionRunner(robot, policy="explore", navigator=FakeNav(robot), world=MockWorld(grid),
+    nav = FakeNav(robot)
+    runner = MissionRunner(robot, policy="explore", navigator=nav, world=MockWorld(grid),
                            target_object=target, **({} if target else {"job": "survey"}))
     runner.start()
+    runner.agent.fake_nav = nav           # the runner wraps the navigator it is given
     return runner.agent
 
 
@@ -98,3 +100,49 @@ def test_a_gap_between_furniture_is_no_room():
         for i in range(int(round(4.20 / RES)), int(round(4.70 / RES))):
             m["cells"][j * m["width"] + i] = CELL_OCCUPIED      # the small room now 1.0 m long
     assert _goal(_agent(), m) is None
+
+
+def test_review_a_room_the_retry_book_holds_waits():
+    """Review: a small-room goal that failed (or a place set aside by earlier
+    missions) waits as any goal's would."""
+    agent = _agent()
+    agent.retry.radius_m = 1.0
+    agent.retry.set_aside.append((4.0, 1.6, 0))
+    assert _goal(agent) is None
+
+
+def test_review_a_refused_goal_is_given_up_after_its_tries():
+    from brain.explore import SMALL_ROOM_REFUSED
+    agent = _agent()
+    agent.fake_nav.refuse = 100
+    for _ in range(SMALL_ROOM_REFUSED):
+        agent._small_at = None
+        assert _goal(agent)[0] == "WAIT"
+    agent._small_at = None
+    assert _goal(agent) is None
+
+
+def test_review_a_whole_survey_sends_one_goal_into_each_small_room():
+    """Review: through the runner and the chooser (the call, the track, the look),
+    home_first_floor's survey goes into its pantry and laundry, once each."""
+    from tests import survey_sweep as sw
+    grid = build_world("home_first_floor")
+    (cx, cy), theta, _ = sw.starts("home_first_floor")[0]
+    grid.x, grid.y, grid.theta = cx + 0.5, cy + 0.5, theta
+    truth = build_world("home_first_floor")
+    room = {c: n for n, cs in sorted(truth.rooms.items(), key=lambda kv: -len(kv[1])) for c in cs}
+    robot = MockRobot(grid, render=False)
+    runner = MissionRunner(robot, job="survey", policy="explore", navigator=FakeNav(robot),
+                           world=MockWorld(grid), mission_time_limit_s=sw.TIME_LIMIT_S,
+                           clock=lambda: grid.sim_time, idle=robot.pass_time)
+    runner.start()
+    for _ in range(sw.TICK_CAP):
+        if not runner.tick():
+            break
+    events = runner.agent.events
+    sent = [e for e in events if e.get("event") == "goal_sent" and e.get("kind") == "small_room"]
+    rooms = [room.get((int(e["goal"][0] / 0.3), int(e["goal"][1] / 0.3))) for e in sent]
+    assert rooms.count("pantry") == 1 and rooms.count("laundry") == 1, rooms
+    assert len(runner.agent._stood) >= 20       # the track a room "stood in" is read from (FakeNav jumps)
+    assert any(e["state"] == "succeeded" for e in events
+               if e.get("event") == "goal_ended" and e.get("kind") == "small_room")

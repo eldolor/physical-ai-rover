@@ -141,6 +141,7 @@ SMALL_ROOM_S = 5.0
 # in-process (0.30 m cells) the pantry's piece is 0.72-0.90 m2 and the laundry's
 # 1.08, the dining chairs' and kitchen's gaps 0.09-0.63 (on truth: 1.53, 1.98).
 SMALL_ROOM_MIN_M2 = 0.7
+SMALL_ROOM_REFUSED = 3              # review: refusals of one room's goal before it is given up
 STOOD_M = 0.10                      # the grid the robot's own track is kept on
 # 3.172.D: a goal_sent names at most this many of the places a choice skipped
 # because earlier missions set them aside (so a rehearsal can say where).
@@ -358,6 +359,9 @@ class ExploreAgent(MissionAgent):
         self._stood: set = set()            # 3.173.B: where the robot has stood, STOOD_M squares
         self._small_tried: list = []        # 3.173.B: small-room goals sent
         self._small_at: Optional[float] = None
+        self._small_refused: collections.Counter = collections.Counter()
+        self._small_none_on = None          # review: the map a cut last found nothing on
+        self._small_error_logged = False
         self._glimpse_backoffs: list = []   # where the robot stood when a glimpse did
         self._glimpse_spent: list = []      # where a glimpse's turns were given up (3.80.O)
         # Frontier goals already reached, with how often. A frontier still
@@ -1168,7 +1172,17 @@ class ExploreAgent(MissionAgent):
         if self._small_at is not None and t - self._small_at < SMALL_ROOM_S:
             return None
         self._small_at = t
-        seg, d = segment(m)
+        key = (m.get("map_id"), m.get("map_version"))
+        if key[1] is not None and key == self._small_none_on:
+            return None                     # review: nothing found on this very map
+        try:
+            seg, d = segment(m)
+            small = reach(m, pose["x_m"], pose["y_m"], clearance_m=SMALL_ROOM_CLEARANCE_M)
+        except Exception:  # noqa: BLE001 -- a by-product never ends a survey
+            if not self._small_error_logged:
+                self._small_error_logged = True
+                logger.warning("small-room cut failed", exc_info=True)
+            return None
         flat_seg = seg.ravel()
         w, res = m["width"], m["resolution_m"]
         x0, y0 = m["origin_x_m"], m["origin_y_m"]
@@ -1183,7 +1197,6 @@ class ExploreAgent(MissionAgent):
             i, j = self._to_cell(m, (gx, gy))
             if 0 <= i < w and 0 <= j < m["height"]:
                 tried.add(int(seg[j, i]))
-        small = reach(m, pose["x_m"], pose["y_m"], clearance_m=SMALL_ROOM_CLEARANCE_M)
         best = {}
         flat_d = d.ravel()
         area = np.bincount(flat_seg[flat_seg >= 0]) * res * res
@@ -1194,15 +1207,32 @@ class ExploreAgent(MissionAgent):
             key = (-flat_d[cell], n)                 # the most open cell, then the nearer
             if r not in best or key < best[r][0]:
                 best[r] = (key, n, cell)
-        if not best:
+        # The nearest room by path whose cell the retry book allows (review:
+        # a place that failed, or one set aside by earlier missions, waits as
+        # any goal's would).
+        pick = None
+        for r in sorted(best, key=lambda k: best[k][1]):
+            cell = best[r][2]
+            gx, gy = x0 + (cell % w + 0.5) * res, y0 + (cell // w + 0.5) * res
+            if self.retry.available(gx, gy, now):
+                pick = (r, cell, gx, gy)
+                break
+        if pick is None:
+            if not best:
+                self._small_none_on = key
             return None
-        r = min(best, key=lambda k: best[k][1])      # the nearest room by path
-        cell = best[r][2]
-        gx, gy = x0 + (cell % w + 0.5) * res, y0 + (cell // w + 0.5) * res
+        r, cell, gx, gy = pick
         out = self._send(gx, gy, "small_room", now, open_m=round(float(flat_d[cell]) * res, 2),
                          area_m2=round(float(area[r]), 2), rooms=len(best))
         if out[0] == "GOAL":
             self._small_tried.append((gx, gy))
+        else:
+            # Review: refused (a hold, an inflated cell): up to SMALL_ROOM_REFUSED
+            # tries, each a cut apart, then the room is given up.
+            place = (round(gx, 1), round(gy, 1))
+            self._small_refused[place] += 1
+            if self._small_refused[place] >= SMALL_ROOM_REFUSED:
+                self._small_tried.append((gx, gy))
         return out
 
     def _view_allowed(self, g) -> bool:

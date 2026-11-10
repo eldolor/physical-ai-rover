@@ -41,5 +41,9 @@ def test_label_calls_and_where_labels_land_do_not_regress(rows):
         assert statistics.median(calls) <= 10 and max(calls) <= 20, calls
         assert good >= 22, good
     else:
-        assert statistics.median(calls) <= 29 and max(calls) <= 44, calls
+        # 3.173.B (the orchestrator, 2026-11-10): the median was 29, the small-room goal's
+        # arm off exactly on it (off 29/44, good 46; on 31/44, good 48): the two calls are
+        # home_first_floor's pantry and laundry, newly labelled, and calls are free under
+        # the default `frame` source. A guard on cost, not a 3.173 bar.
+        assert statistics.median(calls) <= 31 and max(calls) <= 44, calls
         assert good >= 46, good
