@@ -107,7 +107,13 @@ def test_review_a_recall_refused_again_and_again_gives_way_to_frontiers():
     from brain.explore import RECALL_REFUSED
     runner, grid, nav = _runner("washer")
     lx, ly = _far_floor(grid, nav)
-    nav.refuse = RECALL_REFUSED
+    nav.refuse = 4 * RECALL_REFUSED
+    t = [0.0]
+
+    def clock():                       # round 2: refusals must span RECALL_REFUSED_S
+        t[0] += 1.0
+        return t[0]
+    runner.agent.clock = clock
     runner.agent.recall_from([(lx, ly)])
     kinds = _until_goal(runner)
     assert kinds == ["frontier"] and runner.agent.recall == []
@@ -132,3 +138,18 @@ def test_review_a_place_the_map_cannot_reach_yet_is_kept_not_spent():
     runner.agent.recall_from([(-50.0, -50.0)])        # off every map
     assert runner.agent._recall_goal(runner.agent.clock()) is None
     assert runner.agent.recall == [(-50.0, -50.0)] and not runner.agent.sent
+
+
+def test_review_2_a_momentary_hold_does_not_spend_the_place():
+    """Review round 2: five refusals inside a second (the mission's own verb
+    still holding the robot) gave the place away; it gives way only after
+    RECALL_REFUSED_S of refusals."""
+    from brain.explore import RECALL_REFUSED
+    runner, grid, nav = _runner("washer")
+    lx, ly = _far_floor(grid, nav)
+    agent = runner.agent
+    agent.recall_from([(lx, ly)])
+    nav.refuse = RECALL_REFUSED + 1
+    for _ in range(RECALL_REFUSED + 1):
+        agent._recall_goal(agent.clock())          # simulated time stands still
+    assert agent.recall == [(lx, ly)]

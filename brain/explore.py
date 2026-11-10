@@ -129,8 +129,11 @@ NUDGE_PLACE_M = 0.30
 # 3.172 F5: a find goes first to where earlier missions on the saved map put
 # the target -- at most this many carried landmarks, one goal each.
 RECALL_MAX = 3
-# Review: refusals in a row (authority, a hold) before a place gives way to frontiers.
+# Review: refusals in a row (authority, a hold), over at least RECALL_REFUSED_S
+# (round 2: a verb's own hold refuses for about a second), before a place gives
+# way to frontiers.
 RECALL_REFUSED = 5
+RECALL_REFUSED_S = 10.0
 # "Boxed in": fewer reachable stopping places than this around the robot.
 BOXED_CELLS = 40
 # 3.70 E3: a room goal aims at least this far inside the room's label where
@@ -331,6 +334,7 @@ class ExploreAgent(MissionAgent):
         self._reverse_refused = False       # 3.172: this escape's REVERSE was refused
         self.recall: list = []              # 3.172 F5: carried places of the target, best first
         self._recall_refused = 0            # refusals in a row of recall[0]
+        self._recall_refused_at = None      # when that row began
         self._glimpse_backoffs: list = []   # where the robot stood when a glimpse did
         self._glimpse_spent: list = []      # where a glimpse's turns were given up (3.80.O)
         # Frontier goals already reached, with how often. A frontier still
@@ -918,6 +922,7 @@ class ExploreAgent(MissionAgent):
         tx, ty = self.recall[0]
         if self._at_target(tx, ty):
             self.recall.pop(0)
+            self._recall_refused, self._recall_refused_at = 0, None
             self._pending = [("FACE", (tx, ty))]
             self._event("recall", pose=pose, at=[round(tx, 2), round(ty, 2)], here=True)
             return self._do_pending()
@@ -930,15 +935,18 @@ class ExploreAgent(MissionAgent):
         out = self._send(spot[0], spot[1], "recall", now, at=[round(tx, 2), round(ty, 2)])
         if out[0] == "GOAL":
             self.recall.pop(0)
-            self._recall_refused = 0
+            self._recall_refused, self._recall_refused_at = 0, None
             self._goal["recall"] = (tx, ty)
         else:
             self._recall_refused += 1
-            if self._recall_refused >= RECALL_REFUSED:
+            if self._recall_refused_at is None:
+                self._recall_refused_at = now
+            if (self._recall_refused >= RECALL_REFUSED
+                    and now - self._recall_refused_at >= RECALL_REFUSED_S):
                 # Review: refused again and again, it gives way (frontiers too
                 # would be refused by a hold, but never forever by one place).
                 self.recall.pop(0)
-                self._recall_refused = 0
+                self._recall_refused, self._recall_refused_at = 0, None
                 self._event("recall_dropped", at=[round(tx, 2), round(ty, 2)],
                             refused=RECALL_REFUSED)
         return out
