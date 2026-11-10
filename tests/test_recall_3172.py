@@ -92,3 +92,43 @@ def test_the_first_goal_is_the_recall_and_a_target_not_there_costs_one_goal():
     assert math.hypot(first[1] - lx, first[2] - ly) <= APPROACH_FAR_M + CELL
     assert kinds.count("recall") == 1 and "frontier" in kinds
     assert runner.agent.recall == [] and not runner.agent.exhausted
+
+
+def _until_goal(runner, n=200):
+    for _ in range(n):
+        runner.tick()
+        if runner.agent.sent:
+            return [k for _, _, k in runner.agent.sent]
+    return []
+
+
+def test_review_a_recall_refused_again_and_again_gives_way_to_frontiers():
+    """Review round 1: a refusal kept the place first, so every tick re-sent it."""
+    from brain.explore import RECALL_REFUSED
+    runner, grid, nav = _runner("washer")
+    lx, ly = _far_floor(grid, nav)
+    nav.refuse = RECALL_REFUSED
+    runner.agent.recall_from([(lx, ly)])
+    kinds = _until_goal(runner)
+    assert kinds == ["frontier"] and runner.agent.recall == []
+
+
+def test_review_no_recall_while_this_missions_own_sighting_is_kept():
+    """Review round 1: a sighting cooling down fell through to a recall."""
+    runner, grid, nav = _runner("washer")
+    lx, ly = _far_floor(grid, nav)
+    runner.agent.recall_from([(lx, ly)])
+    runner.agent._last_seen = (lx, ly)
+    runner.agent.retry.set_aside.clear()
+    for _ in range(runner.agent.retry.limit):
+        runner.agent.retry.fail(lx, ly, runner.agent.clock())
+    assert runner.agent._recall_goal(runner.agent.clock()) is None
+    assert runner.agent.recall == [(lx, ly)]
+
+
+def test_review_a_place_the_map_cannot_reach_yet_is_kept_not_spent():
+    """Review round 1: the straight-line fallback through walls spent the one try."""
+    runner, grid, nav = _runner("washer")
+    runner.agent.recall_from([(-50.0, -50.0)])        # off every map
+    assert runner.agent._recall_goal(runner.agent.clock()) is None
+    assert runner.agent.recall == [(-50.0, -50.0)] and not runner.agent.sent

@@ -129,6 +129,8 @@ NUDGE_PLACE_M = 0.30
 # 3.172 F5: a find goes first to where earlier missions on the saved map put
 # the target -- at most this many carried landmarks, one goal each.
 RECALL_MAX = 3
+# Review: refusals in a row (authority, a hold) before a place gives way to frontiers.
+RECALL_REFUSED = 5
 # "Boxed in": fewer reachable stopping places than this around the robot.
 BOXED_CELLS = 40
 # 3.70 E3: a room goal aims at least this far inside the room's label where
@@ -328,6 +330,7 @@ class ExploreAgent(MissionAgent):
         self._nudged: list = []             # 3.172: where the robot stood at each nudge
         self._reverse_refused = False       # 3.172: this escape's REVERSE was refused
         self.recall: list = []              # 3.172 F5: carried places of the target, best first
+        self._recall_refused = 0            # refusals in a row of recall[0]
         self._glimpse_backoffs: list = []   # where the robot stood when a glimpse did
         self._glimpse_spent: list = []      # where a glimpse's turns were given up (3.80.O)
         # Frontier goals already reached, with how often. A frontier still
@@ -907,8 +910,8 @@ class ExploreAgent(MissionAgent):
         to the first carried place of the target and face it: one try each,
         dropped once a goal to it is taken, reached or not. A place set aside
         never blocks it (it is where the target was, as an approach)."""
-        if not self.recall:
-            return None
+        if not self.recall or self._last_seen is not None:
+            return None             # review: this mission's own sighting, even cooling, comes first
         pose = self._pose()
         if not pose.get("usable"):
             return None
@@ -918,34 +921,55 @@ class ExploreAgent(MissionAgent):
             self._pending = [("FACE", (tx, ty))]
             self._event("recall", pose=pose, at=[round(tx, 2), round(ty, 2)], here=True)
             return self._do_pending()
-        d = math.hypot(tx - pose["x_m"], ty - pose["y_m"])
-        gx, gy = self._approach_point(pose, tx, ty, d)
-        out = self._send(gx, gy, "recall", now, at=[round(tx, 2), round(ty, 2)])
+        spot = self._band_point(pose, tx, ty)
+        if spot is None:
+            # Review: no reachable floor beside it on this map yet. Kept, not
+            # spent on a straight-line goal through walls: frontiers grow the
+            # map, and the next choice asks again.
+            return None
+        out = self._send(spot[0], spot[1], "recall", now, at=[round(tx, 2), round(ty, 2)])
         if out[0] == "GOAL":
             self.recall.pop(0)
+            self._recall_refused = 0
             self._goal["recall"] = (tx, ty)
+        else:
+            self._recall_refused += 1
+            if self._recall_refused >= RECALL_REFUSED:
+                # Review: refused again and again, it gives way (frontiers too
+                # would be refused by a hold, but never forever by one place).
+                self.recall.pop(0)
+                self._recall_refused = 0
+                self._event("recall_dropped", at=[round(tx, 2), round(ty, 2)],
+                            refused=RECALL_REFUSED)
         return out
 
-    def _approach_point(self, pose: dict, tx: float, ty: float, d: float) -> tuple:
+    def _band_point(self, pose: dict, tx: float, ty: float) -> Optional[tuple]:
         """Reachable floor within APPROACH_NEAR_M..APPROACH_FAR_M of the
-        target, nearest the robot by path; the straight-line standoff point
-        if the map offers none."""
+        target, nearest the robot by path; None if the map offers none."""
         try:
             m = self.world.get_map()
         except Exception:  # noqa: BLE001
             m = {}
         steps, start, _need = reachable(m, pose["x_m"], pose["y_m"])
-        if start is not None:
-            res = m["resolution_m"]
-            best = None
-            for (cx, cy), n in steps.items():
-                px = m["origin_x_m"] + (cx + 0.5) * res
-                py = m["origin_y_m"] + (cy + 0.5) * res
-                if APPROACH_NEAR_M <= math.hypot(px - tx, py - ty) <= APPROACH_FAR_M:
-                    if best is None or n < best[0]:
-                        best = (n, px, py)
-            if best is not None:
-                return best[1], best[2]
+        if start is None:
+            return None
+        res = m["resolution_m"]
+        best = None
+        for (cx, cy), n in steps.items():
+            px = m["origin_x_m"] + (cx + 0.5) * res
+            py = m["origin_y_m"] + (cy + 0.5) * res
+            if APPROACH_NEAR_M <= math.hypot(px - tx, py - ty) <= APPROACH_FAR_M:
+                if best is None or n < best[0]:
+                    best = (n, px, py)
+        return None if best is None else (best[1], best[2])
+
+    def _approach_point(self, pose: dict, tx: float, ty: float, d: float) -> tuple:
+        """Reachable floor within APPROACH_NEAR_M..APPROACH_FAR_M of the
+        target, nearest the robot by path; the straight-line standoff point
+        if the map offers none."""
+        best = self._band_point(pose, tx, ty)
+        if best is not None:
+            return best
         k = (d - APPROACH_STANDOFF_M) / d
         return pose["x_m"] + (tx - pose["x_m"]) * k, pose["y_m"] + (ty - pose["y_m"]) * k
 
