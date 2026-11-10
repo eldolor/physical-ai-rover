@@ -104,3 +104,30 @@ def test_set_aside_stays_off_s3():
     """The chain's fields are local (the user, 2026-10-31): these are places on a floor plan."""
     from control.inventory_store import _for_s3
     assert "set_aside" not in _for_s3({"landmarks": [], "set_aside": [{"x_m": 1.0, "y_m": 2.0, "age": 0}]})
+
+
+def _first_goal(runner, n=100):
+    for _ in range(n):
+        runner.tick()
+        sent = [e for e in runner.agent.events if e.get("event") == "goal_sent"]
+        if sent:
+            return sent[0]
+    raise AssertionError("no goal")
+
+
+def test_d_a_goal_sent_names_where_a_carried_set_aside_place_was_skipped():
+    """3.172.D: so a rehearsal can read where the places set aside lay (B4)."""
+    first = _first_goal(_runner())
+    assert "set_aside_at" not in first
+    runner = _runner()
+    runner.agent.retry.set_aside.append((first["goal"][0], first["goal"][1], 0))
+    sent = _first_goal(runner)
+    assert sent["goal"] != first["goal"]
+    assert first["goal"] in sent["set_aside_at"]
+
+
+def test_d_this_missions_own_cooldown_is_not_named():
+    runner = _runner()
+    first = _first_goal(_runner())
+    runner.agent.retry.fail(first["goal"][0], first["goal"][1], 0.0)
+    assert "set_aside_at" not in _first_goal(runner)

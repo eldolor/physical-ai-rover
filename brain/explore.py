@@ -129,6 +129,9 @@ NUDGE_PLACE_M = 0.30
 # 3.172 F5: a find goes first to where earlier missions on the saved map put
 # the target -- at most this many carried landmarks, one goal each.
 RECALL_MAX = 3
+# 3.172.D: a goal_sent names at most this many of the places a choice skipped
+# because earlier missions set them aside (so a rehearsal can say where).
+SET_ASIDE_LOGGED = 20
 # Review: refusals in a row (authority, a hold), over at least RECALL_REFUSED_S
 # (round 2: a verb's own hold refuses for about a second), before a place gives
 # way to frontiers.
@@ -335,6 +338,7 @@ class ExploreAgent(MissionAgent):
         self.recall: list = []              # 3.172 F5: carried places of the target, best first
         self._recall_refused = 0            # refusals in a row of recall[0]
         self._recall_refused_at = None      # when that row began
+        self._aside_at: list = []           # 3.172.D: this choice's skips for a carried set-aside
         self._glimpse_backoffs: list = []   # where the robot stood when a glimpse did
         self._glimpse_spent: list = []      # where a glimpse's turns were given up (3.80.O)
         # Frontier goals already reached, with how often. A frontier still
@@ -631,6 +635,8 @@ class ExploreAgent(MissionAgent):
     def _send(self, x_m: float, y_m: float, kind: str, now: float, **info):
         if self._choice_t0 is not None:
             info["choice_ms"] = self._decided()
+        if self._aside_at:
+            info["set_aside_at"] = self._aside_at[:SET_ASIDE_LOGGED]
         # 3.76: remembered BEFORE the call. A send whose answer is lost (a
         # read timeout after the bridge took the goal) leaves that goal
         # driving; it is still the mission's own, never "someone else's".
@@ -996,11 +1002,13 @@ class ExploreAgent(MissionAgent):
             if self._asked is not None:
                 return self._answer_ask(now)
         self._choice_t0, self._choice_ms = time.perf_counter(), None
+        self._aside_at = []
         try:
             return self._choose_next(now)
         finally:
             self.choice_times_ms.append(self._decided())
             self._choice_t0 = None
+            self._aside_at = []
 
     def _decided(self) -> float:
         """The current choice's time up to its decision, fixed the first
@@ -1066,6 +1074,7 @@ class ExploreAgent(MissionAgent):
                                   size_m=round(f.size_m, 2), score=round(f.score, 2),
                                   skipped=dict(skipped))
             skipped["set aside"] += 1
+            self._note_aside(f.goal)
         seen_cells = {self._to_cell(m, c) for c in self.seen}
         for g in find_view_gaps(m, pose["x_m"], pose["y_m"], seen_cells, clearance_m=leave,
                                 reach_map=rch):
@@ -1122,6 +1131,12 @@ class ExploreAgent(MissionAgent):
                     or any(math.hypot(g.goal[0] - vx, g.goal[1] - vy) < self.retry.radius_m
                            for vx, vy in self._view_goals))
 
+    def _note_aside(self, goal) -> None:
+        """3.172.D: a skipped candidate that a carried set-aside place holds
+        (not this mission's cooldown), for its choice's goal_sent."""
+        if self.retry.is_set_aside(goal[0], goal[1]):
+            self._aside_at.append([round(goal[0], 2), round(goal[1], 2)])
+
     def _pool(self, m, pose, frontiers, leave, known, now, skipped, rch=None):
         """3.65 phase 2: every frontier and view gap the rule would send, as
         `[(kind, candidate, rank)]` with their features -- frontiers first, in
@@ -1139,6 +1154,7 @@ class ExploreAgent(MissionAgent):
                 continue
             if not self.retry.available(f.goal[0], f.goal[1], now, known):
                 skipped["set aside"] += 1
+                self._note_aside(f.goal)
                 continue
             pool.append(("frontier", f, rank))
             feats.append(goal_features(m, pose, f.goal, kind="frontier", path_m=f.distance_m,
