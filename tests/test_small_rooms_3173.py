@@ -347,6 +347,7 @@ def test_thermos1_a_room_stood_in_stays_stood_in_once_a_stop_reaches_where_it_st
     m = _hall_map()
     agent = _agent()
     agent._stood.add((round(1.4 / 0.10), round(4.4 / 0.10)))
+    assert _sides(agent, m) == ["east"]              # stood in the west room
     real = agent._small_regions
 
     def grown(m2, seg, rch):
@@ -355,7 +356,17 @@ def test_thermos1_a_room_stood_in_stays_stood_in_once_a_stop_reaches_where_it_st
         reg[j - 2:j + 3, i - 2:i + 3] = -1           # where it stood, now reached
         return reg
     agent._small_regions = grown
-    assert _sides(agent, m) == ["east"]
+    assert _sides(agent, m) == []
+
+
+def test_thermos1_review_passing_a_room_s_door_is_not_standing_in_it():
+    """Review of the Thermos 1 fix: the robot's path is mostly cells a stop
+    reaches (-1); standing in the hall 0.2 m from the west room's door never
+    marks that room stood in."""
+    m = _hall_map()
+    agent = _agent()
+    agent._stood.add((round(1.9 / 0.10), round(3.5 / 0.10)))
+    assert sorted(_sides(agent, m)) == ["east", "west"]
 
 
 def test_thermos2_a_tried_goal_whose_cell_is_no_longer_free_still_marks_its_room():

@@ -363,6 +363,7 @@ class ExploreAgent(MissionAgent):
         self._recall_refused_last = None    # its latest refusal
         self._aside_at: list = []           # 3.172.D: this choice's skips for a carried set-aside
         self._stood: set = set()            # 3.173.B: where the robot has stood, STOOD_M squares
+        self._stood_in: set = set()         # Thermos 1: those once inside a small-room region
         self._small_tried: list = []        # 3.173.B: small-room goals sent
         self._small_at: Optional[float] = None
         self._small_refused: collections.Counter = collections.Counter()
@@ -1205,9 +1206,12 @@ class ExploreAgent(MissionAgent):
             if 0 <= i < w and 0 <= j < h:
                 if reg[j, i] >= 0:
                     stood.add(int(reg[j, i]))
-                else:
-                    # Thermos 1: a stop now reaches where it stood; the rest of
-                    # that room is still the room it stood in.
+                    self._stood_in.add((kx, ky))
+                elif (kx, ky) in self._stood_in:
+                    # Thermos 1: a stop now reaches where it stood inside a
+                    # region; the rest of that room is still the room it stood
+                    # in. Only such cells: most of its path is reached floor,
+                    # and passing a room's door is not standing in it (review).
                     stood |= self._regions_near(m, reg, free, i, j)
         # Review: a region is tried if a goal sent before reaches it -- any of
         # its cells within the reach radius of that goal through free floor
