@@ -174,9 +174,6 @@ paragraph.**
   perception on real frames is built.
 * Not built: `brain/planner.py`, S7 (chaos and soak), a Stage 1 vision
   re-run against the lit renderer.
-* 3.173: surveys never enter laundry or pantry (0 of 9); A: no survey sends a room
-  goal, and on SLAM's map those rooms likely hold no cell a goal may stand on
-  (truth: 0.366 m, the goal needs 0.35 m); B and C not built.
 
 **Waiting on the Rover** (due Oct 19 - Nov 11)
 
@@ -319,7 +316,8 @@ paragraph.**
 * 3.172.A: an escape whose REVERSE is refused and whose front is over the bar creeps forward 10 cm, once a place; the return treats 45 s of no travel as a stall, shifts, re-sends, and ends `no_motion` after 3 shifts (was 600 s). 20 of 20 reproduced traps, 0 contacts; not reproduced live. F4 held.
 * 3.172.B: frontier places that stalled twice are set aside for the next 3 missions on the saved map (never for an approach; tried last, not never; local only). Live, 13 missions: aisle median 0 s (was 453), finds 8 of 11, 13 of 13 docked, 0 contacts; FAILED B4 (a survey 10 of 13 rooms, cause open).
 * 3.172.C: a find goes first to where earlier missions on the saved map saw the target (`recall` goals: carried landmarks of its name, belief >= 0.8, at most 3, one try each). Live 8 finds: 8 of 8 found, all first goals recalls, median 134 s (was 502), 0 contacts; a target moved between missions not measured.
-* 3.172.E: 3.158.B's 45-mission rehearsal again on `dev`: C1 26 of 26 (was 13), finds median 132 s (was 1,126), C10, C12-C14 and D4 now met, 0 contacts, 0 falls, 0 wrong; FAILED C4 (0 of 5 exhausted) and C5 (surveys 11 of 13 rooms, never laundry or pantry); 3.173.B's small-room goal refused `preempted` 30 of 30 and never drove.
+* 3.172.E: 3.158.B's 45-mission rehearsal again on `dev`: C1 26 of 26 (was 13), finds median 132 s (was 1,126), C10, C12-C14 and D4 now met, 0 contacts, 0 falls, 0 wrong; FAILED C4 (0 of 5 exhausted) and C5 (surveys 11 of 13 rooms, never laundry or pantry); 3.173.B's small-room goal refused `preempted` 30 of 30 and never drove. Surveys still end on the time limit (`out_of_budget`), never `exhausted`.
+* 3.173: a survey sends a `small_room` goal (0.25 m clearance) into each region of the cut no goal stop reaches; a `preempted` refusal is waited through. Live 5 surveys: laundry 5/5, pantry 5/5 (was 0 of 9), 13 of 13 rooms each, 0 contacts, all docked; the breakfast region stalls every time (a narrower rule would save 3-7 min a survey).
 * 3.158.B: the simulator rehearsal (45 missions, drop guard on, stand-in tiers) FAILED C1 (13 of 26), C4 (0 of 5), C5, C10 (33 of 35), C12, C13, C14 and D4; 0 wrong found, 0 contacts, 0 falls. One chair aisle took 49.7% of mission time. Fixes: 3.172.
 * 3.156.B: a mission's end goes home (`brain/dock.py`; `return_to_dock` on in
   the config, off in the runner); the dock is the start pose; a Stop or D-pad
