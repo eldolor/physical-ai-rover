@@ -4,8 +4,10 @@ amendment 3's rule against `dev`'s (B as merged: a piece with no goal stop).
     python evaluations/small-rooms-3173/s3_sweep.py OUT.jsonl [house ...]
 
 `dev`'s rule is reproduced in process: `_small_regions` returns the cut's
-pieces that hold no goal stop -- exactly B's old filter, its area the whole
-piece's. Rooms entered: the truth room under the robot after every tick
+pieces that hold no goal stop -- B's old filter, its area the whole piece's.
+One difference (review round 2): both arms judge "tried" by amendment 3's rule
+(a region the sent goal reaches through floor within 0.35 m), where `dev`
+marked only the piece under the goal's cell. Rooms entered: the truth room under the robot after every tick
 (`FakeNav` moves it goal to goal). Contacts (S4) are not read here: `FakeNav`
 moves the robot without driving it. Three starts a house (`survey_sweep`'s),
 both arms. Holds the desktop lock shared and steps aside between surveys.

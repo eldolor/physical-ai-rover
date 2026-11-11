@@ -1203,21 +1203,27 @@ class ExploreAgent(MissionAgent):
             i, j = self._to_cell(m, (kx * STOOD_M, ky * STOOD_M))
             if 0 <= i < w and 0 <= j < h:
                 stood.add(int(reg[j, i]))
-        # Review: a region is tried if any of its cells lies within the reach
-        # radius of a goal sent before -- not only the region now under that
-        # goal's cell, which a grown map's stops may since have reached
-        # (the rest of the region would otherwise be sent again).
+        # Review: a region is tried if a goal sent before reaches it -- any of
+        # its cells within the reach radius of that goal through free floor
+        # connected to the goal (never through a wall: review round 2, rooms
+        # back to back) -- not only the region now under the goal's cell, which
+        # a grown map's stops may since have reached.
         tried = set()
-        at = np.zeros((h, w), dtype=bool)
-        for gx, gy in self._small_tried:
-            i, j = self._to_cell(m, (gx, gy))
-            if 0 <= i < w and 0 <= j < h:
-                at[j, i] = True
-        if at.any():
+        if self._small_tried:
             from scipy import ndimage
             need = max(1, int(math.ceil(leave_clearance_m(self.safety.min_distance_cm) / res)))
-            near = ndimage.distance_transform_edt(~at) <= need
-            tried = set(np.unique(reg[near & (reg >= 0)]).tolist())
+            free = np.asarray(m["cells"]).reshape(h, w) == CELL_FREE
+            for gx, gy in self._small_tried:
+                i, j = self._to_cell(m, (gx, gy))
+                if not (0 <= i < w and 0 <= j < h) or not free[j, i]:
+                    continue
+                j0, j1, i0, i1 = max(0, j - need), min(h, j + need + 1), max(0, i - need), min(w, i + need + 1)
+                jj, ii = np.mgrid[j0:j1, i0:i1]
+                disc = free[j0:j1, i0:i1] & ((jj - j) ** 2 + (ii - i) ** 2 <= need * need)
+                lab, _ = ndimage.label(disc, structure=np.ones((3, 3), dtype=bool))
+                mine = lab == lab[j - j0, i - i0]
+                sub = reg[j0:j1, i0:i1]
+                tried |= set(np.unique(sub[mine & (sub >= 0)]).tolist())
         best = {}
         flat_d = d.ravel()
         area = np.bincount(flat_reg[flat_reg >= 0]) * res * res

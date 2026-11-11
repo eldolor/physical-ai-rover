@@ -222,6 +222,49 @@ def test_amendment3_review_a_region_is_tried_even_once_its_goal_cell_is_reached(
     assert _goal(agent, m, HALL_POSE) is None
 
 
+def _back_to_back_map():
+    """Review round 2: west of the hall, two side rooms 0.55 m by 1.475 m back to
+    back along the hall, a 0.05 m wall between them, each with its own 0.55 m
+    door at its far end."""
+    w, h = 90, 110
+    cells = [[CELL_OCCUPIED] * w for _ in range(h)]
+
+    def box(x0, x1, y0, y1, v):
+        for j in range(int(round(y0 / RES)), int(round(y1 / RES))):
+            for i in range(int(round(x0 / RES)), int(round(x1 / RES))):
+                cells[j][i] = v
+    box(0.7, 3.7, 0.1, 2.1, CELL_FREE)
+    hx0, hx1 = 1.775, 2.625
+    box(hx0, hx1, 2.1, 5.4, CELL_FREE)
+    box(hx0 - 0.65, hx0 - 0.10, 2.3, 3.75, CELL_FREE)     # south room
+    box(hx0 - 0.65, hx0 - 0.10, 3.80, 5.3, CELL_FREE)     # north room, 0.05 m wall between
+    box(hx0 - 0.10, hx0, 2.3, 2.85, CELL_FREE)            # their doors, far ends
+    box(hx0 - 0.10, hx0, 4.75, 5.3, CELL_FREE)
+    return {"usable": True, "resolution_m": RES, "width": w, "height": h,
+            "origin_x_m": 0.0, "origin_y_m": 0.0, "cells": [c for row in cells for c in row]}
+
+
+def test_amendment3_review2_a_tried_goal_never_marks_the_room_behind_a_wall():
+    """Review round 2: a goal sent 0.15 m south of a 0.05 m wall (0.20 m from the
+    room behind it, inside the reach radius in a straight line) leaves that room
+    untried: the reach is measured through floor connected to the goal."""
+    from brain.room_labels import segment
+    m = _back_to_back_map()
+    agent = _agent()
+    rch = reach(m, HALL_POSE["x_m"], HALL_POSE["y_m"],
+                clearance_m=leave_clearance_m(agent.safety.min_distance_cm))
+    seg, _ = segment(m)
+    reg = agent._small_regions(m, seg, rch)
+    south, north = int(reg[int(3.0 / RES), int(1.4 / RES)]), int(reg[int(4.6 / RES), int(1.4 / RES)])
+    assert south >= 0 and north >= 0 and south != north
+    agent._small_tried = [(1.4, 3.6)]                      # in the south room, by the wall
+    sent = []
+    while (out := _goal(agent, m, HALL_POSE)) is not None:
+        sent.append(int(reg[int(agent._goal["y_m"] / RES), int(agent._goal["x_m"] / RES)]))
+        agent._goal, agent._small_at = None, None
+    assert sent == [north], sent
+
+
 def test_3172e_a_held_refusal_is_sent_again_uncounted_then_counts_past_its_wait():
     from brain.explore import SMALL_ROOM_HELD_S
     agent = _agent()
