@@ -220,3 +220,53 @@ def test_the_frame_interval_is_a_setting_and_0_keeps_none(tmp_path):
     assert abs(two["frames_kept"] - 2 * four["frames_kept"]) <= 1
     assert none["frames_kept"] == 0 and none["walks"] == []
     assert none["pose_coverage"] >= 0.95
+
+
+def test_review_a_brain_unreachable_for_good_still_gets_a_row(tmp_path):
+    """Review 1: the brain never answers again mid-mission; the row is written once
+    no status has been read for STATUS_LOST_S, never waited on for ever."""
+    w = _World(run_s=10_000.0)
+    brain = _Brain(w)
+    real = brain.get
+
+    def dies(path):
+        if w.t > 20:
+            raise ConnectionError("brain gone")
+        return real(path)
+    brain.get = dies
+    r = rec.Recorder(_Robot(w), brain, tmp_path / "b", clock=w.clock, sleep=w.sleep)
+    row = r.record(r.wait_for_start(give_up_s=5))
+    assert row["row_end"] == "status_lost" and row["outcome"] is None
+    assert w.t <= 20 + rec.STATUS_LOST_S + 2
+
+
+def test_review_a_failing_frame_write_or_a_bad_log_line_never_loses_the_row(tmp_path, monkeypatch):
+    """Review 2: a frame write that raises (a full disk) and a cut intervention
+    line are counted, and the row is still written."""
+    def full(*a, **k):
+        raise OSError(28, "No space left on device")
+    monkeypatch.setattr(rec, "store_frame", full)
+    log = tmp_path / "interventions.jsonl"
+    w = _World()
+    brain = _Brain(w)
+    real = brain.get
+
+    def logs_at_the_end(path):
+        if w.t >= 50 and not log.exists():
+            log.write_text('{"intervention": {"kind": "stop"}}\n{"interven')   # a cut last line
+        return real(path)
+    brain.get = logs_at_the_end
+    r = rec.Recorder(_Robot(w), brain, tmp_path / "b", interventions=log,
+                     clock=w.clock, sleep=w.sleep)
+    row = r.record(r.wait_for_start(give_up_s=5))
+    assert row["frames_kept"] == 0 and row["frame_errors"] > 0
+    assert row["intervention_lines"] == 2 and row["interventions"] == ["stop", "unreadable"]
+    assert row["row_end"] == "ended"
+
+
+def test_review_distance_starts_a_new_leg_on_a_new_frame_in_one_map():
+    track = [{"x_m": 0, "y_m": 0, "map_id": "s", "frame_id": None},
+             {"x_m": 1, "y_m": 0, "map_id": "s", "frame_id": None},
+             {"x_m": 40, "y_m": 0, "map_id": "s", "frame_id": "saved"},
+             {"x_m": 41, "y_m": 0, "map_id": "s", "frame_id": "saved"}]
+    assert rec.distance_m(track) == 2.0

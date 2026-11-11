@@ -76,7 +76,11 @@ def main(argv=None):
     b1 = []
     for h in hr:
         r = rrows.get(h.get("mission_id"))
-        miss = [f for f in FIELDS if r is None or r.get(f) is None]
+        # Review: a field is present when its key is; None is a value (`end_state`
+        # of a fault, `ret_state` with no return). A reading not had says `missing`.
+        miss = [f for f in FIELDS if r is None or f not in r]
+        miss += [f for f in ("report", "health", "battery", "intervention_lines")
+                 if r is not None and r.get(f) == "missing"]
         same = r is not None and r["outcome"] == h["outcome"] and \
             r["end_reason"] == (h["end_reason"] or "")[:200] and abs(r["seconds"] - h["seconds"]) <= 3
         b1.append({"mission": h.get("mission_id"), "row": r is not None, "absent_fields": miss,
@@ -121,7 +125,7 @@ def main(argv=None):
     def room_at(x, y):
         X, Y = rot @ np.array([x, y]) + off
         return room_of.get((int(math.floor(X / CELL_M)), int(math.floor(Y / CELL_M))))
-    agree = total = 0
+    agree = total = seen_agree = seen = 0
     b4 = []
     for h in hr:
         mid = h.get("mission_id")
@@ -132,9 +136,14 @@ def main(argv=None):
         for n in world.rooms:
             total += 1
             agree += (n in got) == (n in want)
+        seen += len(got | want)
+        seen_agree += len(got & want)
         b4.append({"mission": mid, "missed": sorted(want - got), "extra": sorted(got - want)})
     ok["B4"] = total > 0 and agree / total >= 0.95
     report["B4"] = {"agree": agree, "pairs": total, "share": round(agree / total, 4) if total else None,
+                    # Review: the stricter share, over rooms the track or truth entered
+                    # (reported beside the bar, which stays as written)
+                    "share_entered": round(seen_agree / seen, 4) if seen else None,
                     "fit_pairs": len(pairs), "fit_resid_m_median": round(float(np.median(resid)), 3),
                     "fit_resid_m_p90": round(float(np.percentile(resid, 90)), 3), "missions": b4}
 

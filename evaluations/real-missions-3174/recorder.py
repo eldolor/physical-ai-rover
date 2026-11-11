@@ -43,6 +43,7 @@ STATUS_EVERY = 2        # ticks: the status each 1 s
 BATTERY_EVERY = 10      # ticks: the pack each 5 s
 IDLE_S = 1.0            # between status reads while no mission runs
 END_GRACE_S = 30.0      # after `running` turns False: the report and the return land
+STATUS_LOST_S = 120.0   # no status of this mission for this long: its row is written
 WALK_MAX = 64           # control.recording_routes.WALK_NAME's length
 
 # 3.174 section 1's measures this row cannot hold, and why.
@@ -75,10 +76,12 @@ def refuse_in_repo(path: Path) -> Path:
 
 def distance_m(track) -> float:
     """Metres driven along the track, on one map: a sample on another map id
-    (a re-map) starts a new leg rather than a jump."""
+    (a re-map) or another frame id (a session anchored on the saved map, review)
+    starts a new leg rather than a jump."""
     d, last = 0.0, None
     for s in track:
-        if last is not None and s.get("map_id") == last.get("map_id"):
+        if last is not None and (s.get("map_id"), s.get("frame_id")) == \
+                (last.get("map_id"), last.get("frame_id")):
             d += math.hypot(s["x_m"] - last["x_m"], s["y_m"] - last["y_m"])
         last = s
     return d
@@ -140,9 +143,20 @@ class Recorder:
             return None
 
     def _lines(self):
-        if self.interventions is None or not self.interventions.exists():
+        try:
+            if self.interventions is None or not self.interventions.exists():
+                return []
+            return self.interventions.read_text(errors="replace").splitlines()
+        except OSError:
             return []
-        return self.interventions.read_text().splitlines()
+
+    @staticmethod
+    def _kind(line):
+        """An intervention line's kind; a cut or foreign line is `unreadable` (review)."""
+        try:
+            return (json.loads(line).get("intervention") or {}).get("kind")
+        except (ValueError, AttributeError):
+            return "unreadable"
 
     def wait_for_start(self, give_up_s=None):
         t0 = self.clock()
@@ -160,8 +174,8 @@ class Recorder:
         h0, b0 = self._get(self.robot, "/health"), self._get(self.robot, "/battery")
         lines0 = len(self._lines())
         walk_base = mid[:WALK_MAX - 4]
-        track, frames, part, seq, rows = [], 0, 1, 0, []
-        gap_ticks, fail_since = 0, None
+        track, frames, part, seq, frame_errors = [], 0, 1, 0, 0
+        gap_ticks, row_end, seen_at = 0, "ended", t0
         status, v = first, [b0.get("v")] if b0 and b0.get("v") is not None else []
         t_end, tick = None, 0
         tf = (self.dir / "track" / f"{walk_base}.jsonl").open("a")
@@ -183,22 +197,27 @@ class Recorder:
                     if s2 is None:
                         missed = True
                     elif s2.get("mission_id") == mid:
-                        status = s2
+                        status, seen_at = s2, now
                 if self.frame_every and tick % self.frame_every == 0 and t_end is None:
                     f = self._get(self.robot, "/frame")
                     if f and f.get("image_base64"):
-                        if seq >= MAX_FRAMES_PER_WALK:      # the walk's cap: the next part
-                            finish_walk_meta(self.store, f"{walk_base}-p{part}",
-                                             target_object=status.get("target_object"))
-                            part, seq = part + 1, 0
-                        store_frame(self.store, f"{walk_base}-p{part}", seq,
-                                    base64.b64decode(f["image_base64"]),
-                                    f.get("media_type") or "image/jpeg",
-                                    {"t": round(now - t0, 2),
-                                     "navigate": {"action": status.get("last_action")}},
-                                    count=seq)
-                        seq += 1
-                        frames += 1
+                        # Review: a write that fails (a full disk, a bad frame) is
+                        # counted; it never ends the mission's record.
+                        try:
+                            if seq >= MAX_FRAMES_PER_WALK:      # the walk's cap: the next part
+                                finish_walk_meta(self.store, f"{walk_base}-p{part}",
+                                                 target_object=status.get("target_object"))
+                                part, seq = part + 1, 0
+                            store_frame(self.store, f"{walk_base}-p{part}", seq,
+                                        base64.b64decode(f["image_base64"]),
+                                        f.get("media_type") or "image/jpeg",
+                                        {"t": round(now - t0, 2),
+                                         "navigate": {"action": status.get("last_action")}},
+                                        count=seq)
+                            seq += 1
+                            frames += 1
+                        except Exception:  # noqa: BLE001 -- counted in the row
+                            frame_errors += 1
                     elif f is None:
                         missed = True
                 if tick % BATTERY_EVERY == 0:
@@ -214,12 +233,21 @@ class Recorder:
                                               or now - t_end > END_GRACE_S)
                 if done:
                     break
+                if now - seen_at > STATUS_LOST_S:
+                    # Review: no word of this mission for that long (the brain
+                    # gone, or its end missed in an outage): its row now, not never.
+                    row_end, status = "status_lost", {**status, "outcome": None, "end_state": None}
+                    break
                 tick += 1
                 self.sleep(max(0.0, TICK_S - (self.clock() - now)))
         finally:
             tf.close()
         if seq:
-            finish_walk_meta(self.store, f"{walk_base}-p{part}", target_object=status.get("target_object"))
+            try:
+                finish_walk_meta(self.store, f"{walk_base}-p{part}",
+                                 target_object=status.get("target_object"))
+            except Exception:  # noqa: BLE001 -- counted in the row
+                frame_errors += 1
         h1, b1 = self._get(self.robot, "/health"), self._get(self.robot, "/battery")
         if b1 and b1.get("v") is not None:
             v.append(b1["v"])
@@ -254,8 +282,9 @@ class Recorder:
             "report": "kept" if rep else "missing",
             "report_landmarks": len(rep.get("landmarks") or rep.get("things") or []) if rep else None,
             "intervention_lines": len([x for x in new_lines if x.strip()]) if self.interventions else "missing",
-            "interventions": [(json.loads(x).get("intervention") or {}).get("kind")
-                              for x in new_lines if x.strip()] if self.interventions else "missing",
+            "interventions": [self._kind(x) for x in new_lines if x.strip()]
+            if self.interventions else "missing",
+            "frame_errors": frame_errors, "row_end": row_end,
             "health": "kept" if h0 and h1 else "missing",
             "battery": "kept" if b0 and b1 else "missing",
             "unmeasurable": UNMEASURABLE,
