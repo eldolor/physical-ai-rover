@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
-B = Path(__file__).resolve().parents[2] / "autonomy-3158" / "B"
+B = Path(__file__).resolve().parents[1] / "autonomy-3158" / "B"
 sys.path.insert(0, str(B))
 
 import rehearsal as R          # noqa: E402
