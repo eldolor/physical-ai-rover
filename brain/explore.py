@@ -1203,11 +1203,21 @@ class ExploreAgent(MissionAgent):
             i, j = self._to_cell(m, (kx * STOOD_M, ky * STOOD_M))
             if 0 <= i < w and 0 <= j < h:
                 stood.add(int(reg[j, i]))
+        # Review: a region is tried if any of its cells lies within the reach
+        # radius of a goal sent before -- not only the region now under that
+        # goal's cell, which a grown map's stops may since have reached
+        # (the rest of the region would otherwise be sent again).
         tried = set()
+        at = np.zeros((h, w), dtype=bool)
         for gx, gy in self._small_tried:
             i, j = self._to_cell(m, (gx, gy))
             if 0 <= i < w and 0 <= j < h:
-                tried.add(int(reg[j, i]))
+                at[j, i] = True
+        if at.any():
+            from scipy import ndimage
+            need = max(1, int(math.ceil(leave_clearance_m(self.safety.min_distance_cm) / res)))
+            near = ndimage.distance_transform_edt(~at) <= need
+            tried = set(np.unique(reg[near & (reg >= 0)]).tolist())
         best = {}
         flat_d = d.ravel()
         area = np.bincount(flat_reg[flat_reg >= 0]) * res * res

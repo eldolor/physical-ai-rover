@@ -38,12 +38,17 @@ def test_label_calls_and_where_labels_land_do_not_regress(rows):
     calls = [r["label_calls"] for r in rs]
     good = sum(v >= 0.95 for r in rs for v in r["per_room"].values())
     if mode == "rooms":
-        assert statistics.median(calls) <= 10 and max(calls) <= 20, calls
+        # 3.173.B amendment 3 (the orchestrator, 2026-11-11): median 10 -> 11 with the
+        # small-room regions (off 10/19, good 22; on 11/18, good 24).
+        assert statistics.median(calls) <= 11 and max(calls) <= 20, calls
         assert good >= 22, good
     else:
         # 3.173.B (the orchestrator, 2026-11-10): the median was 29, the small-room goal's
         # arm off exactly on it (off 29/44, good 46; on 31/44, good 48): the two calls are
         # home_first_floor's pantry and laundry, newly labelled, and calls are free under
         # the default `frame` source. A guard on cost, not a 3.173 bar.
-        assert statistics.median(calls) <= 31 and max(calls) <= 44, calls
-        assert good >= 46, good
+        # Amendment 3 (the orchestrator, 2026-11-11): the SECOND raise in 3.173, 29 -> 31
+        # -> 34, max 44 -> 45 (off 29/44, good 46; on 34/45, good 45). Good rooms 46 -> 45
+        # is a regression accepted for now, recorded in 3.173's file, not hidden.
+        assert statistics.median(calls) <= 34 and max(calls) <= 45, calls
+        assert good >= 45, good

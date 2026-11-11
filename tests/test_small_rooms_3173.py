@@ -199,6 +199,29 @@ def test_amendment3_two_small_rooms_in_one_piece_with_goal_stops():
         assert 3.2 <= y <= 4.8
 
 
+def test_amendment3_review_a_region_is_tried_even_once_its_goal_cell_is_reached():
+    """Review: a map that grew so that a stop now reaches the sent goal's own
+    cell leaves the rest of that region; it is still the region tried."""
+    m = _hall_map()
+    agent = _agent()
+    assert _goal(agent, m, HALL_POSE)[0] == "GOAL"
+    gx, gy = agent._goal["x_m"], agent._goal["y_m"]
+    agent._goal, agent._small_at = None, None
+    real = agent._small_regions
+
+    def grown(m2, seg, rch):
+        reg = real(m2, seg, rch)
+        i, j = int(gx / RES), int(gy / RES)
+        reg[j - 2:j + 3, i - 2:i + 3] = -1           # the goal's own cells now reached
+        return reg
+    agent._small_regions = grown
+    out = _goal(agent, m, HALL_POSE)
+    assert out is not None and out[0] == "GOAL"
+    assert (agent._goal["x_m"] < 1.775) != (gx < 1.775)   # the other side room, not this one again
+    agent._goal, agent._small_at = None, None
+    assert _goal(agent, m, HALL_POSE) is None
+
+
 def test_3172e_a_held_refusal_is_sent_again_uncounted_then_counts_past_its_wait():
     from brain.explore import SMALL_ROOM_HELD_S
     agent = _agent()
