@@ -65,6 +65,7 @@ from brain.memory import MissionMemory
 from robot.interface import VERB_MAX_TAG, ZONE_UNUSABLE, Preempted, RobotInterface
 from robot.safety import CREEP_MARGIN_CM, FOOTPRINT_LENGTH_M, SafetyViolation, verb_speed_m_s
 from world.bridge_faults import fault_from_headers, response_detail, setup_fault_message
+from world.interface import CELL_FREE
 
 logger = logging.getLogger("explore")
 
@@ -1166,10 +1167,11 @@ class ExploreAgent(MissionAgent):
         return not (self.memory.target_object or self.memory.target_room)
 
     def _small_room_goal(self, m: dict, pose: dict, rch, now: float):
-        """3.173.B: a survey's goal into a room of the map (`segment`'s cut)
-        the robot has not stood in and where no goal at the goal clearance can
-        stand (no stop of `rch` in it), at the most open cell in it that keeps
-        SMALL_ROOM_CLEARANCE_M and that passes reach; the nearest such room
+        """3.173.B: a survey's goal into a region of the map no goal stop
+        reaches (amendment 3, `_small_regions`: per piece of `segment`'s cut,
+        as SLAM's cut puts small rooms in one piece with a bigger one) that the
+        robot has not stood in, at the most open cell in it that keeps
+        SMALL_ROOM_CLEARANCE_M and that passes reach; the nearest such region
         first, each once. Only a goal: nav2 plans it and the robot server
         vets every move."""
         if not self._survey() or SMALL_ROOM_CLEARANCE_M <= 0:
@@ -1192,30 +1194,30 @@ class ExploreAgent(MissionAgent):
                 self._small_error_logged = True
                 logger.warning("small-room cut failed", exc_info=True)
             return None
-        flat_seg = seg.ravel()
-        w, res = m["width"], m["resolution_m"]
+        w, h, res = m["width"], m["height"], m["resolution_m"]
         x0, y0 = m["origin_x_m"], m["origin_y_m"]
-        have_goal = set(flat_seg[rch.order].tolist()) if len(rch) else set()
+        reg = self._small_regions(m, seg, rch)
+        flat_reg = reg.ravel()
         stood = set()
         for kx, ky in self._stood:
             i, j = self._to_cell(m, (kx * STOOD_M, ky * STOOD_M))
-            if 0 <= i < w and 0 <= j < m["height"]:
-                stood.add(int(seg[j, i]))
+            if 0 <= i < w and 0 <= j < h:
+                stood.add(int(reg[j, i]))
         tried = set()
         for gx, gy in self._small_tried:
             i, j = self._to_cell(m, (gx, gy))
-            if 0 <= i < w and 0 <= j < m["height"]:
-                tried.add(int(seg[j, i]))
+            if 0 <= i < w and 0 <= j < h:
+                tried.add(int(reg[j, i]))
         best = {}
         flat_d = d.ravel()
-        area = np.bincount(flat_seg[flat_seg >= 0]) * res * res
+        area = np.bincount(flat_reg[flat_reg >= 0]) * res * res
         for cell, n in zip(small.order.tolist(), small.dist.tolist()):
-            r = int(flat_seg[cell])
-            if r < 0 or r in have_goal or r in stood or r in tried or area[r] < SMALL_ROOM_MIN_M2:
+            r = int(flat_reg[cell])
+            if r < 0 or r in stood or r in tried or area[r] < SMALL_ROOM_MIN_M2:
                 continue
-            key = (-flat_d[cell], n)                 # the most open cell, then the nearer
-            if r not in best or key < best[r][0]:
-                best[r] = (key, n, cell)
+            rank = (-flat_d[cell], n)                # the most open cell, then the nearer
+            if r not in best or rank < best[r][0]:
+                best[r] = (rank, n, cell)
         # The nearest room by path whose cell the retry book allows (review:
         # a place that failed, or one set aside by earlier missions, waits as
         # any goal's would).
@@ -1233,6 +1235,28 @@ class ExploreAgent(MissionAgent):
         r, cell, gx, gy = pick
         return self._send_small(gx, gy, now, {"open_m": round(float(flat_d[cell]) * res, 2),
                                               "area_m2": round(float(area[r]), 2), "rooms": len(best)})
+
+    def _small_regions(self, m: dict, seg, rch):
+        """Amendment 3: the candidate regions, an int array (-1 off them): in
+        each piece of `seg`, the free cells no goal stop reaches -- none within
+        `need * res` of a stop of `rch`, centre to centre, `need` the cells
+        `reach` itself keeps clear -- split 8-connected."""
+        from scipy import ndimage
+        w, h, res = m["width"], m["height"], m["resolution_m"]
+        need = max(1, int(math.ceil(leave_clearance_m(self.safety.min_distance_cm) / res)))
+        stops = np.zeros(w * h, dtype=bool)
+        if len(rch):
+            stops[rch.order] = True
+        stops = stops.reshape(h, w)
+        reached = (ndimage.distance_transform_edt(~stops) <= need) if stops.any() else stops
+        cand = (np.asarray(m["cells"]).reshape(h, w) == CELL_FREE) & ~reached & (seg >= 0)
+        lab, _ = ndimage.label(cand, structure=np.ones((3, 3), dtype=bool))
+        reg = np.full((h, w), -1, dtype=int)
+        if cand.any():
+            # A region crossing two pieces is two regions.
+            _, reg[cand] = np.unique(lab[cand].astype(np.int64) * (int(seg.max()) + 1) + seg[cand],
+                                     return_inverse=True)
+        return reg
 
     def _send_small(self, gx: float, gy: float, now: float, info: dict, since=None):
         self._small_held = None

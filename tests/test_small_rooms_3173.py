@@ -149,6 +149,56 @@ def test_review_a_whole_survey_sends_one_goal_into_each_small_room():
                if e.get("event") == "goal_ended" and e.get("kind") == "small_room")
 
 
+def _hall_map():
+    """Amendment 3: shaped as SLAM's map holds laundry and pantry
+    (`b_slam_map.py` on `picar-maps-3172e`). A 3 m room, a 0.85 m hall north
+    from it whose middle holds goal stops, and off the hall two side rooms
+    0.55 m by 1.6 m through 0.55 m doors at their ends. `segment()` cuts the
+    room, the hall and both side rooms as ONE piece (the doors are no necks),
+    and that piece holds goal stops."""
+    from world.interface import CELL_UNKNOWN
+    w, h = 90, 110
+    cells = [[CELL_UNKNOWN] * w for _ in range(h)]
+
+    def box(x0, x1, y0, y1, v):
+        for j in range(int(round(y0 / RES)), int(round(y1 / RES))):
+            for i in range(int(round(x0 / RES)), int(round(x1 / RES))):
+                cells[j][i] = v
+    box(0.0, 4.5, 0.0, 5.5, CELL_OCCUPIED)
+    box(0.7, 3.7, 0.1, 2.1, CELL_FREE)               # the room
+    hx0, hx1 = 1.775, 2.625                          # the hall
+    box(hx0, hx1, 2.1, 5.4, CELL_FREE)
+    box(hx0 - 0.65, hx0 - 0.10, 3.2, 4.8, CELL_FREE)  # west side room
+    box(hx1 + 0.10, hx1 + 0.65, 3.2, 4.8, CELL_FREE)  # east side room
+    box(hx0 - 0.10, hx0, 3.25, 3.80, CELL_FREE)       # their doors
+    box(hx1, hx1 + 0.10, 3.25, 3.80, CELL_FREE)
+    return {"usable": True, "resolution_m": RES, "width": w, "height": h,
+            "origin_x_m": 0.0, "origin_y_m": 0.0, "cells": [c for row in cells for c in row]}
+
+
+HALL_POSE = {"usable": True, "x_m": 2.2, "y_m": 1.0, "heading_deg": 90.0}
+
+
+def test_amendment3_two_small_rooms_in_one_piece_with_goal_stops():
+    from brain.room_labels import segment
+    m = _hall_map()
+    seg, _ = segment(m)
+    piece = {int(seg[int(y / RES), int(x / RES)]) for x, y in ((2.2, 1.0), (2.2, 4.0), (1.4, 4.4), (3.0, 4.4))}
+    assert len(piece) == 1                         # as on SLAM's map: one piece
+    agent = _agent()
+    sent = []
+    for _ in range(4):
+        out = _goal(agent, m, HALL_POSE)
+        if out is None:
+            break
+        sent.append((agent._goal["x_m"], agent._goal["y_m"]))
+        agent._goal, agent._small_at = None, None
+    sides = sorted("west" if x < 1.775 else "east" if x > 2.625 else "hall" for x, _ in sent)
+    assert sides == ["east", "west"], sent
+    for x, y in sent:
+        assert 3.2 <= y <= 4.8
+
+
 def test_3172e_a_held_refusal_is_sent_again_uncounted_then_counts_past_its_wait():
     from brain.explore import SMALL_ROOM_HELD_S
     agent = _agent()
