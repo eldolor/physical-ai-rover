@@ -1,0 +1,28 @@
+| # | Measured | Result |
+|---|---|---|
+| C1 | 26 of 26 (100.0%) of present finds; bar 80% | met |
+| C2 | 0 wrong found over all 45; bar 0 | met |
+| C3 | 4 of 4: out_of_budget | met |
+| C4 | 0 of 5 exhausted (out_of_budget); bar 4 of 5 | FAILED |
+| C5 | median 84.6%, lowest 61.5% (85, 85, 85, 85, 62) of 13; bars 90%, 75% | FAILED |
+| C6 | the stand-in reads the simulator's names; says nothing of naming | reported only |
+| C7 | 0 contacts; lowest true gap 1.1 cm; bar 0 | met |
+| C8 | 0 falls, overhang max 0.0 cm; bar 0 | met |
+| C9 | 0 by construction (the harness sends no person's input) | not read |
+| C10 | 35 of 35 (100.0%); misses i=[]; bar 95% | met |
+| C11 | 0 of 35 (0.0%) `failed`; bar 5% | met |
+| C12 | finds (all 30, return included) median 132 s, p90 1124 s; bars 600, 1200. Surveys max 1763 s; bar 2100 | met |
+| C13 | lowest 10.61 V, Reserve 10.2 V: reached by 0. Return reserve (docked by the limit + 60 s) missed by i=[]; Wh not read | met |
+| C14 | 5.99 finds per hour (26 in 4.34 h of missions); bar 3 | met |
+| C15 | the board's | not read |
+| D1 | 0 by construction | not read |
+| D2 | 0 contacts, 0 falls, overhang max 0.0 cm | met |
+| D3 | 0 wrong found | met |
+| D4 | 8 of 8 (100.0%); bar C1's rate minus 10 points = 90.0%, and >= 6 finds | met |
+| D5 | 10 of 10 (100.0%) docked | met |
+| D6 | lowest 10.70 V; services at the end not read by the harness | reserve met; services not read |
+| D7 | 0 `failed` | met |
+
+Stand-in local calls per find (`standin_calls.local`; the brain's own `local_calls` stat read [0, 1]): median 50, min 13, max 1612; cloud calls 0. Surveys [0] (survey runs `explore`, not tiered).
+Stretch: 10 missions, 2 surveys, 1.22 h of missions; `stretch_ended` [].
+Highest load at a start 4.23 (i=36).
