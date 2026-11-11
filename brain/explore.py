@@ -1198,32 +1198,27 @@ class ExploreAgent(MissionAgent):
         x0, y0 = m["origin_x_m"], m["origin_y_m"]
         reg = self._small_regions(m, seg, rch)
         flat_reg = reg.ravel()
+        free = np.asarray(m["cells"]).reshape(h, w) == CELL_FREE
         stood = set()
         for kx, ky in self._stood:
             i, j = self._to_cell(m, (kx * STOOD_M, ky * STOOD_M))
             if 0 <= i < w and 0 <= j < h:
-                stood.add(int(reg[j, i]))
+                if reg[j, i] >= 0:
+                    stood.add(int(reg[j, i]))
+                else:
+                    # Thermos 1: a stop now reaches where it stood; the rest of
+                    # that room is still the room it stood in.
+                    stood |= self._regions_near(m, reg, free, i, j)
         # Review: a region is tried if a goal sent before reaches it -- any of
         # its cells within the reach radius of that goal through free floor
         # connected to the goal (never through a wall: review round 2, rooms
         # back to back) -- not only the region now under the goal's cell, which
         # a grown map's stops may since have reached.
         tried = set()
-        if self._small_tried:
-            from scipy import ndimage
-            need = max(1, int(math.ceil(leave_clearance_m(self.safety.min_distance_cm) / res)))
-            free = np.asarray(m["cells"]).reshape(h, w) == CELL_FREE
-            for gx, gy in self._small_tried:
-                i, j = self._to_cell(m, (gx, gy))
-                if not (0 <= i < w and 0 <= j < h) or not free[j, i]:
-                    continue
-                j0, j1, i0, i1 = max(0, j - need), min(h, j + need + 1), max(0, i - need), min(w, i + need + 1)
-                jj, ii = np.mgrid[j0:j1, i0:i1]
-                disc = free[j0:j1, i0:i1] & ((jj - j) ** 2 + (ii - i) ** 2 <= need * need)
-                lab, _ = ndimage.label(disc, structure=np.ones((3, 3), dtype=bool))
-                mine = lab == lab[j - j0, i - i0]
-                sub = reg[j0:j1, i0:i1]
-                tried |= set(np.unique(sub[mine & (sub >= 0)]).tolist())
+        for gx, gy in self._small_tried:
+            i, j = self._to_cell(m, (gx, gy))
+            if 0 <= i < w and 0 <= j < h:
+                tried |= self._regions_near(m, reg, free, i, j)
         best = {}
         flat_d = d.ravel()
         area = np.bincount(flat_reg[flat_reg >= 0]) * res * res
@@ -1251,6 +1246,25 @@ class ExploreAgent(MissionAgent):
         r, cell, gx, gy = pick
         return self._send_small(gx, gy, now, {"open_m": round(float(flat_d[cell]) * res, 2),
                                               "area_m2": round(float(area[r]), 2), "rooms": len(best)})
+
+    def _regions_near(self, m: dict, reg, free, i: int, j: int) -> set:
+        """The regions of `reg` with a cell within the reach radius of cell
+        (i, j), through free floor connected to it. A cell no longer free (the
+        map shifted or inflated under it: Thermos 2) starts from the nearest
+        free cell within that radius; none there, no region."""
+        from scipy import ndimage
+        h, w = free.shape
+        need = max(1, int(math.ceil(leave_clearance_m(self.safety.min_distance_cm) / m["resolution_m"])))
+        j0, j1, i0, i1 = max(0, j - need), min(h, j + need + 1), max(0, i - need), min(w, i + need + 1)
+        jj, ii = np.mgrid[j0:j1, i0:i1]
+        d2 = (jj - j) ** 2 + (ii - i) ** 2
+        disc = free[j0:j1, i0:i1] & (d2 <= need * need)
+        if not disc.any():
+            return set()
+        lab, _ = ndimage.label(disc, structure=np.ones((3, 3), dtype=bool))
+        seed = np.unravel_index(np.argmin(np.where(disc, d2, np.iinfo(d2.dtype).max)), disc.shape)
+        sub = reg[j0:j1, i0:i1]
+        return set(np.unique(sub[(lab == lab[seed]) & (sub >= 0)]).tolist())
 
     def _small_regions(self, m: dict, seg, rch):
         """Amendment 3: the candidate regions, an int array (-1 off them): in

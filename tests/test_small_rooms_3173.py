@@ -326,3 +326,45 @@ def test_3172e_a_held_refusal_is_waited_through_not_counted():
     sent = [e for e in runner.agent.events if e.get("event") == "goal_sent" and e.get("kind") == "small_room"]
     rooms = [room.get((int(e["goal"][0] / 0.3), int(e["goal"][1] / 0.3))) for e in sent]
     assert rooms.count("pantry") == 1 and rooms.count("laundry") == 1, rooms
+
+
+def _sides(agent, m):
+    sent = []
+    for _ in range(4):
+        out = _goal(agent, m, HALL_POSE)
+        if out is None:
+            break
+        x = agent._goal["x_m"]
+        sent.append("west" if x < 1.775 else "east" if x > 2.625 else "hall")
+        agent._goal, agent._small_at = None, None
+    return sent
+
+
+def test_thermos1_a_room_stood_in_stays_stood_in_once_a_stop_reaches_where_it_stood():
+    """Thermos 1: the robot stood in the west side room; a grown map's stops
+    now reach that cell (-1 in today's regions). The rest of the room is still
+    the room it stood in, never a goal."""
+    m = _hall_map()
+    agent = _agent()
+    agent._stood.add((round(1.4 / 0.10), round(4.4 / 0.10)))
+    real = agent._small_regions
+
+    def grown(m2, seg, rch):
+        reg = real(m2, seg, rch)
+        i, j = int(1.4 / RES), int(4.4 / RES)
+        reg[j - 2:j + 3, i - 2:i + 3] = -1           # where it stood, now reached
+        return reg
+    agent._small_regions = grown
+    assert _sides(agent, m) == ["east"]
+
+
+def test_thermos2_a_tried_goal_whose_cell_is_no_longer_free_still_marks_its_room():
+    """Thermos 2: the map has shifted under a goal sent before, so its point
+    now lies on the wall cell beside the west room (free from x 1.10 m); it still
+    marks the room it was sent into."""
+    m = _hall_map()
+    agent = _agent()
+    i, j = int(1.07 / RES), int(4.0 / RES)
+    assert m["cells"][j * m["width"] + i] == CELL_OCCUPIED
+    agent._small_tried = [(1.07, 4.0)]
+    assert _sides(agent, m) == ["east"]

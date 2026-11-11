@@ -12,6 +12,10 @@ house, FakeNav for nav2). Recorded 2026-10-13 in 3.70's "Records: S1-S3":
 * `spacing` (amendment 1: asked again through every doorway, labels stop
   at doorways): calls median 29, max 44; rooms >= 95% labelled 46 of 90
   (36 before; S2 still FAILED, pinned as no regression).
+
+Raised by 3.173.B (small-room goals; the reasons are in the tests):
+`rooms` median 10 -> 11; `spacing` median 29 -> 31 -> 34, max 44 -> 45,
+rooms >= 95% labelled 46 -> 45 (a regression, accepted and recorded).
 """
 
 import statistics
