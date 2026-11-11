@@ -38,7 +38,7 @@ from control.recording_routes import (MAX_FRAMES_PER_WALK,  # noqa: E402
 from control.walk_store import LocalWalkStore  # noqa: E402
 
 TICK_S = 0.5            # the pose's rate, 2 Hz
-FRAME_EVERY = 4         # ticks: a frame each 2 s
+FRAME_EVERY_S = 2.0     # a frame each 2 s by default (`--frame-every-s`; 0 keeps none)
 STATUS_EVERY = 2        # ticks: the status each 1 s
 BATTERY_EVERY = 10      # ticks: the pack each 5 s
 IDLE_S = 1.0            # between status reads while no mission runs
@@ -120,7 +120,7 @@ def numbers_only(row: dict) -> dict:
 
 class Recorder:
     def __init__(self, robot, brain, batch_dir, interventions=None, room_at=None,
-                 clock=time.time, sleep=time.sleep):
+                 frame_every_s=FRAME_EVERY_S, clock=time.time, sleep=time.sleep):
         self.robot, self.brain = robot, brain          # httpx-like: .get(path) -> response
         self.dir = refuse_in_repo(batch_dir)
         self.store = LocalWalkStore(self.dir / "walks")
@@ -128,6 +128,8 @@ class Recorder:
         self.interventions = Path(interventions) if interventions else None
         self.room_at = room_at
         self.clock, self.sleep = clock, sleep
+        # ticks between kept frames; None keeps none
+        self.frame_every = max(1, round(frame_every_s / TICK_S)) if frame_every_s > 0 else None
 
     # -- reads that never raise: a dropped link is a gap, not an end ----------
     def _get(self, client, path):
@@ -182,7 +184,7 @@ class Recorder:
                         missed = True
                     elif s2.get("mission_id") == mid:
                         status = s2
-                if tick % FRAME_EVERY == 0 and t_end is None:
+                if self.frame_every and tick % self.frame_every == 0 and t_end is None:
                     f = self._get(self.robot, "/frame")
                     if f and f.get("image_base64"):
                         if seq >= MAX_FRAMES_PER_WALK:      # the walk's cap: the next part
@@ -284,11 +286,14 @@ def main(argv=None):
     ap.add_argument("--root", default="~/picar-kept/real-missions")
     ap.add_argument("--missions", type=int, default=None)
     ap.add_argument("--interventions", default=None)
+    ap.add_argument("--frame-every-s", type=float, default=FRAME_EVERY_S,
+                    help="seconds between kept frames (0: none); 3.174.B's B6 checks the default")
     a = ap.parse_args(argv)
     headers = {"x-app-secret": os.environ.get("APP_SHARED_SECRET", "")}
     robot = httpx.Client(base_url=a.robot, timeout=5, headers=headers)
     brain = httpx.Client(base_url=a.brain, timeout=5, headers=headers)
-    Recorder(robot, brain, Path(a.root).expanduser() / a.batch, a.interventions).run(a.missions)
+    Recorder(robot, brain, Path(a.root).expanduser() / a.batch, a.interventions,
+             frame_every_s=a.frame_every_s).run(a.missions)
 
 
 if __name__ == "__main__":

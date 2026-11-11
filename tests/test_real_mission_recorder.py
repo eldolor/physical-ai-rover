@@ -208,3 +208,15 @@ def test_distance_starts_a_new_leg_on_a_new_map():
     track = [{"x_m": 0, "y_m": 0, "map_id": "a"}, {"x_m": 1, "y_m": 0, "map_id": "a"},
              {"x_m": 50, "y_m": 0, "map_id": "b"}, {"x_m": 51, "y_m": 0, "map_id": "b"}]
     assert rec.distance_m(track) == 2.0
+
+
+def test_the_frame_interval_is_a_setting_and_0_keeps_none(tmp_path):
+    def run(every, name):
+        w = _World()
+        r = rec.Recorder(_Robot(w), _Brain(w), tmp_path / name, frame_every_s=every,
+                         clock=w.clock, sleep=w.sleep)
+        return r.record(r.wait_for_start(give_up_s=5))
+    two, four, none = run(2.0, "a"), run(4.0, "b"), run(0, "c")
+    assert abs(two["frames_kept"] - 2 * four["frames_kept"]) <= 1
+    assert none["frames_kept"] == 0 and none["walks"] == []
+    assert none["pose_coverage"] >= 0.95
