@@ -142,6 +142,11 @@ SMALL_ROOM_S = 5.0
 # 1.08, the dining chairs' and kitchen's gaps 0.09-0.63 (on truth: 1.53, 1.98).
 SMALL_ROOM_MIN_M2 = 0.7
 SMALL_ROOM_REFUSED = 3              # review: refusals of one room's goal before it is given up
+# 3.172.E: live, every small-room goal was refused `preempted` (the mission's own
+# last verb still held authority) and counted toward SMALL_ROOM_REFUSED. Such a
+# refusal is waited through as every other kind's is: the pick is sent again
+# each choice, uncounted, for up to this long; then it counts as one refusal.
+SMALL_ROOM_HELD_S = 10.0
 STOOD_M = 0.10                      # the grid the robot's own track is kept on
 # 3.172.D: a goal_sent names at most this many of the places a choice skipped
 # because earlier missions set them aside (so a rehearsal can say where).
@@ -360,6 +365,7 @@ class ExploreAgent(MissionAgent):
         self._small_tried: list = []        # 3.173.B: small-room goals sent
         self._small_at: Optional[float] = None
         self._small_refused: collections.Counter = collections.Counter()
+        self._small_held = None             # 3.172.E: (pick, info, first held refusal's time)
         self._small_none_on = None          # review: the map a cut last found nothing on
         self._small_error_logged = False
         self._glimpse_backoffs: list = []   # where the robot stood when a glimpse did
@@ -1169,6 +1175,9 @@ class ExploreAgent(MissionAgent):
         if not self._survey() or SMALL_ROOM_CLEARANCE_M <= 0:
             return None
         t = self.clock()
+        if self._small_held is not None:
+            (gx, gy), info, since = self._small_held
+            return self._send_small(gx, gy, now, info, since)
         if self._small_at is not None and t - self._small_at < SMALL_ROOM_S:
             return None
         self._small_at = t
@@ -1222,13 +1231,23 @@ class ExploreAgent(MissionAgent):
                 self._small_none_on = key
             return None
         r, cell, gx, gy = pick
-        out = self._send(gx, gy, "small_room", now, open_m=round(float(flat_d[cell]) * res, 2),
-                         area_m2=round(float(area[r]), 2), rooms=len(best))
+        return self._send_small(gx, gy, now, {"open_m": round(float(flat_d[cell]) * res, 2),
+                                              "area_m2": round(float(area[r]), 2), "rooms": len(best)})
+
+    def _send_small(self, gx: float, gy: float, now: float, info: dict, since=None):
+        self._small_held = None
+        out = self._send(gx, gy, "small_room", now, **info)
         if out[0] == "GOAL":
             self._small_tried.append((gx, gy))
+            return out
+        t = self.clock()
+        if out[2] == "goal refused: preempted" and (since is None or t - since < SMALL_ROOM_HELD_S):
+            # 3.172.E: the mission's own hold: waited through, not counted.
+            self._small_held = ((gx, gy), info, t if since is None else since)
         else:
-            # Review: refused (a hold, an inflated cell): up to SMALL_ROOM_REFUSED
-            # tries, each a cut apart, then the room is given up.
+            # Review: refused (an inflated cell, or held past SMALL_ROOM_HELD_S):
+            # up to SMALL_ROOM_REFUSED tries, each a cut apart, then the room is
+            # given up.
             place = (round(gx, 1), round(gy, 1))
             self._small_refused[place] += 1
             if self._small_refused[place] >= SMALL_ROOM_REFUSED:

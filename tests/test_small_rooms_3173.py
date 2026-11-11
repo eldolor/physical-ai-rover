@@ -112,9 +112,10 @@ def test_review_a_room_the_retry_book_holds_waits():
 
 
 def test_review_a_refused_goal_is_given_up_after_its_tries():
+    """A refusal other than the mission's own hold (3.172.E) counts."""
     from brain.explore import SMALL_ROOM_REFUSED
     agent = _agent()
-    agent.fake_nav.refuse = 100
+    agent.fake_nav.set_goal = lambda x, y: {"accepted": False, "reason": "rejected"}
     for _ in range(SMALL_ROOM_REFUSED):
         agent._small_at = None
         assert _goal(agent)[0] == "WAIT"
@@ -146,3 +147,66 @@ def test_review_a_whole_survey_sends_one_goal_into_each_small_room():
     assert len(runner.agent._stood) >= 20       # the track a room "stood in" is read from (FakeNav jumps)
     assert any(e["state"] == "succeeded" for e in events
                if e.get("event") == "goal_ended" and e.get("kind") == "small_room")
+
+
+def test_3172e_a_held_refusal_is_sent_again_uncounted_then_counts_past_its_wait():
+    from brain.explore import SMALL_ROOM_HELD_S
+    agent = _agent()
+    t = [100.0]
+    agent.clock = lambda: t[0]
+    agent.fake_nav.refuse = 1000
+    first = _goal(agent)
+    assert first[0] == "WAIT" and agent._small_held is not None
+    place = (round(agent._small_held[0][0], 1), round(agent._small_held[0][1], 1))
+    for _ in range(5):                       # sent again at once, no cut between, uncounted
+        t[0] += 1.0
+        assert _goal(agent)[0] == "WAIT"
+    assert agent._small_refused[place] == 0
+    t[0] = 100.0 + SMALL_ROOM_HELD_S + 0.1   # held past its wait: one refusal
+    assert _goal(agent)[0] == "WAIT"
+    assert agent._small_refused[place] == 1 and agent._small_held is None
+    agent.fake_nav.refuse = 0
+    agent._small_at = None
+    assert _goal(agent)[0] == "GOAL"
+
+
+class _HeldNav(FakeNav):
+    """3.172.E live: the robot server refuses a goal `preempted` while the
+    mission's own last verb still holds authority (it lapses on silence). Every
+    goal kind met it (frontier 899 times over 7 surveys); this double refuses
+    each place's first HELD sends so."""
+    HELD = 5
+
+    def __init__(self, robot):
+        super().__init__(robot)
+        self.held = {}
+
+    def set_goal(self, x_m, y_m):
+        place = (round(x_m, 1), round(y_m, 1))
+        self.held[place] = self.held.get(place, 0) + 1
+        if self.held[place] <= self.HELD:
+            return {"accepted": False, "reason": "preempted"}
+        return super().set_goal(x_m, y_m)
+
+
+def test_3172e_a_held_refusal_is_waited_through_not_counted():
+    """3.172.E: live, 30 of 30 small-room goals were refused `preempted` and the
+    room given up after SMALL_ROOM_REFUSED; every other kind waits through that
+    refusal, and so must this one."""
+    from tests import survey_sweep as sw
+    grid = build_world("home_first_floor")
+    (cx, cy), theta, _ = sw.starts("home_first_floor")[0]
+    grid.x, grid.y, grid.theta = cx + 0.5, cy + 0.5, theta
+    truth = build_world("home_first_floor")
+    room = {c: n for n, cs in sorted(truth.rooms.items(), key=lambda kv: -len(kv[1])) for c in cs}
+    robot = MockRobot(grid, render=False)
+    runner = MissionRunner(robot, job="survey", policy="explore", navigator=_HeldNav(robot),
+                           world=MockWorld(grid), mission_time_limit_s=sw.TIME_LIMIT_S,
+                           clock=lambda: grid.sim_time, idle=robot.pass_time)
+    runner.start()
+    for _ in range(sw.TICK_CAP):
+        if not runner.tick():
+            break
+    sent = [e for e in runner.agent.events if e.get("event") == "goal_sent" and e.get("kind") == "small_room"]
+    rooms = [room.get((int(e["goal"][0] / 0.3), int(e["goal"][1] / 0.3))) for e in sent]
+    assert rooms.count("pantry") == 1 and rooms.count("laundry") == 1, rooms
