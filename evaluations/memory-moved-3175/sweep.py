@@ -142,13 +142,28 @@ def mission(trial, where, store_dir, name):
     runner.inventory_prior = store.latest_for
     runner.inventory_sink = lambda report: store.save(f"{name}-{trial['id']}".replace(":", "_").replace(" ", "_"), report)
     runner.start()
+    agent, events = runner.agent, []
+    note = agent._event
+
+    def kept(name, pose=None, **fields):
+        # Explore keeps its last MAX_EVENTS only; this list keeps them all,
+        # and names the carried place each recall goal was sent for.
+        rec = {"event": name, **fields}
+        if name == "goal_sent" and fields.get("kind") == "recall" and agent.recall:
+            rec["place"] = list(agent.recall[0])
+        events.append(rec)
+        note(name, pose, **fields)
+    agent._event = kept
     ticks = 0
     while runner.tick() and ticks < TICK_CAP:
         ticks += 1
     s = runner.status()
-    events = getattr(runner.agent, "events", [])
-    goals = [e for e in events if e.get("event") == "goal_sent"]
-    recalls = [p for e in events if e.get("event") == "recall_set" for p in e.get("places") or []]
+    goals = [e for e in events if e["event"] == "goal_sent"]
+    queued = [p for e in events if e["event"] == "recall_set" for p in e.get("places") or []]
+    # A recall acted on: a goal sent for a carried place, or a place close
+    # enough to be faced where the robot stood (`here`).
+    acted = [e["place"] for e in goals if e.get("kind") == "recall" and "place" in e]
+    acted += [e["at"] for e in events if e["event"] == "recall" and e.get("here")]
     target_m = None
     if where is not None:
         target_m = math.dist((grid.x, grid.y), (where[0] + 0.5, where[1] + 0.5)) * CELL
@@ -161,9 +176,11 @@ def mission(trial, where, store_dir, name):
             "wrong_found": s["outcome"] == "found" and (target_m is None or target_m > FOUND_M),
             "first_goal": goals[0]["kind"] if goals else None,
             "recall_goals": sum(g["kind"] == "recall" for g in goals),
-            "recalled": recalls,
-            "recalled_old": any(math.dist(p, old) <= RECALL_NEAR_M for p in recalls),
-            "contacts": len(contacts), "goals": len(goals)}
+            "queued": queued, "acted": acted,
+            "recalled_old": any(math.dist(p, old) <= RECALL_NEAR_M for p in acted),
+            "contacts": sum(c.startswith("BLOCKED at") for c in contacts),
+            "blocked_turning": sum(c.startswith("BLOCKED turning") for c in contacts),
+            "goals": len(goals)}
 
 
 def run_trial(args):
@@ -187,7 +204,11 @@ def run(out, work, workers):
     done = set()
     if Path(out).exists():
         rows = [json.loads(line) for line in open(out)]
-        done = {r["trial"] for r in rows if r["mission"] == "after"}
+        have = {}
+        for r in rows:
+            have.setdefault(r["trial"], set()).add(r["mission"])
+        done = {t for t, ms in have.items()
+                if {"seed", "fresh", "stale", "after"} <= ms and ("cold" in ms or ":gone:" in t)}
     todo = [(t, work) for t in trials() if t["id"] not in done]
     print(f"{len(todo)} trials to run", flush=True)
     with mp.Pool(workers) as pool, open(out, "a") as f:
@@ -207,8 +228,9 @@ def score(path):
     rows = [json.loads(line) for line in open(path)]
     by = {}
     for r in rows:
-        by.setdefault(r["trial"], {})[r["mission"]] = r
-    full = {k: v for k, v in by.items() if "after" in v}
+        by.setdefault(r["trial"], {})[r["mission"]] = r      # a re-run trial: its last rows
+    full = {k: v for k, v in by.items()
+            if {"seed", "fresh", "stale", "after"} <= set(v) and ("cold" in v or ":gone:" in k)}
     moved = [v for v in full.values() if v["stale"]["move"] != "gone" and "cold" in v]
     gone = [v for v in full.values() if v["stale"]["move"] == "gone"]
     f = lambda vs, m: sum(v[m]["outcome"] == "found" for v in vs)  # noqa: E731
