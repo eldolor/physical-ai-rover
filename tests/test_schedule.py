@@ -418,11 +418,7 @@ def test_a_survey_with_no_slam_pose_is_ros_not_ready(tmp_path, robot_client, mon
         b.tick(MON_9 - timedelta(seconds=30))           # the dock, from a usable pose
         from control.remote_world import RemoteWorld
         monkeypatch.setattr(RemoteWorld, "get_pose", lambda self: {"usable": False})
-        assert b.tick(MON_9 + timedelta(seconds=5)) == []
-        assert list(b.sched.pending.values()) == [sch.NOT_DOCKED]   # no pose: not docked first
-        b.sched.pending.clear()
-        monkeypatch.undo()
-        monkeypatch.delenv("APP_SHARED_SECRET", raising=False)
+        skipped_with(b, sch.ROS_NOT_READY)
     finally:
         b.close()
 

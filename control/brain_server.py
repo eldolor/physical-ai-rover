@@ -1581,7 +1581,7 @@ def create_app(
         known = (r.status().get("dock") if r is not None else None) or dock_seen["dock"]
         pose = world().get_pose() or {}
         if not pose.get("usable"):
-            return "the robot's pose cannot be read"
+            raise LookupError("SLAM has no pose yet")
         if known is None:
             return "no dock is known yet"
         off_m = math.hypot(pose["x_m"] - known["x_m"], pose["y_m"] - known["y_m"])
@@ -1619,6 +1619,10 @@ def create_app(
             return PERSON_HOLDING, f"{holder} holds the robot"
         try:
             off = _docked()
+        except LookupError as e:
+            # No pose: whether it is docked cannot be known, and nothing that
+            # maps can run. Amendment 9: ros_not_ready, whatever the policy.
+            return ROS_NOT_READY, str(e)
         except Exception as e:  # noqa: BLE001
             off = f"unreadable: {e}"
         if off:
@@ -1626,8 +1630,6 @@ def create_app(
         why = battery_too_low(robot())
         if why:
             return BATTERY_NOT_NORMAL, why
-        if _schedule_policy(s) == "explore" and not (world().get_pose() or {}).get("usable"):
-            return ROS_NOT_READY, "SLAM has no pose yet"
         return None
 
     schedule_detail: dict = {}
