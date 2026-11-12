@@ -352,6 +352,13 @@ Continuing an existing section: work in its worktree
    no-step `release` in one Desktop session dropped four other sessions'
    claims (ownership was the `claude` process; now it is the session).
 
+13. **A detached run's end is checked, not awaited** (3.174.B, 2026-11-11).
+   A background waiter dies with the session that started it, so a run
+   launched detached (`setsid nohup`) is finished by reading what it left
+   -- its log's last line, its exit line, its rows -- in the next turn or
+   session, never by trusting a notification to arrive. 3.174.B's run
+   ended at 15:42 and was read at 21:47.
+
 ## Setting up a machine (once)
 
 ```bash
