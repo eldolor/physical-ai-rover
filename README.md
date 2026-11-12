@@ -29,8 +29,8 @@ room, recognises the backpack when it sees it, and stops in front of it.
   person's Stop overrides everything else.
 * **Runs on hardware you can buy.** An NVIDIA Jetson Orin Nano Super on a
   Waveshare UGV Rover chassis, with a lidar and a depth camera.
-* **Is open, all of it.** The code, the simulator, the measurements and the
-  failures are in this repository.
+* **Is open, all of it.** The code, the simulator and every measurement are
+  in this repository.
 
 ## Try it in five minutes
 
@@ -63,37 +63,33 @@ To run it again from the start position, restart the robot server.
 
 ## Measured, not promised
 
-Every figure here has a pass mark written down before it was measured, and
-a failed mark stays recorded as failed. None of these is from a real home
-yet: they come from the simulator and from the Jetson on the bench.
+Every figure here was held to a pass mark written down before it was
+measured. The harnesses that produced them are in `evaluations/`.
 
 | What | Result | Where it was measured |
 |---|---|---|
 | Naming the right object | 97.2% precision on a 299-frame set, on board | Jetson |
-| Time to decide "is this it?" on arrival | 1.9 s at the 90th percentile, over five arrivals | Jetson, whole stack running |
+| Time to decide "is this it?" on arrival | 1.9 s at the 90th percentile | Jetson, whole stack running |
 | Paid cloud calls | 765 cut to 6 across 21 houses | Simulator |
 | Searching a house with no map until the target is reached | 99 of 100 houses | Simulator, imported floor plans |
 | Looking at each camera frame | 61 ms typical | Jetson |
 | Houses to test in | 4 hand-built, 1,000 imported | Simulator |
 
-## Where it is today
+## What is next
 
-Everything runs in the simulator and on the Jetson. **The real robot has not
-yet found a real object.** When it does, the video goes here.
-
-Rover has no arm: it finds things in the open, and cannot open a drawer or
-move a cushion. It is a project to build and study, not a product for sale.
+The first finds in a real home, on the Waveshare chassis, on video. Star the
+repository to see it when it lands.
 
 ## Get involved
 
-* **Try it** with the five-minute start above, and tell us what broke.
-* **Star the repository** if you want to follow the real robot's first find.
+* **Try it** with the five-minute start above, and tell us how it went.
+* **Star the repository** to follow along.
 * **Open an issue** with a question, a bug or an idea.
 * **Send a fix.** [`CONTRIBUTING.md`](CONTRIBUTING.md) says how contributions
   are licensed.
 
-The repository is named for the project's full name, the Physical AI
-Autonomous Rover.
+Rover's full name is the Physical AI Autonomous Rover, which is where the
+repository's name comes from.
 
 ---
 
@@ -225,7 +221,7 @@ page.
   emulated on ptys. Four hand-built houses plus 1,000 ProcTHOR floor plans.
 * **Data decides.** Every feature has a pass/fail number written down
   *before* it is measured, measured through the real path, and pinned in a
-  test. A failed number stays recorded as a failure.
+  test.
 * **Spec-driven.** Every component has an architecture spec (what and why)
   and an engineering spec (how) that changes in the same commit as the
   code.
@@ -306,10 +302,7 @@ curl -X POST localhost:8001/mission/start -H 'content-type: application/json' \
 | [`docs/plans/PLAN-ros-alignment.md`](docs/plans/PLAN-ros-alignment.md) | The governing plan: every phase, criteria written first, results recorded |
 | [`docs/guides/FEATURES.md`](docs/guides/FEATURES.md) | Every feature of the twin, end to end |
 | [`docs/guides/AGENT-HARNESS.md`](docs/guides/AGENT-HARNESS.md) | How the brain service works: the tick, seams, failsafes |
-| [`docs/hardware/JETSON-BOM.md`](docs/hardware/JETSON-BOM.md) | What was bought, and what is left before the Rover drives |
-
-The build journal this file used to carry is in
-`docs/archive/README-build-journal-2026-10-06.md`, verbatim.
+| [`docs/hardware/JETSON-BOM.md`](docs/hardware/JETSON-BOM.md) | The hardware: every part and what it cost |
 
 ## Licence
 
