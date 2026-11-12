@@ -181,4 +181,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.175](3.175-memory-when-things-move.md) | A find's memory when the target has moved, and asking it without driving |
 | [3.176](3.176-plain-language-request.md) | A find asked in plain words: the target, how it looks and a room hint |
 | [3.177](3.177-visual-promise.md) | Visual promise: does a frame say the target is near before it is in view |
+| [3.178](3.178-watch-list.md) | A watch list: a few named valuables noticed on every mission |
 <!-- /sections -->
