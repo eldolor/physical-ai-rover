@@ -210,6 +210,8 @@ Resources:
             # a rule allows at most five path patterns (3.46 added a route).
             - /teleop-brain/mission/*
             - /teleop-brain/health
+            # 3.163.B: the schedules (GET, PUT).
+            - /teleop-brain/schedules
       Actions:
         - Type: forward
           TargetGroupArn: !Ref AlbTargetGroup
