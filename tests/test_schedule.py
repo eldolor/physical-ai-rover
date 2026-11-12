@@ -251,10 +251,19 @@ class Brain:
 
     def __init__(self, tmp_path, robot_client, **brain):
         from control.brain_server import create_app
+        import os
         from control.remote_world import RemoteWorld
-        self.app = create_app(config_path=brain_config(tmp_path, **brain),
-                              robot_factory=lambda: RemoteRobot(ASGI_BASE_URL, client=robot_client),
-                              world_factory=lambda r: RemoteWorld(ASGI_BASE_URL, client=robot_client))
+        saved = os.environ.get("SCHEDULE_DIR")
+        os.environ["SCHEDULE_DIR"] = str(tmp_path / "sched")     # this brain's own, over the suite's
+        try:
+            self.app = create_app(config_path=brain_config(tmp_path, **brain),
+                                  robot_factory=lambda: RemoteRobot(ASGI_BASE_URL, client=robot_client),
+                                  world_factory=lambda r: RemoteWorld(ASGI_BASE_URL, client=robot_client))
+        finally:
+            if saved is None:
+                os.environ.pop("SCHEDULE_DIR", None)
+            else:
+                os.environ["SCHEDULE_DIR"] = saved
         self.client = TestClient(self.app).__enter__()
         self.sched = self.app.state.scheduler
         self.clock = Clock(MON_9 - timedelta(minutes=1))
@@ -394,7 +403,9 @@ def test_off_the_dock_skips(brain, robot_client):
     brain.tick(MON_9 - timedelta(seconds=30))          # the first check takes the dock
     robot_client.post("/action", json={"action": "FORWARD", "duration": 1.0},
                       headers={"x-driver": "twin-dpad"})
-    time.sleep(1.5)     # the person's authority lapses; the robot stays where they left it
+    end = time.monotonic() + 10     # the person's authority lapses; the robot stays where they left it
+    while robot_client.get("/health").json()["authority_holder"] and time.monotonic() < end:
+        time.sleep(0.05)
     skipped_with(brain, sch.NOT_DOCKED)
 
 
@@ -462,14 +473,27 @@ def test_schedules_and_their_record_survive_a_restart(tmp_path, robot_client):
 def test_a_scheduled_run_is_named_in_the_intervention_line_and_the_report(tmp_path, robot_client):
     b = Brain(tmp_path, robot_client)
     try:
-        b.set(FIND)
+        b.set({**FIND, "id": "report-check"})
         b.tick(MON_9 + timedelta(seconds=5))
         b.wait_end()
-        time.sleep(0.5)
         import os
         log = os.path.join(os.environ.get("INTERVENTION_DIR") or str(tmp_path / "iv"), "interventions.jsonl")
-        line = json.loads(open(log).read().splitlines()[-1])
-        assert line["started_by"] == "schedule:keys"
+        end = time.monotonic() + 10     # written on its own thread after the stop
+        while time.monotonic() < end and not (os.path.exists(log) and "schedule:report-check" in open(log).read()):
+            time.sleep(0.05)
+        lines = [json.loads(x) for x in open(log).read().splitlines()]
+        assert any(x.get("started_by") == "schedule:report-check" for x in lines)
+        mid = b.status().get("mission_id")
+        end = time.monotonic() + 10     # 3.162's report, written on its own thread
+        report = None
+        while time.monotonic() < end:
+            r = b.client.get(f"/mission/reports/{mid}")
+            if r.status_code == 200:
+                report = r.json()
+                break
+            time.sleep(0.05)
+        assert report is not None, mid
+        assert (report.get("report") or report).get("started_by") == "schedule:report-check", report
     finally:
         b.close()
 
@@ -488,3 +512,56 @@ def test_off_by_default(tmp_path, robot_client):
         assert not (tmp_path / "sched").exists() or not (tmp_path / "sched" / "runs.jsonl").exists()
     finally:
         b.close()
+
+
+# ---------- review round 1 (each seen red first) ----------
+
+def test_a_torn_last_line_never_swallows_the_next_one(tmp_path):
+    store = sch.ScheduleStore(tmp_path)
+    store.append({"due": "x", "id": "a", "outcome": sch.FIRED})
+    with open(store.runs_path, "a") as f:
+        f.write('{"due": "y", "id": "b", "outco')          # a power cut mid-write
+    store.append({"due": "z", "id": "c", "outcome": sch.FIRING})
+    assert ("z", "c") in store.finals()
+
+
+def test_a_file_that_is_not_schedules_reads_as_off(tmp_path):
+    for bad in ("[1, 2]", '{"enabled": true, "schedules": [{"id": "x"}]}'):
+        (tmp_path / "schedules.json").write_text(bad)
+        body = sch.ScheduleStore(tmp_path).load()
+        assert body["enabled"] is False and body["schedules"] == [] and body.get("unreadable"), body
+
+
+def test_the_dock_is_never_guessed_on_a_real_robot(tmp_path, robot_client, monkeypatch):
+    real = RemoteRobot.get_health
+    monkeypatch.setattr(RemoteRobot, "get_health", lambda self: {**real(self), "mode": "hardware"})
+    b = Brain(tmp_path, robot_client, schedules_on_robot=True)
+    try:
+        b.set(FIND)
+        b.tick(MON_9 - timedelta(seconds=30))
+        skipped_with(b, sch.NOT_DOCKED)
+    finally:
+        b.close()
+
+
+def test_a_lapsed_lease_is_not_called_a_persons_stop(brain, robot_client, monkeypatch):
+    real = RemoteRobot.get_health
+    monkeypatch.setattr(RemoteRobot, "get_health",
+                        lambda self: {**real(self), "autonomy_latch": {"by": "brain", "lapsed": True}})
+    brain.set(FIND)
+    skipped_with(brain, sch.AUTONOMY_LAPSED)
+
+
+def test_a_failed_scheduled_start_closes_the_mission_it_opened(brain, monkeypatch):
+    closed = []
+    monkeypatch.setattr(RemoteRobot, "close_mission", lambda self, mid: closed.append(mid))
+    brain.app.state.brain_state["building"] = None
+    from control import brain_server
+
+    def refuse(*a, **kw):
+        raise ValueError("no such policy here")
+    monkeypatch.setattr(brain_server.MissionRunner, "__init__", refuse)
+    brain.set(FIND)
+    lines = brain.tick(MON_9 + timedelta(seconds=5))
+    assert [(x["outcome"], x.get("reason")) for x in lines] == [(sch.SKIPPED, sch.START_REFUSED)]
+    assert len(closed) == 1 and closed[0] is not None

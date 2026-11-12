@@ -115,7 +115,7 @@ from control.recording_routes import (  # noqa: F401 -- re-exported, see above
     mount_recording_routes,
 )
 from control.remote_robot import DEFAULT_DRIVER, RemoteRobot
-from control.scheduler import (BATTERY_NOT_NORMAL, DISABLED, MISSION_RUNNING, NOT_ALLOWED_HERE,
+from control.scheduler import (AUTONOMY_LAPSED, BATTERY_NOT_NORMAL, DISABLED, MISSION_RUNNING, NOT_ALLOWED_HERE,
                                NOT_DOCKED, PERSON_HOLDING, PERSON_STOP_LATCHED, ROBOT_UNREACHABLE,
                                ROS_NOT_READY, START_REFUSED, Scheduler, ScheduleStore, SkipStart,
                                TICK_S, validate as validate_schedules)
@@ -1188,6 +1188,21 @@ def create_app(
             runner.stop("mission loop cancelled")
             raise
 
+    async def close_opened(lift: bool) -> None:
+        """3.163.B: a schedule's start that failed after it opened its mission
+        on the robot server closes it (3.171's close), so no mission stays open
+        with nothing behind it. A person's start opens through resume, as before."""
+        if lift:
+            return
+        mission_id = getattr(robot(), "mission_id", None)
+        close = getattr(robot(), "close_mission", None)
+        if mission_id is None or close is None:
+            return
+        try:
+            await asyncio.to_thread(close, mission_id)
+        except Exception as e:  # noqa: BLE001 -- a report only
+            logger.warning("could not close a scheduled start's mission: %s", e)
+
     async def put_back(lifted: Optional[str]) -> None:
         """3.76 K2: a start refused after `resume_autonomy()` began no
         mission, so the person's Stop it lifted still stands. Only ever
@@ -1309,12 +1324,15 @@ def create_app(
                                         detail="Stopped while the mission was being set up.")
         except drills.DrillNotAllowed as e:
             await put_back(lifted)
+            await close_opened(lift)
             raise HTTPException(status_code=403, detail=str(e))
         except ValueError as e:
             await put_back(lifted)
+            await close_opened(lift)
             raise HTTPException(status_code=400, detail=str(e))
         except Exception:
             await put_back(lifted)
+            await close_opened(lift)
             raise
         finally:
             state["building"] = None
@@ -1567,8 +1585,13 @@ def create_app(
     dock_seen: dict = {"dock": None}
 
     def _note_dock() -> None:
-        """At every tick until one is known: the pose, taken as the dock."""
+        """At every tick until one is known: the pose, taken as the dock.
+        Only in the simulator (every run there starts docked, amendment 9):
+        on a real robot the dock is only ever a mission's own `status.dock`."""
         if dock_seen["dock"] is not None:
+            return
+        get_health = getattr(robot(), "get_health", None)
+        if get_health is None or get_health().get("mode") != "sim":
             return
         pose = world().get_pose() or {}
         if pose.get("usable"):
@@ -1612,8 +1635,11 @@ def create_app(
         runner = state["runner"]
         if (runner is not None and runner.is_running()) or state["building"] is not None:
             return MISSION_RUNNING, ""
-        if health.get("autonomy_latch"):
-            return PERSON_STOP_LATCHED, f"latched by {health['autonomy_latch'].get('by')}"
+        latch = health.get("autonomy_latch")
+        if latch:
+            if latch.get("lapsed"):
+                return AUTONOMY_LAPSED, f"the lease of {latch.get('by')} lapsed"
+            return PERSON_STOP_LATCHED, f"latched by {latch.get('by')}"
         holder = health.get("authority_holder")
         if holder and driver_priority(holder) == DRIVER_MANUAL:
             return PERSON_HOLDING, f"{holder} holds the robot"
@@ -1704,7 +1730,8 @@ def create_app(
             clean = validate_schedules(body)
         except ValueError as e:
             raise HTTPException(status_code=422, detail=str(e))
-        await asyncio.to_thread(schedule_store.save, clean, scheduler.clock())
+        async with scheduler.lock:      # never in the middle of a tick's pass
+            await asyncio.to_thread(schedule_store.save, clean, scheduler.clock())
         return await asyncio.to_thread(schedules_view)
 
     @app.get(prefix + "/mission/status", dependencies=[Depends(require_secret)])

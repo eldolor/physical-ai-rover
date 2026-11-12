@@ -70,6 +70,7 @@
     "sched.why.mission_running": "another search is running",
     "sched.why.person_stop_latched": "someone had pressed Stop",
     "sched.why.person_holding": "someone was driving the robot",
+    "sched.why.autonomy_lapsed": "the robot was stopped after it lost touch with the autopilot",
     "sched.why.not_docked": "the robot wasn't on its dock",
     "sched.why.battery_not_normal": "the battery was low",
     "sched.why.ros_not_ready": "the robot didn't know where it was yet",

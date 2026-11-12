@@ -55,6 +55,7 @@ NOT_ALLOWED_HERE = "not_allowed_here"
 MISSION_RUNNING = "mission_running"
 BUSY = "busy"                       # mission_running still, when the grace ran out
 PERSON_STOP_LATCHED = "person_stop_latched"
+AUTONOMY_LAPSED = "autonomy_lapsed"       # 3.145's lease lapsed: latched, though no person pressed Stop
 PERSON_HOLDING = "person_holding"
 NOT_DOCKED = "not_docked"
 BATTERY_NOT_NORMAL = "battery_not_normal"
@@ -160,7 +161,19 @@ class ScheduleStore:
             # Never a start from a file that cannot be read: off, and said.
             logger.error("schedules unreadable (%s): read as off", e)
             return {"enabled": False, "schedules": [], "unreadable": str(e)}
-        return body
+        try:
+            since = {s["id"]: s.get("since") for s in body["schedules"]}
+            clean = validate({"enabled": body.get("enabled", False),
+                              "schedules": [{k: v for k, v in s.items() if k != "since"}
+                                            for s in body["schedules"]]})
+        except (KeyError, TypeError, AttributeError, ValueError) as e:
+            # A hand-edited file that is not schedules: off, and said, never
+            # a pass that raises and blocks every other schedule.
+            logger.error("schedules file is not valid (%s): read as off", e)
+            return {"enabled": False, "schedules": [], "unreadable": f"not valid: {e}"}
+        for s in clean["schedules"]:
+            s["since"] = since.get(s["id"])
+        return clean
 
     def save(self, body: dict, now: datetime) -> dict:
         """`body` (already validated) written whole. A schedule whose time or
@@ -188,8 +201,15 @@ class ScheduleStore:
 
     def append(self, line: dict) -> None:
         self.dir.mkdir(parents=True, exist_ok=True)
-        with open(self.runs_path, "a") as f:
-            f.write(json.dumps(line) + "\n")
+        with open(self.runs_path, "a+b") as f:
+            # A line torn by a power cut has no newline: start a fresh one, so
+            # this line is never glued onto it and dropped with it.
+            f.seek(0, os.SEEK_END)
+            torn = False
+            if f.tell():
+                f.seek(-1, os.SEEK_END)
+                torn = f.read(1) != b"\n"
+            f.write(((b"\n" if torn else b"") + json.dumps(line).encode() + b"\n"))
             f.flush()
             os.fsync(f.fileno())
 
@@ -237,19 +257,19 @@ class Scheduler:
         self.before = before        # awaited first at every tick (the brain notes the dock)
         self.grace_s, self.lookback_s = grace_s, lookback_s
         self.pending: dict = {}     # (due, id) -> the reason it is waiting on
-        self._lock = asyncio.Lock()
+        self.lock = asyncio.Lock()  # a tick, and a person's change of the schedules
 
     async def tick(self) -> list:
         """One pass. Returns the lines it wrote."""
-        async with self._lock:
+        async with self.lock:
             if self.before is not None:
                 try:
                     await self.before()
                 except Exception:  # noqa: BLE001 -- a note that failed costs nothing here
                     logger.exception("schedule tick's first step failed")
             now = self.clock()
-            state = self.store.load()
-            finals = self.store.finals()
+            state = await asyncio.to_thread(self.store.load)
+            finals = await asyncio.to_thread(self.store.finals)
             wrote = []
             for s in state.get("schedules", []):
                 try:
@@ -272,27 +292,27 @@ class Scheduler:
         if age.total_seconds() > self.grace_s:
             waited = self.pending.pop(key, None)
             if waited is None:
-                return self._end({**base, "outcome": MISSED_DOWN})
-            return self._end({**base, "outcome": SKIPPED,
+                return await self._end({**base, "outcome": MISSED_DOWN})
+            return await self._end({**base, "outcome": SKIPPED,
                               "reason": BUSY if waited == MISSION_RUNNING else waited})
         reason = await self.check(state, s)
         if reason is not None:
             self.pending[key] = reason
             return None
         self.pending.pop(key, None)
-        self._end({**base, "outcome": FIRING})
+        await self._end({**base, "outcome": FIRING})
         try:
             mission_id = await self.start(s)
         except SkipStart as e:
-            return self._end({**base, "outcome": SKIPPED, "reason": e.reason, "detail": e.detail[:300]})
+            return await self._end({**base, "outcome": SKIPPED, "reason": e.reason, "detail": e.detail[:300]})
         except Exception as e:  # noqa: BLE001 -- a start that raised is a skip on the record
             logger.exception("scheduled start %s failed", s["id"])
-            return self._end({**base, "outcome": SKIPPED, "reason": START_REFUSED, "detail": str(e)[:300]})
-        return self._end({**base, "outcome": FIRED, "mission_id": mission_id})
+            return await self._end({**base, "outcome": SKIPPED, "reason": START_REFUSED, "detail": str(e)[:300]})
+        return await self._end({**base, "outcome": FIRED, "mission_id": mission_id})
 
-    def _end(self, line: dict) -> dict:
+    async def _end(self, line: dict) -> dict:
         line = {**line, "at": self.clock().isoformat(timespec="seconds")}
-        self.store.append(line)
+        await asyncio.to_thread(self.store.append, line)
         logger.info("schedule %s due %s: %s %s", line["id"], line["due"], line["outcome"],
                     line.get("reason") or line.get("mission_id") or "")
         return line

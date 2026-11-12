@@ -2269,7 +2269,13 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
 
   const SCHED_RELOAD_MS = 20000;
   const SCHED_ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
-  let schedView = null, schedLoadedAt = 0, schedLoading = false, schedSaving = false;
+  const SCHED_DAY_KEYS = ["sched.day0", "sched.day1", "sched.day2", "sched.day3",
+                          "sched.day4", "sched.day5", "sched.day6"];
+  // The view is the brain's at `schedViewUrl`: one from another brain is never
+  // shown or written back (review round 1). `schedSeq` counts saves, so a load
+  // begun before one is dropped rather than undo it.
+  let schedView = null, schedViewUrl = null, schedLoadedAt = 0, schedLoading = false;
+  let schedSaving = false, schedSeq = 0;
   const schedForm = { job: "find", days: SCHED_ALL_DAYS.slice() };
 
   function schedWhy(reason) {
@@ -2283,7 +2289,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
 
   function schedDays(days) {
     if (days.length === 7) return t("sched.daysAll");
-    return days.map(function (d) { return t("sched.day" + d); }).join(", ");
+    return days.map(function (d) { return t(SCHED_DAY_KEYS[d]); }).join(", ");
   }
 
   // When a due time is, in words. From the autopilot's own count of seconds,
@@ -2296,7 +2302,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     const clock = schedClock(at);
     if (diff <= 0) return t("sched.today", { at: clock });
     if (diff === 1) return t("sched.tomorrow", { at: clock });
-    return t("sched.onDay", { day: t("sched.day" + ((due.getDay() + 6) % 7)), at: clock });
+    return t("sched.onDay", { day: t(SCHED_DAY_KEYS[(due.getDay() + 6) % 7]), at: clock });
   }
 
   function schedAgo(line) {
@@ -2304,34 +2310,44 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
   }
 
   async function loadSchedules(force) {
-    if (!state.brainConnected || schedLoading) return;
+    if (!state.brainConnected) return;
+    if (schedViewUrl !== state.brainUrl) { schedView = null; schedLoadedAt = 0; force = true; }
+    if (schedLoading || schedSaving) return;
     if (!force && Date.now() - schedLoadedAt < SCHED_RELOAD_MS) return;
     schedLoading = true;
-    const url = state.brainUrl;
+    const url = state.brainUrl, seq = schedSeq;
     try {
       const view = await brainApi("GET", "/schedules");
-      if (url !== state.brainUrl) return;
+      if (url !== state.brainUrl || seq !== schedSeq) return;   // another brain, or a save since
       schedView = view;
+      schedViewUrl = url;
+      schedLoadedAt = Date.now();
       document.getElementById("sched-error").textContent = "";
     } catch (e) {
-      // An older autopilot has no schedules: the panel stays hidden.
-      schedView = e.status === 404 ? null : schedView;
+      if (url !== state.brainUrl) return;
+      // An older autopilot has no schedules: the panel stays hidden. Any
+      // other failure keeps no list to edit (it may be stale).
+      schedView = null;
+      schedLoadedAt = Date.now();
       if (e.status !== 404) {
         document.getElementById("sched-error").textContent = t("sched.loadFailed", { why: e.message });
       }
     } finally {
       schedLoading = false;
-      schedLoadedAt = Date.now();
       renderSchedules();
     }
   }
 
   async function saveSchedules(body) {
-    if (schedSaving) return false;
+    if (schedSaving || schedViewUrl !== state.brainUrl) return false;
     schedSaving = true;
+    schedSeq += 1;
+    const url = state.brainUrl;
     renderSchedules();
     try {
-      schedView = await brainApi("PUT", "/schedules", body);
+      const view = await brainApi("PUT", "/schedules", body);
+      if (url !== state.brainUrl) return false;
+      schedView = view;
       schedLoadedAt = Date.now();
       document.getElementById("sched-error").textContent = "";
       return true;
@@ -2374,6 +2390,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
 
   function renderSchedules() {
     const panel = document.getElementById("schedules-panel");
+    if (schedViewUrl !== state.brainUrl) schedView = null;
     panel.hidden = !state.brainConnected || !schedView;
     renderMissionSchedule();
     if (panel.hidden) return;
@@ -2473,7 +2490,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     Array.prototype.forEach.call(box.children, function (b) {
       const all = b.dataset.day === "all";
       const on = all ? schedForm.days.length === 7 : schedForm.days.indexOf(Number(b.dataset.day)) >= 0;
-      b.textContent = all ? t("sched.everyDay") : t("sched.day" + b.dataset.day);
+      b.textContent = all ? t("sched.everyDay") : t(SCHED_DAY_KEYS[Number(b.dataset.day)]);
       b.setAttribute("aria-pressed", on ? "true" : "false");
       b.classList.toggle("active-mode", on);
     });
@@ -2483,7 +2500,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
   function renderMissionSchedule() {
     const el = document.getElementById("mission-schedule");
     if (!el) return;
-    const v = state.brainConnected ? schedView : null;
+    const v = state.brainConnected && schedViewUrl === state.brainUrl ? schedView : null;
     let words = "";
     if (v && v.schedules && v.schedules.length) {
       const last = (v.runs || [])[0];
