@@ -1188,13 +1188,10 @@ def create_app(
             runner.stop("mission loop cancelled")
             raise
 
-    async def close_opened(lift: bool) -> None:
+    async def close_opened(mission_id: Optional[int]) -> None:
         """3.163.B: a schedule's start that failed after it opened its mission
-        on the robot server closes it (3.171's close), so no mission stays open
-        with nothing behind it. A person's start opens through resume, as before."""
-        if lift:
-            return
-        mission_id = getattr(robot(), "mission_id", None)
+        on the robot server closes that one (3.171's close), so no mission stays
+        open with nothing behind it. None: this start opened nothing."""
         close = getattr(robot(), "close_mission", None)
         if mission_id is None or close is None:
             return
@@ -1243,6 +1240,7 @@ def create_app(
             raise HTTPException(status_code=409, detail="A mission is already running.")
         build = state["building"] = {"stopped": False}
         lifted = None
+        opened = None       # 3.163.B: the mission this schedule's start opened, if it did
         try:
             # 3.137: no autonomous mission starts on a low battery -- the
             # robot server's ladder at Low or worse, or a reading under this
@@ -1261,9 +1259,10 @@ def create_app(
             if not lift:
                 # 3.163.B: a schedule opens the mission only if no Stop is
                 # latched, read and opened in one step on the robot server.
-                opened = await asyncio.to_thread(robot().open_mission)
-                if opened:
-                    raise SkipStart(PERSON_STOP_LATCHED, f"latched by {opened.get('by')}")
+                refused = await asyncio.to_thread(robot().open_mission)
+                if refused:
+                    raise SkipStart(PERSON_STOP_LATCHED, f"latched by {refused.get('by')}")
+                opened = getattr(robot(), "mission_id", None)
             elif resume is not None:
                 try:
                     lifted = await asyncio.to_thread(resume)
@@ -1324,15 +1323,15 @@ def create_app(
                                         detail="Stopped while the mission was being set up.")
         except drills.DrillNotAllowed as e:
             await put_back(lifted)
-            await close_opened(lift)
+            await close_opened(opened)
             raise HTTPException(status_code=403, detail=str(e))
         except ValueError as e:
             await put_back(lifted)
-            await close_opened(lift)
+            await close_opened(opened)
             raise HTTPException(status_code=400, detail=str(e))
         except Exception:
             await put_back(lifted)
-            await close_opened(lift)
+            await close_opened(opened)
             raise
         finally:
             state["building"] = None
@@ -1588,10 +1587,17 @@ def create_app(
         """At every tick until one is known: the pose, taken as the dock.
         Only in the simulator (every run there starts docked, amendment 9):
         on a real robot the dock is only ever a mission's own `status.dock`."""
-        if dock_seen["dock"] is not None:
+        if dock_seen["dock"] is not None or dock_seen.get("not_sim"):
             return
         get_health = getattr(robot(), "get_health", None)
-        if get_health is None or get_health().get("mode") != "sim":
+        if get_health is None:
+            return
+        try:
+            mode = get_health().get("mode")
+        except Exception:  # noqa: BLE001 -- unreachable now: asked again next tick
+            return
+        if mode != "sim":
+            dock_seen["not_sim"] = True      # asked once: a robot's mode does not change
             return
         pose = world().get_pose() or {}
         if pose.get("usable"):

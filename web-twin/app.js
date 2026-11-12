@@ -2326,8 +2326,9 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     } catch (e) {
       if (url !== state.brainUrl) return;
       // An older autopilot has no schedules: the panel stays hidden. Any
-      // other failure keeps no list to edit (it may be stale).
-      schedView = null;
+      // other failure keeps this brain's last list, so the panel (and the
+      // error in it) stays in view.
+      if (e.status === 404) schedView = null;
       schedLoadedAt = Date.now();
       if (e.status !== 404) {
         document.getElementById("sched-error").textContent = t("sched.loadFailed", { why: e.message });

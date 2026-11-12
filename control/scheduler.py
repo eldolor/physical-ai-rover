@@ -182,7 +182,7 @@ class ScheduleStore:
         rows = []
         for s in body["schedules"]:
             was = old.get(s["id"])
-            since = was["since"] if was is not None and _same(was, s) and "since" in was else now.isoformat()
+            since = (was.get("since") if was is not None and _same(was, s) else None) or now.isoformat()
             rows.append({**s, "since": since})
         out = {"enabled": body["enabled"], "schedules": rows}
         self.dir.mkdir(parents=True, exist_ok=True)

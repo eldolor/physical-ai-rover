@@ -565,3 +565,10 @@ def test_a_failed_scheduled_start_closes_the_mission_it_opened(brain, monkeypatc
     lines = brain.tick(MON_9 + timedelta(seconds=5))
     assert [(x["outcome"], x.get("reason")) for x in lines] == [(sch.SKIPPED, sch.START_REFUSED)]
     assert len(closed) == 1 and closed[0] is not None
+
+
+def test_a_schedule_with_no_since_is_repaired_by_a_save(tmp_path):
+    (tmp_path / "schedules.json").write_text(json.dumps({"enabled": True, "schedules": [one()]}))
+    store = sch.ScheduleStore(tmp_path)
+    saved = store.save(store.load() | {"schedules": [one()]}, MON_9 - timedelta(hours=1))
+    assert saved["schedules"][0]["since"] == (MON_9 - timedelta(hours=1)).isoformat()
