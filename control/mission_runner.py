@@ -70,6 +70,7 @@ from brain.inventory import DEFAULT_FOV_DEG, REPORT_BELIEF, Inventory, _bearing_
 from brain.memory import MissionMemory
 from brain.mission_report import map_coverage
 from brain.navigate import CloudUnavailable
+from brain import room_names
 from brain.room_labels import RoomLabeller, frame_room
 from brain.vision_agent import VisionAgent
 from robot.interface import (AUTONOMY_LAPSED, BATTERY_CHECK, BATTERY_POWEROFF, BATTERY_RESERVE,
@@ -802,6 +803,14 @@ class MissionRunner:
         # types only (the agent's `goal_labels`, below). Useless to any other
         # chooser, and each ask may be a paid call, so refused without one.
         self.find_room_labels = bool(find_room_labels) and job == "find"
+        # 3.160.D: a find with no labeller (the flag off, or skipped for a
+        # flat prior) still reads the rooms a person named on the saved map,
+        # for the same room types (`_name_labels`). Free: it asks nothing.
+        self._names_only = (job == "find" and self.room_labeller is None
+                            and explore_goal_policy == "rooms")
+        self._names_layer: Optional[tuple] = None    # ((coarse key, frame_id, names), coarse map, layer)
+        self._person_rooms_read = 0
+        self._names_error_logged = False
         self._goal_layer: Optional[tuple] = None     # ((map key, seeds), coarse map, layer)
         self._coarse_memo: Optional[tuple] = None    # (map key, coarse map)
         self._label_error_logged = False
@@ -990,6 +999,8 @@ class MissionRunner:
                      "goal_policy": goal_policy_for(explore_goal_policy)}
             if self.find_room_labels and self.room_labeller is not None:
                 extra["goal_labels"] = self._goal_labels
+            elif self._names_only:
+                extra["goal_labels"] = self._name_labels
             if explore_ask_timeout_s:
                 if policy != "explore":
                     # A tiered search's questions run on through a pause, and
@@ -1726,10 +1737,8 @@ class MissionRunner:
                            if self.room_labeller and not self.find_room_labels else None),
                 # 3.116.B: a find mission's own asks, the same shape.
                 # A skipped find keeps the count's key, at 0 (review).
-                "room_labels": ({"skipped": self._labels_skipped, "label_calls": 0}
-                                if self._labels_skipped
-                                else self.room_labeller.status() if self.find_room_labels
-                                else None),
+                # 3.160.D: `person_rooms`, the named rooms it read, once any.
+                "room_labels": self._room_labels_status(),
                 # 3.162: the name its report is kept under (the twin's match).
                 "mission_id": self.report_id,
                 "mission": self.memory.mission,
@@ -3248,6 +3257,46 @@ class MissionRunner:
             self._goal_layer = (key, cm, layer)
         _key, cm, layer = self._goal_layer
         return (cm, layer) if layer else None
+
+    def _name_labels(self, m: dict) -> Optional[tuple]:
+        """3.160.D: a find with no labeller's layer for the room goal
+        policy's types, as `_goal_labels` gives one: the rooms a person named
+        on the saved map (the pose's `frame_id`, brain/room_names.py's store),
+        every free cell of a named room carrying its name, on the coarse map.
+        Cut again only when the map or the names change. None with no saved
+        map, no named room, or a store that cannot be read: a name is never
+        worth a mission, so the mission runs as with none."""
+        try:
+            if not m or "cells" not in m:
+                return None
+            frame_id = (self.world.get_pose() or {}).get("frame_id")
+            if not frame_id:
+                return None
+            doc = room_names.default_store().load(frame_id)
+            rooms = [r for r in doc.get("rooms") or () if r.get("name") and r.get("_keys")]
+            self._person_rooms_read = len(rooms)
+            if not rooms:
+                return None
+            cm = self._coarse(m)
+            key = (RoomLabeller._key(cm), frame_id, doc.get("rev"),
+                   tuple((r["name"], len(r["_keys"])) for r in rooms))
+            if self._names_layer is None or self._names_layer[0] != key:
+                empty = {"names": [], "cells": [-1] * (int(cm["width"]) * int(cm["height"]))}
+                self._names_layer = (key, cm, RoomLabeller._with_person(cm, empty, rooms))
+            _key, cm, layer = self._names_layer
+            return (cm, layer) if layer["names"] else None
+        except Exception:  # noqa: BLE001 -- see above
+            if not self._names_error_logged:
+                logger.warning("room names unavailable to this find", exc_info=True)
+                self._names_error_logged = True
+            return None
+
+    def _room_labels_status(self) -> Optional[dict]:
+        s = ({"skipped": self._labels_skipped, "label_calls": 0} if self._labels_skipped
+             else self.room_labeller.status() if self.find_room_labels else None)
+        if self._names_only and self._person_rooms_read:
+            s = {**(s or {"label_calls": 0}), "person_rooms": self._person_rooms_read}
+        return s
 
     def room_labels(self) -> Optional[dict]:
         """3.70 S2: a survey's room labels as the map's `room_labels` block

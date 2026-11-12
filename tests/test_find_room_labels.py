@@ -133,7 +133,9 @@ def test_a_flat_prior_target_asks_nothing(source, monkeypatch):
     runner, _nav, _g = _mission(explore_goal_policy="rooms", find_room_labels=True, **kw)
     off, _nav2, _g2 = _mission(explore_goal_policy="rooms")
     s, o = runner.status(), off.status()
-    assert runner.room_labeller is None and runner.agent.goal_labels is None
+    # 3.160.D: its goal labels are the person's names only -- none here.
+    assert runner.room_labeller is None
+    assert runner.agent.goal_labels(runner.world.get_map()) is None
     assert s["room_labels"] == {"skipped": "flat_prior", "label_calls": 0}
     assert (s["outcome"], s["step"], s["explore"]["goals_sent"]) == \
         (o["outcome"], o["step"], o["explore"]["goals_sent"])
