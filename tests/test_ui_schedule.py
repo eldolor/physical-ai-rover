@@ -74,6 +74,8 @@ def _shot(page, name):
     d = os.environ.get("UI_SHOTS")
     if d:
         Path(d).mkdir(parents=True, exist_ok=True)
+        page.mouse.move(1, 1)          # no hover on the button just tapped
+        page.wait_for_timeout(300)
         page.screenshot(path=str(Path(d) / f"twin-3.163-{name}.png"), full_page=False)
 
 
