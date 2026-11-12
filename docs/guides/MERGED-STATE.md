@@ -77,6 +77,7 @@ section's own file has the numbers, failed criteria and review rounds.
   at `VERB_MAX_S` (7 s). 3.106: the in-sight livelock is bounded.
 * 3.88: `explore_ask` off.
 * 3.87, 3.123, 3.124, 3.126: an unchanged map is a 304 on both hops.
+* 3.160.D: a find with no labeller types the rooms policy's goals from the person's room names on the saved map (asks nothing; `status.room_labels.person_rooms`). In process, oracle names: reward +0.18 (95% [+0.08, +0.30]), finds unchanged, off is off 0/200; D7 FAILED live (`out_of_budget`: the washer's laundry is off the saved map).
 * 3.177.A FAILED, B dropped: CLIP RN50's whole-frame score does not rise before the target comes into view on the rig walks (object-balanced AUROC 0.45, bar 0.65; the other objects' words 0.58). 9 walks, 4 objects, no backpack judged; another scorer would need new bars.
 
 ## Safety, stops and arbitration
