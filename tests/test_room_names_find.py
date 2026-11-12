@@ -64,6 +64,20 @@ def test_a_find_types_its_goals_from_the_names_and_asks_nothing(saved_map):
     assert len(layer["cells"]) == cm["width"] * cm["height"]
     assert layer["names"] and set(layer["names"]) <= set(grid.rooms)
     assert runner.room_labels() is None                # not a survey's labels
+    # The names reach explore's typing: a goal in a known, named room is
+    # typed with that room's name, and never with another's (review).
+    w, res = m["width"], m["resolution_m"]
+    goals, truth = [], []
+    for name, cells in grid.rooms.items():
+        for i, j in cells:
+            mx, my = int((i + 0.5) * CELL / res), int((j + 0.5) * CELL / res)
+            if m["cells"][my * w + mx] == 0:
+                goals.append(((i + 0.5) * CELL, (j + 0.5) * CELL))
+                truth.append(name)
+    types = runner.agent._goal_types(m, goals)
+    typed = [(t, n) for t, n in zip(types, truth) if t is not None]
+    assert len(typed) > len(goals) // 2
+    assert sum(t == n for t, n in typed) >= 0.95 * len(typed)
 
 
 @pytest.mark.parametrize("why", ["no names", "no frame_id", "unnamed rooms"])
@@ -135,4 +149,29 @@ def test_the_rule_chooser_reads_no_names(saved_map):
     saved_map.set(_true_rooms())
     runner, _nav, _g = _mission(explore_goal_policy="rule")
     assert runner.agent.goal_labels is None
+    assert runner.status()["room_labels"] is None
+
+
+def test_a_pose_dropout_keeps_the_names(saved_map, monkeypatch):
+    """A momentarily unusable pose (stale SLAM, a dropped fetch) keeps the
+    saved map the mission last read: the types do not flap (review)."""
+    saved_map.set(_true_rooms())
+    runner, _nav, grid = _mission(explore_goal_policy="rooms")
+    m = runner.world.get_map()
+    assert runner.agent.goal_labels(m) is not None
+    monkeypatch.setattr(MockWorld, "get_pose", lambda self: {"usable": False, "frame_id": None})
+    assert runner.agent.goal_labels(m) is not None
+    assert runner.status()["room_labels"]["person_rooms"] == len(grid.rooms)
+
+
+def test_a_failing_store_after_names_counts_none(saved_map, monkeypatch):
+    saved_map.set(_true_rooms())
+    runner, _nav, _g = _mission(explore_goal_policy="rooms")
+    m = runner.world.get_map()
+    assert runner.agent.goal_labels(m) is not None
+
+    def boom():
+        raise OSError("disk gone")
+    monkeypatch.setattr(rn, "default_store", boom)
+    assert runner.agent.goal_labels(m) is None
     assert runner.status()["room_labels"] is None

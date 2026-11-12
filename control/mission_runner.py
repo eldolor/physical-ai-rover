@@ -810,6 +810,7 @@ class MissionRunner:
                             and explore_goal_policy == "rooms")
         self._names_layer: Optional[tuple] = None    # ((coarse key, frame_id, names), coarse map, layer)
         self._person_rooms_read = 0
+        self._names_frame: Optional[str] = None      # the saved map last read
         self._names_error_logged = False
         self._goal_layer: Optional[tuple] = None     # ((map key, seeds), coarse map, layer)
         self._coarse_memo: Optional[tuple] = None    # (map key, coarse map)
@@ -3269,7 +3270,11 @@ class MissionRunner:
         try:
             if not m or "cells" not in m:
                 return None
-            frame_id = (self.world.get_pose() or {}).get("frame_id")
+            # A pose that is momentarily unusable (stale SLAM, a dropped
+            # fetch) keeps the saved map this mission last read (review).
+            pose = self.world.get_pose() or {}
+            frame_id = pose.get("frame_id") if pose.get("usable") else None
+            frame_id = self._names_frame = frame_id or self._names_frame
             if not frame_id:
                 return None
             doc = room_names.default_store().load(frame_id)
@@ -3286,6 +3291,7 @@ class MissionRunner:
             _key, cm, layer = self._names_layer
             return (cm, layer) if layer["names"] else None
         except Exception:  # noqa: BLE001 -- see above
+            self._person_rooms_read = 0          # what the choice used: none (review)
             if not self._names_error_logged:
                 logger.warning("room names unavailable to this find", exc_info=True)
                 self._names_error_logged = True
