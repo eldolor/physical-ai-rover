@@ -1,19 +1,52 @@
-# Physical AI Autonomous Rover
+# Rover
 
-**Vision-language perception, SLAM and reinforcement learning for
-autonomous object search.**
+**An open-source robot that finds things in your home.**
 
-A robot car that finds things by looking.
+A Mars rover explores a planet. This one explores your house, and finds what
+you ask for.
 
-Say "find my red backpack". The robot drives off, searches the house room
-by room, recognises the backpack when it sees it, and stops in front of it.
+Say "find my red backpack". Rover drives off, searches the house room by
+room, recognises the backpack when it sees it, and stops in front of it.
 Nobody gives it a floor plan: it maps the house as it drives, decides for
 itself where to look next, and confirms what it found before it says so.
 
+<img src="docs/media/twin-found.png" width="300"
+     alt="Rover's phone app after finding a red backpack in the simulator">
+
+*The phone app, driving the simulator. The software cannot tell the
+simulator from the real robot.*
+
 It runs on an NVIDIA Jetson Orin Nano Super riding a Waveshare UGV Rover
-(D500 lidar, OAK-D Lite depth camera, ESP32 motor board). Perception,
-identity, mapping and planning all run on board; a cloud VLM is the last
-tier, and the robot still works with the internet unplugged.
+chassis (D500 lidar, OAK-D Lite depth camera, ESP32 motor board).
+Perception, identity, mapping and planning all run on board; a cloud VLM is
+the last tier, and Rover still works with the internet unplugged.
+
+**Where it is today:** everything runs in the simulator and on the Jetson.
+The real robot has not yet found a real object. [Status](#status) has more.
+
+The repository is named for the project's full name, the Physical AI
+Autonomous Rover.
+
+## Try it in five minutes
+
+No robot, no GPU and no API key needed.
+
+```bash
+git clone --depth 1 https://github.com/eldolor/physical-ai-rover.git
+cd physical-ai-rover
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+
+uvicorn robot.server:app --port 8000 &
+uvicorn control.brain_server:app --port 8001 &
+```
+
+Open http://127.0.0.1:8000/ in a browser, narrowed to phone width. Press
+**Connect**, then **Start**. Rover searches the simulated house and finds the
+red backpack in about 30 seconds. The **Drive** tab shows its camera and the
+map it draws as it goes.
+
+To run it again from the start position, restart the robot server.
 
 ---
 
@@ -151,14 +184,15 @@ page.
 
 The Jetson is in hand and the whole stack runs on it under full load:
 perception, the local vision-language model, SLAM, nav2 and the safety loop,
-with no late safety tick. The Rover chassis is arriving; nothing has driven
-real wheels yet. Every number above is measured in simulation or on the
+with no late safety tick. The Rover chassis arrived in November 2026 and is
+being brought up; the real robot has not yet found a real object. Every
+number above is measured in simulation or on the
 Jetson, not yet in a real home. `CLAUDE.md` section 3 has the detailed
 state and the open work.
 
 ---
 
-## Quick start
+## For developers
 
 ```bash
 python -m venv .venv
@@ -176,7 +210,7 @@ pytest service/vision_analyze/tests/ -q        # the cloud vision service's own 
 ```bash
 uvicorn robot.server:app --port 8000
 uvicorn control.brain_server:app --port 8001
-# open http://127.0.0.1:8000/  -> Settings: connect both -> Sim tab
+# open http://127.0.0.1:8000/  -> Connect -> Home tab (Start), Drive tab (D-pad, camera, map)
 ```
 
 Restart the robot server to put the robot back at its start position.
