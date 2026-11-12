@@ -605,3 +605,21 @@ def test_schedules_stay_off_on_a_real_robot_by_default():
     assert DEFAULTS["schedules_on_robot"] is False
     assert yaml.safe_load((root / "config" / "robot.yaml").read_text())["brain"]["schedules_on_robot"] is False
     assert load_brain_config(str(root / "config" / "robot.yaml"))["schedules_on_robot"] is False
+
+
+def test_the_week_is_pinned():
+    """T1, T3 and T5 as measured (`evaluations/schedule-3163/`, run 2)."""
+    from pathlib import Path
+    here = Path(__file__).resolve().parents[1] / "evaluations" / "schedule-3163"
+    week = [json.loads(x) for x in (here / "week.jsonl").read_text().splitlines()]
+    fired = [r for r in week if r["expect"] == "fired"]
+    assert len(week) == 21 and len(fired) == 15
+    assert all(r["ok_end"] for r in week), [r for r in week if not r["ok_end"]]
+    assert sum(r["contacts"] for r in fired) == 0 and all(r["docked"] for r in fired)
+    assert all(r["t1_s"] is None or r["t1_s"] <= 60 for r in fired)
+    assert json.loads((here / "week-runs.json").read_text())["twice"] == []
+    wall = [json.loads(x) for x in (here / "wall.jsonl").read_text().splitlines()]
+    assert len(wall) == 3 and all(r["t1_s"] <= 60 for r in wall)
+    hand = [json.loads(x) for x in (here / "hand.jsonl").read_text().splitlines()]
+    finds = lambda rows: sum(bool(r.get("found_right")) for r in rows if r["job"] == "find")  # noqa: E731
+    assert abs(finds(fired) - finds(hand)) <= 2

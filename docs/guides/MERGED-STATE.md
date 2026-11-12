@@ -94,6 +94,7 @@ section's own file has the numbers, failed criteria and review rounds.
   are not yet deployed.
 * 3.170: Settings' Shut down (`POST /power/shutdown`: a person's Stop, then 3.137's power-off, once; 403 with no secret wherever it could really power off); stub only so far, 3.137.C owes the polkit rule and `shutdown_steps`; not deployed.
 * 3.171: a local brain's non-zero `/wheels` obeys the ladder (Power-off, Reserve, a check); the brain closes its mission (`POST /autonomy/mission-closed`), so a lost final `/stop` is no false trip; live 10/10 each, a control with the close lost too trips 3/3.
+* 3.163.B: schedules (`control/scheduler.py`, Settings' Schedules, Home's next run); a start never lifts a Stop (`/autonomy/resume {"lift": false}`); off on a real robot (`schedules_on_robot`); an accelerated week: 15 of 15 on time and docked, 0 contacts, 6 of 6 skips with their reason; the sim charger needed 15 top-ups (the dock drifts, a limit for 3.156 and 3.163.C); not deployed.
 * 3.82, 3.84, 3.86, 3.97, 3.104: a person's Stop latches the brain out
   until a mission starts (`POST /autonomy/resume`); a person's move ends a
   nav2 goal under every drive; a Stop during the arrival's confirmation
