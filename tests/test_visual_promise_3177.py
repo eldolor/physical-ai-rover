@@ -50,7 +50,7 @@ def test_labels_count_recorded_steps_not_positions(mods):
     v, steps = [0, 0, 0, 1], [0, 1, 2, 5]
     assert mods["score"].labels(v, 2, steps) == ([], [0])
     assert mods["score"].labels(v, 3, steps) == ([2], [])
-    assert mods["score"].labels([0, 0, 0, 0, 1], 2) == ([2, 3], [0])
+    assert mods["score"].labels([0, 0, 0, 0, 1], 2) == ([2, 3], [0, 1])
 
 
 def test_a_torn_last_line_is_dropped(mods, tmp_path):
