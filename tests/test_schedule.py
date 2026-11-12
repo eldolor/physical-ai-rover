@@ -227,7 +227,7 @@ def test_a_resume_that_may_not_lift_keeps_a_persons_stop(robot_client):
 
 
 def test_the_sim_pack_is_set_only_in_the_simulator(robot_client, monkeypatch):
-    assert robot_client.post("/sim/battery", json={"v": 10.4}).status_code == 501   # no pack
+    assert robot_client.post("/sim/battery", json={"v": 10.4}).status_code == 404   # no pack
     monkeypatch.setenv("SIM_BATTERY_V", "12.0")
     client = asgi_client(server.create_app())
     assert client.post("/sim/battery", json={"v": 10.4}).json() == {"v": 10.4}
@@ -572,3 +572,36 @@ def test_a_schedule_with_no_since_is_repaired_by_a_save(tmp_path):
     store = sch.ScheduleStore(tmp_path)
     saved = store.save(store.load() | {"schedules": [one()]}, MON_9 - timedelta(hours=1))
     assert saved["schedules"][0]["since"] == (MON_9 - timedelta(hours=1)).isoformat()
+
+
+# ---------- the orchestrator's conditions (2026-11-12) ----------
+
+@pytest.mark.parametrize("mode, env", [
+    ("hardware", {"SIM_MOTOR_BOARD": "fake", "WORLD_MODE": "none"}),
+    ("teleop", {"WORLD_MODE": "none"}),
+])
+def test_the_sim_pack_route_is_absent_on_a_real_or_teleop_body(monkeypatch, sim_programs, mode, env):
+    monkeypatch.delenv("APP_SHARED_SECRET", raising=False)
+    monkeypatch.setenv("SIM_MAP", "scaled_house")
+    monkeypatch.setenv("SIM_BATTERY_V", "12.0")       # even with a sim pack asked for
+    for k in ("SIM_MOTOR_BOARD", "WORLD_MODE", "ROBOT_DRIVE", "SIM_BODY_URL", "SIM_SENSORS_URL"):
+        monkeypatch.delenv(k, raising=False)
+    if env.get("SIM_MOTOR_BOARD") == "fake":
+        sim_programs(SIM_MAP="scaled_house").apply(monkeypatch)
+    monkeypatch.setenv("ROBOT_MODE", mode)
+    for k, v in env.items():
+        monkeypatch.setenv(k, v)
+    with TestClient(server.create_app()) as client:
+        assert client.post("/sim/battery", json={"v": 10.3}).status_code == 404
+
+
+def test_schedules_stay_off_on_a_real_robot_by_default():
+    from pathlib import Path
+
+    import yaml
+
+    from control.brain_config import DEFAULTS, load_brain_config
+    root = Path(__file__).resolve().parents[1]
+    assert DEFAULTS["schedules_on_robot"] is False
+    assert yaml.safe_load((root / "config" / "robot.yaml").read_text())["brain"]["schedules_on_robot"] is False
+    assert load_brain_config(str(root / "config" / "robot.yaml"))["schedules_on_robot"] is False

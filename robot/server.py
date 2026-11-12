@@ -2242,8 +2242,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
     @app.post(prefix + "/sim/battery", dependencies=[Depends(require_secret)])
     def sim_battery(req: SimBatteryRequest):
         """3.163.B: set the simulated pack's volts, as a drained or charged
-        pack would read (a harness's injected Low). 501 on any robot with no
-        simulated pack: a real battery is never set from here."""
+        pack would read (a harness's injected Low). 404 on any robot with no
+        simulated pack (amendment 6): to a real body the route does not exist,
+        and a real battery is never set from here."""
         r = robot
         for _ in range(3):
             pack = getattr(r, "battery", None)
@@ -2253,7 +2254,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             r = getattr(r, "inner", None)
             if r is None:
                 break
-        raise HTTPException(status_code=501, detail="this robot has no simulated pack -- sim only")
+        raise HTTPException(status_code=404, detail="Not Found")
 
     class MoveObjectRequest(BaseModel):
         src: List[int]
