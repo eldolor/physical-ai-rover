@@ -177,8 +177,8 @@ here to `docs/guides/MERGED-STATE.md`; open work only stays here.**
   the bars first): 3.175 a find's memory when the target moved, and "where
   did you last see it" without driving; 3.176 a find asked in plain words
   (a free rule parser, a room hint into goal choice; the model arm asks
-  first); 3.177 visual promise, offline on the rig walks; 3.178 a watch
-  list of valuables (its real test needs the Rover's frames).
+  first); 3.178 a watch list of valuables (its real test needs the
+  Rover's frames).
 * Not built: `brain/planner.py`, S7 (chaos and soak), a Stage 1 vision
   re-run against the lit renderer.
 

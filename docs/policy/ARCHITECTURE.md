@@ -469,6 +469,8 @@ on the ProcTHOR sweeps (their imports carry room types), against today's
 `rule` on goals and time to find, on houses it was not trained on; (2) the
 inventory distance, once real frames name objects; (3) visual promise, only
 if (1) and (2) leave a gap, since it costs a model call per frontier.
+3.177.A found no such signal in CLIP RN50's whole-frame score on the rig
+walks (FAILED, 2026-11-12), so (3) needs another scorer.
 
 ## Contracts
 
