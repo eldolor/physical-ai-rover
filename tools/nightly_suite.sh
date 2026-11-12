@@ -75,8 +75,13 @@ PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"; export PATH
 mkdir -p "$logs"
 # Where a FAIL is emailed (see the end); the wrapper mails its own FAILs too.
 # SES is in sandbox mode on this account, so the address must be a verified
-# identity. NIGHTLY_EMAIL overrides it; NIGHTLY_EMAIL="" turns the email off.
-to="${NIGHTLY_EMAIL-anshu.gaind@gmail.com}"
+# identity. The address is not kept in the repo (it is public): it is the
+# first line of ~/.vision-picar-nightly-email. NIGHTLY_EMAIL overrides it;
+# NIGHTLY_EMAIL="" turns the email off; with neither, no email is sent.
+to="${NIGHTLY_EMAIL-$(head -n 1 "$HOME/.vision-picar-nightly-email" 2>/dev/null | tr -d '[:space:]' || true)}"
+# An email that is off by accident (no file, NIGHTLY_EMAIL not set) is said.
+[ -n "$to" ] || [ -n "${NIGHTLY_EMAIL+set}" ] || \
+  echo "nightly: no ~/.vision-picar-nightly-email and NIGHTLY_EMAIL not set: a FAIL will not be emailed" >> "$logs/launchd.log"
 # One run at a time (rounds 10-11): every checkout of this repo shares $wt,
 # and a second run's refresh would rewrite the tree under the first's
 # pytest. A kernel lock (flock, through the venv's python: macOS has no

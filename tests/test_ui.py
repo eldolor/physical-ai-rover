@@ -2980,7 +2980,7 @@ def test_a_tunnelled_robot_gets_the_interstitial_bypass(browser, twin_server):
     the request succeeds, the body is an HTML page, and the only symptom is
     a JSON parse error."""
     page, errors = open_twin(browser, twin_server)
-    tunnel = "https://salami-turbulent-engorge.ngrok-free.dev"
+    tunnel = "https://example-tunnel.ngrok-free.dev"
     # The tunnel is played by the local server, so Connect succeeds offline.
     # Against the real host this passed only when the internet answered:
     # no connection, no health poll, nothing to capture (half the runs).
@@ -3035,7 +3035,7 @@ def test_the_brain_gets_it_too_and_a_path_prefixed_url_still_works(browser, twin
 
     page.route("**/brain/health", capture)
     page.click("#btn-settings")
-    page.fill("#cfg-brain-url", "https://salami-turbulent-engorge.ngrok-free.dev/brain")
+    page.fill("#cfg-brain-url", "https://example-tunnel.ngrok-free.dev/brain")
     page.click("#btn-brain-connect")
     page.wait_for_timeout(900)
 
