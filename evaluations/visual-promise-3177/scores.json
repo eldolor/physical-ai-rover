@@ -1,0 +1,654 @@
+{
+ "criterion_1": {
+  "hash": "00d12dbc44f6495a927a2a58d53887fc58c9e468e5774d65a8d90288d364a2d6",
+  "frames": 2261,
+  "rows": 2261,
+  "devices": [
+   "cpu"
+  ],
+  "met": true
+ },
+ "criterion_2": {
+  "2a": 0.44754377421415487,
+  "2b_ci": [
+   0.40330820691623126,
+   0.6084355543276246
+  ],
+  "2c_floor": 0.28169014084507044,
+  "met_2a": false,
+  "met_2b": false,
+  "met_2c": false,
+  "objects": [
+   "a white phone charger cable",
+   "blue and yellow running shoes",
+   "blue bottle",
+   "woven laundry basket"
+  ]
+ },
+ "criterion_3": {
+  "control": 0.5830803322025433,
+  "gap": -0.13553655798838843,
+  "met": false
+ },
+ "met": false,
+ "main": {
+  "k": 5,
+  "variant": "full",
+  "walks": 9,
+  "pos": 97,
+  "neg": 685,
+  "balanced_target": 0.44754377421415487,
+  "balanced_margin": 0.35200785198981543,
+  "balanced_control": 0.5830803322025433,
+  "pooled_target": 0.5427238593696666,
+  "pooled_margin": 0.4248492433723973,
+  "ci_target": [
+   0.40330820691623126,
+   0.6084355543276246
+  ],
+  "ci_margin": [
+   0.33358197665944306,
+   0.47790195591139367
+  ],
+  "per_object": {
+   "a white phone charger cable": {
+    "walks": 2,
+    "pos": 13,
+    "neg": 35,
+    "target": 0.28169014084507044,
+    "margin": 0.5258215962441315,
+    "control": 0.3187793427230047
+   },
+   "blue and yellow running shoes": {
+    "walks": 1,
+    "pos": 6,
+    "neg": 13,
+    "target": 0.5256410256410257,
+    "margin": 0.19230769230769232,
+    "control": 0.808974358974359
+   },
+   "blue bottle": {
+    "walks": 1,
+    "pos": 5,
+    "neg": 184,
+    "target": 0.41739130434782606,
+    "margin": 0.24347826086956523,
+    "control": 0.5780434782608695
+   },
+   "woven laundry basket": {
+    "walks": 5,
+    "pos": 73,
+    "neg": 453,
+    "target": 0.5654526260226973,
+    "margin": 0.4464238585378728,
+    "control": 0.6265241488519399
+   }
+  },
+  "per_walk": {
+   "a-white-phone-charger-ca-20260921-203250": {
+    "object": "a white phone charger cable",
+    "pos": 6,
+    "neg": 32,
+    "target": 0.234375,
+    "margin": 0.4895833333333333,
+    "control": 0.3046875
+   },
+   "a-white-phone-charger-ca-20260921-203355": {
+    "object": "a white phone charger cable",
+    "pos": 7,
+    "neg": 3,
+    "target": 0.7142857142857143,
+    "margin": 0.8571428571428571,
+    "control": 0.44761904761904764
+   },
+   "blue-bottle-20260907-185007": {
+    "object": "blue bottle",
+    "pos": 5,
+    "neg": 184,
+    "target": 0.41739130434782606,
+    "margin": 0.24347826086956523,
+    "control": 0.5780434782608695
+   },
+   "blue-shoes-20260908-210511": {
+    "object": "blue and yellow running shoes",
+    "pos": 6,
+    "neg": 13,
+    "target": 0.5256410256410257,
+    "margin": 0.19230769230769232,
+    "control": 0.808974358974359
+   },
+   "woven-laundry-basket-20260908-215252": {
+    "object": "woven laundry basket",
+    "pos": 10,
+    "neg": 48,
+    "target": 0.4166666666666667,
+    "margin": 0.2375,
+    "control": 0.6704166666666667
+   },
+   "woven-laundry-basket-20260908-215351": {
+    "object": "woven laundry basket",
+    "pos": 5,
+    "neg": 39,
+    "target": 0.08205128205128205,
+    "margin": 0.8615384615384616,
+    "control": 0.12615384615384614
+   },
+   "woven-laundry-basket-20260912-231358": {
+    "object": "woven laundry basket",
+    "pos": 25,
+    "neg": 97,
+    "target": 0.5063917525773196,
+    "margin": 0.46309278350515465,
+    "control": 0.5691958762886598
+   },
+   "woven-laundry-basket-20260913-115414": {
+    "object": "woven laundry basket",
+    "pos": 17,
+    "neg": 174,
+    "target": 0.6413116970926301,
+    "margin": 0.4570655848546315,
+    "control": 0.7000338066260987
+   },
+   "woven-laundry-basket-20260913-115703": {
+    "object": "woven laundry basket",
+    "pos": 16,
+    "neg": 95,
+    "target": 0.6210526315789474,
+    "margin": 0.4118421052631579,
+    "control": 0.6252631578947367
+   }
+  }
+ },
+ "recorded": {
+  "k": {
+   "3": {
+    "k": 3,
+    "variant": "full",
+    "walks": 12,
+    "pos": 85,
+    "neg": 748,
+    "balanced_target": 0.5204698084203823,
+    "balanced_margin": 0.4565424258637788,
+    "balanced_control": 0.5150837486586723,
+    "pooled_target": 0.5227344490053678,
+    "pooled_margin": 0.4000631512472371,
+    "ci_target": [
+     0.373159793230955,
+     0.5772212316590221
+    ],
+    "ci_margin": [
+     0.3412510745032071,
+     0.4676284249559082
+    ],
+    "per_object": {
+     "a white phone charger cable": {
+      "walks": 2,
+      "pos": 9,
+      "neg": 43,
+      "target": 0.4692737430167598,
+      "margin": 0.7150837988826816,
+      "control": 0.36703910614525137
+     },
+     "blue and yellow running shoes": {
+      "walks": 2,
+      "pos": 9,
+      "neg": 16,
+      "target": 0.6,
+      "margin": 0.26153846153846155,
+      "control": 0.7353846153846153
+     },
+     "blue bottle": {
+      "walks": 2,
+      "pos": 12,
+      "neg": 192,
+      "target": 0.2687074829931973,
+      "margin": 0.28401360544217685,
+      "control": 0.4591836734693877
+     },
+     "grey backpack": {
+      "walks": 1,
+      "pos": 7,
+      "neg": 3,
+      "target": 0.7142857142857143,
+      "margin": 0.6190476190476191,
+      "control": 0.38095238095238093
+     },
+     "woven laundry basket": {
+      "walks": 5,
+      "pos": 48,
+      "neg": 494,
+      "target": 0.5500821018062397,
+      "margin": 0.4030286444079548,
+      "control": 0.6328589673417261
+     }
+    },
+    "per_walk": {
+     "a-white-phone-charger-ca-20260921-203250": {
+      "object": "a white phone charger cable",
+      "pos": 4,
+      "neg": 36,
+      "target": 0.3541666666666667,
+      "margin": 0.6527777777777778,
+      "control": 0.33402777777777776
+     },
+     "a-white-phone-charger-ca-20260921-203355": {
+      "object": "a white phone charger cable",
+      "pos": 5,
+      "neg": 7,
+      "target": 0.9428571428571428,
+      "margin": 0.9714285714285714,
+      "control": 0.5028571428571429
+     },
+     "blue-bottle-20260907-142454": {
+      "object": "blue bottle",
+      "pos": 9,
+      "neg": 2,
+      "target": 0.4444444444444444,
+      "margin": 0.5555555555555556,
+      "control": 0.2444444444444444
+     },
+     "blue-bottle-20260907-185007": {
+      "object": "blue bottle",
+      "pos": 3,
+      "neg": 190,
+      "target": 0.2631578947368421,
+      "margin": 0.2754385964912281,
+      "control": 0.4659649122807018
+     },
+     "blue-shoes-20260907-152528": {
+      "object": "blue and yellow running shoes",
+      "pos": 5,
+      "neg": 1,
+      "target": 0.4,
+      "margin": 0.4,
+      "control": 0.1
+     },
+     "blue-shoes-20260908-210511": {
+      "object": "blue and yellow running shoes",
+      "pos": 4,
+      "neg": 15,
+      "target": 0.6166666666666667,
+      "margin": 0.25,
+      "control": 0.7883333333333334
+     },
+     "grey-backpack-20260921-203748": {
+      "object": "grey backpack",
+      "pos": 7,
+      "neg": 3,
+      "target": 0.7142857142857143,
+      "margin": 0.6190476190476191,
+      "control": 0.38095238095238093
+     },
+     "woven-laundry-basket-20260908-215252": {
+      "object": "woven laundry basket",
+      "pos": 6,
+      "neg": 54,
+      "target": 0.404320987654321,
+      "margin": 0.18518518518518517,
+      "control": 0.6753086419753086
+     },
+     "woven-laundry-basket-20260908-215351": {
+      "object": "woven laundry basket",
+      "pos": 3,
+      "neg": 43,
+      "target": 0.12403100775193798,
+      "margin": 0.8372093023255814,
+      "control": 0.16434108527131783
+     },
+     "woven-laundry-basket-20260912-231358": {
+      "object": "woven laundry basket",
+      "pos": 16,
+      "neg": 112,
+      "target": 0.5323660714285714,
+      "margin": 0.44419642857142855,
+      "control": 0.5901227678571429
+     },
+     "woven-laundry-basket-20260913-115414": {
+      "object": "woven laundry basket",
+      "pos": 11,
+      "neg": 184,
+      "target": 0.5721343873517787,
+      "margin": 0.3784584980237154,
+      "control": 0.6882411067193676
+     },
+     "woven-laundry-basket-20260913-115703": {
+      "object": "woven laundry basket",
+      "pos": 12,
+      "neg": 101,
+      "target": 0.6237623762376238,
+      "margin": 0.3952145214521452,
+      "control": 0.6420792079207921
+     }
+    }
+   },
+   "10": {
+    "k": 10,
+    "variant": "full",
+    "walks": 8,
+    "pos": 153,
+    "neg": 572,
+    "balanced_target": 0.41245612165777845,
+    "balanced_margin": 0.36045185066174723,
+    "balanced_control": 0.5685694956651205,
+    "pooled_target": 0.4878814367450731,
+    "pooled_margin": 0.44953909726637,
+    "ci_target": [
+     0.3639667219704199,
+     0.5756498387561393
+    ],
+    "ci_margin": [
+     0.341472676870952,
+     0.5307587249701838
+    ],
+    "per_object": {
+     "a white phone charger cable": {
+      "walks": 1,
+      "pos": 10,
+      "neg": 23,
+      "target": 0.10434782608695652,
+      "margin": 0.3695652173913043,
+      "control": 0.2995652173913044
+     },
+     "blue and yellow running shoes": {
+      "walks": 1,
+      "pos": 11,
+      "neg": 8,
+      "target": 0.6818181818181818,
+      "margin": 0.3068181818181818,
+      "control": 0.9261363636363636
+     },
+     "blue bottle": {
+      "walks": 1,
+      "pos": 10,
+      "neg": 169,
+      "target": 0.3464497041420118,
+      "margin": 0.2869822485207101,
+      "control": 0.5088165680473373
+     },
+     "woven laundry basket": {
+      "walks": 5,
+      "pos": 122,
+      "neg": 372,
+      "target": 0.5172087745839636,
+      "margin": 0.47844175491679275,
+      "control": 0.5397598335854765
+     }
+    },
+    "per_walk": {
+     "a-white-phone-charger-ca-20260921-203250": {
+      "object": "a white phone charger cable",
+      "pos": 10,
+      "neg": 23,
+      "target": 0.10434782608695652,
+      "margin": 0.3695652173913043,
+      "control": 0.2995652173913044
+     },
+     "blue-bottle-20260907-185007": {
+      "object": "blue bottle",
+      "pos": 10,
+      "neg": 169,
+      "target": 0.3464497041420118,
+      "margin": 0.2869822485207101,
+      "control": 0.5088165680473373
+     },
+     "blue-shoes-20260908-210511": {
+      "object": "blue and yellow running shoes",
+      "pos": 11,
+      "neg": 8,
+      "target": 0.6818181818181818,
+      "margin": 0.3068181818181818,
+      "control": 0.9261363636363636
+     },
+     "woven-laundry-basket-20260908-215252": {
+      "object": "woven laundry basket",
+      "pos": 15,
+      "neg": 38,
+      "target": 0.6175438596491228,
+      "margin": 0.5070175438596491,
+      "control": 0.6684210526315789
+     },
+     "woven-laundry-basket-20260908-215351": {
+      "object": "woven laundry basket",
+      "pos": 10,
+      "neg": 29,
+      "target": 0.22758620689655173,
+      "margin": 0.8103448275862069,
+      "control": 0.17241379310344826
+     },
+     "woven-laundry-basket-20260912-231358": {
+      "object": "woven laundry basket",
+      "pos": 41,
+      "neg": 68,
+      "target": 0.3902439024390244,
+      "margin": 0.4257532281205165,
+      "control": 0.4967718794835007
+     },
+     "woven-laundry-basket-20260913-115414": {
+      "object": "woven laundry basket",
+      "pos": 32,
+      "neg": 155,
+      "target": 0.613508064516129,
+      "margin": 0.5433467741935484,
+      "control": 0.5603024193548387
+     },
+     "woven-laundry-basket-20260913-115703": {
+      "object": "woven laundry basket",
+      "pos": 24,
+      "neg": 82,
+      "target": 0.4679878048780488,
+      "margin": 0.3323170731707317,
+      "control": 0.5657520325203252
+     }
+    }
+   }
+  },
+  "tiles": {
+   "k": 5,
+   "variant": "tiles",
+   "walks": 9,
+   "pos": 97,
+   "neg": 685,
+   "balanced_target": 0.43714793114723366,
+   "balanced_margin": 0.34666404280156715,
+   "balanced_control": 0.5587488624670504,
+   "pooled_target": 0.5389122767095232,
+   "pooled_margin": 0.37216975765161,
+   "ci_target": [
+    0.38917953453457765,
+    0.5889046273020232
+   ],
+   "ci_margin": [
+    0.3024156854117555,
+    0.41746178879625556
+   ],
+   "per_object": {
+    "a white phone charger cable": {
+     "walks": 2,
+     "pos": 13,
+     "neg": 35,
+     "target": 0.2347417840375587,
+     "margin": 0.47417840375586856,
+     "control": 0.2647887323943662
+    },
+    "blue and yellow running shoes": {
+     "walks": 1,
+     "pos": 6,
+     "neg": 13,
+     "target": 0.6538461538461539,
+     "margin": 0.3333333333333333,
+     "control": 0.7615384615384615
+    },
+    "blue bottle": {
+     "walks": 1,
+     "pos": 5,
+     "neg": 184,
+     "target": 0.2826086956521739,
+     "margin": 0.18695652173913044,
+     "control": 0.5614130434782609
+    },
+    "woven laundry basket": {
+     "walks": 5,
+     "pos": 73,
+     "neg": 453,
+     "target": 0.5773950910530483,
+     "margin": 0.39218791237793615,
+     "control": 0.6472552124571127
+    }
+   },
+   "per_walk": {
+    "a-white-phone-charger-ca-20260921-203250": {
+     "object": "a white phone charger cable",
+     "pos": 6,
+     "neg": 32,
+     "target": 0.16666666666666666,
+     "margin": 0.4270833333333333,
+     "control": 0.253125
+    },
+    "a-white-phone-charger-ca-20260921-203355": {
+     "object": "a white phone charger cable",
+     "pos": 7,
+     "neg": 3,
+     "target": 0.8571428571428571,
+     "margin": 0.9047619047619048,
+     "control": 0.37142857142857144
+    },
+    "blue-bottle-20260907-185007": {
+     "object": "blue bottle",
+     "pos": 5,
+     "neg": 184,
+     "target": 0.2826086956521739,
+     "margin": 0.18695652173913044,
+     "control": 0.5614130434782609
+    },
+    "blue-shoes-20260908-210511": {
+     "object": "blue and yellow running shoes",
+     "pos": 6,
+     "neg": 13,
+     "target": 0.6538461538461539,
+     "margin": 0.3333333333333333,
+     "control": 0.7615384615384615
+    },
+    "woven-laundry-basket-20260908-215252": {
+     "object": "woven laundry basket",
+     "pos": 10,
+     "neg": 48,
+     "target": 0.5145833333333333,
+     "margin": 0.3458333333333333,
+     "control": 0.6660416666666666
+    },
+    "woven-laundry-basket-20260908-215351": {
+     "object": "woven laundry basket",
+     "pos": 5,
+     "neg": 39,
+     "target": 0.20512820512820512,
+     "margin": 0.6358974358974359,
+     "control": 0.23897435897435898
+    },
+    "woven-laundry-basket-20260912-231358": {
+     "object": "woven laundry basket",
+     "pos": 25,
+     "neg": 97,
+     "target": 0.6016494845360825,
+     "margin": 0.3595876288659794,
+     "control": 0.6450721649484537
+    },
+    "woven-laundry-basket-20260913-115414": {
+     "object": "woven laundry basket",
+     "pos": 17,
+     "neg": 174,
+     "target": 0.5769100743745774,
+     "margin": 0.40466531440162273,
+     "control": 0.6769100743745774
+    },
+    "woven-laundry-basket-20260913-115703": {
+     "object": "woven laundry basket",
+     "pos": 16,
+     "neg": 95,
+     "target": 0.6072368421052632,
+     "margin": 0.40328947368421053,
+     "control": 0.6394736842105264
+    }
+   }
+  },
+  "onset": {
+   "by_frames_to_onset": {
+    "1": [
+     0.135,
+     26
+    ],
+    "2": [
+     0.249,
+     19
+    ],
+    "3": [
+     -0.094,
+     19
+    ],
+    "4": [
+     -0.188,
+     17
+    ],
+    "5": [
+     0.149,
+     16
+    ],
+    "6": [
+     0.018,
+     15
+    ],
+    "7": [
+     -0.341,
+     14
+    ],
+    "8": [
+     -0.428,
+     14
+    ],
+    "9": [
+     -0.242,
+     13
+    ],
+    "10": [
+     -0.187,
+     12
+    ],
+    "11": [
+     -0.071,
+     12
+    ],
+    "12": [
+     -0.291,
+     12
+    ],
+    "13": [
+     -0.273,
+     12
+    ],
+    "14": [
+     -0.253,
+     11
+    ],
+    "15": [
+     -0.048,
+     9
+    ]
+   },
+   "far": [
+    0.005,
+    685
+   ]
+  },
+  "cpu_ms_full_frame": {
+   "p50": 233.5,
+   "p90": 677.2
+  },
+  "texts": {
+   "a white phone charger cable": "a white phone charger cable",
+   "blue bottle": "blue bottle",
+   "blue and yellow running shoes": "blue and yellow running shoes",
+   "grey backpack": "Grey backpack",
+   "red backpack": "burgundy backpack",
+   "woven laundry basket": "woven laundry basket"
+  }
+ }
+}
