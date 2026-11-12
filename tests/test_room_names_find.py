@@ -152,6 +152,20 @@ def test_the_rule_chooser_reads_no_names(saved_map):
     assert runner.status()["room_labels"] is None
 
 
+def test_the_sweep_s_recorded_bars_hold():
+    """3.160.D D1-D5, re-scored from the recorded arms (the sweep itself is
+    200 missions an arm: evaluations/room-names-3160d/sweep.py)."""
+    import importlib.util
+    from pathlib import Path
+    d = Path(__file__).resolve().parents[1] / "evaluations" / "room-names-3160d"
+    spec = importlib.util.spec_from_file_location("score_3160d", d / "score.py")
+    score = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(score)
+    s = score.main(d)
+    assert all(s[b]["met"] for b in ("D1", "D2", "D3", "D4", "D5")), s
+    assert s["D1"]["ci95"][0] >= 0.08 and s["D4"]["noid"]["differ"] == s["D4"]["empty"]["differ"] == 0
+
+
 def test_a_pose_dropout_keeps_the_names(saved_map, monkeypatch):
     """A momentarily unusable pose (stale SLAM, a dropped fetch) keeps the
     saved map the mission last read: the types do not flap (review)."""

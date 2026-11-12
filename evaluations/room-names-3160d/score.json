@@ -1,0 +1,77 @@
+{
+ "D1": {
+  "missions": 100,
+  "mean_diff": 0.1796,
+  "ci95": [
+   0.0817,
+   0.2971
+  ],
+  "met": true
+ },
+ "D2": {
+  "R": {
+   "dev": 100,
+   "names": 100,
+   "met": true
+  },
+  "U": {
+   "dev": 100,
+   "names": 100,
+   "met": true
+  },
+  "met": true
+ },
+ "D3": {
+  "dev_m": 25.35,
+  "names_m": 22.950000000000003,
+  "ratio": 0.905,
+  "met": true
+ },
+ "D4": {
+  "noid": {
+   "missions": 200,
+   "differ": 0,
+   "first": []
+  },
+  "empty": {
+   "missions": 200,
+   "differ": 0,
+   "first": []
+  },
+  "met": true
+ },
+ "D5": {
+  "asks": 0,
+  "missions_reading_names": 193,
+  "exceptions": 0,
+  "met": true
+ },
+ "mode_R": {
+  "dev": {
+   "reward": 0.4753,
+   "goals": 9.78,
+   "metres": 32.91,
+   "changed": null
+  },
+  "names": {
+   "reward": 0.6549,
+   "goals": 6.26,
+   "metres": 21.99,
+   "changed": 83
+  }
+ },
+ "mode_U": {
+  "dev": {
+   "reward": 0.3762,
+   "goals": 11.51,
+   "metres": 39.36,
+   "changed": null
+  },
+  "names": {
+   "reward": 0.4705,
+   "goals": 9.03,
+   "metres": 34.89,
+   "changed": 92
+  }
+ }
+}
