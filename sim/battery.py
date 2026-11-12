@@ -81,6 +81,13 @@ class SimBattery:
     def is_driving(self) -> bool:
         return self._driving_since is not None
 
+    def set_v(self, v: float, now: Optional[float] = None) -> None:
+        """3.163.B: the pack at `v` from now on, draining or charging from
+        there as before. The next reading is fresh."""
+        now = self.clock() if now is None else now
+        self._anchor = (now, float(v))
+        self._held = None
+
     def charging(self, on: bool, now: Optional[float] = None) -> None:
         """3.156.D: on or off the charger (no rate, no charger)."""
         now = self.clock() if now is None else now

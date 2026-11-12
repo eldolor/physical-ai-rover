@@ -768,6 +768,9 @@ class MissionRunner:
             )
 
         self.robot = robot
+        # 3.163.B: who started it: None for a person, "schedule:<id>" for a
+        # schedule (set by the brain server before start()).
+        self.started_by: Optional[str] = None
         # 3.171: the Start this runner was built for (`resume_autonomy()` runs
         # first). Read now: by this mission's end the next Start may have set it.
         self._mission_id = getattr(robot, "mission_id", None)
@@ -1716,6 +1719,7 @@ class MissionRunner:
                            if self._charge else None),
                 "policy": self.policy,
                 "job": self.job,
+                "started_by": self.started_by,
                 # 3.70 S2: a survey's room labels -- how many asks, the cap,
                 # whether it was reached, and the names so far.
                 "survey": (self.room_labeller.status()
@@ -2589,7 +2593,7 @@ class MissionRunner:
             }
         return {
             "mission_id": self.mission_id, "house": self.house,
-            "policy": self.policy, "job": self.job,
+            "policy": self.policy, "job": self.job, "started_by": self.started_by,
             "target_object": self.memory.target_object, "target_room": self.memory.target_room,
             "started_at": round(ended_at - (time.monotonic() - self._started_at), 3),
             "ended_at": round(ended_at, 3),
@@ -3112,6 +3116,7 @@ class MissionRunner:
                 rooms = set(self.memory.visited_rooms)
                 rooms.update(getattr(self.agent, "rooms_entered", ()) or ())
                 report = {"outcome": outcome, "end_reason": note, "job": self.job,
+                          "started_by": self.started_by,
                           "target": self.memory.target_object,
                           "step": len(self.agent.history), "ended": round(time.time(), 3),
                           "rooms_entered": sorted(rooms), "rooms_source": "model"}

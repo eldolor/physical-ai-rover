@@ -1105,3 +1105,19 @@ body.first-run-on #tab-home > .panel:not(#first-run) { display: none; }
 .first-run-go { width: 100%; margin-top: 14px; }
 .first-run-status { font-family: var(--sans); font-size: var(--fs-body); color: var(--text-dim); margin-top: 10px; min-height: 1.2em; }
 .first-run-status.is-err { color: var(--text); font-weight: 600; }
+
+/* 3.163.B: the Schedules panel (Settings) */
+.sched-list { list-style: none; margin: 8px 0; padding: 0; }
+.sched-row { display: grid; grid-template-columns: 1fr auto; gap: 2px 8px; align-items: center;
+             padding: 8px 0; border-bottom: 1px solid var(--border); }
+.sched-row .sched-what { grid-column: 1; }
+.sched-row .sched-result { grid-column: 1; font-size: var(--fs-body); color: var(--text-dim); }
+.sched-row .sched-remove { grid-column: 2; grid-row: 1 / span 2; min-height: 44px; min-width: 44px; }
+.sched-empty { color: var(--text-dim); padding: 8px 0; }
+.sched-days { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
+.sched-day { min-height: 44px; min-width: 44px; flex: 0 0 auto; }
+.sched-every { flex: 1 0 100%; }
+#sched-form .text-input { width: 100%; min-height: 44px; margin-bottom: 8px; box-sizing: border-box; }
+#sched-form .field-label { display: block; margin-top: 6px; }
+#sched-form[hidden], #sched-not-here[hidden], #mission-schedule[hidden],
+#sched-target[hidden], #sched-target-label[hidden], #sched-add[hidden] { display: none; }

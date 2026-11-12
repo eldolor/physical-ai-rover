@@ -299,6 +299,8 @@ Resources:
             - /teleop-robot/sim/objects/move
             # 3.72's house swap; answers 409 here, reachable to be read.
             - /teleop-robot/sim/house/random
+            # 3.163.B: the simulated pack's volts (answers 404 off the simulator).
+            - /teleop-robot/sim/battery
             # 3.84: a new mission lifts a person's Stop's latch; 3.76 K2: a
             # refused start puts it back; 3.145: the brain's goal-lease
             # heartbeat. One wildcard for the three: five values is the limit.

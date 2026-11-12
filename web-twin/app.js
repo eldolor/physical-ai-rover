@@ -2265,6 +2265,303 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     }
   }
 
+  // ---------- 3.163.B: schedules (the autopilot keeps them) ----------
+
+  const SCHED_RELOAD_MS = 20000;
+  const SCHED_ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
+  const SCHED_DAY_KEYS = ["sched.day0", "sched.day1", "sched.day2", "sched.day3",
+                          "sched.day4", "sched.day5", "sched.day6"];
+  // The view is the brain's at `schedViewUrl`: one from another brain is never
+  // shown or written back (review round 1). `schedSeq` counts saves, so a load
+  // begun before one is dropped rather than undo it.
+  let schedView = null, schedViewUrl = null, schedLoadedAt = 0, schedLoading = false;
+  let schedSaving = false, schedSeq = 0;
+  const schedForm = { job: "find", days: SCHED_ALL_DAYS.slice() };
+
+  function schedWhy(reason) {
+    return strings.has("sched.why." + reason) ? t("sched.why." + reason) : reason;
+  }
+
+  function schedClock(at) {        // "09:00" -> "9:00"
+    const parts = String(at || "").split(":");
+    return parts.length === 2 ? String(Number(parts[0])) + ":" + parts[1] : at;
+  }
+
+  function schedDays(days) {
+    if (days.length === 7) return t("sched.daysAll");
+    return days.map(function (d) { return t(SCHED_DAY_KEYS[d]); }).join(", ");
+  }
+
+  // When a due time is, in words. From the autopilot's own count of seconds,
+  // so a phone in another time zone (or the clock of a test) still agrees.
+  function schedWhen(inS, at) {
+    const due = new Date(Date.now() + inS * 1000);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const day = new Date(due); day.setHours(0, 0, 0, 0);
+    const diff = Math.round((day - today) / 86400000);
+    const clock = schedClock(at);
+    if (diff <= 0) return t("sched.today", { at: clock });
+    if (diff === 1) return t("sched.tomorrow", { at: clock });
+    return t("sched.onDay", { day: t(SCHED_DAY_KEYS[(due.getDay() + 6) % 7]), at: clock });
+  }
+
+  function schedAgo(line) {
+    return schedClock(String(line.due || "").slice(11, 16));
+  }
+
+  async function loadSchedules(force) {
+    if (!state.brainConnected) return;
+    if (schedViewUrl !== state.brainUrl) { schedView = null; schedLoadedAt = 0; force = true; }
+    if (schedLoading || schedSaving) return;
+    if (!force && Date.now() - schedLoadedAt < SCHED_RELOAD_MS) return;
+    schedLoading = true;
+    const url = state.brainUrl, seq = schedSeq;
+    try {
+      const view = await brainApi("GET", "/schedules");
+      if (url !== state.brainUrl || seq !== schedSeq) return;   // another brain, or a save since
+      schedView = view;
+      schedViewUrl = url;
+      schedLoadedAt = Date.now();
+      document.getElementById("sched-error").textContent = "";
+    } catch (e) {
+      if (url !== state.brainUrl) return;
+      // An older autopilot has no schedules: the panel stays hidden. Any
+      // other failure keeps this brain's last list, so the panel (and the
+      // error in it) stays in view.
+      if (e.status === 404) schedView = null;
+      schedLoadedAt = Date.now();
+      if (e.status !== 404) {
+        document.getElementById("sched-error").textContent = t("sched.loadFailed", { why: e.message });
+      }
+    } finally {
+      schedLoading = false;
+      renderSchedules();
+    }
+  }
+
+  async function saveSchedules(body) {
+    if (schedSaving || schedViewUrl !== state.brainUrl) return false;
+    schedSaving = true;
+    schedSeq += 1;
+    const url = state.brainUrl;
+    renderSchedules();
+    try {
+      const view = await brainApi("PUT", "/schedules", body);
+      if (url !== state.brainUrl) return false;
+      schedView = view;
+      schedLoadedAt = Date.now();
+      document.getElementById("sched-error").textContent = "";
+      return true;
+    } catch (e) {
+      document.getElementById("sched-error").textContent = t("sched.failed", { why: e.message });
+      return false;
+    } finally {
+      schedSaving = false;
+      renderSchedules();
+    }
+  }
+
+  function schedBody(changes) {
+    return Object.assign({
+      enabled: !!schedView.enabled,
+      schedules: schedView.schedules.map(function (s) {
+        return { id: s.id, job: s.job, target: s.target, days: s.days, at: s.at, enabled: s.enabled };
+      }),
+    }, changes);
+  }
+
+  function schedLastLine(id) {
+    return (schedView.runs || []).find(function (r) { return r.id === id; }) || null;
+  }
+
+  function schedRowWords(s) {
+    const words = { days: schedDays(s.days), at: schedClock(s.at), target: s.target };
+    return s.job === "find" ? t("sched.rowFind", words) : t("sched.rowSurvey", words);
+  }
+
+  function schedResultWords(s) {
+    const waiting = (schedView.waiting || []).find(function (w) { return w.id === s.id; });
+    if (waiting) return t("sched.waiting", { why: schedWhy(waiting.reason) });
+    const line = schedLastLine(s.id);
+    if (!line) return "";
+    if (line.outcome === "fired") return t("sched.ran", { when: schedAgo(line) });
+    return t("sched.skipped", { when: schedAgo(line),
+      why: schedWhy(line.outcome === "missed_down" ? "missed_down" : line.reason) });
+  }
+
+  function renderSchedules() {
+    const panel = document.getElementById("schedules-panel");
+    if (schedViewUrl !== state.brainUrl) schedView = null;
+    panel.hidden = !state.brainConnected || !schedView;
+    renderMissionSchedule();
+    if (panel.hidden) return;
+    document.getElementById("sched-label").textContent = t("sched.label");
+    document.getElementById("sched-lede").textContent = t("sched.lede");
+    const notHere = document.getElementById("sched-not-here");
+    notHere.hidden = schedView.allowed !== false;
+    notHere.textContent = t("sched.notHere");
+    const master = document.getElementById("sched-master");
+    master.textContent = schedView.enabled ? t("sched.on") : t("sched.off");
+    master.setAttribute("aria-pressed", schedView.enabled ? "true" : "false");
+    master.classList.toggle("active-mode", !!schedView.enabled);
+    master.disabled = schedSaving || !schedView.schedules.length;
+    const list = document.getElementById("sched-list");
+    list.textContent = "";
+    if (!schedView.schedules.length) {
+      const empty = document.createElement("li");
+      empty.className = "sched-empty";
+      empty.textContent = t("sched.empty");
+      list.appendChild(empty);
+    }
+    schedView.schedules.forEach(function (s) {
+      const li = document.createElement("li");
+      li.className = "sched-row";
+      const what = document.createElement("div");
+      what.className = "sched-what";
+      what.textContent = schedRowWords(s);
+      const result = document.createElement("div");
+      result.className = "sched-result";
+      result.textContent = schedResultWords(s);
+      const remove = document.createElement("button");
+      remove.className = "ghost sched-remove";
+      remove.type = "button";
+      remove.textContent = t("sched.remove");
+      remove.setAttribute("aria-label", t("sched.removeOne", { what: schedRowWords(s) }));
+      remove.disabled = schedSaving;
+      remove.onclick = function () {
+        const rest = schedBody({}).schedules.filter(function (x) { return x.id !== s.id; });
+        saveSchedules(schedBody({ schedules: rest, enabled: rest.length ? !!schedView.enabled : false }));
+      };
+      li.appendChild(what);
+      li.appendChild(result);
+      li.appendChild(remove);
+      list.appendChild(li);
+    });
+    const add = document.getElementById("sched-add");
+    add.textContent = t("sched.add");
+    add.disabled = schedSaving;
+    document.getElementById("sched-job-find").textContent = t("sched.find");
+    document.getElementById("sched-job-survey").textContent = t("sched.survey");
+    document.querySelectorAll(".sched-job").forEach(function (b) {
+      const on = b.dataset.job === schedForm.job;
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      b.classList.toggle("active-mode", on);
+    });
+    document.getElementById("sched-target-label").textContent = t("sched.target");
+    document.getElementById("sched-target-label").hidden = schedForm.job !== "find";
+    document.getElementById("sched-target").hidden = schedForm.job !== "find";
+    document.getElementById("sched-at-label").textContent = t("sched.at");
+    document.getElementById("sched-days-label").textContent = t("sched.days");
+    renderSchedDays();
+    document.getElementById("sched-cancel").textContent = t("sched.cancel");
+    const save = document.getElementById("sched-save");
+    save.textContent = t("sched.save");
+    save.disabled = schedSaving;
+  }
+
+  function renderSchedDays() {
+    const box = document.getElementById("sched-days");
+    if (!box.children.length) {
+      const every = document.createElement("button");
+      every.type = "button";
+      every.className = "ghost sched-day sched-every";
+      every.dataset.day = "all";
+      box.appendChild(every);
+      SCHED_ALL_DAYS.forEach(function (d) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "ghost sched-day";
+        b.dataset.day = String(d);
+        box.appendChild(b);
+      });
+      box.onclick = function (ev) {
+        const b = ev.target.closest(".sched-day");
+        if (!b) return;
+        if (b.dataset.day === "all") {
+          schedForm.days = schedForm.days.length === 7 ? [] : SCHED_ALL_DAYS.slice();
+        } else {
+          const d = Number(b.dataset.day);
+          schedForm.days = schedForm.days.indexOf(d) >= 0
+            ? schedForm.days.filter(function (x) { return x !== d; })
+            : schedForm.days.concat([d]).sort();
+        }
+        renderSchedDays();
+      };
+    }
+    Array.prototype.forEach.call(box.children, function (b) {
+      const all = b.dataset.day === "all";
+      const on = all ? schedForm.days.length === 7 : schedForm.days.indexOf(Number(b.dataset.day)) >= 0;
+      b.textContent = all ? t("sched.everyDay") : t(SCHED_DAY_KEYS[Number(b.dataset.day)]);
+      b.setAttribute("aria-pressed", on ? "true" : "false");
+      b.classList.toggle("active-mode", on);
+    });
+  }
+
+  // Home's one line: the next run, schedules off, or why the last was skipped.
+  function renderMissionSchedule() {
+    const el = document.getElementById("mission-schedule");
+    if (!el) return;
+    const v = state.brainConnected && schedViewUrl === state.brainUrl ? schedView : null;
+    let words = "";
+    if (v && v.schedules && v.schedules.length) {
+      const last = (v.runs || [])[0];
+      if (!v.enabled) {
+        words = t("sched.homeOff");
+      } else if (last && last.outcome !== "fired") {
+        words = t("sched.homeSkipped",
+          { why: schedWhy(last.outcome === "missed_down" ? "missed_down" : last.reason) });
+      } else if (v.next) {
+        const when = schedWhen(v.next.in_s, v.next.at.slice(11, 16));
+        words = v.next.job === "find" ? t("sched.nextFind", { target: v.next.target, when: when })
+          : t("sched.nextSurvey", { when: when });
+      }
+    }
+    el.hidden = !words;
+    if (el.textContent !== words) el.textContent = words;
+  }
+
+  document.getElementById("sched-master").onclick = function () {
+    if (!schedView) return;
+    saveSchedules(schedBody({ enabled: !schedView.enabled }));
+  };
+  document.getElementById("sched-add").onclick = function () {
+    document.getElementById("sched-form").hidden = false;
+    document.getElementById("sched-add").hidden = true;
+    renderSchedules();
+  };
+  document.getElementById("sched-job-group").onclick = function (ev) {
+    const b = ev.target.closest(".sched-job");
+    if (!b) return;
+    schedForm.job = b.dataset.job;
+    renderSchedules();
+  };
+  function schedCloseForm() {
+    document.getElementById("sched-form").hidden = true;
+    document.getElementById("sched-add").hidden = false;
+  }
+  document.getElementById("sched-cancel").onclick = schedCloseForm;
+  document.getElementById("sched-save").onclick = async function () {
+    if (!schedView) return;
+    const err = document.getElementById("sched-error");
+    const target = document.getElementById("sched-target").value.trim();
+    if (schedForm.job === "find" && !target) { err.textContent = t("sched.needTarget"); return; }
+    if (!schedForm.days.length) { err.textContent = t("sched.needDay"); return; }
+    if (schedView.schedules.length >= 10) { err.textContent = t("sched.full"); return; }
+    const row = { id: "s" + Date.now().toString(36), job: schedForm.job,
+                  target: schedForm.job === "find" ? target : null,
+                  days: schedForm.days.slice(), at: document.getElementById("sched-at").value || "09:00",
+                  enabled: true };
+    const first = !schedView.schedules.length;
+    // The first schedule turns schedules on: a person who adds one wants it to run.
+    const ok = await saveSchedules(schedBody({
+      schedules: schedBody({}).schedules.concat([row]),
+      enabled: first ? true : !!schedView.enabled }));
+    if (ok) {
+      schedCloseForm();
+      document.getElementById("sched-target").value = "";
+    }
+  };
+
   document.getElementById("btn-shutdown").onclick = function () {
     document.getElementById("shutdown-confirm-text").textContent = shutdownConfirmWords();
     document.getElementById("shutdown-error").textContent = "";
@@ -2985,6 +3282,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     const el = document.getElementById("mission-card");
     if (!el) return;
     el.hidden = !state.brainConnected;
+    renderSchedules();
     if (!state.brainConnected) {
       const note = document.getElementById("mission-local-down");   // 3.152
       if (note) note.hidden = true;
@@ -2992,6 +3290,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     }
     const card = missionCardText(state.lastBrainStatus);
     loadSaw(state.lastBrainStatus);      // 3.162: once per ended mission
+    loadSchedules(false);                // 3.163.B: at most every 20 s
     // Only on a change: the card is read on every poll.
     if (el.textContent !== card.text) el.textContent = card.text;
     el.dataset.state = card.kind;
@@ -3537,6 +3836,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     state.lastBrainStatus = null;     // 3.132: revoice() must not redraw it
     stopBrainPolling();
     setBrainText("brain-tel-outcome", t("state.brainLost"), "alert");
+    renderSchedules();
     const lostEl = document.getElementById("brain-connection-status"), lostUrl = state.brainUrl;
     setVoicedConnStatus(lostEl, function () {
       setConnStatus(lostEl, "err", "Not connected", t("brain.lostDetail", {url: lostUrl, why: e.message}));
@@ -4197,6 +4497,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     try {
       const health = await brainApi("GET", "/health");
       state.brainConnected = true;
+      loadSchedules(true);      // 3.163.B
       // null means "this brain pins nothing, so the vision service's own
       // default applies" -- resolved for display in brainModelLabel().
       state.brainNavigateModelId = health.navigate_model_id || null;
@@ -7167,6 +7468,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     if (state.connected && state.lastAuthorityHealth) renderAuthority(state.lastAuthorityHealth);
     renderBattery();
     renderHeaderMode();
+    renderSchedules();
   }
   applyDebugReadouts(prefGet(PREF.debugReadouts) === "1");
   debugToggleEl.addEventListener("change", function () {

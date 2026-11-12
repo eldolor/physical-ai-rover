@@ -3,10 +3,10 @@
 For one person with the car on the bench. Claude reads the board and the logs
 over ssh; you do what needs hands. Written 2026-11-08 (3.169).
 
-The days: today is Sunday 11-08 (delivery, afternoon). You are home Monday
-11-09 and Tuesday 11-10, then away 11-11 to the week of 11-23. The Amazon
+The days: Sunday 11-08 (delivery, afternoon), then two bench days, Monday
+11-09 and Tuesday 11-10. Bench work then pauses. The Amazon
 return window closes **2026-12-08**. The Jetson comes out of the car at the end
-of Tuesday (U9 to U12) and goes back in first thing on your return (R1).
+of Tuesday (U9 to U12) and goes back in first thing when bench work resumes (R1).
 
 Row numbers such as L0.3 are from `docs/plans/ros-alignment/3.140-rover-live-checks.md`.
 Its bars are the bars here. Claude records each result there.
@@ -88,8 +88,8 @@ checks. A bad result on any of them is a reason to think about returning it.
 | The safety sweep against the real lidar (floor) | **on your return** |
 | Flash our firmware fork, only after all of the above | **on your return** |
 
-You are back the week of 11-23 and Thanksgiving is 11-26. That leaves about
-two weeks, less the day R1 and R2 take. Nothing is wired when you get back, so
+Bench work resumes with about two weeks left before the return window
+closes, less the day R1 and R2 take. Nothing is wired at that point, so
 do those first, then the two floor checks.
 
 From 11-11 until you are back and R1 is done, the motor board cannot be reached.

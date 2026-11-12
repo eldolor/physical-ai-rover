@@ -919,6 +919,22 @@ every room the robot reads is called by the person's name: a survey asks
 the cloud nothing about a named room. With no saved map yet the panel says
 "Survey first". Screenshots: `docs/evaluations/twin-3.160-*.png`.
 
+**Schedules** (3.163.B; Settings, and one line on Home). The robot can find
+something or check the house on its own at set times, from its dock. Add a
+schedule (Find something with what to find, or Check the house; a time, 9:00
+unless changed; the days, every day unless changed) and Save: the first one
+turns schedules on. One tap on the switch turns them all off. Each schedule
+says how its last run went, or what it is waiting for. A run starts only from
+the dock, with the battery above Low, nobody driving the robot, no Stop
+pressed and no other search running; otherwise it waits up to ten minutes and
+is then skipped, and the twin says why in plain words. A schedule never lifts
+a Stop. A scheduled run is an ordinary search: Stop ends it, and it goes home.
+Home's card says the next run ("Next: check the house tomorrow at 9:00"), that
+schedules are off, or why the last run was skipped. Kept on the robot, never
+uploaded. On a real robot schedules stay off until the unattended checks pass
+(3.158.D), on the user's word; the panel says so. Screenshots:
+`docs/evaluations/twin-3.163-*.png`.
+
 **What it saw** (3.162).
 After a mission ends, Home shows the picture the robot judged to be the
 target, under the one-sentence card: one tap opens it full size and says

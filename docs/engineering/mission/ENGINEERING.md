@@ -381,6 +381,31 @@ watchdog trip), `_safe_stop()` (logs, never raises), `vision_fn.close()` if
 present, then ship one metrics row if `metrics_url` is set (kept as
 `_metrics_row`).
 
+### Schedules (3.163.B)
+
+`control/scheduler.py` decides when; the brain server checks and starts. A
+`Scheduler` task on the brain's event loop ticks every `TICK_S` (10 s) on the
+local wall clock (`SCHEDULE_CLOCK_FILE` adds an offset, for an accelerated
+harness only). At each tick it first notes the dock (the SLAM pose, until a
+mission's `status.dock` is known), then for each schedule's due times since it
+was saved (at most a day back): a due time already ended is passed; one older
+than `GRACE_S` (600 s) ends `skipped` with the last reason it waited on
+(`mission_running` recorded as `busy`), or `missed_down` if no tick saw it;
+otherwise the checks run, in D3's order: `disabled`, `robot_unreachable` (no
+`/health`, or a robot server with no `autonomy_latch`, which would lift a Stop
+on our start), `not_allowed_here`, `mission_running`, `person_stop_latched`,
+`person_holding` (`authority_holder` ranked as a person), `ros_not_ready` (no
+usable SLAM pose), `not_docked` (the pose further than `DOCK_TOL_M` or
+`DOCK_TOL_DEG` from the dock), `battery_not_normal` (`battery_too_low()`). A due
+time that passes them writes `firing` to `runs.jsonl`, fsynced, before
+`launch(req, lift=False, started_by="schedule:<id>")`: the start
+`POST /mission/start` uses, except that it calls `RemoteRobot.open_mission()`
+(`POST /autonomy/resume {"lift": false}`) instead of `resume_autonomy()`, so a
+Stop latched even between the check and the start is never lifted. A start
+that then fails ends `skipped` (`person_stop_latched`, `battery_not_normal`,
+`mission_running` or `start_refused`), never tried again. `started_by` rides in
+status, 3.99's line and 3.162's report.
+
 ### The return to the dock (3.156.B)
 
 `brain/dock.py` holds the trip; the runner holds when it runs.
@@ -608,6 +633,7 @@ otherwise). CORS allows any origin.
 | `POST /mission/stop` | none | `{"stopped": true, "status": {...}}` -- cancels the loop task, then `runner.stop()`; with no mission ever run, stops the robot anyway and returns the idle status | -- |
 | `GET /mission/status` | none | `MissionRunner.status()` plus `fault`; before any mission `{"running": false, "outcome": "idle", "step": 0, "log_tail": [], "fault": "none"}` | -- |
 | `POST /mission/explore/pick` | `GoalPickRequest` (`extra="forbid"`): `choice` int >= 1, `candidate` str 1-32 chars, as `status.explore.ask` publishes them (3.88 A) | `{"accepted": true, "choice", "candidate"}` -- `runner.pick_goal()` stores it under the runner's and the ask's locks; the next tick sends it to nav2 through the gated navigator. Never `/world/goal` | 409 with the reason, nothing sent: no mission, a mission that does not ask, a choice that is not the open one, an id not offered, a second pick, a pick at or after the timeout; 422 a bad body |
+| `GET /schedules`, `PUT /schedules` | PUT: `{enabled, schedules: [{id, job, target, days, at, enabled}]}`, at most 10 (`control/scheduler.py` `validate()`, 422 naming the fault) | 3.163.B: `{enabled, schedules, runs (the last 10 ends), next ({id, job, target, at, in_s} or null), waiting ([{due, id, reason, detail}]), allowed (true, false or null), unreadable}`; a PUT answers the same after writing the file whole | 422 |
 | `GET /mission/inventory` | none | `{"inventory": null}` before any mission; else the current or last mission's object inventory (3.46; shape in the [perception engineering spec](../perception/ENGINEERING.md), "Inventory"). On mission end the report is also saved by `control/inventory_store.py` on a daemon thread | -- |
 | `GET /mission/reports`, `GET /mission/reports/{id}` | none | 3.162: what each kept mission saw (`brain/what_i_saw.py`, local only, the newest 50); one line each, or one report; 404 for none. `status.mission_id` is the name of this mission's report |
 | `GET /mission/reports/{id}/found.jpg`, `/thumbs/{n}.jpg` | none | 3.162: the frame the identity check judged, or a thing's thumbnail; `image/jpeg`, `nosniff`; nothing else in the directory is served |
@@ -762,6 +788,9 @@ The `brain:` block of `config/robot.yaml`, read by
 | `vision_timeout_s` | 20.0 | 20.0 | s | B3.2 per-call timeout | `load_brain_config()` refuses one that is not a finite number > 0, as it does `tick_timeout_s`, `request_timeout_s` and the two drill deadlines (3.76 N1: 0 timed out every call, or aborted every mission on its first tick); `arrival_confirm_timeout_s` must be finite too |
 | `max_vision_failures` | 3 | 3 | calls | B3.2 budget | B3 plan's suggestion; three abandoned threads at most |
 | `return_to_dock` | False | true | -- | 3.156 D2: drive home after the end | the runner's own default is off so the in-process harnesses keep today's end; the brain config turns it on |
+| `schedules_on_robot` | False | false | -- | 3.163.B: a robot server whose mode is not `sim` runs schedules only when true (`not_allowed_here`) | stays false until 3.158.D is met, on the user's word |
+| `schedule_dir` | recordings/schedules | recordings/schedules | -- | 3.163.B: `schedules.json` and `runs.jsonl`, local only (git-ignored, never uploaded) | `SCHEDULE_DIR` |
+| `schedule_find_policy`, `schedule_survey_policy` | tiered, explore | tiered, explore | -- | 3.163.B: the policy a scheduled find or survey runs | refused at load unless a policy |
 | `return_wait_s` | 30.0 | 30.0 | s | 3.156 D2: a return goal nav2 never takes is `skipped` | refused at load unless a finite number > 0 |
 | `recharge_resume` | False | false | -- | 3.156 D7a: a battery end charges at the dock and resumes | off until the Rover; `RECHARGE_RESUME=1` |
 | `resume_v` | 11.8 | 11.8 | V | 3.156 D7d: leave the charger | a placeholder until 3.137.E |

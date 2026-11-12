@@ -135,6 +135,8 @@ def check_robot(url: str, secret=None, timeout=DEFAULT_TIMEOUT_S) -> dict:
             "watchdog_poll_age_s": poll_age,
             "driver": body.get("driver"),
             "authority_holder": body.get("authority_holder"),
+            # 3.163.B: a latched Stop is a person's choice, not a fault.
+            "autonomy_latch": body.get("autonomy_latch"),
             "last_refusal": body.get("last_refusal"),
             # 3.164: why it last stopped, and a hang the watchdog caught.
             # Description, not a verdict input: a brain that hung is that

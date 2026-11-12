@@ -349,6 +349,28 @@ def test_j1_a_failed_fetch_names_no_commit(nightly):
     assert "send-email" in p["mails"].read_text()
 
 
+def test_the_address_comes_from_the_home_file_when_the_variable_is_unset(nightly):
+    """The address left the (public) repo: with NIGHTLY_EMAIL unset it is the
+    first line of ~/.vision-picar-nightly-email, spaces and a CR stripped;
+    with no file either, nothing is mailed and launchd.log says so."""
+    run, push, p = nightly
+    run()
+    _git(p["main"], "remote", "set-url", "origin", "/nonexistent/origin.git")
+    home = p["latest"].parents[3]
+    unset = ("env", "-u", "NIGHTLY_EMAIL", "sh")
+    proc = p["start"](unset, inner=False)
+    proc.communicate(timeout=60)
+    assert "FAIL" in p["latest"].read_text()
+    assert not p["mails"].exists()
+    assert "will not be emailed" in (p["latest"].parent / "launchd.log").read_text()
+    (home / ".vision-picar-nightly-email").write_text("file@example.com \r\nsecond\n")
+    proc = p["start"](unset, inner=False)
+    proc.communicate(timeout=60)
+    sent = p["mails"].read_text()
+    assert "send-email" in sent and "file@example.com" in sent and "second" not in sent
+    assert "file@example.com \r" not in sent and "file@example.com\r" not in sent
+
+
 def test_j1_a_refresh_that_fails_is_reported_and_emailed(nightly):
     """Round 1: the refresh's failure is the night's FAIL, and like any FAIL
     it is emailed (the first fix exited before the email)."""

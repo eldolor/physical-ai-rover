@@ -71,6 +71,7 @@ budget (B3.2), which only sees calls that return or time out.
 """
 
 import asyncio
+import math
 import base64
 import binascii
 import functools
@@ -114,13 +115,18 @@ from control.recording_routes import (  # noqa: F401 -- re-exported, see above
     mount_recording_routes,
 )
 from control.remote_robot import DEFAULT_DRIVER, RemoteRobot
+from control.scheduler import (AUTONOMY_LAPSED, BATTERY_NOT_NORMAL, DISABLED, MISSION_RUNNING, NOT_ALLOWED_HERE,
+                               NOT_DOCKED, PERSON_HOLDING, PERSON_STOP_LATCHED, ROBOT_UNREACHABLE,
+                               ROS_NOT_READY, START_REFUSED, Scheduler, ScheduleStore, SkipStart,
+                               TICK_S, validate as validate_schedules)
 from control.stream_recorder import StreamRecorder
 from control.walk_store import METRICS_PREFIX
 from control.remote_navigator import RemoteNavigator
 from control.remote_world import RemoteWorld
 from control.walk_store import walk_store_from_config
 from robot.identity import configure_logging, git_revision, log_identity
-from robot.interface import RobotInterface
+from brain import dock as docking
+from robot.interface import DRIVER_MANUAL, RobotInterface, driver_priority
 from world.interface import NullWorld, WorldInterface
 
 logger = logging.getLogger("brain_server")
@@ -1147,7 +1153,7 @@ def create_app(
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
-        allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allow_headers=["*"],
     )
 
@@ -1182,6 +1188,18 @@ def create_app(
             runner.stop("mission loop cancelled")
             raise
 
+    async def close_opened(mission_id: Optional[int]) -> None:
+        """3.163.B: a schedule's start that failed after it opened its mission
+        on the robot server closes that one (3.171's close), so no mission stays
+        open with nothing behind it. None: this start opened nothing."""
+        close = getattr(robot(), "close_mission", None)
+        if mission_id is None or close is None:
+            return
+        try:
+            await asyncio.to_thread(close, mission_id)
+        except Exception as e:  # noqa: BLE001 -- a report only
+            logger.warning("could not close a scheduled start's mission: %s", e)
+
     async def put_back(lifted: Optional[str]) -> None:
         """3.76 K2: a start refused after `resume_autonomy()` began no
         mission, so the person's Stop it lifted still stands. Only ever
@@ -1207,6 +1225,12 @@ def create_app(
 
     @app.post(prefix + "/mission/start", dependencies=[Depends(require_secret)])
     async def start_mission(req: MissionStartRequest):
+        return await launch(req)
+
+    async def launch(req: MissionStartRequest, lift: bool = True,
+                     started_by: Optional[str] = None) -> dict:
+        """A mission's start: a person's (`POST /mission/start`) or, with
+        `lift=False`, a schedule's (3.163.B), which lifts no Stop."""
         runner = state["runner"]
         if (runner is not None and runner.is_running()) or state["building"] is not None:
             # Reject rather than race -- two loops driving one robot is
@@ -1216,6 +1240,7 @@ def create_app(
             raise HTTPException(status_code=409, detail="A mission is already running.")
         build = state["building"] = {"stopped": False}
         lifted = None
+        opened = None       # 3.163.B: the mission this schedule's start opened, if it did
         try:
             # 3.137: no autonomous mission starts on a low battery -- the
             # robot server's ladder at Low or worse, or a reading under this
@@ -1231,7 +1256,14 @@ def create_app(
             # and the mission's first command ends it `cancelled` by that Stop.
             # A start refused after this puts it back (3.76 K2, below).
             resume = getattr(robot(), "resume_autonomy", None)
-            if resume is not None:
+            if not lift:
+                # 3.163.B: a schedule opens the mission only if no Stop is
+                # latched, read and opened in one step on the robot server.
+                refused = await asyncio.to_thread(robot().open_mission)
+                if refused:
+                    raise SkipStart(PERSON_STOP_LATCHED, f"latched by {refused.get('by')}")
+                opened = getattr(robot(), "mission_id", None)
+            elif resume is not None:
                 try:
                     lifted = await asyncio.to_thread(resume)
                 except Exception as e:  # noqa: BLE001 -- never unsafe: the latch stays
@@ -1291,12 +1323,15 @@ def create_app(
                                         detail="Stopped while the mission was being set up.")
         except drills.DrillNotAllowed as e:
             await put_back(lifted)
+            await close_opened(opened)
             raise HTTPException(status_code=403, detail=str(e))
         except ValueError as e:
             await put_back(lifted)
+            await close_opened(opened)
             raise HTTPException(status_code=400, detail=str(e))
         except Exception:
             await put_back(lifted)
+            await close_opened(opened)
             raise
         finally:
             state["building"] = None
@@ -1308,6 +1343,7 @@ def create_app(
         state["generation"] += 1
         cancel_reconfirm("a new mission started")
         state["tick_timeout_s"] = getattr(runner, "tick_timeout_s", state["tick_timeout_s"])
+        runner.started_by = started_by      # 3.163.B: None for a person's start
         runner.start()
         state["fault"] = req.fault or drills.NONE
         state["runner"] = runner
@@ -1539,6 +1575,170 @@ def create_app(
         runner = state["runner"]
         report = getattr(runner, "inventory_report", None)
         return {"inventory": report() if report is not None else None}
+
+    # ---------- 3.163.B: schedules (control/scheduler.py) ----------
+
+    schedule_store = ScheduleStore(config["schedule_dir"])
+    # Where the robot is docked: the last mission's `status.dock`, else the
+    # pose at the first check (amendment 9: every simulated run starts docked).
+    dock_seen: dict = {"dock": None}
+
+    def _note_dock() -> None:
+        """At every tick until one is known: the pose, taken as the dock.
+        Only in the simulator (every run there starts docked, amendment 9):
+        on a real robot the dock is only ever a mission's own `status.dock`."""
+        if dock_seen["dock"] is not None or dock_seen.get("not_sim"):
+            return
+        get_health = getattr(robot(), "get_health", None)
+        if get_health is None:
+            return
+        try:
+            mode = get_health().get("mode")
+        except Exception:  # noqa: BLE001 -- unreachable now: asked again next tick
+            return
+        if mode != "sim":
+            dock_seen["not_sim"] = True      # asked once: a robot's mode does not change
+            return
+        pose = world().get_pose() or {}
+        if pose.get("usable"):
+            dock_seen["dock"] = {"x_m": pose["x_m"], "y_m": pose["y_m"],
+                                 "theta": pose["heading_deg"]}
+
+    def _docked() -> Optional[str]:
+        """None when the SLAM pose is on the known dock, else why not."""
+        r = state["runner"]
+        known = (r.status().get("dock") if r is not None else None) or dock_seen["dock"]
+        pose = world().get_pose() or {}
+        if not pose.get("usable"):
+            raise LookupError("SLAM has no pose yet")
+        if known is None:
+            return "no dock is known yet"
+        off_m = math.hypot(pose["x_m"] - known["x_m"], pose["y_m"] - known["y_m"])
+        off_deg = abs((pose["heading_deg"] - known["theta"] + 180.0) % 360.0 - 180.0)
+        if off_m > docking.DOCK_TOL_M or off_deg > docking.DOCK_TOL_DEG:
+            return f"{off_m:.2f} m, {off_deg:.0f} deg from the dock"
+        return None
+
+    def _schedule_policy(s: dict) -> str:
+        return config["schedule_find_policy" if s["job"] == "find" else "schedule_survey_policy"]
+
+    def _check_sync(sched_state: dict, s: dict) -> Optional[tuple]:
+        """D3's checks, in order: (reason, detail) or None. Blocking reads."""
+        if not sched_state.get("enabled") or not s.get("enabled"):
+            return DISABLED, ""
+        get_health = getattr(robot(), "get_health", None)
+        if get_health is None:
+            return ROBOT_UNREACHABLE, "this robot client cannot read /health"
+        try:
+            health = get_health()
+        except Exception as e:  # noqa: BLE001
+            return ROBOT_UNREACHABLE, str(e)[:200]
+        if "autonomy_latch" not in health:
+            # A robot server older than 3.163.B would lift a Stop on our start.
+            return ROBOT_UNREACHABLE, "the robot server is too old to start a schedule safely"
+        if health.get("mode") != "sim" and not config["schedules_on_robot"]:
+            return NOT_ALLOWED_HERE, ""
+        runner = state["runner"]
+        if (runner is not None and runner.is_running()) or state["building"] is not None:
+            return MISSION_RUNNING, ""
+        latch = health.get("autonomy_latch")
+        if latch:
+            if latch.get("lapsed"):
+                return AUTONOMY_LAPSED, f"the lease of {latch.get('by')} lapsed"
+            return PERSON_STOP_LATCHED, f"latched by {latch.get('by')}"
+        holder = health.get("authority_holder")
+        if holder and driver_priority(holder) == DRIVER_MANUAL:
+            return PERSON_HOLDING, f"{holder} holds the robot"
+        try:
+            off = _docked()
+        except LookupError as e:
+            # No pose: whether it is docked cannot be known, and nothing that
+            # maps can run. Amendment 9: ros_not_ready, whatever the policy.
+            return ROS_NOT_READY, str(e)
+        except Exception as e:  # noqa: BLE001
+            off = f"unreadable: {e}"
+        if off:
+            return NOT_DOCKED, off
+        why = battery_too_low(robot())
+        if why:
+            return BATTERY_NOT_NORMAL, why
+        return None
+
+    schedule_detail: dict = {}
+
+    async def schedule_check(sched_state: dict, s: dict) -> Optional[str]:
+        got = await asyncio.to_thread(_check_sync, sched_state, s)
+        if got is None:
+            schedule_detail.pop(s["id"], None)
+            return None
+        schedule_detail[s["id"]] = got[1]
+        return got[0]
+
+    async def schedule_start(s: dict) -> Optional[str]:
+        req = MissionStartRequest(job=s["job"], target_object=s["target"],
+                                  policy=_schedule_policy(s))
+        try:
+            reply = await launch(req, lift=False, started_by=f"schedule:{s['id']}")
+        except HTTPException as e:
+            detail = str(e.detail)
+            if e.status_code == 409 and detail.startswith("battery_low"):
+                raise SkipStart(BATTERY_NOT_NORMAL, detail)
+            if e.status_code == 409 and "already running" in detail:
+                raise SkipStart(MISSION_RUNNING, detail)
+            raise SkipStart(START_REFUSED, f"{e.status_code}: {detail}")
+        return (reply.get("status") or {}).get("mission_id")
+
+    async def note_dock() -> None:
+        await asyncio.to_thread(_note_dock)
+
+    scheduler = Scheduler(schedule_store, schedule_check, schedule_start, before=note_dock)
+    app.state.scheduler = scheduler
+
+    async def schedule_loop():
+        while True:
+            try:
+                await scheduler.tick()
+            except asyncio.CancelledError:
+                raise
+            except Exception:  # noqa: BLE001 -- the loop outlives one bad pass
+                logger.exception("schedule tick failed")
+            await asyncio.sleep(TICK_S)
+
+    @app.on_event("startup")
+    async def _start_schedules():
+        state["schedule_task"] = asyncio.create_task(schedule_loop())
+
+    @app.on_event("shutdown")
+    async def _stop_schedules():
+        task = state.get("schedule_task")
+        if task is not None:
+            task.cancel()
+
+    def schedules_view() -> dict:
+        view = scheduler.view()
+        for w in view["waiting"]:
+            w["detail"] = schedule_detail.get(w["id"], "")
+        # Whether this robot runs them at all (amendment 9); None: not known.
+        try:
+            mode = robot().get_health().get("mode")
+            view["allowed"] = mode == "sim" or bool(config["schedules_on_robot"])
+        except Exception:  # noqa: BLE001 -- an unreachable robot is not a refusal here
+            view["allowed"] = None
+        return view
+
+    @app.get(prefix + "/schedules", dependencies=[Depends(require_secret)])
+    async def get_schedules():
+        return await asyncio.to_thread(schedules_view)
+
+    @app.put(prefix + "/schedules", dependencies=[Depends(require_secret)])
+    async def put_schedules(body: dict):
+        try:
+            clean = validate_schedules(body)
+        except ValueError as e:
+            raise HTTPException(status_code=422, detail=str(e))
+        async with scheduler.lock:      # never in the middle of a tick's pass
+            await asyncio.to_thread(schedule_store.save, clean, scheduler.clock())
+        return await asyncio.to_thread(schedules_view)
 
     @app.get(prefix + "/mission/status", dependencies=[Depends(require_secret)])
     async def mission_status():

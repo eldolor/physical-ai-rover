@@ -227,6 +227,13 @@ DEFAULTS = {
     # (nav2's hold never clears) skips the return.
     "return_to_dock": True,
     "return_wait_s": 30.0,
+    # 3.163.B: schedules (control/scheduler.py), kept in schedule_dir (local
+    # only). Only a simulated robot runs them unless schedules_on_robot is
+    # true, which stays false until 3.158.D is met, on the user's word.
+    "schedules_on_robot": False,
+    "schedule_dir": "recordings/schedules",
+    "schedule_find_policy": "tiered",
+    "schedule_survey_policy": "explore",
     # 3.156.D: a battery end goes home, charges to resume_v (a placeholder
     # until 3.137.E) and resumes; the limit is paused on the charger, under
     # mission_wall_limit_s. Off: nothing sees a charger before the Rover.
@@ -553,6 +560,8 @@ def load_brain_config(config_path=None) -> dict:
         merged["inventory_bucket"] = os.environ["INVENTORY_BUCKET"].strip()
     if os.environ.get("INVENTORY_DIR"):
         merged["inventory_dir"] = os.environ["INVENTORY_DIR"]
+    if os.environ.get("SCHEDULE_DIR"):
+        merged["schedule_dir"] = os.environ["SCHEDULE_DIR"]
     # Same one-generic-image rule: where to ship metrics is a property of
     # the deployment, not of the config file baked into an artifact.
     if os.environ.get("METRICS_URL"):
@@ -656,6 +665,12 @@ def load_brain_config(config_path=None) -> dict:
     if not isinstance(merged["return_to_dock"], bool):
         raise ValueError(f"brain.return_to_dock must be true or false; "
                          f"got {merged['return_to_dock']!r}")
+    if not isinstance(merged["schedules_on_robot"], bool):
+        raise ValueError(f"brain.schedules_on_robot must be true or false; "
+                         f"got {merged['schedules_on_robot']!r}")
+    for key in ("schedule_find_policy", "schedule_survey_policy"):
+        if merged[key] not in ("frontier", "vision", "tiered", "explore"):
+            raise ValueError(f"brain.{key} must be a policy; got {merged[key]!r}")
     wait = merged["return_wait_s"]
     if (isinstance(wait, bool) or not isinstance(wait, (int, float))
             or not 0 < wait < float("inf")):
