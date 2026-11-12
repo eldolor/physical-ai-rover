@@ -893,6 +893,21 @@ floor the map no longer has is listed unplaced, never guessed onto a
 neighbour). No `frame_id` (the simulator's own world, no saved map) or no
 names: the labeller is exactly as before (`tests/test_room_names.py`).
 
+A find with no labeller (`find_room_labels` off, or skipped for a flat
+prior) reads the names too (3.160.D): under `explore_goal_policy: rooms` the
+runner hands the agent `goal_labels` = `MissionRunner._name_labels`, the
+person's named rooms only (`RoomLabeller._with_person` over an empty model
+layer) on the same 0.30 m coarse map, cut again when the map, the `frame_id`
+or the names (`rev`, each room's name and size) change. It asks nothing (no
+frame, no `/room` call). The `frame_id` is the pose's; an unusable pose
+keeps the one this mission last read, so a SLAM dropout does not flap the
+types. No saved map, no named room or a store that raises: None, the
+mission exactly as with no names; `status.room_labels.person_rooms` counts
+the named rooms the last choice read (absent at 0;
+`tests/test_room_names_find.py`). Known limit, shared with the survey's
+`layer()`: a named room `placed()` would list unplaced after a re-map is
+still painted where its cells lie.
+
 
 **Explore asks a person (3.88 A).** With `explore_ask` on (brain config,
 or a start's own `explore_ask`), `MissionRunner` gives `ExploreAgent` a
