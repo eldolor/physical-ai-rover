@@ -77,6 +77,7 @@ section's own file has the numbers, failed criteria and review rounds.
   at `VERB_MAX_S` (7 s). 3.106: the in-sight livelock is bounded.
 * 3.88: `explore_ask` off.
 * 3.87, 3.123, 3.124, 3.126: an unchanged map is a 304 on both hops.
+* 3.177.A FAILED, B dropped: CLIP RN50's whole-frame score does not rise before the target comes into view on the rig walks (object-balanced AUROC 0.45, bar 0.65; the other objects' words 0.58). 9 walks, 4 objects, no backpack judged; another scorer would need new bars.
 
 ## Safety, stops and arbitration
 
@@ -137,6 +138,7 @@ section's own file has the numbers, failed criteria and review rounds.
   `cancelled`), read through `read_outcome()`; the budget is
   `mission_time_limit_s` (1200 s), `battery_floor_v` and, for `vision`,
   `vision_max_calls`. Survey mode; `room_label_source: cloud` off.
+* 3.175.A: a target moved between missions (in process, 75 trials): a stale recall costs nothing at the median but p90 507 s over no memory (A2 FAILED), and the next mission recalls the old place again in 30 of 75 (A3 FAILED: one stale look keeps belief >= 0.8); found counts hold, 0 wrong, 0 contacts. The harness carries landmarks, not the map, so no recall went first (A5 FAILED, instrument). 3.175.B needed, with the map carried.
 
 ## ROS and maps
 
