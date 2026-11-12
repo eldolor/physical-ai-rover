@@ -1686,6 +1686,12 @@ def create_app(
         view = scheduler.view()
         for w in view["waiting"]:
             w["detail"] = schedule_detail.get(w["id"], "")
+        # Whether this robot runs them at all (amendment 9); None: not known.
+        try:
+            mode = robot().get_health().get("mode")
+            view["allowed"] = mode == "sim" or bool(config["schedules_on_robot"])
+        except Exception:  # noqa: BLE001 -- an unreachable robot is not a refusal here
+            view["allowed"] = None
         return view
 
     @app.get(prefix + "/schedules", dependencies=[Depends(require_secret)])
