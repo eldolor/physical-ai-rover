@@ -194,6 +194,17 @@ class RelatchRequest(BaseModel):
     by: str
 
 
+class ResumeRequest(BaseModel):
+    """3.163.B: `lift: false` opens a mission only when no Stop is latched
+    (a schedule never lifts a person's Stop)."""
+    lift: bool = True
+
+
+class SimBatteryRequest(BaseModel):
+    """3.163.B: the simulated pack's volts (sim only)."""
+    v: float = Field(ge=0.0, le=30.0)
+
+
 class MissionClosedRequest(BaseModel):
     """3.171: which Start's mission is over (`/autonomy/resume`'s `mission_id`)."""
     mission_id: int
@@ -802,6 +813,12 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
     def autonomy_latch():
         with goal_gen_lock:
             return goal_stop["autonomy_stopped"]
+
+    def _latch_view(latch):
+        """3.163.B: the latch as `/health` shows it."""
+        if latch is None:
+            return None
+        return {"by": latch["by"], "lapsed": bool(latch.get("lapsed"))}
 
     def lapse_detail(owner: str, quiet_s=None) -> str:
         """3.145: one wording for a lapse, on /health and in every refusal."""
@@ -1935,18 +1952,24 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         _start_goal_end(gen)
 
     @app.post(prefix + "/autonomy/resume", dependencies=[Depends(require_secret)])
-    def autonomy_resume(x_driver: str = Header(default="")):
+    def autonomy_resume(req: Optional[ResumeRequest] = None, x_driver: str = Header(default="")):
         """Lift a person's Stop's latch (3.84). Called by the brain when a
         mission STARTS -- a person pressed Start -- and by nothing else: a
         person's own verbs and goals are never refused by the latch, and a
         mission the Stop interrupted must end, not resume when the person
-        next drives."""
+        next drives. 3.163.B: `{"lift": false}` (a schedule's start) lifts
+        nothing: under a latch it opens no mission and says so, in the same
+        locked step as the read, so a Stop pressed just before is kept."""
         driver = (x_driver or "").strip() or DRIVER_UNKNOWN
         if batt["requested"]:      # 3.170: a Start cannot undo a shutdown's Stop
             return {"resumed": False, "driver": driver, "stopped_by": None, "mission_id": None}
+        lift = req is None or req.lift
         mission_id = None
         with goal_gen_lock:
             was = goal_stop["autonomy_stopped"]
+            if not lift and was is not None:
+                return {"resumed": False, "driver": driver, "stopped_by": was["by"],
+                        "mission_id": None, "refused": PERSON_STOP}
             goal_stop["autonomy_stopped"] = None
             # 3.145: what a relatch for a start that then fails puts back,
             # a lapse as a lapse (not as a person's Stop by `brain`).
@@ -2215,6 +2238,22 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         """Every object in the simulated house, movers marked, and the sim
         clock. Ground truth, like `/world/truth`: no decision may read it."""
         return _sim_grid().describe_objects()
+
+    @app.post(prefix + "/sim/battery", dependencies=[Depends(require_secret)])
+    def sim_battery(req: SimBatteryRequest):
+        """3.163.B: set the simulated pack's volts, as a drained or charged
+        pack would read (a harness's injected Low). 501 on any robot with no
+        simulated pack: a real battery is never set from here."""
+        r = robot
+        for _ in range(3):
+            pack = getattr(r, "battery", None)
+            if pack is not None and hasattr(pack, "set_v"):
+                pack.set_v(req.v)
+                return {"v": req.v}
+            r = getattr(r, "inner", None)
+            if r is None:
+                break
+        raise HTTPException(status_code=501, detail="this robot has no simulated pack -- sim only")
 
     class MoveObjectRequest(BaseModel):
         src: List[int]
@@ -2752,6 +2791,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             # driven". The twin shows both beside the watchdog readout.
             "driver": state["driver"],
             "authority_holder": authority_holder(time.monotonic()),
+            # 3.163.B: who latched autonomy out (a person's Stop, a lapse),
+            # or None. A schedule reads it to skip, and never lifts it.
+            "autonomy_latch": _latch_view(autonomy_latch()),
             "refusal_counts": dict(state["refusal_counts"]),
             "last_refusal": aged(state["last_refusal"]),
             # 3.164: why it last stopped, kept beside the watchdog's record,

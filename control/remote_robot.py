@@ -163,6 +163,27 @@ class RemoteRobot(RobotInterface):
             return None
         return reply.get("stopped_by") or "unknown"
 
+    def open_mission(self) -> Optional[dict]:
+        """3.163.B: a schedule's start. Opens the mission on the robot server
+        and keeps its `mission_id`, but lifts NO latch: under one the server
+        opens nothing and this answers who set it. None when it opened. A
+        server older than the `lift` field raises, so a schedule never starts
+        on one that would lift a Stop."""
+        self.mission_id = None
+        reply = self._request("POST", "/autonomy/resume", json={"lift": False})
+        if reply.get("refused"):
+            return {"refused": reply["refused"], "by": reply.get("stopped_by")}
+        if reply.get("mission_id") is None:
+            # A shutdown under way, or a driver that opens no mission.
+            raise RobotTransportError("POST /autonomy/resume: the robot server opened no mission")
+        self.mission_id = reply.get("mission_id")
+        return None
+
+    def get_health(self) -> dict:
+        """3.163.B: the robot server's `/health` (the latch, who holds the
+        robot, its mode), for a schedule's checks."""
+        return self._request("GET", "/health")
+
     def relatch_autonomy(self, by: str) -> bool:
         """3.76 K2: put back a latch `resume_autonomy()` lifted for a mission
         that never started. True if it latched (False: one was set since)."""

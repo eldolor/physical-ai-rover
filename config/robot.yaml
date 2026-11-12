@@ -445,6 +445,15 @@ brain:
   # nav2 does not take for return_wait_s is skipped (`no_nav2`).
   return_to_dock: true
   return_wait_s: 30.0
+  # 3.163.B: missions and surveys on a schedule, set on the twin and kept in
+  # schedule_dir (local only: a home's routine, never uploaded). Only a
+  # simulated robot runs them until schedules_on_robot is true, which stays
+  # false until 3.158.D (unattended) is met, on the user's word. A scheduled
+  # find runs schedule_find_policy, a survey schedule_survey_policy.
+  schedules_on_robot: false
+  schedule_dir: recordings/schedules
+  schedule_find_policy: tiered
+  schedule_survey_policy: explore
   # 3.156.D: a battery end goes home, charges to resume_v (a placeholder
   # until 3.137.E) and resumes, the limit paused on the charger, under the
   # wall limit. Off until the Rover: nothing sees a charger yet.
