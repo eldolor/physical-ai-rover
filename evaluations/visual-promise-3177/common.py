@@ -10,6 +10,8 @@ from pathlib import Path
 HERE = Path(__file__).parent
 RECORDINGS = Path(os.environ.get("PICAR_RECORDINGS", "/home/anshu/vision-picar-data/recordings"))
 SET = HERE / "set.json"
+# Criterion 1: the set the plan pinned (3.177.A, 2026-11-12).
+PINNED = "00d12dbc44f6495a927a2a58d53887fc58c9e468e5774d65a8d90288d364a2d6"
 
 # "burgundy backpack" and "red backpack" are one bag (3.92's OBJECT).
 OBJECT = {"burgundy backpack": "red backpack"}
@@ -38,22 +40,37 @@ def set_hash(rows) -> str:
 
 
 def load_set() -> dict:
-    """`set.json`, refused if its rows no longer hash to its recorded hash."""
+    """`set.json`, refused unless its rows hash to the pinned hash."""
     d = json.loads(SET.read_text())
-    if set_hash(d["frames"]) != d["hash"]:
-        raise SystemExit("set.json's rows do not match its hash")
+    if set_hash(d["frames"]) != d["hash"] or d["hash"] != PINNED:
+        raise SystemExit("set.json is not the pinned set")
     return d
 
 
 def texts(d: dict) -> dict:
-    """object -> the words it is scored with: its first walk's description."""
+    """object -> the words it stands for in another object's control: its
+    first walk's description. A walk's own score always uses its own words."""
     out = {}
     for r in d["frames"]:
         out.setdefault(obj(r["target"]), r["target"])
     return out
 
 
-def done(out: Path) -> set:
-    if not out.exists():
-        return set()
-    return {json.loads(l)["key"] for l in out.read_text().splitlines() if l.strip()}
+def all_texts(d: dict) -> list:
+    """Every distinct description in the set: each frame is scored against all."""
+    return sorted({r["target"] for r in d["frames"]})
+
+
+def rows(path: Path) -> dict:
+    """key -> row; a torn last line (a killed run) is dropped, not fatal."""
+    out = {}
+    lines = [l for l in path.read_text().splitlines() if l.strip()] if path.exists() else []
+    for i, line in enumerate(lines):
+        try:
+            r = json.loads(line)
+        except json.JSONDecodeError:
+            if i == len(lines) - 1:
+                break
+            raise
+        out[r["key"]] = r
+    return out

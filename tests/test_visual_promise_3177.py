@@ -14,21 +14,26 @@ import pytest
 HERE = Path(__file__).resolve().parents[1] / "evaluations" / "visual-promise-3177"
 
 
+def _load(name):
+    spec = importlib.util.spec_from_file_location(f"vp3177_{name}", HERE / f"{name}.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+
 @pytest.fixture(scope="module")
 def mods():
-    """score.py and common.py, loaded by path and not left in sys.modules."""
-    sys.path.insert(0, str(HERE))
+    """score.py and its `common`, loaded by path; sys.modules left as found
+    (other evaluations ship a `common` too)."""
+    before = sys.modules.get("common")
+    common = sys.modules["common"] = _load("common")
     try:
-        out = {}
-        for name in ("common", "score"):
-            spec = importlib.util.spec_from_file_location(f"vp3177_{name}", HERE / f"{name}.py")
-            m = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(m)
-            out[name] = m
-        yield out
+        yield {"common": common, "score": _load("score")}
     finally:
-        sys.path.remove(str(HERE))
-        sys.modules.pop("common", None)
+        if before is None:
+            sys.modules.pop("common", None)
+        else:
+            sys.modules["common"] = before
 
 
 def test_labels_split_before_far_and_leave_out_just_after(mods):
@@ -37,6 +42,19 @@ def test_labels_split_before_far_and_leave_out_just_after(mods):
     assert pos == [5, 6, 7]
     # 0-4 are far; 10-12 follow the sighting (left out); 13-17 are far.
     assert neg == [0, 1, 2, 3, 4, 13, 14, 15, 16, 17]
+
+
+def test_labels_count_recorded_steps_not_positions(mods):
+    # Frame 3 is missing: frame 2 is 3 steps before the sighting at 5, not 2.
+    v, steps = [0, 0, 0, 1], [0, 1, 2, 5]
+    assert mods["score"].labels(v, 2, steps) == ([], [0, 1, 2])
+    assert mods["score"].labels(v, 3, steps) == ([2], [0, 1])
+
+
+def test_a_torn_last_line_is_dropped(mods, tmp_path):
+    p = tmp_path / "r.jsonl"
+    p.write_text('{"key": "a"}\n{"key": "b"}\n{"key": "c", "fu')
+    assert set(mods["common"].rows(p)) == {"a", "b"}
 
 
 def test_pairs_count_ties_half(mods):
@@ -49,7 +67,9 @@ def _walk(name, object_, visible, target_score, objects):
     n = len(visible)
     m = np.zeros((n, len(objects)))
     m[:, objects.index(object_)] = target_score
-    return {"walk": name, "object": object_, "visible": visible, "objects": objects,
+    return {"walk": name, "object": object_, "visible": visible, "steps": list(range(n)),
+            "own": objects.index(object_),
+            "others": {o: j for j, o in enumerate(objects) if o != object_},
             "full": m, "tiles": m}
 
 
@@ -74,4 +94,4 @@ def test_set_hash_matches_its_rows(mods):
     assert d["n"] == len(d["frames"]) == 2261
     assert sum(r["visible"] for r in d["frames"]) == 535
     assert mods["common"].set_hash(d["frames"]) == d["hash"]
-    assert d["hash"].startswith("00d12dbc44f6")
+    assert d["hash"] == mods["common"].PINNED

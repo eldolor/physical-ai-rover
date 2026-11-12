@@ -3,9 +3,11 @@
 """
 evaluations/visual-promise-3177/run_clip.py
 
-3.177.A: one whole-frame CLIP RN50 encode a frame (the shipped `ClipScorer`
-and preprocess), cosine against all six objects' words; plus the three
-square tiles (recorded, no bar). On the CPU only (P24). Resumable. Free.
+3.177.A: one whole-frame CLIP RN50 encode a frame (the shipped `ClipScorer`'s
+model, preprocess and text features), cosine against every description in
+the set; plus the three square tiles (recorded, no bar). On the CPU only
+(P24). Resumable. Free. `ms` times the whole-frame preprocess and encode
+only: the frame is decoded once, outside it, as the board already holds it.
 
     .venv/bin/python evaluations/visual-promise-3177/run_clip.py [--limit N]
 """
@@ -17,28 +19,35 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-from brain.perceive import Box, ClipScorer          # noqa: E402
-from common import HERE, RECORDINGS, done, load_set, texts   # noqa: E402
+from brain.perceive import ClipScorer                         # noqa: E402
+from common import HERE, RECORDINGS, all_texts, load_set, rows   # noqa: E402
 
 OUT = HERE / "clip-cpu.jsonl"
 
 
 def tiles(w: int, h: int):
-    """Left, centre and right squares of side h (a landscape frame)."""
-    s = min(w, h)
-    return [Box(x, 0, x + s, s) if w >= h else Box(0, x, s, x + s)
-            for x in (0, (max(w, h) - s) // 2, max(w, h) - s)]
+    """Left, centre and right squares (x1, y1, x2, y2) of a frame's short side."""
+    s, long_ = min(w, h), max(w, h)
+    return [(x, 0, x + s, s) if w >= h else (0, x, s, x + s)
+            for x in (0, (long_ - s) // 2, long_ - s)]
+
+
+def encode(scorer, img, feats):
+    t = scorer.preprocess(img).unsqueeze(0).to(scorer.device)
+    with scorer._torch.no_grad():
+        f = scorer.model.encode_image(t)
+        f /= f.norm(dim=-1, keepdim=True)
+        return [round(float(v), 5) for v in (f @ feats.T)[0]]
 
 
 def main():
     from PIL import Image
     limit = int(sys.argv[sys.argv.index("--limit") + 1]) if "--limit" in sys.argv else None
     d = load_set()
-    words = texts(d)
-    objects = sorted(words)
-    order = tuple(words[o] for o in objects)
+    order = all_texts(d)
     scorer = ClipScorer(device="cpu")
-    seen = done(OUT)
+    feats = scorer._text_features(tuple(order))    # once, before any frame is timed
+    seen = set(rows(OUT))
     n = 0
     with OUT.open("a") as f:
         for r in d["frames"]:
@@ -46,15 +55,13 @@ def main():
                 continue
             if limit is not None and n >= limit:
                 break
-            jpeg = (RECORDINGS / r["key"]).read_bytes()
-            w, h = Image.open(io.BytesIO(jpeg)).size
+            img = Image.open(io.BytesIO((RECORDINGS / r["key"]).read_bytes())).convert("RGB")
+            w, h = img.size
             t0 = time.perf_counter()
-            full = scorer.score(jpeg, Box(0, 0, w, h), order)
+            full = encode(scorer, img, feats)
             ms = (time.perf_counter() - t0) * 1000
-            tile = [scorer.score(jpeg, b, order) for b in tiles(w, h)]
-            row = {"key": r["key"], "device": scorer.device, "objects": objects,
-                   "full": [round(v, 5) for v in full],
-                   "tiles": [[round(v, 5) for v in t] for t in tile],
+            row = {"key": r["key"], "device": scorer.device, "texts": order, "full": full,
+                   "tiles": [encode(scorer, img.crop(b), feats) for b in tiles(w, h)],
                    "ms": round(ms, 1), "w": w, "h": h}
             f.write(json.dumps(row) + "\n"); f.flush()
             n += 1

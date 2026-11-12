@@ -14,12 +14,10 @@ within a walk (a positive is compared only with a negative of its own walk);
 
 import json
 import sys
-from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import HERE, load_set, obj, texts   # noqa: E402
+from common import HERE, load_set, obj, rows as read_rows, texts
 
 K, KS = 5, (3, 5, 10)
 BAR_2A, BAR_2C, CONTROL_BAND, CONTROL_GAP = 0.65, 0.55, (0.43, 0.57), 0.10
@@ -27,13 +25,21 @@ BOOT, SEED = 2000, 0
 ONSET_MAX = 15
 
 
-def labels(visible, k):
-    """(positives, negatives): out of view with the target in view within the
-    next k frames; out of view with none within k on either side."""
+def labels(visible, k, steps=None):
+    """(positives, negatives), as indices: out of view with the target in view
+    within the next k recorded steps; out of view with none within k steps on
+    either side. `steps` are the frames' numbers (a walk may skip one); by
+    default 0, 1, 2, ..."""
     v = np.asarray(visible, bool)
-    n = len(v)
-    pos = [i for i in range(n) if not v[i] and v[i + 1:i + k + 1].any()]
-    neg = [i for i in range(n) if not v[i] and not v[max(0, i - k):i + k + 1].any()]
+    st = np.arange(len(v)) if steps is None else np.asarray(steps)
+    pos, neg = [], []
+    for i in np.flatnonzero(~v):
+        ahead = v[(st > st[i]) & (st <= st[i] + k)].any()
+        near = v[np.abs(st - st[i]) <= k].any()
+        if ahead:
+            pos.append(int(i))
+        elif not near:
+            neg.append(int(i))
     return pos, neg
 
 
@@ -56,7 +62,10 @@ def add(a, b):
 
 
 def build_walks(d, rows):
-    """[{walk, object, visible, scores: {variant: (frames, objects)}}] for walks with every row."""
+    """[{walk, object, visible, steps, own, others, full, tiles}] for the walks
+    with every row. `own` is the column of the walk's own words; `others` maps
+    each other object to the column of its words (`texts()`)."""
+    canon = texts(d)
     by_walk = {}
     for r in d["frames"]:
         by_walk.setdefault(r["key"].split("/")[0], []).append(r)
@@ -65,27 +74,30 @@ def build_walks(d, rows):
         if not all(f["key"] in rows for f in frames):
             continue
         rs = [rows[f["key"]] for f in frames]
-        full = np.array([x["full"] for x in rs])
-        tiles = np.array([x["tiles"] for x in rs]).max(axis=1)
-        out.append({"walk": walk, "object": obj(frames[0]["target"]),
+        cols = rs[0]["texts"]
+        o = obj(frames[0]["target"])
+        out.append({"walk": walk, "object": o,
                     "visible": [f["visible"] for f in frames],
-                    "objects": rs[0]["objects"], "full": full, "tiles": tiles})
+                    "steps": [int(f["key"].rsplit("-", 1)[1].split(".")[0]) for f in frames],
+                    "own": cols.index(frames[0]["target"]),
+                    "others": {p: cols.index(t) for p, t in canon.items() if p != o},
+                    "full": np.array([x["full"] for x in rs]),
+                    "tiles": np.array([x["tiles"] for x in rs]).max(axis=1)})
     return out
 
 
 def variant_scores(w, variant):
     """{name: per-frame score}: the walk's own words, each other object, the margin."""
     m = w[variant]
-    i = w["objects"].index(w["object"])
-    others = [j for j in range(len(w["objects"])) if j != i]
-    return {"target": m[:, i], "others": {w["objects"][j]: m[:, j] for j in others},
-            "margin": m[:, i] - m[:, others].mean(axis=1)}
+    others = list(w["others"].values())
+    return {"target": m[:, w["own"]], "others": {p: m[:, j] for p, j in w["others"].items()},
+            "margin": m[:, w["own"]] - m[:, others].mean(axis=1)}
 
 
 def evaluate(walks, variant, k):
     per_walk, per_obj, ctrl = {}, {}, {}
     for w in walks:
-        pos, neg = labels(w["visible"], k)
+        pos, neg = labels(w["visible"], k, w["steps"])
         if not pos or not neg:
             continue
         s = variant_scores(w, variant)
@@ -155,19 +167,19 @@ def onset_curve(walks):
     by = {j: [] for j in range(1, ONSET_MAX + 1)}
     far = []
     for w in walks:
-        pos, neg = labels(w["visible"], K)
+        pos, neg = labels(w["visible"], K, w["steps"])
         if not pos or not neg:
             continue
         s = variant_scores(w, "full")["target"]
         out = ~np.asarray(w["visible"], bool)
         z = (s - s[out].mean()) / (s[out].std() or 1.0)
-        v = w["visible"]
+        v, st = w["visible"], w["steps"]
         for i in range(len(v)):
             if v[i]:
                 continue
             nxt = next((j for j in range(i + 1, len(v)) if v[j]), None)
-            if nxt is not None and nxt - i <= ONSET_MAX:
-                by[nxt - i].append(z[i])
+            if nxt is not None and st[nxt] - st[i] <= ONSET_MAX:
+                by[st[nxt] - st[i]].append(z[i])
         far += [z[i] for i in neg]
     return {"by_frames_to_onset": {j: [round(float(np.mean(x)), 3), len(x)] if x else None
                                    for j, x in by.items()},
@@ -177,12 +189,7 @@ def onset_curve(walks):
 def main():
     partial = "--partial" in sys.argv
     d = load_set()
-    path = HERE / "clip-cpu.jsonl"
-    rows = {}
-    for line in path.read_text().splitlines() if path.exists() else []:
-        if line.strip():
-            r = json.loads(line)
-            rows[r["key"]] = r
+    rows = read_rows(HERE / "clip-cpu.jsonl")
     devices = sorted({r["device"] for r in rows.values()})
     if devices and devices != ["cpu"]:
         raise SystemExit(f"rows from {devices}: P24 forbids mixing devices")
@@ -200,7 +207,7 @@ def main():
     c2["met_2c"] = c2["2c_floor"] is not None and c2["2c_floor"] >= BAR_2C
     ctl = main_["balanced_control"]
     c3 = {"control": ctl, "gap": None if ctl is None or c2["2a"] is None else c2["2a"] - ctl}
-    c3["met"] = (ctl is not None and CONTROL_BAND[0] <= ctl <= CONTROL_BAND[1]
+    c3["met"] = (c3["gap"] is not None and CONTROL_BAND[0] <= ctl <= CONTROL_BAND[1]
                  and c3["gap"] >= CONTROL_GAP)
     ms = [r["ms"] for r in rows.values()]
     s = {
