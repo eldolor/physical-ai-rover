@@ -5,27 +5,32 @@
 A Mars rover explores a planet. This one explores your house, and finds what
 you ask for.
 
-Say "find my red backpack". Rover drives off, searches the house room by
-room, recognises the backpack when it sees it, and stops in front of it.
-Nobody gives it a floor plan: it maps the house as it drives, decides for
-itself where to look next, and confirms what it found before it says so.
-
 <img src="docs/media/twin-found.png" width="300"
      alt="Rover's phone app after finding a red backpack in the simulator">
 
 *The phone app, driving the simulator. The software cannot tell the
 simulator from the real robot.*
 
-It runs on an NVIDIA Jetson Orin Nano Super riding a Waveshare UGV Rover
-chassis (D500 lidar, OAK-D Lite depth camera, ESP32 motor board).
-Perception, identity, mapping and planning all run on board; a cloud VLM is
-the last tier, and Rover still works with the internet unplugged.
+Say "find my red backpack". Rover drives off, searches the house room by
+room, recognises the backpack when it sees it, and stops in front of it.
 
-**Where it is today:** everything runs in the simulator and on the Jetson.
-The real robot has not yet found a real object.
+## What Rover does
 
-The repository is named for the project's full name, the Physical AI
-Autonomous Rover.
+* **Finds what you name.** The target is plain words, not a fixed list of
+  objects it was trained on.
+* **Needs no floor plan.** It maps the house as it drives and decides for
+  itself where to look next.
+* **Works with the internet unplugged.** Seeing, recognising, mapping and
+  planning all run on the robot. The cloud is a last resort, not a
+  requirement.
+* **Tells the truth about what it found.** It confirms the object before it
+  says "found". When it cannot confirm, it says so.
+* **Stops when you say stop.** Every movement passes one safety layer, and a
+  person's Stop overrides everything else.
+* **Runs on hardware you can buy.** An NVIDIA Jetson Orin Nano Super on a
+  Waveshare UGV Rover chassis, with a lidar and a depth camera.
+* **Is open, all of it.** The code, the simulator, the measurements and the
+  failures are in this repository.
 
 ## Try it in five minutes
 
@@ -48,7 +53,54 @@ map it draws as it goes.
 
 To run it again from the start position, restart the robot server.
 
+## How Rover is different
+
+| Other robots | What they do | What Rover does |
+|---|---|---|
+| Robot vacuums with cameras | Notice some objects they pass while cleaning | Goes looking for the one thing you name |
+| Home security robots | Patrol and send video to your phone | Searches for a thing, and works offline |
+| Research systems for object search | Run on research robots that cost tens of thousands of dollars | Runs on a hobby chassis and a single-board computer |
+
+## Measured, not promised
+
+Every figure here has a pass mark written down before it was measured, and
+a failed mark stays recorded as failed. None of these is from a real home
+yet: they come from the simulator and from the Jetson on the bench.
+
+| What | Result | Where it was measured |
+|---|---|---|
+| Naming the right object | 97.2% precision on a 299-frame set, on board | Jetson |
+| Time to decide "is this it?" on arrival | 1.9 s at the 90th percentile, over five arrivals | Jetson, whole stack running |
+| Paid cloud calls | 765 cut to 6 across 21 houses | Simulator |
+| Searching a house with no map until the target is reached | 99 of 100 houses | Simulator, imported floor plans |
+| Looking at each camera frame | 61 ms typical | Jetson |
+| Houses to test in | 4 hand-built, 1,000 imported | Simulator |
+
+## Where it is today
+
+Everything runs in the simulator and on the Jetson. **The real robot has not
+yet found a real object.** When it does, the video goes here.
+
+Rover has no arm: it finds things in the open, and cannot open a drawer or
+move a cushion. It is a project to build and study, not a product for sale.
+
+## Get involved
+
+* **Try it** with the five-minute start above, and tell us what broke.
+* **Star the repository** if you want to follow the real robot's first find.
+* **Open an issue** with a question, a bug or an idea.
+* **Send a fix.** [`CONTRIBUTING.md`](CONTRIBUTING.md) says how contributions
+  are licensed.
+
+The repository is named for the project's full name, the Physical AI
+Autonomous Rover.
+
 ---
+
+## Under the hood
+
+The rest of this page is for engineers: why the problem is hard, how each
+part works, and how to work in the code.
 
 ## Why this is hard
 
