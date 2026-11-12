@@ -172,6 +172,13 @@ paragraph.**
 * **Explore reads `frame["detections"]`, which only the simulator
   provides** (3.76 E): on the car explore cannot see the target until
   perception on real frames is built.
+* 3.175-3.178 (the user, 2026-11-12: features from similar products and
+  projects, buildable while the Rover waits on Waveshare; each step A writes
+  the bars first): 3.175 a find's memory when the target moved, and "where
+  did you last see it" without driving; 3.176 a find asked in plain words
+  (a free rule parser, a room hint into goal choice; the model arm asks
+  first); 3.177 visual promise, offline on the rig walks; 3.178 a watch
+  list of valuables (its real test needs the Rover's frames).
 * Not built: `brain/planner.py`, S7 (chaos and soak), a Stage 1 vision
   re-run against the lit renderer.
 
