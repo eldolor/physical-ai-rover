@@ -900,10 +900,10 @@ person's named rooms only (`RoomLabeller._with_person` over an empty model
 layer) on the same 0.30 m coarse map, cut again when the map, the `frame_id`
 or the names (`rev`, each room's name and size) change. It asks nothing (no
 frame, no `/room` call). The `frame_id` is the pose's; an unusable pose
-keeps the one this mission last read, so a SLAM dropout does not flap the
-types. No saved map, no named room or a store that raises: None, the
+(or a pose fetch that raises) keeps the one this mission last read, so a
+SLAM dropout does not flap the types. No saved map, no named room or a store that raises: None, the
 mission exactly as with no names; `status.room_labels.person_rooms` counts
-the named rooms the last choice read (absent at 0;
+the named rooms the last choice placed on the live map (absent at 0;
 `tests/test_room_names_find.py`). Known limit, shared with the survey's
 `layer()`: a named room `placed()` would list unplaced after a re-map is
 still painted where its cells lie.

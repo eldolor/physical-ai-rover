@@ -3270,17 +3270,20 @@ class MissionRunner:
         try:
             if not m or "cells" not in m:
                 return None
-            # A pose that is momentarily unusable (stale SLAM, a dropped
-            # fetch) keeps the saved map this mission last read (review).
-            pose = self.world.get_pose() or {}
+            # A pose that is momentarily unusable (stale SLAM) or whose
+            # fetch fails keeps the saved map this mission last read (review).
+            try:
+                pose = self.world.get_pose() or {}
+            except Exception:  # noqa: BLE001 -- a dropout, as unusable
+                pose = {}
             frame_id = pose.get("frame_id") if pose.get("usable") else None
             frame_id = self._names_frame = frame_id or self._names_frame
             if not frame_id:
                 return None
             doc = room_names.default_store().load(frame_id)
             rooms = [r for r in doc.get("rooms") or () if r.get("name") and r.get("_keys")]
-            self._person_rooms_read = len(rooms)
             if not rooms:
+                self._person_rooms_read = 0
                 return None
             cm = self._coarse(m)
             key = (RoomLabeller._key(cm), frame_id, doc.get("rev"),
@@ -3289,6 +3292,10 @@ class MissionRunner:
                 empty = {"names": [], "cells": [-1] * (int(cm["width"]) * int(cm["height"]))}
                 self._names_layer = (key, cm, RoomLabeller._with_person(cm, empty, rooms))
             _key, cm, layer = self._names_layer
+            # Counted as placed: a named room the live map cannot hold typed
+            # nothing, so it was not read (Thermos).
+            placed = set(layer["names"])
+            self._person_rooms_read = sum(r["name"] in placed for r in rooms)
             return (cm, layer) if layer["names"] else None
         except Exception:  # noqa: BLE001 -- see above
             self._person_rooms_read = 0          # what the choice used: none (review)

@@ -276,8 +276,12 @@ def test_names_stay_local_no_other_module_reads_the_store():
     out = subprocess.run(["git", "grep", "--untracked", "-l", "-e", "import room_names",
                           "-e", "room_names as", "-e", "ROOM_NAMES_DIR", "--", "*.py"],
                          cwd=ROOT, capture_output=True, text=True).stdout.split()
+    # 3.160.D: the runner reads the names for a find's goal types and keeps
+    # only a count in its status; its sweep and live run read local copies.
+    out = [p for p in out if not p.startswith("evaluations/room-names-3160d/")]
     assert sorted(out) == ["brain/room_labels.py", "brain/room_names.py",
-                           "control/brain_server.py", "tests/test_room_names.py",
+                           "control/brain_server.py", "control/mission_runner.py",
+                           "tests/test_room_names.py", "tests/test_room_names_find.py",
                            "tests/test_ui_room_names.py"]
     assert "recordings/" in (ROOT / ".gitignore").read_text()
 

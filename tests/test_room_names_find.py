@@ -189,3 +189,27 @@ def test_a_failing_store_after_names_counts_none(saved_map, monkeypatch):
     monkeypatch.setattr(rn, "default_store", boom)
     assert runner.agent.goal_labels(m) is None
     assert runner.status()["room_labels"] is None
+
+
+def test_a_failed_pose_fetch_keeps_the_names(saved_map, monkeypatch):
+    """A pose fetch that raises (RemoteWorld's transport error) is a dropout
+    too: the saved map last read still types the goals (Thermos)."""
+    saved_map.set(_true_rooms())
+    runner, _nav, grid = _mission(explore_goal_policy="rooms")
+    m = runner.world.get_map()
+    assert runner.agent.goal_labels(m) is not None
+
+    def boom(self):
+        raise OSError("world timed out")
+    monkeypatch.setattr(MockWorld, "get_pose", boom)
+    assert runner.agent.goal_labels(m) is not None
+    assert runner.status()["room_labels"]["person_rooms"] == len(grid.rooms)
+
+
+def test_names_off_the_map_count_none(saved_map):
+    """Named rooms the live map cannot place type nothing, and the status says
+    none were read, not how many the store holds (Thermos)."""
+    saved_map.set({"attic": [(900, 900), (901, 900)]})
+    runner, _nav, _g = _mission(explore_goal_policy="rooms")
+    assert runner.agent.goal_labels(runner.world.get_map()) is None
+    assert runner.status()["room_labels"] is None
