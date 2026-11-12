@@ -186,9 +186,17 @@ def follow(robot, brain, m, started_wall):
 
 
 def wait_charge(robot):
+    """Spaced for the charge, as 3.158.B is. Amendment 11: a pack the charger
+    stand-in has not brought back by then is topped up, and the run says so."""
     t = time.time()
     while (rh.volts(robot) or 0) < rh.START_V and time.time() - t < rh.CHARGE_WAIT_S:
         time.sleep(2)
+    v = rh.volts(robot) or 0
+    if v < rh.START_V:
+        robot.post("/sim/battery", json={"v": rh.START_V})
+        time.sleep(15)                  # the ladder reads the new pack
+        return round(v, 2)
+    return None
 
 
 def week(out: Path, env_extra, clock: Clock):
@@ -206,12 +214,13 @@ def week(out: Path, env_extra, clock: Clock):
             hh, mm = map(int, sched["at"].split(":"))
             due = (MONDAY + timedelta(days=day)).replace(hour=hh, minute=mm)
             inject, expect = INJECT.get((day, sched["id"]), (None, "fired"))
-            wait_charge(robot)
+            topped = wait_charge(robot)
             rec = {"day": day, "id": sched["id"], "job": sched["job"], "target": sched["target"],
                    "due": due.isoformat(), "inject": inject, "expect": expect,
-                   "load": round(os.getloadavg()[0], 2)}
+                   "load": round(os.getloadavg()[0], 2), "topped_up_from_v": topped}
             holder = None
             if inject == "off_dock":
+                before = robot.get("/world/truth").json()
                 rec["nudge"] = nudge(robot, "FORWARD").get("executed")
                 lapse(robot)
             elif inject == "battery_low":
@@ -255,13 +264,19 @@ def week(out: Path, env_extra, clock: Clock):
                     rec.update(follow(robot, brain, sched, t_run))
                 line = wait_final(brain, due, sched["id"], 30)
             else:
-                time.sleep(2 * TICK_S + 5)          # tried inside the grace
-                waiting = brain.get("/schedules").json().get("waiting", [])
-                rec["waiting"] = [w["reason"] for w in waiting if w["id"] == sched["id"]]
+                # Amendment 11: wait until the scheduler has tried it (run 1
+                # jumped past the grace before any tick saw the due time).
+                seen, end = [], time.time() + 20 + 6 * TICK_S
+                while time.time() < end and not seen:
+                    time.sleep(1.0)
+                    waiting = brain.get("/schedules").json().get("waiting", [])
+                    seen = [w["reason"] for w in waiting
+                            if w["id"] == sched["id"] and w["due"] == due.isoformat()]
+                rec["waiting"] = seen
                 clock.jump_to(due + timedelta(seconds=GRACE_S + 15))
                 line = wait_final(brain, due, sched["id"], 60)
                 s = brain.get("/mission/status").json()
-                rec["started"] = s.get("started_by") == f"schedule:{sched['id']}"
+                rec["started"] = bool(s.get("running")) and s.get("started_by") == f"schedule:{sched['id']}"
                 if rec["started"] and s.get("running"):
                     rec.update(follow(robot, brain, sched, time.time()))   # it should not have
             rec["line"] = line
@@ -276,6 +291,9 @@ def week(out: Path, env_extra, clock: Clock):
             if inject == "off_dock":
                 rec["nudge_back"] = nudge(robot, "REVERSE").get("executed")
                 lapse(robot)
+                after = robot.get("/world/truth").json()
+                rec["nudge_back_err_m"] = round(math.hypot(after["x_m"] - before["x_m"],
+                                                           after["y_m"] - before["y_m"]), 3)
             elif inject == "battery_low":
                 robot.post("/sim/battery", json={"v": 12.0})
                 time.sleep(15)
@@ -295,10 +313,11 @@ def hand(out: Path):
              if r["expect"] == "fired"]
     done = len(out.read_text().splitlines()) if out.exists() else 0
     for r in fired[done:]:
-        wait_charge(robot)
+        topped = wait_charge(robot)
         m = {"job": r["job"], "target": r["target"]}
         rec = {"day": r["day"], "id": r["id"], "job": r["job"], "target": r["target"],
-               "load": round(os.getloadavg()[0], 2), **rh.mission(robot, brain, HOUSE, m)}
+               "load": round(os.getloadavg()[0], 2), "topped_up_from_v": topped,
+               **rh.mission(robot, brain, HOUSE, m)}
         rec["found_right"] = rec.get("found_target_m") is not None and rec["found_target_m"] <= rh.FOUND_RADIUS_M
         with out.open("a") as f:
             f.write(json.dumps(rec) + "\n")
@@ -311,7 +330,7 @@ def wall(out: Path, clock: Clock):
     brain = httpx.Client(base_url=f"http://127.0.0.1:{de.BRAIN}", timeout=60)
     clock.set_offset(0.0)
     for i in range(3):
-        wait_charge(robot)
+        topped = wait_charge(robot)
         due = (datetime.now() + timedelta(minutes=2)).replace(second=0, microsecond=0)
         sid = f"wall{i}"
         brain.put("/schedules", json={"enabled": True, "schedules": [
@@ -327,7 +346,7 @@ def wall(out: Path, clock: Clock):
                 break
             time.sleep(0.25)
         rec = {"i": i, "due": due.isoformat(), "t1_s": None if t_run is None else round(t_run - real_due, 1),
-               "load": round(os.getloadavg()[0], 2)}
+               "load": round(os.getloadavg()[0], 2), "topped_up_from_v": topped}
         if t_run is not None:
             rec.update(follow(robot, brain, {"job": "find", "target": "red backpack"}, t_run))
         with out.open("a") as f:
