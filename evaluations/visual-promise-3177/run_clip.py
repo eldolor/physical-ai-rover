@@ -23,6 +23,7 @@ from brain.perceive import ClipScorer                         # noqa: E402
 from common import HERE, RECORDINGS, all_texts, load_set, rows   # noqa: E402
 
 OUT = HERE / "clip-cpu.jsonl"
+THREADS = 4          # the desktop is shared (3.175.A's sweep beside it); recorded in each row
 
 
 def tiles(w: int, h: int):
@@ -46,6 +47,7 @@ def main():
     d = load_set()
     order = all_texts(d)
     scorer = ClipScorer(device="cpu")
+    scorer._torch.set_num_threads(THREADS)
     feats = scorer._text_features(tuple(order))    # once, before any frame is timed
     seen = set(rows(OUT))
     if OUT.exists():                               # a torn last row: cut it, so the next appends cleanly
