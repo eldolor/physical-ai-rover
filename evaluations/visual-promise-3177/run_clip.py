@@ -48,6 +48,10 @@ def main():
     scorer = ClipScorer(device="cpu")
     feats = scorer._text_features(tuple(order))    # once, before any frame is timed
     seen = set(rows(OUT))
+    if OUT.exists():                               # a torn last row: cut it, so the next appends cleanly
+        data = OUT.read_bytes()
+        if data and not data.endswith(b"\n"):
+            OUT.write_bytes(data[:data.rfind(b"\n") + 1])
     n = 0
     with OUT.open("a") as f:
         for r in d["frames"]:
@@ -60,7 +64,8 @@ def main():
             t0 = time.perf_counter()
             full = encode(scorer, img, feats)
             ms = (time.perf_counter() - t0) * 1000
-            row = {"key": r["key"], "device": scorer.device, "texts": order, "full": full,
+            row = {"key": r["key"], "device": scorer.device, "threads": scorer._torch.get_num_threads(),
+                   "texts": order, "full": full,
                    "tiles": [encode(scorer, img.crop(b), feats) for b in tiles(w, h)],
                    "ms": round(ms, 1), "w": w, "h": h}
             f.write(json.dumps(row) + "\n"); f.flush()

@@ -45,10 +45,12 @@ def test_labels_split_before_far_and_leave_out_just_after(mods):
 
 
 def test_labels_count_recorded_steps_not_positions(mods):
-    # Frame 3 is missing: frame 2 is 3 steps before the sighting at 5, not 2.
+    # Frames 3 and 4 are missing: frame 2 is 3 steps before the sighting at
+    # 5, not 1; and a frame within k of a missing step is not a negative.
     v, steps = [0, 0, 0, 1], [0, 1, 2, 5]
-    assert mods["score"].labels(v, 2, steps) == ([], [0, 1, 2])
-    assert mods["score"].labels(v, 3, steps) == ([2], [0, 1])
+    assert mods["score"].labels(v, 2, steps) == ([], [0])
+    assert mods["score"].labels(v, 3, steps) == ([2], [])
+    assert mods["score"].labels([0, 0, 0, 0, 1], 2) == ([2, 3], [0])
 
 
 def test_a_torn_last_line_is_dropped(mods, tmp_path):
@@ -95,3 +97,22 @@ def test_set_hash_matches_its_rows(mods):
     assert sum(r["visible"] for r in d["frames"]) == 535
     assert mods["common"].set_hash(d["frames"]) == d["hash"]
     assert d["hash"] == mods["common"].PINNED
+
+
+def test_build_walks_scores_own_words_and_controls_with_first_words(mods):
+    frames = [{"key": "red-1/frame-0000.jpg", "target": "burgundy backpack", "visible": False},
+              {"key": "red-2/frame-0003.jpg", "target": "red backpack", "visible": False},
+              {"key": "red-2/frame-0005.jpg", "target": "red backpack", "visible": True},
+              {"key": "box-1/frame-0000.jpg", "target": "box", "visible": False}]
+    d = {"frames": frames}
+    cols = mods["common"].all_texts(d)
+    rows = {f["key"]: {"texts": cols, "full": [0.0] * len(cols), "tiles": [[0.0] * len(cols)] * 3}
+            for f in frames}
+    walks = {w["walk"]: w for w in mods["score"].build_walks(d, rows)}
+    assert walks["red-2"]["steps"] == [3, 5]
+    assert cols[walks["red-2"]["own"]] == "red backpack"
+    # In another object's control the bag stands for its first walk's words.
+    assert {o: cols[j] for o, j in walks["box-1"]["others"].items()} == {"red backpack": "burgundy backpack"}
+    rows["red-2/frame-0005.jpg"] = dict(rows["red-2/frame-0005.jpg"], texts=list(reversed(cols)))
+    with pytest.raises(SystemExit):
+        mods["score"].build_walks(d, rows)

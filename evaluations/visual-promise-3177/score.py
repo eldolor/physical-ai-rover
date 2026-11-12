@@ -20,6 +20,9 @@ import numpy as np
 from common import HERE, load_set, obj, rows as read_rows, texts
 
 K, KS = 5, (3, 5, 10)
+# The plan's judged objects at k = 5, counted on the labels before measuring.
+JUDGED = {"a white phone charger cable", "blue bottle", "blue and yellow running shoes",
+          "woven laundry basket"}
 BAR_2A, BAR_2C, CONTROL_BAND, CONTROL_GAP = 0.65, 0.55, (0.43, 0.57), 0.10
 BOOT, SEED = 2000, 0
 ONSET_MAX = 15
@@ -29,13 +32,16 @@ def labels(visible, k, steps=None):
     """(positives, negatives), as indices: out of view with the target in view
     within the next k recorded steps; out of view with none within k steps on
     either side. `steps` are the frames' numbers (a walk may skip one); by
-    default 0, 1, 2, ..."""
+    default 0, 1, 2, ... A skipped number inside the walk is a step whose
+    label is unknown, so a frame that is not a positive and has one within k
+    is left out."""
     v = np.asarray(visible, bool)
     st = np.arange(len(v)) if steps is None else np.asarray(steps)
+    gaps = np.setdiff1d(np.arange(st.min(), st.max() + 1), st) if len(st) else st
     pos, neg = [], []
     for i in np.flatnonzero(~v):
         ahead = v[(st > st[i]) & (st <= st[i] + k)].any()
-        near = v[np.abs(st - st[i]) <= k].any()
+        near = v[np.abs(st - st[i]) <= k].any() or (np.abs(gaps - st[i]) <= k).any()
         if ahead:
             pos.append(int(i))
         elif not near:
@@ -75,6 +81,8 @@ def build_walks(d, rows):
             continue
         rs = [rows[f["key"]] for f in frames]
         cols = rs[0]["texts"]
+        if any(x["texts"] != cols for x in rs):
+            raise SystemExit(f"{walk}: rows scored against different texts")
         o = obj(frames[0]["target"])
         out.append({"walk": walk, "object": o,
                     "visible": [f["visible"] for f in frames],
@@ -205,6 +213,10 @@ def main():
     c2["met_2a"] = c2["2a"] is not None and c2["2a"] >= BAR_2A
     c2["met_2b"] = c2["2b_ci"] is not None and c2["2b_ci"][0] > 0.5
     c2["met_2c"] = c2["2c_floor"] is not None and c2["2c_floor"] >= BAR_2C
+    # 2a and 2c are defined over exactly the plan's four objects.
+    c2["objects"] = sorted(objs)
+    if set(objs) != JUDGED:
+        c2["met_2a"] = c2["met_2c"] = False
     ctl = main_["balanced_control"]
     c3 = {"control": ctl, "gap": None if ctl is None or c2["2a"] is None else c2["2a"] - ctl}
     c3["met"] = (c3["gap"] is not None and CONTROL_BAND[0] <= ctl <= CONTROL_BAND[1]
