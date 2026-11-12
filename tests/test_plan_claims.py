@@ -387,6 +387,21 @@ def test_review_session_start_names_claims_this_process_already_holds(repo, owne
     assert "THIS SESSION ALREADY HOLDS 3.90.A" in out and "release 3.90.A" in out
 
 
+def test_session_start_board_is_one_line_per_state_ids_only(repo, owners):
+    _, a = owners()
+    out = pc.hook_start(cwd=repo)
+    free = [ln for ln in out.splitlines() if ln.startswith("  free:")]
+    assert free and "3.90.A" in free[0].split()
+    assert "First" not in out                         # titles stay in `board`, not the context
+    pc.claim("3.90.A", cwd=repo, me=a)
+    os.environ["PICAR_CLAIM_PID"] = str(a["pid"])
+    try:
+        out = pc.hook_start(cwd=repo)
+    finally:
+        del os.environ["PICAR_CLAIM_PID"]
+    assert any(ln.startswith("  mine:") and "3.90.A" in ln.split() for ln in out.splitlines())
+
+
 # ---------- Thermos bug pass fixes (2026-10-12) ----------
 
 def test_thermos_owner_start_does_not_depend_on_the_callers_time_zone(owners):

@@ -864,8 +864,8 @@ class Board:
 ORDER = ["mine", "claimed", "active", "free", "conflict", "blocked", "waits", "unknown", "idle"]
 
 
-def cmd_board(show_all=False, short=False, cwd=None, b=None) -> str:
-    b = b or Board(cwd)
+def _rows(b, show_all=False) -> list:
+    """(state, step, why) for every row the board shows, in ORDER."""
     rows = []
     for s in b.steps:
         st, why = b.status(s)
@@ -884,6 +884,12 @@ def cmd_board(show_all=False, short=False, cwd=None, b=None) -> str:
                      f"held by this session ({c.get('worktree', '')})" if mine
                      else claimed_why(c, b.now, b.times)))
     rows.sort(key=lambda r: ORDER.index(r[0]) if r[0] in ORDER else 99)
+    return rows
+
+
+def cmd_board(show_all=False, short=False, cwd=None, b=None) -> str:
+    b = b or Board(cwd)
+    rows = _rows(b, show_all)
     if short:
         rows = [r for r in rows if r[0] in ("mine", "claimed", "active", "free", "unknown")]
     lines = []
@@ -1424,7 +1430,7 @@ def hook_start(cwd=None) -> str:
     earlier conversation of this process) already holds."""
     try:
         b = Board(cwd, timeout=START_TIMEOUT_S)      # a session start never waits long
-        board = cmd_board(short=True, b=b)
+        board = compact_board(b)
         mine = [c for c in b.live if same_owner(c, b.me)]
         earlier = [c for c in b.claims + b.stale
                    if not same_owner(c, b.me) and same_process(c, b.me)]
@@ -1445,7 +1451,24 @@ def hook_start(cwd=None) -> str:
                      f"is over, ask the user to free it (`release --force {c['step']}`).\n")
     return (head + "Plan steps (PARALLEL-SESSIONS.md rules 8 and 12). Claim before working on the "
             "plan: `python tools/plan_section.py next`, then `claim <step>`; if refused, stop and "
-            "report. Board:\n" + board)
+            "report. `python tools/plan_section.py board` for titles and reasons.\n" + board)
+
+
+def compact_board(b) -> str:
+    """The board as one line per state, step ids only: what a session start
+    needs to know, at a fraction of the full board's context."""
+    by = {}
+    for st, s, _ in _rows(b):
+        if st in ("mine", "claimed", "active", "free", "unknown"):
+            by.setdefault(st, []).append(s["id"])
+    lines = [f"WARNING: origin unreachable ({b.remote_err}): claims on origin are not shown, "
+             "and `claim` will fail"] if b.remote_err else []
+    for st in ("mine", "claimed", "active", "free"):
+        if by.get(st):
+            lines.append(f"  {st}: {' '.join(by[st])}")
+    if by.get("unknown"):
+        lines.append(f"  unknown: {len(by['unknown'])} (rows `board` cannot read)")
+    return "\n".join(lines) or "  no open steps"
 
 
 def main(argv):
