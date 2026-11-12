@@ -22,7 +22,7 @@ Perception, identity, mapping and planning all run on board; a cloud VLM is
 the last tier, and Rover still works with the internet unplugged.
 
 **Where it is today:** everything runs in the simulator and on the Jetson.
-The real robot has not yet found a real object. [Status](#status) has more.
+The real robot has not yet found a real object.
 
 The repository is named for the project's full name, the Physical AI
 Autonomous Rover.
@@ -179,18 +179,6 @@ page.
   code.
 * **Built with Claude Code** throughout: about 155,000 lines of Python, a
   thin layer of C++, and a phone UI in plain JavaScript.
-
-## Status
-
-The Jetson is in hand and the whole stack runs on it under full load:
-perception, the local vision-language model, SLAM, nav2 and the safety loop,
-with no late safety tick. The Rover chassis arrived in November 2026 and is
-being brought up; the real robot has not yet found a real object. Every
-number above is measured in simulation or on the
-Jetson, not yet in a real home. `CLAUDE.md` section 3 has the detailed
-state and the open work.
-
----
 
 ## For developers
 
