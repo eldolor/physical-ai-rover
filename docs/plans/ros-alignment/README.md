@@ -178,4 +178,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.172](3.172-autonomy-rehearsal-fixes.md) | Rehearsal fixes: leave the trap, come home, drop stalled goals, go to what is remembered, end a survey |
 | [3.173](3.173-surveys-small-rooms.md) | Surveys reach small rooms |
 | [3.174](3.174-real-mission-debrief.md) | Real missions: record, score and debrief |
+| [3.175](3.175-memory-when-things-move.md) | A find's memory when the target has moved, and asking it without driving |
 <!-- /sections -->
