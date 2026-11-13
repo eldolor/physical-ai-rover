@@ -15,12 +15,13 @@ canonical word, and both splits cover every kind.
 """
 import hashlib
 import json
+import re
 from collections import Counter
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SET = ROOT / "evaluations" / "request-3176" / "requests.jsonl"
-SHA256 = "b3426a499263581d5d8036e7d370c0e19e02ee08771a39556634b612e6390bc8"
+SHA256 = "3f0aa8e9753893599f7e5796a9978d1ef923981e7e47fce695776d60f32109b2"
 
 # 3.176.A's vocabulary (the section file, "The room vocabulary"): the four
 # types the shipped prior knows, then the others a label or a name can carry.
@@ -32,6 +33,17 @@ SIZES = {"small", "large"}
 KINDS = {"plain", "request_verb", "question", "attributes", "hint_type",
          "hint_synonym", "hint_cue", "hint_in_furniture", "location_not_room",
          "room_word_in_target", "compound", "ambiguous", "punctuation", "name_hint"}
+
+
+def _words(text: str) -> list:
+    """Lower-case word tokens, an apostrophe kept inside a word ("ben's")."""
+    return re.findall(r"[a-z0-9]+(?:'[a-z]+)?", text.lower())
+
+
+def _said(phrase: str, text: str) -> bool:
+    """`phrase`'s words appear in `text` in a row, as whole words."""
+    want, have = _words(phrase), _words(text)
+    return any(have[i:i + len(want)] == want for i in range(len(have) - len(want) + 1))
 
 
 def _rows() -> list:
@@ -52,13 +64,15 @@ def test_every_row_has_the_designed_shape():
         assert set(e) == {"target", "room", "colours", "size"}, r["id"]
         # The target is what was said: lower case, every word of it in the text.
         assert e["target"] and e["target"] == e["target"].strip().lower(), r["id"]
-        said = r["text"].lower()
-        assert all(w in said for w in e["target"].split()), r["id"]
+        assert _said(e["target"], r["text"]), r["id"]
         room = e["room"]
         if room is not None:
             assert len(room) == 1, r["id"]
             if "type" in room:
                 assert room["type"] in ROOM_TYPES, r["id"]
+                # A person's name wins over a type: a row whose text says one
+                # of its map's names expects that name (or no room), never a type.
+                assert not any(_said(n, r["text"]) for n in r["names"]), r["id"]
             else:
                 assert room["name"] in r["names"], r["id"]
         assert set(e["colours"]) <= COLOURS and e["size"] in SIZES | {None}, r["id"]
