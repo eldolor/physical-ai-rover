@@ -421,9 +421,12 @@ reason `no_motion`, at the next stall, instead of waiting out `RETURN_MAX_S`. A
 refusal because the just-cancelled goal still holds the robot is a wait
 (`MAX_HOLDS` polls), not a person's preemption. Every move goes through the agent's `SafetyController`; a person's Stop, a preemption
 or Reserve still propagates from the cancel and from each verb.
-* **The dock** (`status.dock`, `{x_m, y_m, theta, source}`) is the world's
-  pose read at `start()`, `source: start` (3.156.E brings the saved map's).
-  None when the pose was not usable: the return is then `skipped`, `no_dock`.
+* **The dock** (`status.dock`, `{x_m, y_m, theta, source}`) is read from the
+  world's pose at `start()` by `dock_from_pose()`: the pose's `dock` when it
+  carries a readable one, `source: saved_map` (3.156.E: under `world: ros` on
+  a matched reload, the saved map's `dock_pose`, the same point for every
+  mission on that map); else the pose itself, `source: start`. None when the
+  pose was not usable: the return is then `skipped`, `no_dock`.
 * **When** (`_return_wanted`, `RETURNS`): after `found`, `room_reached`,
   `exhausted`, `out_of_budget`, `arrived_unconfirmed` and `blocked`, with
   `return_to_dock` on (the constructor's default is off; the brain config's

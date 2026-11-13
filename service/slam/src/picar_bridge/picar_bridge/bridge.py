@@ -15,7 +15,8 @@ and the other direction:
     GET /scan            the LaserScan this node last published
     GET /tf?target=&source=   a tf2 lookup, for R3's measurements
     GET /slam/pose       map -> base_footprint (SLAM) and odom -> base_footprint,
-                         and the saved map's id once ready (3.50.D5)
+                         and the saved map's id once ready (3.50.D5); on a
+                         matched reload, the saved map's dock_pose (3.156.E)
     GET /slam/map        slam_toolbox's OccupancyGrid, as ROS publishes it
     POST /slam/remap {by}  3.50.D4: a person's "re-map now": a reloaded map
                          being localised on is mapped again from the robot's
@@ -379,6 +380,10 @@ class Bridge(Node):
         # 1's, so /world/error lays it on the house from there.
         self.reload_start_truth = None
         self.reload_matched = False
+        # 3.156.E (D1): the dock a matched reload localised at -- the saved
+        # map's `dock_pose`, or the origin when that was unreadable -- in the
+        # map frame, as meta.json holds it. None on a fresh map.
+        self.reload_dock = None
         # ---- 3.50.D4: re-mapping a matched reload (remap.py) ----
         # The version localised on, its map as reloaded (frozen) and the
         # contradiction tracker; set only while a matched reload localises.
@@ -1045,11 +1050,15 @@ class Bridge(Node):
             # matched reload and through a re-map, new on a fall-back. Only
             # once ready: a reload being judged may still fall back.
             map_id = self.map_id if ready else None
+            # 3.156.E (D1): the saved dock, on the frame it belongs to only:
+            # a matched reload, once ready (a fall-back's map is not it).
+            dock = (dict(self.reload_dock) if ready and self.reload_matched
+                    and self.reload_dock is not None else None)
         # 3.50.D3: no map pose, and the start truth pending, until the frame
         # is decided -- world/ros_world.py then anchors nothing and reads the
         # pose and the map unusable, rather than anchor a frame about to go.
         return 200, {"session": self.session, "map_id": map_id, "start_truth": start,
-                     "start_truth_pending": pending,
+                     "start_truth_pending": pending, "dock_pose": dock,
                      "map": self._pose_in("map") if ready else None,
                      "odom": self._pose_in("odom"), "at": time.time()}
 
@@ -1311,6 +1320,7 @@ class Bridge(Node):
             self.reload = {**record, "result": "matched"}
             self.reload_start_truth = saved.meta.get("start_truth")
             self.reload_matched = True
+            self.reload_dock = {"x": dock[0], "y": dock[1], "theta": dock[2]}
             self._remap_version = saved
             self._remap_saved = frozen
             self._set_tracker(remap.Contradictions(frozen) if frozen else None)
@@ -1323,6 +1333,7 @@ class Bridge(Node):
             self.slam_state = "starting"
             self.reload_matched = False
             self.reload_start_truth = None
+            self.reload_dock = None
             self._remap_version = self._remap_saved = None
             self._set_tracker(None)
             self._reload_map = None
