@@ -9,7 +9,9 @@ are in `docs/plans/ros-alignment/3.175-memory-when-things-move.md`.
 Each trial is one target, one move (another room, within its room, or gone)
 and five missions on a real chain: an `InventoryStore` directory of its own and
 one saved map's `frame_id` on every pose, so a mission seeds from the head of
-the chain and saves its report as the live brain does.
+the chain and saves its report as the live brain does. Since 3.175.B (amendment
+B0) each mission of the chain also starts from the map the previous one ended
+with, as the car reloads its saved map; `seed` and `cold` start from nothing.
 
     python tools/desktop_lock.py shared --why "3.175.A sweep" -- \\
         python evaluations/memory-moved-3175/sweep.py run ROWS.jsonl WORKDIR [WORKERS]
@@ -100,9 +102,11 @@ def trials():
     return out
 
 
-def mission(trial, where, store_dir, name):
+def mission(trial, where, store_dir, name, cells=None):
     """One find from the house's dock with the target at `where` (a cell, or
-    None: gone), on the chain in `store_dir`. Returns the row."""
+    None: gone), on the chain in `store_dir`, starting from the map `cells`
+    (3.175.B amendment B0: the previous mission's; None, unknown). Returns
+    (the row, the map the mission ended with)."""
     import logging
     logging.disable(logging.WARNING)
     from control.inventory_store import InventoryStore
@@ -133,10 +137,13 @@ def mission(trial, where, store_dir, name):
             contacts.append(event)
         record(event)
     grid._record = counted
+    world = SavedMap(grid)
+    if cells is not None:
+        world._cells = list(cells)
     robot = MockRobot(grid, render=False, exact_verbs=True)
     store = InventoryStore(str(store_dir))
     runner = MissionRunner(robot, policy="explore", navigator=inflated_nav_class()(robot),
-                           world=SavedMap(grid), target_object=trial["target"],
+                           world=world, target_object=trial["target"],
                            mission_time_limit_s=LIMIT_S, clock=lambda: grid.sim_time,
                            idle=robot.pass_time, return_to_dock=False)
     runner.inventory_prior = store.latest_for
@@ -168,7 +175,7 @@ def mission(trial, where, store_dir, name):
     if where is not None:
         target_m = math.dist((grid.x, grid.y), (where[0] + 0.5, where[1] + 0.5)) * CELL
     old = ((p0[0] + 0.5) * CELL, (p0[1] + 0.5) * CELL)
-    return {"trial": trial["id"], "house": trial["house"], "target": trial["target"],
+    return {"carried_map": cells is not None, "trial": trial["id"], "house": trial["house"], "target": trial["target"],
             "move": trial["move"], "mission": name, "outcome": s["outcome"],
             "end_reason": (s.get("end_reason") or "")[:160], "search_s": round(grid.sim_time, 1),
             "ticks": ticks, "capped": ticks >= TICK_CAP,
@@ -180,7 +187,7 @@ def mission(trial, where, store_dir, name):
             "recalled_old": any(math.dist(p, old) <= RECALL_NEAR_M for p in acted),
             "contacts": sum(c.startswith("BLOCKED at") for c in contacts),
             "blocked_turning": sum(c.startswith("BLOCKED turning") for c in contacts),
-            "goals": len(goals)}
+            "goals": len(goals)}, list(world._cells)
 
 
 def run_trial(args):
@@ -192,10 +199,12 @@ def run_trial(args):
         for f in p.glob("*.json"):
             f.unlink()                    # a re-run trial starts from an empty store
     p0, p1 = trial["p0"], trial["p1"]
-    rows = [mission(trial, p0, chain, "seed"), mission(trial, p0, chain, "fresh"),
-            mission(trial, p1, chain, "stale"), mission(trial, p1, chain, "after")]
+    rows, cells = [], None
+    for name, where in (("seed", p0), ("fresh", p0), ("stale", p1), ("after", p1)):
+        row, cells = mission(trial, where, chain, name, cells)    # B0: the map carried
+        rows.append(row)
     if trial["move"] != "gone":
-        rows.append(mission(trial, p1, cold, "cold"))
+        rows.append(mission(trial, p1, cold, "cold")[0])
     return rows
 
 
