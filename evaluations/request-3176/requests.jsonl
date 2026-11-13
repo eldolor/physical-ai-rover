@@ -1,0 +1,138 @@
+{"id": "r001", "split": "dev", "kind": "plain", "text": "backpack", "names": [], "expect": {"target": "backpack", "room": null, "colours": [], "size": null}}
+{"id": "r002", "split": "test", "kind": "plain", "text": "red backpack", "names": [], "expect": {"target": "red backpack", "room": null, "colours": ["red"], "size": null}}
+{"id": "r003", "split": "dev", "kind": "plain", "text": "basketball", "names": [], "expect": {"target": "basketball", "room": null, "colours": [], "size": null}}
+{"id": "r004", "split": "test", "kind": "plain", "text": "garbage can", "names": [], "expect": {"target": "garbage can", "room": null, "colours": [], "size": null}}
+{"id": "r005", "split": "dev", "kind": "plain", "text": "house plant", "names": [], "expect": {"target": "house plant", "room": null, "colours": [], "size": null}}
+{"id": "r006", "split": "test", "kind": "plain", "text": "laundry hamper", "names": [], "expect": {"target": "laundry hamper", "room": null, "colours": [], "size": null}}
+{"id": "r007", "split": "dev", "kind": "plain", "text": "water bottle", "names": [], "expect": {"target": "water bottle", "room": null, "colours": [], "size": null}}
+{"id": "r008", "split": "test", "kind": "plain", "text": "keys", "names": [], "expect": {"target": "keys", "room": null, "colours": [], "size": null}}
+{"id": "r009", "split": "dev", "kind": "plain", "text": "washer", "names": [], "expect": {"target": "washer", "room": null, "colours": [], "size": null}}
+{"id": "r010", "split": "test", "kind": "plain", "text": "blue shoes", "names": [], "expect": {"target": "blue shoes", "room": null, "colours": ["blue"], "size": null}}
+{"id": "r011", "split": "dev", "kind": "request_verb", "text": "find my keys", "names": [], "expect": {"target": "keys", "room": null, "colours": [], "size": null}}
+{"id": "r012", "split": "test", "kind": "request_verb", "text": "Find the remote", "names": [], "expect": {"target": "remote", "room": null, "colours": [], "size": null}}
+{"id": "r013", "split": "dev", "kind": "request_verb", "text": "look for the cat", "names": [], "expect": {"target": "cat", "room": null, "colours": [], "size": null}}
+{"id": "r014", "split": "test", "kind": "request_verb", "text": "search for my phone", "names": [], "expect": {"target": "phone", "room": null, "colours": [], "size": null}}
+{"id": "r015", "split": "dev", "kind": "request_verb", "text": "please find my wallet", "names": [], "expect": {"target": "wallet", "room": null, "colours": [], "size": null}}
+{"id": "r016", "split": "test", "kind": "request_verb", "text": "can you find the TV remote please", "names": [], "expect": {"target": "tv remote", "room": null, "colours": [], "size": null}}
+{"id": "r017", "split": "dev", "kind": "request_verb", "text": "help me find my glasses", "names": [], "expect": {"target": "glasses", "room": null, "colours": [], "size": null}}
+{"id": "r018", "split": "test", "kind": "request_verb", "text": "go find the dog bed", "names": [], "expect": {"target": "dog bed", "room": null, "colours": [], "size": null}}
+{"id": "r019", "split": "dev", "kind": "request_verb", "text": "locate the laundry basket", "names": [], "expect": {"target": "laundry basket", "room": null, "colours": [], "size": null}}
+{"id": "r020", "split": "test", "kind": "request_verb", "text": "I lost my headphones", "names": [], "expect": {"target": "headphones", "room": null, "colours": [], "size": null}}
+{"id": "r021", "split": "dev", "kind": "request_verb", "text": "I can't find my charger", "names": [], "expect": {"target": "charger", "room": null, "colours": [], "size": null}}
+{"id": "r022", "split": "test", "kind": "request_verb", "text": "find a plunger", "names": [], "expect": {"target": "plunger", "room": null, "colours": [], "size": null}}
+{"id": "r023", "split": "dev", "kind": "question", "text": "where is my phone?", "names": [], "expect": {"target": "phone", "room": null, "colours": [], "size": null}}
+{"id": "r024", "split": "test", "kind": "question", "text": "where's the remote?", "names": [], "expect": {"target": "remote", "room": null, "colours": [], "size": null}}
+{"id": "r025", "split": "dev", "kind": "question", "text": "have you seen my keys", "names": [], "expect": {"target": "keys", "room": null, "colours": [], "size": null}}
+{"id": "r026", "split": "test", "kind": "question", "text": "where did I leave my glasses?", "names": [], "expect": {"target": "glasses", "room": null, "colours": [], "size": null}}
+{"id": "r027", "split": "dev", "kind": "question", "text": "is my wallet in the bedroom?", "names": [], "expect": {"target": "wallet", "room": {"type": "bedroom"}, "colours": [], "size": null}}
+{"id": "r028", "split": "test", "kind": "question", "text": "is the cat in the kitchen?", "names": [], "expect": {"target": "cat", "room": {"type": "kitchen"}, "colours": [], "size": null}}
+{"id": "r029", "split": "dev", "kind": "question", "text": "where are my slippers", "names": [], "expect": {"target": "slippers", "room": null, "colours": [], "size": null}}
+{"id": "r030", "split": "test", "kind": "question", "text": "can you see the basketball anywhere?", "names": [], "expect": {"target": "basketball", "room": null, "colours": [], "size": null}}
+{"id": "r031", "split": "dev", "kind": "attributes", "text": "find my blue water bottle", "names": [], "expect": {"target": "blue water bottle", "room": null, "colours": ["blue"], "size": null}}
+{"id": "r032", "split": "test", "kind": "attributes", "text": "the small black wallet", "names": [], "expect": {"target": "small black wallet", "room": null, "colours": ["black"], "size": "small"}}
+{"id": "r033", "split": "dev", "kind": "attributes", "text": "a big green ball", "names": [], "expect": {"target": "big green ball", "room": null, "colours": ["green"], "size": "large"}}
+{"id": "r034", "split": "test", "kind": "attributes", "text": "my little pink cup", "names": [], "expect": {"target": "little pink cup", "room": null, "colours": ["pink"], "size": "small"}}
+{"id": "r035", "split": "dev", "kind": "attributes", "text": "the grey hoodie", "names": [], "expect": {"target": "grey hoodie", "room": null, "colours": ["grey"], "size": null}}
+{"id": "r036", "split": "test", "kind": "attributes", "text": "the gray hoodie", "names": [], "expect": {"target": "gray hoodie", "room": null, "colours": ["grey"], "size": null}}
+{"id": "r037", "split": "dev", "kind": "attributes", "text": "large white box", "names": [], "expect": {"target": "large white box", "room": null, "colours": ["white"], "size": "large"}}
+{"id": "r038", "split": "test", "kind": "attributes", "text": "tiny yellow toy car", "names": [], "expect": {"target": "tiny yellow toy car", "room": null, "colours": ["yellow"], "size": "small"}}
+{"id": "r039", "split": "dev", "kind": "attributes", "text": "the black and white sneakers", "names": [], "expect": {"target": "black and white sneakers", "room": null, "colours": ["black", "white"], "size": null}}
+{"id": "r040", "split": "test", "kind": "attributes", "text": "my brown leather bag", "names": [], "expect": {"target": "brown leather bag", "room": null, "colours": ["brown"], "size": null}}
+{"id": "r041", "split": "dev", "kind": "attributes", "text": "huge orange pumpkin", "names": [], "expect": {"target": "huge orange pumpkin", "room": null, "colours": ["orange"], "size": "large"}}
+{"id": "r042", "split": "test", "kind": "attributes", "text": "the purple umbrella", "names": [], "expect": {"target": "purple umbrella", "room": null, "colours": ["purple"], "size": null}}
+{"id": "r043", "split": "dev", "kind": "hint_type", "text": "find my water bottle in the kitchen", "names": [], "expect": {"target": "water bottle", "room": {"type": "kitchen"}, "colours": [], "size": null}}
+{"id": "r044", "split": "test", "kind": "hint_type", "text": "the remote in the living room", "names": [], "expect": {"target": "remote", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "r045", "split": "dev", "kind": "hint_type", "text": "red backpack in the bedroom", "names": [], "expect": {"target": "red backpack", "room": {"type": "bedroom"}, "colours": ["red"], "size": null}}
+{"id": "r046", "split": "test", "kind": "hint_type", "text": "look for the plunger in the bathroom", "names": [], "expect": {"target": "plunger", "room": {"type": "bathroom"}, "colours": [], "size": null}}
+{"id": "r047", "split": "dev", "kind": "hint_type", "text": "my phone, somewhere in the kitchen", "names": [], "expect": {"target": "phone", "room": {"type": "kitchen"}, "colours": [], "size": null}}
+{"id": "r048", "split": "test", "kind": "hint_type", "text": "the basketball near the bedroom", "names": [], "expect": {"target": "basketball", "room": {"type": "bedroom"}, "colours": [], "size": null}}
+{"id": "r049", "split": "dev", "kind": "hint_type", "text": "garbage can by the bathroom", "names": [], "expect": {"target": "garbage can", "room": {"type": "bathroom"}, "colours": [], "size": null}}
+{"id": "r050", "split": "test", "kind": "hint_type", "text": "find the dog bed inside the living room", "names": [], "expect": {"target": "dog bed", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "r051", "split": "dev", "kind": "hint_type", "text": "keys in the Kitchen", "names": [], "expect": {"target": "keys", "room": {"type": "kitchen"}, "colours": [], "size": null}}
+{"id": "r052", "split": "test", "kind": "hint_type", "text": "my glasses are in the bedroom", "names": [], "expect": {"target": "glasses", "room": {"type": "bedroom"}, "colours": [], "size": null}}
+{"id": "r053", "split": "dev", "kind": "hint_type", "text": "I left my keys in the living room", "names": [], "expect": {"target": "keys", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "r054", "split": "test", "kind": "hint_type", "text": "search the bathroom for the laundry hamper", "names": [], "expect": {"target": "laundry hamper", "room": {"type": "bathroom"}, "colours": [], "size": null}}
+{"id": "r055", "split": "dev", "kind": "hint_type", "text": "my laptop in the office", "names": [], "expect": {"target": "laptop", "room": {"type": "office"}, "colours": [], "size": null}}
+{"id": "r056", "split": "test", "kind": "hint_type", "text": "the washer in the laundry room", "names": [], "expect": {"target": "washer", "room": {"type": "laundry room"}, "colours": [], "size": null}}
+{"id": "r057", "split": "dev", "kind": "hint_type", "text": "bike pump in the garage", "names": [], "expect": {"target": "bike pump", "room": {"type": "garage"}, "colours": [], "size": null}}
+{"id": "r058", "split": "test", "kind": "hint_type", "text": "find the umbrella in the hallway", "names": [], "expect": {"target": "umbrella", "room": {"type": "hallway"}, "colours": [], "size": null}}
+{"id": "r059", "split": "dev", "kind": "hint_type", "text": "the salt shaker in the dining room", "names": [], "expect": {"target": "salt shaker", "room": {"type": "dining room"}, "colours": [], "size": null}}
+{"id": "r060", "split": "test", "kind": "hint_type", "text": "my shoes, probably in the hallway", "names": [], "expect": {"target": "shoes", "room": {"type": "hallway"}, "colours": [], "size": null}}
+{"id": "r061", "split": "dev", "kind": "hint_synonym", "text": "the remote in the lounge", "names": [], "expect": {"target": "remote", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "r062", "split": "test", "kind": "hint_synonym", "text": "the cat in the family room", "names": [], "expect": {"target": "cat", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "r063", "split": "dev", "kind": "hint_synonym", "text": "the toothbrush in the restroom", "names": [], "expect": {"target": "toothbrush", "room": {"type": "bathroom"}, "colours": [], "size": null}}
+{"id": "r064", "split": "test", "kind": "hint_synonym", "text": "my book in the study", "names": [], "expect": {"target": "book", "room": {"type": "office"}, "colours": [], "size": null}}
+{"id": "r065", "split": "dev", "kind": "hint_synonym", "text": "the teddy bear in the nursery", "names": [], "expect": {"target": "teddy bear", "room": {"type": "bedroom"}, "colours": [], "size": null}}
+{"id": "r066", "split": "test", "kind": "hint_synonym", "text": "the iron in the utility room", "names": [], "expect": {"target": "iron", "room": {"type": "laundry room"}, "colours": [], "size": null}}
+{"id": "r067", "split": "dev", "kind": "hint_synonym", "text": "the mop in the laundry", "names": [], "expect": {"target": "mop", "room": {"type": "laundry room"}, "colours": [], "size": null}}
+{"id": "r068", "split": "test", "kind": "hint_synonym", "text": "my coat in the hall", "names": [], "expect": {"target": "coat", "room": {"type": "hallway"}, "colours": [], "size": null}}
+{"id": "r069", "split": "dev", "kind": "hint_synonym", "text": "my keys near the foyer", "names": [], "expect": {"target": "keys", "room": {"type": "hallway"}, "colours": [], "size": null}}
+{"id": "r070", "split": "test", "kind": "hint_synonym", "text": "towel in the washroom", "names": [], "expect": {"target": "towel", "room": {"type": "bathroom"}, "colours": [], "size": null}}
+{"id": "r071", "split": "dev", "kind": "hint_synonym", "text": "the blanket in the guest room", "names": [], "expect": {"target": "blanket", "room": {"type": "bedroom"}, "colours": [], "size": null}}
+{"id": "r072", "split": "test", "kind": "hint_synonym", "text": "the cushion in the sitting room", "names": [], "expect": {"target": "cushion", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "r073", "split": "dev", "kind": "hint_synonym", "text": "my notebook in the home office", "names": [], "expect": {"target": "notebook", "room": {"type": "office"}, "colours": [], "size": null}}
+{"id": "r074", "split": "test", "kind": "hint_synonym", "text": "the hairbrush in the master bedroom", "names": [], "expect": {"target": "hairbrush", "room": {"type": "bedroom"}, "colours": [], "size": null}}
+{"id": "r075", "split": "dev", "kind": "hint_cue", "text": "my water bottle, probably in the kitchen", "names": [], "expect": {"target": "water bottle", "room": {"type": "kitchen"}, "colours": [], "size": null}}
+{"id": "r076", "split": "test", "kind": "hint_cue", "text": "red backpack, maybe the bedroom", "names": [], "expect": {"target": "red backpack", "room": {"type": "bedroom"}, "colours": ["red"], "size": null}}
+{"id": "r077", "split": "dev", "kind": "hint_cue", "text": "the cat - try the living room", "names": [], "expect": {"target": "cat", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "r078", "split": "test", "kind": "hint_cue", "text": "find my phone, check the bathroom first", "names": [], "expect": {"target": "phone", "room": {"type": "bathroom"}, "colours": [], "size": null}}
+{"id": "r079", "split": "dev", "kind": "hint_cue", "text": "keys. last saw them in the kitchen", "names": [], "expect": {"target": "keys", "room": {"type": "kitchen"}, "colours": [], "size": null}}
+{"id": "r080", "split": "test", "kind": "hint_cue", "text": "my wallet, I think it's in the bedroom", "names": [], "expect": {"target": "wallet", "room": {"type": "bedroom"}, "colours": [], "size": null}}
+{"id": "r081", "split": "dev", "kind": "hint_cue", "text": "the remote (living room probably)", "names": [], "expect": {"target": "remote", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "r082", "split": "test", "kind": "hint_cue", "text": "glasses -- office maybe", "names": [], "expect": {"target": "glasses", "room": {"type": "office"}, "colours": [], "size": null}}
+{"id": "r083", "split": "dev", "kind": "hint_in_furniture", "text": "the keys on the kitchen counter", "names": [], "expect": {"target": "keys", "room": {"type": "kitchen"}, "colours": [], "size": null}}
+{"id": "r084", "split": "test", "kind": "hint_in_furniture", "text": "my toothbrush by the bathroom sink", "names": [], "expect": {"target": "toothbrush", "room": {"type": "bathroom"}, "colours": [], "size": null}}
+{"id": "r085", "split": "dev", "kind": "hint_in_furniture", "text": "the book on the bedroom shelf", "names": [], "expect": {"target": "book", "room": {"type": "bedroom"}, "colours": [], "size": null}}
+{"id": "r086", "split": "test", "kind": "hint_in_furniture", "text": "the remote under the living room sofa", "names": [], "expect": {"target": "remote", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "r087", "split": "dev", "kind": "hint_in_furniture", "text": "my mug on the office desk", "names": [], "expect": {"target": "mug", "room": {"type": "office"}, "colours": [], "size": null}}
+{"id": "r088", "split": "test", "kind": "hint_in_furniture", "text": "the shoes next to the garage door", "names": [], "expect": {"target": "shoes", "room": {"type": "garage"}, "colours": [], "size": null}}
+{"id": "r089", "split": "dev", "kind": "location_not_room", "text": "the keys on the table", "names": [], "expect": {"target": "keys", "room": null, "colours": [], "size": null}}
+{"id": "r090", "split": "test", "kind": "location_not_room", "text": "my phone near the sofa", "names": [], "expect": {"target": "phone", "room": null, "colours": [], "size": null}}
+{"id": "r091", "split": "dev", "kind": "location_not_room", "text": "the cat under the bed", "names": [], "expect": {"target": "cat", "room": null, "colours": [], "size": null}}
+{"id": "r092", "split": "test", "kind": "location_not_room", "text": "the ball behind the couch", "names": [], "expect": {"target": "ball", "room": null, "colours": [], "size": null}}
+{"id": "r093", "split": "dev", "kind": "location_not_room", "text": "my glasses by the window", "names": [], "expect": {"target": "glasses", "room": null, "colours": [], "size": null}}
+{"id": "r094", "split": "test", "kind": "location_not_room", "text": "the remote next to the tv", "names": [], "expect": {"target": "remote", "room": null, "colours": [], "size": null}}
+{"id": "r095", "split": "dev", "kind": "location_not_room", "text": "the toy in the box", "names": [], "expect": {"target": "toy", "room": null, "colours": [], "size": null}}
+{"id": "r096", "split": "test", "kind": "location_not_room", "text": "my shoes by the door", "names": [], "expect": {"target": "shoes", "room": null, "colours": [], "size": null}}
+{"id": "r097", "split": "dev", "kind": "location_not_room", "text": "the backpack on the chair", "names": [], "expect": {"target": "backpack", "room": null, "colours": [], "size": null}}
+{"id": "r098", "split": "test", "kind": "location_not_room", "text": "my keys upstairs", "names": [], "expect": {"target": "keys", "room": null, "colours": [], "size": null}}
+{"id": "r099", "split": "dev", "kind": "location_not_room", "text": "the cat downstairs", "names": [], "expect": {"target": "cat", "room": null, "colours": [], "size": null}}
+{"id": "r100", "split": "test", "kind": "location_not_room", "text": "the bottle beside the fridge", "names": [], "expect": {"target": "bottle", "room": null, "colours": [], "size": null}}
+{"id": "r101", "split": "dev", "kind": "room_word_in_target", "text": "kitchen scissors", "names": [], "expect": {"target": "kitchen scissors", "room": null, "colours": [], "size": null}}
+{"id": "r102", "split": "test", "kind": "room_word_in_target", "text": "find the bathroom scale", "names": [], "expect": {"target": "bathroom scale", "room": null, "colours": [], "size": null}}
+{"id": "r103", "split": "dev", "kind": "room_word_in_target", "text": "bedroom slippers in the hallway", "names": [], "expect": {"target": "bedroom slippers", "room": {"type": "hallway"}, "colours": [], "size": null}}
+{"id": "r104", "split": "test", "kind": "room_word_in_target", "text": "the office chair", "names": [], "expect": {"target": "office chair", "room": null, "colours": [], "size": null}}
+{"id": "r105", "split": "dev", "kind": "room_word_in_target", "text": "the garage door opener", "names": [], "expect": {"target": "garage door opener", "room": null, "colours": [], "size": null}}
+{"id": "r106", "split": "test", "kind": "room_word_in_target", "text": "kitchen towel in the bathroom", "names": [], "expect": {"target": "kitchen towel", "room": {"type": "bathroom"}, "colours": [], "size": null}}
+{"id": "r107", "split": "dev", "kind": "compound", "text": "the cup with a lid", "names": [], "expect": {"target": "cup with a lid", "room": null, "colours": [], "size": null}}
+{"id": "r108", "split": "test", "kind": "compound", "text": "box of tissues in the bedroom", "names": [], "expect": {"target": "box of tissues", "room": {"type": "bedroom"}, "colours": [], "size": null}}
+{"id": "r109", "split": "dev", "kind": "compound", "text": "phone charger", "names": [], "expect": {"target": "phone charger", "room": null, "colours": [], "size": null}}
+{"id": "r110", "split": "test", "kind": "compound", "text": "the pair of scissors", "names": [], "expect": {"target": "pair of scissors", "room": null, "colours": [], "size": null}}
+{"id": "r111", "split": "dev", "kind": "ambiguous", "text": "the remote in the kitchen or the living room", "names": [], "expect": {"target": "remote", "room": null, "colours": [], "size": null}}
+{"id": "r112", "split": "test", "kind": "ambiguous", "text": "keys, bedroom or bathroom", "names": [], "expect": {"target": "keys", "room": null, "colours": [], "size": null}}
+{"id": "r113", "split": "dev", "kind": "ambiguous", "text": "my phone, not in the kitchen", "names": [], "expect": {"target": "phone", "room": null, "colours": [], "size": null}}
+{"id": "r114", "split": "test", "kind": "ambiguous", "text": "the cat is not in the bedroom", "names": [], "expect": {"target": "cat", "room": null, "colours": [], "size": null}}
+{"id": "r115", "split": "dev", "kind": "ambiguous", "text": "my bag in the kitchn", "names": [], "expect": {"target": "bag", "room": null, "colours": [], "size": null}}
+{"id": "r116", "split": "test", "kind": "ambiguous", "text": "the ball in the playroom", "names": [], "expect": {"target": "ball", "room": null, "colours": [], "size": null}}
+{"id": "r117", "split": "dev", "kind": "ambiguous", "text": "my hat in the sunroom", "names": [], "expect": {"target": "hat", "room": null, "colours": [], "size": null}}
+{"id": "r118", "split": "test", "kind": "ambiguous", "text": "the drill in the basement", "names": [], "expect": {"target": "drill", "room": null, "colours": [], "size": null}}
+{"id": "r119", "split": "dev", "kind": "punctuation", "text": "Find the RED BACKPACK!!", "names": [], "expect": {"target": "red backpack", "room": null, "colours": ["red"], "size": null}}
+{"id": "r120", "split": "test", "kind": "punctuation", "text": "  keys  ", "names": [], "expect": {"target": "keys", "room": null, "colours": [], "size": null}}
+{"id": "r121", "split": "dev", "kind": "punctuation", "text": "WHERE IS MY PHONE", "names": [], "expect": {"target": "phone", "room": null, "colours": [], "size": null}}
+{"id": "r122", "split": "test", "kind": "punctuation", "text": "the remote... in the living room?", "names": [], "expect": {"target": "remote", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "r123", "split": "dev", "kind": "punctuation", "text": "find: water bottle (kitchen)", "names": [], "expect": {"target": "water bottle", "room": {"type": "kitchen"}, "colours": [], "size": null}}
+{"id": "r124", "split": "test", "kind": "punctuation", "text": "Basketball.", "names": [], "expect": {"target": "basketball", "room": null, "colours": [], "size": null}}
+{"id": "r125", "split": "dev", "kind": "name_hint", "text": "the lego set in Ben's room", "names": ["Ben's room", "Kitchen", "Den"], "expect": {"target": "lego set", "room": {"name": "Ben's room"}, "colours": [], "size": null}}
+{"id": "r126", "split": "test", "kind": "name_hint", "text": "the lego set in ben's room", "names": ["Ben's room", "Kitchen", "Den"], "expect": {"target": "lego set", "room": {"name": "Ben's room"}, "colours": [], "size": null}}
+{"id": "r127", "split": "dev", "kind": "name_hint", "text": "the lego set in Ben's room", "names": [], "expect": {"target": "lego set", "room": null, "colours": [], "size": null}}
+{"id": "r128", "split": "test", "kind": "name_hint", "text": "my laptop in Mum's office", "names": ["Mum's office", "Kitchen"], "expect": {"target": "laptop", "room": {"name": "Mum's office"}, "colours": [], "size": null}}
+{"id": "r129", "split": "dev", "kind": "name_hint", "text": "my laptop in Mum's office", "names": [], "expect": {"target": "laptop", "room": {"type": "office"}, "colours": [], "size": null}}
+{"id": "r130", "split": "test", "kind": "name_hint", "text": "the toy truck in the playroom", "names": ["playroom", "kitchen"], "expect": {"target": "toy truck", "room": {"name": "playroom"}, "colours": [], "size": null}}
+{"id": "r131", "split": "dev", "kind": "name_hint", "text": "the toy truck in the playroom", "names": [], "expect": {"target": "toy truck", "room": null, "colours": [], "size": null}}
+{"id": "r132", "split": "test", "kind": "name_hint", "text": "the remote, probably in the den", "names": ["Ben's room", "Kitchen", "Den"], "expect": {"target": "remote", "room": {"name": "Den"}, "colours": [], "size": null}}
+{"id": "r133", "split": "dev", "kind": "name_hint", "text": "the remote, probably in the den", "names": [], "expect": {"target": "remote", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "r134", "split": "test", "kind": "name_hint", "text": "the mug in the kitchen", "names": ["Ben's room", "Kitchen", "Den"], "expect": {"target": "mug", "room": {"name": "Kitchen"}, "colours": [], "size": null}}
+{"id": "r135", "split": "dev", "kind": "name_hint", "text": "my book in the reading nook", "names": ["Reading nook", "Garage"], "expect": {"target": "book", "room": {"name": "Reading nook"}, "colours": [], "size": null}}
+{"id": "r136", "split": "test", "kind": "name_hint", "text": "my book in the reading nook", "names": ["Garage"], "expect": {"target": "book", "room": null, "colours": [], "size": null}}
+{"id": "r137", "split": "dev", "kind": "name_hint", "text": "the drill in the garage", "names": ["Reading nook", "Garage"], "expect": {"target": "drill", "room": {"name": "Garage"}, "colours": [], "size": null}}
+{"id": "r138", "split": "test", "kind": "name_hint", "text": "the ball in the sunroom or the playroom", "names": ["playroom", "sunroom"], "expect": {"target": "ball", "room": null, "colours": [], "size": null}}
