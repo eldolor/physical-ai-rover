@@ -434,6 +434,22 @@ or Reserve still propagates from the cancel and from each verb.
   (`skipped`, `person`), `failed` (`fault`) or `out_of_budget` at the
   battery's Reserve or Power-off (`battery_reserve`); with no navigator
   (`no_nav2`). Off: `return` is None and the end is today's.
+* **A navigator for a mission that does not explore** (3.156.E, D2): with
+  `return_to_dock` on, `control/brain_server.py`'s `_return_navigator()`
+  builds a `RemoteNavigator` for a mission with no explore search and keeps
+  it only if `available()` says the world takes goals. It never refuses a
+  start: a world that cannot take goals, an unreachable server or a client
+  that cannot be built gives none (the return `skipped`, `no_nav2`); a
+  refused secret is also none, logged as a warning. Off builds none. The
+  runner wraps it as `_GatedNavigator(goals_allowed=..., clears_keepout=False)`:
+  the agent never holds it, a goal before the return phase answers
+  `{"accepted": false, "reason": "not_returning"}`, and its end does not clear
+  the robot server's keepout marks. **One intended change, pinned**
+  (`test_the_time_reserve_now_ends_a_mission_that_does_not_explore`): with a
+  navigator home, D3's return reserve now ends such a mission early too, as
+  it ends explore's. G4's in-process half (`evaluations/dock-3156e/`): with
+  the return off, 20 seeded frontier missions end as `dev`'s (0 differ),
+  four of them re-run in the suite.
 * **How:** `_finish` stores the decided end in `_pending_end`, builds a
   `ReturnTrip` (the dock, the gated navigator, the agent's `SafetyController`,
   the world's pose and map, the clock and `idle`), logs `<outcome>: <note> --
@@ -738,6 +754,9 @@ cancelled_by)` (`stopped` -> `cancelled`/`stop`, `preempted` ->
   clears, when the navigator has `clear_keepout` (`RemoteNavigator`:
   `DELETE /world/keepout`), the keepout marks the mission's wedges left
   (3.76 K5.3, the user 2026-10-21; a failure is logged, never raised).
+  3.156.E: a return-only gate (`clears_keepout=False`) skips that clear,
+  and its `goals_allowed` refuses goals outside the return phase
+  (`not_returning`).
 - The intervention line (3.99, `brain/intervention_log.py`): `_finish`
   builds one record per started mission under its lock
   (`_intervention_line()`: mission id, house, policy, job, target, start and
@@ -920,6 +939,8 @@ tests/test_mission_guarded_verbs.py -q`.
 | `tests/test_brain_server.py` (78) | **the import boundary, by mechanism:** a subprocess imports the brain app and lists `sys.modules`, so a forbidden import fails the suite and does not depend on review; two-hop mission completes; 409 on a second start; stop with no mission stops the car; secret gating; `ROUTE_PREFIX`; **the brain process loads no `sim`, and from `robot`/`world` only `robot.interface`, `robot.safety`, `robot.identity`, `world.interface`**; model and wording validation (refused at start, outage tolerated, one round trip); unknown field is 422; tiered start refusals and sim-vs-real perception choice; a survey's room source (3.70 S2): the frame's by default, the cloud's `/room` with the vision URL, secret and a timeout held to half the tick's, refused at start with no vision URL, never built for a find, reported on `/health`; a bad source or timeout refused at load |
 | `tests/test_tick_within.py` (6) | the mission loop's tick await: a cancel landing as the tick ends is raised, not lost, and a tick failing in that turn is logged (red only on Python 3.10 with `wait_for`), a cancel mid-tick and a deadline cancel the wait, results and errors come back, and `brain_server` never calls `asyncio.wait_for` |
 | `tests/test_dock_return.py` (25) | 3.156.B (C8's red-first): a return after `found`, a survey's end, `exhausted`, `out_of_budget`, `arrived_unconfirmed`, `blocked`, docked on the true pose; none after a person or a fault or at Reserve; `no_nav2` skipped with no straight-line verbs; off is today's end; a Stop / D-pad / Reserve during the return keeps the outcome; the time and battery reserves end the search early and dock; `HomeBudget`'s units; `exact_verbs`; the config's keys; review 1: the search goal cancelled at the switch, a Stop during the return an intervention, an abort visible, no reserve at the dock, an approach that cannot close ends; review 2: an autonomous takeover mid-return a fault, not a D-pad |
+| `tests/test_dock_saved.py` (24) | 3.156.E D1/G2 (red first, 10 failed on `dev`): the bridge's `/slam/pose` carries a matched reload's dock (the saved one, the origin when unreadable) and none on a fall-back, a fresh map or before ready; `RosWorld` converts it through the anchor (the car, the sim) and drops one on no saved frame or unreadable; `dock_from_pose` takes it as `saved_map`, else the start pose as `dev`; the runner records it |
+| `tests/test_dock_navigator.py` (16) | 3.156.E D2/G4 (red first, 6 failed on `dev`): a frontier mission goes home on a return-only navigator, no goal before the end, the agent never holds it, its end leaves the keepout marks (explore's still clears them), off holds none, no navigator `no_nav2`, the time reserve now ends it early; the brain server builds it only with the return on and a world that takes goals, starts anyway otherwise, warns on a refused secret; G4's four pinned rows |
 | `tests/test_resume_recharge.py` (28) | 3.156.D (red first): a battery end charges and resumes with what it kept; time never charges; `no_charge`, `left_dock`, `no_time`, the wall limit, a failed return, the fourth charge; a Stop and a D-pad while charging; off is off; a never-charged `SimBattery` exact |
 | `tests/test_camera_budget_3153.py` (6) | 3.153: one failed frame read mid-mission keeps the outcome (red before), the car stopped on that tick and the count reset; a camera never back ends `failed` after exactly 3 with no move; only consecutive failures count; any other robot error still ends at once; a Stop during a failed read is unchanged; a read failing at once waits `CAMERA_RETRY_S` between tries |
 | `tests/test_failsafes.py` (15) | B3.2 budget and hang; one failure survivable; no movement after stop; B3.3 dead-man; every drill ends `failed` with the robot stopped; no-fault builds the ordinary mission; drills can be switched off |
