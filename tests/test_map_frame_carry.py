@@ -676,7 +676,8 @@ def test_the_s3_copy_holds_only_this_missions_own_landmarks(tmp_path):
     local = json.loads((tmp_path / "m2.json").read_text())
     assert local["frame_id"] == SAVED and local["carry_seq"] == 1
     assert {"stool", "box", "lamp"} <= {d["label"] for d in local["reported"] + local["candidates"]}
-    assert {d["label"]: d["seen_seq"] for d in local["reported"] + local["candidates"]}["lamp"] == 1
+    seqs = {d["label"]: d["seen_seq"] for d in local["reported"] + local["candidates"]}
+    assert (seqs["lamp"], seqs["stool"], seqs["box"]) == (1, 0, 0)    # carried, unseen: kept
 
 
 def test_a_carried_landmark_seen_again_records_its_first_sighting_here():
