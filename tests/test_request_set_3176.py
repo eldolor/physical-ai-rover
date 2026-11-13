@@ -21,7 +21,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SET = ROOT / "evaluations" / "request-3176" / "requests.jsonl"
-SHA256 = "3f0aa8e9753893599f7e5796a9978d1ef923981e7e47fce695776d60f32109b2"
+SHA256 = "d9d70255f9e6465d2cbcdce0f71e384e0f99ad15751392117481e9d571117a42"
 
 # 3.176.A's vocabulary (the section file, "The room vocabulary"): the four
 # types the shipped prior knows, then the others a label or a name can carry.
@@ -32,7 +32,8 @@ COLOURS = {"red", "orange", "yellow", "green", "blue", "purple", "pink",
 SIZES = {"small", "large"}
 KINDS = {"plain", "request_verb", "question", "attributes", "hint_type",
          "hint_synonym", "hint_cue", "hint_in_furniture", "location_not_room",
-         "room_word_in_target", "compound", "ambiguous", "punctuation", "name_hint"}
+         "room_word_in_target", "compound", "ambiguous", "punctuation", "name_hint",
+         "no_target", "two_targets", "absent_room"}
 
 
 def _words(text: str) -> list:
@@ -62,9 +63,12 @@ def test_every_row_has_the_designed_shape():
         assert r["split"] in ("dev", "test") and r["kind"] in KINDS, r["id"]
         e = r["expect"]
         assert set(e) == {"target", "room", "colours", "size"}, r["id"]
-        # The target is what was said: lower case, every word of it in the text.
-        assert e["target"] and e["target"] == e["target"].strip().lower(), r["id"]
-        assert _said(e["target"], r["text"]), r["id"]
+        # No object, or two: no target (one search finds one thing; never a guess).
+        assert (e["target"] is None) == (r["kind"] in ("no_target", "two_targets")), r["id"]
+        if e["target"] is not None:
+            # The target is what was said: lower case, its words in a row in the text.
+            assert e["target"] == e["target"].strip().lower(), r["id"]
+            assert _said(e["target"], r["text"]), r["id"]
         room = e["room"]
         if room is not None:
             assert len(room) == 1, r["id"]
@@ -75,6 +79,9 @@ def test_every_row_has_the_designed_shape():
                 assert not any(_said(n, r["text"]) for n in r["names"]), r["id"]
             else:
                 assert room["name"] in r["names"], r["id"]
+        if r["kind"] == "absent_room":
+            # A room the house lacks: a type the map's names do not hold.
+            assert "type" in room and room["type"] not in {n.lower() for n in r["names"]}, r["id"]
         assert set(e["colours"]) <= COLOURS and e["size"] in SIZES | {None}, r["id"]
 
 
