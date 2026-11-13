@@ -94,6 +94,22 @@ def test_a_return_only_navigator_leaves_the_keepout_marks():
     assert nav.closed == 1               # the client is still closed
 
 
+def test_a_return_that_sent_goals_clears_its_own_marks():
+    """Review: the trip home's goals can leave keepout marks (the robot
+    server marks a refused wedge under any goal in progress); a gate that
+    sent one clears them at the end, as explore's does."""
+    runner, nav, grid = frontier()
+    runner.start()
+    for _ in range(4):
+        runner.tick()
+    runner._finish(EXHAUSTED, "decided")
+    n = 0
+    while runner.tick() and n < 3000:
+        n += 1
+    runner._navigator.end()
+    assert nav.sent and nav.cleared == 1
+
+
 def test_an_explore_navigator_still_clears_them():
     from tests.test_dock_return import mission
 

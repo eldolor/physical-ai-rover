@@ -3055,10 +3055,8 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
   function returnWhyKey(reason) {
     var head = String(reason || "").split(":")[0].trim();
     if (head.indexOf("nav2_") === 0) return "nav2";
-    var known = ["no_nav2", "no_dock", "person", "fault", "battery_reserve", "not_aligned",
-                 "vetoed", "no_motion", "timeout", "no_pose", "autonomy_lapsed", "stop",
-                 "dpad", "preempted"];
-    return known.indexOf(head) >= 0 ? head : "other";
+    // The words are the table's: a reason with no `return.why.*` is "other" (review).
+    return head && strings.has("return.why." + head) ? head : "other";
   }
   function returnView(status) {
     if (!status) return null;

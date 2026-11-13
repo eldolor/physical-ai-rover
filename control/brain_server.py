@@ -549,6 +549,15 @@ def _close_quietly(obj) -> None:
             logger.warning("could not close a policy the start let go: %s", e)
 
 
+def _new_navigator(config: dict, robot, robot_secret: Optional[str]) -> RemoteNavigator:
+    """nav2's goals through the robot server, named as the brain's verbs are
+    (3.84) -- one construction for explore's search and the trip home."""
+    return RemoteNavigator(
+        config.get("world_url") or getattr(robot, "base_url", None) or config["robot_url"],
+        secret=robot_secret, timeout=config["request_timeout_s"],
+        driver=getattr(robot, "driver", DEFAULT_DRIVER))
+
+
 def _return_navigator(config: dict, robot, robot_secret: Optional[str]):
     """3.156.E (D2): the trip home's navigator for a mission that does not
     explore, or None. Never refuses a start: a world that cannot take goals
@@ -558,10 +567,7 @@ def _return_navigator(config: dict, robot, robot_secret: Optional[str]):
     is a setup fault a person should see, not "no nav2"."""
     navigator = None
     try:
-        navigator = RemoteNavigator(
-            config.get("world_url") or getattr(robot, "base_url", None) or config["robot_url"],
-            secret=robot_secret, timeout=config["request_timeout_s"],
-            driver=getattr(robot, "driver", DEFAULT_DRIVER))
+        navigator = _new_navigator(config, robot, robot_secret)
         ok = navigator.available()
     except PermissionError as e:
         logger.warning("no return to the dock this mission: the robot server refused the "
@@ -772,11 +778,7 @@ def create_app(
             if not req.target_object and req.job != "survey":
                 raise ValueError(f"The {policy_name} searches for an object -- it "
                                  "needs a target_object (or job 'survey').")
-            navigator = RemoteNavigator(
-                config.get("world_url") or getattr(robot, "base_url", None)
-                or config["robot_url"],
-                secret=robot_secret, timeout=config["request_timeout_s"],
-                driver=getattr(robot, "driver", DEFAULT_DRIVER))   # its goals named as its verbs (3.84)
+            navigator = _new_navigator(config, robot, robot_secret)
             try:
                 ok = navigator.available()
             except httpx.HTTPError as e:
