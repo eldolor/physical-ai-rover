@@ -51,7 +51,7 @@
 {"id": "r051", "split": "dev", "kind": "hint_type", "text": "keys in the Kitchen", "names": [], "expect": {"target": "keys", "room": {"type": "kitchen"}, "colours": [], "size": null}}
 {"id": "r052", "split": "test", "kind": "hint_type", "text": "my glasses are in the bedroom", "names": [], "expect": {"target": "glasses", "room": {"type": "bedroom"}, "colours": [], "size": null}}
 {"id": "r053", "split": "dev", "kind": "hint_type", "text": "I left my keys in the living room", "names": [], "expect": {"target": "keys", "room": {"type": "living room"}, "colours": [], "size": null}}
-{"id": "r054", "split": "test", "kind": "hint_type", "text": "search the bathroom for the laundry hamper", "names": [], "expect": {"target": "laundry hamper", "room": {"type": "bathroom"}, "colours": [], "size": null}}
+{"id": "r054", "split": "test", "kind": "hint_type", "text": "find the laundry hamper in the bathroom please", "names": [], "expect": {"target": "laundry hamper", "room": {"type": "bathroom"}, "colours": [], "size": null}}
 {"id": "r055", "split": "dev", "kind": "hint_type", "text": "my laptop in the office", "names": [], "expect": {"target": "laptop", "room": {"type": "office"}, "colours": [], "size": null}}
 {"id": "r056", "split": "test", "kind": "hint_type", "text": "the washer in the laundry room", "names": [], "expect": {"target": "washer", "room": {"type": "laundry room"}, "colours": [], "size": null}}
 {"id": "r057", "split": "dev", "kind": "hint_type", "text": "bike pump in the garage", "names": [], "expect": {"target": "bike pump", "room": {"type": "garage"}, "colours": [], "size": null}}
