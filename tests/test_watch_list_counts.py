@@ -27,7 +27,9 @@ def test_no_list_item_is_a_labelled_target():
     ref = _count().count()["labelled"]
     assert (ref["walks"], ref["frames"]) == (21, 2261)
     assert ref["set_hash"] == "00d12dbc44f6495a927a2a58d53887fc58c9e468e5774d65a8d90288d364a2d6"
-    assert len(ref["targets"]) == 7          # 6 objects; "burgundy backpack" is the red one
+    assert sorted(ref["targets"]) == [   # folded by 3.177's names: burgundy is the red one
+        "a white phone charger cable", "blue and yellow running shoes", "blue bottle",
+        "grey backpack", "red backpack", "woven laundry basket"]
     assert all(c == {"walks": 0, "frames": 0, "visible": 0} for c in ref["per_item"].values())
 
 
@@ -51,6 +53,16 @@ def test_exact_names_only():
     assert m.item_of("phone charger cable") is None
     assert m.item_of("phone box") is None
     assert m.item_of("a white phone charger cable") is None
+    assert m.item_of("telephone") is None    # a landline, not a lost phone
+    assert m.item_of("purse") is None        # a handbag, not a wallet
+    assert m.item_of("phones") == "phone"
+    assert m._WORDS.search("headphones") and not m._WORDS.search("keyboard")
+
+
+def test_unknown_arguments_are_refused():
+    import pytest
+    with pytest.raises(SystemExit):
+        _count().main(["-w"])
 
 
 def test_counts_file_is_current():

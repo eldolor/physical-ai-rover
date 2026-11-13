@@ -30,10 +30,6 @@
   },
   "set_hash": "00d12dbc44f6495a927a2a58d53887fc58c9e468e5774d65a8d90288d364a2d6",
   "targets": {
-   "Grey backpack": {
-    "frames": 211,
-    "visible": 94
-   },
    "a white phone charger cable": {
     "frames": 176,
     "visible": 118
@@ -46,13 +42,13 @@
     "frames": 242,
     "visible": 28
    },
-   "burgundy backpack": {
-    "frames": 38,
-    "visible": 33
+   "grey backpack": {
+    "frames": 211,
+    "visible": 94
    },
    "red backpack": {
-    "frames": 640,
-    "visible": 0
+    "frames": 678,
+    "visible": 33
    },
    "woven laundry basket": {
     "frames": 891,
@@ -83,23 +79,24 @@
   ],
   "phone": [
    "phone",
+   "phones",
    "cellphone",
    "cell phone",
    "mobile phone",
    "smartphone",
    "smart phone",
-   "iphone",
-   "telephone"
+   "iphone"
   ],
   "remote": [
    "remote",
+   "remotes",
    "remote control",
    "tv remote",
    "television remote"
   ],
   "wallet": [
    "wallet",
-   "purse",
+   "wallets",
    "billfold",
    "coin purse",
    "card holder"

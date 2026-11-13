@@ -33,7 +33,7 @@ name) are listed apart, uncounted, so the choice can be read.
 
 from __future__ import annotations
 
-import hashlib
+import importlib.util
 import json
 import re
 import sys
@@ -41,28 +41,38 @@ from pathlib import Path
 
 HERE = Path(__file__).parent
 ROOT = HERE.parent.parent
-SET = ROOT / "evaluations" / "visual-promise-3177" / "set.json"
-# 3.177.A's pin of 3.92's set (its `common.PINNED`, 2026-11-12).
-PINNED = "00d12dbc44f6495a927a2a58d53887fc58c9e468e5774d65a8d90288d364a2d6"
 MEMORY = [ROOT / "evaluations" / "inventory-346" / f
           for f in ("memory-all.json", "memory-heldout-all.json",
                     "memory-objects.json", "memory-heldout-objects.json")]
 OUT = HERE / "counts.json"
 
+
+def _common():
+    """3.177.A's own module (its pin, its hash rule, its object names),
+    loaded under a name of its own so no other `common` is shadowed."""
+    spec = importlib.util.spec_from_file_location(
+        "visual_promise_3177_common", ROOT / "evaluations" / "visual-promise-3177" / "common.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
 # 3.178's default list and each item's names, fixed before counting.
+# Precision first: a name that also means something else is left out
+# ("telephone" is a landline, "purse" a handbag) and lands in `near`.
 LIST = {
     "keys": ("key", "keys", "car key", "house key", "key ring", "keyring",
              "keychain", "key chain", "a set of keys"),
-    "wallet": ("wallet", "purse", "billfold", "coin purse", "card holder"),
-    "phone": ("phone", "cellphone", "cell phone", "mobile phone",
-              "smartphone", "smart phone", "iphone", "telephone"),
+    "wallet": ("wallet", "wallets", "billfold", "coin purse", "card holder"),
+    "phone": ("phone", "phones", "cellphone", "cell phone", "mobile phone",
+              "smartphone", "smart phone", "iphone"),
     "glasses": ("glasses", "eyeglasses", "spectacles", "sunglasses",
                 "reading glasses", "eyewear"),
-    "remote": ("remote", "remote control", "tv remote", "television remote"),
+    "remote": ("remote", "remotes", "remote control", "tv remote", "television remote"),
 }
-# A near name holds one of these words, ending a word ("payphone" is near,
-# "keyboard" is not); reported, never counted.
-_WORDS = re.compile(r"(keys?|wallet|purse|phone|glasses|spectacles|eyewear|remote)\b", re.I)
+# A near name holds one of these words, ending a word, plural or not
+# ("payphone", "headphones" are near; "keyboard" is not); reported, never counted.
+_WORDS = re.compile(r"(keys?|wallets?|purses?|phones?|glasses|spectacles|eyewear|remotes?)\b", re.I)
 
 
 def item_of(name: str):
@@ -74,28 +84,18 @@ def item_of(name: str):
     return None
 
 
-def set_hash(rows) -> str:
-    """3.177's rule: one sha256 over (key, visible, the JPEG's sha256), in order."""
-    h = hashlib.sha256()
-    for r in rows:
-        h.update(f"{r['key']}\t{int(r['visible'])}\t{r['sha256']}\n".encode())
-    return h.hexdigest()
-
-
-def labelled(path: Path = SET) -> dict:
-    """The human reference: walks and frames whose target is a list item."""
-    doc = json.loads(path.read_text())
+def labelled(doc: dict, common) -> dict:
+    """The human reference: walks and frames whose target is a list item.
+    Targets are folded by 3.177's object names (case, and the burgundy
+    backpack is the red one)."""
     rows = doc["frames"]
-    got = set_hash(rows)
-    if got != PINNED:
-        raise SystemExit(f"{path} is not 3.177's pinned set: {got} != {PINNED}")
     walks, targets = {}, {}
     for r in rows:
-        walk = r["key"].split("/")[0]
-        walks.setdefault(walk, r["target"])
-        targets.setdefault(r["target"], [0, 0])
-        targets[r["target"]][0] += 1
-        targets[r["target"]][1] += bool(r["visible"])
+        t = common.obj(r["target"])
+        walks.setdefault(r["key"].split("/")[0], t)
+        targets.setdefault(t, [0, 0])
+        targets[t][0] += 1
+        targets[t][1] += bool(r["visible"])
     per_item = {item: {"walks": 0, "frames": 0, "visible": 0} for item in LIST}
     for target, (n, vis) in targets.items():
         item = item_of(target)
@@ -103,7 +103,7 @@ def labelled(path: Path = SET) -> dict:
             per_item[item]["frames"] += n
             per_item[item]["visible"] += vis
             per_item[item]["walks"] += sum(1 for t in walks.values() if t == target)
-    return {"set_hash": got, "walks": len(walks), "frames": len(rows),
+    return {"set_hash": doc["hash"], "walks": len(walks), "frames": len(rows),
             "targets": {t: {"frames": n, "visible": v} for t, (n, v) in sorted(targets.items())},
             "per_item": per_item}
 
@@ -136,14 +136,18 @@ def surfaced(keys: set, paths=MEMORY) -> dict:
 
 
 def count() -> dict:
-    ref = labelled()
-    keys = {r["key"] for r in json.loads(SET.read_text())["frames"]}
+    common = _common()
+    doc = common.load_set()          # refused unless it is 3.177's pinned set
+    keys = {r["key"] for r in doc["frames"]}
     return {"list": {k: list(v) for k, v in LIST.items()},
-            "labelled": ref, "surfaced": surfaced(keys)}
+            "labelled": labelled(doc, common), "surfaced": surfaced(keys)}
 
 
 def main(argv=None) -> int:
     argv = sys.argv[1:] if argv is None else argv
+    unknown = [a for a in argv if a != "--write"]
+    if unknown:
+        raise SystemExit(f"usage: count.py [--write]; not understood: {' '.join(unknown)}")
     d = count()
     text = json.dumps(d, indent=1, sort_keys=True) + "\n"
     if "--write" in argv:
