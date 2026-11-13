@@ -3032,15 +3032,18 @@ class MissionRunner:
 
     def _recall_carried(self) -> int:
         """3.172 F5: the carried landmarks named as the target (the found
-        rule's match), believed at least `REPORT_BELIEF`, best first, to
-        explore -- under `_lock`, just seeded. None for a survey."""
+        rule's match), believed at least `REPORT_BELIEF`, to explore --
+        under `_lock`, just seeded. None for a survey. 3.175.B: newest
+        sighting first (`seen_seq`; one that does not say, last), then by
+        belief: a target moved and seen again is recalled where it went."""
         fn = getattr(self.agent, "recall_from", None)
         if fn is None or not self.memory.target_object:
             return 0
         lms = sorted((lm for lm in self.inventory.landmarks
                       if lm.carried and lm.belief >= REPORT_BELIEF
                       and self.memory.names_target(lm.label)),
-                     key=lambda lm: -lm.belief)
+                     key=lambda lm: (-(lm.seen_seq if lm.seen_seq is not None else -1),
+                                     -lm.belief))
         fn([(lm.x, lm.y) for lm in lms])
         return len(self.agent.recall)
 
