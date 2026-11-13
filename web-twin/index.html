@@ -224,6 +224,9 @@
       <!-- 3.132 Stage 3: the mission in one sentence, for a person at home.
            The telemetry rows below are Engineer mode's. -->
       <div class="mission-card op-only" id="mission-card" data-state="none" hidden></div>
+      <!-- 3.156.E (D6): the trip home after the mission's end, or its
+           charge, in plain words; Engineer mode's row is "Return" below. -->
+      <div class="mission-return op-only" id="mission-return" data-state="none" hidden></div>
       <!-- 3.162: what the last mission saw -- the frame it called found and
            each thing it placed, from the robot's own disk (never uploaded). -->
       <div class="saw" id="saw" hidden>
@@ -331,6 +334,10 @@
         <!-- 3.152. Whether the tiered mission holds its local VLM down (found
              absent; its /health probed until ready). Off: none configured. -->
         <div class="full eng-only">Local VLM: <span class="val" id="brain-tel-localvlm">&ndash;</span></div>
+        <!-- 3.156.E (D6). The return to the dock (status.return) or the
+             charge on it (status.charge), and where the dock came from:
+             the saved map's, or the mission's start. -->
+        <div class="full eng-only">Return: <span class="val" id="brain-tel-return">&ndash;</span></div>
         <div class="full eng-only">Robot watchdog: <span class="val" id="brain-tel-watchdog">&ndash;</span></div>
         <!-- Phase M4. Who holds the robot, and why the last command was
              refused. Both sit beside the watchdog because they answer the
