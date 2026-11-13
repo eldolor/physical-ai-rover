@@ -228,8 +228,9 @@ detections reads
 the pose anyway. Without `inventory_prior` (sweeps, harnesses) nothing extra
 is read. Since 3.172 F5, right after the seed (`_recall_carried()`, under the
 lock) the carried landmarks named as the target (`MissionMemory.names_target`)
-with belief at least `REPORT_BELIEF` go to explore's `recall_from()`, best first;
-none for a survey. `MissionRunner(..., inventory=True, detections_fn=None)`:
+with belief at least `REPORT_BELIEF` go to explore's `recall_from()`, best first
+(since 3.175.B: newest sighting first by `seen_seq`, one with none last, then by
+belief); none for a survey. `MissionRunner(..., inventory=True, detections_fn=None)`:
 `detections_fn(frame) -> [{label, bearing_deg}] | None`, bearings off the
 camera axis; None means the detector did not run on that frame, so no
 miss is inferred from it.
@@ -303,6 +304,7 @@ them):
 |---|---|---|
 | `L_HIT`, `L_MISS` | +0.85, -0.4 | log-odds per independent hit / miss; one hit reads 0.70. An isolated miss is held pending and forgiven unless the next independent look also misses (3.46 amendment 2) |
 | `REPORT_BELIEF` | 0.8 | reported vs candidate: two hits and no miss |
+| `STALE_BELIEF` | 0.7 | 3.175.B: a carried landmark not yet seen this mission, on its first independent miss, is held to at most this (before the forgiveness): not reported, so the next mission does not recall it; still carried; one hit from a new view reports it again. Each landmark records `seen_seq`, the `carry_seq` of the mission that last saw it (a merge keeps the newer; a carried row without a number carries None) |
 | `NEW_VIEW_M`, `NEW_VIEW_DEG` | 0.5 m, 30 deg | what makes a look independent; time alone never does |
 | `MERGE_M`, `RELABEL_M` | 0.5 m, 0.3 m | single linkage within a label; a different label this close is a vote |
 | `FOLD_M`, `MAX_POINTS` | 0.05 m, 32 | 3.165: an observation this close to a same-label member folds into it; members a landmark at most (anchors excepted) |
