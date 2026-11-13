@@ -549,6 +549,48 @@ def _close_quietly(obj) -> None:
             logger.warning("could not close a policy the start let go: %s", e)
 
 
+def _new_navigator(config: dict, robot, robot_secret: Optional[str]) -> RemoteNavigator:
+    """nav2's goals through the robot server, named as the brain's verbs are
+    (3.84) -- one construction for explore's search and the trip home."""
+    return RemoteNavigator(
+        config.get("world_url") or getattr(robot, "base_url", None) or config["robot_url"],
+        secret=robot_secret, timeout=config["request_timeout_s"],
+        driver=getattr(robot, "driver", DEFAULT_DRIVER))
+
+
+def _return_navigator(config: dict, robot, robot_secret: Optional[str]):
+    """3.156.E (D2): the trip home's navigator for a mission that does not
+    explore, or None. Never refuses a start: a world that cannot take goals
+    (the simulator's own, no nav2), a server that cannot be reached, or one
+    that refuses the secret leaves the mission as it was, its return
+    `skipped`, `no_nav2`. A refused secret is logged as a warning (review): it
+    is a setup fault a person should see, not "no nav2".
+
+    Only with a robot server to ask: a `world_url`, or a robot that is one
+    (`base_url`). An in-process robot has no goal route of its own, and the
+    config's `robot_url` would be some other server -- a dial out the offline
+    mode forbids (`tests/test_offline_mode.py`)."""
+    if not (config.get("world_url") or getattr(robot, "base_url", None)):
+        return None
+    navigator = None
+    try:
+        navigator = _new_navigator(config, robot, robot_secret)
+        ok = navigator.available()
+    except PermissionError as e:
+        logger.warning("no return to the dock this mission: the robot server refused the "
+                       "brain's secret on its goal route (%s)", e)
+        ok = False
+    except Exception as e:  # noqa: BLE001 -- unreachable: no return, never a refused start
+        logger.info("no return to the dock this mission: the goal route was not reached "
+                    "(%s)", e)
+        ok = False
+    if not ok:
+        if navigator is not None:
+            _close_quietly(navigator)
+        return None
+    return navigator
+
+
 def _person_room(rooms: list, x_m: float, y_m: float) -> Optional[str]:
     """3.160's name for the place (x, y) on the saved map, or None: its cell,
     else the nearest named cell within 0.3 m (an object stands against a
@@ -743,11 +785,7 @@ def create_app(
             if not req.target_object and req.job != "survey":
                 raise ValueError(f"The {policy_name} searches for an object -- it "
                                  "needs a target_object (or job 'survey').")
-            navigator = RemoteNavigator(
-                config.get("world_url") or getattr(robot, "base_url", None)
-                or config["robot_url"],
-                secret=robot_secret, timeout=config["request_timeout_s"],
-                driver=getattr(robot, "driver", DEFAULT_DRIVER))   # its goals named as its verbs (3.84)
+            navigator = _new_navigator(config, robot, robot_secret)
             try:
                 ok = navigator.available()
             except httpx.HTTPError as e:
@@ -764,6 +802,8 @@ def create_app(
                     f"The {policy_name} needs nav2: this robot server's world cannot "
                     "take goals (run it with WORLD_MODE=ros and the ROS container up "
                     "-- service/slam/README.md).")
+        elif config["return_to_dock"]:
+            navigator = _return_navigator(config, robot, robot_secret)
 
         vision_fn = None
         try:
@@ -892,8 +932,9 @@ def create_app(
             explore_goal_policy=config["explore_goal_policy"],
             tier_search=tier_search,
             explore_ask_timeout_s=config["explore_ask_timeout_s"] if asks else None,
-            # 3.156.B (D2): home to the dock after the end; a mission with no
-            # navigator (no explore search) records `skipped`, `no_nav2`.
+            # 3.156.B (D2): home to the dock after the end. 3.156.E: a mission
+            # that does not explore gets a navigator for the trip home only;
+            # a world that cannot take goals gives none: `skipped`, `no_nav2`.
             return_to_dock=config["return_to_dock"],
             return_wait_s=config["return_wait_s"],
             # 3.156.D: a battery end charges and resumes (off until the Rover).

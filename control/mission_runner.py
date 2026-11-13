@@ -337,10 +337,21 @@ class _GatedNavigator:
     `cancel_own()` ends the mission's own goal at the mission's end -- the
     robot server spares a goal on the brain's stop (it reads one as a
     loser's teardown), and under explore the goal is the brain's -- but not
-    a goal someone else has set since."""
+    a goal someone else has set since.
 
-    def __init__(self, navigator, is_running: Callable[[], bool]):
+    3.156.E (D2): a mission that does not explore gets one too, for the trip
+    home only: `goals_allowed` refuses every goal until the return phase
+    (the search never sees it), and with `clears_keepout` off its end clears
+    the robot server's keepout marks only if it sent a goal itself (review:
+    the trip home's own goals can leave marks; a mission that never sent
+    one did not make the marks on nav2's map and leaves them)."""
+
+    def __init__(self, navigator, is_running: Callable[[], bool],
+                 goals_allowed: Optional[Callable[[], bool]] = None,
+                 clears_keepout: bool = True):
         self._nav, self._is_running = navigator, is_running
+        self._goals_allowed = goals_allowed
+        self._clears_keepout = clears_keepout
         self._own: Optional[Tuple[float, float]] = None
         # 3.104: a goal was accepted, or its answer was lost (it may still be
         # driving, the mission's own -- explore's `_send`); a refusal is not.
@@ -369,6 +380,8 @@ class _GatedNavigator:
         with self._lock:
             if not self._is_running() or self._ending:
                 return {"accepted": False, "reason": "mission_ended"}
+            if self._goals_allowed is not None and not self._goals_allowed():
+                return {"accepted": False, "reason": "not_returning"}
             self._in_flight += 1
         try:
             try:
@@ -485,7 +498,8 @@ class _GatedNavigator:
         # wedges left on nav2's map go with it. Here, by whichever finishes
         # last -- `end()` or a goal still on its way -- so it follows every
         # goal the mission sent, and no mark made under one is left behind.
-        clear = getattr(self._nav, "clear_keepout", None)
+        mine = self._clears_keepout or self._sent
+        clear = getattr(self._nav, "clear_keepout", None) if mine else None
         if clear is not None:
             try:
                 clear()
@@ -1018,6 +1032,17 @@ class MissionRunner:
                 # 3.80.O: the agent's vision_fn is the guarded wrapper below,
                 # so the tier's tracking switch is handed over by name.
                 extra["local_track_fn"] = getattr(vision_fn, "set_local_track", None)
+        elif navigator is not None and self.return_to_dock:
+            # 3.156.E (D2): no explore search, so the navigator is the trip
+            # home's alone: no goal before the return phase, the agent never
+            # holds it, and the server's keepout marks are cleared at the end
+            # only if the trip home sent a goal.
+            self._navigator = _GatedNavigator(
+                navigator, self.is_running,
+                # The trip home is under way (built in _finish, dropped on a
+                # resume): no string of status's to keep in step (review).
+                goals_allowed=lambda: self._return_trip is not None,
+                clears_keepout=False)
         self._gated = _HaltGate(robot, self.is_running,
                                 on_frame=self._observe if self.inventory else None)
         self.agent = agent_class(

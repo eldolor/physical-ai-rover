@@ -78,6 +78,25 @@ def _saved_frame(reply: dict) -> Optional[str]:
     return m if isinstance(m, str) and m else None
 
 
+def _saved_dock(reply: dict, anchor: "Anchor"):
+    """3.156.E (D1): the saved map's dock, in ROS's map frame (x, y,
+    theta in radians, as meta.json holds it), when this reply carries one
+    AND the anchor lays that same saved map's frame -- else None. A dock on
+    any other frame (a first-contact anchor, a session whose map changed
+    under it) would be a point on the wrong map."""
+    d = reply.get("dock_pose")
+    if not isinstance(d, dict) or anchor.frame is None or anchor.frame != _saved_frame(reply):
+        return None
+    try:
+        vals = [d[k] for k in ("x", "y", "theta")]
+        if not all(isinstance(v, (int, float)) and not isinstance(v, bool)
+                   and math.isfinite(v) for v in vals):
+            return None
+    except (KeyError, OverflowError, TypeError):
+        return None
+    return float(vals[0]), float(vals[1]), float(vals[2])
+
+
 def _stale(pose: dict) -> bool:
     age = pose.get("age_s")             # absent from a bridge that predates it
     return age is not None and age > POSE_STALE_S
@@ -376,8 +395,15 @@ class RosWorld(WorldInterface):
         if anchor is None or est is None or _stale(est):
             return unusable_pose()
         x, y, h = self._apply(*_ros_to_ours(est["x_m"], est["y_m"], est["yaw_rad"]), anchor)
-        return {"usable": True, "map_id": f"slam-{anchor.session}", "frame_id": anchor.frame,
+        pose = {"usable": True, "map_id": f"slam-{anchor.session}", "frame_id": anchor.frame,
                 "x_m": x, "y_m": y, "heading_deg": round(h, 4)}
+        dock = _saved_dock(reply, anchor)
+        if dock is not None:
+            # 3.156.E (D1): converted through the same anchor as the pose,
+            # so the two are on one frame. Absent on every other answer.
+            dx, dy, dh = self._apply(*_ros_to_ours(*dock), anchor)
+            pose["dock"] = {"x_m": dx, "y_m": dy, "heading_deg": round(dh, 4)}
+        return pose
 
     def get_odom_pose(self) -> dict:
         """diff_drive_controller's dead reckoning, in the same anchored frame

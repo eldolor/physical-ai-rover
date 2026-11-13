@@ -55,6 +55,9 @@ section's own file has the numbers, failed criteria and review rounds.
 * 3.165 (3.76 G2): a landmark holds at most 32 weighted members (`FOLD_M`
   0.05 m), its position still the mean of every observation; the sweep is
   `dev`'s to the number; criterion 2 FAILED as written (1.56x, bar 1.5x).
+* 3.178.A: the watch list (keys, wallet, phone, glasses, remote) has 0 labelled frames in 3.92's
+  pinned set (`evaluations/watch-list-3178/counts.json`); B1-B6 and C's bars are written. Design: one
+  YOLOE prompt and one CLIP encode per crop for target and list; P(target) never sees the list's texts.
 * 3.167: the sweep's seed-3463 precision 97.1% -> 93.8% is 3.74 B's floor
   band moving the robot (`fc5c2122`), one seed's variance (four seeds pooled
   96.5% -> 96.9%). 3.60's precision bar is judged on seeds 346, 3461,
@@ -135,11 +138,21 @@ section's own file has the numbers, failed criteria and review rounds.
   (`recharge_resume`, off; simulator stand-in only, 3.156.F on the Rover);
   in process 45/45 charges resumed, E3-E8 met; FAILED E1 live (a return ended
   `not_aligned`, cause open) and E2 (rooms 78%, finds 79% of no-drain).
+* 3.156.E (code merged, step OPEN): under `world: ros` on a matched reload the
+  dock is the saved map's `dock_pose` (`/slam/pose` -> the pose's optional
+  `dock` -> `status.dock.source` `saved_map`; else the start pose); a mission
+  that does not explore gets a return-only navigator (no goal before the end;
+  no nav2 = `skipped`, `no_nav2`, never a refused start), so the return
+  reserve now ends it early too; the twin's Return line and row. Met G2,
+  G4 in process (0/20 differ off), G6, G7; NOT RUN G1, G3, G5, G4 live (no
+  Docker). Known limit: a bridge still starting at a mission's start reads
+  as `no_nav2` for that mission.
 * 3.70: four end states (`found`, `exhausted`, `out_of_budget`,
   `cancelled`), read through `read_outcome()`; the budget is
   `mission_time_limit_s` (1200 s), `battery_floor_v` and, for `vision`,
   `vision_max_calls`. Survey mode; `room_label_source: cloud` off.
 * 3.175.A: a target moved between missions (in process, 75 trials): a stale recall costs nothing at the median but p90 507 s over no memory (A2 FAILED), and the next mission recalls the old place again in 30 of 75 (A3 FAILED: one stale look keeps belief >= 0.8); found counts hold, 0 wrong, 0 contacts. The harness carries landmarks, not the map, so no recall went first (A5 FAILED, instrument). 3.175.B needed, with the map carried.
+* 3.176.A (criteria only, nothing built): a find asked in plain words is parsed at the twin before Start (rule parser, offline; `brain/request.py` is B's), and the brain runs what was shown. A room hint is its own `room_hint` field, never `target_room`, acting only as a `rooms`-policy prior override (the hinted type set to 1.0): inert without room labels or under `rule`, never a paid call, never ends a search; a null target is refused. The 152-sentence request set (`evaluations/request-3176/`, dev 76 / test 76) is sha256-pinned by `tests/test_request_set_3176.py`. B-D's bars are numeric in the section file (parser >= 90% target / 95% room; sim right, wrong and off arms; the model arm paid, the user's go).
 
 ## ROS and maps
 

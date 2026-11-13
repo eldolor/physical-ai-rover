@@ -3043,6 +3043,57 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     }
   }
 
+  // ---------- 3.156.E (D6): the trip home ----------
+  // status.return ({state: returning | docked | failed | cancelled | skipped,
+  // reason}) after the mission's end decision, and status.charge while it
+  // charges on the dock (the return is cleared when the mission resumes).
+  // Operator mode: one plain line under the card; Engineer mode: the Return
+  // row with the raw reason and the dock's source (saved_map / start).
+  // Hidden with the brain unreachable: a stale "going back" is worse than
+  // none (review).
+  var RETURN_STATES = ["returning", "docked", "failed", "cancelled", "skipped"];
+  function returnWhyKey(reason) {
+    var head = String(reason || "").split(":")[0].trim();
+    if (head.indexOf("nav2_") === 0) return "nav2";
+    // The words are the table's: a reason with no `return.why.*` is "other" (review).
+    return head && strings.has("return.why." + head) ? head : "other";
+  }
+  function returnView(status) {
+    if (!status) return null;
+    var charge = status.charge;
+    var ret = status.return;
+    var source = (status.dock && status.dock.source) || "none";
+    if (status.running && charge && charge.state === "charging") {
+      var v = typeof charge.v === "number" ? charge.v.toFixed(2) : null;
+      var to = typeof charge.resume_v === "number" ? charge.resume_v.toFixed(1) : null;
+      return {
+        kind: "charging",
+        op: v && to ? t("return.charging", {v: v, to: to}) : t("return.chargingNoV"),
+        eng: t("return.engCharging", {v: v || "?", to: to || "?", n: charge.cycles || 1,
+                                      source: source}),
+        cls: null};
+    }
+    if (!ret || RETURN_STATES.indexOf(ret.state) < 0) return null;
+    var op = ret.state === "returning" || ret.state === "docked"
+      ? t("return." + ret.state)
+      : t("return." + ret.state, {why: t("return.why." + returnWhyKey(ret.reason))});
+    var why = ret.reason && ret.state !== "returning" ? ": " + ret.reason : "";
+    return {
+      kind: ret.state, op: op,
+      eng: t("return.eng", {state: ret.state, why: why, source: source}),
+      cls: ret.state === "docked" ? "safe" : ret.state === "failed" ? "warn" : null};
+  }
+  function renderReturn(status) {
+    var view = state.brainConnected ? returnView(status) : null;
+    setBrainText("brain-tel-return", view ? view.eng : null, view ? view.cls : null);
+    var line = document.getElementById("mission-return");
+    if (!line) return;
+    line.hidden = !view;
+    if (!view) return;
+    if (line.textContent !== view.op) line.textContent = view.op;
+    line.dataset.state = view.kind;
+  }
+
   // ---------- 3.132 Stage 3: the mission card ----------
   // The mission in one sentence, for a person at home: what it is doing,
   // for what, and how far it has got. Operator mode's (.op-only); Engineer
@@ -3286,6 +3337,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     if (!state.brainConnected) {
       const note = document.getElementById("mission-local-down");   // 3.152
       if (note) note.hidden = true;
+      renderReturn(null);              // 3.156.E: no stale trip home
       return;
     }
     const card = missionCardText(state.lastBrainStatus);
@@ -3349,6 +3401,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     renderCloudRow(status);
     renderTierReadouts(status);
     renderLocalVlm(status);
+    renderReturn(status);              // 3.156.E
     renderMissionCard();
 
     // The mission log comes from the brain, so it is rewritten wholesale

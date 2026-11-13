@@ -61,8 +61,12 @@ def world(request):
 
 def test_get_pose_answers_the_same_shape_everywhere(world):
     pose = world.get_pose()
-    assert set(pose) == {"usable", "map_id", "frame_id", "x_m", "y_m", "heading_deg"}
+    # 3.156.E: one optional key, `dock`, on a usable saved-map pose only.
+    assert set(pose) - {"dock"} == {"usable", "map_id", "frame_id", "x_m", "y_m", "heading_deg"}
     assert isinstance(pose["usable"], bool)
+    if "dock" in pose:
+        assert pose["usable"] and pose["frame_id"]
+        assert set(pose["dock"]) == {"x_m", "y_m", "heading_deg"}
 
 
 def test_an_unusable_pose_carries_no_numbers(world):

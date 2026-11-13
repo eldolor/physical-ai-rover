@@ -1096,6 +1096,17 @@ body.stop-bar-on .toast-stack { bottom: calc(160px + env(safe-area-inset-bottom)
 .mission-card[data-state="found"] { border-color: var(--accent-safe); }
 .mission-card[data-state="warn"] { border-color: var(--accent-warn); }
 #brain-report-row[hidden] { display: none; }
+/* 3.156.E (D6): the trip home, one line under the card. */
+.mission-return {
+  margin: -4px 0 10px; padding: 8px 14px;
+  border-left: 3px solid var(--border); color: var(--text-dim);
+  font-size: var(--fs-body); line-height: var(--lh-tight);
+}
+.mission-return[hidden] { display: none; }
+.mission-return[data-state="returning"] { border-left-color: var(--accent-primary); color: var(--text); }
+.mission-return[data-state="docked"] { border-left-color: var(--accent-safe); }
+.mission-return[data-state="charging"] { border-left-color: var(--accent-primary); color: var(--text); }
+.mission-return[data-state="failed"] { border-left-color: var(--accent-warn); color: var(--text); }
 
 /* 3.132 Stage 3B: the first run takes Home's place until it is done. */
 .first-run[hidden], .first-run-step[hidden] { display: none; }

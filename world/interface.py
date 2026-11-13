@@ -167,6 +167,13 @@ class WorldInterface(ABC):
              "y_m": float|None,
              "heading_deg": float|None}  # compass, 0 = -y_m (north), 90 = +x_m
 
+        One OPTIONAL key (3.156.E, D1), present only on a usable pose whose
+        frame is a saved map's (`frame_id` set) that names its dock:
+            "dock": {"x_m": float, "y_m": float, "heading_deg": float}
+        -- the charger, in the same frame and units as the pose. Every other
+        backend and answer leaves it out; a consumer reads its absence as
+        "no saved dock", never as the origin.
+
         **`map_id` is not bookkeeping.** A pose without a map is two
         numbers that mean nothing, and the failure is silent: coordinates
         from a map built yesterday are byte-identical to coordinates from

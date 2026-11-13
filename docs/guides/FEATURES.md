@@ -682,7 +682,16 @@ Until 3.132 Stage 3 these were one tab, Sim. **Home** holds the Remote
 brain panel below (Find or Survey, Start or Stop) and, in operator mode,
 **the mission card**: one sentence naming the mission's state, target and
 progress ("Searching for the red backpack -- 2 rooms looked at so far.",
-"Found the red backpack."), coloured by 3.70 E6's ending styles. The
+"Found the red backpack."), coloured by 3.70 E6's ending styles. Under it,
+**the trip home** (3.156.E): once the mission has decided its end, one line
+says the return to the dock in plain words ("Going back to the dock.",
+"Back on the dock.", "Couldn't get back to the dock -- the way back was
+blocked.", "Didn't go back to the dock -- it can't plan a route on this
+robot.") or its charge ("Charging on the dock (11.23 of 11.8 volts), then it
+carries on."); it is hidden while the brain is unreachable. Engineer mode's
+**Return** row says the same with the raw state and reason, and where the
+dock came from: `saved_map` (a reloaded map's own dock) or `start` (the
+mission's start pose). Screenshots: `docs/evaluations/twin-3.156e-*.png`. The
 telemetry rows are Engineer mode's, except "Where it looked", shown once
 an ending has one. **Drive** holds Manual control and What the robot
 senses. The watchdog row draws a robot at rest (fired, nothing running)
