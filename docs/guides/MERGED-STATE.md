@@ -138,6 +138,15 @@ section's own file has the numbers, failed criteria and review rounds.
   (`recharge_resume`, off; simulator stand-in only, 3.156.F on the Rover);
   in process 45/45 charges resumed, E3-E8 met; FAILED E1 live (a return ended
   `not_aligned`, cause open) and E2 (rooms 78%, finds 79% of no-drain).
+* 3.156.E (code merged, step OPEN): under `world: ros` on a matched reload the
+  dock is the saved map's `dock_pose` (`/slam/pose` -> the pose's optional
+  `dock` -> `status.dock.source` `saved_map`; else the start pose); a mission
+  that does not explore gets a return-only navigator (no goal before the end;
+  no nav2 = `skipped`, `no_nav2`, never a refused start), so the return
+  reserve now ends it early too; the twin's Return line and row. Met G2,
+  G4 in process (0/20 differ off), G6, G7; NOT RUN G1, G3, G5, G4 live (no
+  Docker). Known limit: a bridge still starting at a mission's start reads
+  as `no_nav2` for that mission.
 * 3.70: four end states (`found`, `exhausted`, `out_of_budget`,
   `cancelled`), read through `read_outcome()`; the budget is
   `mission_time_limit_s` (1200 s), `battery_floor_v` and, for `vision`,
