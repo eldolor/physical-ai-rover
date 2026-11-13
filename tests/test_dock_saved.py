@@ -198,3 +198,23 @@ def test_the_runner_records_the_saved_dock():
     s = runner.status()
     assert s["dock"] == {"x_m": 0.45, "y_m": 0.45, "theta": 180.0, "source": SAVED_MAP}
     runner.stop("test")
+
+
+def test_the_bridge_and_the_world_agree_across_the_wall(bridge_mod, monkeypatch, tmp_path):
+    """The field's name and shape, end to end: the REAL bridge's /slam/pose
+    reply (a matched reload, the car: no truth) read by `RosWorld`. A rename
+    on either side of the wall fails here, not on the car."""
+    b, _, store = _reload_bridge(bridge_mod, monkeypatch, tmp_path, MATCH)
+    _set_dock(store, {"x": 1.0, "y": 2.0, "theta": math.pi / 2})
+    b.start_slam()
+    monkeypatch.setattr(b, "_pose_in", lambda frame: {"x_m": 0.0, "y_m": 0.0, "yaw_rad": 0.0,
+                                                      "age_s": 0.0})
+    reply = b.slam_pose()[1]
+
+    def handler(request):
+        return httpx.Response(200, json=reply)
+    client = httpx.Client(base_url="http://bridge", transport=httpx.MockTransport(handler))
+    pose = RosWorld("http://bridge", client=client).get_pose()
+    assert pose["frame_id"] == "map-0a1b2c3d"
+    assert pose["dock"] == pytest.approx({"x_m": 1.0, "y_m": -2.0, "heading_deg": 0.0})
+    assert dock_from_pose(pose)["source"] == SAVED_MAP
