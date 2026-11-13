@@ -140,6 +140,7 @@ section's own file has the numbers, failed criteria and review rounds.
   `mission_time_limit_s` (1200 s), `battery_floor_v` and, for `vision`,
   `vision_max_calls`. Survey mode; `room_label_source: cloud` off.
 * 3.175.A: a target moved between missions (in process, 75 trials): a stale recall costs nothing at the median but p90 507 s over no memory (A2 FAILED), and the next mission recalls the old place again in 30 of 75 (A3 FAILED: one stale look keeps belief >= 0.8); found counts hold, 0 wrong, 0 contacts. The harness carries landmarks, not the map, so no recall went first (A5 FAILED, instrument). 3.175.B needed, with the map carried.
+* 3.176.A (criteria only, nothing built): a find asked in plain words is parsed at the twin before Start (rule parser, offline; `brain/request.py` is B's), and the brain runs what was shown. A room hint is its own `room_hint` field, never `target_room`, acting only as a `rooms`-policy prior override (the hinted type set to 1.0): inert without room labels or under `rule`, never a paid call, never ends a search; a null target is refused. The 152-sentence request set (`evaluations/request-3176/`, dev 76 / test 76) is sha256-pinned by `tests/test_request_set_3176.py`. B-D's bars are numeric in the section file (parser >= 90% target / 95% room; sim right, wrong and off arms; the model arm paid, the user's go).
 
 ## ROS and maps
 
