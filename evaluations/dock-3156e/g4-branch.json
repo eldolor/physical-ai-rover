@@ -1,0 +1,402 @@
+[
+ {
+  "house": "scaled_house",
+  "start": [
+   21.5,
+   5.5,
+   270
+  ],
+  "outcome": "found",
+  "end_reason": "Hallway, kitchen, living room searched. Found.",
+  "steps": 51,
+  "metres": 12.0,
+  "end": [
+   22.5,
+   4.5,
+   90.0
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "scaled_house",
+  "start": [
+   2.5,
+   4.5,
+   90
+  ],
+  "outcome": "found",
+  "end_reason": "Hallway, kitchen, living room searched. Found.",
+  "steps": 29,
+  "metres": 6.0,
+  "end": [
+   22.5,
+   4.5,
+   90.0
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "scaled_house",
+  "start": [
+   12.5,
+   10.5,
+   270
+  ],
+  "outcome": "out_of_budget",
+  "end_reason": "step backstop of 300 reached (derived from the 1200 s time limit)",
+  "steps": 300,
+  "metres": 3.4,
+  "end": [
+   2.1667,
+   11.5,
+   287.5
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "scaled_house",
+  "start": [
+   13.5,
+   2.5,
+   0
+  ],
+  "outcome": "out_of_budget",
+  "end_reason": "step backstop of 300 reached (derived from the 1200 s time limit)",
+  "steps": 300,
+  "metres": 6.7,
+  "end": [
+   2.1667,
+   11.5,
+   287.5
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "scaled_house",
+  "start": [
+   4.5,
+   11.5,
+   0
+  ],
+  "outcome": "out_of_budget",
+  "end_reason": "step backstop of 300 reached (derived from the 1200 s time limit)",
+  "steps": 300,
+  "metres": 13.3,
+  "end": [
+   2.1667,
+   11.5,
+   287.5
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "scaled_house",
+  "start": [
+   24.5,
+   11.5,
+   90
+  ],
+  "outcome": "out_of_budget",
+  "end_reason": "step backstop of 300 reached (derived from the 1200 s time limit)",
+  "steps": 300,
+  "metres": 7.3,
+  "end": [
+   2.1667,
+   11.5,
+   287.5
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "scaled_house",
+  "start": [
+   18.5,
+   11.5,
+   90
+  ],
+  "outcome": "out_of_budget",
+  "end_reason": "step backstop of 300 reached (derived from the 1200 s time limit)",
+  "steps": 300,
+  "metres": 9.1,
+  "end": [
+   2.1667,
+   11.5,
+   287.5
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "scaled_house",
+  "start": [
+   8.5,
+   5.5,
+   0
+  ],
+  "outcome": "out_of_budget",
+  "end_reason": "step backstop of 300 reached (derived from the 1200 s time limit)",
+  "steps": 300,
+  "metres": 9.7,
+  "end": [
+   3.5619,
+   2.1725,
+   22.97
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "scaled_house",
+  "start": [
+   18.5,
+   2.5,
+   270
+  ],
+  "outcome": "found",
+  "end_reason": "Kitchen searched. Found.",
+  "steps": 13,
+  "metres": 2.4,
+  "end": [
+   22.5,
+   6.5,
+   90.0
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "scaled_house",
+  "start": [
+   14.5,
+   6.5,
+   270
+  ],
+  "outcome": "found",
+  "end_reason": "Hallway, kitchen searched. Found.",
+  "steps": 26,
+  "metres": 4.8,
+  "end": [
+   21.5,
+   5.5,
+   90.0
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "home_first_floor",
+  "start": [
+   30.5,
+   10.5,
+   270
+  ],
+  "outcome": "out_of_budget",
+  "end_reason": "step backstop of 300 reached (derived from the 1200 s time limit)",
+  "steps": 300,
+  "metres": 12.1,
+  "end": [
+   26.5619,
+   2.1725,
+   22.97
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "home_first_floor",
+  "start": [
+   52.5,
+   46.5,
+   90
+  ],
+  "outcome": "found",
+  "end_reason": "Garage, garage hall, kitchen searched. Found.",
+  "steps": 48,
+  "metres": 10.8,
+  "end": [
+   43.5,
+   19.5,
+   360.0
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "home_first_floor",
+  "start": [
+   4.5,
+   39.5,
+   180
+  ],
+  "outcome": "out_of_budget",
+  "end_reason": "step backstop of 300 reached (derived from the 1200 s time limit)",
+  "steps": 300,
+  "metres": 0.7,
+  "end": [
+   2.1667,
+   39.5,
+   287.5
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "home_first_floor",
+  "start": [
+   2.5,
+   12.5,
+   0
+  ],
+  "outcome": "out_of_budget",
+  "end_reason": "step backstop of 300 reached (derived from the 1200 s time limit)",
+  "steps": 300,
+  "metres": 48.8,
+  "end": [
+   4.85,
+   22.1833,
+   360.0
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "home_first_floor",
+  "start": [
+   28.5,
+   35.5,
+   180
+  ],
+  "outcome": "out_of_budget",
+  "end_reason": "step backstop of 300 reached (derived from the 1200 s time limit)",
+  "steps": 300,
+  "metres": 20.5,
+  "end": [
+   31.8275,
+   28.4381,
+   112.89
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "home_first_floor",
+  "start": [
+   46.5,
+   28.5,
+   0
+  ],
+  "outcome": "found",
+  "end_reason": "Garage, garage hall, kitchen searched. Found.",
+  "steps": 69,
+  "metres": 16.8,
+  "end": [
+   43.5,
+   19.5,
+   360.0
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "home_first_floor",
+  "start": [
+   16.5,
+   22.5,
+   0
+  ],
+  "outcome": "found",
+  "end_reason": "Breakfast, family room, kitchen searched. Found.",
+  "steps": 43,
+  "metres": 9.9,
+  "end": [
+   45.5,
+   18.5,
+   90.0
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "home_first_floor",
+  "start": [
+   15.5,
+   2.5,
+   90
+  ],
+  "outcome": "out_of_budget",
+  "end_reason": "step backstop of 300 reached (derived from the 1200 s time limit)",
+  "steps": 300,
+  "metres": 32.8,
+  "end": [
+   15.8333,
+   2.8333,
+   270.0
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "home_first_floor",
+  "start": [
+   45.5,
+   10.5,
+   180
+  ],
+  "outcome": "found",
+  "end_reason": "Kitchen searched. Found.",
+  "steps": 11,
+  "metres": 2.4,
+  "end": [
+   45.5,
+   18.5,
+   180.0
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ },
+ {
+  "house": "home_first_floor",
+  "start": [
+   2.5,
+   26.5,
+   90
+  ],
+  "outcome": "out_of_budget",
+  "end_reason": "step backstop of 300 reached (derived from the 1200 s time limit)",
+  "steps": 300,
+  "metres": 8.8,
+  "end": [
+   2.1667,
+   39.5,
+   287.5
+  ],
+  "navigator": false,
+  "goals_sent": 0,
+  "return": null
+ }
+]
