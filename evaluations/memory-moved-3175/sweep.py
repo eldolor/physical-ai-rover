@@ -102,6 +102,14 @@ def trials():
     return out
 
 
+def trials_hash():
+    """3.175.B amendment B0: the trial list both arms run, as 16 hex digits
+    (ids, P0 and P1), so a test can pin that B-dev and B-fix ran the same."""
+    import hashlib
+    rows = [[t["id"], list(t["p0"]), t["p1"] and list(t["p1"])] for t in trials()]
+    return hashlib.sha256(json.dumps(rows).encode()).hexdigest()[:16]
+
+
 def mission(trial, where, store_dir, name, cells=None):
     """One find from the house's dock with the target at `where` (a cell, or
     None: gone), on the chain in `store_dir`, starting from the map `cells`
