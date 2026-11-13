@@ -1,0 +1,167 @@
+{
+ "labelled": {
+  "frames": 2261,
+  "per_item": {
+   "glasses": {
+    "frames": 0,
+    "visible": 0,
+    "walks": 0
+   },
+   "keys": {
+    "frames": 0,
+    "visible": 0,
+    "walks": 0
+   },
+   "phone": {
+    "frames": 0,
+    "visible": 0,
+    "walks": 0
+   },
+   "remote": {
+    "frames": 0,
+    "visible": 0,
+    "walks": 0
+   },
+   "wallet": {
+    "frames": 0,
+    "visible": 0,
+    "walks": 0
+   }
+  },
+  "set_hash": "00d12dbc44f6495a927a2a58d53887fc58c9e468e5774d65a8d90288d364a2d6",
+  "targets": {
+   "Grey backpack": {
+    "frames": 211,
+    "visible": 94
+   },
+   "a white phone charger cable": {
+    "frames": 176,
+    "visible": 118
+   },
+   "blue and yellow running shoes": {
+    "frames": 63,
+    "visible": 38
+   },
+   "blue bottle": {
+    "frames": 242,
+    "visible": 28
+   },
+   "burgundy backpack": {
+    "frames": 38,
+    "visible": 33
+   },
+   "red backpack": {
+    "frames": 640,
+    "visible": 0
+   },
+   "woven laundry basket": {
+    "frames": 891,
+    "visible": 224
+   }
+  },
+  "walks": 21
+ },
+ "list": {
+  "glasses": [
+   "glasses",
+   "eyeglasses",
+   "spectacles",
+   "sunglasses",
+   "reading glasses",
+   "eyewear"
+  ],
+  "keys": [
+   "key",
+   "keys",
+   "car key",
+   "house key",
+   "key ring",
+   "keyring",
+   "keychain",
+   "key chain",
+   "a set of keys"
+  ],
+  "phone": [
+   "phone",
+   "cellphone",
+   "cell phone",
+   "mobile phone",
+   "smartphone",
+   "smart phone",
+   "iphone",
+   "telephone"
+  ],
+  "remote": [
+   "remote",
+   "remote control",
+   "tv remote",
+   "television remote"
+  ],
+  "wallet": [
+   "wallet",
+   "purse",
+   "billfold",
+   "coin purse",
+   "card holder"
+  ]
+ },
+ "surfaced": {
+  "memory-all.json": {
+   "exact": {
+    "glasses": [],
+    "keys": [],
+    "phone": [
+     "blue-bottle-20260907-185007/frame-0003.jpg"
+    ],
+    "remote": [],
+    "wallet": []
+   },
+   "frames": 685,
+   "near": {},
+   "variant": "all"
+  },
+  "memory-heldout-all.json": {
+   "exact": {
+    "glasses": [],
+    "keys": [],
+    "phone": [],
+    "remote": [],
+    "wallet": []
+   },
+   "frames": 1576,
+   "near": {
+    "payphone": 5,
+    "phone box": 1
+   },
+   "variant": "all"
+  },
+  "memory-heldout-objects.json": {
+   "exact": {
+    "glasses": [],
+    "keys": [],
+    "phone": [],
+    "remote": [],
+    "wallet": []
+   },
+   "frames": 1576,
+   "near": {
+    "boom microphone": 1
+   },
+   "variant": "objects"
+  },
+  "memory-objects.json": {
+   "exact": {
+    "glasses": [],
+    "keys": [],
+    "phone": [
+     "blue-bottle-20260907-185007/frame-0003.jpg"
+    ],
+    "remote": [],
+    "wallet": []
+   },
+   "frames": 685,
+   "near": {},
+   "variant": "objects"
+  }
+ }
+}
