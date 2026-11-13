@@ -113,7 +113,8 @@ def _for_s3(report: dict) -> dict:
     out = {k: v for k, v in report.items() if k not in _LOCAL_ONLY_KEYS}
 
     def own(rows):
-        return [{k: v for k, v in d.items() if k not in _LOCAL_ONLY_ROW_KEYS} for d in rows or []
+        return [{k: v for k, v in d.items() if k not in _LOCAL_ONLY_ROW_KEYS}
+                if isinstance(d, dict) else d for d in rows or []
                 if not (isinstance(d, dict) and d.get("carried") and d.get("last_step") is None)]
     for key in ("reported", "candidates"):
         if key in out:
