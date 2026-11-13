@@ -79,6 +79,31 @@ def test_recalls_go_newest_sighting_first_then_by_belief():
             dict(_row("washer", 2.0, 2.0, 0.85), seen_seq=3),
             _row("washer", 3.0, 3.0, 0.99),                  # says nothing: last
             dict(_row("washer", 4.0, 4.0, 0.90), seen_seq=3)]
-    runner.inventory.seed("f1", _report(rows))
+    runner.inventory.seed("f1", dict(_report(rows), carry_seq=3))
     assert runner._recall_carried() == 3
     assert runner.agent.recall == [(4.0, 4.0), (2.0, 2.0), (1.0, 1.0)]
+
+
+def test_review_a_carried_seen_seq_that_cannot_be_true_says_nothing():
+    saved = dict(_session_one(), carry_seq=3)
+    rows = saved["reported"] + saved["candidates"]
+    for d, bad in zip(rows, (-1, 2.5)):
+        d["seen_seq"] = bad
+    inv = Inventory()
+    inv.seed(SAVED, saved)
+    assert {lm.seen_seq for lm in inv.landmarks} == {None}
+    for value, want in ((float("nan"), None), (4, None), (3, 3), (3.0, 3), (True, None)):
+        saved = dict(_session_one(), carry_seq=3)
+        saved["reported"][0]["seen_seq"] = value
+        inv = Inventory()
+        inv.seed(SAVED, saved)
+        assert _stool(inv).seen_seq == want, value
+
+
+def test_review_another_name_where_it_was_is_not_a_sighting():
+    """A box put down where the carried stool was: a vote, not the stool seen
+    -- so the stool is not this mission's, and a look later still finds it stale."""
+    inv = _seeded(seq=1)
+    inv.observe([{"label": "box", "bearing_deg": 0.0}], _pose(), _scan({0: 2.0}))
+    lm = _stool(inv)
+    assert lm.seen_seq == 0
