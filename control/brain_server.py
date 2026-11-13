@@ -564,7 +564,14 @@ def _return_navigator(config: dict, robot, robot_secret: Optional[str]):
     (the simulator's own, no nav2), a server that cannot be reached, or one
     that refuses the secret leaves the mission as it was, its return
     `skipped`, `no_nav2`. A refused secret is logged as a warning (review): it
-    is a setup fault a person should see, not "no nav2"."""
+    is a setup fault a person should see, not "no nav2".
+
+    Only with a robot server to ask: a `world_url`, or a robot that is one
+    (`base_url`). An in-process robot has no goal route of its own, and the
+    config's `robot_url` would be some other server -- a dial out the offline
+    mode forbids (`tests/test_offline_mode.py`)."""
+    if not (config.get("world_url") or getattr(robot, "base_url", None)):
+        return None
     navigator = None
     try:
         navigator = _new_navigator(config, robot, robot_secret)

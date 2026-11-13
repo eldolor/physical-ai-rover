@@ -184,7 +184,8 @@ def _app(tmp_path, monkeypatch, ok, return_to_dock=True):
     _Nav.built, _Nav.ok = [], ok
     monkeypatch.setattr(bs, "RemoteNavigator", _Nav)
     config = tmp_path / "robot.yaml"
-    config.write_text(f"brain:\n  tick_interval_s: 0.0\n  return_to_dock: {str(return_to_dock).lower()}\n")
+    config.write_text(f"brain:\n  tick_interval_s: 0.0\n  return_to_dock: {str(return_to_dock).lower()}\n"
+                      "  world_url: http://robot.test\n")
     return bs.create_app(config_path=str(config),
                          robot_factory=lambda: RecordingRobot(fresh_mock_robot()))
 
@@ -218,6 +219,20 @@ def test_a_refused_secret_starts_and_is_a_warning(tmp_path, monkeypatch, caplog)
         runner = _start(_app(tmp_path, monkeypatch, ok=PermissionError("HTTP 401")))
     assert runner._navigator is None and _Nav.built[0].closed
     assert any("refused the brain's secret" in r.getMessage() for r in caplog.records)
+
+
+def test_an_in_process_robot_with_no_world_url_asks_no_server(tmp_path, monkeypatch):
+    """Offline mode: no robot server to ask, no dial out (the config's
+    robot_url would be another server's)."""
+    import control.brain_server as bs
+    _Nav.built, _Nav.ok = [], True
+    monkeypatch.setattr(bs, "RemoteNavigator", _Nav)
+    config = tmp_path / "robot.yaml"
+    config.write_text("brain:\n  tick_interval_s: 0.0\n  return_to_dock: true\n")
+    app = bs.create_app(config_path=str(config),
+                        robot_factory=lambda: RecordingRobot(fresh_mock_robot()))
+    runner = _start(app)
+    assert _Nav.built == [] and runner._navigator is None
 
 
 def test_off_builds_no_navigator(tmp_path, monkeypatch):
