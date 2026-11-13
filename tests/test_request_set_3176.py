@@ -21,12 +21,22 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SET = ROOT / "evaluations" / "request-3176" / "requests.jsonl"
-SHA256 = "d9d70255f9e6465d2cbcdce0f71e384e0f99ad15751392117481e9d571117a42"
+SHA256 = "6fcb2742c56d1ff1e7d7e394e86e4e6c590761924132b29457c51874e063c07d"
 
 # 3.176.A's vocabulary (the section file, "The room vocabulary"): the four
 # types the shipped prior knows, then the others a label or a name can carry.
 ROOM_TYPES = {"kitchen", "living room", "bedroom", "bathroom",
               "dining room", "office", "laundry room", "garage", "hallway"}
+# The vocabulary's words for each type (the section file's table).
+WORDS = {"kitchen": {"kitchen", "kitchenette"},
+         "living room": {"living room", "lounge", "family room", "sitting room", "den"},
+         "bedroom": {"bedroom", "master bedroom", "guest room", "spare room", "nursery"},
+         "bathroom": {"bathroom", "restroom", "washroom", "powder room", "loo"},
+         "dining room": {"dining room", "dining area"},
+         "office": {"office", "home office", "study"},
+         "laundry room": {"laundry room", "laundry", "utility room"},
+         "garage": {"garage"},
+         "hallway": {"hallway", "hall", "corridor", "entryway", "foyer"}}
 COLOURS = {"red", "orange", "yellow", "green", "blue", "purple", "pink",
            "brown", "black", "white", "grey", "silver", "gold"}
 SIZES = {"small", "large"}
@@ -80,8 +90,10 @@ def test_every_row_has_the_designed_shape():
             else:
                 assert room["name"] in r["names"], r["id"]
         if r["kind"] == "absent_room":
-            # A room the house lacks: a type the map's names do not hold.
-            assert "type" in room and room["type"] not in {n.lower() for n in r["names"]}, r["id"]
+            # A room the house lacks: read as said (the parser does not know
+            # the house), a type none of the map's names is a word for.
+            assert room is not None and "type" in room, r["id"]
+            assert not {n.lower() for n in r["names"]} & WORDS[room["type"]], r["id"]
         assert set(e["colours"]) <= COLOURS and e["size"] in SIZES | {None}, r["id"]
 
 
@@ -90,6 +102,10 @@ def test_a_plain_target_is_its_own_text():
     for r in _rows():
         if r["kind"] == "plain":
             assert r["expect"]["target"] == r["text"] and r["expect"]["room"] is None, r["id"]
+
+
+def test_the_vocabulary_names_every_type():
+    assert set(WORDS) == ROOM_TYPES and all(t in WORDS[t] for t in ROOM_TYPES)
 
 
 def test_both_splits_cover_every_kind_with_and_without_a_hint():
