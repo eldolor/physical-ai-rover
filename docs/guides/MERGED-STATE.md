@@ -55,6 +55,9 @@ section's own file has the numbers, failed criteria and review rounds.
 * 3.165 (3.76 G2): a landmark holds at most 32 weighted members (`FOLD_M`
   0.05 m), its position still the mean of every observation; the sweep is
   `dev`'s to the number; criterion 2 FAILED as written (1.56x, bar 1.5x).
+* 3.178.A: the watch list (keys, wallet, phone, glasses, remote) has 0 labelled frames in 3.92's
+  pinned set (`evaluations/watch-list-3178/counts.json`); B1-B6 and C's bars are written. Design: one
+  YOLOE prompt and one CLIP encode per crop for target and list; P(target) never sees the list's texts.
 * 3.167: the sweep's seed-3463 precision 97.1% -> 93.8% is 3.74 B's floor
   band moving the robot (`fc5c2122`), one seed's variance (four seeds pooled
   96.5% -> 96.9%). 3.60's precision bar is judged on seeds 346, 3461,
