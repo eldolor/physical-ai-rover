@@ -223,7 +223,8 @@ def run(out, work, workers):
         rows = [json.loads(line) for line in open(out)]
         have = {}
         for r in rows:
-            have.setdefault(r["trial"], set()).add(r["mission"])
+            if r.get("carried_map") is not None:     # review: never resume over A's rows
+                have.setdefault(r["trial"], set()).add(r["mission"])
         done = {t for t, ms in have.items()
                 if {"seed", "fresh", "stale", "after"} <= ms and ("cold" in ms or ":gone:" in t)}
     todo = [(t, work) for t in trials() if t["id"] not in done]
