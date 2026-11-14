@@ -60,7 +60,7 @@ from brain.goal_policy import FEATURES as GOAL_FEATURES
 from brain.goal_policy import LinearGoalPolicy
 from brain.goal_policy import features as goal_features
 from brain.goal_policy import goal_context
-from brain.goal_policy import ROOM_FEATURES, ROOM_RES_M, RoomGoalPolicy, room_type
+from brain.goal_policy import ROOM_FEATURES, ROOM_RES_M, RoomGoalPolicy, hint_matches, room_type
 from brain.memory import MissionMemory
 from robot.interface import VERB_MAX_TAG, ZONE_UNUSABLE, Preempted, RobotInterface
 from robot.safety import CREEP_MARGIN_CM, FOOTPRINT_LENGTH_M, SafetyViolation, verb_speed_m_s
@@ -278,9 +278,19 @@ class ExploreAgent(MissionAgent):
         ask: Optional[GoalAsk] = None,
         choice_sink: Optional[Callable[[dict], None]] = None,
         goal_labels: Optional[Callable[[dict], Optional[dict]]] = None,
+        room_hint: Optional[dict] = None,
         **kwargs,
     ):
         super().__init__(robot, memory, **kwargs)
+        # 3.176: a find's room hint ({"type": t} or {"name": n}), read by the
+        # room goal policy only, as that room's prior 1.0. It orders goals; it
+        # never ends a search by itself (3.176.B S7 measured 3 `exhausted`
+        # ends of 400 hinted missions, not traced). `hint_cells`: the labelled cells (on the map
+        # the last choice was typed on) in the hinted room -- None before any
+        # labelled map, 0 while none carries it (not "absent": the map is
+        # discovered).
+        self.room_hint = room_hint
+        self.hint_cells: Optional[int] = None
         # 3.116.B: a find mission's own room labels (`find_room_labels`),
         # read for the room goal policy's types only -- never as the map's
         # `room_labels`, so 3.70 E3's room goals stay off. Called with this
@@ -953,14 +963,16 @@ class ExploreAgent(MissionAgent):
         """3.172 F5: where earlier missions on this saved map put the target
         (the runner's carried landmarks of its name, best first)."""
         self.recall = [(float(x), float(y)) for x, y in places][:RECALL_MAX]
+        self._recall_tried = {}             # 3.175.E review: tries count per installed list
         if self.recall:
             self._event("recall_set", places=[[round(x, 2), round(y, 2)] for x, y in self.recall])
 
     def _recall_goal(self, now: float):
         """3.172 F5: with nothing of this mission's in sight or remembered, go
-        to the first carried place of the target and face it: one try each,
-        dropped once a goal to it is taken, reached or not. A place set aside
-        never blocks it (it is where the target was, as an approach)."""
+        to the first carried place of the target and face it, dropped once a
+        goal to it arrives; since 3.175.E a goal that ends without arriving puts
+        it back (`_goal_ended`), at most `RECALL_TRIES` goals a place. A place
+        set aside never blocks it (it is where the target was, as an approach)."""
         if not self.recall or self._last_seen is not None:
             return None             # review: this mission's own sighting, even cooling, comes first
         pose = self._pose()
@@ -974,8 +986,8 @@ class ExploreAgent(MissionAgent):
             self._pending = [("FACE", (tx, ty))]
             self._event("recall", pose=pose, at=[round(tx, 2), round(ty, 2)], here=True)
             return self._do_pending()
-        spot = self._band_point(pose, tx, ty, avoid=tried) if tried else None
-        spot = spot or self._band_point(pose, tx, ty)      # 3.175.E: else the best again
+        other, best = self._band_points(pose, tx, ty, avoid=tried)
+        spot = other or best                                 # 3.175.E: else the best again
         if spot is None:
             # Review: no reachable floor beside it on this map yet. Kept, not
             # spent on a straight-line goal through walls: frontiers grow the
@@ -1003,28 +1015,36 @@ class ExploreAgent(MissionAgent):
                 self._recall_refused, self._recall_refused_at = 0, None
         return out
 
-    def _band_point(self, pose: dict, tx: float, ty: float, avoid=()) -> Optional[tuple]:
+    def _band_point(self, pose: dict, tx: float, ty: float) -> Optional[tuple]:
         """Reachable floor within APPROACH_NEAR_M..APPROACH_FAR_M of the
-        target, nearest the robot by path, and (3.175.E) farther than
-        `RECALL_OTHER_M` from every point in `avoid`; None if the map offers none."""
+        target, nearest the robot by path; None if the map offers none."""
+        return self._band_points(pose, tx, ty)[1]
+
+    def _band_points(self, pose: dict, tx: float, ty: float, avoid=()) -> tuple:
+        """(3.175.E) One pass over the map: (the band point nearest by path
+        that is at least `RECALL_OTHER_M` from every point in `avoid`, or None
+        when `avoid` is empty or none is; the nearest band point, or None)."""
         try:
             m = self.world.get_map()
         except Exception:  # noqa: BLE001
             m = {}
         steps, start, _need = reachable(m, pose["x_m"], pose["y_m"])
         if start is None:
-            return None
+            return None, None
         res = m["resolution_m"]
-        best = None
+        best = other = None
         for (cx, cy), n in steps.items():
             px = m["origin_x_m"] + (cx + 0.5) * res
             py = m["origin_y_m"] + (cy + 0.5) * res
             if APPROACH_NEAR_M <= math.hypot(px - tx, py - ty) <= APPROACH_FAR_M:
-                if any(math.hypot(px - ax, py - ay) < RECALL_OTHER_M for ax, ay in avoid):
-                    continue
                 if best is None or n < best[0]:
                     best = (n, px, py)
-        return None if best is None else (best[1], best[2])
+                if avoid and not any(math.hypot(px - ax, py - ay) < RECALL_OTHER_M
+                                     for ax, ay in avoid):
+                    if other is None or n < other[0]:
+                        other = (n, px, py)
+        pick = lambda b: None if b is None else (b[1], b[2])  # noqa: E731
+        return pick(other), pick(best)
 
     def _approach_point(self, pose: dict, tx: float, ty: float, d: float) -> tuple:
         """Reachable floor within APPROACH_NEAR_M..APPROACH_FAR_M of the
@@ -1377,9 +1397,12 @@ class ExploreAgent(MissionAgent):
                                        goals_sent=self.goals_sent, ctx=ctx))
         if getattr(self.goal_policy, "rooms", False):
             goals = [c.goal for _, c, _ in pool]
+            room_hint = getattr(self, "room_hint", None)
+            hint = {"hint": room_hint} if room_hint else {}
             feats = self.goal_policy.extend(m, pose, goals, feats, trail=self._trail,
                                             types=self._goal_types(m, goals),
-                                            target=self.memory.target_object, ctx=ctx)
+                                            target=self.memory.target_object, ctx=ctx,
+                                            **hint)
         return pool, feats
 
     def _goal_types(self, m: dict, goals: list) -> list:
@@ -1397,9 +1420,15 @@ class ExploreAgent(MissionAgent):
             if got is not None:
                 m = got[0]
                 labels = self._labels({**m, "room_labels": got[1]})
+        room_hint = getattr(self, "room_hint", None)
         if labels is None:
+            if room_hint:
+                self.hint_cells = None        # no labelled map this choice: not stale
             return [None] * len(goals)
         w, h, names = m["width"], m["height"], labels["names"]
+        if room_hint:
+            hit = {k for k, n in enumerate(names) if hint_matches(room_type(n), room_hint)}
+            self.hint_cells = sum(1 for k in labels["cells"] if k in hit) if hit else 0
         r = max(1, int(round(ROOM_RES_M / m["resolution_m"])))
         ring = sorted(((di, dj) for di in range(-r, r + 1) for dj in range(-r, r + 1)),
                       key=lambda d: d[0] * d[0] + d[1] * d[1])
@@ -1661,7 +1690,16 @@ class ExploreAgent(MissionAgent):
         """3.156.D7e: the mission went to charge and comes back. The goal it
         was on was ended by that, not by the place: forgotten, uncounted;
         everything learned stays."""
-        self._goal = None
+        g, self._goal = self._goal, None
+        place = (g or {}).get("recall")
+        if place is not None:
+            # 3.175.E review (both reviewers): a recall goal ended by charging
+            # is uncounted too -- the place goes back, its try returned.
+            tried = self._recall_tried.get(place)
+            if tried:
+                tried.pop()
+            if place not in self.recall:
+                self.recall.insert(0, place)
         self._approach = None           # or a re-sighting there sends no approach goal
         self._pending = []
         self._local_wait_since = None

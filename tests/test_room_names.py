@@ -278,7 +278,11 @@ def test_names_stay_local_no_other_module_reads_the_store():
                          cwd=ROOT, capture_output=True, text=True).stdout.split()
     # 3.160.D: the runner reads the names for a find's goal types and keeps
     # only a count in its status; its sweep and live run read local copies.
-    out = [p for p in out if not p.startswith("evaluations/room-names-3160d/")]
+    # 3.176.B: its sweep swaps the store for an in-memory one (the houses'
+    # own rooms) in every arm with a frame_id; the arms without one never
+    # reach a store (its rows: person_rooms 0 in all 200). That file only.
+    out = [p for p in out if not p.startswith("evaluations/room-names-3160d/")
+           and p != "evaluations/request-3176/sweep.py"]
     assert sorted(out) == ["brain/room_labels.py", "brain/room_names.py",
                            "control/brain_server.py", "control/mission_runner.py",
                            "tests/test_room_names.py", "tests/test_room_names_find.py",

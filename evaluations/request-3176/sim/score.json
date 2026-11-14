@@ -1,0 +1,216 @@
+{
+ "skipped": {
+  "dev": {
+   "no_target": 0,
+   "no_hint": 0,
+   "parse_mismatch": 0
+  },
+  "none": {
+   "no_target": 0,
+   "no_hint": 0,
+   "parse_mismatch": 0
+  },
+  "right": {
+   "no_target": 0,
+   "no_hint": 0,
+   "parse_mismatch": 0
+  },
+  "wrong": {
+   "no_target": 0,
+   "no_hint": 0,
+   "parse_mismatch": 0
+  },
+  "absent": {
+   "no_target": 0,
+   "no_hint": 0,
+   "parse_mismatch": 0
+  },
+  "nolabels": {
+   "no_target": 0,
+   "no_hint": 0,
+   "parse_mismatch": 0
+  },
+  "parsed": {
+   "no_target": 0,
+   "no_hint": 0,
+   "parse_mismatch": 0
+  }
+ },
+ "S1": {
+  "R": {
+   "pairs": 100,
+   "found": [
+    99,
+    100
+   ],
+   "both_found": 99,
+   "goals_median": [
+    4,
+    5
+   ],
+   "sim_s_median": [
+    9.37,
+    10.04
+   ],
+   "met": true
+  },
+  "U": {
+   "pairs": 100,
+   "found": [
+    99,
+    100
+   ],
+   "both_found": 99,
+   "goals_median": [
+    5,
+    6
+   ],
+   "sim_s_median": [
+    10.23,
+    12.28
+   ],
+   "met": true
+  },
+  "met": true
+ },
+ "S4": {
+  "R": {
+   "pairs": 100,
+   "found": [
+    99,
+    100
+   ],
+   "both_found": 99,
+   "goals_median": [
+    10,
+    5
+   ],
+   "sim_s_median": [
+    20.73,
+    10.06
+   ],
+   "met": true
+  },
+  "U": {
+   "pairs": 100,
+   "found": [
+    100,
+    100
+   ],
+   "both_found": 100,
+   "goals_median": [
+    14.0,
+    6.0
+   ],
+   "sim_s_median": [
+    28.455,
+    12.28
+   ],
+   "met": true
+  },
+  "met": true
+ },
+ "S2": {
+  "pairs": 100,
+  "found": [
+   99,
+   100
+  ],
+  "both_found": 99,
+  "goals_median": [
+   5,
+   6
+  ],
+  "sim_s_median": [
+   10.23,
+   12.28
+  ],
+  "goals_ratio": 0.833,
+  "sim_s_ratio": 0.833,
+  "reward_mean_diff": 0.1023,
+  "reward_ci95": [
+   0.0068,
+   0.1992
+  ],
+  "met": false
+ },
+ "S3": {
+  "pairs": 100,
+  "found": [
+   99,
+   100
+  ],
+  "both_found": 99,
+  "goals_median": [
+   4,
+   5
+  ],
+  "sim_s_median": [
+   9.37,
+   10.04
+  ],
+  "reward_mean_diff": -0.0209,
+  "reward_ci95": [
+   -0.1047,
+   0.0375
+  ],
+  "met": true
+ },
+ "S5": {
+  "pairs_both_found": 199,
+  "median": 1.594,
+  "p90": 4.405,
+  "worst": 12.124,
+  "met": false
+ },
+ "S6": {
+  "parsed_vs_none": {
+   "missions": 200,
+   "differ": 0,
+   "first": []
+  },
+  "nolabels_vs_dev": {
+   "missions": 200,
+   "differ": 0,
+   "first": []
+  },
+  "absent_vs_none": {
+   "missions": 200,
+   "differ": 0,
+   "first": []
+  },
+  "met": true
+ },
+ "S7": {
+  "odd_outcomes": [
+   [
+    "right",
+    194,
+    "U",
+    "exhausted"
+   ],
+   [
+    "right",
+    195,
+    "R",
+    "exhausted"
+   ],
+   [
+    "wrong",
+    247,
+    "R",
+    "exhausted"
+   ]
+  ],
+  "exceptions": {
+   "dev": 0,
+   "none": 0,
+   "right": 0,
+   "wrong": 0,
+   "absent": 0,
+   "nolabels": 0,
+   "parsed": 0
+  },
+  "met": false
+ }
+}

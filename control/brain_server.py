@@ -87,10 +87,12 @@ from typing import Callable, Optional
 
 import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException, Response
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field
 
 from brain.goal_policy import rooms_prior_informative
+from brain.request import check_hint, parse as parse_request
 from brain.navigate import MAX_TARGET_CHARS, room_label_fn_for, vision_fn_for
 from brain.perceive import (DEFAULT_CLIP, DEFAULT_DETECTOR,
                             DEFAULT_MATCH_PROBABILITY, PerceptionUnavailable)
@@ -103,7 +105,7 @@ from brain import what_i_saw as what_i_saw_mod
 from control import drills
 from control.brain_config import load_brain_config
 from control.inventory_store import _slug, inventory_store_from_config
-from control.mission_runner import VISION_POLICIES, MissionRunner
+from control.mission_runner import MAX_REQUEST_CHARS, VISION_POLICIES, MissionRunner
 from control.reconfirm import CloudWatch, Reconfirmer, health_probe
 from control.recording_routes import (  # noqa: F401 -- re-exported, see above
     FRAME_SUFFIX,
@@ -199,6 +201,21 @@ class MissionStartRequest(BaseModel):
     # twin's "Record this walk" under Drive via brain). The brain drains the
     # teleop body's frames itself, so the phone uploads each frame once.
     record_walk: Optional[str] = None
+    # 3.176: a find's room hint, {"type": <vocabulary type>} or {"name": <a
+    # room named on the saved map>} (brain/request.py `check_hint`). It orders
+    # explore's goals by the room policy's prior; it never ends a mission by itself,
+    # and it is not `target_room` (a mission to reach a room).
+    room_hint: Optional[dict] = None
+    # 3.176: the sentence the find was asked in, kept in the status and the
+    # report for the record; it changes nothing the mission does.
+    request: Optional[str] = Field(default=None, max_length=MAX_REQUEST_CHARS)
+
+    model_config = ConfigDict(extra="forbid")
+
+
+class RequestParseRequest(BaseModel):
+    """3.176: a sentence to read as a find (`POST /mission/request/parse`)."""
+    text: str = Field(max_length=MAX_REQUEST_CHARS)
 
     model_config = ConfigDict(extra="forbid")
 
@@ -733,6 +750,11 @@ def create_app(
         # 3.90 E: "combine frames" changes the tier's candidate rule; any
         # other policy has none, and an unknown name is refused, not ignored.
         parse_frame_vote(req.frame_vote)
+        # 3.176: a room hint is a vocabulary type, or a room named on the
+        # saved map the robot is on now; anything else is refused at start.
+        room_hint = check_hint(req.room_hint)
+        if room_hint is not None and "name" in room_hint:
+            check_hint(room_hint, _map_room_names(strict=True))
         if req.frame_vote not in (None, "off") and req.policy != "tiered":
             raise ValueError("frame_vote combines the tiered policy's frames: it needs "
                              "policy 'tiered'.")
@@ -782,7 +804,7 @@ def create_app(
         if req.policy == "explore" or tier_search == "explore":
             # 3.31. Goals go to nav2 through the robot server; checked here so
             # a world with no planner refuses at start, not on the first tick.
-            if not req.target_object and req.job != "survey":
+            if not (req.target_object or "").strip() and req.job != "survey":
                 raise ValueError(f"The {policy_name} searches for an object -- it "
                                  "needs a target_object (or job 'survey').")
             navigator = _new_navigator(config, robot, robot_secret)
@@ -908,6 +930,8 @@ def create_app(
         kwargs = dict(
             target_object=req.target_object,
             target_room=req.target_room,
+            room_hint=room_hint,
+            request=req.request,
             mission=req.mission,
             max_steps=req.max_steps,
             mission_time_limit_s=(req.mission_time_limit_s
@@ -1495,6 +1519,38 @@ def create_app(
         if not ok:
             raise HTTPException(status_code=409, detail=why)
         return {"accepted": True, "choice": req.choice, "candidate": req.candidate}
+
+    # ---- 3.176: a find asked in plain words ----
+
+    def _map_room_names(strict: bool = False) -> list:
+        """The room names a person gave the saved map the robot is on now
+        (3.160's store, the pose's `frame_id`). [] with no saved map or no
+        names; a read that fails is [] too, or the start's ValueError when
+        `strict` (a name hint cannot be checked)."""
+        try:
+            pose = world().get_pose() or {}
+            # As the mission reads it (`_name_labels`): a pose not marked
+            # usable names no saved map.
+            frame_id = pose.get("frame_id") if pose.get("usable") else None
+            names = ([r["name"] for r in room_names_mod.default_store().rooms(frame_id)
+                      if r.get("name")] if frame_id else [])
+        except Exception as e:  # noqa: BLE001 -- the parse reads no names; a start refuses
+            if strict:
+                raise ValueError(f"a room_hint name cannot be checked: {e}")
+            logger.warning("request parse: room names unreadable: %s", e)
+            return []
+        if strict and not frame_id:
+            raise ValueError("a room_hint name needs a saved map (none is loaded)")
+        return names
+
+    @app.post(prefix + "/mission/request/parse", dependencies=[Depends(require_secret)])
+    def request_parse(req: RequestParseRequest):
+        """3.176: what a sentence would start, read by rules (no model, no
+        paid call, nothing moves), against the saved map's room names. The
+        twin shows it before Start and starts with what it showed."""
+        names = _map_room_names()
+        return JSONResponse({**parse_request(req.text, names).to_dict(),
+                             "names_read": len(names)})
 
     # ---- 3.160: rooms a person names on the saved map ----
 

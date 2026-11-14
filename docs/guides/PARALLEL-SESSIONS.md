@@ -312,7 +312,11 @@ Continuing an existing section: work in its worktree
      origin takes exactly one and every machine -- the Jetson, a cloud
      session -- sees it. The local claim file is written only after that
      push succeeds. Origin unreachable: `claim` fails; there is no
-     local-only claim. A `claim/*` push passes the pre-push hook without
+     local-only claim. The host is a digest (origin is public) of the host
+     name and pid namespace; in a Claude Code cloud container
+     (`CLAUDE_CODE_REMOTE=true`), of its `CLAUDE_CODE_REMOTE_SESSION_ID`
+     instead, because every cloud container shares the other two (3.179).
+     So an ended container's claim stays held until the user frees it. A `claim/*` push passes the pre-push hook without
      the gate.
    * `board`, `next` and `claim` read origin's claims with one `git
      ls-remote` (offline, `board` says so). The dev State cell is not
