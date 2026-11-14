@@ -122,19 +122,20 @@ def host() -> str:
     namespace (and the image's machine-id), so the pair named every cloud
     container alike, and each cloud session read the others' claims as
     this machine's, their process gone: free, and taken over. There one
-    container is one session, so `CLAUDE_CODE_REMOTE_SESSION_ID` (stable
-    across a worker restart, unlike the boot id) joins the digest. Without
-    it the digest is the one every desktop claim already carries."""
+    container is one session, and in one (`CLAUDE_CODE_REMOTE=true`) the
+    machine is named by its `CLAUDE_CODE_REMOTE_SESSION_ID` alone (stable
+    across a worker restart, unlike the boot id). Anywhere else the digest
+    is the one every desktop and Jetson claim already carries."""
     forced = os.environ.get("PICAR_CLAIM_HOST")
     if forced:
         return forced
+    cloud = os.environ.get("CLAUDE_CODE_REMOTE_SESSION_ID", "")
+    if cloud and os.environ.get("CLAUDE_CODE_REMOTE") == "true":
+        return _digest("h-", f"cloud|{cloud}")
     try:
         ns = str(os.stat("/proc/self/ns/pid").st_ino)
     except OSError:
         ns = ""
-    cloud = os.environ.get("CLAUDE_CODE_REMOTE_SESSION_ID", "")
-    if cloud:
-        return _digest("h-", f"{socket.gethostname()}|{ns}|{cloud}")
     return _digest("h-", f"{socket.gethostname()}|{ns}")
 
 

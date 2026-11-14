@@ -21,6 +21,13 @@ import plan_claims as pc  # noqa: E402
 REMOTE = "CLAUDE_CODE_REMOTE_SESSION_ID"
 
 
+def container(monkeypatch, remote_id):
+    """Be the cloud container named `remote_id` (both variables Claude Code
+    sets there)."""
+    monkeypatch.setenv("CLAUDE_CODE_REMOTE", "true")
+    monkeypatch.setenv(REMOTE, remote_id)
+
+
 def _dev_host() -> str:
     """`host()` as `dev` computed it before 3.179, copied verbatim: the
     desktop's claims must keep matching it (criterion 3)."""
@@ -38,14 +45,14 @@ def _claim_on_origin(repo, step):
 
 
 def test_criterion_1_two_cloud_containers_are_two_machines(repo, owners, monkeypatch):
-    monkeypatch.setenv(REMOTE, "cse_container_a")
+    container(monkeypatch, "cse_container_a")
     pa, a = owners()
     pc.claim("3.90.A", cwd=repo, me=a)
     sha = remote_refs(repo)["3.90.A"]
     pa.kill()                                  # A's process is not running in B
     pa.wait()
 
-    monkeypatch.setenv(REMOTE, "cse_container_b")
+    container(monkeypatch, "cse_container_b")
     _, b = owners()
     theirs = _claim_on_origin(repo, "3.90.A")
     assert theirs["host"] != b["host"]
@@ -59,24 +66,21 @@ def test_criterion_1_two_cloud_containers_are_two_machines(repo, owners, monkeyp
 
 
 def test_criterion_1_next_does_not_offer_another_containers_claim(repo, owners, monkeypatch):
-    monkeypatch.setenv(REMOTE, "cse_container_a")
+    container(monkeypatch, "cse_container_a")
     pa, a = owners()
-    for step in ("3.90.A", "3.91.A"):
-        try:
-            pc.claim(step, cwd=repo, me=a)
-        except SystemExit:
-            pass                              # one session per section; 3.91 may have no free step
+    pc.claim("3.90.A", cwd=repo, me=a)
+    assert "3.90.A" in remote_refs(repo)       # claimed on origin before B looks
     pa.kill()
     pa.wait()
-    monkeypatch.setenv(REMOTE, "cse_container_b")
+    container(monkeypatch, "cse_container_b")
     _, b = owners()
     monkeypatch.setenv("PICAR_CLAIM_PID", str(b["pid"]))
     out = pc.cmd_next(cwd=repo)
-    assert "3.90.A" not in out.split("\n")[0], out
+    assert "3.90.A" not in out, out
 
 
 def test_criterion_2_one_container_takes_over_its_own_dead_holder(repo, owners, monkeypatch):
-    monkeypatch.setenv(REMOTE, "cse_container_a")
+    container(monkeypatch, "cse_container_a")
     pa, a = owners()
     pc.claim("3.90.A", cwd=repo, me=a)
     pa.kill()
@@ -96,18 +100,31 @@ def test_criterion_3_without_a_remote_id_the_digest_is_dev_s(monkeypatch, value)
     assert pc.host() == _dev_host()
 
 
+@pytest.mark.parametrize("remote", [None, "", "false", "1"])
+def test_criterion_3_a_remote_id_outside_a_cloud_container_changes_nothing(monkeypatch, remote):
+    """A desktop or Jetson session that inherits the id (Remote Control)
+    keeps its machine's digest: only CLAUDE_CODE_REMOTE=true is the cloud."""
+    monkeypatch.delenv("PICAR_CLAIM_HOST", raising=False)
+    container(monkeypatch, "cse_inherited")
+    if remote is None:
+        monkeypatch.delenv("CLAUDE_CODE_REMOTE", raising=False)
+    else:
+        monkeypatch.setenv("CLAUDE_CODE_REMOTE", remote)
+    assert pc.host() == _dev_host()
+
+
 def test_criterion_3_the_cloud_digest_differs_and_is_stable(monkeypatch):
     monkeypatch.delenv("PICAR_CLAIM_HOST", raising=False)
-    monkeypatch.setenv(REMOTE, "cse_one")
+    container(monkeypatch, "cse_one")
     one = pc.host()
     assert one != _dev_host() and pc.host() == one
-    monkeypatch.setenv(REMOTE, "cse_two")
+    container(monkeypatch, "cse_two")
     assert pc.host() != one
 
 
 def test_criterion_4_the_raw_id_never_reaches_origin(repo, owners, monkeypatch):
     secret = "cse_01SECRETVALUE"
-    monkeypatch.setenv(REMOTE, secret)
+    container(monkeypatch, secret)
     assert re.fullmatch(r"h-[0-9a-f]{12}", pc.host())
     assert secret not in pc.host()
     _, a = owners()
@@ -119,7 +136,7 @@ def test_criterion_4_the_raw_id_never_reaches_origin(repo, owners, monkeypatch):
 
 
 def test_criterion_5_a_claim_under_the_old_shared_digest_stays_its_sessions(repo, monkeypatch):
-    monkeypatch.setenv(REMOTE, "cse_mine")
+    container(monkeypatch, "cse_mine")
     legacy = _dev_host()
     fake_claim(repo, "3.90.A", host=legacy, session="s-mine0001", pid=1)
     me = {"pid": 4242424, "start": "x", "session": "s-mine0001", "host": pc.host()}
