@@ -82,11 +82,14 @@ def test_tries_are_capped():
     assert kinds[:2] == ["recall", "recall"] and runner.agent.recall == []
 
 
-def test_with_no_other_approach_point_the_best_goes_again():
+def test_with_no_other_approach_point_the_best_goes_again(monkeypatch):
     runner, nav, place = _setup(abort=1)
     agent = runner.agent
     first = agent._band_point(agent._pose(), *place)
-    agent._recall_tried[place] = [place]           # every band point is too near
+    agent._recall_tried[place] = [first]
+    import brain.explore as explore
+    monkeypatch.setattr(explore, "RECALL_OTHER_M", 10.0)   # every band point is too near
+    assert agent._band_points(agent._pose(), *place, avoid=[first]) == (None, first)
     out = agent._recall_goal(agent.clock())
     assert out[0] == "GOAL" and agent.recall == []
     assert agent._recall_tried[place][-1] == first
@@ -104,3 +107,21 @@ def test_a_recall_that_arrives_is_one_goal():
     runner, nav, place = _setup(abort=0)
     kinds = _run(runner)
     assert kinds.count("recall") == 1 and not _events(runner, "recall_again")
+
+
+def test_a_recall_goal_ended_by_charging_keeps_its_place_and_its_try():
+    """Review: set_aside forgets the goal uncounted, so the place goes back."""
+    runner, nav, place = _setup(abort=0)
+    agent = runner.agent
+    out = agent._recall_goal(agent.clock())
+    assert out[0] == "GOAL" and agent.recall == [] and len(agent._recall_tried[place]) == 1
+    agent.set_aside()
+    assert agent.recall == [place] and agent._recall_tried[place] == []
+
+
+def test_a_new_recall_list_starts_its_tries_afresh():
+    runner, nav, place = _setup(abort=0)
+    agent = runner.agent
+    agent._recall_tried[place] = [place, place]
+    agent.recall_from([place])
+    assert agent._recall_tried == {} and agent.recall == [place]
