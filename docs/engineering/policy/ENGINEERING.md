@@ -908,6 +908,27 @@ the named rooms the last choice placed on the live map (absent at 0;
 `layer()`: a named room `placed()` would list unplaced after a re-map is
 still painted where its cells lie.
 
+**A find's room hint (3.176).** A start's `room_hint` (`{"type": t}` or
+`{"name": n}`, `brain/request.py` `check_hint`) reaches `ExploreAgent.room_hint`
+and, at each choice, `RoomGoalPolicy.extend(..., hint=)`. `hinted_prior()`
+reads it as the target's own prior with every goal type the hint names set to
+1.0 -- a type hint matches a goal's type through the vocabulary
+(`canonical_room`: a room labelled "den" is a living room), a name hint the
+person's room of that name, both without case -- and every other rate
+unchanged. No hint, or no goal in the hinted room: the prior object itself,
+so a find without a hint scores exactly as before (3.176.B S6: 0 of 200
+differ). It can only reorder goals that carry room types: with no room-label
+layer (no names and `find_room_labels` off) or under another policy it does
+nothing, and `status.room_hint` says why. It never changes the asks decision
+(`find_room_labels`' flat-prior skip reads the target's own prior), and the
+mission ends only as one without a hint can. `ExploreAgent.hint_cells` counts
+the labelled cells in the hinted room on the map the last choice was typed on
+(`_goal_types`), never "absent": the map is discovered. The sentence a person
+types is read by `brain/request.py` `parse()` (rules, no model: the target,
+colour and size words, one room or none; 3.176.A's vocabulary), served by the
+brain's `POST /mission/request/parse` (mission spec);
+`tests/test_request.py`.
+
 
 **Explore asks a person (3.88 A).** With `explore_ask` on (brain config,
 or a start's own `explore_ask`), `MissionRunner` gives `ExploreAgent` a
