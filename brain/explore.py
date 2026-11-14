@@ -132,6 +132,14 @@ NUDGE_PLACE_M = 0.30
 # 3.172 F5: a find goes first to where earlier missions on the saved map put
 # the target -- at most this many carried landmarks, one goal each.
 RECALL_MAX = 3
+# 3.175.E: a recall goal that ends without arriving (aborted, stalled, ...)
+# goes again once, from another approach point: at most this many goals per
+# place per mission. 3.175.B: one aborted try spent the place unlooked-at.
+RECALL_TRIES = 2
+# The second goal's point is at least this far from the first one's when the
+# band offers such floor (one sim cell); else the best point again (an abort
+# may be the moment's, a person or a pet in the way).
+RECALL_OTHER_M = 0.3
 # 3.173.B: a survey's goal into a room of its map that holds no cell at the
 # goal clearance (laundry and pantry: 0.366 m on truth, the goal's 0.35 m on
 # SLAM's map) may stand at this clearance -- over the chassis' 0.181 m, at which
@@ -361,6 +369,7 @@ class ExploreAgent(MissionAgent):
         self._recall_refused = 0            # refusals in a row of recall[0]
         self._recall_refused_at = None      # when that row began
         self._recall_refused_last = None    # its latest refusal
+        self._recall_tried: dict = {}       # 3.175.E: place -> the goal points sent for it
         self._aside_at: list = []           # 3.172.D: this choice's skips for a carried set-aside
         self._stood: set = set()            # 3.173.B: where the robot has stood, STOOD_M squares
         self._stood_in: set = set()         # Thermos 1: those once inside a small-room region
@@ -958,13 +967,15 @@ class ExploreAgent(MissionAgent):
         if not pose.get("usable"):
             return None
         tx, ty = self.recall[0]
+        tried = self._recall_tried.get((tx, ty), [])
         if self._at_target(tx, ty):
             self.recall.pop(0)
             self._recall_refused, self._recall_refused_at = 0, None
             self._pending = [("FACE", (tx, ty))]
             self._event("recall", pose=pose, at=[round(tx, 2), round(ty, 2)], here=True)
             return self._do_pending()
-        spot = self._band_point(pose, tx, ty)
+        spot = self._band_point(pose, tx, ty, avoid=tried) if tried else None
+        spot = spot or self._band_point(pose, tx, ty)      # 3.175.E: else the best again
         if spot is None:
             # Review: no reachable floor beside it on this map yet. Kept, not
             # spent on a straight-line goal through walls: frontiers grow the
@@ -975,6 +986,7 @@ class ExploreAgent(MissionAgent):
             self.recall.pop(0)
             self._recall_refused, self._recall_refused_at = 0, None
             self._goal["recall"] = (tx, ty)
+            self._recall_tried.setdefault((tx, ty), []).append(spot)
         else:
             last, self._recall_refused_last = self._recall_refused_last, now
             if self._recall_refused_at is None or (
@@ -991,9 +1003,10 @@ class ExploreAgent(MissionAgent):
                 self._recall_refused, self._recall_refused_at = 0, None
         return out
 
-    def _band_point(self, pose: dict, tx: float, ty: float) -> Optional[tuple]:
+    def _band_point(self, pose: dict, tx: float, ty: float, avoid=()) -> Optional[tuple]:
         """Reachable floor within APPROACH_NEAR_M..APPROACH_FAR_M of the
-        target, nearest the robot by path; None if the map offers none."""
+        target, nearest the robot by path, and (3.175.E) farther than
+        `RECALL_OTHER_M` from every point in `avoid`; None if the map offers none."""
         try:
             m = self.world.get_map()
         except Exception:  # noqa: BLE001
@@ -1007,6 +1020,8 @@ class ExploreAgent(MissionAgent):
             px = m["origin_x_m"] + (cx + 0.5) * res
             py = m["origin_y_m"] + (cy + 0.5) * res
             if APPROACH_NEAR_M <= math.hypot(px - tx, py - ty) <= APPROACH_FAR_M:
+                if any(math.hypot(px - ax, py - ay) < RECALL_OTHER_M for ax, ay in avoid):
+                    continue
                 if best is None or n < best[0]:
                     best = (n, px, py)
         return None if best is None else (best[1], best[2])
@@ -1693,6 +1708,13 @@ class ExploreAgent(MissionAgent):
             return
         target = g.get("target") or (g["x_m"], g["y_m"])
         self.goals_failed += 1
+        place = g.get("recall")
+        if place is not None and len(self._recall_tried.get(place, ())) < RECALL_TRIES:
+            # 3.175.E: not arrived, so not looked at: once more, from another
+            # approach point, after whatever this failure queues (an escape).
+            self.recall.insert(0, place)
+            self._event("recall_again", at=[round(place[0], 2), round(place[1], 2)], state=state,
+                        tries=len(self._recall_tried.get(place, ())))
         # 3.85 at merge: with 3.80.G's close-in (perception sightings), an
         # approach stalled with the robot already in the band is a plain
         # failure (one retry failure), as its timeout was before the stall
