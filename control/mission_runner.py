@@ -72,6 +72,7 @@ from brain.mission_report import map_coverage
 from brain.navigate import CloudUnavailable
 from brain import room_names
 from brain.room_labels import RoomLabeller, frame_room
+from brain.request import check_hint
 from brain.vision_agent import VisionAgent
 from robot.interface import (AUTONOMY_LAPSED, BATTERY_CHECK, BATTERY_POWEROFF, BATTERY_RESERVE,
                              DRIVER_MANUAL, PERSON_STOP,
@@ -104,6 +105,8 @@ SEED_EVERY_S = 2.0
 # brain-side pre-check and the robot-side veto now agree on one number
 # instead of two. tests/test_sensors.py pins the property.
 DEFAULT_MIN_DISTANCE_CM = 20.0
+# 3.176: the sentence a find was asked in, kept for the record (at most).
+MAX_REQUEST_CHARS = 500
 # The reference backpack hunt (tests/demo_active_search.py) takes 83 steps
 # with the frontier policy, so a budget of 80 would end just short of it.
 # Under a vision policy every step is a paid call and this wants to come
@@ -751,6 +754,8 @@ class MissionRunner:
         house: Optional[str] = None,
         return_to_dock: bool = False,
         return_wait_s: float = docking.RETURN_WAIT_S,
+        room_hint: Optional[dict] = None,
+        request: Optional[str] = None,
     ):
         if job not in JOBS:
             raise ValueError(f"Unknown job: {job!r}. Known: {', '.join(JOBS)}")
@@ -775,14 +780,27 @@ class MissionRunner:
             if target_object or target_room:
                 raise ValueError("A survey has no target: it maps the house and labels "
                                  "its rooms, and never ends Found")
-        elif not target_object and not target_room:
+        elif not (target_object or "").strip() and not target_room:
+            # 3.176: a blank target is no target (it would match every label
+            # in the simulator's substring rule).
             raise ValueError(
                 "A mission needs a target_object or a target_room -- otherwise "
                 "MissionMemory.is_complete() is never true and it can only end "
                 "out of budget."
             )
+        if isinstance(target_object, str) and not target_object.strip():
+            target_object = None              # beside a target_room: no target
+        # 3.176: a find's room hint orders explore's goals by the room
+        # policy's prior; never a survey's (no target), never `target_room`.
+        room_hint = check_hint(room_hint)
+        if room_hint is not None and job != "find":
+            raise ValueError("room_hint is for a find (job 'find'), not a survey")
 
         self.robot = robot
+        self.room_hint = room_hint
+        # 3.176: the sentence a person typed, kept for the record only.
+        self.request = request.strip()[:MAX_REQUEST_CHARS] if isinstance(request, str) and request.strip() else None
+        self._explore_policy_name = explore_goal_policy
         # 3.163.B: who started it: None for a person, "schedule:<id>" for a
         # schedule (set by the brain server before start()).
         self.started_by: Optional[str] = None
@@ -1012,6 +1030,8 @@ class MissionRunner:
             extra = {"navigator": self._navigator, "clock": self.clock,
                      # 3.65 phase 2: "rule" (None) or the learned goal choice.
                      "goal_policy": goal_policy_for(explore_goal_policy)}
+            if room_hint is not None:
+                extra["room_hint"] = room_hint
             if self.find_room_labels and self.room_labeller is not None:
                 extra["goal_labels"] = self._goal_labels
             elif self._names_only:
@@ -1765,6 +1785,10 @@ class MissionRunner:
                 # A skipped find keeps the count's key, at 0 (review).
                 # 3.160.D: `person_rooms`, the named rooms it read, once any.
                 "room_labels": self._room_labels_status(),
+                # 3.176: the sentence typed (record only) and the room hint,
+                # whether it can act, and the labelled cells it has so far.
+                "request": self.request,
+                "room_hint": self._room_hint_status(),
                 # 3.162: the name its report is kept under (the twin's match).
                 "mission_id": self.report_id,
                 "mission": self.memory.mission,
@@ -2694,6 +2718,10 @@ class MissionRunner:
             # so this is the map the mission ran on, as the world names it.
             "map_id": None, "map_version": None,
         }
+        if self.request or self.room_hint:
+            # 3.176: only when given, so a plain find's report is dev's.
+            report["request"] = self.request
+            report["room_hint"] = self._room_hint_status()
         try:
             m = self.world.get_map()
             report.update(map_coverage(m))
@@ -3286,6 +3314,23 @@ class MissionRunner:
             self._goal_layer = (key, cm, layer)
         _key, cm, layer = self._goal_layer
         return (cm, layer) if layer else None
+
+    def _room_hint_status(self) -> Optional[dict]:
+        """3.176: the hint, whether it can act on this mission, why not, and
+        the labelled cells in its room so far (None before a labelled map).
+        Inert -- never refused -- without a room-label layer: it can only
+        reorder goals that carry room types."""
+        if self.room_hint is None:
+            return None
+        why = None
+        if not self.explores:
+            why = "no explore search"
+        elif self._explore_policy_name != "rooms":
+            why = "explore_goal_policy is not 'rooms'"
+        elif not (self.find_room_labels and self.room_labeller is not None) and not self._names_only:
+            why = "no room labels on a find"
+        return {"hint": dict(self.room_hint), "acts": why is None, "why": why,
+                "cells": getattr(self.agent, "hint_cells", None) if why is None else None}
 
     def _name_labels(self, m: dict) -> Optional[tuple]:
         """3.160.D: a find with no labeller's layer for the room goal
