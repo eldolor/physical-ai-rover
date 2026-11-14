@@ -694,7 +694,8 @@ the limit null with the cap off), `error`,
 `{mode, label_calls, label_call_limit, capped, rooms_named, seeds}`, each
 seed `[x_m, y_m, name]`), `request` and `room_hint` (3.176: null without
 one; else `{hint, acts, why, cells}` -- `acts` false with `why` "no explore
-search", "explore_goal_policy is not 'rooms'" or "no room labels on a find",
+search", "explore_goal_policy is not 'rooms'", "no room labels on a find" or
+"no named rooms read on the saved map",
 `cells` the labelled cells in the hinted room on the map the last choice was
 typed on, null before one, 0 while none carries it; the report holds both
 only when given), `mission`, `target_object`,

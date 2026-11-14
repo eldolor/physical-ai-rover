@@ -3329,6 +3329,9 @@ class MissionRunner:
             why = "explore_goal_policy is not 'rooms'"
         elif not (self.find_room_labels and self.room_labeller is not None) and not self._names_only:
             why = "no room labels on a find"
+        elif self._names_only and not self._person_rooms_read:
+            # The names are read at each choice: none placed (yet), nothing typed.
+            why = "no named rooms read on the saved map"
         return {"hint": dict(self.room_hint), "acts": why is None, "why": why,
                 "cells": getattr(self.agent, "hint_cells", None) if why is None else None}
 

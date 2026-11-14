@@ -276,7 +276,8 @@ class ExploreAgent(MissionAgent):
         super().__init__(robot, memory, **kwargs)
         # 3.176: a find's room hint ({"type": t} or {"name": n}), read by the
         # room goal policy only, as that room's prior 1.0. It orders goals; it
-        # never ends a search. `hint_cells`: the labelled cells (on the map
+        # never ends a search by itself (3.176.B S7 measured 3 `exhausted`
+        # ends of 400 hinted missions, not traced). `hint_cells`: the labelled cells (on the map
         # the last choice was typed on) in the hinted room -- None before any
         # labelled map, 0 while none carries it (not "absent": the map is
         # discovered).
@@ -1394,10 +1395,12 @@ class ExploreAgent(MissionAgent):
             if got is not None:
                 m = got[0]
                 labels = self._labels({**m, "room_labels": got[1]})
+        room_hint = getattr(self, "room_hint", None)
         if labels is None:
+            if room_hint:
+                self.hint_cells = None        # no labelled map this choice: not stale
             return [None] * len(goals)
         w, h, names = m["width"], m["height"], labels["names"]
-        room_hint = getattr(self, "room_hint", None)
         if room_hint:
             hit = {k for k, n in enumerate(names) if hint_matches(room_type(n), room_hint)}
             self.hint_cells = sum(1 for k in labels["cells"] if k in hit) if hit else 0

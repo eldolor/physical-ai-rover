@@ -136,14 +136,14 @@ def _thing_end(toks: list) -> int:
     """Index of the first token that ends the thing's words."""
     for i, t in enumerate(toks):
         if (t in _LOCATION or t in _PUNCT or t in _PLACE or t in _VERBS
-                or t in _FILLER or tuple(toks[i:i + 2]) in _LOCATION_PAIRS
+                or t in _FILLER or t in _NOT or t.endswith("n't") or tuple(toks[i:i + 2]) in _LOCATION_PAIRS
                 or tuple(toks[i:i + 2]) == ("for", "me")):
             return i
     return len(toks)
 
 
 def _owners_off(toks: list) -> list:
-    while toks and (toks[0] in _OWNERS or toks[0].endswith("'s") or toks[0].endswith("s'")):
+    while toks and (toks[0] in _OWNERS or toks[0].endswith("'s")):
         toks = toks[1:]
     return toks
 
@@ -183,16 +183,20 @@ def _rooms_in(toks: list, names: Sequence[str]) -> list:
     return sorted(found, key=lambda f: f[0])
 
 
-def _hint(toks: list, names: Sequence[str]) -> Optional[dict]:
-    """One room named, not negated, or None (never a guess)."""
+def _hint(toks: list, names: Sequence[str]) -> tuple:
+    """(one room named and not negated, or None -- never a guess; the token
+    indices it was read from)."""
     rooms = _rooms_in(toks, names)
     distinct = {tuple(sorted(h.items())) for _, h in rooms}
     if len(distinct) != 1:
-        return None
-    first = rooms[0][0]
+        return None, set()
+    first, hint = rooms[0]
     if any(t in _NOT or t.endswith("n't") for t in toks[:first]):
-        return None
-    return rooms[0][1]
+        return None, set()
+    width = len(_tokens(hint["name"])) if "name" in hint else len(
+        next(p for p, t in _ROOM_PHRASES if t == hint["type"]
+             and tuple(toks[first:first + len(p)]) == p))
+    return hint, set(range(first, first + width))
 
 
 def parse(text: str, names: Sequence[str] = ()) -> Request:
@@ -212,10 +216,15 @@ def parse(text: str, names: Sequence[str] = ()) -> Request:
             target, room_words = None, thing
     elif target is None:
         room_words = toks
-    hint = _hint(room_words, names)
+    hint, used = _hint(room_words, names)
     colours = tuple(COLOURS[w] for w in (target or "").split() if w in COLOURS)
     sizes = [SIZES[w] for w in (target or "").split() if w in SIZES]
-    unused = " ".join(t for t in rest if t not in _PUNCT)
+    # The words read past: what followed the thing, less the room the hint
+    # was read from and the small words around it ("in the").
+    skip = used if room_words is rest else set()
+    unused = " ".join(t for i, t in enumerate(rest)
+                      if i not in skip and t not in _PUNCT and t not in _LOCATION
+                      and t not in _OWNERS and t not in _FILLER)
     return Request(text=text, target=target, room_hint=hint, colours=colours,
                    size=sizes[0] if sizes else None, unused=unused,
                    detector_prompts=(target,) if target else ())
@@ -228,6 +237,8 @@ def _covers(words: list, hint: dict, names: Sequence[str]) -> bool:
     return _WORD_TYPE.get(" ".join(words)) == hint["type"]
 
 
+# brain/room_names.py's MAX_NAME (a person's room name), kept equal by
+# tests/test_request.py -- not imported, so this module stays free of numpy.
 MAX_HINT_NAME = 40
 
 

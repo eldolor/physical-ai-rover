@@ -38,6 +38,7 @@ import numpy as np
 
 from brain.frontier import _cell_of
 from brain.room_labels import segment
+from brain.request import canonical_room
 from world.interface import CELL_FREE, CELL_OCCUPIED, CELL_UNKNOWN
 
 WEIGHTS_PATH = Path(__file__).resolve().parent / "explore_goal_weights.json"
@@ -338,11 +339,12 @@ def hint_matches(t: Optional[str], hint: Optional[dict]) -> bool:
     """Whether a goal's room type (a label's name, 'bedroom 2' cut to
     'bedroom') is the room a hint names (3.176): a type hint matches every
     room its vocabulary words name ('den' is a living room), a name hint the
-    person's room of that name; both without case."""
+    person's room of that name; both without case. Goal types are cut to
+    `room_type` ('Bedroom 2' -> 'Bedroom'), so a name ending in a number
+    matches every room of that stem: a known limit (policy spec)."""
     if not t or not hint:
         return False
     if "type" in hint:
-        from brain.request import canonical_room
         return canonical_room(t) == hint["type"]
     return t.strip().lower() == room_type(str(hint.get("name", ""))).strip().lower()
 

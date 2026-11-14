@@ -49,10 +49,12 @@ def score(rows) -> dict:
 # ---------- P1-P6: the parser on the pinned set ----------
 
 def test_the_recorded_score_is_what_the_parser_scores():
+    """dev is re-scored on the parser as it is; test keeps its first score
+    (3.176.A: scored once, at `parser_commit`), never re-scored here."""
     rec = json.loads(SCORE.read_text())
     rows = _rows()
-    for split in ("dev", "test"):
-        assert score([r for r in rows if r["split"] == split]) == rec[split]["score"], split
+    assert score([r for r in rows if r["split"] == "dev"]) == rec["dev"]["score"]
+    assert rec["test"]["parser_commit"] == "457694de"
 
 
 def test_p1_to_p4_on_the_test_split():
@@ -106,11 +108,24 @@ def test_p6_the_parser_imports_no_network_client():
     ("my bag in the kitchn", "bag", None),                    # never a guess
     ("kitchen scissors", "kitchen scissors", None),
     ("the keys on the kitchen counter", "keys", {"type": "kitchen"}),
+    ("my keys aren't in the kitchen", "keys", None),          # review: a contraction
+    ("my phone isn't in the bedroom", "phone", None),
 ])
 def test_rules(text, target, room):
     p = rq.parse(text)
     assert (p.target, p.room_hint) == (target, room)
     assert p.detector_prompts == ((target,) if target else ())
+
+
+def test_unused_is_what_was_read_past_not_the_room():
+    assert rq.parse("find my keys in the kitchen").unused == ""
+    assert rq.parse("the keys on the kitchen counter").unused == "counter"
+    assert rq.parse("my glasses by the window").unused == "window"
+
+
+def test_the_hint_name_cap_is_the_room_name_cap():
+    from brain.room_names import MAX_NAME
+    assert rq.MAX_HINT_NAME == MAX_NAME
 
 
 def test_a_name_on_the_map_wins_over_a_type():
@@ -191,9 +206,12 @@ def test_the_status_says_whether_the_hint_can_act():
     assert st["request"] == "the red backpack in the kitchen"
     assert st["room_hint"] == {"hint": {"type": "kitchen"}, "acts": False,
                                "why": "explore_goal_policy is not 'rooms'", "cells": None}
+    # The rooms policy with no named rooms on a saved map (none here): the
+    # hint cannot act, and says so rather than claiming it steers (review).
     r, _n, _g = _mission(explore_goal_policy="rooms", room_hint={"type": "kitchen"})
-    assert r.status()["room_hint"]["why"] == "no room labels on a find" or \
-        r.status()["room_hint"]["acts"]
+    assert r.status()["room_hint"] == {"hint": {"type": "kitchen"}, "acts": False,
+                                       "why": "no named rooms read on the saved map",
+                                       "cells": None}
 
 
 def test_a_plain_find_has_no_hint_and_no_request_in_its_status():
@@ -254,6 +272,21 @@ def test_the_parse_route_reads_against_the_saved_maps_names(monkeypatch):
     got = c.post("/mission/request/parse", json={"text": "my keys and my phone"}).json()
     assert got["target"] is None and got["detector_prompts"] == []
     assert c.post("/mission/request/parse", json={"text": "x", "more": 1}).status_code == 422
+
+
+def test_the_parse_route_survives_a_world_that_answers_garbage(monkeypatch):
+    """Thermos: a ValueError subclass from the pose read (a non-JSON body)
+    reads no names; the route still answers."""
+    c = _client(monkeypatch)
+    from control import brain_server
+
+    class Bad:
+        def get_pose(self):
+            raise json.JSONDecodeError("not json", "<html>", 0)
+
+    app = brain_server.create_app(robot_factory=lambda: object(), world_factory=lambda r: Bad())
+    got = TestClient(app).post("/mission/request/parse", json={"text": "keys in the den"})
+    assert got.status_code == 200 and got.json()["names_read"] == 0
 
 
 def test_the_parse_route_without_a_saved_map_reads_no_names(monkeypatch):
