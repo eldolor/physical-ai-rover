@@ -1,0 +1,23 @@
+{
+ "parser_commit": "457694de",
+ "dev": {
+  "score": {
+   "rows": 76,
+   "target": 76,
+   "room": 76,
+   "attributes": 76,
+   "wrong_room": 0,
+   "misses": []
+  }
+ },
+ "test": {
+  "score": {
+   "rows": 76,
+   "target": 76,
+   "room": 76,
+   "attributes": 76,
+   "wrong_room": 0,
+   "misses": []
+  }
+ }
+}
