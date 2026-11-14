@@ -22,7 +22,10 @@ if __name__ == "__main__":
     rows = _rows()
     rev = subprocess.run(["git", "log", "-1", "--format=%h", "--", "brain/request.py"],
                          cwd=REPO, capture_output=True, text=True).stdout.strip()
-    out = {"parser_commit": rev,
-           **{s: {"score": score([r for r in rows if r["split"] == s])} for s in ("dev", "test")}}
+    # The test split's first score is kept as recorded (scored once); only
+    # dev is written again.
+    out = json.load(open(sys.argv[1])) if os.path.exists(sys.argv[1]) else {
+        "test": {"score": score([r for r in rows if r["split"] == "test"]), "parser_commit": rev}}
+    out["dev"] = {"score": score([r for r in rows if r["split"] == "dev"]), "parser": rev}
     json.dump(out, open(sys.argv[1], "w"), indent=1)
     print(json.dumps(out))

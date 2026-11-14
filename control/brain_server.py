@@ -203,7 +203,7 @@ class MissionStartRequest(BaseModel):
     record_walk: Optional[str] = None
     # 3.176: a find's room hint, {"type": <vocabulary type>} or {"name": <a
     # room named on the saved map>} (brain/request.py `check_hint`). It orders
-    # explore's goals by the room policy's prior; it never ends a mission,
+    # explore's goals by the room policy's prior; it never ends a mission by itself,
     # and it is not `target_room` (a mission to reach a room).
     room_hint: Optional[dict] = None
     # 3.176: the sentence the find was asked in, kept in the status and the
@@ -1529,20 +1529,19 @@ def create_app(
         `strict` (a name hint cannot be checked)."""
         try:
             pose = world().get_pose() or {}
-            frame_id = pose.get("frame_id") if pose.get("usable", True) else None
-            if not frame_id:
-                if strict:
-                    raise ValueError("a room_hint name needs a saved map (none is loaded)")
-                return []
-            return [r["name"] for r in room_names_mod.default_store().rooms(frame_id)
-                    if r.get("name")]
-        except ValueError:
-            raise
+            # As the mission reads it (`_name_labels`): a pose not marked
+            # usable names no saved map.
+            frame_id = pose.get("frame_id") if pose.get("usable") else None
+            names = ([r["name"] for r in room_names_mod.default_store().rooms(frame_id)
+                      if r.get("name")] if frame_id else [])
         except Exception as e:  # noqa: BLE001 -- the parse reads no names; a start refuses
             if strict:
                 raise ValueError(f"a room_hint name cannot be checked: {e}")
             logger.warning("request parse: room names unreadable: %s", e)
             return []
+        if strict and not frame_id:
+            raise ValueError("a room_hint name needs a saved map (none is loaded)")
+        return names
 
     @app.post(prefix + "/mission/request/parse", dependencies=[Depends(require_secret)])
     def request_parse(req: RequestParseRequest):

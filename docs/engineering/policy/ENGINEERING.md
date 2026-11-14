@@ -920,8 +920,11 @@ so a find without a hint scores exactly as before (3.176.B S6: 0 of 200
 differ). It can only reorder goals that carry room types: with no room-label
 layer (no names and `find_room_labels` off) or under another policy it does
 nothing, and `status.room_hint` says why. It never changes the asks decision
-(`find_room_labels`' flat-prior skip reads the target's own prior), and the
-mission ends only as one without a hint can. `ExploreAgent.hint_cells` counts
+(`find_room_labels`' flat-prior skip reads the target's own prior) and never
+ends a search by itself; but a hinted order can still run explore's frontiers
+out first (3.176.B S7: 3 of 400 hinted missions ended `exhausted` where the
+unhinted one found). Known limit: goal types are cut to `room_type`, so a name
+hint ending in a number ("Bedroom 2") matches every room of that stem. `ExploreAgent.hint_cells` counts
 the labelled cells in the hinted room on the map the last choice was typed on
 (`_goal_types`), never "absent": the map is discovered. The sentence a person
 types is read by `brain/request.py` `parse()` (rules, no model: the target,
