@@ -116,10 +116,22 @@ def host() -> str:
     repository, so it is a digest, never the host name; and it includes the
     process-id namespace, so two containers sharing a host name (cloud
     sessions) are two machines, each unable to see the other's processes
-    (3.139 review). Stable across reboots: no boot id."""
+    (3.139 review). Stable across reboots: no boot id.
+
+    3.179: Claude Code's cloud containers share the host name AND the pid
+    namespace (and the image's machine-id), so the pair named every cloud
+    container alike, and each cloud session read the others' claims as
+    this machine's, their process gone: free, and taken over. There one
+    container is one session, and in one (`CLAUDE_CODE_REMOTE=true`) the
+    machine is named by its `CLAUDE_CODE_REMOTE_SESSION_ID` alone (stable
+    across a worker restart, unlike the boot id). Anywhere else the digest
+    is the one every desktop and Jetson claim already carries."""
     forced = os.environ.get("PICAR_CLAIM_HOST")
     if forced:
         return forced
+    cloud = os.environ.get("CLAUDE_CODE_REMOTE_SESSION_ID", "")
+    if cloud and os.environ.get("CLAUDE_CODE_REMOTE") == "true":
+        return _digest("h-", f"cloud|{cloud}")
     try:
         ns = str(os.stat("/proc/self/ns/pid").st_ino)
     except OSError:

@@ -60,7 +60,7 @@ from brain.goal_policy import FEATURES as GOAL_FEATURES
 from brain.goal_policy import LinearGoalPolicy
 from brain.goal_policy import features as goal_features
 from brain.goal_policy import goal_context
-from brain.goal_policy import ROOM_FEATURES, ROOM_RES_M, RoomGoalPolicy, room_type
+from brain.goal_policy import ROOM_FEATURES, ROOM_RES_M, RoomGoalPolicy, hint_matches, room_type
 from brain.memory import MissionMemory
 from robot.interface import VERB_MAX_TAG, ZONE_UNUSABLE, Preempted, RobotInterface
 from robot.safety import CREEP_MARGIN_CM, FOOTPRINT_LENGTH_M, SafetyViolation, verb_speed_m_s
@@ -278,9 +278,19 @@ class ExploreAgent(MissionAgent):
         ask: Optional[GoalAsk] = None,
         choice_sink: Optional[Callable[[dict], None]] = None,
         goal_labels: Optional[Callable[[dict], Optional[dict]]] = None,
+        room_hint: Optional[dict] = None,
         **kwargs,
     ):
         super().__init__(robot, memory, **kwargs)
+        # 3.176: a find's room hint ({"type": t} or {"name": n}), read by the
+        # room goal policy only, as that room's prior 1.0. It orders goals; it
+        # never ends a search by itself (3.176.B S7 measured 3 `exhausted`
+        # ends of 400 hinted missions, not traced). `hint_cells`: the labelled cells (on the map
+        # the last choice was typed on) in the hinted room -- None before any
+        # labelled map, 0 while none carries it (not "absent": the map is
+        # discovered).
+        self.room_hint = room_hint
+        self.hint_cells: Optional[int] = None
         # 3.116.B: a find mission's own room labels (`find_room_labels`),
         # read for the room goal policy's types only -- never as the map's
         # `room_labels`, so 3.70 E3's room goals stay off. Called with this
@@ -1377,9 +1387,12 @@ class ExploreAgent(MissionAgent):
                                        goals_sent=self.goals_sent, ctx=ctx))
         if getattr(self.goal_policy, "rooms", False):
             goals = [c.goal for _, c, _ in pool]
+            room_hint = getattr(self, "room_hint", None)
+            hint = {"hint": room_hint} if room_hint else {}
             feats = self.goal_policy.extend(m, pose, goals, feats, trail=self._trail,
                                             types=self._goal_types(m, goals),
-                                            target=self.memory.target_object, ctx=ctx)
+                                            target=self.memory.target_object, ctx=ctx,
+                                            **hint)
         return pool, feats
 
     def _goal_types(self, m: dict, goals: list) -> list:
@@ -1397,9 +1410,15 @@ class ExploreAgent(MissionAgent):
             if got is not None:
                 m = got[0]
                 labels = self._labels({**m, "room_labels": got[1]})
+        room_hint = getattr(self, "room_hint", None)
         if labels is None:
+            if room_hint:
+                self.hint_cells = None        # no labelled map this choice: not stale
             return [None] * len(goals)
         w, h, names = m["width"], m["height"], labels["names"]
+        if room_hint:
+            hit = {k for k, n in enumerate(names) if hint_matches(room_type(n), room_hint)}
+            self.hint_cells = sum(1 for k in labels["cells"] if k in hit) if hit else 0
         r = max(1, int(round(ROOM_RES_M / m["resolution_m"])))
         ring = sorted(((di, dj) for di in range(-r, r + 1) for dj in range(-r, r + 1)),
                       key=lambda d: d[0] * d[0] + d[1] * d[1])

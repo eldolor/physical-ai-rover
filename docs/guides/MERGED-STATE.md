@@ -154,6 +154,7 @@ section's own file has the numbers, failed criteria and review rounds.
 * 3.175.A: a target moved between missions (in process, 75 trials): a stale recall costs nothing at the median but p90 507 s over no memory (A2 FAILED), and the next mission recalls the old place again in 30 of 75 (A3 FAILED: one stale look keeps belief >= 0.8); found counts hold, 0 wrong, 0 contacts. The harness carries landmarks, not the map, so no recall went first (A5 FAILED, instrument). 3.175.B needed, with the map carried.
 * 3.175.B: the moved-target sweep now carries the map (B0). `dev` as it was and with B's changes both FAILED A1-A5 (A3 41 -> 23 of 75; finds unchanged within a trial; A6, A7 met). On `dev` now: a carried landmark not yet seen this mission is held to `STALE_BELIEF` 0.7 on its first independent miss, any label (one dropout demotes a present object until a new-view sighting), and recalls go newest sighting first (`seen_seq`, kept off the S3 copy). The rest of A3 is an aborted recall spent after one try (candidate next step, not built). Pre-existing: the slow tier's `test_walk_dist_sweep` label-call pin fails on clean dev.
 * 3.176.A (criteria only, nothing built): a find asked in plain words is parsed at the twin before Start (rule parser, offline; `brain/request.py` is B's), and the brain runs what was shown. A room hint is its own `room_hint` field, never `target_room`, acting only as a `rooms`-policy prior override (the hinted type set to 1.0): inert without room labels or under `rule`, never a paid call, never ends a search; a null target is refused. The 152-sentence request set (`evaluations/request-3176/`, dev 76 / test 76) is sha256-pinned by `tests/test_request_set_3176.py`. B-D's bars are numeric in the section file (parser >= 90% target / 95% room; sim right, wrong and off arms; the model arm paid, the user's go).
+* 3.176.B: `brain/request.py` parses a find's sentence by rules (offline); the brain's `POST /mission/request/parse` serves it, and `/mission/start` takes `room_hint` (a vocabulary type or a named room on the saved map) and `request` (record only). The hint is a `rooms`-policy prior override (`hinted_prior`: the hinted room 1.0); with no hint, no labels or a room the house lacks, 0 of 200 missions differ. P1-P6 met (test 76/76; one author wrote set and parser). FAILED: S2 (mode U goals 0.833x, bar 0.8x), S5 (a wrong hint costs 1.59x median, 4.41x p90 seconds), S7 (3 of 400 hinted missions `exhausted`; cause explore's camera-seen record, not B). L1 not run (no nav2 in the cloud). No UI sends a hint yet (3.176.C). Candidates: a softer hint, a blind request set, explore's seen record, a capitalised room name gets no prior.
 
 ## ROS and maps
 
@@ -187,6 +188,11 @@ section's own file has the numbers, failed criteria and review rounds.
   serves the deployed twin (`picar-stack`, `picar-ngrok`).
 * 3.93, 3.128, 3.129, 3.139, 3.121, 3.113: locks, claims and the fast tier
   (section 3c; 3.113 in section 6).
+* 3.179: a cloud claim's host is a digest of its container's `CLAUDE_CODE_REMOTE_SESSION_ID`
+  (`CLAUDE_CODE_REMOTE=true`), so cloud sessions see each other's claims as held; the desktop's
+  digest is unchanged. An ended cloud container's claim stays held until the user's
+  `release --force`; the 8 claims made under the old shared digest need that once. Candidate:
+  release by a lease-guarded update to a "released" record (no branch delete).
 * 3.168: `tools/rover/`: read-only bring-up tools for L0.3-L0.6, L0.8 (udev rules, board compare, lidar capture and score, stock firmware dump, camera check), dry-run on the fakes; nothing can write to the board.
 * 3.150: `tools/bash_guard.py`, a PreToolUse hook on Bash, refuses
   `PICAR_SKIP_GATE=1` / `PICAR_CLAIM_BYPASS=1`, `--no-verify` or a
