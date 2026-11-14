@@ -651,6 +651,7 @@ otherwise). CORS allows any origin.
 | Method, path | Body | Success | Errors |
 |---|---|---|---|
 | `POST /mission/start` | `MissionStartRequest` (below); first, after the 409 check and before the build, `robot().resume_autonomy()` (`POST /autonomy/resume` on the robot server) lifts a person's Stop's latch (3.84) -- a failure is logged, never a refusal; a start refused after it puts the latch back (`relatch_autonomy()`, 3.76 K2). The build slot is held until a stopped build's runner is discarded, so a start meanwhile gets the 409 and 3.81.E's wait never reads an older runner | `{"started": true, "status": {...}}` | 409 `"A mission is already running."` (also while another start is still building its runner, 3.76 C2); 409 `"Stopped while the mission was being set up."` when a Stop landed during the build (the runner is discarded, never started); 400 config or validation error with its message (explore: an unreachable robot server or a refused secret is named as such, 3.76); 403 drill on a brain with drills off; 422 an unknown field or a bad type |
+| `POST /mission/request/parse` | `RequestParseRequest` (`extra="forbid"`): `text` str, at most `MAX_REQUEST_CHARS` (500) | 3.176: `brain/request.py` `parse(text, names).to_dict()` -- `text`, `target` (null when no single object was named), `room_hint` (`{"type"}`, `{"name"}` or null), `attributes` (`colours`, `size`), `detector_prompts` (`[target]`, or `[]`), `unused` -- plus `names_read`. `names` are the room names a person gave the saved map the robot is on now (the pose's `frame_id`, `room_names.default_store()`); none with no saved map, and a store or pose that cannot be read gives none (logged), never an error. Rules only: no model, no paid call, nothing moves | 422 a bad body |
 | `POST /mission/stop` | none | `{"stopped": true, "status": {...}}` -- cancels the loop task, then `runner.stop()`; with no mission ever run, stops the robot anyway and returns the idle status | -- |
 | `GET /mission/status` | none | `MissionRunner.status()` plus `fault`; before any mission `{"running": false, "outcome": "idle", "step": 0, "log_tail": [], "fault": "none"}` | -- |
 | `POST /mission/explore/pick` | `GoalPickRequest` (`extra="forbid"`): `choice` int >= 1, `candidate` str 1-32 chars, as `status.explore.ask` publishes them (3.88 A) | `{"accepted": true, "choice", "candidate"}` -- `runner.pick_goal()` stores it under the runner's and the ask's locks; the next tick sends it to nav2 through the gated navigator. Never `/world/goal` | 409 with the reason, nothing sent: no mission, a mission that does not ask, a choice that is not the open one, an id not offered, a second pick, a pick at or after the timeout; 422 a bad body |
@@ -667,7 +668,9 @@ otherwise). CORS allows any origin.
 | Field | Type, default | Notes |
 |---|---|---|
 | `target_object` | str, None | required for `vision`/`tiered`, where it must be non-blank and at most 200 characters (400 otherwise); no cap for `frontier`/`explore` |
-| `target_room` | str, None | `frontier` only in practice; one of the two targets is required (`ValueError` -> 400) |
+| `target_room` | str, None | `frontier` only in practice; one of the two targets is required (`ValueError` -> 400). A blank `target_object` is no target (3.176: it would match every simulator label) |
+| `room_hint` | dict, None | 3.176: `{"type": t}`, `t` one of `brain/request.py` `ROOM_TYPES` (the nine vocabulary types), or `{"name": n}`, a room named on the saved map loaded now; anything else is a 400 before anything is built (`check_hint`; a name hint with no saved map, or names that cannot be read, too). A find's only: refused for a survey. Not `target_room`: it orders explore's goals by the room policy's prior and never ends a mission (policy spec, "A find's room hint") |
+| `request` | str, None; at most 500 (else 422) | 3.176: the sentence the find was asked in; `status.request` and the report keep it. Changes nothing the mission does |
 | `mission` | str, None | free text; defaulted from the targets |
 | `max_steps` | int, None | the step backstop; omitted, derived from the time limit (3.70 E4) |
 | `mission_time_limit_s` | float, None; `0 < x <= 86400` (else 422) | this mission's time limit; omitted, the config's `mission_time_limit_s` (3.70 E4) |
@@ -689,7 +692,12 @@ how much was paused on a person's pick, which the time limit leaves out --
 the limit null with the cap off), `error`,
 `policy`, `job` (3.70: `find` or `survey`), `survey` (null for `find`;
 `{mode, label_calls, label_call_limit, capped, rooms_named, seeds}`, each
-seed `[x_m, y_m, name]`), `mission`, `target_object`,
+seed `[x_m, y_m, name]`), `request` and `room_hint` (3.176: null without
+one; else `{hint, acts, why, cells}` -- `acts` false with `why` "no explore
+search", "explore_goal_policy is not 'rooms'" or "no room labels on a find",
+`cells` the labelled cells in the hinted room on the map the last choice was
+typed on, null before one, 0 while none carries it; the report holds both
+only when given), `mission`, `target_object`,
 `target_room`, `step`, `max_steps`, `found`, `room_reached`, `complete`,
 `last_action`, `turns` (`count`, `reversals`, `last_turn_deg`, `share`,
 `spinning`), `last_reasoning`, `rooms_visited`, `rooms_searched`,
