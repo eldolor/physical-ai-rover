@@ -56,6 +56,15 @@ often the detector dropping a box; an object that is really gone fails
 every look. Detector confidence is NOT the increment: it is uncalibrated across
 classes, the same reason the target gate thresholds `probability`.
 
+**A carried landmark looked at and not seen is stale at once** (3.175.B): on
+its first miss of this mission (a new view, not yet seen this mission) its
+belief is held to at most `STALE_BELIEF`, under `REPORT_BELIEF` but still
+carried, before the forgiveness above applies. A stale recall then never
+leads the next mission back to a place the target has left (3.175.A's A3:
+one look at 0.98 left it recalled again), and one later sighting from a new
+view reports it again. Each landmark also keeps `seen_seq`, the `carry_seq` of
+the mission that last saw it under its own label, so the runner can recall the newest first.
+
 ## The class is a vote
 
 Repetition shows the detector is consistent, not that it is right; a mug
@@ -121,6 +130,9 @@ CARRY_MIN_BELIEF = 0.5    # no more evidence it is gone than that it is there
 # looks can outvote a name carried for any number of missions (review 4).
 CARRY_WEIGHT = 20.0
 REPORT_BELIEF = 0.8     # two independent hits, no misses
+# 3.175.B: a carried landmark's first miss holds it here: not reported (so
+# not recalled), still carried (>= CARRY_MIN_BELIEF), one hit from reported.
+STALE_BELIEF = 0.7
 NEW_VIEW_M = 0.5
 NEW_VIEW_DEG = 30.0
 MERGE_M = 0.5
@@ -174,6 +186,24 @@ def frame_detections(frame: dict) -> Optional[list]:
 
 def _sigmoid(x: float) -> float:
     return 1.0 / (1.0 + math.exp(-x))
+
+
+def _logit(p: float) -> float:
+    return math.log(p / (1.0 - p))
+
+
+STALE_SCORE = _logit(STALE_BELIEF)
+
+
+def _seen_seq(value, head: int) -> Optional[int]:
+    """3.175.B: a carried row's `seen_seq` -- an integral number from 0 to the
+    saved report's own `carry_seq` (no mission after it saw anything), else
+    None: one that does not say is recalled last, never first."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    if isinstance(value, float) and not (math.isfinite(value) and value.is_integer()):
+        return None
+    return int(value) if 0 <= value <= head else None
 
 
 def scan_returns(scan: dict) -> list:
@@ -270,6 +300,9 @@ class Landmark:
     _miss_pose: Optional[dict] = None
     _miss_frame: Optional[int] = None                 # when _miss_pose was taken
     _pending_miss: Optional[int] = None               # the frame of a forgiven miss
+    # 3.175.B: the `carry_seq` of the mission that last saw it (None: a
+    # carried report that did not say).
+    seen_seq: Optional[int] = None
     # 3.50.D5: carried from an earlier mission on the same saved map, with
     # the votes it had there -- weights beside this mission's looks, scaled to
     # total at most CARRY_WEIGHT, never rounded in memory (review 4; a report
@@ -421,7 +454,7 @@ class Landmark:
                 "votes": {k: round(v, 3) if isinstance(v, float) else v
                           for k, v in self.votes.items()},
                 "room": self.room, "first_step": self.first_step,
-                "last_step": self.last_step, "points": self._n,
+                "last_step": self.last_step, "seen_seq": self.seen_seq, "points": self._n,
                 "carried": self.carried}
 
 
@@ -504,6 +537,10 @@ class Inventory:
             if lm.first_step is None:
                 lm.first_step = step      # 3.50.D5: a carried landmark's first sighting here
             self._count_look(lm, label, x, y, pose, joined)
+            if label == lm.label:
+                # 3.175.B: seen as itself. A vote under another name (another
+                # object where it was, within RELABEL_M) is not a sighting.
+                lm.seen_seq = self.carry_seq
             # 3.60: seen again, from anywhere, so the last miss was the
             # detector dropping it -- not only when this look counted.
             lm._pending_miss = None
@@ -577,6 +614,7 @@ class Inventory:
                 if name and math.isfinite(n) and n > 0:
                     votes[name] += n
             lm._carried_votes, lm._votes = _bounded(votes), None
+            lm.seen_seq = _seen_seq(d.get("seen_seq"), carry_seq_of(report))   # 3.175.B
             self._next_id += 1
             self.landmarks.append(lm)
             carried += 1
@@ -642,6 +680,8 @@ class Inventory:
                 keep._carried_votes = _bounded(keep._carried_votes + other._carried_votes, cap)
             keep._votes = None
             keep.carried = keep.carried or other.carried
+            seqs = [q for q in (keep.seen_seq, other.seen_seq) if q is not None]
+            keep.seen_seq = max(seqs) if seqs else None     # 3.175.B: the newer sighting
             keep._missed |= other._missed
             keep._missed -= keep._looks.keys()   # a frame that saw a part did not miss it
             keep.score = max(keep.score, other.score)
@@ -669,6 +709,10 @@ class Inventory:
                 continue                      # something in front of it
             if _new_view(lm._miss_pose, pose):
                 lm._miss_pose, lm._miss_frame = dict(pose), self.frames
+                if lm.carried and lm.seen_seq != self.carry_seq:
+                    # 3.175.B: carried, unseen this mission, and looked at:
+                    # stale for the chain, before the forgiveness.
+                    lm.score = min(lm.score, STALE_SCORE)
                 if lm._pending_miss is None:
                     lm._pending_miss = self.frames   # forgiven unless the next look agrees
                     continue

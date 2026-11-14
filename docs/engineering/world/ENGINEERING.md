@@ -42,7 +42,8 @@ this process. Use `ros` or `none` there.
 
 ```text
 get_pose()  -> {"usable": bool, "map_id": str|None, "frame_id": str|None,
-                "x_m": float|None, "y_m": float|None, "heading_deg": float|None}
+                "x_m": float|None, "y_m": float|None, "heading_deg": float|None,
+                ["dock": {"x_m": float, "y_m": float, "heading_deg": float}]}   # optional, 3.156.E
 get_map()   -> {"usable": bool, "map_id": str|None, "map_version": int,
                 "resolution_m": float|None, "width": int, "height": int,
                 "origin_x_m": float|None, "origin_y_m": float|None,
@@ -61,6 +62,13 @@ get_truth() -> {"usable": bool, "source": "sim"|None,
   rely on that). `None` in the simulator's own world, for an unusable pose,
   and whenever the frame lives only with this map. The object inventory
   carries landmarks across missions by it.
+- **`dock`** (3.156.E, optional) is the saved map's dock in the pose's own
+  frame and units. Only `RosWorld` answers it, and only on a usable pose whose
+  anchor is the saved map's frame (`frame_id` set) when the bridge's
+  `/slam/pose` carries a readable `dock_pose`: a matched reload. Every other
+  backend and answer leaves the key out, and a consumer reads its absence as
+  "no saved dock", never the origin. `tests/test_world_contract.py` allows it
+  as the one optional key.
 - **Unusable answers.** An unusable pose has every number set to `None`. An
   unusable map has `width = height = 0`, `cells = []`, `map_version = 0` and
   `None` for the remaining numbers.
@@ -153,6 +161,12 @@ The bridge's routes and their fields are specified once, in the
   and `get_pose()` / `get_odom_pose()` answer it as `frame_id`. A
   first-contact anchor is not the saved map's frame: `frame_id` `None`. A
   bridge that predates the field sends none: `None`.
+- **The saved dock** (3.156.E): `_saved_dock()` reads `/slam/pose`'s
+  `dock_pose` (ROS map frame, theta in radians) only when the anchor's
+  `frame` equals the reply's `map_id`; a non-finite, non-numeric, boolean or
+  missing value is dropped. `get_pose()` converts it with `_ros_to_ours()`
+  and the session's anchor, as it converts the pose, so the two are on one
+  frame. `get_odom_pose()` carries no dock.
 - **One anchor per session, installed once, never moved** (3.76 round 5).
   While the bridge's start-truth thread is still working (`/slam/pose`'s
   `start_truth_pending: true` with no `start_truth`), nothing is installed:

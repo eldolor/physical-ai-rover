@@ -98,6 +98,9 @@ def _sweep_stale_tmp(directory: Path) -> None:
 # held before D5 -- this mission's own landmarks, none of the chain's fields.
 # The local file keeps everything; the chain reads only that.
 _LOCAL_ONLY_KEYS = ("frame_id", "carried_from", "carry_seq", "mission_id", "set_aside")
+# A row's chain fields: carried from an earlier mission, and (3.175.B) the
+# `carry_seq` of the mission that last saw it.
+_LOCAL_ONLY_ROW_KEYS = ("carried", "seen_seq")
 
 
 def _for_s3(report: dict) -> dict:
@@ -110,7 +113,8 @@ def _for_s3(report: dict) -> dict:
     out = {k: v for k, v in report.items() if k not in _LOCAL_ONLY_KEYS}
 
     def own(rows):
-        return [{k: v for k, v in d.items() if k != "carried"} for d in rows or []
+        return [{k: v for k, v in d.items() if k not in _LOCAL_ONLY_ROW_KEYS}
+                if isinstance(d, dict) else d for d in rows or []
                 if not (isinstance(d, dict) and d.get("carried") and d.get("last_step") is None)]
     for key in ("reported", "candidates"):
         if key in out:

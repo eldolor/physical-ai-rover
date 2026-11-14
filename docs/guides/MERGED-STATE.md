@@ -138,11 +138,21 @@ section's own file has the numbers, failed criteria and review rounds.
   (`recharge_resume`, off; simulator stand-in only, 3.156.F on the Rover);
   in process 45/45 charges resumed, E3-E8 met; FAILED E1 live (a return ended
   `not_aligned`, cause open) and E2 (rooms 78%, finds 79% of no-drain).
+* 3.156.E (code merged, step OPEN): under `world: ros` on a matched reload the
+  dock is the saved map's `dock_pose` (`/slam/pose` -> the pose's optional
+  `dock` -> `status.dock.source` `saved_map`; else the start pose); a mission
+  that does not explore gets a return-only navigator (no goal before the end;
+  no nav2 = `skipped`, `no_nav2`, never a refused start), so the return
+  reserve now ends it early too; the twin's Return line and row. Met G2,
+  G4 in process (0/20 differ off), G6, G7; NOT RUN G1, G3, G5, G4 live (no
+  Docker). Known limit: a bridge still starting at a mission's start reads
+  as `no_nav2` for that mission.
 * 3.70: four end states (`found`, `exhausted`, `out_of_budget`,
   `cancelled`), read through `read_outcome()`; the budget is
   `mission_time_limit_s` (1200 s), `battery_floor_v` and, for `vision`,
   `vision_max_calls`. Survey mode; `room_label_source: cloud` off.
 * 3.175.A: a target moved between missions (in process, 75 trials): a stale recall costs nothing at the median but p90 507 s over no memory (A2 FAILED), and the next mission recalls the old place again in 30 of 75 (A3 FAILED: one stale look keeps belief >= 0.8); found counts hold, 0 wrong, 0 contacts. The harness carries landmarks, not the map, so no recall went first (A5 FAILED, instrument). 3.175.B needed, with the map carried.
+* 3.175.B: the moved-target sweep now carries the map (B0). `dev` as it was and with B's changes both FAILED A1-A5 (A3 41 -> 23 of 75; finds unchanged within a trial; A6, A7 met). On `dev` now: a carried landmark not yet seen this mission is held to `STALE_BELIEF` 0.7 on its first independent miss, any label (one dropout demotes a present object until a new-view sighting), and recalls go newest sighting first (`seen_seq`, kept off the S3 copy). The rest of A3 is an aborted recall spent after one try (candidate next step, not built). Pre-existing: the slow tier's `test_walk_dist_sweep` label-call pin fails on clean dev.
 * 3.176.A (criteria only, nothing built): a find asked in plain words is parsed at the twin before Start (rule parser, offline; `brain/request.py` is B's), and the brain runs what was shown. A room hint is its own `room_hint` field, never `target_room`, acting only as a `rooms`-policy prior override (the hinted type set to 1.0): inert without room labels or under `rule`, never a paid call, never ends a search; a null target is refused. The 152-sentence request set (`evaluations/request-3176/`, dev 76 / test 76) is sha256-pinned by `tests/test_request_set_3176.py`. B-D's bars are numeric in the section file (parser >= 90% target / 95% room; sim right, wrong and off arms; the model arm paid, the user's go).
 
 ## ROS and maps

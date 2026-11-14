@@ -4,10 +4,11 @@
 brain/dock.py -- 3.156.B: the return to the dock
 (`docs/plans/ros-alignment/3.156-return-to-dock.md`, design D1-D6).
 
-* `dock_from_pose()`: the dock is where the mission started (D1's `start`
-  source: in the simulator the start pose is the dock stand-in; under ROS a
-  reload localises from the saved dock, a fresh map's start is its best
-  guess, so it is never called verified).
+* `dock_from_pose()`: the saved map's dock when the pose names one (3.156.E,
+  D1's `saved_map` source: under ROS a matched reload's `dock_pose`, the same
+  point every mission on that map), else where the mission started (`start`:
+  in the simulator the start pose is the dock stand-in; a fresh map's start
+  is its best guess, so it is never called verified).
 * `HomeBudget`: D3's return reserve. `T_home = K * L_home / v_obs + T_DOCK_S`,
   `L_home` the path length home on the brain's own map (`brain/frontier.py`'s
   `reach`, from the dock), `v_obs` this mission's own driving speed; the
@@ -96,9 +97,23 @@ def ahead(heading_deg: float) -> tuple:
     return math.sin(h), -math.cos(h)
 
 
-def dock_from_pose(pose: Optional[dict], source: str = "start") -> Optional[dict]:
+SAVED_MAP, START = "saved_map", "start"
+
+
+def dock_from_pose(pose: Optional[dict], source: str = START) -> Optional[dict]:
+    """The dock, from the pose at the mission's start: its `dock` (3.156.E)
+    when it carries a readable one, else the pose itself as `source`."""
     if not pose or not pose.get("usable"):
         return None
+    saved = pose.get("dock")
+    if isinstance(saved, dict):
+        try:
+            d = {"x_m": float(saved["x_m"]), "y_m": float(saved["y_m"]),
+                 "theta": float(saved["heading_deg"]), "source": SAVED_MAP}
+            if all(math.isfinite(d[k]) for k in ("x_m", "y_m", "theta")):
+                return d
+        except (KeyError, TypeError, ValueError):
+            pass                        # unreadable: the start pose, as before
     try:
         return {"x_m": float(pose["x_m"]), "y_m": float(pose["y_m"]),
                 "theta": float(pose["heading_deg"]), "source": source}
