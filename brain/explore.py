@@ -220,6 +220,13 @@ def _setup_fault(what: str, reply: dict) -> RuntimeError:
 # far from every way the camera already faced there -- half the field of view,
 # so the new look does not repeat the old one's middle.
 VIEW_REUSE_DEG = CAMERA_FOV_DEG / 2
+# 3.180.A amendment 2: a bearing whose target lies closer than this to its
+# origin says nothing about direction and is not compared.
+VIEW_BEARING_MIN_M = 0.3
+# Amendment 2: view goals a mission may send from a spot already used (each
+# spot takes one), at most -- under A6's 6, and the most S7's three traced
+# finds needed (1, 1 and 4).
+VIEW_REUSE_BUDGET = 4
 
 
 def leave_clearance_m(min_distance_cm: float) -> float:
@@ -1343,32 +1350,38 @@ class ExploreAgent(MissionAgent):
 
     def _view_allowed(self, g) -> bool:
         """A view gap may be sent unless (1) its centre is within the retry
-        radius of a patch already looked at, or, for an earlier view goal
-        whose spot is within that radius, (2a) the camera would point within
-        that radius of where that look pointed (its `face`, else its centre),
-        or (2b) the direction to the new target, measured from THAT spot, is
-        within VIEW_REUSE_DEG of the way that look faced (3.180.A and its
-        amendment 1; before 3.180.A any earlier view goal there refused it,
-        whichever way it had looked, and a target beside a spot once used to
-        look elsewhere was never looked at: 3.176.B S7). (2a) and (2b) are
-        the den guard: a patch whose centre or face drifts as the camera sees
-        more of it is still the same look (the den run sent twelve view goals
-        to one spot)."""
+        radius of a patch already looked at; or its goal is within that
+        radius of an earlier view goal's spot (a reuse, 3.180.A) and (2) that
+        spot was already used twice, or the mission has spent
+        VIEW_REUSE_BUDGET reuses, or (3) the camera would face within
+        VIEW_REUSE_DEG of the way an earlier look there faced, measured from
+        the new goal or from that spot, a bearing whose target lies within
+        VIEW_BEARING_MIN_M of its origin not used (amendment 2). Before
+        3.180.A any earlier view goal there refused it, whichever way it had
+        looked, and a target beside a spot once used to look elsewhere was
+        never looked at (3.176.B S7). (2) and (3) are the den guard: a patch
+        drifting from one spot gets at most two looks (the den run sent
+        twelve view goals to one spot)."""
         r = self.retry.radius_m
         if any(math.hypot(g.centre[0] - lx, g.centre[1] - ly) < r for lx, ly in self._looked):
             return False
+        near = [v for v in getattr(self, "_view_looks", ())
+                if math.hypot(g.goal[0] - v[0], g.goal[1] - v[1]) < r]
+        if not near:
+            return True                       # a new spot: no reuse, no budget
+        # Amendment 2: one reuse per spot, and a budget of reuses a mission.
+        if len(near) >= 2 or getattr(self, "view_reuses", 0) >= VIEW_REUSE_BUDGET:
+            return False
         tx, ty = self._look_target(g)
-        for vx, vy, vb, ox, oy in getattr(self, "_view_looks", ()):
-            if math.hypot(g.goal[0] - vx, g.goal[1] - vy) >= r:
-                continue
-            # Amendment 1: the same look if it points where that one did (a
-            # face or centre that drifted sideways), or the same way measured
-            # from THAT spot (the earlier bearing's own origin).
-            if math.hypot(tx - ox, ty - oy) < r:
-                return False
-            b = math.degrees(math.atan2(ty - vy, tx - vx))
-            if abs((b - vb + 180.0) % 360.0 - 180.0) <= VIEW_REUSE_DEG:
-                return False
+        for vx, vy, vb, ox, oy in near:
+            if math.hypot(ox - vx, oy - vy) < VIEW_BEARING_MIN_M:
+                continue                      # that look's own bearing is noise
+            for px, py in (g.goal, (vx, vy)):  # from either origin
+                if math.hypot(tx - px, ty - py) < VIEW_BEARING_MIN_M:
+                    continue
+                b = math.degrees(math.atan2(ty - py, tx - px))
+                if abs((b - vb + 180.0) % 360.0 - 180.0) <= VIEW_REUSE_DEG:
+                    return False
         return True
 
     def _note_view(self, g) -> None:
