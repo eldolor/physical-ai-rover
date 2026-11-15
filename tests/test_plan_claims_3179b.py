@@ -269,3 +269,43 @@ def test_review_a_released_record_deleted_meanwhile_is_still_claimed(repo, owner
     _, b = owners()
     c = pc.claim("3.90.A", cwd=repo, me=b)
     assert remote_refs(repo)["3.90.A"] == c["sha"]
+
+
+# ---------- the orchestrator's checks (2026-11-15) ----------
+
+def test_another_hosts_dead_claim_is_never_replaced_where_deletes_are_refused(repo, owners):
+    """The refused-delete replace is only for a holder this host can judge
+    dead; another host's claim is never judged from here (3.179.A)."""
+    _, a = owners()
+    theirs = fake_claim(repo, "3.90.A", host="far", pid=1, days_old=3)
+    refuse_deletes(repo)
+    with pytest.raises(SystemExit, match="claimed"):
+        pc.claim("3.90.A", cwd=repo, me=a)
+    assert remote_refs(repo)["3.90.A"] == theirs
+
+
+def test_an_old_reader_takes_a_released_record_as_held_never_free(repo, owners, tmp_path):
+    """`dev`'s pre-3.179.B code (the desktop or the Jetson before its update)
+    parses a released record as a claim with no host: 'could not read the
+    holder', so its board warns and its `claim` refuses -- fail safe."""
+    _, a = owners()
+    pc.claim("3.90.A", cwd=repo, me=a)
+    refuse_deletes(repo)
+    pc.release("3.90.A", cwd=repo, me=a)
+    old_src = subprocess.run(["git", "show", "4c017869:tools/plan_claims.py"], cwd=TOOLS,
+                             capture_output=True, text=True, check=True).stdout
+    assert "released_message" not in old_src                  # truly the old code
+    path = tmp_path / "old_plan_claims.py"
+    path.write_text(old_src)
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("old_plan_claims_3179b", path)
+    old = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(old)
+    claims, err = old.remote_claims(repo)
+    assert err and "3.90.A" in err
+    held = [c for c in claims if c["step"] == "3.90.A"]
+    assert held and held[0]["host"] == "?"
+    _, b = owners()
+    with pytest.raises(SystemExit, match="cannot read the claims"):
+        old.claim("3.90.A", cwd=repo, me=b)
+    assert message(repo, remote_refs(repo)["3.90.A"]).startswith("released ")
