@@ -1665,7 +1665,12 @@ class ExploreAgent(MissionAgent):
         """3.156.D7e: the mission went to charge and comes back. The goal it
         was on was ended by that, not by the place: forgotten, uncounted;
         everything learned stays."""
-        self._goal = None
+        g, self._goal = self._goal, None
+        place = (g or {}).get("recall")
+        if place is not None and place not in self.recall:
+            # 3.175.E review: a recall goal ended by charging is uncounted too;
+            # its place was popped on send, so it goes back first.
+            self.recall.insert(0, place)
         self._approach = None           # or a re-sighting there sends no approach goal
         self._pending = []
         self._local_wait_since = None
