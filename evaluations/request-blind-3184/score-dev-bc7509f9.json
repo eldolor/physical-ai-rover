@@ -1,0 +1,329 @@
+{
+ "parser": "/tmp/claude-0/-home-user-physical-ai-rover/171ef515-b7f8-5a13-9d27-f592ef84dcd8/scratchpad/pdev/brain/request.py",
+ "parser_sha256": "3464692b99b65f48414716b771eeb26c2e0b7f361122425e548443ead9b9d7fd",
+ "commit": "bc7509f9fc6846697682b887afdc41727ce8b251",
+ "set_sha256": "0fe77d505a7619885b8b590df9e0869dd8879cebafad1277fb26d107e37cbb9f",
+ "rows": 110,
+ "counts": {
+  "P1": 97,
+  "P2": 107,
+  "P3": 0,
+  "P4": 110
+ },
+ "bars": {
+  "P1": 99,
+  "P2": 105,
+  "P3": 1,
+  "P4": 105
+ },
+ "met": {
+  "P1": false,
+  "P2": true,
+  "P3": true,
+  "P4": true
+ },
+ "misses": [
+  {
+   "id": "b006",
+   "kind": "polite",
+   "text": "Hey robot, can you find my phone?",
+   "names": [],
+   "expect": {
+    "target": "phone",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "hey robot",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "wrong": [
+    "target"
+   ]
+  },
+  {
+   "id": "b008",
+   "kind": "polite",
+   "text": "Could you please look for my wallet?",
+   "names": [],
+   "expect": {
+    "target": "wallet",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "could you",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "wrong": [
+    "target"
+   ]
+  },
+  {
+   "id": "b009",
+   "kind": "polite",
+   "text": "Would you mind looking for the dog's leash?",
+   "names": [],
+   "expect": {
+    "target": "leash",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "would you mind looking for the dog's leash",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "wrong": [
+    "target"
+   ]
+  },
+  {
+   "id": "b010",
+   "kind": "polite",
+   "text": "Can you look for my keys for me?",
+   "names": [],
+   "expect": {
+    "target": "keys",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "can you look for my keys",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "wrong": [
+    "target"
+   ]
+  },
+  {
+   "id": "b020",
+   "kind": "indirect",
+   "text": "I think I left my phone in the den",
+   "names": [],
+   "expect": {
+    "target": "phone",
+    "room": {
+     "type": "living room"
+    },
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "i think i left my phone",
+    "room": {
+     "type": "living room"
+    },
+    "colours": [],
+    "size": null
+   },
+   "wrong": [
+    "target"
+   ]
+  },
+  {
+   "id": "b022",
+   "kind": "indirect",
+   "text": "Any idea where the scissors are?",
+   "names": [],
+   "expect": {
+    "target": "scissors",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "any idea where the scissors",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "wrong": [
+    "target"
+   ]
+  },
+  {
+   "id": "b023",
+   "kind": "indirect",
+   "text": "I need my laptop, it's in the study",
+   "names": [],
+   "expect": {
+    "target": "laptop",
+    "room": {
+     "type": "office"
+    },
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "i need my laptop",
+    "room": {
+     "type": "office"
+    },
+    "colours": [],
+    "size": null
+   },
+   "wrong": [
+    "target"
+   ]
+  },
+  {
+   "id": "b033",
+   "kind": "room_first",
+   "text": "In the kitchen, can you find my mug?",
+   "names": [],
+   "expect": {
+    "target": "mug",
+    "room": {
+     "type": "kitchen"
+    },
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": null,
+    "room": {
+     "type": "kitchen"
+    },
+    "colours": [],
+    "size": null
+   },
+   "wrong": [
+    "target"
+   ]
+  },
+  {
+   "id": "b034",
+   "kind": "room_first",
+   "text": "Bedroom: look for my phone charger",
+   "names": [],
+   "expect": {
+    "target": "phone charger",
+    "room": {
+     "type": "bedroom"
+    },
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "bedroom",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "wrong": [
+    "target",
+    "room"
+   ]
+  },
+  {
+   "id": "b035",
+   "kind": "room_first",
+   "text": "Go to the garage and find the tape measure",
+   "names": [],
+   "expect": {
+    "target": "tape measure",
+    "room": {
+     "type": "garage"
+    },
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": null,
+    "room": {
+     "type": "garage"
+    },
+    "colours": [],
+    "size": null
+   },
+   "wrong": [
+    "target"
+   ]
+  },
+  {
+   "id": "b036",
+   "kind": "room_first",
+   "text": "Check the bathroom for my razor",
+   "names": [],
+   "expect": {
+    "target": "razor",
+    "room": {
+     "type": "bathroom"
+    },
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "bathroom for my razor",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "wrong": [
+    "target",
+    "room"
+   ]
+  },
+  {
+   "id": "b037",
+   "kind": "room_first",
+   "text": "In the office, find the stapler please",
+   "names": [],
+   "expect": {
+    "target": "stapler",
+    "room": {
+     "type": "office"
+    },
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": null,
+    "room": {
+     "type": "office"
+    },
+    "colours": [],
+    "size": null
+   },
+   "wrong": [
+    "target"
+   ]
+  },
+  {
+   "id": "b038",
+   "kind": "room_first",
+   "text": "Living room - where's the TV remote?",
+   "names": [],
+   "expect": {
+    "target": "tv remote",
+    "room": {
+     "type": "living room"
+    },
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "living room",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "wrong": [
+    "target",
+    "room"
+   ]
+  }
+ ]
+}

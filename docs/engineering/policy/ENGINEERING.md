@@ -951,7 +951,9 @@ hint ending in a number ("Bedroom 2") matches every room of that stem. `ExploreA
 the labelled cells in the hinted room on the map the last choice was typed on
 (`_goal_types`), never "absent": the map is discovered. The sentence a person
 types is read by `brain/request.py` `parse()` (rules, no model: the target,
-colour and size words, one room or none; 3.176.A's vocabulary), served by the
+colour and size words, one room or none; 3.176.A's vocabulary; since 3.176.E
+also polite and indirect openings, a greeting closed by a comma, a modal after
+the thing, a room said before it, and "look ... for X"), served by the
 brain's `POST /mission/request/parse` (mission spec);
 `tests/test_request.py`.
 
