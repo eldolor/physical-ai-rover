@@ -19,19 +19,23 @@ REPO = os.environ.get("REPO") or os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, os.path.join(REPO, "evaluations", "request-3176"))
 import sweep as S                                             # noqa: E402
+import subprocess                                             # noqa: E402
 import brain                                                  # noqa: E402
 
 # "." is on the path (the harness's imports): run from REPO's own directory,
-# or the brain is another checkout's (3.180.A's first baseline was).
-if not os.path.realpath(brain.__file__).startswith(os.path.realpath(REPO) + os.sep):
-    raise SystemExit(f"brain is {brain.__file__}, not under REPO {REPO}: run from REPO")
+# or the brain is another checkout's (3.180.A's first baseline was). Checked
+# here too, not only in request-3176's harness: with REPO a `dev` worktree,
+# `sweep` above is THAT tree's copy, which may predate its own check.
+BRAIN = os.path.dirname(os.path.realpath(brain.__file__))
+if not BRAIN.startswith(os.path.realpath(REPO) + os.sep):
+    raise SystemExit(f"brain is {BRAIN}, not under REPO {REPO}: run from REPO's directory")
 
 ARMS = ("dev", "none", "right", "wrong")
 
 
 def _one(args):
     row = S._one(args)
-    if S._runner and row["outcome"] not in ("no_hint", "parse_mismatch", "skipped"):
+    if S._runner and not S._info.get("skip") and row["outcome"] != "no_target":
         ag = S._runner[0].agent
         row["view_goals"] = len(getattr(ag, "_view_goals", ()))
         row["view_reuses"] = getattr(ag, "view_reuses", None)
@@ -43,9 +47,9 @@ def main(arm, path):
     jobs = [(arm, s, h, m) for s, h in S.T.select_houses() for m in ("R", "U")]
     with ProcessPoolExecutor(int(os.environ.get("WORKERS", "4")), max_tasks_per_child=1) as ex:
         rows = list(ex.map(_one, jobs))
-    git = os.popen(f"git -C {REPO} rev-parse --short HEAD").read().strip()
-    report = {"arm": arm, "commit": git, "brain": S.BRAIN if hasattr(S, "BRAIN") else None,
-              "pairs": len(rows), "rows": rows}
+    git = subprocess.run(["git", "-C", REPO, "rev-parse", "--short", "HEAD"],
+                         capture_output=True, text=True).stdout.strip()
+    report = {"arm": arm, "commit": git, "brain": BRAIN, "pairs": len(rows), "rows": rows}
     S.T.save_atomic(path, lambda p: json.dump(report, open(p, "w"), indent=1))
     print(json.dumps({"arm": arm, "commit": git,
                       "found": sum(r["outcome"] == "found" for r in rows)}))

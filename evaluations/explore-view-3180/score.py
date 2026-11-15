@@ -52,7 +52,8 @@ def main(d, out):
         both = [k for k in keys if B[k]["outcome"] == "found" and A[k]["outcome"] == "found"]
         g = [med([A[k]["goals"] for k in both]), med([B[k]["goals"] for k in both])]
         s = [med([A[k]["sim_s"] for k in both]), med([B[k]["sim_s"] for k in both])]
-        m4 = g[0] <= g[1] and s[0] <= 1.05 * s[1]
+        # No pair both found: nothing to compare, so the bar is not met.
+        m4 = None not in g + s and g[0] <= g[1] and s[0] <= 1.05 * s[1]
         a4 &= m4
         zero = [k for k in keys if (A[k].get("view_reuses") or 0) == 0]
         diff0 = [list(k) for k in zero if [A[k][f] for f in ("outcome", "goals", "metres")]

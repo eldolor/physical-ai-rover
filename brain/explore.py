@@ -1328,8 +1328,10 @@ class ExploreAgent(MissionAgent):
 
     @staticmethod
     def _look_bearing(g) -> float:
-        """The compass bearing (deg) the camera faces from a view gap's goal:
-        to its `face` (the part seen from there), else its centre."""
+        """The angle (deg, atan2(dy, dx): counter-clockwise from +x, not a
+        compass bearing) the camera faces from a view gap's goal: to its
+        `face` (the part seen from there), else its centre. Only differences
+        of these are used."""
         tx, ty = g.face if g.face is not None else g.centre
         return math.degrees(math.atan2(ty - g.goal[1], tx - g.goal[0]))
 
@@ -1352,12 +1354,15 @@ class ExploreAgent(MissionAgent):
                        for vx, vy, vb in getattr(self, "_view_looks", ()))
 
     def _note_view(self, g) -> None:
-        """A view goal was sent for gap `g`: its spot, and the way it faced."""
+        """A view goal was sent for gap `g`: its spot, and the way it faced.
+        Tolerates an agent built without `__init__` (tests do), as
+        `_view_allowed` does."""
+        looks = self.__dict__.setdefault("_view_looks", [])
         if any(math.hypot(g.goal[0] - vx, g.goal[1] - vy) < self.retry.radius_m
-               for vx, vy in self._view_goals):
-            self.view_reuses += 1
+               for vx, vy, _b in looks):
+            self.view_reuses = getattr(self, "view_reuses", 0) + 1
         self._view_goals.append(g.goal)
-        self._view_looks.append((g.goal[0], g.goal[1], self._look_bearing(g)))
+        looks.append((g.goal[0], g.goal[1], self._look_bearing(g)))
 
     def _note_aside(self, goal) -> None:
         """3.172.D: a skipped candidate that a carried set-aside place holds
