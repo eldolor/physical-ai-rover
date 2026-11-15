@@ -758,7 +758,12 @@ class _Sight:
                                self.ds[lo:lo + _SIGHT_CHUNK])
             flat = (cy + self.pad) * self.stride + (cx + self.pad)
             kept = np.logical_and.accumulate(self.free[flat], axis=1)
-            hit[pair[live[((self.lab[flat] == c) & kept).any(axis=1)]]] = True
+            # 3.180.B: the cell that stops a ray is seen too when it is part
+            # of the patch (an object's face). Only `find_view_gaps(faces=)`
+            # labels a cell that is not free, so without it this adds nothing.
+            stop = np.concatenate([np.ones_like(kept[:, :1]), kept[:, :-1]], axis=1) & ~kept
+            mine = self.lab[flat] == c
+            hit[pair[live[(mine & (kept | stop)).any(axis=1)]]] = True
             live = live[kept[:, -1] & ~hit[pair[live]]]
         return hit.tolist()
 
@@ -779,6 +784,30 @@ def camera_seen(m: dict, x_m: float, y_m: float, view_deg: float,
     free = inside & (_grid(m).ravel()[flat] == CELL_FREE)
     kept = np.logical_and.accumulate(free, axis=2)
     return {(i % w, i // w) for i in np.unique(flat[kept]).tolist()}
+
+
+def camera_faces(m: dict, x_m: float, y_m: float, view_deg: float,
+                 fov_deg: float = CAMERA_FOV_DEG,
+                 range_m: float = CAMERA_RANGE_M) -> set:
+    """3.180.B: the occupied cells the camera's rays reach first -- the same
+    rays as `camera_seen`, each stopped at the first cell that is not free,
+    kept when that cell is occupied (not unknown, not off the map). An object
+    there would have been in view: the simulator's detector fires on a face
+    some ray reaches inside the field of view (3.32), and these rays are
+    shorter than its range."""
+    if not m.get("usable") or not m.get("resolution_m"):
+        return set()
+    w, h = m["width"], m["height"]
+    cx, cy = _ray_cells(m, [(x_m, y_m, view_deg)], fov_deg, range_m)
+    inside = (cx >= 0) & (cx < w) & (cy >= 0) & (cy < h)
+    flat = np.where(inside, cy * w + cx, 0)
+    vals = _grid(m).ravel()[flat]
+    free = inside & (vals == CELL_FREE)
+    kept = np.logical_and.accumulate(free, axis=2)
+    # The first step that is not free: every step before it was.
+    before = np.concatenate([np.ones_like(kept[..., :1]), kept[..., :-1]], axis=2)
+    first = before & ~kept & inside & (vals == CELL_OCCUPIED)
+    return {(i % w, i // w) for i in np.unique(flat[first]).tolist()}
 
 
 def _components(mask: np.ndarray) -> tuple:
@@ -845,11 +874,18 @@ def find_view_gaps(m: dict, x_m: float, y_m: float, seen: set,
                    clearance_m: float = GOAL_CLEARANCE_M,
                    min_area_m2: float = MIN_GAP_M2,
                    look_from_m: float = 1.0,
-                   reach_map: Optional[Reach] = None) -> list:
+                   reach_map: Optional[Reach] = None,
+                   faces: Optional[set] = None) -> list:
     """Patches of known floor the camera has not seen, nearest first, each
     with a reachable place to look at it from: the reachable cell nearest
     `look_from_m` short of the patch's middle. `reach_map`, if given, is
-    `reach(m, x_m, y_m, clearance_m)` already computed."""
+    `reach(m, x_m, y_m, clearance_m)` already computed.
+
+    3.180.B: `faces`, if given, is the set of occupied cells whose face the
+    camera has reached (`camera_faces`). Every other occupied cell next to
+    known floor then joins the unseen cells -- a target is a solid object,
+    and floor seen round it does not say it was in view. None (the default):
+    exactly the answer before."""
     r = _reach_for(m, x_m, y_m, clearance_m, reach_map)
     if r.start is None:
         return []
@@ -861,6 +897,22 @@ def find_view_gaps(m: dict, x_m: float, y_m: float, seen: set,
             raise ValueError("seen must hold (x, y) cell pairs")
         on = (xy[:, 0] >= 0) & (xy[:, 0] < w) & (xy[:, 1] >= 0) & (xy[:, 1] < h)
         unseen_mask[xy[on, 1], xy[on, 0]] = False
+    if faces is not None:
+        occ = r.grid == CELL_OCCUPIED
+        flo = r.grid == CELL_FREE
+        beside = np.zeros_like(flo)
+        beside[1:, :] |= flo[:-1, :]
+        beside[:-1, :] |= flo[1:, :]
+        beside[:, 1:] |= flo[:, :-1]
+        beside[:, :-1] |= flo[:, 1:]
+        face_mask = occ & beside
+        if faces:
+            fx = np.asarray(list(faces), dtype=np.int64)
+            ok = (fx[:, 0] >= 0) & (fx[:, 0] < w) & (fx[:, 1] >= 0) & (fx[:, 1] < h)
+            face_mask[fx[ok, 1], fx[ok, 0]] = False
+        unseen_mask = unseen_mask | face_mask
+    else:
+        face_mask = None
     labels, count = _components(unseen_mask)
     lab = labels.ravel()
     cells_at = np.flatnonzero(lab >= 0)
@@ -877,10 +929,15 @@ def find_view_gaps(m: dict, x_m: float, y_m: float, seen: set,
     old = _OldOrder(unseen_mask, labels)
     sight = _Sight(m, r.grid, labels)
     out = []
+    # 3.180.B: a patch holding an unseen face is kept whatever its area --
+    # MIN_GAP_M2 is floor ("a corner, not somewhere to go"), and an object
+    # can be one map cell (0.0025 m2 at 5 cm).
+    has_face = (np.bincount(lab[face_mask.ravel() & (lab >= 0)], minlength=count) > 0
+                if face_mask is not None else np.zeros(count, dtype=bool))
     for c in range(count):
         n_cells = int(size[c])
         area = n_cells * res * res
-        if area < min_area_m2 or not len(r):
+        if (area < min_area_m2 and not has_face[c]) or not len(r):
             continue
         mx = int(sum_x[c]) / n_cells                  # exact: integer sums
         my = int(sum_y[c]) / n_cells

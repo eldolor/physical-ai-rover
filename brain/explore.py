@@ -52,8 +52,8 @@ from brain.arrival import ARRIVED, CHECKING, LOCAL_FRESH_S, REFUSED, ArrivalChec
 from brain.perceive import DETECTED
 from brain.tiered import STEER_BAND_DEG, located_local_bearing, turn_for
 from brain.tiered import candidate_refused as _refused
-from brain.frontier import (CAMERA_FOV_DEG, RetryBook, camera_seen, find_frontiers,
-                            find_view_gaps, known_near, reach, reachable)
+from brain.frontier import (CAMERA_FOV_DEG, RetryBook, camera_faces, camera_seen,
+                            find_frontiers, find_view_gaps, known_near, reach, reachable)
 from brain.room_labels import segment
 from brain.choice_log import BY_RULE_TIMEOUT, GoalAsk
 from brain.goal_policy import FEATURES as GOAL_FEATURES
@@ -376,6 +376,9 @@ class ExploreAgent(MissionAgent):
         # centres -- not map indices, because a SLAM map grows and its
         # origin moves.
         self.seen: set = set()
+        # 3.180.B: occupied cells whose face a camera ray reached -- where an
+        # object would have been in view -- on `seen`'s lattice.
+        self.seen_faces: set = set()
         self._looked: list = []        # view-gap centres already visited
         self._backed_off: list = []    # targets a refused face has backed off from (3.69)
         self._nudged: list = []             # 3.172: where the robot stood at each nudge
@@ -1142,7 +1145,7 @@ class ExploreAgent(MissionAgent):
             self._note_aside(f.goal)
         seen_cells = {self._to_cell(m, c) for c in self.seen}
         for g in find_view_gaps(m, pose["x_m"], pose["y_m"], seen_cells, clearance_m=leave,
-                                reach_map=rch):
+                                reach_map=rch, faces=self._face_cells(m)):
             if not self._view_allowed(g):
                 continue
             if not self.retry.available(g.goal[0], g.goal[1], now, known):
@@ -1348,6 +1351,13 @@ class ExploreAgent(MissionAgent):
         tx, ty = ExploreAgent._look_target(g)
         return math.degrees(math.atan2(ty - g.goal[1], tx - g.goal[0]))
 
+    def _face_cells(self, m: dict) -> Optional[set]:
+        """3.180.B: `seen_faces` as this map's cells, for `find_view_gaps`;
+        None for an agent without the record (built by `__new__` in tests),
+        which keeps the old answer."""
+        faces = getattr(self, "seen_faces", None)
+        return None if faces is None else {self._to_cell(m, c) for c in faces}
+
     def _view_allowed(self, g) -> bool:
         """A view gap may be sent unless (1) its centre is within the retry
         radius of a patch already looked at; or its goal is within that
@@ -1427,7 +1437,7 @@ class ExploreAgent(MissionAgent):
                                        failures=self.retry.failures_near(*f.goal),
                                        reached=reached, goals_sent=self.goals_sent, ctx=ctx))
         for g in find_view_gaps(m, pose["x_m"], pose["y_m"], seen_cells, clearance_m=leave,
-                                reach_map=rch):
+                                reach_map=rch, faces=self._face_cells(m)):
             if not self._view_allowed(g):
                 continue
             if not self.retry.available(g.goal[0], g.goal[1], now, known):
@@ -2154,7 +2164,13 @@ class ExploreAgent(MissionAgent):
         lx, ly = self._seen_lattice
         kx = round((m["origin_x_m"] - lx) / res)
         ky = round((m["origin_y_m"] - ly) / res)
-        for c in camera_seen(m, pose["x_m"], pose["y_m"], pose["heading_deg"] + pan):
+        view = pose["heading_deg"] + pan
+        faces = getattr(self, "seen_faces", None)
+        if faces is not None:
+            for c in camera_faces(m, pose["x_m"], pose["y_m"], view):
+                faces.add((round(lx + (kx + c[0] + 0.5) * res, 3),
+                           round(ly + (ky + c[1] + 0.5) * res, 3)))
+        for c in camera_seen(m, pose["x_m"], pose["y_m"], view):
             # On the first map's own lattice (3.76 L2): a SLAM map's origin
             # moves by fractions of a cell as it grows, and centres worked out
             # from each origin put the same floor in the set again after
