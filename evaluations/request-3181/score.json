@@ -1,0 +1,1466 @@
+{
+ "commit": "93d493f2",
+ "parser_last_changed": "196528ab",
+ "rows": [
+  {
+   "id": "b001",
+   "group": "rules",
+   "kind": "plain",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b002",
+   "group": "rules",
+   "kind": "plain",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b003",
+   "group": "rules",
+   "kind": "plain",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b004",
+   "group": "rules",
+   "kind": "plain",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b005",
+   "group": "rules",
+   "kind": "plain",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b006",
+   "group": "rules",
+   "kind": "plain",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b007",
+   "group": "rules",
+   "kind": "plain",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b008",
+   "group": "rules",
+   "kind": "plain",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b009",
+   "group": "rules",
+   "kind": "polite",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b010",
+   "group": "rules",
+   "kind": "polite",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b011",
+   "group": "rules",
+   "kind": "polite",
+   "target": false,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b012",
+   "group": "rules",
+   "kind": "polite",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b013",
+   "group": "rules",
+   "kind": "polite",
+   "target": false,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b014",
+   "group": "rules",
+   "kind": "polite",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b015",
+   "group": "rules",
+   "kind": "polite",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b016",
+   "group": "rules",
+   "kind": "polite",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b017",
+   "group": "rules",
+   "kind": "polite",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b018",
+   "group": "rules",
+   "kind": "polite",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b019",
+   "group": "rules",
+   "kind": "polite",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b020",
+   "group": "rules",
+   "kind": "polite",
+   "target": false,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b021",
+   "group": "rules",
+   "kind": "polite",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b022",
+   "group": "rules",
+   "kind": "polite",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b023",
+   "group": "rules",
+   "kind": "indirect",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b024",
+   "group": "rules",
+   "kind": "indirect",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b025",
+   "group": "rules",
+   "kind": "indirect",
+   "target": false,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b026",
+   "group": "rules",
+   "kind": "indirect",
+   "target": false,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b027",
+   "group": "rules",
+   "kind": "indirect",
+   "target": false,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b028",
+   "group": "rules",
+   "kind": "indirect",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b029",
+   "group": "rules",
+   "kind": "indirect",
+   "target": false,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b030",
+   "group": "rules",
+   "kind": "indirect",
+   "target": false,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b031",
+   "group": "rules",
+   "kind": "attributes",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b032",
+   "group": "rules",
+   "kind": "attributes",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b033",
+   "group": "rules",
+   "kind": "attributes",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b034",
+   "group": "rules",
+   "kind": "attributes",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b035",
+   "group": "rules",
+   "kind": "attributes",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b036",
+   "group": "rules",
+   "kind": "attributes",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b037",
+   "group": "rules",
+   "kind": "attributes",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b038",
+   "group": "rules",
+   "kind": "attributes",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b039",
+   "group": "rules",
+   "kind": "room",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b040",
+   "group": "rules",
+   "kind": "room",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b041",
+   "group": "rules",
+   "kind": "room",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b042",
+   "group": "rules",
+   "kind": "room",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b043",
+   "group": "rules",
+   "kind": "room",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b044",
+   "group": "rules",
+   "kind": "room",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b045",
+   "group": "rules",
+   "kind": "room",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b046",
+   "group": "rules",
+   "kind": "room",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b047",
+   "group": "rules",
+   "kind": "room",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b048",
+   "group": "rules",
+   "kind": "room",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b049",
+   "group": "rules",
+   "kind": "room",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b050",
+   "group": "rules",
+   "kind": "room",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b051",
+   "group": "rules",
+   "kind": "room",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b052",
+   "group": "rules",
+   "kind": "room",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b053",
+   "group": "rules",
+   "kind": "room",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b054",
+   "group": "rules",
+   "kind": "relative",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b055",
+   "group": "rules",
+   "kind": "relative",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b056",
+   "group": "rules",
+   "kind": "relative",
+   "target": false,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b057",
+   "group": "rules",
+   "kind": "relative",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b058",
+   "group": "rules",
+   "kind": "relative",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b059",
+   "group": "rules",
+   "kind": "relative",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b060",
+   "group": "rules",
+   "kind": "relative",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b061",
+   "group": "rules",
+   "kind": "relative",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b062",
+   "group": "rules",
+   "kind": "relative",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b063",
+   "group": "rules",
+   "kind": "relative",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b064",
+   "group": "rules",
+   "kind": "room_in_target",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b065",
+   "group": "rules",
+   "kind": "room_in_target",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b066",
+   "group": "rules",
+   "kind": "room_in_target",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b067",
+   "group": "rules",
+   "kind": "room_in_target",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b068",
+   "group": "rules",
+   "kind": "with_of",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b069",
+   "group": "rules",
+   "kind": "with_of",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b070",
+   "group": "rules",
+   "kind": "with_of",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b071",
+   "group": "rules",
+   "kind": "no_target",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b072",
+   "group": "rules",
+   "kind": "no_target",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b073",
+   "group": "rules",
+   "kind": "no_target",
+   "target": false,
+   "room": false,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b074",
+   "group": "rules",
+   "kind": "two_targets",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b075",
+   "group": "rules",
+   "kind": "two_targets",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b076",
+   "group": "rules",
+   "kind": "two_targets",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b077",
+   "group": "rules",
+   "kind": "no_guess",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b078",
+   "group": "rules",
+   "kind": "no_guess",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b079",
+   "group": "rules",
+   "kind": "no_guess",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b080",
+   "group": "rules",
+   "kind": "no_guess",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b081",
+   "group": "rules",
+   "kind": "no_guess",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b082",
+   "group": "rules",
+   "kind": "no_guess",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b083",
+   "group": "rules",
+   "kind": "no_guess",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b084",
+   "group": "rules",
+   "kind": "names",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b085",
+   "group": "rules",
+   "kind": "names",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b086",
+   "group": "rules",
+   "kind": "names",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b087",
+   "group": "rules",
+   "kind": "names",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b088",
+   "group": "rules",
+   "kind": "names",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b089",
+   "group": "rules",
+   "kind": "case",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b090",
+   "group": "rules",
+   "kind": "case",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b091",
+   "group": "rules",
+   "kind": "case",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b092",
+   "group": "rules",
+   "kind": "case",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b093",
+   "group": "gap",
+   "kind": "room_first",
+   "target": false,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b094",
+   "group": "gap",
+   "kind": "room_first",
+   "target": false,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b095",
+   "group": "gap",
+   "kind": "room_first",
+   "target": false,
+   "room": false,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b096",
+   "group": "gap",
+   "kind": "room_first",
+   "target": false,
+   "room": false,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b097",
+   "group": "gap",
+   "kind": "verb_typo",
+   "target": false,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b098",
+   "group": "gap",
+   "kind": "verb_typo",
+   "target": false,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b099",
+   "group": "gap",
+   "kind": "question",
+   "target": true,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  },
+  {
+   "id": "b100",
+   "group": "gap",
+   "kind": "place_first",
+   "target": false,
+   "room": true,
+   "wrong_room": false,
+   "attributes": true
+  }
+ ],
+ "misses": [
+  {
+   "id": "b011",
+   "group": "rules",
+   "kind": "polite",
+   "text": "Could you please look for the TV remote?",
+   "names": [],
+   "failed": [
+    "target"
+   ],
+   "expected": {
+    "target": "tv remote",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "could you",
+    "room": null,
+    "colours": [],
+    "size": null
+   }
+  },
+  {
+   "id": "b013",
+   "group": "rules",
+   "kind": "polite",
+   "text": "Hey robot, where is my wallet?",
+   "names": [],
+   "failed": [
+    "target"
+   ],
+   "expected": {
+    "target": "wallet",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "hey robot",
+    "room": null,
+    "colours": [],
+    "size": null
+   }
+  },
+  {
+   "id": "b020",
+   "group": "rules",
+   "kind": "polite",
+   "text": "Would you mind finding the car keys?",
+   "names": [],
+   "failed": [
+    "target"
+   ],
+   "expected": {
+    "target": "car keys",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "would you mind finding the car keys",
+    "room": null,
+    "colours": [],
+    "size": null
+   }
+  },
+  {
+   "id": "b025",
+   "group": "rules",
+   "kind": "indirect",
+   "text": "Any idea where the scissors are?",
+   "names": [],
+   "failed": [
+    "target"
+   ],
+   "expected": {
+    "target": "scissors",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "any idea where the scissors",
+    "room": null,
+    "colours": [],
+    "size": null
+   }
+  },
+  {
+   "id": "b026",
+   "group": "rules",
+   "kind": "indirect",
+   "text": "I need my medication, can you find it?",
+   "names": [],
+   "failed": [
+    "target"
+   ],
+   "expected": {
+    "target": "medication",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "i need my medication",
+    "room": null,
+    "colours": [],
+    "size": null
+   }
+  },
+  {
+   "id": "b027",
+   "group": "rules",
+   "kind": "indirect",
+   "text": "Do you know where my notebook is?",
+   "names": [],
+   "failed": [
+    "target"
+   ],
+   "expected": {
+    "target": "notebook",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "do you know where my notebook",
+    "room": null,
+    "colours": [],
+    "size": null
+   }
+  },
+  {
+   "id": "b029",
+   "group": "rules",
+   "kind": "indirect",
+   "text": "Have you spotted the cat toy anywhere?",
+   "names": [],
+   "failed": [
+    "target"
+   ],
+   "expected": {
+    "target": "cat toy",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "have you spotted the cat toy",
+    "room": null,
+    "colours": [],
+    "size": null
+   }
+  },
+  {
+   "id": "b030",
+   "group": "rules",
+   "kind": "indirect",
+   "text": "I'm looking for my blue mug",
+   "names": [],
+   "failed": [
+    "target"
+   ],
+   "expected": {
+    "target": "blue mug",
+    "room": null,
+    "colours": [
+     "blue"
+    ],
+    "size": null
+   },
+   "got": {
+    "target": "i'm looking for my blue mug",
+    "room": null,
+    "colours": [
+     "blue"
+    ],
+    "size": null
+   }
+  },
+  {
+   "id": "b056",
+   "group": "rules",
+   "kind": "relative",
+   "text": "my keys might be behind the bookshelf",
+   "names": [],
+   "failed": [
+    "target"
+   ],
+   "expected": {
+    "target": "keys",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "keys might be",
+    "room": null,
+    "colours": [],
+    "size": null
+   }
+  },
+  {
+   "id": "b073",
+   "group": "rules",
+   "kind": "no_target",
+   "text": "search the garage",
+   "names": [],
+   "failed": [
+    "target",
+    "room"
+   ],
+   "expected": {
+    "target": null,
+    "room": {
+     "type": "garage"
+    },
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "search the garage",
+    "room": null,
+    "colours": [],
+    "size": null
+   }
+  },
+  {
+   "id": "b093",
+   "group": "gap",
+   "kind": "room_first",
+   "text": "In the kitchen, find my mug",
+   "names": [],
+   "failed": [
+    "target"
+   ],
+   "expected": {
+    "target": "mug",
+    "room": {
+     "type": "kitchen"
+    },
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": null,
+    "room": {
+     "type": "kitchen"
+    },
+    "colours": [],
+    "size": null
+   }
+  },
+  {
+   "id": "b094",
+   "group": "gap",
+   "kind": "room_first",
+   "text": "Go to the kitchen and find my mug",
+   "names": [],
+   "failed": [
+    "target"
+   ],
+   "expected": {
+    "target": "mug",
+    "room": {
+     "type": "kitchen"
+    },
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": null,
+    "room": {
+     "type": "kitchen"
+    },
+    "colours": [],
+    "size": null
+   }
+  },
+  {
+   "id": "b095",
+   "group": "gap",
+   "kind": "room_first",
+   "text": "Kitchen: find the blender",
+   "names": [],
+   "failed": [
+    "target",
+    "room"
+   ],
+   "expected": {
+    "target": "blender",
+    "room": {
+     "type": "kitchen"
+    },
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "kitchen",
+    "room": null,
+    "colours": [],
+    "size": null
+   }
+  },
+  {
+   "id": "b096",
+   "group": "gap",
+   "kind": "room_first",
+   "text": "the bedroom, look for my charger",
+   "names": [],
+   "failed": [
+    "target",
+    "room"
+   ],
+   "expected": {
+    "target": "charger",
+    "room": {
+     "type": "bedroom"
+    },
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "bedroom",
+    "room": null,
+    "colours": [],
+    "size": null
+   }
+  },
+  {
+   "id": "b097",
+   "group": "gap",
+   "kind": "verb_typo",
+   "text": "fnd my phone in the bedroom",
+   "names": [],
+   "failed": [
+    "target"
+   ],
+   "expected": {
+    "target": "phone",
+    "room": {
+     "type": "bedroom"
+    },
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "fnd my phone",
+    "room": {
+     "type": "bedroom"
+    },
+    "colours": [],
+    "size": null
+   }
+  },
+  {
+   "id": "b098",
+   "group": "gap",
+   "kind": "verb_typo",
+   "text": "where r my glasses",
+   "names": [],
+   "failed": [
+    "target"
+   ],
+   "expected": {
+    "target": "glasses",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "where r my glasses",
+    "room": null,
+    "colours": [],
+    "size": null
+   }
+  },
+  {
+   "id": "b100",
+   "group": "gap",
+   "kind": "place_first",
+   "text": "look under the couch in the family room for my slipper",
+   "names": [],
+   "failed": [
+    "target"
+   ],
+   "expected": {
+    "target": "slipper",
+    "room": {
+     "type": "living room"
+    },
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": null,
+    "room": {
+     "type": "living room"
+    },
+    "colours": [],
+    "size": null
+   }
+  }
+ ],
+ "rules": {
+  "n": 92,
+  "target": 82,
+  "room": 91,
+  "attributes": 92,
+  "wrong_room": 0,
+  "by_kind": {
+   "plain": {
+    "n": 8,
+    "target": 8,
+    "room": 8,
+    "attributes": 8
+   },
+   "polite": {
+    "n": 14,
+    "target": 11,
+    "room": 14,
+    "attributes": 14
+   },
+   "indirect": {
+    "n": 8,
+    "target": 3,
+    "room": 8,
+    "attributes": 8
+   },
+   "attributes": {
+    "n": 8,
+    "target": 8,
+    "room": 8,
+    "attributes": 8
+   },
+   "room": {
+    "n": 15,
+    "target": 15,
+    "room": 15,
+    "attributes": 15
+   },
+   "relative": {
+    "n": 10,
+    "target": 9,
+    "room": 10,
+    "attributes": 10
+   },
+   "room_in_target": {
+    "n": 4,
+    "target": 4,
+    "room": 4,
+    "attributes": 4
+   },
+   "with_of": {
+    "n": 3,
+    "target": 3,
+    "room": 3,
+    "attributes": 3
+   },
+   "no_target": {
+    "n": 3,
+    "target": 2,
+    "room": 2,
+    "attributes": 3
+   },
+   "two_targets": {
+    "n": 3,
+    "target": 3,
+    "room": 3,
+    "attributes": 3
+   },
+   "no_guess": {
+    "n": 7,
+    "target": 7,
+    "room": 7,
+    "attributes": 7
+   },
+   "names": {
+    "n": 5,
+    "target": 5,
+    "room": 5,
+    "attributes": 5
+   },
+   "case": {
+    "n": 4,
+    "target": 4,
+    "room": 4,
+    "attributes": 4
+   }
+  }
+ },
+ "gap": {
+  "n": 8,
+  "target": 1,
+  "room": 6,
+  "attributes": 8,
+  "wrong_room": 0,
+  "by_kind": {
+   "room_first": {
+    "n": 4,
+    "target": 0,
+    "room": 2,
+    "attributes": 4
+   },
+   "verb_typo": {
+    "n": 2,
+    "target": 0,
+    "room": 2,
+    "attributes": 2
+   },
+   "question": {
+    "n": 1,
+    "target": 1,
+    "room": 1,
+    "attributes": 1
+   },
+   "place_first": {
+    "n": 1,
+    "target": 0,
+    "room": 1,
+    "attributes": 1
+   }
+  }
+ },
+ "verdict": {
+  "R1": {
+   "metric": "target",
+   "got": "82 of 92",
+   "rate": 0.8913,
+   "bar": ">= 90%",
+   "met": false
+  },
+  "R2": {
+   "metric": "room",
+   "got": "91 of 92",
+   "rate": 0.9891,
+   "bar": ">= 95%",
+   "met": true
+  },
+  "R3": {
+   "metric": "a room given where none was said, or the wrong room",
+   "got": 0,
+   "bar": "<= 1",
+   "met": true
+  },
+  "R4": {
+   "metric": "attributes",
+   "got": "92 of 92",
+   "rate": 1.0,
+   "bar": ">= 95%",
+   "met": true
+  },
+  "R5": {
+   "metric": "plain rows exact",
+   "got": "8 of 8",
+   "bar": "100%",
+   "met": true
+  }
+ }
+}

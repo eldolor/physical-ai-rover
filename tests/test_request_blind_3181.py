@@ -120,3 +120,18 @@ def test_colours_compare_as_a_set():
         return {**r, "colours": list(reversed(r["colours"]))}
     out = _scorer().score(rows(), _oracle(rows(), change))
     assert out["rules"]["attributes"] == 92
+
+
+# ---------- the score, pinned as a floor (3.181.A's one run, 2026-11-15) ----------
+
+def test_the_parser_scores_no_worse_than_its_blind_run():
+    """3.181.A scored 3.176.B's parser once on this set: R1 82/92 (FAILED,
+    bar 90%), R2 91/92, R3 0, R4 92/92, R5 8/8. Pinned as floors, so a
+    regression fails here while a parser that reads more passes; a parser
+    changed to fit THIS set no longer has a blind score (the section says so)."""
+    from brain.request import parse
+    out = _scorer().score(rows(), parse)
+    r = out["rules"]
+    assert r["target"] >= 82 and r["room"] >= 91 and r["attributes"] >= 92, r
+    assert r["wrong_room"] == 0
+    assert out["verdict"]["R5"]["met"]
