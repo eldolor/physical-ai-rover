@@ -185,4 +185,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.179](3.179-claim-host-cloud.md) | Claim host identity unique per cloud container |
 | [3.181](3.181-request-blind-set.md) | A blind request set for the plain-words find |
 | [3.183](3.183-small-fixes-1115.md) | Two fixes found in review: a stale slow-tier pin, capitalised room names |
+| [3.180](3.180-explore-seen-record.md) | Explore's seen record counts only what a detection could see |
 <!-- /sections -->
