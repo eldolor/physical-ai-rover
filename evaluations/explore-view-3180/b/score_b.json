@@ -1,0 +1,209 @@
+{
+ "arms": {
+  "dev": {
+   "found_B_base": {
+    "R": [
+     98,
+     100
+    ],
+    "U": [
+     98,
+     100
+    ]
+   },
+   "both_found": 196,
+   "goals_median": [
+    7.0,
+    7.0
+   ],
+   "sim_s_median": [
+    14.42,
+    14.42
+   ],
+   "B5_met": true,
+   "exhausted_B_base": [
+    4,
+    0
+   ],
+   "changed": 58,
+   "view_goals_mean": [
+    1.575,
+    1.045
+   ]
+  },
+  "none": {
+   "found_B_base": {
+    "R": [
+     100,
+     100
+    ],
+    "U": [
+     99,
+     100
+    ]
+   },
+   "both_found": 199,
+   "goals_median": [
+    5,
+    5
+   ],
+   "sim_s_median": [
+    10.41,
+    10.41
+   ],
+   "B5_met": true,
+   "exhausted_B_base": [
+    1,
+    0
+   ],
+   "changed": 46,
+   "view_goals_mean": [
+    1.085,
+    0.765
+   ]
+  },
+  "right": {
+   "found_B_base": {
+    "R": [
+     100,
+     100
+    ],
+    "U": [
+     98,
+     100
+    ]
+   },
+   "both_found": 198,
+   "goals_median": [
+    5.0,
+    5.0
+   ],
+   "sim_s_median": [
+    10.035,
+    10.0
+   ],
+   "B5_met": true,
+   "exhausted_B_base": [
+    2,
+    0
+   ],
+   "changed": 46,
+   "view_goals_mean": [
+    1.415,
+    0.675
+   ]
+  },
+  "wrong": {
+   "found_B_base": {
+    "R": [
+     98,
+     99
+    ],
+    "U": [
+     100,
+     100
+    ]
+   },
+   "both_found": 197,
+   "goals_median": [
+    14,
+    12
+   ],
+   "sim_s_median": [
+    28.76,
+    24.78
+   ],
+   "B5_met": false,
+   "exhausted_B_base": [
+    2,
+    1
+   ],
+   "changed": 146,
+   "view_goals_mean": [
+    5.975,
+    4.36
+   ]
+  }
+ },
+ "B1": {
+  "outcome": "found",
+  "met": true
+ },
+ "B2": {
+  "195R": "found",
+  "194U": "exhausted",
+  "met": false
+ },
+ "B3": {
+  "lost": [
+   [
+    "dev",
+    201,
+    "U",
+    "exhausted"
+   ],
+   [
+    "dev",
+    225,
+    "R",
+    "exhausted"
+   ],
+   [
+    "dev",
+    247,
+    "R",
+    "exhausted"
+   ],
+   [
+    "dev",
+    292,
+    "U",
+    "exhausted"
+   ],
+   [
+    "none",
+    292,
+    "U",
+    "exhausted"
+   ],
+   [
+    "right",
+    194,
+    "U",
+    "exhausted"
+   ],
+   [
+    "right",
+    323,
+    "U",
+    "exhausted"
+   ],
+   [
+    "wrong",
+    184,
+    "R",
+    "exhausted"
+   ],
+   [
+    "wrong",
+    251,
+    "R",
+    "exhausted"
+   ]
+  ],
+  "met": false
+ },
+ "B4": {
+  "met": false
+ },
+ "B5": {
+  "met": false
+ },
+ "B6": {
+  "exhausted_B_base": [
+   9,
+   1
+  ],
+  "met": false
+ }
+}
