@@ -362,6 +362,13 @@ def hinted_prior(prior: dict, types: list, hint: Optional[dict]) -> dict:
     return {**prior, **{t: 1.0 for t in hit}}
 
 
+def _prior_type(t, prior: dict):
+    """3.185: a goal type the prior does not name, read through the shared
+    vocabulary: its canonical type if the prior names that, else None."""
+    c = canonical_room(t) if isinstance(t, str) else None
+    return c if c in prior else None
+
+
 def room_type(name: str) -> str:
     """'bedroom 2' -> 'bedroom'."""
     return re.sub(r" \d+$", "", name)
@@ -406,7 +413,11 @@ class RoomGoalPolicy:
         prior = hinted_prior(self.prior.get((target or "").lower(), {}), types, hint)
         # A type the prior does not name reads as no type: in training every
         # labelled type had a prior, so "known, P = 0" meant a real zero.
-        types = [t if t in prior else None for t in types]
+        # 3.185: a whole vocabulary synonym ("lounge", "master bedroom") reads
+        # as its canonical type -- after the hint, so a name hint on the room's
+        # own name keeps its rate; a name that only contains a room word is
+        # not that room (`canonical_room` looks up the whole name).
+        types = [t if t in prior else _prior_type(t, prior) for t in types]
         room = room_features(m, pose, goals, trail=trail, types=types, prior=prior, ctx=ctx)
         return [a + b for a, b in zip(feats, room)]
 

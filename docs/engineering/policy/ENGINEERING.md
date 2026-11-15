@@ -922,6 +922,15 @@ hint and the prior read it, as `__init__` lowers the prior's keys: a person's ro
 "kitchen", where it read as no type before. A type the prior does not name still
 reads as none. `tests/test_goal_policy_case_3183.py`.
 
+**Synonym names (3.185).** After the hint is applied, a goal type that is not
+itself a key of the target's prior is read through the shared vocabulary
+(`_prior_type()` -> `brain/request.py` `canonical_room`, a whole-name lookup):
+"Lounge" or "Den" reads as "living room", "Master Bedroom" as "bedroom", if the
+prior names that type; otherwise none. The order keeps a name hint on the
+room's own name at its 1.0. A name that only contains a room word ("Kids Den",
+"Bathroom Closet") is not that room; the vocabulary is not edited here.
+`tests/test_goal_policy_synonyms_3185.py`.
+
 **A find's room hint (3.176).** A start's `room_hint` (`{"type": t}` or
 `{"name": n}`, `brain/request.py` `check_hint`) reaches `ExploreAgent.room_hint`
 and, at each choice, `RoomGoalPolicy.extend(..., hint=)`. `hinted_prior()`
