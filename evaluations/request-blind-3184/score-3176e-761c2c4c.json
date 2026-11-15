@@ -1,0 +1,76 @@
+{
+ "parser": "/tmp/claude-0/-home-user-physical-ai-rover/171ef515-b7f8-5a13-9d27-f592ef84dcd8/scratchpad/p176e/brain/request.py",
+ "parser_sha256": "d45dada62cfb2c5692e7fc97cbdaae890ae46eec14fb1928f0c5bfe0f914e83d",
+ "commit": "761c2c4cd4c1942e831ff8c1c89894f08b2809d8",
+ "set_sha256": "0fe77d505a7619885b8b590df9e0869dd8879cebafad1277fb26d107e37cbb9f",
+ "rows": 110,
+ "counts": {
+  "P1": 108,
+  "P2": 109,
+  "P3": 0,
+  "P4": 110
+ },
+ "bars": {
+  "P1": 99,
+  "P2": 105,
+  "P3": 1,
+  "P4": 105
+ },
+ "met": {
+  "P1": true,
+  "P2": true,
+  "P3": true,
+  "P4": true
+ },
+ "misses": [
+  {
+   "id": "b020",
+   "kind": "indirect",
+   "text": "I think I left my phone in the den",
+   "names": [],
+   "expect": {
+    "target": "phone",
+    "room": {
+     "type": "living room"
+    },
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "i think i left my phone",
+    "room": {
+     "type": "living room"
+    },
+    "colours": [],
+    "size": null
+   },
+   "wrong": [
+    "target"
+   ]
+  },
+  {
+   "id": "b036",
+   "kind": "room_first",
+   "text": "Check the bathroom for my razor",
+   "names": [],
+   "expect": {
+    "target": "razor",
+    "room": {
+     "type": "bathroom"
+    },
+    "colours": [],
+    "size": null
+   },
+   "got": {
+    "target": "bathroom for my razor",
+    "room": null,
+    "colours": [],
+    "size": null
+   },
+   "wrong": [
+    "target",
+    "room"
+   ]
+  }
+ ]
+}

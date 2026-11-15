@@ -26,6 +26,7 @@ def load_parser(root: Path):
     path = root / "brain" / "request.py"
     spec = importlib.util.spec_from_file_location("request_under_test", path)
     mod = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = mod          # dataclasses look their module up here
     spec.loader.exec_module(mod)
     return mod, path
 
