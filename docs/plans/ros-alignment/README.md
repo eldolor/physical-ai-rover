@@ -186,4 +186,6 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.180](3.180-explore-seen-record.md) | Explore's view goals: a look-from spot reused for a new direction, then the seen record |
 | [3.181](3.181-request-blind-set.md) | A blind request set for the plain-words find |
 | [3.183](3.183-small-fixes-1115.md) | Two fixes found in review: a stale slow-tier pin, capitalised room names |
+| [3.184](3.184-request-blind-set-2.md) | A second blind request set, held out from the parser fixes |
+| [3.185](3.185-room-name-synonyms.md) | A person's room name that is a synonym reaches its room type |
 <!-- /sections -->
