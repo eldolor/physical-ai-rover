@@ -10,6 +10,7 @@ refuses deletes is simulated by a `pre-receive` hook on the local bare
 repo; no test reaches the real origin."""
 
 import os
+import re
 import socket
 import subprocess
 import sys
@@ -224,8 +225,47 @@ def test_criterion_9_a_released_record_holds_digests_shas_and_a_time(repo, owner
     refuse_deletes(repo)
     pc.release("3.90.A", cwd=repo, me=a)
     msg = message(repo, remote_refs(repo)["3.90.A"])
-    assert "raw-session-id" not in msg and socket.gethostname() not in msg.replace("vm", "")
-    assert repo not in msg and "/" not in msg
+    assert "raw-session-id" not in msg and repo not in msg
     rec = pc.parse_released_message(msg)
     assert set(rec) == {"step", "by", "forced", "was", "at"}
-    assert rec["by"].startswith("s-") and len(rec["was"]) == 40
+    assert re.fullmatch(r"s-[0-9a-f]{12}", rec["by"])
+    assert re.fullmatch(r"[0-9a-f]{40}", rec["was"]) and rec["forced"] == "no"
+    assert re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ", rec["at"])
+    assert msg.split("\n")[0] == "released 3.90.A"
+    body = [ln for ln in msg.strip().split("\n")[2:]]
+    assert [ln.split(": ")[0] for ln in body] == ["by", "forced", "was", "at"]   # nothing else
+
+
+# ---------- review round 1 ----------
+
+def test_review_a_delete_that_got_no_answer_writes_no_record(repo, owners, monkeypatch):
+    """Only a refused delete falls back: a timeout is not a refusal."""
+    _, a = owners()
+    sha = pc.claim("3.90.A", cwd=repo, me=a)["sha"]
+    monkeypatch.setattr(pc, "_push_delete",
+                        lambda top, step, s: (False, False, "no answer from origin in 20 s"))
+    with pytest.raises(SystemExit, match="could not give back"):
+        pc.release("3.90.A", cwd=repo, me=a)
+    assert remote_refs(repo)["3.90.A"] == sha
+
+
+def test_review_a_released_record_deleted_meanwhile_is_still_claimed(repo, owners, monkeypatch):
+    """The board read a released record; someone with delete rights removed
+    it before the claim's push: the step is free, and the claim takes it."""
+    _, a = owners()
+    pc.claim("3.90.A", cwd=repo, me=a)
+    refuse_deletes(repo)
+    pc.release("3.90.A", cwd=repo, me=a)
+    bare = subprocess.run(["git", "remote", "get-url", "origin"], cwd=repo,
+                          capture_output=True, text=True).stdout.strip()
+    os.remove(os.path.join(bare, "hooks", "pre-receive"))
+    real = pc._push_replace
+
+    def cleaned_first(top, step, sha, expect):
+        _git(repo, "push", "-q", "origin", f":refs/heads/claim/{step}")
+        monkeypatch.setattr(pc, "_push_replace", real)
+        return real(top, step, sha, expect)
+    monkeypatch.setattr(pc, "_push_replace", cleaned_first)
+    _, b = owners()
+    c = pc.claim("3.90.A", cwd=repo, me=b)
+    assert remote_refs(repo)["3.90.A"] == c["sha"]
