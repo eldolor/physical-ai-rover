@@ -143,6 +143,12 @@ so it states:
 * A worker that hit a user-only decision: release the claim if nothing is
   committed for it, note the question, and move on.
 * Update the ledger at every start and end.
+* **Keep the open-step count current** (the user, 2026-11-15): the bold
+  "Open steps" line at the top of `docs/plans/PLAN-ros-alignment.md`. After
+  any merge that changes a step's state, re-run `plan_section.py board --all`
+  from a checkout of current `origin/dev` and update the counts (free,
+  waiting, blocked, held, done, dropped), the cloud-doable free steps, the
+  date and the dev sha, in a docs-only commit.
 
 ## 5. End of a batch, end of a day
 
