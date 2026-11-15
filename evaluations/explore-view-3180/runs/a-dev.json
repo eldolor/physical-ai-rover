@@ -1,6 +1,7 @@
 {
  "arm": "dev",
- "commit": "45278578",
+ "commit": "e49fcfc8",
+ "brain": "/home/user/physical-ai-rover/brain",
  "pairs": 200,
  "rows": [
   {
@@ -149,13 +150,13 @@
    "mode": "R",
    "target": "house plant",
    "outcome": "found",
-   "goals": 30,
-   "metres": 126.6,
-   "reward": -0.866,
-   "sim_s": 60.35,
+   "goals": 31,
+   "metres": 127.2,
+   "reward": -0.892,
+   "sim_s": 62.73,
    "person_rooms": 0,
-   "view_goals": 2,
-   "view_reuses": 0
+   "view_goals": 3,
+   "view_reuses": 1
   },
   {
    "split": "val",
@@ -1214,12 +1215,12 @@
    "target": "house plant",
    "outcome": "found",
    "goals": 85,
-   "metres": 318.9,
-   "reward": -3.889,
-   "sim_s": 176.85,
+   "metres": 309.3,
+   "reward": -3.793,
+   "sim_s": 177.48,
    "person_rooms": 0,
    "view_goals": 38,
-   "view_reuses": 6
+   "view_reuses": 8
   },
   {
    "split": "val",

@@ -1,6 +1,7 @@
 {
  "arm": "right",
- "commit": "45278578",
+ "commit": "e49fcfc8",
+ "brain": "/home/user/physical-ai-rover/brain",
  "pairs": 200,
  "rows": [
   {
@@ -675,17 +676,17 @@
    "mode": "U",
    "target": "red backpack",
    "outcome": "found",
-   "goals": 17,
-   "metres": 57.0,
-   "reward": 0.09,
-   "sim_s": 36.04,
+   "goals": 37,
+   "metres": 114.6,
+   "reward": -0.886,
+   "sim_s": 78.18,
    "text": "find the red backpack, probably in the living room",
    "hint": "living room",
    "person_rooms": 3,
    "hint_acts": true,
    "hint_cells": 393,
-   "view_goals": 8,
-   "view_reuses": 0
+   "view_goals": 19,
+   "view_reuses": 1
   },
   {
    "split": "val",
@@ -3393,17 +3394,17 @@
    "mode": "R",
    "target": "cart",
    "outcome": "found",
-   "goals": 18,
-   "metres": 60.9,
-   "reward": 0.031,
-   "sim_s": 37.87,
+   "goals": 21,
+   "metres": 64.8,
+   "reward": -0.068,
+   "sim_s": 44.87,
    "text": "find the cart, probably in the living room",
    "hint": "living room",
    "person_rooms": 3,
    "hint_acts": true,
    "hint_cells": 179,
-   "view_goals": 8,
-   "view_reuses": 2
+   "view_goals": 12,
+   "view_reuses": 5
   },
   {
    "split": "val",
