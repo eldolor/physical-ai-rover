@@ -31,26 +31,44 @@ def load_parser(root: Path):
     return mod, path
 
 
+def e_row(r):
+    return r["expect"]
+
+
 def score(root):
     root = Path(root).resolve()
     data = SET.read_bytes()
-    assert hashlib.sha256(data).hexdigest() == SET_SHA256, "the set is not the frozen one"
+    set_sha = hashlib.sha256(data).hexdigest()
+    if set_sha != SET_SHA256:                 # review: not an assert (python -O)
+        raise SystemExit(f"the set is not the frozen one: {set_sha}")
     rows = [json.loads(line) for line in data.decode().splitlines()]
+    git = lambda *a: subprocess.run(["git", "-C", str(root), *a],  # noqa: E731
+                                    capture_output=True, text=True)
+    head = git("rev-parse", "HEAD")
+    if head.returncode != 0:
+        raise SystemExit(f"{root} is not a git worktree: {head.stderr.strip()}")
+    if git("status", "--porcelain", "brain/request.py").stdout.strip():
+        raise SystemExit("brain/request.py differs from its commit: score a clean worktree")
+    commit = head.stdout.strip()
     mod, path = load_parser(root)
-    commit = subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"],
-                            capture_output=True, text=True).stdout.strip()
     n = {"P1": 0, "P2": 0, "P3": 0, "P4": 0}
     misses = []
     for r in rows:
         e = r["expect"]
-        got = mod.parse(r["text"], r["names"])
+        try:
+            got = mod.parse(r["text"], r["names"])
+        except Exception as e:  # noqa: BLE001 -- review: a raise is a miss, the run goes on
+            misses.append({"id": r["id"], "kind": r["kind"], "text": r["text"],
+                           "names": r["names"], "expect": e_row(r), "got": None,
+                           "wrong": ["target", "room", "attributes"], "error": repr(e)})
+            continue
         room = dict(got.room_hint) if got.room_hint else None
         got_d = {"target": got.target, "room": room,
                  "colours": sorted(set(got.colours or ())), "size": got.size}
         ok_t = got.target == e["target"]
         ok_r = room == e["room"]
         wrong_room = room is not None and room != e["room"]
-        ok_a = got_d["colours"] == e["colours"] and got.size == e["size"]
+        ok_a = got_d["colours"] == sorted(set(e["colours"])) and got.size == e["size"]
         n["P1"] += ok_t
         n["P2"] += ok_r
         n["P3"] += wrong_room
@@ -62,8 +80,8 @@ def score(root):
                                                      ("attributes", ok_a)) if not ok]})
     met = {"P1": n["P1"] >= BARS["P1"], "P2": n["P2"] >= BARS["P2"],
            "P3": n["P3"] <= BARS["P3"], "P4": n["P4"] >= BARS["P4"]}
-    return {"parser": str(path), "parser_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-            "commit": commit, "set_sha256": SET_SHA256, "rows": len(rows),
+    return {"parser": "brain/request.py", "parser_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "commit": commit, "set_sha256": set_sha, "rows": len(rows),
             "counts": n, "bars": BARS, "met": met, "misses": misses}
 
 
@@ -71,5 +89,6 @@ if __name__ == "__main__":
     out = score(sys.argv[1])
     text = json.dumps(out, indent=1)
     if len(sys.argv) > 2:
-        Path(sys.argv[2]).write_text(text + "\n")
+        with open(sys.argv[2], "x") as f:      # review: a first score is never overwritten
+            f.write(text + "\n")
     print(json.dumps({k: out[k] for k in ("commit", "counts", "met")}), f"misses={len(out['misses'])}")
