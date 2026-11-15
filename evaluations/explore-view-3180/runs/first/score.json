@@ -1,0 +1,172 @@
+{
+ "arms": {
+  "dev": {
+   "found": {
+    "R": {
+     "pairs": 100,
+     "found": [
+      100,
+      100
+     ],
+     "met": true
+    },
+    "U": {
+     "pairs": 100,
+     "found": [
+      100,
+      100
+     ],
+     "met": true
+    }
+   },
+   "both_found": 200,
+   "goals_median": [
+    7.0,
+    7.0
+   ],
+   "sim_s_median": [
+    14.495,
+    14.495
+   ],
+   "A4_met": true,
+   "reuse_zero_missions": 182,
+   "reuse_zero_differ": [],
+   "missions_changed": 17,
+   "view_goals_mean": [
+    1.14,
+    1
+   ]
+  },
+  "none": {
+   "found": {
+    "R": {
+     "pairs": 100,
+     "found": [
+      100,
+      100
+     ],
+     "met": true
+    },
+    "U": {
+     "pairs": 100,
+     "found": [
+      100,
+      100
+     ],
+     "met": true
+    }
+   },
+   "both_found": 200,
+   "goals_median": [
+    5.0,
+    5.0
+   ],
+   "sim_s_median": [
+    10.415,
+    10.415
+   ],
+   "A4_met": true,
+   "reuse_zero_missions": 189,
+   "reuse_zero_differ": [],
+   "missions_changed": 10,
+   "view_goals_mean": [
+    0.795,
+    0.685
+   ]
+  },
+  "right": {
+   "found": {
+    "R": {
+     "pairs": 100,
+     "found": [
+      100,
+      99
+     ],
+     "met": true
+    },
+    "U": {
+     "pairs": 100,
+     "found": [
+      100,
+      99
+     ],
+     "met": true
+    }
+   },
+   "both_found": 198,
+   "goals_median": [
+    5.0,
+    5.0
+   ],
+   "sim_s_median": [
+    10.0,
+    10.0
+   ],
+   "A4_met": true,
+   "reuse_zero_missions": 186,
+   "reuse_zero_differ": [],
+   "missions_changed": 14,
+   "view_goals_mean": [
+    0.69,
+    0.725
+   ]
+  },
+  "wrong": {
+   "found": {
+    "R": {
+     "pairs": 100,
+     "found": [
+      100,
+      99
+     ],
+     "met": true
+    },
+    "U": {
+     "pairs": 100,
+     "found": [
+      100,
+      100
+     ],
+     "met": true
+    }
+   },
+   "both_found": 199,
+   "goals_median": [
+    12,
+    12
+   ],
+   "sim_s_median": [
+    25.33,
+    24.72
+   ],
+   "A4_met": true,
+   "reuse_zero_missions": 110,
+   "reuse_zero_differ": [],
+   "missions_changed": 89,
+   "view_goals_mean": [
+    4.635,
+    3.69
+   ]
+  }
+ },
+ "A2": {
+  "lost": [],
+  "met": true
+ },
+ "A3": {
+  "met": true
+ },
+ "A4": {
+  "met": true
+ },
+ "A5": {
+  "met": true
+ },
+ "A6": {
+  "missions": 800,
+  "mean": 0.335,
+  "max": 9,
+  "with_any": 133,
+  "met": false
+ }
+}

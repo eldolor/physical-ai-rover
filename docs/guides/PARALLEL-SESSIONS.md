@@ -324,7 +324,13 @@ Continuing an existing section: work in its worktree
    * `release [<step>]` deletes this session's claim branches (with a lease
      on the sha it pushed, so never one someone made since) and local
      files. Without a step it gives back this session's claims only.
-     Release once your work is on dev.
+     Release once your work is on dev. Where origin refuses branch deletes
+     (a cloud session: HTTP 403), `release` instead turns the branch into a
+     `released <step>` record under the same lease (3.179.B). Every claim
+     reader takes that as no claim (it still reserves its number for
+     `new`), and the next `claim` replaces it under a lease on its sha, so
+     two claimers never both win. Released records pile up until someone
+     whose origin allows deletes removes them.
    * Stale claims. On the same machine, a holder whose process has exited
      may be taken over: `claim <step>` deletes the old branch (with a lease)
      and makes its own. **A claim from another machine is never freed

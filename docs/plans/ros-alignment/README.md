@@ -183,4 +183,7 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.177](3.177-visual-promise.md) | Visual promise: does a frame say the target is near before it is in view |
 | [3.178](3.178-watch-list.md) | A watch list: a few named valuables noticed on every mission |
 | [3.179](3.179-claim-host-cloud.md) | Claim host identity unique per cloud container |
+| [3.180](3.180-explore-seen-record.md) | Explore's view goals: a look-from spot reused for a new direction, then the seen record |
+| [3.181](3.181-request-blind-set.md) | A blind request set for the plain-words find |
+| [3.183](3.183-small-fixes-1115.md) | Two fixes found in review: a stale slow-tier pin, capitalised room names |
 <!-- /sections -->

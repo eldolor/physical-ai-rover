@@ -1,0 +1,100 @@
+{"id": "b001", "group": "rules", "kind": "plain", "text": "keys", "names": [], "target": "keys", "room": null, "colours": [], "size": null}
+{"id": "b002", "group": "rules", "kind": "plain", "text": "remote", "names": [], "target": "remote", "room": null, "colours": [], "size": null}
+{"id": "b003", "group": "rules", "kind": "plain", "text": "wallet", "names": [], "target": "wallet", "room": null, "colours": [], "size": null}
+{"id": "b004", "group": "rules", "kind": "plain", "text": "phone", "names": [], "target": "phone", "room": null, "colours": [], "size": null}
+{"id": "b005", "group": "rules", "kind": "plain", "text": "glasses", "names": [], "target": "glasses", "room": null, "colours": [], "size": null}
+{"id": "b006", "group": "rules", "kind": "plain", "text": "backpack", "names": [], "target": "backpack", "room": null, "colours": [], "size": null}
+{"id": "b007", "group": "rules", "kind": "plain", "text": "charger", "names": [], "target": "charger", "room": null, "colours": [], "size": null}
+{"id": "b008", "group": "rules", "kind": "plain", "text": "slippers", "names": [], "target": "slippers", "room": null, "colours": [], "size": null}
+{"id": "b009", "group": "rules", "kind": "polite", "text": "Find my keys.", "names": [], "target": "keys", "room": null, "colours": [], "size": null}
+{"id": "b010", "group": "rules", "kind": "polite", "text": "Can you find my phone?", "names": [], "target": "phone", "room": null, "colours": [], "size": null}
+{"id": "b011", "group": "rules", "kind": "polite", "text": "Could you please look for the TV remote?", "names": [], "target": "tv remote", "room": null, "colours": [], "size": null}
+{"id": "b012", "group": "rules", "kind": "polite", "text": "Please find the dog's leash", "names": [], "target": "leash", "room": null, "colours": [], "size": null}
+{"id": "b013", "group": "rules", "kind": "polite", "text": "Hey robot, where is my wallet?", "names": [], "target": "wallet", "room": null, "colours": [], "size": null}
+{"id": "b014", "group": "rules", "kind": "polite", "text": "Where's my laptop", "names": [], "target": "laptop", "room": null, "colours": [], "size": null}
+{"id": "b015", "group": "rules", "kind": "polite", "text": "Have you seen my reading glasses?", "names": [], "target": "reading glasses", "room": null, "colours": [], "size": null}
+{"id": "b016", "group": "rules", "kind": "polite", "text": "Look for Emma's water bottle please", "names": [], "target": "water bottle", "room": null, "colours": [], "size": null}
+{"id": "b017", "group": "rules", "kind": "polite", "text": "find the umbrella for me", "names": [], "target": "umbrella", "room": null, "colours": [], "size": null}
+{"id": "b018", "group": "rules", "kind": "polite", "text": "I lost my earbuds", "names": [], "target": "earbuds", "room": null, "colours": [], "size": null}
+{"id": "b019", "group": "rules", "kind": "polite", "text": "Search for my passport!", "names": [], "target": "passport", "room": null, "colours": [], "size": null}
+{"id": "b020", "group": "rules", "kind": "polite", "text": "Would you mind finding the car keys?", "names": [], "target": "car keys", "room": null, "colours": [], "size": null}
+{"id": "b021", "group": "rules", "kind": "polite", "text": "Go find my sneakers", "names": [], "target": "sneakers", "room": null, "colours": [], "size": null}
+{"id": "b022", "group": "rules", "kind": "polite", "text": "Help me find my headphones", "names": [], "target": "headphones", "room": null, "colours": [], "size": null}
+{"id": "b023", "group": "rules", "kind": "indirect", "text": "I can't find my phone anywhere", "names": [], "target": "phone", "room": null, "colours": [], "size": null}
+{"id": "b024", "group": "rules", "kind": "indirect", "text": "Where did I leave my glasses?", "names": [], "target": "glasses", "room": null, "colours": [], "size": null}
+{"id": "b025", "group": "rules", "kind": "indirect", "text": "Any idea where the scissors are?", "names": [], "target": "scissors", "room": null, "colours": [], "size": null}
+{"id": "b026", "group": "rules", "kind": "indirect", "text": "I need my medication, can you find it?", "names": [], "target": "medication", "room": null, "colours": [], "size": null}
+{"id": "b027", "group": "rules", "kind": "indirect", "text": "Do you know where my notebook is?", "names": [], "target": "notebook", "room": null, "colours": [], "size": null}
+{"id": "b028", "group": "rules", "kind": "indirect", "text": "My wallet is missing", "names": [], "target": "wallet", "room": null, "colours": [], "size": null}
+{"id": "b029", "group": "rules", "kind": "indirect", "text": "Have you spotted the cat toy anywhere?", "names": [], "target": "cat toy", "room": null, "colours": [], "size": null}
+{"id": "b030", "group": "rules", "kind": "indirect", "text": "I'm looking for my blue mug", "names": [], "target": "blue mug", "room": null, "colours": ["blue"], "size": null}
+{"id": "b031", "group": "rules", "kind": "attributes", "text": "Find the small black wallet", "names": [], "target": "small black wallet", "room": null, "colours": ["black"], "size": "small"}
+{"id": "b032", "group": "rules", "kind": "attributes", "text": "look for a big red ball", "names": [], "target": "big red ball", "room": null, "colours": ["red"], "size": "large"}
+{"id": "b033", "group": "rules", "kind": "attributes", "text": "Where is the gray hoodie?", "names": [], "target": "gray hoodie", "room": null, "colours": ["grey"], "size": null}
+{"id": "b034", "group": "rules", "kind": "attributes", "text": "find my little green notebook", "names": [], "target": "little green notebook", "room": null, "colours": ["green"], "size": "small"}
+{"id": "b035", "group": "rules", "kind": "attributes", "text": "Find the huge yellow umbrella", "names": [], "target": "huge yellow umbrella", "room": null, "colours": ["yellow"], "size": "large"}
+{"id": "b036", "group": "rules", "kind": "attributes", "text": "find the black and white sneakers", "names": [], "target": "black and white sneakers", "room": null, "colours": ["black", "white"], "size": null}
+{"id": "b037", "group": "rules", "kind": "attributes", "text": "Can you find my tiny pink hair clip?", "names": [], "target": "tiny pink hair clip", "room": null, "colours": ["pink"], "size": "small"}
+{"id": "b038", "group": "rules", "kind": "attributes", "text": "find the orange and purple scarf", "names": [], "target": "orange and purple scarf", "room": null, "colours": ["orange", "purple"], "size": null}
+{"id": "b039", "group": "rules", "kind": "room", "text": "Find my keys in the kitchen", "names": [], "target": "keys", "room": {"type": "kitchen"}, "colours": [], "size": null}
+{"id": "b040", "group": "rules", "kind": "room", "text": "Look for the remote in the living room", "names": [], "target": "remote", "room": {"type": "living room"}, "colours": [], "size": null}
+{"id": "b041", "group": "rules", "kind": "room", "text": "Where is my phone? Maybe in the bedroom.", "names": [], "target": "phone", "room": {"type": "bedroom"}, "colours": [], "size": null}
+{"id": "b042", "group": "rules", "kind": "room", "text": "find the shampoo in the bathroom please", "names": [], "target": "shampoo", "room": {"type": "bathroom"}, "colours": [], "size": null}
+{"id": "b043", "group": "rules", "kind": "room", "text": "my glasses are in the office", "names": [], "target": "glasses", "room": {"type": "office"}, "colours": [], "size": null}
+{"id": "b044", "group": "rules", "kind": "room", "text": "Find the drill in the garage", "names": [], "target": "drill", "room": {"type": "garage"}, "colours": [], "size": null}
+{"id": "b045", "group": "rules", "kind": "room", "text": "look for my hat in the hallway", "names": [], "target": "hat", "room": {"type": "hallway"}, "colours": [], "size": null}
+{"id": "b046", "group": "rules", "kind": "room", "text": "find the detergent in the laundry room", "names": [], "target": "detergent", "room": {"type": "laundry room"}, "colours": [], "size": null}
+{"id": "b047", "group": "rules", "kind": "room", "text": "find the salt shaker in the dining room", "names": [], "target": "salt shaker", "room": {"type": "dining room"}, "colours": [], "size": null}
+{"id": "b048", "group": "rules", "kind": "room", "text": "Can you find my book in the lounge?", "names": [], "target": "book", "room": {"type": "living room"}, "colours": [], "size": null}
+{"id": "b049", "group": "rules", "kind": "room", "text": "find my towel in the restroom", "names": [], "target": "towel", "room": {"type": "bathroom"}, "colours": [], "size": null}
+{"id": "b050", "group": "rules", "kind": "room", "text": "the teddy bear is probably in the nursery", "names": [], "target": "teddy bear", "room": {"type": "bedroom"}, "colours": [], "size": null}
+{"id": "b051", "group": "rules", "kind": "room", "text": "find my laptop in the study", "names": [], "target": "laptop", "room": {"type": "office"}, "colours": [], "size": null}
+{"id": "b052", "group": "rules", "kind": "room", "text": "look for my coat in the foyer", "names": [], "target": "coat", "room": {"type": "hallway"}, "colours": [], "size": null}
+{"id": "b053", "group": "rules", "kind": "room", "text": "find the iron in the utility room", "names": [], "target": "iron", "room": {"type": "laundry room"}, "colours": [], "size": null}
+{"id": "b054", "group": "rules", "kind": "relative", "text": "Find my phone on the kitchen counter", "names": [], "target": "phone", "room": {"type": "kitchen"}, "colours": [], "size": null}
+{"id": "b055", "group": "rules", "kind": "relative", "text": "Find the TV remote under the sofa", "names": [], "target": "tv remote", "room": null, "colours": [], "size": null}
+{"id": "b056", "group": "rules", "kind": "relative", "text": "my keys might be behind the bookshelf", "names": [], "target": "keys", "room": null, "colours": [], "size": null}
+{"id": "b057", "group": "rules", "kind": "relative", "text": "find my charger next to the bed", "names": [], "target": "charger", "room": null, "colours": [], "size": null}
+{"id": "b058", "group": "rules", "kind": "relative", "text": "find the cat's ball near the bedroom", "names": [], "target": "ball", "room": {"type": "bedroom"}, "colours": [], "size": null}
+{"id": "b059", "group": "rules", "kind": "relative", "text": "look for my socks by the bathroom", "names": [], "target": "socks", "room": {"type": "bathroom"}, "colours": [], "size": null}
+{"id": "b060", "group": "rules", "kind": "relative", "text": "find my mug on the desk in the home office", "names": [], "target": "mug", "room": {"type": "office"}, "colours": [], "size": null}
+{"id": "b061", "group": "rules", "kind": "relative", "text": "find the blanket on the bed in the guest room", "names": [], "target": "blanket", "room": {"type": "bedroom"}, "colours": [], "size": null}
+{"id": "b062", "group": "rules", "kind": "relative", "text": "Find my sunglasses upstairs", "names": [], "target": "sunglasses", "room": null, "colours": [], "size": null}
+{"id": "b063", "group": "rules", "kind": "relative", "text": "find my keys inside the coat closet", "names": [], "target": "keys", "room": null, "colours": [], "size": null}
+{"id": "b064", "group": "rules", "kind": "room_in_target", "text": "find the kitchen scissors", "names": [], "target": "kitchen scissors", "room": null, "colours": [], "size": null}
+{"id": "b065", "group": "rules", "kind": "room_in_target", "text": "Where is the bathroom scale?", "names": [], "target": "bathroom scale", "room": null, "colours": [], "size": null}
+{"id": "b066", "group": "rules", "kind": "room_in_target", "text": "find the kitchen timer in the office", "names": [], "target": "kitchen timer", "room": {"type": "office"}, "colours": [], "size": null}
+{"id": "b067", "group": "rules", "kind": "room_in_target", "text": "find the garage door opener in the car", "names": [], "target": "garage door opener", "room": null, "colours": [], "size": null}
+{"id": "b068", "group": "rules", "kind": "with_of", "text": "find the cup with a lid", "names": [], "target": "cup with a lid", "room": null, "colours": [], "size": null}
+{"id": "b069", "group": "rules", "kind": "with_of", "text": "look for the box of tissues in the den", "names": [], "target": "box of tissues", "room": {"type": "living room"}, "colours": [], "size": null}
+{"id": "b070", "group": "rules", "kind": "with_of", "text": "find my bag of dog food", "names": [], "target": "bag of dog food", "room": null, "colours": [], "size": null}
+{"id": "b071", "group": "rules", "kind": "no_target", "text": "check the bedroom", "names": [], "target": null, "room": {"type": "bedroom"}, "colours": [], "size": null}
+{"id": "b072", "group": "rules", "kind": "no_target", "text": "find it in the kitchen", "names": [], "target": null, "room": {"type": "kitchen"}, "colours": [], "size": null}
+{"id": "b073", "group": "rules", "kind": "no_target", "text": "search the garage", "names": [], "target": null, "room": {"type": "garage"}, "colours": [], "size": null}
+{"id": "b074", "group": "rules", "kind": "two_targets", "text": "find my keys and my phone", "names": [], "target": null, "room": null, "colours": [], "size": null}
+{"id": "b075", "group": "rules", "kind": "two_targets", "text": "look for the remote or the charger in the living room", "names": [], "target": null, "room": {"type": "living room"}, "colours": [], "size": null}
+{"id": "b076", "group": "rules", "kind": "two_targets", "text": "Find my wallet and keys", "names": [], "target": null, "room": null, "colours": [], "size": null}
+{"id": "b077", "group": "rules", "kind": "no_guess", "text": "find my keys in the kitchen or the living room", "names": [], "target": "keys", "room": null, "colours": [], "size": null}
+{"id": "b078", "group": "rules", "kind": "no_guess", "text": "my phone is not in the bedroom", "names": [], "target": "phone", "room": null, "colours": [], "size": null}
+{"id": "b079", "group": "rules", "kind": "no_guess", "text": "find my shoes in the kitchn", "names": [], "target": "shoes", "room": null, "colours": [], "size": null}
+{"id": "b080", "group": "rules", "kind": "no_guess", "text": "find the lego in the playroom", "names": [], "target": "lego", "room": null, "colours": [], "size": null}
+{"id": "b081", "group": "rules", "kind": "no_guess", "text": "find my bike in the basement", "names": [], "target": "bike", "room": null, "colours": [], "size": null}
+{"id": "b082", "group": "rules", "kind": "no_guess", "text": "Find the cat downstairs", "names": [], "target": "cat", "room": null, "colours": [], "size": null}
+{"id": "b083", "group": "rules", "kind": "no_guess", "text": "find my keys in the bedrom", "names": [], "target": "keys", "room": null, "colours": [], "size": null}
+{"id": "b084", "group": "rules", "kind": "names", "text": "find my guitar in the den", "names": ["Den"], "target": "guitar", "room": {"name": "Den"}, "colours": [], "size": null}
+{"id": "b085", "group": "rules", "kind": "names", "text": "look for the football in Ben's room", "names": ["Ben's Room", "Studio"], "target": "football", "room": {"name": "Ben's Room"}, "colours": [], "size": null}
+{"id": "b086", "group": "rules", "kind": "names", "text": "find my headphones in the studio", "names": ["Studio"], "target": "headphones", "room": {"name": "Studio"}, "colours": [], "size": null}
+{"id": "b087", "group": "rules", "kind": "names", "text": "find the plant in the sunroom", "names": ["Sunroom"], "target": "plant", "room": {"name": "Sunroom"}, "colours": [], "size": null}
+{"id": "b088", "group": "rules", "kind": "names", "text": "find the remote in the kitchen", "names": ["Den"], "target": "remote", "room": {"type": "kitchen"}, "colours": [], "size": null}
+{"id": "b089", "group": "rules", "kind": "case", "text": "FIND MY KEYS", "names": [], "target": "keys", "room": null, "colours": [], "size": null}
+{"id": "b090", "group": "rules", "kind": "case", "text": "find my wallett", "names": [], "target": "wallett", "room": null, "colours": [], "size": null}
+{"id": "b091", "group": "rules", "kind": "case", "text": "Find the remote control  in the living room", "names": [], "target": "remote control", "room": {"type": "living room"}, "colours": [], "size": null}
+{"id": "b092", "group": "rules", "kind": "case", "text": "find the Remote in the Living Room", "names": [], "target": "remote", "room": {"type": "living room"}, "colours": [], "size": null}
+{"id": "b093", "group": "gap", "kind": "room_first", "text": "In the kitchen, find my mug", "names": [], "target": "mug", "room": {"type": "kitchen"}, "colours": [], "size": null}
+{"id": "b094", "group": "gap", "kind": "room_first", "text": "Go to the kitchen and find my mug", "names": [], "target": "mug", "room": {"type": "kitchen"}, "colours": [], "size": null}
+{"id": "b095", "group": "gap", "kind": "room_first", "text": "Kitchen: find the blender", "names": [], "target": "blender", "room": {"type": "kitchen"}, "colours": [], "size": null}
+{"id": "b096", "group": "gap", "kind": "room_first", "text": "the bedroom, look for my charger", "names": [], "target": "charger", "room": {"type": "bedroom"}, "colours": [], "size": null}
+{"id": "b097", "group": "gap", "kind": "verb_typo", "text": "fnd my phone in the bedroom", "names": [], "target": "phone", "room": {"type": "bedroom"}, "colours": [], "size": null}
+{"id": "b098", "group": "gap", "kind": "verb_typo", "text": "where r my glasses", "names": [], "target": "glasses", "room": null, "colours": [], "size": null}
+{"id": "b099", "group": "gap", "kind": "question", "text": "Is my phone in the bedroom?", "names": [], "target": "phone", "room": {"type": "bedroom"}, "colours": [], "size": null}
+{"id": "b100", "group": "gap", "kind": "place_first", "text": "look under the couch in the family room for my slipper", "names": [], "target": "slipper", "room": {"type": "living room"}, "colours": [], "size": null}
