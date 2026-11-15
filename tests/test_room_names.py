@@ -283,9 +283,11 @@ def test_names_stay_local_no_other_module_reads_the_store():
     # reach a store (its rows: person_rooms 0 in all 200). That file only.
     # 3.183.B: its copy of 3.160.D's sweep does the same (one more arm,
     # capitalised names). That file only.
+    # 3.185: its copy of 3.183.B's (synonym and near-name arms). That file only.
     out = [p for p in out if not p.startswith("evaluations/room-names-3160d/")
            and p not in ("evaluations/request-3176/sweep.py",
-                         "evaluations/small-fixes-3183/sweep_b.py")]
+                         "evaluations/small-fixes-3183/sweep_b.py",
+                         "evaluations/room-synonyms-3185/sweep.py")]
     assert sorted(out) == ["brain/room_labels.py", "brain/room_names.py",
                            "control/brain_server.py", "control/mission_runner.py",
                            "tests/test_room_names.py", "tests/test_room_names_find.py",
