@@ -1,0 +1,110 @@
+{"id": "b001", "kind": "plain", "text": "keys", "names": [], "expect": {"target": "keys", "room": null, "colours": [], "size": null}}
+{"id": "b002", "kind": "plain", "text": "wallet", "names": [], "expect": {"target": "wallet", "room": null, "colours": [], "size": null}}
+{"id": "b003", "kind": "plain", "text": "remote", "names": [], "expect": {"target": "remote", "room": null, "colours": [], "size": null}}
+{"id": "b004", "kind": "plain", "text": "phone charger", "names": [], "expect": {"target": "phone charger", "room": null, "colours": [], "size": null}}
+{"id": "b005", "kind": "plain", "text": "reading glasses", "names": [], "expect": {"target": "reading glasses", "room": null, "colours": [], "size": null}}
+{"id": "b006", "kind": "polite", "text": "Hey robot, can you find my phone?", "names": [], "expect": {"target": "phone", "room": null, "colours": [], "size": null}}
+{"id": "b007", "kind": "polite", "text": "Please find the remote.", "names": [], "expect": {"target": "remote", "room": null, "colours": [], "size": null}}
+{"id": "b008", "kind": "polite", "text": "Could you please look for my wallet?", "names": [], "expect": {"target": "wallet", "room": null, "colours": [], "size": null}}
+{"id": "b009", "kind": "polite", "text": "Would you mind looking for the dog's leash?", "names": [], "expect": {"target": "leash", "room": null, "colours": [], "size": null}}
+{"id": "b010", "kind": "polite", "text": "Can you look for my keys for me?", "names": [], "expect": {"target": "keys", "room": null, "colours": [], "size": null}}
+{"id": "b011", "kind": "polite", "text": "find my headphones please", "names": [], "expect": {"target": "headphones", "room": null, "colours": [], "size": null}}
+{"id": "b012", "kind": "polite", "text": "Help me find my sunglasses!", "names": [], "expect": {"target": "sunglasses", "room": null, "colours": [], "size": null}}
+{"id": "b013", "kind": "polite", "text": "Find the cat's toy mouse, thanks", "names": [], "expect": {"target": "toy mouse", "room": null, "colours": [], "size": null}}
+{"id": "b014", "kind": "polite", "text": "Look for a pen, please.", "names": [], "expect": {"target": "pen", "room": null, "colours": [], "size": null}}
+{"id": "b015", "kind": "indirect", "text": "Where did I leave my keys?", "names": [], "expect": {"target": "keys", "room": null, "colours": [], "size": null}}
+{"id": "b016", "kind": "indirect", "text": "Where's my water bottle?", "names": [], "expect": {"target": "water bottle", "room": null, "colours": [], "size": null}}
+{"id": "b017", "kind": "indirect", "text": "Have you seen Ben's backpack?", "names": [], "expect": {"target": "backpack", "room": null, "colours": [], "size": null}}
+{"id": "b018", "kind": "indirect", "text": "I can't find my glasses anywhere", "names": [], "expect": {"target": "glasses", "room": null, "colours": [], "size": null}}
+{"id": "b019", "kind": "indirect", "text": "I lost my earbuds in the living room", "names": [], "expect": {"target": "earbuds", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "b020", "kind": "indirect", "text": "I think I left my phone in the den", "names": [], "expect": {"target": "phone", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "b021", "kind": "indirect", "text": "Where are my slippers?", "names": [], "expect": {"target": "slippers", "room": null, "colours": [], "size": null}}
+{"id": "b022", "kind": "indirect", "text": "Any idea where the scissors are?", "names": [], "expect": {"target": "scissors", "room": null, "colours": [], "size": null}}
+{"id": "b023", "kind": "indirect", "text": "I need my laptop, it's in the study", "names": [], "expect": {"target": "laptop", "room": {"type": "office"}, "colours": [], "size": null}}
+{"id": "b024", "kind": "indirect", "text": "My daughter's backpack is in the hallway somewhere", "names": [], "expect": {"target": "backpack", "room": {"type": "hallway"}, "colours": [], "size": null}}
+{"id": "b025", "kind": "room_last", "text": "Find my mug in the kitchen", "names": [], "expect": {"target": "mug", "room": {"type": "kitchen"}, "colours": [], "size": null}}
+{"id": "b026", "kind": "room_last", "text": "Look for the remote in the living room.", "names": [], "expect": {"target": "remote", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "b027", "kind": "room_last", "text": "find my watch in the bedroom", "names": [], "expect": {"target": "watch", "room": {"type": "bedroom"}, "colours": [], "size": null}}
+{"id": "b028", "kind": "room_last", "text": "Where is my toothbrush? Check the bathroom", "names": [], "expect": {"target": "toothbrush", "room": {"type": "bathroom"}, "colours": [], "size": null}}
+{"id": "b029", "kind": "room_last", "text": "Find the vacuum in the garage", "names": [], "expect": {"target": "vacuum", "room": {"type": "garage"}, "colours": [], "size": null}}
+{"id": "b030", "kind": "room_last", "text": "can you find my notebook in the office", "names": [], "expect": {"target": "notebook", "room": {"type": "office"}, "colours": [], "size": null}}
+{"id": "b031", "kind": "room_last", "text": "Find the placemats in the dining room", "names": [], "expect": {"target": "placemats", "room": {"type": "dining room"}, "colours": [], "size": null}}
+{"id": "b032", "kind": "room_last", "text": "find the detergent in the laundry room", "names": [], "expect": {"target": "detergent", "room": {"type": "laundry room"}, "colours": [], "size": null}}
+{"id": "b033", "kind": "room_first", "text": "In the kitchen, can you find my mug?", "names": [], "expect": {"target": "mug", "room": {"type": "kitchen"}, "colours": [], "size": null}}
+{"id": "b034", "kind": "room_first", "text": "Bedroom: look for my phone charger", "names": [], "expect": {"target": "phone charger", "room": {"type": "bedroom"}, "colours": [], "size": null}}
+{"id": "b035", "kind": "room_first", "text": "Go to the garage and find the tape measure", "names": [], "expect": {"target": "tape measure", "room": {"type": "garage"}, "colours": [], "size": null}}
+{"id": "b036", "kind": "room_first", "text": "Check the bathroom for my razor", "names": [], "expect": {"target": "razor", "room": {"type": "bathroom"}, "colours": [], "size": null}}
+{"id": "b037", "kind": "room_first", "text": "In the office, find the stapler please", "names": [], "expect": {"target": "stapler", "room": {"type": "office"}, "colours": [], "size": null}}
+{"id": "b038", "kind": "room_first", "text": "Living room - where's the TV remote?", "names": [], "expect": {"target": "tv remote", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "b039", "kind": "synonym", "text": "Find my book in the lounge", "names": [], "expect": {"target": "book", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "b040", "kind": "synonym", "text": "find the baby monitor in the nursery", "names": [], "expect": {"target": "baby monitor", "room": {"type": "bedroom"}, "colours": [], "size": null}}
+{"id": "b041", "kind": "synonym", "text": "Look for the hand towel in the loo", "names": [], "expect": {"target": "hand towel", "room": {"type": "bathroom"}, "colours": [], "size": null}}
+{"id": "b042", "kind": "synonym", "text": "Find my keys in the foyer", "names": [], "expect": {"target": "keys", "room": {"type": "hallway"}, "colours": [], "size": null}}
+{"id": "b043", "kind": "synonym", "text": "find the extension cord in the utility room", "names": [], "expect": {"target": "extension cord", "room": {"type": "laundry room"}, "colours": [], "size": null}}
+{"id": "b044", "kind": "synonym", "text": "Where's my jacket? Maybe the entryway", "names": [], "expect": {"target": "jacket", "room": {"type": "hallway"}, "colours": [], "size": null}}
+{"id": "b045", "kind": "synonym", "text": "Find the board game in the family room", "names": [], "expect": {"target": "board game", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "b046", "kind": "synonym", "text": "find my sweater in the spare room", "names": [], "expect": {"target": "sweater", "room": {"type": "bedroom"}, "colours": [], "size": null}}
+{"id": "b047", "kind": "synonym", "text": "Look for the salt shaker in the dining area", "names": [], "expect": {"target": "salt shaker", "room": {"type": "dining room"}, "colours": [], "size": null}}
+{"id": "b048", "kind": "synonym", "text": "find the soap in the powder room", "names": [], "expect": {"target": "soap", "room": {"type": "bathroom"}, "colours": [], "size": null}}
+{"id": "b049", "kind": "synonym", "text": "Find my slippers in the master bedroom", "names": [], "expect": {"target": "slippers", "room": {"type": "bedroom"}, "colours": [], "size": null}}
+{"id": "b050", "kind": "relative", "text": "Find the remote under the couch in the living room", "names": [], "expect": {"target": "remote", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "b051", "kind": "relative", "text": "my glasses are on the bedroom nightstand", "names": [], "expect": {"target": "glasses", "room": {"type": "bedroom"}, "colours": [], "size": null}}
+{"id": "b052", "kind": "relative", "text": "Find my keys behind the TV", "names": [], "expect": {"target": "keys", "room": null, "colours": [], "size": null}}
+{"id": "b053", "kind": "relative", "text": "Look for the cat brush next to the bathroom", "names": [], "expect": {"target": "cat brush", "room": {"type": "bathroom"}, "colours": [], "size": null}}
+{"id": "b054", "kind": "relative", "text": "find the book beside the lamp in the study", "names": [], "expect": {"target": "book", "room": {"type": "office"}, "colours": [], "size": null}}
+{"id": "b055", "kind": "relative", "text": "Find my shoes by the front door", "names": [], "expect": {"target": "shoes", "room": null, "colours": [], "size": null}}
+{"id": "b056", "kind": "relative", "text": "the charger is probably behind the desk in the office", "names": [], "expect": {"target": "charger", "room": {"type": "office"}, "colours": [], "size": null}}
+{"id": "b057", "kind": "relative", "text": "Find the umbrella in the hall closet", "names": [], "expect": {"target": "umbrella", "room": {"type": "hallway"}, "colours": [], "size": null}}
+{"id": "b058", "kind": "relative", "text": "Look for my wallet on the kitchen counter", "names": [], "expect": {"target": "wallet", "room": {"type": "kitchen"}, "colours": [], "size": null}}
+{"id": "b059", "kind": "relative", "text": "find the ball under the bed", "names": [], "expect": {"target": "ball", "room": null, "colours": [], "size": null}}
+{"id": "b060", "kind": "relative", "text": "Find my coat near the garage", "names": [], "expect": {"target": "coat", "room": {"type": "garage"}, "colours": [], "size": null}}
+{"id": "b061", "kind": "relative", "text": "Find the bowl inside the dishwasher", "names": [], "expect": {"target": "bowl", "room": null, "colours": [], "size": null}}
+{"id": "b062", "kind": "attributes", "text": "Find the little red ball", "names": [], "expect": {"target": "little red ball", "room": null, "colours": ["red"], "size": "small"}}
+{"id": "b063", "kind": "attributes", "text": "find my big blue umbrella", "names": [], "expect": {"target": "big blue umbrella", "room": null, "colours": ["blue"], "size": "large"}}
+{"id": "b064", "kind": "attributes", "text": "Where is the small black wallet?", "names": [], "expect": {"target": "small black wallet", "room": null, "colours": ["black"], "size": "small"}}
+{"id": "b065", "kind": "attributes", "text": "Find the gray hoodie in the laundry room", "names": [], "expect": {"target": "gray hoodie", "room": {"type": "laundry room"}, "colours": ["grey"], "size": null}}
+{"id": "b066", "kind": "attributes", "text": "look for my black and white sneakers", "names": [], "expect": {"target": "black and white sneakers", "room": null, "colours": ["black", "white"], "size": null}}
+{"id": "b067", "kind": "attributes", "text": "Find the tiny green dinosaur in the bedroom", "names": [], "expect": {"target": "tiny green dinosaur", "room": {"type": "bedroom"}, "colours": ["green"], "size": "small"}}
+{"id": "b068", "kind": "attributes", "text": "find a huge brown box", "names": [], "expect": {"target": "huge brown box", "room": null, "colours": ["brown"], "size": "large"}}
+{"id": "b069", "kind": "attributes", "text": "Find my pink water bottle in the kitchen", "names": [], "expect": {"target": "pink water bottle", "room": {"type": "kitchen"}, "colours": ["pink"], "size": null}}
+{"id": "b070", "kind": "attributes", "text": "Have you seen the large yellow towel?", "names": [], "expect": {"target": "large yellow towel", "room": null, "colours": ["yellow"], "size": "large"}}
+{"id": "b071", "kind": "attributes", "text": "find the blue and yellow kite in the garage", "names": [], "expect": {"target": "blue and yellow kite", "room": {"type": "garage"}, "colours": ["blue", "yellow"], "size": null}}
+{"id": "b072", "kind": "attributes", "text": "Look for the purple pillow on the couch", "names": [], "expect": {"target": "purple pillow", "room": null, "colours": ["purple"], "size": null}}
+{"id": "b073", "kind": "room_in_target", "text": "Find the bathroom scale", "names": [], "expect": {"target": "bathroom scale", "room": null, "colours": [], "size": null}}
+{"id": "b074", "kind": "room_in_target", "text": "find the kitchen scissors in the office", "names": [], "expect": {"target": "kitchen scissors", "room": {"type": "office"}, "colours": [], "size": null}}
+{"id": "b075", "kind": "room_in_target", "text": "Where's the laundry basket?", "names": [], "expect": {"target": "laundry basket", "room": null, "colours": [], "size": null}}
+{"id": "b076", "kind": "room_in_target", "text": "Find the garage door opener in the living room", "names": [], "expect": {"target": "garage door opener", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "b077", "kind": "room_in_target", "text": "find my office chair cushion", "names": [], "expect": {"target": "office chair cushion", "room": null, "colours": [], "size": null}}
+{"id": "b078", "kind": "compound", "text": "Find my cup with a lid", "names": [], "expect": {"target": "cup with a lid", "room": null, "colours": [], "size": null}}
+{"id": "b079", "kind": "compound", "text": "find the box of tissues in the bathroom", "names": [], "expect": {"target": "box of tissues", "room": {"type": "bathroom"}, "colours": [], "size": null}}
+{"id": "b080", "kind": "compound", "text": "Look for the bag of dog food in the garage", "names": [], "expect": {"target": "bag of dog food", "room": {"type": "garage"}, "colours": [], "size": null}}
+{"id": "b081", "kind": "typo", "text": "find my walet", "names": [], "expect": {"target": "walet", "room": null, "colours": [], "size": null}}
+{"id": "b082", "kind": "typo", "text": "Where are my headphoens?", "names": [], "expect": {"target": "headphoens", "room": null, "colours": [], "size": null}}
+{"id": "b083", "kind": "typo", "text": "Find the remote in the livng room", "names": [], "expect": {"target": "remote", "room": null, "colours": [], "size": null}}
+{"id": "b084", "kind": "typo", "text": "find my keys in the kitchn", "names": [], "expect": {"target": "keys", "room": null, "colours": [], "size": null}}
+{"id": "b085", "kind": "typo", "text": "Look for my phone in the bedrom", "names": [], "expect": {"target": "phone", "room": null, "colours": [], "size": null}}
+{"id": "b086", "kind": "typo", "text": "find the sissors in the office", "names": [], "expect": {"target": "sissors", "room": {"type": "office"}, "colours": [], "size": null}}
+{"id": "b087", "kind": "no_hint", "text": "Find my keys, kitchen or living room", "names": [], "expect": {"target": "keys", "room": null, "colours": [], "size": null}}
+{"id": "b088", "kind": "no_hint", "text": "Find the remote, not in the bedroom", "names": [], "expect": {"target": "remote", "room": null, "colours": [], "size": null}}
+{"id": "b089", "kind": "no_hint", "text": "find the lego in the playroom", "names": [], "expect": {"target": "lego", "room": null, "colours": [], "size": null}}
+{"id": "b090", "kind": "no_hint", "text": "Look for the paint cans in the basement", "names": [], "expect": {"target": "paint cans", "room": null, "colours": [], "size": null}}
+{"id": "b091", "kind": "no_hint", "text": "find my old photos in the attic", "names": [], "expect": {"target": "old photos", "room": null, "colours": [], "size": null}}
+{"id": "b092", "kind": "no_hint", "text": "Find my slippers upstairs", "names": [], "expect": {"target": "slippers", "room": null, "colours": [], "size": null}}
+{"id": "b093", "kind": "no_hint", "text": "my charger is somewhere downstairs", "names": [], "expect": {"target": "charger", "room": null, "colours": [], "size": null}}
+{"id": "b094", "kind": "no_hint", "text": "find the flip flops on the patio", "names": [], "expect": {"target": "flip flops", "room": null, "colours": [], "size": null}}
+{"id": "b095", "kind": "names", "text": "Find the stuffed rabbit in Mia's room", "names": ["Mia's room"], "expect": {"target": "stuffed rabbit", "room": {"name": "Mia's room"}, "colours": [], "size": null}}
+{"id": "b096", "kind": "names", "text": "Look for the remote in the den", "names": ["Den"], "expect": {"target": "remote", "room": {"name": "Den"}, "colours": [], "size": null}}
+{"id": "b097", "kind": "names", "text": "find the blocks in the playroom", "names": ["Playroom"], "expect": {"target": "blocks", "room": {"name": "Playroom"}, "colours": [], "size": null}}
+{"id": "b098", "kind": "names", "text": "Find my laptop in the office", "names": ["Studio"], "expect": {"target": "laptop", "room": {"type": "office"}, "colours": [], "size": null}}
+{"id": "b099", "kind": "names", "text": "find grandpa's glasses in the GRANNY FLAT", "names": ["Granny flat"], "expect": {"target": "glasses", "room": {"name": "Granny flat"}, "colours": [], "size": null}}
+{"id": "b100", "kind": "no_target", "text": "Check the garage", "names": [], "expect": {"target": null, "room": {"type": "garage"}, "colours": [], "size": null}}
+{"id": "b101", "kind": "no_target", "text": "find it in the kitchen", "names": [], "expect": {"target": null, "room": {"type": "kitchen"}, "colours": [], "size": null}}
+{"id": "b102", "kind": "no_target", "text": "Look in the bathroom", "names": [], "expect": {"target": null, "room": {"type": "bathroom"}, "colours": [], "size": null}}
+{"id": "b103", "kind": "two_targets", "text": "Find my keys and my phone", "names": [], "expect": {"target": null, "room": null, "colours": [], "size": null}}
+{"id": "b104", "kind": "two_targets", "text": "Where are the remote or the charger?", "names": [], "expect": {"target": null, "room": null, "colours": [], "size": null}}
+{"id": "b105", "kind": "two_targets", "text": "find my wallet and keys in the bedroom", "names": [], "expect": {"target": null, "room": {"type": "bedroom"}, "colours": [], "size": null}}
+{"id": "b106", "kind": "case", "text": "FIND MY KEYS", "names": [], "expect": {"target": "keys", "room": null, "colours": [], "size": null}}
+{"id": "b107", "kind": "case", "text": "where's my PHONE???", "names": [], "expect": {"target": "phone", "room": null, "colours": [], "size": null}}
+{"id": "b108", "kind": "case", "text": "Find The Remote In The Living Room!", "names": [], "expect": {"target": "remote", "room": {"type": "living room"}, "colours": [], "size": null}}
+{"id": "b109", "kind": "case", "text": "find my keys (probably in the garage)", "names": [], "expect": {"target": "keys", "room": {"type": "garage"}, "colours": [], "size": null}}
+{"id": "b110", "kind": "case", "text": "find my water bottle, probably in the kitchen", "names": [], "expect": {"target": "water bottle", "room": {"type": "kitchen"}, "colours": [], "size": null}}
