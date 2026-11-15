@@ -63,13 +63,20 @@ def test_each_row_says_a_parse_3176_can_give(row):
 
 # ---------- the scorer, on a fake parser (before the real one is scored) ----------
 
-def _scorer():
+def _load_scorer():
     import importlib.util
     path = SET.with_name("score.py")
     spec = importlib.util.spec_from_file_location("score_3181", path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
+
+
+_SCORER = _load_scorer()
+
+
+def _scorer():
+    return _SCORER
 
 
 class _Req:
@@ -135,3 +142,29 @@ def test_the_parser_scores_no_worse_than_its_blind_run():
     assert r["target"] >= 82 and r["room"] >= 91 and r["attributes"] >= 92, r
     assert r["wrong_room"] == 0
     assert out["verdict"]["R5"]["met"]
+    # Review: by row, not only by count -- a row that passed in the blind run
+    # still passes (a fix elsewhere cannot hide a new miss).
+    missed = {m["id"] for m in out["misses"] if m["group"] == "rules"}
+    assert missed <= BLIND_RULES_MISSES, sorted(missed - BLIND_RULES_MISSES)
+
+
+BLIND_RULES_MISSES = {"b011", "b013", "b020", "b025", "b026", "b027", "b029", "b030",
+                      "b056", "b073"}
+
+
+def test_the_recorded_score_is_the_blind_run():
+    """score.json is the one run the section reports; the scorer refuses to
+    overwrite it."""
+    d = json.loads(SET.with_name("score.json").read_text())
+    assert d["commit"] == "93d493f2" and d["parser_last_changed"] == "196528ab"
+    assert {m["id"] for m in d["misses"] if m["group"] == "rules"} == BLIND_RULES_MISSES
+    assert d["rules"]["target"] == 82 and d["rules"]["room"] == 91
+
+
+def test_the_room_types_are_3176s():
+    """Written blind from 3.176's table; checked against the parser's own
+    vocabulary only after the freeze."""
+    import brain.request as req
+    types = {v for v in vars(req).values() if isinstance(v, (set, frozenset, tuple, list))
+             and ROOM_TYPES <= set(v) and set(v) <= ROOM_TYPES}
+    assert types, "brain/request.py's room types are not the set this file names"
