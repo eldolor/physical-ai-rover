@@ -400,7 +400,7 @@ class ExploreAgent(MissionAgent):
         # 3.180.A: each view goal's spot and the bearing the camera faced from
         # it (to the gap's `face`, else its centre), and how many view goals
         # stood at a spot already used (for another direction).
-        self._view_looks: list = []    # [(x_m, y_m, bearing_deg)]
+        self._view_looks: list = []    # [(x_m, y_m, bearing_deg, target_x_m, target_y_m)]
         self.view_reuses = 0
         # 3.31's furnished-home runs: wedged between a sofa and a coffee
         # table, every goal aborted, the places were set aside one by one,
@@ -1327,6 +1327,12 @@ class ExploreAgent(MissionAgent):
         return out
 
     @staticmethod
+    def _look_target(g) -> tuple:
+        """Where the camera points from a view gap's goal: its `face` (the
+        part seen from there), else its centre."""
+        return g.face if g.face is not None else g.centre
+
+    @staticmethod
     def _look_bearing(g) -> float:
         """The angle (deg, atan2(dy, dx): counter-clockwise from +x, not a
         compass bearing) the camera faces from a view gap's goal: to its
@@ -1348,10 +1354,19 @@ class ExploreAgent(MissionAgent):
         r = self.retry.radius_m
         if any(math.hypot(g.centre[0] - lx, g.centre[1] - ly) < r for lx, ly in self._looked):
             return False
-        b = self._look_bearing(g)
-        return not any(math.hypot(g.goal[0] - vx, g.goal[1] - vy) < r
-                       and abs((b - vb + 180.0) % 360.0 - 180.0) <= VIEW_REUSE_DEG
-                       for vx, vy, vb in getattr(self, "_view_looks", ()))
+        tx, ty = self._look_target(g)
+        for vx, vy, vb, ox, oy in getattr(self, "_view_looks", ()):
+            if math.hypot(g.goal[0] - vx, g.goal[1] - vy) >= r:
+                continue
+            # Amendment 1: the same look if it points where that one did (a
+            # face or centre that drifted sideways), or the same way measured
+            # from THAT spot (the earlier bearing's own origin).
+            if math.hypot(tx - ox, ty - oy) < r:
+                return False
+            b = math.degrees(math.atan2(ty - vy, tx - vx))
+            if abs((b - vb + 180.0) % 360.0 - 180.0) <= VIEW_REUSE_DEG:
+                return False
+        return True
 
     def _note_view(self, g) -> None:
         """A view goal was sent for gap `g`: its spot, and the way it faced.
@@ -1359,10 +1374,11 @@ class ExploreAgent(MissionAgent):
         `_view_allowed` does."""
         looks = self.__dict__.setdefault("_view_looks", [])
         if any(math.hypot(g.goal[0] - vx, g.goal[1] - vy) < self.retry.radius_m
-               for vx, vy, _b in looks):
+               for vx, vy, *_rest in looks):
             self.view_reuses = getattr(self, "view_reuses", 0) + 1
         self._view_goals.append(g.goal)
-        looks.append((g.goal[0], g.goal[1], self._look_bearing(g)))
+        tx, ty = self._look_target(g)
+        looks.append((g.goal[0], g.goal[1], self._look_bearing(g), tx, ty))
 
     def _note_aside(self, goal) -> None:
         """3.172.D: a skipped candidate that a carried set-aside place holds

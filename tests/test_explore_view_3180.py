@@ -80,3 +80,29 @@ def test_the_face_is_where_the_camera_looked():
     assert not a._view_allowed(_gap((2.0, 2.0), (3.5, 2.2)))           # east again
     assert a._view_allowed(_gap((2.0, 2.0), (2.0, 0.5)))               # south
     assert math.isclose(a._view_looks[0][2], 0.0, abs_tol=1e-9)
+
+
+def test_amendment_1_a_face_drifting_sideways_is_the_same_look():
+    """Both reviewers: the patch's `face` drifts sideways past 30 deg from
+    the same spot. Its target is within the retry radius of the first look's
+    target, so it is the same look and refused."""
+    a = _agent()
+    first = _gap((2.0, 2.0), (3.5, 2.5), face=(2.6, 2.0))        # faced 0 deg
+    a._note_view(first)
+    a._looked.append(first.centre)
+    drifted = _gap((2.05, 2.0), (3.4, 3.4), face=(2.6, 2.4))      # ~36 deg from the new goal
+    assert not a._view_allowed(drifted)
+
+
+def test_amendment_1_the_direction_is_measured_from_the_earlier_spot():
+    """`/code-review`: a new goal 0.55 m from the earlier spot faces a
+    target 46 deg off from itself, but only 24 deg off from the earlier spot,
+    which already looked that way: refused. Its target is 0.72 m from the
+    first look's target, so only the origin decides."""
+    a = _agent()
+    first = _gap((2.0, 2.0), (3.5, 2.0))                          # faced 0 deg
+    a._note_view(first)
+    a._looked.append(first.centre)
+    g = _gap((2.0, 2.55), (2.9, 1.6))
+    assert math.hypot(2.9 - 3.5, 1.6 - 2.0) > a.retry.radius_m
+    assert not a._view_allowed(g)
