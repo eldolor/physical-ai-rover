@@ -213,3 +213,4 @@ section's own file has the numbers, failed criteria and review rounds.
   `vision-picar-ros:latest` built outside a clean `origin/dev` checkout
   (asks where you see it, denies in auto mode). Build `:latest` in a second
   call after creating its checkout.
+* 3.185: `RoomGoalPolicy.extend` reads a room name the prior does not name through the shared vocabulary (`canonical_room`, whole names only), so a person's "Lounge", "Master Bedroom" or "Washroom" gets its type's prior; a name hint still matches the room's own name first. On the 100-house sweep synonym names now equal canonical names (mode R goals 9.85 -> 6.32; on `dev` before they equalled no names, 175 of 200 differing); canonical and no-names arms 0 of 200 changed; near names ("Bathroom Closet") still read as none. Reported: the no-names baseline moved 15 of 200 since 3.183.B, probably 3.180.A (unbisected).
