@@ -1,0 +1,24 @@
+{
+ "dev": {
+  "score": {
+   "rows": 76,
+   "target": 76,
+   "room": 76,
+   "attributes": 76,
+   "wrong_room": 0,
+   "misses": []
+  },
+  "parser": "41b9f617"
+ },
+ "test": {
+  "score": {
+   "rows": 76,
+   "target": 76,
+   "room": 76,
+   "attributes": 76,
+   "wrong_room": 0,
+   "misses": []
+  },
+  "parser_commit": "457694de"
+ }
+}

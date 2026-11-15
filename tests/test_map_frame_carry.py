@@ -667,12 +667,17 @@ def test_the_s3_copy_holds_only_this_missions_own_landmarks(tmp_path):
     seen = up["reported"] + up["candidates"]
     assert [d["label"] for d in seen] == ["lamp"]
     assert all("carried" not in d for d in seen) and "carried" not in up["counts"]
+    # 3.175.B: a row's chain position (the mission that last saw it) is a
+    # chain field too; the local file keeps it.
+    assert all("seen_seq" not in d for d in seen)
     assert up["counts"]["landmarks"] == len(seen)
     assert sorted(d["id"] for d in seen) == list(range(1, len(seen) + 1))
 
     local = json.loads((tmp_path / "m2.json").read_text())
     assert local["frame_id"] == SAVED and local["carry_seq"] == 1
     assert {"stool", "box", "lamp"} <= {d["label"] for d in local["reported"] + local["candidates"]}
+    seqs = {d["label"]: d["seen_seq"] for d in local["reported"] + local["candidates"]}
+    assert (seqs["lamp"], seqs["stool"], seqs["box"]) == (1, 0, 0)    # carried, unseen: kept
 
 
 def test_a_carried_landmark_seen_again_records_its_first_sighting_here():

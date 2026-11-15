@@ -38,6 +38,7 @@ import numpy as np
 
 from brain.frontier import _cell_of
 from brain.room_labels import segment
+from brain.request import canonical_room
 from world.interface import CELL_FREE, CELL_OCCUPIED, CELL_UNKNOWN
 
 WEIGHTS_PATH = Path(__file__).resolve().parent / "explore_goal_weights.json"
@@ -334,6 +335,33 @@ def rooms_prior_informative(target: Optional[str]) -> bool:
     return prior_is_informative(_shipped_rooms_prior().get((target or "").lower()))
 
 
+def hint_matches(t: Optional[str], hint: Optional[dict]) -> bool:
+    """Whether a goal's room type (a label's name, 'bedroom 2' cut to
+    'bedroom') is the room a hint names (3.176): a type hint matches every
+    room its vocabulary words name ('den' is a living room), a name hint the
+    person's room of that name; both without case. Goal types are cut to
+    `room_type` ('Bedroom 2' -> 'Bedroom'), so a name ending in a number
+    matches every room of that stem: a known limit (policy spec)."""
+    if not t or not hint:
+        return False
+    if "type" in hint:
+        return canonical_room(t) == hint["type"]
+    return t.strip().lower() == room_type(str(hint.get("name", ""))).strip().lower()
+
+
+def hinted_prior(prior: dict, types: list, hint: Optional[dict]) -> dict:
+    """3.176: a find's room hint as a prior -- the target's own rates, with
+    every goal type the hint names at 1.0 (the shape a sure target has:
+    `garbage bag` is kitchen 1.0). No hint, or no goal in the hinted room:
+    the prior unchanged, so a hint can only reorder goals, never add one."""
+    if not hint:
+        return prior
+    hit = {t for t in types if hint_matches(t, hint)}
+    if not hit:
+        return prior
+    return {**prior, **{t: 1.0 for t in hit}}
+
+
 def room_type(name: str) -> str:
     """'bedroom 2' -> 'bedroom'."""
     return re.sub(r" \d+$", "", name)
@@ -364,12 +392,14 @@ class RoomGoalPolicy:
         return prior_is_informative(self.prior.get((target or "").lower()))
 
     def extend(self, m: dict, pose: dict, goals: list, feats: list, *, trail,
-               types: list, target: Optional[str], ctx: Optional[dict] = None) -> list:
+               types: list, target: Optional[str], ctx: Optional[dict] = None,
+               hint: Optional[dict] = None) -> list:
         """The pool's ten features, each with its seven room features after.
-        `ctx`: the choice's `goal_context()`, passed to `room_features()`."""
+        `ctx`: the choice's `goal_context()`, passed to `room_features()`.
+        `hint`: a find's room hint (3.176), read as that room's rate 1.0."""
         if not goals:
             return []
-        prior = self.prior.get((target or "").lower(), {})
+        prior = hinted_prior(self.prior.get((target or "").lower(), {}), types, hint)
         # A type the prior does not name reads as no type: in training every
         # labelled type had a prior, so "known, P = 0" meant a real zero.
         types = [t if t in prior else None for t in types]

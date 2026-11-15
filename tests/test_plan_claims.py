@@ -62,7 +62,8 @@ def repo(tmp_path, monkeypatch):
     origin). The session's own identity is cleared: owners are named."""
     for k in ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE"):
         os.environ.pop(k, None)
-    for k in ("CLAUDE_CODE_SESSION_ID", "CLAUDE_SESSION_ID", "PICAR_CLAIM_BYPASS",
+    for k in ("CLAUDE_CODE_SESSION_ID", "CLAUDE_SESSION_ID", "CLAUDE_CODE_REMOTE_SESSION_ID",
+              "CLAUDE_CODE_REMOTE", "PICAR_CLAIM_BYPASS",
               "PICAR_CLAIM_HOST", "PICAR_CLAIM_SESSION", "PICAR_CLAIM_PID"):
         monkeypatch.delenv(k, raising=False)
     r = tmp_path / "repo"
