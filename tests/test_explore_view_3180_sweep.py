@@ -12,12 +12,14 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-RUNS = ROOT / "evaluations" / "explore-view-3180" / "runs" / "am1"   # amendment 1
+AM2 = ROOT / "evaluations" / "explore-view-3180" / "runs"           # amendment 2 (current code)
+RUNS = AM2 / "am1"                                                  # amendment 1
 FIRST = ROOT / "evaluations" / "explore-view-3180" / "runs" / "first"   # the first run
 sys.path.insert(0, str(ROOT / "evaluations" / "explore-view-3180"))
 import score                                                    # noqa: E402
 
 VERDICTS = {"A2": True, "A3": True, "A4": True, "A5": True, "A6": False}
+VERDICTS_AM2 = {"A2": True, "A3": True, "A4": True, "A5": True, "A6": True}
 
 
 def _rows(name):
@@ -68,3 +70,28 @@ def test_3176_s6_holds_against_real_dev():
     f = ("outcome", "goals", "metres")
     assert len(real) == 200
     assert [k for k in real if [real[k][x] for x in f] != [nolabels[k][x] for x in f]] == []
+
+
+def test_amendment_2_as_measured():
+    """Amendment 2's run: A2-A6 met (A6 max 4); A1 by its letter only --
+    195 and 194 find, 247 is back to `exhausted` (its cause written: no gap
+    near the plant was refused; the reordered goals ran out first, the
+    seen-record case)."""
+    out = json.loads((AM2 / "score.json").read_text())
+    assert {k: out[k]["met"] for k in VERDICTS_AM2} == VERDICTS_AM2
+    assert out["A6"]["max"] == 4
+    for arm, key, outcome, goals in (("right", (195, "R"), "found", 7),
+                                     ("right", (194, "U"), "found", 10),
+                                     ("wrong", (247, "R"), "exhausted", 37)):
+        a = _rows_in(AM2, f"a-{arm}")[key]
+        assert (a["outcome"], a["goals"]) == (outcome, goals), key
+
+
+def _rows_in(d, name):
+    return {(r["index"], r["mode"]): r for r in json.loads((d / f"{name}.json").read_text())["rows"]}
+
+
+def test_amendment_2_score_is_reproducible(tmp_path):
+    out = tmp_path / "score.json"
+    score.main(str(AM2), str(out))
+    assert json.loads(out.read_text()) == json.loads((AM2 / "score.json").read_text())
