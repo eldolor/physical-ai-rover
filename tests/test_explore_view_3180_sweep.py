@@ -12,7 +12,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-RUNS = ROOT / "evaluations" / "explore-view-3180" / "runs"
+RUNS = ROOT / "evaluations" / "explore-view-3180" / "runs"     # amendment 1's re-run
+FIRST = RUNS / "first"                                          # the first run, kept
 sys.path.insert(0, str(ROOT / "evaluations" / "explore-view-3180"))
 import score                                                    # noqa: E402
 
@@ -25,14 +26,19 @@ def _rows(name):
 
 
 def test_the_recorded_score_is_what_the_arms_score(tmp_path):
-    out = tmp_path / "score.json"
-    score.main(str(RUNS), str(out))
-    assert json.loads(out.read_text()) == json.loads((RUNS / "score.json").read_text())
+    for runs in (RUNS, FIRST):
+        out = tmp_path / "score.json"
+        score.main(str(runs), str(out))
+        assert json.loads(out.read_text()) == json.loads((runs / "score.json").read_text()), runs
 
 
 def test_each_bar_is_pinned_as_it_came_out():
-    rec = json.loads((RUNS / "score.json").read_text())
-    assert {k: rec[k]["met"] for k in VERDICTS} == VERDICTS
+    """Both runs: A6 FAILED in the first and again after amendment 1."""
+    for runs in (RUNS, FIRST):
+        rec = json.loads((runs / "score.json").read_text())
+        assert {k: rec[k]["met"] for k in VERDICTS} == VERDICTS, runs
+    assert json.loads((FIRST / "score.json").read_text())["A6"]["max"] == 9
+    assert json.loads((RUNS / "score.json").read_text())["A6"]["max"] == 9
 
 
 def test_the_baseline_ran_devs_code():

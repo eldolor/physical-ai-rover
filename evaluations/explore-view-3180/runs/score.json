@@ -29,11 +29,11 @@
     14.495
    ],
    "A4_met": true,
-   "reuse_zero_missions": 182,
+   "reuse_zero_missions": 181,
    "reuse_zero_differ": [],
-   "missions_changed": 17,
+   "missions_changed": 18,
    "view_goals_mean": [
-    1.14,
+    1.145,
     1
    ]
   },
@@ -66,11 +66,11 @@
     10.415
    ],
    "A4_met": true,
-   "reuse_zero_missions": 189,
+   "reuse_zero_missions": 188,
    "reuse_zero_differ": [],
-   "missions_changed": 10,
+   "missions_changed": 11,
    "view_goals_mean": [
-    0.795,
+    0.805,
     0.685
    ]
   },
@@ -103,11 +103,11 @@
     10.0
    ],
    "A4_met": true,
-   "reuse_zero_missions": 186,
+   "reuse_zero_missions": 185,
    "reuse_zero_differ": [],
-   "missions_changed": 14,
+   "missions_changed": 15,
    "view_goals_mean": [
-    0.69,
+    0.765,
     0.725
    ]
   },
@@ -136,15 +136,15 @@
     12
    ],
    "sim_s_median": [
-    25.33,
+    25.6,
     24.72
    ],
    "A4_met": true,
-   "reuse_zero_missions": 110,
+   "reuse_zero_missions": 108,
    "reuse_zero_differ": [],
-   "missions_changed": 89,
+   "missions_changed": 91,
    "view_goals_mean": [
-    4.635,
+    4.65,
     3.69
    ]
   }
@@ -164,9 +164,9 @@
  },
  "A6": {
   "missions": 800,
-  "mean": 0.335,
+  "mean": 0.347,
   "max": 9,
-  "with_any": 133,
+  "with_any": 138,
   "met": false
  }
 }
