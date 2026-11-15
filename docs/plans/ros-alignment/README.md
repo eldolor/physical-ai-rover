@@ -183,5 +183,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.177](3.177-visual-promise.md) | Visual promise: does a frame say the target is near before it is in view |
 | [3.178](3.178-watch-list.md) | A watch list: a few named valuables noticed on every mission |
 | [3.179](3.179-claim-host-cloud.md) | Claim host identity unique per cloud container |
-| [3.180](3.180-explore-seen-record.md) | Explore's seen record counts only what a detection could see |
+| [3.180](3.180-explore-seen-record.md) | Explore's view goals: a look-from spot reused for a new direction, then the seen record |
 <!-- /sections -->
