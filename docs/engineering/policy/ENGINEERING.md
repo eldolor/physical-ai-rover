@@ -675,6 +675,7 @@ decision, and its value and evidence are kept in one place,
 | Name | Value | Where | Why |
 |---|---|---|---|
 | `leave_clearance_m(min_distance_cm)` | half of `FOOTPRINT_LENGTH_M` + `min_distance_cm` = 0.3265 m at 20 cm (7 map cells at 5 cm) | `brain/explore.py`, passed as `clearance_m` to `find_frontiers()` and `find_view_gaps()` | 3.45: room to drive away from the goal at any heading. `evaluations/slam-345/goal_sweep.py`: 36% of chosen goals leavable at 0.22 m, 52% at 0.30 m, 98% at this |
+| `VIEW_REUSE_DEG` | 30 deg (`CAMERA_FOV_DEG` / 2) | `brain/explore.py`, `_view_allowed()` | 3.180.A: a view goal's spot (within `retry.radius_m`) is refused again only for a patch the camera faced within this angle there (the den guard); beyond it, the spot may look again |
 | `GOAL_CLEARANCE_M` | 0.22 m | `brain/frontier.py` | 3.31's default: the half-diagonal plus sized as a margin over nav2's old 0.12 m inflation; since 3.67's 0.35 m it sits inside the inflation band at a cost nav2 still plans to (about 149 of 252, below inscribed). Still used by approach points and the boxed-in check |
 | `PASS_CLEARANCE_M` | 0.15 m | `brain/frontier.py` | room to pass through (the den's 0.6 m door) |
 | `GOAL_TIMEOUT_S` | 120 s | `brain/explore.py` | a goal nav2 never finishes is failed |
@@ -812,7 +813,11 @@ cloud alone.
 gives `ExploreAgent` a `goal_policy` from `brain/goal_policy.goal_policy_for`
 (None for the rule). With one set, `_next_frontier` calls `_learned_goal`:
 every frontier not reached twice and available in the retry book, and every
-view gap not already looked at or stood at, is pooled; `features()` gives
+view gap `_view_allowed()` passes is pooled (3.180.A: not already looked at,
+and not stood at to face the same way -- a spot one earlier view goal used is
+free again for a patch more than `VIEW_REUSE_DEG` from the way it faced, so a
+target beside it is still looked at; the rule loop asks the same function,
+and `view_reuses` counts such sends); `features()` gives
 each ten values (path, turn, is-view, frontier size, view area, unknown and
 camera-unseen shares within 1 m, retry failures, times reached, is-view x
 goals sent), each scaled to about 0..1; `LinearGoalPolicy.best()` sends
