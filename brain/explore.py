@@ -52,8 +52,8 @@ from brain.arrival import ARRIVED, CHECKING, LOCAL_FRESH_S, REFUSED, ArrivalChec
 from brain.perceive import DETECTED
 from brain.tiered import STEER_BAND_DEG, located_local_bearing, turn_for
 from brain.tiered import candidate_refused as _refused
-from brain.frontier import (RetryBook, camera_seen, find_frontiers, find_view_gaps,
-                            known_near, reach, reachable)
+from brain.frontier import (CAMERA_FOV_DEG, RetryBook, camera_seen, find_frontiers,
+                            find_view_gaps, known_near, reach, reachable)
 from brain.room_labels import segment
 from brain.choice_log import BY_RULE_TIMEOUT, GoalAsk
 from brain.goal_policy import FEATURES as GOAL_FEATURES
@@ -214,6 +214,19 @@ def _setup_fault(what: str, reply: dict) -> RuntimeError:
     """3.82: a bridge fault no wait mends, as the error that ends the
     mission `failed` with its status named."""
     return RuntimeError(setup_fault_message(what, reply, reply.get("detail")))
+
+
+# 3.180.A: a view goal's spot may be used again only to face more than this
+# far from every way the camera already faced there -- half the field of view,
+# so the new look does not repeat the old one's middle.
+VIEW_REUSE_DEG = CAMERA_FOV_DEG / 2
+# 3.180.A amendment 2: a bearing whose target lies closer than this to its
+# origin says nothing about direction and is not compared.
+VIEW_BEARING_MIN_M = 0.3
+# Amendment 2: view goals a mission may send from a spot already used (each
+# spot takes one), at most -- under A6's 6, and the most S7's three traced
+# finds needed (1, 1 and 4).
+VIEW_REUSE_BUDGET = 4
 
 
 def leave_clearance_m(min_distance_cm: float) -> float:
@@ -391,6 +404,11 @@ class ExploreAgent(MissionAgent):
         # dropping it then cut a later run off from the den.
         self._reached: list = []
         self._view_goals: list = []    # where view goals have stood the robot
+        # 3.180.A: each view goal's spot and the bearing the camera faced from
+        # it (to the gap's `face`, else its centre), and how many view goals
+        # stood at a spot already used (for another direction).
+        self._view_looks: list = []    # [(x_m, y_m, bearing_deg, target_x_m, target_y_m)]
+        self.view_reuses = 0
         # 3.31's furnished-home runs: wedged between a sofa and a coffee
         # table, every goal aborted, the places were set aside one by one,
         # and the search ended (`searched`, now `exhausted`) with the robot
@@ -1125,14 +1143,7 @@ class ExploreAgent(MissionAgent):
         seen_cells = {self._to_cell(m, c) for c in self.seen}
         for g in find_view_gaps(m, pose["x_m"], pose["y_m"], seen_cells, clearance_m=leave,
                                 reach_map=rch):
-            if any(math.hypot(g.centre[0] - lx, g.centre[1] - ly) < self.retry.radius_m
-                   for lx, ly in self._looked):
-                continue
-            # A patch's centre moves as the camera sees more of it, so also
-            # never stand at the same place twice to look: the den run sent
-            # twelve view goals to one spot.
-            if any(math.hypot(g.goal[0] - vx, g.goal[1] - vy) < self.retry.radius_m
-                   for vx, vy in self._view_goals):
+            if not self._view_allowed(g):
                 continue
             if not self.retry.available(g.goal[0], g.goal[1], now, known):
                 self._note_aside(g.goal)          # review 3: view gaps too
@@ -1143,7 +1154,7 @@ class ExploreAgent(MissionAgent):
                 if out[0] == "GOAL":
                     self._goal["look_at"] = g.centre
                     self._goal["face"] = g.face
-                    self._view_goals.append(g.goal)
+                    self._note_view(g)
                 return out
         # "Boxed in" is counted at the clearance goals need (3.45 review):
         # counted at 0.22 m, a nook with room for nav2 but none to leave by
@@ -1322,11 +1333,68 @@ class ExploreAgent(MissionAgent):
                 self._small_tried.append((gx, gy))
         return out
 
+    @staticmethod
+    def _look_target(g) -> tuple:
+        """Where the camera points from a view gap's goal: its `face` (the
+        part seen from there), else its centre."""
+        return g.face if g.face is not None else g.centre
+
+    @staticmethod
+    def _look_bearing(g) -> float:
+        """The angle (deg, atan2(dy, dx): counter-clockwise from +x, not a
+        compass bearing) the camera faces from a view gap's goal: to its
+        `face` (the part seen from there), else its centre. Only differences
+        of these are used."""
+        tx, ty = ExploreAgent._look_target(g)
+        return math.degrees(math.atan2(ty - g.goal[1], tx - g.goal[0]))
+
     def _view_allowed(self, g) -> bool:
-        return not (any(math.hypot(g.centre[0] - lx, g.centre[1] - ly) < self.retry.radius_m
-                        for lx, ly in self._looked)
-                    or any(math.hypot(g.goal[0] - vx, g.goal[1] - vy) < self.retry.radius_m
-                           for vx, vy in self._view_goals))
+        """A view gap may be sent unless (1) its centre is within the retry
+        radius of a patch already looked at; or its goal is within that
+        radius of an earlier view goal's spot (a reuse, 3.180.A) and (2) that
+        spot was already used twice, or the mission has spent
+        VIEW_REUSE_BUDGET reuses, or (3) the camera would face within
+        VIEW_REUSE_DEG of the way an earlier look there faced, measured from
+        the new goal or from that spot, a bearing whose target lies within
+        VIEW_BEARING_MIN_M of its origin not used (amendment 2). Before
+        3.180.A any earlier view goal there refused it, whichever way it had
+        looked, and a target beside a spot once used to look elsewhere was
+        never looked at (3.176.B S7). (2) and (3) are the den guard: a patch
+        drifting from one spot gets at most two looks (the den run sent
+        twelve view goals to one spot)."""
+        r = self.retry.radius_m
+        if any(math.hypot(g.centre[0] - lx, g.centre[1] - ly) < r for lx, ly in self._looked):
+            return False
+        near = [v for v in getattr(self, "_view_looks", ())
+                if math.hypot(g.goal[0] - v[0], g.goal[1] - v[1]) < r]
+        if not near:
+            return True                       # a new spot: no reuse, no budget
+        # Amendment 2: one reuse per spot, and a budget of reuses a mission.
+        if len(near) >= 2 or getattr(self, "view_reuses", 0) >= VIEW_REUSE_BUDGET:
+            return False
+        tx, ty = self._look_target(g)
+        for vx, vy, vb, ox, oy in near:
+            if math.hypot(ox - vx, oy - vy) < VIEW_BEARING_MIN_M:
+                continue                      # that look's own bearing is noise
+            for px, py in (g.goal, (vx, vy)):  # from either origin
+                if math.hypot(tx - px, ty - py) < VIEW_BEARING_MIN_M:
+                    continue
+                b = math.degrees(math.atan2(ty - py, tx - px))
+                if abs((b - vb + 180.0) % 360.0 - 180.0) <= VIEW_REUSE_DEG:
+                    return False
+        return True
+
+    def _note_view(self, g) -> None:
+        """A view goal was sent for gap `g`: its spot, and the way it faced.
+        Tolerates an agent built without `__init__` (tests do), as
+        `_view_allowed` does."""
+        looks = self.__dict__.setdefault("_view_looks", [])
+        if any(math.hypot(g.goal[0] - vx, g.goal[1] - vy) < self.retry.radius_m
+               for vx, vy, *_rest in looks):
+            self.view_reuses = getattr(self, "view_reuses", 0) + 1
+        self._view_goals.append(g.goal)
+        tx, ty = self._look_target(g)
+        looks.append((g.goal[0], g.goal[1], self._look_bearing(g), tx, ty))
 
     def _note_aside(self, goal) -> None:
         """3.172.D: a skipped candidate that a carried set-aside place holds
@@ -1435,7 +1503,7 @@ class ExploreAgent(MissionAgent):
         if out[0] == "GOAL":
             self._goal["look_at"] = c.centre
             self._goal["face"] = c.face
-            self._view_goals.append(c.goal)
+            self._note_view(c)
         return out
 
     def _learned_goal(self, m, pose, frontiers, leave, known, now, skipped, rch=None):

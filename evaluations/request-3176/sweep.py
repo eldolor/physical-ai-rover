@@ -40,6 +40,14 @@ REPO = os.environ.get("REPO") or os.path.dirname(os.path.dirname(HERE))
 sys.path.insert(0, os.path.join(REPO, "evaluations", "goal-learn-396"))
 sys.path.insert(0, REPO)
 import train as T                                             # noqa: E402
+import brain                                                  # noqa: E402
+
+# The harness's own imports put "." on the path, so a run from another
+# checkout's directory loads THAT checkout's brain whatever REPO says (found
+# 2026-11-15: 3.176.B's `dev` arm ran B's code). Refuse it.
+BRAIN = os.path.dirname(os.path.realpath(brain.__file__))
+if not BRAIN.startswith(os.path.realpath(REPO) + os.sep):
+    raise SystemExit(f"brain is {BRAIN}, not under REPO {REPO}: run from REPO's directory")
 
 FRAME = "map-3176b000"
 ARMS = ("dev", "none", "right", "wrong", "absent", "nolabels", "parsed")
@@ -205,7 +213,7 @@ def main(arm: str, path: str) -> None:
     # One process per mission: an arm's patches stay in its own process.
     with ProcessPoolExecutor(int(os.environ.get("WORKERS", "4")), max_tasks_per_child=1) as ex:
         rows = list(ex.map(_one, jobs))
-    report = {"arm": arm, "repo": REPO, "pairs": len(rows), "rows": rows}
+    report = {"arm": arm, "repo": REPO, "brain": BRAIN, "pairs": len(rows), "rows": rows}
     for m in ("R", "U"):
         rs = [r for r in rows if r["mode"] == m]
         report[m] = {"missions": len(rs), "found": sum(r["outcome"] == "found" for r in rs),
