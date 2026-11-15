@@ -65,7 +65,16 @@ _LEADS = sorted((tuple(p.split()) for p in (
     "where is", "where's", "where are", "where did i leave", "where did i put",
     "have you seen", "can you see", "i lost", "i've lost", "i can't find",
     "i cannot find", "i left", "is", "are", "check", "look in", "look", "go to",
-    "try", "please")), key=lambda p: -len(p))
+    "try", "please",
+    # 3.176.E: polite and indirect openings, and a name the robot is called by.
+    "could you", "can you", "would you", "would you mind", "would you mind finding",
+    "would you mind looking for", "finding", "looking for", "look for", "search",
+    "do you know where", "any idea where", "have you spotted", "have you noticed",
+    "did you see", "i'm looking for", "im looking for", "i am looking for", "i need")),
+    key=lambda p: -len(p))
+# 3.176.E: words a person calls the robot by, read past only when a comma
+# closes them ("hey robot, ..."): "robot vacuum" is a thing.
+_VOCATIVE = {"hey", "hi", "ok", "okay", "robot", "rover"}
 _OWNERS = {"my", "the", "a", "an", "our", "your", "his", "her", "their", "some",
            "this", "that", "these", "those"}
 # A location word ends the thing's words; what follows may name a room.
@@ -73,7 +82,9 @@ _LOCATION = {"in", "on", "near", "by", "under", "behind", "beside", "inside", "a
              "around", "underneath", "within"}
 _LOCATION_PAIRS = {("next", "to"), ("close", "to")}
 _PLACE = {"upstairs", "downstairs", "anywhere", "somewhere", "everywhere"}
-_VERBS = {"is", "are", "was", "were", "it's", "they're"}
+_VERBS = {"is", "are", "was", "were", "it's", "they're",
+          # 3.176.E: a modal after the target ends it ("my keys might be ...").
+          "might", "may", "could", "should", "must", "would"}
 _FILLER = {"please", "probably", "maybe", "perhaps"}
 _PUNCT = {",", ".", ";", ":", "!", "?", "(", ")", "-", "--"}
 _NOT = {"not", "isn't", "aren't", "wasn't", "weren't", "never", "no"}
@@ -125,6 +136,12 @@ def _strip_lead(toks: list) -> list:
         changed = False
         while toks and toks[0] in _PUNCT:
             toks, changed = toks[1:], True
+        n = 0
+        while n < len(toks) and n < 2 and toks[n] in _VOCATIVE:
+            n += 1
+        if n and n < len(toks) and toks[n] == ",":
+            toks, changed = toks[n + 1:], True
+            continue
         for lead in _LEADS:
             if tuple(toks[:len(lead)]) == lead:
                 toks, changed = toks[len(lead):], True
@@ -199,11 +216,40 @@ def _hint(toks: list, names: Sequence[str]) -> tuple:
     return hint, set(range(first, first + width))
 
 
+_PREFIX_ENDS = {",", ":", "-", "--", "and", "then"}
+
+
+def _room_first(toks: list, names: Sequence[str]):
+    """3.176.E: a room said BEFORE the thing ("in the kitchen, find my mug",
+    "kitchen: find the blender", "go to the kitchen and find my mug") ->
+    (that room's hint, the words after it), or None. The room must be the
+    whole opening (a location word and owners allowed before it), ended by a
+    comma, colon, dash, "and" or "then"."""
+    i = 0
+    while i < len(toks) and (toks[i] in _LOCATION or toks[i] in _OWNERS):
+        i += 1
+    rooms = _rooms_in(toks[i:], names)
+    if not rooms or rooms[0][0] != 0:
+        return None
+    hint = rooms[0][1]
+    width = len(_tokens(hint["name"])) if "name" in hint else len(
+        next(p for p, t in _ROOM_PHRASES if t == hint["type"]
+             and tuple(toks[i:i + len(p)]) == p))
+    j = i + width
+    if j < len(toks) and toks[j] in _PREFIX_ENDS:
+        return hint, toks[j + 1:]
+    return None
+
+
 def parse(text: str, names: Sequence[str] = ()) -> Request:
-    """One sentence -> a `Request` (3.176.A's rules). `names`: the saved
-    map's room names (a person's, 3.160), matched whole and without case."""
+    """One sentence -> a `Request` (3.176.A's rules, widened by 3.176.E).
+    `names`: the saved map's room names (a person's, 3.160), matched whole
+    and without case."""
     names = [n for n in (names or ()) if isinstance(n, str) and n.strip()]
     toks = _strip_lead(_tokens(text))
+    first = _room_first(toks, names)
+    if first is not None:
+        toks = _strip_lead(first[1])
     end = _thing_end(toks)
     thing, rest = _owners_off(toks[:end]), toks[end:]
     target = _one_thing(thing)
@@ -216,7 +262,23 @@ def parse(text: str, names: Sequence[str] = ()) -> Request:
             target, room_words = None, thing
     elif target is None:
         room_words = toks
+        # 3.176.E: "look under the couch in the family room for my slipper":
+        # no thing before the place, the thing after a closing "for".
+        if "for" in rest:
+            k = len(rest) - 1 - rest[::-1].index("for")
+            after = _owners_off(rest[k + 1:])
+            after = after[:_thing_end(after)]
+            if _one_thing(after) is not None:
+                target, room_words = _one_thing(after), rest[:k]
+                rest = rest[:k]
     hint, used = _hint(room_words, names)
+    if first is not None:
+        # The room said first; the same room again after the thing is the
+        # same hint (its words used); another room makes two (none).
+        if hint is None or hint == first[0]:
+            hint = first[0]
+        else:
+            hint, used = None, set()
     colours = tuple(COLOURS[w] for w in (target or "").split() if w in COLOURS)
     sizes = [SIZES[w] for w in (target or "").split() if w in SIZES]
     # The words read past: what followed the thing, less the room the hint

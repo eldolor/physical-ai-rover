@@ -1,0 +1,152 @@
+{"id":"r001","text":"backpack","target":"backpack","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["backpack"],"unused":""}
+{"id":"r002","text":"red backpack","target":"red backpack","room_hint":null,"attributes":{"colours":["red"],"size":null},"detector_prompts":["red backpack"],"unused":""}
+{"id":"r003","text":"basketball","target":"basketball","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["basketball"],"unused":""}
+{"id":"r004","text":"garbage can","target":"garbage can","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["garbage can"],"unused":""}
+{"id":"r005","text":"house plant","target":"house plant","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["house plant"],"unused":""}
+{"id":"r006","text":"laundry hamper","target":"laundry hamper","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["laundry hamper"],"unused":""}
+{"id":"r007","text":"water bottle","target":"water bottle","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["water bottle"],"unused":""}
+{"id":"r008","text":"keys","target":"keys","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["keys"],"unused":""}
+{"id":"r009","text":"washer","target":"washer","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["washer"],"unused":""}
+{"id":"r010","text":"blue shoes","target":"blue shoes","room_hint":null,"attributes":{"colours":["blue"],"size":null},"detector_prompts":["blue shoes"],"unused":""}
+{"id":"r011","text":"find my keys","target":"keys","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["keys"],"unused":""}
+{"id":"r012","text":"Find the remote","target":"remote","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["remote"],"unused":""}
+{"id":"r013","text":"look for the cat","target":"cat","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["cat"],"unused":""}
+{"id":"r014","text":"search for my phone","target":"phone","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["phone"],"unused":""}
+{"id":"r015","text":"please find my wallet","target":"wallet","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["wallet"],"unused":""}
+{"id":"r016","text":"can you find the TV remote please","target":"tv remote","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["tv remote"],"unused":""}
+{"id":"r017","text":"help me find my glasses","target":"glasses","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["glasses"],"unused":""}
+{"id":"r018","text":"go find the dog bed","target":"dog bed","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["dog bed"],"unused":""}
+{"id":"r019","text":"locate the laundry basket","target":"laundry basket","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["laundry basket"],"unused":""}
+{"id":"r020","text":"I lost my headphones","target":"headphones","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["headphones"],"unused":""}
+{"id":"r021","text":"I can't find my charger","target":"charger","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["charger"],"unused":""}
+{"id":"r022","text":"find a plunger","target":"plunger","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["plunger"],"unused":""}
+{"id":"r023","text":"where is my phone?","target":"phone","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["phone"],"unused":""}
+{"id":"r024","text":"where's the remote?","target":"remote","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["remote"],"unused":""}
+{"id":"r025","text":"have you seen my keys","target":"keys","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["keys"],"unused":""}
+{"id":"r026","text":"where did I leave my glasses?","target":"glasses","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["glasses"],"unused":""}
+{"id":"r027","text":"is my wallet in the bedroom?","target":"wallet","room_hint":{"type":"bedroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["wallet"],"unused":""}
+{"id":"r028","text":"is the cat in the kitchen?","target":"cat","room_hint":{"type":"kitchen"},"attributes":{"colours":[],"size":null},"detector_prompts":["cat"],"unused":""}
+{"id":"r029","text":"where are my slippers","target":"slippers","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["slippers"],"unused":""}
+{"id":"r030","text":"can you see the basketball anywhere?","target":"basketball","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["basketball"],"unused":"anywhere"}
+{"id":"r031","text":"find my blue water bottle","target":"blue water bottle","room_hint":null,"attributes":{"colours":["blue"],"size":null},"detector_prompts":["blue water bottle"],"unused":""}
+{"id":"r032","text":"the small black wallet","target":"small black wallet","room_hint":null,"attributes":{"colours":["black"],"size":"small"},"detector_prompts":["small black wallet"],"unused":""}
+{"id":"r033","text":"a big green ball","target":"big green ball","room_hint":null,"attributes":{"colours":["green"],"size":"large"},"detector_prompts":["big green ball"],"unused":""}
+{"id":"r034","text":"my little pink cup","target":"little pink cup","room_hint":null,"attributes":{"colours":["pink"],"size":"small"},"detector_prompts":["little pink cup"],"unused":""}
+{"id":"r035","text":"the grey hoodie","target":"grey hoodie","room_hint":null,"attributes":{"colours":["grey"],"size":null},"detector_prompts":["grey hoodie"],"unused":""}
+{"id":"r036","text":"the gray hoodie","target":"gray hoodie","room_hint":null,"attributes":{"colours":["grey"],"size":null},"detector_prompts":["gray hoodie"],"unused":""}
+{"id":"r037","text":"large white box","target":"large white box","room_hint":null,"attributes":{"colours":["white"],"size":"large"},"detector_prompts":["large white box"],"unused":""}
+{"id":"r038","text":"tiny yellow toy car","target":"tiny yellow toy car","room_hint":null,"attributes":{"colours":["yellow"],"size":"small"},"detector_prompts":["tiny yellow toy car"],"unused":""}
+{"id":"r039","text":"the black and white sneakers","target":"black and white sneakers","room_hint":null,"attributes":{"colours":["black","white"],"size":null},"detector_prompts":["black and white sneakers"],"unused":""}
+{"id":"r040","text":"my brown leather bag","target":"brown leather bag","room_hint":null,"attributes":{"colours":["brown"],"size":null},"detector_prompts":["brown leather bag"],"unused":""}
+{"id":"r041","text":"huge orange pumpkin","target":"huge orange pumpkin","room_hint":null,"attributes":{"colours":["orange"],"size":"large"},"detector_prompts":["huge orange pumpkin"],"unused":""}
+{"id":"r042","text":"the purple umbrella","target":"purple umbrella","room_hint":null,"attributes":{"colours":["purple"],"size":null},"detector_prompts":["purple umbrella"],"unused":""}
+{"id":"r043","text":"find my water bottle in the kitchen","target":"water bottle","room_hint":{"type":"kitchen"},"attributes":{"colours":[],"size":null},"detector_prompts":["water bottle"],"unused":""}
+{"id":"r044","text":"the remote in the living room","target":"remote","room_hint":{"type":"living room"},"attributes":{"colours":[],"size":null},"detector_prompts":["remote"],"unused":""}
+{"id":"r045","text":"red backpack in the bedroom","target":"red backpack","room_hint":{"type":"bedroom"},"attributes":{"colours":["red"],"size":null},"detector_prompts":["red backpack"],"unused":""}
+{"id":"r046","text":"look for the plunger in the bathroom","target":"plunger","room_hint":{"type":"bathroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["plunger"],"unused":""}
+{"id":"r047","text":"my phone, somewhere in the kitchen","target":"phone","room_hint":{"type":"kitchen"},"attributes":{"colours":[],"size":null},"detector_prompts":["phone"],"unused":"somewhere"}
+{"id":"r048","text":"the basketball near the bedroom","target":"basketball","room_hint":{"type":"bedroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["basketball"],"unused":""}
+{"id":"r049","text":"garbage can by the bathroom","target":"garbage can","room_hint":{"type":"bathroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["garbage can"],"unused":""}
+{"id":"r050","text":"find the dog bed inside the living room","target":"dog bed","room_hint":{"type":"living room"},"attributes":{"colours":[],"size":null},"detector_prompts":["dog bed"],"unused":""}
+{"id":"r051","text":"keys in the Kitchen","target":"keys","room_hint":{"type":"kitchen"},"attributes":{"colours":[],"size":null},"detector_prompts":["keys"],"unused":""}
+{"id":"r052","text":"my glasses are in the bedroom","target":"glasses","room_hint":{"type":"bedroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["glasses"],"unused":"are"}
+{"id":"r053","text":"I left my keys in the living room","target":"keys","room_hint":{"type":"living room"},"attributes":{"colours":[],"size":null},"detector_prompts":["keys"],"unused":""}
+{"id":"r054","text":"find the laundry hamper in the bathroom please","target":"laundry hamper","room_hint":{"type":"bathroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["laundry hamper"],"unused":""}
+{"id":"r055","text":"my laptop in the office","target":"laptop","room_hint":{"type":"office"},"attributes":{"colours":[],"size":null},"detector_prompts":["laptop"],"unused":""}
+{"id":"r056","text":"the washer in the laundry room","target":"washer","room_hint":{"type":"laundry room"},"attributes":{"colours":[],"size":null},"detector_prompts":["washer"],"unused":""}
+{"id":"r057","text":"bike pump in the garage","target":"bike pump","room_hint":{"type":"garage"},"attributes":{"colours":[],"size":null},"detector_prompts":["bike pump"],"unused":""}
+{"id":"r058","text":"find the umbrella in the hallway","target":"umbrella","room_hint":{"type":"hallway"},"attributes":{"colours":[],"size":null},"detector_prompts":["umbrella"],"unused":""}
+{"id":"r059","text":"the salt shaker in the dining room","target":"salt shaker","room_hint":{"type":"dining room"},"attributes":{"colours":[],"size":null},"detector_prompts":["salt shaker"],"unused":""}
+{"id":"r060","text":"my shoes, probably in the hallway","target":"shoes","room_hint":{"type":"hallway"},"attributes":{"colours":[],"size":null},"detector_prompts":["shoes"],"unused":""}
+{"id":"r061","text":"the remote in the lounge","target":"remote","room_hint":{"type":"living room"},"attributes":{"colours":[],"size":null},"detector_prompts":["remote"],"unused":""}
+{"id":"r062","text":"the cat in the family room","target":"cat","room_hint":{"type":"living room"},"attributes":{"colours":[],"size":null},"detector_prompts":["cat"],"unused":""}
+{"id":"r063","text":"the toothbrush in the restroom","target":"toothbrush","room_hint":{"type":"bathroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["toothbrush"],"unused":""}
+{"id":"r064","text":"my book in the study","target":"book","room_hint":{"type":"office"},"attributes":{"colours":[],"size":null},"detector_prompts":["book"],"unused":""}
+{"id":"r065","text":"the teddy bear in the nursery","target":"teddy bear","room_hint":{"type":"bedroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["teddy bear"],"unused":""}
+{"id":"r066","text":"the iron in the utility room","target":"iron","room_hint":{"type":"laundry room"},"attributes":{"colours":[],"size":null},"detector_prompts":["iron"],"unused":""}
+{"id":"r067","text":"the mop in the laundry","target":"mop","room_hint":{"type":"laundry room"},"attributes":{"colours":[],"size":null},"detector_prompts":["mop"],"unused":""}
+{"id":"r068","text":"my coat in the hall","target":"coat","room_hint":{"type":"hallway"},"attributes":{"colours":[],"size":null},"detector_prompts":["coat"],"unused":""}
+{"id":"r069","text":"my keys near the foyer","target":"keys","room_hint":{"type":"hallway"},"attributes":{"colours":[],"size":null},"detector_prompts":["keys"],"unused":""}
+{"id":"r070","text":"towel in the washroom","target":"towel","room_hint":{"type":"bathroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["towel"],"unused":""}
+{"id":"r071","text":"the blanket in the guest room","target":"blanket","room_hint":{"type":"bedroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["blanket"],"unused":""}
+{"id":"r072","text":"the cushion in the sitting room","target":"cushion","room_hint":{"type":"living room"},"attributes":{"colours":[],"size":null},"detector_prompts":["cushion"],"unused":""}
+{"id":"r073","text":"my notebook in the home office","target":"notebook","room_hint":{"type":"office"},"attributes":{"colours":[],"size":null},"detector_prompts":["notebook"],"unused":""}
+{"id":"r074","text":"the hairbrush in the master bedroom","target":"hairbrush","room_hint":{"type":"bedroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["hairbrush"],"unused":""}
+{"id":"r075","text":"my water bottle, probably in the kitchen","target":"water bottle","room_hint":{"type":"kitchen"},"attributes":{"colours":[],"size":null},"detector_prompts":["water bottle"],"unused":""}
+{"id":"r076","text":"red backpack, maybe the bedroom","target":"red backpack","room_hint":{"type":"bedroom"},"attributes":{"colours":["red"],"size":null},"detector_prompts":["red backpack"],"unused":""}
+{"id":"r077","text":"the cat - try the living room","target":"cat","room_hint":{"type":"living room"},"attributes":{"colours":[],"size":null},"detector_prompts":["cat"],"unused":"try"}
+{"id":"r078","text":"find my phone, check the bathroom first","target":"phone","room_hint":{"type":"bathroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["phone"],"unused":"check first"}
+{"id":"r079","text":"keys. last saw them in the kitchen","target":"keys","room_hint":{"type":"kitchen"},"attributes":{"colours":[],"size":null},"detector_prompts":["keys"],"unused":"last saw them"}
+{"id":"r080","text":"my wallet, I think it's in the bedroom","target":"wallet","room_hint":{"type":"bedroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["wallet"],"unused":"i think it's"}
+{"id":"r081","text":"the remote (living room probably)","target":"remote","room_hint":{"type":"living room"},"attributes":{"colours":[],"size":null},"detector_prompts":["remote"],"unused":""}
+{"id":"r082","text":"glasses -- office maybe","target":"glasses","room_hint":{"type":"office"},"attributes":{"colours":[],"size":null},"detector_prompts":["glasses"],"unused":""}
+{"id":"r083","text":"the keys on the kitchen counter","target":"keys","room_hint":{"type":"kitchen"},"attributes":{"colours":[],"size":null},"detector_prompts":["keys"],"unused":"counter"}
+{"id":"r084","text":"my toothbrush by the bathroom sink","target":"toothbrush","room_hint":{"type":"bathroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["toothbrush"],"unused":"sink"}
+{"id":"r085","text":"the book on the bedroom shelf","target":"book","room_hint":{"type":"bedroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["book"],"unused":"shelf"}
+{"id":"r086","text":"the remote under the living room sofa","target":"remote","room_hint":{"type":"living room"},"attributes":{"colours":[],"size":null},"detector_prompts":["remote"],"unused":"sofa"}
+{"id":"r087","text":"my mug on the office desk","target":"mug","room_hint":{"type":"office"},"attributes":{"colours":[],"size":null},"detector_prompts":["mug"],"unused":"desk"}
+{"id":"r088","text":"the shoes next to the garage door","target":"shoes","room_hint":{"type":"garage"},"attributes":{"colours":[],"size":null},"detector_prompts":["shoes"],"unused":"next to door"}
+{"id":"r089","text":"the keys on the table","target":"keys","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["keys"],"unused":"table"}
+{"id":"r090","text":"my phone near the sofa","target":"phone","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["phone"],"unused":"sofa"}
+{"id":"r091","text":"the cat under the bed","target":"cat","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["cat"],"unused":"bed"}
+{"id":"r092","text":"the ball behind the couch","target":"ball","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["ball"],"unused":"couch"}
+{"id":"r093","text":"my glasses by the window","target":"glasses","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["glasses"],"unused":"window"}
+{"id":"r094","text":"the remote next to the tv","target":"remote","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["remote"],"unused":"next to tv"}
+{"id":"r095","text":"the toy in the box","target":"toy","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["toy"],"unused":"box"}
+{"id":"r096","text":"my shoes by the door","target":"shoes","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["shoes"],"unused":"door"}
+{"id":"r097","text":"the backpack on the chair","target":"backpack","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["backpack"],"unused":"chair"}
+{"id":"r098","text":"my keys upstairs","target":"keys","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["keys"],"unused":"upstairs"}
+{"id":"r099","text":"the cat downstairs","target":"cat","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["cat"],"unused":"downstairs"}
+{"id":"r100","text":"the bottle beside the fridge","target":"bottle","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["bottle"],"unused":"fridge"}
+{"id":"r101","text":"kitchen scissors","target":"kitchen scissors","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["kitchen scissors"],"unused":""}
+{"id":"r102","text":"find the bathroom scale","target":"bathroom scale","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["bathroom scale"],"unused":""}
+{"id":"r103","text":"bedroom slippers in the hallway","target":"bedroom slippers","room_hint":{"type":"hallway"},"attributes":{"colours":[],"size":null},"detector_prompts":["bedroom slippers"],"unused":""}
+{"id":"r104","text":"the office chair","target":"office chair","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["office chair"],"unused":""}
+{"id":"r105","text":"the garage door opener","target":"garage door opener","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["garage door opener"],"unused":""}
+{"id":"r106","text":"kitchen towel in the bathroom","target":"kitchen towel","room_hint":{"type":"bathroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["kitchen towel"],"unused":""}
+{"id":"r107","text":"the cup with a lid","target":"cup with a lid","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["cup with a lid"],"unused":""}
+{"id":"r108","text":"box of tissues in the bedroom","target":"box of tissues","room_hint":{"type":"bedroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["box of tissues"],"unused":""}
+{"id":"r109","text":"phone charger","target":"phone charger","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["phone charger"],"unused":""}
+{"id":"r110","text":"the pair of scissors","target":"pair of scissors","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["pair of scissors"],"unused":""}
+{"id":"r111","text":"the remote in the kitchen or the living room","target":"remote","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["remote"],"unused":"kitchen or living room"}
+{"id":"r112","text":"keys, bedroom or bathroom","target":"keys","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["keys"],"unused":"bedroom or bathroom"}
+{"id":"r113","text":"my phone, not in the kitchen","target":"phone","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["phone"],"unused":"not kitchen"}
+{"id":"r114","text":"the cat is not in the bedroom","target":"cat","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["cat"],"unused":"is not bedroom"}
+{"id":"r115","text":"my bag in the kitchn","target":"bag","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["bag"],"unused":"kitchn"}
+{"id":"r116","text":"the ball in the playroom","target":"ball","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["ball"],"unused":"playroom"}
+{"id":"r117","text":"my hat in the sunroom","target":"hat","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["hat"],"unused":"sunroom"}
+{"id":"r118","text":"the drill in the basement","target":"drill","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["drill"],"unused":"basement"}
+{"id":"r119","text":"Find the RED BACKPACK!!","target":"red backpack","room_hint":null,"attributes":{"colours":["red"],"size":null},"detector_prompts":["red backpack"],"unused":""}
+{"id":"r120","text":"  keys  ","target":"keys","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["keys"],"unused":""}
+{"id":"r121","text":"WHERE IS MY PHONE","target":"phone","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["phone"],"unused":""}
+{"id":"r122","text":"the remote... in the living room?","target":"remote","room_hint":{"type":"living room"},"attributes":{"colours":[],"size":null},"detector_prompts":["remote"],"unused":""}
+{"id":"r123","text":"find: water bottle (kitchen)","target":"water bottle","room_hint":{"type":"kitchen"},"attributes":{"colours":[],"size":null},"detector_prompts":["water bottle"],"unused":""}
+{"id":"r124","text":"Basketball.","target":"basketball","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["basketball"],"unused":""}
+{"id":"r125","text":"the lego set in Ben's room","target":"lego set","room_hint":{"name":"Ben's room"},"attributes":{"colours":[],"size":null},"detector_prompts":["lego set"],"unused":""}
+{"id":"r126","text":"the lego set in ben's room","target":"lego set","room_hint":{"name":"Ben's room"},"attributes":{"colours":[],"size":null},"detector_prompts":["lego set"],"unused":""}
+{"id":"r127","text":"the lego set in Ben's room","target":"lego set","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["lego set"],"unused":"ben's room"}
+{"id":"r128","text":"my laptop in Mum's office","target":"laptop","room_hint":{"name":"Mum's office"},"attributes":{"colours":[],"size":null},"detector_prompts":["laptop"],"unused":""}
+{"id":"r129","text":"my laptop in Mum's office","target":"laptop","room_hint":{"type":"office"},"attributes":{"colours":[],"size":null},"detector_prompts":["laptop"],"unused":"mum's"}
+{"id":"r130","text":"the toy truck in the playroom","target":"toy truck","room_hint":{"name":"playroom"},"attributes":{"colours":[],"size":null},"detector_prompts":["toy truck"],"unused":""}
+{"id":"r131","text":"the toy truck in the playroom","target":"toy truck","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["toy truck"],"unused":"playroom"}
+{"id":"r132","text":"the remote, probably in the den","target":"remote","room_hint":{"name":"Den"},"attributes":{"colours":[],"size":null},"detector_prompts":["remote"],"unused":""}
+{"id":"r133","text":"the remote, probably in the den","target":"remote","room_hint":{"type":"living room"},"attributes":{"colours":[],"size":null},"detector_prompts":["remote"],"unused":""}
+{"id":"r134","text":"the mug in the kitchen","target":"mug","room_hint":{"name":"Kitchen"},"attributes":{"colours":[],"size":null},"detector_prompts":["mug"],"unused":""}
+{"id":"r135","text":"my book in the reading nook","target":"book","room_hint":{"name":"Reading nook"},"attributes":{"colours":[],"size":null},"detector_prompts":["book"],"unused":""}
+{"id":"r136","text":"my book in the reading nook","target":"book","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["book"],"unused":"reading nook"}
+{"id":"r137","text":"the drill in the garage","target":"drill","room_hint":{"name":"Garage"},"attributes":{"colours":[],"size":null},"detector_prompts":["drill"],"unused":""}
+{"id":"r138","text":"the ball in the sunroom or the playroom","target":"ball","room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":["ball"],"unused":"sunroom or playroom"}
+{"id":"r139","text":"find it in the kitchen","target":null,"room_hint":{"type":"kitchen"},"attributes":{"colours":[],"size":null},"detector_prompts":[],"unused":"kitchen"}
+{"id":"r140","text":"check the bedroom","target":null,"room_hint":{"type":"bedroom"},"attributes":{"colours":[],"size":null},"detector_prompts":[],"unused":""}
+{"id":"r141","text":"go to the living room","target":null,"room_hint":{"type":"living room"},"attributes":{"colours":[],"size":null},"detector_prompts":[],"unused":""}
+{"id":"r142","text":"find something","target":null,"room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":[],"unused":""}
+{"id":"r143","text":"where is it?","target":null,"room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":[],"unused":""}
+{"id":"r144","text":"look in the bathroom","target":null,"room_hint":{"type":"bathroom"},"attributes":{"colours":[],"size":null},"detector_prompts":[],"unused":""}
+{"id":"r145","text":"find my keys and my phone","target":null,"room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":[],"unused":""}
+{"id":"r146","text":"the remote or the charger, in the living room","target":null,"room_hint":{"type":"living room"},"attributes":{"colours":[],"size":null},"detector_prompts":[],"unused":"living room"}
+{"id":"r147","text":"keys and wallet","target":null,"room_hint":null,"attributes":{"colours":[],"size":null},"detector_prompts":[],"unused":""}
+{"id":"r148","text":"my phone and glasses in the bedroom","target":null,"room_hint":{"type":"bedroom"},"attributes":{"colours":[],"size":null},"detector_prompts":[],"unused":"bedroom"}
+{"id":"r149","text":"the drill in the garage","target":"drill","room_hint":{"type":"garage"},"attributes":{"colours":[],"size":null},"detector_prompts":["drill"],"unused":""}
+{"id":"r150","text":"my laptop in the office","target":"laptop","room_hint":{"type":"office"},"attributes":{"colours":[],"size":null},"detector_prompts":["laptop"],"unused":""}
+{"id":"r151","text":"the washer in the laundry room","target":"washer","room_hint":{"type":"laundry room"},"attributes":{"colours":[],"size":null},"detector_prompts":["washer"],"unused":""}
+{"id":"r152","text":"the plates in the dining room","target":"plates","room_hint":{"type":"dining room"},"attributes":{"colours":[],"size":null},"detector_prompts":["plates"],"unused":""}
