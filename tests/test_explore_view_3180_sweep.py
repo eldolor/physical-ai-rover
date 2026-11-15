@@ -12,8 +12,8 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-RUNS = ROOT / "evaluations" / "explore-view-3180" / "runs"     # amendment 1's re-run
-FIRST = RUNS / "first"                                          # the first run, kept
+RUNS = ROOT / "evaluations" / "explore-view-3180" / "runs" / "am1"   # amendment 1
+FIRST = ROOT / "evaluations" / "explore-view-3180" / "runs" / "first"   # the first run
 sys.path.insert(0, str(ROOT / "evaluations" / "explore-view-3180"))
 import score                                                    # noqa: E402
 
