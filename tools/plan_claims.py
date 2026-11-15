@@ -265,6 +265,7 @@ def claim_message(c: dict) -> str:
 RELEASED_KEYS = ("by", "forced", "was", "at")
 
 
+assert "at" in MSG_KEYS          # a released record's time is written through it
 RELEASED_HOST = "h-released"     # what a pre-3.179.B reader takes as another machine
 RELEASED_SESSION = "s-released"
 
@@ -281,7 +282,7 @@ def released_message(step: str, by: str, forced: bool, was: str) -> str:
     held by another machine (`h-released`), so it blocks that step only,
     instead of failing every claim with "could not read the holder"."""
     vals = {"by": by or "", "forced": "yes" if forced else "no", "was": was}
-    old = {"step": step, "section": section_of(step), "title": "released",
+    old = {"step": step, "section": section_of(step), "title": "released (free on dev: update this checkout)",
            "session": RELEASED_SESSION, "worktree": "", "branch": "",
            "host": RELEASED_HOST, "pid": "", "start": "", "at": _utc()}
     lines = [f"{k}: {_clean(vals[k])}" for k in RELEASED_KEYS if k != "at"]

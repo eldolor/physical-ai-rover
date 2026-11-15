@@ -302,7 +302,7 @@ def _old_tool(tmp_path):
     return old
 
 
-def test_an_old_reader_takes_a_released_record_as_that_step_held_and_nothing_else(
+def test_an_old_reader_takes_a_released_record_as_that_step_held_and_no_other_section(
         repo, owners, tmp_path, monkeypatch):
     """An old reader sees the released step held by another machine
     (`h-released`): that step (and, by its one-session-per-section rule,
@@ -327,6 +327,8 @@ def test_an_old_reader_takes_a_released_record_as_that_step_held_and_nothing_els
     monkeypatch.delenv("PICAR_CLAIM_PID")
     with pytest.raises(SystemExit, match="claimed"):
         old.claim("3.90.A", cwd=repo, me=b)
+    with pytest.raises(SystemExit, match="held|claimed"):   # the named cost: its section too
+        old.claim("3.90.B", cwd=repo, me=b)
     c = old.claim("3.91.A", cwd=repo, me=b)
     assert remote_refs(repo)["3.91.A"] == c["sha"]
     assert message(repo, remote_refs(repo)["3.90.A"]).startswith("released ")
