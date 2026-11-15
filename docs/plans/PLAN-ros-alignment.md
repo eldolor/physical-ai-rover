@@ -1,5 +1,7 @@
 # Plan: ROS 2, proved on the sim's data
 
+**Open steps (2026-11-15, `plan_section.py board --all` on `dev` 82d33386):** 14 free, 41 waiting (on the Rover or the user), 3 blocked, 3 held for 3.156.E's desktop runs; 234 done, 4 dropped. About four of the free steps can be done in a cloud session (no Docker, Jetson or Rover): 3.176.C, 3.175.C, 3.178.B (not its Jetson bars) and possibly 3.161.B. Updated at merge by whoever changes the counts (the user, 2026-11-15).
+
 *(Retitled 2026-10-01: it was "with the twin still doing the proving", from
 the watched-on-a-phone rule retired the day it was written -- see section 0.)*
 
