@@ -42,3 +42,9 @@ def test_a_hint_and_a_capitalised_name_agree():
     hint = {"name": "Kitchen"}
     assert _extend(["Kitchen", "den", None], hint=hint) == \
         _extend(["kitchen", "den", None], hint=hint)
+
+
+def test_edge_spaces_are_read_as_hint_matches_reads_them():
+    """Review: a stray space ("Kitchen ") read as no type while a name hint
+    (which strips) still matched it."""
+    assert _extend([" Kitchen ", "living room ", None]) == _extend(["kitchen", "living room", None])
