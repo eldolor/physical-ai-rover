@@ -117,6 +117,7 @@ def mission(trial, where, store_dir, name, cells=None):
     (the row, the map the mission ended with)."""
     import logging
     logging.disable(logging.WARNING)
+    from brain.inventory import REPORT_BELIEF
     from control.inventory_store import InventoryStore
     from control.mission_runner import MissionRunner
     from sim.maps import build_world
@@ -195,7 +196,13 @@ def mission(trial, where, store_dir, name, cells=None):
             "recalled_old": any(math.dist(p, old) <= RECALL_NEAR_M for p in acted),
             "contacts": sum(c.startswith("BLOCKED at") for c in contacts),
             "blocked_turning": sum(c.startswith("BLOCKED turning") for c in contacts),
-            "goals": len(goals)}, list(world._cells)
+            "goals": len(goals),
+            # 3.175.F: landmarks an aborted recall held stale, and whether the
+            # target's landmark at P0 ends this mission reportable.
+            "abort_misses": getattr(runner, "_recall_abort_misses", 0),
+            "p0_reported": any(lm.belief >= REPORT_BELIEF and runner.memory.names_target(lm.label)
+                               and math.dist((lm.x, lm.y), old) <= RECALL_NEAR_M
+                               for lm in runner.inventory.landmarks)}, list(world._cells)
 
 
 def run_trial(args):

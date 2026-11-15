@@ -193,6 +193,9 @@ def _logit(p: float) -> float:
 
 
 STALE_SCORE = _logit(STALE_BELIEF)
+# 3.175.F: a recall goal to a carried place that ended without arriving is
+# the miss it never got -- landmarks this near the place it was sent for.
+RECALL_FAILED_M = 0.05
 
 
 def _seen_seq(value, head: int) -> Optional[int]:
@@ -720,6 +723,26 @@ class Inventory:
                 lm.score = max(-SCORE_CLAMP, lm.score + 2 * L_MISS)
                 lm._missed |= {lm._pending_miss, self.frames}
                 lm._pending_miss = None
+
+    def recall_failed(self, x: float, y: float, names=None) -> int:
+        """3.175.F: a recall goal to the carried place (x, y) ended without
+        arriving (aborted, stalled, ...), so this mission never looked there.
+        Each carried landmark within `RECALL_FAILED_M` of it, not seen this
+        mission, and named as the target (`names(label)`, when given) is held
+        to `STALE_SCORE`, as 3.175.B's empty look holds it: carried on, not
+        recalled by the next mission. Returns how many."""
+        n = 0
+        for lm in self.landmarks:
+            if not lm.carried or lm.seen_seq == self.carry_seq:
+                continue
+            if names is not None and not names(lm.label):
+                continue
+            if math.hypot(lm.x - x, lm.y - y) > RECALL_FAILED_M:
+                continue
+            if lm.score > STALE_SCORE:
+                lm.score = STALE_SCORE
+                n += 1
+        return n
 
     # ---------- reading ----------
 

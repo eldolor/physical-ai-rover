@@ -1274,6 +1274,7 @@ class MissionRunner:
             self._ticks += 1
             self._vision_failures = 0
             self._camera_failures = 0
+            self._recall_misses()           # 3.175.F: an aborted recall is a miss
             self._failed_arrival = None
             self._failed_arrival_frame = None
             self._last_action = result.action
@@ -3099,6 +3100,42 @@ class MissionRunner:
                                      -lm.belief))
         fn([(lm.x, lm.y) for lm in lms])
         return len(self.agent.recall)
+
+    def _recall_misses(self) -> int:
+        """3.175.F, under `_lock`, after each step: explore's new events read
+        once each. A `goal_ended` of kind `recall` in any state but
+        `succeeded` (aborted, stalled, canceled, rejected, lost) means this
+        mission never looked at the carried place its `goal_sent` named
+        (`at`), so the inventory counts the miss it never got
+        (`Inventory.recall_failed`). A goal ended by a charge trip sends no
+        `goal_ended` and counts nothing. Returns the landmarks capped."""
+        events = getattr(self.agent, "events", None)
+        if not isinstance(events, list) or not events:
+            return 0
+        last = getattr(self, "_recall_ev_last", None)
+        new = []
+        for rec in reversed(events):          # explore trims its list: read back to the last one read
+            if rec is last:
+                break
+            new.append(rec)
+        self._recall_ev_last = events[-1]
+        n = 0
+        for rec in reversed(new):
+            name = rec.get("event")
+            if name == "goal_sent":
+                at = rec.get("at") if rec.get("kind") == "recall" else None
+                self._recall_ev_at = at if isinstance(at, (list, tuple)) and len(at) == 2 else None
+            elif name == "goal_ended" and rec.get("kind") == "recall":
+                at, self._recall_ev_at = getattr(self, "_recall_ev_at", None), None
+                if at is None or rec.get("state") == "succeeded":
+                    continue
+                names = self.memory.names_target if self.memory.target_object else None
+                k = self.inventory.recall_failed(float(at[0]), float(at[1]), names)
+                n += k
+                self._recall_abort_misses = getattr(self, "_recall_abort_misses", 0) + k
+                self._log_line(f"recall to {at} ended {rec.get('state')}: "
+                               f"{k} carried landmark(s) held stale")
+        return n
 
     def _carry_set_aside(self, frame_id, prior) -> int:
         """3.172 F3: the places earlier missions on this saved map could not
