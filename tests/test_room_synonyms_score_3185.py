@@ -40,3 +40,15 @@ def test_expected_effect():
 def test_score_json_matches_the_arms():
     with open(os.path.join(HERE, "score.json")) as f:
         assert json.load(f) == json.loads(json.dumps(score.score(_arms())))
+
+
+def test_each_arm_ran_its_own_tree_without_exceptions():
+    """S2 is only a comparison if the dev arms imported another tree's brain
+    (3.180), and differ() reads two failed runs as equal, so none may fail."""
+    arms = _arms()
+    for name, rep in arms.items():
+        assert rep["brain_path"].endswith("/brain")
+        assert ("plan-3.185" in rep["brain_path"]) == name.startswith("branch_"), name
+        for m in ("R", "U"):
+            assert rep[m]["exceptions"] == 0, (name, m)
+            assert not any(r["outcome"] == "exception" for r in rep["rows"]), name
