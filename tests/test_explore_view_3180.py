@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright (C) 2026 Anshu Gaind
 """
-3.180.A: a view goal's look-from spot may be used again for a patch in
+3.180.A: a view goal's look-from spot may be used once more for a patch in
 another direction (more than `VIEW_REUSE_DEG` from what the camera faced
-there); the den guard -- one patch whose centre drifts, seen from one spot in
-one direction -- still gets one view (bar A7). `ExploreAgent.view_reuses`
-counts the reuses (A6).
+there, from either origin), within a mission budget of reuses (amendment 2).
+The den guard: a patch whose centre drifts the same way from one spot gets
+one view; one drifting sideways gets at most two (bar A7).
+`ExploreAgent.view_reuses` counts the reuses (A6).
 """
 import math
 
