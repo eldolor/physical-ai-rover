@@ -28,14 +28,20 @@ def got_of(req) -> dict:
             "colours": sorted(set(req.colours or ())), "size": req.size}
 
 
+def expected_of(row: dict) -> dict:
+    return {"target": row["target"], "room": row["room"],
+            "colours": sorted(set(row["colours"])), "size": row["size"]}
+
+
 def judge(row: dict, got: dict) -> dict:
     """Per-row verdicts. R3 counts a room given where none was said, or the
     wrong room (a room missed is R2's, not R3's)."""
-    room_ok = got["room"] == row["room"]
-    return {"target": got["target"] == row["target"],
+    want = expected_of(row)
+    room_ok = got["room"] == want["room"]
+    return {"target": got["target"] == want["target"],
             "room": room_ok,
             "wrong_room": got["room"] is not None and not room_ok,
-            "attributes": got["colours"] == row["colours"] and got["size"] == row["size"]}
+            "attributes": got["colours"] == want["colours"] and got["size"] == want["size"]}
 
 
 def score(rows: list, parse) -> dict:
@@ -58,6 +64,10 @@ def score(rows: list, parse) -> dict:
         for k in ("target", "room", "attributes"):
             g[k] = sum(r[k] for r in rs)
         g["wrong_room"] = sum(r["wrong_room"] for r in rs)
+        # Review: attributes are read from the words taken as the target, so a
+        # wrong target can still carry the right colours. Reported beside R4
+        # (whose definition is 3.176's P4, frozen), not instead of it.
+        g["attributes_with_target"] = sum(r["attributes"] and r["target"] for r in rs)
         kinds = defaultdict(lambda: {"n": 0, "target": 0, "room": 0, "attributes": 0})
         for r in rs:
             kk = kinds[r["kind"]]
@@ -67,7 +77,7 @@ def score(rows: list, parse) -> dict:
         g["by_kind"] = dict(kinds)
         out[group] = g
     rules = out["rules"]
-    plain = [r for r in out["rows"] if r["kind"] == "plain"]
+    plain = [r for r in out["rows"] if r["kind"] == "plain" and r["group"] == "rules"]
     verdict = {}
     for bar, (k, share) in BARS.items():
         rate = rules[k] / rules["n"]
@@ -84,6 +94,12 @@ def score(rows: list, parse) -> dict:
 
 
 def main():
+    """Writes score.json once: the result is the first full score (the
+    section's rule), so an existing file is never replaced; a later run goes
+    to a path of its own. The tree's state is recorded beside the commit."""
+    out = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).with_name("score.json")
+    if out.exists():
+        raise SystemExit(f"{out} exists: 3.181's score is its first run; write elsewhere")
     sys.path.insert(0, str(ROOT))
     from brain.request import parse
     rows = [json.loads(line) for line in SET.read_text().splitlines() if line.strip()]
@@ -92,8 +108,9 @@ def main():
                           capture_output=True, text=True).stdout.strip()
     parser = subprocess.run(["git", "log", "-1", "--format=%h", "--", "brain/request.py"],
                             cwd=ROOT, capture_output=True, text=True).stdout.strip()
-    result = {"commit": head, "parser_last_changed": parser, **result}
-    out = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).with_name("score.json")
+    dirty = bool(subprocess.run(["git", "status", "--porcelain", "--", "brain/", "evaluations/"],
+                                cwd=ROOT, capture_output=True, text=True).stdout.strip())
+    result = {"commit": head, "parser_last_changed": parser, "tree_dirty": dirty, **result}
     out.write_text(json.dumps(result, indent=1, ensure_ascii=False) + "\n")
     print(json.dumps(result["verdict"], indent=1))
     print(f"misses: {len(result['misses'])} (rules {sum(m['group'] == 'rules' for m in result['misses'])})")
