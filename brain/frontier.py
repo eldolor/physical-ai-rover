@@ -761,9 +761,13 @@ class _Sight:
             # 3.180.B: the cell that stops a ray is seen too when it is part
             # of the patch (an object's face). Only `find_view_gaps(faces=)`
             # labels a cell that is not free, so without it this adds nothing.
-            stop = np.concatenate([np.ones_like(kept[:, :1]), kept[:, :-1]], axis=1) & ~kept
             mine = self.lab[flat] == c
-            hit[pair[live[(mine & (kept | stop)).any(axis=1)]]] = True
+            if c >= 0:              # -1 is every cell outside a patch: as before
+                stop = np.concatenate([np.ones_like(kept[:, :1]), kept[:, :-1]], axis=1) & ~kept
+                mine &= kept | stop
+            else:
+                mine &= kept
+            hit[pair[live[mine.any(axis=1)]]] = True
             live = live[kept[:, -1] & ~hit[pair[live]]]
         return hit.tolist()
 
