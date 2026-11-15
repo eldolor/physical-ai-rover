@@ -52,3 +52,11 @@ def test_a_name_hint_on_a_synonym_named_room_keeps_its_rate():
     assert hinted != _extend(["Lounge", "bedroom", None])          # the hint acts
     assert hinted == _extend(["living room", "bedroom", None],
                              hint={"type": "living room"})        # as a type hint would
+
+
+def test_a_type_hint_reaches_a_synonym_named_room():
+    """A type hint ("living room") matches a room named "Lounge" through the
+    vocabulary, as it does a room named "living room"."""
+    hint = {"type": "living room"}
+    assert _extend(["Lounge", "bedroom", None], hint=hint) == \
+        _extend(["living room", "bedroom", None], hint=hint)
