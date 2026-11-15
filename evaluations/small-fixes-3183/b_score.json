@@ -1,0 +1,113 @@
+{
+ "brain_paths": {
+  "dev_dev": "/tmp/claude-0/-home-user-physical-ai-rover/d8ffbcbb-80ba-5ab9-9190-c0256423c914/scratchpad/devB/brain",
+  "dev_names": "/tmp/claude-0/-home-user-physical-ai-rover/d8ffbcbb-80ba-5ab9-9190-c0256423c914/scratchpad/devB/brain",
+  "dev_names_title": "/tmp/claude-0/-home-user-physical-ai-rover/d8ffbcbb-80ba-5ab9-9190-c0256423c914/scratchpad/devB/brain",
+  "branch_dev": "/home/user/physical-ai-rover/.claude/worktrees/plan-3.183/brain",
+  "branch_names": "/home/user/physical-ai-rover/.claude/worktrees/plan-3.183/brain",
+  "branch_names_title": "/home/user/physical-ai-rover/.claude/worktrees/plan-3.183/brain"
+ },
+ "B2": {
+  "names_differ": 0,
+  "no_names_differ": 0,
+  "missions": 200,
+  "met": true,
+  "rows": []
+ },
+ "B3": {
+  "differ": 0,
+  "missions": 200,
+  "met": true,
+  "rows": []
+ },
+ "reported": {
+  "dev_names_title_vs_dev_names_differ": 175,
+  "dev_names_title_vs_dev_no_names_differ": 0
+ },
+ "summary": {
+  "dev_dev": {
+   "R": {
+    "missions": 100,
+    "found": 100,
+    "goals_mean": 9.78,
+    "metres_mean": 32.91
+   },
+   "U": {
+    "missions": 100,
+    "found": 100,
+    "goals_mean": 11.51,
+    "metres_mean": 39.36
+   }
+  },
+  "dev_names": {
+   "R": {
+    "missions": 100,
+    "found": 100,
+    "goals_mean": 6.26,
+    "metres_mean": 21.99
+   },
+   "U": {
+    "missions": 100,
+    "found": 100,
+    "goals_mean": 9.03,
+    "metres_mean": 34.89
+   }
+  },
+  "dev_names_title": {
+   "R": {
+    "missions": 100,
+    "found": 100,
+    "goals_mean": 9.78,
+    "metres_mean": 32.91
+   },
+   "U": {
+    "missions": 100,
+    "found": 100,
+    "goals_mean": 11.51,
+    "metres_mean": 39.36
+   }
+  },
+  "branch_dev": {
+   "R": {
+    "missions": 100,
+    "found": 100,
+    "goals_mean": 9.78,
+    "metres_mean": 32.91
+   },
+   "U": {
+    "missions": 100,
+    "found": 100,
+    "goals_mean": 11.51,
+    "metres_mean": 39.36
+   }
+  },
+  "branch_names": {
+   "R": {
+    "missions": 100,
+    "found": 100,
+    "goals_mean": 6.26,
+    "metres_mean": 21.99
+   },
+   "U": {
+    "missions": 100,
+    "found": 100,
+    "goals_mean": 9.03,
+    "metres_mean": 34.89
+   }
+  },
+  "branch_names_title": {
+   "R": {
+    "missions": 100,
+    "found": 100,
+    "goals_mean": 6.26,
+    "metres_mean": 21.99
+   },
+   "U": {
+    "missions": 100,
+    "found": 100,
+    "goals_mean": 9.03,
+    "metres_mean": 34.89
+   }
+  }
+ }
+}

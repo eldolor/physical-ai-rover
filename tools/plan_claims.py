@@ -262,6 +262,45 @@ def claim_message(c: dict) -> str:
     return f"claim {_clean(c['step'])}\n\n" + "\n".join(f"{k}: {_clean(pub.get(k))}" for k in MSG_KEYS)
 
 
+RELEASED_KEYS = ("by", "forced", "was", "at")
+
+
+assert "at" in MSG_KEYS          # a released record's time is written through it
+RELEASED_HOST = "h-released"     # what a pre-3.179.B reader takes as another machine
+RELEASED_SESSION = "s-released"
+
+
+def released_message(step: str, by: str, forced: bool, was: str) -> str:
+    """3.179.B: a released record's message. Where origin refuses branch
+    deletes (the cloud's proxy), a release turns `claim/<step>` into this
+    instead, and every reader takes it as no claim. Public: `by` is a
+    session digest, `was` the sha of the claim it replaced.
+
+    It also carries the claim keys a pre-3.179.B `parse_claim_message`
+    reads (the orchestrator, 2026-11-15): an old checkout -- an older
+    worktree's own copy of this file, the Jetson's -- reads it as THIS step
+    held by another machine (`h-released`), so it blocks that step and, by
+    its one-session-per-section rule, that section until it updates,
+    instead of failing every claim with "could not read the holder"."""
+    vals = {"by": by or "", "forced": "yes" if forced else "no", "was": was}
+    old = {"step": step, "section": section_of(step), "title": "released (free on dev: update this checkout)",
+           "session": RELEASED_SESSION, "worktree": "", "branch": "",
+           "host": RELEASED_HOST, "pid": "", "start": "", "at": _utc()}
+    lines = [f"{k}: {_clean(vals[k])}" for k in RELEASED_KEYS if k != "at"]
+    lines += [f"{k}: {_clean(old[k])}" for k in MSG_KEYS]
+    return f"released {_clean(step)}\n\n" + "\n".join(lines)
+
+
+def parse_released_message(text: str) -> dict:
+    lines = text.split("\n")
+    out = {"step": lines[0][len("released "):].strip()}
+    for line in lines[1:]:
+        k, sep, v = line.partition(": ")
+        if sep and k in RELEASED_KEYS:
+            out[k] = v.strip()
+    return out
+
+
 def parse_claim_message(text: str) -> dict:
     out = {}
     for line in text.split("\n")[1:]:
@@ -303,11 +342,12 @@ def _commits(top: str, shas: list) -> dict:
     return out
 
 
-def remote_claims(top: str, timeout: float = NET_TIMEOUT_S):
+def remote_claims(top: str, timeout: float = NET_TIMEOUT_S, released=None):
     """([claim, ...], None) for every `claim/*` branch on origin, read with
     one `ls-remote` (the holders of claims not seen before are fetched as
     objects, through `<ref>:` refspecs that store no ref); ([], reason)
-    when origin cannot be read."""
+    when origin cannot be read. A released record (3.179.B) is no claim:
+    never returned; appended to `released` when a list is given."""
     code, out, err = net(["ls-remote", "origin", CLAIM_REF + "*"], top, timeout)
     if code:
         return [], err or f"git ls-remote exited {code}"
@@ -325,6 +365,11 @@ def remote_claims(top: str, timeout: float = NET_TIMEOUT_S):
     claims = []
     for step, sha in sorted(refs.items()):
         ts, msg = have.get(sha, (0, ""))
+        if msg.startswith("released "):
+            if released is not None:
+                released.append({**parse_released_message(msg), "step": step, "sha": sha,
+                                 "committed": ts})
+            continue
         c = parse_claim_message(msg) if msg else {}
         c.update({"step": step, "section": section_of(step), "sha": sha, "remote": True,
                   "committed": ts})
@@ -340,14 +385,18 @@ def _identity_args(top: str) -> list:
     return ["-c", "user.name=plan-claims", "-c", "user.email=plan-claims@localhost"]
 
 
-def _claim_commit(top: str, c: dict) -> str:
+def _orphan_commit(top: str, msg: str) -> str:
     tree = subprocess.run(["git", "hash-object", "-t", "tree", "-w", "--stdin"], cwd=top, input="",
                           capture_output=True, text=True, check=True).stdout.strip()
-    r = subprocess.run(["git", *_identity_args(top), "commit-tree", tree, "-m", claim_message(c)],
+    r = subprocess.run(["git", *_identity_args(top), "commit-tree", tree, "-m", msg],
                        cwd=top, capture_output=True, text=True)
     if r.returncode:
-        raise SystemExit(f"claim: could not make the claim commit: {r.stderr.strip()}")
+        raise SystemExit(f"could not make a claim-branch commit: {r.stderr.strip()}")
     return r.stdout.strip()
+
+
+def _claim_commit(top: str, c: dict) -> str:
+    return _orphan_commit(top, claim_message(c))
 
 
 def _push_create(top: str, step: str, sha: str):
@@ -364,6 +413,44 @@ def _push_delete(top: str, step: str, sha: str):
     ref = CLAIM_REF + step
     code, _, err = net(["push", "-q", f"--force-with-lease={ref}:{sha}", "origin", f":{ref}"], top)
     return code == 0, code != 0 and _rejected(err), err
+
+
+def _push_replace(top: str, step: str, sha: str, expect: str):
+    """Point `claim/<step>` at `sha` only if it still holds `expect` (a
+    lease: origin compares and swaps under its ref lock). 3.179.B: works
+    where deletes are refused. (ok, rejected, message)."""
+    ref = CLAIM_REF + step
+    code, _, err = net(["push", "-q", f"--force-with-lease={ref}:{expect}", "origin",
+                        f"{sha}:{ref}"], top)  # no "+": it would override the lease
+    return code == 0, code != 0 and _rejected(err), err
+
+
+def _push_released(top: str, step: str, was: str, me, forced: bool):
+    """Turn the claim `was` into a released record, under a lease on `was`."""
+    rec = _orphan_commit(top, released_message(step, (me or {}).get("session") or "", forced, was))
+    return _push_replace(top, step, rec, was)
+
+
+def _withdraw(top: str, step: str, sha: str, me, forced: bool = False):
+    """Give back the claim `sha` on origin: deleted where origin allows it
+    (3.139), else -- the cloud refuses deletes (HTTP 403) -- replaced by a
+    released record (3.179.B). Either push is leased on `sha`, so a claim
+    made since is never touched; a lease refusal is `rejected`.
+    (ok, rejected, message)."""
+    done, rejected, err = _push_delete(top, step, sha)
+    if done or rejected or not _delete_refused(err):
+        return done, rejected, err
+    ok, rejected2, err2 = _push_released(top, step, sha, me, forced)
+    return ok, rejected2, ("" if ok else f"delete refused ({err}); released record: {err2}")
+
+
+def _delete_refused(err: str) -> bool:
+    """Origin answered and refused a branch DELETE as such -- the cloud's
+    proxy (HTTP 403, measured 2026-11-15) or a server hook -- as opposed to
+    not answering (a timeout, no network), which falls back to nothing
+    (review: a second push would only double the wait)."""
+    e = err.lower()
+    return "403" in e or "[remote rejected]" in e or "declined" in e or "prohibited" in e
 
 
 def _rejected(err: str) -> bool:
@@ -825,7 +912,8 @@ class Board:
         self.steps = load_steps(self.top, self.branches)
         self.times = plan_times(self.top)
         self.claims = read_claims(self.common)
-        self.remote, self.remote_err = (remote_claims(self.top, timeout) if remote
+        self.released = []                             # 3.179.B: released records on origin
+        self.remote, self.remote_err = (remote_claims(self.top, timeout, self.released) if remote
                                         else ([], "not read"))
         self.split()
 
@@ -984,11 +1072,27 @@ def claim(sid: str, cwd=None, me=None, accept_overlap=False) -> dict:
             c.update({"sha": ours["sha"], "at": ours.get("at") or c["at"]})
             _write_claim(path, c)
             return c
+        # 3.179.B: a released record is replaced, under a lease on its sha.
+        expect = next((x["sha"] for x in b.released if x["step"] == sid), None)
         for x in b.stale:                             # take over: a lease on the sha we read, so
             if x["step"] == sid:                      # a claim made since is never deleted
-                _push_delete(b.top, sid, x["sha"])
+                done, gone_since, derr = _push_delete(b.top, sid, x["sha"])
+                if not done and not gone_since and _delete_refused(derr):
+                    expect = x["sha"]                 # deletes refused (the cloud): replace it
         sha = _claim_commit(b.top, c)
-        ok, rejected, err = _push_create(b.top, sid, sha)
+        ok, rejected, err = (_push_replace(b.top, sid, sha, expect) if expect
+                             else _push_create(b.top, sid, sha))
+        if not ok and rejected:
+            # The ref moved since the board read it. If no one holds it now --
+            # released (again) meanwhile, or a released record deleted -- try
+            # once more against what is there (review: a free step refused).
+            rel_now = []
+            now, _ = remote_claims(b.top, released=rel_now)
+            if not any(x["step"] == sid for x in now):
+                again = next((x["sha"] for x in rel_now if x["step"] == sid), None)
+                if again != expect:
+                    ok, rejected, err = (_push_replace(b.top, sid, sha, again) if again
+                                         else _push_create(b.top, sid, sha))
         if not ok:
             if rejected:
                 now, _ = remote_claims(b.top)
@@ -1013,7 +1117,7 @@ def claim(sid: str, cwd=None, me=None, accept_overlap=False) -> dict:
                   and (claim_section(x) == c["section"]
                        or overlap(c["touches"], (b.find(x["step"]) or {}).get("touches", [])))]
         if rivals:
-            done, rejected, e = _push_delete(b.top, sid, sha)
+            done, rejected, e = _withdraw(b.top, sid, sha, b.me)
             if not done and not rejected:
                 raise SystemExit(f"claim: {rivals[0]['step']} was claimed on origin meanwhile by "
                                  f"{who(rivals[0])}, and withdrawing claim/{sid} failed ({e}): run "
@@ -1050,8 +1154,9 @@ def release(sid=None, cwd=None, me=None, force=False, unpushed=False) -> list:
     every claim of the same process, nor every one whose process reads
     dead). With a step, also one whose holder has exited on this host.
     force: anyone's -- the user's
-    word only. Origin is deleted with a lease on the sha read, so a claim
-    someone made since is never deleted."""
+    word only. Origin's ref is deleted with a lease on the sha read, so a
+    claim someone made since is never deleted; where origin refuses deletes
+    it becomes a released record under the same lease (3.179.B)."""
     rp = repo(cwd)
     if not rp:
         raise SystemExit("not in a git repository")
@@ -1095,9 +1200,9 @@ def release(sid=None, cwd=None, me=None, force=False, unpushed=False) -> list:
                         f"`release --unpushed {step}` to give the claim back anyway; released so "
                         f"far: {', '.join(gone) or 'nothing'}")
             if ok_r:
-                done, rejected, e = _push_delete(top, step, ok_r["sha"])
+                done, rejected, e = _withdraw(top, step, ok_r["sha"], me, forced=force)
                 if not done and not rejected:
-                    raise SystemExit(f"release: could not delete claim/{step} on origin ({e}); "
+                    raise SystemExit(f"release: could not give back claim/{step} on origin ({e}); "
                                      f"released so far: {', '.join(gone) or 'nothing'}")
             for c in ok_l:
                 try:
