@@ -374,7 +374,7 @@ def _orphan_commit(top: str, msg: str) -> str:
     r = subprocess.run(["git", *_identity_args(top), "commit-tree", tree, "-m", msg],
                        cwd=top, capture_output=True, text=True)
     if r.returncode:
-        raise SystemExit(f"claim: could not make the claim commit: {r.stderr.strip()}")
+        raise SystemExit(f"could not make a claim-branch commit: {r.stderr.strip()}")
     return r.stdout.strip()
 
 
@@ -421,10 +421,19 @@ def _withdraw(top: str, step: str, sha: str, me, forced: bool = False):
     made since is never touched; a lease refusal is `rejected`.
     (ok, rejected, message)."""
     done, rejected, err = _push_delete(top, step, sha)
-    if done or rejected:
+    if done or rejected or not _delete_refused(err):
         return done, rejected, err
     ok, rejected2, err2 = _push_released(top, step, sha, me, forced)
-    return ok, rejected2, ("" if ok else f"delete: {err}; released record: {err2}")
+    return ok, rejected2, ("" if ok else f"delete refused ({err}); released record: {err2}")
+
+
+def _delete_refused(err: str) -> bool:
+    """Origin answered and refused a branch DELETE as such -- the cloud's
+    proxy (HTTP 403, measured 2026-11-15) or a server hook -- as opposed to
+    not answering (a timeout, no network), which falls back to nothing
+    (review: a second push would only double the wait)."""
+    e = err.lower()
+    return "403" in e or "[remote rejected]" in e or "declined" in e or "prohibited" in e
 
 
 def _rejected(err: str) -> bool:
@@ -1050,12 +1059,23 @@ def claim(sid: str, cwd=None, me=None, accept_overlap=False) -> dict:
         expect = next((x["sha"] for x in b.released if x["step"] == sid), None)
         for x in b.stale:                             # take over: a lease on the sha we read, so
             if x["step"] == sid:                      # a claim made since is never deleted
-                done, gone_since, _ = _push_delete(b.top, sid, x["sha"])
-                if not done and not gone_since:       # deletes refused (the cloud): replace it
-                    expect = x["sha"]
+                done, gone_since, derr = _push_delete(b.top, sid, x["sha"])
+                if not done and not gone_since and _delete_refused(derr):
+                    expect = x["sha"]                 # deletes refused (the cloud): replace it
         sha = _claim_commit(b.top, c)
         ok, rejected, err = (_push_replace(b.top, sid, sha, expect) if expect
                              else _push_create(b.top, sid, sha))
+        if not ok and rejected:
+            # The ref moved since the board read it. If no one holds it now --
+            # released (again) meanwhile, or a released record deleted -- try
+            # once more against what is there (review: a free step refused).
+            rel_now = []
+            now, _ = remote_claims(b.top, released=rel_now)
+            if not any(x["step"] == sid for x in now):
+                again = next((x["sha"] for x in rel_now if x["step"] == sid), None)
+                if again != expect:
+                    ok, rejected, err = (_push_replace(b.top, sid, sha, again) if again
+                                         else _push_create(b.top, sid, sha))
         if not ok:
             if rejected:
                 now, _ = remote_claims(b.top)
@@ -1117,8 +1137,9 @@ def release(sid=None, cwd=None, me=None, force=False, unpushed=False) -> list:
     every claim of the same process, nor every one whose process reads
     dead). With a step, also one whose holder has exited on this host.
     force: anyone's -- the user's
-    word only. Origin is deleted with a lease on the sha read, so a claim
-    someone made since is never deleted."""
+    word only. Origin's ref is deleted with a lease on the sha read, so a
+    claim someone made since is never deleted; where origin refuses deletes
+    it becomes a released record under the same lease (3.179.B)."""
     rp = repo(cwd)
     if not rp:
         raise SystemExit("not in a git repository")
@@ -1164,7 +1185,7 @@ def release(sid=None, cwd=None, me=None, force=False, unpushed=False) -> list:
             if ok_r:
                 done, rejected, e = _withdraw(top, step, ok_r["sha"], me, forced=force)
                 if not done and not rejected:
-                    raise SystemExit(f"release: could not delete claim/{step} on origin ({e}); "
+                    raise SystemExit(f"release: could not give back claim/{step} on origin ({e}); "
                                      f"released so far: {', '.join(gone) or 'nothing'}")
             for c in ok_l:
                 try:
