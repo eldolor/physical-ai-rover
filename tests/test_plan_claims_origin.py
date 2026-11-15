@@ -142,9 +142,9 @@ def test_criterion_2_a_rejected_push_writes_nothing_and_names_the_holder(repo, o
     real = pc.remote_claims
     calls = []
 
-    def stale_view(top, timeout=None):                        # the board saw origin before the other push
+    def stale_view(top, timeout=None, released=None):         # the board saw origin before the other push
         calls.append(1)
-        return ([], None) if len(calls) == 1 else real(top)
+        return ([], None) if len(calls) == 1 else real(top, released=released)
     monkeypatch.setattr(pc, "remote_claims", stale_view)
     fake_claim(repo, "3.90.A", host="far", worktree="/far/their-wt")
     with pytest.raises(SystemExit, match=r"claimed on origin.*their-wt"):
@@ -471,9 +471,9 @@ def test_review_a_rival_in_the_section_landing_meanwhile_withdraws_the_claim(rep
     real = pc.remote_claims
     calls = []
 
-    def stale_view(top, timeout=None):
+    def stale_view(top, timeout=None, released=None):
         calls.append(1)
-        return ([], None) if len(calls) == 1 else real(top)
+        return ([], None) if len(calls) == 1 else real(top, released=released)
     monkeypatch.setattr(pc, "remote_claims", stale_view)
     fake_claim(repo, "3.90", host="far")                    # the whole section, another machine
     with pytest.raises(SystemExit, match="meanwhile"):
@@ -550,9 +550,9 @@ def test_review2_a_failed_recheck_keeps_the_claim_it_won(repo, owners, monkeypat
     real = pc.remote_claims
     calls = []
 
-    def flaky(top, timeout=None):
+    def flaky(top, timeout=None, released=None):
         calls.append(1)
-        return real(top) if len(calls) == 1 else ([], "no answer from origin in 20 s")
+        return real(top, released=released) if len(calls) == 1 else ([], "no answer from origin in 20 s")
     monkeypatch.setattr(pc, "remote_claims", flaky)
     c = pc.claim("3.90.A", cwd=repo, me=a)
     assert remote_refs(repo) == {"3.90.A": c["sha"]} and c["unchecked"]
