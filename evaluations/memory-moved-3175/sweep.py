@@ -197,9 +197,9 @@ def mission(trial, where, store_dir, name, cells=None):
             "contacts": sum(c.startswith("BLOCKED at") for c in contacts),
             "blocked_turning": sum(c.startswith("BLOCKED turning") for c in contacts),
             "goals": len(goals),
-            # 3.175.F: landmarks an aborted recall held stale, and whether the
-            # target's landmark at P0 ends this mission reportable.
-            "abort_misses": getattr(runner, "_recall_abort_misses", 0),
+            # 3.175.F: whether the target's landmark at P0 ends this mission
+            # reportable (its F-risk measure; F's own abort_misses field is
+            # in rows-f.jsonl only, its rule not shipped).
             "p0_reported": any(lm.belief >= REPORT_BELIEF and runner.memory.names_target(lm.label)
                                and math.dist((lm.x, lm.y), old) <= RECALL_NEAR_M
                                for lm in runner.inventory.landmarks)}, list(world._cells)
