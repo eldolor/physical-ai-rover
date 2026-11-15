@@ -9,7 +9,7 @@ counts the reuses (A6).
 """
 import math
 
-from brain.explore import VIEW_REUSE_DEG, ExploreAgent
+from brain.explore import VIEW_REUSE_BUDGET, VIEW_REUSE_DEG, ExploreAgent
 from brain.frontier import CAMERA_FOV_DEG, ViewGap
 from brain.memory import MissionMemory
 from sim.maps import build_world
@@ -82,16 +82,20 @@ def test_the_face_is_where_the_camera_looked():
     assert math.isclose(a._view_looks[0][2], 0.0, abs_tol=1e-9)
 
 
-def test_amendment_1_a_face_drifting_sideways_is_the_same_look():
-    """Both reviewers: the patch's `face` drifts sideways past 30 deg from
-    the same spot. Its target is within the retry radius of the first look's
-    target, so it is the same look and refused."""
+def test_a_face_drifting_sideways_gets_at_most_two_looks_from_one_spot():
+    """Both reviewers (amendment 1): a patch's `face` drifts sideways past
+    30 deg from the same spot. Since amendment 2 the den guard is the cap:
+    the drift may be looked at once more (a reuse), never a third time."""
     a = _agent()
     first = _gap((2.0, 2.0), (3.5, 2.5), face=(2.6, 2.0))        # faced 0 deg
     a._note_view(first)
     a._looked.append(first.centre)
-    drifted = _gap((2.05, 2.0), (3.4, 3.4), face=(2.6, 2.4))      # ~36 deg from the new goal
-    assert not a._view_allowed(drifted)
+    drifted = _gap((2.05, 2.0), (3.4, 3.4), face=(2.6, 2.45))    # ~37 deg from both origins
+    assert a._view_allowed(drifted)
+    a._note_view(drifted)
+    a._looked.append(drifted.centre)
+    again = _gap((2.0, 2.05), (3.0, 4.2), face=(2.4, 2.75))       # ~62 deg: new, but the spot is full
+    assert not a._view_allowed(again)
 
 
 def test_amendment_1_the_direction_is_measured_from_the_earlier_spot():
@@ -106,3 +110,43 @@ def test_amendment_1_the_direction_is_measured_from_the_earlier_spot():
     g = _gap((2.0, 2.55), (2.9, 1.6))
     assert math.hypot(2.9 - 3.5, 1.6 - 2.0) > a.retry.radius_m
     assert not a._view_allowed(g)
+
+
+
+def test_amendment_2_a_parallel_look_from_a_nearby_spot_is_refused():
+    """`/code-review` on amendment 1: from 0.55 m away, facing exactly the
+    way the first look faced (0 deg from the new goal; 34.5 deg from the
+    earlier spot). Either origin within 30 deg refuses it."""
+    a = _agent()
+    a._note_view(_gap((2.0, 2.0), (3.5, 2.0)))
+    assert not a._view_allowed(_gap((2.0, 2.55), (2.8, 2.55)))
+
+
+def test_amendment_2_two_close_targets_in_different_directions_are_two_looks():
+    """Thermos on amendment 1: targets 0.4 m out, 90 deg apart, only 0.57 m
+    from each other. Different looks: allowed."""
+    a = _agent()
+    a._note_view(_gap((2.0, 2.0), (2.4, 2.0)))
+    assert a._view_allowed(_gap((2.0, 2.0), (2.0, 2.4)))
+
+
+def test_amendment_2_a_bearing_from_an_origin_next_to_its_target_is_not_used():
+    """Both reviewers on amendment 1: the new target lies 0.1 m from the
+    earlier spot, so the bearing from there is noise and is skipped; from the
+    new goal it faces west, opposite the earlier east look: allowed."""
+    a = _agent()
+    a._note_view(_gap((2.0, 2.0), (3.5, 2.0)))                    # faced east
+    assert a._view_allowed(_gap((2.5, 2.0), (2.1, 2.0)))
+
+
+def test_amendment_2_the_mission_budget_stops_reuses_not_new_spots():
+    a = _agent()
+    assert VIEW_REUSE_BUDGET == 4
+    for i in range(VIEW_REUSE_BUDGET):              # four spots, each reused once
+        x = 1.0 + 3.0 * i
+        a._note_view(_gap((x, 1.0), (x + 1.5, 1.0)))            # east
+        a._note_view(_gap((x, 1.0), (x, 2.5)))                  # north: a reuse
+    assert a.view_reuses == VIEW_REUSE_BUDGET
+    a._note_view(_gap((20.0, 1.0), (21.5, 1.0)))
+    assert not a._view_allowed(_gap((20.0, 1.0), (20.0, 2.5)))    # a fifth reuse
+    assert a._view_allowed(_gap((25.0, 1.0), (26.5, 1.0)))        # a new spot
