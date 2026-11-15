@@ -279,7 +279,8 @@ def released_message(step: str, by: str, forced: bool, was: str) -> str:
     It also carries the claim keys a pre-3.179.B `parse_claim_message`
     reads (the orchestrator, 2026-11-15): an old checkout -- an older
     worktree's own copy of this file, the Jetson's -- reads it as THIS step
-    held by another machine (`h-released`), so it blocks that step only,
+    held by another machine (`h-released`), so it blocks that step and, by
+    its one-session-per-section rule, that section until it updates,
     instead of failing every claim with "could not read the holder"."""
     vals = {"by": by or "", "forced": "yes" if forced else "no", "was": was}
     old = {"step": step, "section": section_of(step), "title": "released (free on dev: update this checkout)",
