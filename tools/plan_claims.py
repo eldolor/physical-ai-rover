@@ -265,13 +265,28 @@ def claim_message(c: dict) -> str:
 RELEASED_KEYS = ("by", "forced", "was", "at")
 
 
+RELEASED_HOST = "h-released"     # what a pre-3.179.B reader takes as another machine
+RELEASED_SESSION = "s-released"
+
+
 def released_message(step: str, by: str, forced: bool, was: str) -> str:
     """3.179.B: a released record's message. Where origin refuses branch
     deletes (the cloud's proxy), a release turns `claim/<step>` into this
     instead, and every reader takes it as no claim. Public: `by` is a
-    session digest, `was` the sha of the claim it replaced."""
-    vals = {"by": by or "", "forced": "yes" if forced else "no", "was": was, "at": _utc()}
-    return f"released {_clean(step)}\n\n" + "\n".join(f"{k}: {_clean(vals[k])}" for k in RELEASED_KEYS)
+    session digest, `was` the sha of the claim it replaced.
+
+    It also carries the claim keys a pre-3.179.B `parse_claim_message`
+    reads (the orchestrator, 2026-11-15): an old checkout -- an older
+    worktree's own copy of this file, the Jetson's -- reads it as THIS step
+    held by another machine (`h-released`), so it blocks that step only,
+    instead of failing every claim with "could not read the holder"."""
+    vals = {"by": by or "", "forced": "yes" if forced else "no", "was": was}
+    old = {"step": step, "section": section_of(step), "title": "released",
+           "session": RELEASED_SESSION, "worktree": "", "branch": "",
+           "host": RELEASED_HOST, "pid": "", "start": "", "at": _utc()}
+    lines = [f"{k}: {_clean(vals[k])}" for k in RELEASED_KEYS if k != "at"]
+    lines += [f"{k}: {_clean(old[k])}" for k in MSG_KEYS]
+    return f"released {_clean(step)}\n\n" + "\n".join(lines)
 
 
 def parse_released_message(text: str) -> dict:

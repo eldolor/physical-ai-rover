@@ -233,7 +233,10 @@ def test_criterion_9_a_released_record_holds_digests_shas_and_a_time(repo, owner
     assert re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ", rec["at"])
     assert msg.split("\n")[0] == "released 3.90.A"
     body = [ln for ln in msg.strip().split("\n")[2:]]
-    assert [ln.split(": ")[0] for ln in body] == ["by", "forced", "was", "at"]   # nothing else
+    assert [ln.split(": ")[0] for ln in body] == ["by", "forced", "was", *pc.MSG_KEYS]
+    old = pc.parse_claim_message(msg)              # what a pre-3.179.B reader sees
+    assert old["host"] == "h-released" and old["session"] == "s-released"
+    assert old["worktree"] == old["branch"] == "" and old["pid"] is None
 
 
 # ---------- review round 1 ----------
@@ -284,14 +287,9 @@ def test_another_hosts_dead_claim_is_never_replaced_where_deletes_are_refused(re
     assert remote_refs(repo)["3.90.A"] == theirs
 
 
-def test_an_old_reader_takes_a_released_record_as_held_never_free(repo, owners, tmp_path):
-    """`dev`'s pre-3.179.B code (the desktop or the Jetson before its update)
-    parses a released record as a claim with no host: 'could not read the
-    holder', so its board warns and its `claim` refuses -- fail safe."""
-    _, a = owners()
-    pc.claim("3.90.A", cwd=repo, me=a)
-    refuse_deletes(repo)
-    pc.release("3.90.A", cwd=repo, me=a)
+def _old_tool(tmp_path):
+    """`plan_claims.py` as it was before 3.179.B (the desktop's older
+    worktrees, the Jetson's checkout)."""
     old_src = subprocess.run(["git", "show", "4c017869:tools/plan_claims.py"], cwd=TOOLS,
                              capture_output=True, text=True, check=True).stdout
     assert "released_message" not in old_src                  # truly the old code
@@ -301,11 +299,37 @@ def test_an_old_reader_takes_a_released_record_as_held_never_free(repo, owners, 
     spec = importlib.util.spec_from_file_location("old_plan_claims_3179b", path)
     old = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(old)
+    return old
+
+
+def test_an_old_reader_takes_a_released_record_as_that_step_held_and_nothing_else(
+        repo, owners, tmp_path, monkeypatch):
+    """An old reader sees the released step held by another machine
+    (`h-released`): that step (and, by its one-session-per-section rule,
+    that section) is blocked -- fail safe -- and nothing else: no 'could
+    not read the holder', other sections stay free and claimable."""
+    _, a = owners()
+    pc.claim("3.90.A", cwd=repo, me=a)
+    refuse_deletes(repo)
+    pc.release("3.90.A", cwd=repo, me=a)
+    old = _old_tool(tmp_path)
     claims, err = old.remote_claims(repo)
-    assert err and "3.90.A" in err
+    assert err is None
     held = [c for c in claims if c["step"] == "3.90.A"]
-    assert held and held[0]["host"] == "?"
+    assert held and held[0]["host"] == "h-released"
     _, b = owners()
-    with pytest.raises(SystemExit, match="cannot read the claims"):
+    board = old.cmd_board(b=old.Board(repo, b))
+    assert re.search(r"^claimed\s+3\.90\.A", board, re.M), board
+    assert "origin unreachable" not in board
+    monkeypatch.setenv("PICAR_CLAIM_PID", str(b["pid"]))
+    out = old.cmd_next(cwd=repo)
+    assert out.startswith("3.91.A"), out
+    monkeypatch.delenv("PICAR_CLAIM_PID")
+    with pytest.raises(SystemExit, match="claimed"):
         old.claim("3.90.A", cwd=repo, me=b)
+    c = old.claim("3.91.A", cwd=repo, me=b)
+    assert remote_refs(repo)["3.91.A"] == c["sha"]
     assert message(repo, remote_refs(repo)["3.90.A"]).startswith("released ")
+    # and the new code still reads it as released, the step free
+    assert pc.parse_released_message(message(repo, remote_refs(repo)["3.90.A"]))["forced"] == "no"
+    assert not [x for x in pc.remote_claims(repo)[0] if x["step"] == "3.90.A"]
