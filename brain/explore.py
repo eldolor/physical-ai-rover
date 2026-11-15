@@ -1338,19 +1338,22 @@ class ExploreAgent(MissionAgent):
         compass bearing) the camera faces from a view gap's goal: to its
         `face` (the part seen from there), else its centre. Only differences
         of these are used."""
-        tx, ty = g.face if g.face is not None else g.centre
+        tx, ty = ExploreAgent._look_target(g)
         return math.degrees(math.atan2(ty - g.goal[1], tx - g.goal[0]))
 
     def _view_allowed(self, g) -> bool:
         """A view gap may be sent unless (1) its centre is within the retry
-        radius of a patch already looked at, or (2) from an earlier view
-        goal within that radius the camera already faced this way -- within
-        VIEW_REUSE_DEG (3.180.A; before it, any earlier view goal there
-        refused it, whichever way it had looked, and a target beside a spot
-        once used to look elsewhere was never looked at: 3.176.B S7). The
-        den guard is (2): a patch whose centre drifts as the camera sees more
-        of it lies the same way from the same spot (the den run sent twelve
-        view goals to one spot)."""
+        radius of a patch already looked at, or, for an earlier view goal
+        whose spot is within that radius, (2a) the camera would point within
+        that radius of where that look pointed (its `face`, else its centre),
+        or (2b) the direction to the new target, measured from THAT spot, is
+        within VIEW_REUSE_DEG of the way that look faced (3.180.A and its
+        amendment 1; before 3.180.A any earlier view goal there refused it,
+        whichever way it had looked, and a target beside a spot once used to
+        look elsewhere was never looked at: 3.176.B S7). (2a) and (2b) are
+        the den guard: a patch whose centre or face drifts as the camera sees
+        more of it is still the same look (the den run sent twelve view goals
+        to one spot)."""
         r = self.retry.radius_m
         if any(math.hypot(g.centre[0] - lx, g.centre[1] - ly) < r for lx, ly in self._looked):
             return False
