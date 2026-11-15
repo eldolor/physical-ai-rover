@@ -59,3 +59,64 @@ def test_each_row_says_a_parse_3176_can_give(row):
     assert row["colours"] == sorted(set(row["colours"]))
     if row["kind"] == "plain":
         assert row["target"] == row["text"] and room is None and not row["colours"]
+
+
+# ---------- the scorer, on a fake parser (before the real one is scored) ----------
+
+def _scorer():
+    import importlib.util
+    path = SET.with_name("score.py")
+    spec = importlib.util.spec_from_file_location("score_3181", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+class _Req:
+    def __init__(self, target, room, colours, size):
+        self.target, self.room_hint, self.colours, self.size = target, room, tuple(colours), size
+
+
+def _oracle(rs, change=None):
+    by_text = {r["text"]: r for r in rs}
+
+    def parse(text, names=()):
+        r = dict(by_text[text])
+        if change:
+            r = change(r) or r
+        return _Req(r["target"], r["room"], r["colours"], r["size"])
+    return parse
+
+
+def test_a_parser_that_gives_every_expected_parse_meets_every_bar():
+    out = _scorer().score(rows(), _oracle(rows()))
+    assert all(v["met"] for v in out["verdict"].values()), out["verdict"]
+    assert out["misses"] == [] and out["rules"]["n"] == 92 and out["gap"]["n"] == 8
+
+
+def test_a_wrong_room_counts_against_r2_and_r3_and_is_listed():
+    def change(r):
+        if r["id"] == "b041":                        # a rules row with a room
+            return {**r, "room": {"type": "garage"}}
+    rs = rows()
+    assert rs[40]["id"] == "b041" and rs[40]["room"] is not None
+    out = _scorer().score(rs, _oracle(rs, change))
+    assert out["rules"]["room"] == 91 and out["rules"]["wrong_room"] == 1
+    assert out["verdict"]["R3"]["met"]               # one is within the bar
+    assert [m["id"] for m in out["misses"]] == ["b041"]
+    assert out["misses"][0]["failed"] == ["room"]
+
+
+def test_a_missed_room_is_not_a_wrong_room():
+    def change(r):
+        if r["room"] is not None and r["group"] == "rules":
+            return {**r, "room": None}
+    out = _scorer().score(rows(), _oracle(rows(), change))
+    assert out["rules"]["wrong_room"] == 0 and not out["verdict"]["R2"]["met"]
+
+
+def test_colours_compare_as_a_set():
+    def change(r):
+        return {**r, "colours": list(reversed(r["colours"]))}
+    out = _scorer().score(rows(), _oracle(rows(), change))
+    assert out["rules"]["attributes"] == 92
