@@ -288,9 +288,10 @@ def test_another_hosts_dead_claim_is_never_replaced_where_deletes_are_refused(re
 
 
 def _old_tool(tmp_path):
-    """`plan_claims.py` as it was before 3.179.B (the desktop's older
-    worktrees, the Jetson's checkout)."""
-    old_src = subprocess.run(["git", "show", "4c017869:tools/plan_claims.py"], cwd=TOOLS,
+    """`plan_claims.py` as it was before 3.179.B, at 3.179.A's commit on
+    dev (`078d2f88`): what the desktop's older worktrees and the Jetson's
+    checkout run."""
+    old_src = subprocess.run(["git", "show", "078d2f88:tools/plan_claims.py"], cwd=TOOLS,
                              capture_output=True, text=True, check=True).stdout
     assert "released_message" not in old_src                  # truly the old code
     path = tmp_path / "old_plan_claims.py"
