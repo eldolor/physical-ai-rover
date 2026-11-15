@@ -1,4 +1,6 @@
-# Plan: ROS 2, proved on the sim's data
+# The Rover plan: from the simulator to the car
+
+*(Retitled 2026-11-15 by the user. This file began on 2026-09-25 as the plan to adopt ROS 2 properly, "ROS 2, proved on the sim's data", and has been the project's governing plan since; its 3.N sections now cover everything from perception to the phone app. The file and its section folder keep the name `ros-alignment`, because about 1,000 references and the claim tool use that path.)*
 
 **Open steps (2026-11-15, `plan_section.py board --all` on `dev` 82d33386):** 14 free, 41 waiting (on the Rover or the user), 3 blocked, 3 held for 3.156.E's desktop runs; 234 done, 4 dropped. About four of the free steps can be done in a cloud session (no Docker, Jetson or Rover): 3.176.C, 3.175.C, 3.178.B (not its Jetson bars) and possibly 3.161.B. Updated at merge by whoever changes the counts (the user, 2026-11-15).
 
