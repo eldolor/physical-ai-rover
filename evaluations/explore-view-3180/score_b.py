@@ -38,6 +38,10 @@ def load(d, name):
             for r in json.load(open(os.path.join(d, f"{name}.json")))["rows"]}
 
 
+def _mean(xs):
+    return round(statistics.mean(xs), 3) if xs else None
+
+
 def med(xs):
     return round(statistics.median(xs), 3) if xs else None
 
@@ -72,8 +76,8 @@ def score(arms: dict) -> dict:
         rep["arms"][arm] = {"found_B_base": per, "both_found": len(both),
                             "goals_median": g, "sim_s_median": s, "B5_met": ok5,
                             "exhausted_B_base": [en, eb], "changed": len(changed),
-                            "view_goals_mean": [round(statistics.mean([N[k].get("view_goals") or 0 for k in keys]), 3),
-                                                round(statistics.mean([B[k].get("view_goals") or 0 for k in keys]), 3)]}
+                            "view_goals_mean": [_mean([N[k].get("view_goals") or 0 for k in keys]),
+                                                _mean([B[k].get("view_goals") or 0 for k in keys])]}
         for k in sorted(set(changed) | {(i, m) for a, i, m in TRACED if a == arm}):
             if k in B and k in N:
                 kept.append({"arm": arm, "base": {f: B[k].get(f) for f in KEEP},
