@@ -5,9 +5,7 @@
 *(Retitled 2026-10-01: it was "with the twin still doing the proving", from
 the watched-on-a-phone rule retired the day it was written -- see section 0.)*
 
-Status (updated 2026-10-01): **R0-R7 BUILT (R0-R1c 2026-09-25, R2-R7 and
-arrival 2026-09-26); 3.17-3.30 built on data, with 3.24's gates G1-G3 met
-and G4 waiting on the Jetson; R8-R9 need the hardware** · Date: 2026-09-25 · Phase IDs: `R0`-`R9`,
+Date: 2026-09-25 · Phase IDs: `R0`-`R9`,
 alongside `S*` (`PLAN-sim-hardening.md`), `B*` (`PLAN-brain-relocation.md`),
 `M*` (`PLAN-microduck-transplants.md`), `T*` (`PLAN-teleop-robot.md`),
 `N*` (`PLAN-mapping.md`), `C*`/`P*` (`PLAN-onboard-perception.md`).
