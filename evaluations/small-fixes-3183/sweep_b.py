@@ -22,7 +22,10 @@ The person's names stand in as the grid's own rooms (each 0.30 m grid cell's
 store cells), under the fixed frame_id FRAME. Nothing is written to disk but
 OUT.
 
-    python evaluations/room-names-3160d/sweep.py ARM OUT.json
+    python evaluations/small-fixes-3183/sweep_b.py ARM OUT.json
+
+For a `dev` arm, copy this file into a `dev` worktree's
+evaluations/small-fixes-3183/ (it is not on `dev`) and run it from there.
 """
 import json
 import os
@@ -129,7 +132,10 @@ def main(arm: str, path: str) -> None:
         rs = [r for r in rows if r["mode"] == m and r["outcome"] != "no_target"]
         report[m] = {"missions": len(rs), "found": sum(r["outcome"] == "found" for r in rs),
                      "exceptions": sum(r["outcome"] == "exception" for r in rs)}
-    T.save_atomic(path, lambda p: json.dump(report, open(p, "w"), indent=1))
+    def write(p):
+        with open(p, "w") as f:          # closed before save_atomic renames it (review)
+            json.dump(report, f, indent=1)
+    T.save_atomic(path, write)
     print(json.dumps({k: v for k, v in report.items() if k != "rows"}))
 
 
