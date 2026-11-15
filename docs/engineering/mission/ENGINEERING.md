@@ -146,11 +146,12 @@ end at `_finish`, and the status's `explore` block). With no
    scene (held, not overwritten with None); `last_frame_seq` is read from
    `result.frame`'s `metadata.seq`, not from the scene. Since 3.175.F,
    `_recall_misses()` reads the agent's new `events` once each (explore's;
-   another policy has none): a recall `goal_ended` in any state but
-   `succeeded` calls `Inventory.recall_failed()` at the place its
+   another policy has none): a recall `goal_ended` in
+   `RECALL_MISS_STATES` (aborted, rejected, stalled; not `canceled` or
+   `lost`, which are not the place's failure) calls `Inventory.recall_failed()` at the place its
    `goal_sent` named (`at`), so the next mission does not recall a place
    this one never looked at; it logs one line and counts
-   `_recall_abort_misses`.
+   `_recall_abort_misses`; a fault in it is logged, never raised.
 5. Count consecutive refused FORWARDs (reset by any executed move).
 6. Outside the lock: `found`/`room_reached` if `memory.is_complete()`,
    after `_hear_a_person()` (3.104): one `look_center()` through the halt

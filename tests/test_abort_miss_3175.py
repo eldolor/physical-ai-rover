@@ -91,3 +91,25 @@ def test_each_event_is_read_once():
     lm = _lm(runner.inventory, "washer")
     lm.score = 5.0                                       # as if seen again since
     assert runner._recall_misses() == 0 and lm.score == 5.0
+
+
+def _events_runner(state):
+    runner, grid, nav = _runner("washer")
+    runner.inventory.seed("f1", _report([_row("washer", 2.0, 2.0)]))
+    runner.agent.events = [{"event": "goal_sent", "kind": "recall", "at": [2.0, 2.0]},
+                           {"event": "goal_ended", "kind": "recall", "state": state}]
+    return runner
+
+
+def test_only_ends_that_say_the_place_was_unreachable_count():
+    """Review: `canceled` (someone else ended it) and `lost` (an outage) are
+    not the place's failure."""
+    for state, n in (("aborted", 1), ("rejected", 1), ("stalled", 1),
+                     ("canceled", 0), ("lost", 0), ("succeeded", 0)):
+        assert _events_runner(state)._recall_misses() == n, state
+
+
+def test_a_fault_in_the_reader_is_logged_not_raised():
+    runner = _events_runner("aborted")
+    runner.agent.events[0]["at"] = ["x", "y"]
+    assert runner._recall_misses() == 0
