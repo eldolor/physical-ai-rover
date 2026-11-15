@@ -916,6 +916,12 @@ the named rooms the last choice placed on the live map (absent at 0;
 `layer()`: a named room `placed()` would list unplaced after a re-map is
 still painted where its cells lie.
 
+**Room types without case (3.183.B).** `RoomGoalPolicy.extend` lowers every
+goal's room type before the hint and the prior read it, as `__init__` lowers the
+prior's keys: a person's room named "Kitchen" (3.160.D) reads as the prior's
+"kitchen", where it read as no type before. A type the prior does not name still
+reads as none. `tests/test_goal_policy_case_3183.py`.
+
 **A find's room hint (3.176).** A start's `room_hint` (`{"type": t}` or
 `{"name": n}`, `brain/request.py` `check_hint`) reaches `ExploreAgent.room_hint`
 and, at each choice, `RoomGoalPolicy.extend(..., hint=)`. `hinted_prior()`

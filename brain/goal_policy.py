@@ -399,6 +399,9 @@ class RoomGoalPolicy:
         `hint`: a find's room hint (3.176), read as that room's rate 1.0."""
         if not goals:
             return []
+        # 3.183.B: types are read without case, as the prior's keys are kept
+        # (a person's "Kitchen" is the prior's "kitchen"; 3.176.B found it).
+        types = [t.lower() if isinstance(t, str) else t for t in types]
         prior = hinted_prior(self.prior.get((target or "").lower(), {}), types, hint)
         # A type the prior does not name reads as no type: in training every
         # labelled type had a prior, so "known, P = 0" meant a real zero.
