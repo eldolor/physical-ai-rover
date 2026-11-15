@@ -75,3 +75,30 @@ def test_without_faces_the_answer_is_the_old_one():
     here = _centre(5, 10)
     seen = camera_seen(m, *here, 0.0)
     assert find_view_gaps(m, *here, seen) == find_view_gaps(m, *here, seen, faces=None)
+
+
+# ---------- 3.180.B's sweep, pinned (failed bars stay recorded as failed) ----------
+
+import json                                                     # noqa: E402
+from pathlib import Path                                        # noqa: E402
+
+B = Path(__file__).resolve().parent.parent / "evaluations" / "explore-view-3180" / "b"
+VERDICTS = {"B1": True, "B2": False, "B3": False, "B4": False, "B5": False, "B6": False}
+
+
+def test_b_bars_as_measured():
+    rec = json.loads((B / "score_b.json").read_text())
+    assert {k: rec[k]["met"] for k in VERDICTS} == VERDICTS
+    assert len(rec["B3"]["lost"]) == 9 and rec["B6"]["exhausted_B_base"] == [9, 1]
+
+
+def test_b_rows_hold_the_lost_and_the_traced():
+    rows = [json.loads(line) for line in (B / "rows.jsonl").read_text().splitlines()]
+    at = {(r["arm"], r["b"]["index"], r["b"]["mode"]): r for r in rows}
+    assert at[("wrong", 247, "R")]["b"]["outcome"] == "found"
+    assert at[("wrong", 247, "R")]["base"]["outcome"] == "exhausted"
+    assert at[("right", 194, "U")]["b"]["outcome"] == "exhausted"
+    lost = json.loads((B / "score_b.json").read_text())["B3"]["lost"]
+    for arm, i, mode, _ in lost:
+        r = at[(arm, i, mode)]
+        assert (r["base"]["outcome"], r["b"]["outcome"]) == ("found", "exhausted")

@@ -13,7 +13,7 @@ from this branch), as the section file wrote them:
      both found, each arm
   B6 `exhausted` endings, all arms, <= the baseline's
 
-Writes OUT.json (the scores) and OUT_DIR/rows.json: only the rows the pinned
+Writes OUT_DIR/score_b.json (the scores) and OUT_DIR/rows.jsonl (one row a line): only the rows the pinned
 tests read -- every mission whose (outcome, goals, metres) changed, and S7's
 three -- both sides, so the committed data stays small (the orchestrator,
 2026-11-15). The full arm files stay out of git.
@@ -94,7 +94,9 @@ def main(runs, out_dir):
     rep, kept = score(arms)
     os.makedirs(out_dir, exist_ok=True)
     json.dump(rep, open(os.path.join(out_dir, "score_b.json"), "w"), indent=1)
-    json.dump(kept, open(os.path.join(out_dir, "rows.json"), "w"), indent=1)
+    with open(os.path.join(out_dir, "rows.jsonl"), "w") as f:
+        for row in kept:
+            f.write(json.dumps(row, separators=(",", ":")) + "\n")
     print(json.dumps({k: v["met"] for k, v in rep.items() if isinstance(v, dict) and "met" in v}))
 
 
