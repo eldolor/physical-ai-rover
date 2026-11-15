@@ -314,3 +314,52 @@ def test_a_name_hint_needs_a_saved_map(monkeypatch):
     r = c.post("/mission/start", json={"target_object": "keys", "policy": "explore",
                                        "room_hint": {"name": "Den"}})
     assert 400 <= r.status_code < 500 and "saved map" in r.text
+
+
+# ---------- 3.176.E: wider openings, a modal after the target, a room said first ----------
+
+@pytest.mark.parametrize("text,target,room", [
+    ("could you please look for the red cup", "red cup", None),
+    ("hey robot, where are my slippers?", "slippers", None),
+    ("would you mind finding the spare key", "spare key", None),
+    ("do you know where my charger is", "charger", None),
+    ("any idea where the stapler is?", "stapler", None),
+    ("have you noticed my hat in the hallway", "hat", {"type": "hallway"}),
+    ("I'm looking for my green scarf", "green scarf", None),
+    ("I need my pills, can you find them?", "pills", None),
+    ("my bag could be under the desk", "bag", None),
+    ("search the office", None, {"type": "office"}),
+    ("in the bedroom, find my book", "book", {"type": "bedroom"}),
+    ("Kitchen: find the kettle", "kettle", {"type": "kitchen"}),
+    ("go to the garage and find the drill", "drill", {"type": "garage"}),
+    ("the bathroom - look for my razor", "razor", {"type": "bathroom"}),
+    ("look behind the sofa in the lounge for the ball", "ball", {"type": "living room"}),
+    ("in the kitchen, find my mug in the bedroom", "mug", None),        # two rooms: none
+])
+def test_e_rules(text, target, room):
+    p = rq.parse(text)
+    assert (p.target, p.room_hint) == (target, room)
+
+
+def test_e_a_word_the_robot_is_called_by_is_read_past_only_before_a_comma():
+    """Review: "robot vacuum" is a thing; "hey robot," is a greeting."""
+    assert rq.parse("where is the robot vacuum").target == "robot vacuum"
+    assert rq.parse("find rover charger").target == "rover charger"
+    assert rq.parse("hey robot, find my keys").target == "keys"
+    assert rq.parse("ok, where is my phone").target == "phone"
+
+
+def test_e_the_same_room_said_twice_is_one_hint_and_used():
+    p = rq.parse("kitchen: find my mug in the kitchen")
+    assert (p.target, p.room_hint, p.unused) == ("mug", {"type": "kitchen"}, "")
+
+
+def test_e6_3176_parses_unchanged_row_for_row():
+    """3.176.E bar E6: every one of 3.176's 152 sentences parses exactly as
+    3.176.B's parser did (frozen in parses_3176b.jsonl before the change)."""
+    frozen = {json.loads(line)["id"]: json.loads(line)
+              for line in (ROOT / "evaluations" / "request-3176" / "parses_3176b.jsonl")
+              .read_text().splitlines()}
+    for r in _rows():
+        want = {k: v for k, v in frozen[r["id"]].items() if k != "id"}
+        assert rq.parse(r["text"], r["names"]).to_dict() == want, r["id"]
