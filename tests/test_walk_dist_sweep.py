@@ -67,7 +67,11 @@ def test_every_walk_of_the_sim_surveys_gives_the_old_distances(monkeypatch):
     monkeypatch.setattr(rl, "_walk_dist", both)
     rows = [sw.run(h, st, mode="spacing") for h in sw.HOUSES for st in sw.starts(h)]
     assert [r["outcome"] for r in rows] == ["exhausted"] * 9, rows
-    # Each survey's label calls as on dev before 3.120 (607bcbc).
-    assert [r["label_calls"] for r in rows] == [6, 6, 6, 33, 29, 28, 42, 44, 37]
+    # Each survey's label calls: as on dev before 3.120 (607bcbc) until 3.173.B
+    # changed survey goals by design -- `67b775d3` (a goal into a small room)
+    # and `808075da` (amendment 3: what a small room is); 3.173 raised
+    # tests/test_survey_sweep.py's pins for the same 9 surveys and missed this
+    # copy. 3.183.A found both by bisect (evaluations/small-fixes-3183/).
+    assert [r["label_calls"] for r in rows] == [5, 7, 6, 34, 33, 35, 44, 45, 42]
     assert len(seen) > 50
     assert bad == []
