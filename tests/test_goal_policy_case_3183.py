@@ -48,3 +48,21 @@ def test_edge_spaces_are_read_as_hint_matches_reads_them():
     """Review: a stray space ("Kitchen ") read as no type while a name hint
     (which strips) still matched it."""
     assert _extend([" Kitchen ", "living room ", None]) == _extend(["kitchen", "living room", None])
+
+
+def test_the_sweep_scores_are_the_recorded_ones():
+    """3.183.B's sweeps (evaluations/small-fixes-3183/): B2 and B3 met, and the
+    fault's size on dev, re-scored from the committed arms."""
+    import importlib.util
+    from pathlib import Path
+    path = Path(__file__).resolve().parents[1] / "evaluations/small-fixes-3183/b_score.py"
+    spec = importlib.util.spec_from_file_location("b_score_3183", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    arms = {f"{t}_{a}": mod.load(f"b_{t}_{a}.json")
+            for t in ("dev", "branch") for a in ("dev", "names", "names_title")}
+    assert mod.differ(arms["dev_names"], arms["branch_names"]) == []
+    assert mod.differ(arms["dev_dev"], arms["branch_dev"]) == []
+    assert mod.differ(arms["branch_names_title"], arms["branch_names"]) == []
+    assert mod.differ(arms["dev_names_title"], arms["dev_dev"]) == []
+    assert len(mod.differ(arms["dev_names_title"], arms["dev_names"])) == 175
