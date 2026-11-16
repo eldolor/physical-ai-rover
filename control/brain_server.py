@@ -1720,9 +1720,14 @@ def create_app(
                     landed = saved is not None and (
                         (live.get("mission_id") and saved.get("mission_id") == live.get("mission_id"))
                         # Further on than a mission that carried (another
-                        # process saved since); one that never carried is
-                        # behind every saved chain by design.
-                        or 0 < carry_seq_of(live) < carry_seq_of(saved))
+                        # process saved since).
+                        or 0 < carry_seq_of(live) < carry_seq_of(saved)
+                        # An ended mission that never carried: its own save
+                        # (seq 0) is never the head over a chain, so any chain
+                        # on its map ends its turn (review of eff57ec7: else
+                        # it is read for the process's life). A running one
+                        # keeps its own sightings first.
+                        or (not running and carry_seq_of(live) == 0))
                     if not landed:
                         heads = [(live, "mission")] + ([(saved, "saved")] if saved is not None else [])
                 if heads is None:
@@ -1754,15 +1759,18 @@ def create_app(
                 names[0]):
             names.append(target)
         try:
-            first = None
-            for head, source in heads:
-                for n in names:
+            # The exact words before the target, across every head; a place
+            # seen anywhere before a doubtful one (review of eff57ec7).
+            first = doubtful = None
+            for n in names:
+                for head, source in heads:
                     got = last_seen_mod.answer(n, head, reports(), source=source)
-                    if first is None:
-                        first = got
-                    if got["status"] not in (last_seen_mod.NOT_SEEN, last_seen_mod.NO_MEMORY):
+                    first = first or got
+                    if got["status"] == last_seen_mod.SEEN:
                         return JSONResponse(got)
-            return JSONResponse(first)
+                    if got["status"] == last_seen_mod.DOUBTFUL and doubtful is None:
+                        doubtful = got
+            return JSONResponse(doubtful or first)
         except OSError as e:
             raise HTTPException(status_code=503, detail=f"the reports can't be read now ({e})")
 
