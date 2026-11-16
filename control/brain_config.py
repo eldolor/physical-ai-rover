@@ -239,6 +239,11 @@ DEFAULTS = {
     # mission_wall_limit_s. Off: nothing sees a charger before the Rover.
     "recharge_resume": False,
     "resume_v": 11.8,
+    # 3.178: a few named valuables noticed on every mission beside the
+    # target (brain/watch_list.py; at most 8; [] switches it off). Read only
+    # by the inventory report's `watch` block; the car's perception is not
+    # prompted with it until 3.178 B4-B6 are met on the desktop and board.
+    "watch_list": ["keys", "wallet", "phone", "glasses", "remote"],
     "mission_wall_limit_s": 14400.0,
     "charge_stall_s": 300.0,
     # A `vision` mission's paid /navigate calls (one per step), counted per
@@ -696,5 +701,12 @@ def load_brain_config(config_path=None) -> dict:
         raise ValueError("brain.explore_goal_policy must be 'rule', 'learned', 'network' or "
                          f"'rooms'; got {merged['explore_goal_policy']!r}")
     merged["tier_tree"] = tier_tree_config(merged["tier_tree"], no_below, merged["tier_search"])
+    if merged["watch_list"] is None:
+        raise ValueError("brain.watch_list must be a list of names ([] switches it off)")
+    from brain.watch_list import normalise as watch_list_normalise
+    try:
+        merged["watch_list"] = list(watch_list_normalise(merged["watch_list"]))
+    except ValueError as e:
+        raise ValueError(f"brain.{e}") from e
 
     return merged
