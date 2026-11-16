@@ -135,3 +135,35 @@ def test_diagnosis_never_runs_on_fresh_seeds():
         with pytest.raises(SystemExit):
             diagnose_f.main(["--seed", str(seed), "--out", "/dev/null"])
     assert {"5178", "5179", "6178", "6179"} <= set(range_rule_f.FRESH)
+
+
+def test_fs_fresh_run_is_pinned():
+    """3.178.F's fresh run (6178/6179, once): F1-F3 met; D3 as information."""
+    r = json.loads((HERE / "results-f.json").read_text())
+    s, p = r["search"], r["present"]
+    assert (s["seed"], p["seed"]) == (6178, 6179)
+    assert (s["missions"], p["missions"], s["max_steps"]) == (20, 20, 150)
+    assert r["list_false_rate"] == sw.LIST_FALSE_RATE and len(r["placed"]) == 9
+    two = s["passes_2v"] + p["passes_2v"]
+    reached_two = s["reached_2v"] + p["reached_2v"]
+    assert (s["passes_2v"], p["passes_2v"]) == (23, 24)
+    assert two >= 30                                              # the sample bar
+    assert (s["reached_2v"], p["reached_2v"]) == (23, 23)
+    assert reached_two / two >= 0.90                              # F1: 46 of 47
+    # E's definition, information: 46 of 53.
+    assert (s["passes"], p["passes"], s["reached"], p["reached"]) == (28, 25, 23, 23)
+    label = (s["rules"]["label"], p["rules"]["label"])
+    votes = (s["rules"]["votes"], p["rules"]["votes"])
+    assert [x["wrong_pins"] for x in label] == [3, 4]
+    assert sum(x["wrong_pins"] for x in label) <= 14              # F2
+    assert s["same_as_off"] + p["same_as_off"] == 40              # F3
+    # D3, information only.
+    assert [(x["found"], x["found_2v"]) for x in label] == [(23, 23), (23, 23)]
+    assert [(x["found"], x["found_2v"]) for x in votes] == [(23, 23), (20, 20)]
+    assert [x["wrong_pins"] for x in votes] == [1, 2]
+    assert s["carried"] + p["carried"] == 0
+    # Every pass E's way that did not reach a report but one was a glimpse.
+    lost_two = 0
+    for row in s["rows"] + p["rows"]:
+        lost_two += len(row["passes_2v"]) - len(row["reached_2v"])
+    assert lost_two == 1
