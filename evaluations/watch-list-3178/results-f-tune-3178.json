@@ -1,0 +1,3453 @@
+{
+ "list": [
+  "keys",
+  "wallet",
+  "phone",
+  "glasses",
+  "remote"
+ ],
+ "list_false_rate": 0.05,
+ "noise": {
+  "bearing_sigma_deg": 3.0,
+  "miss_rate": 0.1,
+  "relabel_rate": 0.05
+ },
+ "pass_range_m": 2.5,
+ "pin_m": 0.5,
+ "placed": [
+  {
+   "cell": [
+    28,
+    28
+   ],
+   "item": "keys",
+   "room": "bathroom",
+   "routes_near": 34
+  },
+  {
+   "cell": [
+    21,
+    28
+   ],
+   "item": "wallet",
+   "room": "bedroom 1",
+   "routes_near": 26
+  },
+  {
+   "cell": [
+    35,
+    33
+   ],
+   "item": "phone",
+   "room": "bedroom 2",
+   "routes_near": 17
+  },
+  {
+   "cell": [
+    44,
+    10
+   ],
+   "item": "glasses",
+   "room": "dining room",
+   "routes_near": 15
+  },
+  {
+   "cell": [
+    8,
+    35
+   ],
+   "item": "remote",
+   "room": "entry",
+   "routes_near": 20
+  },
+  {
+   "cell": [
+    29,
+    18
+   ],
+   "item": "keys",
+   "room": "kitchen",
+   "routes_near": 22
+  },
+  {
+   "cell": [
+    13,
+    18
+   ],
+   "item": "wallet",
+   "room": "living room",
+   "routes_near": 15
+  },
+  {
+   "cell": [
+    50,
+    24
+   ],
+   "item": "phone",
+   "room": "main bedroom",
+   "routes_near": 18
+  },
+  {
+   "cell": [
+    52,
+    17
+   ],
+   "item": "glasses",
+   "room": "study",
+   "routes_near": 14
+  }
+ ],
+ "present": {
+  "arrived_off": 1,
+  "arrived_on": 1,
+  "carried": 0,
+  "max_steps": 150,
+  "missions": 20,
+  "passes": 19,
+  "passes_2v": 18,
+  "reached": 18,
+  "reached_2v": 18,
+  "rows": [
+   {
+    "carried": 0,
+    "injected": 8,
+    "label": {
+     "found": [
+      "keys"
+     ],
+     "found_1m": [
+      "keys"
+     ],
+     "found_2v": [
+      "keys"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        8.638,
+        8.705,
+        0.846,
+        {
+         "keys": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 1,
+    "nearest_m": {
+     "keys#50": 0.558
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "keys"
+    ],
+    "passes_2v": [
+     "keys"
+    ],
+    "reached": [
+     "keys"
+    ],
+    "reached_2v": [
+     "keys"
+    ],
+    "same_as_off": true,
+    "start_room": "bathroom",
+    "steps": 150,
+    "views": {
+     "keys#50": 2
+    },
+    "votes": {
+     "found": [
+      "keys"
+     ],
+     "found_1m": [
+      "keys"
+     ],
+     "found_2v": [
+      "keys"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        8.638,
+        8.705,
+        0.846,
+        {
+         "keys": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 4,
+    "label": {
+     "found": [
+      "wallet"
+     ],
+     "found_1m": [
+      "wallet"
+     ],
+     "found_2v": [
+      "wallet"
+     ],
+     "held": 0,
+     "pins": {
+      "wallet": [
+       [
+        6.289,
+        8.568,
+        0.928,
+        {
+         "wallet": 3
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 2,
+    "nearest_m": {
+     "wallet#51": 2.045
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "wallet"
+    ],
+    "passes_2v": [
+     "wallet"
+    ],
+    "reached": [
+     "wallet"
+    ],
+    "reached_2v": [
+     "wallet"
+    ],
+    "same_as_off": true,
+    "start_room": "bedroom 1",
+    "steps": 150,
+    "views": {
+     "wallet#51": 3
+    },
+    "votes": {
+     "found": [
+      "wallet"
+     ],
+     "found_1m": [
+      "wallet"
+     ],
+     "found_2v": [
+      "wallet"
+     ],
+     "held": 0,
+     "pins": {
+      "wallet": [
+       [
+        6.289,
+        8.568,
+        0.928,
+        {
+         "wallet": 3
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 1,
+    "label": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {},
+     "true_pins": 0,
+     "wrong_pins": []
+    },
+    "mission": 3,
+    "nearest_m": {
+     "phone#52": 1.5
+    },
+    "outcome_off": "found",
+    "outcome_on": "found",
+    "passes": [
+     "phone"
+    ],
+    "passes_2v": [],
+    "reached": [],
+    "reached_2v": [],
+    "same_as_off": true,
+    "start_room": "bedroom 2",
+    "steps": 11,
+    "views": {
+     "phone#52": 1
+    },
+    "votes": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {},
+     "true_pins": 0,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 5,
+    "label": {
+     "found": [
+      "wallet"
+     ],
+     "found_1m": [
+      "wallet"
+     ],
+     "found_2v": [
+      "wallet"
+     ],
+     "held": 0,
+     "pins": {
+      "wallet": [
+       [
+        6.28,
+        8.604,
+        0.931,
+        {
+         "wallet": 4
+        }
+       ],
+       [
+        5.966,
+        9.401,
+        0.858,
+        {
+         "wallet": 4
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": [
+      {
+       "belief": 0.858,
+       "item": "wallet",
+       "to_instance_m": 0.777,
+       "x_m": 5.966,
+       "y_m": 9.401
+      }
+     ]
+    },
+    "mission": 4,
+    "nearest_m": {
+     "wallet#51": 1.112
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "wallet"
+    ],
+    "passes_2v": [
+     "wallet"
+    ],
+    "reached": [
+     "wallet"
+    ],
+    "reached_2v": [
+     "wallet"
+    ],
+    "same_as_off": true,
+    "start_room": "closet",
+    "steps": 150,
+    "views": {
+     "wallet#51": 7
+    },
+    "votes": {
+     "found": [
+      "wallet"
+     ],
+     "found_1m": [
+      "wallet"
+     ],
+     "found_2v": [
+      "wallet"
+     ],
+     "held": 0,
+     "pins": {
+      "wallet": [
+       [
+        6.28,
+        8.604,
+        0.931,
+        {
+         "wallet": 4
+        }
+       ],
+       [
+        5.966,
+        9.401,
+        0.858,
+        {
+         "wallet": 4
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": [
+      {
+       "belief": 0.858,
+       "item": "wallet",
+       "to_instance_m": 0.777,
+       "x_m": 5.966,
+       "y_m": 9.401
+      }
+     ]
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 10,
+    "label": {
+     "found": [
+      "glasses"
+     ],
+     "found_1m": [
+      "glasses"
+     ],
+     "found_2v": [
+      "glasses"
+     ],
+     "held": 0,
+     "pins": {
+      "glasses": [
+       [
+        13.242,
+        3.006,
+        0.982,
+        {
+         "book": 1,
+         "glasses": 12
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 5,
+    "nearest_m": {
+     "glasses#53": 0.51
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "glasses"
+    ],
+    "passes_2v": [
+     "glasses"
+    ],
+    "reached": [
+     "glasses"
+    ],
+    "reached_2v": [
+     "glasses"
+    ],
+    "same_as_off": true,
+    "start_room": "dining room",
+    "steps": 150,
+    "views": {
+     "glasses#53": 11
+    },
+    "votes": {
+     "found": [
+      "glasses"
+     ],
+     "found_1m": [
+      "glasses"
+     ],
+     "found_2v": [
+      "glasses"
+     ],
+     "held": 0,
+     "pins": {
+      "glasses": [
+       [
+        13.242,
+        3.006,
+        0.982,
+        {
+         "book": 1,
+         "glasses": 12
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 6,
+    "label": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {},
+     "true_pins": 0,
+     "wrong_pins": []
+    },
+    "mission": 6,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "passes_2v": [],
+    "reached": [],
+    "reached_2v": [],
+    "same_as_off": true,
+    "start_room": "ensuite",
+    "steps": 150,
+    "views": {},
+    "votes": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {},
+     "true_pins": 0,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 8,
+    "label": {
+     "found": [
+      "keys",
+      "remote"
+     ],
+     "found_1m": [
+      "keys",
+      "remote"
+     ],
+     "found_2v": [
+      "keys",
+      "remote"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        2.13,
+        12.997,
+        0.982,
+        {
+         "keys": 9,
+         "phone": 1,
+         "tv remote": 1
+        }
+       ]
+      ],
+      "remote": [
+       [
+        2.459,
+        10.768,
+        0.928,
+        {
+         "remote": 3
+        }
+       ]
+      ]
+     },
+     "true_pins": 2,
+     "wrong_pins": []
+    },
+    "mission": 7,
+    "nearest_m": {
+     "keys#35": 0.515,
+     "remote#54": 0.671
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "keys",
+     "remote"
+    ],
+    "passes_2v": [
+     "keys",
+     "remote"
+    ],
+    "reached": [
+     "keys",
+     "remote"
+    ],
+    "reached_2v": [
+     "keys",
+     "remote"
+    ],
+    "same_as_off": true,
+    "start_room": "entry",
+    "steps": 150,
+    "views": {
+     "keys#35": 8,
+     "remote#54": 3
+    },
+    "votes": {
+     "found": [
+      "keys",
+      "remote"
+     ],
+     "found_1m": [
+      "keys",
+      "remote"
+     ],
+     "found_2v": [
+      "keys",
+      "remote"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        2.13,
+        12.997,
+        0.982,
+        {
+         "keys": 9,
+         "phone": 1,
+         "tv remote": 1
+        }
+       ]
+      ],
+      "remote": [
+       [
+        2.459,
+        10.768,
+        0.928,
+        {
+         "remote": 3
+        }
+       ]
+      ]
+     },
+     "true_pins": 2,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 12,
+    "label": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {
+      "remote": [
+       [
+        10.955,
+        7.495,
+        0.928,
+        {
+         "glasses": 1,
+         "remote": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 0,
+     "wrong_pins": [
+      {
+       "belief": 0.928,
+       "item": "remote",
+       "to_instance_m": 8.785,
+       "x_m": 10.955,
+       "y_m": 7.495
+      }
+     ]
+    },
+    "mission": 8,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "passes_2v": [],
+    "reached": [],
+    "reached_2v": [],
+    "same_as_off": true,
+    "start_room": "hall",
+    "steps": 150,
+    "views": {},
+    "votes": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 1,
+     "pins": {},
+     "true_pins": 0,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 8,
+    "label": {
+     "found": [
+      "keys"
+     ],
+     "found_1m": [
+      "keys"
+     ],
+     "found_2v": [
+      "keys"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        8.929,
+        5.432,
+        0.982,
+        {
+         "keys": 9,
+         "pet bowl": 1
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 9,
+    "nearest_m": {
+     "keys#55": 0.463
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "keys"
+    ],
+    "passes_2v": [
+     "keys"
+    ],
+    "reached": [
+     "keys"
+    ],
+    "reached_2v": [
+     "keys"
+    ],
+    "same_as_off": true,
+    "start_room": "kitchen",
+    "steps": 150,
+    "views": {
+     "keys#55": 11
+    },
+    "votes": {
+     "found": [
+      "keys"
+     ],
+     "found_1m": [
+      "keys"
+     ],
+     "found_2v": [
+      "keys"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        8.929,
+        5.432,
+        0.982,
+        {
+         "keys": 9,
+         "pet bowl": 1
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 10,
+    "label": {
+     "found": [
+      "keys",
+      "wallet"
+     ],
+     "found_1m": [
+      "keys",
+      "wallet"
+     ],
+     "found_2v": [
+      "keys",
+      "wallet"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        8.829,
+        5.469,
+        0.982,
+        {
+         "keys": 12
+        }
+       ]
+      ],
+      "wallet": [
+       [
+        4.165,
+        5.43,
+        0.982,
+        {
+         "wallet": 5
+        }
+       ]
+      ]
+     },
+     "true_pins": 2,
+     "wrong_pins": []
+    },
+    "mission": 10,
+    "nearest_m": {
+     "keys#55": 0.491,
+     "wallet#56": 2.124
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "keys",
+     "wallet"
+    ],
+    "passes_2v": [
+     "keys",
+     "wallet"
+    ],
+    "reached": [
+     "keys",
+     "wallet"
+    ],
+    "reached_2v": [
+     "keys",
+     "wallet"
+    ],
+    "same_as_off": true,
+    "start_room": "living room",
+    "steps": 150,
+    "views": {
+     "keys#55": 13,
+     "wallet#56": 6
+    },
+    "votes": {
+     "found": [
+      "keys",
+      "wallet"
+     ],
+     "found_1m": [
+      "keys",
+      "wallet"
+     ],
+     "found_2v": [
+      "keys",
+      "wallet"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        8.829,
+        5.469,
+        0.982,
+        {
+         "keys": 12
+        }
+       ]
+      ],
+      "wallet": [
+       [
+        4.165,
+        5.43,
+        0.982,
+        {
+         "wallet": 5
+        }
+       ]
+      ]
+     },
+     "true_pins": 2,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 4,
+    "label": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {},
+     "true_pins": 0,
+     "wrong_pins": []
+    },
+    "mission": 11,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "passes_2v": [],
+    "reached": [],
+    "reached_2v": [],
+    "same_as_off": true,
+    "start_room": "main bedroom",
+    "steps": 150,
+    "views": {},
+    "votes": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {},
+     "true_pins": 0,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 4,
+    "label": {
+     "found": [
+      "glasses"
+     ],
+     "found_1m": [
+      "glasses"
+     ],
+     "found_2v": [
+      "glasses"
+     ],
+     "held": 0,
+     "pins": {
+      "glasses": [
+       [
+        15.616,
+        5.251,
+        0.982,
+        {
+         "glasses": 6
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 12,
+    "nearest_m": {
+     "glasses#58": 0.506
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "glasses"
+    ],
+    "passes_2v": [
+     "glasses"
+    ],
+    "reached": [
+     "glasses"
+    ],
+    "reached_2v": [
+     "glasses"
+    ],
+    "same_as_off": true,
+    "start_room": "study",
+    "steps": 150,
+    "views": {
+     "glasses#58": 4
+    },
+    "votes": {
+     "found": [
+      "glasses"
+     ],
+     "found_1m": [
+      "glasses"
+     ],
+     "found_2v": [
+      "glasses"
+     ],
+     "held": 0,
+     "pins": {
+      "glasses": [
+       [
+        15.616,
+        5.251,
+        0.982,
+        {
+         "glasses": 6
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 7,
+    "label": {
+     "found": [
+      "keys"
+     ],
+     "found_1m": [
+      "keys"
+     ],
+     "found_2v": [
+      "keys"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        8.65,
+        9.402,
+        0.968,
+        {
+         "keys": 3,
+         "wallet": 1
+        }
+       ],
+       [
+        8.598,
+        8.71,
+        0.846,
+        {
+         "keys": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": [
+      {
+       "belief": 0.968,
+       "item": "keys",
+       "to_instance_m": 0.702,
+       "x_m": 8.65,
+       "y_m": 9.402
+      }
+     ]
+    },
+    "mission": 13,
+    "nearest_m": {
+     "keys#50": 1.236
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "keys"
+    ],
+    "passes_2v": [
+     "keys"
+    ],
+    "reached": [
+     "keys"
+    ],
+    "reached_2v": [
+     "keys"
+    ],
+    "same_as_off": true,
+    "start_room": "bathroom",
+    "steps": 150,
+    "views": {
+     "keys#50": 3
+    },
+    "votes": {
+     "found": [
+      "keys"
+     ],
+     "found_1m": [
+      "keys"
+     ],
+     "found_2v": [
+      "keys"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        8.65,
+        9.402,
+        0.968,
+        {
+         "keys": 3,
+         "wallet": 1
+        }
+       ],
+       [
+        8.598,
+        8.71,
+        0.846,
+        {
+         "keys": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": [
+      {
+       "belief": 0.968,
+       "item": "keys",
+       "to_instance_m": 0.702,
+       "x_m": 8.65,
+       "y_m": 9.402
+      }
+     ]
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 6,
+    "label": {
+     "found": [
+      "wallet"
+     ],
+     "found_1m": [
+      "wallet"
+     ],
+     "found_2v": [
+      "wallet"
+     ],
+     "held": 0,
+     "pins": {
+      "wallet": [
+       [
+        6.32,
+        8.554,
+        0.982,
+        {
+         "bed": 2,
+         "wallet": 7
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 14,
+    "nearest_m": {
+     "wallet#51": 0.487
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "wallet"
+    ],
+    "passes_2v": [
+     "wallet"
+    ],
+    "reached": [
+     "wallet"
+    ],
+    "reached_2v": [
+     "wallet"
+    ],
+    "same_as_off": true,
+    "start_room": "bedroom 1",
+    "steps": 150,
+    "views": {
+     "wallet#51": 9
+    },
+    "votes": {
+     "found": [
+      "wallet"
+     ],
+     "found_1m": [
+      "wallet"
+     ],
+     "found_2v": [
+      "wallet"
+     ],
+     "held": 0,
+     "pins": {
+      "wallet": [
+       [
+        6.32,
+        8.554,
+        0.982,
+        {
+         "bed": 2,
+         "wallet": 7
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 5,
+    "label": {
+     "found": [
+      "phone"
+     ],
+     "found_1m": [
+      "phone"
+     ],
+     "found_2v": [
+      "phone"
+     ],
+     "held": 0,
+     "pins": {
+      "phone": [
+       [
+        10.651,
+        10.218,
+        0.846,
+        {
+         "phone": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 15,
+    "nearest_m": {
+     "phone#52": 1.442
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "phone"
+    ],
+    "passes_2v": [
+     "phone"
+    ],
+    "reached": [
+     "phone"
+    ],
+    "reached_2v": [
+     "phone"
+    ],
+    "same_as_off": true,
+    "start_room": "bedroom 2",
+    "steps": 150,
+    "views": {
+     "phone#52": 2
+    },
+    "votes": {
+     "found": [
+      "phone"
+     ],
+     "found_1m": [
+      "phone"
+     ],
+     "found_2v": [
+      "phone"
+     ],
+     "held": 0,
+     "pins": {
+      "phone": [
+       [
+        10.651,
+        10.218,
+        0.846,
+        {
+         "phone": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 7,
+    "label": {
+     "found": [
+      "wallet"
+     ],
+     "found_1m": [
+      "wallet"
+     ],
+     "found_2v": [
+      "wallet"
+     ],
+     "held": 0,
+     "pins": {
+      "glasses": [
+       [
+        7.483,
+        12.473,
+        0.846,
+        {
+         "glasses": 1,
+         "wallet": 1
+        }
+       ]
+      ],
+      "wallet": [
+       [
+        6.274,
+        8.558,
+        0.968,
+        {
+         "wallet": 4
+        }
+       ],
+       [
+        5.942,
+        9.387,
+        0.846,
+        {
+         "bed": 1,
+         "wallet": 1
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": [
+      {
+       "belief": 0.846,
+       "item": "wallet",
+       "to_instance_m": 0.775,
+       "x_m": 5.942,
+       "y_m": 9.387
+      },
+      {
+       "belief": 0.846,
+       "item": "glasses",
+       "to_instance_m": 10.766,
+       "x_m": 7.483,
+       "y_m": 12.473
+      }
+     ]
+    },
+    "mission": 16,
+    "nearest_m": {
+     "wallet#51": 0.67
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "wallet"
+    ],
+    "passes_2v": [
+     "wallet"
+    ],
+    "reached": [
+     "wallet"
+    ],
+    "reached_2v": [
+     "wallet"
+    ],
+    "same_as_off": true,
+    "start_room": "closet",
+    "steps": 150,
+    "views": {
+     "wallet#51": 5
+    },
+    "votes": {
+     "found": [
+      "wallet"
+     ],
+     "found_1m": [
+      "wallet"
+     ],
+     "found_2v": [
+      "wallet"
+     ],
+     "held": 2,
+     "pins": {
+      "wallet": [
+       [
+        6.274,
+        8.558,
+        0.968,
+        {
+         "wallet": 4
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 8,
+    "label": {
+     "found": [
+      "glasses"
+     ],
+     "found_1m": [
+      "glasses"
+     ],
+     "found_2v": [
+      "glasses"
+     ],
+     "held": 0,
+     "pins": {
+      "glasses": [
+       [
+        13.327,
+        2.999,
+        0.982,
+        {
+         "glasses": 8
+        }
+       ],
+       [
+        12.84,
+        3.889,
+        0.852,
+        {
+         "glasses": 2,
+         "remote": 1
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": [
+      {
+       "belief": 0.852,
+       "item": "glasses",
+       "to_instance_m": 0.69,
+       "x_m": 12.84,
+       "y_m": 3.889
+      }
+     ]
+    },
+    "mission": 17,
+    "nearest_m": {
+     "glasses#53": 1.309
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "glasses"
+    ],
+    "passes_2v": [
+     "glasses"
+    ],
+    "reached": [
+     "glasses"
+    ],
+    "reached_2v": [
+     "glasses"
+    ],
+    "same_as_off": true,
+    "start_room": "dining room",
+    "steps": 150,
+    "views": {
+     "glasses#53": 10
+    },
+    "votes": {
+     "found": [
+      "glasses"
+     ],
+     "found_1m": [
+      "glasses"
+     ],
+     "found_2v": [
+      "glasses"
+     ],
+     "held": 1,
+     "pins": {
+      "glasses": [
+       [
+        13.327,
+        2.999,
+        0.982,
+        {
+         "glasses": 8
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 6,
+    "label": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {
+      "phone": [
+       [
+        15.229,
+        7.511,
+        0.846,
+        {
+         "phone": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 18,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "passes_2v": [],
+    "reached": [],
+    "reached_2v": [],
+    "same_as_off": true,
+    "start_room": "ensuite",
+    "steps": 150,
+    "views": {},
+    "votes": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {
+      "phone": [
+       [
+        15.229,
+        7.511,
+        0.846,
+        {
+         "phone": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 8,
+    "label": {
+     "found": [
+      "keys",
+      "remote"
+     ],
+     "found_1m": [
+      "keys",
+      "remote"
+     ],
+     "found_2v": [
+      "keys",
+      "remote"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        2.331,
+        12.9,
+        0.928,
+        {
+         "keys": 3
+        }
+       ]
+      ],
+      "remote": [
+       [
+        2.52,
+        10.681,
+        0.982,
+        {
+         "remote": 13
+        }
+       ]
+      ]
+     },
+     "true_pins": 2,
+     "wrong_pins": []
+    },
+    "mission": 19,
+    "nearest_m": {
+     "keys#35": 1.308,
+     "remote#54": 0.525
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "keys",
+     "remote"
+    ],
+    "passes_2v": [
+     "keys",
+     "remote"
+    ],
+    "reached": [
+     "keys",
+     "remote"
+    ],
+    "reached_2v": [
+     "keys",
+     "remote"
+    ],
+    "same_as_off": true,
+    "start_room": "entry",
+    "steps": 150,
+    "views": {
+     "keys#35": 4,
+     "remote#54": 12
+    },
+    "votes": {
+     "found": [
+      "keys",
+      "remote"
+     ],
+     "found_1m": [
+      "keys",
+      "remote"
+     ],
+     "found_2v": [
+      "keys",
+      "remote"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        2.331,
+        12.9,
+        0.928,
+        {
+         "keys": 3
+        }
+       ]
+      ],
+      "remote": [
+       [
+        2.52,
+        10.681,
+        0.982,
+        {
+         "remote": 13
+        }
+       ]
+      ]
+     },
+     "true_pins": 2,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 8,
+    "label": {
+     "found": [
+      "keys"
+     ],
+     "found_1m": [
+      "keys"
+     ],
+     "found_2v": [
+      "keys"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        9.034,
+        5.547,
+        0.846,
+        {
+         "keys": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 20,
+    "nearest_m": {
+     "keys#55": 1.799
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "keys"
+    ],
+    "passes_2v": [
+     "keys"
+    ],
+    "reached": [
+     "keys"
+    ],
+    "reached_2v": [
+     "keys"
+    ],
+    "same_as_off": true,
+    "start_room": "hall",
+    "steps": 150,
+    "views": {
+     "keys#55": 2
+    },
+    "votes": {
+     "found": [
+      "keys"
+     ],
+     "found_1m": [
+      "keys"
+     ],
+     "found_2v": [
+      "keys"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        9.034,
+        5.547,
+        0.846,
+        {
+         "keys": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   }
+  ],
+  "rules": {
+   "label": {
+    "found": 18,
+    "found_1m": 18,
+    "found_2v": 18,
+    "found_rate": 0.9473684210526315,
+    "held": 0,
+    "true_pins": 19,
+    "wrong_pins": 6,
+    "wrong_pins_per_mission": 0.3
+   },
+   "votes": {
+    "found": 18,
+    "found_1m": 18,
+    "found_2v": 18,
+    "found_rate": 0.9473684210526315,
+    "held": 4,
+    "true_pins": 19,
+    "wrong_pins": 2,
+    "wrong_pins_per_mission": 0.1
+   }
+  },
+  "same_as_off": 20,
+  "seed": 3179,
+  "target": "red backpack"
+ },
+ "rules": [
+  "label",
+  "votes"
+ ],
+ "search": {
+  "arrived_off": 0,
+  "arrived_on": 0,
+  "carried": 0,
+  "max_steps": 150,
+  "missions": 20,
+  "passes": 21,
+  "passes_2v": 21,
+  "reached": 19,
+  "reached_2v": 19,
+  "rows": [
+   {
+    "carried": 0,
+    "injected": 7,
+    "label": {
+     "found": [
+      "keys"
+     ],
+     "found_1m": [
+      "keys"
+     ],
+     "found_2v": [
+      "keys"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        8.578,
+        8.714,
+        0.846,
+        {
+         "keys": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 1,
+    "nearest_m": {
+     "keys#50": 1.082
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "keys"
+    ],
+    "passes_2v": [
+     "keys"
+    ],
+    "reached": [
+     "keys"
+    ],
+    "reached_2v": [
+     "keys"
+    ],
+    "same_as_off": true,
+    "start_room": "bathroom",
+    "steps": 150,
+    "views": {
+     "keys#50": 2
+    },
+    "votes": {
+     "found": [
+      "keys"
+     ],
+     "found_1m": [
+      "keys"
+     ],
+     "found_2v": [
+      "keys"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        8.578,
+        8.714,
+        0.846,
+        {
+         "keys": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 7,
+    "label": {
+     "found": [
+      "wallet"
+     ],
+     "found_1m": [
+      "wallet"
+     ],
+     "found_2v": [
+      "wallet"
+     ],
+     "held": 0,
+     "pins": {
+      "wallet": [
+       [
+        6.338,
+        8.609,
+        0.982,
+        {
+         "bed": 2,
+         "guitar": 1,
+         "wallet": 11
+        }
+       ],
+       [
+        7.477,
+        7.991,
+        0.846,
+        {
+         "wallet": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": [
+      {
+       "belief": 0.846,
+       "item": "wallet",
+       "to_instance_m": 0.968,
+       "x_m": 7.477,
+       "y_m": 7.991
+      }
+     ]
+    },
+    "mission": 2,
+    "nearest_m": {
+     "wallet#51": 0.471
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "wallet"
+    ],
+    "passes_2v": [
+     "wallet"
+    ],
+    "reached": [
+     "wallet"
+    ],
+    "reached_2v": [
+     "wallet"
+    ],
+    "same_as_off": true,
+    "start_room": "bedroom 1",
+    "steps": 150,
+    "views": {
+     "wallet#51": 11
+    },
+    "votes": {
+     "found": [
+      "wallet"
+     ],
+     "found_1m": [
+      "wallet"
+     ],
+     "found_2v": [
+      "wallet"
+     ],
+     "held": 0,
+     "pins": {
+      "wallet": [
+       [
+        6.338,
+        8.609,
+        0.982,
+        {
+         "bed": 2,
+         "guitar": 1,
+         "wallet": 11
+        }
+       ],
+       [
+        7.477,
+        7.991,
+        0.846,
+        {
+         "wallet": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": [
+      {
+       "belief": 0.846,
+       "item": "wallet",
+       "to_instance_m": 0.968,
+       "x_m": 7.477,
+       "y_m": 7.991
+      }
+     ]
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 6,
+    "label": {
+     "found": [
+      "phone"
+     ],
+     "found_1m": [
+      "phone"
+     ],
+     "found_2v": [
+      "phone"
+     ],
+     "held": 0,
+     "pins": {
+      "phone": [
+       [
+        10.55,
+        10.053,
+        0.982,
+        {
+         "phone": 7
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 3,
+    "nearest_m": {
+     "phone#52": 0.431
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "phone"
+    ],
+    "passes_2v": [
+     "phone"
+    ],
+    "reached": [
+     "phone"
+    ],
+    "reached_2v": [
+     "phone"
+    ],
+    "same_as_off": true,
+    "start_room": "bedroom 2",
+    "steps": 150,
+    "views": {
+     "phone#52": 6
+    },
+    "votes": {
+     "found": [
+      "phone"
+     ],
+     "found_1m": [
+      "phone"
+     ],
+     "found_2v": [
+      "phone"
+     ],
+     "held": 0,
+     "pins": {
+      "phone": [
+       [
+        10.55,
+        10.053,
+        0.982,
+        {
+         "phone": 7
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 10,
+    "label": {
+     "found": [
+      "wallet"
+     ],
+     "found_1m": [
+      "wallet"
+     ],
+     "found_2v": [
+      "wallet"
+     ],
+     "held": 0,
+     "pins": {
+      "wallet": [
+       [
+        6.295,
+        8.568,
+        0.982,
+        {
+         "wallet": 20
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 4,
+    "nearest_m": {
+     "wallet#51": 0.434
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "wallet"
+    ],
+    "passes_2v": [
+     "wallet"
+    ],
+    "reached": [
+     "wallet"
+    ],
+    "reached_2v": [
+     "wallet"
+    ],
+    "same_as_off": true,
+    "start_room": "closet",
+    "steps": 150,
+    "views": {
+     "wallet#51": 8
+    },
+    "votes": {
+     "found": [
+      "wallet"
+     ],
+     "found_1m": [
+      "wallet"
+     ],
+     "found_2v": [
+      "wallet"
+     ],
+     "held": 0,
+     "pins": {
+      "wallet": [
+       [
+        6.295,
+        8.568,
+        0.982,
+        {
+         "wallet": 20
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 10,
+    "label": {
+     "found": [
+      "glasses",
+      "glasses"
+     ],
+     "found_1m": [
+      "glasses",
+      "glasses"
+     ],
+     "found_2v": [
+      "glasses",
+      "glasses"
+     ],
+     "held": 0,
+     "pins": {
+      "glasses": [
+       [
+        15.659,
+        5.195,
+        0.982,
+        {
+         "glasses": 7
+        }
+       ],
+       [
+        13.507,
+        3.105,
+        0.968,
+        {
+         "glasses": 4
+        }
+       ]
+      ]
+     },
+     "true_pins": 2,
+     "wrong_pins": []
+    },
+    "mission": 5,
+    "nearest_m": {
+     "glasses#53": 1.901,
+     "glasses#58": 0.518
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "glasses",
+     "glasses"
+    ],
+    "passes_2v": [
+     "glasses",
+     "glasses"
+    ],
+    "reached": [
+     "glasses",
+     "glasses"
+    ],
+    "reached_2v": [
+     "glasses",
+     "glasses"
+    ],
+    "same_as_off": true,
+    "start_room": "dining room",
+    "steps": 150,
+    "views": {
+     "glasses#53": 5,
+     "glasses#58": 9
+    },
+    "votes": {
+     "found": [
+      "glasses",
+      "glasses"
+     ],
+     "found_1m": [
+      "glasses",
+      "glasses"
+     ],
+     "found_2v": [
+      "glasses",
+      "glasses"
+     ],
+     "held": 0,
+     "pins": {
+      "glasses": [
+       [
+        15.659,
+        5.195,
+        0.982,
+        {
+         "glasses": 7
+        }
+       ],
+       [
+        13.507,
+        3.105,
+        0.968,
+        {
+         "glasses": 4
+        }
+       ]
+      ]
+     },
+     "true_pins": 2,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 6,
+    "label": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {},
+     "true_pins": 0,
+     "wrong_pins": []
+    },
+    "mission": 6,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "passes_2v": [],
+    "reached": [],
+    "reached_2v": [],
+    "same_as_off": true,
+    "start_room": "ensuite",
+    "steps": 150,
+    "views": {},
+    "votes": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {},
+     "true_pins": 0,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 5,
+    "label": {
+     "found": [
+      "keys",
+      "remote"
+     ],
+     "found_1m": [
+      "keys",
+      "remote"
+     ],
+     "found_2v": [
+      "keys",
+      "remote"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        2.273,
+        13.004,
+        0.982,
+        {
+         "keys": 13,
+         "toy car": 1
+        }
+       ]
+      ],
+      "remote": [
+       [
+        2.525,
+        10.773,
+        0.982,
+        {
+         "book": 1,
+         "remote": 12
+        }
+       ]
+      ]
+     },
+     "true_pins": 2,
+     "wrong_pins": []
+    },
+    "mission": 7,
+    "nearest_m": {
+     "keys#35": 0.507,
+     "remote#54": 0.494
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "keys",
+     "remote"
+    ],
+    "passes_2v": [
+     "keys",
+     "remote"
+    ],
+    "reached": [
+     "keys",
+     "remote"
+    ],
+    "reached_2v": [
+     "keys",
+     "remote"
+    ],
+    "same_as_off": true,
+    "start_room": "entry",
+    "steps": 150,
+    "views": {
+     "keys#35": 11,
+     "remote#54": 11
+    },
+    "votes": {
+     "found": [
+      "keys",
+      "remote"
+     ],
+     "found_1m": [
+      "keys",
+      "remote"
+     ],
+     "found_2v": [
+      "keys",
+      "remote"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        2.273,
+        13.004,
+        0.982,
+        {
+         "keys": 13,
+         "toy car": 1
+        }
+       ]
+      ],
+      "remote": [
+       [
+        2.525,
+        10.773,
+        0.982,
+        {
+         "book": 1,
+         "remote": 12
+        }
+       ]
+      ]
+     },
+     "true_pins": 2,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 5,
+    "label": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {},
+     "true_pins": 0,
+     "wrong_pins": []
+    },
+    "mission": 8,
+    "nearest_m": {
+     "wallet#56": 2.042
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "wallet"
+    ],
+    "passes_2v": [
+     "wallet"
+    ],
+    "reached": [],
+    "reached_2v": [],
+    "same_as_off": true,
+    "start_room": "hall",
+    "steps": 150,
+    "views": {
+     "wallet#56": 2
+    },
+    "votes": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {},
+     "true_pins": 0,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 5,
+    "label": {
+     "found": [
+      "keys"
+     ],
+     "found_1m": [
+      "keys"
+     ],
+     "found_2v": [
+      "keys"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        8.983,
+        5.532,
+        0.982,
+        {
+         "keys": 8
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 9,
+    "nearest_m": {
+     "keys#55": 0.508
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "keys"
+    ],
+    "passes_2v": [
+     "keys"
+    ],
+    "reached": [
+     "keys"
+    ],
+    "reached_2v": [
+     "keys"
+    ],
+    "same_as_off": true,
+    "start_room": "kitchen",
+    "steps": 150,
+    "views": {
+     "keys#55": 7
+    },
+    "votes": {
+     "found": [
+      "keys"
+     ],
+     "found_1m": [
+      "keys"
+     ],
+     "found_2v": [
+      "keys"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        8.983,
+        5.532,
+        0.982,
+        {
+         "keys": 8
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 5,
+    "label": {
+     "found": [
+      "keys",
+      "glasses"
+     ],
+     "found_1m": [
+      "keys",
+      "glasses"
+     ],
+     "found_2v": [
+      "keys",
+      "glasses"
+     ],
+     "held": 0,
+     "pins": {
+      "glasses": [
+       [
+        13.42,
+        3.04,
+        0.982,
+        {
+         "chair": 1,
+         "glasses": 4
+        }
+       ]
+      ],
+      "keys": [
+       [
+        8.85,
+        5.495,
+        0.982,
+        {
+         "keys": 9
+        }
+       ]
+      ]
+     },
+     "true_pins": 2,
+     "wrong_pins": []
+    },
+    "mission": 10,
+    "nearest_m": {
+     "glasses#53": 0.493,
+     "keys#55": 0.488
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "keys",
+     "glasses"
+    ],
+    "passes_2v": [
+     "keys",
+     "glasses"
+    ],
+    "reached": [
+     "keys",
+     "glasses"
+    ],
+    "reached_2v": [
+     "keys",
+     "glasses"
+    ],
+    "same_as_off": true,
+    "start_room": "living room",
+    "steps": 150,
+    "views": {
+     "glasses#53": 5,
+     "keys#55": 9
+    },
+    "votes": {
+     "found": [
+      "keys",
+      "glasses"
+     ],
+     "found_1m": [
+      "keys",
+      "glasses"
+     ],
+     "found_2v": [
+      "keys",
+      "glasses"
+     ],
+     "held": 0,
+     "pins": {
+      "glasses": [
+       [
+        13.42,
+        3.04,
+        0.982,
+        {
+         "chair": 1,
+         "glasses": 4
+        }
+       ]
+      ],
+      "keys": [
+       [
+        8.85,
+        5.495,
+        0.982,
+        {
+         "keys": 9
+        }
+       ]
+      ]
+     },
+     "true_pins": 2,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 8,
+    "label": {
+     "found": [
+      "phone"
+     ],
+     "found_1m": [
+      "phone"
+     ],
+     "found_2v": [
+      "phone"
+     ],
+     "held": 0,
+     "pins": {
+      "phone": [
+       [
+        15.266,
+        7.353,
+        0.928,
+        {
+         "phone": 3
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 11,
+    "nearest_m": {
+     "phone#57": 0.508
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "phone"
+    ],
+    "passes_2v": [
+     "phone"
+    ],
+    "reached": [
+     "phone"
+    ],
+    "reached_2v": [
+     "phone"
+    ],
+    "same_as_off": true,
+    "start_room": "main bedroom",
+    "steps": 150,
+    "views": {
+     "phone#57": 4
+    },
+    "votes": {
+     "found": [
+      "phone"
+     ],
+     "found_1m": [
+      "phone"
+     ],
+     "found_2v": [
+      "phone"
+     ],
+     "held": 0,
+     "pins": {
+      "phone": [
+       [
+        15.266,
+        7.353,
+        0.928,
+        {
+         "phone": 3
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 5,
+    "label": {
+     "found": [
+      "glasses"
+     ],
+     "found_1m": [
+      "glasses"
+     ],
+     "found_2v": [
+      "glasses"
+     ],
+     "held": 0,
+     "pins": {
+      "glasses": [
+       [
+        15.646,
+        5.287,
+        0.968,
+        {
+         "bookcase": 1,
+         "glasses": 3
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 12,
+    "nearest_m": {
+     "glasses#58": 0.504
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "glasses"
+    ],
+    "passes_2v": [
+     "glasses"
+    ],
+    "reached": [
+     "glasses"
+    ],
+    "reached_2v": [
+     "glasses"
+    ],
+    "same_as_off": true,
+    "start_room": "study",
+    "steps": 150,
+    "views": {
+     "glasses#58": 4
+    },
+    "votes": {
+     "found": [
+      "glasses"
+     ],
+     "found_1m": [
+      "glasses"
+     ],
+     "found_2v": [
+      "glasses"
+     ],
+     "held": 0,
+     "pins": {
+      "glasses": [
+       [
+        15.646,
+        5.287,
+        0.968,
+        {
+         "bookcase": 1,
+         "glasses": 3
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 6,
+    "label": {
+     "found": [
+      "keys"
+     ],
+     "found_1m": [
+      "keys"
+     ],
+     "found_2v": [
+      "keys"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        8.633,
+        8.694,
+        0.928,
+        {
+         "keys": 3
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 13,
+    "nearest_m": {
+     "keys#50": 0.552
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "keys"
+    ],
+    "passes_2v": [
+     "keys"
+    ],
+    "reached": [
+     "keys"
+    ],
+    "reached_2v": [
+     "keys"
+    ],
+    "same_as_off": true,
+    "start_room": "bathroom",
+    "steps": 150,
+    "views": {
+     "keys#50": 3
+    },
+    "votes": {
+     "found": [
+      "keys"
+     ],
+     "found_1m": [
+      "keys"
+     ],
+     "found_2v": [
+      "keys"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        8.633,
+        8.694,
+        0.928,
+        {
+         "keys": 3
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 10,
+    "label": {
+     "found": [
+      "wallet"
+     ],
+     "found_1m": [
+      "wallet"
+     ],
+     "found_2v": [
+      "wallet"
+     ],
+     "held": 0,
+     "pins": {
+      "wallet": [
+       [
+        6.553,
+        8.565,
+        0.982,
+        {
+         "dresser": 1,
+         "wallet": 5
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 14,
+    "nearest_m": {
+     "wallet#51": 0.515
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "wallet"
+    ],
+    "passes_2v": [
+     "wallet"
+    ],
+    "reached": [
+     "wallet"
+    ],
+    "reached_2v": [
+     "wallet"
+    ],
+    "same_as_off": true,
+    "start_room": "bedroom 1",
+    "steps": 150,
+    "views": {
+     "wallet#51": 7
+    },
+    "votes": {
+     "found": [
+      "wallet"
+     ],
+     "found_1m": [
+      "wallet"
+     ],
+     "found_2v": [
+      "wallet"
+     ],
+     "held": 0,
+     "pins": {
+      "wallet": [
+       [
+        6.553,
+        8.565,
+        0.982,
+        {
+         "dresser": 1,
+         "wallet": 5
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 8,
+    "label": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {},
+     "true_pins": 0,
+     "wrong_pins": []
+    },
+    "mission": 15,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "passes_2v": [],
+    "reached": [],
+    "reached_2v": [],
+    "same_as_off": true,
+    "start_room": "bedroom 2",
+    "steps": 150,
+    "views": {},
+    "votes": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {},
+     "true_pins": 0,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 10,
+    "label": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {},
+     "true_pins": 0,
+     "wrong_pins": []
+    },
+    "mission": 16,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "passes_2v": [],
+    "reached": [],
+    "reached_2v": [],
+    "same_as_off": true,
+    "start_room": "closet",
+    "steps": 150,
+    "views": {},
+    "votes": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {},
+     "true_pins": 0,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 6,
+    "label": {
+     "found": [
+      "glasses"
+     ],
+     "found_1m": [
+      "glasses"
+     ],
+     "found_2v": [
+      "glasses"
+     ],
+     "held": 0,
+     "pins": {
+      "glasses": [
+       [
+        13.516,
+        3.178,
+        0.968,
+        {
+         "glasses": 4
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 17,
+    "nearest_m": {
+     "glasses#53": 1.53,
+     "glasses#58": 2.419
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "glasses",
+     "glasses"
+    ],
+    "passes_2v": [
+     "glasses",
+     "glasses"
+    ],
+    "reached": [
+     "glasses"
+    ],
+    "reached_2v": [
+     "glasses"
+    ],
+    "same_as_off": true,
+    "start_room": "dining room",
+    "steps": 150,
+    "views": {
+     "glasses#53": 5,
+     "glasses#58": 2
+    },
+    "votes": {
+     "found": [
+      "glasses"
+     ],
+     "found_1m": [
+      "glasses"
+     ],
+     "found_2v": [
+      "glasses"
+     ],
+     "held": 0,
+     "pins": {
+      "glasses": [
+       [
+        13.516,
+        3.178,
+        0.968,
+        {
+         "glasses": 4
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 12,
+    "label": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 0,
+     "pins": {
+      "phone": [
+       [
+        16.364,
+        10.169,
+        0.928,
+        {
+         "keys": 1,
+         "phone": 1,
+         "wallet": 1
+        }
+       ]
+      ],
+      "wallet": [
+       [
+        16.868,
+        12.59,
+        0.846,
+        {
+         "wallet": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 0,
+     "wrong_pins": [
+      {
+       "belief": 0.846,
+       "item": "wallet",
+       "to_instance_m": 10.98,
+       "x_m": 16.868,
+       "y_m": 12.59
+      },
+      {
+       "belief": 0.928,
+       "item": "phone",
+       "to_instance_m": 2.873,
+       "x_m": 16.364,
+       "y_m": 10.169
+      }
+     ]
+    },
+    "mission": 18,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "passes_2v": [],
+    "reached": [],
+    "reached_2v": [],
+    "same_as_off": true,
+    "start_room": "ensuite",
+    "steps": 150,
+    "views": {},
+    "votes": {
+     "found": [],
+     "found_1m": [],
+     "found_2v": [],
+     "held": 1,
+     "pins": {
+      "wallet": [
+       [
+        16.868,
+        12.59,
+        0.846,
+        {
+         "wallet": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 0,
+     "wrong_pins": [
+      {
+       "belief": 0.846,
+       "item": "wallet",
+       "to_instance_m": 10.98,
+       "x_m": 16.868,
+       "y_m": 12.59
+      }
+     ]
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 4,
+    "label": {
+     "found": [
+      "wallet",
+      "remote"
+     ],
+     "found_1m": [
+      "wallet",
+      "remote"
+     ],
+     "found_2v": [
+      "wallet",
+      "remote"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        2.328,
+        12.892,
+        0.846,
+        {
+         "keys": 2
+        }
+       ]
+      ],
+      "remote": [
+       [
+        2.533,
+        10.497,
+        0.982,
+        {
+         "keys": 1,
+         "remote": 4
+        }
+       ]
+      ],
+      "wallet": [
+       [
+        6.327,
+        8.53,
+        0.982,
+        {
+         "wallet": 5
+        }
+       ]
+      ]
+     },
+     "true_pins": 3,
+     "wrong_pins": []
+    },
+    "mission": 19,
+    "nearest_m": {
+     "remote#54": 1.074,
+     "wallet#51": 0.461
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "wallet",
+     "remote"
+    ],
+    "passes_2v": [
+     "wallet",
+     "remote"
+    ],
+    "reached": [
+     "wallet",
+     "remote"
+    ],
+    "reached_2v": [
+     "wallet",
+     "remote"
+    ],
+    "same_as_off": true,
+    "start_room": "entry",
+    "steps": 150,
+    "views": {
+     "remote#54": 6,
+     "wallet#51": 5
+    },
+    "votes": {
+     "found": [
+      "wallet",
+      "remote"
+     ],
+     "found_1m": [
+      "wallet",
+      "remote"
+     ],
+     "found_2v": [
+      "wallet",
+      "remote"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        2.328,
+        12.892,
+        0.846,
+        {
+         "keys": 2
+        }
+       ]
+      ],
+      "remote": [
+       [
+        2.533,
+        10.497,
+        0.982,
+        {
+         "keys": 1,
+         "remote": 4
+        }
+       ]
+      ],
+      "wallet": [
+       [
+        6.327,
+        8.53,
+        0.982,
+        {
+         "wallet": 5
+        }
+       ]
+      ]
+     },
+     "true_pins": 3,
+     "wrong_pins": []
+    }
+   },
+   {
+    "carried": 0,
+    "injected": 9,
+    "label": {
+     "found": [
+      "keys"
+     ],
+     "found_1m": [
+      "keys"
+     ],
+     "found_2v": [
+      "keys"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        8.555,
+        8.392,
+        0.846,
+        {
+         "keys": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    },
+    "mission": 20,
+    "nearest_m": {
+     "keys#50": 1.407
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "keys"
+    ],
+    "passes_2v": [
+     "keys"
+    ],
+    "reached": [
+     "keys"
+    ],
+    "reached_2v": [
+     "keys"
+    ],
+    "same_as_off": true,
+    "start_room": "hall",
+    "steps": 150,
+    "views": {
+     "keys#50": 2
+    },
+    "votes": {
+     "found": [
+      "keys"
+     ],
+     "found_1m": [
+      "keys"
+     ],
+     "found_2v": [
+      "keys"
+     ],
+     "held": 0,
+     "pins": {
+      "keys": [
+       [
+        8.555,
+        8.392,
+        0.846,
+        {
+         "keys": 2
+        }
+       ]
+      ]
+     },
+     "true_pins": 1,
+     "wrong_pins": []
+    }
+   }
+  ],
+  "rules": {
+   "label": {
+    "found": 19,
+    "found_1m": 19,
+    "found_2v": 19,
+    "found_rate": 0.9047619047619048,
+    "held": 0,
+    "true_pins": 20,
+    "wrong_pins": 3,
+    "wrong_pins_per_mission": 0.15
+   },
+   "votes": {
+    "found": 19,
+    "found_1m": 19,
+    "found_2v": 19,
+    "found_rate": 0.9047619047619048,
+    "held": 1,
+    "true_pins": 20,
+    "wrong_pins": 2,
+    "wrong_pins_per_mission": 0.1
+   }
+  },
+  "same_as_off": 20,
+  "seed": 3178,
+  "target": "unicorn"
+ }
+}

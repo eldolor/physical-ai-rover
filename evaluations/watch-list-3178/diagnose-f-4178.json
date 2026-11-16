@@ -1,0 +1,2286 @@
+{
+ "present": [
+  {
+   "lost": [],
+   "mission": 1,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bathroom"
+  },
+  {
+   "lost": [],
+   "mission": 2,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bedroom 1"
+  },
+  {
+   "lost": [
+    {
+     "cause": "fusion: joined a landmark labelled otherwise",
+     "cell": [
+      35,
+      33
+     ],
+     "frames": [
+      {
+       "frame": 3,
+       "pose": {
+        "heading_deg": 315.534,
+        "x_m": 10.05,
+        "y_m": 11.25
+       },
+       "rows": [
+        {
+         "bearing": 71.26,
+         "inst_range": 1.342,
+         "label": "phone",
+         "lm": 3,
+         "look": false,
+         "range_m": 1.165,
+         "to_inst": 0.01
+        }
+       ],
+       "true": {
+        "bearing_deg": -18.55,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.342,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 6,
+       "pose": {
+        "heading_deg": 45.534,
+        "x_m": 9.936,
+        "y_m": 11.134
+       },
+       "rows": [
+        {
+         "bearing": -10.11,
+         "inst_range": 1.298,
+         "label": "phone",
+         "lm": null,
+         "look": null,
+         "range_m": 1.126,
+         "to_inst": 0.016
+        }
+       ],
+       "true": {
+        "bearing_deg": -11.85,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.298,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 7,
+       "pose": {
+        "heading_deg": 45.534,
+        "x_m": 10.15,
+        "y_m": 10.924
+       },
+       "rows": [
+        {
+         "bearing": -17.16,
+         "inst_range": 1.007,
+         "label": "phone",
+         "lm": null,
+         "look": null,
+         "range_m": 0.809,
+         "to_inst": 0.012
+        }
+       ],
+       "true": {
+        "bearing_deg": -15.12,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.007,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 8,
+       "pose": {
+        "heading_deg": 45.534,
+        "x_m": 10.364,
+        "y_m": 10.713
+       },
+       "rows": [],
+       "true": {
+        "bearing_deg": -17.6,
+        "box": true,
+        "kept": 0,
+        "range_m": 0.722,
+        "relabelled": true
+       }
+      },
+      {
+       "frame": 9,
+       "pose": {
+        "heading_deg": 45.534,
+        "x_m": 10.55,
+        "y_m": 10.531
+       },
+       "rows": [
+        {
+         "bearing": -16.47,
+         "inst_range": 0.491,
+         "label": "phone",
+         "lm": 3,
+         "look": false,
+         "range_m": 0.373,
+         "to_inst": 0.004
+        }
+       ],
+       "true": {
+        "bearing_deg": -19.23,
+        "box": true,
+        "kept": 1,
+        "range_m": 0.491,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 10,
+       "pose": {
+        "heading_deg": 45.534,
+        "x_m": 10.55,
+        "y_m": 10.531
+       },
+       "rows": [
+        {
+         "bearing": -19.14,
+         "inst_range": 0.491,
+         "label": "phone",
+         "lm": null,
+         "look": null,
+         "range_m": 0.365,
+         "to_inst": 0.004
+        }
+       ],
+       "true": {
+        "bearing_deg": -19.23,
+        "box": true,
+        "kept": 1,
+        "range_m": 0.491,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 17,
+       "pose": {
+        "heading_deg": 45.534,
+        "x_m": 10.232,
+        "y_m": 10.206
+       },
+       "rows": [
+        {
+         "bearing": 9.08,
+         "inst_range": 0.447,
+         "label": "phone",
+         "lm": 3,
+         "look": true,
+         "range_m": 0.324,
+         "to_inst": 0.005
+        }
+       ],
+       "true": {
+        "bearing_deg": 12.87,
+        "box": true,
+        "kept": 1,
+        "range_m": 0.447,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 18,
+       "pose": {
+        "heading_deg": 45.534,
+        "x_m": 10.232,
+        "y_m": 10.206
+       },
+       "rows": [
+        {
+         "bearing": 13.31,
+         "inst_range": 0.447,
+         "label": "phone",
+         "lm": null,
+         "look": null,
+         "range_m": 0.309,
+         "to_inst": 0.004
+        }
+       ],
+       "true": {
+        "bearing_deg": 12.87,
+        "box": true,
+        "kept": 1,
+        "range_m": 0.447,
+        "relabelled": false
+       }
+      }
+     ],
+     "inst": 52,
+     "item": "phone",
+     "kept_frames": 7,
+     "kept_views": 3,
+     "landmarks": [
+      {
+       "belief": 0.968,
+       "id": 3,
+       "label": "headphones",
+       "misses": 0,
+       "reported": true,
+       "to_inst": 0.0,
+       "votes": {
+        "headphones": 2,
+        "mug": 1,
+        "phone": 1
+       }
+      }
+     ],
+     "looks_near": 1,
+     "near_views": 3,
+     "placed_d": [
+      0.01,
+      0.016,
+      0.012,
+      0.004,
+      0.004,
+      0.005,
+      0.004
+     ],
+     "relabelled": 1,
+     "true_frames": 8,
+     "true_ranges": [
+      1.342,
+      1.298,
+      1.007,
+      0.722,
+      0.491,
+      0.491,
+      0.447,
+      0.447
+     ],
+     "true_views": 4,
+     "unranged": 0
+    }
+   ],
+   "mission": 3,
+   "passes": 1,
+   "reached": 0,
+   "start_room": "bedroom 2"
+  },
+  {
+   "lost": [],
+   "mission": 4,
+   "passes": 0,
+   "reached": 0,
+   "start_room": "closet"
+  },
+  {
+   "lost": [],
+   "mission": 5,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "dining room"
+  },
+  {
+   "lost": [],
+   "mission": 6,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "ensuite"
+  },
+  {
+   "lost": [],
+   "mission": 7,
+   "passes": 2,
+   "reached": 2,
+   "start_room": "entry"
+  },
+  {
+   "lost": [
+    {
+     "cause": "placement: fewer than two views ranged within 0.5 m",
+     "cell": [
+      21,
+      28
+     ],
+     "frames": [
+      {
+       "frame": 35,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.715,
+        "y_m": 6.843
+       },
+       "rows": [
+        {
+         "bearing": 28.37,
+         "inst_range": 1.727,
+         "label": "wallet",
+         "lm": 4,
+         "look": true,
+         "range_m": 0.663,
+         "to_inst": 0.902
+        }
+       ],
+       "true": {
+        "bearing_deg": 29.59,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.727,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 40,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.28,
+        "y_m": 7.312
+       },
+       "rows": [
+        {
+         "bearing": 12.46,
+         "inst_range": 1.25,
+         "label": "wallet",
+         "lm": 7,
+         "look": true,
+         "range_m": 1.092,
+         "to_inst": 0.004
+        }
+       ],
+       "true": {
+        "bearing_deg": 10.5,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.25,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 41,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 12.92,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.869,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 44,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 12.18,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.87,
+         "to_inst": 0.002
+        },
+        {
+         "bearing": 5.79,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": 7,
+         "look": false,
+         "range_m": 0.884,
+         "to_inst": 0.006
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 2,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 45,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 0,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 48,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 15.92,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.867,
+         "to_inst": 0.001
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 49,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 10.31,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": 7,
+         "look": false,
+         "range_m": 0.874,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 52,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 0,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 53,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 8.12,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.878,
+         "to_inst": 0.004
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 56,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 11.94,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.87,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 57,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 9.52,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.874,
+         "to_inst": 0.004
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 60,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 11.29,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.872,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 61,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 13.14,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.869,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 64,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 17.02,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": 7,
+         "look": false,
+         "range_m": 0.866,
+         "to_inst": 0.0
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 65,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 9.9,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.874,
+         "to_inst": 0.003
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 68,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 13.98,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.868,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 69,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 11.27,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": 7,
+         "look": false,
+         "range_m": 0.872,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 72,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 14.19,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.868,
+         "to_inst": 0.001
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 73,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 14.62,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.867,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 76,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 11.12,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.872,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 77,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 11.96,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.87,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 80,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 16.12,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.867,
+         "to_inst": 0.001
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 81,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 13.11,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.869,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 84,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 14.3,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.867,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 85,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 13.1,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.869,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 88,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 13.68,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.868,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 89,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 14.03,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.868,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 92,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 0,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 93,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 13.54,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.868,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 96,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 13.28,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.868,
+         "to_inst": 0.003
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 97,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 10.18,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.874,
+         "to_inst": 0.003
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 100,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 15.94,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.867,
+         "to_inst": 0.001
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 101,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 13.5,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": 7,
+         "look": false,
+         "range_m": 0.868,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 104,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 15.36,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.867,
+         "to_inst": 0.001
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 105,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 11.23,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": 7,
+         "look": false,
+         "range_m": 0.872,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 108,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 11.52,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.87,
+         "to_inst": 0.003
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 109,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 14.34,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.867,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 112,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 18.32,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.866,
+         "to_inst": 0.0
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 113,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 8.2,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": 7,
+         "look": false,
+         "range_m": 0.878,
+         "to_inst": 0.004
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 116,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 12.98,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.869,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 117,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 13.38,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": 7,
+         "look": false,
+         "range_m": 0.868,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 120,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 9.68,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.874,
+         "to_inst": 0.004
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 121,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 16.69,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.866,
+         "to_inst": 0.001
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 124,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 16.5,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.866,
+         "to_inst": 0.001
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 125,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 10.15,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.874,
+         "to_inst": 0.003
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 128,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 8.25,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.878,
+         "to_inst": 0.004
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 129,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 12.96,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.869,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 132,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 13.77,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.868,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 133,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 14.94,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.867,
+         "to_inst": 0.001
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 136,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 0,
+        "range_m": 1.02,
+        "relabelled": true
+       }
+      },
+      {
+       "frame": 137,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 12.42,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.869,
+         "to_inst": 0.003
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 140,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 10.81,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.872,
+         "to_inst": 0.003
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 141,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 15.02,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.867,
+         "to_inst": 0.001
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 144,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 14.51,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.867,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 145,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 0,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 148,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 13.93,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.868,
+         "to_inst": 0.002
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 149,
+       "pose": {
+        "heading_deg": 160.87,
+        "x_m": 6.357,
+        "y_m": 7.534
+       },
+       "rows": [
+        {
+         "bearing": 16.84,
+         "inst_range": 1.02,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.866,
+         "to_inst": 0.001
+        }
+       ],
+       "true": {
+        "bearing_deg": 13.15,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.02,
+        "relabelled": false
+       }
+      }
+     ],
+     "inst": 51,
+     "item": "wallet",
+     "kept_frames": 52,
+     "kept_views": 2,
+     "landmarks": [
+      {
+       "belief": 0.701,
+       "id": 7,
+       "label": "wallet",
+       "misses": 0,
+       "reported": false,
+       "to_inst": 0.003,
+       "votes": {
+        "wallet": 1
+       }
+      }
+     ],
+     "looks_near": 1,
+     "near_views": 1,
+     "placed_d": [
+      0.902,
+      0.004,
+      0.002,
+      0.002,
+      0.006,
+      0.001,
+      0.002,
+      0.004,
+      0.002,
+      0.004,
+      0.002,
+      0.002,
+      0.0,
+      0.003,
+      0.002,
+      0.002,
+      0.001,
+      0.002,
+      0.002,
+      0.002,
+      0.001,
+      0.002,
+      0.002,
+      0.002,
+      0.002,
+      0.002,
+      0.002,
+      0.003,
+      0.003,
+      0.001,
+      0.002,
+      0.001,
+      0.002,
+      0.003,
+      0.002,
+      0.0,
+      0.004,
+      0.002,
+      0.002,
+      0.004,
+      0.001,
+      0.001,
+      0.003,
+      0.004,
+      0.002,
+      0.002,
+      0.001,
+      0.003,
+      0.003,
+      0.001,
+      0.002,
+      0.002,
+      0.001
+     ],
+     "relabelled": 1,
+     "true_frames": 57,
+     "true_ranges": [
+      1.727,
+      1.25,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02,
+      1.02
+     ],
+     "true_views": 2,
+     "unranged": 0
+    }
+   ],
+   "mission": 8,
+   "passes": 1,
+   "reached": 0,
+   "start_room": "hall"
+  },
+  {
+   "lost": [],
+   "mission": 9,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "kitchen"
+  },
+  {
+   "lost": [],
+   "mission": 10,
+   "passes": 3,
+   "reached": 3,
+   "start_room": "living room"
+  },
+  {
+   "lost": [],
+   "mission": 11,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "main bedroom"
+  },
+  {
+   "lost": [],
+   "mission": 12,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "study"
+  },
+  {
+   "lost": [],
+   "mission": 13,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bathroom"
+  },
+  {
+   "lost": [],
+   "mission": 14,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bedroom 1"
+  },
+  {
+   "lost": [],
+   "mission": 15,
+   "passes": 2,
+   "reached": 2,
+   "start_room": "bedroom 2"
+  },
+  {
+   "lost": [],
+   "mission": 16,
+   "passes": 0,
+   "reached": 0,
+   "start_room": "closet"
+  },
+  {
+   "lost": [
+    {
+     "cause": "one viewpoint: the camera saw it from fewer than two new views",
+     "cell": [
+      44,
+      10
+     ],
+     "frames": [
+      {
+       "frame": 2,
+       "pose": {
+        "heading_deg": 13.345,
+        "x_m": 15.45,
+        "y_m": 2.55
+       },
+       "rows": [
+        {
+         "bearing": -120.31,
+         "inst_range": 2.184,
+         "label": "glasses",
+         "lm": 5,
+         "look": true,
+         "range_m": 2.025,
+         "to_inst": 0.013
+        }
+       ],
+       "true": {
+        "bearing_deg": -27.33,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.184,
+        "relabelled": false
+       }
+      }
+     ],
+     "inst": 53,
+     "item": "glasses",
+     "kept_frames": 1,
+     "kept_views": 1,
+     "landmarks": [
+      {
+       "belief": 0.701,
+       "id": 5,
+       "label": "glasses",
+       "misses": 0,
+       "reported": false,
+       "to_inst": 0.013,
+       "votes": {
+        "glasses": 1
+       }
+      }
+     ],
+     "looks_near": 1,
+     "near_views": 1,
+     "placed_d": [
+      0.013
+     ],
+     "relabelled": 0,
+     "true_frames": 1,
+     "true_ranges": [
+      2.184
+     ],
+     "true_views": 1,
+     "unranged": 0
+    }
+   ],
+   "mission": 17,
+   "passes": 1,
+   "reached": 0,
+   "start_room": "dining room"
+  },
+  {
+   "lost": [],
+   "mission": 18,
+   "passes": 0,
+   "reached": 0,
+   "start_room": "ensuite"
+  },
+  {
+   "lost": [],
+   "mission": 19,
+   "passes": 2,
+   "reached": 2,
+   "start_room": "entry"
+  },
+  {
+   "lost": [],
+   "mission": 20,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "hall"
+  }
+ ],
+ "search": [
+  {
+   "lost": [],
+   "mission": 1,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bathroom"
+  },
+  {
+   "lost": [],
+   "mission": 2,
+   "passes": 0,
+   "reached": 0,
+   "start_room": "bedroom 1"
+  },
+  {
+   "lost": [],
+   "mission": 3,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bedroom 2"
+  },
+  {
+   "lost": [],
+   "mission": 4,
+   "passes": 0,
+   "reached": 0,
+   "start_room": "closet"
+  },
+  {
+   "lost": [],
+   "mission": 5,
+   "passes": 2,
+   "reached": 2,
+   "start_room": "dining room"
+  },
+  {
+   "lost": [],
+   "mission": 6,
+   "passes": 0,
+   "reached": 0,
+   "start_room": "ensuite"
+  },
+  {
+   "lost": [],
+   "mission": 7,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "entry"
+  },
+  {
+   "lost": [],
+   "mission": 8,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "hall"
+  },
+  {
+   "lost": [],
+   "mission": 9,
+   "passes": 2,
+   "reached": 2,
+   "start_room": "kitchen"
+  },
+  {
+   "lost": [],
+   "mission": 10,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "living room"
+  },
+  {
+   "lost": [],
+   "mission": 11,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "main bedroom"
+  },
+  {
+   "lost": [],
+   "mission": 12,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "study"
+  },
+  {
+   "lost": [],
+   "mission": 13,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bathroom"
+  },
+  {
+   "lost": [],
+   "mission": 14,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bedroom 1"
+  },
+  {
+   "lost": [],
+   "mission": 15,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bedroom 2"
+  },
+  {
+   "lost": [],
+   "mission": 16,
+   "passes": 0,
+   "reached": 0,
+   "start_room": "closet"
+  },
+  {
+   "lost": [],
+   "mission": 17,
+   "passes": 2,
+   "reached": 2,
+   "start_room": "dining room"
+  },
+  {
+   "lost": [],
+   "mission": 18,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "ensuite"
+  },
+  {
+   "lost": [],
+   "mission": 19,
+   "passes": 2,
+   "reached": 2,
+   "start_room": "entry"
+  },
+  {
+   "lost": [
+    {
+     "cause": "one viewpoint: the camera saw it from fewer than two new views",
+     "cell": [
+      21,
+      28
+     ],
+     "frames": [
+      {
+       "frame": 1,
+       "pose": {
+        "heading_deg": 179.992,
+        "x_m": 5.85,
+        "y_m": 7.05
+       },
+       "rows": [
+        {
+         "bearing": -21.75,
+         "inst_range": 1.616,
+         "label": "wallet",
+         "lm": 1,
+         "look": false,
+         "range_m": 1.441,
+         "to_inst": 0.012
+        }
+       ],
+       "true": {
+        "bearing_deg": -23.68,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.616,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 4,
+       "pose": {
+        "heading_deg": 179.992,
+        "x_m": 5.85,
+        "y_m": 7.05
+       },
+       "rows": [
+        {
+         "bearing": -22.96,
+         "inst_range": 1.616,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 1.45,
+         "to_inst": 0.015
+        }
+       ],
+       "true": {
+        "bearing_deg": -23.68,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.616,
+        "relabelled": false
+       }
+      }
+     ],
+     "inst": 51,
+     "item": "wallet",
+     "kept_frames": 2,
+     "kept_views": 1,
+     "landmarks": [
+      {
+       "belief": 0.701,
+       "id": 1,
+       "label": "bed",
+       "misses": 0,
+       "reported": false,
+       "to_inst": 0.014,
+       "votes": {
+        "bed": 1
+       }
+      }
+     ],
+     "looks_near": 0,
+     "near_views": 1,
+     "placed_d": [
+      0.012,
+      0.015
+     ],
+     "relabelled": 0,
+     "true_frames": 2,
+     "true_ranges": [
+      1.616,
+      1.616
+     ],
+     "true_views": 1,
+     "unranged": 0
+    }
+   ],
+   "mission": 20,
+   "passes": 1,
+   "reached": 0,
+   "start_room": "hall"
+  }
+ ],
+ "seed": 4178,
+ "steps": 150
+}

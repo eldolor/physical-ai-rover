@@ -9,6 +9,8 @@ nothing it did not? (criteria B1, B2 and B4's simulator half, written in
     python evaluations/watch-list-3178/sweep.py --missions 2 --out /tmp/x.json
     python evaluations/watch-list-3178/sweep.py --placed placements.json --steps STEPS \
         --seed SEED --out results-e.json             # 3.178.E (its section gives the numbers)
+    python evaluations/watch-list-3178/sweep.py --placed placements.json --steps 150 \
+        --seed 6178 --workers 4 --out results-f.json # 3.178.F's fresh run
 
 `--placed` (3.178.E) adds the list items `placement.py` chose to the house
 before each mission (solid, one cell each, as the house's own small things),
@@ -48,6 +50,16 @@ Scored:
   the section's pin-is-right distance) of the instance; also reported at
   1.0 m (3.46's match distance), which is not the bar.
 * B2, a WRONG PIN: a pin with no instance of its item within `PIN_M`.
+* 3.178.F, a pass's VIEWS: how many independent viewpoints its true
+  sightings came from, by the inventory's own rule (`inventory._new_view`:
+  `NEW_VIEW_M` moved or `NEW_VIEW_DEG` turned, greedily, as
+  `inventory_sweep._views` counts them), over every true sighting of the
+  instance out to the inventory's own placement horizon (`MAX_RANGE_M`,
+  4 m; the pass itself still needs one within 2.5 m). A report needs two independent
+  hits (`REPORT_BELIEF`), and frames from one viewpoint are one look by
+  design, so a pass seen from fewer than `MIN_VIEWS` (2) can never reach a
+  report under any rule. `passes_2v` / `reached_2v` / `found_2v` count over
+  the passes with at least two; B1's `passes` (every pass) are unchanged.
 * B4 (sim half): the same starts with the list off; outcome and every
   action must be equal mission by mission. The search sweep has an absent
   target (it explores to `max_steps`, as 3.46's did); a second sweep with a
@@ -84,6 +96,9 @@ MAX_STEPS = base.MAX_STEPS          # 150, 3.46's
 SEED = 3178                 # 3.178.B's (search; present SEED + 1)
 FRESH_SEED = 4178           # 3.178.D's, fresh (written before its run)
 RULES = ("label", "votes")  # 3.178.A's pin rule; 3.178.D's
+# 3.178.F: the views a report needs -- two independent hits reach
+# REPORT_BELIEF (one hit reads 0.70), and one viewpoint is one look.
+MIN_VIEWS = 2
 PRESENT_TARGET = "red backpack"
 HOUSE = base.house
 
@@ -150,6 +165,7 @@ class ListErringDetector(base.ErringDetector):
         self.insts = INSTANCES if insts is None else insts
         self.item_insts = item_instances(self.insts)
         self.nearest: dict = {}          # instance -> nearest true range (m)
+        self.poses: dict = {}            # 3.178.F: instance -> its true sightings' poses
         self.injected = 0
 
     def __call__(self, frame):
@@ -157,14 +173,22 @@ class ListErringDetector(base.ErringDetector):
         view = g.theta + g.pan * base.PAN_ANGLE_RAD
         for d in frame.get("detections") or []:
             item = item_for(d.get("label"), LIST)
-            if item is None or d["distance_m"] > PASS_RANGE_M:
+            # 3.178.F: a view is any true sighting the inventory could place
+            # (out to its MAX_RANGE_M); a PASS is one within PASS_RANGE_M.
+            if item is None or d["distance_m"] > max(PASS_RANGE_M, inv.MAX_RANGE_M):
                 continue
             a = view + math.radians(d["bearing_deg"])
             r = d["distance_m"] / base.CELL_M
             cell = (int(math.floor(g.x + r * math.cos(a))), int(math.floor(g.y + r * math.sin(a))))
             for k in self.item_insts[item]:
                 if cell in self.insts[k][1] or _near_cell(cell, self.insts[k][1]):
-                    self.nearest[k] = min(self.nearest.get(k, 9e9), d["distance_m"])
+                    if d["distance_m"] <= PASS_RANGE_M:
+                        self.nearest[k] = min(self.nearest.get(k, 9e9), d["distance_m"])
+                    poses = self.poses.setdefault(k, [])
+                    pose = {"x_m": g.x * base.CELL_M, "y_m": g.y * base.CELL_M,
+                            "heading_deg": g.heading_deg}
+                    if not poses or poses[-1] != pose:     # once a frame
+                        poses.append(pose)
         out = super().__call__(frame)
         if out is not None and self.list_rng is not None and self.list_rng.random() < self.false_rate:
             fov = float(frame.get("fov_deg") or inv.DEFAULT_FOV_DEG)
@@ -173,6 +197,12 @@ class ListErringDetector(base.ErringDetector):
                           "confidence": 1.0}]
             self.injected += 1
         return out
+
+
+def views(poses: list) -> int:
+    """3.178.F: independent viewpoints among `poses`, by the inventory's own
+    new-view rule (`inventory_sweep._views`)."""
+    return base._views(poses)
 
 
 def _near_cell(cell, cells) -> bool:
@@ -209,6 +239,8 @@ def run_one(start, *, list_on: bool, seed: int, target: str = base.ABSENT_TARGET
     return {"start_room": room, "outcome": runner.status()["outcome"],
             "actions": [a.action for a in runner.memory.actions],
             "watch": watch, "nearest": det.nearest,
+            # 3.178.F: each pass's independent viewpoints (`views`).
+            "views": {k: views(ps) for k, ps in det.poses.items()},
             "reported": [{k: lm.get(k) for k in ("label", "x_m", "y_m", "belief", "carried")}
                          for lm in report.get("reported") or []],   # reported only, by construction
             "carried": sum(1 for lm in report.get("reported") or [] if lm.get("carried")),
@@ -250,8 +282,11 @@ def score_mission(r: dict, rule: str, insts=None) -> dict:
                    and dist_to_cells(lm["x_m"], lm["y_m"], insts[k][1]) <= PIN_M
                    for lm in r.get("reported") or []):
                 reached.append(k)
+    two = [k for k in passes if (r.get("views") or {}).get(k, 0) >= MIN_VIEWS]   # 3.178.F
     return {"passes": passes, "found": found, "found_loose": found_loose, "wrong_pins": wrong,
-            "true_pins": true, "reached": reached}
+            "true_pins": true, "reached": reached, "passes_2v": two,
+            "reached_2v": [k for k in reached if k in two],
+            "found_2v": [k for k in found if k in two]}
 
 
 def _pair(job) -> tuple:
@@ -286,13 +321,18 @@ def sweep(n: int, target: str, seed: int, max_steps: int, log=sys.stderr, placed
                "nearest_m": {f"{insts[i][0]}#{i}" if placed else insts[i][0]: d
                              for i, d in sorted(on["nearest"].items())},
                "passes": name(sc["label"]["passes"]),
-               "reached": name(sc["label"]["reached"])}
+               "reached": name(sc["label"]["reached"]),
+               "views": {f"{insts[i][0]}#{i}" if placed else insts[i][0]: on["views"].get(i, 0)
+                         for i in sc["label"]["passes"]},
+               "passes_2v": name(sc["label"]["passes_2v"]),
+               "reached_2v": name(sc["label"]["reached_2v"])}
         for rule, sr in sc.items():
             w = on["watch"][rule] or {}
             row[rule] = {"pins": {item: [(p["x_m"], p["y_m"], p["belief"], p.get("votes")) for p in ps]
                                   for item, ps in w.get("pins", {}).items() if ps},
                          "held": w.get("held", 0),
                          "found": name(sr["found"]), "found_1m": name(sr["found_loose"]),
+                         "found_2v": name(sr["found_2v"]),
                          "true_pins": sr["true_pins"], "wrong_pins": sr["wrong_pins"]}
         rows.append(row)
         print(f"{target:<12} mission {k + 1:2d} {on['start_room']:<12} {on['outcome']:<11} "
@@ -302,12 +342,15 @@ def sweep(n: int, target: str, seed: int, max_steps: int, log=sys.stderr, placed
               + f" same {same}  {on['wall_s'] + off['wall_s']:.0f}s", file=log, flush=True)
     passes = sum(len(r["passes"]) for r in rows)
     reached = sum(len(r["reached"]) for r in rows)
+    passes_2v = sum(len(r["passes_2v"]) for r in rows)
     arrived = lambda key: sum(1 for r in rows if r[key] in ("found", "arrived_unconfirmed"))  # noqa: E731
     by_rule = {}
     for rule in RULES:
         found = sum(len(r[rule]["found"]) for r in rows)
         wrong = sum(len(r[rule]["wrong_pins"]) for r in rows)
+        found_2v = sum(len(r[rule]["found_2v"]) for r in rows)
         by_rule[rule] = {"found": found, "found_rate": found / passes if passes else None,
+                         "found_2v": found_2v,
                          "found_1m": sum(len(r[rule]["found_1m"]) for r in rows),
                          "true_pins": sum(r[rule]["true_pins"] for r in rows),
                          "wrong_pins": wrong,
@@ -315,6 +358,7 @@ def sweep(n: int, target: str, seed: int, max_steps: int, log=sys.stderr, placed
                          "held": sum(r[rule]["held"] for r in rows)}
     return {"target": target, "missions": len(rows), "max_steps": max_steps, "seed": seed,
             "passes": passes, "reached": reached, "rules": by_rule,
+            "passes_2v": passes_2v, "reached_2v": sum(len(r["reached_2v"]) for r in rows),
             "carried": sum(r["carried"] for r in rows),
             "same_as_off": sum(r["same_as_off"] for r in rows),
             "arrived_on": arrived("outcome_on"), "arrived_off": arrived("outcome_off"),
@@ -356,7 +400,8 @@ def main(argv=None):
     Path(args.out).write_text(json.dumps(out, indent=1, sort_keys=True) + "\n")
     for key in ("search", "present"):
         s = out[key]
-        print(f"{key}: passes {s['passes']} reached {s['reached']} carried {s['carried']} same {s['same_as_off']}/{s['missions']} "
+        print(f"{key}: passes {s['passes']} reached {s['reached']} "
+              f"2-view passes {s['passes_2v']} reached {s['reached_2v']} carried {s['carried']} same {s['same_as_off']}/{s['missions']} "
               f"arrived on {s['arrived_on']} off {s['arrived_off']}", file=sys.stderr)
         for rule, v in s["rules"].items():
             print(f"  {rule}: found {v['found']} true {v['true_pins']} wrong {v['wrong_pins']} "

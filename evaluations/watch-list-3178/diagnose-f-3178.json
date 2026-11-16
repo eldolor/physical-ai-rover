@@ -1,0 +1,1206 @@
+{
+ "present": [
+  {
+   "lost": [],
+   "mission": 1,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bathroom"
+  },
+  {
+   "lost": [],
+   "mission": 2,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bedroom 1"
+  },
+  {
+   "lost": [
+    {
+     "cause": "one viewpoint: the camera saw it from fewer than two new views",
+     "cell": [
+      35,
+      33
+     ],
+     "frames": [
+      {
+       "frame": 3,
+       "pose": {
+        "heading_deg": 266.202,
+        "x_m": 11.55,
+        "y_m": 11.25
+       },
+       "rows": [
+        {
+         "bearing": 59.21,
+         "inst_range": 1.5,
+         "label": "phone",
+         "lm": 6,
+         "look": true,
+         "range_m": 1.297,
+         "to_inst": 0.014
+        }
+       ],
+       "true": {
+        "bearing_deg": -27.63,
+        "box": true,
+        "kept": 1,
+        "range_m": 1.5,
+        "relabelled": false
+       }
+      }
+     ],
+     "inst": 52,
+     "item": "phone",
+     "kept_frames": 1,
+     "kept_views": 1,
+     "landmarks": [
+      {
+       "belief": 0.701,
+       "id": 6,
+       "label": "phone",
+       "misses": 0,
+       "reported": false,
+       "to_inst": 0.014,
+       "votes": {
+        "phone": 1
+       }
+      }
+     ],
+     "looks_near": 1,
+     "near_views": 1,
+     "placed_d": [
+      0.014
+     ],
+     "relabelled": 0,
+     "true_frames": 1,
+     "true_ranges": [
+      1.5
+     ],
+     "true_views": 1,
+     "unranged": 0
+    }
+   ],
+   "mission": 3,
+   "passes": 1,
+   "reached": 0,
+   "start_room": "bedroom 2"
+  },
+  {
+   "lost": [],
+   "mission": 4,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "closet"
+  },
+  {
+   "lost": [],
+   "mission": 5,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "dining room"
+  },
+  {
+   "lost": [],
+   "mission": 6,
+   "passes": 0,
+   "reached": 0,
+   "start_room": "ensuite"
+  },
+  {
+   "lost": [],
+   "mission": 7,
+   "passes": 2,
+   "reached": 2,
+   "start_room": "entry"
+  },
+  {
+   "lost": [],
+   "mission": 8,
+   "passes": 0,
+   "reached": 0,
+   "start_room": "hall"
+  },
+  {
+   "lost": [],
+   "mission": 9,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "kitchen"
+  },
+  {
+   "lost": [],
+   "mission": 10,
+   "passes": 2,
+   "reached": 2,
+   "start_room": "living room"
+  },
+  {
+   "lost": [],
+   "mission": 11,
+   "passes": 0,
+   "reached": 0,
+   "start_room": "main bedroom"
+  },
+  {
+   "lost": [],
+   "mission": 12,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "study"
+  },
+  {
+   "lost": [],
+   "mission": 13,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bathroom"
+  },
+  {
+   "lost": [],
+   "mission": 14,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bedroom 1"
+  },
+  {
+   "lost": [],
+   "mission": 15,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bedroom 2"
+  },
+  {
+   "lost": [],
+   "mission": 16,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "closet"
+  },
+  {
+   "lost": [],
+   "mission": 17,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "dining room"
+  },
+  {
+   "lost": [],
+   "mission": 18,
+   "passes": 0,
+   "reached": 0,
+   "start_room": "ensuite"
+  },
+  {
+   "lost": [],
+   "mission": 19,
+   "passes": 2,
+   "reached": 2,
+   "start_room": "entry"
+  },
+  {
+   "lost": [],
+   "mission": 20,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "hall"
+  }
+ ],
+ "search": [
+  {
+   "lost": [],
+   "mission": 1,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bathroom"
+  },
+  {
+   "lost": [],
+   "mission": 2,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bedroom 1"
+  },
+  {
+   "lost": [],
+   "mission": 3,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bedroom 2"
+  },
+  {
+   "lost": [],
+   "mission": 4,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "closet"
+  },
+  {
+   "lost": [],
+   "mission": 5,
+   "passes": 2,
+   "reached": 2,
+   "start_room": "dining room"
+  },
+  {
+   "lost": [],
+   "mission": 6,
+   "passes": 0,
+   "reached": 0,
+   "start_room": "ensuite"
+  },
+  {
+   "lost": [],
+   "mission": 7,
+   "passes": 2,
+   "reached": 2,
+   "start_room": "entry"
+  },
+  {
+   "lost": [
+    {
+     "cause": "placement: fewer than two views ranged within 0.5 m",
+     "cell": [
+      13,
+      18
+     ],
+     "frames": [
+      {
+       "frame": 21,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 6.303,
+        "y_m": 7.335
+       },
+       "rows": [
+        {
+         "bearing": -12.54,
+         "inst_range": 2.874,
+         "label": "wallet",
+         "lm": 4,
+         "look": true,
+         "range_m": 1.824,
+         "to_inst": 0.844
+        }
+       ],
+       "true": {
+        "bearing_deg": -11.63,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.874,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 22,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 6.103,
+        "y_m": 7.111
+       },
+       "rows": [
+        {
+         "bearing": -18.75,
+         "inst_range": 2.579,
+         "label": "wallet",
+         "lm": 4,
+         "look": false,
+         "range_m": 1.472,
+         "to_inst": 0.926
+        }
+       ],
+       "true": {
+        "bearing_deg": -13.99,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.579,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 26,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.726,
+        "y_m": 7.14
+       },
+       "rows": [
+        {
+         "bearing": 1.46,
+         "inst_range": 2.31,
+         "label": "wallet",
+         "lm": 6,
+         "look": true,
+         "range_m": 2.289,
+         "to_inst": 0.044
+        }
+       ],
+       "true": {
+        "bearing_deg": -2.94,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.31,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 27,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.547,
+        "y_m": 6.939
+       },
+       "rows": [
+        {
+         "bearing": -3.72,
+         "inst_range": 2.042,
+         "label": "wallet",
+         "lm": 6,
+         "look": false,
+         "range_m": 1.85,
+         "to_inst": 0.026
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.32,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.042,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 28,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.547,
+        "y_m": 6.939
+       },
+       "rows": [
+        {
+         "bearing": -1.55,
+         "inst_range": 2.042,
+         "label": "wallet",
+         "lm": 6,
+         "look": false,
+         "range_m": 1.913,
+         "to_inst": 0.033
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.32,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.042,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 44,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.567,
+        "y_m": 6.961
+       },
+       "rows": [
+        {
+         "bearing": -5.89,
+         "inst_range": 2.072,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 1.009,
+         "to_inst": 0.852
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.28,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.072,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 45,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.547,
+        "y_m": 6.939
+       },
+       "rows": [
+        {
+         "bearing": -5.46,
+         "inst_range": 2.042,
+         "label": "wallet",
+         "lm": 6,
+         "look": false,
+         "range_m": 1.841,
+         "to_inst": 0.0
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.32,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.042,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 46,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.547,
+        "y_m": 6.939
+       },
+       "rows": [
+        {
+         "bearing": -8.37,
+         "inst_range": 2.042,
+         "label": "wallet",
+         "lm": 4,
+         "look": false,
+         "range_m": 0.956,
+         "to_inst": 0.877
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.32,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.042,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 62,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.567,
+        "y_m": 6.961
+       },
+       "rows": [
+        {
+         "bearing": -4.84,
+         "inst_range": 2.072,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 1.874,
+         "to_inst": 0.004
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.28,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.072,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 63,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.547,
+        "y_m": 6.939
+       },
+       "rows": [
+        {
+         "bearing": -6.65,
+         "inst_range": 2.042,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.969,
+         "to_inst": 0.862
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.32,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.042,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 64,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.547,
+        "y_m": 6.939
+       },
+       "rows": [
+        {
+         "bearing": -3.15,
+         "inst_range": 2.042,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 1.85,
+         "to_inst": 0.039
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.32,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.042,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 80,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.567,
+        "y_m": 6.961
+       },
+       "rows": [
+        {
+         "bearing": -3.55,
+         "inst_range": 2.072,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 1.878,
+         "to_inst": 0.031
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.28,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.072,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 81,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.547,
+        "y_m": 6.939
+       },
+       "rows": [
+        {
+         "bearing": -5.55,
+         "inst_range": 2.042,
+         "label": "wallet",
+         "lm": 6,
+         "look": false,
+         "range_m": 1.841,
+         "to_inst": 0.0
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.32,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.042,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 82,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.547,
+        "y_m": 6.939
+       },
+       "rows": [
+        {
+         "bearing": -8.02,
+         "inst_range": 2.042,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.956,
+         "to_inst": 0.876
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.32,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.042,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 98,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.567,
+        "y_m": 6.961
+       },
+       "rows": [
+        {
+         "bearing": -4.1,
+         "inst_range": 2.072,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 1.874,
+         "to_inst": 0.021
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.28,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.072,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 99,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.547,
+        "y_m": 6.939
+       },
+       "rows": [
+        {
+         "bearing": -5.83,
+         "inst_range": 2.042,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.982,
+         "to_inst": 0.848
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.32,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.042,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 100,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.547,
+        "y_m": 6.939
+       },
+       "rows": [
+        {
+         "bearing": -10.9,
+         "inst_range": 2.042,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 0.92,
+         "to_inst": 0.918
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.32,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.042,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 116,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.567,
+        "y_m": 6.961
+       },
+       "rows": [],
+       "true": {
+        "bearing_deg": -3.28,
+        "box": true,
+        "kept": 0,
+        "range_m": 2.072,
+        "relabelled": true
+       }
+      },
+      {
+       "frame": 117,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.547,
+        "y_m": 6.939
+       },
+       "rows": [
+        {
+         "bearing": -5.62,
+         "inst_range": 2.042,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 1.841,
+         "to_inst": 0.0
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.32,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.042,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 118,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.547,
+        "y_m": 6.939
+       },
+       "rows": [
+        {
+         "bearing": 0.94,
+         "inst_range": 2.042,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 1.982,
+         "to_inst": 0.05
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.32,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.042,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 134,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.567,
+        "y_m": 6.961
+       },
+       "rows": [
+        {
+         "bearing": 2.51,
+         "inst_range": null,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 4.385,
+         "to_inst": null
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.28,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.072,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 135,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.547,
+        "y_m": 6.939
+       },
+       "rows": [
+        {
+         "bearing": -3.25,
+         "inst_range": 2.042,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 1.85,
+         "to_inst": 0.037
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.32,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.042,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 136,
+       "pose": {
+        "heading_deg": 318.182,
+        "x_m": 5.547,
+        "y_m": 6.939
+       },
+       "rows": [
+        {
+         "bearing": 1.03,
+         "inst_range": 2.042,
+         "label": "wallet",
+         "lm": null,
+         "look": null,
+         "range_m": 2.02,
+         "to_inst": 0.027
+        }
+       ],
+       "true": {
+        "bearing_deg": -3.32,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.042,
+        "relabelled": false
+       }
+      }
+     ],
+     "inst": 56,
+     "item": "wallet",
+     "kept_frames": 22,
+     "kept_views": 2,
+     "landmarks": [
+      {
+       "belief": 0.701,
+       "id": 6,
+       "label": "wallet",
+       "misses": 0,
+       "reported": false,
+       "to_inst": 0.021,
+       "votes": {
+        "wallet": 1
+       }
+      }
+     ],
+     "looks_near": 1,
+     "near_views": 1,
+     "placed_d": [
+      0.844,
+      0.926,
+      0.044,
+      0.026,
+      0.033,
+      0.852,
+      0.0,
+      0.877,
+      0.004,
+      0.862,
+      0.039,
+      0.031,
+      0.0,
+      0.876,
+      0.021,
+      0.848,
+      0.918,
+      0.0,
+      0.05,
+      0.037,
+      0.027
+     ],
+     "relabelled": 1,
+     "true_frames": 23,
+     "true_ranges": [
+      2.874,
+      2.579,
+      2.31,
+      2.042,
+      2.042,
+      2.072,
+      2.042,
+      2.042,
+      2.072,
+      2.042,
+      2.042,
+      2.072,
+      2.042,
+      2.042,
+      2.072,
+      2.042,
+      2.042,
+      2.072,
+      2.042,
+      2.042,
+      2.072,
+      2.042,
+      2.042
+     ],
+     "true_views": 2,
+     "unranged": 1
+    }
+   ],
+   "mission": 8,
+   "passes": 1,
+   "reached": 0,
+   "start_room": "hall"
+  },
+  {
+   "lost": [],
+   "mission": 9,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "kitchen"
+  },
+  {
+   "lost": [],
+   "mission": 10,
+   "passes": 2,
+   "reached": 2,
+   "start_room": "living room"
+  },
+  {
+   "lost": [],
+   "mission": 11,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "main bedroom"
+  },
+  {
+   "lost": [],
+   "mission": 12,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "study"
+  },
+  {
+   "lost": [],
+   "mission": 13,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bathroom"
+  },
+  {
+   "lost": [],
+   "mission": 14,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "bedroom 1"
+  },
+  {
+   "lost": [],
+   "mission": 15,
+   "passes": 0,
+   "reached": 0,
+   "start_room": "bedroom 2"
+  },
+  {
+   "lost": [],
+   "mission": 16,
+   "passes": 0,
+   "reached": 0,
+   "start_room": "closet"
+  },
+  {
+   "lost": [
+    {
+     "cause": "placement: fewer than two views ranged within 0.5 m",
+     "cell": [
+      52,
+      17
+     ],
+     "frames": [
+      {
+       "frame": 1,
+       "pose": {
+        "heading_deg": 189.124,
+        "x_m": 15.45,
+        "y_m": 2.85
+       },
+       "rows": [
+        {
+         "bearing": -17.46,
+         "inst_range": 2.419,
+         "label": "glasses",
+         "lm": 1,
+         "look": true,
+         "range_m": 1.058,
+         "to_inst": 1.203
+        }
+       ],
+       "true": {
+        "bearing_deg": -18.67,
+        "box": true,
+        "kept": 1,
+        "range_m": 2.419,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 4,
+       "pose": {
+        "heading_deg": 189.124,
+        "x_m": 15.45,
+        "y_m": 2.85
+       },
+       "rows": [],
+       "true": {
+        "bearing_deg": -18.67,
+        "box": true,
+        "kept": 0,
+        "range_m": 2.419,
+        "relabelled": true
+       }
+      },
+      {
+       "frame": 31,
+       "pose": {
+        "heading_deg": 189.124,
+        "x_m": 15.211,
+        "y_m": 1.524
+       },
+       "rows": [
+        {
+         "bearing": -19.78,
+         "inst_range": 3.764,
+         "label": "glasses",
+         "lm": 8,
+         "look": true,
+         "range_m": 3.627,
+         "to_inst": 0.011
+        }
+       ],
+       "true": {
+        "bearing_deg": -19.17,
+        "box": true,
+        "kept": 1,
+        "range_m": 3.764,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 32,
+       "pose": {
+        "heading_deg": 189.124,
+        "x_m": 15.164,
+        "y_m": 1.821
+       },
+       "rows": [
+        {
+         "bearing": -20.68,
+         "inst_range": 3.479,
+         "label": "glasses",
+         "lm": null,
+         "look": null,
+         "range_m": 2.115,
+         "to_inst": 1.207
+        }
+       ],
+       "true": {
+        "bearing_deg": -21.46,
+        "box": true,
+        "kept": 1,
+        "range_m": 3.479,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 77,
+       "pose": {
+        "heading_deg": 189.124,
+        "x_m": 15.444,
+        "y_m": 1.304
+       },
+       "rows": [
+        {
+         "bearing": -15.38,
+         "inst_range": 3.958,
+         "label": "glasses",
+         "lm": null,
+         "look": null,
+         "range_m": 3.809,
+         "to_inst": 0.01
+        }
+       ],
+       "true": {
+        "bearing_deg": -14.16,
+        "box": true,
+        "kept": 1,
+        "range_m": 3.958,
+        "relabelled": false
+       }
+      },
+      {
+       "frame": 78,
+       "pose": {
+        "heading_deg": 189.124,
+        "x_m": 15.397,
+        "y_m": 1.6
+       },
+       "rows": [],
+       "true": {
+        "bearing_deg": -15.6,
+        "box": true,
+        "kept": 0,
+        "range_m": 3.667,
+        "relabelled": true
+       }
+      }
+     ],
+     "inst": 58,
+     "item": "glasses",
+     "kept_frames": 4,
+     "kept_views": 2,
+     "landmarks": [
+      {
+       "belief": 0.846,
+       "id": 8,
+       "label": "dresser",
+       "misses": 0,
+       "reported": true,
+       "to_inst": 0.009,
+       "votes": {
+        "dresser": 1,
+        "glasses": 1
+       }
+      }
+     ],
+     "looks_near": 1,
+     "near_views": 1,
+     "placed_d": [
+      1.203,
+      0.011,
+      1.207,
+      0.01
+     ],
+     "relabelled": 2,
+     "true_frames": 6,
+     "true_ranges": [
+      2.419,
+      2.419,
+      3.764,
+      3.479,
+      3.958,
+      3.667
+     ],
+     "true_views": 2,
+     "unranged": 0
+    }
+   ],
+   "mission": 17,
+   "passes": 2,
+   "reached": 1,
+   "start_room": "dining room"
+  },
+  {
+   "lost": [],
+   "mission": 18,
+   "passes": 0,
+   "reached": 0,
+   "start_room": "ensuite"
+  },
+  {
+   "lost": [],
+   "mission": 19,
+   "passes": 2,
+   "reached": 2,
+   "start_room": "entry"
+  },
+  {
+   "lost": [],
+   "mission": 20,
+   "passes": 1,
+   "reached": 1,
+   "start_room": "hall"
+  }
+ ],
+ "seed": 3178,
+ "steps": 150
+}
