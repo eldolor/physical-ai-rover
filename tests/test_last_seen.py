@@ -227,8 +227,29 @@ def test_the_route_reads_a_running_missions_live_inventory(brain):
     state["runner"] = runner
     a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
     assert a["source"] == "mission" and a["place"]["x_m"] == 5.0
-    runner.is_running = lambda: False             # ended: its report is the saved chain's
+    # Ended, its save not yet queued (review, second pass): still its own
+    # inventory, never the older saved head.
+    runner.is_running = lambda: False
+    a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
+    assert a["source"] == "mission" and a["place"]["x_m"] == 5.0
+    # A saved chain on the same map further on (another brain process) wins.
+    _save_chain(brain.tmp, _head([_row("mug", 9.0, 9.0, 0.9, seen_seq=7)], carry_seq=7))
+    a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
+    assert a["source"] == "saved" and a["place"]["x_m"] == 9.0
+
+
+def test_a_runner_with_no_saved_map_falls_back_to_the_saved_chain(brain):
+    _save_chain(brain.tmp, _head([_row("mug", 1.0, 1.0, 0.9, seen_seq=4)]))
+    state = _route_state(brain)
+    state["runner"] = SimpleNamespace(is_running=lambda: False,
+                                      inventory_report=lambda: _head([], frame_id=None))
     assert brain.get("/mission/last-seen", params={"name": "mug"}).json()["place"]["x_m"] == 1.0
+
+
+def test_a_huge_number_in_a_row_is_skipped_not_a_500():
+    head = {"frame_id": FRAME, "carry_seq": 1,
+            "reported": [_row("mug", 10 ** 400, 1.0, 0.9), _row("mug", 2.0, 2.0, 0.9)]}
+    assert [p["x_m"] for p in last_seen.answer("mug", head)["places"]] == [2.0]
 
 
 def test_a_save_still_in_flight_is_a_503_not_a_wrong_answer(brain, monkeypatch):

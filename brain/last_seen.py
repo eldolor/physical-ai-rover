@@ -87,8 +87,8 @@ def _rows(name: str, head: dict) -> list:
         try:
             label = str(d["label"]).strip().lower()
             x, y, b = float(d["x_m"]), float(d["y_m"]), float(d["belief"])
-        except (KeyError, TypeError, ValueError):
-            continue
+        except (KeyError, TypeError, ValueError, OverflowError):
+            continue                  # (OverflowError: a huge JSON integer; review)
         if not label or not all(map(math.isfinite, (x, y, b))) or b < CARRY_MIN_BELIEF:
             continue
         if not names(name, label):

@@ -2909,12 +2909,14 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   // The name to ask for, or "" while it cannot be known: the reading's target
   // once it is of the words in the box (both reviews: a tap before the read
   // asked for the whole sentence); the words as typed only from a brain that
-  // reads no sentences ("old").
+  // reads no sentences ("old") or when the read failed ("error").
   function lastSeenName() {
     const typed = document.getElementById("brain-target").value.trim();
     const r = findReader ? findReader.reading : null;
     if (!typed || !r || r.text !== typed) return "";
-    if (r.status === "old") return typed;
+    // A brain that reads no sentences, or a read that failed: the words as
+    // typed (review: a failing parse must not take the ask away with it).
+    if (r.status === "old" || r.status === "error") return typed;
     return r.status === "ok" && r.parsed && r.parsed.target ? r.parsed.target : "";
   }
   function setLastSeenThumb(thumb) {

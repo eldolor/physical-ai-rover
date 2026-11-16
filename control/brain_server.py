@@ -103,6 +103,7 @@ from brain import room_labels as room_labels_mod
 from brain import room_names as room_names_mod
 from brain import what_i_saw as what_i_saw_mod
 from brain import last_seen as last_seen_mod
+from brain.inventory import carry_seq_of
 from control import drills
 from control.brain_config import load_brain_config
 from control.inventory_store import _slug, inventory_store_from_config
@@ -1678,25 +1679,35 @@ def create_app(
         except last_seen_mod.NameRefused as e:
             raise HTTPException(status_code=422, detail=str(e))
         runner = state["runner"]
-        head, source = None, "saved"
-        if runner is not None and runner.is_running():
+        head, source, live = None, "saved", None
+        if runner is not None:
+            # This brain's last mission, running or ended: its inventory is
+            # what it saves (review: between a mission's end and its save
+            # being queued, the directory holds no trace of it).
             report = getattr(runner, "inventory_report", None)
-            live = report() if report is not None else None
-            if isinstance(live, dict) and live.get("frame_id"):
-                head, source = live, "mission"
+            got = report() if report is not None else None
+            if isinstance(got, dict) and got.get("frame_id"):
+                live = got
         try:
-            if head is None:
-                inv = inventory_store_from_config(config)
-                # A mission's save still being written is waited for before
-                # the directory is listed (review): else the first mission on
-                # a map reads as "no memory", or a new map's as the old one's.
-                key = str(inv.local_dir.resolve())
-                with inventory_store_mod._PENDING_COND:
-                    if not inventory_store_mod._PENDING_COND.wait_for(
-                            lambda: not inventory_store_mod._PENDING.get(key),
-                            inventory_store_mod.PENDING_WAIT_S):
-                        raise TimeoutError(f"an inventory save still in flight after "
-                                           f"{inventory_store_mod.PENDING_WAIT_S:.0f} s")
+            inv = inventory_store_from_config(config)
+            # A save still being written is waited for before the directory
+            # is listed (review): else the first mission on a map reads as
+            # "no memory", or a new map's as the old one's.
+            key = str(inv.local_dir.resolve())
+            with inventory_store_mod._PENDING_COND:
+                if not inventory_store_mod._PENDING_COND.wait_for(
+                        lambda: not inventory_store_mod._PENDING.get(key),
+                        inventory_store_mod.PENDING_WAIT_S):
+                    raise TimeoutError(f"an inventory save still in flight after "
+                                       f"{inventory_store_mod.PENDING_WAIT_S:.0f} s")
+            if live is not None:
+                # The saved chain on the same map wins only when it is further
+                # on (another brain process saved after this one's mission).
+                saved = inv.latest_for(live["frame_id"])
+                head, source = live, "mission"
+                if saved is not None and carry_seq_of(saved) > carry_seq_of(live):
+                    head, source = saved, "saved"
+            else:
                 head = last_seen_mod.saved_head(inv)
         except TimeoutError as e:
             raise HTTPException(status_code=503, detail=f"a mission's memory is still being saved: {e}")

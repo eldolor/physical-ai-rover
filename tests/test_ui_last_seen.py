@@ -84,7 +84,7 @@ def _shot(page, name):
         page.screenshot(path=str(Path(out) / f"twin-3.175c-{name}.png"))
 
 
-def _open(browser, twin_server, brain, *, ask="real", engineer=False):
+def _open(browser, twin_server, brain, *, ask="real", engineer=False, parse="real"):
     """Home with a stubbed brain connected. `ask`: "real" answers from the
     real brain; "old" a brain without the route (FastAPI's 404); "abort" no
     answer."""
@@ -111,6 +111,8 @@ def _open(browser, twin_server, brain, *, ask="real", engineer=False):
             return route.fulfill(status=200, content_type="application/json",
                                  body=json.dumps({"started": True, "status": RUNNING}))
         if path == "/mission/request/parse":
+            if parse == "abort":
+                return route.abort()
             r = brain.post(path, json=req.post_data_json)
             return route.fulfill(status=r.status_code, content_type="application/json", body=r.text)
         if path == ASK:
@@ -274,5 +276,18 @@ def test_an_answer_is_forgotten_once_a_mission_starts(browser, twin_server, brai
     sync_api.expect(page.locator(ASK_BTN)).to_be_visible()
     sync_api.expect(page.locator("#last-seen")).to_be_hidden()
     assert page.locator(TEXT).inner_text() == ""
+    assert not errors, errors
+    page.context.close()
+
+
+def test_a_failing_sentence_read_still_lets_the_words_be_asked(browser, twin_server, brain):
+    """Review, second pass: a parse that fails must not take the ask away."""
+    page, errors, calls = _open(browser, twin_server, brain, parse="abort")
+    page.fill("#brain-target", "red backpack")
+    sync_api.expect(page.locator("#find-reading")).to_contain_text("Couldn't read that", timeout=5000)
+    sync_api.expect(page.locator(ASK_BTN)).to_be_enabled()
+    page.click(ASK_BTN)
+    sync_api.expect(page.locator(TEXT)).to_contain_text("Last seen: red backpack", timeout=5000)
+    assert calls["ask"] == ["/mission/last-seen?name=red%20backpack"], calls
     assert not errors, errors
     page.context.close()
