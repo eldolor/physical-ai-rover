@@ -322,7 +322,8 @@ def sweep(n: int, target: str, seed: int, max_steps: int, log=sys.stderr, placed
                              for i, d in sorted(on["nearest"].items())},
                "passes": name(sc["label"]["passes"]),
                "reached": name(sc["label"]["reached"]),
-               "views": {f"{insts[i][0]}#{i}" if placed else insts[i][0]: on["views"].get(i, 0)
+               # Keyed by instance always: two instances of one item never collapse.
+               "views": {f"{insts[i][0]}#{i}": on["views"].get(i, 0)
                          for i in sc["label"]["passes"]},
                "passes_2v": name(sc["label"]["passes_2v"]),
                "reached_2v": name(sc["label"]["reached_2v"])}

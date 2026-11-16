@@ -2,8 +2,8 @@
 # Copyright (C) 2026 Anshu Gaind
 """3.178.F's diagnosis: why does a pass never reach a report?
 
-    python evaluations/watch-list-3178/diagnose_f.py --seed 3178 --out diagnose-f-b.json
-    python evaluations/watch-list-3178/diagnose_f.py --seed 4178 --out diagnose-f-d.json
+    python evaluations/watch-list-3178/diagnose_f.py --seed 3178 --out diagnose-f-3178.json
+    python evaluations/watch-list-3178/diagnose_f.py --seed 4178 --out diagnose-f-4178.json
 
 TUNING seeds only (B's 3178/3179, D's 4178/4179); never E's fresh 5178/5179
 or F's own (6178/6179). The mission is `sweep.run_one`'s with the list on (E's placed
@@ -25,17 +25,18 @@ did not get through (`classify`).
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import math
+import multiprocessing
 import random
 import sys
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE.parents[1]))
 
-import sweep as sw  # noqa: E402
 from brain import inventory as inv  # noqa: E402
 from brain.goal_pose import _wrap  # noqa: E402
 from brain.watch_list import item_for  # noqa: E402
@@ -45,6 +46,19 @@ from sim.mock_robot import MockRobot  # noqa: E402
 from tests import inventory_sweep as base  # noqa: E402
 from tests.conftest import mock_world_for  # noqa: E402
 
+def load_sweep():
+    """`sweep.py` under a unique module name (other evaluations have a
+    `sweep.py` too), once per process."""
+    name = "watch_sweep_3178"
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, HERE / "sweep.py")
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules[name] = mod
+        spec.loader.exec_module(mod)
+    return sys.modules[name]
+
+
+sw = load_sweep()
 LIST = sw.LIST
 
 
@@ -184,14 +198,6 @@ def trace_one(job) -> dict:
     return out
 
 
-def _views(poses: list) -> int:
-    kept = []
-    for p in poses:
-        if all(inv._new_view(q, p) for q in kept):
-            kept.append(p)
-    return len(kept)
-
-
 def explain(i, insts, det, tinv, lms) -> dict:
     item = item_for(insts[i][0], LIST)
     cells = insts[i][1]
@@ -215,13 +221,13 @@ def explain(i, insts, det, tinv, lms) -> dict:
                         "to_inst": round(sw.dist_to_cells(lm.x, lm.y, cells), 3),
                         "reported": lm.belief >= inv.REPORT_BELIEF})
     e = {"inst": i, "item": item, "cell": sorted(cells)[0],
-         "true_frames": len(seen), "true_views": _views(poses),
+         "true_frames": len(seen), "true_views": sw.views(poses),
          "true_ranges": [t["det"]["true"][i]["range_m"] for t in seen],
-         "kept_frames": len(kept_frames), "kept_views": _views([t["pose"] for t in kept_frames]),
+         "kept_frames": len(kept_frames), "kept_views": sw.views([t["pose"] for t in kept_frames]),
          "relabelled": sum(t["det"]["true"][i]["relabelled"] for t in seen),
          "unranged": sum(1 for _, row in rows if "xy" not in row),
          "placed_d": [row["to_inst"][i] for _, row in placed],
-         "near_views": _views([t["pose"] for t, _ in near]),
+         "near_views": sw.views([t["pose"] for t, _ in near]),
          "looks_near": len(looks_near), "landmarks": lm_rows,
          # Each frame that saw it: the pose, the truth, and the inventory's rows of its item.
          "frames": [{"frame": t["frame"], "pose": t["pose"], "true": t["det"]["true"][i],
@@ -242,9 +248,11 @@ def classify(e: dict) -> str:
         return "detector: fewer than two views survived the erring detector"
     if e["near_views"] < 2:
         return "placement: fewer than two views ranged within 0.5 m"
-    if any(lm.get("reported") is False and lm["label"] == e["item"] for lm in e["landmarks"]):
+    if any(lm.get("reported") is False and item_for(lm["label"], LIST) == e["item"]
+           for lm in e["landmarks"]):
         return "belief: a landmark of its item under REPORT_BELIEF"
-    if any(lm.get("label") != e["item"] for lm in e["landmarks"] if not lm.get("gone")):
+    if any(item_for(lm.get("label"), LIST) != e["item"] for lm in e["landmarks"]
+           if not lm.get("gone")):
         return "fusion: joined a landmark labelled otherwise"
     return "other"
 
@@ -266,7 +274,8 @@ def main(argv=None):
                               ("present", sw.PRESENT_TARGET, args.seed + 1)):
         jobs = [(k, s, target, seed * 100 + k, args.steps, placed)
                 for k, s in enumerate(sw.starts(args.missions, seed, placed))]
-        with ProcessPoolExecutor(args.workers) as ex:
+        # fork: the workers share this process's module table (`load_sweep`).
+        with ProcessPoolExecutor(args.workers, mp_context=multiprocessing.get_context("fork")) as ex:
             out[key] = list(ex.map(trace_one, jobs))
     path = Path(args.out)
     if not path.is_absolute():

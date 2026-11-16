@@ -8,6 +8,7 @@ here (each is minutes); `evaluations/watch-list-3178/diagnose_f.py` and
 """
 from __future__ import annotations
 
+import importlib.util
 import json
 import sys
 from collections import Counter
@@ -18,8 +19,20 @@ import pytest
 from brain import inventory as inv
 
 HERE = Path(__file__).resolve().parents[1] / "evaluations" / "watch-list-3178"
-sys.path.insert(0, str(HERE))
-import sweep as sw  # noqa: E402
+
+
+def _load(name: str, file: str):
+    """An evaluation script under a unique module name (other evaluations
+    have a `sweep.py` too); nothing goes on sys.path."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, HERE / file)
+        mod = importlib.util.module_from_spec(spec)
+        sys.modules[name] = mod
+        spec.loader.exec_module(mod)
+    return sys.modules[name]
+
+
+sw = _load("watch_sweep_3178", "sweep.py")
 
 ONE_VIEW = "one viewpoint"
 PLACEMENT = "placement"
@@ -129,12 +142,18 @@ def test_tuning_numbers_are_pinned(seed, passes, reached, two, reached_two, wron
 
 
 def test_diagnosis_never_runs_on_fresh_seeds():
-    import diagnose_f
-    import range_rule_f
-    for seed in (5178, 6178):
+    diagnose_f = _load("watch_diagnose_3178f", "diagnose_f.py")
+    range_rule_f = _load("watch_range_rule_3178f", "range_rule_f.py")
+    assert diagnose_f.sw is sw and range_rule_f.load_sweep() is sw
+    # Every fresh seed, and the tuning seed below one (its present sweep is seed + 1).
+    for seed in (5177, 5178, 5179, 6177, 6178, 6179):
         with pytest.raises(SystemExit):
             diagnose_f.main(["--seed", str(seed), "--out", "/dev/null"])
-    assert {"5178", "5179", "6178", "6179"} <= set(range_rule_f.FRESH)
+        with pytest.raises(SystemExit):
+            range_rule_f.main(["closest", "--seed", str(seed), "--out", "/tmp/x.json"])
+    # The range experiment never writes over a pinned file.
+    with pytest.raises(SystemExit):
+        range_rule_f.main(["median", "--seed", "3178", "--out", str(HERE / "results-d.json")])
 
 
 def test_fs_fresh_run_is_pinned():
