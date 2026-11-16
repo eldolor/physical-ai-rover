@@ -1691,15 +1691,15 @@ def create_app(
             running = bool(getattr(runner, "is_running", lambda: False)())
         except Exception:  # noqa: BLE001 -- a runner mid-teardown is not running
             running = False
-        # 3.175.G: the heads to read, in order (the next for a name the one
-        # before has not seen, or, after a never-carried head, has only doubted).
-        # - A running mission that carried the chain (`carry_seq` > 0) holds it
-        #   and more: it alone, with no wait on another mission's save.
-        # - Any other mission of this brain (running but not carrying yet, or
-        #   ended): its own inventory first, then the saved chain on ITS map,
-        #   until its own save lands (the saved head is its report, by
-        #   `mission_id`, or one further on than a mission that carried).
-        # - Once landed, or with no mission: the newest saved map's head.
+        # 3.175.G: the heads to read, in order.
+        # - A mission of this brain that carried the chain (`carry_seq` > 0)
+        #   holds it and its own looks: it alone -- running, with no wait;
+        #   ended, until its save lands.
+        # - One that never carried (running or ended): its own inventory, then
+        #   the saved chain on ITS map, until its save lands. Its doubtful
+        #   yields to a place seen in the saved head (it never looked there).
+        # - Landed (the saved head is its report by `mission_id`, or further on
+        #   than a mission that carried), or no mission: the newest saved map.
         try:
             if live is not None and running and carry_seq_of(live) > 0:
                 heads = [(live, "mission")]
