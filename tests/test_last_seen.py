@@ -331,7 +331,7 @@ def test_g1_the_route_asks_for_a_sentences_target(brain):
 
 def test_g2_a_running_mission_answers_live_with_no_wait_and_no_compare(brain, monkeypatch):
     from control import inventory_store as inv_mod
-    live = _head([_row("mug", 5.0, 5.0, 0.9, seen_seq=0)], carry_seq=0)    # carried nothing
+    live = _head([_row("mug", 5.0, 5.0, 0.9, seen_seq=4)], carry_seq=4)    # it carried the chain
     _save_chain(brain.tmp, _head([_row("mug", 1.0, 1.0, 0.9, seen_seq=3)], carry_seq=3))
     _route_state(brain)["runner"] = SimpleNamespace(is_running=lambda: True, inventory_report=lambda: live)
     key = str((brain.tmp / "inv").resolve())
@@ -368,3 +368,40 @@ def test_g4_a_huge_number_in_a_report_row_is_skipped_not_a_500():
                {"mission_id": "ok", "frame_id": FRAME,
                 "landmarks": [{"label": "mug", "x_m": 1.0, "y_m": 1.0}]}]
     assert last_seen.answer("mug", head, reports)["when"]["mission_id"] == "ok"
+
+
+def test_g6_an_exact_name_is_asked_first_and_a_cut_fragment_never(brain):
+    """3.175.G review: the sentence rules cut "t-shirt" to "t", which is in
+    nearly every label. The words are asked as given first; the sentence's
+    target only when they are not seen, and only a whole-word target of at
+    least three letters."""
+    _save_chain(brain.tmp, _head([_row("t-shirt", 1.0, 1.0, 0.95, seen_seq=4),
+                                  _row("table", 2.0, 2.0, 0.95, seen_seq=4),
+                                  _row("plant in pot", 3.0, 3.0, 0.95, seen_seq=4),
+                                  _row("plant", 4.0, 4.0, 0.95, seen_seq=4),
+                                  _row("red backpack", 5.0, 5.0, 0.95, seen_seq=4)]))
+
+    def ask(n):
+        return brain.get("/mission/last-seen", params={"name": n}).json()
+    assert (ask("t-shirt")["name"], ask("t-shirt")["place"]["x_m"]) == ("t-shirt", 1.0)
+    assert ask("where is my t-shirt")["name"] == "where is my t-shirt"     # "t" refused
+    assert ask("where is my t-shirt")["status"] == "not_seen"
+    assert ask("plant in pot")["place"]["x_m"] == 3.0                    # a label, as given
+    a = ask("where is my red backpack")
+    assert (a["name"], a["place"]["x_m"]) == ("red backpack", 5.0)
+
+
+def test_g7_a_running_mission_not_yet_carrying_reads_the_saved_chain(brain):
+    """3.175.G review: a mission that has not carried the chain yet (seeded
+    late, carry_seq 0) must not hide the saved map's sightings."""
+    live = _head([], carry_seq=0)
+    _save_chain(brain.tmp, _head([_row("mug", 1.0, 1.0, 0.9, seen_seq=3)], carry_seq=3))
+    _route_state(brain)["runner"] = SimpleNamespace(is_running=lambda: True, inventory_report=lambda: live)
+    a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
+    assert a["status"] == "seen" and a["place"]["x_m"] == 1.0, a
+
+
+def test_g8_a_runner_without_is_running_is_not_a_500(brain):
+    live = _head([_row("mug", 5.0, 5.0, 0.9, seen_seq=2)], carry_seq=2)
+    _route_state(brain)["runner"] = SimpleNamespace(inventory_report=lambda: live)
+    assert brain.get("/mission/last-seen", params={"name": "mug"}).status_code == 200

@@ -1680,10 +1680,6 @@ def create_app(
             last_seen_mod.clean_name(name)        # a bad name reads nothing
         except last_seen_mod.NameRefused as e:
             raise HTTPException(status_code=422, detail=str(e))
-        # 3.175.G: a sentence is read by 3.176's rules (no room names, so no
-        # world) and its target asked for: a twin whose read failed sends the
-        # words as typed. No single target: the words as they are.
-        name = parse_request(name, []).target or name
         runner = state["runner"]
         live = None
         if runner is not None:
@@ -1692,9 +1688,12 @@ def create_app(
             if isinstance(got, dict) and got.get("frame_id"):
                 live = got
         try:
-            if live is not None and runner.is_running():
-                # 3.175.G: a running mission answers from its own inventory,
-                # with no wait on another's save and nothing to compare.
+            running = bool(getattr(runner, "is_running", lambda: False)())
+            if live is not None and running and carry_seq_of(live) > 0:
+                # 3.175.G: a running mission that has carried the chain answers
+                # from its own inventory (it holds the chain and more), with no
+                # wait on another's save and nothing to compare. One not yet
+                # carrying (seeded late, or nothing saved) is compared below.
                 head, source = live, "mission"
             else:
                 inv = inventory_store_from_config(config)
@@ -1732,7 +1731,21 @@ def create_app(
                 except what_i_saw_mod.ReportRefused:
                     continue                      # deleted since it was listed
         try:
-            return JSONResponse(last_seen_mod.answer(name, head, reports(), source=source))
+            got = last_seen_mod.answer(name, head, reports(), source=source)
+            if got["status"] == last_seen_mod.NOT_SEEN:
+                # 3.175.G: the words as given first (a label like "t-shirt" or
+                # "plant in pot" is asked whole); not seen, a sentence's target
+                # by 3.176's rules (no room names, so no world) -- a twin whose
+                # read failed sends the words as typed. Only a target of whole
+                # words of the name, three letters or more: the rules cut
+                # "t-shirt" to "t", which is in nearly every label.
+                target = parse_request(name, []).target
+                if target and target != got["name"] and len(target) >= 3 and re.search(
+                        r"(?<![\w-])" + re.escape(target) + r"(?![\w-])", got["name"]):
+                    again = last_seen_mod.answer(target, head, reports(), source=source)
+                    if again["status"] != last_seen_mod.NOT_SEEN:
+                        got = again
+            return JSONResponse(got)
         except OSError as e:
             raise HTTPException(status_code=503, detail=f"the reports can't be read now ({e})")
 
