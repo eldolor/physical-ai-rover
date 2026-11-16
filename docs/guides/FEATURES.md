@@ -795,7 +795,7 @@ finished map at mission start; N1's discovered map replaced it.)
   says so plainly when the robot looked there since and did not see it,
   has never seen it on this map, or remembers nothing yet. The place is the
   one a search would go to first. **Go check** starts an ordinary search for
-  it, exactly as Start would. Answered from the robot's own disk (never
+  it, as Start would for that name typed alone (with no room). Answered from the robot's own disk (never
   uploaded); on the car it covers things once searched for (only the target
   is named on real frames).
 - **Policy picker** -- the free rule-based explorer (`brain/agent.py`, which

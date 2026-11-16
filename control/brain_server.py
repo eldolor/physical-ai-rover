@@ -106,6 +106,7 @@ from brain import last_seen as last_seen_mod
 from control import drills
 from control.brain_config import load_brain_config
 from control.inventory_store import _slug, inventory_store_from_config
+from control import inventory_store as inventory_store_mod
 from control.mission_runner import MAX_REQUEST_CHARS, VISION_POLICIES, MissionRunner
 from control.reconfirm import CloudWatch, Reconfirmer, health_probe
 from control.recording_routes import (  # noqa: F401 -- re-exported, see above
@@ -1672,6 +1673,10 @@ def create_app(
         (the running mission's inventory, else the newest saved map's head)
         and 3.162's reports. Read-only and local: no pose, no map, no robot,
         no bridge; nothing moves (`brain/last_seen.py`)."""
+        try:
+            last_seen_mod.clean_name(name)        # a bad name reads nothing
+        except last_seen_mod.NameRefused as e:
+            raise HTTPException(status_code=422, detail=str(e))
         runner = state["runner"]
         head, source = None, "saved"
         if runner is not None and runner.is_running():
@@ -1681,22 +1686,35 @@ def create_app(
                 head, source = live, "mission"
         try:
             if head is None:
-                head = last_seen_mod.saved_head(inventory_store_from_config(config))
+                inv = inventory_store_from_config(config)
+                # A mission's save still being written is waited for before
+                # the directory is listed (review): else the first mission on
+                # a map reads as "no memory", or a new map's as the old one's.
+                key = str(inv.local_dir.resolve())
+                with inventory_store_mod._PENDING_COND:
+                    if not inventory_store_mod._PENDING_COND.wait_for(
+                            lambda: not inventory_store_mod._PENDING.get(key),
+                            inventory_store_mod.PENDING_WAIT_S):
+                        raise TimeoutError(f"an inventory save still in flight after "
+                                           f"{inventory_store_mod.PENDING_WAIT_S:.0f} s")
+                head = last_seen_mod.saved_head(inv)
         except TimeoutError as e:
             raise HTTPException(status_code=503, detail=f"a mission's memory is still being saved: {e}")
         except OSError as e:
             raise HTTPException(status_code=503, detail=f"the memory can't be read now ({e})")
         store = _saw_store()
-        reports = []
-        for line in store.list():
-            try:
-                reports.append(store.get(line["mission_id"]))
-            except what_i_saw_mod.ReportRefused:
-                continue                      # deleted since it was listed
+
+        def reports():
+            # Lazily, newest first: only as many as `when` needs.
+            for line in store.list():
+                try:
+                    yield store.get(line["mission_id"])
+                except what_i_saw_mod.ReportRefused:
+                    continue                      # deleted since it was listed
         try:
-            return JSONResponse(last_seen_mod.answer(name, head, reports, source=source))
-        except last_seen_mod.NameRefused as e:
-            raise HTTPException(status_code=422, detail=str(e))
+            return JSONResponse(last_seen_mod.answer(name, head, reports(), source=source))
+        except OSError as e:
+            raise HTTPException(status_code=503, detail=f"the reports can't be read now ({e})")
 
     @app.get(prefix + "/mission/inventory", dependencies=[Depends(require_secret)])
     async def mission_inventory():

@@ -2905,11 +2905,17 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     return brainApi("GET", "/mission/last-seen?name=" + encodeURIComponent(name));
   }, function () { renderLastSeen(); });
   var lastSeenThumb = { key: null, url: null, seq: 0 };
+  var lastSeenDrawn = { html: null, brain: null };
+  // The name to ask for, or "" while it cannot be known: the reading's target
+  // once it is of the words in the box (both reviews: a tap before the read
+  // asked for the whole sentence); the words as typed only from a brain that
+  // reads no sentences ("old").
   function lastSeenName() {
     const typed = document.getElementById("brain-target").value.trim();
     const r = findReader ? findReader.reading : null;
-    if (r && r.status === "ok" && r.text === typed && r.parsed && r.parsed.target) return r.parsed.target;
-    return typed;
+    if (!typed || !r || r.text !== typed) return "";
+    if (r.status === "old") return typed;
+    return r.status === "ok" && r.parsed && r.parsed.target ? r.parsed.target : "";
   }
   function setLastSeenThumb(thumb) {
     const img = document.getElementById("last-seen-img");
@@ -2922,7 +2928,8 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     img.hidden = true;
     img.removeAttribute("src");
     if (!thumb) return;
-    fetch(state.brainUrl + "/mission/reports/" + encodeURIComponent(thumb.mission_id) + "/" + thumb.thumb,
+    const path = String(thumb.thumb).split("/").map(encodeURIComponent).join("/");
+    fetch(state.brainUrl + "/mission/reports/" + encodeURIComponent(thumb.mission_id) + "/" + path,
           { headers: brainAuthHeaders({}) })
       .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.blob(); })
       .then(function (blob) {
@@ -2939,6 +2946,14 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     const text = document.getElementById("last-seen-text");
     const go = document.getElementById("btn-last-seen-go");
     if (!ask || !row || !text || !go || !lastSeen) return;
+    // An answer is of one brain, before one mission: a mission (it changes
+    // what the robot remembers) or another brain forgets it (both reviews).
+    if (lastSeen.reading.status !== "idle"
+        && (state.brainMissionRunning || lastSeenDrawn.brain !== state.brainUrl)) {
+      lastSeen.clear();                     // redraws through here, idle
+      return;
+    }
+    lastSeenDrawn.brain = state.brainUrl;
     const shown = state.brainConnected && findJob() && !state.brainMissionRunning;
     ask.textContent = t("lastSeen.ask");
     // style.display, not `hidden`: ui.css's `button` display beats the attribute.
@@ -2947,7 +2962,9 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     const view = shown ? lastSeenView(lastSeen.reading, t, escapeHtml, Date.now(), engineerMode())
       : { text: "", go: false, thumb: null };
     row.hidden = !view.text;
-    if (text.innerHTML !== view.text) text.innerHTML = view.text;
+    // Compared with what was last drawn, not innerHTML (re-serialised by
+    // the browser): a live region is rewritten only when it changes.
+    if (lastSeenDrawn.html !== view.text) { text.innerHTML = view.text; lastSeenDrawn.html = view.text; }
     go.textContent = t("lastSeen.go");
     go.hidden = !view.go;
     go.disabled = findStarting;
@@ -4459,7 +4476,11 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     else renderLastSeen();
   });
   document.getElementById("btn-last-seen").onclick = function () {
-    if (state.brainConnected && findJob()) lastSeen.ask(lastSeenName());
+    const name = lastSeenName();
+    if (name && state.brainConnected && findJob()) {
+      lastSeenDrawn.brain = state.brainUrl;
+      lastSeen.ask(name);
+    }
   };
   document.getElementById("btn-last-seen-go").onclick = function () { goCheck(); };
 

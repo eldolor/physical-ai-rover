@@ -101,8 +101,35 @@ def test_bad_rows_and_seen_seq_are_read_as_the_seed_reads_them():
             _row("mug", 7.0, 7.0, 0.9, seen_seq=99), _row("mug", 8.0, 8.0, 0.85, seen_seq=1)]
     head = {"frame_id": FRAME, "carry_seq": 2, "reported": rows}
     a = last_seen.answer("mug", head)
-    # seen_seq 99 is past the head's carry_seq: read None, recalled last.
-    assert [(p["x_m"], p["seen_seq"]) for p in a["places"]] == [(8.0, 1), (7.0, None)]
+    # seen_seq 99 is past the head's carry_seq: read None, recalled last. A
+    # belief of True is 1.0 to the seed's float(), so it is carried too.
+    assert [(p["x_m"], p["seen_seq"]) for p in a["places"]] == [(8.0, 1), (1.0, None), (7.0, None)]
+    assert [(p["x_m"], p["y_m"]) for p in a["places"]] == _recalled(head, "mug")
+
+
+def test_rows_parse_as_the_seed_parses_them():
+    """Review: numeric strings and integral float seen_seq, as `Inventory.seed`."""
+    rows = [_row("mug", "1.5", "2", "0.9", seen_seq=2.0), _row("mug", 3.0, 3.0, 0.95, seen_seq=1)]
+    head = {"frame_id": FRAME, "carry_seq": 2, "reported": rows}
+    a = last_seen.answer("mug", head)
+    assert [(p["x_m"], p["seen_seq"]) for p in a["places"]] == [(1.5, 2), (3.0, 1)]
+    assert [(p["x_m"], p["y_m"]) for p in a["places"]] == _recalled(head, "mug")
+
+
+def test_reports_are_read_only_as_far_as_when_needs():
+    head = _head([_row("mug", 1.0, 1.0, 0.95, seen_seq=3)])
+    read = []
+
+    def reports():
+        for i in range(10):
+            read.append(i)
+            yield {"mission_id": f"m{i}", "frame_id": FRAME,
+                   "landmarks": [{"label": "mug", "x_m": 1.0, "y_m": 1.0}] if i == 1 else []}
+    assert last_seen.answer("mug", head, reports())["when"]["mission_id"] == "m1"
+    assert read == [0, 1]
+    read.clear()
+    last_seen.answer("zeppelin", head, reports())
+    assert read == []                                    # not seen: no report read
 
 
 def test_when_is_the_newest_kept_report_on_the_map_with_the_thing_there():
@@ -212,6 +239,22 @@ def test_a_save_still_in_flight_is_a_503_not_a_wrong_answer(brain, monkeypatch):
         raise TimeoutError("an inventory save still in flight after 2 s")
     monkeypatch.setattr(InventoryStore, "latest_for", slow)
     r = brain.get("/mission/last-seen", params={"name": "mug"})
+    assert r.status_code == 503 and "still being saved" in r.json()["detail"]
+
+
+def test_the_route_waits_for_a_save_in_flight_then_503s(brain, monkeypatch):
+    """Review: a save still being written was listed around, so the first
+    mission on a map read as "no memory"."""
+    from control import inventory_store as inv_mod
+    key = str((brain.tmp / "inv").resolve())
+    monkeypatch.setattr(inv_mod, "PENDING_WAIT_S", 0.05)
+    with inv_mod._PENDING_COND:
+        inv_mod._PENDING[key] = 1
+    try:
+        r = brain.get("/mission/last-seen", params={"name": "mug"})
+    finally:
+        with inv_mod._PENDING_COND:
+            inv_mod._PENDING.pop(key, None)
     assert r.status_code == 503 and "still being saved" in r.json()["detail"]
 
 

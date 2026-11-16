@@ -43,7 +43,7 @@ export function createLastSeen(ask, onChange) {
   return {
     reading: r,
     ask: askFor,
-    // Forget the shown answer (the box changed, a mission started).
+    // Forget the shown answer (app.js: the box changed, a mission started, another brain).
     clear: function () { seq++; set({ name: null, status: "idle", answer: null, error: null }); },
   };
 }
@@ -59,14 +59,16 @@ export function agoWords(ended, nowMs, t) {
 }
 
 function roomOf(a) {
-  // The report's room where it differs from the mission's own label: a
-  // person's name for it (3.160), shown as given. Else the mission's label
-  // ("living_room"), as words: "the living room". "unknown" is no room.
+  // The report's room (3.160's person-given name there, where one is), else
+  // the head row's. A mission's label ("living_room": lower case, no
+  // apostrophe) reads "the living room"; anything else -- a person's name --
+  // is shown as given (review: one rule for both sources). "unknown" is none.
   const p = a.place || a.doubtful || {};
   const w = a.when && a.when.room;
-  if (w && w !== "unknown" && w !== p.room) return String(w);
-  const room = p.room || w;
-  return room && room !== "unknown" ? "the " + String(room).replace(/_/g, " ") : null;
+  const room = w && w !== "unknown" ? w : p.room;
+  if (!room || room === "unknown") return null;
+  const s = String(room);
+  return /^[a-z0-9_ ]+$/.test(s) ? "the " + s.replace(/_/g, " ") : s;
 }
 
 // The row's words: { text, go, thumb } -- `text` is HTML built from escaped

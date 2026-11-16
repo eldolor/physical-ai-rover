@@ -43,7 +43,7 @@ import math
 import re
 from typing import Iterable, Optional
 
-from brain.inventory import CARRY_MIN_BELIEF, MERGE_M, REPORT_BELIEF, carry_seq_of
+from brain.inventory import CARRY_MIN_BELIEF, MERGE_M, REPORT_BELIEF, _seen_seq, carry_seq_of
 
 MAX_NAME_CHARS = 80
 SEEN, DOUBTFUL, NOT_SEEN, NO_MEMORY = "seen", "doubtful", "not_seen", "no_memory"
@@ -76,25 +76,22 @@ def _num(v) -> Optional[float]:
     return f if math.isfinite(f) else None
 
 
-def _seen_seq(v, head_seq: int) -> Optional[int]:
-    """As `Inventory.seed` reads it: an integer from 0 to the head's own
-    `carry_seq`, else None (recalled last)."""
-    if isinstance(v, bool) or not isinstance(v, int):
-        return None
-    return v if 0 <= v <= head_seq else None
-
-
 def _rows(name: str, head: dict) -> list:
     """The head's rows naming `name`, as a mission would carry them (belief at
     least CARRY_MIN_BELIEF, a finite place)."""
     seq = carry_seq_of(head)
     out = []
     for d in list(head.get("reported") or []) + list(head.get("candidates") or []):
-        if not isinstance(d, dict):
+        # As `Inventory.seed` reads a row: float() on each number, so what a
+        # mission carries is what is answered (review: one parse rule).
+        try:
+            label = str(d["label"]).strip().lower()
+            x, y, b = float(d["x_m"]), float(d["y_m"]), float(d["belief"])
+        except (KeyError, TypeError, ValueError):
             continue
-        label = str(d.get("label") or "").strip().lower()
-        x, y, b = _num(d.get("x_m")), _num(d.get("y_m")), _num(d.get("belief"))
-        if not label or None in (x, y, b) or b < CARRY_MIN_BELIEF or not names(name, label):
+        if not label or not all(map(math.isfinite, (x, y, b))) or b < CARRY_MIN_BELIEF:
+            continue
+        if not names(name, label):
             continue
         out.append({"label": label, "x_m": x, "y_m": y, "belief": b,
                     "room": str(d.get("room") or "unknown"),
@@ -144,7 +141,8 @@ def _public(r: dict) -> dict:
 
 def answer(name, head: Optional[dict], reports: Iterable[dict] = (), source: str = "saved") -> dict:
     """Where `name` was last seen, from the chain `head` and the kept 3.162
-    `reports` (newest first). Raises NameRefused for a blank or long name."""
+    `reports` (newest first; read only as far as `when` needs, so a
+    generator is read lazily). Raises NameRefused for a blank or long name."""
     name = clean_name(name)
     out = {"name": name, "status": NO_MEMORY, "place": None, "places": [], "doubtful": None,
            "when": None, "frame_id": None, "source": source, "carry_seq": None,

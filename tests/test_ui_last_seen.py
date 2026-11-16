@@ -60,7 +60,7 @@ def brain(tmp_path_factory):
     ReportStore(d / "saw").save("m-1", {"job": "find", "target": "keys", "frame_id": FRAME,
                                         "ended": time.time() - 2 * 3600},
                                 looks=[{"label": "red backpack", "x_m": 2.0, "y_m": 1.0,
-                                        "room": "the hall", "belief": 0.95, "looks": 3,
+                                        "room": "Sam's hall", "belief": 0.95, "looks": 3,
                                         "jpeg": _jpeg(), "box": [0.2, 0.2, 0.6, 0.8]}])
     old = {k: os.environ.get(k) for k in ("INVENTORY_DIR", "WHAT_I_SAW_DIR")}
     os.environ["INVENTORY_DIR"], os.environ["WHAT_I_SAW_DIR"] = str(d / "inv"), str(d / "saw")
@@ -156,7 +156,7 @@ def test_the_answer_shows_where_when_and_its_picture_and_go_check_is_starts_find
     sync_api.expect(page.locator(ASK_BTN)).to_be_visible()
     page.click(ASK_BTN)
     text = page.locator(TEXT)
-    sync_api.expect(text).to_contain_text("Last seen: red backpack, in the hall, 2 h ago", timeout=5000)
+    sync_api.expect(text).to_contain_text("Last seen: red backpack, in Sam's hall, 2 h ago", timeout=5000)
     assert calls["ask"] == ["/mission/last-seen?name=red%20backpack"], calls
     img = page.locator("#last-seen-img")
     sync_api.expect(img).to_be_visible(timeout=5000)
@@ -240,5 +240,39 @@ def test_engineer_mode_names_the_fields(browser, twin_server, brain):
     page.click(ASK_BTN)
     sync_api.expect(page.locator(TEXT)).to_contain_text("frame_id map-ui", timeout=5000)
     sync_api.expect(page.locator(TEXT)).to_contain_text("report m-1")
+    assert not errors, errors
+    page.context.close()
+
+
+def test_the_ask_waits_for_the_reading_of_a_sentence(browser, twin_server, brain):
+    """Both reviews: a tap before the sentence was read asked for the whole
+    sentence. The button is off until the reading is of the words in the box."""
+    page, errors, calls = _open(browser, twin_server, brain)
+    page.evaluate("""() => { const b = document.getElementById('brain-target');
+        b.value = 'where is my red backpack'; b.dispatchEvent(new Event('input')); }""")
+    sync_api.expect(page.locator(ASK_BTN)).to_be_disabled()
+    sync_api.expect(page.locator("#find-reading")).to_contain_text("red backpack", timeout=5000)
+    sync_api.expect(page.locator(ASK_BTN)).to_be_enabled()
+    page.click(ASK_BTN)
+    sync_api.expect(page.locator(TEXT)).to_contain_text("Last seen", timeout=5000)
+    assert calls["ask"] == ["/mission/last-seen?name=red%20backpack"], calls
+    assert not errors, errors
+    page.context.close()
+
+
+def test_an_answer_is_forgotten_once_a_mission_starts(browser, twin_server, brain):
+    """Both reviews: the answer from before Go check came back when the
+    mission ended, though the mission changed what the robot remembers."""
+    page, errors, calls = _open(browser, twin_server, brain)
+    page.fill("#brain-target", "red backpack")
+    page.click(ASK_BTN)
+    sync_api.expect(page.locator(TEXT)).to_contain_text("Last seen", timeout=5000)
+    page.click(GO)
+    sync_api.expect(page.locator(START)).to_have_text("Stop", timeout=5000)
+    calls["start"].clear()                   # the stub's status: idle again, the mission over
+    sync_api.expect(page.locator(START)).to_have_text("Start", timeout=10000)
+    sync_api.expect(page.locator(ASK_BTN)).to_be_visible()
+    sync_api.expect(page.locator("#last-seen")).to_be_hidden()
+    assert page.locator(TEXT).inner_text() == ""
     assert not errors, errors
     page.context.close()
