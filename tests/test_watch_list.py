@@ -12,9 +12,8 @@ import pytest
 
 from brain import watch_list as wl
 from brain.inventory import REPORT_BELIEF
-from brain.perceive import (ABSENT, CLIP_LOGIT_SCALE, CROP_LOW_CONFIDENCE, DETECTED,
-                            UNAVAILABLE, Box, Detection, OpenVocabCropSource, Perception,
-                            PerceptionPipeline)
+from brain.perceive import (ABSENT, CLIP_LOGIT_SCALE, CROP_LOW_CONFIDENCE, DETECTED, Box,
+                            Detection, OpenVocabCropSource, PerceptionPipeline)
 
 RESULTS = Path(__file__).resolve().parents[1] / "evaluations" / "watch-list-3178" / "results.json"
 IMAGE = base64.b64encode(b"not-really-a-jpeg").decode()
@@ -116,7 +115,6 @@ def test_a_list_sighting_reaches_perception_with_its_camera_bearing():
     assert [d["label"] for d in p.watch] == ["keys"]
     assert p.watch[0]["bearing_deg"] == pytest.approx((225 / 640 - 0.5) * 66.0)
     assert p.watch[0]["confidence"] >= wl.WATCH_GATE
-    assert wl.perception_detections(p) == p.watch
 
 
 def test_a_box_proposed_for_a_list_item_never_answers_for_the_target():
@@ -163,9 +161,28 @@ def test_the_open_vocab_prompt_carries_the_list_after_the_target():
     assert seen == ["red backpack", ["red backpack", "keys", "phone"]]
 
 
-def test_no_detections_when_perception_did_not_run():
-    assert wl.perception_detections(Perception(status=UNAVAILABLE)) is None
-    assert wl.perception_detections(Perception(status=ABSENT)) == []
+def test_a_lone_string_is_refused_never_split_into_letters():
+    with pytest.raises(ValueError):
+        pipe([], {}, watch="keys")
+
+
+def test_a_box_labelled_with_the_target_s_coco_word_stays_the_target_s():
+    """Review: target "remote control" (COCO word "remote") with "remote"
+    in the list -- dropped from the list, and its "remote" boxes the target's."""
+    table = {100.0: {"remote control": 0.40}}
+    p = PerceptionPipeline(Detector([det("remote")]), Scorer(table), "remote control",
+                           crop_path=CROP_LOW_CONFIDENCE, watch=wl.DEFAULT_WATCH_LIST).perceive(frame())
+    assert p.status == DETECTED
+    assert "remote" not in wl.watched(wl.DEFAULT_WATCH_LIST, "remote control")
+    assert "keys" not in wl.watched(wl.DEFAULT_WATCH_LIST, "key")   # names_target's rule
+
+
+def test_a_distractor_repeating_an_item_does_not_halve_it():
+    table = {200.0: {"keys": 0.40}}
+    p = PerceptionPipeline(Detector([det("keys", x1=200.0)]), Scorer(table), "red backpack",
+                           crop_path=CROP_LOW_CONFIDENCE, distractors=("a wall", "keys"),
+                           watch=["keys"]).perceive(frame())
+    assert [d["label"] for d in p.watch] == ["keys"]
 
 
 # --- the report's watch block -----------------------------------------------

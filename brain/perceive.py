@@ -783,11 +783,11 @@ class PerceptionPipeline:
     ):
         if not target or not target.strip():
             raise ValueError("PerceptionPipeline needs a target string")
-        from brain.watch_list import normalise, watched
+        from brain.watch_list import for_target
         # 3.178: the watch list, less any item naming the target (counted
         # once, as the target). Its texts are scored AFTER the target's and
         # the distractors', and never enter P(target).
-        self.watch = watched(normalise(list(watch)), target.strip()) if watch else ()
+        self.watch = for_target(watch, target.strip())
         self._busy = threading.Lock()      # one frame in the models at a time
         self._busy_since: Optional[float] = None
         self.detector = detector
@@ -1104,8 +1104,12 @@ class PerceptionPipeline:
             # the list's, never the target's: the target's crops are today's
             # rule over the other boxes, under today's cap, so the list
             # cannot crowd them out. The list's own crops are capped apart.
+            # A box labelled with the target's own text or COCO word stays
+            # the target's whatever the list says.
             from brain.watch_list import item_for
-            listed = [d for d in proposals if item_for(d.label, self.watch) is not None]
+            own = {self.target.lower(), self.coco_class or ""}
+            listed = [d for d in proposals if d.label.strip().lower() not in own
+                      and item_for(d.label, self.watch) is not None]
             ids = {id(d) for d in listed}
             kept = [d for d in kept if id(d) not in ids]
             kept.sort(key=lambda d: d.box.area, reverse=True)
@@ -1131,7 +1135,8 @@ class PerceptionPipeline:
             watch = None
             if self.watch:
                 from brain.watch_list import sighting
-                watch = sighting(scores, self.watch, CLIP_LOGIT_SCALE)
+                skip = [k for k, t in enumerate(own) if t.strip().lower() in self.watch]
+                watch = sighting(scores, self.watch, CLIP_LOGIT_SCALE, skip=skip)
             out.append(Candidate(
                 detection=det,
                 similarity=mine[0],
@@ -1483,8 +1488,9 @@ class UltralyticsTextDetector:
                 # 3.178: with a watch list the prompt is several classes;
                 # each box is labelled with the one it was proposed for.
                 k = int(b.cls[0]) if len(classes) > 1 else 0
-                out.append(Detection(box=Box(x1, y1, x2, y2),
-                                     label=classes[k] if 0 <= k < len(classes) else classes[0],
+                if not 0 <= k < len(classes):
+                    continue        # never relabelled as the target
+                out.append(Detection(box=Box(x1, y1, x2, y2), label=classes[k],
                                      confidence=float(b.conf[0])))
         return out
 
@@ -1652,9 +1658,10 @@ def pipeline_for(target: str, *, weights: str = DEFAULT_DETECTOR,
     (3.81 C2: 377 MB free with VE resident, floor 500).
     """
     _free_unused()
-    from brain.watch_list import normalise, watched
-    # 3.178: the detector is prompted with the list the pipeline scores.
-    watch = watched(normalise(list(watch)), target.strip()) if watch else ()
+    from brain.watch_list import for_target
+    # 3.178: the detector is prompted with the list the pipeline scores
+    # (`for_target` is idempotent, so the pipeline's own pass agrees).
+    watch = for_target(watch, target.strip())
     return PerceptionPipeline(
         detector=detector_for(weights, target, device=device, watch=watch),
         scorer=ClipScorer(clip_model, device=device),
