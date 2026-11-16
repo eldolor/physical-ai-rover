@@ -364,3 +364,20 @@ def test_d_s_run_on_b_s_seeds_reproduces_b():
     vot = [r[k]["rules"]["votes"] for k in ("search", "present")]
     assert [v["wrong_pins"] for v in lab] == [4, 2] and [v["found"] for v in lab] == [3, 1]
     assert [v["wrong_pins"] for v in vot] == [1, 1] and [v["true_pins"] for v in vot] == [3, 1]
+
+
+def test_pin_ok_groups_by_item_where_landmark_disputed_does_not():
+    # Thermos (3.178.D): `Landmark.disputed` compares raw labels, `pin_ok`
+    # groups them by item, so the two can disagree on one landmark. Pinned
+    # so a step that ships the votes rule decides it knowingly.
+    lm = _voted("remote", {"remote": 2, "tv remote": 1}, disputed=True)   # raw split 1/3
+    assert wl.pin_ok(lm, "remote", ITEMS)
+
+
+def test_the_default_block_adds_only_rule_held_and_pin_votes():
+    # The shipped payload gains `rule`, `held` (0 under "label") and each
+    # pin's `votes`; its pins are 3.178.A's.
+    report = {"reported": [_voted("keys", {"keys": 1, "glasses": 1})]}
+    block = wl.watch_block(report, ITEMS)
+    assert (block["rule"], block["held"], block["pinned"]) == ("label", 0, 1)
+    assert block["pins"]["keys"][0]["votes"] == {"keys": 1, "glasses": 1}
