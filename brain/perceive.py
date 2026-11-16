@@ -1082,7 +1082,7 @@ class PerceptionPipeline:
                           watch=watch)
 
     def _crops(self, proposals: Sequence[Detection]) -> list:
-        """4.2's gate. With a COCO word the label is a cheap prefilter and
+        """`(detection, for_target)` pairs. 4.2's gate. With a COCO word the label is a cheap prefilter and
         few crops survive it; without one every proposal is a candidate and
         CLIP does the whole job. `soft_gate` is the interior of that axis:
         the prefilter is an accept SET from CLIP's text space rather than
@@ -1114,9 +1114,10 @@ class PerceptionPipeline:
             kept = [d for d in kept if id(d) not in ids]
             kept.sort(key=lambda d: d.box.area, reverse=True)
             listed.sort(key=lambda d: d.box.area, reverse=True)
-            return kept[:self.max_crops] + [(d, False) for d in listed[:self.max_crops]]
+            return ([(d, True) for d in kept[:self.max_crops]]
+                    + [(d, False) for d in listed[:self.max_crops]])
         kept.sort(key=lambda d: d.box.area, reverse=True)
-        return kept[:self.max_crops]
+        return [(d, True) for d in kept[:self.max_crops]]
 
     def _score(self, image: bytes, crops: Sequence[Detection],
                width: float, pan: float, tilt: float) -> list:
@@ -1125,8 +1126,7 @@ class PerceptionPipeline:
         # both; the target's softmax reads only `own`'s scores.
         texts = own + self.watch
         out = []
-        for crop in crops:
-            det, for_target = crop if isinstance(crop, tuple) else (crop, True)
+        for det, for_target in crops:
             scores = list(self.scorer.score(image, det.box, texts))
             if len(scores) != len(texts):
                 raise PerceptionUnavailable(

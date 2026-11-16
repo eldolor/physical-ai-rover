@@ -825,7 +825,7 @@ The `brain:` block of `config/robot.yaml`, read by
 | `schedule_dir` | recordings/schedules | recordings/schedules | -- | 3.163.B: `schedules.json` and `runs.jsonl`, local only (git-ignored, never uploaded) | `SCHEDULE_DIR` |
 | `schedule_find_policy`, `schedule_survey_policy` | tiered, explore | tiered, explore | -- | 3.163.B: the policy a scheduled find or survey runs | refused at load unless a policy |
 | `return_wait_s` | 30.0 | 30.0 | s | 3.156 D2: a return goal nav2 never takes is `skipped` | refused at load unless a finite number > 0 |
-| `watch_list` | keys, wallet, phone, glasses, remote | -- | names | 3.178: the inventory report's `watch` block (`MissionRunner(watch_list=...)`) | at most 8, refused at load otherwise; `[]` off; not in `config/robot.yaml` yet (3.156.F's claim holds it); not passed to the car's perception until 3.178 B4-B6 |
+| `watch_list` | keys, wallet, phone, glasses, remote | -- | names | 3.178: the inventory report's `watch` block (`MissionRunner(watch_list=...)`) | at most 8, refused at load otherwise (`_watch_list()` restates `brain.watch_list.normalise`'s rules: the walks Lambda ships no `brain/`); `[]` off; not in `config/robot.yaml` yet (3.156.F's claim holds it); not passed to the car's perception until 3.178 B4-B6 |
 | `recharge_resume` | False | false | -- | 3.156 D7a: a battery end charges at the dock and resumes | off until the Rover; `RECHARGE_RESUME=1` |
 | `resume_v` | 11.8 | 11.8 | V | 3.156 D7d: leave the charger | a placeholder until 3.137.E |
 | `mission_wall_limit_s` | 14400 | 14400 | s | 3.156 D7d: the total a charged mission may last | the time limit is paused while charging; this is not |

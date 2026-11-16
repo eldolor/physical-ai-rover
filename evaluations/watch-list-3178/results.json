@@ -1,0 +1,809 @@
+{
+ "list": [
+  "keys",
+  "wallet",
+  "phone",
+  "glasses",
+  "remote"
+ ],
+ "list_false_rate": 0.05,
+ "noise": {
+  "bearing_sigma_deg": 3.0,
+  "miss_rate": 0.1,
+  "relabel_rate": 0.05
+ },
+ "pass_range_m": 2.5,
+ "pin_m": 0.5,
+ "present": {
+  "arrived_off": 0,
+  "arrived_on": 0,
+  "found": 1,
+  "found_1m": 1,
+  "found_rate": 1.0,
+  "max_steps": 150,
+  "missions": 20,
+  "passes": 1,
+  "rows": [
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 8,
+    "mission": 1,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "bathroom",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 4,
+    "mission": 2,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "bedroom 1",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 5,
+    "mission": 3,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "bedroom 2",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 5,
+    "mission": 4,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "closet",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 10,
+    "mission": 5,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "dining room",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 6,
+    "mission": 6,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "ensuite",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [
+     "keys"
+    ],
+    "found_1m": [
+     "keys"
+    ],
+    "injected": 8,
+    "mission": 7,
+    "nearest_m": {
+     "keys": 0.525
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "keys"
+    ],
+    "pins": {
+     "keys": [
+      [
+       2.285,
+       12.965,
+       0.982
+      ]
+     ]
+    },
+    "same_as_off": true,
+    "start_room": "entry",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 12,
+    "mission": 8,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "hall",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 8,
+    "mission": 9,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {
+     "keys": [
+      [
+       14.644,
+       0.533,
+       0.852
+      ]
+     ]
+    },
+    "same_as_off": true,
+    "start_room": "kitchen",
+    "steps": 150,
+    "wrong_pins": [
+     {
+      "belief": 0.852,
+      "item": "keys",
+      "to_instance_m": 17.403,
+      "x_m": 14.644,
+      "y_m": 0.533
+     }
+    ]
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 10,
+    "mission": 10,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "living room",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 4,
+    "mission": 11,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "main bedroom",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 4,
+    "mission": 12,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "study",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 7,
+    "mission": 13,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "bathroom",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 6,
+    "mission": 14,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {
+     "glasses": [
+      [
+       5.968,
+       11.294,
+       0.846
+      ]
+     ]
+    },
+    "same_as_off": true,
+    "start_room": "bedroom 1",
+    "steps": 150,
+    "wrong_pins": [
+     {
+      "belief": 0.846,
+      "item": "glasses",
+      "to_instance_m": null,
+      "x_m": 5.968,
+      "y_m": 11.294
+     }
+    ]
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 5,
+    "mission": 15,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "bedroom 2",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 7,
+    "mission": 16,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "closet",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 8,
+    "mission": 17,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "dining room",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 6,
+    "mission": 18,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "ensuite",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 8,
+    "mission": 19,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "entry",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 8,
+    "mission": 20,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "hall",
+    "steps": 150,
+    "wrong_pins": []
+   }
+  ],
+  "same_as_off": 20,
+  "seed": 3179,
+  "target": "red backpack",
+  "wrong_pins": 2,
+  "wrong_pins_per_mission": 0.1
+ },
+ "search": {
+  "arrived_off": 0,
+  "arrived_on": 0,
+  "found": 3,
+  "found_1m": 3,
+  "found_rate": 1.0,
+  "max_steps": 150,
+  "missions": 20,
+  "passes": 3,
+  "rows": [
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 7,
+    "mission": 1,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {
+     "keys": [
+      [
+       9.595,
+       9.3,
+       0.846
+      ]
+     ]
+    },
+    "same_as_off": true,
+    "start_room": "bathroom",
+    "steps": 150,
+    "wrong_pins": [
+     {
+      "belief": 0.846,
+      "item": "keys",
+      "to_instance_m": 8.045,
+      "x_m": 9.595,
+      "y_m": 9.3
+     }
+    ]
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 7,
+    "mission": 2,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "bedroom 1",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 6,
+    "mission": 3,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "bedroom 2",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 10,
+    "mission": 4,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "closet",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 10,
+    "mission": 5,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "dining room",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 6,
+    "mission": 6,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "ensuite",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [
+     "keys"
+    ],
+    "found_1m": [
+     "keys"
+    ],
+    "injected": 5,
+    "mission": 7,
+    "nearest_m": {
+     "keys": 0.389
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "keys"
+    ],
+    "pins": {
+     "keys": [
+      [
+       2.291,
+       13.022,
+       0.982
+      ]
+     ]
+    },
+    "same_as_off": true,
+    "start_room": "entry",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 5,
+    "mission": 8,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "hall",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 5,
+    "mission": 9,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "kitchen",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [
+     "tv remote"
+    ],
+    "found_1m": [
+     "tv remote"
+    ],
+    "injected": 5,
+    "mission": 10,
+    "nearest_m": {
+     "tv remote": 1.656
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "tv remote"
+    ],
+    "pins": {
+     "remote": [
+      [
+       3.011,
+       2.286,
+       0.982
+      ]
+     ]
+    },
+    "same_as_off": true,
+    "start_room": "living room",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 8,
+    "mission": 11,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "main bedroom",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 5,
+    "mission": 12,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "study",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 6,
+    "mission": 13,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "bathroom",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 10,
+    "mission": 14,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {
+     "remote": [
+      [
+       7.497,
+       8.248,
+       0.846
+      ]
+     ]
+    },
+    "same_as_off": true,
+    "start_room": "bedroom 1",
+    "steps": 150,
+    "wrong_pins": [
+     {
+      "belief": 0.846,
+      "item": "remote",
+      "to_instance_m": 7.377,
+      "x_m": 7.497,
+      "y_m": 8.248
+     }
+    ]
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 8,
+    "mission": 15,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "bedroom 2",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 10,
+    "mission": 16,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "closet",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 6,
+    "mission": 17,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "dining room",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 12,
+    "mission": 18,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {
+     "phone": [
+      [
+       16.364,
+       10.169,
+       0.928
+      ]
+     ],
+     "wallet": [
+      [
+       16.868,
+       12.59,
+       0.846
+      ]
+     ]
+    },
+    "same_as_off": true,
+    "start_room": "ensuite",
+    "steps": 150,
+    "wrong_pins": [
+     {
+      "belief": 0.846,
+      "item": "wallet",
+      "to_instance_m": null,
+      "x_m": 16.868,
+      "y_m": 12.59
+     },
+     {
+      "belief": 0.928,
+      "item": "phone",
+      "to_instance_m": null,
+      "x_m": 16.364,
+      "y_m": 10.169
+     }
+    ]
+   },
+   {
+    "found": [
+     "keys"
+    ],
+    "found_1m": [
+     "keys"
+    ],
+    "injected": 4,
+    "mission": 19,
+    "nearest_m": {
+     "keys": 0.405
+    },
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [
+     "keys"
+    ],
+    "pins": {
+     "keys": [
+      [
+       2.391,
+       13.008,
+       0.982
+      ]
+     ]
+    },
+    "same_as_off": true,
+    "start_room": "entry",
+    "steps": 150,
+    "wrong_pins": []
+   },
+   {
+    "found": [],
+    "found_1m": [],
+    "injected": 9,
+    "mission": 20,
+    "nearest_m": {},
+    "outcome_off": "out_of_budget",
+    "outcome_on": "out_of_budget",
+    "passes": [],
+    "pins": {},
+    "same_as_off": true,
+    "start_room": "hall",
+    "steps": 150,
+    "wrong_pins": []
+   }
+  ],
+  "same_as_off": 20,
+  "seed": 3178,
+  "target": "unicorn",
+  "wrong_pins": 4,
+  "wrong_pins_per_mission": 0.2
+ }
+}
