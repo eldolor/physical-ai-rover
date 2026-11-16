@@ -23,7 +23,7 @@ import time
 from concurrent.futures import ProcessPoolExecutor
 
 sys.path.insert(0, os.path.dirname(__file__))
-sys.path.insert(0, ".")
+sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "..")))  # 3.186: this checkout, never the launch dir
 from harness import run_house                      # noqa: E402
 from brain.goal_policy import FEATURES             # noqa: E402
 from sim.maps.procthor import usable               # noqa: E402

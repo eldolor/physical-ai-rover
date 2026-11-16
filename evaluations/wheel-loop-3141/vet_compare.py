@@ -11,7 +11,8 @@ this file's `vet_bench.py` (on the board, a copy in /tmp).
 import sys
 import time
 
-sys.path.insert(0, ".")
+import os  # noqa: E401
+sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "..")))  # 3.186: this checkout, never the launch dir
 
 import vet_bench as vb  # noqa: E402
 from robot.safety import SafetyController  # noqa: E402

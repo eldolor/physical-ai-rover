@@ -3,7 +3,8 @@
 """evaluations/explore-369/trace.py -- one house's mission, step by step:
 action, detail, pose, and the arrival readout. `python ... trace.py HOUSE`"""
 import json, math, sys
-sys.path.insert(0, ".")
+import os  # noqa: E401
+sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "..")))  # 3.186: this checkout, never the launch dir
 from control.mission_runner import MissionRunner
 from sim.maps import build_world
 from sim.maps.procthor import TARGET

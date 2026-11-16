@@ -8,10 +8,29 @@ metres driven measured: each succeeded nav goal's shortest path on the true
 floor, plus what the verbs drove (`MockRobot`'s odometer).
 """
 import math
+import os
 import sys
 from collections import deque
 
-sys.path.insert(0, ".")
+# 3.186: this checkout's root, never "." -- "." loaded the LAUNCH directory's
+# brain/ whatever checkout a sweep named (3.180's void baseline).
+ROOT = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if sys.path[:1] != [ROOT]:
+    sys.path.insert(0, ROOT)
+
+
+def _own_checkout(imported_only: bool) -> None:
+    """Refuse robot code from another checkout: imported before this file
+    (checked first), or found earlier on the path (checked after the imports)."""
+    for pkg in ("brain", "control", "sim", "world", "tests"):
+        if imported_only and pkg not in sys.modules:
+            continue
+        where = os.path.dirname(os.path.realpath(__import__(pkg).__file__))
+        if where != os.path.join(ROOT, pkg):
+            raise SystemExit(f"{pkg} is {where}, not under {ROOT}: this harness's own checkout")
+
+
+_own_checkout(imported_only=True)
 from brain.goal_policy import LinearGoalPolicy            # noqa: E402
 from control.mission_runner import MissionRunner          # noqa: E402
 from sim.maps import build_world                          # noqa: E402
@@ -21,6 +40,11 @@ from sim.mock_world import MockWorld                      # noqa: E402
 from tests.procthor_sweep import MAX_STEPS, TICK_CAP      # noqa: E402
 from sim.grid_world import CELL_WALL                       # noqa: E402
 from tests.test_explore import CELL, FakeNav              # noqa: E402
+
+# Every harness that imports this one records the brain it ran.
+_own_checkout(imported_only=False)
+BRAIN = os.path.join(ROOT, "brain")
+print(f"brain: {BRAIN}", file=sys.stderr)
 
 GOAL_COST, METRE_COST = 0.02, 0.01   # 3.65 phase 2's reward, fixed before training
 # A mission that raises scores far below any miss (200 goals and 2 km driven

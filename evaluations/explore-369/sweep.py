@@ -12,7 +12,8 @@ import sys
 import time
 from concurrent.futures import ProcessPoolExecutor
 
-sys.path.insert(0, ".")
+import os  # noqa: E401
+sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "..")))  # 3.186: this checkout, never the launch dir
 from sim.maps.procthor import usable          # noqa: E402
 from tests.procthor_sweep import run_house    # noqa: E402
 

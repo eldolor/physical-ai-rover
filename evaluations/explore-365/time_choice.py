@@ -20,10 +20,11 @@ slow case). Prints p50/p90/max per policy and the candidate counts.
 import json
 import random
 import statistics
+import os
 import sys
 import time
 
-sys.path.insert(0, ".")
+sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "..")))  # 3.186: this checkout, never the launch dir
 from brain.explore import leave_clearance_m                    # noqa: E402
 from brain.frontier import find_frontiers, find_view_gaps     # noqa: E402
 from brain.goal_policy import NetGoalPolicy, features         # noqa: E402
