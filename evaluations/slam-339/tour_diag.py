@@ -7,7 +7,7 @@ import subprocess
 import sys
 import time
 
-sys.path.insert(0, ".")
+sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "..")))  # 3.186: this checkout, never the launch dir
 os.environ.update(SIM_MAP="home_first_floor")
 from tests import demo_explore as dx
 
