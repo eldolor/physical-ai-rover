@@ -86,20 +86,26 @@ daily budget, runs used today, runs used this week.
 
 ## 3. Brief each worker
 
-Claim **before** spawning: `python tools/plan_section.py claim <step>`
-(a section with no Steps table: `claim 3.N`). Workers are your
-subagents and share this session's id, so the claim covers them. If the
-claim is refused, drop the step and take the next one; never work around
-a refusal (rule 12).
+**Standing rule (the user, 2026-11-16): every new step starts in a FRESH
+session.** Never hand a new step to a session that has already worked on
+another one: a long conversation re-reads its whole history on every turn,
+which burns the weekly quota. In a cloud session, create it with the
+`create_session` tool (repository and `dev` as its source, a title that is
+the step's id and name, the brief below as its prompt); from a desktop
+session, start a new Claude Code session for it. A session that finishes
+its step stands by until the user retires it; follow-up work on the SAME
+step (review fixes, a re-run, the push) stays with it. A session started
+by the orchestrator may ask the user to confirm the assignment: tell the
+user at once, since nothing starts until they tap.
 
-Spawn each worker with the Agent tool, in the background, one message
-for all the workers you start together. The brief is all a worker knows,
-so it states:
+The worker claims its own step first (`python tools/plan_section.py claim
+<step>`; a section with no Steps table: `claim 3.N`), as its own session.
+If the claim is refused it stops and reports; never work around a refusal
+(rule 12). The brief is all a worker knows, so it states:
 
 1. **The step**: its id, title, its section file
-   (`docs/plans/ros-alignment/3.N-*.md`), and that the claim is already
-   held by this session. If a `claim` or hook refusal appears anyway,
-   stop and report it.
+   (`docs/plans/ros-alignment/3.N-*.md`), that it claims the step first,
+   and the orchestrator's session id to report to (send_message).
 2. **Where to work**: the section's worktree, `.claude/worktrees/plan-3.N`
    (`git worktree list`; continue an existing one, never make a second
    branch). Then `eval "$(python tools/plan_section.py env)"` for its own
@@ -116,8 +122,10 @@ so it states:
    code; `/code-review` run (plus `/thermos-bug-pass` on a risky change,
    CLAUDE.md section 6) and recorded with `plan_section.py reviewed
    [--thermos]`; `plan_section.py ready` passing.
-5. **What it must not do**: push to `dev`, release the claim, deploy,
-   spend, force push, or start a second step. It reports back instead.
+5. **What it must not do**: push to `dev` before the orchestrator's "push
+   to dev" for that step, deploy, spend, force push, or start a second
+   step. Once its work is on `dev` it releases its own claim
+   (`plan_section.py release <step>`).
 6. **The report**: commits (sha, one line each), criteria met / failed
    with the numbers, review findings and what was fixed, what is left,
    and its own estimate of how big the remaining work is.
