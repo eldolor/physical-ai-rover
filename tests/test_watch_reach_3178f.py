@@ -28,7 +28,11 @@ def _load(name: str, file: str):
         spec = importlib.util.spec_from_file_location(name, HERE / file)
         mod = importlib.util.module_from_spec(spec)
         sys.modules[name] = mod
-        spec.loader.exec_module(mod)
+        try:
+            spec.loader.exec_module(mod)
+        except BaseException:
+            del sys.modules[name]          # never cache a half-run module
+            raise
     return sys.modules[name]
 
 
@@ -147,13 +151,19 @@ def test_diagnosis_never_runs_on_fresh_seeds():
     assert diagnose_f.sw is sw and range_rule_f.load_sweep() is sw
     # Every fresh seed, and the tuning seed below one (its present sweep is seed + 1).
     for seed in (5177, 5178, 5179, 6177, 6178, 6179):
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit, match="tuning seeds only"):
             diagnose_f.main(["--seed", str(seed), "--out", "/dev/null"])
-        with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit, match="tuning seeds only"):
             range_rule_f.main(["closest", "--seed", str(seed), "--out", "/tmp/x.json"])
-    # The range experiment never writes over a pinned file.
-    with pytest.raises(SystemExit):
+        with pytest.raises(SystemExit, match="tuning seeds only"):     # mode last
+            range_rule_f.main([f"--seed={seed}", "--out", "/tmp/x.json", "closest"])
+    # Neither writes over a pinned file.
+    with pytest.raises(SystemExit, match="outside"):
         range_rule_f.main(["median", "--seed", "3178", "--out", str(HERE / "results-d.json")])
+    with pytest.raises(SystemExit, match="pinned"):
+        diagnose_f.main(["--seed", "3178", "--out", "diagnose-f-3178.json", "--workers", "1",
+                         "--missions", "0"])
+    assert range_rule_f.inv.range_at is range_rule_f.orig
 
 
 def test_fs_fresh_run_is_pinned():

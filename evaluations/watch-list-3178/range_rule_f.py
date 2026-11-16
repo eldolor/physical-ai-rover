@@ -33,10 +33,13 @@ def load_sweep():
         spec = importlib.util.spec_from_file_location(name, HERE / "sweep.py")
         mod = importlib.util.module_from_spec(spec)
         sys.modules[name] = mod
-        spec.loader.exec_module(mod)
+        try:
+            spec.loader.exec_module(mod)
+        except BaseException:
+            del sys.modules[name]          # never cache a half-run module
+            raise
     return sys.modules[name]
 
-FRESH = ("5178", "5179", "6178", "6179")     # E's and F's fresh seeds: never here
 TUNING = (3178, 4178)                        # B's and D's (search; present is seed + 1)
 orig = inv.range_at
 
@@ -64,10 +67,15 @@ def main(argv=None):
     out = Path(args.out).resolve()
     if out.parent == HERE:
         raise SystemExit("--out must be outside evaluations/watch-list-3178 (its files are pinned)")
+    rest = list(argv)
+    rest.remove(args.mode)               # the mode, wherever argparse found it
     # fork: workers inherit the patched module; under spawn they would not.
     multiprocessing.set_start_method("fork", force=True)
     inv.range_at = {"closest": closest, "median": median, "orig": orig}[args.mode]
-    load_sweep().main(argv[1:])
+    try:
+        load_sweep().main(rest)
+    finally:
+        inv.range_at = orig
 
 
 if __name__ == "__main__":

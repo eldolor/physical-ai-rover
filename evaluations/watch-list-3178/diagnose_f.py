@@ -2,8 +2,8 @@
 # Copyright (C) 2026 Anshu Gaind
 """3.178.F's diagnosis: why does a pass never reach a report?
 
-    python evaluations/watch-list-3178/diagnose_f.py --seed 3178 --out diagnose-f-3178.json
-    python evaluations/watch-list-3178/diagnose_f.py --seed 4178 --out diagnose-f-4178.json
+    python evaluations/watch-list-3178/diagnose_f.py --seed 3178 --out diagnose-f-3178.json --overwrite
+    python evaluations/watch-list-3178/diagnose_f.py --seed 4178 --out diagnose-f-4178.json --overwrite
 
 TUNING seeds only (B's 3178/3179, D's 4178/4179); never E's fresh 5178/5179
 or F's own (6178/6179). The mission is `sweep.run_one`'s with the list on (E's placed
@@ -54,7 +54,11 @@ def load_sweep():
         spec = importlib.util.spec_from_file_location(name, HERE / "sweep.py")
         mod = importlib.util.module_from_spec(spec)
         sys.modules[name] = mod
-        spec.loader.exec_module(mod)
+        try:
+            spec.loader.exec_module(mod)
+        except BaseException:
+            del sys.modules[name]          # never cache a half-run module
+            raise
     return sys.modules[name]
 
 
@@ -265,10 +269,17 @@ def main(argv=None):
     ap.add_argument("--placed", default="placements.json")
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--out", required=True)
+    ap.add_argument("--overwrite", action="store_true",
+                    help="replace an existing file in this folder (the pinned diagnose-f-*.json)")
     args = ap.parse_args(argv)
     if args.seed not in (3178, 4178):
         raise SystemExit("tuning seeds only: B's 3178 or D's 4178 (never E's or F's fresh seeds)")
     placed = tuple(json.loads(Path(__file__).with_name(args.placed).read_text())["placed"])
+    path = Path(args.out)
+    if not path.is_absolute():
+        path = Path(__file__).with_name(args.out)
+    if path.resolve().parent == HERE and path.exists() and not args.overwrite:
+        raise SystemExit(f"{path.name} is pinned by tests/test_watch_reach_3178f.py: pass --overwrite")
     out = {"seed": args.seed, "steps": args.steps}
     for key, target, seed in (("search", base.ABSENT_TARGET, args.seed),
                               ("present", sw.PRESENT_TARGET, args.seed + 1)):
@@ -277,9 +288,6 @@ def main(argv=None):
         # fork: the workers share this process's module table (`load_sweep`).
         with ProcessPoolExecutor(args.workers, mp_context=multiprocessing.get_context("fork")) as ex:
             out[key] = list(ex.map(trace_one, jobs))
-    path = Path(args.out)
-    if not path.is_absolute():
-        path = Path(__file__).with_name(args.out)
     path.write_text(json.dumps(out, indent=1, sort_keys=True, default=str) + "\n")
     for key in ("search", "present"):
         for m in out[key]:
