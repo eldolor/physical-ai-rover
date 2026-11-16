@@ -381,3 +381,39 @@ def test_the_default_block_adds_only_rule_held_and_pin_votes():
     block = wl.watch_block(report, ITEMS)
     assert (block["rule"], block["held"], block["pinned"]) == ("label", 0, 1)
     assert block["pins"]["keys"][0]["votes"] == {"keys": 1, "glasses": 1}
+
+
+# --- 3.178.E: carried pins' scaled votes ---------------------------------------
+
+def _carried_through_seed(votes, belief=0.9):
+    """One landmark carried by the real `Inventory.seed`, as its next report
+    shows it (votes scaled to the carry cap)."""
+    from brain.inventory import Inventory
+    saved = {"frame_id": "f1", "reported": [dict(_voted("keys", votes, belief=belief))]}
+    inv = Inventory()
+    assert inv.seed("f1", saved) == 1
+    (lm,) = inv.report()["reported"]
+    return lm
+
+
+def test_a_carried_pin_whose_votes_were_scaled_stays_a_pin():
+    # D's recorded gap: {keys 3, 30 other labels 1 each} was a pin (3 votes,
+    # runner-up 1, share 1/4); carried, the cap scales keys to 1.82.
+    votes = {"keys": 3, **{f"thing {k}": 1 for k in range(30)}}
+    assert wl.pin_ok(_voted("keys", votes), "keys", ITEMS)
+    lm = _carried_through_seed(votes)
+    assert lm["carried"] and lm["votes"]["keys"] < wl.PIN_MIN_VOTES
+    assert wl.pin_ok(lm, "keys", ITEMS)
+    assert wl.watch_block({"reported": [lm]}, ITEMS, rule="votes")["pinned"] == 1
+
+
+def test_a_capped_carried_landmark_is_still_judged_on_its_dispute():
+    # Shares survive the scaling, so a disputed landmark stays refused.
+    lm = _carried_through_seed({"keys": 12, "glasses": 10})
+    assert lm["carried"] and not wl.pin_ok(lm, "keys", ITEMS)
+    # A carried landmark under the cap is not scaled: the vote count holds.
+    small = _carried_through_seed({"keys": 1})
+    assert small["votes"] == {"keys": 1} and not wl.pin_ok(small, "keys", ITEMS)
+    assert wl.pin_ok(_carried_through_seed({"keys": 2}), "keys", ITEMS)
+    # Not carried: the share alone never stands in for two looks.
+    assert not wl.pin_ok(dict(lm, carried=False, votes={"keys": 1.5}), "keys", ITEMS)

@@ -58,6 +58,10 @@ WATCH_GATE = 0.9
 # 3.178.D: fixed before its run. A pin needs this many votes for its own
 # item; the dispute share is the inventory's own (`DISPUTE_SHARE`).
 PIN_MIN_VOTES = 2
+# 3.178.E: the report rounds each vote to 3 decimals (up to 0.0005 a label,
+# and a capped landmark can hold many labels). Uncapped totals of whole looks
+# are whole numbers, so nothing real lies between cap - 1 and the cap.
+_VOTE_SLACK = 0.5
 _SPACE = re.compile(r"\s+")
 
 
@@ -146,13 +150,31 @@ def sighting(scores: Sequence[float], items: Sequence[str], scale: float,
     return (items[k], probs[k]) if probs[k] >= gate else None
 
 
+def _capped(landmark: dict, total: float) -> bool:
+    """3.178.E: a carried landmark whose votes reached the carry cap
+    (`brain.inventory.CARRY_WEIGHT`, 20). `Inventory.seed` scales a carried
+    landmark's votes down to sum to at most the cap, so its counts are a
+    share of the cap, not looks: {keys 3, 30 other labels 1 each} carries
+    keys as 1.8. Shares survive the scaling exactly, so such a landmark is
+    judged on the dispute test alone. That loses nothing: with whole looks,
+    an undisputed top group of 1 has no runner-up at all, so a landmark
+    with 20 or more votes and an undisputed top group always held >= 2 of
+    them. `_VOTE_SLACK` (0.5) covers the report's rounding (3 decimals a label)."""
+    if not landmark.get("carried"):
+        return False
+    from brain.inventory import CARRY_WEIGHT
+    return total >= CARRY_WEIGHT - _VOTE_SLACK
+
+
 def pin_ok(landmark: dict, item: str, items: Sequence[str],
            min_votes: float = PIN_MIN_VOTES, dispute_share: Optional[float] = None) -> bool:
     """3.178.D's pin rule: the landmark's votes, grouped by the list item each
     label names (a label naming none is its own group), give `item` at
     least `min_votes`, `item` is the most voted group, and the runner-up's
     share of the top two groups is under `dispute_share` (the inventory's
-    `DISPUTE_SHARE`). A landmark with no votes is never a pin."""
+    `DISPUTE_SHARE`). A carried landmark whose votes reached the carry cap
+    is judged on the share alone (`_capped`, 3.178.E). A landmark with no
+    votes is never a pin."""
     if dispute_share is None:
         from brain.inventory import DISPUTE_SHARE as dispute_share
     raw = landmark.get("votes")
@@ -169,7 +191,7 @@ def pin_ok(landmark: dict, item: str, items: Sequence[str],
         key = item_for(label, items) or ("", _clean(label))
         groups[key] = groups.get(key, 0.0) + n
     own = groups.pop(item, 0.0)
-    if own < min_votes:
+    if own < min_votes and not _capped(landmark, own + sum(groups.values())):
         return False
     second = max(groups.values(), default=0.0)
     return second / (own + second) < dispute_share   # `Landmark.disputed`'s test
