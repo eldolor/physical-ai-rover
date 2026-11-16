@@ -220,17 +220,31 @@ def test_h6c_a_raising_sink_ends_the_mission_normally_its_state_failed():
 
 
 def test_h6d_the_callback_costs_under_a_millisecond():
+    """The best of three batches of 1,000 (amendment H-a, before the run:
+    the cost, not another test's thread holding the GIL)."""
     r = _runner()
-    times = []
-    for i in range(1000):
-        with r._inventory_save_lock:
-            r._inventory_save = {"state": "pending", "mission_id": i, "error": None}
-        t0 = time.perf_counter()
-        r.inventory_saved(i, True)
-        times.append(time.perf_counter() - t0)
-    times.sort()
-    p99 = times[989]
-    assert p99 <= 0.001, p99
+    p99s = []
+    for _ in range(3):
+        times = []
+        for i in range(1000):
+            with r._inventory_save_lock:
+                r._inventory_save = {"state": "pending", "mission_id": i, "error": None}
+            t0 = time.perf_counter()
+            r.inventory_saved(i, True)
+            times.append(time.perf_counter() - t0)
+        times.sort()
+        p99s.append(times[989])
+    assert min(p99s) <= 0.001, p99s
+    print("H6d p99 (s):", p99s)
+
+
+def test_h6a_an_unexpected_error_reaches_the_state(tmp_path):
+    from control import inventory_store as inv_mod
+    got = []
+    inv_mod.InventoryStore(str(tmp_path / "inv")).save_async(
+        "m-1", {"frame_id": FRAME, "bad": object()}, on_local=lambda ok, e: got.append((ok, e))).join(5)
+    assert len(got) == 1 and got[0][0] is False and "TypeError" in got[0][1], got
+    assert str((tmp_path / "inv").resolve()) not in inv_mod._PENDING
 
 
 # ---------- H7: end to end through the brain app ----------

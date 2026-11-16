@@ -200,6 +200,10 @@ class InventoryStore:
     def save(self, mission_id: str, report: dict, _local_done=None) -> dict:
         try:
             return self._save(mission_id, report, _local_done)
+        except BaseException as e:
+            if _local_done is not None:
+                _local_done(False, f"save: {e!r}")   # 3.175.H: the real error, if first
+            raise
         finally:
             if _local_done is not None:
                 _local_done()             # no-op if the local step already said so

@@ -1018,7 +1018,9 @@ def create_app(
         # 3.50.D5: save_async counts the save as pending until its local file
         # is written, so the next mission's lookup waits for it.
         # 3.175.H: the store says when the local file settled, and the runner
-        # keeps it (`inventory_save_state`), so a reader never infers it.
+        # keeps it (`inventory_save_state`), so a reader never infers it. A
+        # sink that never calls `inventory_saved` leaves the state `pending`,
+        # and the last-seen route then reads the ended mission first.
         runner.inventory_sink = lambda report: store.save_async(
             mission_id, report, on_local=functools.partial(runner.inventory_saved, mission_id))
         # 3.50.D5: a mission on a saved map starts from the last inventory
