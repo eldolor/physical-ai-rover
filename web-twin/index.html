@@ -30,6 +30,7 @@
 <link rel="modulepreload" href="js/history.js">
 <link rel="modulepreload" href="js/state.js">
 <link rel="modulepreload" href="js/connstatus.js">
+<link rel="modulepreload" href="js/request.js">
 </head>
 <body>
 <div class="wrap">
@@ -274,6 +275,9 @@
              "there is no start button". -->
         <button id="btn-brain-mission" class="primary" style="flex:1;" disabled>Start</button>
       </div>
+      <!-- 3.176.C: what the brain read from the box; Start sends exactly it. -->
+      <div class="hint" id="find-reading" aria-live="polite" style="display:none;"></div>
+      <button id="btn-find-drop-room" class="ghost" style="display:none; margin-top:6px;">Search everywhere</button>
       <!-- 3.132 Stage 2A (both reviewers): the policy picker is Engineer
            mode's, so what a saved policy costs is said here, in plain words. -->
       <div class="hint op-only" id="brain-cost-hint" style="display:none;"></div>

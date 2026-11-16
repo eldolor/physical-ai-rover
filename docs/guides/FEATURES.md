@@ -774,6 +774,18 @@ finished map at mission start; N1's discovered map replaced it.)
   name rooms), and its Exhausted ending reads **Survey done -- every
   reachable part mapped**. A survey started from another phone sets the
   picker. The D-pad still takes over (M4).
+- **A find asked in plain words** (3.176.C) -- the Find box takes a
+  sentence ("find my small black wallet, probably in the kitchen"). A
+  moment after typing stops, the line under it says what the robot will
+  look for ("I'll look for **small black wallet**, starting in **the
+  kitchen**. How it looks: black, small."), and any words it did not use.
+  **Search everywhere** drops the room. Start sends exactly what the line
+  shows, and stays off until the line has caught up with an edit, when no
+  single thing was named ("find it in the kitchen"), when the box is empty,
+  or when the brain does not answer (the line says which). The room only
+  orders where explore looks first; it never ends a search by itself. A
+  plain target ("backpack") starts exactly as before. A brain older than
+  the sentence reader gets the words as typed, and the line says so.
 - **Policy picker** -- the free rule-based explorer (`brain/agent.py`, which
   since the ROS alignment explores by the WORLD's pose in metres and builds
   its scene from the depth grid -- no grid cells), the **vision policy** (one

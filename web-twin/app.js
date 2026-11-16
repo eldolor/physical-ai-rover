@@ -35,6 +35,7 @@ import { DEBUG_LOG_KEY, pushDebugLog } from "./js/debuglog.js";
 import { renderTargetHistory, saveTargetToHistory } from "./js/history.js";
 import { state } from "./js/state.js";
 import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatus.js";
+import { createFindReader, renderFindReading } from "./js/request.js";
 
 (function () {
   "use strict";
@@ -2855,6 +2856,38 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     return !e.status || e.status === 502 || e.status === 503 || e.status === 504;
   }
 
+  // 3.176.C: the Find box reads a sentence through the brain's parse route
+  // (rules, nothing moves) and Start sends what the line under it showed.
+  // `var`: updateBrainControls may run before this line does at start-up.
+  // `findStarting`: a Start in progress keeps its button (a second tap cancels
+  // the wait for a person's hold), whatever the box does meanwhile.
+  var findStarting = false;
+  var findReader = createFindReader(function (text) {
+    return brainApi("POST", "/mission/request/parse", { text: text });
+  }, function () { renderFindBox(); });
+  function findJob() { return state.brainJob !== "survey"; }
+  // Start's fields for a find now, or null while Start must stay off.
+  function findFields() {
+    return findReader ? findReader.startFields(document.getElementById("brain-target").value) : null;
+  }
+  function renderFindBox() {
+    const el = document.getElementById("find-reading");
+    const drop = document.getElementById("btn-find-drop-room");
+    const btn = document.getElementById("btn-brain-mission");
+    if (!el || !drop || !btn || !findReader) return;
+    const shown = state.brainConnected && findJob() && !state.brainMissionRunning;
+    // style.display, not `hidden`: ui.css's `button` display beats the attribute.
+    el.style.display = shown ? "" : "none";
+    let showDrop = false;
+    if (shown) {
+      drop.textContent = t("find.dropRoom");
+      showDrop = renderFindReading(el, findReader.reading, t, escapeHtml, engineerMode());
+    }
+    drop.style.display = showDrop ? "" : "none";
+    btn.disabled = !state.brainConnected
+      || (shown && !findStarting && !findFields());
+  }
+
   function setBrainText(id, value, cls) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -4151,7 +4184,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
   function updateBrainControls() {
     const btn = document.getElementById("btn-brain-mission");
     const hint = document.getElementById("brain-connect-hint");
-    btn.disabled = !state.brainConnected;
+    btn.disabled = !state.brainConnected;   // and a find's reading: renderFindBox()
     btn.textContent = state.brainMissionRunning ? "Stop" : "Start";
     // Start is the panel's primary action; Stop is a stop. The default grey
     // style made Start read as a label -- see index.html.
@@ -4177,6 +4210,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     updateBrainPickersRow();
     renderMissionCard();
     updateStopBar();
+    renderFindBox();
   }
 
   // ---------- 3.132 Stage 3: the STOP bar ----------
@@ -4337,8 +4371,16 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     hint.innerHTML = t("hint.survey", {cap: cap});
   }
 
+  document.getElementById("brain-target").addEventListener("input", function () {
+    findReader.edit(this.value);
+  });
+  document.getElementById("btn-find-drop-room").onclick = function () {
+    findReader.dropRoom();
+  };
+
   document.getElementById("brain-job").addEventListener("change", function () {
     state.brainJob = state.brainJobChosen = this.value;
+    if (findJob() && state.brainConnected) findReader.edit(document.getElementById("brain-target").value);
     updateBrainControls();
   });
 
@@ -4363,8 +4405,21 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     // between any driver and the wheels and allows exactly one writer, and
     // a brain that dies with a browser tab was never going to be it. The
     // server's own 409 and M4's authority order are what enforce it now.
-    const target = document.getElementById("brain-target").value.trim() || "red backpack";
+    const typed = document.getElementById("brain-target").value.trim();
     const survey = state.brainJob === "survey";
+    // 3.176.C: exactly what the line under the box showed at this tap; none
+    // (an edit not yet read, no target) and Start was off: a race, start nothing.
+    const fields = survey ? null : findFields();
+    if (!survey && !fields) { updateBrainControls(); return; }
+    findStarting = true;
+    try { await startBrainMissionWith(survey, typed, fields); } finally {
+      findStarting = false;
+      renderFindBox();
+    }
+  }
+
+  async function startBrainMissionWith(survey, typed, fields) {
+    const target = survey ? null : fields.target_object;
     // A survey sends no drill: its picker is hidden, and may still hold one.
     // 3.132: drills are Engineer mode's; a person's Start is never one (review).
     const fault = survey || !engineerMode() ? "none" : document.getElementById("brain-fault").value;
@@ -4389,11 +4444,11 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
       showToast(t(why), "info");
       return;
     }
-    if (!survey) saveTargetToHistory(target);
+    if (!survey) saveTargetToHistory(typed);
     setButtonBusy(btn, true, "Starting\u2026");
     brainStartStopBusy = true;
     const body = survey ? { job: "survey", policy: "explore" }
-      : { target_object: target, fault: fault, policy: state.brainPolicy };
+      : Object.assign({}, fields, { fault: fault, policy: state.brainPolicy });
     // 3.88 A: sent only when switched on, and only for explore's search.
     if (state.brainAsk && engineerMode() && (survey || state.brainPolicy === "explore")) body.explore_ask = true;
     // Sent only on the policy that reads them, and only when actually
@@ -4550,6 +4605,7 @@ import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/con
     try {
       const health = await brainApi("GET", "/health");
       state.brainConnected = true;
+      if (findJob()) findReader.refresh(document.getElementById("brain-target").value);
       loadSchedules(true);      // 3.163.B
       // null means "this brain pins nothing, so the vision service's own
       // default applies" -- resolved for display in brainModelLabel().
