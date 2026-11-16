@@ -417,3 +417,37 @@ def test_a_capped_carried_landmark_is_still_judged_on_its_dispute():
     assert wl.pin_ok(_carried_through_seed({"keys": 2}), "keys", ITEMS)
     # Not carried: the share alone never stands in for two looks.
     assert not wl.pin_ok(dict(lm, carried=False, votes={"keys": 1.5}), "keys", ITEMS)
+
+
+# --- 3.178.E's fresh sweep (seeds 5178/5179; bars written before the run) ----
+
+RESULTS_E = RESULTS.with_name("results-e.json")
+
+
+def test_e_s_fresh_sweep_numbers_are_pinned():
+    r = json.loads(RESULTS_E.read_text())
+    search, present = r["search"], r["present"]
+    assert (search["seed"], present["seed"]) == (5178, 5179)
+    assert (search["missions"], present["missions"], search["max_steps"]) == (20, 20, 150)
+    assert r["list_false_rate"] == 0.05 and len(r["placed"]) == 9
+    lab = (search["rules"]["label"], present["rules"]["label"])
+    vot = (search["rules"]["votes"], present["rules"]["votes"])
+    passes = search["passes"] + present["passes"]
+    # Sample bar, met: 50 passes (>= 30).
+    assert (search["passes"], present["passes"]) == (24, 26) and passes >= 30
+    # D1, met: 2 + 1 wrong pins under D's rule (dev's 5 + 5).
+    assert [v["wrong_pins"] for v in vot] == [2, 1]
+    assert [v["wrong_pins"] for v in lab] == [5, 5]
+    # D2, met: 45 vs 48 true pins, margin max(1, 4.8).
+    assert [v["true_pins"] for v in vot] == [24, 21] and [v["true_pins"] for v in lab] == [24, 24]
+    # D3, FAILED: 41 of 50 (82%); dev's rule 44 of 50. Over passes that
+    # reached a report (information only): 41 of 44.
+    assert [v["found"] for v in vot] == [22, 19] and [v["found"] for v in lab] == [22, 22]
+    assert sum(v["found"] for v in vot) / passes < 0.9
+    assert search["reached"] + present["reached"] == 44
+    # D4, met; no landmark was carried (the `_capped` fix moves no number).
+    assert (search["same_as_off"], present["same_as_off"]) == (20, 20)
+    assert search["carried"] == present["carried"] == 0
+    # Not shipped: the watch block's default stays 3.178.A's rule.
+    import inspect
+    assert inspect.signature(wl.watch_block).parameters["rule"].default == "label"
