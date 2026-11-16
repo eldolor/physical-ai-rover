@@ -72,7 +72,10 @@ def names(name: str, label) -> bool:
 def _num(v) -> Optional[float]:
     if isinstance(v, bool) or not isinstance(v, (int, float)):
         return None
-    f = float(v)
+    try:
+        f = float(v)
+    except OverflowError:
+        return None               # a huge JSON integer (3.175.G)
     return f if math.isfinite(f) else None
 
 

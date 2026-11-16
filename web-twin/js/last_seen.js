@@ -59,17 +59,16 @@ export function agoWords(ended, nowMs, t) {
 }
 
 function roomOf(a) {
-  // The head row's room is the mission's own label ("living_room"): it reads
-  // "the living room". A report's room that differs from it is 3.160's
-  // person-given name there, shown as given. With no label to compare (the
-  // head row's "unknown"), a report room in label form (lower case,
-  // underscores) is taken as a label. "unknown" is no room.
+  // A room in label form (lower case, underscores: a mission's own label,
+  // "living_room") reads "the living room", from the head row or from a
+  // report's row (another mission's label, 3.175.G). Anything else is 3.160's
+  // person-given name there, shown as given. The report's room first.
   const p = a.place || a.doubtful || {};
-  const label = p.room && p.room !== "unknown" ? String(p.room) : null;
   const w = a.when && a.when.room && a.when.room !== "unknown" ? String(a.when.room) : null;
-  const words = function (s) { return "the " + s.replace(/_/g, " "); };
-  if (w && w !== label) return label || !/^[a-z0-9_]+$/.test(w) ? w : words(w);
-  return label ? words(label) : null;
+  const label = p.room && p.room !== "unknown" ? String(p.room) : null;
+  const room = w || label;
+  if (!room) return null;
+  return /^[a-z0-9_]+$/.test(room) ? "the " + room.replace(/_/g, " ") : room;
 }
 
 // The row's words: { text, go, thumb } -- `text` is HTML built from escaped

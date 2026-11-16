@@ -315,3 +315,56 @@ def test_the_measured_numbers_on_real_chains():
     assert s["C3"]["not_seen"] == s["C3"]["asked"] and s["C3"]["empty_store"] == "no_memory"
     assert s["C4"]["robot_reads_and_world_calls"] == 0
     assert s["C5"]["reports"] == 50 and s["C5"]["p95_ms"] <= 200
+
+
+# ---------- 3.175.G: the second review's fixes on 7403cf36 ----------
+
+def test_g1_the_route_asks_for_a_sentences_target(brain):
+    """A twin whose sentence read failed sends the words as typed: the brain
+    reads them by 3.176's rules (no names, no world) and asks for the target."""
+    _save_chain(brain.tmp, _head([_row("red backpack", 1.0, 2.0, 0.95, seen_seq=4)]))
+    a = brain.get("/mission/last-seen", params={"name": "where is my red backpack"}).json()
+    assert a["status"] == "seen" and a["name"] == "red backpack", a
+    assert brain.get("/mission/last-seen", params={"name": "zeppelin"}).json()["name"] == "zeppelin"
+    assert brain.robot.reads == [] and brain.world.reads == []
+
+
+def test_g2_a_running_mission_answers_live_with_no_wait_and_no_compare(brain, monkeypatch):
+    from control import inventory_store as inv_mod
+    live = _head([_row("mug", 5.0, 5.0, 0.9, seen_seq=0)], carry_seq=0)    # carried nothing
+    _save_chain(brain.tmp, _head([_row("mug", 1.0, 1.0, 0.9, seen_seq=3)], carry_seq=3))
+    _route_state(brain)["runner"] = SimpleNamespace(is_running=lambda: True, inventory_report=lambda: live)
+    key = str((brain.tmp / "inv").resolve())
+    monkeypatch.setattr(inv_mod, "PENDING_WAIT_S", 0.05)
+    with inv_mod._PENDING_COND:
+        inv_mod._PENDING[key] = 1                  # an earlier mission's slow save
+    try:
+        r = brain.get("/mission/last-seen", params={"name": "mug"})
+    finally:
+        with inv_mod._PENDING_COND:
+            inv_mod._PENDING.pop(key, None)
+    assert r.status_code == 200, r.text
+    assert r.json()["source"] == "mission" and r.json()["place"]["x_m"] == 5.0
+
+
+def test_g3_an_ended_runner_yields_to_the_newest_map_once_its_save_lands(brain):
+    import os
+    import time as _t
+    live = _head([_row("mug", 5.0, 5.0, 0.9, seen_seq=2)], carry_seq=2, frame_id="map-a")
+    _route_state(brain)["runner"] = SimpleNamespace(is_running=lambda: False, inventory_report=lambda: live)
+    from control.inventory_store import InventoryStore
+    store = InventoryStore(str(brain.tmp / "inv"))
+    store.save("own", live)                                     # its own save landed
+    store.save("b1", _head([_row("mug", 9.0, 9.0, 0.9, seen_seq=1)], carry_seq=1, frame_id="map-b"))
+    os.utime(brain.tmp / "inv" / "b1.json", (_t.time() + 5,) * 2)   # map B saved since
+    a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
+    assert a["frame_id"] == "map-b" and a["place"]["x_m"] == 9.0, a
+
+
+def test_g4_a_huge_number_in_a_report_row_is_skipped_not_a_500():
+    head = _head([_row("mug", 1.0, 1.0, 0.95, seen_seq=3)])
+    reports = [{"mission_id": "bad", "frame_id": FRAME,
+                "landmarks": [{"label": "mug", "x_m": 10 ** 400, "y_m": 1.0}]},
+               {"mission_id": "ok", "frame_id": FRAME,
+                "landmarks": [{"label": "mug", "x_m": 1.0, "y_m": 1.0}]}]
+    assert last_seen.answer("mug", head, reports)["when"]["mission_id"] == "ok"

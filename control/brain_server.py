@@ -1680,37 +1680,44 @@ def create_app(
             last_seen_mod.clean_name(name)        # a bad name reads nothing
         except last_seen_mod.NameRefused as e:
             raise HTTPException(status_code=422, detail=str(e))
+        # 3.175.G: a sentence is read by 3.176's rules (no room names, so no
+        # world) and its target asked for: a twin whose read failed sends the
+        # words as typed. No single target: the words as they are.
+        name = parse_request(name, []).target or name
         runner = state["runner"]
-        head, source, live = None, "saved", None
+        live = None
         if runner is not None:
-            # This brain's last mission, running or ended: its inventory is
-            # what it saves (review: between a mission's end and its save
-            # being queued, the directory holds no trace of it).
             report = getattr(runner, "inventory_report", None)
             got = report() if report is not None else None
             if isinstance(got, dict) and got.get("frame_id"):
                 live = got
         try:
-            inv = inventory_store_from_config(config)
-            # A save still being written is waited for before the directory
-            # is listed (review): else the first mission on a map reads as
-            # "no memory", or a new map's as the old one's.
-            key = str(inv.local_dir.resolve())
-            with inventory_store_mod._PENDING_COND:
-                if not inventory_store_mod._PENDING_COND.wait_for(
-                        lambda: not inventory_store_mod._PENDING.get(key),
-                        inventory_store_mod.PENDING_WAIT_S):
-                    raise TimeoutError(f"an inventory save still in flight after "
-                                       f"{inventory_store_mod.PENDING_WAIT_S:.0f} s")
-            if live is not None:
-                # The saved chain on the same map wins only when it is further
-                # on (another brain process saved after this one's mission).
-                saved = inv.latest_for(live["frame_id"])
+            if live is not None and runner.is_running():
+                # 3.175.G: a running mission answers from its own inventory,
+                # with no wait on another's save and nothing to compare.
                 head, source = live, "mission"
-                if saved is not None and carry_seq_of(saved) > carry_seq_of(live):
-                    head, source = saved, "saved"
             else:
-                head = last_seen_mod.saved_head(inv)
+                inv = inventory_store_from_config(config)
+                # A save still being written is waited for before the
+                # directory is listed (3.175.C review).
+                key = str(inv.local_dir.resolve())
+                with inventory_store_mod._PENDING_COND:
+                    if not inventory_store_mod._PENDING_COND.wait_for(
+                            lambda: not inventory_store_mod._PENDING.get(key),
+                            inventory_store_mod.PENDING_WAIT_S):
+                        raise TimeoutError(f"an inventory save still in flight after "
+                                           f"{inventory_store_mod.PENDING_WAIT_S:.0f} s")
+                head, source = None, "saved"
+                if live is not None:
+                    # An ended mission: its own inventory only until its save
+                    # lands (the window between its end and the save being
+                    # queued); then the newest saved map, as with no runner
+                    # (3.175.G: never pinned to its map for the process's life).
+                    saved = inv.latest_for(live["frame_id"])
+                    if saved is None or carry_seq_of(saved) < carry_seq_of(live):
+                        head, source = live, "mission"
+                if head is None:
+                    head = last_seen_mod.saved_head(inv)
         except TimeoutError as e:
             raise HTTPException(status_code=503, detail=f"a mission's memory is still being saved: {e}")
         except OSError as e:

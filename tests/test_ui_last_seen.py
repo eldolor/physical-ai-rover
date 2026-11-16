@@ -283,11 +283,38 @@ def test_an_answer_is_forgotten_once_a_mission_starts(browser, twin_server, brai
 def test_a_failing_sentence_read_still_lets_the_words_be_asked(browser, twin_server, brain):
     """Review, second pass: a parse that fails must not take the ask away."""
     page, errors, calls = _open(browser, twin_server, brain, parse="abort")
-    page.fill("#brain-target", "red backpack")
+    page.fill("#brain-target", "where is my red backpack")
     sync_api.expect(page.locator("#find-reading")).to_contain_text("Couldn't read that", timeout=5000)
     sync_api.expect(page.locator(ASK_BTN)).to_be_enabled()
     page.click(ASK_BTN)
+    # 3.175.G: the words go as typed and the brain reads the sentence's target.
     sync_api.expect(page.locator(TEXT)).to_contain_text("Last seen: red backpack", timeout=5000)
-    assert calls["ask"] == ["/mission/last-seen?name=red%20backpack"], calls
+    assert calls["ask"] == ["/mission/last-seen?name=where%20is%20my%20red%20backpack"], calls
+    # Go check starts the find for the target the brain read, not the sentence.
+    page.click(GO)
+    sync_api.expect(page.locator(START)).to_have_text("Stop", timeout=5000)
+    assert calls["start"][0]["target_object"] == "red backpack", calls
+    assert not errors, errors
+    page.context.close()
+
+
+def test_g5_a_report_room_in_label_form_reads_as_words(browser, twin_server, brain):
+    """3.175.G: another mission's label ("dining_room") is words, never raw;
+    a person's name is shown as given."""
+    page, errors, calls = _open(browser, twin_server, brain)
+    got = page.evaluate("""async () => {
+        const m = await import('./js/last_seen.js');
+        const t = (k, v) => k + JSON.stringify(v || {});
+        const esc = (x) => String(x);
+        const view = (placeRoom, whenRoom) => m.lastSeenView({status: 'ok', answer: {
+            name: 'mug', status: 'seen', places: [{room: placeRoom}], place: {room: placeRoom},
+            when: {room: whenRoom, ended: null, mission_id: 'm', thumb: null}}}, t, esc, 0, false).text;
+        return [view('living_room', 'dining_room'), view('living_room', "Sam's hall"),
+                view('living_room', null), view('unknown', 'dining_room')];
+    }""")
+    assert '"room":"<b>the dining room</b>"' in got[0], got[0]
+    assert '"room":"<b>Sam\'s hall</b>"' in got[1], got[1]
+    assert '"room":"<b>the living room</b>"' in got[2], got[2]
+    assert '"room":"<b>the dining room</b>"' in got[3], got[3]
     assert not errors, errors
     page.context.close()
