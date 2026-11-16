@@ -1,0 +1,95 @@
+{
+ "tuning_seeds": [
+  3178,
+  3179,
+  4178,
+  4179
+ ],
+ "route_steps": 400,
+ "missions": 80,
+ "near_cells": 6,
+ "clear_cells": 2,
+ "placed": [
+  {
+   "item": "keys",
+   "cell": [
+    28,
+    28
+   ],
+   "room": "bathroom",
+   "routes_near": 34
+  },
+  {
+   "item": "wallet",
+   "cell": [
+    21,
+    28
+   ],
+   "room": "bedroom 1",
+   "routes_near": 26
+  },
+  {
+   "item": "phone",
+   "cell": [
+    35,
+    33
+   ],
+   "room": "bedroom 2",
+   "routes_near": 17
+  },
+  {
+   "item": "glasses",
+   "cell": [
+    44,
+    10
+   ],
+   "room": "dining room",
+   "routes_near": 15
+  },
+  {
+   "item": "remote",
+   "cell": [
+    8,
+    35
+   ],
+   "room": "entry",
+   "routes_near": 20
+  },
+  {
+   "item": "keys",
+   "cell": [
+    29,
+    18
+   ],
+   "room": "kitchen",
+   "routes_near": 22
+  },
+  {
+   "item": "wallet",
+   "cell": [
+    13,
+    18
+   ],
+   "room": "living room",
+   "routes_near": 15
+  },
+  {
+   "item": "phone",
+   "cell": [
+    50,
+    24
+   ],
+   "room": "main bedroom",
+   "routes_near": 18
+  },
+  {
+   "item": "glasses",
+   "cell": [
+    52,
+    17
+   ],
+   "room": "study",
+   "routes_near": 14
+  }
+ ]
+}
