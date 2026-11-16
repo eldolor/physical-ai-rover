@@ -4,8 +4,15 @@
 nothing it did not? (criteria B1, B2 and B4's simulator half, written in
 3.178.A before this ran.)
 
-    python evaluations/watch-list-3178/sweep.py            # both sweeps -> results.json
+    python evaluations/watch-list-3178/sweep.py            # 3.178.D's fresh seeds -> results-d.json
+    python evaluations/watch-list-3178/sweep.py --seed 3178 --out results-d-bseed.json   # B's seeds
     python evaluations/watch-list-3178/sweep.py --missions 2 --out /tmp/x.json
+
+Each report is scored under both pin rules (`RULES`, 3.178.D), paired.
+`results.json` is 3.178.B's record in B's schema (top-level `found`,
+`wrong_pins`), written by this script as of `c4849877`; this version
+writes the per-rule schema (`rules.label`, `rules.votes`), so do not
+regenerate `results.json` with it.
 
 Every mission runs the WHOLE path: `MissionRunner` -> the frontier policy ->
 `robot/safety.py` -> `MockRobot` in `complex_house`. The inventory is fed by
@@ -129,6 +136,9 @@ def run_one(start, *, list_on: bool, seed: int, target: str = base.ABSENT_TARGET
     # 3.178.D: the one report scored under both pin rules, paired.
     watch = {rule: (watch_block(report, LIST, target, rule=rule) if list_on else None)
              for rule in RULES}
+    # The default rule's block IS the runner's own (the shipped path); the
+    # other rule is recomputed from the same report.
+    assert watch["label"] == report.get("watch"), "the runner's watch block moved"
     return {"start_room": room, "outcome": runner.status()["outcome"],
             "actions": [a.action for a in runner.memory.actions],
             "watch": watch, "nearest": det.nearest,
