@@ -133,7 +133,11 @@ def test_frames_stay_local_no_upload_path_reads_the_store():
     (control/inventory_store.py) carries no image."""
     out = subprocess.run(["git", "grep", "--untracked", "-l", "-e", "what_i_saw", "-e", "WHAT_I_SAW_DIR",
                           "--", "*.py"], cwd=ROOT, capture_output=True, text=True).stdout.split()
-    assert sorted(out) == ["brain/what_i_saw.py", "control/brain_server.py", "control/mission_runner.py",
+    # 3.175.C: "where did you last see it" reads the store (read-only, local:
+    # its route answers the person's own phone); its measure and tests too.
+    assert sorted(out) == ["brain/last_seen.py", "brain/what_i_saw.py", "control/brain_server.py",
+                           "control/mission_runner.py", "evaluations/last-seen-3175c/measure.py",
+                           "tests/test_last_seen.py", "tests/test_ui_last_seen.py",
                            "tests/test_ui_what_i_saw.py", "tests/test_what_i_saw.py",
                            "tests/test_what_i_saw_live.py", "tests/test_what_i_saw_sweep.py"]
     assert "jpeg" not in (ROOT / "control" / "inventory_store.py").read_text().lower()
