@@ -325,3 +325,42 @@ def test_the_sweep_s_numbers_are_pinned():
     # comparison is UNINFORMATIVE, not met: no mission arrived either way.
     assert (search["same_as_off"], present["same_as_off"]) == (20, 20)
     assert (present["arrived_on"], present["arrived_off"]) == (0, 0)
+
+
+# --- 3.178.D's fresh sweep (seeds 4178/4179; bars written before the run) ----
+
+RESULTS_D = RESULTS.with_name("results-d.json")
+RESULTS_D_BSEED = RESULTS.with_name("results-d-bseed.json")
+
+
+def test_d_s_fresh_sweep_numbers_are_pinned():
+    r = json.loads(RESULTS_D.read_text())
+    search, present = r["search"], r["present"]
+    assert (search["seed"], present["seed"]) == (4178, 4179)
+    assert (search["missions"], present["missions"], search["max_steps"]) == (20, 20, 150)
+    assert r["list"] == list(wl.DEFAULT_WATCH_LIST) and r["list_false_rate"] == 0.05
+    lab = (search["rules"]["label"], present["rules"]["label"])
+    vot = (search["rules"]["votes"], present["rules"]["votes"])
+    # D1, met: D's rule, 1 + 0 wrong pins (<= 2 a sweep, <= 4 over 40);
+    # dev's rule on the same reports, 6 + 2.
+    assert [v["wrong_pins"] for v in vot] == [1, 0]
+    assert [v["wrong_pins"] for v in lab] == [6, 2]
+    # D2, met and judged (dev's true pins >= 3): 4 vs 4.
+    assert [v["true_pins"] for v in vot] == [v["true_pins"] for v in lab] == [2, 2]
+    # D3, FAILED: 4 of 5 passes pinned (bar 90%), the same under dev's rule.
+    assert (search["passes"], present["passes"]) == (3, 2)
+    assert [v["found"] for v in vot] == [v["found"] for v in lab] == [2, 2]
+    assert sum(v["found"] for v in vot) / (search["passes"] + present["passes"]) < 0.9
+    # D4, met: the robot is the same with the list on and off.
+    assert (search["same_as_off"], present["same_as_off"]) == (20, 20)
+    # Not shipped: the watch block's default stays 3.178.A's rule.
+    import inspect
+    assert inspect.signature(wl.watch_block).parameters["rule"].default == "label"
+
+
+def test_d_s_run_on_b_s_seeds_reproduces_b():
+    r = json.loads(RESULTS_D_BSEED.read_text())
+    lab = [r[k]["rules"]["label"] for k in ("search", "present")]
+    vot = [r[k]["rules"]["votes"] for k in ("search", "present")]
+    assert [v["wrong_pins"] for v in lab] == [4, 2] and [v["found"] for v in lab] == [3, 1]
+    assert [v["wrong_pins"] for v in vot] == [1, 1] and [v["true_pins"] for v in vot] == [3, 1]
