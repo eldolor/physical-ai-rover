@@ -907,6 +907,11 @@ class MissionRunner:
         self.watch_list = watch_list_normalise(watch_list)
         self.inventory_sink: Optional[Callable[[dict], None]] = None
         self._inventory_error_logged = False
+        # 3.175.H: whether this mission's inventory save landed, said by the
+        # runner so a reader never infers it from the store. Its own lock: the
+        # save thread's callback never waits on a tick.
+        self._inventory_save = {"state": "none", "mission_id": None, "error": None}
+        self._inventory_save_lock = threading.Lock()
         # 3.50.D5: set by the brain server -- the newest saved inventory on a
         # saved map (`InventoryStore.latest_for`), asked once, on the first
         # usable pose with a `frame_id`, to seed this mission's inventory.
@@ -3211,13 +3216,36 @@ class MissionRunner:
         except Exception as e:  # noqa: BLE001 -- a report lost, never the mission
             logger.warning("what it saw not saved: %s", e)
 
+    def inventory_save_state(self) -> dict:
+        """3.175.H: `{state, mission_id, error}`. `state` is `none` (no save
+        handed off yet), `pending` (handed to the sink, its local file not
+        settled), `saved` (the local file is written) or `failed`."""
+        with self._inventory_save_lock:
+            return dict(self._inventory_save)
+
+    def inventory_saved(self, mission_id, ok: bool, error: Optional[str] = None) -> None:
+        """3.175.H: the sink's owner says the local file settled. Applies once,
+        and only to this mission's pending save; never raises."""
+        with self._inventory_save_lock:
+            cur = self._inventory_save
+            if cur["state"] != "pending" or cur["mission_id"] != mission_id:
+                return
+            self._inventory_save = {"state": "saved" if ok else "failed",
+                                    "mission_id": mission_id,
+                                    "error": None if ok else (str(error) if error else "not saved")}
+
     def _finish_inventory(self) -> None:
         if self.inventory is None or self.inventory_sink is None:
             return
+        with self._inventory_save_lock:
+            # Before the sink: its callback may fire before it returns.
+            self._inventory_save = {"state": "pending", "mission_id": self.mission_id,
+                                    "error": None}
         try:
             self.inventory_sink(self.inventory_report())
         except Exception as e:  # noqa: BLE001
             logger.warning("inventory not saved: %s", e)
+            self.inventory_saved(self.mission_id, False, f"sink: {e}")
 
     def _log_line(self, line: str) -> None:
         self._log.append(line)

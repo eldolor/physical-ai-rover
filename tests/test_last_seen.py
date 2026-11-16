@@ -232,8 +232,12 @@ def test_the_route_reads_a_running_missions_live_inventory(brain):
     runner.is_running = lambda: False
     a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
     assert a["source"] == "mission" and a["place"]["x_m"] == 5.0
-    # A saved chain on the same map further on (another brain process) wins.
+    # A saved chain on the same map further on (another brain process): read
+    # once the runner says its save settled (3.175.H), not inferred before.
     _save_chain(brain.tmp, _head([_row("mug", 9.0, 9.0, 0.9, seen_seq=7)], carry_seq=7))
+    a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
+    assert a["source"] == "mission" and a["place"]["x_m"] == 5.0
+    runner.inventory_save_state = lambda: {"state": "saved", "mission_id": "run-5", "error": None}
     a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
     assert a["source"] == "saved" and a["place"]["x_m"] == 9.0
 
@@ -350,8 +354,12 @@ def test_g2_a_running_mission_answers_live_with_no_wait_and_no_compare(brain, mo
 def test_g3_an_ended_runner_yields_to_the_newest_map_once_its_save_lands(brain):
     import os
     import time as _t
-    live = _head([_row("mug", 5.0, 5.0, 0.9, seen_seq=2)], carry_seq=2, frame_id="map-a")
-    _route_state(brain)["runner"] = SimpleNamespace(is_running=lambda: False, inventory_report=lambda: live)
+    live = dict(_head([_row("mug", 5.0, 5.0, 0.9, seen_seq=2)], carry_seq=2, frame_id="map-a"),
+                mission_id="own")
+    # 3.175.H: the runner says its save landed.
+    _route_state(brain)["runner"] = SimpleNamespace(
+        is_running=lambda: False, inventory_report=lambda: live,
+        inventory_save_state=lambda: {"state": "saved", "mission_id": "own", "error": None})
     from control.inventory_store import InventoryStore
     store = InventoryStore(str(brain.tmp / "inv"))
     store.save("own", live)                                     # its own save landed
@@ -455,14 +463,8 @@ def test_g12_an_ended_mission_that_never_carried_keeps_its_own_newer_sightings(b
     _route_state(brain)["runner"] = SimpleNamespace(is_running=lambda: False, inventory_report=lambda: live)
     a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
     assert (a["source"], a["place"]["x_m"]) == ("mission", 5.0), a
-    # The recorded limit, pinned so a change to it is seen: its save landed
-    # (seq 0, never the head over the seq-3 chain) and a newer map was saved,
-    # yet it is still read first, with its own map's chain after it.
-    from control.inventory_store import InventoryStore
-    InventoryStore(str(brain.tmp / "inv")).save("run-1", live)
-    _other_map_newer(brain.tmp)
-    a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
-    assert (a["source"], a["frame_id"], a["place"]["x_m"]) == ("mission", FRAME, 5.0), a
+    # G11's pin (its save landed yet it was read first until the brain
+    # restarted) is gone with 3.175.H: `tests/test_save_state_3175h.py`.
 
 
 def test_g13_exact_words_across_heads_and_seen_before_doubtful(brain):

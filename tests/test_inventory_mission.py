@@ -451,7 +451,7 @@ def test_two_missions_in_one_second_get_their_own_file(monkeypatch):
         def save(self, mission_id, report):
             ids.append(mission_id)
 
-        def save_async(self, mission_id, report):    # 3.50.D5's sink
+        def save_async(self, mission_id, report, on_local=None):    # 3.50.D5's sink
             self.save(mission_id, report)
 
         def latest_for(self, frame_id):       # 3.50.D5: nothing saved to carry

@@ -153,27 +153,40 @@ class InventoryStore:
             self._client = boto3.client("s3")
         return self._client
 
-    def save_async(self, mission_id: str, report: dict) -> threading.Thread:
+    def save_async(self, mission_id: str, report: dict, on_local=None) -> threading.Thread:
         """`save()` on a daemon thread (the mission's end never waits on an
         upload), counted as pending until its local file is written, so
-        `latest_for()` can wait for it (3.50.D5)."""
+        `latest_for()` can wait for it (3.50.D5).
+
+        3.175.H: `on_local(ok, error)` is called once when the local file
+        settles -- written (`ok`), or not (an error, or the save ended before
+        that) -- and before the pending count drops, so a lookup that waited
+        sees it. One that raises is logged, never the save's failure."""
         key = str(self.local_dir.resolve())
         with _PENDING_COND:
             _PENDING[key] = _PENDING.get(key, 0) + 1
 
         fired = []
 
-        def done():
+        def done(ok: bool = False, error: Optional[str] = "the save ended before its local file"):
             # Once: when the local file is settled, or when the save ends
             # without getting that far (an exception) -- whichever is first.
             with _PENDING_COND:
                 if fired:
                     return
                 fired.append(True)
-                _PENDING[key] -= 1
-                if not _PENDING[key]:
-                    del _PENDING[key]
-                _PENDING_COND.notify_all()
+            try:
+                if on_local is not None:
+                    on_local(ok, None if ok else error)
+            except Exception as e:  # noqa: BLE001 -- never the save's failure
+                logger.warning("inventory %s: the save-state callback failed: %s",
+                               mission_id, e)
+            finally:
+                with _PENDING_COND:
+                    _PENDING[key] -= 1
+                    if not _PENDING[key]:
+                        del _PENDING[key]
+                    _PENDING_COND.notify_all()
 
         t = threading.Thread(target=self.save, args=(mission_id, report),
                              kwargs={"_local_done": done}, daemon=True)
@@ -225,7 +238,9 @@ class InventoryStore:
         except OSError as exc:
             out["errors"].append(f"local: {exc}")
         if _local_done is not None:
-            _local_done()                 # the local file is settled: lookups may go on
+            # The local file is settled: lookups may go on (3.175.H: and
+            # whether it was written).
+            _local_done(out["local"] is not None, "; ".join(out["errors"]) or None)
             _local_done = None
         if self.bucket:
             key = f"{self.prefix}/{self.robot}/{name}"

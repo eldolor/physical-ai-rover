@@ -1017,7 +1017,10 @@ def create_app(
                                or ("survey" if req.job == "survey" else "mission")))
         # 3.50.D5: save_async counts the save as pending until its local file
         # is written, so the next mission's lookup waits for it.
-        runner.inventory_sink = lambda report: store.save_async(mission_id, report)
+        # 3.175.H: the store says when the local file settled, and the runner
+        # keeps it (`inventory_save_state`), so a reader never infers it.
+        runner.inventory_sink = lambda report: store.save_async(
+            mission_id, report, on_local=functools.partial(runner.inventory_saved, mission_id))
         # 3.50.D5: a mission on a saved map starts from the last inventory
         # saved on it (local files only).
         runner.inventory_prior = store.latest_for
@@ -1670,6 +1673,18 @@ def create_app(
         except OSError as e:
             raise HTTPException(status_code=500, detail=f"not deleted: {e}")
 
+    def _save_settled(runner, live: dict) -> bool:
+        """3.175.H: the runner says this mission's inventory save settled
+        (`saved` or `failed`) for the live report's `mission_id`. A runner
+        that does not say, or raises, has not settled."""
+        try:
+            got = getattr(runner, "inventory_save_state", None)
+            st = got() if got is not None else None
+        except Exception:  # noqa: BLE001 -- unknown reads as not settled
+            return False
+        return (isinstance(st, dict) and st.get("state") in ("saved", "failed")
+                and bool(live.get("mission_id")) and st.get("mission_id") == live.get("mission_id"))
+
     @app.get(prefix + "/mission/last-seen", dependencies=[Depends(require_secret)])
     def mission_last_seen(name: str = ""):
         """3.175.C: where a named thing was last seen, from the chain head
@@ -1691,22 +1706,26 @@ def create_app(
             running = bool(getattr(runner, "is_running", lambda: False)())
         except Exception:  # noqa: BLE001 -- a runner mid-teardown is not running
             running = False
-        # 3.175.G: the heads to read, in order.
+        # 3.175.G/H: the heads to read, in order.
         # - A mission of this brain that carried the chain (`carry_seq` > 0)
         #   holds it and its own looks: it alone -- running, with no wait;
-        #   ended, until its save lands.
+        #   ended, until its save settles.
         # - One that never carried (running or ended): its own inventory, then
-        #   the saved chain on ITS map, until its save lands. Its doubtful
+        #   the saved chain on ITS map, until its save settles. Its doubtful
         #   yields to a place seen in the saved head (it never looked there).
-        # - Landed (the saved head is its report by `mission_id`, or further on
-        #   than a mission that carried), or no mission: the newest saved map.
+        # - Settled -- the runner says its save for this `mission_id` was
+        #   written or failed (3.175.H; never inferred from the store) -- or
+        #   no mission: the newest saved map, as the next find would carry it.
+        #   A failed save is in no chain, so a find would not recall it.
         try:
             if live is not None and running and carry_seq_of(live) > 0:
                 heads = [(live, "mission")]
             else:
                 inv = inventory_store_from_config(config)
                 # A save still being written is waited for before the
-                # directory is listed (3.175.C review).
+                # directory is listed (3.175.C review), and before the
+                # runner's save state is read (it settles before the count
+                # drops: 3.175.H).
                 key = str(inv.local_dir.resolve())
                 with inventory_store_mod._PENDING_COND:
                     if not inventory_store_mod._PENDING_COND.wait_for(
@@ -1715,27 +1734,15 @@ def create_app(
                         raise TimeoutError(f"an inventory save still in flight after "
                                            f"{inventory_store_mod.PENDING_WAIT_S:.0f} s")
                 heads = None
-                if live is not None:
-                    saved = inv.latest_for(live["frame_id"])
-                    landed = saved is not None and (
-                        (live.get("mission_id") and saved.get("mission_id") == live.get("mission_id"))
-                        # Further on than a mission that carried (another
-                        # process saved since).
-                        or 0 < carry_seq_of(live) < carry_seq_of(saved))
-                    # Known limit (3.175.G): an ended mission whose save never
-                    # becomes its map's head is read first until the brain
-                    # restarts -- one that never carried even when its save
-                    # succeeded (`latest_for` takes the highest carry_seq), or
-                    # one whose save failed. Yielding instead dropped its own
-                    # newer sightings (review of 1dfd33b4). The fix is the
-                    # runner saying its save landed, with the saved mission_id.
-                    if not landed:
-                        # A mission that carried holds the chain and its own
-                        # looks: alone, so a row it dropped or doubted never
-                        # comes back from the older saved head (review of
-                        # fefd4bc7). One that never carried: then its map's.
-                        heads = [(live, "mission")]
-                        if saved is not None and carry_seq_of(live) == 0:
+                if live is not None and (running or not _save_settled(runner, live)):
+                    # A mission that carried holds the chain and its own
+                    # looks: alone, so a row it dropped or doubted never
+                    # comes back from the older saved head (review of
+                    # fefd4bc7). One that never carried: then its map's.
+                    heads = [(live, "mission")]
+                    if carry_seq_of(live) == 0:
+                        saved = inv.latest_for(live["frame_id"])
+                        if saved is not None:
                             heads.append((saved, "saved"))
                 if heads is None:
                     heads = [(last_seen_mod.saved_head(inv), "saved")]
