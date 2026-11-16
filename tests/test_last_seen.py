@@ -455,15 +455,25 @@ def test_g12_an_ended_mission_that_never_carried_keeps_its_own_newer_sightings(b
     _route_state(brain)["runner"] = SimpleNamespace(is_running=lambda: False, inventory_report=lambda: live)
     a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
     assert (a["source"], a["place"]["x_m"]) == ("mission", 5.0), a
+    # The recorded limit, pinned so a change to it is seen: its save landed
+    # (seq 0, never the head over the seq-3 chain) and a newer map was saved,
+    # yet it is still read first, with its own map's chain after it.
+    from control.inventory_store import InventoryStore
+    InventoryStore(str(brain.tmp / "inv")).save("run-1", live)
+    _other_map_newer(brain.tmp)
+    a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
+    assert (a["source"], a["frame_id"], a["place"]["x_m"]) == ("mission", FRAME, 5.0), a
 
 
-def test_g13_exact_words_across_heads_and_the_newer_heads_doubt_first(brain):
+def test_g13_exact_words_across_heads_and_seen_before_doubtful(brain):
     live = dict(_head([_row("mug", 5.0, 5.0, 0.6), _row("plant", 6.0, 6.0, 0.9)], carry_seq=0),
                 mission_id="run-1")
     _save_chain(brain.tmp, _head([_row("mug", 1.0, 1.0, 0.9, seen_seq=3),
                                   _row("plant in pot", 2.0, 2.0, 0.9, seen_seq=3)], carry_seq=3))
     _route_state(brain)["runner"] = SimpleNamespace(is_running=lambda: True, inventory_report=lambda: live)
+    # A mission that never carried has not looked at the saved place: its
+    # weak row does not hide it (reviews of efdd037b).
     a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
-    assert (a["status"], a["source"]) == ("doubtful", "mission"), a      # it looked: newer evidence
+    assert (a["status"], a["source"], a["place"]["x_m"]) == ("seen", "saved", 1.0), a
     a = brain.get("/mission/last-seen", params={"name": "plant in pot"}).json()
     assert (a["name"], a["place"]["x_m"]) == ("plant in pot", 2.0), a

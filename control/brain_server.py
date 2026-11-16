@@ -1723,10 +1723,12 @@ def create_app(
                         # process saved since).
                         or 0 < carry_seq_of(live) < carry_seq_of(saved))
                     # Known limit (3.175.G): an ended mission whose save never
-                    # becomes the head (it never carried, or its save failed)
-                    # is read first until the brain restarts. Yielding instead
-                    # dropped its own newer sightings (review of 1dfd33b4);
-                    # the fix is the runner saying whether its save landed.
+                    # becomes its map's head is read first until the brain
+                    # restarts -- one that never carried even when its save
+                    # succeeded (`latest_for` takes the highest carry_seq), or
+                    # one whose save failed. Yielding instead dropped its own
+                    # newer sightings (review of 1dfd33b4). The fix is the
+                    # runner saying its save landed, with the saved mission_id.
                     if not landed:
                         heads = [(live, "mission")] + ([(saved, "saved")] if saved is not None else [])
                 if heads is None:
@@ -1757,17 +1759,24 @@ def create_app(
                 r"(?<![\w\-\u2010-\u2015])" + re.escape(target) + r"(?![\w\-\u2010-\u2015])",
                 names[0]):
             names.append(target)
+        first = None
         try:
             # The exact words before the target, across every head (review of
-            # eff57ec7); within a name, the newer head first, and its doubtful
-            # (it looked and did not see) before an older head's seen.
-            first = None
+            # eff57ec7). Within a name, a place seen in any head before a
+            # doubtful one: two heads come only from a mission that never
+            # carried the chain, which has not looked at the saved places, so
+            # its weak row is no evidence against them (reviews of efdd037b).
             for n in names:
+                doubtful = None
                 for head, source in heads:
                     got = last_seen_mod.answer(n, head, reports(), source=source)
-                    first = first or got
-                    if got["status"] in (last_seen_mod.SEEN, last_seen_mod.DOUBTFUL):
+                    first = got if n == names[0] and head is heads[0][0] else first
+                    if got["status"] == last_seen_mod.SEEN:
                         return JSONResponse(got)
+                    if got["status"] == last_seen_mod.DOUBTFUL and doubtful is None:
+                        doubtful = got
+                if doubtful is not None:
+                    return JSONResponse(doubtful)
             return JSONResponse(first)
         except OSError as e:
             raise HTTPException(status_code=503, detail=f"the reports can't be read now ({e})")
