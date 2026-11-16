@@ -1689,12 +1689,20 @@ def create_app(
                 live = got
         try:
             running = bool(getattr(runner, "is_running", lambda: False)())
+        except Exception:  # noqa: BLE001 -- a runner mid-teardown is not running
+            running = False
+        # 3.175.G: the heads to read, in order (the next only for a name the
+        # one before has not seen).
+        # - A running mission that carried the chain (`carry_seq` > 0) holds it
+        #   and more: it alone, with no wait on another mission's save.
+        # - Any other mission of this brain (running but not carrying yet, or
+        #   ended): its own inventory first, then the saved chain on ITS map,
+        #   until its own save lands (the saved head is its report, by
+        #   `mission_id`, or one further on).
+        # - Once landed, or with no mission: the newest saved map's head.
+        try:
             if live is not None and running and carry_seq_of(live) > 0:
-                # 3.175.G: a running mission that has carried the chain answers
-                # from its own inventory (it holds the chain and more), with no
-                # wait on another's save and nothing to compare. One not yet
-                # carrying (seeded late, or nothing saved) is compared below.
-                head, source = live, "mission"
+                heads = [(live, "mission")]
             else:
                 inv = inventory_store_from_config(config)
                 # A save still being written is waited for before the
@@ -1706,17 +1714,19 @@ def create_app(
                             inventory_store_mod.PENDING_WAIT_S):
                         raise TimeoutError(f"an inventory save still in flight after "
                                            f"{inventory_store_mod.PENDING_WAIT_S:.0f} s")
-                head, source = None, "saved"
+                heads = None
                 if live is not None:
-                    # An ended mission: its own inventory only until its save
-                    # lands (the window between its end and the save being
-                    # queued); then the newest saved map, as with no runner
-                    # (3.175.G: never pinned to its map for the process's life).
                     saved = inv.latest_for(live["frame_id"])
-                    if saved is None or carry_seq_of(saved) < carry_seq_of(live):
-                        head, source = live, "mission"
-                if head is None:
-                    head = last_seen_mod.saved_head(inv)
+                    landed = saved is not None and (
+                        (live.get("mission_id") and saved.get("mission_id") == live.get("mission_id"))
+                        # Further on than a mission that carried (another
+                        # process saved since); one that never carried is
+                        # behind every saved chain by design.
+                        or 0 < carry_seq_of(live) < carry_seq_of(saved))
+                    if not landed:
+                        heads = [(live, "mission")] + ([(saved, "saved")] if saved is not None else [])
+                if heads is None:
+                    heads = [(last_seen_mod.saved_head(inv), "saved")]
         except TimeoutError as e:
             raise HTTPException(status_code=503, detail=f"a mission's memory is still being saved: {e}")
         except OSError as e:
@@ -1730,22 +1740,29 @@ def create_app(
                     yield store.get(line["mission_id"])
                 except what_i_saw_mod.ReportRefused:
                     continue                      # deleted since it was listed
+
+        # 3.175.G: the words as given first (a label like "t-shirt" or "plant
+        # in pot" is asked whole); not seen, a sentence's target by 3.176's
+        # rules (no room names, so no world) -- a twin whose read failed sends
+        # the words as typed -- only if it is whole words of the name (a
+        # hyphen or dash joins words: the rules cut "t-shirt" to "t") and two
+        # letters or more.
+        names = [last_seen_mod.clean_name(name)]
+        target = parse_request(name, []).target
+        if target and target != names[0] and len(target) >= 2 and re.search(
+                r"(?<![\w\-\u2010-\u2015])" + re.escape(target) + r"(?![\w\-\u2010-\u2015])",
+                names[0]):
+            names.append(target)
         try:
-            got = last_seen_mod.answer(name, head, reports(), source=source)
-            if got["status"] == last_seen_mod.NOT_SEEN:
-                # 3.175.G: the words as given first (a label like "t-shirt" or
-                # "plant in pot" is asked whole); not seen, a sentence's target
-                # by 3.176's rules (no room names, so no world) -- a twin whose
-                # read failed sends the words as typed. Only a target of whole
-                # words of the name, three letters or more: the rules cut
-                # "t-shirt" to "t", which is in nearly every label.
-                target = parse_request(name, []).target
-                if target and target != got["name"] and len(target) >= 3 and re.search(
-                        r"(?<![\w-])" + re.escape(target) + r"(?![\w-])", got["name"]):
-                    again = last_seen_mod.answer(target, head, reports(), source=source)
-                    if again["status"] != last_seen_mod.NOT_SEEN:
-                        got = again
-            return JSONResponse(got)
+            first = None
+            for head, source in heads:
+                for n in names:
+                    got = last_seen_mod.answer(n, head, reports(), source=source)
+                    if first is None:
+                        first = got
+                    if got["status"] not in (last_seen_mod.NOT_SEEN, last_seen_mod.NO_MEMORY):
+                        return JSONResponse(got)
+            return JSONResponse(first)
         except OSError as e:
             raise HTTPException(status_code=503, detail=f"the reports can't be read now ({e})")
 

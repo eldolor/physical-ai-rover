@@ -220,7 +220,7 @@ def test_the_route_with_nothing_kept_says_no_memory(brain):
 
 def test_the_route_reads_a_running_missions_live_inventory(brain):
     from control import brain_server  # noqa: F401
-    live = _head([_row("mug", 5.0, 5.0, 0.9, seen_seq=5)], carry_seq=5)
+    live = dict(_head([_row("mug", 5.0, 5.0, 0.9, seen_seq=5)], carry_seq=5), mission_id="run-5")
     _save_chain(brain.tmp, _head([_row("mug", 1.0, 1.0, 0.9, seen_seq=4)]))
     runner = SimpleNamespace(is_running=lambda: True, inventory_report=lambda: live)
     state = _route_state(brain)
@@ -405,3 +405,42 @@ def test_g8_a_runner_without_is_running_is_not_a_500(brain):
     live = _head([_row("mug", 5.0, 5.0, 0.9, seen_seq=2)], carry_seq=2)
     _route_state(brain)["runner"] = SimpleNamespace(inventory_report=lambda: live)
     assert brain.get("/mission/last-seen", params={"name": "mug"}).status_code == 200
+
+
+def _other_map_newer(tmp):
+    import os
+    import time as _t
+    from control.inventory_store import InventoryStore
+    InventoryStore(str(tmp / "inv")).save("b1", _head([_row("mug", 9.0, 9.0, 0.9, seen_seq=1)],
+                                                      carry_seq=1, frame_id="map-b"))
+    os.utime(tmp / "inv" / "b1.json", (_t.time() + 5,) * 2)
+
+
+def test_g9_a_running_mission_not_carrying_answers_its_own_sightings_first(brain):
+    """Review of e28512a8: its own fresh sighting, never another map's."""
+    live = dict(_head([_row("mug", 5.0, 5.0, 0.9)], carry_seq=0), mission_id="run-1")
+    _save_chain(brain.tmp, _head([_row("mug", 1.0, 1.0, 0.9, seen_seq=3)], carry_seq=3))
+    _other_map_newer(brain.tmp)
+    _route_state(brain)["runner"] = SimpleNamespace(is_running=lambda: True, inventory_report=lambda: live)
+    a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
+    assert (a["source"], a["place"]["x_m"]) == ("mission", 5.0), a
+
+
+def test_g10_then_the_saved_chain_on_its_own_map_not_the_newest(brain):
+    live = dict(_head([], carry_seq=0), mission_id="run-1")
+    _save_chain(brain.tmp, _head([_row("mug", 1.0, 1.0, 0.9, seen_seq=3)], carry_seq=3))
+    _other_map_newer(brain.tmp)
+    _route_state(brain)["runner"] = SimpleNamespace(is_running=lambda: True, inventory_report=lambda: live)
+    a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
+    assert (a["frame_id"], a["place"]["x_m"]) == (FRAME, 1.0), a
+
+
+def test_g11_short_whole_word_targets_and_dashes(brain):
+    _save_chain(brain.tmp, _head([_row("tv", 1.0, 1.0, 0.95, seen_seq=4),
+                                  _row("lunch bag", 2.0, 2.0, 0.95, seen_seq=4)]))
+
+    def ask(n):
+        return brain.get("/mission/last-seen", params={"name": n}).json()
+    a = ask("where is my tv")
+    assert (a["status"], a["name"]) == ("seen", "tv"), a
+    assert ask("where is my lunch–box")["status"] == "not_seen"   # "lunch" cut at an en dash
