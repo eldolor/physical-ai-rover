@@ -2866,9 +2866,15 @@ import { createFindReader, renderFindReading } from "./js/request.js";
     return brainApi("POST", "/mission/request/parse", { text: text });
   }, function () { renderFindBox(); });
   function findJob() { return state.brainJob !== "survey"; }
+  // Whether the chosen policy can use a room hint: only a search that
+  // explores reads one (control/mission_runner.py `explores`). `tiered`
+  // explores when the brain's `tier_search` is `explore`, which the page
+  // cannot see: the hint is sent, and the brain's status says if it acted.
+  function findRoomUsed() { return state.brainPolicy === "explore" || state.brainPolicy === "tiered"; }
   // Start's fields for a find now, or null while Start must stay off.
   function findFields() {
-    return findReader ? findReader.startFields(document.getElementById("brain-target").value) : null;
+    return findReader ? findReader.startFields(document.getElementById("brain-target").value,
+                                               findRoomUsed()) : null;
   }
   function renderFindBox() {
     const el = document.getElementById("find-reading");
@@ -2881,7 +2887,7 @@ import { createFindReader, renderFindReading } from "./js/request.js";
     let showDrop = false;
     if (shown) {
       drop.textContent = t("find.dropRoom");
-      showDrop = renderFindReading(el, findReader.reading, t, escapeHtml, engineerMode());
+      showDrop = renderFindReading(el, findReader.reading, t, escapeHtml, engineerMode(), findRoomUsed());
     }
     drop.style.display = showDrop ? "" : "none";
     btn.disabled = !state.brainConnected
@@ -4372,7 +4378,8 @@ import { createFindReader, renderFindReading } from "./js/request.js";
   }
 
   document.getElementById("brain-target").addEventListener("input", function () {
-    findReader.edit(this.value);
+    // Read only with a brain to ask; connecting reads the box (review).
+    if (state.brainConnected && findJob()) findReader.edit(this.value);
   });
   document.getElementById("btn-find-drop-room").onclick = function () {
     findReader.dropRoom();
@@ -4380,7 +4387,8 @@ import { createFindReader, renderFindReading } from "./js/request.js";
 
   document.getElementById("brain-job").addEventListener("change", function () {
     state.brainJob = state.brainJobChosen = this.value;
-    if (findJob() && state.brainConnected) findReader.edit(document.getElementById("brain-target").value);
+    // Read again: the saved map's names may have changed meanwhile (Thermos).
+    if (findJob() && state.brainConnected) findReader.refresh(document.getElementById("brain-target").value);
     updateBrainControls();
   });
 
@@ -4444,7 +4452,9 @@ import { createFindReader, renderFindReading } from "./js/request.js";
       showToast(t(why), "info");
       return;
     }
-    if (!survey) saveTargetToHistory(typed);
+    // The thing, not the sentence: the Guide's boxes share this history and
+    // do not read sentences (review).
+    if (!survey) saveTargetToHistory(target);
     setButtonBusy(btn, true, "Starting\u2026");
     brainStartStopBusy = true;
     const body = survey ? { job: "survey", policy: "explore" }
@@ -4570,6 +4580,7 @@ import { createFindReader, renderFindReading } from "./js/request.js";
   document.getElementById("brain-policy").addEventListener("change", function () {
     state.brainPolicy = this.value;
     prefSet(PREF.brainPolicy, this.value);
+    renderFindBox();   // 3.176.C: whether the room is sent depends on it
     // The model and wording pickers live on the Guide tab and were
     // previously shown only for Robot view. This is their second consumer.
     updateModelPickerRow();

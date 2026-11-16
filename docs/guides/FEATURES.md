@@ -783,7 +783,9 @@ finished map at mission start; N1's discovered map replaced it.)
   shows, and stays off until the line has caught up with an edit, when no
   single thing was named ("find it in the kitchen"), when the box is empty,
   or when the brain does not answer (the line says which). The room only
-  orders where explore looks first; it never ends a search by itself. A
+  orders where explore looks first (so it is sent only with the explore
+  or tiered policy; with the others the line says it is not used); it
+  never ends a search by itself. A
   plain target ("backpack") starts exactly as before. A brain older than
   the sentence reader gets the words as typed, and the line says so.
 - **Policy picker** -- the free rule-based explorer (`brain/agent.py`, which

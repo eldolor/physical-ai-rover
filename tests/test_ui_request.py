@@ -50,12 +50,22 @@ def _shot(page, name):
         page.screenshot(path=str(Path(out) / f"twin-3.176c-{name}.png"))
 
 
-def _open(browser, twin_server, brain, *, parse="real", engineer=True):
+def _open(browser, twin_server, brain, *, parse="real", engineer=True, policy="explore"):
     """The Home tab with a stubbed brain connected. `parse`: "real" answers
     the parse route from the real brain, "held" keeps each request for the
-    test to answer, "abort" fails it with no answer, None leaves it to the
-    stub's 404 (a brain built before 3.176.B)."""
+    test to answer, "abort" fails it with no answer, "abort-once" fails the
+    first read of each text and answers the next, "html404" answers a
+    tunnel's 404 page, None leaves it to the stub's FastAPI 404 (a brain
+    built before 3.176.B). `policy`: explore by default, a policy that reads a
+    room hint."""
     page, errors = open_twin(browser, twin_server, engineer=engineer, tab="home")
+    if policy:
+        # The saved policy: the picker is Engineer mode's, an operator's
+        # Start uses what was saved.
+        page.evaluate("p => localStorage.setItem('vp_brain_policy', p)", policy)
+        page.reload(wait_until="load")
+        page.wait_for_function("() => !!document.body.dataset.tab")
+        page.wait_for_timeout(500)
     calls = {"parse": [], "start": [], "other": [], "held": []}
 
     def stub(route):
@@ -81,6 +91,13 @@ def _open(browser, twin_server, brain, *, parse="real", engineer=True):
                 return calls["held"].append(route)
             if parse == "abort":
                 return route.abort()
+            if parse == "abort-once":
+                if calls["parse"].count(req.post_data_json["text"]) == 1:
+                    return route.abort()
+                return _fulfil(route, brain)
+            if parse == "html404":
+                return route.fulfill(status=404, content_type="text/html",
+                                     body="<html>ERR_NGROK_3200 endpoint offline</html>")
         calls["other"].append(path)
         route.fulfill(status=404, content_type="application/json",
                       body=json.dumps({"detail": "Not Found"}))
@@ -296,4 +313,43 @@ def test_a_survey_shows_no_reading_and_reads_nothing(browser, twin_server, brain
     assert body.get("job") == "survey" and "target_object" not in body, body
     assert "request" not in body and "room_hint" not in body, body
     assert not errors, errors
+    page.context.close()
+
+
+def test_a_policy_that_cannot_use_a_room_sends_none_and_says_so(browser, twin_server, brain):
+    """Review: only a search that explores reads a room hint; the rule-based
+    policy gets the thing alone, and the line says the room is not used."""
+    page, errors, calls = _open(browser, twin_server, brain, policy="frontier")
+    page.fill("#brain-target", "find my blue mug in the kitchen")
+    line = page.locator(LINE)
+    sync_api.expect(line).to_contain_text("not sent", timeout=5000)
+    sync_api.expect(page.locator("#btn-find-drop-room")).to_be_hidden()
+    page.click(START)
+    sync_api.expect(page.locator(START)).to_have_text("Stop", timeout=5000)
+    body = calls["start"][0]
+    assert body["target_object"] == "blue mug" and "room_hint" not in body, body
+    assert body["policy"] == "frontier", body
+    assert not errors, errors
+    page.context.close()
+
+
+def test_a_lost_read_is_tried_again(browser, twin_server, brain):
+    """Review: one read with no answer used to leave Start off until the
+    words changed."""
+    page, errors, calls = _open(browser, twin_server, brain, parse="abort-once")
+    page.fill("#brain-target", "find my blue mug in the kitchen")
+    sync_api.expect(page.locator(LINE)).to_contain_text("blue mug", timeout=8000)
+    sync_api.expect(page.locator(START)).to_be_enabled()
+    assert not errors, errors
+    page.context.close()
+
+
+def test_a_tunnels_404_is_no_answer_not_an_older_brain(browser, twin_server, brain):
+    """Review: only FastAPI's own 404 means the route is missing; a tunnel's
+    404 page for an offline endpoint must not send the sentence as the
+    target."""
+    page, errors, calls = _open(browser, twin_server, brain, parse="html404")
+    page.fill("#brain-target", "find my keys in the kitchen")
+    sync_api.expect(page.locator(LINE)).to_contain_text("Parse failed", timeout=5000)
+    sync_api.expect(page.locator(START)).to_be_disabled()
     page.context.close()
