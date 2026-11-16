@@ -52,7 +52,7 @@ import collections
 import threading
 from concurrent.futures import CancelledError
 import time
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Sequence, Tuple
 
 from brain.agent import ObjectSearchAgent, _held_no_route, _takes_local_ok
 from brain.arrival import SOURCE_LOCAL
@@ -67,6 +67,8 @@ from brain.frontier import RETRY_COOLDOWN_S, RETRY_LIMIT, SET_ASIDE_MIN_FAILURES
 from brain.inventory import MAX_RANGE_M as INVENTORY_RANGE_M
 from brain.what_i_saw import MAX_THUMBS
 from brain.inventory import DEFAULT_FOV_DEG, REPORT_BELIEF, Inventory, _bearing_to, frame_detections
+from brain.watch_list import normalise as watch_list_normalise
+from brain.watch_list import watch_block
 from brain.memory import MissionMemory
 from brain.mission_report import map_coverage
 from brain.navigate import CloudUnavailable
@@ -737,6 +739,7 @@ class MissionRunner:
         retry_limit: int = RETRY_LIMIT,
         inventory: bool = True,
         detections_fn: Optional[Callable[[dict], Optional[list]]] = None,
+        watch_list: Optional[Sequence[str]] = None,
         mission_time_limit_s: Optional[float] = None,
         recharge_resume: bool = False,
         resume_v: float = docking.RESUME_V,
@@ -898,6 +901,10 @@ class MissionRunner:
         # report when the mission ends, never allowed to fail it.
         self.inventory = Inventory() if inventory else None
         self.detections_fn = detections_fn or frame_detections
+        # 3.178: the watch list (None: the default five; () : off). Read only
+        # by the report's `watch` block: no policy sees it, and the car's
+        # perception is not prompted with it until 3.178's B4-B6 are met.
+        self.watch_list = watch_list_normalise(watch_list)
         self.inventory_sink: Optional[Callable[[dict], None]] = None
         self._inventory_error_logged = False
         # 3.50.D5: set by the brain server -- the newest saved inventory on a
@@ -3122,6 +3129,9 @@ class MissionRunner:
             report["mission"] = self.memory.mission
             report["mission_id"] = self.mission_id      # 3.50.D5: carried_from
             report["outcome"] = self._outcome
+            if self.watch_list:
+                report["watch"] = watch_block(report, self.watch_list,
+                                              self.memory.target_object)
             book = getattr(self.agent, "retry", None)
             if book is not None:
                 report["set_aside"] = book.carry_out(SET_ASIDE_MIN_FAILURES, SET_ASIDE_MISSIONS)

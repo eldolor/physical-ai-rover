@@ -964,6 +964,8 @@ def create_app(
             # 3.156.D: a battery end charges and resumes (off until the Rover).
             recharge_resume=config["recharge_resume"],
             resume_v=config["resume_v"],
+            # 3.178: the report's `watch` block (not the car's perception yet).
+            watch_list=config["watch_list"],
             mission_wall_limit_s=config["mission_wall_limit_s"],
             charge_stall_s=config["charge_stall_s"],
         )
