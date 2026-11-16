@@ -94,12 +94,22 @@ def item_for(label: Optional[str], items: Sequence[str]) -> Optional[str]:
 
 
 def watched(items: Sequence[str], target: Optional[str]) -> tuple:
-    """`items` less any item the day's target names (or that names the
-    target): that thing is the target, counted once, as the target."""
+    """`items` less any item the day's target names, by the found rule's own
+    test (`MissionMemory.names_target`: the target inside the name) or the
+    other way round ("remote" in "remote control"): that thing is the
+    target, counted once, as the target."""
     if not target:
         return tuple(items)
     t = _clean(target)
-    return tuple(i for i in items if item_for(t, (i,)) is None and item_for(i, (t,)) is None)
+    return tuple(i for i in items if t not in i and i not in t)
+
+
+def for_target(items: Optional[Iterable], target: str) -> tuple:
+    """The list a pipeline uses for `target`: `normalise`d (a lone string is
+    refused, never split into letters) less the target; () when empty."""
+    if not items:
+        return ()
+    return watched(normalise(items), target)
 
 
 def softmax(scores: Sequence[float], scale: float) -> list:
@@ -111,28 +121,20 @@ def softmax(scores: Sequence[float], scale: float) -> list:
 
 
 def sighting(scores: Sequence[float], items: Sequence[str], scale: float,
-             gate: float = WATCH_GATE) -> Optional[tuple]:
+             gate: float = WATCH_GATE, skip: Sequence[int] = ()) -> Optional[tuple]:
     """`(item, probability)` for one crop, or None. `scores` are the crop's
     cosines against every text it was scored on, with the list's texts LAST
-    and in `items`' order; the probability is the softmax over all of them.
-    At a gate above 0.5 at most one item can pass."""
+    and in `items`' order; the probability is the softmax over all of them
+    but the indices in `skip` (a distractor that repeats a list item, which
+    would halve that item's mass). At a gate above 0.5 at most one item can
+    pass."""
     n = len(items)
     if n == 0 or len(scores) <= n:
         return None
-    probs = softmax(scores, scale)[-n:]
+    kept = [s for k, s in enumerate(scores) if k not in skip]
+    probs = softmax(kept, scale)[-n:]
     k = max(range(n), key=lambda i: probs[i])
     return (items[k], probs[k]) if probs[k] >= gate else None
-
-
-def perception_detections(perception) -> Optional[list]:
-    """The inventory's detections from one frame's `Perception`: its list
-    sightings, as `{label, bearing_deg, confidence}`. None when perception
-    did not run on the frame (the inventory's 'detector did not run': no
-    misses are charged)."""
-    status = getattr(perception, "status", None)
-    if status is None or status == "unavailable":
-        return None
-    return [dict(d) for d in getattr(perception, "watch", None) or []]
 
 
 def watch_block(report: dict, items: Sequence[str], target: Optional[str] = None,
