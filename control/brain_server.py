@@ -1698,7 +1698,7 @@ def create_app(
         # - Any other mission of this brain (running but not carrying yet, or
         #   ended): its own inventory first, then the saved chain on ITS map,
         #   until its own save lands (the saved head is its report, by
-        #   `mission_id`, or one further on).
+        #   `mission_id`, or one further on than a mission that carried).
         # - Once landed, or with no mission: the newest saved map's head.
         try:
             if live is not None and running and carry_seq_of(live) > 0:
@@ -1721,13 +1721,12 @@ def create_app(
                         (live.get("mission_id") and saved.get("mission_id") == live.get("mission_id"))
                         # Further on than a mission that carried (another
                         # process saved since).
-                        or 0 < carry_seq_of(live) < carry_seq_of(saved)
-                        # An ended mission that never carried: its own save
-                        # (seq 0) is never the head over a chain, so any chain
-                        # on its map ends its turn (review of eff57ec7: else
-                        # it is read for the process's life). A running one
-                        # keeps its own sightings first.
-                        or (not running and carry_seq_of(live) == 0))
+                        or 0 < carry_seq_of(live) < carry_seq_of(saved))
+                    # Known limit (3.175.G): an ended mission whose save never
+                    # becomes the head (it never carried, or its save failed)
+                    # is read first until the brain restarts. Yielding instead
+                    # dropped its own newer sightings (review of 1dfd33b4);
+                    # the fix is the runner saying whether its save landed.
                     if not landed:
                         heads = [(live, "mission")] + ([(saved, "saved")] if saved is not None else [])
                 if heads is None:
@@ -1759,18 +1758,17 @@ def create_app(
                 names[0]):
             names.append(target)
         try:
-            # The exact words before the target, across every head; a place
-            # seen anywhere before a doubtful one (review of eff57ec7).
-            first = doubtful = None
+            # The exact words before the target, across every head (review of
+            # eff57ec7); within a name, the newer head first, and its doubtful
+            # (it looked and did not see) before an older head's seen.
+            first = None
             for n in names:
                 for head, source in heads:
                     got = last_seen_mod.answer(n, head, reports(), source=source)
                     first = first or got
-                    if got["status"] == last_seen_mod.SEEN:
+                    if got["status"] in (last_seen_mod.SEEN, last_seen_mod.DOUBTFUL):
                         return JSONResponse(got)
-                    if got["status"] == last_seen_mod.DOUBTFUL and doubtful is None:
-                        doubtful = got
-            return JSONResponse(doubtful or first)
+            return JSONResponse(first)
         except OSError as e:
             raise HTTPException(status_code=503, detail=f"the reports can't be read now ({e})")
 

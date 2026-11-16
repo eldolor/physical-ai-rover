@@ -446,24 +446,24 @@ def test_g11_short_whole_word_targets_and_dashes(brain):
     assert ask("where is my lunch–box")["status"] == "not_seen"   # "lunch" cut at an en dash
 
 
-def test_g12_an_ended_mission_that_never_carried_is_not_pinned(brain):
-    """Review of eff57ec7: its own seq-0 save is never the head over a chain
-    further on, so it never "landed" -- pinned for the process's life."""
+def test_g12_an_ended_mission_that_never_carried_keeps_its_own_newer_sightings(brain):
+    """Reviews of eff57ec7 and 1dfd33b4: yielding to an older chain on its map
+    dropped the mission's own newer sighting. Its own inventory first; the
+    pin this leaves is recorded (the runner does not say its save landed)."""
     live = dict(_head([_row("mug", 5.0, 5.0, 0.9)], carry_seq=0), mission_id="run-1")
     _save_chain(brain.tmp, _head([_row("mug", 1.0, 1.0, 0.9, seen_seq=3)], carry_seq=3))
-    _other_map_newer(brain.tmp)
     _route_state(brain)["runner"] = SimpleNamespace(is_running=lambda: False, inventory_report=lambda: live)
     a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
-    assert (a["frame_id"], a["place"]["x_m"]) == ("map-b", 9.0), a
+    assert (a["source"], a["place"]["x_m"]) == ("mission", 5.0), a
 
 
-def test_g13_a_seen_answer_beats_a_doubtful_one_and_exact_words_beat_a_target(brain):
+def test_g13_exact_words_across_heads_and_the_newer_heads_doubt_first(brain):
     live = dict(_head([_row("mug", 5.0, 5.0, 0.6), _row("plant", 6.0, 6.0, 0.9)], carry_seq=0),
                 mission_id="run-1")
     _save_chain(brain.tmp, _head([_row("mug", 1.0, 1.0, 0.9, seen_seq=3),
                                   _row("plant in pot", 2.0, 2.0, 0.9, seen_seq=3)], carry_seq=3))
     _route_state(brain)["runner"] = SimpleNamespace(is_running=lambda: True, inventory_report=lambda: live)
     a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
-    assert (a["status"], a["place"]["x_m"]) == ("seen", 1.0), a
+    assert (a["status"], a["source"]) == ("doubtful", "mission"), a      # it looked: newer evidence
     a = brain.get("/mission/last-seen", params={"name": "plant in pot"}).json()
     assert (a["name"], a["place"]["x_m"]) == ("plant in pot", 2.0), a
