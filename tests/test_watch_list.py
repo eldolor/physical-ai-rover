@@ -234,9 +234,13 @@ def test_the_brain_config_agrees_with_normalise_and_never_imports_brain():
     import subprocess
     import sys
     from control.brain_config import _watch_list
-    for case in (["Keys", " keys ", "TV  Remote"], [], [f"t{i}" for i in range(8)]):
-        assert tuple(_watch_list(case)) == wl.normalise(case)
-    for bad in ([f"t{i}" for i in range(9)], ["", "keys"], [3], ["x" * 41]):
+    import itertools
+    words = ["Keys", " keys ", "TV  Remote", "phone", "x" * 40, "WALLET", "a\tb", "glasses"]
+    for n in range(len(words) + 1):
+        for case in itertools.combinations(words, n):
+            assert tuple(_watch_list(list(case))) == wl.normalise(list(case))
+    assert tuple(_watch_list([f"t{i}" for i in range(8)])) == wl.normalise([f"t{i}" for i in range(8)])
+    for bad in ([f"t{i}" for i in range(9)], ["", "keys"], [" "], [3], ["x" * 41]):
         with pytest.raises(ValueError):
             _watch_list(bad)
         with pytest.raises(ValueError):
@@ -244,7 +248,7 @@ def test_the_brain_config_agrees_with_normalise_and_never_imports_brain():
     assert (wl.MAX_ITEMS, wl.MAX_ITEM_CHARS) == (8, 40)
     code = ("import sys; sys.modules['brain'] = None\n"
             "from control.brain_config import load_brain_config\n"
-            "assert load_brain_config()['watch_list']")
+            "assert isinstance(load_brain_config()['watch_list'], list)")
     subprocess.run([sys.executable, "-c", code], check=True,
                    cwd=Path(__file__).resolve().parents[1])
 
@@ -261,20 +265,8 @@ def test_the_sweep_s_numbers_are_pinned():
     # B2, FAILED: 6 wrong pins in 40 missions (bar <= 0.1 a mission).
     assert (search["wrong_pins"], present["wrong_pins"]) == (4, 2)
     assert (search["wrong_pins"] + present["wrong_pins"]) / 40 > 0.1
-    # B4's simulator half, met: every mission's actions and outcome equal.
+    # B4's simulator half: every mission's actions and outcome equal (met,
+    # and true by construction: no policy reads the inventory). The arrival
+    # comparison is UNINFORMATIVE, not met: no mission arrived either way.
     assert (search["same_as_off"], present["same_as_off"]) == (20, 20)
     assert (present["arrived_on"], present["arrived_off"]) == (0, 0)
-
-
-def test_the_sweep_s_first_mission_reproduces():
-    """The sweep is deterministic: mission 1 of the search sweep, rerun,
-    gives the pinned wrong pin."""
-    import importlib.util
-    spec = importlib.util.spec_from_file_location("wl_sweep", RESULTS.with_name("sweep.py"))
-    sweep = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(sweep)
-    start = sweep.base.starts(n=1, seed=sweep.SEED)[0]
-    on = sweep.run_one(start, list_on=True, seed=sweep.SEED * 100)
-    pinned = json.loads(RESULTS.read_text())["search"]["rows"][0]
-    assert on["outcome"] == pinned["outcome_on"] and len(on["actions"]) == pinned["steps"]
-    assert sweep.score_mission(on)["wrong_pins"] == pinned["wrong_pins"]

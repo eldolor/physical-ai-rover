@@ -1119,12 +1119,16 @@ class PerceptionPipeline:
         kept.sort(key=lambda d: d.box.area, reverse=True)
         return [(d, True) for d in kept[:self.max_crops]]
 
-    def _score(self, image: bytes, crops: Sequence[Detection],
+    def _score(self, image: bytes, crops: Sequence[tuple],
                width: float, pan: float, tilt: float) -> list:
+        """`crops` are `_crops()`'s `(detection, for_target)` pairs."""
         own = (self.target,) + self.distractors
         # 3.178: the list's texts last, so one image encode per crop serves
         # both; the target's softmax reads only `own`'s scores.
         texts = own + self.watch
+        if self.watch:
+            from brain.watch_list import sighting
+            skip = [k for k, t in enumerate(own) if t.strip().lower() in self.watch]
         out = []
         for det, for_target in crops:
             scores = list(self.scorer.score(image, det.box, texts))
@@ -1134,8 +1138,6 @@ class PerceptionPipeline:
             mine = scores[:len(own)]
             watch = None
             if self.watch:
-                from brain.watch_list import sighting
-                skip = [k for k, t in enumerate(own) if t.strip().lower() in self.watch]
                 watch = sighting(scores, self.watch, CLIP_LOGIT_SCALE, skip=skip)
             out.append(Candidate(
                 detection=det,
