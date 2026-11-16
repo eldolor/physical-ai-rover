@@ -488,3 +488,14 @@ def test_g14_a_carried_missions_doubt_stands_over_the_saved_place(brain):
     _route_state(brain)["runner"] = SimpleNamespace(is_running=lambda: False, inventory_report=lambda: live)
     a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
     assert (a["status"], a["source"]) == ("doubtful", "mission"), a
+
+
+
+def test_g15_a_carried_ended_mission_is_its_own_only_head(brain):
+    """Review of fefd4bc7: a row the carried mission let fall under carrying
+    (looked and missed) must not come back from the older saved head."""
+    live = dict(_head([_row("mug", 1.0, 1.0, 0.4, seen_seq=3)], carry_seq=4), mission_id="run-4")
+    _save_chain(brain.tmp, _head([_row("mug", 1.0, 1.0, 0.9, seen_seq=3)], carry_seq=3))
+    _route_state(brain)["runner"] = SimpleNamespace(is_running=lambda: False, inventory_report=lambda: live)
+    a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
+    assert (a["status"], a["source"]) == ("not_seen", "mission"), a

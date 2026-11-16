@@ -1730,7 +1730,13 @@ def create_app(
                     # newer sightings (review of 1dfd33b4). The fix is the
                     # runner saying its save landed, with the saved mission_id.
                     if not landed:
-                        heads = [(live, "mission")] + ([(saved, "saved")] if saved is not None else [])
+                        # A mission that carried holds the chain and its own
+                        # looks: alone, so a row it dropped or doubted never
+                        # comes back from the older saved head (review of
+                        # fefd4bc7). One that never carried: then its map's.
+                        heads = [(live, "mission")]
+                        if saved is not None and carry_seq_of(live) == 0:
+                            heads.append((saved, "saved"))
                 if heads is None:
                     heads = [(last_seen_mod.saved_head(inv), "saved")]
         except TimeoutError as e:
