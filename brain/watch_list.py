@@ -31,13 +31,15 @@ What lives here, and what does not:
   the softmax over the target and the distractors only, so a list cannot
   move a crop's P(target).
 * **The report's `watch` block** (`watch_block`): each item's pins -- a
-  reported landmark (belief >= `REPORT_BELIEF`) whose label names the item
-  and that passes `pin_ok` (3.178.D): at least `PIN_MIN_VOTES` looks voting
-  for its own item and no dispute, with votes grouped by the item they
-  name. 3.178.B's sweep showed why: two different false list labels ranged
-  to one wall spot made one landmark, votes {keys 1, glasses 1}, reported
-  as "keys". That block is what "where did you last see it" (3.175) and
-  recall (3.172.C) read.
+  reported landmark (belief >= `REPORT_BELIEF`) whose label names the item.
+  That block is what "where did you last see it" (3.175) and recall
+  (3.172.C) read. 3.178.D's stricter rule, `pin_ok` (at least
+  `PIN_MIN_VOTES` looks voting for its own item and no dispute, with votes
+  grouped by the item they name), is `watch_block(rule="votes")` and is
+  **not the default**: it met D's wrong-pin and true-pin bars but D3 (passes
+  pinned >= 90%) failed, so it did not ship. Why it exists: 3.178.B's two
+  different false list labels ranged to one wall spot made one landmark,
+  votes {keys 1, glasses 1}, reported as "keys".
 
 No model is loaded here; `brain.perceive` holds the models and calls
 `sighting` per crop.
@@ -170,22 +172,23 @@ def pin_ok(landmark: dict, item: str, items: Sequence[str],
     if own < min_votes:
         return False
     second = max(groups.values(), default=0.0)
-    return second < own and second / (own + second) < dispute_share
+    return second / (own + second) < dispute_share   # `Landmark.disputed`'s test
 
 
 def watch_block(report: dict, items: Sequence[str], target: Optional[str] = None,
                 report_belief: Optional[float] = None, rule: str = "label") -> dict:
     """The mission report's `watch` block: for each watched item (less the
-    target), its pins -- reported landmarks whose label names it and, under
-    `rule` "votes" (3.178.D, the default), that pass `pin_ok` -- with
-    position, room, belief and the step last seen. `rule` "label" is
-    3.178.A's rule (the label alone), kept for the sweep's paired score.
+    target), its pins -- reported landmarks whose label names it -- with
+    position, room, belief and the step last seen. `rule` "label" (the
+    default, 3.178.A's) takes the label alone; "votes" (3.178.D, not
+    shipped) also needs `pin_ok`, and is kept for the sweep's paired score.
     `held` counts the reported landmarks naming an item that `pin_ok`
     refused."""
     if rule not in ("votes", "label"):
         raise ValueError(f"unknown pin rule {rule!r}")
     if report_belief is None:
         from brain.inventory import REPORT_BELIEF as report_belief
+    from brain.inventory import DISPUTE_SHARE
     items = watched(items, target)
     pins: dict = {i: [] for i in items}
     held = 0
@@ -193,7 +196,7 @@ def watch_block(report: dict, items: Sequence[str], target: Optional[str] = None
         item = item_for(lm.get("label"), items)
         if item is None or float(lm.get("belief") or 0.0) < report_belief:
             continue
-        if rule == "votes" and not pin_ok(lm, item, items):
+        if rule == "votes" and not pin_ok(lm, item, items, dispute_share=DISPUTE_SHARE):
             held += 1
             continue
         pins[item].append({k: lm.get(k) for k in
