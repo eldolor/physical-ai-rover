@@ -201,6 +201,61 @@ def test_the_watch_block_pins_reported_list_items_only():
     assert block["pinned"] == 1 and block["gate"] == wl.WATCH_GATE
 
 
+# --- 3.178.D: a pin needs two looks voting its own item and no dispute -------
+
+ITEMS = wl.DEFAULT_WATCH_LIST
+
+
+def _voted(label, votes, belief=0.9, x=1.0, disputed=False):
+    return dict(_lm(label, belief, x=x), votes=votes, disputed=disputed)
+
+
+def test_two_different_false_list_labels_make_no_pin():
+    # 3.178.B's search mission 1: a false "keys" and a false "glasses" fused
+    # on one wall spot, reported as "keys".
+    assert not wl.pin_ok(_voted("keys", {"keys": 1, "glasses": 1}), "keys", ITEMS)
+
+
+def test_a_pin_needs_two_votes_for_its_own_item():
+    assert not wl.pin_ok(_voted("keys", {"keys": 1}), "keys", ITEMS)
+    assert wl.pin_ok(_voted("keys", {"keys": 2}), "keys", ITEMS)
+    assert not wl.pin_ok(_voted("keys", {}), "keys", ITEMS)
+    assert not wl.pin_ok(_lm("keys", 0.9), "keys", ITEMS)          # no votes at all
+
+
+def test_labels_naming_one_item_vote_together_and_others_dispute():
+    # "tv remote" and "remote" agree; a "keys" look against a remote disputes.
+    assert wl.pin_ok(_voted("tv remote", {"tv remote": 1, "remote": 1}), "remote", ITEMS)
+    assert wl.pin_ok(_voted("remote", {"remote": 3, "keys": 1}), "remote", ITEMS)   # 1/4 < 1/3
+    assert not wl.pin_ok(_voted("remote", {"remote": 2, "keys": 1}), "remote", ITEMS)  # 1/3
+    # A label naming no item disputes as its own group, at the inventory's share.
+    assert not wl.pin_ok(_voted("keys", {"keys": 2, "coin": 1}), "keys", ITEMS)
+    assert wl.pin_ok(_voted("keys", {"keys": 5, "coin": 1, "cup": 1}), "keys", ITEMS)
+    # The item must be the most voted group even when the label says it.
+    assert not wl.pin_ok(_voted("keys", {"keys": 2, "glasses": 2}), "keys", ITEMS)
+
+
+def test_carried_float_votes_count_and_bad_votes_are_ignored():
+    assert wl.pin_ok(_voted("keys", {"keys": 1.6, "glasses": 0.2}), "keys", ITEMS) is False  # 1.6 < 2
+    assert wl.pin_ok(_voted("keys", {"keys": 2.4, "glasses": 0.2}), "keys", ITEMS)
+    assert wl.pin_ok(_voted("keys", {"keys": 2, "x": "nan", "y": None, "z": -3,
+                                     "w": float("inf")}), "keys", ITEMS)
+
+
+def test_the_watch_block_scores_both_rules():
+    report = {"reported": [_voted("keys", {"keys": 1, "glasses": 1}, x=5.0),
+                           _voted("keys", {"keys": 3}, x=1.0),
+                           _voted("phone", {"phone": 1}, x=2.0)]}
+    label = wl.watch_block(report, ITEMS, rule="label")
+    votes = wl.watch_block(report, ITEMS, rule="votes")
+    assert [p["x_m"] for p in label["pins"]["keys"]] == [5.0, 1.0]
+    assert [p["x_m"] for p in votes["pins"]["keys"]] == [1.0] and votes["pins"]["phone"] == []
+    assert (label["held"], votes["held"], votes["pinned"]) == (0, 2, 1)
+    assert votes["pins"]["keys"][0]["votes"] == {"keys": 3}
+    with pytest.raises(ValueError):
+        wl.watch_block(report, ITEMS, rule="belief")
+
+
 def test_the_mission_report_carries_the_watch_block():
     from control.mission_runner import MissionRunner
     from sim.mock_robot import MockRobot

@@ -48,7 +48,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from brain import inventory as inv  # noqa: E402
-from brain.watch_list import DEFAULT_WATCH_LIST, item_for  # noqa: E402
+from brain.watch_list import DEFAULT_WATCH_LIST, item_for, watch_block  # noqa: E402
 from control.mission_runner import MissionRunner  # noqa: E402
 from sim.maps import build_world  # noqa: E402
 from sim.mock_robot import MockRobot  # noqa: E402
@@ -62,7 +62,9 @@ PIN_M = 0.5
 LOOSE_M = 1.0
 MISSIONS = 20
 MAX_STEPS = base.MAX_STEPS          # 150, 3.46's
-SEED = 3178
+SEED = 3178                 # 3.178.B's (search; present SEED + 1)
+FRESH_SEED = 4178           # 3.178.D's, fresh (written before its run)
+RULES = ("label", "votes")  # 3.178.A's pin rule; 3.178.D's
 PRESENT_TARGET = "red backpack"
 HOUSE = base.house
 # The house's instances of each list item (by `item_for`, the report's rule).
@@ -124,9 +126,12 @@ def run_one(start, *, list_on: bool, seed: int, target: str = base.ABSENT_TARGET
     while runner.tick():
         pass
     report = runner.inventory_report()
+    # 3.178.D: the one report scored under both pin rules, paired.
+    watch = {rule: (watch_block(report, LIST, target, rule=rule) if list_on else None)
+             for rule in RULES}
     return {"start_room": room, "outcome": runner.status()["outcome"],
             "actions": [a.action for a in runner.memory.actions],
-            "watch": report.get("watch"), "nearest": det.nearest,
+            "watch": watch, "nearest": det.nearest,
             "injected": det.injected, "wall_s": round(time.perf_counter() - t0, 2)}
 
 
@@ -134,15 +139,17 @@ def _dist(item: str, x: float, y: float) -> float:
     return min((base._dist_to_instance(x, y, k) for k in ITEM_INSTANCES[item]), default=math.inf)
 
 
-def score_mission(r: dict) -> dict:
-    passes, found, found_loose, wrong = [], [], [], []
-    pins = (r["watch"] or {}).get("pins", {})
+def score_mission(r: dict, rule: str) -> dict:
+    passes, found, found_loose, wrong, true = [], [], [], [], 0
+    pins = ((r["watch"] or {}).get(rule) or {}).get("pins", {})
     for item, rows in pins.items():
         for p in rows:
             d = _dist(item, p["x_m"], p["y_m"])
             if d > PIN_M:
                 wrong.append({"item": item, "x_m": p["x_m"], "y_m": p["y_m"],
                               "belief": p["belief"], "to_instance_m": None if math.isinf(d) else round(d, 3)})
+            else:
+                true += 1
     for item, ks in ITEM_INSTANCES.items():
         for k in ks:
             if k not in r["nearest"]:
@@ -153,7 +160,8 @@ def score_mission(r: dict) -> dict:
                 found.append(k)
             if any(d <= LOOSE_M for d in ds):
                 found_loose.append(k)
-    return {"passes": passes, "found": found, "found_loose": found_loose, "wrong_pins": wrong}
+    return {"passes": passes, "found": found, "found_loose": found_loose, "wrong_pins": wrong,
+            "true_pins": true}
 
 
 def sweep(n: int, target: str, seed: int, max_steps: int, log=sys.stderr) -> dict:
@@ -162,31 +170,42 @@ def sweep(n: int, target: str, seed: int, max_steps: int, log=sys.stderr) -> dic
     for k, start in enumerate(starts):
         on = run_one(start, list_on=True, seed=seed * 100 + k, target=target, max_steps=max_steps)
         off = run_one(start, list_on=False, seed=seed * 100 + k, target=target, max_steps=max_steps)
-        s = score_mission(on)
+        sc = {rule: score_mission(on, rule) for rule in RULES}
         same = on["outcome"] == off["outcome"] and on["actions"] == off["actions"]
-        rows.append({"mission": k + 1, "start_room": on["start_room"],
-                     "outcome_on": on["outcome"], "outcome_off": off["outcome"],
-                     "steps": len(on["actions"]), "same_as_off": same,
-                     "injected": on["injected"],
-                     "nearest_m": {HOUSE.INSTANCES[i][0]: d for i, d in sorted(on["nearest"].items())},
-                     "pins": {item: [(p["x_m"], p["y_m"], p["belief"]) for p in ps]
-                              for item, ps in (on["watch"] or {}).get("pins", {}).items() if ps},
-                     "passes": [HOUSE.INSTANCES[i][0] for i in s["passes"]],
-                     "found": [HOUSE.INSTANCES[i][0] for i in s["found"]],
-                     "found_1m": [HOUSE.INSTANCES[i][0] for i in s["found_loose"]],
-                     "wrong_pins": s["wrong_pins"]})
+        name = lambda ks: [HOUSE.INSTANCES[i][0] for i in ks]  # noqa: E731
+        row = {"mission": k + 1, "start_room": on["start_room"],
+               "outcome_on": on["outcome"], "outcome_off": off["outcome"],
+               "steps": len(on["actions"]), "same_as_off": same,
+               "injected": on["injected"],
+               "nearest_m": {HOUSE.INSTANCES[i][0]: d for i, d in sorted(on["nearest"].items())},
+               "passes": name(sc["label"]["passes"])}
+        for rule, sr in sc.items():
+            w = on["watch"][rule] or {}
+            row[rule] = {"pins": {item: [(p["x_m"], p["y_m"], p["belief"], p.get("votes")) for p in ps]
+                                  for item, ps in w.get("pins", {}).items() if ps},
+                         "held": w.get("held", 0),
+                         "found": name(sr["found"]), "found_1m": name(sr["found_loose"]),
+                         "true_pins": sr["true_pins"], "wrong_pins": sr["wrong_pins"]}
+        rows.append(row)
         print(f"{target:<12} mission {k + 1:2d} {on['start_room']:<12} {on['outcome']:<11} "
-              f"passes {len(s['passes'])} found {len(s['found'])} wrong {len(s['wrong_pins'])} "
-              f"same {same}  {on['wall_s'] + off['wall_s']:.0f}s", file=log, flush=True)
+              f"passes {len(row['passes'])} "
+              + " ".join(f"{rule}: found {len(row[rule]['found'])} true {row[rule]['true_pins']} "
+                         f"wrong {len(row[rule]['wrong_pins'])}" for rule in RULES)
+              + f" same {same}  {on['wall_s'] + off['wall_s']:.0f}s", file=log, flush=True)
     passes = sum(len(r["passes"]) for r in rows)
-    found = sum(len(r["found"]) for r in rows)
-    found_1m = sum(len(r["found_1m"]) for r in rows)
-    wrong = sum(len(r["wrong_pins"]) for r in rows)
     arrived = lambda key: sum(1 for r in rows if r[key] in ("found", "arrived_unconfirmed"))  # noqa: E731
+    by_rule = {}
+    for rule in RULES:
+        found = sum(len(r[rule]["found"]) for r in rows)
+        wrong = sum(len(r[rule]["wrong_pins"]) for r in rows)
+        by_rule[rule] = {"found": found, "found_rate": found / passes if passes else None,
+                         "found_1m": sum(len(r[rule]["found_1m"]) for r in rows),
+                         "true_pins": sum(r[rule]["true_pins"] for r in rows),
+                         "wrong_pins": wrong,
+                         "wrong_pins_per_mission": wrong / len(rows) if rows else None,
+                         "held": sum(r[rule]["held"] for r in rows)}
     return {"target": target, "missions": len(rows), "max_steps": max_steps, "seed": seed,
-            "passes": passes, "found": found, "found_rate": found / passes if passes else None,
-            "found_1m": found_1m, "wrong_pins": wrong,
-            "wrong_pins_per_mission": wrong / len(rows) if rows else None,
+            "passes": passes, "rules": by_rule,
             "same_as_off": sum(r["same_as_off"] for r in rows),
             "arrived_on": arrived("outcome_on"), "arrived_off": arrived("outcome_off"),
             "rows": rows}
@@ -196,19 +215,24 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--missions", type=int, default=MISSIONS)
     ap.add_argument("--steps", type=int, default=MAX_STEPS)
-    ap.add_argument("--out", default=str(Path(__file__).with_name("results.json")))
+    ap.add_argument("--seed", type=int, default=FRESH_SEED,
+                    help="the search sweep's seed; present is seed + 1 (B: 3178, D: 4178)")
+    ap.add_argument("--out", default=str(Path(__file__).with_name("results-d.json")))
     args = ap.parse_args(argv)
     out = {"list": list(LIST), "list_false_rate": LIST_FALSE_RATE, "pass_range_m": PASS_RANGE_M,
            "pin_m": PIN_M, "noise": {"bearing_sigma_deg": base.BEARING_SIGMA_DEG,
                                      "miss_rate": base.MISS_RATE, "relabel_rate": base.RELABEL_RATE},
-           "search": sweep(args.missions, base.ABSENT_TARGET, SEED, args.steps),
-           "present": sweep(args.missions, PRESENT_TARGET, SEED + 1, args.steps)}
+           "rules": list(RULES),
+           "search": sweep(args.missions, base.ABSENT_TARGET, args.seed, args.steps),
+           "present": sweep(args.missions, PRESENT_TARGET, args.seed + 1, args.steps)}
     Path(args.out).write_text(json.dumps(out, indent=1, sort_keys=True) + "\n")
     for key in ("search", "present"):
         s = out[key]
-        print(f"{key}: passes {s['passes']} found {s['found']} ({s['found_rate']}) "
-              f"found@1m {s['found_1m']} wrong {s['wrong_pins']} same {s['same_as_off']}/{s['missions']} "
+        print(f"{key}: passes {s['passes']} same {s['same_as_off']}/{s['missions']} "
               f"arrived on {s['arrived_on']} off {s['arrived_off']}", file=sys.stderr)
+        for rule, v in s["rules"].items():
+            print(f"  {rule}: found {v['found']} true {v['true_pins']} wrong {v['wrong_pins']} "
+                  f"held {v['held']}", file=sys.stderr)
 
 
 if __name__ == "__main__":
