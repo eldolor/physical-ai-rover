@@ -31,9 +31,13 @@ What lives here, and what does not:
   the softmax over the target and the distractors only, so a list cannot
   move a crop's P(target).
 * **The report's `watch` block** (`watch_block`): each item's pins -- a
-  reported landmark (belief >= `REPORT_BELIEF`) whose label names the item.
-  That block is what "where did you last see it" (3.175) and recall
-  (3.172.C) read.
+  reported landmark (belief >= `REPORT_BELIEF`) whose label names the item
+  and that passes `pin_ok` (3.178.D): at least `PIN_MIN_VOTES` looks voting
+  for its own item and no dispute, with votes grouped by the item they
+  name. 3.178.B's sweep showed why: two different false list labels ranged
+  to one wall spot made one landmark, votes {keys 1, glasses 1}, reported
+  as "keys". That block is what "where did you last see it" (3.175) and
+  recall (3.172.C) read.
 
 No model is loaded here; `brain.perceive` holds the models and calls
 `sighting` per crop.
@@ -49,6 +53,9 @@ MAX_ITEMS = 8
 MAX_ITEM_CHARS = 40
 # 3.178.A: fixed before measuring, not tuned on the frames that judge it.
 WATCH_GATE = 0.9
+# 3.178.D: fixed before its run. A pin needs this many votes for its own
+# item; the dispute share is the inventory's own (`DISPUTE_SHARE`).
+PIN_MIN_VOTES = 2
 _SPACE = re.compile(r"\s+")
 
 
@@ -137,23 +144,62 @@ def sighting(scores: Sequence[float], items: Sequence[str], scale: float,
     return (items[k], probs[k]) if probs[k] >= gate else None
 
 
+def pin_ok(landmark: dict, item: str, items: Sequence[str],
+           min_votes: float = PIN_MIN_VOTES, dispute_share: Optional[float] = None) -> bool:
+    """3.178.D's pin rule: the landmark's votes, grouped by the list item each
+    label names (a label naming none is its own group), give `item` at
+    least `min_votes`, `item` is the most voted group, and the runner-up's
+    share of the top two groups is under `dispute_share` (the inventory's
+    `DISPUTE_SHARE`). A landmark with no votes is never a pin."""
+    if dispute_share is None:
+        from brain.inventory import DISPUTE_SHARE as dispute_share
+    raw = landmark.get("votes")
+    if not isinstance(raw, dict):
+        return False
+    groups: dict = {}
+    for label, n in raw.items():
+        try:
+            n = float(n)
+        except (TypeError, ValueError):
+            continue
+        if not math.isfinite(n) or n <= 0:
+            continue
+        key = item_for(label, items) or ("", _clean(label))
+        groups[key] = groups.get(key, 0.0) + n
+    own = groups.pop(item, 0.0)
+    if own < min_votes:
+        return False
+    second = max(groups.values(), default=0.0)
+    return second < own and second / (own + second) < dispute_share
+
+
 def watch_block(report: dict, items: Sequence[str], target: Optional[str] = None,
-                report_belief: Optional[float] = None) -> dict:
+                report_belief: Optional[float] = None, rule: str = "label") -> dict:
     """The mission report's `watch` block: for each watched item (less the
-    target), its pins -- reported landmarks whose label names it -- with
-    position, room, belief and the step last seen."""
+    target), its pins -- reported landmarks whose label names it and, under
+    `rule` "votes" (3.178.D, the default), that pass `pin_ok` -- with
+    position, room, belief and the step last seen. `rule` "label" is
+    3.178.A's rule (the label alone), kept for the sweep's paired score.
+    `held` counts the reported landmarks naming an item that `pin_ok`
+    refused."""
+    if rule not in ("votes", "label"):
+        raise ValueError(f"unknown pin rule {rule!r}")
     if report_belief is None:
         from brain.inventory import REPORT_BELIEF as report_belief
     items = watched(items, target)
     pins: dict = {i: [] for i in items}
+    held = 0
     for lm in (report or {}).get("reported", []) or []:
         item = item_for(lm.get("label"), items)
         if item is None or float(lm.get("belief") or 0.0) < report_belief:
             continue
+        if rule == "votes" and not pin_ok(lm, item, items):
+            held += 1
+            continue
         pins[item].append({k: lm.get(k) for k in
-                           ("id", "label", "x_m", "y_m", "room", "belief", "hits",
+                           ("id", "label", "x_m", "y_m", "room", "belief", "hits", "votes",
                             "last_step", "carried")})
     for rows in pins.values():
         rows.sort(key=lambda r: -(r["belief"] or 0.0))
-    return {"items": list(items), "gate": WATCH_GATE, "pins": pins,
-            "pinned": sum(1 for rows in pins.values() if rows)}
+    return {"items": list(items), "gate": WATCH_GATE, "pins": pins, "rule": rule,
+            "held": held, "pinned": sum(1 for rows in pins.values() if rows)}
