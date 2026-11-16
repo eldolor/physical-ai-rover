@@ -517,6 +517,12 @@ class Candidate:
     # computed over the whole set rather than just the winner -- a softmax
     # over two numbers is not the same thing.
     scores: tuple = ()
+    # 3.178: `(item, P)` when this crop is a watch-list sighting at
+    # `brain.watch_list.WATCH_GATE`, else None. Never enters `probability`.
+    watch: Optional[tuple] = None
+    # 3.178: False for a crop kept only for the watch list (its box was
+    # proposed for a list item); such a crop never answers for the target.
+    for_target: bool = True
 
     @property
     def margin(self) -> float:
@@ -580,6 +586,10 @@ class Perception:
     # 3.91.C: the frame's (width, height) in pixels, when the pipeline read
     # them; None from the simulator's geometry, whose boxes are not pixels.
     image_size: Optional[tuple] = None
+    # 3.178: the frame's watch-list sightings, `{label, bearing_deg,
+    # confidence}` with the bearing off the CAMERA axis (pan not added: the
+    # inventory adds it), one per crop that passed the list's gate.
+    watch: list = field(default_factory=list)
 
     @property
     def matched(self) -> bool:
@@ -769,9 +779,15 @@ class PerceptionPipeline:
         proposer: Optional["RegionProposer"] = None,
         affinity_k: int = DEFAULT_AFFINITY_K,
         confidence: Optional[float] = None,
+        watch: Sequence[str] = (),
     ):
         if not target or not target.strip():
             raise ValueError("PerceptionPipeline needs a target string")
+        from brain.watch_list import for_target
+        # 3.178: the watch list, less any item naming the target (counted
+        # once, as the target). Its texts are scored AFTER the target's and
+        # the distractors', and never enter P(target).
+        self.watch = for_target(watch, target.strip())
         self._busy = threading.Lock()      # one frame in the models at a time
         self._busy_since: Optional[float] = None
         self.detector = detector
@@ -1020,7 +1036,7 @@ class PerceptionPipeline:
         size = _image_size(image)
         width = float(frame.get("image_width") or 0.0) or size[0]
         try:
-            candidates = self._score(image, crops, width, pan, tilt)
+            scored = self._score(image, crops, width, pan, tilt)
         except PerceptionUnavailable as exc:
             return Perception(status=UNAVAILABLE, reason=str(exc),
                               crop_source=self.crop_source,
@@ -1030,6 +1046,18 @@ class PerceptionPipeline:
             return Perception(status=UNAVAILABLE, reason=f"scorer failed: {exc}",
                               crop_source=self.crop_source,
                               pan_deg=pan, tilt_deg=tilt)
+
+        # 3.178: the list's sightings, from every scored crop, whatever the
+        # target's answer. Bearings off the camera axis, as the inventory
+        # reads them.
+        watch = [{"label": c.watch[0], "bearing_deg": c.bearing_deg - pan,
+                  "confidence": round(c.watch[1], 4)}
+                 for c in scored if c.watch is not None and c.bearing_deg is not None]
+        candidates = [c for c in scored if c.for_target]
+        if not candidates:
+            return Perception(status=ABSENT, crop_source=self.crop_source,
+                              reason="no proposals survived the crop gate",
+                              pan_deg=pan, tilt_deg=tilt, watch=watch)
 
         if self.match_margin is not None:
             best = max(candidates, key=lambda c: c.margin)
@@ -1044,16 +1072,17 @@ class PerceptionPipeline:
                 status=ABSENT, candidates=candidates,
                 crop_source=self.crop_source, pan_deg=pan, tilt_deg=tilt,
                 reason=(f"{len(candidates)} proposal(s), best {unit} "
-                        f"{got:.3f} < {gate}"))
+                        f"{got:.3f} < {gate}"), watch=watch)
 
         return Perception(status=DETECTED, candidates=candidates, best=best,
                           crop_source=self.crop_source, pan_deg=pan,
                           tilt_deg=tilt,
                           image_size=(size if size[0] > 0 and size[1] > 0 else None),
-                          reason=f"{best.detection.label} @ {unit} {got:.3f}")
+                          reason=f"{best.detection.label} @ {unit} {got:.3f}",
+                          watch=watch)
 
     def _crops(self, proposals: Sequence[Detection]) -> list:
-        """4.2's gate. With a COCO word the label is a cheap prefilter and
+        """`(detection, for_target)` pairs. 4.2's gate. With a COCO word the label is a cheap prefilter and
         few crops survive it; without one every proposal is a candidate and
         CLIP does the whole job. `soft_gate` is the interior of that axis:
         the prefilter is an accept SET from CLIP's text space rather than
@@ -1070,24 +1099,54 @@ class PerceptionPipeline:
                     or d.label.strip().lower() in self.affinity]
         else:
             kept = list(proposals)
+        if self.watch:
+            # 3.178: a box proposed for a list item (its label names one) is
+            # the list's, never the target's: the target's crops are today's
+            # rule over the other boxes, under today's cap, so the list
+            # cannot crowd them out. The list's own crops are capped apart.
+            # A box labelled with the target's own text or COCO word stays
+            # the target's whatever the list says.
+            from brain.watch_list import item_for
+            own = {self.target.lower(), self.coco_class or ""}
+            listed = [d for d in proposals if d.label.strip().lower() not in own
+                      and item_for(d.label, self.watch) is not None]
+            ids = {id(d) for d in listed}
+            kept = [d for d in kept if id(d) not in ids]
+            kept.sort(key=lambda d: d.box.area, reverse=True)
+            listed.sort(key=lambda d: d.box.area, reverse=True)
+            return ([(d, True) for d in kept[:self.max_crops]]
+                    + [(d, False) for d in listed[:self.max_crops]])
         kept.sort(key=lambda d: d.box.area, reverse=True)
-        return kept[:self.max_crops]
+        return [(d, True) for d in kept[:self.max_crops]]
 
-    def _score(self, image: bytes, crops: Sequence[Detection],
+    def _score(self, image: bytes, crops: Sequence[tuple],
                width: float, pan: float, tilt: float) -> list:
-        texts = (self.target,) + self.distractors
+        """`crops` are `_crops()`'s `(detection, for_target)` pairs."""
+        own = (self.target,) + self.distractors
+        # 3.178: the list's texts last, so one image encode per crop serves
+        # both; the target's softmax reads only `own`'s scores.
+        texts = own + self.watch
+        if self.watch:
+            from brain.watch_list import sighting
+            skip = [k for k, t in enumerate(own) if t.strip().lower() in self.watch]
         out = []
-        for det in crops:
+        for det, for_target in crops:
             scores = list(self.scorer.score(image, det.box, texts))
             if len(scores) != len(texts):
                 raise PerceptionUnavailable(
                     f"scorer returned {len(scores)} scores for {len(texts)} texts")
+            mine = scores[:len(own)]
+            watch = None
+            if self.watch:
+                watch = sighting(scores, self.watch, CLIP_LOGIT_SCALE, skip=skip)
             out.append(Candidate(
                 detection=det,
-                similarity=scores[0],
-                best_distractor=max(scores[1:]) if len(scores) > 1 else 0.0,
-                scores=tuple(scores),
+                similarity=mine[0],
+                best_distractor=max(mine[1:]) if len(mine) > 1 else 0.0,
+                scores=tuple(mine),
                 bearing_deg=self._bearing(det.box, width, pan),
+                watch=watch,
+                for_target=for_target,
             ))
         return out
 
@@ -1404,10 +1463,10 @@ class UltralyticsTextDetector:
     that for you.
     """
 
-    def _set_text(self, text: str):  # pragma: no cover - needs the model
-        self.model.set_classes([text])
+    def _set_text(self, text):  # pragma: no cover - needs the model
+        self.model.set_classes(_classes_of(text))
 
-    def detect_text(self, image: bytes, text: str):  # pragma: no cover
+    def detect_text(self, image: bytes, text):  # pragma: no cover
         # PIL is imported here, not at module scope, because every other
         # model-touching method in this file does the same: it is an optional
         # perception dependency and a module-level import would make
@@ -1417,9 +1476,10 @@ class UltralyticsTextDetector:
         # frames came back `unavailable` at 2ms rather than crashing.
         from PIL import Image
 
-        if self._classes != [text]:
+        classes = _classes_of(text)
+        if self._classes != classes:
             self._set_text(text)
-            self._classes = [text]
+            self._classes = classes
         img = Image.open(io.BytesIO(image)).convert("RGB")
         results = self.model.predict(img, conf=self.confidence,
                                      verbose=False, device=self.device)
@@ -1427,9 +1487,20 @@ class UltralyticsTextDetector:
         for r in results:
             for b in getattr(r, "boxes", []):
                 x1, y1, x2, y2 = (float(v) for v in b.xyxy[0].tolist())
-                out.append(Detection(box=Box(x1, y1, x2, y2), label=text,
+                # 3.178: with a watch list the prompt is several classes;
+                # each box is labelled with the one it was proposed for.
+                k = int(b.cls[0]) if len(classes) > 1 else 0
+                if not 0 <= k < len(classes):
+                    continue        # never relabelled as the target
+                out.append(Detection(box=Box(x1, y1, x2, y2), label=classes[k],
                                      confidence=float(b.conf[0])))
         return out
+
+
+def _classes_of(text) -> list:
+    """A prompt as the class list ultralytics takes: one text, or (3.178)
+    the target followed by the watch list."""
+    return [text] if isinstance(text, str) else list(text)
 
 
 class YoloE(UltralyticsTextDetector):
@@ -1472,7 +1543,7 @@ class YoloE(UltralyticsTextDetector):
         self.model_name = self.weights
         self._classes = None
 
-    def _set_text(self, text: str):  # pragma: no cover - needs the model
+    def _set_text(self, text):  # pragma: no cover - needs the model
         # YOLOE wants precomputed text embeddings, where YOLO-World takes
         # the strings themselves. Not `self.model.get_text_pe`: that builds
         # all of MobileCLIP in this process and leaves ~0.5 GB of heap
@@ -1495,7 +1566,8 @@ class YoloE(UltralyticsTextDetector):
             # encode with the wrong model.
             logger.warning("YOLOE text model %r: encoding in process",
                            net.text_model)
-            self.model.set_classes([text], self.model.get_text_pe([text]))
+            classes = _classes_of(text)
+            self.model.set_classes(classes, self.model.get_text_pe(classes))
             return
         from pathlib import Path
 
@@ -1503,14 +1575,17 @@ class YoloE(UltralyticsTextDetector):
 
         source = str(Path(attempt_download_asset(MOBILECLIP)).resolve())
         param = next(net.parameters())
-        feats = torch.tensor(yoloe_features(source, text),
-                             dtype=torch.float32).reshape(1, 1, -1)
+        # 3.178: one cached encode per text (the target's as before; each
+        # watch-list item's once per board, then from the cache on disk).
+        classes = _classes_of(text)
+        feats = torch.tensor([yoloe_features(source, c) for c in classes],
+                             dtype=torch.float32).reshape(1, len(classes), -1)
         with torch.inference_mode():
             pe = net.model[-1].get_tpe(feats.to(param.device).to(param.dtype))
-        self.model.set_classes([text], pe)
+        self.model.set_classes(classes, pe)
 
-    def detect_text(self, image: bytes, text: str):  # pragma: no cover - needs the model
-        fresh = self._classes != [text]
+    def detect_text(self, image: bytes, text):  # pragma: no cover - needs the model
+        fresh = self._classes != _classes_of(text)
         out = super().detect_text(image, text)
         if fresh:
             self._release()
@@ -1544,17 +1619,22 @@ class OpenVocabCropSource:
     regions, not its own confidence.
     """
 
-    def __init__(self, backend, target: str):
+    def __init__(self, backend, target: str, watch: Sequence[str] = ()):
         self.backend = backend
         self.target = target
+        # 3.178: the watch list rides the same prompt, after the target, so
+        # one predict proposes for both. Without a list the prompt is the
+        # target's one string, exactly as before.
+        self.watch = tuple(watch)
         self.weights = f"crops:{getattr(backend, 'weights', 'open-vocab')}"
 
     def detect(self, image: bytes, confidence: float):
         # The backend's own threshold already gated this; `confidence` is
         # the pipeline's crop-path knob and is deliberately not applied a
         # second time, or the two gates would compound invisibly.
+        prompt = [self.target, *self.watch] if self.watch else self.target
         return [Detection(box=d.box, label=d.label, confidence=d.confidence)
-                for d in self.backend.detect_text(image, self.target)]
+                for d in self.backend.detect_text(image, prompt)]
 
 
 def pipeline_for(target: str, *, weights: str = DEFAULT_DETECTOR,
@@ -1562,6 +1642,7 @@ def pipeline_for(target: str, *, weights: str = DEFAULT_DETECTOR,
                  device: Optional[str] = None,
                  floor_mask: bool = False,
                  segmenter: str = DEFAULT_SEGMENTER,
+                 watch: Sequence[str] = (),
                  **kwargs) -> PerceptionPipeline:
     """The real pipeline, models loaded. Raises `PerceptionUnavailable`
     with a usable message if the optional dependencies are absent.
@@ -1579,11 +1660,16 @@ def pipeline_for(target: str, *, weights: str = DEFAULT_DETECTOR,
     (3.81 C2: 377 MB free with VE resident, floor 500).
     """
     _free_unused()
+    from brain.watch_list import for_target
+    # 3.178: the detector is prompted with the list the pipeline scores
+    # (`for_target` is idempotent, so the pipeline's own pass agrees).
+    watch = for_target(watch, target.strip())
     return PerceptionPipeline(
-        detector=detector_for(weights, target, device=device),
+        detector=detector_for(weights, target, device=device, watch=watch),
         scorer=ClipScorer(clip_model, device=device),
         target=target,
         proposer=SegformerFloorProposer(segmenter, device=device) if floor_mask else None,
+        watch=watch,
         **kwargs,
     )
 
@@ -1628,7 +1714,8 @@ def is_text_prompted(weights: str) -> bool:
     return str(weights).startswith("yoloe")
 
 
-def detector_for(weights: str, target: str, *, device: Optional[str] = None):
+def detector_for(weights: str, target: str, *, device: Optional[str] = None,
+                 watch: Sequence[str] = ()):
     """The `Detector` for a checkpoint name -- the one place that chooses.
 
     Two shapes exist and they are not interchangeable. A YOLO checkpoint is
@@ -1638,7 +1725,7 @@ def detector_for(weights: str, target: str, *, device: Optional[str] = None):
     function is what keeps that difference out of every caller.
     """
     if is_text_prompted(weights):
-        return OpenVocabCropSource(YoloE(weights, device=device), target)
+        return OpenVocabCropSource(YoloE(weights, device=device), target, watch)
     return YoloDetector(weights, device=device)
 
 

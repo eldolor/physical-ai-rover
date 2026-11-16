@@ -239,6 +239,11 @@ DEFAULTS = {
     # mission_wall_limit_s. Off: nothing sees a charger before the Rover.
     "recharge_resume": False,
     "resume_v": 11.8,
+    # 3.178: a few named valuables noticed on every mission beside the
+    # target (brain/watch_list.py; at most 8; [] switches it off). Read only
+    # by the inventory report's `watch` block; the car's perception is not
+    # prompted with it until 3.178 B4-B6 are met on the desktop and board.
+    "watch_list": ["keys", "wallet", "phone", "glasses", "remote"],
     "mission_wall_limit_s": 14400.0,
     "charge_stall_s": 300.0,
     # A `vision` mission's paid /navigate calls (one per step), counted per
@@ -696,5 +701,32 @@ def load_brain_config(config_path=None) -> dict:
         raise ValueError("brain.explore_goal_policy must be 'rule', 'learned', 'network' or "
                          f"'rooms'; got {merged['explore_goal_policy']!r}")
     merged["tier_tree"] = tier_tree_config(merged["tier_tree"], no_below, merged["tier_search"])
+    merged["watch_list"] = _watch_list(merged["watch_list"])
 
     return merged
+
+
+# 3.178: `brain.watch_list.normalise`'s rules, restated here because the
+# walks Lambda ships control/ without brain/ (service/lambda/build.sh), and
+# this module loads at its cold start. tests/test_watch_list.py pins that
+# the two agree and that this module loads with `brain` unimportable.
+WATCH_LIST_MAX_ITEMS = 8
+WATCH_LIST_MAX_CHARS = 40
+
+
+def _watch_list(items) -> list:
+    if not isinstance(items, list):
+        raise ValueError("brain.watch_list must be a list of names ([] switches it off); "
+                         f"got {items!r}")
+    out: list = []
+    for raw in items:
+        if not isinstance(raw, str) or not " ".join(raw.split()):
+            raise ValueError(f"brain.watch_list entries must be non-empty strings; got {raw!r}")
+        item = " ".join(raw.split()).lower()
+        if len(item) > WATCH_LIST_MAX_CHARS:
+            raise ValueError(f"brain.watch_list entry {item!r} is longer than {WATCH_LIST_MAX_CHARS}")
+        if item not in out:
+            out.append(item)
+    if len(out) > WATCH_LIST_MAX_ITEMS:
+        raise ValueError(f"brain.watch_list holds at most {WATCH_LIST_MAX_ITEMS} names; got {len(out)}")
+    return out
