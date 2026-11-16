@@ -788,6 +788,16 @@ finished map at mission start; N1's discovered map replaced it.)
   never ends a search by itself. A
   plain target ("backpack") starts exactly as before. A brain older than
   the sentence reader gets the words as typed, and the line says so.
+- **Where did you last see it?** (3.175.C) -- under the Find box, a tap asks
+  the robot where it last saw the thing in the box, from what it already
+  remembers: nothing moves. The answer says where ("Last seen: **red
+  backpack**, in **the hall**, 2 h ago."), with the picture it kept, and
+  says so plainly when the robot looked there since and did not see it,
+  has never seen it on this map, or remembers nothing yet. The place is the
+  one a search would go to first. **Go check** starts an ordinary search for
+  it, exactly as Start would. Answered from the robot's own disk (never
+  uploaded); on the car it covers things once searched for (only the target
+  is named on real frames).
 - **Policy picker** -- the free rule-based explorer (`brain/agent.py`, which
   since the ROS alignment explores by the WORLD's pose in metres and builds
   its scene from the depth grid -- no grid cells), the **vision policy** (one

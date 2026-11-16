@@ -1,0 +1,1720 @@
+{
+ "houses": {
+  "complex_house": {
+   "head_carry_seq": 1,
+   "labels": [
+    "armchair",
+    "bathtub",
+    "bed",
+    "book",
+    "bookcase",
+    "coffee table",
+    "desk",
+    "dresser",
+    "headphones",
+    "keys",
+    "kitchen counter",
+    "kitchen island",
+    "mug",
+    "pet bowl",
+    "red backpack",
+    "shoe bench",
+    "shoes",
+    "toilet",
+    "towel",
+    "toy car",
+    "trash can",
+    "tv console",
+    "umbrella",
+    "vanity",
+    "water bottle"
+   ],
+   "asks": [
+    {
+     "label": "armchair",
+     "status": "seen",
+     "places": [
+      [
+       5.022,
+       3.907
+      ],
+      [
+       15.026,
+       11.392
+      ]
+     ],
+     "truth": [
+      [
+       5.022,
+       3.907
+      ],
+      [
+       15.026,
+       11.392
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m0",
+      "ended": 1794815447.658,
+      "saved_at": "2026-11-16T07:50:47+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/0.jpg",
+      "room": "hall"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "bathtub",
+     "status": "seen",
+     "places": [
+      [
+       17.692,
+       11.5
+      ],
+      [
+       16.508,
+       9.895
+      ]
+     ],
+     "truth": [
+      [
+       17.692,
+       11.5
+      ],
+      [
+       16.508,
+       9.895
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m0",
+      "ended": 1794815447.658,
+      "saved_at": "2026-11-16T07:50:47+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/2.jpg",
+      "room": "main bedroom"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "bed",
+     "status": "seen",
+     "places": [
+      [
+       12.596,
+       10.533
+      ],
+      [
+       16.493,
+       6.901
+      ],
+      [
+       16.776,
+       7.882
+      ]
+     ],
+     "truth": [
+      [
+       12.596,
+       10.533
+      ],
+      [
+       16.493,
+       6.901
+      ],
+      [
+       16.776,
+       7.882
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m1",
+      "ended": 1794815537.474,
+      "saved_at": "2026-11-16T07:52:17+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/0.jpg",
+      "room": "hall"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "book",
+     "status": "seen",
+     "places": [
+      [
+       15.84,
+       9.438
+      ]
+     ],
+     "truth": [
+      [
+       15.84,
+       9.438
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m0",
+      "ended": 1794815447.658,
+      "saved_at": "2026-11-16T07:50:47+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/4.jpg",
+      "room": "main bedroom"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "bookcase",
+     "status": "doubtful",
+     "places": [],
+     "truth": [],
+     "when": null,
+     "thumb_ok": null
+    },
+    {
+     "label": "coffee table",
+     "status": "seen",
+     "places": [
+      [
+       2.751,
+       4.063
+      ]
+     ],
+     "truth": [
+      [
+       2.751,
+       4.063
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m0",
+      "ended": 1794815447.658,
+      "saved_at": "2026-11-16T07:50:47+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/5.jpg",
+      "room": "hall"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "desk",
+     "status": "seen",
+     "places": [
+      [
+       9.196,
+       12.131
+      ]
+     ],
+     "truth": [
+      [
+       9.196,
+       12.131
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m1",
+      "ended": 1794815537.474,
+      "saved_at": "2026-11-16T07:52:17+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/1.jpg",
+      "room": "bedroom 2"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "dresser",
+     "status": "seen",
+     "places": [
+      [
+       11.067,
+       12.049
+      ],
+      [
+       14.952,
+       8.638
+      ]
+     ],
+     "truth": [
+      [
+       11.067,
+       12.049
+      ],
+      [
+       14.952,
+       8.638
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m1",
+      "ended": 1794815537.474,
+      "saved_at": "2026-11-16T07:52:17+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/2.jpg",
+      "room": "bedroom 2"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "headphones",
+     "status": "seen",
+     "places": [
+      [
+       11.078,
+       8.707
+      ]
+     ],
+     "truth": [
+      [
+       11.078,
+       8.707
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m1",
+      "ended": 1794815537.474,
+      "saved_at": "2026-11-16T07:52:17+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/3.jpg",
+      "room": "hall"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "keys",
+     "status": "doubtful",
+     "places": [],
+     "truth": [],
+     "when": null,
+     "thumb_ok": null
+    },
+    {
+     "label": "kitchen counter",
+     "status": "doubtful",
+     "places": [],
+     "truth": [],
+     "when": null,
+     "thumb_ok": null
+    },
+    {
+     "label": "kitchen island",
+     "status": "seen",
+     "places": [
+      [
+       8.841,
+       3.427
+      ],
+      [
+       10.539,
+       3.651
+      ]
+     ],
+     "truth": [
+      [
+       8.841,
+       3.427
+      ],
+      [
+       10.539,
+       3.651
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m0",
+      "ended": 1794815447.658,
+      "saved_at": "2026-11-16T07:50:47+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/7.jpg",
+      "room": "living room"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "mug",
+     "status": "seen",
+     "places": [
+      [
+       5.757,
+       5.404
+      ]
+     ],
+     "truth": [
+      [
+       5.757,
+       5.404
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m0",
+      "ended": 1794815447.658,
+      "saved_at": "2026-11-16T07:50:47+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/8.jpg",
+      "room": "hall"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "pet bowl",
+     "status": "doubtful",
+     "places": [],
+     "truth": [],
+     "when": null,
+     "thumb_ok": null
+    },
+    {
+     "label": "red backpack",
+     "status": "seen",
+     "places": [
+      [
+       9.002,
+       11.557
+      ]
+     ],
+     "truth": [
+      [
+       9.002,
+       11.557
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m1",
+      "ended": 1794815537.474,
+      "saved_at": "2026-11-16T07:52:17+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/4.jpg",
+      "room": "bedroom 2"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "shoe bench",
+     "status": "seen",
+     "places": [
+      [
+       0.937,
+       9.546
+      ],
+      [
+       0.85,
+       11.175
+      ]
+     ],
+     "truth": [
+      [
+       0.937,
+       9.546
+      ],
+      [
+       0.85,
+       11.175
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m1",
+      "ended": 1794815537.474,
+      "saved_at": "2026-11-16T07:52:17+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/5.jpg",
+      "room": "entry"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "shoes",
+     "status": "seen",
+     "places": [
+      [
+       1.174,
+       8.07
+      ]
+     ],
+     "truth": [
+      [
+       1.174,
+       8.07
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m1",
+      "ended": 1794815537.474,
+      "saved_at": "2026-11-16T07:52:17+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/6.jpg",
+      "room": "entry"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "toilet",
+     "status": "seen",
+     "places": [
+      [
+       18.022,
+       10.763
+      ],
+      [
+       8.059,
+       9.892
+      ]
+     ],
+     "truth": [
+      [
+       18.022,
+       10.763
+      ],
+      [
+       8.059,
+       9.892
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m0",
+      "ended": 1794815447.658,
+      "saved_at": "2026-11-16T07:50:47+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/10.jpg",
+      "room": "ensuite"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "towel",
+     "status": "doubtful",
+     "places": [],
+     "truth": [],
+     "when": null,
+     "thumb_ok": null
+    },
+    {
+     "label": "toy car",
+     "status": "seen",
+     "places": [
+      [
+       4.064,
+       4.825
+      ]
+     ],
+     "truth": [
+      [
+       4.064,
+       4.825
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m0",
+      "ended": 1794815447.658,
+      "saved_at": "2026-11-16T07:50:47+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/15.jpg",
+      "room": "hall"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "trash can",
+     "status": "seen",
+     "places": [
+      [
+       11.977,
+       3.509
+      ]
+     ],
+     "truth": [
+      [
+       11.977,
+       3.509
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m0",
+      "ended": 1794815447.658,
+      "saved_at": "2026-11-16T07:50:47+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/16.jpg",
+      "room": "kitchen"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "tv console",
+     "status": "doubtful",
+     "places": [],
+     "truth": [],
+     "when": null,
+     "thumb_ok": null
+    },
+    {
+     "label": "umbrella",
+     "status": "seen",
+     "places": [
+      [
+       2.764,
+       8.677
+      ]
+     ],
+     "truth": [
+      [
+       2.764,
+       8.677
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m1",
+      "ended": 1794815537.474,
+      "saved_at": "2026-11-16T07:52:17+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/7.jpg",
+      "room": "entry"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "vanity",
+     "status": "seen",
+     "places": [
+      [
+       9.288,
+       8.221
+      ]
+     ],
+     "truth": [
+      [
+       9.288,
+       8.221
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m0",
+      "ended": 1794815447.658,
+      "saved_at": "2026-11-16T07:50:47+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/20.jpg",
+      "room": "bathroom"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "water bottle",
+     "status": "seen",
+     "places": [
+      [
+       10.796,
+       4.651
+      ]
+     ],
+     "truth": [
+      [
+       10.796,
+       4.651
+      ]
+     ],
+     "when": {
+      "mission_id": "complex_house-m0",
+      "ended": 1794815447.658,
+      "saved_at": "2026-11-16T07:50:47+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/12.jpg",
+      "room": "kitchen"
+     },
+     "thumb_ok": true
+    }
+   ],
+   "unseen": {
+    "desk chair": "not_seen",
+    "dining table": "not_seen",
+    "guitar": "not_seen",
+    "laptop bag": "not_seen",
+    "laundry basket": "not_seen",
+    "refrigerator": "not_seen",
+    "sideboard": "not_seen",
+    "slippers": "not_seen",
+    "sofa": "not_seen",
+    "tv remote": "not_seen",
+    "unicorn": "not_seen",
+    "zeppelin": "not_seen",
+    "saxophone": "not_seen",
+    "giraffe": "not_seen",
+    "hovercraft": "not_seen"
+   },
+   "robot_reads": [],
+   "world_calls": [],
+   "reports_kept": 2
+  },
+  "scaled_house": {
+   "head_carry_seq": 1,
+   "labels": [
+    "bed",
+    "red backpack",
+    "refrigerator",
+    "sofa"
+   ],
+   "asks": [
+    {
+     "label": "bed",
+     "status": "seen",
+     "places": [
+      [
+       0.9,
+       3.157
+      ]
+     ],
+     "truth": [
+      [
+       0.9,
+       3.157
+      ]
+     ],
+     "when": {
+      "mission_id": "scaled_house-m1",
+      "ended": 1794815554.017,
+      "saved_at": "2026-11-16T07:52:34+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/0.jpg",
+      "room": "hallway"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "red backpack",
+     "status": "seen",
+     "places": [
+      [
+       6.894,
+       1.655
+      ]
+     ],
+     "truth": [
+      [
+       6.894,
+       1.655
+      ]
+     ],
+     "when": {
+      "mission_id": "scaled_house-m1",
+      "ended": 1794815554.017,
+      "saved_at": "2026-11-16T07:52:34+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/1.jpg",
+      "room": "living room"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "refrigerator",
+     "status": "seen",
+     "places": [
+      [
+       7.187,
+       0.794
+      ]
+     ],
+     "truth": [
+      [
+       7.187,
+       0.794
+      ]
+     ],
+     "when": {
+      "mission_id": "scaled_house-m1",
+      "ended": 1794815554.017,
+      "saved_at": "2026-11-16T07:52:34+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/2.jpg",
+      "room": "unknown"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "sofa",
+     "status": "seen",
+     "places": [
+      [
+       0.91,
+       0.791
+      ]
+     ],
+     "truth": [
+      [
+       0.91,
+       0.791
+      ]
+     ],
+     "when": {
+      "mission_id": "scaled_house-m1",
+      "ended": 1794815554.017,
+      "saved_at": "2026-11-16T07:52:34+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/3.jpg",
+      "room": "living room"
+     },
+     "thumb_ok": true
+    }
+   ],
+   "unseen": {
+    "unicorn": "not_seen",
+    "zeppelin": "not_seen",
+    "saxophone": "not_seen",
+    "giraffe": "not_seen",
+    "hovercraft": "not_seen"
+   },
+   "robot_reads": [],
+   "world_calls": [],
+   "reports_kept": 2
+  },
+  "home_first_floor": {
+   "head_carry_seq": 1,
+   "labels": [
+    "armchair",
+    "bookcase",
+    "breakfast table",
+    "car",
+    "chair",
+    "coffee table",
+    "desk",
+    "desk chair",
+    "dining table",
+    "dryer",
+    "garage shelves",
+    "kitchen counter",
+    "kitchen island",
+    "pantry shelves",
+    "red backpack",
+    "refrigerator",
+    "sectional sofa",
+    "side table",
+    "sofa",
+    "staircase",
+    "toilet",
+    "tv console",
+    "vanity",
+    "washer"
+   ],
+   "asks": [
+    {
+     "label": "armchair",
+     "status": "seen",
+     "places": [
+      [
+       3.334,
+       8.663
+      ],
+      [
+       3.442,
+       11.143
+      ],
+      [
+       7.855,
+       4.61
+      ]
+     ],
+     "truth": [
+      [
+       3.334,
+       8.663
+      ],
+      [
+       3.442,
+       11.143
+      ],
+      [
+       7.855,
+       4.61
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/0.jpg",
+      "room": "foyer"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "bookcase",
+     "status": "seen",
+     "places": [
+      [
+       3.587,
+       3.956
+      ]
+     ],
+     "truth": [
+      [
+       3.587,
+       3.956
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m0",
+      "ended": 1794815669.924,
+      "saved_at": "2026-11-16T07:54:29+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/3.jpg",
+      "room": "hall"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "breakfast table",
+     "status": "seen",
+     "places": [
+      [
+       10.533,
+       4.614
+      ],
+      [
+       10.955,
+       3.625
+      ]
+     ],
+     "truth": [
+      [
+       10.533,
+       4.614
+      ],
+      [
+       10.955,
+       3.625
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/3.jpg",
+      "room": "family room"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "car",
+     "status": "seen",
+     "places": [
+      [
+       12.344,
+       10.307
+      ]
+     ],
+     "truth": [
+      [
+       12.344,
+       10.307
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/4.jpg",
+      "room": "kitchen"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "chair",
+     "status": "seen",
+     "places": [
+      [
+       3.334,
+       8.663
+      ],
+      [
+       3.442,
+       11.143
+      ],
+      [
+       7.855,
+       4.61
+      ],
+      [
+       10.225,
+       3.238
+      ],
+      [
+       10.134,
+       4.684
+      ],
+      [
+       8.349,
+       9.69
+      ],
+      [
+       9.005,
+       10.935
+      ],
+      [
+       7.499,
+       11.023
+      ],
+      [
+       8.535,
+       11.693
+      ],
+      [
+       11.263,
+       4.179
+      ],
+      [
+       1.461,
+       3.821
+      ]
+     ],
+     "truth": [
+      [
+       3.334,
+       8.663
+      ],
+      [
+       3.442,
+       11.143
+      ],
+      [
+       7.855,
+       4.61
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/0.jpg",
+      "room": "foyer"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "coffee table",
+     "status": "seen",
+     "places": [
+      [
+       2.409,
+       9.958
+      ],
+      [
+       6.527,
+       2.641
+      ]
+     ],
+     "truth": [
+      [
+       2.409,
+       9.958
+      ],
+      [
+       6.527,
+       2.641
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/12.jpg",
+      "room": "foyer"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "desk",
+     "status": "seen",
+     "places": [
+      [
+       2.109,
+       2.882
+      ],
+      [
+       0.93,
+       3.409
+      ],
+      [
+       1.461,
+       3.821
+      ]
+     ],
+     "truth": [
+      [
+       2.109,
+       2.882
+      ],
+      [
+       0.93,
+       3.409
+      ],
+      [
+       1.461,
+       3.821
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m0",
+      "ended": 1794815669.924,
+      "saved_at": "2026-11-16T07:54:29+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/12.jpg",
+      "room": "hall"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "desk chair",
+     "status": "seen",
+     "places": [
+      [
+       1.461,
+       3.821
+      ]
+     ],
+     "truth": [
+      [
+       1.461,
+       3.821
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m0",
+      "ended": 1794815669.924,
+      "saved_at": "2026-11-16T07:54:29+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/14.jpg",
+      "room": "den"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "dining table",
+     "status": "seen",
+     "places": [
+      [
+       8.208,
+       9.732
+      ],
+      [
+       7.861,
+       11.401
+      ],
+      [
+       8.767,
+       11.392
+      ]
+     ],
+     "truth": [
+      [
+       8.208,
+       9.732
+      ],
+      [
+       7.861,
+       11.401
+      ],
+      [
+       8.767,
+       11.392
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/14.jpg",
+      "room": "foyer"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "dryer",
+     "status": "seen",
+     "places": [
+      [
+       14.456,
+       7.403
+      ]
+     ],
+     "truth": [
+      [
+       14.456,
+       7.403
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/17.jpg",
+      "room": "kitchen"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "garage shelves",
+     "status": "seen",
+     "places": [
+      [
+       15.579,
+       9.389
+      ],
+      [
+       15.584,
+       12.153
+      ]
+     ],
+     "truth": [
+      [
+       15.579,
+       9.389
+      ],
+      [
+       15.584,
+       12.153
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/18.jpg",
+      "room": "garage"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "kitchen counter",
+     "status": "seen",
+     "places": [
+      [
+       12.18,
+       2.519
+      ],
+      [
+       14.359,
+       4.513
+      ]
+     ],
+     "truth": [
+      [
+       12.18,
+       2.519
+      ],
+      [
+       14.359,
+       4.513
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/20.jpg",
+      "room": "hall"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "kitchen island",
+     "status": "seen",
+     "places": [
+      [
+       12.93,
+       4.803
+      ]
+     ],
+     "truth": [
+      [
+       12.93,
+       4.803
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/22.jpg",
+      "room": "hall"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "pantry shelves",
+     "status": "seen",
+     "places": [
+      [
+       11.714,
+       7.017
+      ]
+     ],
+     "truth": [
+      [
+       11.714,
+       7.017
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/33.jpg",
+      "room": "garage hall"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "red backpack",
+     "status": "seen",
+     "places": [
+      [
+       13.772,
+       5.862
+      ]
+     ],
+     "truth": [
+      [
+       13.772,
+       5.862
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/23.jpg",
+      "room": "breakfast"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "refrigerator",
+     "status": "seen",
+     "places": [
+      [
+       14.097,
+       3.457
+      ]
+     ],
+     "truth": [
+      [
+       14.097,
+       3.457
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/24.jpg",
+      "room": "garage hall"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "sectional sofa",
+     "status": "seen",
+     "places": [
+      [
+       5.637,
+       5.05
+      ],
+      [
+       5.11,
+       1.868
+      ],
+      [
+       5.138,
+       3.725
+      ]
+     ],
+     "truth": [
+      [
+       5.637,
+       5.05
+      ],
+      [
+       5.11,
+       1.868
+      ],
+      [
+       5.138,
+       3.725
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/25.jpg",
+      "room": "foyer"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "side table",
+     "status": "seen",
+     "places": [
+      [
+       0.925,
+       11.377
+      ]
+     ],
+     "truth": [
+      [
+       0.925,
+       11.377
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/27.jpg",
+      "room": "foyer"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "sofa",
+     "status": "seen",
+     "places": [
+      [
+       5.637,
+       5.05
+      ],
+      [
+       5.11,
+       1.868
+      ],
+      [
+       5.138,
+       3.725
+      ],
+      [
+       1.203,
+       10.639
+      ],
+      [
+       1.104,
+       10.013
+      ]
+     ],
+     "truth": [
+      [
+       5.637,
+       5.05
+      ],
+      [
+       5.11,
+       1.868
+      ],
+      [
+       5.138,
+       3.725
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/25.jpg",
+      "room": "foyer"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "staircase",
+     "status": "seen",
+     "places": [
+      [
+       6.574,
+       7.882
+      ],
+      [
+       3.593,
+       5.401
+      ]
+     ],
+     "truth": [
+      [
+       6.574,
+       7.882
+      ],
+      [
+       3.593,
+       5.401
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/28.jpg",
+      "room": "foyer"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "toilet",
+     "status": "seen",
+     "places": [
+      [
+       1.119,
+       6.153
+      ]
+     ],
+     "truth": [
+      [
+       1.119,
+       6.153
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/29.jpg",
+      "room": "family room"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "tv console",
+     "status": "seen",
+     "places": [
+      [
+       6.929,
+       0.911
+      ]
+     ],
+     "truth": [
+      [
+       6.929,
+       0.911
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/30.jpg",
+      "room": "family room"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "vanity",
+     "status": "seen",
+     "places": [
+      [
+       0.889,
+       6.881
+      ]
+     ],
+     "truth": [
+      [
+       0.889,
+       6.881
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/31.jpg",
+      "room": "family room"
+     },
+     "thumb_ok": true
+    },
+    {
+     "label": "washer",
+     "status": "seen",
+     "places": [
+      [
+       14.4,
+       6.669
+      ]
+     ],
+     "truth": [
+      [
+       14.4,
+       6.669
+      ]
+     ],
+     "when": {
+      "mission_id": "home_first_floor-m1",
+      "ended": 1794815804.29,
+      "saved_at": "2026-11-16T07:56:44+0000",
+      "job": "find",
+      "target": "unicorn",
+      "thumb": "thumbs/35.jpg",
+      "room": "garage hall"
+     },
+     "thumb_ok": true
+    }
+   ],
+   "unseen": {
+    "unicorn": "not_seen",
+    "zeppelin": "not_seen",
+    "saxophone": "not_seen",
+    "giraffe": "not_seen",
+    "hovercraft": "not_seen"
+   },
+   "robot_reads": [],
+   "world_calls": [],
+   "reports_kept": 2
+  }
+ },
+ "missions": [
+  {
+   "house": "complex_house",
+   "mission": "complex_house-m0",
+   "outcome": "exhausted",
+   "search_s": 878.1,
+   "ticks": 929
+  },
+  {
+   "house": "complex_house",
+   "mission": "complex_house-m1",
+   "outcome": "exhausted",
+   "search_s": 908.8,
+   "ticks": 1079
+  },
+  {
+   "house": "scaled_house",
+   "mission": "scaled_house-m0",
+   "outcome": "exhausted",
+   "search_s": 112.6,
+   "ticks": 110
+  },
+  {
+   "house": "scaled_house",
+   "mission": "scaled_house-m1",
+   "outcome": "exhausted",
+   "search_s": 169.6,
+   "ticks": 149
+  },
+  {
+   "house": "home_first_floor",
+   "mission": "home_first_floor-m0",
+   "outcome": "out_of_budget",
+   "search_s": 1201.1,
+   "ticks": 1156
+  },
+  {
+   "house": "home_first_floor",
+   "mission": "home_first_floor-m1",
+   "outcome": "exhausted",
+   "search_s": 1156.0,
+   "ticks": 1228
+  }
+ ],
+ "empty": "no_memory",
+ "timing": {
+  "reports": 50,
+  "ms": [
+   14.98,
+   12.29,
+   12.66,
+   12.37,
+   10.35,
+   14.11,
+   12.7,
+   9.65,
+   10.28,
+   13.2,
+   18.53,
+   10.53,
+   11.97,
+   12.1,
+   12.89,
+   9.62,
+   10.82,
+   12.13,
+   12.48,
+   12.43,
+   11.62,
+   13.0,
+   13.02,
+   12.93,
+   12.61,
+   12.8,
+   11.55,
+   9.63,
+   9.0,
+   13.85,
+   12.09,
+   14.04,
+   11.95,
+   12.04,
+   12.51,
+   11.95,
+   9.71,
+   11.32,
+   13.12,
+   11.64
+  ],
+  "robot_reads": [],
+  "world_calls": []
+ }
+}

@@ -1132,3 +1132,11 @@ body.first-run-on #tab-home > .panel:not(#first-run) { display: none; }
 #sched-form .field-label { display: block; margin-top: 6px; }
 #sched-form[hidden], #sched-not-here[hidden], #mission-schedule[hidden],
 #sched-target[hidden], #sched-target-label[hidden], #sched-add[hidden] { display: none; }
+
+/* 3.175.C: "Where did you last see it?" under the Find box. */
+.last-seen { margin-top: 8px; display: flex; gap: 10px; align-items: flex-start; }
+.last-seen[hidden], #last-seen-img[hidden], #btn-last-seen-go[hidden] { display: none; }
+#last-seen-img { width: 72px; height: 72px; object-fit: cover; border-radius: 8px; flex: none; }
+.last-seen-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; overflow-wrap: anywhere; }
+.last-seen-body .hint { margin: 0; }
+#btn-last-seen-go { align-self: flex-start; }

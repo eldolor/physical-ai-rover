@@ -36,6 +36,7 @@ import { renderTargetHistory, saveTargetToHistory } from "./js/history.js";
 import { state } from "./js/state.js";
 import { redrawVoicedStatus, setVoicedConnStatus, setConnStatus } from "./js/connstatus.js";
 import { createFindReader, renderFindReading } from "./js/request.js";
+import { createLastSeen, lastSeenView } from "./js/last_seen.js";
 
 (function () {
   "use strict";
@@ -2892,6 +2893,75 @@ import { createFindReader, renderFindReading } from "./js/request.js";
     drop.style.display = showDrop ? "" : "none";
     btn.disabled = !state.brainConnected
       || (shown && !findStarting && !findFields());
+    renderLastSeen();
+  }
+
+  // ---------- 3.175.C: "Where did you last see it?" ----------
+  // Asks the brain's read-only GET /mission/last-seen for the box's target
+  // (the reading's, else the words as typed); "Go check" is an ordinary find
+  // for the answered name, through Start's own path. `var`: renderFindBox may
+  // run before this line does at start-up.
+  var lastSeen = createLastSeen(function (name) {
+    return brainApi("GET", "/mission/last-seen?name=" + encodeURIComponent(name));
+  }, function () { renderLastSeen(); });
+  var lastSeenThumb = { key: null, url: null, seq: 0 };
+  function lastSeenName() {
+    const typed = document.getElementById("brain-target").value.trim();
+    const r = findReader ? findReader.reading : null;
+    if (r && r.status === "ok" && r.text === typed && r.parsed && r.parsed.target) return r.parsed.target;
+    return typed;
+  }
+  function setLastSeenThumb(thumb) {
+    const img = document.getElementById("last-seen-img");
+    const key = thumb ? thumb.mission_id + "/" + thumb.thumb : null;
+    if (!img || key === lastSeenThumb.key) return;
+    const mine = ++lastSeenThumb.seq;
+    if (lastSeenThumb.url) URL.revokeObjectURL(lastSeenThumb.url);
+    lastSeenThumb.key = key;
+    lastSeenThumb.url = null;
+    img.hidden = true;
+    img.removeAttribute("src");
+    if (!thumb) return;
+    fetch(state.brainUrl + "/mission/reports/" + encodeURIComponent(thumb.mission_id) + "/" + thumb.thumb,
+          { headers: brainAuthHeaders({}) })
+      .then(function (res) { if (!res.ok) throw new Error("HTTP " + res.status); return res.blob(); })
+      .then(function (blob) {
+        if (mine !== lastSeenThumb.seq) return;
+        lastSeenThumb.url = URL.createObjectURL(blob);
+        img.src = lastSeenThumb.url;
+        img.hidden = false;
+      })
+      .catch(function () { /* no picture: the words still stand */ });
+  }
+  function renderLastSeen() {
+    const ask = document.getElementById("btn-last-seen");
+    const row = document.getElementById("last-seen");
+    const text = document.getElementById("last-seen-text");
+    const go = document.getElementById("btn-last-seen-go");
+    if (!ask || !row || !text || !go || !lastSeen) return;
+    const shown = state.brainConnected && findJob() && !state.brainMissionRunning;
+    ask.textContent = t("lastSeen.ask");
+    // style.display, not `hidden`: ui.css's `button` display beats the attribute.
+    ask.style.display = shown ? "" : "none";
+    ask.disabled = !lastSeenName() || lastSeen.reading.status === "asking";
+    const view = shown ? lastSeenView(lastSeen.reading, t, escapeHtml, Date.now(), engineerMode())
+      : { text: "", go: false, thumb: null };
+    row.hidden = !view.text;
+    if (text.innerHTML !== view.text) text.innerHTML = view.text;
+    go.textContent = t("lastSeen.go");
+    go.hidden = !view.go;
+    go.disabled = findStarting;
+    setLastSeenThumb(view.thumb);
+  }
+  async function goCheck() {
+    const a = lastSeen.reading.answer;
+    if (!a || !a.name || state.brainMissionRunning || findStarting) return;
+    // An ordinary find for the answered name: Start's path and body.
+    findStarting = true;
+    try { await startBrainMissionWith(false, a.name, { target_object: a.name }); } finally {
+      findStarting = false;
+      renderFindBox();
+    }
   }
 
   function setBrainText(id, value, cls) {
@@ -4384,6 +4454,14 @@ import { createFindReader, renderFindReading } from "./js/request.js";
   document.getElementById("btn-find-drop-room").onclick = function () {
     findReader.dropRoom();
   };
+  document.getElementById("brain-target").addEventListener("input", function () {
+    if (lastSeen.reading.status !== "idle") lastSeen.clear();   // an answer was for other words
+    else renderLastSeen();
+  });
+  document.getElementById("btn-last-seen").onclick = function () {
+    if (state.brainConnected && findJob()) lastSeen.ask(lastSeenName());
+  };
+  document.getElementById("btn-last-seen-go").onclick = function () { goCheck(); };
 
   document.getElementById("brain-job").addEventListener("change", function () {
     state.brainJob = state.brainJobChosen = this.value;

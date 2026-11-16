@@ -102,6 +102,7 @@ from brain.intervention_log import FILE_NAME as INTERVENTION_FILE, InterventionL
 from brain import room_labels as room_labels_mod
 from brain import room_names as room_names_mod
 from brain import what_i_saw as what_i_saw_mod
+from brain import last_seen as last_seen_mod
 from control import drills
 from control.brain_config import load_brain_config
 from control.inventory_store import _slug, inventory_store_from_config
@@ -1664,6 +1665,38 @@ def create_app(
             return {"deleted": saw_call(_saw_store().delete, mission_id)}
         except OSError as e:
             raise HTTPException(status_code=500, detail=f"not deleted: {e}")
+
+    @app.get(prefix + "/mission/last-seen", dependencies=[Depends(require_secret)])
+    def mission_last_seen(name: str = ""):
+        """3.175.C: where a named thing was last seen, from the chain head
+        (the running mission's inventory, else the newest saved map's head)
+        and 3.162's reports. Read-only and local: no pose, no map, no robot,
+        no bridge; nothing moves (`brain/last_seen.py`)."""
+        runner = state["runner"]
+        head, source = None, "saved"
+        if runner is not None and runner.is_running():
+            report = getattr(runner, "inventory_report", None)
+            live = report() if report is not None else None
+            if isinstance(live, dict) and live.get("frame_id"):
+                head, source = live, "mission"
+        try:
+            if head is None:
+                head = last_seen_mod.saved_head(inventory_store_from_config(config))
+        except TimeoutError as e:
+            raise HTTPException(status_code=503, detail=f"a mission's memory is still being saved: {e}")
+        except OSError as e:
+            raise HTTPException(status_code=503, detail=f"the memory can't be read now ({e})")
+        store = _saw_store()
+        reports = []
+        for line in store.list():
+            try:
+                reports.append(store.get(line["mission_id"]))
+            except what_i_saw_mod.ReportRefused:
+                continue                      # deleted since it was listed
+        try:
+            return JSONResponse(last_seen_mod.answer(name, head, reports, source=source))
+        except last_seen_mod.NameRefused as e:
+            raise HTTPException(status_code=422, detail=str(e))
 
     @app.get(prefix + "/mission/inventory", dependencies=[Depends(require_secret)])
     async def mission_inventory():
