@@ -72,6 +72,30 @@ You cannot read the quota yourself. The user sees it with `/usage`.
   * A worker that runs past ~2x its estimate without a commit is stopped
     and its state reported, not left to burn.
 
+* **At most two worker sessions at once by default** (2026-11-15: four
+  Opus sessions spent about 3% of the week an hour). More only on the
+  user's word and a fresh `/usage` reading.
+
+**The orchestrator's own size: check it, and hand over early** (the user,
+2026-11-16). Every turn re-reads the whole conversation, so a long-lived
+orchestrator becomes the most expensive session running (this skill's
+first orchestrator reached 620K tokens of context). Check your own context
+use at every day's start and after each batch (the session's context
+figure in `get_session`, or the user's `/usage` "Context window"):
+
+* above **300K tokens (30%)**: finish what is in flight, write a handoff,
+  and tell the user to start a fresh orchestrator;
+* never start a new batch above **400K (40%)**.
+
+The handoff is a message to the user with the prompt for the fresh
+orchestrator, holding only what the repo doesn't: the workers' session ids
+and what each is doing, decisions waiting on the user, the last quota
+reading and its time, and anything verified but not yet written down.
+Durable facts go in a `docs/handoffs/` file on `dev` first. Workers report
+to whichever session briefed them: tell each running worker, by
+send_message, the new orchestrator's session id once the user has
+started it.
+
 **The ledger** is `.git/orchestrator/ledger.md` (local, in the shared
 `.git`, never committed; create it if missing; in a cloud session, which
 is reclaimed, also put the day's summary in your final message). One line
