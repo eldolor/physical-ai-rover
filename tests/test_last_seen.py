@@ -477,3 +477,14 @@ def test_g13_exact_words_across_heads_and_seen_before_doubtful(brain):
     assert (a["status"], a["source"], a["place"]["x_m"]) == ("seen", "saved", 1.0), a
     a = brain.get("/mission/last-seen", params={"name": "plant in pot"}).json()
     assert (a["name"], a["place"]["x_m"]) == ("plant in pot", 2.0), a
+
+
+
+def test_g14_a_carried_missions_doubt_stands_over_the_saved_place(brain):
+    """Review of f3f035e4: a mission that carried the chain looked at its
+    places; ended with its save not landed, its doubtful beats the old seen."""
+    live = dict(_head([_row("mug", 1.0, 1.0, 0.7, seen_seq=3)], carry_seq=4), mission_id="run-4")
+    _save_chain(brain.tmp, _head([_row("mug", 1.0, 1.0, 0.9, seen_seq=3)], carry_seq=3))
+    _route_state(brain)["runner"] = SimpleNamespace(is_running=lambda: False, inventory_report=lambda: live)
+    a = brain.get("/mission/last-seen", params={"name": "mug"}).json()
+    assert (a["status"], a["source"]) == ("doubtful", "mission"), a

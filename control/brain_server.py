@@ -1691,8 +1691,8 @@ def create_app(
             running = bool(getattr(runner, "is_running", lambda: False)())
         except Exception:  # noqa: BLE001 -- a runner mid-teardown is not running
             running = False
-        # 3.175.G: the heads to read, in order (the next only for a name the
-        # one before has not seen).
+        # 3.175.G: the heads to read, in order (the next for a name the one
+        # before has not seen, or, after a never-carried head, has only doubted).
         # - A running mission that carried the chain (`carry_seq` > 0) holds it
         #   and more: it alone, with no wait on another mission's save.
         # - Any other mission of this brain (running but not carrying yet, or
@@ -1762,19 +1762,24 @@ def create_app(
         first = None
         try:
             # The exact words before the target, across every head (review of
-            # eff57ec7). Within a name, a place seen in any head before a
-            # doubtful one: two heads come only from a mission that never
-            # carried the chain, which has not looked at the saved places, so
-            # its weak row is no evidence against them (reviews of efdd037b).
+            # eff57ec7). Within a name, heads in order -- but a mission head
+            # that never carried the chain (`carry_seq` 0) has not looked at
+            # the saved places, so its weak row is no evidence against them:
+            # then a place seen in a later head comes before its doubtful
+            # (reviews of efdd037b). A head that carried did look: its
+            # doubtful stands (review of f3f035e4).
+            weak_first = live is not None and heads[0][0] is live and carry_seq_of(live) == 0
             for n in names:
                 doubtful = None
                 for head, source in heads:
                     got = last_seen_mod.answer(n, head, reports(), source=source)
-                    first = got if n == names[0] and head is heads[0][0] else first
+                    first = first or got
                     if got["status"] == last_seen_mod.SEEN:
                         return JSONResponse(got)
-                    if got["status"] == last_seen_mod.DOUBTFUL and doubtful is None:
-                        doubtful = got
+                    if got["status"] == last_seen_mod.DOUBTFUL:
+                        if not weak_first:
+                            return JSONResponse(got)
+                        doubtful = doubtful or got
                 if doubtful is not None:
                     return JSONResponse(doubtful)
             return JSONResponse(first)
