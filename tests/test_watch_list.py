@@ -227,3 +227,54 @@ def test_the_brain_config_validates_the_list(tmp_path):
             load_brain_config(p)
     p.write_text("brain:\n  watch_list: []\n")
     assert load_brain_config(p)["watch_list"] == []
+
+
+def test_the_brain_config_agrees_with_normalise_and_never_imports_brain():
+    """Thermos (review): the walks Lambda ships control/ without brain/."""
+    import subprocess
+    import sys
+    from control.brain_config import _watch_list
+    for case in (["Keys", " keys ", "TV  Remote"], [], [f"t{i}" for i in range(8)]):
+        assert tuple(_watch_list(case)) == wl.normalise(case)
+    for bad in ([f"t{i}" for i in range(9)], ["", "keys"], [3], ["x" * 41]):
+        with pytest.raises(ValueError):
+            _watch_list(bad)
+        with pytest.raises(ValueError):
+            wl.normalise(bad)
+    assert (wl.MAX_ITEMS, wl.MAX_ITEM_CHARS) == (8, 40)
+    code = ("import sys; sys.modules['brain'] = None\n"
+            "from control.brain_config import load_brain_config\n"
+            "assert load_brain_config()['watch_list']")
+    subprocess.run([sys.executable, "-c", code], check=True,
+                   cwd=Path(__file__).resolve().parents[1])
+
+
+# --- the sweep's numbers (3.178.B; bars written in 3.178.A) ------------------
+
+def test_the_sweep_s_numbers_are_pinned():
+    r = json.loads(RESULTS.read_text())
+    search, present = r["search"], r["present"]
+    assert (search["missions"], present["missions"]) == (20, 20)
+    assert r["list"] == list(wl.DEFAULT_WATCH_LIST) and r["list_false_rate"] == 0.05
+    # B1, met on a thin sample: 4 of 4 passes pinned within 0.5 m (bar 90%).
+    assert (search["passes"], search["found"], present["passes"], present["found"]) == (3, 3, 1, 1)
+    # B2, FAILED: 6 wrong pins in 40 missions (bar <= 0.1 a mission).
+    assert (search["wrong_pins"], present["wrong_pins"]) == (4, 2)
+    assert (search["wrong_pins"] + present["wrong_pins"]) / 40 > 0.1
+    # B4's simulator half, met: every mission's actions and outcome equal.
+    assert (search["same_as_off"], present["same_as_off"]) == (20, 20)
+    assert (present["arrived_on"], present["arrived_off"]) == (0, 0)
+
+
+def test_the_sweep_s_first_mission_reproduces():
+    """The sweep is deterministic: mission 1 of the search sweep, rerun,
+    gives the pinned wrong pin."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("wl_sweep", RESULTS.with_name("sweep.py"))
+    sweep = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(sweep)
+    start = sweep.base.starts(n=1, seed=sweep.SEED)[0]
+    on = sweep.run_one(start, list_on=True, seed=sweep.SEED * 100)
+    pinned = json.loads(RESULTS.read_text())["search"]["rows"][0]
+    assert on["outcome"] == pinned["outcome_on"] and len(on["actions"]) == pinned["steps"]
+    assert sweep.score_mission(on)["wrong_pins"] == pinned["wrong_pins"]

@@ -701,12 +701,32 @@ def load_brain_config(config_path=None) -> dict:
         raise ValueError("brain.explore_goal_policy must be 'rule', 'learned', 'network' or "
                          f"'rooms'; got {merged['explore_goal_policy']!r}")
     merged["tier_tree"] = tier_tree_config(merged["tier_tree"], no_below, merged["tier_search"])
-    if merged["watch_list"] is None:
-        raise ValueError("brain.watch_list must be a list of names ([] switches it off)")
-    from brain.watch_list import normalise as watch_list_normalise
-    try:
-        merged["watch_list"] = list(watch_list_normalise(merged["watch_list"]))
-    except ValueError as e:
-        raise ValueError(f"brain.{e}") from e
+    merged["watch_list"] = _watch_list(merged["watch_list"])
 
     return merged
+
+
+# 3.178: `brain.watch_list.normalise`'s rules, restated here because the
+# walks Lambda ships control/ without brain/ (service/lambda/build.sh), and
+# this module loads at its cold start. tests/test_watch_list.py pins that
+# the two agree and that this module loads with `brain` unimportable.
+WATCH_LIST_MAX_ITEMS = 8
+WATCH_LIST_MAX_CHARS = 40
+
+
+def _watch_list(items) -> list:
+    if not isinstance(items, list):
+        raise ValueError("brain.watch_list must be a list of names ([] switches it off); "
+                         f"got {items!r}")
+    out: list = []
+    for raw in items:
+        if not isinstance(raw, str) or not " ".join(raw.split()):
+            raise ValueError(f"brain.watch_list entries must be non-empty strings; got {raw!r}")
+        item = " ".join(raw.split()).lower()
+        if len(item) > WATCH_LIST_MAX_CHARS:
+            raise ValueError(f"brain.watch_list entry {item!r} is longer than {WATCH_LIST_MAX_CHARS}")
+        if item not in out:
+            out.append(item)
+    if len(out) > WATCH_LIST_MAX_ITEMS:
+        raise ValueError(f"brain.watch_list holds at most {WATCH_LIST_MAX_ITEMS} names; got {len(out)}")
+    return out
