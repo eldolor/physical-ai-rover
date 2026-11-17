@@ -189,4 +189,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.184](3.184-request-blind-set-2.md) | A second blind request set, held out from the parser fixes |
 | [3.185](3.185-room-name-synonyms.md) | A person's room name that is a synonym reaches its room type |
 | [3.186](3.186-harness-repo-path.md) | Harnesses load the robot code they name, not the launch directory's |
+| [3.187](3.187-cloud-call-bandit.md) | When the tier calls the cloud, learned: 3.65 phase 1's contextual bandit |
 <!-- /sections -->
