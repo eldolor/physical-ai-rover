@@ -190,4 +190,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.185](3.185-room-name-synonyms.md) | A person's room name that is a synonym reaches its room type |
 | [3.186](3.186-harness-repo-path.md) | Harnesses load the robot code they name, not the launch directory's |
 | [3.187](3.187-cloud-call-bandit.md) | When the tier calls the cloud, learned: 3.65 phase 1's contextual bandit |
+| [3.188](3.188-qwen-finetune.md) | Fine-tune the local VLM (Qwen2.5-VL-3B) on real frames for frame identity |
 <!-- /sections -->
