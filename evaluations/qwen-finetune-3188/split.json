@@ -1,0 +1,236 @@
+{
+ "source": "evaluations/tier-calibration-392/qwen-VE.jsonl",
+ "set_hash": "163dec93a76a",
+ "frames": 2261,
+ "objects": [
+  "a white phone charger cable",
+  "blue and yellow running shoes",
+  "blue bottle",
+  "grey backpack",
+  "red backpack",
+  "woven laundry basket"
+ ],
+ "yes_at": 0.5,
+ "stock_pooled": {
+  "frames": 2261,
+  "in_view": 535,
+  "yes": 508,
+  "false_yes": 26,
+  "false_no": 53,
+  "precision": 0.9488,
+  "recall": 0.9009
+ },
+ "folds": {
+  "a white phone charger cable": {
+   "held_out_walks": [
+    "a-white-phone-charger-ca-20260921-203250",
+    "a-white-phone-charger-ca-20260921-203355"
+   ],
+   "train_frames": 2085,
+   "train_in_view": 417,
+   "stock": {
+    "frames": 176,
+    "in_view": 118,
+    "yes": 128,
+    "false_yes": 12,
+    "false_no": 2,
+    "precision": 0.9062,
+    "recall": 0.9831,
+    "false_yes_keys": [
+     "a-white-phone-charger-ca-20260921-203250/frame-0013.jpg",
+     "a-white-phone-charger-ca-20260921-203250/frame-0051.jpg",
+     "a-white-phone-charger-ca-20260921-203250/frame-0052.jpg",
+     "a-white-phone-charger-ca-20260921-203250/frame-0053.jpg",
+     "a-white-phone-charger-ca-20260921-203250/frame-0054.jpg",
+     "a-white-phone-charger-ca-20260921-203250/frame-0055.jpg",
+     "a-white-phone-charger-ca-20260921-203250/frame-0057.jpg",
+     "a-white-phone-charger-ca-20260921-203355/frame-0071.jpg",
+     "a-white-phone-charger-ca-20260921-203355/frame-0082.jpg",
+     "a-white-phone-charger-ca-20260921-203355/frame-0083.jpg",
+     "a-white-phone-charger-ca-20260921-203355/frame-0088.jpg",
+     "a-white-phone-charger-ca-20260921-203355/frame-0090.jpg"
+    ],
+    "false_no_keys": [
+     "a-white-phone-charger-ca-20260921-203250/frame-0009.jpg",
+     "a-white-phone-charger-ca-20260921-203250/frame-0010.jpg"
+    ]
+   }
+  },
+  "blue and yellow running shoes": {
+   "held_out_walks": [
+    "blue-shoes-20260907-152528",
+    "blue-shoes-20260908-210511"
+   ],
+   "train_frames": 2198,
+   "train_in_view": 497,
+   "stock": {
+    "frames": 63,
+    "in_view": 38,
+    "yes": 33,
+    "false_yes": 1,
+    "false_no": 6,
+    "precision": 0.9697,
+    "recall": 0.8421,
+    "false_yes_keys": [
+     "blue-shoes-20260907-152528/frame-0017.jpg"
+    ],
+    "false_no_keys": [
+     "blue-shoes-20260907-152528/frame-0007.jpg",
+     "blue-shoes-20260908-210511/frame-0018.jpg",
+     "blue-shoes-20260908-210511/frame-0019.jpg",
+     "blue-shoes-20260908-210511/frame-0022.jpg",
+     "blue-shoes-20260908-210511/frame-0023.jpg",
+     "blue-shoes-20260908-210511/frame-0025.jpg"
+    ]
+   }
+  },
+  "blue bottle": {
+   "held_out_walks": [
+    "blue-bottle-20260907-142454",
+    "blue-bottle-20260907-185007"
+   ],
+   "train_frames": 2019,
+   "train_in_view": 507,
+   "stock": {
+    "frames": 242,
+    "in_view": 28,
+    "yes": 29,
+    "false_yes": 1,
+    "false_no": 0,
+    "precision": 0.9655,
+    "recall": 1.0,
+    "false_yes_keys": [
+     "blue-bottle-20260907-185007/frame-0019.jpg"
+    ],
+    "false_no_keys": []
+   }
+  },
+  "grey backpack": {
+   "held_out_walks": [
+    "grey-backpack-20260921-203627",
+    "grey-backpack-20260921-203748",
+    "grey-backpack-opus-4-5-20260921-210743"
+   ],
+   "train_frames": 2050,
+   "train_in_view": 441,
+   "stock": {
+    "frames": 211,
+    "in_view": 94,
+    "yes": 91,
+    "false_yes": 12,
+    "false_no": 15,
+    "precision": 0.8681,
+    "recall": 0.8404,
+    "false_yes_keys": [
+     "grey-backpack-20260921-203748/frame-0004.jpg",
+     "grey-backpack-20260921-203748/frame-0055.jpg",
+     "grey-backpack-20260921-203748/frame-0056.jpg",
+     "grey-backpack-20260921-203748/frame-0057.jpg",
+     "grey-backpack-20260921-203748/frame-0073.jpg",
+     "grey-backpack-20260921-203748/frame-0074.jpg",
+     "grey-backpack-20260921-203748/frame-0076.jpg",
+     "grey-backpack-20260921-203748/frame-0078.jpg",
+     "grey-backpack-20260921-203748/frame-0079.jpg",
+     "grey-backpack-20260921-203748/frame-0080.jpg",
+     "grey-backpack-20260921-203748/frame-0081.jpg",
+     "grey-backpack-opus-4-5-20260921-210743/frame-0023.jpg"
+    ],
+    "false_no_keys": [
+     "grey-backpack-20260921-203748/frame-0000.jpg",
+     "grey-backpack-20260921-203748/frame-0001.jpg",
+     "grey-backpack-20260921-203748/frame-0002.jpg",
+     "grey-backpack-20260921-203748/frame-0003.jpg",
+     "grey-backpack-20260921-203748/frame-0007.jpg",
+     "grey-backpack-20260921-203748/frame-0016.jpg",
+     "grey-backpack-20260921-203748/frame-0066.jpg",
+     "grey-backpack-20260921-203748/frame-0083.jpg",
+     "grey-backpack-20260921-203748/frame-0085.jpg",
+     "grey-backpack-opus-4-5-20260921-210743/frame-0002.jpg",
+     "grey-backpack-opus-4-5-20260921-210743/frame-0006.jpg",
+     "grey-backpack-opus-4-5-20260921-210743/frame-0010.jpg",
+     "grey-backpack-opus-4-5-20260921-210743/frame-0012.jpg",
+     "grey-backpack-opus-4-5-20260921-210743/frame-0021.jpg",
+     "grey-backpack-opus-4-5-20260921-210743/frame-0028.jpg"
+    ]
+   }
+  },
+  "red backpack": {
+   "held_out_walks": [
+    "red-backpack-20260907-144856",
+    "red-backpack-20260912-224429",
+    "red-backpack-20260912-224646",
+    "red-backpack-20260912-224822",
+    "red-backpack-20260912-225001",
+    "red-backpack-20260921-203152"
+   ],
+   "train_frames": 1583,
+   "train_in_view": 502,
+   "stock": {
+    "frames": 678,
+    "in_view": 33,
+    "yes": 30,
+    "false_yes": 0,
+    "false_no": 3,
+    "precision": 1.0,
+    "recall": 0.9091,
+    "false_yes_keys": [],
+    "false_no_keys": [
+     "red-backpack-20260907-144856/frame-0016.jpg",
+     "red-backpack-20260907-144856/frame-0017.jpg",
+     "red-backpack-20260907-144856/frame-0019.jpg"
+    ]
+   }
+  },
+  "woven laundry basket": {
+   "held_out_walks": [
+    "woven-laundry-basket-20260908-215140",
+    "woven-laundry-basket-20260908-215252",
+    "woven-laundry-basket-20260908-215351",
+    "woven-laundry-basket-20260912-231358",
+    "woven-laundry-basket-20260913-115414",
+    "woven-laundry-basket-20260913-115703"
+   ],
+   "train_frames": 1370,
+   "train_in_view": 311,
+   "stock": {
+    "frames": 891,
+    "in_view": 224,
+    "yes": 197,
+    "false_yes": 0,
+    "false_no": 27,
+    "precision": 1.0,
+    "recall": 0.8795,
+    "false_yes_keys": [],
+    "false_no_keys": [
+     "woven-laundry-basket-20260908-215252/frame-0005.jpg",
+     "woven-laundry-basket-20260908-215252/frame-0006.jpg",
+     "woven-laundry-basket-20260908-215252/frame-0017.jpg",
+     "woven-laundry-basket-20260908-215252/frame-0020.jpg",
+     "woven-laundry-basket-20260908-215252/frame-0021.jpg",
+     "woven-laundry-basket-20260908-215252/frame-0022.jpg",
+     "woven-laundry-basket-20260908-215252/frame-0081.jpg",
+     "woven-laundry-basket-20260908-215252/frame-0082.jpg",
+     "woven-laundry-basket-20260908-215252/frame-0083.jpg",
+     "woven-laundry-basket-20260908-215252/frame-0084.jpg",
+     "woven-laundry-basket-20260908-215351/frame-0022.jpg",
+     "woven-laundry-basket-20260908-215351/frame-0072.jpg",
+     "woven-laundry-basket-20260912-231358/frame-0125.jpg",
+     "woven-laundry-basket-20260913-115414/frame-0157.jpg",
+     "woven-laundry-basket-20260913-115414/frame-0159.jpg",
+     "woven-laundry-basket-20260913-115414/frame-0189.jpg",
+     "woven-laundry-basket-20260913-115414/frame-0190.jpg",
+     "woven-laundry-basket-20260913-115414/frame-0191.jpg",
+     "woven-laundry-basket-20260913-115414/frame-0192.jpg",
+     "woven-laundry-basket-20260913-115414/frame-0193.jpg",
+     "woven-laundry-basket-20260913-115414/frame-0195.jpg",
+     "woven-laundry-basket-20260913-115414/frame-0218.jpg",
+     "woven-laundry-basket-20260913-115414/frame-0220.jpg",
+     "woven-laundry-basket-20260913-115703/frame-0019.jpg",
+     "woven-laundry-basket-20260913-115703/frame-0023.jpg",
+     "woven-laundry-basket-20260913-115703/frame-0027.jpg",
+     "woven-laundry-basket-20260913-115703/frame-0029.jpg"
+    ]
+   }
+  }
+ }
+}
