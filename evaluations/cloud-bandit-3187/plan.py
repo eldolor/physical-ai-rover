@@ -77,18 +77,20 @@ def split(d: dict) -> dict:
 
 
 def pilot(d: dict) -> dict:
-    """B's 20 frames. One `random.Random(3187)`. Objects in sorted order, 3
-    frames each (18), plus one more to each of the two objects with the most
-    frames (20). An object's walks are shuffled once and its picks cycle over
-    them; pick i of an object asks for a frame with the target in view when
+    """B's 20 frames. One `random.Random(3187)`. Objects in sorted order,
+    20 // objects frames each (3 for the pinned set's 6), plus one more to
+    each of the 20 % objects with the most frames (2: the basket, the red
+    bag). An object's walks are shuffled once and its picks cycle over them,
+    passing over a walk with no frame left; pick i of an object asks for a frame with the target in view when
     i is even and one without when odd, taking the other kind when its walk
     has none left; the frame is a uniform choice among that walk's remaining
     frames of that kind. From every walk, held out or not: the pilot fits
     nothing, and C answers every frame anyway."""
     rng = random.Random(PILOT_SEED)
     by = walks_by_object(d)
-    quota = {o: 3 for o in by}
-    for o in sorted(by, key=lambda o: (-sum(w["n"] for w in by[o].values()), o))[:PILOT_N - 3 * len(by)]:
+    base, extra = divmod(PILOT_N, len(by))
+    quota = {o: base for o in by}
+    for o in sorted(by, key=lambda o: (-sum(w["n"] for w in by[o].values()), o))[:extra]:
         quota[o] += 1
     assert sum(quota.values()) == PILOT_N
     target = {r["key"]: r["target"] for r in d["frames"]}
@@ -98,7 +100,9 @@ def pilot(d: dict) -> dict:
         rng.shuffle(walks)
         pools = {w: {"visible": by[o][w]["visible"][:], "absent": by[o][w]["absent"][:]} for w in walks}
         for i in range(quota[o]):
-            w = walks[i % len(walks)]
+            # The next walk in the cycle with a frame left (a used-up walk is passed over).
+            left = [walks[(i + j) % len(walks)] for j in range(len(walks))]
+            w = next(w for w in left if pools[w]["visible"] or pools[w]["absent"])
             want = "visible" if i % 2 == 0 else "absent"
             kind = want if pools[w][want] else ("absent" if want == "visible" else "visible")
             key = rng.choice(pools[w][kind])
@@ -149,6 +153,8 @@ def main():
     for name, new in out.items():
         if (HERE / name).exists() and "--force" not in sys.argv:
             raise SystemExit(f"{name} exists; --check it, or --force")
+    if (HERE / "pilot-answers.jsonl").exists():
+        raise SystemExit("pilot-answers.jsonl exists: B's answers belong to this pilot.json; never rewrite it")
     for name, new in out.items():
         (HERE / name).write_text(json.dumps(new, indent=1) + "\n")
     s, p = out["split.json"], out["pilot.json"]

@@ -7,6 +7,7 @@ this section writes. Free; reads files only."""
 import importlib.util
 import json
 import os
+import sys
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -26,8 +27,9 @@ PILOT_SEED = 3187    # the pilot's frames (A, 2026-11-18)
 PILOT_N = 20
 # What /navigate ships (cloudformation/serverless.yaml NavigateModelId).
 SHIPPED_MODEL = "us.anthropic.claude-opus-4-5-20251101-v1:0"
-# brain/tiered.py's LOCAL_YES_AT and DEFAULT_LOCAL_NO_BELOW (3.80.D's rule).
-LOCAL_YES_AT, LOCAL_NO_BELOW = 0.5, 0.1
+sys.path.insert(0, str(ROOT))
+from brain.tiered import DEFAULT_LOCAL_NO_BELOW as LOCAL_NO_BELOW  # noqa: E402  3.80.D's rule
+from brain.tiered import LOCAL_YES_AT  # noqa: E402,F401
 
 
 def load_set() -> dict:
@@ -43,12 +45,38 @@ def walk_of(key: str) -> str:
 
 
 def jsonl(path: Path) -> list:
-    return [json.loads(l) for l in path.read_text().splitlines() if l.strip()]
+    """Rows in order; a torn last line (a killed run) is dropped, not fatal."""
+    lines = [l for l in path.read_text().splitlines() if l.strip()] if path.exists() else []
+    out = []
+    for i, line in enumerate(lines):
+        try:
+            out.append(json.loads(line))
+        except json.JSONDecodeError:
+            if i == len(lines) - 1:
+                break
+            raise
+    return out
+
+
+def rows_by_file(walk: str) -> tuple:
+    """({frame file: the FIRST walk.jsonl row filing it}, rows filing a file
+    already seen). The one rule count.py and pilot.py both read rows by."""
+    out, dup = {}, 0
+    path = RECORDINGS / walk / "walk.jsonl"
+    for line in (path.read_text().splitlines() if path.exists() else []):
+        try:
+            e = json.loads(line) if line.strip() else None
+        except json.JSONDecodeError:
+            continue
+        if isinstance(e, dict) and e.get("file"):
+            dup += e["file"] in out
+            out.setdefault(e["file"], e)
+    return out, dup
 
 
 def local_kind(row: dict) -> str:
     """A VE answer as `yes`, `no` or `unable` (the band counts as unable),
-    by brain/tiered.py `_local_kind`'s thresholds."""
+    by brain/tiered.py's own thresholds."""
     s = row.get("score")
     if row.get("status") != "answered" or not isinstance(s, (int, float)):
         return "unable"

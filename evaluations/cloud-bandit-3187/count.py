@@ -23,65 +23,57 @@ A labelled frame is, by its row (the first row filing that frame):
 
 `with_shipped_answer` counts `sync` rows answered by the shipped model
 (`SHIPPED_MODEL`, Opus 4.5); `need_minimum` is every other frame: the least
-C must replay. 3.65's "373 carrying a cloud answer" (2026-10-09) is compared
+C must replay -- a lower bound, since a September answer by the same model
+came from an earlier prompt (`sync_by_model_and_prompt` shows which; the
+section's amendment 6 replays all). A frame filed twice is classified on its
+first row (`duplicate_rows` counts the rest). 3.65's "373 carrying a cloud answer" (2026-10-09) is compared
 with `sync + tier_called`.
 """
 
 import json
 from collections import Counter, defaultdict
 
-from common import HERE, RECORDINGS, SHIPPED_MODEL, load_set, walk_of
-
-
-def rows_by_file(walk: str) -> dict:
-    out = {}
-    path = RECORDINGS / walk / "walk.jsonl"
-    if not path.exists():
-        return out
-    for line in path.read_text().splitlines():
-        try:
-            e = json.loads(line) if line.strip() else None
-        except json.JSONDecodeError:
-            continue
-        if isinstance(e, dict) and e.get("file"):
-            out.setdefault(e["file"], e)
-    return out
+from common import HERE, RECORDINGS, SHIPPED_MODEL, load_set, rows_by_file, walk_of
 
 
 def classify(row) -> tuple:
-    """(kind, model_id) for one labelled frame's row, or ("no_row", None)."""
+    """(kind, model_id, prompt_variant) for one labelled frame's row."""
     if row is None:
-        return "no_row", None
+        return "no_row", None, None
     nav = row.get("navigate") or {}
     tier = nav.get("_tier") or row.get("_tier")
     if tier:
-        return ("tier_called" if tier.get("cloud_called") else "tier_local"), None
+        return ("tier_called" if tier.get("cloud_called") else "tier_local"), None, None
     if "target_visible" in nav and not nav.get("error"):
-        return "sync", nav.get("model_id")
-    return "no_answer", None
+        return "sync", nav.get("model_id"), nav.get("prompt_variant")
+    return "no_answer", None, None
 
 
 def main():
     d = load_set()
-    rows = {}
-    kinds, by_model = Counter(), Counter()
+    rows, dups = {}, 0
+    kinds, by_model, by_variant = Counter(), Counter(), Counter()
     per_walk = defaultdict(Counter)
     for r in d["frames"]:
         walk, frame = r["key"].split("/", 1)
         if walk not in rows:
-            rows[walk] = rows_by_file(walk)
-        kind, model = classify(rows[walk].get(frame))
+            rows[walk], dup = rows_by_file(walk)
+            dups += dup
+        kind, model, variant = classify(rows[walk].get(frame))
         kinds[kind] += 1
         per_walk[walk][kind] += 1
         if kind == "sync":
             by_model[model or "unrecorded"] += 1
+            by_variant[f"{model or 'unrecorded'} | {variant or 'unrecorded'}"] += 1
         if kind == "sync" and model == SHIPPED_MODEL:
             per_walk[walk]["with_shipped_answer"] += 1
     shipped = by_model.get(SHIPPED_MODEL, 0)
     out = {"set_hash": d["hash"], "recordings": str(RECORDINGS), "frames": d["n"],
            "walks_without_log": sorted(w for w, rs in rows.items() if not rs),
            **{k: kinds.get(k, 0) for k in ("sync", "tier_called", "tier_local", "no_answer", "no_row")},
-           "sync_by_model": dict(by_model), "with_shipped_answer": shipped,
+           "duplicate_rows": dups,
+           "sync_by_model": dict(by_model), "sync_by_model_and_prompt": dict(by_variant),
+           "with_shipped_answer": shipped,
            "need_minimum": d["n"] - shipped,
            "comparable_to_3_65_373": kinds["sync"] + kinds["tier_called"],
            "tiered_walks": sorted(w for w, c in per_walk.items() if c["tier_called"] or c["tier_local"]),
