@@ -70,12 +70,13 @@ def list_frames(s3, walk: str) -> dict:
 
 
 def fetch(s3, walk: str, name: str, cache: Path) -> bytes:
+    """Always re-read from S3 (a stale cache would make 'today's labels' a lie);
+    the copy in `cache` is only for inspection."""
+    b = s3.get_object(Bucket=BUCKET, Key=f"{PREFIX}/{walk}/{name}")["Body"].read()
     p = cache / walk / name
-    if not p.exists():
-        p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_bytes(s3.get_object(Bucket=BUCKET,
-                                    Key=f"{PREFIX}/{walk}/{name}")["Body"].read())
-    return p.read_bytes()
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_bytes(b)
+    return b
 
 
 def jsonl(b: bytes):
@@ -116,6 +117,7 @@ def main(cache: Path) -> dict:
     folds = {}
     for o, f in json.loads((HERE / "split.json").read_text())["folds"].items():
         held = sorted(f["held_out_walks"])
+        assert held == sorted(w for w in walks if frames[w]["object"] == o), o
         train = [w for w in walks if frames[w]["object"] != o]
         n = lambda ws: sum(frames[w]["labelled"] for w in ws)
         folds[o] = {"held_out_walks": held, "train_walks": train,
@@ -123,6 +125,9 @@ def main(cache: Path) -> dict:
                     "split_json_train_frames": f["train_frames"],
                     "agrees_with_split_json": n(train) == f["train_frames"]
                     and n(held) == f["stock"]["frames"]}
+    # fail before any pinned file is overwritten
+    assert not missing and not mismatch, (missing[:3], mismatch[:3])
+    assert all(x["agrees_with_split_json"] for x in folds.values())
     all_keys = sorted(f"{w}/{x}" for w in walks for x in frames[w]["frames"])
     out = {"bucket": BUCKET, "prefix": PREFIX,
            "read_from": "S3 (list + labels.json only; no frame bytes read)",
@@ -136,15 +141,20 @@ def main(cache: Path) -> dict:
     (HERE / "folds.json").write_text(json.dumps(out, indent=1) + "\n")
 
     # --- the 299 vs the 2,261
-    arrival = [f"{w}/{x}" for w in ARRIVAL_WALKS for x in sorted(frames[w]["frames"])] \
-        if all(w in frames for w in ARRIVAL_WALKS) else []
+    # 3.48 pins the four WHOLE walks (299 labelled frames): not a sub-sample,
+    # so the list is every labelled frame of them, and the count is the check.
+    assert all(w in frames for w in ARRIVAL_WALKS)
+    arrival = [f"{w}/{x}" for w in ARRIVAL_WALKS for x in sorted(frames[w]["frames"])]
+    assert len(arrival) == ARRIVAL_COUNT, len(arrival)
     in_set = [k for k in arrival if k in by_key]
     ov = {"arrival_walks": ARRIVAL_WALKS, "arrival_frames": len(arrival),
           "arrival_frames_expected": ARRIVAL_COUNT,
           "in_2261": len(in_set), "not_in_2261": len(arrival) - len(in_set),
           "per_walk": {w: {"frames": frames[w]["labelled"],
                            "in_view": frames[w]["in_view"], "object": frames[w]["object"],
-                           "fold": frames[w]["object"]} for w in ARRIVAL_WALKS},
+                           "fold": next(o for o, f in folds.items()
+                                       if w in f["held_out_walks"])}
+                       for w in ARRIVAL_WALKS},
           "in_view": sum(frames[w]["in_view"] for w in ARRIVAL_WALKS),
           "rule": "judge each frame only by the fold model that held out its "
                   "object (folds.json: the fold named by per_walk[...].fold)"}
@@ -156,17 +166,21 @@ def main(cache: Path) -> dict:
     teal, models = [], set()
     for r in wj:
         nav = r.get("navigate") or {}
-        models.add(nav.get("model_id"))
-        if r["file"] in tv and not tv[r["file"]] and nav.get("target_visible") is True \
-                and nav.get("model_id") in (OPUS_MODEL, None):
-            teal.append(f"{TEAL_WALK}/{r['file']}")
+        f = r.get("file")
+        models.add(nav.get("model_id") if nav else None)
+        if f in tv and not tv[f] and nav.get("target_visible") is True \
+                and nav.get("model_id") == OPUS_MODEL:
+            teal.append(f"{TEAL_WALK}/{f}")
+    assert len(teal) == TEAL_COUNT, len(teal)
     tw = jsonl(fetch(s3, TAUPE_WALK, "walk.jsonl", cache))
     seq_file = {r["teleop_seq"]: r["file"] for r in tw if "teleop_seq" in r}
     probes = [p["seq"] for p in json.loads(TAUPE_PROBES.read_text())["probes"]]
-    taupe = [f"{TAUPE_WALK}/{seq_file[s]}" for s in probes if s in seq_file]
     tfiles = list_frames(s3, TAUPE_WALK)
+    assert len(probes) == TAUPE_COUNT and all(s in seq_file for s in probes), probes
+    taupe = [f"{TAUPE_WALK}/{seq_file[s]}" for s in probes]
+    assert all(k.rsplit("/", 1)[1] in tfiles for k in taupe), "taupe frame not on S3"
     look = {"teal_bin": {"walk": TEAL_WALK, "expected": TEAL_COUNT, "frames": len(teal),
-                         "in_2261": all(k in by_key for k in teal), "keys": teal,
+                         "in_2261": sum(k in by_key for k in teal), "keys": teal,
                          "model_ids_seen": sorted(m for m in models if m),
                          "rule": "label false and Opus' recorded navigate.target_visible true"},
             "taupe_bag": {"walk": TAUPE_WALK, "expected": TAUPE_COUNT, "frames": len(taupe),

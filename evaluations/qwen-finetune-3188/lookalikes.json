@@ -3,7 +3,7 @@
   "walk": "blue-bottle-20260907-185007",
   "expected": 34,
   "frames": 34,
-  "in_2261": true,
+  "in_2261": 34,
   "keys": [
    "blue-bottle-20260907-185007/frame-0003.jpg",
    "blue-bottle-20260907-185007/frame-0005.jpg",

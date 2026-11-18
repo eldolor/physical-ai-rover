@@ -64,10 +64,20 @@ def test_folds_resolve_to_files_and_agree_with_the_split():
 def test_the_299_arrival_frames_are_all_inside_the_2261():
     o = _j("overlap-299.json")
     assert (o["arrival_frames"], o["in_2261"], o["not_in_2261"], o["in_view"]) == (299, 299, 0, 74)
+    folds = _j("folds.json")["folds"]
+    for w, v in o["per_walk"].items():
+        assert w in folds[v["fold"]]["held_out_walks"]
 
 
 def test_lookalike_lists():
     l = _j("lookalikes.json")
-    assert l["teal_bin"]["frames"] == 34 and l["teal_bin"]["in_2261"] is True
+    assert l["teal_bin"]["frames"] == 34 and l["teal_bin"]["in_2261"] == 34
     assert l["taupe_bag"]["frames"] == 7 and l["taupe_bag"]["in_2261"] == 0
     assert l["taupe_bag"]["on_s3"] == 7
+    teal = {k.split("/")[0] for k in l["teal_bin"]["keys"]}
+    assert teal == {"blue-bottle-20260907-185007"} and len(set(l["teal_bin"]["keys"])) == 34
+    assert {k.split("/")[0] for k in l["taupe_bag"]["keys"]} == {"red-backpack-gpt-6-astra-20261021-205737"}
+    frames = _j("frames.json")["walks"]
+    for k in l["teal_bin"]["keys"]:                   # every one is a labelled "not visible"
+        w, f = k.split("/")
+        assert frames[w]["frames"][f]["visible"] is False
