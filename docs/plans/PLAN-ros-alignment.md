@@ -2,7 +2,7 @@
 
 *(Retitled 2026-11-15 by the user. This file began on 2026-09-25 as the plan to adopt ROS 2 properly, "ROS 2, proved on the sim's data", and has been the project's governing plan since; its 3.N sections now cover everything from perception to the phone app. The file and its section folder keep the name `ros-alignment`, because about 1,000 references and the claim tool use that path.)*
 
-**Open steps (2026-11-16, `plan_section.py board --all` on `dev` 0bdde1ad):** 12 free, 41 waiting (on the Rover or the user), 3 blocked, 3 held for 3.156.E's desktop runs; 238 done, 4 dropped. None of the free steps can be finished in a cloud session now: 3.175.C is done; 3.178.B's remaining bars (B3, B4's frames, B5-B6) need the desktop's frames and the Jetson; 3.161.B, 3.70.S4 and 3.70.M1 need Docker; 3.70.S2 touches CloudFormation and the cloud vision service; 3.91.C's last criterion is on the Rover. Updated at merge by whoever changes the counts (the user, 2026-11-15).
+**Open steps (2026-11-18, `plan_section.py board --all` on `dev` 0c35099f):** 13 free, 48 waiting (on the Rover or the user), 7 blocked, 3 held for 3.156's desktop and Rover runs; 245 done, 4 dropped. None of the free steps can be finished in a cloud session now: 3.178.B's remaining bars need the desktop's frames and the Jetson; 3.188.A2 needs the desktop's frames; 3.161.B, 3.70.S4 and 3.70.M1 need Docker; 3.70.S2 touches CloudFormation and the cloud vision service; 3.91.C's last criterion is on the Rover; the rest are on the Jetson or the Rover. Updated at merge by whoever changes the counts (the user, 2026-11-15).
 
 *(Retitled 2026-10-01: it was "with the twin still doing the proving", from
 the watched-on-a-phone rule retired the day it was written -- see section 0.)*
