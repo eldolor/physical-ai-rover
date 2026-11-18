@@ -225,8 +225,10 @@ page.
 * **Spec-driven.** Every component has an architecture spec (what and why)
   and an engineering spec (how) that changes in the same commit as the
   code.
-* **Built with Claude Code** throughout: about 155,000 lines of Python, a
-  thin layer of C++, and a phone UI in plain JavaScript.
+* **Built with Claude Code** throughout: about 159,000 lines of code
+  (comments and blanks excluded), mostly Python, a thin layer of C++, and a
+  phone UI in plain JavaScript. The tests outweigh the product they test;
+  [Code size](#code-size) has the breakdown.
 
 ## For developers
 
@@ -290,6 +292,40 @@ curl -X POST localhost:8001/mission/start -H 'content-type: application/json' \
 | `tools/` | The Jetson's setup and benches, the spec linter, the parallel-session and lock tools |
 | `evaluations/` | Measurement harnesses and their recorded results, by plan section |
 | `docs/` | Specs (architecture and engineering per component), plans, guides, hardware, evaluations |
+
+## Code size
+
+Counted with [`cloc`](https://github.com/AlDanial/cloc) on `dev` at
+`27ef8b52` (2026-11-18). Code lines exclude comments (Python docstrings
+included) and blank lines. Recorded data, logs and the Markdown docs are not
+counted.
+
+| Part | Code | Comment | Blank |
+|---|---:|---:|---:|
+| **The product** | **44,400** | 22,700 | 7,100 |
+| &nbsp;&nbsp;`brain/` | 10,000 | 5,500 | 1,800 |
+| &nbsp;&nbsp;`control/` | 9,600 | 4,600 | 1,500 |
+| &nbsp;&nbsp;`web-twin/`, `web-shared/` | 8,400 | 3,100 | 650 |
+| &nbsp;&nbsp;`service/` | 5,600 | 2,800 | 1,200 |
+| &nbsp;&nbsp;`robot/` | 4,400 | 3,100 | 850 |
+| &nbsp;&nbsp;`sim/` | 3,000 | 2,200 | 760 |
+| &nbsp;&nbsp;`cloudformation/` | 2,700 | 600 | 170 |
+| &nbsp;&nbsp;`world/`, `config/`, `firmware/` | 720 | 940 | 180 |
+| **Tests** (`tests/`) | **63,800** | 15,700 | 18,300 |
+| **Evaluation harnesses** (`evaluations/`) | **38,300** | 7,500 | 6,900 |
+| **Tooling** (`tools/`) | **11,800** | 4,300 | 2,200 |
+| **All** | **159,400** | 50,200 | 34,600 |
+
+By language: Python 138,800, JavaScript 8,000, shell 4,500, YAML 4,200,
+HTML 1,900, CSS 1,400, C++ 340. Tests are about 1.4 times the product's code,
+and with the evaluation harnesses about 2.3 times. With comments and blank
+lines the repo holds about 290,000 lines of code; recorded results add about
+3.8 million lines of JSON, JSONL and logs. To count again:
+
+```bash
+mkdir -p /tmp/rover-count && git archive HEAD | tar -x -C /tmp/rover-count && cd /tmp/rover-count
+cloc --include-lang="Python,JavaScript,Bourne Shell,Bourne Again Shell,HTML,CSS,C++,YAML,Dockerfile,XML" .
+```
 
 ## Reading list
 
