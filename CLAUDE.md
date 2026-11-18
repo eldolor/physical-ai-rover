@@ -137,9 +137,10 @@ here to `docs/guides/MERGED-STATE.md`; open work only stays here.**
 
 **Waiting on the user**
 
-* **Deploys:** the twin is live from `dev` `5e88b9de` (2026-11-05, with
-  3.152's local-VLM readout). The user's go for 3.132 Stage 5 and the
-  twin's next deploy (2026-11-07); confirm what ships at deploy time.
+* **Deploys:** the twin is live from `dev` `413a806b` (2026-11-18, from a
+  cloud session; 26/26 files match). Cloud sessions can deploy the twin only:
+  IAM user `vision-picar-deployer` (S3 put, invalidation, DescribeStacks).
+  Each deploy still needs the user's go; confirm what ships.
 * **The board's brain is `dev` `bdcf782c`** (updated 2026-11-06 for 3.155's
   unit, the user's go): update it only when asked (`tools/jetson/README.md`'s
   update step).

@@ -52,3 +52,22 @@ and the "Open steps" line in `PLAN-ros-alignment.md`.*
   in minutes instead of building on a cheating simulator).
 * Quota: 18% (2026-11-16 07:36 UTC) -> 22% (11-16 ~10:20) -> 30%
   (11-18 ~13:15) for 11 worker runs. Resets Sat 2026-11-21 12:59 UTC.
+
+## Later on 2026-11-18: the twin deployed from the cloud
+
+* The user's go: `dev` `413a806b` deployed by a cloud session (bucket
+  `vision-picar-serverless-staticbucket-2jbqpgdcnvtv`, distribution
+  `E1VYDK2ACPS00K`, invalidation `IRI5JIQRQM9JB74EF1VCEG7KD` Completed). All
+  26 `assets.json` paths match `HEAD` by sha256; content types right; the
+  Home tab loads with no page errors against an older brain (last seen,
+  Find, schedules each degrade quietly on a 404).
+* Cloud sessions now have valid AWS keys (IAM user `vision-picar-deployer`,
+  us-east-2), the AWS CLI from the environment's setup script, and the
+  CloudFront host on the network allowlist. The key is for the twin deploy
+  only; Lambda deploys stay on the desktop.
+* Advised the user to drop the old ECS statements from that user's policy
+  (`iam:PutRolePolicy` + `iam:PassRole` + ECS is a path to admin, and the
+  key sits in plain text in the environment). Not verified whether they did.
+* The cloud deploy item in `HANDOFF-2026-11-16-desktop-return.md` section 1
+  is done; that section's remaining note (the board's brain lacks 3.176.B's
+  parse route) still holds.
