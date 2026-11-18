@@ -1,0 +1,40 @@
+{
+ "arrival_walks": [
+  "blue-bottle-20260907-142454",
+  "blue-bottle-20260907-185007",
+  "blue-shoes-20260907-152528",
+  "red-backpack-20260907-144856"
+ ],
+ "arrival_frames": 299,
+ "arrival_frames_expected": 299,
+ "in_2261": 299,
+ "not_in_2261": 0,
+ "per_walk": {
+  "blue-bottle-20260907-142454": {
+   "frames": 33,
+   "in_view": 18,
+   "object": "blue bottle",
+   "fold": "blue bottle"
+  },
+  "blue-bottle-20260907-185007": {
+   "frames": 209,
+   "in_view": 10,
+   "object": "blue bottle",
+   "fold": "blue bottle"
+  },
+  "blue-shoes-20260907-152528": {
+   "frames": 19,
+   "in_view": 13,
+   "object": "blue and yellow running shoes",
+   "fold": "blue and yellow running shoes"
+  },
+  "red-backpack-20260907-144856": {
+   "frames": 38,
+   "in_view": 33,
+   "object": "red backpack",
+   "fold": "red backpack"
+  }
+ },
+ "in_view": 74,
+ "rule": "judge each frame only by the fold model that held out its object (folds.json: the fold named by per_walk[...].fold)"
+}

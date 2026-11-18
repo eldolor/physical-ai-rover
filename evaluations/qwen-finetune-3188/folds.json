@@ -1,0 +1,199 @@
+{
+ "bucket": "vision-picar-recordings-303351622021-us-east-2",
+ "prefix": "recordings",
+ "read_from": "S3 (list + labels.json only; no frame bytes read)",
+ "walks": 21,
+ "frames": 2261,
+ "keys_sha256_12": "163dec93a76a",
+ "etags_sha256_12": "74b47b47e30d",
+ "missing_on_s3": [],
+ "label_vs_3.92": [],
+ "folds": {
+  "a white phone charger cable": {
+   "held_out_walks": [
+    "a-white-phone-charger-ca-20260921-203250",
+    "a-white-phone-charger-ca-20260921-203355"
+   ],
+   "train_walks": [
+    "blue-bottle-20260907-142454",
+    "blue-bottle-20260907-185007",
+    "blue-shoes-20260907-152528",
+    "blue-shoes-20260908-210511",
+    "grey-backpack-20260921-203627",
+    "grey-backpack-20260921-203748",
+    "grey-backpack-opus-4-5-20260921-210743",
+    "red-backpack-20260907-144856",
+    "red-backpack-20260912-224429",
+    "red-backpack-20260912-224646",
+    "red-backpack-20260912-224822",
+    "red-backpack-20260912-225001",
+    "red-backpack-20260921-203152",
+    "woven-laundry-basket-20260908-215140",
+    "woven-laundry-basket-20260908-215252",
+    "woven-laundry-basket-20260908-215351",
+    "woven-laundry-basket-20260912-231358",
+    "woven-laundry-basket-20260913-115414",
+    "woven-laundry-basket-20260913-115703"
+   ],
+   "held_frames": 176,
+   "train_frames": 2085,
+   "split_json_train_frames": 2085,
+   "agrees_with_split_json": true
+  },
+  "blue and yellow running shoes": {
+   "held_out_walks": [
+    "blue-shoes-20260907-152528",
+    "blue-shoes-20260908-210511"
+   ],
+   "train_walks": [
+    "a-white-phone-charger-ca-20260921-203250",
+    "a-white-phone-charger-ca-20260921-203355",
+    "blue-bottle-20260907-142454",
+    "blue-bottle-20260907-185007",
+    "grey-backpack-20260921-203627",
+    "grey-backpack-20260921-203748",
+    "grey-backpack-opus-4-5-20260921-210743",
+    "red-backpack-20260907-144856",
+    "red-backpack-20260912-224429",
+    "red-backpack-20260912-224646",
+    "red-backpack-20260912-224822",
+    "red-backpack-20260912-225001",
+    "red-backpack-20260921-203152",
+    "woven-laundry-basket-20260908-215140",
+    "woven-laundry-basket-20260908-215252",
+    "woven-laundry-basket-20260908-215351",
+    "woven-laundry-basket-20260912-231358",
+    "woven-laundry-basket-20260913-115414",
+    "woven-laundry-basket-20260913-115703"
+   ],
+   "held_frames": 63,
+   "train_frames": 2198,
+   "split_json_train_frames": 2198,
+   "agrees_with_split_json": true
+  },
+  "blue bottle": {
+   "held_out_walks": [
+    "blue-bottle-20260907-142454",
+    "blue-bottle-20260907-185007"
+   ],
+   "train_walks": [
+    "a-white-phone-charger-ca-20260921-203250",
+    "a-white-phone-charger-ca-20260921-203355",
+    "blue-shoes-20260907-152528",
+    "blue-shoes-20260908-210511",
+    "grey-backpack-20260921-203627",
+    "grey-backpack-20260921-203748",
+    "grey-backpack-opus-4-5-20260921-210743",
+    "red-backpack-20260907-144856",
+    "red-backpack-20260912-224429",
+    "red-backpack-20260912-224646",
+    "red-backpack-20260912-224822",
+    "red-backpack-20260912-225001",
+    "red-backpack-20260921-203152",
+    "woven-laundry-basket-20260908-215140",
+    "woven-laundry-basket-20260908-215252",
+    "woven-laundry-basket-20260908-215351",
+    "woven-laundry-basket-20260912-231358",
+    "woven-laundry-basket-20260913-115414",
+    "woven-laundry-basket-20260913-115703"
+   ],
+   "held_frames": 242,
+   "train_frames": 2019,
+   "split_json_train_frames": 2019,
+   "agrees_with_split_json": true
+  },
+  "grey backpack": {
+   "held_out_walks": [
+    "grey-backpack-20260921-203627",
+    "grey-backpack-20260921-203748",
+    "grey-backpack-opus-4-5-20260921-210743"
+   ],
+   "train_walks": [
+    "a-white-phone-charger-ca-20260921-203250",
+    "a-white-phone-charger-ca-20260921-203355",
+    "blue-bottle-20260907-142454",
+    "blue-bottle-20260907-185007",
+    "blue-shoes-20260907-152528",
+    "blue-shoes-20260908-210511",
+    "red-backpack-20260907-144856",
+    "red-backpack-20260912-224429",
+    "red-backpack-20260912-224646",
+    "red-backpack-20260912-224822",
+    "red-backpack-20260912-225001",
+    "red-backpack-20260921-203152",
+    "woven-laundry-basket-20260908-215140",
+    "woven-laundry-basket-20260908-215252",
+    "woven-laundry-basket-20260908-215351",
+    "woven-laundry-basket-20260912-231358",
+    "woven-laundry-basket-20260913-115414",
+    "woven-laundry-basket-20260913-115703"
+   ],
+   "held_frames": 211,
+   "train_frames": 2050,
+   "split_json_train_frames": 2050,
+   "agrees_with_split_json": true
+  },
+  "red backpack": {
+   "held_out_walks": [
+    "red-backpack-20260907-144856",
+    "red-backpack-20260912-224429",
+    "red-backpack-20260912-224646",
+    "red-backpack-20260912-224822",
+    "red-backpack-20260912-225001",
+    "red-backpack-20260921-203152"
+   ],
+   "train_walks": [
+    "a-white-phone-charger-ca-20260921-203250",
+    "a-white-phone-charger-ca-20260921-203355",
+    "blue-bottle-20260907-142454",
+    "blue-bottle-20260907-185007",
+    "blue-shoes-20260907-152528",
+    "blue-shoes-20260908-210511",
+    "grey-backpack-20260921-203627",
+    "grey-backpack-20260921-203748",
+    "grey-backpack-opus-4-5-20260921-210743",
+    "woven-laundry-basket-20260908-215140",
+    "woven-laundry-basket-20260908-215252",
+    "woven-laundry-basket-20260908-215351",
+    "woven-laundry-basket-20260912-231358",
+    "woven-laundry-basket-20260913-115414",
+    "woven-laundry-basket-20260913-115703"
+   ],
+   "held_frames": 678,
+   "train_frames": 1583,
+   "split_json_train_frames": 1583,
+   "agrees_with_split_json": true
+  },
+  "woven laundry basket": {
+   "held_out_walks": [
+    "woven-laundry-basket-20260908-215140",
+    "woven-laundry-basket-20260908-215252",
+    "woven-laundry-basket-20260908-215351",
+    "woven-laundry-basket-20260912-231358",
+    "woven-laundry-basket-20260913-115414",
+    "woven-laundry-basket-20260913-115703"
+   ],
+   "train_walks": [
+    "a-white-phone-charger-ca-20260921-203250",
+    "a-white-phone-charger-ca-20260921-203355",
+    "blue-bottle-20260907-142454",
+    "blue-bottle-20260907-185007",
+    "blue-shoes-20260907-152528",
+    "blue-shoes-20260908-210511",
+    "grey-backpack-20260921-203627",
+    "grey-backpack-20260921-203748",
+    "grey-backpack-opus-4-5-20260921-210743",
+    "red-backpack-20260907-144856",
+    "red-backpack-20260912-224429",
+    "red-backpack-20260912-224646",
+    "red-backpack-20260912-224822",
+    "red-backpack-20260912-225001",
+    "red-backpack-20260921-203152"
+   ],
+   "held_frames": 891,
+   "train_frames": 1370,
+   "split_json_train_frames": 1370,
+   "agrees_with_split_json": true
+  }
+ }
+}

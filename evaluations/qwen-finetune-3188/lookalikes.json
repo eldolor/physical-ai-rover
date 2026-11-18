@@ -1,0 +1,75 @@
+{
+ "teal_bin": {
+  "walk": "blue-bottle-20260907-185007",
+  "expected": 34,
+  "frames": 34,
+  "in_2261": true,
+  "keys": [
+   "blue-bottle-20260907-185007/frame-0003.jpg",
+   "blue-bottle-20260907-185007/frame-0005.jpg",
+   "blue-bottle-20260907-185007/frame-0013.jpg",
+   "blue-bottle-20260907-185007/frame-0014.jpg",
+   "blue-bottle-20260907-185007/frame-0016.jpg",
+   "blue-bottle-20260907-185007/frame-0017.jpg",
+   "blue-bottle-20260907-185007/frame-0018.jpg",
+   "blue-bottle-20260907-185007/frame-0019.jpg",
+   "blue-bottle-20260907-185007/frame-0020.jpg",
+   "blue-bottle-20260907-185007/frame-0043.jpg",
+   "blue-bottle-20260907-185007/frame-0044.jpg",
+   "blue-bottle-20260907-185007/frame-0053.jpg",
+   "blue-bottle-20260907-185007/frame-0057.jpg",
+   "blue-bottle-20260907-185007/frame-0058.jpg",
+   "blue-bottle-20260907-185007/frame-0059.jpg",
+   "blue-bottle-20260907-185007/frame-0060.jpg",
+   "blue-bottle-20260907-185007/frame-0063.jpg",
+   "blue-bottle-20260907-185007/frame-0064.jpg",
+   "blue-bottle-20260907-185007/frame-0065.jpg",
+   "blue-bottle-20260907-185007/frame-0066.jpg",
+   "blue-bottle-20260907-185007/frame-0067.jpg",
+   "blue-bottle-20260907-185007/frame-0068.jpg",
+   "blue-bottle-20260907-185007/frame-0069.jpg",
+   "blue-bottle-20260907-185007/frame-0074.jpg",
+   "blue-bottle-20260907-185007/frame-0080.jpg",
+   "blue-bottle-20260907-185007/frame-0081.jpg",
+   "blue-bottle-20260907-185007/frame-0084.jpg",
+   "blue-bottle-20260907-185007/frame-0086.jpg",
+   "blue-bottle-20260907-185007/frame-0087.jpg",
+   "blue-bottle-20260907-185007/frame-0088.jpg",
+   "blue-bottle-20260907-185007/frame-0089.jpg",
+   "blue-bottle-20260907-185007/frame-0090.jpg",
+   "blue-bottle-20260907-185007/frame-0098.jpg",
+   "blue-bottle-20260907-185007/frame-0113.jpg"
+  ],
+  "model_ids_seen": [
+   "us.anthropic.claude-opus-4-5-20251101-v1:0"
+  ],
+  "rule": "label false and Opus' recorded navigate.target_visible true"
+ },
+ "taupe_bag": {
+  "walk": "red-backpack-gpt-6-astra-20261021-205737",
+  "expected": 7,
+  "frames": 7,
+  "in_2261": 0,
+  "on_s3": 7,
+  "probe_teleop_seqs": [
+   325,
+   368,
+   401,
+   425,
+   465,
+   532,
+   548
+  ],
+  "keys": [
+   "red-backpack-gpt-6-astra-20261021-205737/frame-0065.jpg",
+   "red-backpack-gpt-6-astra-20261021-205737/frame-0108.jpg",
+   "red-backpack-gpt-6-astra-20261021-205737/frame-0141.jpg",
+   "red-backpack-gpt-6-astra-20261021-205737/frame-0165.jpg",
+   "red-backpack-gpt-6-astra-20261021-205737/frame-0205.jpg",
+   "red-backpack-gpt-6-astra-20261021-205737/frame-0272.jpg",
+   "red-backpack-gpt-6-astra-20261021-205737/frame-0288.jpg"
+  ],
+  "rule": "3.91 B4's 7 DETECTED asked frames, B6-replay-205737.json probes, teleop_seq -> file"
+ },
+ "fold_note": "teal bin (blue-bottle target): judge by the blue bottle fold; taupe (red-backpack target): by the red backpack fold"
+}
