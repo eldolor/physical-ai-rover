@@ -191,4 +191,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.186](3.186-harness-repo-path.md) | Harnesses load the robot code they name, not the launch directory's |
 | [3.187](3.187-cloud-call-bandit.md) | When the tier calls the cloud, learned: 3.65 phase 1's contextual bandit |
 | [3.188](3.188-qwen-finetune.md) | Fine-tune the local VLM (Qwen2.5-VL-3B) on real frames for frame identity |
+| [3.189](3.189-cloud-ros-build.md) | Build the ROS image and run the live stack in a cloud session |
 <!-- /sections -->
