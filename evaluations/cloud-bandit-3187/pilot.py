@@ -16,21 +16,27 @@ the vision secret); see the section file's recipe.
     PICAR_RECORDINGS=<recordings dir> .venv/bin/python evaluations/cloud-bandit-3187/pilot.py [--pay]
 
 `pilot-answers.jsonl` is append-only: a `sent` row before each call, then
-its result row. A frame with an answer is never sent again; a frame that
-failed, or whose `sent` row has no result (the run died mid-call), is sent
-again on the next run. `pilot-summary.json` holds the measured cost per
-frame and C's estimate.
+its result row (a torn last line from a killed run is cut off first). A
+frame with an answer is never sent again; a frame that failed, or whose
+`sent` row has no result (the run died mid-call), is sent again on the next
+run, at most `MAX_TRIES` times in all. `pilot-summary.json` holds the
+measured cost per frame and C's estimate.
 
 **Spend.** `usd_measured` prices each answer's own token counts. A call
 that failed or never reported may still have been billed, for each of
-`post_navigate`'s attempts, so the stop rule counts `usd_upper`: measured
-plus `NAVIGATE_ATTEMPTS` default-token calls for every such frame.
+`post_navigate`'s attempts, so the stop rule counts `usd_seen`: measured
+plus `NAVIGATE_ATTEMPTS` calls, at the median measured tokens (the defaults
+before any answer), for every such call. It is what this script can see,
+not a true upper bound: a retry inside an answered frame reports only its
+last attempt's usage.
 
-**The stop rule** is read from the whole file before every frame, so it
-holds across runs (`STOP_*`): `usd_upper` passes $1.00; an answer cost over
-$0.10, came from a model other than the shipped one, or had no token counts;
-or the last 3 results are failures. Clearing a stop is a person's decision:
-read why, then move the file aside.
+**The stop rule** is read before every frame, so it holds across runs
+(`STOP_*`): `usd_seen` over this file and every set-aside
+`pilot-answers.stopped-*.jsonl` passes $1.00; an answer (scorable or not)
+cost over $0.10, came from a model other than the shipped one, or had no
+token counts; or the last 3 results are failures. Clearing a stop is a
+person's decision: read why, then rename the file to
+`pilot-answers.stopped-<n>.jsonl`, whose spend still counts.
 """
 
 import fcntl
@@ -48,6 +54,7 @@ ANSWERS, SUMMARY, LOCK = HERE / "pilot-answers.jsonl", HERE / "pilot-summary.jso
 STOP_TOTAL_USD = 1.00
 STOP_CALL_USD = 0.10
 STOP_ERRORS_IN_A_ROW = 3
+MAX_TRIES = 2
 
 
 def frame_entry(walk: str, frame: str) -> dict:
@@ -79,23 +86,43 @@ def preconditions(pilot: dict, pinned: dict, pay: bool) -> list:
     return bad
 
 
-def state(rows: list, unpriced_usd: float) -> dict:
+def spend(rows: list, unpriced_usd: float) -> tuple:
+    """(measured dollars, dollars seen): every failed result and every `sent`
+    row with no result after it (a call that never reported, even if its
+    frame was sent again) counts `unpriced_usd`."""
+    measured, unknown, pending = 0.0, 0, set()
+    for r in rows:
+        if r.get("sent"):
+            unknown += r["key"] in pending      # an earlier call that never reported
+            pending.add(r["key"])
+            continue
+        pending.discard(r["key"])
+        if isinstance(r.get("usd"), (int, float)):
+            measured += r["usd"]
+        elif "error" in r:
+            unknown += 1
+    unknown += len(pending)
+    return measured, measured + unknown * unpriced_usd
+
+
+def state(rows: list, unpriced_usd: float, earlier_usd: float = 0.0) -> dict:
     """The file read as frames: each key's last result, the keys whose last
-    row is a `sent` with no result, the spend, and the stop rule's verdict."""
-    last, results = {}, []
+    row is a `sent` with no result, the tries per key, the spend (plus
+    `earlier_usd` from set-aside files), and the stop rule's verdict."""
+    last, results, tries = {}, [], {}
     for r in rows:
         last[r["key"]] = r
-        if not r.get("sent"):
+        if r.get("sent"):
+            tries[r["key"]] = tries.get(r["key"], 0) + 1
+        else:
             results.append(r)
     answered = {k: r for k, r in last.items() if not r.get("sent") and "error" not in r}
     dangling = [k for k, r in last.items() if r.get("sent")]
-    measured = sum(r["usd"] for r in results if isinstance(r.get("usd"), (int, float)))
-    # Every failed result and every dangling call may have billed each attempt.
-    unknown = sum(1 for r in results if "error" in r and r.get("usd") is None) + len(dangling)
-    upper = measured + unknown * unpriced_usd
+    measured, seen = spend(rows, unpriced_usd)
+    seen += earlier_usd
     stop = None
     for r in results:
-        if "error" in r:
+        if "model_id" not in r:      # failed before any answer came back
             continue
         if r.get("model_id") != SHIPPED_MODEL or r.get("usd") is None:
             stop = f"{r['key']} answered by {r.get('model_id')!r} (usd {r.get('usd')}), not {SHIPPED_MODEL}"
@@ -104,19 +131,21 @@ def state(rows: list, unpriced_usd: float) -> dict:
     tail = results[-STOP_ERRORS_IN_A_ROW:]
     if len(tail) == STOP_ERRORS_IN_A_ROW and all("error" in r for r in tail):
         stop = stop or f"the last {STOP_ERRORS_IN_A_ROW} results failed"
-    if upper > STOP_TOTAL_USD:
-        stop = stop or f"spend up to ${upper:.4f} > ${STOP_TOTAL_USD}"
-    return {"answered": answered, "results": results, "dangling": dangling,
-            "measured": measured, "upper": upper, "stop": stop}
+    if seen > STOP_TOTAL_USD:
+        stop = stop or f"spend seen ${seen:.4f} > ${STOP_TOTAL_USD}"
+    return {"answered": answered, "results": results, "dangling": dangling, "tries": tries,
+            "measured": measured, "seen": seen, "stop": stop}
 
 
 def summarize(st: dict, n_full: int) -> dict:
     ok = list(st["answered"].values())
-    failed = sum("error" in r for r in st["results"]) + len(st["dangling"])
+    calls = sum(st["tries"].values())
+    failed = calls - len(ok)
     priced = [r for r in ok if isinstance(r.get("usd"), (int, float))]
     per = statistics.mean(r["usd"] for r in priced) if priced else None
     out = {"answered_frames": len(ok), "results": len(st["results"]), "failed": failed,
-           "usd_measured": round(st["measured"], 6), "usd_upper": round(st["upper"], 6),
+           "calls": calls,
+           "usd_measured": round(st["measured"], 6), "usd_seen": round(st["seen"], 6),
            "usd_per_frame_mean": round(per, 6) if per is not None else None,
            "input_tokens_median": statistics.median(r["input_tokens"] for r in priced) if priced else None,
            "output_tokens_median": statistics.median(r["output_tokens"] for r in priced) if priced else None,
@@ -124,9 +153,10 @@ def summarize(st: dict, n_full: int) -> dict:
            "agree_with_label": sum(r["target_visible"] == r["visible"] for r in ok),
            "stopped": st["stop"]}
     # C's estimate, the section's formula: frames x mean cost x (1 + the
-    # failure share), the failure share as failed / (failed + answered frames).
+    # failure share), the failure share as calls that did not end in an
+    # answer over all calls sent.
     if per is not None:
-        retry = failed / (failed + len(ok))
+        retry = failed / calls
         out[f"estimate_C_all_{n_full}_usd"] = round(n_full * per * (1 + retry), 2)
         counts = HERE / "cloud-counts.json"
         if counts.exists():
@@ -139,6 +169,16 @@ def summarize(st: dict, n_full: int) -> dict:
     return out
 
 
+def repair_tail(path):
+    """Cut a torn last line (a run killed mid-write) so the next row does not
+    land on it."""
+    if not path.exists():
+        return
+    data = path.read_bytes()
+    if data and not data.endswith(b"\n"):
+        path.write_bytes(data[:data.rfind(b"\n") + 1])
+
+
 def append(row: dict):
     with ANSWERS.open("a") as f:
         f.write(json.dumps(row) + "\n")
@@ -147,7 +187,6 @@ def append(row: dict):
 
 
 def main():
-    sys.path.insert(0, str(HERE.parent.parent))
     from control import admin_prices, walk_replay
     from control.admin_server import NAVIGATE_ATTEMPTS, post_navigate
     from control.brain_config import load_brain_config
@@ -160,10 +199,9 @@ def main():
         raise SystemExit("not sent:\n  " + "\n  ".join(bad))
     one = admin_prices.cost_usd(1, SHIPPED_MODEL, {"input": admin_prices.DEFAULT_TOKENS_IN,
                                                    "output": admin_prices.DEFAULT_TOKENS_OUT})
-    unpriced = NAVIGATE_ATTEMPTS * one
     if not pay:
         print(f"dry run: {pilot['n']} frames present and pinned; nothing sent. At the default "
-              f"tokens one call is ${one}; a failed frame counts ${unpriced} toward the stop.")
+              f"tokens one call is ${one}; a failed call counts {NAVIGATE_ATTEMPTS} of them toward the stop.")
         return
     lock = LOCK.open("w")
     try:
@@ -171,12 +209,26 @@ def main():
     except BlockingIOError:
         raise SystemExit("another pilot.py holds the lock; nothing sent")
     url, timeout_s = os.environ["VISION_URL"], load_brain_config()["replay_timeout_s"]
+    repair_tail(ANSWERS)
     rows = jsonl(ANSWERS)
-    st = state(rows, unpriced)
+    earlier = [jsonl(f) for f in sorted(HERE.glob("pilot-answers.stopped-*.jsonl"))]
+
+    def unpriced_usd() -> float:
+        ok = [r for f in earlier + [rows] for r in f if isinstance(r.get("usd"), (int, float))]
+        tokens = ({"input": statistics.median(r["input_tokens"] for r in ok),
+                   "output": statistics.median(r["output_tokens"] for r in ok)} if ok else
+                  {"input": admin_prices.DEFAULT_TOKENS_IN, "output": admin_prices.DEFAULT_TOKENS_OUT})
+        return NAVIGATE_ATTEMPTS * admin_prices.cost_usd(1, SHIPPED_MODEL, tokens)
+
+    def now() -> dict:
+        u = unpriced_usd()
+        return state(rows, u, sum(spend(f, u)[1] for f in earlier))
+
+    st = now()
     for p in pilot["frames"]:
         if st["stop"]:
             break
-        if p["key"] in st["answered"]:
+        if p["key"] in st["answered"] or st["tries"].get(p["key"], 0) >= MAX_TRIES:
             continue
         walk, frame = p["key"].split("/", 1)
         image = (RECORDINGS / p["key"]).read_bytes()
@@ -208,7 +260,7 @@ def main():
         append(row)
         rows.append(row)
         print(row, flush=True)
-        st = state(rows, unpriced)
+        st = now()
     summary = summarize(st, pinned["n"])
     SUMMARY.write_text(json.dumps(summary, indent=1) + "\n")
     print(json.dumps(summary, indent=1))

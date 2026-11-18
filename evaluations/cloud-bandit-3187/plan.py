@@ -23,8 +23,8 @@ import random
 import sys
 from collections import defaultdict
 
-from common import (CAL, HERE, PILOT_N, PILOT_SEED, SPLIT_SEED, jsonl, load_set,
-                    local_kind, obj, walk_of)
+from common import (CAL, HERE, LOCAL_NO_BELOW, LOCAL_YES_AT, PILOT_N, PILOT_SEED, SPLIT_SEED,
+                    jsonl, load_set, local_kind, obj, walk_of)
 
 MAX_DRAWS = 100
 
@@ -102,7 +102,9 @@ def pilot(d: dict) -> dict:
         for i in range(quota[o]):
             # The next walk in the cycle with a frame left (a used-up walk is passed over).
             left = [walks[(i + j) % len(walks)] for j in range(len(walks))]
-            w = next(w for w in left if pools[w]["visible"] or pools[w]["absent"])
+            w = next((w for w in left if pools[w]["visible"] or pools[w]["absent"]), None)
+            if w is None:
+                raise SystemExit(f"{o}: fewer frames than its quota of {quota[o]}")
             want = "visible" if i % 2 == 0 else "absent"
             kind = want if pools[w][want] else ("absent" if want == "visible" else "visible")
             key = rng.choice(pools[w][kind])
@@ -138,7 +140,7 @@ def local_counts(d: dict) -> dict:
             c["ve_fixes_gate_false_pass"] += det and not v and kind == "no"
             c["ve_breaks_gate_right"] += (det == v) and not right
             c["ve_disagrees_gate"] += det != (kind == "yes")
-    return {"set_hash": d["hash"], "thresholds": "VE yes >= 0.5, no <= 0.1 (brain/tiered.py)", **c}
+    return {"set_hash": d["hash"], "thresholds": f"VE yes >= {LOCAL_YES_AT}, no <= {LOCAL_NO_BELOW} (brain/tiered.py, config/robot.yaml)", **c}
 
 
 def main():
@@ -153,8 +155,10 @@ def main():
     for name, new in out.items():
         if (HERE / name).exists() and "--force" not in sys.argv:
             raise SystemExit(f"{name} exists; --check it, or --force")
-    if (HERE / "pilot-answers.jsonl").exists():
-        raise SystemExit("pilot-answers.jsonl exists: B's answers belong to this pilot.json; never rewrite it")
+    old_pilot = HERE / "pilot.json"
+    if (list(HERE.glob("pilot-answers*.jsonl")) and old_pilot.exists()
+            and json.loads(old_pilot.read_text()) != out["pilot.json"]):
+        raise SystemExit("B's answers belong to the existing pilot.json; never change it")
     for name, new in out.items():
         (HERE / name).write_text(json.dumps(new, indent=1) + "\n")
     s, p = out["split.json"], out["pilot.json"]

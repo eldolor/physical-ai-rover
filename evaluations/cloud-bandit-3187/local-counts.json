@@ -1,6 +1,6 @@
 {
  "set_hash": "00d12dbc44f6495a927a2a58d53887fc58c9e468e5774d65a8d90288d364a2d6",
- "thresholds": "VE yes >= 0.5, no <= 0.1 (brain/tiered.py)",
+ "thresholds": "VE yes >= 0.5, no <= 0.1 (brain/tiered.py, config/robot.yaml)",
  "frames": 2261,
  "in_view": 535,
  "gate_passed": 431,

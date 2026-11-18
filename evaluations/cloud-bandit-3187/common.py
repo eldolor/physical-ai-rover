@@ -2,7 +2,7 @@
 # Copyright (C) 2026 Anshu Gaind
 """3.187 shared: the pinned labelled set (3.177.A's `set.json`, refused unless
 it hashes to the pinned hash), 3.92's per-frame local answers, and the files
-this section writes. Free; reads files only."""
+this section writes. Free: reads files and config, calls nothing."""
 
 import importlib.util
 import json
@@ -28,8 +28,12 @@ PILOT_N = 20
 # What /navigate ships (cloudformation/serverless.yaml NavigateModelId).
 SHIPPED_MODEL = "us.anthropic.claude-opus-4-5-20251101-v1:0"
 sys.path.insert(0, str(ROOT))
-from brain.tiered import DEFAULT_LOCAL_NO_BELOW as LOCAL_NO_BELOW  # noqa: E402  3.80.D's rule
-from brain.tiered import LOCAL_YES_AT  # noqa: E402,F401
+from brain.tiered import LOCAL_YES_AT, _local_kind  # noqa: E402  3.80.D's rule
+from control.brain_config import load_brain_config  # noqa: E402
+
+# What ships: config/robot.yaml's tier_local_no_below (the code default is
+# only a default); the yes line is a constant in brain/tiered.py.
+LOCAL_NO_BELOW = float(load_brain_config()["tier_local_no_below"])
 
 
 def load_set() -> dict:
@@ -76,8 +80,6 @@ def rows_by_file(walk: str) -> tuple:
 
 def local_kind(row: dict) -> str:
     """A VE answer as `yes`, `no` or `unable` (the band counts as unable),
-    by brain/tiered.py's own thresholds."""
-    s = row.get("score")
-    if row.get("status") != "answered" or not isinstance(s, (int, float)):
-        return "unable"
-    return "yes" if s >= LOCAL_YES_AT else "no" if s <= LOCAL_NO_BELOW else "unable"
+    by brain/tiered.py's own `_local_kind` at the shipped thresholds."""
+    kind = _local_kind(row, LOCAL_NO_BELOW, LOCAL_YES_AT)
+    return kind if kind in ("yes", "no") else "unable"
