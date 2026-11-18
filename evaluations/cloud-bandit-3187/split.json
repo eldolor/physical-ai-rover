@@ -1,0 +1,36 @@
+{
+ "seed": 3651,
+ "set_hash": "00d12dbc44f6495a927a2a58d53887fc58c9e468e5774d65a8d90288d364a2d6",
+ "held_out": [
+  "a-white-phone-charger-ca-20260921-203355",
+  "blue-bottle-20260907-142454",
+  "blue-shoes-20260907-152528",
+  "grey-backpack-opus-4-5-20260921-210743",
+  "red-backpack-20260912-224822",
+  "red-backpack-20260912-225001",
+  "woven-laundry-basket-20260912-231358",
+  "woven-laundry-basket-20260913-115703"
+ ],
+ "train": [
+  "a-white-phone-charger-ca-20260921-203250",
+  "blue-bottle-20260907-185007",
+  "blue-shoes-20260908-210511",
+  "grey-backpack-20260921-203627",
+  "grey-backpack-20260921-203748",
+  "red-backpack-20260907-144856",
+  "red-backpack-20260912-224429",
+  "red-backpack-20260912-224646",
+  "red-backpack-20260921-203152",
+  "woven-laundry-basket-20260908-215140",
+  "woven-laundry-basket-20260908-215252",
+  "woven-laundry-basket-20260908-215351",
+  "woven-laundry-basket-20260913-115414"
+ ],
+ "held_out_frames": 809,
+ "train_frames": 1452,
+ "held_out_in_view": 265,
+ "train_in_view": 270,
+ "in_view_one_side": [
+  "red backpack"
+ ]
+}

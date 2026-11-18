@@ -1,0 +1,129 @@
+{
+ "seed": 3187,
+ "set_hash": "00d12dbc44f6495a927a2a58d53887fc58c9e468e5774d65a8d90288d364a2d6",
+ "n": 20,
+ "walks": 17,
+ "in_view": 10,
+ "frames": [
+  {
+   "key": "a-white-phone-charger-ca-20260921-203250/frame-0011.jpg",
+   "object": "a white phone charger cable",
+   "target": "a white phone charger cable",
+   "visible": true
+  },
+  {
+   "key": "a-white-phone-charger-ca-20260921-203355/frame-0076.jpg",
+   "object": "a white phone charger cable",
+   "target": "a white phone charger cable",
+   "visible": false
+  },
+  {
+   "key": "a-white-phone-charger-ca-20260921-203250/frame-0027.jpg",
+   "object": "a white phone charger cable",
+   "target": "a white phone charger cable",
+   "visible": true
+  },
+  {
+   "key": "blue-shoes-20260907-152528/frame-0018.jpg",
+   "object": "blue and yellow running shoes",
+   "target": "blue and yellow running shoes",
+   "visible": true
+  },
+  {
+   "key": "blue-shoes-20260908-210511/frame-0016.jpg",
+   "object": "blue and yellow running shoes",
+   "target": "blue and yellow running shoes",
+   "visible": false
+  },
+  {
+   "key": "blue-shoes-20260907-152528/frame-0012.jpg",
+   "object": "blue and yellow running shoes",
+   "target": "blue and yellow running shoes",
+   "visible": true
+  },
+  {
+   "key": "blue-bottle-20260907-185007/frame-0211.jpg",
+   "object": "blue bottle",
+   "target": "blue bottle",
+   "visible": true
+  },
+  {
+   "key": "blue-bottle-20260907-142454/frame-0005.jpg",
+   "object": "blue bottle",
+   "target": "blue bottle",
+   "visible": false
+  },
+  {
+   "key": "blue-bottle-20260907-185007/frame-0204.jpg",
+   "object": "blue bottle",
+   "target": "blue bottle",
+   "visible": true
+  },
+  {
+   "key": "grey-backpack-opus-4-5-20260921-210743/frame-0029.jpg",
+   "object": "grey backpack",
+   "target": "Grey backpack",
+   "visible": true
+  },
+  {
+   "key": "grey-backpack-20260921-203627/frame-0084.jpg",
+   "object": "grey backpack",
+   "target": "Grey backpack",
+   "visible": false
+  },
+  {
+   "key": "grey-backpack-20260921-203748/frame-0050.jpg",
+   "object": "grey backpack",
+   "target": "Grey backpack",
+   "visible": true
+  },
+  {
+   "key": "red-backpack-20260912-224822/frame-0112.jpg",
+   "object": "red backpack",
+   "target": "red backpack",
+   "visible": false
+  },
+  {
+   "key": "red-backpack-20260921-203152/frame-0043.jpg",
+   "object": "red backpack",
+   "target": "red backpack",
+   "visible": false
+  },
+  {
+   "key": "red-backpack-20260912-224429/frame-0177.jpg",
+   "object": "red backpack",
+   "target": "red backpack",
+   "visible": false
+  },
+  {
+   "key": "red-backpack-20260912-225001/frame-0052.jpg",
+   "object": "red backpack",
+   "target": "red backpack",
+   "visible": false
+  },
+  {
+   "key": "woven-laundry-basket-20260908-215252/frame-0006.jpg",
+   "object": "woven laundry basket",
+   "target": "woven laundry basket",
+   "visible": true
+  },
+  {
+   "key": "woven-laundry-basket-20260912-231358/frame-0126.jpg",
+   "object": "woven laundry basket",
+   "target": "woven laundry basket",
+   "visible": false
+  },
+  {
+   "key": "woven-laundry-basket-20260908-215351/frame-0076.jpg",
+   "object": "woven laundry basket",
+   "target": "woven laundry basket",
+   "visible": true
+  },
+  {
+   "key": "woven-laundry-basket-20260913-115414/frame-0089.jpg",
+   "object": "woven laundry basket",
+   "target": "woven laundry basket",
+   "visible": false
+  }
+ ]
+}
