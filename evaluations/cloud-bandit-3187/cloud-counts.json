@@ -1,0 +1,103 @@
+{
+ "set_hash": "00d12dbc44f6495a927a2a58d53887fc58c9e468e5774d65a8d90288d364a2d6",
+ "recordings": "/tmp/claude-0/-home-user-physical-ai-rover/127f9acc-defa-5ae5-acb8-bb01f05698d4/scratchpad/recordings",
+ "frames": 2261,
+ "walks_without_log": [],
+ "sync": 2243,
+ "tier_called": 0,
+ "tier_local": 0,
+ "no_answer": 18,
+ "no_row": 0,
+ "duplicate_rows": 0,
+ "sync_by_model": {
+  "unrecorded": 1870,
+  "us.anthropic.claude-opus-4-5-20251101-v1:0": 373
+ },
+ "sync_by_model_and_prompt": {
+  "unrecorded | unrecorded": 1870,
+  "us.anthropic.claude-opus-4-5-20251101-v1:0 | default": 373
+ },
+ "with_shipped_answer": 373,
+ "need_minimum": 1888,
+ "comparable_to_3_65_373": 2243,
+ "tiered_walks": [],
+ "per_walk": {
+  "a-white-phone-charger-ca-20260921-203250": {
+   "sync": 82,
+   "no_answer": 2
+  },
+  "a-white-phone-charger-ca-20260921-203355": {
+   "sync": 90,
+   "no_answer": 2
+  },
+  "blue-bottle-20260907-142454": {
+   "sync": 33,
+   "with_shipped_answer": 33
+  },
+  "blue-bottle-20260907-185007": {
+   "sync": 209,
+   "with_shipped_answer": 209
+  },
+  "blue-shoes-20260907-152528": {
+   "sync": 19,
+   "with_shipped_answer": 19
+  },
+  "blue-shoes-20260908-210511": {
+   "sync": 44,
+   "with_shipped_answer": 44
+  },
+  "grey-backpack-20260921-203627": {
+   "sync": 90,
+   "no_answer": 2
+  },
+  "grey-backpack-20260921-203748": {
+   "sync": 87,
+   "no_answer": 2
+  },
+  "grey-backpack-opus-4-5-20260921-210743": {
+   "sync": 30,
+   "with_shipped_answer": 30
+  },
+  "red-backpack-20260907-144856": {
+   "sync": 38,
+   "with_shipped_answer": 38
+  },
+  "red-backpack-20260912-224429": {
+   "sync": 212,
+   "no_answer": 1
+  },
+  "red-backpack-20260912-224646": {
+   "sync": 120
+  },
+  "red-backpack-20260912-224822": {
+   "sync": 120,
+   "no_answer": 2
+  },
+  "red-backpack-20260912-225001": {
+   "sync": 120
+  },
+  "red-backpack-20260921-203152": {
+   "sync": 65
+  },
+  "woven-laundry-basket-20260908-215140": {
+   "sync": 95
+  },
+  "woven-laundry-basket-20260908-215252": {
+   "sync": 86
+  },
+  "woven-laundry-basket-20260908-215351": {
+   "sync": 86
+  },
+  "woven-laundry-basket-20260912-231358": {
+   "sync": 180
+  },
+  "woven-laundry-basket-20260913-115414": {
+   "sync": 229,
+   "no_answer": 2
+  },
+  "woven-laundry-basket-20260913-115703": {
+   "sync": 208,
+   "no_answer": 5
+  }
+ }
+}
