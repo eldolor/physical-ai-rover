@@ -187,6 +187,7 @@ section's own file has the numbers, failed criteria and review rounds.
   its `hold`. 3.136.G: nav2's goal id comes back in `POST /goal`'s reply
   (`status.explore.sent`); the desktop's image rebuilt from `dev`
   `ed6875b5` (2026-11-04), the Jetson's not yet.
+* 3.189: a cloud session builds the ROS image with `service/slam/build-cloud.sh` (`ARG BASE_IMAGE` in the Dockerfile, default unchanged; a local base trusts the HTTPS proxy CA and takes ROS apt from the OSUOSL mirror) in ~7 min (398 s, 3.95 GB), and nav2 reached a goal on `scaled_house` (13.7 s, 0.096 m). Outcome-judged live runs are valid there; timing-judged ones are not (load peaked 4.68 on 4 cores, bar 4: FAILED). A cloud session exports `APP_SHARED_SECRET`, which fails ~40 tests: run `ready` and pushes with `env -u APP_SHARED_SECRET -u LOCAL_SECRET` (~17 min there).
 
 ## The twin, consoles and tooling
 

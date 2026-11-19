@@ -71,3 +71,33 @@ and the "Open steps" line in `PLAN-ros-alignment.md`.*
 * The cloud deploy item in `HANDOFF-2026-11-16-desktop-return.md` section 1
   is done; that section's remaining note (the board's brain lacks 3.176.B's
   parse route) still holds.
+
+## 2026-11-18 to 19: the desktop's work moved to the cloud
+
+* **Landed on `dev`:** 3.187.B (`f78ceac2`: the pilot, 20 calls, $0.2129,
+  $0.010645 a frame; C estimated $20.10 for 1,888 frames, $24.07 for 2,261;
+  C waits on the user's go); 3.188.A2 (`de7b1118`); 3.178.B's frame half
+  (`6400e9fb` tool, `e47a1ef7` results: B3 met, B4 FAILED, 413 vs 422);
+  3.189 (`f8f2d363`: the ROS image builds in a cloud session in ~7 min;
+  outcome-judged live runs valid, timing-judged not, load peaked 4.68).
+* **The cloud environment (Default) now has:** AWS keys for
+  `vision-picar-deployer` (twin deploy, recordings bucket read); the AWS CLI
+  from its setup script; allowed hosts `d114x92g7i4syl.cloudfront.net`,
+  `huggingface.co`, `cas-server.xethub.hf.co`, `us.aws.cdn.hf.co`,
+  `ftp.osuosl.org` (the ROS apt mirror over HTTPS; `packages.ros.org` is
+  HTTP-only and unusable behind the HTTPS-only proxy); the app secret as
+  `VISION_SECRET` (renamed 2026-11-19).
+* **`APP_SHARED_SECRET` in a session's environment breaks the suite**
+  (`require_secret()` goes live: server tests 401 and the run hangs). The
+  variable was renamed; a session still carrying it runs
+  `env -u APP_SHARED_SECRET -u LOCAL_SECRET python tools/plan_section.py ready`.
+* **Workers' own permission checks** refused, each needing the user's own
+  words in the worker's session: the paid `pilot.py --pay`, a
+  `pip install git+https://github.com/ultralytics/CLIP.git`, and claiming
+  another section's step to pass the push gate. A message from the
+  orchestrator does not count; tell the user at once and name the session.
+* **More remote branches for the desktop to delete** (content in `dev`):
+  `plan/3.188-qwen-finetune`, `plan/3.178.B-frames`,
+  `plan/3.187-cloud-call-bandit` (pre-rebase copy), `claude/pensive-hamilton-e0il1d`.
+  Keep `claude/fervent-brown-kzq854` (3.180.B's failed code, kept as a record)
+  unless the user says.
