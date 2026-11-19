@@ -6,10 +6,10 @@
   "capped": 0
  },
  "Z1": {
-  "goals": 2525,
+  "goals": 2528,
   "in_zone": 0,
   "in_zone_grown_012": 0,
-  "zone_refusals_at_send": 4
+  "zone_refusals_at_send": 3
  },
  "Z2": {
   "entries": 0,
@@ -190,12 +190,12 @@
   "frame_id": "map-f1405310",
   "z6_refused": 10,
   "goals_in_zone": [],
-  "peak_load": 4.28,
+  "peak_load": 2.89,
   "store_after_mission": 3,
   "mission": {
    "outcome": "found",
-   "seconds": 77,
-   "goals_sent": 3,
+   "seconds": 62,
+   "goals_sent": 2,
    "entries": [],
    "nogo": {
     "frame_id": "map-f1405310",
@@ -204,7 +204,7 @@
     "leaves": 0
    }
   },
-  "goals": 3,
+  "goals": 2,
   "bridge_after_draw": {
    "zones": 3,
    "suspended": 0,
@@ -219,21 +219,21 @@
   },
   "z3": {
    "zone": {
-    "id": "z7fc032878032",
-    "x0": 1.635,
-    "y0": 0.937,
-    "x1": 2.435,
-    "y1": 1.737,
+    "id": "z452fc297d52d",
+    "x0": 1.63,
+    "y0": 0.939,
+    "x1": 2.43,
+    "y1": 1.739,
     "kind": "area",
-    "set_at": 1795103859.839,
+    "set_at": 1795105016.894,
     "by": "person"
    },
-   "left_after_s": 7.1,
+   "left_after_s": 7.4,
    "restored": {
     "event": "zone_restored",
-    "id": "z7fc032878032",
-    "at": 1795103872.4774032,
-    "clear_m": 0.316
+    "id": "z452fc297d52d",
+    "at": 1795105029.530169,
+    "clear_m": 0.311
    }
   }
  }
