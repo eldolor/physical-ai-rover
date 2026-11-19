@@ -132,7 +132,8 @@ def house_runs(house, load):
         # With none: an empty store -> a new map_id, not reloaded, its first
         # known cells the bridge's own (the world's no more than the bridge's).
         "first_visit_new_map": ("MET" if sa.get("frame_id") and sa["frame_id"] == a["bridge_map_id"]
-                                and sa.get("reloaded") is False else "FAILED"),
+                                and sa.get("reloaded") is False and na.get("bridge_known") == 0
+                                else "FAILED"),
         # The brain's map is the bridge's, built from scans: at the first
         # named moment it holds no more known cells than the bridge's (read
         # just before it), and the bridge's are a part of the house.
@@ -144,14 +145,27 @@ def house_runs(house, load):
         "saved_map_reloaded": ("MET" if b["reload"].get("result") == "matched"
                                and sb.get("frame_id") == saved_id == sa.get("frame_id")
                                and sb.get("reloaded") is True else "FAILED"),
+        # 0 contact samples, counted (min_gap_cm None: nothing came within
+        # the harness's 1.6-cell sampling radius, so no gap to report).
         "missions_ran": ("MET" if a["mission"].get("outcome") and b["mission"].get("outcome")
-                         and not a["mission"].get("contact_samples")
-                         and not b["mission"].get("contact_samples") else "FAILED"),
+                         and a["mission"].get("contact_samples") == 0
+                         and b["mission"].get("contact_samples") == 0 else "FAILED"),
     }
     os.makedirs(OUT, exist_ok=True)
     with open(os.path.join(OUT, f"{house}.json"), "w") as f:
-        json.dump(res, f, indent=1)
+        json.dump(_finite(res), f, indent=1, allow_nan=False)
     return res
+
+
+def _finite(o):
+    """Strict JSON: a non-finite number (min_gap_cm with no sample) is null."""
+    if isinstance(o, float) and o != o or o in (float("inf"), float("-inf")):
+        return None
+    if isinstance(o, dict):
+        return {k: _finite(v) for k, v in o.items()}
+    if isinstance(o, list):
+        return [_finite(v) for v in o]
+    return o
 
 
 def main(argv):

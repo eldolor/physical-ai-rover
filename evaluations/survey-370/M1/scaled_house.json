@@ -11,7 +11,7 @@
    "outcome": "out_of_budget",
    "seconds": 64,
    "contact_samples": 0,
-   "min_gap_cm": Infinity
+   "min_gap_cm": null
   },
   "named": {
    "saved_map": {

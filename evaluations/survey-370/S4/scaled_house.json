@@ -132,7 +132,7 @@
    "outcome": "out_of_budget",
    "seconds": 28,
    "contact_samples": 0,
-   "min_gap_cm": Infinity
+   "min_gap_cm": null
   },
   "seeded": {
    "frame_id": "map-23c9f4c4",
