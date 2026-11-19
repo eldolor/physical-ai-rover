@@ -199,3 +199,38 @@ def test_the_map_is_named_without_an_inventory_store():
                                     start_truth=START), inventory_prior=False)
     assert runner.status()["saved_map"]["frame_id"] == SAVED
     runner.stop("test")
+
+
+def test_the_give_up_runs_on_wall_time_too(monkeypatch):
+    """Review 2: a mission clock that stands still does not keep the note's
+    reads going: wall time past the limit stops them as well."""
+    from control import mission_runner as mr
+    monkeypatch.setattr(mr, "SEED_EVERY_S", 0.0)
+    grid = build_world("scaled_house")
+    runner = MissionRunner(MockRobot(grid, render=False), target_object="unicorn",
+                           policy="frontier", max_steps=50,
+                           world=_world(Judged(10 ** 6, map_id=SAVED, start_truth=START),
+                                        truth=TRUTH), clock=lambda: 0.0)
+    runner.start()
+    assert runner._note_reads_due()
+    runner._started_at -= mr.NOTE_GIVE_UP_S + 1
+    assert not runner._note_reads_due()
+    runner.stop("test")
+
+
+def test_a_pose_read_error_for_the_note_is_not_an_inventory_warning(monkeypatch, caplog):
+    from control import mission_runner as mr
+    monkeypatch.setattr(mr, "SEED_EVERY_S", 0.0)
+    grid = build_world("scaled_house")
+    runner = MissionRunner(MockRobot(grid, render=False), target_object="unicorn",
+                           policy="frontier", max_steps=50,
+                           world=_world(DockBridge(map_id=SAVED, start_truth=START), truth=TRUTH),
+                           detections_fn=lambda frame: None)
+    runner.world.get_pose = lambda: (_ for _ in ()).throw(RuntimeError("500"))
+    runner.start()
+    with caplog.at_level("WARNING"):
+        for _ in range(3):
+            runner.tick()
+    assert not runner._inventory_error_logged
+    assert sum("pose not read" in r.message for r in caplog.records) == 1
+    runner.stop("test")

@@ -933,6 +933,7 @@ class MissionRunner:
         # it was RELOADED (the pose carries the saved dock only on a matched
         # reload, 3.156.E) or is a new map (a first visit or a fall-back).
         self._saved_map: Optional[dict] = None
+        self._pose_read_error_logged = False
         self.inventory_sink_lazy = False
         self._inventory_seeded = False
         self._seed_read_at: Optional[tuple] = None   # (wall, mission clock) of the last read
@@ -3057,7 +3058,14 @@ class MissionRunner:
                     last = self._seed_read_at
                     if last is None or any(n - t >= SEED_EVERY_S for n, t in zip(now, last)):
                         self._seed_read_at = now
-                        self._seed_inventory(self.world.get_pose())
+                        try:
+                            pose = self.world.get_pose()
+                        except Exception as e:  # noqa: BLE001 -- 3.70 M1 review 2: its own warning
+                            if not self._pose_read_error_logged:
+                                self._pose_read_error_logged = True
+                                logger.warning("pose not read for the map's name or the seed: %s", e)
+                            return
+                        self._seed_inventory(pose)
                 return
             pose = self.world.get_pose()
             self._seed_inventory(pose)
@@ -3082,7 +3090,11 @@ class MissionRunner:
         NOTE_GIVE_UP_S of mission time -- a world that never answers a usable
         pose (a phone walk) is not polled for the whole mission."""
         elapsed = self._elapsed_s()
-        return elapsed is None or elapsed < NOTE_GIVE_UP_S
+        if elapsed is None or self._started_at is None:
+            return False               # no mission running: nothing to name
+        # Either clock past the limit stops them (review 2): a simulated
+        # clock can stand still.
+        return elapsed < NOTE_GIVE_UP_S and time.monotonic() - self._started_at < NOTE_GIVE_UP_S
 
     def _note_map(self, pose: Optional[dict]) -> None:
         """3.70 M1: once, on the first usable pose, the map this mission
@@ -3103,7 +3115,7 @@ class MissionRunner:
         elif note["reloaded"]:
             self._log_line(f"map: on the saved map {frame_id}, reloaded")
         else:
-            self._log_line(f"map: a new map {frame_id} (nothing saved matched: built from this run's scans)")
+            self._log_line(f"map: a new map {frame_id} (not a matched reload)")
 
     def _seed_inventory(self, pose: dict) -> None:
         """3.50.D5: once, on the first usable pose: the head of the chain
