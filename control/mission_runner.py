@@ -91,6 +91,8 @@ logger = logging.getLogger("mission_runner")
 # the mission's clock has moved this far -- a simulated clock can stand still
 # or run fast (reviews 3-4).
 SEED_EVERY_S = 2.0
+# 3.70 M1: reads made only to name the map stop after this much mission time.
+NOTE_GIVE_UP_S = 120.0
 
 # Deliberately NOT 30.0, which is exactly one grid cell.
 #
@@ -3047,7 +3049,7 @@ class MissionRunner:
                 return                        # no reads once the mission has ended
             if detections is None:
                 if ((self.inventory_prior is not None and not self._inventory_seeded)
-                        or self._saved_map is None):
+                        or (self._saved_map is None and self._note_reads_due())):
                     # 3.50.D5: seed on the first usable pose even before the
                     # first detection -- a pose read for it at most every
                     # SEED_EVERY_S until then (a phone walk never has one).
@@ -3075,10 +3077,18 @@ class MissionRunner:
                 self._inventory_error_logged = True
                 logger.warning("inventory: frame not recorded: %s", e)
 
+    def _note_reads_due(self) -> bool:
+        """3.70 M1 (review): pose reads made only to name the map stop after
+        NOTE_GIVE_UP_S of mission time -- a world that never answers a usable
+        pose (a phone walk) is not polled for the whole mission."""
+        elapsed = self._elapsed_s()
+        return elapsed is None or elapsed < NOTE_GIVE_UP_S
+
     def _note_map(self, pose: Optional[dict]) -> None:
         """3.70 M1: once, on the first usable pose, the map this mission
-        runs on -- `status()['saved_map']` and a log line. Reads nothing more
-        than the pose it is given."""
+        STARTED on -- `status()['saved_map']` and a log line; like the
+        inventory's seed it is not revised if SLAM restarts under the
+        mission. Reads nothing more than the pose it is given."""
         if self._saved_map is not None or not pose or not pose.get("usable"):
             return
         frame_id = pose.get("frame_id")
@@ -3089,7 +3099,7 @@ class MissionRunner:
                 return
             self._saved_map = note
         if not frame_id:
-            self._log_line("map: no saved map (this world keeps none)")
+            self._log_line("map: not on a saved map's frame (none kept, or not anchored on one)")
         elif note["reloaded"]:
             self._log_line(f"map: on the saved map {frame_id}, reloaded")
         else:

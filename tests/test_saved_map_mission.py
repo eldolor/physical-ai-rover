@@ -14,6 +14,7 @@ Against a fake bridge answering `/slam/pose` as picar_bridge does (3.50.D5's
 of that is pinned in tests/test_dock_saved.py), through `RosWorld` and
 `MissionRunner`.
 """
+import httpx
 import pytest
 
 from control.mission_runner import MissionRunner
@@ -60,14 +61,48 @@ def test_with_a_saved_map_the_mission_runs_on_it_reloaded():
     runner.stop("test")
 
 
-@pytest.mark.parametrize("why", ["first visit", "fall-back"])
-def test_with_none_the_mission_starts_on_a_new_map_under_a_new_id(why):
-    """No saved map, or one that did not fit: a new id, no dock."""
+def test_with_none_the_mission_starts_on_a_new_map_under_a_new_id():
+    """No saved map: a new id, no dock."""
     runner, _ = _mission(DockBridge(map_id=NEW, dock=None, start_truth=START))
     s = runner.status()
     assert s["saved_map"] == {"frame_id": NEW, "map_id": "slam-s1", "reloaded": False}
-    assert s["saved_map"]["frame_id"] != SAVED
     assert any(f"a new map {NEW}" in line for line in runner._log)
+    runner.stop("test")
+
+
+class Judged(DockBridge):
+    """The bridge while it judges a reload (no map pose, no map_id, no
+    dock), then its verdict."""
+
+    def __init__(self, checking_polls, **kw):
+        super().__init__(**kw)
+        self.left = checking_polls
+
+    def handler(self, request):
+        r = super().handler(request)
+        if request.url.path == "/slam/pose" and self.left > 0:
+            self.left -= 1
+            body = dict(r.json(), map=None, map_id=None)
+            body.pop("dock_pose", None)
+            return httpx.Response(200, json=body)
+        return r
+
+
+def test_a_fall_back_after_the_check_is_a_new_map_not_a_reload(monkeypatch):
+    from control import mission_runner as mr
+    monkeypatch.setattr(mr, "SEED_EVERY_S", 0.0)
+    runner, _ = _mission(Judged(3, map_id=NEW, dock=None, start_truth=START), ticks=10)
+    assert runner.status()["saved_map"] == {"frame_id": NEW, "map_id": "slam-s1",
+                                            "reloaded": False}
+    runner.stop("test")
+
+
+def test_a_matched_reload_after_the_check_is_a_reload(monkeypatch):
+    from control import mission_runner as mr
+    monkeypatch.setattr(mr, "SEED_EVERY_S", 0.0)
+    runner, _ = _mission(Judged(3, map_id=SAVED, dock={"x": 0.0, "y": 0.0, "theta": 0.0},
+                                start_truth=START), ticks=10)
+    assert runner.status()["saved_map"]["reloaded"] is True
     runner.stop("test")
 
 
@@ -105,7 +140,7 @@ def test_an_older_bridge_names_no_saved_map():
     runner, _ = _mission(DockBridge(map_id=None, dock=None, start_truth=START))
     assert runner.status()["saved_map"] == {"frame_id": None, "map_id": "slam-s1",
                                             "reloaded": False}
-    assert any("no saved map" in line for line in runner._log)
+    assert any("not on a saved map's frame" in line for line in runner._log)
     runner.stop("test")
 
 
@@ -120,18 +155,42 @@ def test_a_dock_on_no_saved_frame_is_not_a_reload():
 
 
 def test_before_a_usable_pose_nothing_is_named():
-    class Unusable(DockBridge):
-        def handler(self, request):
-            r = super().handler(request)
-            if request.url.path == "/slam/pose":
-                import httpx
-                body = r.json()
-                body["map"] = None                 # the reload still being judged
-                return httpx.Response(200, json=body)
-            return r
-    runner, _ = _mission(Unusable(map_id=SAVED, start_truth=START), ticks=2)
+    runner, _ = _mission(Judged(10 ** 6, map_id=SAVED, start_truth=START), ticks=2)
     assert runner.status()["saved_map"] is None
     runner.stop("test")
+
+
+def _pose_reads(elapsed_s, monkeypatch, ticks=4):
+    """/slam/pose reads over `ticks` ticks of a mission at `elapsed_s`, on
+    frames with no detections, the pose never usable."""
+    from control import mission_runner as mr
+    monkeypatch.setattr(mr, "SEED_EVERY_S", 0.0)
+    bridge = Judged(10 ** 6, map_id=SAVED, start_truth=START)
+    reads = []
+    real = bridge.handler
+    bridge.handler = lambda req: (reads.append(1) if req.url.path == "/slam/pose"
+                                  else None) or real(req)
+    grid = build_world("scaled_house")
+    clock = [0.0]
+    runner = MissionRunner(MockRobot(grid, render=False), target_object="unicorn",
+                           policy="frontier", max_steps=50, world=_world(bridge, truth=TRUTH),
+                           clock=lambda: clock[0], detections_fn=lambda frame: None)
+    runner.start()
+    runner.tick()
+    clock[0] = elapsed_s
+    before = len(reads)
+    for _ in range(ticks):
+        runner.tick()
+    runner.stop("test")
+    return len(reads) - before
+
+
+def test_reads_only_to_name_the_map_stop_after_the_give_up_time(monkeypatch):
+    from control import mission_runner as mr
+    # The tick reads the pose for its own needs either way; the note's own
+    # read (one a tick here, SEED_EVERY_S at 0) is there only before it.
+    early, late = _pose_reads(1.0, monkeypatch), _pose_reads(mr.NOTE_GIVE_UP_S + 1, monkeypatch)
+    assert early - late == 4, (early, late)
 
 
 def test_the_map_is_named_without_an_inventory_store():
