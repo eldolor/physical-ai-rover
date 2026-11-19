@@ -288,3 +288,15 @@ def test_a_first_survey_with_no_detections_still_saves_on_its_frame(tmp_path):
     saved = _saved_file(tmp_path, "s1")
     assert saved["frame_id"] == SAVED
     assert read_saved(saved["room_labels"])["frame_id"] == SAVED
+
+
+# ---------- the live round trip's record (evaluations/survey-370/S4/) ----------
+
+@pytest.mark.parametrize("house", ["scaled_house", "home_first_floor"])
+def test_the_live_round_trip_met_every_s4_bar(house):
+    from pathlib import Path
+    rec = json.loads((Path(__file__).resolve().parents[1] / "evaluations" / "survey-370" / "S4"
+                      / f"{house}.json").read_text())
+    assert set(rec["verdicts"].values()) == {"MET"} and len(rec["verdicts"]) == 5
+    assert rec["s2"]["map_agreement"] >= 0.99
+    assert rec["fall_back"]["landmarks_used"] == 0 and not rec["fall_back"]["labels_used"]

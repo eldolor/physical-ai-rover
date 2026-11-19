@@ -1,0 +1,574 @@
+{
+ "house": "home_first_floor",
+ "image": "vision-picar-ros:plan-3.70",
+ "survey_limit_s": 1800,
+ "s1": {
+  "survey": {
+   "outcome": "out_of_budget",
+   "seconds": 1733,
+   "survey": {
+    "mode": "spacing",
+    "label_calls": 38,
+    "label_call_limit": 60,
+    "capped": false,
+    "no_source": false,
+    "source_error": null,
+    "skipped_for_time": 0,
+    "rooms_named": [
+     "breakfast",
+     "den",
+     "dining room",
+     "family room",
+     "foyer",
+     "hall",
+     "living room"
+    ],
+    "person_named": [],
+    "seeds": [
+     [
+      5.25,
+      11.25,
+      "foyer"
+     ],
+     [
+      6.974,
+      10.984,
+      "dining room"
+     ],
+     [
+      7.853,
+      10.497,
+      "dining room"
+     ],
+     [
+      7.414,
+      9.663,
+      "dining room"
+     ],
+     [
+      9.683,
+      10.617,
+      "dining room"
+     ],
+     [
+      5.546,
+      9.544,
+      "foyer"
+     ],
+     [
+      5.528,
+      8.977,
+      "foyer"
+     ],
+     [
+      5.539,
+      6.957,
+      "foyer"
+     ],
+     [
+      7.061,
+      6.475,
+      "family room"
+     ],
+     [
+      8.204,
+      7.454,
+      "hall"
+     ],
+     [
+      9.821,
+      7.099,
+      "hall"
+     ],
+     [
+      10.671,
+      5.883,
+      "breakfast"
+     ],
+     [
+      11.102,
+      5.586,
+      "breakfast"
+     ],
+     [
+      11.563,
+      5.438,
+      "breakfast"
+     ],
+     [
+      11.873,
+      3.83,
+      "breakfast"
+     ],
+     [
+      10.993,
+      2.708,
+      "breakfast"
+     ],
+     [
+      10.578,
+      2.602,
+      "breakfast"
+     ],
+     [
+      9.169,
+      3.207,
+      "breakfast"
+     ],
+     [
+      7.826,
+      2.565,
+      "family room"
+     ],
+     [
+      6.456,
+      1.891,
+      "family room"
+     ],
+     [
+      5.269,
+      0.921,
+      "family room"
+     ],
+     [
+      7.023,
+      3.618,
+      "family room"
+     ],
+     [
+      4.925,
+      9.118,
+      "foyer"
+     ],
+     [
+      3.869,
+      10.142,
+      "living room"
+     ],
+     [
+      3.662,
+      11.98,
+      "living room"
+     ],
+     [
+      3.398,
+      12.016,
+      "living room"
+     ],
+     [
+      1.945,
+      11.368,
+      "living room"
+     ],
+     [
+      1.521,
+      10.437,
+      "living room"
+     ],
+     [
+      1.649,
+      8.642,
+      "living room"
+     ],
+     [
+      2.516,
+      8.834,
+      "living room"
+     ],
+     [
+      3.711,
+      6.748,
+      "hall"
+     ],
+     [
+      2.912,
+      6.626,
+      "hall"
+     ],
+     [
+      3.326,
+      5.315,
+      "hall"
+     ],
+     [
+      1.967,
+      4.631,
+      "den"
+     ],
+     [
+      0.778,
+      3.854,
+      "den"
+     ],
+     [
+      2.582,
+      3.204,
+      "den"
+     ],
+     [
+      6.782,
+      4.776,
+      "family room"
+     ],
+     [
+      6.795,
+      3.893,
+      "family room"
+     ]
+    ]
+   },
+   "end": "mission ended (out_of_budget): return reserve -- time: 136 s left, the trip home 136 s (11.4 m)"
+  },
+  "map_save": {
+   "map_id": "map-b8af3276",
+   "saving": false,
+   "store": true,
+   "saved": 1,
+   "failed": 0,
+   "skipped": 0,
+   "last_version": 1,
+   "last_at": 1795094192.740514,
+   "last_error": null
+  },
+  "settled_s": 4.0,
+  "map_id": "map-b8af3276",
+  "saved_version": 1,
+  "report": {
+   "frame_id": "map-b8af3276",
+   "mission_id": "20261119T124739.484152Z-survey",
+   "landmarks": 39,
+   "labels": {
+    "names": [
+     "breakfast",
+     "den",
+     "dining room",
+     "family room",
+     "foyer",
+     "hall",
+     "living room"
+    ],
+    "grid": [
+     53,
+     48,
+     0.30000000447034836
+    ],
+    "labelled_cells": 783,
+    "seeds": 38,
+    "frame_id": "map-b8af3276",
+    "mission_id": "20261119T124739.484152Z-survey"
+   }
+  },
+  "load": {
+   "n": 175,
+   "max": 5.07,
+   "p50": 2.01,
+   "over_4": 4
+  }
+ },
+ "s2": {
+  "reload": {
+   "map_id": "map-b8af3276",
+   "version": 1,
+   "took_s": 2.13,
+   "agreement": 1.0,
+   "dock_error_m": 0.001,
+   "dock_error_deg": 0.03,
+   "ok": true,
+   "reason": "matched",
+   "result": "matched"
+  },
+  "map_id": "map-b8af3276",
+  "map_agreement": 1.0,
+  "pose_map_id": "map-b8af3276",
+  "store": {
+   "same_report": true,
+   "labels_cell_for_cell": true,
+   "labels_block_equal": true,
+   "landmarks_equal": true,
+   "landmarks": 39
+  },
+  "find": {
+   "outcome": "out_of_budget",
+   "seconds": 29,
+   "contact_samples": 0,
+   "min_gap_cm": Infinity
+  },
+  "seeded": {
+   "frame_id": "map-b8af3276",
+   "carried_from": "20261119T124739.484152Z-survey",
+   "at_s": 0.3,
+   "labels_block_equal": true,
+   "carried": 32,
+   "saved_at_belief_0_5": 32,
+   "matched": [
+    {
+     "id_saved": 1,
+     "id_seeded": 1,
+     "label": "armchair",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 9,
+     "id_seeded": 2,
+     "label": "armchair",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 17,
+     "id_seeded": 3,
+     "label": "armchair",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 56,
+     "id_seeded": 4,
+     "label": "bookcase",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 20,
+     "id_seeded": 5,
+     "label": "breakfast table",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 28,
+     "id_seeded": 6,
+     "label": "breakfast table",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 4,
+     "id_seeded": 7,
+     "label": "chair",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 19,
+     "id_seeded": 8,
+     "label": "chair",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 21,
+     "id_seeded": 9,
+     "label": "chair",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 30,
+     "id_seeded": 10,
+     "label": "chair",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 37,
+     "id_seeded": 11,
+     "label": "chair",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 15,
+     "id_seeded": 12,
+     "label": "coffee table",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 22,
+     "id_seeded": 13,
+     "label": "coffee table",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 57,
+     "id_seeded": 14,
+     "label": "desk",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 60,
+     "id_seeded": 15,
+     "label": "desk",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 59,
+     "id_seeded": 16,
+     "label": "desk chair",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 5,
+     "id_seeded": 17,
+     "label": "dining table",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 13,
+     "id_seeded": 18,
+     "label": "dining table",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 29,
+     "id_seeded": 19,
+     "label": "kitchen counter",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 27,
+     "id_seeded": 20,
+     "label": "kitchen island",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 16,
+     "id_seeded": 21,
+     "label": "sectional sofa",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 42,
+     "id_seeded": 22,
+     "label": "sectional sofa",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 48,
+     "id_seeded": 23,
+     "label": "side table",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 47,
+     "id_seeded": 24,
+     "label": "sofa",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 2,
+     "id_seeded": 25,
+     "label": "staircase",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 53,
+     "id_seeded": 26,
+     "label": "toilet",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 41,
+     "id_seeded": 27,
+     "label": "tv console",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 55,
+     "id_seeded": 28,
+     "label": "vanity",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 31,
+     "id_seeded": 29,
+     "label": "kitchen counter",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 34,
+     "id_seeded": 30,
+     "label": "red backpack",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 33,
+     "id_seeded": 31,
+     "label": "kitchen counter",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 26,
+     "id_seeded": 32,
+     "label": "kitchen island",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    }
+   ]
+  },
+  "end_inventory_labels_equal": true,
+  "load": {
+   "n": 4,
+   "max": 4.54,
+   "p50": 4.52,
+   "over_4": 3
+  }
+ },
+ "fall_back": {
+  "from_dock_m": 1.19,
+  "from_dock_deg": 59.8,
+  "reload": {
+   "map_id": "map-b8af3276",
+   "version": 1,
+   "took_s": 1.89,
+   "agreement": 0.297,
+   "dock_error_m": 0.252,
+   "dock_error_deg": 19.2,
+   "ok": false,
+   "reason": "scans agree with the saved map 30% (< 60%)",
+   "result": "fell_back"
+  },
+  "map_id": "map-616ba3c4",
+  "find": {
+   "outcome": "out_of_budget",
+   "seconds": 33
+  },
+  "labels_used": false,
+  "landmarks_used": 0,
+  "frame_id": "map-616ba3c4",
+  "load": {
+   "n": 7,
+   "max": 4.2,
+   "p50": 3.65,
+   "over_4": 2
+  }
+ },
+ "verdicts": {
+  "written_as_one": "MET",
+  "map_round_trip": "MET",
+  "labels_cell_for_cell": "MET",
+  "landmarks_equal": "MET",
+  "fall_back_none_used": "MET"
+ }
+}

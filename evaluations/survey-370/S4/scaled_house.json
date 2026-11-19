@@ -1,0 +1,219 @@
+{
+ "house": "scaled_house",
+ "image": "vision-picar-ros:plan-3.70",
+ "survey_limit_s": 900,
+ "s1": {
+  "survey": {
+   "outcome": "exhausted",
+   "seconds": 318,
+   "survey": {
+    "mode": "spacing",
+    "label_calls": 7,
+    "label_call_limit": 60,
+    "capped": false,
+    "no_source": false,
+    "source_error": null,
+    "skipped_for_time": 0,
+    "rooms_named": [
+     "bedroom",
+     "hallway",
+     "kitchen",
+     "living room",
+     "study"
+    ],
+    "person_named": [],
+    "seeds": [
+     [
+      1.95,
+      1.35,
+      "living room"
+     ],
+     [
+      3.696,
+      1.382,
+      "hallway"
+     ],
+     [
+      5.131,
+      1.362,
+      "kitchen"
+     ],
+     [
+      6.537,
+      2.008,
+      "kitchen"
+     ],
+     [
+      4.343,
+      2.789,
+      "hallway"
+     ],
+     [
+      5.158,
+      3.212,
+      "study"
+     ],
+     [
+      2.723,
+      3.168,
+      "bedroom"
+     ]
+    ]
+   },
+   "end": "mission ended (exhausted): no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)"
+  },
+  "map_save": {
+   "map_id": "map-23c9f4c4",
+   "saving": false,
+   "store": true,
+   "saved": 1,
+   "failed": 0,
+   "skipped": 0,
+   "last_version": 1,
+   "last_at": 1795092300.4746442,
+   "last_error": null
+  },
+  "settled_s": 3.5,
+  "map_id": "map-23c9f4c4",
+  "saved_version": 1,
+  "report": {
+   "frame_id": "map-23c9f4c4",
+   "mission_id": "20261119T123942.253154Z-survey",
+   "landmarks": 4,
+   "labels": {
+    "names": [
+     "bedroom",
+     "hallway",
+     "kitchen",
+     "living room",
+     "study"
+    ],
+    "grid": [
+     26,
+     13,
+     0.30000000447034836
+    ],
+    "labelled_cells": 186,
+    "seeds": 7,
+    "frame_id": "map-23c9f4c4",
+    "mission_id": "20261119T123942.253154Z-survey"
+   }
+  },
+  "load": {
+   "n": 34,
+   "max": 2.01,
+   "p50": 1.16,
+   "over_4": 0
+  }
+ },
+ "s2": {
+  "reload": {
+   "map_id": "map-23c9f4c4",
+   "version": 1,
+   "took_s": 1.72,
+   "agreement": 0.708,
+   "dock_error_m": 0.0,
+   "dock_error_deg": 0.0,
+   "ok": true,
+   "reason": "matched",
+   "result": "matched"
+  },
+  "map_id": "map-23c9f4c4",
+  "map_agreement": 1.0,
+  "pose_map_id": "map-23c9f4c4",
+  "store": {
+   "same_report": true,
+   "labels_cell_for_cell": true,
+   "labels_block_equal": true,
+   "landmarks_equal": true,
+   "landmarks": 4
+  },
+  "find": {
+   "outcome": "out_of_budget",
+   "seconds": 28,
+   "contact_samples": 0,
+   "min_gap_cm": Infinity
+  },
+  "seeded": {
+   "frame_id": "map-23c9f4c4",
+   "carried_from": "20261119T123942.253154Z-survey",
+   "at_s": 0.3,
+   "labels_block_equal": true,
+   "carried": 4,
+   "saved_at_belief_0_5": 4,
+   "matched": [
+    {
+     "id_saved": 4,
+     "id_seeded": 1,
+     "label": "bed",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 2,
+     "id_seeded": 2,
+     "label": "red backpack",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 3,
+     "id_seeded": 3,
+     "label": "refrigerator",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    },
+    {
+     "id_saved": 1,
+     "id_seeded": 4,
+     "label": "sofa",
+     "d_m": 0.0,
+     "d_belief": 0.0
+    }
+   ]
+  },
+  "end_inventory_labels_equal": true,
+  "load": {
+   "n": 4,
+   "max": 1.7,
+   "p50": 1.67,
+   "over_4": 0
+  }
+ },
+ "fall_back": {
+  "from_dock_m": 1.19,
+  "from_dock_deg": 59.7,
+  "reload": {
+   "map_id": "map-23c9f4c4",
+   "version": 1,
+   "took_s": 1.72,
+   "agreement": 0.453,
+   "dock_error_m": 0.182,
+   "dock_error_deg": 3.8,
+   "ok": false,
+   "reason": "scans agree with the saved map 45% (< 60%)",
+   "result": "fell_back"
+  },
+  "map_id": "map-ed10fbf1",
+  "find": {
+   "outcome": "out_of_budget",
+   "seconds": 44
+  },
+  "labels_used": false,
+  "landmarks_used": 0,
+  "frame_id": "map-ed10fbf1",
+  "load": {
+   "n": 8,
+   "max": 1.75,
+   "p50": 1.33,
+   "over_4": 0
+  }
+ },
+ "verdicts": {
+  "written_as_one": "MET",
+  "map_round_trip": "MET",
+  "labels_cell_for_cell": "MET",
+  "landmarks_equal": "MET",
+  "fall_back_none_used": "MET"
+ }
+}
