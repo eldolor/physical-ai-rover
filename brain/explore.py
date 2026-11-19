@@ -66,7 +66,7 @@ from robot.interface import VERB_MAX_TAG, ZONE_UNUSABLE, Preempted, RobotInterfa
 from robot.safety import CREEP_MARGIN_CM, FOOTPRINT_LENGTH_M, SafetyViolation, verb_speed_m_s
 from world.bridge_faults import fault_from_headers, response_detail, setup_fault_message
 from world import nogo
-from world.interface import CELL_FREE, CELL_OCCUPIED
+from world.interface import CELL_FREE
 
 logger = logging.getLogger("explore")
 
@@ -856,7 +856,7 @@ class ExploreAgent(MissionAgent):
         key = (m.get("map_id"), m.get("map_version"), self._zones_rev, len(zones))
         if self._masked is not None and self._masked[:4] == key and m.get("map_version") is not None:
             return self._masked[4]
-        out = nogo.masked_map(m, zones, CELL_OCCUPIED)
+        out = nogo.masked_map(m, zones, nogo.CELL_NOGO, grow=nogo.HALF_WIDTH_M)
         if out is m:
             out = dict(m)
         out["nogo_rev"] = self._zones_rev

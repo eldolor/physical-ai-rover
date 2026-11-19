@@ -893,8 +893,13 @@ lies in a zone grown by `HALF_WIDTH_M` (0.12 m) is first sent out
 (`_leave_zone`: the nearest place along the floor, on the map without the
 zones, `LEAVE_GOAL_M` (0.35 m) clear of every zone, sent as kind
 `leave_zone`); then every choice is made on `nogo.masked_map(m, zones,
-CELL_OCCUPIED)`, so no frontier, view gap, room or small-room goal lies in a
-zone and no reachable path crosses one. `_send` checks every goal whatever
+CELL_NOGO, grow=HALF_WIDTH_M)` (cached per map version and zone set), so no
+frontier, view gap, room or small-room goal lies in a zone grown by the
+half-width and no reachable path crosses one. `CELL_NOGO` (2) is neither
+free, unknown nor occupied: no frontier forms beside a zone, and no obstacle
+clearance grows around it (nav2's keepout is lethal to the robot's centre and
+is not inflated); marked occupied, the clearance grown round a zone would
+close a doorway beside it to explore while nav2 still passes it. `_send` checks every goal whatever
 chose it (an approach, a recall): one inside a grown zone is moved just out
 of it along the nearest side (`moved_from_zone` on its event), or, with no
 side clear, not sent (`goal_in_zone`, `zone_refusals`, and the place counts

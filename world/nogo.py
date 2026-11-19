@@ -46,6 +46,12 @@ MAX_COORD_M = 1000.0             # 1 km from the map's origin: anything else is 
 # rasterises each in Python under its lock; 30 of these stay ~1 M cells).
 MAX_SIDE_M = 15.0
 KINDS = ("area", "wall")
+# Explore's own masked map only (never a WorldInterface answer): a cell a
+# zone (grown by HALF_WIDTH_M) covers. Neither free (no goal, no path), nor
+# unknown (no frontier beside it), nor occupied (no obstacle clearance grown
+# around it: nav2's keepout is lethal to the robot's centre and is not
+# inflated, so a doorway beside a zone stays a doorway).
+CELL_NOGO = 2
 ID_RE = re.compile(r"z[0-9a-f]{1,32}")
 
 
