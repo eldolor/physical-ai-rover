@@ -592,6 +592,14 @@ class RoomLabeller:
             logger.warning("room names not applied: %s", e)
             return base
 
+    def model_layer(self, m: Optional[dict]) -> Optional[dict]:
+        """3.70 S4: the models' layer alone, cut fresh from THIS map -- what
+        a survey saves with the map (a person's names are kept by 3.160's
+        own store, and laid over at read). None without a usable map."""
+        if not m or not m.get("usable", True) or "cells" not in m:
+            return None
+        return self._model_layer(m)
+
     @staticmethod
     def _with_person(m: dict, base: dict, person: list) -> dict:
         """Every free cell of a person's named room carries that name; the
@@ -656,3 +664,87 @@ class RoomLabeller:
                 "rooms_named": sorted({n for _x, _y, n in self.seeds if n != UNCLEAR}),
                 "person_named": sorted({r["name"] for r in self._person_rooms() if r.get("name")}),
                 "seeds": [list(s) for s in self.seeds]}
+
+
+# ---------- 3.70 S4: the labels saved with the map ----------
+#
+# A survey's layer is written into its inventory report -- the local file
+# keyed by the saved map's `frame_id` (3.50.D5) -- so the room labels and the
+# landmarks are one file, one write, under one map. The block keeps the grid
+# it was cut on (size, resolution, origin), so it reads back cell for cell
+# whatever map the next session holds; the cells are run-length encoded
+# (a 400 x 400 map is 160,000 cells, a few hundred runs).
+
+SAVED_FORMAT = 1
+
+
+def rle(cells) -> list:
+    """Flat run-length list `[value, count, value, count, ...]`."""
+    out: list = []
+    for v in cells:
+        v = int(v)
+        if out and out[-2] == v:
+            out[-1] += 1
+        else:
+            out += [v, 1]
+    return out
+
+
+def unrle(runs, size: int) -> Optional[list]:
+    """`rle()`'s inverse, or None if the runs do not decode to `size` cells."""
+    if not isinstance(runs, list) or len(runs) % 2:
+        return None
+    out: list = []
+    for k in range(0, len(runs), 2):
+        v, n = runs[k], runs[k + 1]
+        if (isinstance(v, bool) or isinstance(n, bool) or not isinstance(v, int)
+                or not isinstance(n, int) or n <= 0 or len(out) + n > size):
+            return None
+        out.extend([v] * n)
+    return out if len(out) == size else None
+
+
+def saved_block(layer: dict, m: dict, seeds: list, *, mode: str,
+                mission_id: Optional[str]) -> dict:
+    """The block a survey's report carries: `layer()`'s names and cells on
+    map `m`, with `m`'s grid and the seeds (the asks and their answers)."""
+    size = int(m["width"]) * int(m["height"])
+    cells = list(layer["cells"])
+    if len(cells) != size:
+        raise ValueError(f"layer has {len(cells)} cells, the map {size}")
+    return {"format": SAVED_FORMAT, "mission_id": mission_id, "mode": mode,
+            "names": list(layer["names"]), "cells_rle": rle(cells),
+            "width": int(m["width"]), "height": int(m["height"]),
+            "resolution_m": float(m["resolution_m"]),
+            "origin_x_m": float(m["origin_x_m"]), "origin_y_m": float(m["origin_y_m"]),
+            "map_version": m.get("map_version"),
+            "seeds": [[float(x), float(y), str(n)] for x, y, n in seeds]}
+
+
+def read_saved(block) -> Optional[dict]:
+    """A saved block checked whole, with `cells` decoded; None for anything
+    this module did not write (no format, a bad grid, an index past the
+    names) -- a damaged block names no room rather than a wrong one."""
+    try:
+        if not isinstance(block, dict) or block.get("format") != SAVED_FORMAT:
+            return None
+        names = block["names"]
+        if not isinstance(names, list) or not all(isinstance(n, str) for n in names):
+            return None
+        w, h = block["width"], block["height"]
+        if (isinstance(w, bool) or isinstance(h, bool) or not isinstance(w, int)
+                or not isinstance(h, int) or w <= 0 or h <= 0):
+            return None
+        res = float(block["resolution_m"])
+        ox, oy = float(block["origin_x_m"]), float(block["origin_y_m"])
+        if not (res > 0 and all(map(np.isfinite, (res, ox, oy)))):
+            return None
+        cells = unrle(block["cells_rle"], w * h)
+        if cells is None or any(c < -1 or c >= len(names) for c in set(cells)):
+            return None
+        seeds = block.get("seeds") or []
+        if not isinstance(seeds, list):
+            return None
+    except (KeyError, TypeError, ValueError):
+        return None
+    return {**block, "cells": cells}

@@ -73,6 +73,7 @@ from brain.memory import MissionMemory
 from brain.mission_report import map_coverage
 from brain.navigate import CloudUnavailable
 from brain import room_names
+from brain import room_labels as room_labels_mod
 from brain.room_labels import RoomLabeller, frame_room
 from brain.request import check_hint
 from brain.vision_agent import VisionAgent
@@ -917,6 +918,14 @@ class MissionRunner:
         # usable pose with a `frame_id`, to seed this mission's inventory.
         # None (sweeps, harnesses) carries nothing and reads nothing extra.
         self.inventory_prior: Optional[Callable[[str], Optional[dict]]] = None
+        # 3.70 S4: the room labels saved with this map, in the inventory
+        # report (one file under the saved map's `frame_id`): carried from
+        # the chain's head when the inventory seeds, replaced by a survey's
+        # own at its end. `inventory_sink_lazy` (the brain server's): the
+        # sink takes a callable, so the survey's map read and cut run on the
+        # save's thread, never on the event loop a Stop ends on.
+        self._labels_block: Optional[dict] = None
+        self.inventory_sink_lazy = False
         self._inventory_seeded = False
         self._seed_read_at: Optional[tuple] = None   # (wall, mission clock) of the last read
         self.seed_wall_clock: Callable[[], float] = time.monotonic   # a test may replace it
@@ -3084,16 +3093,71 @@ class MissionRunner:
                 self.inventory.detach()
             n = self.inventory.seed(frame_id, prior) if prior else 0
             source = self.inventory.carried_from
+            labels = self._carry_labels(frame_id, prior)
             aside = self._carry_set_aside(frame_id, prior)
             recalled = self._recall_carried() if n else 0
         if n:
             self._log_line(f"inventory: {n} landmarks carried from "
                            f"{source or 'an earlier mission'} on {frame_id}")
+        if labels:
+            self._log_line(f"room labels: {labels} rooms carried from "
+                           f"{(prior or {}).get('room_labels', {}).get('mission_id') or 'a survey'} on {frame_id}")
         if aside:
             self._log_line(f"explore: {aside} stalled places set aside from earlier missions on {frame_id}")
         if recalled:
             self._log_line(f"explore: going first to {recalled} place(s) where earlier missions "
                            f"on {frame_id} saw the {self.memory.target_object}")
+
+    def _carry_labels(self, frame_id, prior) -> int:
+        """3.70 S4, under `_lock`, just seeded: the saved room labels of the
+        chain's head, kept whole for this mission's report -- only on the
+        frame the inventory took (another map's, or a detached inventory's,
+        are never used). A block that does not read back whole is dropped.
+        Returns how many rooms it names."""
+        if (not frame_id or not isinstance(prior, dict) or prior.get("frame_id") != frame_id
+                or self.inventory.frame_id != frame_id):
+            return 0
+        block = prior.get("room_labels")
+        if block is None:
+            return 0
+        got = room_labels_mod.read_saved(block)
+        if got is None:
+            logger.warning("room labels saved on %s unreadable: not carried", frame_id)
+            return 0
+        self._labels_block = block
+        return len(got["names"])
+
+    def _own_labels_due(self) -> bool:
+        """A survey's labeller named at least one room: its layer is saved."""
+        rl = self.room_labeller
+        return (rl is not None and not self.find_room_labels
+                and any(n != room_labels_mod.UNCLEAR for _x, _y, n in rl.seeds))
+
+    def _own_label_block(self) -> Optional[dict]:
+        """3.70 S4: this survey's labels as the saved block -- the model's
+        layer, not a person's names (3.160 keeps those in its own store) --
+        on the world's map now. Reads the map (HTTP when remote) and cuts it:
+        never on the event loop. None, logged, on any error: the inventory
+        is saved without them, and a carried block stays."""
+        try:
+            m = self.world.get_map()
+            layer = self.room_labeller.model_layer(m)
+            if not layer:
+                return None
+            return room_labels_mod.saved_block(layer, m, self.room_labeller.seeds,
+                                               mode=self.room_labeller.mode,
+                                               mission_id=self.mission_id)
+        except Exception as e:  # noqa: BLE001 -- a label never costs the inventory
+            logger.warning("room labels not saved: %s", e)
+            return None
+
+    def _with_own_labels(self, report: dict) -> dict:
+        block = self._own_label_block()
+        if block is not None:
+            with self._lock:
+                self._labels_block = block
+            report["room_labels"] = block
+        return report
 
     def _recall_carried(self) -> int:
         """3.172 F5: the carried landmarks named as the target (the found
@@ -3140,6 +3204,8 @@ class MissionRunner:
             book = getattr(self.agent, "retry", None)
             if book is not None:
                 report["set_aside"] = book.carry_out(SET_ASIDE_MIN_FAILURES, SET_ASIDE_MISSIONS)
+            if self._labels_block is not None:
+                report["room_labels"] = self._labels_block     # 3.70 S4
         return report
 
     def _keep_looks(self, frame: dict, pose: dict, detections: list) -> None:
@@ -3242,7 +3308,16 @@ class MissionRunner:
             self._inventory_save = {"state": "pending", "mission_id": self.mission_id,
                                     "error": None}
         try:
-            self.inventory_sink(self.inventory_report())
+            report = self.inventory_report()
+            if self._own_labels_due():
+                # 3.70 S4: the survey's labels join the same report. A lazy
+                # sink builds them on its save thread (the save is counted
+                # pending from now, so the next lookup waits for it).
+                if self.inventory_sink_lazy:
+                    self.inventory_sink(functools.partial(self._with_own_labels, report))
+                    return
+                report = self._with_own_labels(report)
+            self.inventory_sink(report)
         except Exception as e:  # noqa: BLE001
             logger.warning("inventory not saved: %s", e)
             self.inventory_saved(self.mission_id, False, f"sink: {e}")

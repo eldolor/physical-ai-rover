@@ -1023,6 +1023,8 @@ def create_app(
         # and the last-seen route then reads the ended mission first.
         runner.inventory_sink = lambda report: store.save_async(
             mission_id, report, on_local=functools.partial(runner.inventory_saved, mission_id))
+        # 3.70 S4: a survey hands a callable, built on the save's thread.
+        runner.inventory_sink_lazy = True
         # 3.50.D5: a mission on a saved map starts from the last inventory
         # saved on it (local files only).
         runner.inventory_prior = store.latest_for

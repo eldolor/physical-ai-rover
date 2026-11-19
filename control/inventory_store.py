@@ -97,7 +97,10 @@ def _sweep_stale_tmp(directory: Path) -> None:
 # 3.50.D5, the user's call (2026-10-31, G12/G13): the S3 copy holds what it
 # held before D5 -- this mission's own landmarks, none of the chain's fields.
 # The local file keeps everything; the chain reads only that.
-_LOCAL_ONLY_KEYS = ("frame_id", "carried_from", "carry_seq", "mission_id", "set_aside")
+# 3.70 S4: `room_labels`, the survey's label grid, is a home's floor plan:
+# local only until 3.50.D6 (the private S3 copy of maps) is decided.
+_LOCAL_ONLY_KEYS = ("frame_id", "carried_from", "carry_seq", "mission_id", "set_aside",
+                    "room_labels")
 # A row's chain fields: carried from an earlier mission, and (3.175.B) the
 # `carry_seq` of the mission that last saw it.
 _LOCAL_ONLY_ROW_KEYS = ("carried", "seen_seq")
@@ -209,6 +212,10 @@ class InventoryStore:
                 _local_done()             # no-op if the local step already said so
 
     def _save(self, mission_id: str, report: dict, _local_done=None) -> dict:
+        if callable(report):
+            # 3.70 S4: a report built on this thread (a survey's labels read
+            # the map and cut it); counted pending already by save_async.
+            report = report()
         name = f"{_slug(mission_id)}.json"
         body = json.dumps(report, indent=1, sort_keys=True)
         out = {"local": None, "s3": None, "errors": []}
