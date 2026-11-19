@@ -628,3 +628,72 @@ def test_frames_from_refuses_a_filter_that_matches_nothing(tmp_path):
     _walk_dir(tmp_path, "a-walk", labels={"frame-0000.jpg": True})
     with pytest.raises(perception_eval.CorpusError, match="do not overlap"):
         perception_eval.load_corpus(tmp_path, frames_only={"other/frame.jpg"})
+
+
+# ---------------------------------------------------------------------------
+# 3.178.B: the watch list, on against off (B4's frame half; B3's sightings)
+# ---------------------------------------------------------------------------
+
+def test_score_passes_the_watch_list_to_the_pipeline_and_keeps_its_sightings(
+        tmp_path, monkeypatch, capsys):
+    _walk_dir(tmp_path, "a-walk", labels={"frame-0000.jpg": False,
+                                          "frame-0001.jpg": False})
+    sighting = {"label": "keys", "bearing_deg": 3.0, "confidence": 0.95,
+                "box": [1.0, 2.0, 3.0, 4.0]}
+    answers = iter([Perception(status=ABSENT, watch=[sighting]),
+                    Perception(status=ABSENT)])
+    built = []
+
+    class Stub:
+        def perceive(self, frame):
+            return next(answers)
+
+    def build(args, target):
+        built.append(args.watch)
+        return Stub()
+    monkeypatch.setattr(perception_eval, "_build_pipeline", build)
+    save = tmp_path / "on.json"
+    rc = perception_eval.main(["score", "--recordings", str(tmp_path), "--quiet",
+                               "--detector", "crops:yoloe", "--watch", "default",
+                               "--save", str(save)])
+    out = capsys.readouterr().out
+    assert rc == 0
+    assert built == [("keys", "wallet", "phone", "glasses", "remote")]
+    records, config = load_records(save)
+    assert config["watch"] == ["keys", "wallet", "phone", "glasses", "remote"]
+    assert records[0].watch == [sighting] and records[1].watch == []
+    # The sightings are summed per item in the printout, beside the tables.
+    assert "watch list: 1 sighting(s) on 1 frame(s), 1 walk(s)" in out
+    assert "keys 1" in out
+
+
+def test_watch_takes_a_comma_list_and_is_off_by_default(tmp_path, monkeypatch):
+    _walk_dir(tmp_path, "a-walk", frames=1)
+    built = []
+
+    class Stub:
+        def perceive(self, frame):
+            return Perception(status=ABSENT)
+
+    monkeypatch.setattr(perception_eval, "_build_pipeline",
+                        lambda args, target: built.append(args.watch) or Stub())
+    perception_eval.main(["score", "--recordings", str(tmp_path), "--quiet"])
+    perception_eval.main(["score", "--recordings", str(tmp_path), "--quiet",
+                          "--watch", " Keys, phone ,keys"])
+    assert built == [(), ("keys", "phone")]
+
+
+def test_a_watch_run_is_labelled_so_compare_tells_it_from_the_list_off_run():
+    from control.perception_eval import _label_for
+    base = {"detector": "crops:yoloe", "proposer": "none"}
+    assert _label_for(base) == "crops:yoloe"
+    assert _label_for({**base, "watch": ["keys", "phone"]}) == "crops:yoloe [watch 2]"
+
+
+def test_records_saved_before_the_watch_field_still_load(tmp_path):
+    path = tmp_path / "old.json"
+    path.write_text(json.dumps({"config": {}, "records": [
+        {"walk": "w", "frame": "f.jpg", "visible": False, "status": "absent",
+         "score": None}]}))
+    records, _ = load_records(path)
+    assert records[0].watch == []

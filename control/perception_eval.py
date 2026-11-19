@@ -135,6 +135,10 @@ class FrameScore:
     candidates: int = 0
     adjudicated: bool = False
     ms: float = 0.0
+    # 3.178.B: the frame's watch-list sightings (`Perception.watch`: label,
+    # bearing, confidence, box), [] with no list. Kept per frame so the
+    # by-eye check (criterion 3) reads them without re-running the models.
+    watch: list = field(default_factory=list)
 
     @property
     def scored(self) -> bool:
@@ -454,6 +458,7 @@ def run_walk(pipeline, walk: Walk, metric: str = METRIC_PROBABILITY,
             label=perception.best.detection.label if perception.best else None,
             candidates=len(perception.candidates),
             adjudicated=adjudicated, ms=ms,
+            watch=list(getattr(perception, "watch", None) or []),
         )
         records.append(record)
         if on_frame:
@@ -602,9 +607,30 @@ def _add_score_args(ap) -> None:
                          "default emits ~4 boxes a frame where P19's replayed "
                          "file carried ~45, so this is the axis that decides "
                          "whether those rows are comparable at all")
+    ap.add_argument("--watch", type=_watch_arg, default=(), metavar="ITEMS",
+                    help="3.178: the watch list, comma-separated, or `default` "
+                         "for brain.watch_list's five; off when not given. "
+                         "Needs a crops:<backend> detector (crops:yoloe is the "
+                         "shipped shape). P(target) never reads the list; what "
+                         "can move is the crop set, which list on vs off measures")
     ap.add_argument("--save", default=None, metavar="FILE",
                     help="write the per-frame records for `compare`")
     ap.add_argument("--quiet", action="store_true", help="no per-frame lines")
+
+
+def _watch_arg(text: str) -> tuple:
+    """`--watch`: `default`, or names separated by commas, through the brain's
+    own rule (`brain.watch_list.normalise`: lower-cased, de-duplicated, at
+    most 8)."""
+    import argparse
+
+    from brain.watch_list import DEFAULT_WATCH_LIST, normalise
+    if text.strip().lower() == "default":
+        return DEFAULT_WATCH_LIST
+    try:
+        return normalise([t for t in text.split(",") if t.strip()])
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from exc
 
 
 def _build_pipeline(args, target: str):
@@ -626,6 +652,7 @@ def _build_pipeline(args, target: str):
         vlm_max_pixels=args.vlm_max_pixels,
         vlm_ground=not args.no_vlm_boxes,
         detector_confidence=getattr(args, "detector_confidence", None),
+        watch=getattr(args, "watch", ()),
     )
 
 
@@ -654,6 +681,9 @@ def _config_of(args) -> dict:
         # them cannot be told apart from the run it is compared with.
         "detector_confidence": getattr(args, "detector_confidence", None),
         "segmenter": getattr(args, "segmenter", None),
+        # 3.178.B: list on and list off are different configs; None is off,
+        # so a record from before the key reads the same as a list-off run.
+        "watch": list(getattr(args, "watch", ()) or ()) or None,
     }
 
 
@@ -673,7 +703,25 @@ def _label_for(config: dict) -> str:
         label += f" [seg {config['segmenter']}]"
     if config.get("detector_confidence") is not None:
         label += f" [box conf {config['detector_confidence']}]"
+    if config.get("watch"):
+        label += f" [watch {len(config['watch'])}]"
     return label
+
+
+def format_watch(records: Sequence[FrameScore]) -> str:
+    """3.178.B: the list's sightings, summed per item. Not a precision: each
+    one still has to be checked by eye (criterion 3)."""
+    per_item: Counter = Counter()
+    frames, walks = 0, set()
+    for r in records:
+        if r.watch:
+            frames += 1
+            walks.add(r.walk)
+            per_item.update(s["label"] for s in r.watch)
+    items = ", ".join(f"{k} {n}" for k, n in sorted(per_item.items())) or "none"
+    return (f"  watch list: {sum(per_item.values())} sighting(s) on {frames} "
+            f"frame(s), {len(walks)} walk(s) -- {items}\n"
+            f"  (unjudged: each sighting is checked by eye before it counts)")
 
 
 def cmd_score(args) -> int:
@@ -732,6 +780,8 @@ def cmd_score(args) -> int:
     print(f"{format_gate_table(records, gates)}\n")
     print(f"  unavailable {t['unavailable']}"
           f"{'   <-- frames that could not be read (1.12)' if t['unavailable'] else ''}")
+    if getattr(args, "watch", ()):
+        print(format_watch(records))
     print(f"  {t['ms_per_frame']:.0f}ms per frame on this machine -- compares "
           f"models to each other,\n  never to the robot's budget (2.9).")
 
@@ -821,7 +871,7 @@ __all__ = [
     "best_score", "score_at", "sweep", "by_walk", "totals",
     "recall_at_fp_budget", "run_walk", "decisions_by_frame",
     "save_records", "load_records",
-    "format_gate_table", "format_per_walk", "format_comparison",
+    "format_gate_table", "format_per_walk", "format_comparison", "format_watch",
     "DEFAULT_GATES", "METRICS", "METRIC_PROBABILITY", "METRIC_MARGIN",
     "METRIC_CONFIDENCE", "MIN_USABLE_MARGIN",
 ]

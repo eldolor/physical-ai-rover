@@ -1049,9 +1049,12 @@ class PerceptionPipeline:
 
         # 3.178: the list's sightings, from every scored crop, whatever the
         # target's answer. Bearings off the camera axis, as the inventory
-        # reads them.
+        # reads them; the box (pixels) so a sighting can be checked by eye
+        # (3.178.B criterion 3).
         watch = [{"label": c.watch[0], "bearing_deg": c.bearing_deg - pan,
-                  "confidence": round(c.watch[1], 4)}
+                  "confidence": round(c.watch[1], 4),
+                  "box": [round(v, 1) for v in (c.detection.box.x1, c.detection.box.y1,
+                                                c.detection.box.x2, c.detection.box.y2)]}
                  for c in scored if c.watch is not None and c.bearing_deg is not None]
         candidates = [c for c in scored if c.for_target]
         if not candidates:

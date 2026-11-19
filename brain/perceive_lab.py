@@ -884,6 +884,7 @@ def pipeline_for_spec(target: str, *, detector: str = DEFAULT_DETECTOR,
                       vlm_max_pixels: Optional[int] = None,
                       vlm_ground: bool = True,
                       detector_confidence: Optional[float] = None,
+                      watch: Sequence[str] = (),
                       **kwargs):
     """One string per stage -> something with `perceive(frame)`.
 
@@ -892,7 +893,19 @@ def pipeline_for_spec(target: str, *, detector: str = DEFAULT_DETECTOR,
     mask is worse alone and better together), or one of `gdino` / `owlv2` /
     `yoloworld` -- optionally `name:model_id` -- which replace the whole
     pipeline rather than a stage of it.
+
+    `watch` (3.178.B) is the watch list, and only the `crops:` shape takes
+    it: the detector is prompted `[target, *list]` and the pipeline scores
+    the list, as `pipeline_for(watch=)` does on the car. Any other shape
+    cannot propose boxes for the list, so a list there is refused rather
+    than silently measuring nothing.
     """
+    from brain.watch_list import for_target
+    watch = for_target(watch, target.strip())
+    if watch and not detector.startswith("crops:"):
+        raise ValueError(
+            f"a watch list needs a text-prompted crop source (crops:<backend>, "
+            f"e.g. crops:yoloe); {detector!r} cannot be prompted with it")
     # `crops:<backend>` -- an open-vocabulary detector feeding the NORMAL
     # pipeline (crops -> CLIP -> match, floor mask allowed) instead of
     # replacing it. The bare `<backend>` spec below still replaces the
@@ -909,11 +922,12 @@ def pipeline_for_spec(target: str, *, detector: str = DEFAULT_DETECTOR,
                   SamProposer(sam_model, device=device) if proposer == "sam"
                   else None)
         return PerceptionPipeline(
-            detector=OpenVocabCropSource(backend, target),
+            detector=OpenVocabCropSource(backend, target, watch),
             scorer=ClipScorer(clip_model, device=device),
             target=target,
             proposer=region,
             crop_path=crop_path,
+            watch=watch,
             **({"max_crops": max_crops} if max_crops is not None else {}),
             **({"affinity_k": affinity_k} if affinity_k is not None else {}),
             **({"confidence": confidence} if confidence is not None else {}),

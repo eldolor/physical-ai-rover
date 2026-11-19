@@ -451,3 +451,41 @@ def test_e_s_fresh_sweep_numbers_are_pinned():
     # Not shipped: the watch block's default stays 3.178.A's rule.
     import inspect
     assert inspect.signature(wl.watch_block).parameters["rule"].default == "label"
+
+
+# --- 3.178.B's frame half: the list through perception_eval (B3, B4) --------
+
+def test_a_list_sighting_carries_its_box_for_the_by_eye_check():
+    """B3 checks every sighting's crop by eye, so the frame's sighting names
+    the box it came from (in pixels)."""
+    table = {200.0: {"keys": 0.40}}
+    p = pipe([det("keys", x1=200.0)], table, watch=wl.DEFAULT_WATCH_LIST).perceive(frame())
+    assert p.watch[0]["box"] == [200.0, 100.0, 250.0, 200.0]
+
+
+def test_the_lab_builds_the_shipped_crop_source_prompted_with_the_list(monkeypatch):
+    """`perception_eval --detector crops:yoloe --watch ...` is the shipped
+    shape (`pipeline_for(watch=)`): the prompt and the pipeline both carry
+    the list, less an item naming the target."""
+    from brain import perceive_lab
+
+    class Backend:
+        weights = "fake"
+
+    class FakeClip:
+        def __init__(self, *a, **k):
+            pass
+    monkeypatch.setattr(perceive_lab, "_open_vocab", lambda *a, **k: Backend())
+    monkeypatch.setattr(perceive_lab, "ClipScorer", FakeClip)
+    p = perceive_lab.pipeline_for_spec("a phone", detector="crops:yoloe",
+                                       watch=wl.DEFAULT_WATCH_LIST)
+    assert p.watch == ("keys", "wallet", "glasses", "remote")
+    assert p.detector.watch == p.watch
+    off = perceive_lab.pipeline_for_spec("a phone", detector="crops:yoloe")
+    assert off.watch == () and off.detector.watch == ()
+
+
+def test_the_lab_refuses_a_list_on_a_detector_it_cannot_prompt():
+    from brain import perceive_lab
+    with pytest.raises(ValueError, match="watch"):
+        perceive_lab.pipeline_for_spec("a phone", detector="none", watch=["keys"])
