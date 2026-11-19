@@ -180,6 +180,9 @@ here to `docs/guides/MERGED-STATE.md`; open work only stays here.**
   (a free rule parser, a room hint into goal choice; the model arm asks
   first); 3.178 a watch list of valuables (its real test needs the
   Rover's frames).
+* 3.190 (the user, 2026-11-19): one cloud call at a find's start for the
+  room prior of a target the shipped prior lacks (3.116.C, wired; off by
+  default). A is free; B's calls and C's Lambda deploy wait on the user.
 * Not built: `brain/planner.py`, S7 (chaos and soak), a Stage 1 vision
   re-run against the lit renderer.
 
