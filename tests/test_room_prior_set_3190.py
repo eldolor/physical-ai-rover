@@ -29,12 +29,12 @@ EXPECTED = {
     "toothpaste": "bathroom", "razor": "bathroom",
     "alarm clock": "bedroom", "pajamas": "bedroom", "jewelry box": "bedroom",
     "duvet": "bedroom", "slippers": "bedroom",
-    "video game controller": "living room", "board game": "living room",
-    "sofa cushion": "living room", "dvd case": "living room",
+    "magazine rack": "living room", "board game": "living room",
+    "piano bench": "living room", "dvd case": "living room",
     "fireplace poker": "living room",
 }
 OPEN = ("coffee mug", "scissors", "tape measure", "flashlight", "notebook", "pen",
-        "sunglasses", "wristwatch", "tablet", "baseball cap", "jacket", "dog leash",
+        "sewing kit", "wristwatch", "tablet", "baseball cap", "jacket", "dog leash",
         "candle", "tissue box", "blanket", "hairbrush", "medicine bottle", "batteries",
         "stuffed animal", "spray bottle")
 

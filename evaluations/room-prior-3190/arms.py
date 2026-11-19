@@ -11,6 +11,7 @@ three arms on one commit (amendment 1). Free: no call is made.
 """
 import json
 import os
+import subprocess
 import sys
 from concurrent.futures import ProcessPoolExecutor
 
@@ -22,7 +23,11 @@ sys.path.insert(0, os.path.join(ROOT, "evaluations", "goal-learn-396"))
 sys.path.insert(0, os.path.join(ROOT, "evaluations", "room-prior-3116"))
 import ask as A                                               # noqa: E402
 import train as T                                             # noqa: E402
-from llm_prior import MODEL_ID, PROCTHOR, TYPES, _load        # noqa: E402
+from llm_prior import PROCTHOR, TYPES, _load                  # noqa: E402
+
+# The model whose cached replies were measured -- a fixed record, never the
+# service's live default (`ROOM_MODEL_ID` follows an env var; review).
+MODEL_ID = "us.anthropic.claude-opus-5-5"
 
 ARMS = ("cloud", "none", "wrong")
 DRAWS = 10_000
@@ -84,8 +89,22 @@ def _job(args):
     return r
 
 
+def _head() -> str:
+    return subprocess.run(["git", "rev-parse", "--short=8", "HEAD"], cwd=ROOT,
+                          capture_output=True, text=True, check=True).stdout.strip()
+
+
 def cmd_run(out: str) -> None:
+    """Resumable per arm, but only on the commit the run began on: the
+    arms must share one commit (amendment 1; review)."""
     os.makedirs(out, exist_ok=True)
+    meta, head = os.path.join(out, "run.json"), _head()
+    if os.path.exists(meta):
+        began = json.load(open(meta))["commit"]
+        if began != head:
+            raise SystemExit(f"{out} began at {began}, HEAD is {head}: start a new OUT_DIR")
+    else:
+        T.save_atomic(meta, lambda p: json.dump({"commit": head}, open(p, "w")))
     hs = A.houses("test")
     for arm in ARMS:
         path = os.path.join(out, f"{arm}-R.json")
@@ -153,12 +172,12 @@ def score(rows: dict) -> dict:
     c1 = {"paired_cloud_minus_none": p_cn, "goals": c["median_goals_found"],
           "goals_bar": n["median_goals_found"]}
     c1["met"] = p_cn["ci95"][0] > 0 and c1["goals"] <= c1["goals_bar"]
-    c2 = {"found": c["found"], "found_bar": round(0.99 * n["found"], 2)}
-    c2["met"] = c2["found"] >= c2["found_bar"]
-    c3 = {"found": w["found"], "found_bar": round(0.98 * n["found"], 2),
-          "metres": w["median_metres_found"],
-          "metres_bar": round(1.25 * n["median_metres_found"], 3)}
-    c3["met"] = c3["found"] >= c3["found_bar"] and c3["metres"] <= c3["metres_bar"]
+    # Verdicts against the unrounded bars; only the reported bar is rounded (review).
+    f2, f3, m3 = 0.99 * n["found"], 0.98 * n["found"], 1.25 * n["median_metres_found"]
+    c2 = {"found": c["found"], "found_bar": round(f2, 2), "met": c["found"] >= f2}
+    c3 = {"found": w["found"], "found_bar": round(f3, 2),
+          "metres": w["median_metres_found"], "metres_bar": round(m3, 3),
+          "met": w["found"] >= f3 and w["median_metres_found"] <= m3}
     return {"model_id": MODEL_ID, "summary": s, "criterion_1": c1, "criterion_2": c2,
             "criterion_3": c3,
             "reported": {"paired_wrong_minus_none": p_wn,
