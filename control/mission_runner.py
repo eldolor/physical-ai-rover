@@ -926,6 +926,11 @@ class MissionRunner:
         # save's thread, never on the event loop a Stop ends on.
         self._labels_block: Optional[dict] = None
         self._label_seen: Optional[tuple] = None    # (the labeller's last map, its frame_id)
+        # 3.70 M1: the map this mission runs on, from its first usable pose:
+        # the saved map's frame (`frame_id`, the bridge's map_id) and whether
+        # it was RELOADED (the pose carries the saved dock only on a matched
+        # reload, 3.156.E) or is a new map (a first visit or a fall-back).
+        self._saved_map: Optional[dict] = None
         self.inventory_sink_lazy = False
         self._inventory_seeded = False
         self._seed_read_at: Optional[tuple] = None   # (wall, mission clock) of the last read
@@ -1798,6 +1803,8 @@ class MissionRunner:
                 },
                 "error": self._error,
                 "dock": dict(self._dock) if self._dock else None,
+                # 3.70 M1: the map it runs on (None before a usable pose).
+                "saved_map": dict(self._saved_map) if self._saved_map else None,
                 "return": dict(self._return) if self._return else None,
                 "charge": ({**self._charge, "history": list(self._charge["history"])}
                            if self._charge else None),
@@ -3039,7 +3046,8 @@ class MissionRunner:
             if self._ended():
                 return                        # no reads once the mission has ended
             if detections is None:
-                if self.inventory_prior is not None and not self._inventory_seeded:
+                if ((self.inventory_prior is not None and not self._inventory_seeded)
+                        or self._saved_map is None):
                     # 3.50.D5: seed on the first usable pose even before the
                     # first detection -- a pose read for it at most every
                     # SEED_EVERY_S until then (a phone walk never has one).
@@ -3067,6 +3075,26 @@ class MissionRunner:
                 self._inventory_error_logged = True
                 logger.warning("inventory: frame not recorded: %s", e)
 
+    def _note_map(self, pose: Optional[dict]) -> None:
+        """3.70 M1: once, on the first usable pose, the map this mission
+        runs on -- `status()['saved_map']` and a log line. Reads nothing more
+        than the pose it is given."""
+        if self._saved_map is not None or not pose or not pose.get("usable"):
+            return
+        frame_id = pose.get("frame_id")
+        note = {"frame_id": frame_id, "map_id": pose.get("map_id"),
+                "reloaded": bool(frame_id) and isinstance(pose.get("dock"), dict)}
+        with self._lock:
+            if self._saved_map is not None or self._ended():
+                return
+            self._saved_map = note
+        if not frame_id:
+            self._log_line("map: no saved map (this world keeps none)")
+        elif note["reloaded"]:
+            self._log_line(f"map: on the saved map {frame_id}, reloaded")
+        else:
+            self._log_line(f"map: a new map {frame_id} (nothing saved matched: built from this run's scans)")
+
     def _seed_inventory(self, pose: dict) -> None:
         """3.50.D5: once, on the first usable pose: the head of the chain
         saved on this pose's saved map (`frame_id`) seeds this inventory.
@@ -3076,6 +3104,7 @@ class MissionRunner:
         gives up: until a usable pose comes nothing is recorded either, so
         nothing can be saved on the frame without first reading the chain
         (review 2)."""
+        self._note_map(pose)
         if self.inventory_prior is None or self._inventory_seeded:
             return
         if not pose or not pose.get("usable"):
