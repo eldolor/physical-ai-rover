@@ -869,6 +869,19 @@ def _open_vocab(spec: str, device=None, dtype=None, **extra):
     return cls(override or default, device=device, **kwargs)
 
 
+# 3.178.B: the backends whose `detect_text` takes a class list and labels
+# each box with its class (`UltralyticsTextDetector`). The others take one
+# string, so a list prompt would fail on every frame.
+WATCH_BACKENDS = (YOLOE, YOLOWORLD)
+
+
+def watch_capable(detector: str) -> bool:
+    """Can `pipeline_for_spec(detector, watch=...)` run a watch list?"""
+    if not detector.startswith("crops:"):
+        return False
+    return detector.split(":", 2)[1] in WATCH_BACKENDS
+
+
 def pipeline_for_spec(target: str, *, detector: str = DEFAULT_DETECTOR,
                       clip_model: str = DEFAULT_CLIP,
                       proposer: str = "none",
@@ -894,18 +907,19 @@ def pipeline_for_spec(target: str, *, detector: str = DEFAULT_DETECTOR,
     `yoloworld` -- optionally `name:model_id` -- which replace the whole
     pipeline rather than a stage of it.
 
-    `watch` (3.178.B) is the watch list, and only the `crops:` shape takes
-    it: the detector is prompted `[target, *list]` and the pipeline scores
-    the list, as `pipeline_for(watch=)` does on the car. Any other shape
-    cannot propose boxes for the list, so a list there is refused rather
-    than silently measuring nothing.
+    `watch` (3.178.B) is the watch list, and only `watch_capable()`
+    shapes take it: the detector is prompted `[target, *list]` and the
+    pipeline scores the list, as `pipeline_for(watch=)` does on the car.
+    Any other shape cannot propose boxes for a class list, so a list there
+    is refused rather than silently measuring nothing.
     """
     from brain.watch_list import for_target
-    watch = for_target(watch, target.strip())
-    if watch and not detector.startswith("crops:"):
+    if watch and not watch_capable(detector):
         raise ValueError(
-            f"a watch list needs a text-prompted crop source (crops:<backend>, "
-            f"e.g. crops:yoloe); {detector!r} cannot be prompted with it")
+            f"a watch list needs a crop source that takes a class list "
+            f"({', '.join('crops:' + b for b in WATCH_BACKENDS)}); "
+            f"{detector!r} cannot be prompted with it")
+    watch = for_target(watch, target.strip())
     # `crops:<backend>` -- an open-vocabulary detector feeding the NORMAL
     # pipeline (crops -> CLIP -> match, floor mask allowed) instead of
     # replacing it. The bare `<backend>` spec below still replaces the
@@ -989,5 +1003,5 @@ __all__ = [
     "OmDetTurbo", "LlmDet", "OMDET", "LLMDET", "DEFAULT_OMDET",
     "DEFAULT_LLMDET",
     "VLM", "SamProposer", "NullDetector",
-    "OpenVocabPipeline", "pipeline_for_spec",
+    "OpenVocabPipeline", "pipeline_for_spec", "WATCH_BACKENDS", "watch_capable",
 ]

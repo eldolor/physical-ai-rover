@@ -486,6 +486,11 @@ def test_the_lab_builds_the_shipped_crop_source_prompted_with_the_list(monkeypat
 
 
 def test_the_lab_refuses_a_list_on_a_detector_it_cannot_prompt():
+    """Only a backend whose detect_text takes a class list (review: OWLv2 and
+    Grounding DINO take one string and would fail on every frame)."""
     from brain import perceive_lab
-    with pytest.raises(ValueError, match="watch"):
-        perceive_lab.pipeline_for_spec("a phone", detector="none", watch=["keys"])
+    for spec in ("none", "yoloe-11s-seg.pt", "crops:owlv2", "crops:gdino", "owlv2"):
+        with pytest.raises(ValueError, match="watch list"):
+            perceive_lab.pipeline_for_spec("a phone", detector=spec, watch=["keys"])
+    assert perceive_lab.watch_capable("crops:yoloe:yoloe-11s-seg.pt")
+    assert perceive_lab.watch_capable("crops:yoloworld")

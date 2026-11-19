@@ -587,8 +587,9 @@ class Perception:
     # them; None from the simulator's geometry, whose boxes are not pixels.
     image_size: Optional[tuple] = None
     # 3.178: the frame's watch-list sightings, `{label, bearing_deg,
-    # confidence}` with the bearing off the CAMERA axis (pan not added: the
-    # inventory adds it), one per crop that passed the list's gate.
+    # confidence, box}` with the bearing off the CAMERA axis (pan not added:
+    # the inventory adds it) and the box in pixels (3.178.B, for the by-eye
+    # check), one per crop that passed the list's gate.
     watch: list = field(default_factory=list)
 
     @property

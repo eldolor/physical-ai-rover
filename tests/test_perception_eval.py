@@ -679,7 +679,7 @@ def test_watch_takes_a_comma_list_and_is_off_by_default(tmp_path, monkeypatch):
                         lambda args, target: built.append(args.watch) or Stub())
     perception_eval.main(["score", "--recordings", str(tmp_path), "--quiet"])
     perception_eval.main(["score", "--recordings", str(tmp_path), "--quiet",
-                          "--watch", " Keys, phone ,keys"])
+                          "--detector", "crops:yoloe", "--watch", " Keys, phone ,keys"])
     assert built == [(), ("keys", "phone")]
 
 
@@ -697,3 +697,36 @@ def test_records_saved_before_the_watch_field_still_load(tmp_path):
          "score": None}]}))
     records, _ = load_records(path)
     assert records[0].watch == []
+
+
+def test_watch_is_refused_before_any_walk_on_a_detector_without_a_class_list(
+        tmp_path, monkeypatch, capsys):
+    _walk_dir(tmp_path, "a-walk", frames=1)
+    monkeypatch.setattr(perception_eval, "_build_pipeline",
+                        lambda args, target: pytest.fail("built a pipeline"))
+    for detector in ("yoloe-11s-seg.pt", "crops:owlv2"):
+        rc = perception_eval.main(["score", "--recordings", str(tmp_path), "--quiet",
+                                   "--detector", detector, "--watch", "keys"])
+        assert rc == 1 and "--watch needs" in capsys.readouterr().out
+
+
+def test_an_empty_watch_is_refused_not_run_as_list_off(tmp_path, capsys):
+    with pytest.raises(SystemExit):
+        perception_eval.main(["score", "--recordings", str(tmp_path), "--watch", " , "])
+
+
+def test_the_saved_config_names_the_list_each_walk_ran_with(tmp_path, monkeypatch):
+    _walk_dir(tmp_path, "a-walk", frames=1)
+
+    class Stub:
+        watch = ("keys", "wallet", "glasses", "remote")   # "phone" was the target
+
+        def perceive(self, frame):
+            return Perception(status=ABSENT)
+    monkeypatch.setattr(perception_eval, "_build_pipeline", lambda args, target: Stub())
+    save = tmp_path / "on.json"
+    perception_eval.main(["score", "--recordings", str(tmp_path), "--quiet",
+                          "--detector", "crops:yoloe", "--watch", "default",
+                          "--save", str(save)])
+    _, config = load_records(save)
+    assert config["watch_by_walk"] == {"a-walk": ["keys", "wallet", "glasses", "remote"]}

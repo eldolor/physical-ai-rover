@@ -627,8 +627,13 @@ def _watch_arg(text: str) -> tuple:
     from brain.watch_list import DEFAULT_WATCH_LIST, normalise
     if text.strip().lower() == "default":
         return DEFAULT_WATCH_LIST
+    names = [t for t in text.split(",") if t.strip()]
+    if not names:
+        # An empty expansion (`--watch "$ITEMS"`) is refused, not run and
+        # saved as a list-off run nobody asked for.
+        raise argparse.ArgumentTypeError("--watch names no item")
     try:
-        return normalise([t for t in text.split(",") if t.strip()])
+        return normalise(names)
     except ValueError as exc:
         raise argparse.ArgumentTypeError(str(exc)) from exc
 
@@ -727,6 +732,15 @@ def format_watch(records: Sequence[FrameScore]) -> str:
 def cmd_score(args) -> int:
     from brain.perceive import PerceptionUnavailable
 
+    watch = getattr(args, "watch", ())
+    if watch:
+        from brain.perceive_lab import watch_capable
+        if not watch_capable(args.detector):
+            # Before any model loads or frame runs, not on the first walk's
+            # build (3.178.B review).
+            return _fail(f"--watch needs --detector crops:yoloe (or "
+                         f"crops:yoloworld); {args.detector!r} cannot be "
+                         f"prompted with a class list.")
     root = Path(args.recordings).expanduser()
     frames_only = None
     if getattr(args, "frames_from", None):
@@ -741,6 +755,7 @@ def cmd_score(args) -> int:
     print("reference: labels.json (adjudicated) -- never walk.jsonl\n")
 
     records = []
+    watch_by_walk = {}
     for walk in walks:
         print(f"  {walk.name}  target {walk.target!r}  "
               f"{len(walk.frames)} frames, {walk.visible} visible")
@@ -748,6 +763,14 @@ def cmd_score(args) -> int:
             pipeline = _build_pipeline(args, walk.target)
         except PerceptionUnavailable as exc:
             return _fail(str(exc))
+        if watch:
+            # The list this walk actually ran with: an item naming the
+            # walk's target is dropped (counted once, as the target), so it
+            # can be shorter than --watch, or empty (3.178.B review).
+            ran = list(getattr(pipeline, "watch", ()) or ())
+            watch_by_walk[walk.name] = ran
+            if list(watch) != ran:
+                print(f"    watch list here: {', '.join(ran) or '-- none --'}")
 
         # The vocabulary verdict, printed per walk because it is per target.
         # It is the thing a mission reads at start to know whether `absent`
@@ -786,7 +809,10 @@ def cmd_score(args) -> int:
           f"models to each other,\n  never to the robot's budget (2.9).")
 
     if args.save:
-        save_records(Path(args.save), records, _config_of(args))
+        config = _config_of(args)
+        if watch:
+            config["watch_by_walk"] = watch_by_walk
+        save_records(Path(args.save), records, config)
         print(f"\n  records -> {args.save}  "
               f"(`compare` reads these without re-running the models)")
     print()
