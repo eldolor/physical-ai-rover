@@ -198,7 +198,7 @@ def segment(m: dict, neck_ratio: float = NECK_RATIO, min_room_m2: float = MIN_RO
     w, h, res = m["width"], m["height"], m["resolution_m"]
     cells = np.asarray(m["cells"]).reshape(h, w)
     free = cells == CELL_FREE
-    occ = cells == CELL_OCCUPIED
+    occ = cells >= CELL_OCCUPIED        # 3.161: explore's CELL_NOGO (2) cuts rooms as a wall
     d = clearance(free, occ)
     parent: dict = {}
     peak: dict = {}

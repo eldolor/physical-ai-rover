@@ -1448,7 +1448,10 @@ def create_app(
         # seconds) is not a mission without zones -- explore asks for the
         # saved map's zones once its pose names one.
         runner.nogo_source = nogo_store_mod.default_store().zones
-        runner.nogo_sink = lambda f, z: state.__setitem__("nogo_sent", _nogo_send(f, z))
+        # Off the tick's thread (review 2): a slow robot server never holds a tick.
+        runner.nogo_sink = lambda f, z: threading.Thread(
+            target=lambda: state.__setitem__("nogo_sent", _nogo_send(f, z)),
+            daemon=True, name="nogo-send").start()
         runner.start()
         state["fault"] = req.fault or drills.NONE
         state["runner"] = runner

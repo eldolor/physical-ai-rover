@@ -750,8 +750,9 @@ class ExploreAgent(MissionAgent):
             self._event("goal_refused", kind=kind, goal=[round(x_m, 2), round(y_m, 2)],
                         reason=reply.get("reason"))
             if reply.get("reason") == "no_go_zone":
-                # 3.161 review: the robot server holds a zone this mission does
-                # not (yet): the place counts as failed, or it is chosen again.
+                # 3.161 review: defensive -- the robot server refuses only a
+                # person's goal for a zone (D5) today; were it to refuse this
+                # mission's, the place counts as failed, or it is chosen again.
                 self.retry.fail(x_m, y_m, now)
             if reply.get("retryable") is False:
                 # 3.82: the robot server says no wait mends it -- its bridge
@@ -793,6 +794,8 @@ class ExploreAgent(MissionAgent):
                        ((z["x1"] + out) - x_m, (z["x1"] + out, y_m)),
                        (y_m - (z["y0"] - out), (x_m, z["y0"] - out)),
                        ((z["y1"] + out) - y_m, (x_m, z["y1"] + out))])
+        # The map WITHOUT the zones (review 2): the point has passed the grown
+        # zone check; the mask's own band would refuse a third of them.
         m = self._masked[4] if self._masked is not None else None
         for _, (px, py) in ways:
             if nogo.zone_at(self.zones, px, py, grow) is None and self._free_at(m, px, py):
@@ -853,14 +856,15 @@ class ExploreAgent(MissionAgent):
     def _zone_map(self, m: dict, zones: list) -> dict:
         """The map with `zones`' cells occupied, cached by the map's version
         and the zones' revision (review: one copy a map, not a choice)."""
-        key = (m.get("map_id"), m.get("map_version"), self._zones_rev, len(zones))
+        key = (m.get("map_id"), m.get("map_version"), self._zones_rev,
+               tuple(z["id"] for z in zones))         # which zones, not how many (review 2)
         if self._masked is not None and self._masked[:4] == key and m.get("map_version") is not None:
-            return self._masked[4]
+            return self._masked[5]
         out = nogo.masked_map(m, zones, nogo.CELL_NOGO, grow=nogo.HALF_WIDTH_M)
         if out is m:
             out = dict(m)
         out["nogo_rev"] = self._zones_rev
-        self._masked = (*key, out)
+        self._masked = (*key, m, out)                 # [4]: the map without the zones
         return out
 
     def _note_refusal(self, scene: dict) -> None:
@@ -1228,9 +1232,9 @@ class ExploreAgent(MissionAgent):
         leave = leave_clearance_m(self.safety.min_distance_cm)
         frame = pose.get("frame_id")
         if self.zone_source is not None and frame and frame != self._zone_frame_asked:
-            self._zone_frame_asked = frame
             try:
                 self.zone_source(frame)
+                self._zone_frame_asked = frame      # only once read (review 2: a failure asks again)
             except Exception:  # noqa: BLE001 -- no zones read: the choice goes on without
                 logger.warning("no-go zones unreadable for %s", frame, exc_info=True)
         if self.zones:

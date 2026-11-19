@@ -247,7 +247,8 @@ def coarse(m: dict, res_m: float = ROOM_RES_M, cells=None) -> dict:
     blocks = cells.reshape(H, k, W, k).swapaxes(1, 2).reshape(H, W, k * k)
     out = np.full((H, W), CELL_UNKNOWN, dtype=cells.dtype)
     out[(blocks == CELL_FREE).sum(axis=2) * 2 >= k * k] = CELL_FREE
-    out[(blocks == CELL_OCCUPIED).any(axis=2)] = CELL_OCCUPIED
+    # >=: 3.161's CELL_NOGO (2, explore's own masked map) is a wall here.
+    out[(blocks >= CELL_OCCUPIED).any(axis=2)] = CELL_OCCUPIED
     return {**m, "width": W, "height": H, "resolution_m": m["resolution_m"] * k,
             "cells": out.ravel().tolist()}
 

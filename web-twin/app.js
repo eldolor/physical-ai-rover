@@ -1225,7 +1225,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       if (seq === state.nogoSeq) { state.nogoView = got; state.nogoLoadedAt = Date.now(); }
       var sent = got && got.sent;
       if (!sent || sent.accepted === false || sent.sent === false) {
-        showToast(t("nogo.notSent", {why: sent.detail || "-"}), "warn");
+        showToast(t("nogo.notSent", {why: (sent && sent.detail) || "-"}), "warn");
       } else {
         showToast(t(okKey), "ok");
       }

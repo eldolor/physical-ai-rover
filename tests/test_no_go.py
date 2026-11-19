@@ -584,3 +584,51 @@ def test_an_autonomous_goal_is_not_refused_by_the_server_for_a_zone(zoned_server
 def test_a_zone_longer_than_a_room_is_refused():
     with pytest.raises(nogo.ZoneRefused, match="at most 15"):
         nogo.clean_zone({"x0": 0, "y0": 0, "x1": 16, "y1": 1})
+
+
+# ---------- review round 2 ----------
+
+def test_a_moved_goal_is_judged_on_the_map_without_the_zones():
+    runner, _, _ = _mission("scaled_house", [], max_steps=1)
+    agent = runner.agent
+    agent.set_zones([nogo.clean_zone({"x0": 1.0, "y0": 1.0, "x1": 2.0, "y1": 2.0})])
+    m = {"usable": True, "width": 20, "height": 20, "resolution_m": 0.3, "origin_x_m": 0.0,
+         "origin_y_m": 0.0, "cells": [CELL_FREE] * 400, "map_id": "m", "map_version": 1}
+    agent._zone_map(m, agent.zones)
+    assert agent._out_of_zones(1.9, 1.5) is not None       # its cell's centre is in the mask's band
+
+
+def test_the_mask_cache_is_keyed_by_which_zones():
+    runner, _, _ = _mission("scaled_house", [], max_steps=1)
+    agent = runner.agent
+    a = nogo.clean_zone({"x0": 0.0, "y0": 0.0, "x1": 1.0, "y1": 1.0})
+    b = nogo.clean_zone({"x0": 3.0, "y0": 3.0, "x1": 4.0, "y1": 4.0})
+    agent.set_zones([a, b])
+    m = {"usable": True, "width": 20, "height": 20, "resolution_m": 0.3, "origin_x_m": 0.0,
+         "origin_y_m": 0.0, "cells": [CELL_FREE] * 400, "map_id": "m", "map_version": 1}
+    only_a = agent._zone_map(m, [a])
+    only_b = agent._zone_map(m, [b])
+    assert only_a["cells"] != only_b["cells"]
+
+
+def test_a_late_resend_never_overwrites_a_newer_set(zoned_server):
+    import time as _t
+    client, bridge, world = zoned_server
+    z1 = nogo.clean_zone(ZONE)
+    client.put("/world/nogo", json={"frame_id": FRAME, "zones": [z1]})
+    bridge.session = "s2"
+    old = world._zones_last
+    z2 = nogo.clean_zone({"x0": 5.0, "y0": 5.0, "x1": 6.0, "y1": 6.0})
+    client.put("/world/nogo", json={"frame_id": FRAME, "zones": [z2]})   # the newer set, on s2
+    assert world._zones_last is not old
+    world.get_pose()                                     # would resend: already on s2
+    _t.sleep(0.2)
+    assert [z["id"] for z in bridge.zones] == [z2["id"]]
+
+
+def test_room_cut_and_coarse_read_a_zone_as_a_wall():
+    from brain.goal_policy import coarse
+    m = {"usable": True, "width": 4, "height": 4, "resolution_m": 0.05, "origin_x_m": 0.0,
+         "origin_y_m": 0.0, "cells": [CELL_FREE] * 15 + [nogo.CELL_NOGO]}
+    out = coarse(m, res_m=0.2)
+    assert out["cells"] == [CELL_OCCUPIED]

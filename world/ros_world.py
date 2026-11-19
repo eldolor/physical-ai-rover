@@ -52,6 +52,8 @@ FREE_BELOW = 25
 # ros2_control dead that is frozen. Normal ages are under 0.1 s (TF at
 # 20 Hz and slam_toolbox's 0.05 s publish period).
 POSE_STALE_S = 1.0
+# 3.161 review 2: a refused zone resend to a new session waits this long.
+ZONES_RETRY_S = 5.0
 # How often an unanchored session may ask the truth again (3.76 round 7).
 TRUTH_RETRY_S = 1.0
 
@@ -245,6 +247,9 @@ class RosWorld(WorldInterface):
         self._zones_last: Optional[tuple] = None
         self._zones_session: Optional[str] = None
         self._zones_resending = False
+        self._zones_failed_at = -math.inf        # review 2: a refused resend waits ZONES_RETRY_S
+        self._zones_warned: Optional[str] = None
+        self._zones_send_lock = threading.RLock()     # one zone send at a time, the resend's check inside
 
     @property
     def _session(self) -> Optional[str]:
@@ -660,13 +665,14 @@ class RosWorld(WorldInterface):
                 rx, ry = _ours_to_ros(*self._unapply(x, y, anchor))
                 poly.append([round(rx, 4), round(ry, 4)])
             out.append({"id": z["id"], "poly": poly})
-        self._zones_last = (list(zones), frame_id)
-        r = self._http.post("/nav/zones", json={"zones": out, "session": anchor.session})
-        if r.status_code == 409:
-            return {"accepted": False, "reason": "the SLAM session changed"}
-        r.raise_for_status()
-        self._zones_session = anchor.session
-        return {"accepted": True, **_json_object(r)}
+        with self._zones_send_lock:
+            self._zones_last = (list(zones), frame_id)
+            r = self._http.post("/nav/zones", json={"zones": out, "session": anchor.session})
+            if r.status_code == 409:
+                return {"accepted": False, "reason": "the SLAM session changed"}
+            r.raise_for_status()
+            self._zones_session = anchor.session
+            return {"accepted": True, **_json_object(r)}
 
     def _zones_again(self, anchor: "Anchor") -> None:
         """3.161 review: a new session on the saved map the last zone set was
@@ -678,18 +684,29 @@ class RosWorld(WorldInterface):
                 or anchor.session == self._zones_session):
             return
         with self._lock:
-            if self._zones_resending:
+            if self._zones_resending or time.monotonic() - self._zones_failed_at < ZONES_RETRY_S:
                 return
             self._zones_resending = True
 
         def send():
+            ok = False
             try:
-                self.set_zones(*last)
-            except Exception as e:  # noqa: BLE001 -- the next pose read tries again
-                logger.warning("no-go zones not re-sent to the new SLAM session: %s", e)
+                with self._zones_send_lock:
+                    # Review 2: a newer set sent meanwhile (a person's edit)
+                    # is never overwritten by this older one.
+                    if self._zones_last is last and self._zones_session != anchor.session:
+                        ok = bool(self.set_zones(*last).get("accepted"))
+                    else:
+                        ok = True
+            except Exception as e:  # noqa: BLE001 -- tried again after ZONES_RETRY_S
+                if self._zones_warned != anchor.session:
+                    self._zones_warned = anchor.session
+                    logger.warning("no-go zones not re-sent to the new SLAM session: %s", e)
             finally:
                 with self._lock:
                     self._zones_resending = False
+                    if not ok:
+                        self._zones_failed_at = time.monotonic()
         threading.Thread(target=send, daemon=True, name="zones-again").start()
 
     def zone_status(self) -> Optional[dict]:
