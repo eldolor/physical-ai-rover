@@ -19,14 +19,19 @@ truth (`tests/demo_explore.coverage()`) is measured, not assumed
 
 from collections import deque
 
-from world.interface import CELL_FREE, CELL_UNKNOWN
+from world import nogo
+from world.interface import CELL_FREE, CELL_OCCUPIED, CELL_UNKNOWN
 
 
-def map_coverage(m: dict) -> dict:
+def map_coverage(m: dict, zones=None) -> dict:
     """`{"coverage": float|None, "mapped_free_m2": float|None}` for one
-    `WorldInterface.get_map()` answer. None for an unusable map."""
+    `WorldInterface.get_map()` answer. None for an unusable map. 3.161 D3:
+    with a person's no-go `zones` (house frame), only floor outside them
+    counts -- their cells are neither floor seen nor floor still to see."""
     if not m or not m.get("usable"):
         return {"coverage": None, "mapped_free_m2": None}
+    if zones:
+        m = nogo.masked_map(m, zones, CELL_OCCUPIED)
     w, h, res, cells = m["width"], m["height"], m["resolution_m"], m["cells"]
     free = sum(1 for c in cells if c == CELL_FREE)
     # Unknown cells connected to the map's border through unknown cells.

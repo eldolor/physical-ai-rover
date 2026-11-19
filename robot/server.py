@@ -128,6 +128,7 @@ from robot.safety import SafetyController, SafetyViolation, path_zone_indices
 from robot.wedge_watch import HOLD_S, SPOT_R_M, SpotBook, WedgeWatch, spot_ahead
 from world.bridge_faults import classify as bridge_fault, headers_for, hold_reason
 from world.factory import get_world
+from world import nogo as nogo_mod
 
 logger = logging.getLogger("server")
 
@@ -2317,6 +2318,13 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         refused = person_stop_refusal(person, latch)
         if refused:
             return {"accepted": False, **refused}
+        # 3.161 D5: a goal inside a person's no-go zone is refused, whoever
+        # sent it, before it takes the robot from anyone. Not a safety veto:
+        # the D-pad is never refused for a zone (robot/safety.py does not
+        # read them).
+        refused = nogo_refusal(world, req.x_m, req.y_m)
+        if refused:
+            return {"accepted": False, **refused}
         # 3.137: at Reserve (or during its check at rest) no goal is taken from
         # anyone -- nav2 drives a goal on its own, at full speed, and a person
         # drives slowly by D-pad: a goal is autonomy whoever asked (DRIVER_ROS).
@@ -2500,6 +2508,82 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         logger.warning(f"keepout: {len(live)} mark(s) cleared at a mission's end"
                     f"{'' if sent else ' (not sent: ' + str(reply.get('reason')) + ')'}")
         return {"cleared": len(live), "sent": sent}
+
+    # ---- 3.161: a person's no-go zones (D2, D4, D5) ----
+    # The brain keeps them (one file per saved map) and sends the whole set
+    # for the map the robot is on here, at a mission's start and on each
+    # edit. This server keeps a copy (for D5's refusal and /health) and
+    # passes it to a world that has a planner (RosWorld -> the bridge's
+    # keepout mask). Zones live in the house frame of the saved map
+    # `frame_id`; on any other map they are not applied.
+    nogo_lock = threading.Lock()
+    nogo_send_lock = threading.Lock()
+    nogo_copy = {"frame_id": None, "zones": [], "sent": None, "detail": None}
+
+    class NoGoRequest(BaseModel):
+        frame_id: Optional[str] = Field(default=None, max_length=64)
+        zones: list = Field(default_factory=list)
+
+    def nogo_refusal(world, x_m: float, y_m: float) -> Optional[dict]:
+        with nogo_lock:
+            frame, zones = nogo_copy["frame_id"], list(nogo_copy["zones"])
+        if not zones:
+            return None
+        try:
+            pose = world.get_pose() or {}
+        except Exception:  # noqa: BLE001 -- no pose: no frame to check against, no refusal
+            return None
+        if not pose.get("usable") or pose.get("frame_id") != frame:
+            return None
+        z = nogo_mod.zone_at(zones, x_m, y_m)
+        if z is None:
+            return None
+        return {"reason": "no_go_zone", "zone": z["id"], "retryable": True,
+                "detail": "that point is inside a no-go zone a person drew"}
+
+    @app.put(prefix + "/world/nogo", dependencies=[Depends(require_secret)])
+    def world_nogo_set(req: NoGoRequest):
+        """3.161 (D2): the whole set of zones for one saved map, replacing
+        the last. 422 for a zone `world/nogo.py` refuses; an empty set
+        clears them. Answers whether the planner took them (`sent`)."""
+        try:
+            zones = nogo_mod.clean_zones(req.zones)
+        except nogo_mod.ZoneRefused as e:
+            raise HTTPException(status_code=422, detail=str(e))
+        if zones and not req.frame_id:
+            raise HTTPException(status_code=422, detail="zones need the saved map's frame_id")
+        sent, detail = None, None
+        # Sends one at a time, so the bridge ends on the last set; the copy's
+        # own lock is never held across the bridge call (a goal reads it).
+        with nogo_send_lock:
+            with nogo_lock:
+                nogo_copy.update(frame_id=req.frame_id, zones=zones, sent=None, detail=None)
+            if hasattr(world_model, "set_zones"):
+                try:
+                    reply = world_model.set_zones(zones, req.frame_id)
+                    sent, detail = bool(reply.get("accepted")), reply.get("reason")
+                except Exception as e:  # noqa: BLE001 -- kept here; the next send mends it
+                    sent, detail = False, f"the ROS bridge did not take the zones: {e}"[:200]
+            with nogo_lock:
+                nogo_copy.update(sent=sent, detail=detail)
+        logger.warning(f"nogo: {len(zones)} zone(s) for {req.frame_id}"
+                       f"{'' if sent is not False else ' (not sent: ' + str(detail) + ')'}")
+        return {"accepted": True, "frame_id": req.frame_id, "zones": len(zones),
+                "sent": sent, "detail": detail}
+
+    @app.get(prefix + "/world/nogo", dependencies=[Depends(require_secret)])
+    def world_nogo_get():
+        """3.161: the copy this server holds, and the bridge's own view of it
+        (which zones it has left out while the robot is in one, D4)."""
+        with nogo_lock:
+            out = {k: (list(v) if isinstance(v, list) else v) for k, v in nogo_copy.items()}
+        bridge = None
+        if hasattr(world_model, "zone_status"):
+            try:
+                bridge = world_model.zone_status()
+            except Exception as e:  # noqa: BLE001 -- the copy still answers
+                bridge = {"error": str(e)[:200]}
+        return JSONResponse({**out, "bridge": bridge})
 
     @app.get(prefix + "/world/error", dependencies=[Depends(require_secret)])
     def world_error():
@@ -2808,7 +2892,14 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             # the moment a CloudFront domain changes. Empty string, not
             # null, so a client can treat it as a plain falsy string.
             "env_label": env_label,
+            # 3.161: the no-go zones this server holds (description only).
+            "nogo": _nogo_health(),
         }
+
+    def _nogo_health() -> dict:
+        with nogo_lock:
+            return {"frame_id": nogo_copy["frame_id"], "zones": len(nogo_copy["zones"]),
+                    "sent": nogo_copy["sent"]}
 
     # 3.137: the ladder's internals, for tests to drive and read (no route).
     app.state.battery = {"ladder": ladder, "poll": battery_poll, "batt": batt,

@@ -885,6 +885,23 @@ prior of 0, a case training saw only where the prior was 0), and the trail
 is never re-anchored, so after a loop closure or a fresh map an old point
 can mark the wrong room as stood in.
 
+**A person's no-go zones (3.161).** `ExploreAgent.zones` (house frame,
+`world/nogo.py`; `[]` is off and leaves every choice as `dev`'s) is set by
+`MissionRunner.set_nogo()` at the start, from the brain's store for the
+pose's `frame_id`, and on each edit. In `_choose_next`, a robot whose centre
+lies in a zone grown by `HALF_WIDTH_M` (0.12 m) is first sent out
+(`_leave_zone`: the nearest place along the floor, on the map without the
+zones, `LEAVE_GOAL_M` (0.35 m) clear of every zone, sent as kind
+`leave_zone`); then every choice is made on `nogo.masked_map(m, zones,
+CELL_OCCUPIED)`, so no frontier, view gap, room or small-room goal lies in a
+zone and no reachable path crosses one. `_send` checks every goal whatever
+chose it (an approach, a recall): one inside a grown zone is moved just out
+of it along the nearest side (`moved_from_zone` on its event), or, with no
+side clear, not sent (`goal_in_zone`, `zone_refusals`, and the place counts
+as failed). `status.explore.nogo` (`frame_id`, `zones`, `refused`, `leaves`)
+appears only with zones. A zone is never a safety veto: the verbs explore
+runs itself (escapes, close-in) are not checked against it.
+
 **A person's room names (3.160).** `brain/room_names.py` keeps the rooms a
 person named on the twin, one file per saved map (`<ROOM_NAMES_DIR>/<frame_id>.json`,
 default `recordings/room-names`, atomic and fsynced; local only), each room

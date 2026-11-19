@@ -144,6 +144,9 @@ def check_robot(url: str, secret=None, timeout=DEFAULT_TIMEOUT_S) -> dict:
             "last_stop_reason": body.get("last_stop_reason"),
             "watchdog": body.get("watchdog"),
             "env_label": body.get("env_label") or None,
+            # 3.161: a person's no-go zones held. Description: where autonomy
+            # may plan is a person's choice, not a fault.
+            "nogo": body.get("nogo"),
             # 3.34: the motor board's link. Description, not a verdict input:
             # a board goes quiet for reasons no release is to blame for (a
             # cable, a flat battery), and the body already refuses to drive

@@ -32,6 +32,11 @@ and the other direction:
                          nav2's KeepoutFilter. The robot server decides them
                          (robot/wedge_watch.py); this only draws them and
                          drops each when its ttl_s runs out.
+    POST /nav/zones {zones: [{id, poly: [[x, y] x4]}]}   3.161: a person's
+                         no-go zones (map frame), the whole set; drawn into
+                         the same mask as the spots, never expiring, and left
+                         out while the robot is in one until it is 0.30 m
+                         clear (keepout.suspend, /health's `nogo`)
     GET /nav/stats, POST /nav/stats/reset   R6's criteria 5 and 6: angular
                          reversals in what REACHED the wheels, and how often
                          collision_monitor stopped or slowed what it was given
@@ -323,6 +328,13 @@ class Bridge(Node):
         latched = QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL,
                              reliability=ReliabilityPolicy.RELIABLE)
         self.keepout_spots = []
+        # 3.161: a person's no-go zones (polygons, map frame), drawn into the
+        # same mask; the ids left out while the robot is in one (D4), and how
+        # often a zone was suspended and restored.
+        self.zones = []
+        self.zones_fresh = set()
+        self.zones_suspended = set()
+        self.zone_events = {"suspended": 0, "restored": 0, "last": None}
         self.keepout_info_pub = self.create_publisher(CostmapFilterInfo, "/costmap_filter_info", latched)
         self.keepout_mask_pub = self.create_publisher(OccupancyGrid, "/keepout_mask", latched)
         info = CostmapFilterInfo()
@@ -334,6 +346,7 @@ class Bridge(Node):
         self.keepout_info_pub.publish(info)
         self._publish_keepout([])
         self.create_timer(1.0, self._expire_keepout)
+        self.create_timer(0.2, self._watch_zones)      # 3.161 D4, at 5 Hz
         # Its own callback group (PLAN-ros-alignment.md 3.36): the poll is a
         # BLOCKING HTTP read, and in the node's default (mutually exclusive)
         # group it starved every subscription -- on the Jetson a full scan
@@ -975,8 +988,71 @@ class Bridge(Node):
                 self.keepout_spots = kept
                 self._publish_keepout(kept)
 
+    # ---------- 3.161: a person's no-go zones ----------
+
+    def set_zones(self, body):
+        """POST /nav/zones: the whole set, replacing the last. Spots are not
+        touched (POST /nav/keepout replaces only those), and neither the
+        spots' expiry nor the mission-end clear removes a zone."""
+        if body.get("session") not in (None, self.session):
+            return 409, {"error": "the SLAM session changed", "session": self.session}
+        try:
+            zones = keepout.parse_zones(body.get("zones") or [])
+        except (KeyError, TypeError, ValueError, IndexError) as e:
+            return 400, {"error": str(e)}
+        pose = self._pose_in("map")
+        with self.lock:
+            self.zones = zones
+            self.zones_fresh = {z["id"] for z in zones}
+            self._zones_step(pose)
+            self._publish_keepout(self.keepout_spots)
+            suspended = sorted(self.zones_suspended)
+        return 200, {"zones": len(zones), "suspended": suspended}
+
+    def _zones_step(self, pose):
+        """Under self.lock: D4's suspension for this pose; logs each change.
+        Returns whether the drawn set changed."""
+        xy = None if pose is None else (pose["x_m"], pose["y_m"])
+        before = self.zones_suspended
+        after = keepout.suspend(self.zones, before, xy, self.zones_fresh)
+        if xy is not None:
+            self.zones_fresh = set()
+        for zid in sorted(after - before):
+            self.zone_events["suspended"] += 1
+            self.zone_events["last"] = {"event": "zone_suspended", "id": zid, "at": time.time()}
+            self.get_logger().warning(f"zone_suspended {zid}: the robot is in it; left out "
+                                      f"of the mask until it is {keepout.LEAVE_M:g} m clear")
+        for zid in sorted(before - after):
+            if any(z["id"] == zid for z in self.zones):
+                self.zone_events["restored"] += 1
+                z = next(z for z in self.zones if z["id"] == zid)
+                d = keepout.zone_distance(z, *xy) if xy is not None else None
+                self.zone_events["last"] = {"event": "zone_restored", "id": zid, "at": time.time(),
+                                            "clear_m": None if d is None else round(d, 3)}
+                self.get_logger().warning(f"zone_restored {zid}: the robot is "
+                                          f"{d if d is None else round(d, 2)} m clear")
+        self.zones_suspended = after
+        return after != before
+
+    def _watch_zones(self):
+        if not self.zones:
+            return
+        pose = self._pose_in("map")
+        if pose is None or pose.get("age_s", 0) > 2.0:
+            return
+        with self.lock:
+            if self._zones_step(pose):
+                self._publish_keepout(self.keepout_spots)
+
+    def _nogo_view(self):
+        """Under self.lock: /health's `nogo` block (3.161 D4)."""
+        return {"zones": len(self.zones), "suspended": sorted(self.zones_suspended),
+                **self.zone_events}
+
     def _publish_keepout(self, spots):
-        m = keepout.mask(spots)
+        # 3.161: the zones still drawn (not suspended) join the spots.
+        m = keepout.mask(spots, zones=[z for z in self.zones
+                                       if z["id"] not in self.zones_suspended])
         msg = OccupancyGrid()
         msg.header.frame_id = "map"
         msg.header.stamp = self.get_clock().now().to_msg()
@@ -1858,6 +1934,8 @@ class Bridge(Node):
                          "map_replies": dict(self.map_replies),
                          # 3.105: goals are held until nav2 answers active
                          "nav2": self._nav2_view(),
+                         # 3.161: a person's no-go zones, and those left out (D4)
+                         "nogo": self._nogo_view(),
                          "brain_url": self.brain_url,
                          "brain_polls": self.brain_polls,
                          "brain_age_s": None if not self.brain_at else time.time() - self.brain_at,
@@ -1961,6 +2039,10 @@ def _handler(bridge):
                 return self._send(*bridge.send_goal(body))
             if path == "/nav/keepout":
                 return self._send(*bridge.set_keepout(body))
+            if path == "/nav/zones":             # 3.161: a person's no-go zones
+                if not isinstance(body, dict):
+                    return self._send(400, {"error": "the body must be a JSON object"})
+                return self._send(*bridge.set_zones(body))
             if path == "/slam/remap":            # 3.50.D4: a person's "re-map now"
                 if not isinstance(body, dict):
                     return self._send(400, {"error": "the body must be a JSON object"})

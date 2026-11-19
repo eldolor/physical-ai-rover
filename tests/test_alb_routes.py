@@ -99,6 +99,11 @@ INTENTIONALLY_UNROUTED = {
     # service/tunnel/, as every live route has since these stacks went.
     ("twin.yaml", "/world/remap"),
     ("teleop-robot.yaml", "/teleop-robot/world/remap"),
+    # 3.161: a person's no-go zones, sent by the brain (and read by the
+    # twin) through service/tunnel/, as every live route has since these
+    # stacks went.
+    ("twin.yaml", "/world/nogo"),
+    ("teleop-robot.yaml", "/teleop-robot/world/nogo"),
     # 3.132 Stage 2B: the twin's ES modules (/js/{name}; app_routes() samples
     # the name). Served from S3 by CloudFront since these stacks were
     # deleted 2026-09-05, like the rest of the page.

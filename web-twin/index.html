@@ -545,6 +545,27 @@
             <ul id="rooms-unplaced" class="rooms-list"></ul>
           </section>
         </div>
+        <!-- 3.161: no-go zones a person draws (rectangles, and lines as walls),
+             kept with the saved map on the robot's own disk; never uploaded.
+             Autonomy never plans into one; the D-pad is never refused. -->
+        <div class="nogo-row" style="display: none">
+          <button id="btn-nogo" type="button">No-go zones</button>
+          <section id="nogo-panel" class="rooms-panel" hidden aria-label="No-go zones">
+            <div class="rooms-head">
+              <span class="rooms-title" id="nogo-title">No-go zones</span>
+              <button id="nogo-done" type="button">Done</button>
+            </div>
+            <p id="nogo-closed" class="rooms-closed" hidden></p>
+            <p id="nogo-hint" class="rooms-hint" aria-live="polite"></p>
+            <p id="nogo-paused" class="nogo-paused" hidden></p>
+            <div class="nogo-tools" id="nogo-tools">
+              <button id="nogo-draw" type="button">Draw</button>
+              <button id="nogo-wall" type="button">Wall</button>
+              <button id="nogo-delete" type="button" hidden>Delete zone</button>
+              <button id="nogo-cancel" type="button" hidden>Cancel</button>
+            </div>
+          </section>
+        </div>
       </div>
       <div class="fpv-source eng-only" id="fpv-source">frame source: <span class="local">not connected</span></div>
     </div>

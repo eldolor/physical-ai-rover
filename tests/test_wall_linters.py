@@ -74,7 +74,9 @@ MAX_DUPLICATES = 12
 # reach nav2's planner (a wedge it cannot otherwise hear of).
 # 15 since 3.50.D4: POST /slam/remap, a person's "re-map now" -- the one
 # trigger the bridge cannot see for itself (the user's choice, 2026-10-23).
-MAX_BRIDGE_ROUTES = 15
+# 16 since 3.161: POST /nav/zones, a person's no-go zones -- the one way a
+# person's drawing reaches nav2's planner (3.161.A D2 registers it here).
+MAX_BRIDGE_ROUTES = 16
 
 
 # ---------- reading both sides ----------

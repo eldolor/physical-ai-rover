@@ -630,6 +630,43 @@ class RosWorld(WorldInterface):
         r.raise_for_status()
         return {"accepted": True, **r.json()}
 
+    def set_zones(self, zones: list, frame_id: Optional[str]) -> dict:
+        """3.161 (D2): a person's no-go zones (house frame, `world/nogo.py`)
+        for the saved map `frame_id`, the whole set, replacing the last. Each
+        rectangle goes to the bridge as its four corners in ROS's map frame
+        (the anchor may rotate it), and the bridge draws them into the same
+        keepout mask as the robot's spots. Refused unless this session's
+        anchor lays that saved map's frame: on any other they would land in
+        the wrong place. An empty set is sent whatever the frame (a clear)."""
+        reply = self._fetch_pose()
+        anchor = self._ensure_session(reply)
+        if anchor is None:
+            return {"accepted": False, "reason": "no SLAM session yet"}
+        if zones and (frame_id is None or anchor.frame != frame_id):
+            return {"accepted": False, "reason": "another saved map",
+                    "detail": f"the zones are for {frame_id}, the robot is on {anchor.frame}"}
+        out = []
+        for z in zones:
+            poly = []
+            for x, y in ((z["x0"], z["y0"]), (z["x1"], z["y0"]),
+                         (z["x1"], z["y1"]), (z["x0"], z["y1"])):
+                rx, ry = _ours_to_ros(*self._unapply(x, y, anchor))
+                poly.append([round(rx, 4), round(ry, 4)])
+            out.append({"id": z["id"], "poly": poly})
+        r = self._http.post("/nav/zones", json={"zones": out, "session": anchor.session})
+        if r.status_code == 409:
+            return {"accepted": False, "reason": "the SLAM session changed"}
+        r.raise_for_status()
+        return {"accepted": True, **_json_object(r)}
+
+    def zone_status(self) -> Optional[dict]:
+        """3.161 (D4): the bridge's `nogo` block on its /health -- the zones it
+        holds and those it has left out of the mask while the robot is in or
+        near one. None from a bridge that predates it."""
+        r = self._http.get("/health")
+        r.raise_for_status()
+        return _json_object(r).get("nogo")
+
     def remap(self, by: str = "") -> dict:
         """3.50.D4: a person's "re-map now". The bridge maps the reloaded
         map again from where the robot is; it refuses (409) unless it is

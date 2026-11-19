@@ -804,6 +804,10 @@ class MissionRunner:
 
         self.robot = robot
         self.room_hint = room_hint
+        # 3.161: a person's no-go zones for the saved map the mission runs on
+        # (house frame) and that map's frame_id; [] is off (`set_nogo`).
+        self.nogo_zones: list = []
+        self.nogo_frame: Optional[str] = None
         # 3.176: the sentence a person typed, kept for the record only.
         self.request = request.strip()[:MAX_REQUEST_CHARS] if isinstance(request, str) and request.strip() else None
         self._explore_policy_name = explore_goal_policy
@@ -1779,6 +1783,17 @@ class MissionRunner:
     def last_frame_seq(self) -> Optional[int]:
         return self._last_frame_seq
 
+    def set_nogo(self, frame_id: Optional[str], zones) -> None:
+        """3.161 (D2, D3): a person's zones for the saved map `frame_id`, at
+        the start and on each edit. Explore reads them for its goal choice;
+        the report's coverage counts floor outside them."""
+        zones = list(zones or ())
+        with self._lock:
+            self.nogo_frame, self.nogo_zones = frame_id, zones
+        set_zones = getattr(self.agent, "set_zones", None)
+        if callable(set_zones):
+            set_zones(zones)
+
     def status(self) -> dict:
         with self._lock:
             elapsed = self._elapsed_s()
@@ -1897,7 +1912,13 @@ class MissionRunner:
                              "asks": self._ask() is not None,
                              "ask": (self._ask().snapshot()
                                      if self._ask() is not None else None),
-                             "choices": len(self.choices)}
+                             "choices": len(self.choices),
+                             # 3.161: only with zones, so a plain mission's status is dev's.
+                             **({"nogo": {"frame_id": self.nogo_frame,
+                                          "zones": len(self.nogo_zones),
+                                          "refused": getattr(self.agent, "zone_refusals", 0),
+                                          "leaves": getattr(self.agent, "zone_leaves", 0)}}
+                                if self.nogo_zones else {})}
                             if self.explores else None),
                 "tier_search": self.tier_search,
                 # 3.46: counts only; the list is GET /mission/inventory.
@@ -2761,7 +2782,9 @@ class MissionRunner:
             report["room_hint"] = self._room_hint_status()
         try:
             m = self.world.get_map()
-            report.update(map_coverage(m))
+            report.update(map_coverage(m, self.nogo_zones))
+            if self.nogo_zones:
+                report["nogo_zones"] = len(self.nogo_zones)   # 3.161: coverage is outside them
             report["map_id"], report["map_version"] = m.get("map_id"), m.get("map_version")
         except Exception as e:  # noqa: BLE001 -- a report never fails a finish
             logger.warning("report: map unreadable: %s", e)
