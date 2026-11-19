@@ -234,3 +234,18 @@ def test_a_pose_read_error_for_the_note_is_not_an_inventory_warning(monkeypatch,
     assert not runner._inventory_error_logged
     assert sum("pose not read" in r.message for r in caplog.records) == 1
     runner.stop("test")
+
+
+# ---------- the live record (evaluations/survey-370/M1/, run 2) ----------
+
+@pytest.mark.parametrize("house", ["scaled_house", "home_first_floor"])
+def test_the_live_run_met_every_m1_bar(house):
+    import json
+    from pathlib import Path
+    rec = json.loads((Path(__file__).resolve().parents[1] / "evaluations" / "survey-370" / "M1"
+                      / f"{house}.json").read_text())
+    assert set(rec["verdicts"].values()) == {"MET"} and len(rec["verdicts"]) == 4
+    a, b = rec["a"]["named"], rec["b"]["named"]
+    assert a["saved_map"]["reloaded"] is False and b["saved_map"]["reloaded"] is True
+    assert a["saved_map"]["frame_id"] == b["saved_map"]["frame_id"]
+    assert a["bridge_known"] == 0                     # it started empty

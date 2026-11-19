@@ -1,0 +1,99 @@
+{
+ "house": "scaled_house",
+ "image": "vision-picar-ros:plan-3.70",
+ "find_s": 120,
+ "a": {
+  "reload": {
+   "result": "none"
+  },
+  "bridge_map_id": "map-368ea085",
+  "mission": {
+   "outcome": "out_of_budget",
+   "seconds": 64,
+   "contact_samples": 0,
+   "min_gap_cm": 27.2
+  },
+  "named": {
+   "saved_map": {
+    "frame_id": "map-368ea085",
+    "map_id": "slam-92cf2a66",
+    "reloaded": false
+   },
+   "at_s": 0.26,
+   "house_m2": 34.0,
+   "bridge_known_m2": 0.0,
+   "bridge_known": 0,
+   "bridge_cells": 0,
+   "world_known": 0,
+   "log": [
+    "map: a new map map-368ea085 (nothing saved matched: built from this run's scans)"
+   ]
+  },
+  "map_save": {
+   "map_id": "map-368ea085",
+   "saving": false,
+   "store": true,
+   "saved": 1,
+   "failed": 0,
+   "skipped": 0,
+   "last_version": 1,
+   "last_at": 1795097467.108811,
+   "last_error": null
+  },
+  "settled_s": 3.0,
+  "load": {
+   "n": 8,
+   "max": 0.94,
+   "p50": 0.55,
+   "over_4": 0
+  }
+ },
+ "b": {
+  "reload": {
+   "map_id": "map-368ea085",
+   "version": 1,
+   "took_s": 1.71,
+   "agreement": 1.0,
+   "dock_error_m": 0.0,
+   "dock_error_deg": 0.0,
+   "ok": true,
+   "reason": "matched",
+   "result": "matched"
+  },
+  "bridge_map_id": "map-368ea085",
+  "mission": {
+   "outcome": "out_of_budget",
+   "seconds": 69,
+   "contact_samples": 0,
+   "min_gap_cm": 23.6
+  },
+  "named": {
+   "saved_map": {
+    "frame_id": "map-368ea085",
+    "map_id": "slam-84a07aa8",
+    "reloaded": true
+   },
+   "at_s": 0.26,
+   "house_m2": 34.0,
+   "bridge_known_m2": 18.5,
+   "bridge_known": 7401,
+   "bridge_cells": 11023,
+   "world_known": 7401,
+   "log": [
+    "map: on the saved map map-368ea085, reloaded"
+   ]
+  },
+  "load": {
+   "n": 8,
+   "max": 2.6,
+   "p50": 1.83,
+   "over_4": 0
+  }
+ },
+ "verdicts": {
+  "first_visit_new_map": "MET",
+  "first_cells_own_scans": "FAILED",
+  "saved_map_reloaded": "MET",
+  "missions_ran": "MET"
+ }
+}
