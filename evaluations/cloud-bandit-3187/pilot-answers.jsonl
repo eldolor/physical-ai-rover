@@ -1,0 +1,40 @@
+{"key": "a-white-phone-charger-ca-20260921-203250/frame-0011.jpg", "sent": "2026-11-19T10:38:58+00:00"}
+{"key": "a-white-phone-charger-ca-20260921-203250/frame-0011.jpg", "object": "a white phone charger cable", "visible": true, "rtt_ms": 5155, "usd": 0.012023, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 1706, "output_tokens": 96, "action": "FORWARD", "target_visible": true}
+{"key": "a-white-phone-charger-ca-20260921-203355/frame-0076.jpg", "sent": "2026-11-19T10:39:04+00:00"}
+{"key": "a-white-phone-charger-ca-20260921-203355/frame-0076.jpg", "object": "a white phone charger cable", "visible": false, "rtt_ms": 2755, "usd": 0.011913, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 1706, "output_tokens": 92, "action": "FORWARD", "target_visible": false}
+{"key": "a-white-phone-charger-ca-20260921-203250/frame-0027.jpg", "sent": "2026-11-19T10:39:06+00:00"}
+{"key": "a-white-phone-charger-ca-20260921-203250/frame-0027.jpg", "object": "a white phone charger cable", "visible": true, "rtt_ms": 6605, "usd": 0.011693, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 1706, "output_tokens": 84, "action": "FORWARD", "target_visible": true}
+{"key": "blue-shoes-20260907-152528/frame-0018.jpg", "sent": "2026-11-19T10:39:13+00:00"}
+{"key": "blue-shoes-20260907-152528/frame-0018.jpg", "object": "blue and yellow running shoes", "visible": true, "rtt_ms": 2243, "usd": 0.007475, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 919, "output_tokens": 88, "action": "STOP", "target_visible": true}
+{"key": "blue-shoes-20260908-210511/frame-0016.jpg", "sent": "2026-11-19T10:39:15+00:00"}
+{"key": "blue-shoes-20260908-210511/frame-0016.jpg", "object": "blue and yellow running shoes", "visible": false, "rtt_ms": 2442, "usd": 0.011775, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 1701, "output_tokens": 88, "action": "FORWARD", "target_visible": false}
+{"key": "blue-shoes-20260907-152528/frame-0012.jpg", "sent": "2026-11-19T10:39:18+00:00"}
+{"key": "blue-shoes-20260907-152528/frame-0012.jpg", "object": "blue and yellow running shoes", "visible": true, "rtt_ms": 2277, "usd": 0.007612, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 919, "output_tokens": 93, "action": "FORWARD", "target_visible": true}
+{"key": "blue-bottle-20260907-185007/frame-0211.jpg", "sent": "2026-11-19T10:39:20+00:00"}
+{"key": "blue-bottle-20260907-185007/frame-0211.jpg", "object": "blue bottle", "visible": true, "rtt_ms": 2152, "usd": 0.00731, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 904, "output_tokens": 85, "action": "STOP", "target_visible": true}
+{"key": "blue-bottle-20260907-142454/frame-0005.jpg", "sent": "2026-11-19T10:39:22+00:00"}
+{"key": "blue-bottle-20260907-142454/frame-0005.jpg", "object": "blue bottle", "visible": false, "rtt_ms": 2415, "usd": 0.007447, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 904, "output_tokens": 90, "action": "LEFT", "target_visible": false}
+{"key": "blue-bottle-20260907-185007/frame-0204.jpg", "sent": "2026-11-19T10:39:24+00:00"}
+{"key": "blue-bottle-20260907-185007/frame-0204.jpg", "object": "blue bottle", "visible": true, "rtt_ms": 2103, "usd": 0.007227, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 904, "output_tokens": 82, "action": "LEFT", "target_visible": true}
+{"key": "grey-backpack-opus-4-5-20260921-210743/frame-0029.jpg", "sent": "2026-11-19T10:39:27+00:00"}
+{"key": "grey-backpack-opus-4-5-20260921-210743/frame-0029.jpg", "object": "grey backpack", "visible": true, "rtt_ms": 2277, "usd": 0.011418, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 1691, "output_tokens": 77, "action": "STOP", "target_visible": true}
+{"key": "grey-backpack-20260921-203627/frame-0084.jpg", "sent": "2026-11-19T10:39:29+00:00"}
+{"key": "grey-backpack-20260921-203627/frame-0084.jpg", "object": "grey backpack", "visible": false, "rtt_ms": 2580, "usd": 0.011638, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 1691, "output_tokens": 85, "action": "RIGHT", "target_visible": false}
+{"key": "grey-backpack-20260921-203748/frame-0050.jpg", "sent": "2026-11-19T10:39:31+00:00"}
+{"key": "grey-backpack-20260921-203748/frame-0050.jpg", "object": "grey backpack", "visible": true, "rtt_ms": 2417, "usd": 0.011363, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 1691, "output_tokens": 75, "action": "STOP", "target_visible": true}
+{"key": "red-backpack-20260912-224822/frame-0112.jpg", "sent": "2026-11-19T10:39:34+00:00"}
+{"key": "red-backpack-20260912-224822/frame-0112.jpg", "object": "red backpack", "visible": false, "rtt_ms": 2674, "usd": 0.011803, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 1691, "output_tokens": 91, "action": "LEFT", "target_visible": false}
+{"key": "red-backpack-20260921-203152/frame-0043.jpg", "sent": "2026-11-19T10:39:36+00:00"}
+{"key": "red-backpack-20260921-203152/frame-0043.jpg", "object": "red backpack", "visible": false, "rtt_ms": 2559, "usd": 0.011721, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 1691, "output_tokens": 88, "action": "LEFT", "target_visible": true}
+{"key": "red-backpack-20260912-224429/frame-0177.jpg", "sent": "2026-11-19T10:39:39+00:00"}
+{"key": "red-backpack-20260912-224429/frame-0177.jpg", "object": "red backpack", "visible": false, "rtt_ms": 10869, "usd": 0.011528, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 1691, "output_tokens": 81, "action": "FORWARD", "target_visible": false}
+{"key": "red-backpack-20260912-225001/frame-0052.jpg", "sent": "2026-11-19T10:39:50+00:00"}
+{"key": "red-backpack-20260912-225001/frame-0052.jpg", "object": "red backpack", "visible": false, "rtt_ms": 2671, "usd": 0.011555, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 1691, "output_tokens": 82, "action": "RIGHT", "target_visible": false}
+{"key": "woven-laundry-basket-20260908-215252/frame-0006.jpg", "sent": "2026-11-19T10:39:53+00:00"}
+{"key": "woven-laundry-basket-20260908-215252/frame-0006.jpg", "object": "woven laundry basket", "visible": true, "rtt_ms": 2347, "usd": 0.01161, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 1706, "output_tokens": 81, "action": "RIGHT", "target_visible": true}
+{"key": "woven-laundry-basket-20260912-231358/frame-0126.jpg", "sent": "2026-11-19T10:39:55+00:00"}
+{"key": "woven-laundry-basket-20260912-231358/frame-0126.jpg", "object": "woven laundry basket", "visible": false, "rtt_ms": 2499, "usd": 0.011748, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 1706, "output_tokens": 86, "action": "RIGHT", "target_visible": false}
+{"key": "woven-laundry-basket-20260908-215351/frame-0076.jpg", "sent": "2026-11-19T10:39:57+00:00"}
+{"key": "woven-laundry-basket-20260908-215351/frame-0076.jpg", "object": "woven laundry basket", "visible": true, "rtt_ms": 2391, "usd": 0.012023, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 1706, "output_tokens": 96, "action": "FORWARD", "target_visible": true}
+{"key": "woven-laundry-basket-20260913-115414/frame-0089.jpg", "sent": "2026-11-19T10:40:00+00:00"}
+{"key": "woven-laundry-basket-20260913-115414/frame-0089.jpg", "object": "woven laundry basket", "visible": false, "rtt_ms": 2518, "usd": 0.012023, "model_id": "us.anthropic.claude-opus-4-5-20251101-v1:0", "input_tokens": 1706, "output_tokens": 96, "action": "RIGHT", "target_visible": false}
