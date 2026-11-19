@@ -264,3 +264,27 @@ def test_a_label_block_that_fails_never_costs_the_inventory(tmp_path, monkeypatc
     _run(store, SAVED, "s1")
     saved = _saved_file(tmp_path, "s1")
     assert "room_labels" not in saved and saved["frame_id"] == SAVED
+
+
+# ---------- review round 2 ----------
+
+def test_a_survey_cut_short_keeps_the_earlier_surveys_labels(surveyed, tmp_path):
+    """A survey stopped or out of time saw part of the house: it must not
+    replace a whole earlier survey's labels (it ends `out_of_budget` here)."""
+    d, _runner, _s = surveyed
+    written = _saved_file(d, "s1")
+    for p in d.iterdir():
+        (tmp_path / p.name).write_text(p.read_text())
+    two, s2 = _run(InventoryStore(str(tmp_path)), SAVED, "s2", mission_time_limit_s=20)
+    assert s2["outcome"] != EXHAUSTED and two.room_labeller.seeds
+    assert _saved_file(tmp_path, "s2")["room_labels"] == written["room_labels"]
+
+
+def test_a_first_survey_with_no_detections_still_saves_on_its_frame(tmp_path):
+    """The car: frames carry no detections (3.76 E), so the inventory never
+    records one -- it takes the frame at the seed, and the labels save."""
+    store = InventoryStore(str(tmp_path))
+    _run(store, SAVED, "s1", detections_fn=lambda frame: None)
+    saved = _saved_file(tmp_path, "s1")
+    assert saved["frame_id"] == SAVED
+    assert read_saved(saved["room_labels"])["frame_id"] == SAVED

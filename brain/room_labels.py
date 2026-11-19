@@ -592,13 +592,13 @@ class RoomLabeller:
             logger.warning("room names not applied: %s", e)
             return base
 
-    def model_layer(self, m: Optional[dict]) -> Optional[dict]:
+    def model_layer(self, m: Optional[dict], seeds: Optional[list] = None) -> Optional[dict]:
         """3.70 S4: the models' layer alone, cut fresh from THIS map -- what
         a survey saves with the map (a person's names are kept by 3.160's
         own store, and laid over at read). None without a usable map."""
         if not m or not m.get("usable", True) or "cells" not in m:
             return None
-        return self._model_layer(m, own_cut=True)
+        return self._model_layer(m, own_cut=True, seeds=seeds)
 
     @staticmethod
     def _with_person(m: dict, base: dict, person: list) -> dict:
@@ -626,8 +626,9 @@ class RoomLabeller:
         return {"names": [used[k] for k in kept], "cells": out.tolist(),
                 "person": sorted({pnames[o] for o in set(own[take].tolist())})}
 
-    def _model_layer(self, m: dict, own_cut: bool = False) -> dict:
-        named = [(x, y, n) for x, y, n in self.seeds if n != UNCLEAR]
+    def _model_layer(self, m: dict, own_cut: bool = False, seeds: Optional[list] = None) -> dict:
+        seeds = self.seeds if seeds is None else seeds
+        named = [(x, y, n) for x, y, n in seeds if n != UNCLEAR]
         if own_cut:
             # 3.70 S4: a cut of its own, never the shared cache -- called on
             # a save thread while a route may be cutting too.
@@ -639,11 +640,11 @@ class RoomLabeller:
             # Every seed walks -- an `unclear` one holds its space and names
             # nothing -- and an answer reaches REACH_M at most: a cell it
             # reaches only through two doorways stays unlabelled.
-            d, owner = _walk(cut.seg, [cut.cell(x, y) or (-1, -1) for x, y, _ in self.seeds],
+            d, owner = _walk(cut.seg, [cut.cell(x, y) or (-1, -1) for x, y, _ in seeds],
                              cut.res, self.door_m)
             names = sorted({n for _x, _y, n in named})
             index = {n: k for k, n in enumerate(names)}
-            lut = np.array([index.get(n, -1) for _x, _y, n in self.seeds] + [-1], dtype=int)
+            lut = np.array([index.get(n, -1) for _x, _y, n in seeds] + [-1], dtype=int)
             cells = np.where((owner >= 0) & (d < self.reach_m), lut[owner], -1)
             return {"names": names, "cells": cells.ravel().tolist()}
         seg = cut.seg
@@ -683,8 +684,8 @@ class RoomLabeller:
 
 SAVED_FORMAT = 1
 # A block whose grid is larger than this is not decoded (a damaged file must
-# not allocate without bound): 2,000 x 2,000 cells, 600 m a side at 0.3 m.
-MAX_SAVED_CELLS = 4_000_000
+# not allocate without bound): 1,000 x 1,000 cells, 300 m a side at 0.3 m.
+MAX_SAVED_CELLS = 1_000_000
 
 
 def rle(cells) -> list:

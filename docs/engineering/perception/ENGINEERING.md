@@ -214,7 +214,8 @@ their rounded total; a merge of carried parts weighs no more than the
 heavier part),
 `carried: true`; a new sighting within `MERGE_M` joins it. Nothing is
 carried with no `frame_id` (the simulator's own world), with no report on
-it, or once recording has begun; the report names `carried_from` (the
+it (3.70 S4: the inventory then takes the frame at once, `Inventory.adopt()`),
+or once recording has begun; the report names `carried_from` (the
 mission id) and `carry_seq` (the carried report's plus one, 0 with nothing
 carried; `carry_seq_of()` is the one parsing rule). Each mission saves
 what it carried plus what it saw, so the chain's head -- the highest

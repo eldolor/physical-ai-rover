@@ -3101,6 +3101,8 @@ class MissionRunner:
             if failed:
                 self.inventory.detach()
             n = self.inventory.seed(frame_id, prior) if prior else 0
+            if frame_id and not failed and not prior:
+                self.inventory.adopt(pose)     # 3.70 S4: on the frame with nothing saved
             source = self.inventory.carried_from
             labels = self._carry_labels(frame_id, prior, labels_ok)
             aside = self._carry_set_aside(frame_id, prior)
@@ -3138,12 +3140,17 @@ class MissionRunner:
         return len(got["names"])
 
     def _own_labels_due(self) -> bool:
-        """A survey's labeller named at least one room: its layer is saved."""
+        """A survey's labeller named at least one room: its layer is saved --
+        over a carried block only when the survey ended `exhausted` (review
+        2: a survey stopped or out of time saw part of the house, and must
+        not wipe a whole earlier survey's labels)."""
         rl = self.room_labeller
-        return (rl is not None and not self.find_room_labels
-                and any(n != room_labels_mod.UNCLEAR for _x, _y, n in rl.seeds))
+        if (rl is None or self.find_room_labels
+                or not any(n != room_labels_mod.UNCLEAR for _x, _y, n in rl.seeds)):
+            return False
+        return self._labels_block is None or self._outcome == EXHAUSTED
 
-    def _own_label_block(self) -> Optional[dict]:
+    def _own_label_block(self, snap: tuple) -> Optional[dict]:
         """3.70 S4: this survey's labels as the saved block -- the model's
         layer, not a person's names (3.160 keeps those in its own store) --
         cut on the last map the labeller saw, at the room policy's grid
@@ -3155,26 +3162,25 @@ class MissionRunner:
         that names nothing: the inventory is saved without it, and a carried
         block stays."""
         try:
-            seen = self._label_seen
-            frame_id = self.inventory.frame_id if self.inventory is not None else None
+            seen, seeds, frame_id = snap
             if seen is None or not frame_id or seen[1] != frame_id:
-                if seen is not None:
+                if seen is not None and seen[1] and frame_id:
                     logger.warning("room labels not saved: the map is on %s, the inventory on %s",
                                    seen[1], frame_id)
                 return None
             m = coarse(seen[0])
-            layer = self.room_labeller.model_layer(m)
+            layer = self.room_labeller.model_layer(m, seeds)
             if not layer or not layer["names"]:
                 return None
-            return room_labels_mod.saved_block(layer, m, self.room_labeller.seeds,
+            return room_labels_mod.saved_block(layer, m, seeds,
                                                mode=self.room_labeller.mode,
                                                mission_id=self.mission_id, frame_id=frame_id)
         except Exception as e:  # noqa: BLE001 -- a label never costs the inventory
             logger.warning("room labels not saved: %s", e)
             return None
 
-    def _with_own_labels(self, report: dict) -> dict:
-        block = self._own_label_block()
+    def _with_own_labels(self, report: dict, snap: tuple) -> dict:
+        block = self._own_label_block(snap)
         if block is not None:
             with self._lock:
                 self._labels_block = block
@@ -3334,11 +3340,16 @@ class MissionRunner:
             if self._own_labels_due():
                 # 3.70 S4: the survey's labels join the same report. A lazy
                 # sink builds them on its save thread (the save is counted
-                # pending from now, so the next lookup waits for it).
+                # pending from now, so the next lookup waits for it), from
+                # what the labeller holds now (review 2: a late step cannot
+                # change it under the build).
+                with self._lock:
+                    snap = (self._label_seen, [list(sd) for sd in self.room_labeller.seeds],
+                            self.inventory.frame_id)
                 if self.inventory_sink_lazy:
-                    self.inventory_sink(functools.partial(self._with_own_labels, report))
+                    self.inventory_sink(functools.partial(self._with_own_labels, report, snap))
                     return
-                report = self._with_own_labels(report)
+                report = self._with_own_labels(report, snap)
             self.inventory_sink(report)
         except Exception as e:  # noqa: BLE001
             logger.warning("inventory not saved: %s", e)
