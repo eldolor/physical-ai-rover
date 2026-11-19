@@ -506,3 +506,81 @@ def test_no_saved_map_closes_the_editor(brain):
     v = c.get("/mission/nogo").json()
     assert v["frame_id"] is None and "Survey first" in v["closed"]
     assert c.post("/mission/nogo", json={"frame_id": None, "op": "clear"}).status_code == 409
+
+
+# ---------- review round 1 ----------
+
+def test_a_mission_started_without_a_frame_gets_its_zones_when_the_pose_names_one():
+    grid = build_world("scaled_house")
+    robot = MockRobot(grid, render=False)
+    nav = FakeNav(robot)
+
+    class Saved(MockWorld):
+        def get_pose(self):
+            p = super().get_pose()
+            return dict(p, frame_id=FRAME) if p.get("usable") else p
+    runner = MissionRunner(robot, target_object="red backpack", policy="explore", navigator=nav,
+                           world=Saved(grid), max_steps=5, clock=lambda: grid.sim_time,
+                           idle=robot.pass_time)
+    zones = [nogo.clean_zone({"x0": 3.0, "y0": 2.0, "x1": 4.5, "y1": 3.0})]
+    asked, sent = [], []
+    runner.nogo_source = lambda f: asked.append(f) or zones
+    runner.nogo_sink = lambda f, z: sent.append((f, len(z)))
+    runner.start()
+    while runner.tick():
+        pass
+    assert asked == [FRAME] and sent == [(FRAME, 1)]
+    assert runner.agent.zones == zones and runner.nogo_frame == FRAME
+
+
+def test_a_goal_the_server_refuses_for_a_zone_counts_as_a_failed_place():
+    runner, _, _ = _mission("scaled_house", [], max_steps=1)
+    agent = runner.agent
+
+    class Refuser:
+        def set_goal(self, x, y):
+            return {"accepted": False, "reason": "no_go_zone", "retryable": True}
+    agent.navigator = Refuser()
+    agent._send(2.0, 2.0, "frontier", 100.0)
+    assert not agent.retry.available(2.0, 2.0, 100.5)
+
+
+def test_a_restarted_bridge_on_the_same_saved_map_gets_the_zones_again(zoned_server):
+    import time as _t
+    client, bridge, world = zoned_server
+    client.put("/world/nogo", json={"frame_id": FRAME, "zones": [nogo.clean_zone(ZONE)]})
+    assert bridge.zone_posts == 1
+    bridge.session, bridge.zones = "s2", None         # the container restarted
+    world.get_pose()
+    for _ in range(100):
+        if bridge.zone_posts == 2:
+            break
+        _t.sleep(0.02)
+    assert bridge.zone_posts == 2 and len(bridge.zones) == 1
+    world.get_pose()
+    _t.sleep(0.1)
+    assert bridge.zone_posts == 2                      # once a session
+
+
+def test_a_moved_goal_never_lands_off_the_floor():
+    runner, _, _ = _mission("scaled_house", [], max_steps=1)
+    agent = runner.agent
+    agent.set_zones([nogo.clean_zone({"x0": 1.0, "y0": 1.0, "x1": 2.0, "y1": 2.0})])
+    m = {"usable": True, "width": 10, "height": 10, "resolution_m": 0.3, "origin_x_m": 0.0,
+         "origin_y_m": 0.0, "cells": [CELL_OCCUPIED] * 100, "map_id": "m", "map_version": 1}
+    agent._zone_map(m, agent.zones)
+    assert agent._out_of_zones(1.9, 1.5) is None           # every way out is wall
+
+
+def test_an_autonomous_goal_is_not_refused_by_the_server_for_a_zone(zoned_server):
+    """Thermos review: D5 is a person's goal; the trip home is never refused
+    for a zone drawn over the dock (explore keeps out by its own check)."""
+    client, bridge, _ = zoned_server
+    client.put("/world/nogo", json={"frame_id": FRAME, "zones": [nogo.clean_zone(ZONE)]})
+    r = client.post("/world/goal", json={"x_m": 2.5, "y_m": 1.0}, headers={"x-driver": "brain"})
+    assert r.json().get("reason") != "no_go_zone", r.json()
+
+
+def test_a_zone_longer_than_a_room_is_refused():
+    with pytest.raises(nogo.ZoneRefused, match="at most 15"):
+        nogo.clean_zone({"x0": 0, "y0": 0, "x1": 16, "y1": 1})

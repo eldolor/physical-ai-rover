@@ -304,6 +304,15 @@ class ExploreAgent(MissionAgent):
         self.zones: list = []
         self.zone_refusals = 0         # goals kept out of a zone at the send (D3's last check)
         self.zone_leaves = 0           # leave_zone goals sent (D4)
+        self._zones_rev = 0            # bumped by each set_zones (a cache key)
+        self._masked = None            # (map_id, map_version, zones_rev, masked map)
+        self._no_way_out = False       # zone_no_way_out logged for this stretch
+        # Review: called with the pose's frame_id when it is a saved map's and
+        # not the one the zones were last asked for (MissionRunner loads them
+        # from the brain's store), so a mission started before the pose was
+        # usable still gets its zones.
+        self.zone_source: Optional[Callable[[str], None]] = None
+        self._zone_frame_asked: Optional[str] = None
         # 3.116.B: a find mission's own room labels (`find_room_labels`),
         # read for the room goal policy's types only -- never as the map's
         # `room_labels`, so 3.70 E3's room goals stay off. Called with this
@@ -740,6 +749,10 @@ class ExploreAgent(MissionAgent):
             self.last_event = f"goal refused: {reply.get('reason')}"
             self._event("goal_refused", kind=kind, goal=[round(x_m, 2), round(y_m, 2)],
                         reason=reply.get("reason"))
+            if reply.get("reason") == "no_go_zone":
+                # 3.161 review: the robot server holds a zone this mission does
+                # not (yet): the place counts as failed, or it is chosen again.
+                self.retry.fail(x_m, y_m, now)
             if reply.get("retryable") is False:
                 # 3.82: the robot server says no wait mends it -- its bridge
                 # refused the goal for how the two are set up (a 401 for a
@@ -780,14 +793,30 @@ class ExploreAgent(MissionAgent):
                        ((z["x1"] + out) - x_m, (z["x1"] + out, y_m)),
                        (y_m - (z["y0"] - out), (x_m, z["y0"] - out)),
                        ((z["y1"] + out) - y_m, (x_m, z["y1"] + out))])
+        m = self._masked[4] if self._masked is not None else None
         for _, (px, py) in ways:
-            if nogo.zone_at(self.zones, px, py, grow) is None:
+            if nogo.zone_at(self.zones, px, py, grow) is None and self._free_at(m, px, py):
                 return (round(px, 3), round(py, 3))
         return None
+
+    @staticmethod
+    def _free_at(m: Optional[dict], x_m: float, y_m: float) -> bool:
+        """Review: a moved goal must land on mapped floor (the last map
+        explore chose on); with no map yet there is nothing to check."""
+        if not m or not m.get("usable") or not m.get("resolution_m"):
+            return True
+        res = m["resolution_m"]
+        i = int(math.floor((x_m - m["origin_x_m"]) / res))
+        j = int(math.floor((y_m - m["origin_y_m"]) / res))
+        if not (0 <= i < m["width"] and 0 <= j < m["height"]):
+            return False
+        return m["cells"][j * m["width"] + i] == CELL_FREE
 
     def set_zones(self, zones) -> None:
         """3.161: the zones for the map the robot is on (house frame)."""
         self.zones = list(zones or ())
+        self._zones_rev += 1
+        self._masked = None
 
     def _leave_zone(self, m: dict, pose: dict, now: float, leave: float):
         """3.161 D4: the robot stands in a zone (grown by its half-width) --
@@ -799,17 +828,40 @@ class ExploreAgent(MissionAgent):
         res, ox, oy, w = m["resolution_m"], m["origin_x_m"], m["origin_y_m"], m["width"]
         if len(rch):
             by = np.argsort(rch.dist, kind="stable")
-            for i in rch.order[by].tolist():
-                cx, cy = ox + (i % w + 0.5) * res, oy + (i // w + 0.5) * res
-                if nogo.nearest_distance(self.zones, cx, cy) >= nogo.LEAVE_GOAL_M:
-                    if not self.retry.available(cx, cy, now):
-                        continue
-                    self.zone_leaves += 1
-                    return self._send(cx, cy, "leave_zone", now,
-                                      zone=nogo.zone_at(self.zones, pose["x_m"], pose["y_m"],
-                                                        nogo.HALF_WIDTH_M)["id"])
-        self._event("zone_no_way_out", reachable_cells=len(rch))
+            order = rch.order[by]
+            cx = ox + (order % w + 0.5) * res
+            cy = oy + (order // w + 0.5) * res
+            near = np.full(order.size, np.inf)
+            for z in self.zones:             # vectorised (review): no per-cell Python
+                dx = np.maximum(np.maximum(z["x0"] - cx, 0.0), cx - z["x1"])
+                dy = np.maximum(np.maximum(z["y0"] - cy, 0.0), cy - z["y1"])
+                near = np.minimum(near, np.hypot(dx, dy))
+            for k in np.flatnonzero(near >= nogo.LEAVE_GOAL_M).tolist():
+                gx, gy = float(cx[k]), float(cy[k])
+                if not self.retry.available(gx, gy, now):
+                    continue
+                self.zone_leaves += 1
+                self._no_way_out = False
+                return self._send(gx, gy, "leave_zone", now,
+                                  zone=nogo.zone_at(self.zones, pose["x_m"], pose["y_m"],
+                                                    nogo.HALF_WIDTH_M)["id"])
+        if not self._no_way_out:             # once a stretch (review)
+            self._no_way_out = True
+            self._event("zone_no_way_out", reachable_cells=len(rch))
         return None
+
+    def _zone_map(self, m: dict, zones: list) -> dict:
+        """The map with `zones`' cells occupied, cached by the map's version
+        and the zones' revision (review: one copy a map, not a choice)."""
+        key = (m.get("map_id"), m.get("map_version"), self._zones_rev, len(zones))
+        if self._masked is not None and self._masked[:4] == key and m.get("map_version") is not None:
+            return self._masked[4]
+        out = nogo.masked_map(m, zones, CELL_OCCUPIED)
+        if out is m:
+            out = dict(m)
+        out["nogo_rev"] = self._zones_rev
+        self._masked = (*key, out)
+        return out
 
     def _note_refusal(self, scene: dict) -> None:
         """3.80.G: an arrival whose identity was refused is at an object that
@@ -1174,15 +1226,29 @@ class ExploreAgent(MissionAgent):
         if not pose.get("usable") or not m.get("usable"):
             return "WAIT", False, "no map yet"
         leave = leave_clearance_m(self.safety.min_distance_cm)
+        frame = pose.get("frame_id")
+        if self.zone_source is not None and frame and frame != self._zone_frame_asked:
+            self._zone_frame_asked = frame
+            try:
+                self.zone_source(frame)
+            except Exception:  # noqa: BLE001 -- no zones read: the choice goes on without
+                logger.warning("no-go zones unreadable for %s", frame, exc_info=True)
         if self.zones:
             # 3.161 D3/D4: out of a zone first; then every choice below is
             # made on the map with the zones' cells occupied -- no frontier,
             # no goal, no reachable path inside one.
-            if nogo.zone_at(self.zones, pose["x_m"], pose["y_m"], nogo.HALF_WIDTH_M) is not None:
+            zones = self.zones
+            if nogo.zone_at(zones, pose["x_m"], pose["y_m"], nogo.HALF_WIDTH_M) is not None:
                 out = self._leave_zone(m, pose, now, leave)
                 if out is not None:
                     return out
-            m = nogo.masked_map(m, self.zones, CELL_OCCUPIED)
+                # No way out (review): the zone it stands in is left off the
+                # mask, so it is not boxed in by its own zone; the others hold.
+                zones = [z for z in zones
+                         if not nogo.inside(z, pose["x_m"], pose["y_m"], nogo.HALF_WIDTH_M)]
+            else:
+                self._no_way_out = False
+            m = self._zone_map(m, zones)
 
         def known(x, y):
             return known_near(m, x, y, self.retry.radius_m)
@@ -1281,7 +1347,7 @@ class ExploreAgent(MissionAgent):
         if self._small_at is not None and t - self._small_at < SMALL_ROOM_S:
             return None
         self._small_at = t
-        key = (m.get("map_id"), m.get("map_version"))
+        key = (m.get("map_id"), m.get("map_version"), m.get("nogo_rev"))   # 3.161: and the zones
         if key[1] is not None and key == self._small_none_on:
             return None                     # review: nothing found on this very map
         try:

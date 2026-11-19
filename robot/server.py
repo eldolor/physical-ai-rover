@@ -2318,13 +2318,16 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         refused = person_stop_refusal(person, latch)
         if refused:
             return {"accepted": False, **refused}
-        # 3.161 D5: a goal inside a person's no-go zone is refused, whoever
-        # sent it, before it takes the robot from anyone. Not a safety veto:
-        # the D-pad is never refused for a zone (robot/safety.py does not
-        # read them).
-        refused = nogo_refusal(world, req.x_m, req.y_m)
-        if refused:
-            return {"accepted": False, **refused}
+        # 3.161 D5: a PERSON's goal inside a no-go zone is refused, before it
+        # takes the robot from anyone. Autonomy keeps out of zones by its own
+        # choice (explore's check, nav2's mask), and the trip home must never
+        # be refused for a zone drawn over the dock (Thermos review). Not a
+        # safety veto: the D-pad is never refused (robot/safety.py does not
+        # read zones).
+        if person and driver_priority(person) == DRIVER_MANUAL:
+            refused = nogo_refusal(world, req.x_m, req.y_m)
+            if refused:
+                return {"accepted": False, **refused}
         # 3.137: at Reserve (or during its check at rest) no goal is taken from
         # anyone -- nav2 drives a goal on its own, at full speed, and a person
         # drives slowly by D-pad: a goal is autonomy whoever asked (DRIVER_ROS).

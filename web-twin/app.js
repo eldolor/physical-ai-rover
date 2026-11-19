@@ -1190,7 +1190,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
 
   async function loadNogo() {
     var seq = state.nogoSeq = (state.nogoSeq || 0) + 1;
-    state.nogoLoading = true;
+    var load = state.nogoLoading = {};      // this load's own token (review)
     state.nogoLoadedAt = Date.now();
     try {
       var v = await brainApi("GET", "/mission/nogo");
@@ -1207,7 +1207,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
         showToast(t("nogo.loadFailed", {why: e.message || e}), "err");
       }
     } finally {
-      if (seq === state.nogoSeq) state.nogoLoading = false;
+      if (state.nogoLoading === load) state.nogoLoading = null;
     }
     renderNogo();
     renderMap();
@@ -1224,7 +1224,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
                                Object.assign({frame_id: v.frame_id, rev: v.rev}, body));
       if (seq === state.nogoSeq) { state.nogoView = got; state.nogoLoadedAt = Date.now(); }
       var sent = got && got.sent;
-      if (sent && sent.accepted && sent.sent === false) {
+      if (!sent || sent.accepted === false || sent.sent === false) {
         showToast(t("nogo.notSent", {why: sent.detail || "-"}), "warn");
       } else {
         showToast(t(okKey), "ok");
@@ -1293,6 +1293,9 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   function nogoZones(grid) {
     var v = state.nogoView;
     if (!v || !v.zones || !grid || !isSlamMap(grid)) return [];
+    // Another saved map's zones are never drawn over this one (review).
+    var p = state.lastPose;
+    if (p && p.frame_id !== undefined && p.frame_id !== v.frame_id) return [];
     return v.zones;
   }
 

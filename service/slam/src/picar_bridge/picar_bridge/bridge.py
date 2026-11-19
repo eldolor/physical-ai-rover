@@ -1001,6 +1001,8 @@ class Bridge(Node):
         except (KeyError, TypeError, ValueError, IndexError) as e:
             return 400, {"error": str(e)}
         pose = self._pose_in("map")
+        if pose is not None and pose.get("age_s", 0) > 2.0:
+            pose = None            # review: a stale pose decides nothing; the watch does
         with self.lock:
             self.zones = zones
             self.zones_fresh = {z["id"] for z in zones}

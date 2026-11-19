@@ -1444,6 +1444,11 @@ def create_app(
             zones = nogo_store_mod.default_store().zones(frame_id)
             runner.set_nogo(frame_id, zones)
             state["nogo_sent"] = await asyncio.to_thread(_nogo_send, frame_id, zones)
+        # Review: a pose not usable at the start (a SLAM restart's first
+        # seconds) is not a mission without zones -- explore asks for the
+        # saved map's zones once its pose names one.
+        runner.nogo_source = nogo_store_mod.default_store().zones
+        runner.nogo_sink = lambda f, z: state.__setitem__("nogo_sent", _nogo_send(f, z))
         runner.start()
         state["fault"] = req.fault or drills.NONE
         state["runner"] = runner

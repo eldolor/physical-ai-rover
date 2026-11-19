@@ -42,6 +42,9 @@ HALF_WIDTH_M = 0.12
 LEAVE_M = 0.30
 LEAVE_GOAL_M = LEAVE_M + 0.05
 MAX_COORD_M = 1000.0             # 1 km from the map's origin: anything else is damage
+# A zone no longer than a house's room is wide (Thermos review: the bridge
+# rasterises each in Python under its lock; 30 of these stay ~1 M cells).
+MAX_SIDE_M = 15.0
 KINDS = ("area", "wall")
 ID_RE = re.compile(r"z[0-9a-f]{1,32}")
 
@@ -80,6 +83,8 @@ def clean_zone(z, now: Optional[float] = None) -> dict:
     if kind not in KINDS:
         raise ZoneRefused(f"a zone's kind is one of {KINDS}")
     short = min(x1 - x0, y1 - y0)
+    if max(x1 - x0, y1 - y0) > MAX_SIDE_M:
+        raise ZoneRefused(f"a zone is at most {MAX_SIDE_M:g} m a side")
     # A wall is WALL_WIDTH_M across by design; its length is what must be MIN_SIDE_M.
     if kind == "wall":
         if max(x1 - x0, y1 - y0) < MIN_SIDE_M - 1e-9 or short < WALL_WIDTH_M - 1e-6:

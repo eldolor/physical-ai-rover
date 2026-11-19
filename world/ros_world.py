@@ -239,6 +239,12 @@ class RosWorld(WorldInterface):
         self._truth_tried: dict = {}     # session -> monotonic time of its last failed read
         self._truth_reading: set = set()     # sessions with a truth read in flight
         self._truth_warned: set = set()          # {(session, kind)}
+        # 3.161 review: the last zone set (zones, frame_id) and the session it
+        # reached. The bridge keeps zones in memory only, so a restarted
+        # container (a new session on the same saved map) is sent them again.
+        self._zones_last: Optional[tuple] = None
+        self._zones_session: Optional[str] = None
+        self._zones_resending = False
 
     @property
     def _session(self) -> Optional[str]:
@@ -394,6 +400,7 @@ class RosWorld(WorldInterface):
         est = reply.get("map")
         if anchor is None or est is None or _stale(est):
             return unusable_pose()
+        self._zones_again(anchor)
         x, y, h = self._apply(*_ros_to_ours(est["x_m"], est["y_m"], est["yaw_rad"]), anchor)
         pose = {"usable": True, "map_id": f"slam-{anchor.session}", "frame_id": anchor.frame,
                 "x_m": x, "y_m": y, "heading_deg": round(h, 4)}
@@ -653,11 +660,37 @@ class RosWorld(WorldInterface):
                 rx, ry = _ours_to_ros(*self._unapply(x, y, anchor))
                 poly.append([round(rx, 4), round(ry, 4)])
             out.append({"id": z["id"], "poly": poly})
+        self._zones_last = (list(zones), frame_id)
         r = self._http.post("/nav/zones", json={"zones": out, "session": anchor.session})
         if r.status_code == 409:
             return {"accepted": False, "reason": "the SLAM session changed"}
         r.raise_for_status()
+        self._zones_session = anchor.session
         return {"accepted": True, **_json_object(r)}
+
+    def _zones_again(self, anchor: "Anchor") -> None:
+        """3.161 review: a new session on the saved map the last zone set was
+        for gets that set again, on a thread of its own (a pose read never
+        waits on the post). Once a session; a failed send is tried again on
+        a later read."""
+        last = self._zones_last
+        if (last is None or not last[0] or anchor.frame is None or anchor.frame != last[1]
+                or anchor.session == self._zones_session):
+            return
+        with self._lock:
+            if self._zones_resending:
+                return
+            self._zones_resending = True
+
+        def send():
+            try:
+                self.set_zones(*last)
+            except Exception as e:  # noqa: BLE001 -- the next pose read tries again
+                logger.warning("no-go zones not re-sent to the new SLAM session: %s", e)
+            finally:
+                with self._lock:
+                    self._zones_resending = False
+        threading.Thread(target=send, daemon=True, name="zones-again").start()
 
     def zone_status(self) -> Optional[dict]:
         """3.161 (D4): the bridge's `nogo` block on its /health -- the zones it

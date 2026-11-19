@@ -808,6 +808,12 @@ class MissionRunner:
         # (house frame) and that map's frame_id; [] is off (`set_nogo`).
         self.nogo_zones: list = []
         self.nogo_frame: Optional[str] = None
+        # Review: where a frame's zones come from (the brain's store) and
+        # where a set read mid-mission goes (the robot server). Explore asks
+        # through `_nogo_lookup` when its pose names a saved map these zones
+        # are not for -- a mission started before the pose was usable.
+        self.nogo_source: Optional[Callable[[str], list]] = None
+        self.nogo_sink: Optional[Callable[[str, list], None]] = None
         # 3.176: the sentence a person typed, kept for the record only.
         self.request = request.strip()[:MAX_REQUEST_CHARS] if isinstance(request, str) and request.strip() else None
         self._explore_policy_name = explore_goal_policy
@@ -1110,6 +1116,8 @@ class MissionRunner:
             arrival_confirm_fn=self._judged_confirm,
             world=self.world,
         )
+        if hasattr(self.agent, "zone_source"):
+            self.agent.zone_source = self._nogo_lookup     # 3.161 review
         if self.vision_fn is None:
             # The UNGATED agent method is fine here: a scene only reads
             # sensors, and `_HaltGate` exists to stop moves, not reads.
@@ -1793,6 +1801,14 @@ class MissionRunner:
         set_zones = getattr(self.agent, "set_zones", None)
         if callable(set_zones):
             set_zones(zones)
+
+    def _nogo_lookup(self, frame_id: str) -> None:
+        if self.nogo_source is None or frame_id == self.nogo_frame:
+            return
+        zones = list(self.nogo_source(frame_id) or ())
+        self.set_nogo(frame_id, zones)
+        if self.nogo_sink is not None:
+            self.nogo_sink(frame_id, zones)
 
     def status(self) -> dict:
         with self._lock:

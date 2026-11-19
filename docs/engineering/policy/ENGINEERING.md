@@ -898,7 +898,7 @@ zone and no reachable path crosses one. `_send` checks every goal whatever
 chose it (an approach, a recall): one inside a grown zone is moved just out
 of it along the nearest side (`moved_from_zone` on its event), or, with no
 side clear, not sent (`goal_in_zone`, `zone_refusals`, and the place counts
-as failed). `status.explore.nogo` (`frame_id`, `zones`, `refused`, `leaves`)
+as failed); a goal the robot server refuses `no_go_zone` counts as a failed place too. A mission that starts before its pose names a saved map asks for that map's zones once it does (`zone_source`, `MissionRunner._nogo_lookup`: the brain's store, then the robot server). `status.explore.nogo` (`frame_id`, `zones`, `refused`, `leaves`)
 appears only with zones. A zone is never a safety veto: the verbs explore
 runs itself (escapes, close-in) are not checked against it.
 

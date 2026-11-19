@@ -22,7 +22,7 @@ UNKNOWN = -1      # nav_msgs/OccupancyGrid's unknown: the filter leaves the cell
 # union). Each arrives as a polygon in ROS's map frame (world/ros_world.py
 # rotates the house-frame rectangle through the anchor). No expiry.
 MAX_ZONES = 30
-MAX_ZONE_M = 50.0         # no side of a house is longer
+MAX_ZONE_M = 22.0         # world/nogo.py's 15 m side, rotated: its diagonal
 # D4: a zone the robot is in is left out of the mask until the robot is
 # LEAVE_M clear of it. It starts when the robot's centre is more than
 # SUSPEND_DEPTH_M inside (NavFn clears the robot's own cell, so one cell in it
