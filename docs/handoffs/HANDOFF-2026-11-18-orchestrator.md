@@ -101,3 +101,32 @@ and the "Open steps" line in `PLAN-ros-alignment.md`.*
   `plan/3.187-cloud-call-bandit` (pre-rebase copy), `claude/pensive-hamilton-e0il1d`.
   Keep `claude/fervent-brown-kzq854` (3.180.B's failed code, kept as a record)
   unless the user says.
+
+## 2026-11-19, later: the orchestrator's second handover (context at 386K)
+
+* **Landed on `dev`:** 3.70.S4 and 3.70.M1 (`01bf06da`, all bars met in both
+  houses, cloud ROS); 3.161.B (`69853cc0`: no-go zones built; Z5's find rate
+  FAILED, 82 vs 87 of 96; Z1-Z4 and Z6-Z10 met; open: a zone over the dock
+  (the trip home drives into it; D5 refuses only a person's goal), zones
+  kept only in the robot server's memory across its restart, Z4's live
+  re-map). Gate warnings pushed past on 3.161.B: f12b1369 no Thermos record,
+  c9903afb (data/docs) no /code-review.
+* **3.187:** C parked by the user (2026-11-19); G (value of information,
+  free) added. G's bars (6be7b993) and harness (280373c0) are on
+  `plan/3.187-cloud-call-bandit`, claim 3.187.G held by worker
+  `session_01JbXvZrqzRT6Q5UshtRuXYz`. Scoring the 373 needs S3, blocked:
+  **the environment lost `AWS_SECRET_ACCESS_KEY`** (the user's edit when
+  adding `VISION_SECRET`); `APP_SHARED_SECRET` is also still set and should
+  be deleted. Once the key is back, score in a fresh session (a variable
+  reaches a session only at start), or tell that worker after a resume.
+* **Twin deploy owed:** `dev` now carries 3.161.B's No-go panel and more since
+  the live `413a806b`; the user's go first.
+* **Follow-ups not yet steps:** `service/slam/build-cloud.sh` needs an
+  `UBUNTU_APT_MIRROR` option (archive.ubuntu.com was refused all of one
+  session on 2026-11-19, fine in another; `https://ftp.osuosl.org/pub/ubuntu`
+  works); 3.161's dock zone and Z5 (the user's call on a new step);
+  3.178.B's B4 fix (the user's call).
+* **Order-dependent test:** `tests/test_arrival.py::test_no_range_sensor_never_ends_found_locally`
+  fails alone on dev, passes in the suite (seen 2026-11-19).
+* **Desktop branch deletions, add:** `plan/3.70-s4-saved-rooms`,
+  `plan/3.70-m1-saved-map-mission`, `plan/3.161-no-go-zones-on-twin`.
