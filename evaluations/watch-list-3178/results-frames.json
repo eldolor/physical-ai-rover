@@ -1,0 +1,115 @@
+{
+ "step": "3.178.B, B3 and B4's frame half (2026-11-19, a cloud session)",
+ "frame_set": {
+  "file": "evaluations/visual-promise-3177/set.json",
+  "hash": "00d12dbc44f6",
+  "frames": 2261,
+  "visible": 535,
+  "walks": 21,
+  "sha256_checked": "2261 of 2261 match"
+ },
+ "commands": [
+  "perception_eval score --frames-from <set keys> --detector crops:yoloe --device cpu --save off.json",
+  "perception_eval score ... --watch default --save on.json",
+  "perception_eval compare off=off.json on=on.json"
+ ],
+ "config": {
+  "detector": "crops:yoloe",
+  "device": "cpu",
+  "dtype": "fp32",
+  "clip": "RN50",
+  "proposer": "none",
+  "crop_path": "low_confidence",
+  "affinity_k": 8,
+  "confidence": null,
+  "metric": "probability",
+  "max_crops": null,
+  "imgsz": null,
+  "vlm_max_pixels": null,
+  "vlm_ground": true,
+  "detector_confidence": null,
+  "segmenter": "nvidia/segformer-b0-finetuned-ade-512-512",
+  "watch": [
+   "keys",
+   "wallet",
+   "phone",
+   "glasses",
+   "remote"
+  ]
+ },
+ "B4": {
+  "gate": 0.8,
+  "tp_off": 422,
+  "tp_on": 413,
+  "fp_off": 5,
+  "fp_on": 5,
+  "bar": "tp_on >= tp_off - 5 and fp_on <= fp_off",
+  "tp_verdict": "FAILED",
+  "fp_verdict": "met",
+  "verdict": "FAILED",
+  "walks_that_differ": {
+   "a-white-phone-charger-ca-20260921-203250": {
+    "tp_off": 28,
+    "tp_on": 23,
+    "fp_off": 0,
+    "fp_on": 0
+   },
+   "a-white-phone-charger-ca-20260921-203355": {
+    "tp_off": 60,
+    "tp_on": 59,
+    "fp_off": 0,
+    "fp_on": 0
+   },
+   "grey-backpack-20260921-203748": {
+    "tp_off": 63,
+    "tp_on": 60,
+    "fp_off": 0,
+    "fp_on": 0
+   }
+  }
+ },
+ "B3": {
+  "gate": 0.9,
+  "sightings": 0,
+  "frames_with_a_sighting": 0,
+  "walks_with_a_sighting": 0,
+  "judged": [],
+  "wrong_frames": 0,
+  "wrong_walks": 0,
+  "bar": "<= 2 frames of 2,261 and <= 2 of 21 walks with a wrong sighting",
+  "verdict": "met",
+  "true_sightings_per_item": {},
+  "note": "no sighting reached the gate, so there was nothing to judge by eye; the list did run (diagnostic below)"
+ },
+ "diagnostic_list_crops": {
+  "what": "every crop's best list probability in a rerun of the on run, sighting() wrapped, nothing else changed",
+  "list_only_crops": 624,
+  "crops_scored_against_the_list": 1653,
+  "max": [
+   "glasses",
+   0.8859
+  ],
+  "at_or_above": {
+   "0.5": 29,
+   "0.7": 6,
+   "0.9": 0
+  },
+  "items_at_or_above_0.5": {
+   "glasses": 3,
+   "phone": 18,
+   "wallet": 7,
+   "keys": 1
+  }
+ },
+ "cpu_timing": {
+  "device": "CPU, this cloud container (4 vCPU Intel Xeon 2.10 GHz); never a board row (P24)",
+  "off": {
+   "p50_ms": 100.0,
+   "p90_ms": 225.3
+  },
+  "on": {
+   "p50_ms": 107.4,
+   "p90_ms": 253.2
+  }
+ }
+}

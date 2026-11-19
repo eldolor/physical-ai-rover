@@ -503,3 +503,31 @@ def test_the_lab_refuses_a_list_on_a_detector_it_cannot_prompt(monkeypatch):
     assert perceive_lab.pipeline_for_spec("phone", detector="none", watch=["phone"]).watch == ()
     with pytest.raises(ValueError, match="one string"):
         perceive_lab.pipeline_for_spec("a phone", detector="none", watch="keys")
+
+
+# --- B3 and B4's frame half on the 2,261 pinned frames (3.178.B, 2026-11-19) -
+
+RESULTS_FRAMES = RESULTS.with_name("results-frames.json")
+
+
+def test_the_frame_half_s_numbers_are_pinned():
+    r = json.loads(RESULTS_FRAMES.read_text())
+    s = r["frame_set"]
+    assert (s["hash"], s["frames"], s["visible"], s["walks"]) == ("00d12dbc44f6", 2261, 535, 21)
+    assert r["config"]["detector"] == "crops:yoloe" and r["config"]["clip"] == "RN50"
+    assert r["config"]["watch"] == list(wl.DEFAULT_WATCH_LIST)
+    # B4's frame half, FAILED on TP: 413 on vs 422 off at 0.8 (bar: >= 417);
+    # FP 5 vs 5 (bar: no more than off) met.
+    b4 = r["B4"]
+    assert (b4["gate"], b4["tp_off"], b4["tp_on"], b4["fp_off"], b4["fp_on"]) == (0.8, 422, 413, 5, 5)
+    assert b4["tp_on"] < b4["tp_off"] - 5 and b4["fp_on"] <= b4["fp_off"]
+    assert b4["verdict"] == "FAILED"
+    # B3, met: no sighting reached P >= 0.9, so 0 wrong frames and 0 walks
+    # (bars <= 2 and <= 2). The list ran: 624 crops were its own, the best
+    # list probability 0.886.
+    b3 = r["B3"]
+    assert (b3["gate"], b3["sightings"], b3["wrong_frames"], b3["wrong_walks"]) == (wl.WATCH_GATE, 0, 0, 0)
+    assert b3["verdict"] == "met"
+    diag = r["diagnostic_list_crops"]
+    assert diag["list_only_crops"] == 624 and diag["at_or_above"]["0.9"] == 0
+    assert r["cpu_timing"]["device"].startswith("CPU")
