@@ -10,12 +10,18 @@
 # the proxy CA, sends apt through the proxy over HTTPS and takes the ROS
 # packages from the OSUOSL mirror; (2) builds service/slam/Dockerfile on it
 # with BASE_IMAGE. The CA is copied into a temporary directory and never
-# lands in the repo; it does end up inside the (local-only) image.
+# lands in the repo; the CA and the proxy URL (127.0.0.1:<port>, no
+# credentials in a cloud session) do end up inside the local-only image,
+# which must not be pushed or saved anywhere.
 # tf2 0.25.24 and the pinned slam_toolbox are still built from source.
 set -euo pipefail
 
 TAG="${1:-vision-picar-ros:cloud}"
-case "$TAG" in *:latest) echo "refusing :latest (the shared tag)"; exit 2;; esac
+case "$TAG" in
+    *:latest) echo "refusing :latest (the shared tag)"; exit 2;;
+    *:*) ;;
+    *) echo "give a tag as name:tag, e.g. vision-picar-ros:plan-3.N"; exit 2;;
+esac
 : "${HTTPS_PROXY:?HTTPS_PROXY is not set (is this a cloud session?)}"
 CA="${PROXY_CA:-/root/.ccr/agent-proxy-ca.crt}"
 [ -r "$CA" ] || { echo "no proxy CA at $CA (set PROXY_CA)"; exit 2; }
@@ -32,7 +38,8 @@ RUN update-ca-certificates \\
  && printf 'Acquire::https::Proxy "%s";\\n' "$HTTPS_PROXY" > /etc/apt/apt.conf.d/99proxy \\
  && sed -i -E 's#http://(archive|security)\\.ubuntu\\.com#https://\\1.ubuntu.com#g' /etc/apt/sources.list \\
  && sed -i 's#http://packages.ros.org/ros2/ubuntu#$MIRROR#g' /etc/apt/sources.list.d/*.sources \\
- &&  true
+ && grep -q '$MIRROR' /etc/apt/sources.list.d/*.sources \\
+ && ! grep -q 'http://archive.ubuntu.com' /etc/apt/sources.list
 ENV GIT_SSL_CAINFO=/etc/ssl/certs/ca-certificates.crt
 DOCKER
 
@@ -41,6 +48,5 @@ docker build --network host -t "$BASE" "$TMP"
 docker build --network host \
     --build-arg "BASE_IMAGE=$BASE" \
     --build-arg "HTTPS_PROXY=$HTTPS_PROXY" --build-arg "https_proxy=$HTTPS_PROXY" \
-    --build-arg "GIT_SSL_CAINFO=/etc/ssl/certs/ca-certificates.crt" \
     -t "$TAG" "$HERE"
 docker image ls "$TAG"
