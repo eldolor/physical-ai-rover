@@ -610,8 +610,8 @@ def _add_score_args(ap) -> None:
     ap.add_argument("--watch", type=_watch_arg, default=(), metavar="ITEMS",
                     help="3.178: the watch list, comma-separated, or `default` "
                          "for brain.watch_list's five; off when not given. "
-                         "Needs a crops:<backend> detector (crops:yoloe is the "
-                         "shipped shape). P(target) never reads the list; what "
+                         "Needs --detector crops:yoloe (the shipped shape) or "
+                         "crops:yoloworld. P(target) never reads the list; what "
                          "can move is the crop set, which list on vs off measures")
     ap.add_argument("--save", default=None, metavar="FILE",
                     help="write the per-frame records for `compare`")
@@ -709,7 +709,8 @@ def _label_for(config: dict) -> str:
     if config.get("detector_confidence") is not None:
         label += f" [box conf {config['detector_confidence']}]"
     if config.get("watch"):
-        label += f" [watch {len(config['watch'])}]"
+        # The items, not their count: two lists of one length are two configs.
+        label += f" [watch {','.join(config['watch'])}]"
     return label
 
 
@@ -738,9 +739,10 @@ def cmd_score(args) -> int:
         if not watch_capable(args.detector):
             # Before any model loads or frame runs, not on the first walk's
             # build (3.178.B review).
-            return _fail(f"--watch needs --detector crops:yoloe (or "
-                         f"crops:yoloworld); {args.detector!r} cannot be "
-                         f"prompted with a class list.")
+            from brain.perceive_lab import WATCH_BACKENDS
+            names = " or ".join(f"crops:{b}" for b in WATCH_BACKENDS)
+            return _fail(f"--watch needs --detector {names}; "
+                         f"{args.detector!r} cannot be prompted with a class list.")
     root = Path(args.recordings).expanduser()
     frames_only = None
     if getattr(args, "frames_from", None):
@@ -761,7 +763,9 @@ def cmd_score(args) -> int:
               f"{len(walk.frames)} frames, {walk.visible} visible")
         try:
             pipeline = _build_pipeline(args, walk.target)
-        except PerceptionUnavailable as exc:
+        except (PerceptionUnavailable, ValueError) as exc:
+            # ValueError: a spec the lab refuses (a bad proposer, a list on a
+            # detector without a class list), reported, never a traceback.
             return _fail(str(exc))
         if watch:
             # The list this walk actually ran with: an item naming the
@@ -769,7 +773,7 @@ def cmd_score(args) -> int:
             # can be shorter than --watch, or empty (3.178.B review).
             ran = list(getattr(pipeline, "watch", ()) or ())
             watch_by_walk[walk.name] = ran
-            if list(watch) != ran:
+            if list(watch) != ran and not args.quiet:
                 print(f"    watch list here: {', '.join(ran) or '-- none --'}")
 
         # The vocabulary verdict, printed per walk because it is per target.

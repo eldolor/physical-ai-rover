@@ -485,7 +485,7 @@ def test_the_lab_builds_the_shipped_crop_source_prompted_with_the_list(monkeypat
     assert off.watch == () and off.detector.watch == ()
 
 
-def test_the_lab_refuses_a_list_on_a_detector_it_cannot_prompt():
+def test_the_lab_refuses_a_list_on_a_detector_it_cannot_prompt(monkeypatch):
     """Only a backend whose detect_text takes a class list (review: OWLv2 and
     Grounding DINO take one string and would fail on every frame)."""
     from brain import perceive_lab
@@ -494,3 +494,12 @@ def test_the_lab_refuses_a_list_on_a_detector_it_cannot_prompt():
             perceive_lab.pipeline_for_spec("a phone", detector=spec, watch=["keys"])
     assert perceive_lab.watch_capable("crops:yoloe:yoloe-11s-seg.pt")
     assert perceive_lab.watch_capable("crops:yoloworld")
+    class FakeClip:
+        def __init__(self, *a, **k):
+            pass
+    monkeypatch.setattr(perceive_lab, "ClipScorer", FakeClip)   # no model, no download
+    # A list emptied by the target (counted once, as the target) is list off,
+    # on any detector; a lone string is refused as one.
+    assert perceive_lab.pipeline_for_spec("phone", detector="none", watch=["phone"]).watch == ()
+    with pytest.raises(ValueError, match="one string"):
+        perceive_lab.pipeline_for_spec("a phone", detector="none", watch="keys")

@@ -914,12 +914,12 @@ def pipeline_for_spec(target: str, *, detector: str = DEFAULT_DETECTOR,
     is refused rather than silently measuring nothing.
     """
     from brain.watch_list import for_target
+    watch = for_target(watch, target.strip())
     if watch and not watch_capable(detector):
         raise ValueError(
             f"a watch list needs a crop source that takes a class list "
             f"({', '.join('crops:' + b for b in WATCH_BACKENDS)}); "
             f"{detector!r} cannot be prompted with it")
-    watch = for_target(watch, target.strip())
     # `crops:<backend>` -- an open-vocabulary detector feeding the NORMAL
     # pipeline (crops -> CLIP -> match, floor mask allowed) instead of
     # replacing it. The bare `<backend>` spec below still replaces the

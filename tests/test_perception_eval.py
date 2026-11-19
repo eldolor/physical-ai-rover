@@ -687,7 +687,7 @@ def test_a_watch_run_is_labelled_so_compare_tells_it_from_the_list_off_run():
     from control.perception_eval import _label_for
     base = {"detector": "crops:yoloe", "proposer": "none"}
     assert _label_for(base) == "crops:yoloe"
-    assert _label_for({**base, "watch": ["keys", "phone"]}) == "crops:yoloe [watch 2]"
+    assert _label_for({**base, "watch": ["keys", "phone"]}) == "crops:yoloe [watch keys,phone]"
 
 
 def test_records_saved_before_the_watch_field_still_load(tmp_path):
@@ -713,6 +713,7 @@ def test_watch_is_refused_before_any_walk_on_a_detector_without_a_class_list(
 def test_an_empty_watch_is_refused_not_run_as_list_off(tmp_path, capsys):
     with pytest.raises(SystemExit):
         perception_eval.main(["score", "--recordings", str(tmp_path), "--watch", " , "])
+    assert "--watch names no item" in capsys.readouterr().err
 
 
 def test_the_saved_config_names_the_list_each_walk_ran_with(tmp_path, monkeypatch):
