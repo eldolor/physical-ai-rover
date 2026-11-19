@@ -102,6 +102,20 @@ DDS** (`RMW_IMPLEMENTATION=rmw_cyclonedds_cpp`).
 
 ---
 
+## 2b. Build it in a cloud session (3.189)
+
+A Claude Code cloud session has Docker (start `dockerd` by hand) but only an
+HTTPS proxy that re-terminates TLS, and `packages.ros.org` (HTTP-only for apt)
+is blocked. `bash service/slam/build-cloud.sh vision-picar-ros:<your-tag>`
+builds the same Dockerfile on a local base that trusts the proxy CA and takes
+ROS packages from the OSUOSL HTTPS mirror (`ROS_APT_MIRROR` overrides it). The
+Dockerfile's only change is `ARG BASE_IMAGE`, defaulting to
+`ros:humble-ros-base`, so desktop and Jetson builds are untouched. The script
+refuses `:latest`. Run the stack with `PICAR_ROS_NETWORK=host`. Results:
+`docs/plans/ros-alignment/3.189-cloud-ros-build.md`.
+
+---
+
 ## 3. Run it (macOS, Docker Desktop -- the development setup)
 
 Prerequisites: Docker Desktop running; the repo's `.venv` set up

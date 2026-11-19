@@ -401,6 +401,7 @@ person's request still re-maps.
 | `BRIDGE_PORT` | 8090 | port | bridge | -- |
 | `BRIDGE_HOST` | `0.0.0.0` | address | bridge | 3.50.D4: the address the HTTP server binds. `127.0.0.1` under host networking on a laptop (the D3/D4 harnesses on Linux), so a run is not reachable from the LAN; the Jetson and Docker Desktop keep the default. |
 | `RMW_IMPLEMENTATION` | `rmw_cyclonedds_cpp` | -- | image `ENV` | The architecture's D10. |
+| `BASE_IMAGE` (build arg) | `ros:humble-ros-base` | image | `service/slam/Dockerfile` | 3.189: the `FROM`. The default is the desktop's and the Jetson's build, unchanged (`tests/test_slam_dockerfile.py`). `service/slam/build-cloud.sh` overrides it with a local base that trusts the cloud session's HTTPS-only, TLS-intercepting proxy and takes ROS apt packages from the OSUOSL mirror (`packages.ros.org` is HTTP-only); the source-built tf2 and `slam_toolbox` are unchanged. |
 | `GEOMETRY2_SHA`, `SLAM_TOOLBOX_SHA` | `404b722...`, `1729c0f...` | git SHA | `service/slam/Dockerfile` | The tf2 0.25.24 ABBA deadlock fix; slam_toolbox with `restamp_tf`. |
 | `ROS_SILENCE_S` | 0.5 | s | `robot/server.py` | Ten missed 20 Hz posts: well past jitter, and inside the 1 s watchdog (G3). |
 | `WHEEL_LOOP_INTERVAL_S` | 0.05 | s | `robot/server.py` | 20 Hz, the rate nav2 emits at. Wall duplicate "control rate". |

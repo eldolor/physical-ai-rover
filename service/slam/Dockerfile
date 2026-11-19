@@ -8,7 +8,11 @@
 # (PLAN-ros-alignment.md section 4): no multicast across Docker's network.
 # It reaches robot/server.py over HTTP at ROBOT_URL, and publishes the
 # bridge's HTTP port back out.
-FROM ros:humble-ros-base
+# BASE_IMAGE defaults to the stock image, so desktop and Jetson builds are
+# unchanged. service/slam/build-cloud.sh overrides it with a local image that
+# trusts a TLS-intercepting HTTPS-only proxy (a cloud session; 3.189).
+ARG BASE_IMAGE=ros:humble-ros-base
+FROM ${BASE_IMAGE}
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-numpy \
