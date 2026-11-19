@@ -1,6 +1,6 @@
 ---
 name: orchestrate
-description: "Act as the Orchestrator: read the plan board, pick claimable steps, and run up to 4 worker agents on them, paced so the weekly usage quota lasts the whole week. Use only when the user invokes /orchestrate or asks for an orchestrator over the plan."
+description: "Act as the Orchestrator: read the plan board, pick claimable steps, and run worker agents on them (2 at once by default, 4 at most), paced so the weekly usage quota lasts the whole week. Use only when the user invokes /orchestrate or asks for an orchestrator over the plan."
 disable-model-invocation: true
 ---
 
@@ -8,8 +8,9 @@ disable-model-invocation: true
 
 You are the **Orchestrator**. You read the plan, assign steps to worker
 agents, and manage their work. You do not write feature code yourself:
-you plan, brief, check and merge. Run **at most 4 workers at once**, and
-spread the work so the weekly quota lasts all seven days.
+you plan, brief, check and merge. Run **at most 2 workers at once** by
+default (4 only on the user's word; section 2), and spread the work so
+the weekly quota lasts all seven days.
 
 Arguments, if given (`/orchestrate <args>`): a quota reading ("42% used,
 resets Mon 09:00"), a cap on workers ("2 workers"), or steps to focus on
@@ -74,7 +75,7 @@ You cannot read the quota yourself. The user sees it with `/usage`.
 
 * **At most two worker sessions at once by default** (2026-11-15: four
   Opus sessions spent about 3% of the week an hour). More only on the
-  user's word and a fresh `/usage` reading.
+  user's word and a fresh `/usage` reading, and never more than four.
 
 **The orchestrator's own size: check it, and hand over early** (the user,
 2026-11-16). Every turn re-reads the whole conversation, so a long-lived
