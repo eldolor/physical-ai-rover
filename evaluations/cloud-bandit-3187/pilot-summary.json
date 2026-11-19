@@ -1,0 +1,17 @@
+{
+ "answered_frames": 20,
+ "results": 20,
+ "failed": 0,
+ "calls": 20,
+ "usd_measured": 0.212905,
+ "usd_seen": 0.212905,
+ "usd_per_frame_mean": 0.010645,
+ "input_tokens_median": 1691.0,
+ "output_tokens_median": 87.0,
+ "rtt_ms_p50": 2470.5,
+ "agree_with_label": 19,
+ "stopped": null,
+ "estimate_C_all_2261_usd": 24.07,
+ "need_minimum": 1888,
+ "estimate_C_minimum_usd": 20.1
+}
