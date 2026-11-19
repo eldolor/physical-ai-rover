@@ -326,21 +326,30 @@ once -- never the survey. `MissionRunner.room_labels()` is the map's
 room adds `room_labels` to its inventory report, the one local file keyed by
 the saved map's `frame_id` (3.50.D5), so labels and landmarks are written in
 one save under one map. The block (`room_labels.saved_block()`) is the
-models' layer alone (`RoomLabeller.model_layer()`; a person's names stay in
-3.160's store) on the world's map at the end, with that map's grid
-(`width`, `height`, `resolution_m`, `origin_x_m`, `origin_y_m`,
-`map_version`), the seeds, `mode`, the survey's `mission_id`, `format` 1, and
-the cells run-length encoded (`cells_rle`: `[value, count, ...]`). The
-brain server's sink is lazy (`inventory_sink_lazy`): the runner hands
-`save_async` a callable, so the map read and the cut run on the save's
-thread, never on the event loop a Stop ends on, while the save is counted
-pending from the hand-off (the next lookup waits for it); an in-process
-sink gets the dict, built inline. A block that fails is logged and the
-inventory is saved without it. On the inventory's seed (`_carry_labels()`,
-under the lock) the chain head's block is kept whole for this mission's
-report when the inventory took that same `frame_id` and the block reads
-back whole (`read_saved()`: format, grid, every index within the names;
-anything else is dropped, logged); a survey's own replaces it at its end.
+models' layer alone (`RoomLabeller.model_layer()`, on a cut of its own, never
+the labeller's shared cache; a person's names stay in 3.160's store), cut on
+the last map the labeller saw (`_label_seen`, kept each label tick with the
+pose's `frame_id`) at the room policy's grid (`coarse()`, `ROOM_RES_M`
+0.3 m: what a find's room goals read, and a cut of milliseconds, so no map
+read or fine cut stretches the save past the next lookup's `PENDING_WAIT_S`).
+It is saved only when that map's `frame_id` is the inventory's (a fresh map
+mid-survey, or a detached inventory, saves none) and the layer names a room.
+The block carries that grid (`width`, `height`, `resolution_m`,
+`origin_x_m`, `origin_y_m`, `map_version`), the seeds, `mode`, `frame_id`,
+the survey's `mission_id`, `format` 1, and the cells run-length encoded
+(`cells_rle`: `[value, count, ...]`). The brain server's sink is lazy
+(`inventory_sink_lazy`): the runner hands `save_async` a callable, so the
+cut runs on the save's thread, never on the event loop a Stop ends on, while
+the save is counted pending from the hand-off (the next lookup waits for
+it); an in-process sink gets the dict, built inline. A block that fails or
+names nothing is logged and skipped, and a carried block then stays in the
+report (its own `mission_id` says which survey it is). On the inventory's
+seed the chain head's block is checked outside the lock (`read_saved()`:
+format, grid at most `MAX_SAVED_CELLS`, numbers not bools or strings, seeds
+`[x, y, name]`, every index within the names) and kept whole for this
+mission's report (`_carry_labels()`, under the lock) when the inventory
+took that same `frame_id` and the block names it; anything else is dropped,
+logged. A survey's own replaces it at its end.
 So a find carries a survey's labels on to the next head, a fall-back (a new
 `frame_id`) or a detached inventory carries none, and `GET
 /mission/inventory` shows the block. `_for_s3()` strips `room_labels` (a
@@ -970,7 +979,7 @@ tests/test_mission_guarded_verbs.py -q`.
 | `tests/test_mission_ends.py` (43) | 3.70 E1-E5: the four end states named, the retired names gone and read as the new ones, `end_state`/`end_reason` per outcome; Stop and a D-pad takeover end `cancelled` with `cancelled_by`, the wheels at zero within 0.5 s; the time limit ends `out_of_budget` within one tick, the derived backstop with a stuck clock, an explicit `max_steps`; the battery under its floor twice (not once) within 2 s, no reading never ends one; the fake board drains `v` and `HardwareRobot.get_battery()` reads it; the report (rooms, coverage, map); a labelled room never entered keeps a mission from ending `exhausted`; coverage within 2 points of truth at the end of a search |
 | `tests/test_arrival_hears_stop.py` (15) | 3.104: a person's Stop latched while the arrival's confirmation waits (the cloud then says yes) ends `cancelled`/`stop` with a `stop`/`robot_stop` intervention line, a D-pad take-over there `cancelled`/`dpad`; without a press `found`; a veto, an autonomous holder (review) and an unreachable robot server each keep `found` after one probe; a goal pending, active or lapsing keeps it when the mission sent one, and ends it `cancelled`/`dpad` (a person's tap) when it never did -- the server's real refusal texts; a goal whose reply was lost counts as sent and one the server refused does not, end to end through `_GatedNavigator` |
 | `tests/test_intervention_log.py` (22) | 3.99: one line per started mission; a brain Stop is `stop`/`brain_stop` with the step and a pose, a D-pad takeover `dpad`/`preempted` naming the driver, 3.84's latch `stop`/`robot_stop`; an autonomous preemption, an abort and a time limit carry no intervention; a second end and an unstarted mission write nothing; a failed pose read still writes the line, an unwritable log changes no outcome and skips no stop, the stop never waits on the pose; the report's counts, hours and rate (per policy), a cut last line skipped, no file "no missions recorded"; the config key and its env; the brain server writes the line for a stopped mission; review round 1: a loop cancelled without a person's Stop (in process and through the brain server's task) is none, the writer is no daemon, the pose says why it is missing, the report's default directory is the brain config's; round 2: a hung pose read holds the writer only `POSE_READ_S`, the brain server shares one log between missions |
-| `tests/test_saved_rooms_s4.py` (10) | 3.70 S4: a survey's labels and inventory are one file on its `frame_id`, the labels cell for cell as the survey's model layer; the S3 copy has no label grid; a lazy sink builds the block on the save thread; a restart (a new store) returns labels and landmarks (id, label, position, belief, votes) as written, the next missions on the map carry the block on; a fall-back carries no label or landmark; a newer survey replaces the labels; a damaged block is not carried (landmarks still are); a failing block never costs the inventory; `rle`/`read_saved` refuse bad input |
+| `tests/test_saved_rooms_s4.py` (13) | 3.70 S4: a survey's labels and inventory are one file on its `frame_id`, the labels cell for cell as the survey's model layer on the coarse grid; a map seen on another frame, a layer naming nothing (the carried block stays) and a detached survey save no labels; the lazy block is built off the caller's thread; the S3 copy has no label grid; a lazy sink builds the block on the save thread; a restart (a new store) returns labels and landmarks (id, label, position, belief, votes) as written, the next missions on the map carry the block on; a fall-back carries no label or landmark; a newer survey replaces the labels; a damaged block is not carried (landmarks still are); a failing block never costs the inventory; `rle`/`read_saved` refuse bad input |
 | `tests/test_survey.py` (93) | 3.70 S1-S2: a survey needs no target and ends `exhausted`; never `found`, never a confirmation; refused with a target, under another policy, or an unknown job; the room labeller cuts a map at its door, asks once per room and never from the doorway, never past its cap (the survey still ends `exhausted`), keeps `unclear`, spaces asks in `spacing` mode, asks again through a doorway within the spacing and stops `spacing` labels at the doorway, lets an `unclear` hold its room, leaves rooms two doorways from any answer unlabelled, keeps (and does not re-ask beside) a seed whose cell turned occupied, and names the room a survey starts in; a label source or frame read that raises skips the label (the survey still ends `exhausted`); a frame with no room spends no call; no ask after a stop; the cap is checked before any cut; cuts are rate-limited on the labeller's clock; `room_labels()` is a full map layer cut from the map it is given; a boolean `survey_time_limit_s` is refused at load; a growing, shifting map is not re-cut every tick and still finds the robot's room by position; `spacing` never asks on floor its cached distances have not seen; no source is remembered (no more frames); an `unknown` frame spends nothing and waits; a failing source backs off; `capped` is set on the ask that reaches the cap; a stop after the frame never reaches the source; the cloud source asks `/room` with the frame and the secret, reads a reply naming no room as `unclear`, spends nothing on a frame with no pixels, reads 5xx/408/429 as an outage and a 401 as our fault, needs a URL, and a survey through a `/room` outage backs off and still ends `exhausted`; a refused secret or a 200 that is not JSON stops the asking with the reason on the status; one room has one spelling; a paid ask is skipped when the step, the frame read (checked again after it) or a drill's deadline left too little of the tick, and the skips are counted; a 400/413 backs off while 401/403/404 stop the asking; punctuation and an article's quotes are no second spelling, a bare article is `unclear`; a hung call gives the tick back on time; three frame refusals in a row stop the asking, a 422 is a frame refusal; no skip is counted when no ask was due; no second paid call while an abandoned one is in flight; refusals count in a row only; another 4xx backs off before it stops the asking; a busy source does not lengthen the back-off |
 | `tests/test_survey_sweep.py` (4, slow) | 3.70 S1/S2 pinned: the 9 sim surveys end `exhausted` with coverage >= 95%; label calls and rooms labelled >= 95% no worse than recorded, per mode |
 | `tests/test_mission_runner.py` (32) | tick-driven equals blocking `run_mission()` step for step; outcomes and idempotent `_finish`; the gate refuses after stop; a stop landing mid-tick records no step; tiered readouts reach status and survive a scene with no tier; the tick keeps advancing while an async call is in flight |

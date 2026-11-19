@@ -18,7 +18,10 @@ import json
 
 import pytest
 
+import threading
+
 from brain import room_labels as rl
+from brain.goal_policy import coarse
 from brain.room_labels import frame_room, read_saved, rle, unrle
 from control.inventory_store import InventoryStore, _for_s3
 from control.mission_runner import EXHAUSTED, MissionRunner
@@ -100,6 +103,9 @@ def test_a_damaged_block_reads_as_none():
     assert read_saved(ok)["cells"] == [0, -1]
     for bad in ({**ok, "format": 2}, {**ok, "cells_rle": [1, 1, -1, 1]},   # index past names
                 {**ok, "width": 3}, {**ok, "names": [3]}, {**ok, "resolution_m": 0},
+                {**ok, "resolution_m": True}, {**ok, "origin_x_m": "0"},
+                {**ok, "seeds": ["x"]}, {**ok, "seeds": [[0, 0, 1]]}, {**ok, "frame_id": 3},
+                {**ok, "width": 100_000, "height": 100_000, "cells_rle": [0, 10 ** 10]},
                 "x", None):
         assert read_saved(bad) is None
 
@@ -115,10 +121,12 @@ def test_a_survey_writes_its_labels_and_inventory_in_one_file_on_its_map(surveye
     assert block is not None and block["names"], "no labels saved"
     assert block["mission_id"] == "mission-s1"
     assert saved["reported"] + saved["candidates"], "no landmarks saved"
-    # The labels as the survey's own layer on the map it ended on, cell for cell.
-    m = runner.world.get_map()
+    # The labels as the survey's own layer, on the room policy's grid of the
+    # last map it saw, cell for cell, and named for the inventory's frame.
+    m = coarse(runner._label_seen[0])
     assert block["cells"] == runner.room_labeller.model_layer(m)["cells"]
     assert (block["width"], block["height"]) == (m["width"], m["height"])
+    assert block["frame_id"] == SAVED
 
 
 def test_the_s3_copy_carries_no_label_grid(surveyed):
@@ -126,10 +134,71 @@ def test_the_s3_copy_carries_no_label_grid(surveyed):
     assert "room_labels" not in _for_s3(_saved_file(d, "s1"))
 
 
-def test_a_lazy_sink_builds_the_labels_on_the_save_thread(tmp_path):
+def test_a_lazy_sink_builds_the_labels_on_the_save_thread(tmp_path, monkeypatch):
+    built_on = []
+    real = rl.saved_block
+    monkeypatch.setattr(rl, "saved_block",
+                        lambda *a, **k: built_on.append(threading.current_thread()) or real(*a, **k))
     store = InventoryStore(str(tmp_path))
     _run(store, SAVED, "s1", lazy=True)
     assert read_saved(_saved_file(tmp_path, "s1")["room_labels"])["names"]
+    assert built_on and threading.current_thread() not in built_on
+
+
+def test_labels_from_a_map_of_another_frame_are_never_saved(tmp_path):
+    """Review 1: a map seen on another saved frame (a fresh map mid-survey)
+    is never saved under the inventory's."""
+    store = InventoryStore(str(tmp_path))
+    grid = build_world("scaled_house")
+    robot = MockRobot(grid, render=False)
+    runner = MissionRunner(robot, job="survey", policy="explore", navigator=FakeNav(robot),
+                           world=_FramedWorld(MockWorld(grid), SAVED, "s1"),
+                           clock=lambda: grid.sim_time, idle=robot.pass_time,
+                           room_label_fn=frame_room)
+    runner.mission_id = "mission-s1"
+    runner.inventory_prior = store.latest_for
+    runner.inventory_sink = lambda report: store.save(runner.mission_id, report)
+    runner.start()
+    for _ in range(20):
+        assert runner.tick()
+    assert runner.inventory.frame_id == SAVED
+    runner.world._frame = OTHER              # the world moves to another saved map
+    while runner.tick():
+        pass
+    saved = _saved_file(tmp_path, "s1")
+    assert saved["frame_id"] == SAVED and "room_labels" not in saved
+
+
+def test_a_survey_whose_layer_names_nothing_keeps_the_carried_labels(surveyed, tmp_path,
+                                                                    monkeypatch):
+    d, _runner, _s = surveyed
+    written = _saved_file(d, "s1")
+    for p in d.iterdir():
+        (tmp_path / p.name).write_text(p.read_text())
+    monkeypatch.setattr(rl.RoomLabeller, "model_layer",
+                        lambda self, m: {"names": [], "cells": [-1] * (m["width"] * m["height"])})
+    _run(InventoryStore(str(tmp_path)), SAVED, "s2")
+    assert _saved_file(tmp_path, "s2")["room_labels"] == written["room_labels"]
+
+
+def test_a_detached_survey_saves_no_labels(tmp_path):
+    def broken(frame_id):
+        raise OSError("disk")
+    store = InventoryStore(str(tmp_path))
+    grid = build_world("scaled_house")
+    robot = MockRobot(grid, render=False)
+    runner = MissionRunner(robot, job="survey", policy="explore", navigator=FakeNav(robot),
+                           world=_FramedWorld(MockWorld(grid), SAVED, "s1"),
+                           clock=lambda: grid.sim_time, idle=robot.pass_time,
+                           room_label_fn=frame_room)
+    runner.mission_id = "mission-s1"
+    runner.inventory_prior = broken
+    runner.inventory_sink = lambda report: store.save(runner.mission_id, report)
+    runner.start()
+    while runner.tick():
+        pass
+    saved = _saved_file(tmp_path, "s1")
+    assert saved["frame_id"] is None and "room_labels" not in saved
 
 
 # ---------- S4: a restart and a reload return all three ----------

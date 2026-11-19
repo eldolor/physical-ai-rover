@@ -925,6 +925,7 @@ class MissionRunner:
         # sink takes a callable, so the survey's map read and cut run on the
         # save's thread, never on the event loop a Stop ends on.
         self._labels_block: Optional[dict] = None
+        self._label_seen: Optional[tuple] = None    # (the labeller's last map, its frame_id)
         self.inventory_sink_lazy = False
         self._inventory_seeded = False
         self._seed_read_at: Optional[tuple] = None   # (wall, mission clock) of the last read
@@ -1394,7 +1395,12 @@ class MissionRunner:
                 if self.find_room_labels and m and "cells" in m:
                     # Nothing to coarsen for once asking has ended (review).
                     m = None if (rl.capped or rl.no_source) else self._coarse(m)
-                name = self.room_labeller.observe(m, self.world.get_pose(), self._label_frame,
+                pose = self.world.get_pose()
+                if not self.find_room_labels and m and pose and pose.get("usable"):
+                    # 3.70 S4: the map and its saved frame, kept for the end's
+                    # saved block -- no map read or fine cut at the end.
+                    self._label_seen = (m, pose.get("frame_id"))
+                name = self.room_labeller.observe(m, pose, self._label_frame,
                                                   alive=self.is_running, fits=self._label_fits)
                 if name is not None:
                     self._log_line(f"room label {self.room_labeller.calls}: {name}")
@@ -3085,6 +3091,9 @@ class MissionRunner:
                     self._seed_error_logged = True
                     logger.warning("inventory: earlier landmarks not read, this mission's "
                                    "kept apart from them: %s", e)
+        # 3.70 S4: the saved labels checked here, outside the lock (a decode).
+        labels_ok = (room_labels_mod.read_saved(prior.get("room_labels"))
+                     if isinstance(prior, dict) and prior.get("room_labels") is not None else None)
         with self._lock:
             if self._inventory_seeded or self._ended():
                 return
@@ -3093,7 +3102,7 @@ class MissionRunner:
                 self.inventory.detach()
             n = self.inventory.seed(frame_id, prior) if prior else 0
             source = self.inventory.carried_from
-            labels = self._carry_labels(frame_id, prior)
+            labels = self._carry_labels(frame_id, prior, labels_ok)
             aside = self._carry_set_aside(frame_id, prior)
             recalled = self._recall_carried() if n else 0
         if n:
@@ -3108,21 +3117,22 @@ class MissionRunner:
             self._log_line(f"explore: going first to {recalled} place(s) where earlier missions "
                            f"on {frame_id} saw the {self.memory.target_object}")
 
-    def _carry_labels(self, frame_id, prior) -> int:
+    def _carry_labels(self, frame_id, prior, got: Optional[dict]) -> int:
         """3.70 S4, under `_lock`, just seeded: the saved room labels of the
         chain's head, kept whole for this mission's report -- only on the
         frame the inventory took (another map's, or a detached inventory's,
-        are never used). A block that does not read back whole is dropped.
-        Returns how many rooms it names."""
+        are never used), and only a block saved on that frame. `got` is
+        `read_saved()` of it, run outside the lock; None (it did not read
+        back whole) drops it. Returns how many rooms it names."""
         if (not frame_id or not isinstance(prior, dict) or prior.get("frame_id") != frame_id
                 or self.inventory.frame_id != frame_id):
             return 0
         block = prior.get("room_labels")
         if block is None:
             return 0
-        got = room_labels_mod.read_saved(block)
-        if got is None:
-            logger.warning("room labels saved on %s unreadable: not carried", frame_id)
+        if got is None or got.get("frame_id") != frame_id:
+            logger.warning("room labels saved on %s unreadable or another map's: not carried",
+                           frame_id)
             return 0
         self._labels_block = block
         return len(got["names"])
@@ -3136,17 +3146,29 @@ class MissionRunner:
     def _own_label_block(self) -> Optional[dict]:
         """3.70 S4: this survey's labels as the saved block -- the model's
         layer, not a person's names (3.160 keeps those in its own store) --
-        on the world's map now. Reads the map (HTTP when remote) and cuts it:
-        never on the event loop. None, logged, on any error: the inventory
-        is saved without them, and a carried block stays."""
+        cut on the last map the labeller saw, at the room policy's grid
+        (`coarse()`, ROOM_RES_M: what a find's room goals read, and a cut of
+        milliseconds, so the save stays far inside the next lookup's
+        PENDING_WAIT_S). Only when that map's frame is the inventory's: a
+        map of another frame (a SLAM restart onto a fresh map mid-survey) is
+        never saved under this one. None, logged, on any error or a layer
+        that names nothing: the inventory is saved without it, and a carried
+        block stays."""
         try:
-            m = self.world.get_map()
+            seen = self._label_seen
+            frame_id = self.inventory.frame_id if self.inventory is not None else None
+            if seen is None or not frame_id or seen[1] != frame_id:
+                if seen is not None:
+                    logger.warning("room labels not saved: the map is on %s, the inventory on %s",
+                                   seen[1], frame_id)
+                return None
+            m = coarse(seen[0])
             layer = self.room_labeller.model_layer(m)
-            if not layer:
+            if not layer or not layer["names"]:
                 return None
             return room_labels_mod.saved_block(layer, m, self.room_labeller.seeds,
                                                mode=self.room_labeller.mode,
-                                               mission_id=self.mission_id)
+                                               mission_id=self.mission_id, frame_id=frame_id)
         except Exception as e:  # noqa: BLE001 -- a label never costs the inventory
             logger.warning("room labels not saved: %s", e)
             return None

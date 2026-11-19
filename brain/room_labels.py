@@ -598,7 +598,7 @@ class RoomLabeller:
         own store, and laid over at read). None without a usable map."""
         if not m or not m.get("usable", True) or "cells" not in m:
             return None
-        return self._model_layer(m)
+        return self._model_layer(m, own_cut=True)
 
     @staticmethod
     def _with_person(m: dict, base: dict, person: list) -> dict:
@@ -626,9 +626,15 @@ class RoomLabeller:
         return {"names": [used[k] for k in kept], "cells": out.tolist(),
                 "person": sorted({pnames[o] for o in set(own[take].tolist())})}
 
-    def _model_layer(self, m: dict) -> dict:
+    def _model_layer(self, m: dict, own_cut: bool = False) -> dict:
         named = [(x, y, n) for x, y, n in self.seeds if n != UNCLEAR]
-        cut = self._segments(m, fresh=True)
+        if own_cut:
+            # 3.70 S4: a cut of its own, never the shared cache -- called on
+            # a save thread while a route may be cutting too.
+            seg, d = segment(m, self.neck_ratio)
+            cut = _Cut(m, seg, d, None, self.clock())
+        else:
+            cut = self._segments(m, fresh=True)
         if self.mode == "spacing":
             # Every seed walks -- an `unclear` one holds its space and names
             # nothing -- and an answer reaches REACH_M at most: a cell it
@@ -676,6 +682,9 @@ class RoomLabeller:
 # (a 400 x 400 map is 160,000 cells, a few hundred runs).
 
 SAVED_FORMAT = 1
+# A block whose grid is larger than this is not decoded (a damaged file must
+# not allocate without bound): 2,000 x 2,000 cells, 600 m a side at 0.3 m.
+MAX_SAVED_CELLS = 4_000_000
 
 
 def rle(cells) -> list:
@@ -705,14 +714,14 @@ def unrle(runs, size: int) -> Optional[list]:
 
 
 def saved_block(layer: dict, m: dict, seeds: list, *, mode: str,
-                mission_id: Optional[str]) -> dict:
+                mission_id: Optional[str], frame_id: Optional[str] = None) -> dict:
     """The block a survey's report carries: `layer()`'s names and cells on
     map `m`, with `m`'s grid and the seeds (the asks and their answers)."""
     size = int(m["width"]) * int(m["height"])
     cells = list(layer["cells"])
     if len(cells) != size:
         raise ValueError(f"layer has {len(cells)} cells, the map {size}")
-    return {"format": SAVED_FORMAT, "mission_id": mission_id, "mode": mode,
+    return {"format": SAVED_FORMAT, "frame_id": frame_id, "mission_id": mission_id, "mode": mode,
             "names": list(layer["names"]), "cells_rle": rle(cells),
             "width": int(m["width"]), "height": int(m["height"]),
             "resolution_m": float(m["resolution_m"]),
@@ -732,19 +741,31 @@ def read_saved(block) -> Optional[dict]:
         if not isinstance(names, list) or not all(isinstance(n, str) for n in names):
             return None
         w, h = block["width"], block["height"]
-        if (isinstance(w, bool) or isinstance(h, bool) or not isinstance(w, int)
-                or not isinstance(h, int) or w <= 0 or h <= 0):
+        if (not _is_int(w) or not _is_int(h) or w <= 0 or h <= 0
+                or w * h > MAX_SAVED_CELLS):
             return None
-        res = float(block["resolution_m"])
-        ox, oy = float(block["origin_x_m"]), float(block["origin_y_m"])
-        if not (res > 0 and all(map(np.isfinite, (res, ox, oy)))):
+        nums = (block["resolution_m"], block["origin_x_m"], block["origin_y_m"])
+        if not all(_is_num(v) for v in nums) or not nums[0] > 0:
             return None
         cells = unrle(block["cells_rle"], w * h)
         if cells is None or any(c < -1 or c >= len(names) for c in set(cells)):
             return None
-        seeds = block.get("seeds") or []
-        if not isinstance(seeds, list):
+        seeds = block["seeds"]
+        if not isinstance(seeds, list) or not all(
+                isinstance(sd, list) and len(sd) == 3 and _is_num(sd[0]) and _is_num(sd[1])
+                and isinstance(sd[2], str) for sd in seeds):
+            return None
+        if block.get("frame_id") is not None and not isinstance(block["frame_id"], str):
             return None
     except (KeyError, TypeError, ValueError):
         return None
     return {**block, "cells": cells}
+
+
+def _is_int(v) -> bool:
+    return isinstance(v, int) and not isinstance(v, bool)
+
+
+def _is_num(v) -> bool:
+    return (isinstance(v, (int, float)) and not isinstance(v, bool)
+            and bool(np.isfinite(v)))
