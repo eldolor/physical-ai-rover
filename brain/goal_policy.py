@@ -40,6 +40,7 @@ from brain.frontier import _cell_of
 from brain.room_labels import segment
 from brain.request import canonical_room
 from world.interface import CELL_FREE, CELL_OCCUPIED, CELL_UNKNOWN
+from world.nogo import CELL_NOGO
 
 WEIGHTS_PATH = Path(__file__).resolve().parent / "explore_goal_weights.json"
 NET_PATH = Path(__file__).resolve().parent / "explore_goal_net.json"
@@ -247,8 +248,9 @@ def coarse(m: dict, res_m: float = ROOM_RES_M, cells=None) -> dict:
     blocks = cells.reshape(H, k, W, k).swapaxes(1, 2).reshape(H, W, k * k)
     out = np.full((H, W), CELL_UNKNOWN, dtype=cells.dtype)
     out[(blocks == CELL_FREE).sum(axis=2) * 2 >= k * k] = CELL_FREE
-    # >=: 3.161's CELL_NOGO (2, explore's own masked map) is a wall here.
-    out[(blocks >= CELL_OCCUPIED).any(axis=2)] = CELL_OCCUPIED
+    # 3.161: CELL_NOGO (2, explore's own masked map only) is a wall here;
+    # any other value is as before (the frozen references feed others).
+    out[((blocks == CELL_OCCUPIED) | (blocks == CELL_NOGO)).any(axis=2)] = CELL_OCCUPIED
     return {**m, "width": W, "height": H, "resolution_m": m["resolution_m"] * k,
             "cells": out.ravel().tolist()}
 

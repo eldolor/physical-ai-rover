@@ -56,6 +56,7 @@ import numpy as np
 
 from brain import room_names
 from world.interface import CELL_FREE, CELL_OCCUPIED
+from world.nogo import CELL_NOGO
 
 logger = logging.getLogger(__name__)
 
@@ -198,7 +199,7 @@ def segment(m: dict, neck_ratio: float = NECK_RATIO, min_room_m2: float = MIN_RO
     w, h, res = m["width"], m["height"], m["resolution_m"]
     cells = np.asarray(m["cells"]).reshape(h, w)
     free = cells == CELL_FREE
-    occ = cells >= CELL_OCCUPIED        # 3.161: explore's CELL_NOGO (2) cuts rooms as a wall
+    occ = (cells == CELL_OCCUPIED) | (cells == CELL_NOGO)   # 3.161: explore's CELL_NOGO cuts rooms as a wall
     d = clearance(free, occ)
     parent: dict = {}
     peak: dict = {}

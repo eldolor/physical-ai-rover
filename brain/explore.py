@@ -710,7 +710,7 @@ class ExploreAgent(MissionAgent):
         return any(math.hypot(g["x_m"] - x, g["y_m"] - y) < OWN_GOAL_TOLERANCE_M for x, y in mine)
 
     def _send(self, x_m: float, y_m: float, kind: str, now: float, **info):
-        if self.zones and kind != "leave_zone":
+        if getattr(self, "zones", None) and kind != "leave_zone":   # (a bare agent has none)
             moved = self._out_of_zones(x_m, y_m)
             if moved is None:
                 # 3.161 D3: no goal into a zone, whatever chose it (an approach,
@@ -1231,13 +1231,14 @@ class ExploreAgent(MissionAgent):
             return "WAIT", False, "no map yet"
         leave = leave_clearance_m(self.safety.min_distance_cm)
         frame = pose.get("frame_id")
-        if self.zone_source is not None and frame and frame != self._zone_frame_asked:
+        if (getattr(self, "zone_source", None) is not None and frame
+                and frame != self._zone_frame_asked):
             try:
                 self.zone_source(frame)
                 self._zone_frame_asked = frame      # only once read (review 2: a failure asks again)
             except Exception:  # noqa: BLE001 -- no zones read: the choice goes on without
                 logger.warning("no-go zones unreadable for %s", frame, exc_info=True)
-        if self.zones:
+        if getattr(self, "zones", None):
             # 3.161 D3/D4: out of a zone first; then every choice below is
             # made on the map with the zones' cells occupied -- no frontier,
             # no goal, no reachable path inside one.
