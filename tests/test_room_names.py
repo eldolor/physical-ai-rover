@@ -290,7 +290,10 @@ def test_names_stay_local_no_other_module_reads_the_store():
     out = [p for p in out if not p.startswith("evaluations/room-names-3160d/")
            and p not in ("evaluations/request-3176/sweep.py",
                          "evaluations/small-fixes-3183/sweep_b.py",
-                         "evaluations/room-synonyms-3185/sweep.py")]
+                         "evaluations/room-synonyms-3185/sweep.py",
+                         # 3.190.D: its live run points the brain's store at a
+                         # work directory outside the repo; uploads nothing.
+                         "evaluations/room-prior-3190/live/live.py")]
     assert sorted(out) == ["brain/room_labels.py", "brain/room_names.py",
                            "control/brain_server.py", "control/mission_runner.py",
                            "tests/test_room_names.py", "tests/test_room_names_find.py",
