@@ -1,0 +1,392 @@
+{
+ "find_rule": {
+  "n": 96,
+  "found_zones": 86,
+  "found_none": 87,
+  "lost": [
+   "procthor:val:26 s0",
+   "procthor:val:39 s0",
+   "procthor:val:44 s1"
+  ],
+  "gained": [
+   "scaled_house s1",
+   "scaled_house s2"
+  ],
+  "lost_outcomes": {
+   "procthor:val:26 s0": "exhausted",
+   "procthor:val:39 s0": "exhausted",
+   "procthor:val:44 s1": "exhausted"
+  },
+  "median_s_zones": 130.7,
+  "median_s_none": 130.7,
+  "median_ratio": 1.0,
+  "exceptions": 0,
+  "capped": 0,
+  "rate_equal": false,
+  "time_within_5pct": true
+ },
+ "safety_rule": {
+  "goals": 2304,
+  "in_zone": 0,
+  "in_grown_012": 0,
+  "entries": 0,
+  "missions_with_entry": []
+ },
+ "loops_rule": {
+  "worst": 0,
+  "worst_at": null,
+  "total": 0,
+  "met": true
+ },
+ "dev_find_rule": {
+  "n": 96,
+  "found_zones": 82,
+  "found_none": 87,
+  "lost": [
+   "procthor:val:13 s1",
+   "procthor:val:26 s0",
+   "procthor:val:3 s0",
+   "procthor:val:39 s0",
+   "procthor:val:39 s1",
+   "procthor:val:44 s0",
+   "procthor:val:44 s1"
+  ],
+  "gained": [
+   "scaled_house s1",
+   "scaled_house s2"
+  ],
+  "lost_outcomes": {
+   "procthor:val:13 s1": "out_of_budget",
+   "procthor:val:26 s0": "exhausted",
+   "procthor:val:3 s0": "exhausted",
+   "procthor:val:39 s0": "exhausted",
+   "procthor:val:39 s1": "exhausted",
+   "procthor:val:44 s0": "exhausted",
+   "procthor:val:44 s1": "exhausted"
+  },
+  "median_s_zones": 128.9,
+  "median_s_none": 130.7,
+  "median_ratio": 0.9862,
+  "exceptions": 0,
+  "capped": 0,
+  "rate_equal": false,
+  "time_within_5pct": true
+ },
+ "dev_loops_rule": {
+  "worst": 0,
+  "worst_at": null,
+  "total": 0,
+  "met": true
+ },
+ "identical_rule": {
+  "compared": 96,
+  "identical": 96,
+  "differ": []
+ },
+ "survey_rule": {
+  "houses": 12,
+  "rows": [
+   {
+    "house": "home_first_floor",
+    "points": 0.0
+   },
+   {
+    "house": "scaled_house",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:0",
+    "points": -0.21
+   },
+   {
+    "house": "procthor:val:2",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:3",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:4",
+    "points": 0.32
+   },
+   {
+    "house": "procthor:val:5",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:9",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:10",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:11",
+    "points": 0.14
+   },
+   {
+    "house": "procthor:val:12",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:13",
+    "points": 0.0
+   }
+  ],
+  "worst_points_below": -0.21,
+  "met": true
+ },
+ "find_rooms": {
+  "n": 96,
+  "found_zones": 81,
+  "found_none": 81,
+  "lost": [
+   "procthor:val:39 s0",
+   "procthor:val:39 s2",
+   "procthor:val:53 s1"
+  ],
+  "gained": [
+   "procthor:val:3 s0",
+   "procthor:val:44 s0",
+   "procthor:val:44 s1"
+  ],
+  "lost_outcomes": {
+   "procthor:val:39 s0": "exhausted",
+   "procthor:val:39 s2": "exhausted",
+   "procthor:val:53 s1": "exhausted"
+  },
+  "median_s_zones": 111.7,
+  "median_s_none": 106.3,
+  "median_ratio": 1.0508,
+  "exceptions": 0,
+  "capped": 0,
+  "rate_equal": true,
+  "time_within_5pct": false
+ },
+ "safety_rooms": {
+  "goals": 2143,
+  "in_zone": 0,
+  "in_grown_012": 0,
+  "entries": 0,
+  "missions_with_entry": []
+ },
+ "loops_rooms": {
+  "worst": 5,
+  "worst_at": "procthor:val:15 s0 z20",
+  "total": 5,
+  "met": false
+ },
+ "dev_find_rooms": {
+  "n": 96,
+  "found_zones": 80,
+  "found_none": 81,
+  "lost": [
+   "procthor:val:10 s0",
+   "procthor:val:13 s1",
+   "procthor:val:34 s2",
+   "procthor:val:39 s0",
+   "procthor:val:53 s1"
+  ],
+  "gained": [
+   "procthor:val:18 s0",
+   "procthor:val:26 s2",
+   "procthor:val:3 s0",
+   "procthor:val:44 s1"
+  ],
+  "lost_outcomes": {
+   "procthor:val:10 s0": "exhausted",
+   "procthor:val:13 s1": "out_of_budget",
+   "procthor:val:34 s2": "out_of_budget",
+   "procthor:val:39 s0": "exhausted",
+   "procthor:val:53 s1": "exhausted"
+  },
+  "median_s_zones": 126.0,
+  "median_s_none": 106.3,
+  "median_ratio": 1.1853,
+  "exceptions": 0,
+  "capped": 0,
+  "rate_equal": false,
+  "time_within_5pct": false
+ },
+ "dev_loops_rooms": {
+  "worst": 4,
+  "worst_at": "procthor:val:15 s0 z20",
+  "total": 4,
+  "met": false
+ },
+ "identical_rooms": {
+  "compared": 96,
+  "identical": 96,
+  "differ": []
+ },
+ "survey_rooms": {
+  "houses": 12,
+  "rows": [
+   {
+    "house": "home_first_floor",
+    "points": 0.0
+   },
+   {
+    "house": "scaled_house",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:0",
+    "points": -0.21
+   },
+   {
+    "house": "procthor:val:2",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:3",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:4",
+    "points": 0.32
+   },
+   {
+    "house": "procthor:val:5",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:9",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:10",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:11",
+    "points": 0.14
+   },
+   {
+    "house": "procthor:val:12",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:13",
+    "points": 0.0
+   }
+  ],
+  "worst_points_below": -0.21,
+  "met": true
+ },
+ "dev_survey_rooms": {
+  "houses": 12,
+  "rows": [
+   {
+    "house": "home_first_floor",
+    "points": 0.0
+   },
+   {
+    "house": "scaled_house",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:0",
+    "points": 0.22
+   },
+   {
+    "house": "procthor:val:2",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:3",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:4",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:5",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:9",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:10",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:11",
+    "points": 0.14
+   },
+   {
+    "house": "procthor:val:12",
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:13",
+    "points": 0.0
+   }
+  ],
+  "worst_points_below": 0.0,
+  "met": true
+ },
+ "leave": {
+  "n": 10,
+  "left": 10,
+  "restored_within_030_of_clearing": 10,
+  "entries_after_leaving": 0,
+  "rows": [
+   {
+    "house": "home_first_floor",
+    "left": true,
+    "restored_clear_m": 0.5
+   },
+   {
+    "house": "scaled_house",
+    "left": true,
+    "restored_clear_m": 0.5
+   },
+   {
+    "house": "procthor:val:0",
+    "left": true,
+    "restored_clear_m": 0.5
+   },
+   {
+    "house": "procthor:val:2",
+    "left": true,
+    "restored_clear_m": 0.5
+   },
+   {
+    "house": "procthor:val:3",
+    "left": true,
+    "restored_clear_m": 0.5
+   },
+   {
+    "house": "procthor:val:4",
+    "left": true,
+    "restored_clear_m": 0.5
+   },
+   {
+    "house": "procthor:val:5",
+    "left": true,
+    "restored_clear_m": 0.5
+   },
+   {
+    "house": "procthor:val:9",
+    "left": true,
+    "restored_clear_m": 0.5
+   },
+   {
+    "house": "procthor:val:10",
+    "left": true,
+    "restored_clear_m": 0.5
+   },
+   {
+    "house": "procthor:val:11",
+    "left": true,
+    "restored_clear_m": 0.5
+   }
+  ]
+ }
+}

@@ -194,4 +194,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.189](3.189-cloud-ros-build.md) | Build the ROS image and run the live stack in a cloud session |
 | [3.190](3.190-prior-at-start.md) | A cloud room prior asked once at a find's start, for targets the shipped prior does not know |
 | [3.191](3.191-explore-approach-livelock.md) | Explore's approach livelock: a goal where the robot stands, re-sent every tick |
+| [3.192](3.192-nogo-reads-as-floor.md) | No-go zones read as floor by the room cut and the goal features |
 <!-- /sections -->

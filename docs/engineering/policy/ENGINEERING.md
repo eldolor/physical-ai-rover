@@ -893,11 +893,26 @@ the mission's dock is left out by the runner (3.161.B part 2, E4). In `_choose_n
 lies in a zone grown by `HALF_WIDTH_M` (0.12 m) is first sent out
 (`_leave_zone`: the nearest place along the floor, on the map without the
 zones, `LEAVE_GOAL_M` (0.35 m) clear of every zone, sent as kind
-`leave_zone`); then every choice is made on `nogo.masked_map(m, zones,
+`leave_zone`); then every goal is chosen on `nogo.masked_map(m, zones,
 CELL_NOGO, grow=HALF_WIDTH_M)` (cached per map version and zone set), so no
 frontier, view gap, room or small-room goal lies in a zone grown by the
-half-width and no reachable path crosses one. `CELL_NOGO` (2) is neither
-free, unknown nor occupied: no frontier forms beside a zone, and no obstacle
+half-width and no reachable path crosses one. **A zone is a wall for reach
+only (3.192, amending 3.161 D3):** what explore understands of the map reads
+the choice's floor map, the map without the zones (`_floor(m)`):
+frontiers' cells, pieces, middles and sizes (`_frontiers`: `find_frontiers`
+on the floor map with a `Reach` that carries the masked map's reach and the
+floor map's grid, so each goal cell is a masked-map stop; a frontier whose
+cells all lie in grown zones is dropped), the small-room cut's `segment`,
+`goal_context`/`goal_features`, the room policy's `extend` and
+`_goal_types` (which hands the find's `goal_labels` source the floor map),
+and `known_near` for the retry book. The small-room pick still ranks its
+cells by clearance on the masked map (a zone's edge is not open floor). Read off the masked map, a zone cut frontiers and rooms and
+changed every candidate's features near it, which lost finds where the
+target was reachable outside every zone (3.161's Z5). View gaps, the room
+goal's reach and the small-room candidates stay on the masked map; with no
+zones the floor map is the map itself. `CELL_NOGO` (2) is neither
+free, unknown nor occupied on the masked map: no stop or path lies in a zone
+(frontiers themselves are read off the floor map, above), and no obstacle
 clearance grows around it (nav2's keepout is lethal to the robot's centre and
 is not inflated); marked occupied, the clearance grown round a zone would
 close a doorway beside it to explore while nav2 still passes it. `_send` checks every goal whatever
