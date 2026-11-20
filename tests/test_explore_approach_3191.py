@@ -45,13 +45,13 @@ class ToleranceNav(FakeNav):
         return super().get_goal()
 
 
-def _k19_geometry():
+def _k19_geometry(east_m=0.12):
     """scaled_house's start cell (6, 4), centre (1.95, 1.35): the robot
-    0.12 m east of the centre, the sighting 0.58 m west of it -- 0.70 m from
-    the robot (just past `_at_target`), the cell centre in the band."""
+    `east_m` east of the centre, the sighting 0.58 m west of it -- with 0.12,
+    0.70 m from the robot (just past `_at_target`), the cell centre in the band."""
     grid = build_world("scaled_house")
     cx, cy = 6.5 * CELL, 4.5 * CELL
-    grid.x, grid.y, grid.theta = (cx + 0.12) / CELL, cy / CELL, math.pi
+    grid.x, grid.y, grid.theta = (cx + east_m) / CELL, cy / CELL, math.pi
     robot = MockRobot(grid, render=False)
     nav = ToleranceNav(robot)
     agent = ExploreAgent(robot, MissionMemory(mission="m", target_object="shoes"),
@@ -76,17 +76,49 @@ def test_an_approach_that_succeeds_without_moving_runs_out_of_tries():
     same in-place approach went out every other step (about 100 in 200)."""
     grid, nav, agent, sight = _k19_geometry()
     agent._sighting = lambda frame: sight
-    approaches = []
-    for _ in range(200):
-        r = agent.step()
-        if r.action == "GOAL" and agent._goal and agent._goal["kind"] == "approach":
-            approaches.append(agent._goal["target"])
-    near = [t for t in approaches if math.dist(t, sight) <= RETRY_RADIUS_M]
+    near = _approaches(agent, sight)
     assert 1 <= len(near) <= RETRY_LIMIT
     # Each in-place success is one failure of the sighting (cooled 30 s, so
     # 200 steps of a few sim seconds see at most a couple).
     assert agent.retry.failures_near(*sight) == len(near)
     assert not agent.retry.available(*sight, grid.sim_time, approach=True)
+
+
+def _approaches(agent, sight, steps=200):
+    approaches = []
+    for _ in range(steps):
+        r = agent.step()
+        if r.action == "GOAL" and agent._goal and agent._goal["kind"] == "approach":
+            approaches.append(agent._goal["target"])
+    while agent._goal is not None and agent._goal["kind"] == "approach":
+        agent.step()                  # review: the last one ended, so charged or kept
+    return [t for t in approaches if math.dist(t, sight) <= RETRY_RADIUS_M]
+
+
+def test_an_in_place_approach_inside_the_band_closes_in_not_charged():
+    """Review: 0.62 m out the robot is within `_at_target`; the in-place
+    success keeps the approach on record, so the next frames take 3.106's
+    in-sight-and-unfound path (bounded by CLOSE_IN_REFUSED, then one retry
+    failure and a back-off), not another goal. Red on dev too (re-sent)."""
+    from brain.explore import CLOSE_IN_REFUSED
+    grid, nav, agent, sight = _k19_geometry(east_m=0.04)
+    pose = agent._pose()
+    assert agent._at_target(*sight)
+    assert math.hypot(sight[0] - pose["x_m"], sight[1] - pose["y_m"]) > 0.55
+    agent._sighting = lambda frame: sight
+    agent.step()                                   # the approach goal
+    assert agent._goal and agent._goal["kind"] == "approach"
+    agent.step()                                   # succeeded in place
+    assert agent._approach == sight and agent.retry.entries == []
+    # 3.106: CLOSE_IN_REFUSED ticks in sight and unfound, then one failure
+    # of the sighting and a back-off -- not a goal.
+    for _ in range(CLOSE_IN_REFUSED):
+        r = agent.step()
+        assert r.action != "GOAL"
+    assert agent.retry.failures_near(*sight) == 1 and agent._approach is None
+    assert "REVERSE" in [r.action, *agent._pending]
+    near = _approaches(agent, sight)
+    assert 1 + len(near) <= RETRY_LIMIT
 
 
 def test_an_approach_that_moves_and_succeeds_charges_nothing():

@@ -1926,11 +1926,19 @@ class ExploreAgent(MissionAgent):
                 if g.get("from") and pose.get("usable") and math.hypot(
                         pose["x_m"] - g["from"][0], pose["y_m"] - g["from"][1]) < STUCK_MOVED_M:
                     # 3.191: reached without leaving -- the band cell was the
-                    # robot's own, just outside `_at_target`'s band. It made no
-                    # progress, so it is a retry failure of the sighting (cooled,
-                    # dropped at RETRY_LIMIT); uncharged, 3.70.M2's k 19 sent
-                    # it again every other tick, 4,657 times.
-                    self.retry.fail(g["target"][0], g["target"][1], now, known=self._known_at)
+                    # robot's own. Uncharged, 3.70.M2's k 19 sent it again
+                    # every other tick, 4,657 times.
+                    if self._at_target(*g["target"]):
+                        # In the band: kept on record, so the next frame closes
+                        # in (3.80.G) or counts it in sight and unfound (3.106),
+                        # each bounded by CLOSE_IN_REFUSED -- as 3.85 keeps a
+                        # refused send in the band -- rather than a goal again.
+                        self._approach = g["target"]
+                    else:
+                        # Just outside it (k 19: 0.70 m): no progress, so a
+                        # retry failure of the sighting (cooled, dropped at
+                        # RETRY_LIMIT).
+                        self.retry.fail(g["target"][0], g["target"][1], now, known=self._known_at)
             elif g.get("recall"):
                 # 3.172 F5: a remembered place, not a sighting: a refused turn
                 # gives up the look, never counts against the place.

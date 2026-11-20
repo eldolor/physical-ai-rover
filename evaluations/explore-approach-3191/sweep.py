@@ -44,17 +44,26 @@ def _one(args):
     sw = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(sw)
     assert Path(ex.__file__).resolve().is_relative_to(Path(root).resolve()), ex.__file__
-    ended = []
-    orig = ex.ExploreAgent._goal_ended
+    # Review: no second pose read -- the target is taken from the goal before
+    # `_goal_ended` runs, the distance moved from its own `goal_ended` event.
+    ended, current = [], {}
+    orig_ended, orig_event = ex.ExploreAgent._goal_ended, ex.ExploreAgent._event
 
     def watched(self, state, now):
-        g, pose = self._goal or {}, self._pose()
-        if g.get("kind") == "approach" and state == "succeeded" and g.get("from") and pose.get("usable"):
-            moved = math.hypot(pose["x_m"] - g["from"][0], pose["y_m"] - g["from"][1])
-            ended.append({"target": list(g.get("target") or (g["x_m"], g["y_m"])),
-                          "moved_m": moved})
-        return orig(self, state, now)
-    ex.ExploreAgent._goal_ended = watched
+        g = self._goal or {}
+        current["target"] = list(g.get("target") or (g.get("x_m"), g.get("y_m")))
+        try:
+            return orig_ended(self, state, now)
+        finally:
+            current.clear()
+
+    def noted(self, name, pose=None, **fields):
+        if (name == "goal_ended" and fields.get("kind") == "approach"
+                and fields.get("state") == "succeeded" and fields.get("moved_m") is not None
+                and current):
+            ended.append({"target": current["target"], "moved_m": fields["moved_m"]})
+        return orig_event(self, name, pose, **fields)
+    ex.ExploreAgent._goal_ended, ex.ExploreAgent._event = watched, noted
     _, reported = _plan()
     row = sw.find(m, "unsurveyed", tempfile.mkdtemp(), None, reported, nav=nav)
     still = [e["target"] for e in ended if e["moved_m"] < STUCK_M]
@@ -91,8 +100,15 @@ def _rows(path):
         return sorted((json.loads(x) for x in f if x.strip()), key=lambda r: r["k"])
 
 
+K19 = 19
+K19_GOALS_MAX = 300       # criterion 2
+K19_DRIVEN_M = 10.0       # criterion 3
+
+
 def score(fix_path, dev_path):
     fix, dev = _rows(fix_path), _rows(dev_path)
+    if not fix or not dev:
+        sys.exit("empty rows")
     by = {r["k"]: r for r in dev}
 
     def found(rows):
@@ -112,6 +128,15 @@ def score(fix_path, dev_path):
                        "dev": [by[r["k"]]["outcome"], by[r["k"]]["search_s"], by[r["k"]]["goals"],
                                by[r["k"]]["distance_m"]]}
                       for r in fix if r["k"] in by and r["outcome"] != by[r["k"]]["outcome"]]
+    k19 = next((r for r in fix if r["k"] == K19), None)
+    if k19 is not None:
+        out["k19"] = {k: k19[k] for k in ("outcome", "search_s", "goals", "distance_m", "target_m",
+                                          "wrong_found", "contacts", "no_move_max_per_place")}
+        out["k19"]["dev"] = {k: by[K19][k] for k in ("outcome", "goals", "distance_m",
+                                                     "no_move_max_per_place")} if K19 in by else None
+        out["k19"]["c2_met"] = k19["no_move_max_per_place"] <= BAR_PER_PLACE and k19["goals"] <= K19_GOALS_MAX
+        out["k19"]["c3_met"] = (not k19["wrong_found"] and k19["contacts"] == 0
+                                and k19["distance_m"] >= K19_DRIVEN_M)
     out["stability_met"] = len(fix) == 20 and not out["fix"]["over_bar"]
     out["progress_met"] = (len(fix) == len(dev) == 20 and out["fix"]["found"] >= out["dev"]["found"]
                            and out["fix"]["wrong_found"] == 0 and out["fix"]["contacts"] == 0)
