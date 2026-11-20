@@ -45,6 +45,12 @@ MAX_COORD_M = 1000.0             # 1 km from the map's origin: anything else is 
 # A zone no longer than a house's room is wide (Thermos review: the bridge
 # rasterises each in Python under its lock; 30 of these stay ~1 M cells).
 MAX_SIDE_M = 15.0
+# 3.161.B part 2 (E1): a zone this close to the trip home's last leg (the
+# staging point to the dock) covers the dock: the chassis' circumscribed
+# radius, hypot(0.253/2, 0.231/2) = 0.171 m, rounded up (pinned against
+# robot/safety.py's footprint by tests/test_no_go_dock.py; not imported, so
+# this module stays free of the robot server).
+DOCK_CLEAR_M = 0.18
 KINDS = ("area", "wall")
 # Explore's own masked map only (never a WorldInterface answer): a cell a
 # zone (grown by HALF_WIDTH_M) covers. Neither free (no goal, no path), nor
@@ -165,6 +171,42 @@ def zone_at(zones: Iterable[dict], x: float, y: float, grow: float = 0.0) -> Opt
 
 def nearest_distance(zones: Iterable[dict], x: float, y: float) -> float:
     return min((distance(z, x, y) for z in zones or ()), default=math.inf)
+
+
+def _seg_point(px, py, ax, ay, bx, by) -> float:
+    dx, dy = bx - ax, by - ay
+    L2 = dx * dx + dy * dy
+    t = 0.0 if L2 == 0 else max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / L2))
+    return math.hypot(px - (ax + t * dx), py - (ay + t * dy))
+
+
+def _crosses(a, b, c, d) -> bool:
+    """Segments ab and cd intersect (touching counts)."""
+    def orient(p, q, r):
+        v = (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0])
+        return (v > 1e-12) - (v < -1e-12)
+
+    def on(p, q, r):
+        return (min(p[0], r[0]) - 1e-12 <= q[0] <= max(p[0], r[0]) + 1e-12
+                and min(p[1], r[1]) - 1e-12 <= q[1] <= max(p[1], r[1]) + 1e-12)
+    o1, o2, o3, o4 = orient(a, b, c), orient(a, b, d), orient(c, d, a), orient(c, d, b)
+    if o1 != o2 and o3 != o4:
+        return True
+    return ((o1 == 0 and on(a, c, b)) or (o2 == 0 and on(a, d, b))
+            or (o3 == 0 and on(c, a, d)) or (o4 == 0 and on(c, b, d)))
+
+
+def segment_distance(z: dict, a, b) -> float:
+    """Metres from the segment a-b to the zone's rectangle; 0 if they meet."""
+    (ax, ay), (bx, by) = a, b
+    if inside(z, ax, ay) or inside(z, bx, by):
+        return 0.0
+    cs = corners(z)
+    edges = list(zip(cs, cs[1:] + cs[:1]))
+    if any(_crosses((ax, ay), (bx, by), c, d) for c, d in edges):
+        return 0.0
+    return min([distance(z, ax, ay), distance(z, bx, by)]
+               + [_seg_point(cx, cy, ax, ay, bx, by) for cx, cy in cs])
 
 
 def corners(z: dict) -> list:

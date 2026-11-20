@@ -1266,6 +1266,13 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     var p = document.getElementById("nogo-paused");
     p.hidden = !paused;
     p.textContent = paused ? "The robot is inside a zone: that zone is paused until it is clear." : "";
+    // 3.161.B part 2 (E6): a stored zone over the dock is not in force; say so.
+    var dockN = nogoDockIds().length;
+    var dk = document.getElementById("nogo-dock");
+    dk.hidden = !dockN;
+    dk.textContent = !dockN ? "" : (dockN === 1
+      ? "A zone covers the robot's dock, so the robot ignores it. Delete it, or draw it clear of the dock."
+      : dockN + " zones cover the robot's dock, so the robot ignores them. Delete them, or draw them clear of the dock.");
     var full = v && v.zones && v.max && v.zones.length >= v.max;
     var tools = !shut && !!v;
     var draw = document.getElementById("nogo-draw"), wall = document.getElementById("nogo-wall");
@@ -1311,13 +1318,18 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     return null;
   }
 
+  function nogoDockIds() {
+    var v = state.nogoView;
+    return ((v && v.dock_conflicts) || []).map(function (d) { return d.id; });
+  }
+
   function drawNogo(ctx, grid, scale) {
     var zs = nogoZones(grid);
     var d = state.nogoDrag;
     if (!zs.length && !(d && d.x1 !== undefined)) return;
     var css = getComputedStyle(document.documentElement);
     var col = (css.getPropertyValue("--map-nogo") || "#FF5C7A").trim();
-    var paused = state.nogoPaused || [];
+    var paused = (state.nogoPaused || []).concat(nogoDockIds());   // both drawn dashed: not in force
     var k = scale / grid.resolution_m;
     ctx.save();
     zs.forEach(function (z) {

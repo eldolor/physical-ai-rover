@@ -888,7 +888,8 @@ can mark the wrong room as stood in.
 **A person's no-go zones (3.161).** `ExploreAgent.zones` (house frame,
 `world/nogo.py`; `[]` is off and leaves every choice as `dev`'s) is set by
 `MissionRunner.set_nogo()` at the start, from the brain's store for the
-pose's `frame_id`, and on each edit. In `_choose_next`, a robot whose centre
+pose's `frame_id`, and on each edit -- only the zones in force: one covering
+the mission's dock is left out by the runner (3.161.B part 2, E4). In `_choose_next`, a robot whose centre
 lies in a zone grown by `HALF_WIDTH_M` (0.12 m) is first sent out
 (`_leave_zone`: the nearest place along the floor, on the map without the
 zones, `LEAVE_GOAL_M` (0.35 m) clear of every zone, sent as kind

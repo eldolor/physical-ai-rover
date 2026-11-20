@@ -35,10 +35,44 @@ FRAME_ID_RE = re.compile(r"[A-Za-z0-9_.:-]{1,64}")
 MAX_FILE_BYTES = 256_000
 DEFAULT_DIR = Path(__file__).resolve().parents[1] / "recordings" / "nogo"
 CLOSED_NO_FRAME = "Survey first: zones are kept with the saved map."
+# 3.161.B part 2 (E3, E4): a zone over the dock, in the operator's words.
+DOCK_REFUSED = ("That zone covers the robot's dock, so it couldn't get home. "
+                "Draw it clear of the dock.")
+DOCK_CONFLICT = ("This zone covers the robot's dock, so the robot ignores it. "
+                 "Delete it, or draw it clear of the dock.")
 
 
 class NoGoRefused(ValueError):
     """An edit that cannot be made as asked."""
+
+
+def dock_leg(dock: dict) -> tuple:
+    """E1: the trip home's last leg, (staging point, dock), in the house frame.
+    `dock` is `brain/dock.py`'s {x_m, y_m, theta}."""
+    from brain.dock import staging_point
+    return staging_point(dock), (float(dock["x_m"]), float(dock["y_m"]))
+
+
+def dock_conflicts(zones, dock: Optional[dict]) -> list:
+    """E1: the ids of the zones that cover the dock (within DOCK_CLEAR_M of
+    its last leg). No dock known: none."""
+    if not dock:
+        return []
+    a, b = dock_leg(dock)
+    return [z["id"] for z in zones or ()
+            if nogo.segment_distance(z, a, b) <= nogo.DOCK_CLEAR_M + 1e-9]
+
+
+def split_for_dock(zones, dock: Optional[dict]) -> tuple:
+    """E4: (the zones in force, the ids left out for covering the dock)."""
+    zones = list(zones or ())
+    out = set(dock_conflicts(zones, dock))
+    return [z for z in zones if z["id"] not in out], [z["id"] for z in zones if z["id"] in out]
+
+
+def dock_report(zones, dock: Optional[dict]) -> list:
+    """E4/E6: GET /mission/nogo's `dock_conflicts`."""
+    return [{"id": i, "reason": DOCK_CONFLICT} for i in dock_conflicts(zones, dock)]
 
 
 def default_dir() -> Path:
@@ -115,13 +149,15 @@ class NoGoStore:
         except OSError:
             pass
 
-    def edit(self, frame_id: Optional[str], op: str, rev=None, zone=None, zone_id=None) -> dict:
+    def edit(self, frame_id: Optional[str], op: str, rev=None, zone=None, zone_id=None,
+             dock: Optional[dict] = None) -> dict:
         """One person's edit, saved; returns the new doc.
         * add    {zone}     -- a rectangle (or a wall from `wall_from_line`)
         * delete {zone_id}  -- remove one
         * clear             -- remove all
         Raises NoGoRefused (no saved map, an unreadable file, a stale rev,
-        a bad zone, too many, an unknown id)."""
+        a bad zone, too many, an unknown id, or -- with `dock` known -- an add
+        that covers the dock, E3)."""
         self._path(frame_id)
         with self._lock:
             doc = self.load(frame_id)
@@ -139,6 +175,8 @@ class NoGoStore:
                                          if k in ("x0", "y0", "x1", "y1", "kind")})
                 except nogo.ZoneRefused as e:
                     raise NoGoRefused(str(e)) from None
+                if dock_conflicts([z], dock):
+                    raise NoGoRefused(DOCK_REFUSED)
                 zones.append(z)
             elif op == "delete":
                 kept = [z for z in zones if z["id"] != zone_id]

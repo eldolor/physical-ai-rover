@@ -33,6 +33,17 @@ from tests.test_ui_room_names import (  # noqa: E402
 from tests.test_ui import _stub_world, open_twin  # noqa: E402
 
 FRAME = "map-5161beef"
+# 3.161.B part 2: a saved map whose dock is at (1.0, 1.0), facing north.
+DOCK = {"x_m": 1.0, "y_m": 1.0, "heading_deg": 0.0}
+
+
+class _DockWorld(_World):
+    def __init__(self, m, frame_id, dock):
+        super().__init__(m, frame_id)
+        self.dock = dock
+
+    def get_pose(self):
+        return dict(super().get_pose(), dock=dict(self.dock))
 
 
 @pytest.fixture
@@ -43,9 +54,10 @@ def brain(tmp_path, monkeypatch):
     from fastapi.testclient import TestClient
     from control import brain_server
 
-    def make(m, frame_id=FRAME):
+    def make(m, frame_id=FRAME, dock=None):
+        w = _World(m, frame_id) if dock is None else _DockWorld(m, frame_id, dock)
         app = brain_server.create_app(robot_factory=lambda: object(),
-                                      world_factory=lambda robot: _World(m, frame_id))
+                                      world_factory=lambda robot: w)
         return TestClient(app)
     return make
 
@@ -260,4 +272,47 @@ def test_the_states_meet_3132s_bars(browser, twin_server, brain):
     bad = {k: v for k, v in results.items() if not _clean(v)}
     assert not bad, bad
     assert not errors and not errors2 and not errors3, (errors, errors2, errors3)
+    page.context.close()
+
+
+# ---------- 3.161.B part 2: a zone over the dock (E-e) ----------
+
+def test_a_zone_drawn_over_the_dock_is_refused_in_plain_words(browser, twin_server, brain):
+    m = _house()
+    page, errors, _, _ = _open(browser, twin_server, brain(m, dock=DOCK), m)
+    page.click("#btn-nogo")
+    page.click("#nogo-draw")
+    _drag(page, m, (0.6, 0.6), (1.4, 1.5))                   # over the dock
+    sync_api.expect(page.locator(".toast").last).to_contain_text(
+        "covers the robot's dock, so it couldn't get home", timeout=3000)
+    assert _stored() == []
+    assert not errors, errors
+    page.context.close()
+
+
+def test_a_zone_clear_of_the_dock_is_drawn_as_before(browser, twin_server, brain):
+    m = _house()
+    page, errors, _, _ = _open(browser, twin_server, brain(m, dock=DOCK), m)
+    page.click("#btn-nogo")
+    page.click("#nogo-draw")
+    _drag(page, m, (2.0, 2.0), (2.8, 2.6))
+    _wait_stored(page, 1)
+    sync_api.expect(page.locator("#nogo-dock")).to_be_hidden()
+    assert not errors, errors
+    page.context.close()
+
+
+def test_a_stored_zone_over_the_dock_is_said_and_meets_3132s_bars(browser, twin_server, brain):
+    m = _house()
+    _seed([{"x0": 0.7, "y0": 0.7, "x1": 1.3, "y1": 1.3}])   # saved before: no dock known then
+    page, errors, _, _ = _open(browser, twin_server, brain(m, dock=DOCK), m)
+    page.click("#btn-nogo")
+    sync_api.expect(page.locator("#nogo-dock")).to_be_visible(timeout=5000)
+    sync_api.expect(page.locator("#nogo-dock")).to_contain_text(
+        "covers the robot's dock, so the robot ignores it")
+    bars = _bars(page)
+    _shot(page, "dock")
+    assert _clean(bars), bars
+    assert len(_stored()) == 1                                # never deleted for the person
+    assert not errors, errors
     page.context.close()

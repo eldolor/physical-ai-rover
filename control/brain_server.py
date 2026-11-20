@@ -1489,15 +1489,20 @@ def create_app(
         runner.started_by = started_by      # 3.163.B: None for a person's start
         # 3.161 (D2): the saved map's zones, to the mission and the robot
         # server, before it can move. No saved map: none (and none sent).
+        # 3.161.B part 2 (E4): the mission's dock is read first, so a zone
+        # over it is left out of both (and reported).
         try:
             frame_id = await asyncio.to_thread(_pose_frame)
         except Exception as e:  # noqa: BLE001 -- no frame read: no zones, never a refusal
             logger.warning("no-go zones: the pose could not be read at start: %s", e)
             frame_id = None
+        if hasattr(runner, "read_dock"):
+            await asyncio.to_thread(runner.read_dock)
         if frame_id:
             zones = nogo_store_mod.default_store().zones(frame_id)
             runner.set_nogo(frame_id, zones)
-            state["nogo_sent"] = await asyncio.to_thread(_nogo_send, frame_id, zones)
+            state["nogo_sent"] = await asyncio.to_thread(_nogo_send, frame_id,
+                                                         list(runner.nogo_zones))
         # Review: a pose not usable at the start (a SLAM restart's first
         # seconds) is not a mission without zones -- explore asks for the
         # saved map's zones once its pose names one.
@@ -1661,37 +1666,70 @@ def create_app(
         return nogo_store_mod.push(base, robot_secret, frame_id, zones,
                                    timeout=config["request_timeout_s"])
 
-    def _nogo_apply(runner, frame_id, zones) -> dict:
-        """The zones for `frame_id` to the running mission (if it is on that
-        map) and to the robot server. Returns the robot server's answer."""
+    def _nogo_running(runner, frame_id):
+        """The running mission, if it is on `frame_id` (or on no saved map yet)."""
         if runner is not None and getattr(runner, "is_running", lambda: False)():
             if getattr(runner, "nogo_frame", None) in (None, frame_id):
-                runner.set_nogo(frame_id, zones)
+                return runner
+        return None
+
+    def _known_dock(frame_id, pose=None):
+        """3.161.B part 2 (E2): the dock for `frame_id` -- the saved map's
+        (a matched reload's pose carries it), else the dock of the mission
+        running, or last run, on that map; None when none is known."""
+        if pose and pose.get("usable") and pose.get("frame_id") == frame_id \
+                and isinstance(pose.get("dock"), dict):
+            d = docking.dock_from_pose(pose)
+            if d is not None and d.get("source") == docking.SAVED_MAP:
+                return d
+        runner = state.get("runner")
+        if runner is not None:
+            saved = getattr(runner, "_saved_map", None) or {}
+            if frame_id in (getattr(runner, "nogo_frame", None), saved.get("frame_id")):
+                return getattr(runner, "_dock", None)
+        return None
+
+    def _nogo_apply(runner, frame_id, zones, dock=None) -> dict:
+        """The zones for `frame_id` to the running mission (if it is on that
+        map) and to the robot server -- those in force only (E4: not one
+        covering the dock). Returns the robot server's answer."""
+        live = _nogo_running(runner, frame_id)
+        if live is not None:
+            live.set_nogo(frame_id, zones)
+            zones = list(live.nogo_zones)
+        else:
+            zones = nogo_store_mod.split_for_dock(zones, dock)[0]
         state["nogo_sent"] = _nogo_send(frame_id, zones)
         return state["nogo_sent"]
 
-    def nogo_view(frame_id, doc=None) -> dict:
+    def nogo_view(frame_id, doc=None, dock=None) -> dict:
         if not frame_id:
             return {"frame_id": None, "closed": nogo_store_mod.CLOSED_NO_FRAME,
                     "zones": [], "rev": 0}
         doc = doc or nogo_store_mod.default_store().load(frame_id)
         return {"frame_id": frame_id, "closed": None, "rev": doc["rev"], "zones": doc["zones"],
                 "max": nogo_mod.MAX_ZONES, "unreadable": doc.get("unreadable"),
-                "sent": state.get("nogo_sent")}
+                "sent": state.get("nogo_sent"),
+                # E4/E6: stored zones over the dock, not in force (a person deletes them).
+                "dock_conflicts": nogo_store_mod.dock_report(doc["zones"], dock),
+                "dock_known": dock is not None}
 
     def _pose_frame():
+        return _pose_and_frame()[1]
+
+    def _pose_and_frame():
         pose = world().get_pose() or {}
-        return pose.get("frame_id") if pose.get("usable") else None
+        return pose, (pose.get("frame_id") if pose.get("usable") else None)
 
     @app.get(prefix + "/mission/nogo", dependencies=[Depends(require_secret)])
     def nogo_get():
         """3.161: the zones on the saved map the robot is on. Local only."""
         try:
-            frame_id = _pose_frame()
+            pose, frame_id = _pose_and_frame()
         except Exception as e:  # noqa: BLE001 -- the editor says so, never a 500
             return {"frame_id": None, "closed": f"The map can't be read now ({e}).",
                     "zones": [], "rev": 0}
-        return nogo_view(frame_id)
+        return nogo_view(frame_id, dock=_known_dock(frame_id, pose))
 
     @app.post(prefix + "/mission/nogo", dependencies=[Depends(require_secret)])
     def nogo_edit(req: NoGoRequest):
@@ -1699,7 +1737,7 @@ def create_app(
         map, or zones another edit changed meanwhile), stored, then sent to
         the robot server and the running mission."""
         try:
-            frame_id = _pose_frame()
+            pose, frame_id = _pose_and_frame()
         except Exception as e:  # noqa: BLE001
             raise HTTPException(status_code=503, detail=f"the map can't be read now ({e})")
         if not frame_id or req.frame_id != frame_id:
@@ -1712,13 +1750,14 @@ def create_app(
                 zone = nogo_mod.wall_from_line(xa, ya, xb, yb)
             except (TypeError, ValueError, nogo_mod.ZoneRefused) as e:
                 raise HTTPException(status_code=422, detail=f"a wall is two points: {e}")
+        dock = _known_dock(frame_id, pose) if frame_id else None
         try:
             doc = nogo_store_mod.default_store().edit(frame_id, req.op, rev=req.rev, zone=zone,
-                                                      zone_id=req.zone_id)
+                                                      zone_id=req.zone_id, dock=dock)
         except nogo_store_mod.NoGoRefused as e:
             raise HTTPException(status_code=409, detail=str(e))
-        _nogo_apply(state["runner"], frame_id, doc["zones"])
-        return nogo_view(frame_id, doc)
+        _nogo_apply(state["runner"], frame_id, doc["zones"], dock)
+        return nogo_view(frame_id, doc, dock)
 
     # ---- 3.160: rooms a person names on the saved map ----
 

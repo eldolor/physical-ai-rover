@@ -59,6 +59,7 @@ from brain.arrival import SOURCE_LOCAL
 from brain.explore import OWN_GOAL_TOLERANCE_M, ExploreAgent  # one tolerance for both (3.76)
 from brain.choice_log import BY_PERSON, GoalAsk
 from brain import dock as docking
+from control import nogo_store
 from brain.intervention_log import (VIA_BRAIN_STOP, VIA_LOOP_CANCELLED, VIA_PREEMPTED,
                                     VIA_ROBOT_STOP)
 from brain.goal_policy import coarse, goal_policy_for
@@ -824,6 +825,12 @@ class MissionRunner:
         # (house frame) and that map's frame_id; [] is off (`set_nogo`).
         self.nogo_zones: list = []
         self.nogo_frame: Optional[str] = None
+        # 3.161.B part 2 (E4): the whole set as stored, and the ids left out
+        # of `nogo_zones` for covering this mission's dock (logged once each).
+        self._nogo_all: list = []
+        self.nogo_dock_refused: list = []
+        self._nogo_dock_logged: set = set()
+        self._dock_read: Optional[tuple] = None      # (dock,) once `read_dock()` ran
         # Review: where a frame's zones come from (the brain's store) and
         # where a set read mid-mission goes (the robot server). Explore asks
         # through `_nogo_lookup` when its pose names a saved map these zones
@@ -1220,9 +1227,31 @@ class MissionRunner:
 
     # ---------- lifecycle ----------
 
-    def start(self) -> None:
+    def read_dock(self) -> Optional[dict]:
+        """The dock this mission's trip home will drive to, read now and kept
+        for `start()` (3.161.B part 2: the brain reads it before the start, so
+        the zones the robot server is sent already leave out one over it)."""
         dock = None
         if self.return_to_dock:
+            try:
+                dock = docking.dock_from_pose(self.world.get_pose())
+            except Exception as e:  # noqa: BLE001 -- no dock pose: the return is skipped, never guessed
+                logger.warning("dock pose not read at start: %s", e)
+        with self._lock:
+            self._dock_read = (dock,)
+        if self._nogo_all:
+            self._apply_nogo()
+        return dock
+
+    def _nogo_dock(self) -> Optional[dict]:
+        if self._outcome != IDLE:              # started: the dock it recorded
+            return self._dock
+        return (self._dock_read or (None,))[0]
+
+    def start(self) -> None:
+        read = self._dock_read
+        dock = read[0] if read is not None else None
+        if read is None and self.return_to_dock:
             try:
                 dock = docking.dock_from_pose(self.world.get_pose())
             except Exception as e:  # noqa: BLE001 -- no dock pose: the return is skipped, never guessed
@@ -1247,6 +1276,8 @@ class MissionRunner:
             self._dock = dock
             self._home = docking.HomeBudget(dock) if dock is not None else None
             self._log_line(f"mission started: {self.memory.mission} ({', '.join(limits)})")
+        if dock is not None and self._nogo_all:
+            self._apply_nogo()          # E4: the dock is known now
 
     def tick(self) -> bool:
         """Advance the mission by one agent step. Returns True while the
@@ -1817,10 +1848,22 @@ class MissionRunner:
     def set_nogo(self, frame_id: Optional[str], zones) -> None:
         """3.161 (D2, D3): a person's zones for the saved map `frame_id`, at
         the start and on each edit. Explore reads them for its goal choice;
-        the report's coverage counts floor outside them."""
-        zones = list(zones or ())
+        the report's coverage counts floor outside them. 3.161.B part 2 (E4):
+        a zone covering this mission's dock is left out (`nogo_zones` holds
+        the ones in force) and reported."""
         with self._lock:
-            self.nogo_frame, self.nogo_zones = frame_id, zones
+            self.nogo_frame, self._nogo_all = frame_id, list(zones or ())
+        self._apply_nogo()
+
+    def _apply_nogo(self) -> None:
+        with self._lock:
+            zones, refused = nogo_store.split_for_dock(self._nogo_all, self._nogo_dock())
+            self.nogo_zones, self.nogo_dock_refused = zones, refused
+            fresh = [i for i in refused if i not in self._nogo_dock_logged]
+            self._nogo_dock_logged.update(fresh)
+            for i in fresh:
+                self._log_line(f"no-go zone {i} covers the dock: left out, so the trip "
+                               "home can reach it (a person deletes or redraws it)")
         set_zones = getattr(self.agent, "set_zones", None)
         if callable(set_zones):
             set_zones(zones)
@@ -1828,10 +1871,9 @@ class MissionRunner:
     def _nogo_lookup(self, frame_id: str) -> None:
         if self.nogo_source is None or frame_id == self.nogo_frame:
             return
-        zones = list(self.nogo_source(frame_id) or ())
-        self.set_nogo(frame_id, zones)
+        self.set_nogo(frame_id, list(self.nogo_source(frame_id) or ()))
         if self.nogo_sink is not None:
-            self.nogo_sink(frame_id, zones)
+            self.nogo_sink(frame_id, list(self.nogo_zones))     # E4: in force only
 
     def status(self) -> dict:
         with self._lock:
@@ -1958,8 +2000,9 @@ class MissionRunner:
                              **({"nogo": {"frame_id": self.nogo_frame,
                                           "zones": len(self.nogo_zones),
                                           "refused": getattr(self.agent, "zone_refusals", 0),
-                                          "leaves": getattr(self.agent, "zone_leaves", 0)}}
-                                if self.nogo_zones else {})}
+                                          "leaves": getattr(self.agent, "zone_leaves", 0),
+                                          "dock_refused": list(self.nogo_dock_refused)}}
+                                if self.nogo_zones or self.nogo_dock_refused else {})}
                             if self.explores else None),
                 "tier_search": self.tier_search,
                 # 3.46: counts only; the list is GET /mission/inventory.
