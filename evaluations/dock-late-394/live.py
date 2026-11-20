@@ -153,6 +153,17 @@ def run():
         watch = {}
         up = threading.Thread(target=lambda: watch.update(d3.container(maps, bridge)), daemon=True)
         up.start()
+        # Run 2 (amended before it ran): started at once, run 1's find met a
+        # robot server with no /wheels yet (`ros_unavailable`, a fault, no
+        # return). Now the find waits for the bridge's first /health -- ROS up,
+        # SLAM still `checking`, the pose not usable -- k 3's state.
+        t_wait = time.time()
+        while time.time() - t_wait < 180:
+            h = jget(bridge, "/health")
+            if h.get("slam"):
+                break
+            time.sleep(0.1)
+        bridge_state = (h.get("slam") or {}).get("state")
         start, tries, t_start = None, 0, time.time()
         while start is None and time.time() - t_start < 120:
             tries += 1
@@ -189,6 +200,7 @@ def run():
         write({"row": "find", "head": head, "image": image, "target": TARGET,
                "start_after_restart_s": start, "start_tries": tries,
                "pose_usable_at_start": bool(pose_at_start.get("usable")),
+               "slam_state_at_start": bridge_state,
                "first_status_log": (first.get("log_tail") or [])[:4],
                "reload": ((watch.get("health") or {}).get("slam") or {}).get("reload"),
                "slam_states": watch.get("states"),
