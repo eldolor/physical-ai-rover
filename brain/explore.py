@@ -54,7 +54,7 @@ from brain.tiered import STEER_BAND_DEG, located_local_bearing, turn_for
 from brain.tiered import candidate_refused as _refused
 from brain.frontier import (CAMERA_FOV_DEG, Reach, RetryBook, camera_seen, find_frontiers,
                             find_view_gaps, known_near, reach, reachable)
-from brain.room_labels import segment
+from brain.room_labels import clearance, segment
 from brain.choice_log import BY_RULE_TIMEOUT, GoalAsk
 from brain.goal_policy import FEATURES as GOAL_FEATURES
 from brain.goal_policy import LinearGoalPolicy
@@ -66,7 +66,7 @@ from robot.interface import VERB_MAX_TAG, ZONE_UNUSABLE, Preempted, RobotInterfa
 from robot.safety import CREEP_MARGIN_CM, FOOTPRINT_LENGTH_M, SafetyViolation, verb_speed_m_s
 from world.bridge_faults import fault_from_headers, response_detail, setup_fault_message
 from world import nogo
-from world.interface import CELL_FREE
+from world.interface import CELL_FREE, CELL_OCCUPIED
 
 logger = logging.getLogger("explore")
 
@@ -307,6 +307,7 @@ class ExploreAgent(MissionAgent):
         self._zones_rev = 0            # bumped by each set_zones (a cache key)
         self._masked = None            # (map_id, map_version, zones_rev, masked map)
         self._floor_of = None          # 3.192: (this choice's masked map, its floor map)
+        self._floor_grid = None        # 3.192: (key, floor cells, int8 grid), one per map
         self._no_way_out = False       # zone_no_way_out logged for this stretch
         # Review: called with the pose's frame_id when it is a saved map's and
         # not the one the zones were last asked for (MissionRunner loads them
@@ -872,11 +873,17 @@ class ExploreAgent(MissionAgent):
             return find_frontiers(m, pose["x_m"], pose["y_m"], clearance_m=leave,
                                   reach_map=rch)
         w, h = floor["width"], floor["height"]
-        grid = np.fromiter(floor["cells"], dtype=np.int8, count=w * h).reshape(h, w)
-        both = Reach(rch.w, rch.h, rch.start, rch.need, rch.order, rch.dist, grid=grid)
+        key = (id(floor["cells"]), floor.get("map_version"))
+        if self._floor_grid is None or self._floor_grid[0] != key \
+                or self._floor_grid[1] is not floor["cells"]:
+            grid = np.fromiter(floor["cells"], dtype=np.int8, count=w * h).reshape(h, w)
+            self._floor_grid = (key, floor["cells"], grid)     # review: once per map
+        both = Reach(rch.w, rch.h, rch.start, rch.need, rch.order, rch.dist,
+                     grid=self._floor_grid[2])
         out = find_frontiers(floor, pose["x_m"], pose["y_m"], clearance_m=leave,
                              reach_map=both)
-        masked = np.asarray(m["cells"]).reshape(h, w) == nogo.CELL_NOGO
+        masked = (rch.grid if rch.grid is not None
+                  else np.asarray(m["cells"]).reshape(h, w)) == nogo.CELL_NOGO
         return [f for f in out if not all(masked[y, x] for x, y in f.cells)]
 
     def _zone_map(self, m: dict, zones: list) -> dict:
@@ -1244,6 +1251,7 @@ class ExploreAgent(MissionAgent):
                 "max_ms": round(xs[-1], 1)}
 
     def _choose_next(self, now: float):
+        self._floor_of = None           # 3.192: this choice's (masked, floor) pair, set below
         pose = self._pose()
         try:
             m = self.world.get_map()
@@ -1265,14 +1273,13 @@ class ExploreAgent(MissionAgent):
             except Exception:  # noqa: BLE001 -- no zones read: the choice goes on without
                 logger.warning("no-go zones unreadable for %s", frame, exc_info=True)
         floor = m
-        self._floor_of = None
         if getattr(self, "zones", None):
             # 3.161 D3/D4: out of a zone first; then every goal below is
             # chosen on the map with the zones' cells masked -- no goal and
             # no reachable path inside one. 3.192: a zone is a wall for
-            # reach only; what explore UNDERSTANDS of the map -- frontiers'
-            # cells, the room cut, the labels, the goal features, mapping
-            # progress -- reads `floor`, the map without the zones.
+            # reach only; frontiers' cells, the small-room cut, the goal and
+            # room features (and the find's room labels source) and
+            # `known_near` read `floor`, the map without the zones.
             zones = self.zones
             if nogo.zone_at(zones, pose["x_m"], pose["y_m"], nogo.HALF_WIDTH_M) is not None:
                 out = self._leave_zone(m, pose, now, leave)
@@ -1388,7 +1395,14 @@ class ExploreAgent(MissionAgent):
         if key[1] is not None and key == self._small_none_on:
             return None                     # review: nothing found on this very map
         try:
-            seg, d = segment(self._floor(m))      # 3.192: a zone is not a wall to the cut
+            floor = self._floor(m)
+            seg, d = segment(floor)               # 3.192: a zone is not a wall to the cut
+            if floor is not m:
+                # Review: but a goal is ranked by openness on the masked map,
+                # so it sits in open floor, not on a zone's edge.
+                cells = np.asarray(m["cells"]).reshape(m["height"], m["width"])
+                d = clearance(cells == CELL_FREE,
+                              (cells == CELL_OCCUPIED) | (cells == nogo.CELL_NOGO))
             small = reach(m, pose["x_m"], pose["y_m"], clearance_m=SMALL_ROOM_CLEARANCE_M)
         except Exception:  # noqa: BLE001 -- a by-product never ends a survey
             if not self._small_error_logged:

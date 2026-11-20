@@ -72,6 +72,8 @@ def run(house, seed, arm, job="find", zones=None, max_steps=None):
 def main(argv):
     if "--chooser" in argv:
         i = argv.index("--chooser")
+        if i + 1 >= len(argv):
+            raise SystemExit("--chooser needs rule or rooms")
         chooser = argv[i + 1]
         argv = argv[:i] + argv[i + 2:]
         os.environ["SWEEP2_CHOOSER"] = chooser   # worker processes read it at import
@@ -79,10 +81,15 @@ def main(argv):
     sw.main(argv)
 
 
+_BASE_RUNNER = sw.MissionRunner
+
+
 def _apply():
+    """Idempotent (review): always from the harness's own MissionRunner."""
     sw.run = run
+    sw.MissionRunner = _BASE_RUNNER
     if os.environ.get("SWEEP2_CHOOSER", "rule") == "rooms":
-        sw.MissionRunner = functools.partial(sw.MissionRunner, explore_goal_policy="rooms")
+        sw.MissionRunner = functools.partial(_BASE_RUNNER, explore_goal_policy="rooms")
     elif os.environ.get("SWEEP2_CHOOSER", "rule") != "rule":
         raise SystemExit("--chooser is rule or rooms")
 
