@@ -1,0 +1,116 @@
+[
+ {
+  "mission": "procthor:val:26 s0",
+  "zones_outcome": "exhausted",
+  "none_outcome": "found",
+  "goals_zones": 13,
+  "goals_none": 7,
+  "part_at_goal": 0,
+  "goal_none": [
+   4.35,
+   5.25
+  ],
+  "goal_zones": [
+   4.95,
+   6.15
+  ],
+  "none_goal_in_grown_zone": false,
+  "none_goal_dist_to_zone_m": 0.27,
+  "zones": [
+   [
+    5.339,
+    2.511,
+    5.761,
+    3.189
+   ],
+   [
+    2.567,
+    4.518,
+    3.133,
+    5.382
+   ],
+   [
+    4.615,
+    4.728,
+    5.285,
+    5.772
+   ]
+  ]
+ },
+ {
+  "mission": "procthor:val:39 s0",
+  "zones_outcome": "exhausted",
+  "none_outcome": "found",
+  "goals_zones": 28,
+  "goals_none": 26,
+  "part_at_goal": 7,
+  "goal_none": [
+   14.55,
+   5.85
+  ],
+  "goal_zones": [
+   14.25,
+   5.85
+  ],
+  "none_goal_in_grown_zone": true,
+  "none_goal_dist_to_zone_m": 0.04,
+  "zones": [
+   [
+    13.121,
+    7.328,
+    13.579,
+    7.972
+   ],
+   [
+    13.621,
+    10.247,
+    14.279,
+    11.053
+   ],
+   [
+    14.589,
+    5.706,
+    15.111,
+    6.594
+   ]
+  ]
+ },
+ {
+  "mission": "procthor:val:44 s1",
+  "zones_outcome": "exhausted",
+  "none_outcome": "found",
+  "goals_zones": 41,
+  "goals_none": 36,
+  "part_at_goal": 21,
+  "goal_none": [
+   13.35,
+   10.65
+  ],
+  "goal_zones": [
+   13.05,
+   10.35
+  ],
+  "none_goal_in_grown_zone": false,
+  "none_goal_dist_to_zone_m": 4.13,
+  "zones": [
+   [
+    8.409,
+    12.642,
+    9.291,
+    13.458
+   ],
+   [
+    0.688,
+    0.889,
+    1.412,
+    1.811
+   ],
+   [
+    12.079,
+    5.742,
+    12.821,
+    6.558
+   ]
+  ]
+ }
+]

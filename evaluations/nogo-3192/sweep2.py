@@ -55,14 +55,15 @@ def run(house, seed, arm, job="find", zones=None, max_steps=None):
     _ENDS.clear()
     kw = {} if max_steps is None else {"max_steps": max_steps}
     row = _orig_run(house, seed, arm, job=job, zones=zones, **kw)
-    zs = [nogo.clean_zone(z) for z in row.get("zones") or []]
+    zs = list(row.get("zones") or [])    # as placed (leave's id "zstart" is no clean id)
     near = {}
     for state, goal in _ENDS:
         if state == "succeeded" or not goal:
             continue
-        for z in zs:
-            if nogo.nearest_distance([z], goal[0], goal[1]) <= NEAR_M:
-                near[z["id"]] = near.get(z["id"], 0) + 1
+        for k, z in enumerate(zs):
+            if nogo.distance(z, goal[0], goal[1]) <= NEAR_M:
+                zid = z.get("id", str(k))
+                near[zid] = near.get(zid, 0) + 1
     row["ends_near_zone"] = near
     row["ends"] = len(_ENDS)
     row["chooser"] = os.environ.get("SWEEP2_CHOOSER", "rule")
