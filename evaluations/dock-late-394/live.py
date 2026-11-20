@@ -38,6 +38,64 @@ WALL_S = FIND_LIMIT_S + 600
 TARGET = "red backpack"
 
 
+class _Load(threading.Thread):
+    """1-minute load every 10 s (evaluations/survey-370/s4_live.py's, copied:
+    its module refuses to import outside its own section's env)."""
+
+    def __init__(self):
+        super().__init__(daemon=True)
+        self.rows, self.stop_ev = [], threading.Event()
+
+    def run(self):
+        while True:
+            with open("/proc/loadavg") as f:
+                self.rows.append((round(time.time()), float(f.read().split()[0])))
+            if self.stop_ev.wait(10):
+                return
+
+    def summary(self, since=None):
+        xs = sorted(v for t, v in self.rows if since is None or t >= since)
+        if not xs:
+            return None
+        return {"n": len(xs), "max": xs[-1], "p50": xs[len(xs) // 2],
+                "over_4": sum(v > 4 for v in xs)}
+
+
+def _settle(bridge, timeout=180):
+    """s4_live's: the mission end's save (or skip) landed and no re-map runs."""
+    t0, h = time.time(), None
+    while time.time() - t0 < timeout:
+        h = bridge.get("/health").json()
+        m = h["map"]
+        if (m["saved"] + m.get("skipped", 0) + m.get("failed", 0) >= 1 and not m.get("saving")
+                and h["slam"]["state"] != "remapping"):
+            break
+        time.sleep(0.5)
+    time.sleep(3)
+    return h["map"] if h else None, round(time.time() - t0, 1)
+
+
+def _survey(brain, limit_s):
+    """s4_live's: one survey through the brain's HTTP API, to its end."""
+    r = brain.post("/mission/start", json={"job": "survey", "policy": "explore",
+                                           "max_steps": 100000, "mission_time_limit_s": limit_s})
+    if r.status_code != 200:
+        return {"start": r.status_code, "detail": r.text[:300]}
+    t0, st = time.time(), {}
+    while time.time() - t0 < limit_s + 120:
+        st = brain.get("/mission/status").json()
+        if not st.get("running") and st.get("outcome") not in (None, "idle", "running"):
+            break
+        time.sleep(1.0)
+    else:
+        brain.post("/mission/stop")
+    return {"outcome": st.get("outcome"), "seconds": round(time.time() - t0)}
+
+
+class _S4:
+    Load, settle, survey = _Load, staticmethod(_settle), staticmethod(_survey)
+
+
 def run():
     assert os.environ.get("ROS_IMAGE", "").endswith("plan-3.194"), "run with this branch's env"
     if ROWS.exists():
@@ -45,7 +103,6 @@ def run():
     image = os.environ["ROS_IMAGE"]
     sys.path.insert(0, str(ROOT))
     sys.path.insert(0, str(ROOT / "evaluations" / "map-350"))
-    sys.path.insert(0, str(ROOT / "evaluations" / "survey-370"))
     os.environ["ROS_IMAGE"] = "for-import-plan-3.50"        # d3_runs' own guard
     import httpx
     import d3_runs as d3
@@ -53,7 +110,7 @@ def run():
     from d3_runs import de
     d3.IMAGE = image
     os.environ["ROS_IMAGE"] = image
-    import s4_live as s4
+    s4 = _S4
 
     def write(row):
         with open(ROWS, "a") as f:
