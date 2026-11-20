@@ -159,3 +159,69 @@ def test_with_no_zones_the_choice_reads_one_map():
     m = agent.world.get_map()
     assert agent._floor(m) is m
 
+
+
+# ---------- 3.192.B's sweeps, as recorded (evaluations/nogo-3192/summary.json) ----------
+
+def _summary():
+    import json
+    from pathlib import Path
+    p = Path(__file__).resolve().parents[1] / "evaluations" / "nogo-3192" / "summary.json"
+    return json.loads(p.read_text())
+
+
+def test_f1_rule_chooser_as_recorded_failed_by_one():
+    """F1 (Z5 as written, chooser rule): 86 of 96 against 87 -- FAILED by one
+    (dev at this base: 82 against 87); median time met."""
+    s = _summary()
+    f, d = s["find_rule"], s["dev_find_rule"]
+    assert (f["found_zones"], f["found_none"], f["n"]) == (86, 87, 96)
+    assert f["lost"] == ["procthor:val:26 s0", "procthor:val:39 s0", "procthor:val:44 s1"]
+    assert f["time_within_5pct"] and not f["rate_equal"]
+    assert (d["found_zones"], d["found_none"]) == (82, 87)
+
+
+def test_f1_prime_rooms_chooser_as_recorded():
+    """F1' (the shipped chooser): find rate equal, 81 of 96 each arm; median
+    time +5.08% -- FAILED by 0.08 points (dev: 80 against 81, +18.53%)."""
+    s = _summary()
+    f, d = s["find_rooms"], s["dev_find_rooms"]
+    assert (f["found_zones"], f["found_none"]) == (81, 81) and f["rate_equal"]
+    assert f["median_ratio"] == 1.0508 and not f["time_within_5pct"]
+    assert (d["found_zones"], d["found_none"], d["median_ratio"]) == (80, 81, 1.1853)
+
+
+def test_f2_f4_no_goal_in_a_zone_and_no_entry():
+    s = _summary()
+    for ch in ("rule", "rooms"):
+        assert s[f"safety_{ch}"]["in_zone"] == 0
+        assert s[f"safety_{ch}"]["in_grown_012"] == 0
+        assert s[f"safety_{ch}"]["entries"] == 0
+        assert s[f"safety_{ch}"]["goals"] > 2000
+    assert s["leave"]["entries_after_leaving"] == 0
+
+
+def test_f3_survey_coverage_within_a_point_both_choosers():
+    s = _summary()
+    for ch in ("rule", "rooms"):
+        assert s[f"survey_{ch}"]["houses"] == 12 and s[f"survey_{ch}"]["met"]
+
+
+def test_f5_every_start_in_a_zone_leaves():
+    s = _summary()["leave"]
+    assert (s["n"], s["left"], s["restored_within_030_of_clearing"]) == (10, 10, 10)
+
+
+def test_f6_no_zone_arm_is_devs_on_both_choosers():
+    s = _summary()
+    for ch in ("rule", "rooms"):
+        assert s[f"identical_{ch}"] == {"compared": 96, "identical": 96, "differ": []}
+
+
+def test_f10_goal_loops_as_recorded():
+    """F10: rule 0; rooms 5 aborted goals by one zone in one mission -- FAILED
+    (bar 3; dev 4 at the same zone, procthor:val:15 s0, which still ends found)."""
+    s = _summary()
+    assert s["loops_rule"]["worst"] == 0
+    assert (s["loops_rooms"]["worst"], s["loops_rooms"]["worst_at"]) == (5, "procthor:val:15 s0 z20")
+    assert s["dev_loops_rooms"]["worst"] == 4
