@@ -3522,6 +3522,67 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     line.dataset.state = view.kind;
   }
 
+  // ---------- 3.190.D: where a find looks first ----------
+  // `status.room_prior` (present only with find_prior_source on): the
+  // likeliest room types for the target -- the shipped table, a cloud
+  // answer or its cache -- or why there is no guess. One line under the
+  // card; hidden for a survey, a search that cannot use room types, or a
+  // prior that does not reach the goal choice (`acts` false).
+  var PRIOR_TYPES = ["kitchen", "living room", "bedroom", "bathroom"];
+  var PRIOR_SOURCES = ["cloud", "cache", "shipped"];
+  // Causes the person can do nothing about on this mission: no line.
+  var PRIOR_QUIET = ["not a find", "no explore search", "explore_goal_policy is not 'rooms'",
+                     "no target object"];
+  function priorWhyKey(why) {
+    var w = String(why || "");
+    // A cooled target says what cooled it: read that cause (review).
+    var cooled = /^failed recently \((.*)\): not asked again yet$/.exec(w);
+    if (cooled) return cooled[1] === "cache not written" ? "other" : priorWhyKey(cooled[1]);
+    if (w === "no room-label layer") return "layer";
+    if (w === "reply is not a prior" || w === "cached reply is not a prior"
+        || w.indexOf("reply cut") === 0) return "reply";
+    if (w === "no vision service" || w === "unreachable" || w === "timeout"
+        || /^http \d/.test(w) || w.indexOf("error:") === 0) return "offline";
+    return "other";
+  }
+  function roomPriorView(status) {
+    var p = status && status.room_prior;
+    if (!p || status.job !== "find") return null;
+    var target = status.target_object || t("word.target");
+    // An ended find keeps its line, in the past tense, as the card keeps its
+    // outcome (review: "Looking ... first" under "Found the ..." misleads).
+    var done = status.running ? "" : "Done";
+    if (PRIOR_SOURCES.indexOf(p.source) >= 0) {
+      var rates = p.rates || {};
+      // Highest first; a tie keeps the types' own order (a stable sort).
+      var order = PRIOR_TYPES.filter(function (k) { return typeof rates[k] === "number"; })
+        .sort(function (a, b) { return rates[b] - rates[a]; });
+      if (!p.acts || !order.length) return null;
+      var vals = order.map(function (k) { return rates[k]; });
+      var top = vals[0], low = vals[vals.length - 1];
+      // brain/goal_policy.py prior_is_informative: a flat prior orders nothing.
+      if (top < 2.0 * Math.max(low, 0.01)) return {source: "flat", text: t("prior.flat" + done, {target: target})};
+      // Only the top type is named, and a second only on a true tie: the
+      // goal choice weighs the rates with distance, so no other order is
+      // promised (Thermos).
+      var rooms = order.length > 1 && vals[1] === top
+        ? t("prior.both", {first: order[0], second: order[1]}) : order[0];
+      return {source: p.source, text: t("prior." + p.source + done, {rooms: rooms, target: target})};
+    }
+    if (p.source !== "none" || PRIOR_QUIET.indexOf(p.why) >= 0) return null;
+    return {source: "none",
+            text: t("prior.none" + done, {target: target, why: t("prior.why." + priorWhyKey(p.why))})};
+  }
+  function renderRoomPrior(status) {
+    var line = document.getElementById("mission-prior");
+    if (!line) return;
+    var view = state.brainConnected ? roomPriorView(status) : null;
+    line.hidden = !view;
+    if (!view) return;
+    if (line.textContent !== view.text) line.textContent = view.text;
+    line.dataset.source = view.source;
+  }
+
   // ---------- 3.132 Stage 3: the mission card ----------
   // The mission in one sentence, for a person at home: what it is doing,
   // for what, and how far it has got. Operator mode's (.op-only); Engineer
@@ -3766,6 +3827,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       const note = document.getElementById("mission-local-down");   // 3.152
       if (note) note.hidden = true;
       renderReturn(null);              // 3.156.E: no stale trip home
+      renderRoomPrior(null);           // 3.190.D
       return;
     }
     const card = missionCardText(state.lastBrainStatus);
@@ -3830,6 +3892,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     renderTierReadouts(status);
     renderLocalVlm(status);
     renderReturn(status);              // 3.156.E
+    renderRoomPrior(status);           // 3.190.D
     renderMissionCard();
 
     // The mission log comes from the brain, so it is rewritten wholesale
