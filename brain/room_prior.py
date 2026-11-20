@@ -253,12 +253,14 @@ def prior_at_start(target: str, vision_url: Optional[str], secret: Optional[str]
     if not vision_url:
         return status("none", "no vision service", None, None)
     key = (str(Path(path or cache_path())), target_key(target))
-    since = _cooling.get(key)
-    if since is not None and time.monotonic() - since < COOL_S:
-        return status("none", "failed recently: not asked again yet", None, model)
+    cool = _cooling.get(key)
+    if cool is not None and time.monotonic() - cool[0] < COOL_S:
+        return status("none", f"failed recently ({cool[1]}): not asked again yet", None, model)
     with _lock:
         # Read again under the lock: a call that finished between the first
-        # read and here has cached its reply and left `_in_flight` (review).
+        # read and here has cached its reply, perhaps from another model,
+        # and left `_in_flight` (review; Thermos round 2).
+        model = read_model(path)
         hit = cached(target, model, path)
         if hit is not None:
             ok = hit.get("prior") is not None and valid_rates(hit["prior"])
@@ -283,24 +285,25 @@ def prior_at_start(target: str, vision_url: Optional[str], secret: Optional[str]
                 if job["stop"] in CLEAN_STOPS:
                     try:
                         job["entry"] = remember(target, answer, path)
-                    except OSError as e:
-                        # A cache that cannot be written still lets this
+                    except (OSError, TypeError, ValueError) as e:
+                        # A cache that cannot be written (or serialised) still lets this
                         # mission use the paid reply (Thermos); the target
                         # cools, so it is not paid for every find.
                         logger.warning("room prior cache not written (%s): reply used "
                                        "for this mission only", e)
                         reply = answer.get("reply")
                         job["entry"] = {"prior": parse(reply if isinstance(reply, str) else "")}
-                        _cooling[key] = time.monotonic()
+                        _cooling[key] = (time.monotonic(), "cache not written")
                 else:
-                    _cooling[key] = time.monotonic()      # cut or filtered: paid, not kept
+                    # Cut or filtered: paid, not kept.
+                    _cooling[key] = (time.monotonic(), f"reply cut ({job['stop']})")
             except BaseException as e:  # noqa: BLE001 -- the start's status names it
                 job["error"] = e
                 why = _why_failed(e)
                 # Paid or possibly paid and lost: a timeout, or a 5xx from the
                 # service or its gateway. Refused connections and 4xx are not.
                 if why == "timeout" or why.startswith("http 5"):
-                    _cooling[key] = time.monotonic()
+                    _cooling[key] = (time.monotonic(), why)
             finally:
                 with _lock:
                     _in_flight.pop(key, None)

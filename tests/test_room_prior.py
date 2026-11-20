@@ -237,7 +237,7 @@ def test_a_cut_reply_is_not_cached_and_cools_the_target(tmp_path, monkeypatch):
     assert (st["source"], st["why"]) == ("none", "reply cut (max_tokens)")
     assert rp.cached("spatula", path=path) is None
     st = rp.prior_at_start("spatula", "http://v", path=path, ask_fn=ask)
-    assert st["why"] == "failed recently: not asked again yet" and stops == ["end_turn"]
+    assert st["why"] == "failed recently (reply cut (max_tokens)): not asked again yet" and stops == ["end_turn"]
     monkeypatch.setattr(rp, "COOL_S", 0.0)
     st = rp.prior_at_start("spatula", "http://v", path=path, ask_fn=ask)
     assert st["why"] == "reply is not a prior" and stops == []
@@ -273,7 +273,7 @@ def test_a_call_that_runs_out_its_http_deadline_cools_the_target(tmp_path, monke
     first = rp.prior_at_start("spatula", "http://v", path=path, ask_fn=hung)
     second = rp.prior_at_start("spatula", "http://v", path=path, ask_fn=hung)
     assert first["why"] == "timeout"
-    assert second["why"] == "failed recently: not asked again yet" and calls == [1]
+    assert second["why"] == "failed recently (timeout): not asked again yet" and calls == [1]
     other = rp.prior_at_start("kettle", "http://v", path=path, ask_fn=_answer())
     assert other["source"] == "cloud"                    # only that target waits
     monkeypatch.setattr(rp, "COOL_S", 0.0)
@@ -301,7 +301,7 @@ def test_a_5xx_cools_the_target_and_a_refused_connection_does_not(tmp_path, monk
         raise httpx.HTTPStatusError("x", request=req, response=httpx.Response(504, request=req))
 
     assert rp.prior_at_start("spatula", "http://v", path=path, ask_fn=gw)["why"] == "http 504"
-    assert rp.prior_at_start("spatula", "http://v", path=path, ask_fn=gw)["why"].startswith("failed recently")
+    assert rp.prior_at_start("spatula", "http://v", path=path, ask_fn=gw)["why"].startswith("failed recently (")
     assert rp.prior_at_start("kettle", "http://127.0.0.1:1", path=path, deadline_s=2)["why"] == "unreachable"
     assert rp.prior_at_start("kettle", "http://127.0.0.1:1", path=path, deadline_s=2)["why"] == "unreachable"
 
@@ -335,4 +335,49 @@ def test_a_failed_cache_write_leaves_no_temp_file_and_cools(tmp_path, monkeypatc
     assert st["source"] == "cloud"
     assert list(tmp_path.iterdir()) == []
     again = rp.prior_at_start("spatula", "http://v", path=tmp_path / "c.json", ask_fn=_answer())
-    assert again["why"].startswith("failed recently")
+    assert again["why"].startswith("failed recently (")
+
+
+# ---------- review round 2 (Thermos) ----------
+
+def test_the_reread_under_the_lock_follows_a_model_served_meanwhile(tmp_path, monkeypatch):
+    """A call that finished between the first read and the lock, from a
+    deployment on another model, is found under that model."""
+    path, calls = tmp_path / "c.json", []
+    real = rp.cached
+    seen = []
+
+    def cached_then_written(target, model=rp.MODEL_ID, path=None):
+        if not seen:
+            seen.append(1)
+            out = real(target, model, path)
+            rp.remember(target, {"reply": GOOD, "model_id": "us.other.model"}, path)
+            return out
+        return real(target, model, path)
+
+    monkeypatch.setattr(rp, "cached", cached_then_written)
+    st = rp.prior_at_start("spatula", "http://v", path=path,
+                           ask_fn=lambda *a, **k: calls.append(1))
+    assert (st["source"], st["model_id"]) == ("cache", "us.other.model") and calls == []
+
+
+def test_a_paid_reply_the_cache_cannot_serialise_is_used_and_cools(tmp_path, monkeypatch):
+    monkeypatch.setattr(rp, "_cooling", {})
+    odd = lambda *a, **k: {"reply": GOOD, "stop": "end_turn", "model_id": rp.MODEL_ID,  # noqa: E731
+                           "usage": {"x": object()}}
+    st = rp.prior_at_start("spatula", "http://v", path=tmp_path / "c.json", ask_fn=odd)
+    assert st["source"] == "cloud" and st["rates"] == rp.parse(GOOD)
+    again = rp.prior_at_start("spatula", "http://v", path=tmp_path / "c.json", ask_fn=odd)
+    assert again["why"].startswith("failed recently (")
+
+
+def test_a_cooled_target_says_what_failed(tmp_path, monkeypatch):
+    monkeypatch.setattr(rp, "_cooling", {})
+
+    def gw(*a, **k):
+        req = httpx.Request("POST", "http://v/room-prior")
+        raise httpx.HTTPStatusError("x", request=req, response=httpx.Response(503, request=req))
+
+    rp.prior_at_start("spatula", "http://v", path=tmp_path / "c.json", ask_fn=gw)
+    st = rp.prior_at_start("spatula", "http://v", path=tmp_path / "c.json", ask_fn=gw)
+    assert st["why"] == "failed recently (http 503): not asked again yet"
