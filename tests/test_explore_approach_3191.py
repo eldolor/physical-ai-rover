@@ -90,16 +90,21 @@ def _approaches(agent, sight, steps=200):
         r = agent.step()
         if r.action == "GOAL" and agent._goal and agent._goal["kind"] == "approach":
             approaches.append(agent._goal["target"])
-    while agent._goal is not None and agent._goal["kind"] == "approach":
-        agent.step()                  # review: the last one ended, so charged or kept
+    for _ in range(50):               # review: the last one ended, so charged or kept
+        if agent._goal is None or agent._goal["kind"] != "approach":
+            break
+        agent.step()
+    assert agent._goal is None or agent._goal["kind"] != "approach"
     return [t for t in approaches if math.dist(t, sight) <= RETRY_RADIUS_M]
 
 
-def test_an_in_place_approach_inside_the_band_closes_in_not_charged():
+def test_an_in_place_approach_inside_the_band_is_kept_not_charged():
     """Review: 0.62 m out the robot is within `_at_target`; the in-place
-    success keeps the approach on record, so the next frames take 3.106's
-    in-sight-and-unfound path (bounded by CLOSE_IN_REFUSED, then one retry
-    failure and a back-off), not another goal. Red on dev too (re-sent)."""
+    success keeps the approach on record, so the next frames take the path a
+    sighting inside the standoff already takes on dev: here (`sight_from`
+    frame) 3.106's in-sight-and-unfound count (CLOSE_IN_REFUSED, then one
+    retry failure and a back-off), not another goal. Red on dev too
+    (re-sent). Perception's close-in on this path is not driven here."""
     from brain.explore import CLOSE_IN_REFUSED
     grid, nav, agent, sight = _k19_geometry(east_m=0.04)
     pose = agent._pose()

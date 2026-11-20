@@ -66,7 +66,10 @@ def _one(args):
     ex.ExploreAgent._goal_ended, ex.ExploreAgent._event = watched, noted
     _, reported = _plan()
     row = sw.find(m, "unsurveyed", tempfile.mkdtemp(), None, reported, nav=nav)
-    still = [e["target"] for e in ended if e["moved_m"] < STUCK_M]
+    # Review 2: the event's moved_m is rounded to 2 dp, so 0.145-0.15 m reads
+    # 0.15; `<=` counts every approach the agent could have charged (and a few
+    # it did not): conservative for a stability bar.
+    still = [e["target"] for e in ended if e["moved_m"] <= STUCK_M]
     places = []
     for t in still:
         for p in places:
@@ -75,7 +78,8 @@ def _one(args):
                 break
         else:
             places.append({"at": t, "n": 1})
-    row.update(nav=nav, approach_succeeded=len(ended), approach_no_move=len(still),
+    row.update(nav=nav, approach_succeeded=len(ended),
+               approach_moved_m=[e["moved_m"] for e in ended], approach_no_move=len(still),
                no_move_max_per_place=max((p["n"] for p in places), default=0))
     return row
 

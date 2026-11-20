@@ -1929,10 +1929,10 @@ class ExploreAgent(MissionAgent):
                     # robot's own. Uncharged, 3.70.M2's k 19 sent it again
                     # every other tick, 4,657 times.
                     if self._at_target(*g["target"]):
-                        # In the band: kept on record, so the next frame closes
-                        # in (3.80.G) or counts it in sight and unfound (3.106),
-                        # each bounded by CLOSE_IN_REFUSED -- as 3.85 keeps a
-                        # refused send in the band -- rather than a goal again.
+                        # In the band: kept on record, as `_send_approach`
+                        # keeps a sighting inside the standoff, so the next
+                        # frame takes that same path -- close-in (3.80.G) or
+                        # in sight and unfound (3.106) -- rather than a goal again.
                         self._approach = g["target"]
                     else:
                         # Just outside it (k 19: 0.70 m): no progress, so a
