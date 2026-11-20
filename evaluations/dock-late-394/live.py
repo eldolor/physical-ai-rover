@@ -157,13 +157,16 @@ def run():
         # robot server with no /wheels yet (`ros_unavailable`, a fault, no
         # return). Now the find waits for the bridge's first /health -- ROS up,
         # SLAM still `checking`, the pose not usable -- k 3's state.
+        # Run 3 (amended before it ran): run 2's find, started at the bridge's
+        # first /health (SLAM `checking`), met the same refusal: the actuator
+        # was not posting yet. Now it waits for the robot server's own
+        # `ros_up` (the actuator's /wheels flowing) and starts at once.
         t_wait = time.time()
         while time.time() - t_wait < 180:
-            h = jget(bridge, "/health")
-            if h.get("slam"):
+            if jget(robot, "/health").get("ros_up") is True:
                 break
-            time.sleep(0.1)
-        bridge_state = (h.get("slam") or {}).get("state")
+            time.sleep(0.05)
+        bridge_state = (jget(bridge, "/health").get("slam") or {}).get("state")
         start, tries, t_start = None, 0, time.time()
         while start is None and time.time() - t_start < 120:
             tries += 1
