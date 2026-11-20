@@ -929,7 +929,8 @@ zone's corner through a gap of no width (a door filled by a zone at
 `procthor:val:15`: explore chose frontiers behind it that no navigator
 reaches, 5 aborted goals). `_zone_map` therefore also runs
 `nogo.close_pinches(masked, zones, CELL_NOGO)`: every 2 x 2 block whose
-diagonal pair is free while each of the other two cells is a wall or a cell
+diagonal pair is free while each of the other two cells is a wall (read off
+the map before masking, so a wall inside a zone stays a wall) or a cell
 whose centre lies in a zone itself (not merely in its grown band), at least
 one of them the latter, gets its free pair marked `CELL_NOGO` too, in one
 pass (cached with the mask; `pinch_cells` counts them). A side that is only

@@ -242,7 +242,7 @@ def cell_mask(m: dict, zones: Iterable[dict], grow: float = 0.0):
 
 
 def close_pinches(masked: dict, zones: Iterable[dict], cell_value: int, free: int = 0,
-                  occupied: int = 100) -> dict:
+                  occupied: int = 100, floor: Optional[dict] = None) -> dict:
     """3.196 D1: a masked map with no diagonal step through a gap of no width
     beside a zone.
 
@@ -256,7 +256,9 @@ def close_pinches(masked: dict, zones: Iterable[dict], cell_value: int, free: in
     its free pair set to `cell_value`. A side that is only the zone's grown
     band (`masked_map`'s `grow`) is no pinch: a navigator passes there
     (`procthor:val:9`). Marked cells are not zone cells, so one pass settles
-    it. Returns `masked` itself when nothing is closed; otherwise a copy,
+    it. `floor` is the map before masking (`masked_map` writes over a wall
+    inside a zone; a wall there is still a wall, never a zone side); without
+    it, `masked` is read for walls. Returns `masked` itself when nothing is closed; otherwise a copy,
     `cells` of the same type, `pinch_cells` counted."""
     zones = list(zones or ())
     if not zones or not masked or not masked.get("usable") or "cells" not in masked:
@@ -266,6 +268,8 @@ def close_pinches(masked: dict, zones: Iterable[dict], cell_value: int, free: in
     cells = masked["cells"]
     a = np.array(cells).reshape(h, w)          # a copy: the input is never changed
     wall = a == occupied
+    if floor is not None and floor is not masked:
+        wall |= np.asarray(floor["cells"]).reshape(h, w) == occupied
     hard = cell_mask(masked, zones, 0.0) & ~wall     # review: a wall in a zone is still a wall
     wall |= hard
     ok = a == free

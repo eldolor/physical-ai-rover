@@ -119,6 +119,22 @@ def test_close_pinches_leaves_a_pinch_between_walls_as_it_is():
                               occupied=CELL_OCCUPIED) is m3
 
 
+def test_a_zone_over_a_wall_corner_closes_no_pinch_on_the_real_path():
+    """Thermos review: `masked_map` writes the zone value over a wall inside
+    the zone, so `_zone_map` passes the floor map for the walls. Here the
+    door's west corner is a pinch of walls only -- (3, 4) the wall, (4, 3) a
+    box -- with the free pair (4, 4) and (3, 3); a zone over the wall cell
+    (3, 4) alone takes no floor there, so the pair stays free."""
+    m = _map()
+    m["cells"][3 * W + 4] = CELL_OCCUPIED          # (4, 3)
+    over = dict(ZONE, x0=0.91, y0=1.21, x1=1.19, y1=1.49)   # covers wall cell (3, 4) only
+    agent = _agent(zones=(over,))
+    masked = agent._zone_map(m, agent.zones)
+    assert masked["cells"][4 * W + 3] == nogo.CELL_NOGO      # the zone's own cell
+    assert masked.get("pinch_cells") is None
+    assert masked["cells"][3 * W + 3] == CELL_FREE and masked["cells"][4 * W + 4] == CELL_FREE
+
+
 def test_close_pinches_closes_both_ends_and_keeps_the_type():
     m = _map()
     masked = nogo.masked_map(m, [ZONE], nogo.CELL_NOGO, grow=nogo.HALF_WIDTH_M)
