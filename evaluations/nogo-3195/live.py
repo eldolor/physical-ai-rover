@@ -89,6 +89,18 @@ def sample(zones, truth, pose, t, span):
             "slam_min_d_m": round(min(sd.values()), 4), "span_s": round(span, 4)}
 
 
+def _zone_log(skip=0):
+    """The bridge's D4 and margin lines (amendment 2), after the first `skip`
+    of them: the find and the trip home. Raises if docker cannot read them
+    (review: never an empty list for a missing container)."""
+    out = subprocess.run(["docker", "logs", de.CONTAINER], capture_output=True, text=True)
+    if out.returncode != 0:
+        raise RuntimeError(f"docker logs {de.CONTAINER}: {out.stderr[-200:]}")
+    lines = [ln.strip()[-160:] for ln in (out.stdout + out.stderr).splitlines()
+             if any(w in ln for w in ("zone_suspended", "zone_restored", "zone_margin_off", "zone_margin_on"))]
+    return lines[skip:]
+
+
 def main(out):
     load, stop = [], threading.Event()
     threading.Thread(target=L3._uptime, args=(load, stop), daemon=True).start()
@@ -104,6 +116,8 @@ def main(out):
             if p.get("usable") and p.get("frame_id"):
                 break
             time.sleep(2)
+        else:
+            raise RuntimeError(f"setup: no usable pose in 120 s ({p})")     # review
         result["frame_id"] = p.get("frame_id")
         zones = sweep.place_zones(HOUSE, 0)
         v = brain.get("/mission/nogo").json()
@@ -127,6 +141,7 @@ def main(out):
         result["z6_refused"] = sum(t == "no_go_zone" for t in taps)
         robot.delete("/world/goal")
         time.sleep(1)
+        before_mission = len(_zone_log())
         r = brain.post("/mission/start", json={"target_object": de.TARGET, "policy": "explore",
                                                "max_steps": 200, "mission_time_limit_s": LIMIT_S})
         result["start"] = r.status_code
@@ -168,6 +183,7 @@ def main(out):
         result["goals_in_zone"] = sum(bool(g and L3._inside(zones, g[0], g[1])) for g in goals)
         time.sleep(2)
         result["bridge_after_mission"] = bridge.get("/health").json().get("nogo")
+        result["bridge_zone_log_mission"] = _zone_log(before_mission)
         result["store_after_mission"] = len(brain.get("/mission/nogo").json()["zones"])
         L3._z3(robot, brain, bridge, result)
     finally:

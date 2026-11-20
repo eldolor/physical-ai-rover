@@ -81,8 +81,172 @@ def parse_zones(zones) -> list:
     return out
 
 
+# 3.195 (D1): the bridge draws each zone grown by one cell. nav2's controller
+# tracks the plan on its own and the keepout mask is on the global costmap
+# only, so a plan hugging the drawn edge was followed a few mm inside it at a
+# corner (3.193's R1). The zone itself, as a person drew it, still decides
+# D4's depth and leave rules; the boxed rule reads what is drawn.
+GROW_M = 0.05
+ARC_STEPS = 8             # segments per corner arc of the margin (a right angle: 11.25 degrees each)
+
+
+def _hull(pts) -> list:
+    """The convex hull, counter-clockwise, duplicates and collinear points dropped."""
+    pts = sorted(set((float(p[0]), float(p[1])) for p in pts))
+    if len(pts) < 3:
+        return pts
+
+    def cross(o, a, b):
+        return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
+    lo, hi = [], []
+    for p in pts:
+        while len(lo) >= 2 and cross(lo[-2], lo[-1], p) <= 0:
+            lo.pop()
+        lo.append(p)
+    for p in reversed(pts):
+        while len(hi) >= 2 and cross(hi[-2], hi[-1], p) <= 0:
+            hi.pop()
+        hi.append(p)
+    return lo[:-1] + hi[:-1]
+
+
+def grown(poly, g: float = GROW_M) -> list:
+    """Every point within g of the polygon, as a polygon: its convex hull
+    offset outward by g, each edge moved out along its normal and each corner
+    rounded by an arc of radius g drawn as ARC_STEPS segments that lie just
+    outside the arc (so the arc is covered; at most g / cos(step / 2) out,
+    0.24 mm past g for a right angle). Rounded, not mitred (review): a mitre
+    reaches g * sqrt(2) past a corner, so a drawn cell came 0.14 m from a
+    zone, past explore's 0.12 m (world/nogo.py HALF_WIDTH_M); rounded, a
+    drawn cell reaches at most g plus a cell's diagonal (0.121 m). The hull covers any polygon
+    (world/nogo.py only sends rectangles, rotated through the anchor)."""
+    hull = _hull(poly)
+    if g <= 0 or len(hull) < 3:
+        return [tuple(p) for p in poly] if g <= 0 else _box(poly, g)
+    n = len(hull)
+    normals = []
+    for a, b in zip(hull, hull[1:] + hull[:1]):
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        L = math.hypot(dx, dy)
+        normals.append((dy / L, -dx / L))        # counter-clockwise: outward is the right
+    out = []
+    for i in range(n):
+        a0 = math.atan2(normals[i - 1][1], normals[i - 1][0])
+        turn = (math.atan2(normals[i][1], normals[i][0]) - a0) % (2 * math.pi)
+        if turn > math.pi:
+            turn = 0.0                           # review: a near-straight corner rounded to -0, not a full circle
+        step = turn / ARC_STEPS
+        r = g / math.cos(step / 2)
+        px, py = hull[i]
+        out.append((px + g * math.cos(a0), py + g * math.sin(a0)))
+        for k in range(ARC_STEPS):
+            ang = a0 + (k + 0.5) * step
+            out.append((px + r * math.cos(ang), py + r * math.sin(ang)))
+        out.append((px + g * math.cos(a0 + turn), py + g * math.sin(a0 + turn)))
+    return out
+
+
+def _box(poly, g: float) -> list:
+    """A degenerate polygon's bounding box grown by g (parse_zones refuses
+    one with no width before it gets here)."""
+    xs, ys = [p[0] for p in poly], [p[1] for p in poly]
+    return [(min(xs) - g, min(ys) - g), (max(xs) + g, min(ys) - g),
+            (max(xs) + g, max(ys) + g), (min(xs) - g, max(ys) + g)]
+
+
+def with_margin(zones: list, g: float = GROW_M) -> list:
+    """3.195: each parsed zone with `drawn`, its polygon grown by g -- what
+    mask() draws and suspend()'s boxed rule tests. `poly` stays the zone."""
+    return [{**z, "drawn": grown(z["poly"], g)} for z in zones]
+
+
+def _drawn(z: dict) -> list:
+    return z.get("drawn") or z["poly"]
+
+
+# 3.195 (review, both reviewers): a robot in a zone's MARGIN, outside the zone
+# itself, can be boxed by the margin's cells alone (the controller rides
+# ~25 mm into the drawn cells). Leaving the whole zone out for it (D4) would
+# let nav2 plan through the zone, the fault the margin is there to stop. So
+# the margin alone comes off: the zone is drawn bare, as 3.193 drew it, until
+# the robot is MARGIN_BACK_M clear of the zone, then grown again.
+MARGIN_BACK_M = GROW_M + 2 * RES_M
+HYST_M = 0.01             # a margin comes back only when it would box the robot nowhere this near
+
+
+def bare(zones: list, off) -> list:
+    """The zones as drawn: those in `off` without their margin."""
+    return [{k: v for k, v in z.items() if k != "drawn"} if z["id"] in off else z for z in zones]
+
+
+def _five(x: float, y: float, phase) -> list:
+    px, py = phase
+    i, j = math.floor((x - px) / RES_M), math.floor((y - py) / RES_M)
+    return [(px + (i + di) * RES_M, py + (j + dj) * RES_M)
+            for di, dj in ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1))]
+
+
+def _boxing(view: list, five: list) -> list:
+    """Per cell of the five, the zones of `view` (as drawn) that draw it."""
+    return [[z for z in view if _touches(_drawn(z), cx, cy, RES_M)] for cx, cy in five]
+
+
+def margins_off(zones: list, off: set, suspended: set, pose, phase=(0.0, 0.0), fresh=()) -> set:
+    """The ids drawn without their margin after this pose ((x, y), map frame;
+    None changes nothing). Among the zones D4 keeps drawn this step (not
+    suspended, not deeper than SUSPEND_DEPTH_M, not fresh within LEAVE_M:
+    review, a zone D4 leaves out anyway never costs a neighbour its margin):
+    * a margin that is off comes back once drawing it would box the robot
+      (its cell and four neighbours all drawn) at no point within HYST_M of
+      the pose, or once the robot is
+      MARGIN_BACK_M clear of the zone (review: not only by distance, so a
+      robot following the edge gets the margin back at the next corner);
+    * when the zones as drawn box the robot, the margins of the zones drawing
+      its five cells come off, nearest zone first, until it is not boxed; if
+      even the bare zones box it, none come off (suspend() decides).
+    suspend() then runs on bare()."""
+    ids = {z["id"] for z in zones}
+    if pose is None:
+        return {i for i in off if i in ids}
+    x, y = pose
+    near = []
+    for z in zones:
+        d = zone_distance(z, x, y)
+        if (z["id"] in suspended or d < -SUSPEND_DEPTH_M or (z["id"] in fresh and d < LEAVE_M)
+                or zone_distance({"poly": _drawn(z)}, x, y) >= 2.5 * RES_M + MARGIN_BACK_M):
+            continue
+        near.append((z, d))
+    keep = {z["id"] for z, d in near if z["id"] in off and d < MARGIN_BACK_M}
+    view = [z for z, _ in near]
+    five = _five(x, y, phase)
+    probes = [_five(x + sx * HYST_M, y + sy * HYST_M, phase) for sx in (-1, 1) for sy in (-1, 1)]
+    for zid in sorted(keep):
+        # back once it would box the robot nowhere within HYST_M of the pose
+        # (review round 4: on a cell boundary, a mm of SLAM jitter flipped it
+        # every tick and republished the mask at 5 Hz)
+        if not any(all(_boxing(bare(view, keep - {zid}), f)) for f in [five] + probes):
+            keep.discard(zid)
+    by = _boxing(bare(view, keep), five)
+    if all(by):
+        # as few margins as unbox the robot, the zone it is nearest (or
+        # deepest in) first; none when even the bare zones box it -- D4's
+        # suspend() then leaves those out whole, and no neighbour loses its
+        # margin for it (review)
+        d_of = {z["id"]: d for z, d in near}
+        cand = sorted({z["id"] for zs in by for z in zs if "drawn" in z}, key=lambda i: (d_of[i], i))
+        trial = set(keep)
+        for zid in cand:
+            trial.add(zid)
+            if not all(_boxing(bare(view, trial), five)):
+                for back in reversed(cand[:cand.index(zid)]):   # review round 4: none needlessly
+                    if back in trial and not all(_boxing(bare(view, trial - {back}), five)):
+                        trial.discard(back)
+                return trial
+    return keep
+
+
 def _inside_poly(poly, x: float, y: float) -> bool:
-    """Even-odd rule (a convex quadrilateral here)."""
+    """Even-odd rule (a zone's quadrilateral, or its grown convex polygon)."""
     inside = False
     n = len(poly)
     for i in range(n):
@@ -90,6 +254,20 @@ def _inside_poly(poly, x: float, y: float) -> bool:
         if (ay > y) != (by > y) and x < ax + (y - ay) * (bx - ax) / (by - ay):
             inside = not inside
     return inside
+
+
+def _row_spans(poly, y: float) -> list:
+    """The x-spans [a, b) where the line at y is inside the polygon, by
+    _inside_poly's rule (a point is inside when an odd number of edge
+    crossings lie to its right)."""
+    xs = []
+    n = len(poly)
+    for i in range(n):
+        (ax, ay), (bx, by) = poly[i], poly[(i + 1) % n]
+        if (ay > y) != (by > y):
+            xs.append(ax + (y - ay) * (bx - ax) / (by - ay))
+    xs.sort()
+    return list(zip(xs[0::2], xs[1::2]))
 
 
 def _seg_dist(ax, ay, bx, by, x, y) -> float:
@@ -111,7 +289,8 @@ def suspend(zones: list, suspended: set, pose, fresh=(), phase=(0.0, 0.0)) -> se
     """D4: the ids left out of the mask after this pose ((x, y) in the map
     frame, or None when unknown: nothing changes). `fresh`: ids that just
     arrived, which the robot within LEAVE_M of also suspends. `phase`: the
-    mask's lattice (mask()'s)."""
+    mask's lattice (mask()'s). 3.195: depth and leave measure from the zone
+    (`poly`); boxed tests the cells drawn (`drawn`, the grown polygon)."""
     if pose is None:
         return {i for i in suspended if any(z["id"] == i for z in zones)}
     x, y = pose
@@ -123,8 +302,8 @@ def suspend(zones: list, suspended: set, pose, fresh=(), phase=(0.0, 0.0)) -> se
                 out.add(z["id"])                 # not yet clear of it
         elif d < -SUSPEND_DEPTH_M or (z["id"] in fresh and d < LEAVE_M):
             out.add(z["id"])
-        elif d < 2.5 * RES_M:                    # may draw the robot's cell or a neighbour
-            near.append(z)
+        elif zone_distance({"poly": _drawn(z)}, x, y) < 2.5 * RES_M:
+            near.append(z)                       # may draw the robot's cell or a neighbour
     # Boxed by the zones still drawn, together (review: two zones a gap
     # apart each draw an edge cell; neither alone boxes the robot): every
     # zone that draws one of the five cells is left out.
@@ -134,7 +313,7 @@ def suspend(zones: list, suspended: set, pose, fresh=(), phase=(0.0, 0.0)) -> se
         i, j = math.floor((x - px) / RES_M), math.floor((y - py) / RES_M)
         five = [(px + (i + di) * RES_M, py + (j + dj) * RES_M)
                 for di, dj in ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1))]
-        by = [[z["id"] for z in drawn if _touches(z["poly"], cx, cy, RES_M)] for cx, cy in five]
+        by = [[z["id"] for z in drawn if _touches(_drawn(z), cx, cy, RES_M)] for cx, cy in five]
         if all(by):
             out.update(i for ids in by for i in ids)
     return out
@@ -229,7 +408,7 @@ def boxed(z: dict, x: float, y: float, res: float = RES_M, phase=(0.0, 0.0)) -> 
     (suspend() tests the drawn zones together.)"""
     px, py = phase
     i, j = math.floor((x - px) / res), math.floor((y - py) / res)
-    return all(_touches(z["poly"], px + (i + di) * res, py + (j + dj) * res, res)
+    return all(_touches(_drawn(z), px + (i + di) * res, py + (j + dj) * res, res)
                for di, dj in ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)))
 
 
@@ -244,29 +423,35 @@ def mask(spots: list, res: float = RES_M, zones=(), phase=(0.0, 0.0)) -> dict:
     if not spots and not zones:
         return {"origin_x_m": 0.0, "origin_y_m": 0.0, "resolution_m": res,
                 "width": 1, "height": 1, "data": [UNKNOWN]}
+    polys = [_drawn(z) for z in zones]          # 3.195: the grown polygon, when the bridge gave one
     xs = ([s["x_m"] - s["r_m"] for s in spots] + [s["x_m"] + s["r_m"] for s in spots]
-          + [p[0] for z in zones for p in z["poly"]])
+          + [p[0] for poly in polys for p in poly])
     ys = ([s["y_m"] - s["r_m"] for s in spots] + [s["y_m"] + s["r_m"] for s in spots]
-          + [p[1] for z in zones for p in z["poly"]])
+          + [p[1] for poly in polys for p in poly])
     x0, x1 = _lattice(min(xs) - MARGIN_M, res, phase[0]), max(xs) + MARGIN_M
     y0, y1 = _lattice(min(ys) - MARGIN_M, res, phase[1]), max(ys) + MARGIN_M
     w, h = int(math.ceil((x1 - x0) / res)), int(math.ceil((y1 - y0) / res))
     data = [UNKNOWN] * (w * h)
-    for z in zones:
+    for poly in polys:
         # 3.193: every cell the zone touches. The cells whose centre is
         # inside, then every cell an edge passes through -- a cell that holds
         # part of the zone with its centre outside holds part of its edge.
-        px, py = [p[0] for p in z["poly"]], [p[1] for p in z["poly"]]
+        px, py = [p[0] for p in poly], [p[1] for p in poly]
         i0, i1 = max(int((min(px) - x0) / res), 0), min(int((max(px) - x0) / res), w - 1)
         j0, j1 = max(int((min(py) - y0) / res), 0), min(int((max(py) - y0) / res), h - 1)
         for j in range(j0, j1 + 1):
-            cy = y0 + (j + 0.5) * res
-            for i in range(i0, i1 + 1):
-                if _inside_poly(z["poly"], x0 + (i + 0.5) * res, cy):
+            # 3.195: the cells whose centre is inside, a row at a time (the
+            # even-odd crossings of the row's centre line, as _inside_poly
+            # counts them), not a point test per cell: a grown zone has ~40
+            # corners, and the bridge redraws under its lock.
+            for a_, b_ in _row_spans(poly, y0 + (j + 0.5) * res):
+                lo = max(int(math.ceil((a_ - x0) / res - 0.5)), i0)
+                hi = min(int(math.ceil((b_ - x0) / res - 0.5)) - 1, i1)
+                for i in range(lo, hi + 1):
                     data[j * w + i] = 100
-        n = len(z["poly"])
+        n = len(poly)
         for k in range(n):
-            for i, j in _edge_cells(z["poly"][k], z["poly"][(k + 1) % n], x0, y0, res, w, h):
+            for i, j in _edge_cells(poly[k], poly[(k + 1) % n], x0, y0, res, w, h):
                 data[j * w + i] = 100
     for s in spots:
         r2 = s["r_m"] ** 2
