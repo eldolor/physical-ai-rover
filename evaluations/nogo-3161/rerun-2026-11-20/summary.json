@@ -1,0 +1,189 @@
+{
+ "missions": {
+  "zones": 96,
+  "none": 96,
+  "exceptions": 0,
+  "capped": 0
+ },
+ "Z1": {
+  "goals": 2528,
+  "in_zone": 0,
+  "in_zone_grown_012": 0,
+  "zone_refusals_at_send": 3
+ },
+ "Z2": {
+  "entries": 0,
+  "missions_with_entry": []
+ },
+ "Z5_find": {
+  "found_zones": 82,
+  "found_none": 87,
+  "n": 96,
+  "lost": [
+   "procthor:val:3 s0",
+   "procthor:val:13 s1",
+   "procthor:val:26 s0",
+   "procthor:val:39 s0",
+   "procthor:val:39 s1",
+   "procthor:val:44 s0",
+   "procthor:val:44 s1"
+  ],
+  "gained": [
+   "scaled_house s1",
+   "scaled_house s2"
+  ],
+  "median_s_zones": 128.9,
+  "median_s_none": 130.7,
+  "median_ratio": 0.9862
+ },
+ "Z5_survey": {
+  "houses": 12,
+  "rows": [
+   {
+    "house": "home_first_floor",
+    "zones": 0.9957,
+    "none": 0.9957,
+    "points": 0.0
+   },
+   {
+    "house": "scaled_house",
+    "zones": 1.0,
+    "none": 1.0,
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:0",
+    "zones": 0.9957,
+    "none": 0.9978,
+    "points": -0.21
+   },
+   {
+    "house": "procthor:val:2",
+    "zones": 0.9947,
+    "none": 0.9947,
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:3",
+    "zones": 0.9959,
+    "none": 0.9959,
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:4",
+    "zones": 0.9968,
+    "none": 0.9968,
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:5",
+    "zones": 1.0,
+    "none": 1.0,
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:9",
+    "zones": 0.9938,
+    "none": 0.9938,
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:10",
+    "zones": 1.0,
+    "none": 1.0,
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:11",
+    "zones": 0.9987,
+    "none": 0.9973,
+    "points": 0.14
+   },
+   {
+    "house": "procthor:val:12",
+    "zones": 1.0,
+    "none": 1.0,
+    "points": 0.0
+   },
+   {
+    "house": "procthor:val:13",
+    "zones": 1.0,
+    "none": 1.0,
+    "points": 0.0
+   }
+  ],
+  "worst_points_below": -0.21
+ },
+ "Z3": {
+  "n": 10,
+  "left": 10,
+  "restored_within_030_of_clearing": 10,
+  "rows": [
+   {
+    "house": "home_first_floor",
+    "left": true,
+    "restored_clear_m": 0.5,
+    "first_goal_leave": true
+   },
+   {
+    "house": "scaled_house",
+    "left": true,
+    "restored_clear_m": 0.5,
+    "first_goal_leave": true
+   },
+   {
+    "house": "procthor:val:0",
+    "left": true,
+    "restored_clear_m": 0.5,
+    "first_goal_leave": true
+   },
+   {
+    "house": "procthor:val:2",
+    "left": true,
+    "restored_clear_m": 0.5,
+    "first_goal_leave": true
+   },
+   {
+    "house": "procthor:val:3",
+    "left": true,
+    "restored_clear_m": 0.5,
+    "first_goal_leave": true
+   },
+   {
+    "house": "procthor:val:4",
+    "left": true,
+    "restored_clear_m": 0.5,
+    "first_goal_leave": true
+   },
+   {
+    "house": "procthor:val:5",
+    "left": true,
+    "restored_clear_m": 0.5,
+    "first_goal_leave": true
+   },
+   {
+    "house": "procthor:val:9",
+    "left": true,
+    "restored_clear_m": 0.5,
+    "first_goal_leave": true
+   },
+   {
+    "house": "procthor:val:10",
+    "left": true,
+    "restored_clear_m": 0.5,
+    "first_goal_leave": true
+   },
+   {
+    "house": "procthor:val:11",
+    "left": true,
+    "restored_clear_m": 0.5,
+    "first_goal_leave": true
+   }
+  ]
+ },
+ "Z10": {
+  "compared": 96,
+  "identical": 96,
+  "differ": []
+ }
+}
