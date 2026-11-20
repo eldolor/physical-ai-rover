@@ -767,8 +767,11 @@ def create_app(
         """3.190.C: this find's room prior, as `status.room_prior` reports it.
         A call is made only for a find whose explore search chooses goals
         with the `rooms` policy, whose target the shipped prior lacks, on a
-        mission with a room-label layer (rooms a person named on the loaded
-        saved map, or the find's own asks) -- and not when the cache has it.
+        mission with a room-label layer -- and not when the cache has it.
+        The layer is in practice rooms a person named on the loaded saved
+        map: `find_labels` (the find's own asks) is never true for a target
+        the shipped prior lacks (3.116 amendment 7), and is kept in the test
+        so the gate follows that rule if it changes (open question 1).
         Waits at most `find_prior_timeout_s`; never refuses a start."""
         none = room_prior_mod.status
         target = " ".join((req.target_object or "").split())
@@ -780,7 +783,7 @@ def create_app(
             return none("none", "explore_goal_policy is not 'rooms'")
         if not target:
             return none("none", "no target object")
-        shipped = shipped_rooms_prior(target)
+        shipped = shipped_rooms_prior(req.target_object)
         if shipped is not None:
             return none("shipped", None, shipped)
         if len(target) > room_prior_mod.MAX_TARGET_CHARS:

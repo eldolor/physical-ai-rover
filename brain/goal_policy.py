@@ -333,8 +333,10 @@ def _shipped_rooms_prior() -> dict:
 
 def shipped_rooms_prior(target: Optional[str]) -> Optional[dict]:
     """The shipped `rooms` policy's rates for this target (any case), or None
-    when it does not know the target (3.190: what a cloud prior is for)."""
-    p = _shipped_rooms_prior().get((target or "").strip().lower())
+    when it does not know the target (3.190: what a cloud prior is for). Keyed
+    as `RoomGoalPolicy.extend` reads it, `.lower()` alone, so a 'shipped'
+    answer is one the goal choice will find (review)."""
+    p = _shipped_rooms_prior().get((target or "").lower())
     return dict(p) if p is not None else None
 
 

@@ -258,3 +258,13 @@ def test_with_a_hint_the_hinted_type_outranks_every_cloud_rate(monkeypatch):
     assert {k: v for k, v in read.items() if k != "bedroom"} == {
         "kitchen": 0.95, "living room": 0.9, "bathroom": 0.5}
     assert runner.status()["room_hint"]["acts"] and runner.status()["room_prior"]["acts"]
+
+
+def test_shipped_means_the_goal_choice_finds_it(tmp_path, monkeypatch, calls):
+    """'garbage bag ' (an edge space) is not the policy's key: it is not
+    reported shipped; it is asked, and the rates go where the policy reads
+    them (review)."""
+    resp, runner, _ = _start(_app(tmp_path, monkeypatch), {"target_object": "garbage bag "})
+    st = resp.json()["status"]["room_prior"]
+    assert st["source"] == "cloud" and [c["target"] for c in calls] == ["garbage bag"]
+    assert _policy_prior(runner, "garbage bag ") == RATES

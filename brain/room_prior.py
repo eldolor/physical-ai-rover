@@ -19,7 +19,10 @@ holding the raw reply (`{"reply", "stop", "usage", "prior"}`), the shape of
 3.116.C's `llm_prior.json`, so that file can seed it. A reply the model gave
 is cached whether or not it parsed (3.116.C's rule: a bad reply is no prior
 and is not paid for twice); a failed call (no connection, a 5xx, a timeout)
-is not.
+and a reply that did not end cleanly (cut on `max_tokens`) are not. The
+cache also records the model that answered last (`_served_model`) and is
+read under it, so a deployment running another model than /room's default
+still hits its own replies.
 
 `prior_at_start()` is the start's bounded call: the call runs on a daemon
 thread and the start waits at most `deadline_s` for it. A reply that comes
@@ -33,6 +36,7 @@ import json
 import logging
 import os
 import threading
+import time
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -43,9 +47,9 @@ MAX_TOKENS = 512
 
 # /room's model, the one 3.116.C and 3.190.A measured. The vision service
 # decides which model answers (vision_core.ROOM_MODEL_ID); this is the id the
-# cache is READ under before a call. A reply from another model is cached
-# under its own id, so it is never read as this one's
-# (tests/test_room_prior.py pins the two equal).
+# cache is read under until the service has answered once (`read_model`).
+# A reply is cached under the model that gave it, never as another's
+# (tests/test_room_prior.py pins the two defaults equal).
 MODEL_ID = "us.anthropic.claude-opus-5-5"
 
 # The target as sent: a few words (the service refuses over 200 characters,
@@ -151,6 +155,7 @@ def remember(target, answer: dict, path: Optional[Path] = None) -> dict:
         got = cache.get(model) if isinstance(cache.get(model), dict) else {}
         got[target_key(target)] = entry
         cache[model] = got
+        cache[SERVED] = model
         save_cache(cache, path)
     return entry
 
@@ -194,18 +199,44 @@ def status(source: str, why: Optional[str] = None, rates: Optional[dict] = None,
             "model_id": model_id}
 
 
+CLEAN_STOPS = (None, "end_turn", "stop_sequence")
+SERVED = "_served_model"          # the cache's record of the model last answering
+
+# One call at a time per target (review): a start that finds a call for its
+# target still running -- one an earlier start gave up waiting for -- waits
+# on that call instead of paying for another.
+_in_flight: dict = {}
+
+# A call that ran out its own HTTP deadline was paid for and lost (Thermos):
+# the same target is not asked again in this process for COOL_S, so a
+# target the service is always too slow for costs one call an hour, not one
+# a find. Kept in memory only; a restart forgets it.
+COOL_S = 3600.0
+_cooling: dict = {}
+
+
+def read_model(path: Optional[Path] = None) -> str:
+    """The model the cache is read under: the one the vision service last
+    answered with (a deployment may run another than /room's default), else
+    `MODEL_ID`."""
+    m = load_cache(path).get(SERVED)
+    return m if isinstance(m, str) and m else MODEL_ID
+
+
 def prior_at_start(target: str, vision_url: Optional[str], secret: Optional[str] = None,
                    deadline_s: float = 4.0, path: Optional[Path] = None,
                    ask_fn: Optional[Callable[..., dict]] = None) -> dict:
     """The start's one bounded look-up for a target the shipped prior lacks:
-    the cache under /room's model, else one call that the start waits at
-    most `deadline_s` for. Never raises; the status says what happened.
+    the cache under the model last served (`read_model`), else one call
+    that the start waits at most `deadline_s` for. Never raises; the status
+    says what happened.
 
     source `cache` or `cloud` carries rates; `none` carries the cause:
-    `cached reply is not a prior`, `reply is not a prior`, `timeout`
-    (past the deadline: the reply, if it comes, is cached for the next find),
+    `cached reply is not a prior`, `reply is not a prior`, `reply cut
+    (<stop>)` (not cached: asked again next time), `timeout` (past the
+    deadline: the reply, if it comes, is cached for the next find),
     `unreachable`, `http <code>`, `error: <type>`, `no vision service`."""
-    model = MODEL_ID
+    model = read_model(path)
     hit = cached(target, model, path)
     if hit is not None:
         if hit.get("prior") is not None and valid_rates(hit["prior"]):
@@ -213,40 +244,63 @@ def prior_at_start(target: str, vision_url: Optional[str], secret: Optional[str]
         return status("none", "cached reply is not a prior", None, model)
     if not vision_url:
         return status("none", "no vision service", None, None)
-    call = ask_fn or ask
-    box: dict = {}
-    done = threading.Event()
-    gave_up = threading.Event()
+    key = (str(Path(path or cache_path())), target_key(target))
+    since = _cooling.get(key)
+    if since is not None and time.monotonic() - since < COOL_S:
+        return status("none", "timed out recently: not asked again yet", None, model)
+    with _lock:
+        job = _in_flight.get(key)
+        mine = job is None
+        if mine:
+            job = _in_flight[key] = {"done": threading.Event(), "gave_up": False}
+    if mine:
+        call = ask_fn or ask
 
-    def run():
-        try:
-            # The HTTP deadline is the start's plus a margin: a reply that
-            # misses the start may still land in the cache, but a hung
-            # connection never outlives the thread by much.
-            answer = call(target, vision_url, secret=secret, timeout_s=max(deadline_s, 1.0) * 3)
-            box["entry"] = remember(target, answer, path)
-            box["model"] = answer.get("model_id") or model
-        except BaseException as e:  # noqa: BLE001 -- the start's status names it
-            box["error"] = e
-        finally:
-            done.set()
-            if gave_up.is_set():
-                if "entry" in box:
-                    logger.info("room prior for %r arrived after the start: cached for the "
-                                "next find", target)
-                elif "error" in box:
-                    logger.info("room prior for %r failed after the start: %s", target,
-                                _why_failed(box["error"]))
+        def run():
+            try:
+                # The HTTP deadline is the start's times three: a reply that
+                # misses the start may still land in the cache, but a hung
+                # connection never outlives the thread by much.
+                answer = call(target, vision_url, secret=secret,
+                              timeout_s=max(deadline_s, 1.0) * 3)
+                job["model"] = answer.get("model_id") or MODEL_ID
+                job["stop"] = answer.get("stop")
+                if job["stop"] in CLEAN_STOPS:
+                    try:
+                        job["entry"] = remember(target, answer, path)
+                    except OSError as e:
+                        # A cache that cannot be written still lets this
+                        # mission use the paid reply (Thermos); the next
+                        # find pays again, and the log says why.
+                        logger.warning("room prior cache not written (%s): reply used "
+                                       "for this mission only", e)
+                        reply = answer.get("reply")
+                        job["entry"] = {"prior": parse(reply if isinstance(reply, str) else "")}
+            except BaseException as e:  # noqa: BLE001 -- the start's status names it
+                job["error"] = e
+                if _why_failed(e) == "timeout":
+                    _cooling[key] = time.monotonic()
+            finally:
+                with _lock:
+                    _in_flight.pop(key, None)
+                job["done"].set()
+                if job["gave_up"]:
+                    logger.info("room prior for %r ended after the start gave up: %s", target,
+                                "cached for the next find" if "entry" in job
+                                else _why_failed(job["error"]) if "error" in job
+                                else f"reply cut ({job.get('stop')})")
 
-    threading.Thread(target=run, name="room-prior", daemon=True).start()
-    if not done.wait(deadline_s):
-        gave_up.set()
-        if not done.is_set():
+        threading.Thread(target=run, name="room-prior", daemon=True).start()
+    if not job["done"].wait(deadline_s):
+        job["gave_up"] = True
+        if not job["done"].is_set():
             return status("none", "timeout", None, model)
-    if "error" in box:
-        logger.warning("room prior for %r: %s", target, box["error"])
-        return status("none", _why_failed(box["error"]), None, model)
-    entry = box["entry"]
+    if "error" in job:
+        logger.warning("room prior for %r: %s", target, job["error"])
+        return status("none", _why_failed(job["error"]), None, model)
+    if "entry" not in job:
+        return status("none", f"reply cut ({job.get('stop')})", None, job["model"])
+    entry = job["entry"]
     if entry["prior"] is None:
-        return status("none", "reply is not a prior", None, box["model"])
-    return status("cloud", None, entry["prior"], box["model"])
+        return status("none", "reply is not a prior", None, job["model"])
+    return status("cloud", None, entry["prior"], job["model"])

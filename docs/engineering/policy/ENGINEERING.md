@@ -967,12 +967,18 @@ them): one JSON object, exactly the four types, each in [0, 1]; anything else
 is no prior. The cache (`ROOM_PRIOR_CACHE`, default
 `recordings/room-prior.json`, git-ignored) is keyed by model id then target
 (lower case, single spaces), in `llm_prior.json`'s shape, so 3.116.C's file
-can seed it; every reply the model gave is kept, parsed or not, and a failed
-call is not. It is read under `room_prior.MODEL_ID`, /room's model; a reply
-from another model is stored under that model and never read as this one's.
-The call (`prior_at_start`) runs on a daemon thread and the start waits at
-most `find_prior_timeout_s` (4 s, the section's proposal): a reply after the
-deadline is cached for the next find and never reaches this mission. The
+can seed it; every reply the model gave is kept, parsed or not; a failed
+call and a reply cut short (`stop` not `end_turn`/`stop_sequence`) are not.
+Each reply is filed under the model that gave it, and the cache records that
+model (`_served_model`) and is read under it (`MODEL_ID`, /room's default,
+until the service has answered once), so a deployment on another model still
+hits its own replies. The call (`prior_at_start`) runs on a daemon thread and
+the start waits at most `find_prior_timeout_s` (4 s, the section's
+proposal): a reply after the deadline is cached for the next find and never
+reaches this mission; a start that finds a call for its target still running
+waits on it rather than paying again; a call that runs out its own HTTP
+deadline (3 x the start's) cools that target for `COOL_S` (an hour, in
+memory); a cache that cannot be written still gives this mission the reply. The
 result is `status.room_prior` (`{source: shipped | cloud | cache | none,
 why, rates, model_id, acts}`), handed to `MissionRunner(room_prior=)`, which
 for `cloud` or `cache` puts the rates where the shipped prior's would be,

@@ -208,3 +208,78 @@ def test_the_real_client_posts_the_target_with_the_secret():
 def test_the_default_cache_lives_under_recordings():
     """Kept out of git (recordings/ is ignored) and overridable."""
     assert rp.DEFAULT_CACHE == Path(rp.__file__).resolve().parents[1] / "recordings" / "room-prior.json"
+
+
+# ---------- review round 1 ----------
+
+def test_a_deployment_on_another_model_still_hits_its_own_replies(tmp_path):
+    path, calls = tmp_path / "c.json", []
+
+    def ask(*a, **k):
+        calls.append(1)
+        return {"reply": GOOD, "stop": "end_turn", "model_id": "us.other.model"}
+
+    assert rp.prior_at_start("spatula", "http://v", path=path, ask_fn=ask)["source"] == "cloud"
+    again = rp.prior_at_start("spatula", "http://v", path=path, ask_fn=ask)
+    assert calls == [1] and again["source"] == "cache" and again["model_id"] == "us.other.model"
+    assert rp.cached("spatula", rp.MODEL_ID, path=path) is None      # never filed as another's
+
+
+def test_a_cut_reply_is_not_cached_and_is_asked_again(tmp_path):
+    path, stops = tmp_path / "c.json", ["max_tokens", "end_turn"]
+
+    def ask(*a, **k):
+        return {"reply": '{"kitchen": 0.9, "living', "stop": stops.pop(0), "model_id": rp.MODEL_ID}
+
+    st = rp.prior_at_start("spatula", "http://v", path=path, ask_fn=ask)
+    assert (st["source"], st["why"]) == ("none", "reply cut (max_tokens)")
+    assert rp.cached("spatula", path=path) is None
+    st = rp.prior_at_start("spatula", "http://v", path=path, ask_fn=ask)
+    assert st["why"] == "reply is not a prior" and stops == []
+
+
+def test_a_call_still_running_is_waited_on_not_paid_again(tmp_path):
+    path, release, calls = tmp_path / "c.json", threading.Event(), []
+
+    def slow(*a, **k):
+        calls.append(1)
+        release.wait(5)
+        return _answer()(*a, **k)
+
+    first = rp.prior_at_start("spatula", "http://v", path=path, deadline_s=0.2, ask_fn=slow)
+    assert first["why"] == "timeout"
+    threading.Timer(0.2, release.set).start()
+    second = rp.prior_at_start("spatula", "http://v", path=path, deadline_s=3.0, ask_fn=slow)
+    assert calls == [1]
+    assert second["source"] == "cloud" and second["rates"] == rp.parse(GOOD)
+    assert rp._in_flight == {}
+
+
+# ---------- review round 1 (Thermos) ----------
+
+def test_a_call_that_runs_out_its_http_deadline_cools_the_target(tmp_path, monkeypatch):
+    path, calls = tmp_path / "c.json", []
+    monkeypatch.setattr(rp, "_cooling", {})
+
+    def hung(*a, **k):
+        calls.append(1)
+        raise httpx.ReadTimeout("slow")
+
+    first = rp.prior_at_start("spatula", "http://v", path=path, ask_fn=hung)
+    second = rp.prior_at_start("spatula", "http://v", path=path, ask_fn=hung)
+    assert first["why"] == "timeout"
+    assert second["why"] == "timed out recently: not asked again yet" and calls == [1]
+    other = rp.prior_at_start("kettle", "http://v", path=path, ask_fn=_answer())
+    assert other["source"] == "cloud"                    # only that target waits
+    monkeypatch.setattr(rp, "COOL_S", 0.0)
+    rp.prior_at_start("spatula", "http://v", path=path, ask_fn=hung)
+    assert calls == [1, 1]
+
+
+def test_a_cache_that_cannot_be_written_still_gives_this_mission_the_reply(tmp_path, monkeypatch):
+    def boom(*a, **k):
+        raise OSError("read-only")
+
+    monkeypatch.setattr(rp, "save_cache", boom)
+    st = rp.prior_at_start("spatula", "http://v", path=tmp_path / "c.json", ask_fn=_answer())
+    assert st["source"] == "cloud" and st["rates"] == rp.parse(GOOD)
