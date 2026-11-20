@@ -52,7 +52,7 @@ from brain.arrival import ARRIVED, CHECKING, LOCAL_FRESH_S, REFUSED, ArrivalChec
 from brain.perceive import DETECTED
 from brain.tiered import STEER_BAND_DEG, located_local_bearing, turn_for
 from brain.tiered import candidate_refused as _refused
-from brain.frontier import (CAMERA_FOV_DEG, RetryBook, camera_seen, find_frontiers,
+from brain.frontier import (CAMERA_FOV_DEG, Reach, RetryBook, camera_seen, find_frontiers,
                             find_view_gaps, known_near, reach, reachable)
 from brain.room_labels import segment
 from brain.choice_log import BY_RULE_TIMEOUT, GoalAsk
@@ -306,6 +306,7 @@ class ExploreAgent(MissionAgent):
         self.zone_leaves = 0           # leave_zone goals sent (D4)
         self._zones_rev = 0            # bumped by each set_zones (a cache key)
         self._masked = None            # (map_id, map_version, zones_rev, masked map)
+        self._floor_of = None          # 3.192: (this choice's masked map, its floor map)
         self._no_way_out = False       # zone_no_way_out logged for this stretch
         # Review: called with the pose's frame_id when it is a saved map's and
         # not the one the zones were last asked for (MissionRunner loads them
@@ -853,6 +854,31 @@ class ExploreAgent(MissionAgent):
             self._event("zone_no_way_out", reachable_cells=len(rch))
         return None
 
+    def _floor(self, m: dict) -> dict:
+        """3.192: the map without the zones for `m`, this choice's masked
+        map; any other map is its own floor (no zones, or not this choice's)."""
+        f = getattr(self, "_floor_of", None)
+        return f[1] if f is not None and f[0] is m else m
+
+    def _frontiers(self, m: dict, floor: dict, pose: dict, leave: float, rch) -> list:
+        """Frontiers for this choice. With no zones, `find_frontiers` on the
+        map, as on `dev`. With zones (3.192, amending 3.161 D3): a frontier's
+        cells, pieces, middle and size are read off `floor`, the map without
+        the zones -- a zone is not a wall, and cutting the frontier at it
+        moved goals far from any zone -- while its goal cell comes only from
+        `rch`, the masked map's reach, so it never lies in a zone grown by the
+        half-width; a frontier whose cells all lie in grown zones is dropped."""
+        if floor is m:
+            return find_frontiers(m, pose["x_m"], pose["y_m"], clearance_m=leave,
+                                  reach_map=rch)
+        w, h = floor["width"], floor["height"]
+        grid = np.fromiter(floor["cells"], dtype=np.int8, count=w * h).reshape(h, w)
+        both = Reach(rch.w, rch.h, rch.start, rch.need, rch.order, rch.dist, grid=grid)
+        out = find_frontiers(floor, pose["x_m"], pose["y_m"], clearance_m=leave,
+                             reach_map=both)
+        masked = np.asarray(m["cells"]).reshape(h, w) == nogo.CELL_NOGO
+        return [f for f in out if not all(masked[y, x] for x, y in f.cells)]
+
     def _zone_map(self, m: dict, zones: list) -> dict:
         """The map with `zones`' cells occupied, cached by the map's version
         and the zones' revision (review: one copy a map, not a choice)."""
@@ -1238,10 +1264,15 @@ class ExploreAgent(MissionAgent):
                 self._zone_frame_asked = frame      # only once read (review 2: a failure asks again)
             except Exception:  # noqa: BLE001 -- no zones read: the choice goes on without
                 logger.warning("no-go zones unreadable for %s", frame, exc_info=True)
+        floor = m
+        self._floor_of = None
         if getattr(self, "zones", None):
-            # 3.161 D3/D4: out of a zone first; then every choice below is
-            # made on the map with the zones' cells occupied -- no frontier,
-            # no goal, no reachable path inside one.
+            # 3.161 D3/D4: out of a zone first; then every goal below is
+            # chosen on the map with the zones' cells masked -- no goal and
+            # no reachable path inside one. 3.192: a zone is a wall for
+            # reach only; what explore UNDERSTANDS of the map -- frontiers'
+            # cells, the room cut, the labels, the goal features, mapping
+            # progress -- reads `floor`, the map without the zones.
             zones = self.zones
             if nogo.zone_at(zones, pose["x_m"], pose["y_m"], nogo.HALF_WIDTH_M) is not None:
                 out = self._leave_zone(m, pose, now, leave)
@@ -1254,14 +1285,15 @@ class ExploreAgent(MissionAgent):
             else:
                 self._no_way_out = False
             m = self._zone_map(m, zones)
+            if m is not floor:
+                self._floor_of = (m, floor)
 
         def known(x, y):
-            return known_near(m, x, y, self.retry.radius_m)
+            return known_near(floor, x, y, self.retry.radius_m)
 
         # One reachability search per choice, shared by every step below (3.77).
         rch = reach(m, pose["x_m"], pose["y_m"], clearance_m=leave)
-        frontiers = find_frontiers(m, pose["x_m"], pose["y_m"], clearance_m=leave,
-                                   reach_map=rch)
+        frontiers = self._frontiers(m, floor, pose, leave, rch)
         skipped = {"reached twice": 0, "set aside": 0}
         small = self._small_room_goal(m, pose, rch, now)
         if small is not None:
@@ -1356,7 +1388,7 @@ class ExploreAgent(MissionAgent):
         if key[1] is not None and key == self._small_none_on:
             return None                     # review: nothing found on this very map
         try:
-            seg, d = segment(m)
+            seg, d = segment(self._floor(m))      # 3.192: a zone is not a wall to the cut
             small = reach(m, pose["x_m"], pose["y_m"], clearance_m=SMALL_ROOM_CLEARANCE_M)
         except Exception:  # noqa: BLE001 -- a by-product never ends a survey
             if not self._small_error_logged:
@@ -1556,7 +1588,8 @@ class ExploreAgent(MissionAgent):
         first (3.88 A's default)."""
         r = self.retry.radius_m
         seen_cells = {self._to_cell(m, c) for c in self.seen}
-        ctx = goal_context(m, seen_cells)   # 3.109: once per choice, not per candidate
+        fm = self._floor(m)                 # 3.192: the features read the map without the zones
+        ctx = goal_context(fm, seen_cells)  # 3.109: once per choice, not per candidate
         pool, feats = [], []
         for rank, f in enumerate(frontiers):
             reached = sum(math.hypot(f.goal[0] - rx, f.goal[1] - ry) < r
@@ -1569,7 +1602,7 @@ class ExploreAgent(MissionAgent):
                 self._note_aside(f.goal)
                 continue
             pool.append(("frontier", f, rank))
-            feats.append(goal_features(m, pose, f.goal, kind="frontier", path_m=f.distance_m,
+            feats.append(goal_features(fm, pose, f.goal, kind="frontier", path_m=f.distance_m,
                                        size_m=f.size_m, seen_cells=seen_cells,
                                        failures=self.retry.failures_near(*f.goal),
                                        reached=reached, goals_sent=self.goals_sent, ctx=ctx))
@@ -1581,7 +1614,7 @@ class ExploreAgent(MissionAgent):
                 self._note_aside(g.goal)          # review 3: view gaps too
                 continue
             pool.append(("view", g, None))
-            feats.append(goal_features(m, pose, g.goal, kind="view", path_m=g.distance_m,
+            feats.append(goal_features(fm, pose, g.goal, kind="view", path_m=g.distance_m,
                                        area_m2=g.area_m2, seen_cells=seen_cells,
                                        failures=self.retry.failures_near(*g.goal),
                                        goals_sent=self.goals_sent, ctx=ctx))
@@ -1589,8 +1622,8 @@ class ExploreAgent(MissionAgent):
             goals = [c.goal for _, c, _ in pool]
             room_hint = getattr(self, "room_hint", None)
             hint = {"hint": room_hint} if room_hint else {}
-            feats = self.goal_policy.extend(m, pose, goals, feats, trail=self._trail,
-                                            types=self._goal_types(m, goals),
+            feats = self.goal_policy.extend(fm, pose, goals, feats, trail=self._trail,
+                                            types=self._goal_types(fm, goals),
                                             target=self.memory.target_object, ctx=ctx,
                                             **hint)
         return pool, feats
