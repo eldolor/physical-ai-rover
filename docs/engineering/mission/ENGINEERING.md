@@ -488,16 +488,21 @@ or Reserve still propagates from the cancel and from each verb.
   mission on that map); else the pose itself, `source: start`. None when the
   pose was not usable: the return is then `skipped`, `no_dock`, unless the
   dock is read late.
-* **A dock read late** (3.194, `_late_dock`): with `return_to_dock` on and no
-  dock at `start()`, `start()` logs it and keeps the wheel odometry
-  (`robot.get_odometry()`, usable only); each search tick then reads the pose
-  again, at most once a `LATE_DOCK_EVERY_S` (1 s, the mission's clock), and an
-  end in `RETURNS` reads it once more (forced) in `_finish` before
-  `_return_wanted` can answer `no_dock`. A `saved_map` dock is taken whenever
-  read. A `start` dock is taken only while the odometry says the robot has not
-  moved since `start()` (under `LATE_DOCK_MOVED_M` 0.05 m of path and
-  `LATE_DOCK_TURNED_DEG` 5 deg; odometry unread at either end counts as moved),
-  because a start pose read after a move is not the dock. Taken: `status.dock`
+* **A dock read late** (3.194, `_late_dock`): with `return_to_dock` on, a
+  navigator, and no dock at `start()`, `start()` logs it and keeps the wheel
+  odometry (`robot.get_odometry()`, usable only); each search tick then reads
+  the pose again, at most once a `LATE_DOCK_EVERY_S` (1 s, the mission's
+  clock), and an end in `RETURNS` reads it once more (forced) in `_finish`
+  before `_return_wanted` can answer `no_dock`. The forced read runs before
+  the wheels stop, so it is bounded by `POSE_READ_S` (`call_with_timeout`) and
+  takes a `saved_map` dock only, with no odometry read. A `saved_map` dock is
+  taken whenever read. A `start` dock is taken only while the odometry says
+  the robot has not moved since `start()` (under `LATE_DOCK_MOVED_M` 0.05 m of
+  path and `LATE_DOCK_TURNED_DEG` 5 deg); odometry unread at either end, a path
+  that shrank (a robot server restart) or any earlier read that showed motion
+  (latched, `_dock_moved`) counts as moved, because a start pose read after a
+  move is not the dock. With the return off, a saved dock that becomes
+  readable only later does not reach E2's no-go split (not covered). Taken: `status.dock`
   gains `late_s` (seconds after the start), a log line says how late and from
   which source, `HomeBudget` starts, and E4's no-go split runs again (and the
   robot server is sent the zones in force if they changed). Never read during

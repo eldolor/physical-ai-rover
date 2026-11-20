@@ -154,7 +154,7 @@ def verdict(rows):
 
 
 def _key(r):
-    return json.dumps([r["house"], list(r["start"]), r["job"]])
+    return json.dumps([r["arm"], r["house"], list(r["start"]), r["job"]])
 
 
 def main(argv):
@@ -170,7 +170,7 @@ def main(argv):
             r = json.loads(line)
             done[_key(r)] = r
     args = [(arm,) + c for c in cases()
-            if json.dumps([c[0], list(c[1]), c[2]]) not in done]
+            if json.dumps([arm, c[0], list(c[1]), c[2]]) not in done]
     with mp.Pool(workers) as pool, open(part, "a") as f:
         for r in pool.imap_unordered(run_one, args, chunksize=1):
             done[_key(r)] = r

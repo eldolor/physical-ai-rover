@@ -1011,6 +1011,7 @@ class MissionRunner:
         # robot has not moved); `_dock_late_at` the clock of the last read.
         self._dock_odom0: Optional[dict] = None
         self._dock_late_at: Optional[float] = None
+        self._dock_moved = False    # latched: a read once showed motion (review)
         # 3.156.D (D7): recharge and resume. Off unless asked (the config's
         # too). `_charging` is the wait on the dock; the decided end stays
         # in `_pending_end` until the pack reaches `resume_v`.
@@ -1293,22 +1294,33 @@ class MissionRunner:
     def _not_moved(self) -> bool:
         """3.194: the robot is where it started -- under LATE_DOCK_MOVED_M of
         path and LATE_DOCK_TURNED_DEG of heading since `start()`, both read.
-        Unknown counts as moved."""
+        Unknown counts as moved, and so does a path that shrank (the robot
+        server restarted: its odometry starts again from 0). Once a read
+        shows motion it stays moved (review: a restart after a move would
+        otherwise read as never having left)."""
+        if self._dock_moved:
+            return False
         now, then = self._odometry(), self._dock_odom0
         if now is None or then is None:
             return False
+        path = now["distance_m"] - then["distance_m"]
         turned = abs((now["heading_deg"] - then["heading_deg"] + 180.0) % 360.0 - 180.0)
-        return (now["distance_m"] - then["distance_m"] < LATE_DOCK_MOVED_M
-                and turned < LATE_DOCK_TURNED_DEG)
+        if path < 0 or path >= LATE_DOCK_MOVED_M or turned >= LATE_DOCK_TURNED_DEG:
+            self._dock_moved = True
+            return False
+        return True
 
     def _late_dock(self, force: bool = False) -> None:
         """3.194: a dock the start could not read (the pose not usable yet),
         read now. The saved map's dock is the dock whenever it is read; a
         start pose only while the robot has not moved (`_not_moved`). Else
         nothing: the return stays `no_dock`, never guessed (D1). At most once
-        a LATE_DOCK_EVERY_S unless `force` (an end that goes home)."""
+        a LATE_DOCK_EVERY_S unless `force` (an end that goes home: before the
+        wheels stop, so the read is bounded by POSE_READ_S and takes the
+        saved map's dock only -- no odometry read -- review). With no
+        navigator the return can only be `no_nav2`: nothing is read."""
         if not self.return_to_dock or self._dock is not None or self._pending_end is not None \
-                or self._started_clock is None:
+                or self._started_clock is None or self._navigator is None or not self._running:
             return
         now = self.clock()
         if not force and self._dock_late_at is not None \
@@ -1316,15 +1328,16 @@ class MissionRunner:
             return
         self._dock_late_at = now
         try:
-            pose = self.world.get_pose()
+            pose = (call_with_timeout(self.world.get_pose, timeout_s=POSE_READ_S) if force
+                    else self.world.get_pose())
             found = docking.dock_from_pose(pose)
-        except Exception as e:  # noqa: BLE001 -- unread: try again later
+        except Exception as e:  # noqa: BLE001 -- unread (or timed out): try again later
             logger.warning("late dock: the pose was not read: %s", e)
             return
         if found is None:
             return
         saved = found if found.get("source") == docking.SAVED_MAP else None
-        if saved is None and not self._not_moved():
+        if saved is None and (force or not self._not_moved()):
             return                      # a start pose away from the start: not the dock
         frame = pose.get("frame_id")
         before = [z["id"] for z in self.nogo_zones]
@@ -1370,11 +1383,11 @@ class MissionRunner:
             self._dock, self._dock_frame, self._dock_saved = dock, frame, saved
             self._home = docking.HomeBudget(dock) if dock is not None else None
             self._log_line(f"mission started: {self.memory.mission} ({', '.join(limits)})")
-            late = self.return_to_dock and dock is None
+            late = self.return_to_dock and dock is None and self._navigator is not None
             if late:
                 self._dock_late_at = self.clock()
-                self._log_line("dock not known at the start (the pose is not usable yet): "
-                               "read again as the mission runs")
+                self._log_line("dock not known at the start (no usable pose): "
+                               "read again while the search runs")
         if late:
             self._dock_odom0 = self._odometry()     # off the lock: an HTTP read
         if self._nogo_all:

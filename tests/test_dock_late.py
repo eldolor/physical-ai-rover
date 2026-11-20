@@ -98,7 +98,8 @@ def test_a_start_pose_read_late_before_any_move_is_the_dock():
     runner, nav, grid, robot, start = late(1, saved=False)
     runner.start()
     assert runner._dock is None
-    runner._late_dock(force=True)               # no tick yet: nothing moved
+    robot.pass_time(1.1)                        # past the throttle; nothing moved
+    runner._late_dock()
     s = runner.status()
     assert s["dock"]["source"] == "start"
     assert abs(s["dock"]["x_m"] - start["x_m"]) < 1e-6
@@ -128,6 +129,37 @@ def test_a_pose_usable_at_the_start_reads_no_more():
     assert "late_s" not in s["dock"]
     assert runner.world.calls >= 1
     assert not any("dock read late" in line for line in runner._log)
+
+
+def test_a_server_restart_after_a_move_is_still_moved():
+    """Review: odometry that shrank (the robot server restarted, its path
+    from 0 again) or once showed motion counts as moved for good."""
+    runner, nav, grid, robot, _ = late(10 ** 6, saved=False)
+    runner.start()
+    robot._path_m += 3.0                        # drove 3 m
+    runner._late_dock(force=False)              # pose unusable: nothing read...
+    assert not runner._not_moved()              # ...but motion seen, latched
+    robot._path_m = runner._dock_odom0["distance_m"]   # a restart reads "no path"
+    assert not runner._not_moved()
+    runner2, _, _, robot2, _ = late(10 ** 6, saved=False)
+    runner2.start()
+    robot2._path_m = runner2._dock_odom0["distance_m"] - 1.0   # shrank
+    assert not runner2._not_moved()
+
+
+def test_the_end_takes_no_start_pose_and_no_navigator_reads_nothing():
+    """Review: the end's forced read takes a saved dock only (no odometry
+    before the wheels stop); with no navigator nothing is read late."""
+    runner, nav, grid, robot, _ = late(1, saved=False)
+    runner.start()
+    runner._late_dock(force=True)
+    assert runner._dock is None
+    runner, nav, grid, robot, _ = late(1)
+    runner._navigator = None
+    runner.start()
+    calls = runner.world.calls
+    runner._late_dock(force=True)
+    assert runner._dock is None and runner.world.calls == calls
 
 
 def test_off_reads_nothing_late():
