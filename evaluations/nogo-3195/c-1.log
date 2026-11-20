@@ -1,0 +1,3 @@
+brain: /home/user/physical-ai-rover/.claude/worktrees/plan-3.195/brain
+{"outcome": "found", "seconds": 263.0, "goals_sent": 3, "closest_outside_m": 0.035, "slam_closest_outside_m": 0.0243, "offset_m_median": 0.0007, "offset_m_max": 0.026566332076521218, "entries": 0, "goals_in_zone": 0, "peak_load": 2.63}
+{"left_after_s": 2.07, "seen_suspended": true, "restored_after_s": 4.93, "truth_clear_at_restore_m": 0.319, "final_outcome": "cancelled", "ended": null}

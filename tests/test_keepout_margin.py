@@ -397,3 +397,34 @@ def test_a_mm_of_jitter_on_a_cell_boundary_never_flaps_the_margin(seed):
             last = set(off)
         flaps += changes > 0
     assert flaps == 0
+
+
+# ---------- the live records (3.195.B), pinned ----------
+
+EVAL = Path(__file__).resolve().parent.parent / "evaluations/nogo-3195"
+
+
+def test_m1_found_nav2_not_slam_at_the_closest_approaches():
+    """M1 on dev's bridge: at each run's closest approach the SLAM pose was
+    within 5 mm of the truth's distance, or closer (2 of 3 at least: the rule)."""
+    import json
+    runs = json.loads((EVAL / "m1-summary.json").read_text())["runs"]
+    assert len(runs) == 3
+    nav2 = [r for r in runs if r["slam_d_at_closest_m"] <= r["closest_true_m"] + 0.005]
+    assert len(nav2) >= 2
+    assert min(r["slam_closest_m"] for r in runs) < 0.002          # nav2 drove its own estimate to the edge
+    assert min(r["closest_true_m"] for r in runs) < 0                # dev entered (m1-3)
+
+
+def test_the_c_runs_met_c1_c2_c4_c5_and_c3_but_one_dock():
+    import json
+    s = json.loads((EVAL / "c-summary.json").read_text())["summary"]
+    assert s["runs"] == 10 and s["invalid_runs"] == []
+    assert s["C1_entries"] == 0
+    assert s["C2_min_m"] >= 0.010
+    assert s["C3_found"] == 10 and s["C3_median_s"] <= 79.5 and s["C3_goals_in_zone"] == 0
+    assert s["C3_docked"] == 9                                       # c-1: the return refused 'preempted'
+    assert s["C4_both_events"] == 10 and min(s["C4_restore_clear_m"]) >= 0.30
+    assert max(s["C5_left_after_s"]) <= 30 and set(s["C5_final"]) == {"cancelled"}
+    assert all(z == [] for z in s["C10_mission_zone_log"])          # amendment 4: every counted run
+    assert s["peak_load"] < 4.0                                      # 3.79
