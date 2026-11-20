@@ -163,7 +163,7 @@ def run():
         # `ros_up` (the actuator's /wheels flowing) and starts at once.
         t_wait = time.time()
         while time.time() - t_wait < 180:
-            if jget(robot, "/health").get("ros_up") is True:
+            if (jget(robot, "/health").get("drive") or {}).get("ros_up") is True:
                 break
             time.sleep(0.05)
         bridge_state = (jget(bridge, "/health").get("slam") or {}).get("state")
