@@ -196,4 +196,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.191](3.191-explore-approach-livelock.md) | Explore's approach livelock: a goal where the robot stands, re-sent every tick |
 | [3.192](3.192-nogo-reads-as-floor.md) | No-go zones read as floor by the room cut and the goal features |
 | [3.194](3.194-late-dock.md) | A dock read late: a mission whose pose was unusable at its start still goes home |
+| [3.193](3.193-nogo-mask-edge-redraw.md) | The bridge's no-go mask: a zone's whole edge, and its redraw after leaving |
 <!-- /sections -->
