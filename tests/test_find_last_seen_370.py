@@ -21,6 +21,7 @@ def test_run_1_scores_as_the_plan_records():
     assert (s["found"]["surveyed"], s["found"]["unsurveyed"], s["found"]["met"]) == (7, 5, False)
     assert (s["first_goal"]["recall_first"], s["first_goal"]["met"]) == (17, False)
     assert [m[0] for m in s["first_goal"]["missed"]] == [3, 11, 15]
+    assert (s["first_goal"]["goal_within_approach"], s["first_goal"]["goal_m_max"]) == (17, 0.55)
     assert (s["median_s"]["surveyed"], s["median_s"]["unsurveyed"], s["median_s"]["met"]) == (1200.0, 1200.0, False)
     assert s["beside"]["surveyed"]["median_found_s"] == 510.2
     assert s["beside"]["unsurveyed"]["median_found_s"] == 280.7
