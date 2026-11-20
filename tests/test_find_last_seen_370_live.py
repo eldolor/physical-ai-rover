@@ -86,3 +86,17 @@ def test_score_fails_and_invalidates_as_written(tmp_path):
     assert not s["valid"] and s["L1_first_goal"]["verdict"] == "INVALID"
     s = live.score(_rows(tmp_path, [GOOD] * 4))    # a run cut short
     assert s["L2_found"]["verdict"] == "INVALID"
+
+
+def test_the_live_run_scores_as_the_plan_records():
+    s = live.score(ROOT / "evaluations/find-last-seen-370/live.jsonl")
+    assert s["preconditions"] == {"survey_saved_one_map": True, "reload_matched": True,
+                                  "every_find_on_the_reload": True}
+    assert s["valid"] and s["finds"] == 5
+    assert (s["L1_first_goal"]["recall_first"], s["L1_first_goal"]["verdict"]) == (5, "MET")
+    assert (s["L2_found"]["found"], s["L2_found"]["verdict"]) == (5, "MET")
+    st = s["L3_stability"]
+    assert (st["contacts"], st["wrong_found"], st["failed"], st["wall_capped"], st["verdict"]) == (0, 0, 0, 0, "MET")
+    b = s["beside"]
+    assert (b["median_seconds"], b["median_goals"], b["median_distance_m"]) == (183, 2, 18.77)
+    assert b["returns"] == ["docked", "docked", "docked", "skipped", "docked"]
