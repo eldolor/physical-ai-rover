@@ -229,8 +229,11 @@ def voi_rows(data, model_for, keys, lam, mu):
     out = []
     for k in keys:
         m = model_for(walk_of(k))
-        asked = voi_decide(m, data["per"][k], data["ve"][k], lam, mu, first[walk_of(k)] == k)
-        out.append(frame_score(data, k, asked))
+        is_first = first[walk_of(k)] == k
+        asked = voi_decide(m, data["per"][k], data["ve"][k], lam, mu, is_first)
+        r = frame_score(data, k, asked)
+        r["first"] = is_first
+        out.append(r)
     return out
 
 
@@ -269,8 +272,15 @@ def run(data) -> dict:
                 for h, ws in halves.items():
                     keys = [k for k in all_keys if k in sk and walk_of(k) in ws]
                     mf = (lambda w, s=s: full[s]) if h == "held_out" else (lambda w: lowo[w])
-                    v = total(voi_rows(data, mf, keys, lam, mu))
+                    rows = voi_rows(data, mf, keys, lam, mu)
+                    v = total(rows)
                     v["bars"] = bars(v, out["fixed"][f"{s}/{h}"]["F"])
+                    # G4: each walk's first frame asks at least the local
+                    # tier (by construction; checked). A walk whose first
+                    # frame is not in the sample has nothing to check.
+                    firsts = [r for r in rows if r["first"]]
+                    v["bars"]["G4"] = all(r["local"] or r["paid"] for r in firsts)
+                    v["bars"]["G4_walks_checked"] = len(firsts)
                     out["cells"][cell][f"{s}/{h}"] = v
 
     # The judged cell: chosen on W's training walks only (G0).
