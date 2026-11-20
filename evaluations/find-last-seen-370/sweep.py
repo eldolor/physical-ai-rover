@@ -3,10 +3,11 @@
 """
 evaluations/find-last-seen-370/sweep.py -- 3.70.M2: "find X" looks first where
 X was last seen. In process, as 3.175.B's sweep (`MissionRunner` -> explore ->
-`robot/safety.py` -> `MockRobot` on the simulator's clock, `InflatedNav`, a real
+`robot/safety.py` -> `MockRobot` on the simulator's clock, a stand-in nav, a real
 `InventoryStore` chain, one saved map's `frame_id` on every pose). How the bars
 are read is in `docs/plans/ros-alignment/3.70-survey-and-mission-ends.md`,
-"M2: how it is measured", written before any run.
+"M2: how it is measured", written before any run. The navigator is NAV:
+`InflatedNav` for run 1, `FakeNav` for run 2 (amendment 1).
 
 One survey of `complex_house` from its dock, then 20 finds for small objects
 the survey reported, from spread starts, twice: *surveyed* (a copy of the
@@ -37,6 +38,7 @@ LIMIT_S = 1200.0           # 3.175's find limit
 CELL = 0.30
 FOUND_M = 0.9              # 3.80.G2: a find within this of the target is right
 RECALL_AT_M = 0.30         # the first recall's place: one cell from a reported landmark of X
+APPROACH_M = 0.60          # review: its goal within explore's APPROACH_FAR_M of that place
 MISSIONS = 20
 START_SEED = 3702          # fresh: S3 judged on 3700
 DET_SEED = 37020
@@ -134,6 +136,8 @@ def plan(reported):
     """The 20 (start, target, detector seed), the same in both arms."""
     from tests.inventory_sweep import starts
     names = targets(reported)
+    if not names:
+        return []                 # review: the survey row is still written
     out = []
     for k, ((cx, cy), theta, room) in enumerate(starts(MISSIONS, seed=START_SEED)):
         out.append({"k": k, "start": [cx, cy], "theta": theta, "room": room,
@@ -192,6 +196,11 @@ def find(m, arm, store_dir, cells, reported, nav=NAV):
     lms = [(r["x_m"], r["y_m"]) for r in reported if r["label"] == m["target"]]
     first_ok = (first_kind == "recall" and first_at is not None
                 and any(math.dist(first_at, p) <= RECALL_AT_M for p in lms))
+    # Review: `at` is the carried place, not the goal; where the robot was
+    # sent is `goal` (a recall faced where it stands sends none: 0 m).
+    first_goal = None if first is None else first.get("goal")
+    first_goal_m = (None if not first_ok else
+                    0.0 if first_goal is None else round(math.dist(first_goal, first_at), 2))
     tx, ty = next(c for c, n in grid.objects.items() if n == m["target"])
     target_m = math.dist((grid.x, grid.y), (tx + 0.5, ty + 0.5)) * CELL
     return {"arm": arm, "k": m["k"], "target": m["target"], "start_room": m["room"],
@@ -201,6 +210,7 @@ def find(m, arm, store_dir, cells, reported, nav=NAV):
             "target_m": round(target_m, 2),
             "wrong_found": s["outcome"] == "found" and target_m > FOUND_M,
             "first_act": first_kind, "first_at": first_at, "first_recall_ok": first_ok,
+            "first_goal": first_goal, "first_goal_m": first_goal_m,
             "goals": len(goals), "recall_goals": sum(g.get("kind") == "recall" for g in goals),
             "contacts": sum(c.startswith("BLOCKED at") for c in contacts),
             "blocked_turning": sum(c.startswith("BLOCKED turning") for c in contacts)}
@@ -256,11 +266,17 @@ def score(path):
            "missions": {a: len(arms[a]) for a in ARMS}}
     out["found"] = {**found, "bar": 19, "met": len(s) == MISSIONS and found["surveyed"] >= 19}
     first = sum(r["first_recall_ok"] for r in s)
+    near = [r for r in s if r["first_recall_ok"] and r.get("first_goal_m") is not None]
     out["first_goal"] = {"recall_first": first, "of": len(s),
+                         "goal_within_approach": (sum(r["first_goal_m"] <= APPROACH_M for r in near)
+                                                  if len(near) == first else None),
+                         "goal_m_max": max((r["first_goal_m"] for r in near), default=None),
                          "missed": [[r["k"], r["target"], r["first_act"]] for r in s if not r["first_recall_ok"]],
                          "met": len(s) == MISSIONS and first == len(s)}
     out["median_s"] = {**med, "ratio": (med["surveyed"] / med["unsurveyed"]) if med["unsurveyed"] else None,
-                       "met": bool(s and u) and med["surveyed"] <= 0.5 * med["unsurveyed"]}
+                       # amendment 1: not judgeable under FakeNav (no driving time)
+                       "met": (None if sv.get("nav") == "fake" else
+                               bool(s and u) and med["surveyed"] <= 0.5 * med["unsurveyed"])}
     out["nav"] = sv.get("nav", "inflated")
     out["beside"] = {a: {"median_steps": statistics.median(r["steps"] for r in arms[a]),
                          "median_goals": statistics.median(r["goals"] for r in arms[a]),
