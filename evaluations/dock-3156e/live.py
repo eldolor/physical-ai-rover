@@ -36,7 +36,9 @@ scaled_house's reload session runs `FINDS` finds (G1, and half of G3) then
 `DRILLS` drills (G5); home_first_floor's runs `FINDS` finds (G3's other half).
 
 The supplementary G4 run (E's live results): `LIVE_FIND_LIMIT_S=300
-LIVE_FINDS=3 LIVE_DRILLS=0`.
+LIVE_FINDS=3 LIVE_DRILLS=0`. G5's re-run: `LIVE_HOUSES=scaled_house
+LIVE_FINDS=0 LIVE_DRILLS=5 LIVE_SEED=2` (the Stop once the return has moved
+10 cm or turned 15 degrees).
 """
 
 import json
@@ -84,6 +86,8 @@ WALL_S = 600                # one mission's wall-clock cap (the limit, the retur
 FINDS = int(os.environ.get("LIVE_FINDS", 5))
 DRILLS = int(os.environ.get("LIVE_DRILLS", 5))
 OFF_M = (1.0, 4.0)          # G1: a person's goal first moves the robot 1-4 m off the dock
+SEED = int(os.environ.get("LIVE_SEED", 0))   # another run's starts: a nonzero offset
+STOP_WHEN_M, STOP_WHEN_DEG = 0.10, 15.0      # G5: a Stop only once the return truly moves
 DOCK_M, DOCK_DEG = 0.15, 15.0   # C2's every-run bars, as G1 and G3 name them
 _run = subprocess.run
 
@@ -156,6 +160,19 @@ class Standins(BaseHTTPRequestHandler):
         self._send({"status": "error", "score": None, "reason": "stand-in: not served"})
 
 
+def get_json(client, path, tries=4):
+    """One reply's JSON, riding out a hiccup (a timeout, a plain-text 503):
+    one bad sample must not end an hour's run (review, 2026-11-20)."""
+    for i in range(tries):
+        try:
+            r = client.get(path)
+            return r.json()
+        except (httpx.HTTPError, ValueError):
+            if i == tries - 1:
+                raise
+            time.sleep(0.5)
+
+
 class Truth:
     def __init__(self, robot, house):
         self.robot = robot
@@ -164,13 +181,13 @@ class Truth:
                       if c == CELL_WALL}
 
     def pose(self):
-        t = self.robot.get("/world/truth").json()
+        t = get_json(self.robot, "/world/truth")
         return t["x_m"], t["y_m"], t["heading_deg"]
 
     def gap_cm(self):
         x, y, h = self.pose()
         cx, cy = x / 0.3, y / 0.3
-        objs = {(o["x"], o["y"]) for o in self.robot.get("/sim/objects").json()["objects"]}
+        objs = {(o["x"], o["y"]) for o in get_json(self.robot, "/sim/objects")["objects"]}
         A = chassis(cx, cy, math.radians(h) - math.pi / 2)
         g = math.inf
         for c in self.walls | objs:
@@ -187,7 +204,7 @@ def off_dock_cells(house, dock, n, seed):
     ok = [c for c in reach
           if all((c[0] + dx, c[1] + dy) in reach for dx in (-1, 0, 1) for dy in (-1, 0, 1))
           and OFF_M[0] <= math.hypot((c[0] + 0.5) * 0.3 - dock[0], (c[1] + 0.5) * 0.3 - dock[1]) <= OFF_M[1]]
-    rng = random.Random(f"dock-3156e-{house}-{seed}")
+    rng = random.Random(f"dock-3156e-{house}-{seed + SEED}")
     rng.shuffle(ok)
     return ok[:n]
 
@@ -195,13 +212,23 @@ def off_dock_cells(house, dock, n, seed):
 def goto(robot, x_m, y_m, timeout_s=180):
     """A person's nav2 goal: named a person, or the robot server refuses it
     as a second autonomous driver (E's results, 'For the live run')."""
+    before = (get_json(robot, "/world/goal").get("goal") or {}).get("goal_id")
     r = robot.post("/world/goal", json={"x_m": x_m, "y_m": y_m}, headers={"x-driver": "twin-dpad"})
-    if r.status_code != 200 or not r.json().get("accepted"):
+    try:
+        reply = r.json()
+    except ValueError:
+        reply = {}
+    if r.status_code != 200 or not reply.get("accepted"):
         return f"refused: {r.status_code} {r.text[:120]}"
+    # This goal's own id when the reply names it, so the last mission's
+    # finished goal is never read as this one's end (review, 2026-11-20).
+    want = reply.get("goal_id") or (reply.get("goal") or {}).get("goal_id")
     end = time.time() + timeout_s
     while time.time() < end:
-        g = (robot.get("/world/goal").json().get("goal") or {})
-        if g.get("state") not in ("pending", "active"):
+        g = (get_json(robot, "/world/goal").get("goal") or {})
+        gid = g.get("goal_id")
+        mine = gid == want if want else (gid is not None and gid != before)
+        if mine and g.get("state") not in (None, "pending", "active"):
             return g.get("state")
         time.sleep(1.0)
     robot.delete("/world/goal")
@@ -218,9 +245,13 @@ def marker(robot, tag):
 
 def goal_posts(log_path, start_tag, end_tag):
     """POST /world/goal lines between two markers of the robot's access log."""
-    lines = Path(log_path).read_text(errors="replace").splitlines()
-    i0 = next((i for i, x in enumerate(lines) if f"m={start_tag}" in x), None)
-    i1 = next((i for i, x in enumerate(lines) if f"m={end_tag}" in x), None)
+    try:
+        lines = Path(log_path).read_text(errors="replace").splitlines()
+    except OSError:
+        return None
+    # The marker whole (`find-1` must not match `find-10`).
+    i0 = next((i for i, x in enumerate(lines) if f"m={start_tag} " in x), None)
+    i1 = next((i for i, x in enumerate(lines) if f"m={end_tag} " in x), None)
     if i0 is None or i1 is None:
         return None
     return sum('"POST /world/goal' in x for x in lines[i0:i1])
@@ -236,6 +267,9 @@ def start_mission(brain, body, wait_s=60):
 
 
 def mission(robot, brain, truth, body, tag, dock_truth=None, drill=False, wall_s=WALL_S):
+    # The goal already there (the person's, or the last mission's) is not
+    # this mission's: `goals_seen` leaves it out (Thermos, 2026-11-20).
+    prior = (get_json(robot, "/world/goal").get("goal") or {}).get("goal_id")
     marker(robot, f"start-{tag}")
     r = start_mission(brain, body)
     if r.status_code != 200:
@@ -243,39 +277,57 @@ def mission(robot, brain, truth, body, tag, dock_truth=None, drill=False, wall_s
     t0 = time.time()
     rec = {"contacts": 0, "min_gap_cm": math.inf, "return_min_gap_cm": math.inf, "samples": 0,
            "load_max": 0.0, "goals_seen": {}}
-    s, ended_at = {}, None
+    s, ended_at, ret_pose = {}, None, None
     while time.time() - t0 < wall_s:
         g = truth.gap_cm()
         rec["samples"] += 1
         rec["min_gap_cm"] = min(rec["min_gap_cm"], g)
         rec["contacts"] += g < 1.0
         rec["load_max"] = max(rec["load_max"], os.getloadavg()[0])
-        s = brain.get("/mission/status").json()
+        s = get_json(brain, "/mission/status")
         ret = s.get("return") or {}
-        gid = ((robot.get("/world/goal").json().get("goal") or {}).get("goal_id"))
-        if gid and gid not in rec["goals_seen"]:
+        gid = ((get_json(robot, "/world/goal").get("goal") or {}).get("goal_id"))
+        if gid and gid != prior and gid not in rec["goals_seen"]:
             rec["goals_seen"][gid] = {"t": round(time.time() - t0, 2), "return": bool(ret)}
         if ret and ended_at is None:
             ended_at = round(time.time() - t0, 2)
             marker(robot, f"end-{tag}")
         if ret.get("state") == "returning":
             rec["return_min_gap_cm"] = min(rec["return_min_gap_cm"], g)
-            if drill and "drill_at" not in rec and ret.get("phase") in ("driving", "creep", "turn"):
-                rec.update(drill_at=round(time.time() - t0, 1), drill_phase=ret.get("phase"))
+            now = truth.pose()
+            ret_pose = ret_pose or now
+            far = math.hypot(now[0] - ret_pose[0], now[1] - ret_pose[1])
+            turned = abs((now[2] - ret_pose[2] + 180) % 360 - 180)
+            # The Stop only once the return truly moves (review, 2026-11-20:
+            # the first run's Stops all landed before any motion).
+            if (drill and "drill_at" not in rec and ret.get("phase") in ("driving", "creep", "turn")
+                    and (far >= STOP_WHEN_M or turned >= STOP_WHEN_DEG)):
+                rec.update(drill_at=round(time.time() - t0, 1), drill_phase=ret.get("phase"),
+                           drill_return_moved_m=round(far, 3), drill_return_turned_deg=round(turned, 1))
                 p0 = truth.pose()
                 robot.post("/stop")
-                t1, moved = time.time(), 0.0
+                t1, moved, spun, track = time.time(), 0.0, 0.0, []
                 while time.time() - t1 < 10.0:
                     p = truth.pose()
+                    track.append([round(time.time() - t1, 2), round(p[0], 4), round(p[1], 4), round(p[2], 2)])
                     moved = max(moved, math.hypot(p[0] - p0[0], p[1] - p0[1]))
+                    spun = max(spun, abs((p[2] - p0[2] + 180) % 360 - 180))
                     time.sleep(0.2)
+                # From the pose at the Stop's sending: any coasting counts.
                 rec["moved_after_stop_cm"] = round(moved * 100, 1)
+                rec["turned_after_stop_deg"] = round(spun, 1)
+                rec["after_stop_track"] = track
         if not s.get("running") and s.get("outcome") not in (None, "idle", "running"):
             break
         time.sleep(0.25)
     else:
         brain.post("/mission/stop")
         rec["wall_capped"] = True
+        for _ in range(60):            # the end the stop made, not the last sample
+            s = get_json(brain, "/mission/status")
+            if not s.get("running"):
+                break
+            time.sleep(0.5)
     if ended_at is None:
         marker(robot, f"end-{tag}")
     marker(robot, f"done-{tag}")
@@ -336,6 +388,7 @@ def main(argv):
                 time.sleep(2)
             emit({"kind": "map", "house": house, "dock_truth": dock_truth, "saved": saved_versions(),
                   "run_dir": de.RUN_DIR, **rec})
+            Standins.calls.update(local=0, cloud=0)
         finally:
             container_logs("map")
             de._kill_ports()
