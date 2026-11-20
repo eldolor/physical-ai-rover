@@ -43,8 +43,17 @@ def coverage_vs(rows, base_rows):
             "met": worst is not None and worst >= -1.0}
 
 
+_find_bars = s2.find_bars
+
+
+def _find_bars_or_none(rows):
+    """`dev`'s files hold its no-zone arm only (G6 needs no more): no find bars."""
+    return _find_bars(rows) if any(r["arm"] == "zones" for r in rows) else None
+
+
 def score(d):
-    out = s2.score(d)
+    s2.find_bars = _find_bars_or_none
+    out = {k: v for k, v in s2.score(d).items() if v is not None}
     for ch in ("rule", "rooms"):
         f = out.get(f"find_{ch}")
         if f:

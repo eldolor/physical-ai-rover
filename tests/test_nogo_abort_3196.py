@@ -177,3 +177,31 @@ def test_without_zones_an_unmoved_abort_is_forgiven_once():
     agent = _agent(zones=())
     _abort(agent, (2.25, 0.75))
     assert agent.retry.failures_near(2.25, 0.75) == 0
+
+
+# ---- 3.196.B's sweep, pinned (evaluations/nogo-3196/summary.json) ----
+
+import json                                              # noqa: E402
+import os                                                # noqa: E402
+
+_SUMMARY = os.path.join(os.path.dirname(__file__), "..", "evaluations", "nogo-3196",
+                        "summary.json")
+
+
+def _summary():
+    with open(_SUMMARY) as fh:
+        return json.load(fh)
+
+
+def test_the_sweep_meets_g1_to_g8():
+    s = _summary()
+    for ch in ("rule", "rooms"):
+        assert s[f"loops_{ch}"]["worst"] <= 3 and s[f"loops_{ch}"]["total"] == 0      # G1
+        assert s[f"g_find_{ch}"]["met"]                                                # G2, G3
+        assert s[f"identical_{ch}"] == {"compared": 96, "identical": 96, "differ": []}  # G6
+        assert s[f"g_survey_{ch}"]["met"] and s[f"g_survey_{ch}"]["houses"] == 12       # G7
+    assert s["record_loops"]["rooms"]["worst"] == 5            # 3.192's, at val:15 s0 z20
+    assert (s["g_find_rule"]["found_zones"], s["g_find_rule"]["median_s_zones"]) == (86, 130.7)
+    assert (s["g_find_rooms"]["found_zones"], s["g_find_rooms"]["median_s_zones"]) == (81, 111.7)
+    assert s["g_safety"] == {"in_zone": 0, "in_grown_012": 0, "entries": 0}            # G4, G5
+    assert (s["leave"]["n"], s["leave"]["left"]) == (10, 10)                            # G8
