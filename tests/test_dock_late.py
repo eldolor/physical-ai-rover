@@ -205,3 +205,17 @@ def test_the_sweep_leaves_the_normal_path_as_dev_had_it():
     for k in dev:
         for f in ("outcome", "return", "return_reason", "dock", "end_s", "end_err_m"):
             assert dev[k][f] == now[k][f], (k, f)
+
+
+def test_the_live_find_after_a_reload_docked():
+    """L5, pinned on the committed record (`evaluations/dock-late-394/live.py`
+    run 3): started with the pose unusable, the saved dock read late, docked."""
+    import json
+    from pathlib import Path
+    p = Path(__file__).resolve().parents[1] / "evaluations" / "dock-late-394" / "live-run3.jsonl"
+    row = [json.loads(line) for line in p.read_text().splitlines()][-1]
+    assert row["row"] == "find" and row["pose_usable_at_start"] is False
+    assert row["reload"]["result"] == "matched"
+    assert row["dock"]["source"] == "saved_map" and row["dock"]["late_s"] > 0
+    assert row["return"]["state"] == "docked"
+    assert row["end_off_dock_m"] <= DOCK_TOL_M and row["end_off_dock_deg"] <= DOCK_TOL_DEG
