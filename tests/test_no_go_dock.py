@@ -190,12 +190,20 @@ def test_the_robot_server_is_sent_only_zones_in_force(brain, tmp_path, monkeypat
 
 # ---------- E4, E5: the mission (E-c, E-d) ----------
 
+class _Saved(MockWorld):
+    """The simulator's world on a saved map (its frame named), no saved dock."""
+
+    def get_pose(self):
+        p = super().get_pose()
+        return dict(p, frame_id=FRAME) if p.get("usable") else p
+
+
 def _runner(return_to_dock=True, max_steps=6):
     grid = build_world("scaled_house")
     robot = MockRobot(grid, render=False)
     nav = FakeNav(robot)
     runner = MissionRunner(robot, target_object="red backpack", policy="explore", navigator=nav,
-                           world=MockWorld(grid), max_steps=max_steps,
+                           world=_Saved(grid), max_steps=max_steps,
                            clock=lambda: grid.sim_time, idle=robot.pass_time,
                            return_to_dock=return_to_dock)
     x, y = grid.x * 0.3, grid.y * 0.3
@@ -256,7 +264,7 @@ def test_with_no_navigator_there_is_no_trip_home_to_keep_clear():
     grid = build_world("scaled_house")
     robot = MockRobot(grid, render=False)
     runner = MissionRunner(robot, target_object="red backpack", policy="frontier",
-                           world=MockWorld(grid), max_steps=3, clock=lambda: grid.sim_time,
+                           world=_Saved(grid), max_steps=3, clock=lambda: grid.sim_time,
                            idle=robot.pass_time, return_to_dock=True)
     x, y = grid.x * 0.3, grid.y * 0.3
     over = nogo.clean_zone(_z(x - 0.4, y - 0.4, x + 0.4, y + 0.4))
@@ -267,11 +275,6 @@ def test_with_no_navigator_there_is_no_trip_home_to_keep_clear():
 
 def test_a_dock_read_on_one_saved_map_never_filters_anothers_zones():
     runner, grid, over, far = _runner()
-
-    class Saved(MockWorld):
-        def get_pose(self):
-            return dict(super().get_pose(), frame_id=FRAME)
-    runner.world = Saved(grid)
     runner.read_dock(runner.world.get_pose())
     runner.set_nogo(FRAME, [over, far])
     assert runner.nogo_dock_refused == [over["id"]]
@@ -328,3 +331,68 @@ def test_a_running_missions_dock_refuses_and_its_own_list_is_reported(brain):
     ran.nogo_dock_refused = [v["zones"][0]["id"]]       # the mission's own word
     v = c.get("/mission/nogo").json()
     assert [d["id"] for d in v["dock_conflicts"]] == [v["zones"][0]["id"]]
+
+
+# ---------- review round 2 ----------
+
+def test_a_dock_read_with_no_saved_map_never_filters_a_saved_maps_zones():
+    runner, grid, over, far = _runner()
+    runner.world = MockWorld(grid)                 # no frame_id: a fresh map's start
+    runner.set_nogo(FRAME, [over, far])
+    runner.start()
+    assert runner.nogo_zones == [over, far] and runner.nogo_dock_refused == []
+
+
+def test_the_saved_dock_is_kept_clear_with_no_trip_home():
+    runner, grid, over, far = _runner(return_to_dock=False)
+    x, y = grid.x * 0.3, grid.y * 0.3
+
+    class Docked(_Saved):
+        def get_pose(self):
+            return dict(super().get_pose(), dock={"x_m": x, "y_m": y, "heading_deg": 0.0})
+    runner.world = Docked(grid)
+    runner.set_nogo(FRAME, [over, far])
+    runner.start()
+    assert runner.nogo_dock_refused == [over["id"]] and runner.nogo_zones == [far]
+
+
+def test_the_saved_dock_refuses_the_draw_while_a_mission_without_a_return_runs(brain):
+    c = brain()                                     # the pose names the saved dock
+
+    class NoReturn(_Ran):
+        def _nogo_dock(self):
+            return None
+    c.app.state.brain_state["runner"] = NoReturn(running=True)
+    r = c.post("/mission/nogo", json={"frame_id": FRAME, "op": "add", "rev": 0,
+                                      "zone": COVERING["over_the_dock"]})
+    assert r.status_code == 409 and r.json()["detail"] == nogo_store.DOCK_REFUSED
+
+
+def test_a_mission_that_left_zones_out_sends_the_stored_set_again_at_its_end(
+        tmp_path, monkeypatch):
+    monkeypatch.setenv("NOGO_DIR", str(tmp_path))
+    monkeypatch.delenv("APP_SHARED_SECRET", raising=False)
+    monkeypatch.setattr(nogo_store, "_DEFAULT", None)
+    store = nogo_store.NoGoStore(tmp_path)
+    store.edit(FRAME, "add", zone=COVERING["over_the_dock"])
+    sent = []
+    monkeypatch.setattr(nogo_store, "push",
+                        lambda base, secret, f, zones, **kw: sent.append(
+                            (f, [z["id"] for z in zones])) or {"accepted": True})
+    from control import brain_server
+
+    class R:
+        base_url = "http://robot.invalid"
+    runner, grid, over, far = _runner(max_steps=3)
+    app = brain_server.create_app(robot_factory=lambda: R(),
+                                  world_factory=lambda r: _World(dock=None))
+    zid = store.zones(FRAME)[0]["id"]
+    runner.set_nogo(FRAME, store.zones(FRAME))
+    runner.nogo_dock_refused = [zid]                # left out for its start-pose dock
+    app.state.brain_state["runner"] = runner
+    app.state.nogo_restore(runner)                  # what mission_loop runs at the end
+    assert sent == [(FRAME, [zid])]
+    sent.clear()
+    app.state.brain_state["runner"] = object()      # a newer mission: never overwritten
+    app.state.nogo_restore(runner)
+    assert sent == []

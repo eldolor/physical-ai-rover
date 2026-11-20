@@ -1316,6 +1316,10 @@ def create_app(
                     break
                 if config["tick_interval_s"]:
                     await asyncio.sleep(config["tick_interval_s"])
+            try:
+                await asyncio.to_thread(_nogo_restore, runner)
+            except Exception as e:  # noqa: BLE001 -- the store keeps them; the next start sends
+                logger.warning("no-go zones not restored to the robot server: %s", e)
             # Ended on its own (not cancelled): 3.53's late confirmation, if
             # the ending was `arrived_unconfirmed`. Its own thread; it never
             # holds this loop or touches the robot.
@@ -1674,20 +1678,36 @@ def create_app(
         return None
 
     def _known_dock(frame_id, pose=None):
-        """3.161.B part 2 (E2): the dock for `frame_id` -- the dock of the
-        mission running on that map, if its trip home can drive to one; else
-        the saved map's (a matched reload's pose carries it); None when none
-        is known. Never a finished mission's (review: its start pose is no
-        dock once it has ended)."""
-        live = _nogo_running(state.get("runner"), frame_id)
-        if live is not None and hasattr(live, "_nogo_dock"):
-            return live._nogo_dock()
+        """3.161.B part 2 (E2): the dock for `frame_id` -- the saved map's (a
+        matched reload's pose carries it), else the trip-home dock of the
+        mission running on that map; None when none is known. Never a
+        finished mission's (review: its start pose is no dock once ended)."""
         if pose and pose.get("usable") and pose.get("frame_id") == frame_id \
                 and isinstance(pose.get("dock"), dict):
             d = docking.dock_from_pose(pose)
             if d is not None and d.get("source") == docking.SAVED_MAP:
                 return d
+        live = _nogo_running(state.get("runner"), frame_id)
+        if live is not None and hasattr(live, "_nogo_dock"):
+            return live._nogo_dock()
         return None
+
+    def _nogo_restore(runner) -> None:
+        """Review 2: a mission that left zones out for its own (start-pose)
+        dock has ended: the robot server gets the stored set again, as the
+        editor now shows it (split for the saved map's dock only)."""
+        frame_id = getattr(runner, "nogo_frame", None)
+        if not frame_id or not getattr(runner, "nogo_dock_refused", None) \
+                or state.get("runner") is not runner:
+            return
+        pose, now = _pose_and_frame()
+        if now != frame_id:
+            return
+        zones = nogo_store_mod.default_store().zones(frame_id)
+        state["nogo_sent"] = _nogo_send(
+            frame_id, nogo_store_mod.split_for_dock(zones, _known_dock(frame_id, pose))[0])
+
+    app.state.nogo_restore = _nogo_restore          # tests drive mission_loop's end with it
 
     def _nogo_apply(runner, frame_id, zones, dock=None) -> dict:
         """The zones for `frame_id` to the running mission (if it is on that
@@ -1722,9 +1742,6 @@ def create_app(
                 # the running mission's own list when one is on this map (review).
                 "dock_conflicts": _dock_conflicts(frame_id, doc["zones"], dock),
                 "dock_known": dock is not None}
-
-    def _pose_frame():
-        return _pose_and_frame()[1]
 
     def _pose_and_frame():
         pose = world().get_pose() or {}

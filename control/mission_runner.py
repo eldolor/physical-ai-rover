@@ -830,8 +830,9 @@ class MissionRunner:
         self._nogo_all: list = []
         self.nogo_dock_refused: list = []
         self._nogo_dock_logged: set = set()
-        self._dock_read: Optional[tuple] = None      # (dock, frame_id) once `read_dock()` ran
+        self._dock_read: Optional[tuple] = None      # (dock, frame_id, saved) once `read_dock()` ran
         self._dock_frame: Optional[str] = None       # the saved map `_dock` was read on
+        self._dock_saved: Optional[dict] = None      # that saved map's own dock, if it names one
         # Review: where a frame's zones come from (the brain's store) and
         # where a set read mid-mission goes (the robot server). Explore asks
         # through `_nogo_lookup` when its pose names a saved map these zones
@@ -1232,45 +1233,45 @@ class MissionRunner:
         """The dock this mission's trip home will drive to, from `pose` (read
         now when not given), kept for `start()` (3.161.B part 2: the brain
         passes the pose it read the saved map's frame from, so the zones the
-        robot server is sent at the start already leave out one over it)."""
-        dock = None
-        if self.return_to_dock:
-            try:
-                pose = self.world.get_pose() if pose is None else pose
-                dock = docking.dock_from_pose(pose)
-            except Exception as e:  # noqa: BLE001 -- no dock pose: the return is skipped, never guessed
-                logger.warning("dock pose not read at start: %s", e)
+        robot server is sent at the start already leave out one over it).
+        The saved map's dock is kept too, return or not (E2)."""
+        found = None
+        try:
+            pose = self.world.get_pose() if pose is None else pose
+            found = docking.dock_from_pose(pose)
+        except Exception as e:  # noqa: BLE001 -- no dock pose: the return is skipped, never guessed
+            logger.warning("dock pose not read at start: %s", e)
+        frame = (pose or {}).get("frame_id") if found else None
+        saved = found if found and found.get("source") == docking.SAVED_MAP else None
+        dock = found if self.return_to_dock else None
         with self._lock:
-            self._dock_read = (dock, (pose or {}).get("frame_id") if dock else None)
+            self._dock_read = (dock, frame, saved)
         if self._nogo_all:
             self._apply_nogo()
         return dock
 
     def _nogo_dock(self) -> Optional[dict]:
-        """E4: the dock a zone must keep clear of -- only one the trip home
-        can drive to (the return on, a navigator to drive it), and only for
-        zones on the saved map it was read on (review: a frame change mid-
-        mission is another map's coordinates)."""
-        if not self.return_to_dock or self._navigator is None:
-            return None
+        """E2/E4: the dock a zone must keep clear of -- the one the trip home
+        drives to when it can run (the return on, a navigator to drive it),
+        else the saved map's; and only for zones on the saved map it was read
+        on (review: another frame is another map's coordinates)."""
         if self._outcome != IDLE:              # started: the dock it recorded
-            dock, frame = self._dock, self._dock_frame
+            dock, frame, saved = self._dock, self._dock_frame, self._dock_saved
         else:
-            dock, frame = (self._dock_read or (None, None))
-        if dock is None or (frame is not None and frame != self.nogo_frame):
+            dock, frame, saved = self._dock_read or (None, None, None)
+        if not self.return_to_dock or self._navigator is None:
+            dock = saved
+        if dock is None or self.nogo_frame is None or frame != self.nogo_frame:
             return None
         return dock
 
     def start(self) -> None:
-        dock, frame = self._dock_read or (None, None)
-        if dock is None and self.return_to_dock:     # not read, or read unusable: once more
-            try:
-                pose = self.world.get_pose()
-                dock = docking.dock_from_pose(pose)
-                frame = (pose or {}).get("frame_id") if dock else None
-            except Exception as e:  # noqa: BLE001 -- no dock pose: the return is skipped, never guessed
-                logger.warning("dock pose not read at start: %s", e)
         before = [z["id"] for z in self.nogo_zones]
+        read = self._dock_read
+        if (self.return_to_dock and (read is None or read[0] is None)) or (
+                read is None and self._nogo_all):
+            self.read_dock()            # not read, or read unusable: once more
+        dock, frame, saved = self._dock_read or (None, None, None)
         with self._lock:
             if self._running:
                 raise RuntimeError("Mission already running")
@@ -1288,7 +1289,7 @@ class MissionRunner:
                 limits.append(f"battery floor {self.battery_floor_v:g} V")
             if self.vision_max_calls:
                 limits.append(f"cloud call cap {self.vision_max_calls}")
-            self._dock, self._dock_frame = dock, frame
+            self._dock, self._dock_frame, self._dock_saved = dock, frame, saved
             self._home = docking.HomeBudget(dock) if dock is not None else None
             self._log_line(f"mission started: {self.memory.mission} ({', '.join(limits)})")
         if self._nogo_all:
