@@ -26,3 +26,18 @@ def test_run_1_scores_as_the_plan_records():
     assert s["beside"]["unsurveyed"]["median_found_s"] == 280.7
     st = s["stability"]
     assert (st["wrong_found"], st["contacts"], st["capped"], st["met"]) == (0, 0, 0, True)
+
+
+def test_run_2_scores_as_the_plan_records():
+    """Amendment 1: FakeNav for the survey and both arms."""
+    s = sweep.score(ROOT / "evaluations/find-last-seen-370/rows-a1.jsonl")
+    assert s["nav"] == "fake"
+    assert s["survey"] == {"outcome": "exhausted", "search_s": 202.3, "contacts": 0, "capped": False}
+    assert s["survey_reported"] == 56 and len(s["targets"]) == 15
+    assert s["missions"] == {"surveyed": 20, "unsurveyed": 20}
+    assert (s["found"]["surveyed"], s["found"]["unsurveyed"], s["found"]["met"]) == (19, 20, True)
+    assert (s["first_goal"]["recall_first"], s["first_goal"]["met"]) == (20, True)
+    assert (s["median_s"]["surveyed"], s["median_s"]["unsurveyed"]) == (2.2, 51.2)
+    assert (s["beside"]["surveyed"]["median_goals"], s["beside"]["unsurveyed"]["median_goals"]) == (1.0, 25.5)
+    st = s["stability"]
+    assert (st["wrong_found"], st["contacts"], st["capped"], st["met"]) == (0, 0, 0, True)
