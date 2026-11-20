@@ -904,13 +904,15 @@ on the floor map with a `Reach` that carries the masked map's reach and the
 floor map's grid, so each goal cell is a masked-map stop; a frontier whose
 cells all lie in grown zones is dropped), the small-room cut's `segment`,
 `goal_context`/`goal_features`, the room policy's `extend` and
-`_goal_types` (and the find's own `goal_labels`), and `known_near` for the
-retry book. Read off the masked map, a zone cut frontiers and rooms and
+`_goal_types` (which hands the find's `goal_labels` source the floor map),
+and `known_near` for the retry book. The small-room pick still ranks its
+cells by clearance on the masked map (a zone's edge is not open floor). Read off the masked map, a zone cut frontiers and rooms and
 changed every candidate's features near it, which lost finds where the
 target was reachable outside every zone (3.161's Z5). View gaps, the room
 goal's reach and the small-room candidates stay on the masked map; with no
 zones the floor map is the map itself. `CELL_NOGO` (2) is neither
-free, unknown nor occupied: no frontier forms beside a zone, and no obstacle
+free, unknown nor occupied on the masked map: no stop or path lies in a zone
+(frontiers themselves are read off the floor map, above), and no obstacle
 clearance grows around it (nav2's keepout is lethal to the robot's centre and
 is not inflated); marked occupied, the clearance grown round a zone would
 close a doorway beside it to explore while nav2 still passes it. `_send` checks every goal whatever
