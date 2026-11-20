@@ -55,6 +55,22 @@ def _still_after(r):
             round(max(abs((p[3] - h0 + 180) % 360 - 180) for p in track), 2))
 
 
+def _marker_lag(r):
+    """1 when the one goal POST logged before the end marker is the return's
+    own: the return was decided before the harness's poll saw it (the marker
+    follows the poll), no goal POST came after the marker, and the only goal
+    id polled is the return's, seen with the return set. Found after G5's
+    re-run (drill 3: decided 0.017 s in, the marker at 0.29 s); disclosed in
+    the plan file."""
+    ret = r.get("ret") or {}
+    seen = r.get("goals_seen") or {}
+    decided, marked = ret.get("decided_at_s"), r.get("end_decided_s")
+    return int(r.get("goal_posts_before_end") == 1 and r.get("goal_posts_after_end") == 0
+               and isinstance(decided, (int, float)) and isinstance(marked, (int, float))
+               and decided < marked and list(seen) == [ret.get("goal_id")]
+               and all(v["return"] for v in seen.values()))
+
+
 def _errors(found):
     found = [r for r in found if "start" not in r]
     ok = [r for r in found if _docked(r)]
@@ -106,6 +122,7 @@ def score(main_rows, supp_rows=(), g5_rows=()):
     # Every non-exploring mission run, the drills' finds too (review, 2026-11-20).
     g4 = both + first_drills + drills
     before = [r.get("goal_posts_before_end") for r in g4]
+    lag = [_marker_lag(r) for r in g4]
     # Disclosed (Thermos, 2026-11-20): a mission whose end came in its first
     # seconds had no window to send an early goal; `with_window` counts those
     # that ran WINDOW_S or more before their end.
@@ -115,12 +132,14 @@ def score(main_rows, supp_rows=(), g5_rows=()):
     early_ids = sum(sum(1 for v in (r.get("goals_seen") or {}).values()
                         if not v["return"] and v["t"] > 0.1) for r in g4)
     G4 = {"missions": len(g4), "goal_posts_before_end": sum(b or 0 for b in before),
+          "the_returns_own_before_the_marker": sum(lag),
+          "early": sum((b or 0) - x for b, x in zip(before, lag)),
           "with_window": sum((r.get("end_decided_s") or 0) >= WINDOW_S for r in g4),
           "pre_end_goal_ids_polled": early_ids,
           "unmeasured": sum(b is None for b in before),
           "goal_posts_after_end": [r.get("goal_posts_after_end") for r in g4],
           "end_decided_s": [r.get("end_decided_s") for r in g4]}
-    G4["met"] = (G4["missions"] >= 10 and G4["goal_posts_before_end"] == 0 and G4["unmeasured"] == 0
+    G4["met"] = (G4["missions"] >= 10 and G4["early"] == 0 and G4["unmeasured"] == 0
                  and early_ids == 0)
 
     # The first run's drills are kept but not judged: every Stop landed
