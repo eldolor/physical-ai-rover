@@ -965,7 +965,7 @@ amendment 7 skips: so in practice the names). `brain/room_prior.py` holds
 3.116.C's question and reply check, moved unchanged (the harness imports
 them): one JSON object, exactly the four types, each in [0, 1]; anything else
 is no prior. The cache (`ROOM_PRIOR_CACHE`, default
-`recordings/room-prior.json`, git-ignored) is keyed by model id then target
+recordings/room-prior.json, git-ignored and made at run time) is keyed by model id then target
 (lower case, single spaces), in `llm_prior.json`'s shape, so 3.116.C's file
 can seed it; every reply the model gave is kept, parsed or not; a failed
 call and a reply cut short (`stop` not `end_turn`/`stop_sequence`) are not.
