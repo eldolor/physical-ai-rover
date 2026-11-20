@@ -14,7 +14,8 @@ survey's store and its end map) and *unsurveyed* (nothing), the same
 (start, target, detector seed) in both.
 
     python tools/desktop_lock.py shared --why "3.70.M2 sweep" -- \\
-        python evaluations/find-last-seen-370/sweep.py run ROWS.jsonl WORKDIR [WORKERS]
+        python evaluations/find-last-seen-370/sweep.py run ROWS.jsonl WORKDIR [WORKERS [NAV]]
+    (NAV: inflated, run 1; fake, amendment 1's run 2)
     python evaluations/find-last-seen-370/sweep.py score ROWS.jsonl
 """
 
@@ -41,6 +42,15 @@ START_SEED = 3702          # fresh: S3 judged on 3700
 DET_SEED = 37020
 TICK_CAP = 40000
 ARMS = ("surveyed", "unsurveyed")
+NAV = "inflated"           # amendment 1: "fake" -- tests/test_explore.FakeNav, run 2
+
+
+def _nav(robot, nav):
+    if nav == "fake":
+        from tests.test_explore import FakeNav
+        return FakeNav(robot)
+    from tests.dock_sweep import inflated_nav_class
+    return inflated_nav_class()(robot)
 
 
 def _quiet():
@@ -69,7 +79,7 @@ def _contacts(grid):
     return out
 
 
-def survey(store_dir, seed=DET_SEED):
+def survey(store_dir, seed=DET_SEED, nav=NAV):
     """The survey: job survey from the dock, S3's noisy detector, saved to
     `store_dir`. Returns (its row, the map it ended with)."""
     _quiet()
@@ -77,7 +87,6 @@ def survey(store_dir, seed=DET_SEED):
     from control.mission_runner import MissionRunner
     from sim.maps import build_world
     from sim.mock_robot import MockRobot
-    from tests.dock_sweep import inflated_nav_class
     from tests.inventory_sweep import ErringDetector
 
     grid = build_world(HOUSE)
@@ -87,7 +96,7 @@ def survey(store_dir, seed=DET_SEED):
     store = InventoryStore(str(store_dir))
     det = ErringDetector(grid, random.Random(seed), noisy=True)
     runner = MissionRunner(robot, job="survey", policy="explore",
-                           navigator=inflated_nav_class()(robot), world=world,
+                           navigator=_nav(robot, nav), world=world,
                            mission_time_limit_s=SURVEY_LIMIT_S, detections_fn=det,
                            clock=lambda: grid.sim_time, idle=robot.pass_time,
                            return_to_dock=False)
@@ -132,7 +141,7 @@ def plan(reported):
     return out
 
 
-def find(m, arm, store_dir, cells, reported):
+def find(m, arm, store_dir, cells, reported, nav=NAV):
     """One find. `store_dir` already holds the survey's report (surveyed) or
     nothing; `cells` the survey's end map or None."""
     _quiet()
@@ -140,7 +149,6 @@ def find(m, arm, store_dir, cells, reported):
     from control.mission_runner import MissionRunner
     from sim.maps import build_world
     from sim.mock_robot import MockRobot
-    from tests.dock_sweep import inflated_nav_class
     from tests.inventory_sweep import ErringDetector
 
     grid = build_world(HOUSE)
@@ -152,7 +160,7 @@ def find(m, arm, store_dir, cells, reported):
     robot = MockRobot(grid, render=False, exact_verbs=True)
     store = InventoryStore(str(store_dir))
     det = ErringDetector(grid, random.Random(m["seed"]), noisy=True)
-    runner = MissionRunner(robot, policy="explore", navigator=inflated_nav_class()(robot),
+    runner = MissionRunner(robot, policy="explore", navigator=_nav(robot, nav),
                            world=world, target_object=m["target"], detections_fn=det,
                            mission_time_limit_s=LIMIT_S, clock=lambda: grid.sim_time,
                            idle=robot.pass_time, return_to_dock=False)
@@ -199,7 +207,7 @@ def find(m, arm, store_dir, cells, reported):
 
 
 def _job(args):
-    m, arm, work, cells, reported = args
+    m, arm, work, cells, reported, nav = args
     d = Path(work) / f"{arm}-{m['k']}"
     if d.exists():
         shutil.rmtree(d)
@@ -207,22 +215,22 @@ def _job(args):
         shutil.copytree(Path(work) / "survey", d)
     else:
         d.mkdir(parents=True)
-    return find(m, arm, d, cells if arm == "surveyed" else None, reported)
+    return find(m, arm, d, cells if arm == "surveyed" else None, reported, nav)
 
 
-def run(out, work, workers):
+def run(out, work, workers, nav=NAV):
     import multiprocessing as mp
     work = Path(work)
     sdir = work / "survey"
     if sdir.exists():
         shutil.rmtree(sdir)
     sdir.mkdir(parents=True)
-    row, cells = survey(sdir)
+    row, cells = survey(sdir, nav=nav)
     print(json.dumps({k: v for k, v in row.items() if k != "reported"}), flush=True)
     plans = plan(row["reported"])
     with open(out, "w") as f:
-        f.write(json.dumps({**row, "plan": plans}) + "\n")
-        jobs = [(m, arm, str(work), cells, row["reported"]) for m in plans for arm in ARMS]
+        f.write(json.dumps({**row, "plan": plans, "nav": nav}) + "\n")
+        jobs = [(m, arm, str(work), cells, row["reported"], nav) for m in plans for arm in ARMS]
         with mp.Pool(workers) as pool:
             for r in pool.imap_unordered(_job, jobs):
                 f.write(json.dumps(r) + "\n")
@@ -253,7 +261,10 @@ def score(path):
                          "met": len(s) == MISSIONS and first == len(s)}
     out["median_s"] = {**med, "ratio": (med["surveyed"] / med["unsurveyed"]) if med["unsurveyed"] else None,
                        "met": bool(s and u) and med["surveyed"] <= 0.5 * med["unsurveyed"]}
+    out["nav"] = sv.get("nav", "inflated")
     out["beside"] = {a: {"median_steps": statistics.median(r["steps"] for r in arms[a]),
+                         "median_goals": statistics.median(r["goals"] for r in arms[a]),
+                         "median_s": med[a],
                          "median_distance_m": statistics.median(r["distance_m"] for r in arms[a]),
                          "median_found_s": (statistics.median(r["search_s"] for r in arms[a]
                                                               if r["outcome"] == "found")
@@ -272,7 +283,7 @@ def score(path):
 if __name__ == "__main__":
     a = sys.argv[1:]
     if a and a[0] == "run":
-        run(a[1], a[2], int(a[3]) if len(a) > 3 else 4)
+        run(a[1], a[2], int(a[3]) if len(a) > 3 else 4, a[4] if len(a) > 4 else NAV)
     elif a and a[0] == "score":
         score(a[1])
     else:
