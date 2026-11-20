@@ -339,3 +339,33 @@ def test_health_lists_the_suspended_ids_and_counts_apart():
     view = src[src.index("def _nogo_view"):src.index("def _publish_keepout")]
     assert '"suspended": sorted(self.zones_suspended)' in view
     assert "**self.zone_events" not in view and '"suspended_count"' in view
+
+
+# ---------- 3.193.B's live runs, pinned ----------
+
+LIVE = Path(__file__).resolve().parent.parent / "evaluations/nogo-3193"
+
+
+def test_the_live_runs_met_e3_e4_r2_r3():
+    import json
+    runs = [json.loads((LIVE / f"live-{k}.json").read_text()) for k in (1, 2, 3)]
+    times = sorted(r["mission"]["seconds"] for r in runs)
+    for r in runs:
+        m, z3 = r["mission"], r["z3"]
+        assert m["outcome"] == "found" and m["entries"] == [] and r["goals_in_zone"] == 0  # E3, E4
+        assert r["truth_every_s"] == 0.25 and m["truth_samples"] >= 290
+        ev = [e["event"] for e in z3["events"]]
+        assert ev == ["zone_suspended", "zone_restored"]                                    # R2
+        assert z3["events"][1]["clear_m"] >= 0.30 and z3["truth_clear_at_restore_m"] >= 0.30
+        assert len(z3["bridge_log"]) == 2
+        assert z3["left_after_s"] <= 30                                                    # R3
+    assert times[1] <= 114                                                                 # E4 median
+
+
+def test_r1_the_old_z3_zone_was_refused_over_the_dock():
+    import json
+    r = json.loads((LIVE / "live-r1-oldz3.json").read_text())["z3_old"]
+    zid = r["zone"]["id"]
+    assert r["explore_nogo"]["dock_refused"] == [zid]
+    assert r["bridge_at_draw"]["zones"] == 4 and r["bridge_after_start"]["zones"] == 3
+    assert r["bridge_at_end"]["restored"] == 0
