@@ -112,6 +112,11 @@ def test_close_pinches_leaves_a_pinch_between_walls_as_it_is():
     m2 = dict(m, cells=[CELL_FREE, nogo.CELL_NOGO, CELL_OCCUPIED, CELL_FREE])
     out = nogo.close_pinches(m2, [on], nogo.CELL_NOGO, free=CELL_FREE, occupied=CELL_OCCUPIED)
     assert out["cells"] == [nogo.CELL_NOGO] * 2 + [CELL_OCCUPIED, nogo.CELL_NOGO]
+    # A zone drawn over a wall's corner takes no floor there: still walls only.
+    over = dict(ZONE, x0=0.31, y0=0.01, x1=0.89, y1=0.59)   # covers cell (1, 0) and (1, 1)
+    m3 = dict(m, cells=[CELL_FREE, CELL_OCCUPIED, CELL_OCCUPIED, CELL_FREE])
+    assert nogo.close_pinches(m3, [over], nogo.CELL_NOGO, free=CELL_FREE,
+                              occupied=CELL_OCCUPIED) is m3
 
 
 def test_close_pinches_closes_both_ends_and_keeps_the_type():

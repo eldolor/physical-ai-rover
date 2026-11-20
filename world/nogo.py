@@ -265,8 +265,9 @@ def close_pinches(masked: dict, zones: Iterable[dict], cell_value: int, free: in
     w, h = masked["width"], masked["height"]
     cells = masked["cells"]
     a = np.array(cells).reshape(h, w)          # a copy: the input is never changed
-    hard = cell_mask(masked, zones, 0.0)
-    wall = hard | (a == occupied)
+    wall = a == occupied
+    hard = cell_mask(masked, zones, 0.0) & ~wall     # review: a wall in a zone is still a wall
+    wall |= hard
     ok = a == free
     mark = np.zeros_like(ok)
     tl, tr = (slice(0, -1), slice(0, -1)), (slice(0, -1), slice(1, None))

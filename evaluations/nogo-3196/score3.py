@@ -64,8 +64,9 @@ def score(d):
         "in_grown_012": sum(out.get(f"safety_{ch}", {}).get("in_grown_012", 0)
                             for ch in ("rule", "rooms")),
         "entries": ent + (lv["entries_after_leaving"] if lv else 0)}
-    out["record_loops"] = {ch: json.load(open(os.path.join(BASE, "summary.json")))[f"loops_{ch}"]
-                           for ch in ("rule", "rooms")}
+    with open(os.path.join(BASE, "summary.json")) as fh:
+        base = json.load(fh)
+    out["record_loops"] = {ch: base[f"loops_{ch}"] for ch in ("rule", "rooms")}
     return out
 
 

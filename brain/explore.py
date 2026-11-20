@@ -2056,9 +2056,16 @@ class ExploreAgent(MissionAgent):
         logger.info(self.last_event)
 
     def _near_zone(self, x_m: float, y_m: float) -> bool:
-        """3.196 D2: within `NEAR_ZONE_M` of a zone (3.192 F10's distance)."""
+        """3.196 D2: within `NEAR_ZONE_M` of a zone (3.192 F10's distance),
+        leaving out a zone the robot itself stands in (grown by the
+        half-width): that one is suspended, not a wall (review)."""
         zones = getattr(self, "zones", None)
-        return bool(zones) and any(nogo.distance(z, x_m, y_m) <= NEAR_ZONE_M for z in zones)
+        if not zones:
+            return False
+        pose = self._pose()
+        here = ((pose["x_m"], pose["y_m"]) if pose.get("usable") else None)
+        return any(nogo.distance(z, x_m, y_m) <= NEAR_ZONE_M for z in zones
+                   if here is None or nogo.distance(z, *here) > nogo.HALF_WIDTH_M)
 
     def _room_failed(self, g: dict) -> None:
         """A room goal's failure counts against the room only when it counts
