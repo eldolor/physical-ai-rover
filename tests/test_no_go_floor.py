@@ -225,3 +225,17 @@ def test_f10_goal_loops_as_recorded():
     assert s["loops_rule"]["worst"] == 0
     assert (s["loops_rooms"]["worst"], s["loops_rooms"]["worst_at"]) == (5, "procthor:val:15 s0 z20")
     assert s["dev_loops_rooms"]["worst"] == 4
+
+
+def test_f9_live_as_recorded():
+    """F9: found, docked, 0 goals in a zone; 1 entry, 2 mm deep along a zone's
+    edge (the bridge's cell-centre mask) -- FAILED, recorded."""
+    import json
+    from pathlib import Path
+    d = json.loads((Path(__file__).resolve().parents[1] / "evaluations" / "nogo-3192"
+                    / "live.json").read_text())
+    m = d["mission"]
+    assert m["outcome"] == "found" and d["goals_in_zone"] == [] and d["z6_refused"] == 10
+    assert len(m["entries"]) == 1 and m["entries"][0]["zones"] == ["za15d23feaa38"]
+    z = next(z for z in d["zones"] if z["id"] == "za15d23feaa38")
+    assert 0 < m["entries"][0]["at"][1] - z["y0"] < 0.005
