@@ -897,7 +897,8 @@ class ExploreAgent(MissionAgent):
         out = nogo.masked_map(m, zones, nogo.CELL_NOGO, grow=nogo.HALF_WIDTH_M)
         # 3.196 D1: and no diagonal step past a zone's corner (a gap of no
         # width: val:15's reach went round a zone that filled the only door).
-        out = nogo.close_pinches(out, nogo.CELL_NOGO, free=CELL_FREE)
+        out = nogo.close_pinches(out, zones, nogo.CELL_NOGO, free=CELL_FREE,
+                                  occupied=CELL_OCCUPIED)
         if out is m:
             out = dict(m)
         out["nogo_rev"] = self._zones_rev

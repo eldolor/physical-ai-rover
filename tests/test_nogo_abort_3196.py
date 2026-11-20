@@ -86,18 +86,39 @@ def test_without_the_zone_the_room_behind_the_door_reaches():
     assert (2, 2) in rch.steps and (5, 2) in rch.steps
 
 
-def test_close_pinches_leaves_a_map_without_zone_cells_as_it_is():
+def test_a_side_in_the_grown_band_only_is_no_pinch():
+    """procthor:val:9 (3.196.B): a cell in the zone's 0.12 m band whose centre
+    is outside the zone is passable to a navigator (nav2's keepout is lethal
+    to the robot's centre only), so the diagonal past it stays open. Here the
+    zone's west edge sits 0.10 m from cell 4's centre: (4, 3) is band, not
+    zone, and (3, 3) still reaches; (6, 3) is zone, so (7, 3) does not."""
+    agent = _agent(zones=(dict(ZONE, x0=1.45),))
+    masked = agent._zone_map(agent.world.get_map(), agent.zones)
+    rch = reach(masked, *ROBOT)
+    assert (3, 3) in rch.steps
+    assert (7, 3) not in rch.steps
+
+
+def test_close_pinches_leaves_a_pinch_between_walls_as_it_is():
     """D1 touches only a pinch beside a zone: two walls meeting at a corner
     (an old, harmless case in the simulator's cell-aligned houses) stay."""
-    m = _map()
-    m["cells"][3 * W + 3] = CELL_OCCUPIED     # with (4, 4) free and (3, 4) a wall
-    assert nogo.close_pinches(m, nogo.CELL_NOGO, free=CELL_FREE) is m
+    m = {"usable": True, "width": 2, "height": 2, "resolution_m": RES,
+         "origin_x_m": 0.0, "origin_y_m": 0.0,
+         "cells": [CELL_FREE, CELL_OCCUPIED, CELL_OCCUPIED, CELL_FREE]}
+    far = dict(ZONE, x0=5.0, y0=5.0, x1=5.6, y1=5.6)
+    assert nogo.close_pinches(m, [far], nogo.CELL_NOGO, free=CELL_FREE,
+                              occupied=CELL_OCCUPIED) is m
+    on = dict(ZONE, x0=0.31, y0=0.01, x1=0.59, y1=0.29)    # cell (1, 0)'s centre inside
+    m2 = dict(m, cells=[CELL_FREE, nogo.CELL_NOGO, CELL_OCCUPIED, CELL_FREE])
+    out = nogo.close_pinches(m2, [on], nogo.CELL_NOGO, free=CELL_FREE, occupied=CELL_OCCUPIED)
+    assert out["cells"] == [nogo.CELL_NOGO] * 2 + [CELL_OCCUPIED, nogo.CELL_NOGO]
 
 
 def test_close_pinches_closes_both_ends_and_keeps_the_type():
     m = _map()
     masked = nogo.masked_map(m, [ZONE], nogo.CELL_NOGO, grow=nogo.HALF_WIDTH_M)
-    out = nogo.close_pinches(masked, nogo.CELL_NOGO, free=CELL_FREE)
+    out = nogo.close_pinches(masked, [ZONE], nogo.CELL_NOGO, free=CELL_FREE,
+                             occupied=CELL_OCCUPIED)
     assert out is not masked and isinstance(out["cells"], list)
     shut = {(i % W, i // W) for i, v in enumerate(out["cells"])
             if v == nogo.CELL_NOGO and masked["cells"][i] != nogo.CELL_NOGO}

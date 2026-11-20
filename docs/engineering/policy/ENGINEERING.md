@@ -928,11 +928,14 @@ needs only its two end cells free, so on the masked map it could pass a
 zone's corner through a gap of no width (a door filled by a zone at
 `procthor:val:15`: explore chose frontiers behind it that no navigator
 reaches, 5 aborted goals). `_zone_map` therefore also runs
-`nogo.close_pinches(masked, CELL_NOGO)`: every 2 x 2 block whose diagonal
-pair is free while the other two cells are not, at least one a zone cell,
-gets its free pair marked `CELL_NOGO` too, for up to `PINCH_PASSES` (4)
-rounds (cached with the mask; `pinch_cells` counts them). A pinch between
-walls alone is left as it was. And a goal within `NEAR_ZONE_M` (0.5 m) of a
+`nogo.close_pinches(masked, zones, CELL_NOGO)`: every 2 x 2 block whose
+diagonal pair is free while each of the other two cells is a wall or a cell
+whose centre lies in a zone itself (not merely in its grown band), at least
+one of them the latter, gets its free pair marked `CELL_NOGO` too, in one
+pass (cached with the mask; `pinch_cells` counts them). A side that is only
+the 0.12 m band is no pinch, because a navigator passes there (nav2's
+keepout is lethal to the robot's centre only; `procthor:val:9`, where
+closing it lost a find), and a pinch between walls alone is left as it was. And a goal within `NEAR_ZONE_M` (0.5 m) of a
 zone that ends `aborted` or `rejected` with the robot unmoved
 (`STUCK_MOVED_M`) is charged to its place at once (`_near_zone()`), not
 forgiven as the first wedge; the escape still runs. With no zones neither

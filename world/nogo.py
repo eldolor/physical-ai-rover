@@ -241,49 +241,46 @@ def cell_mask(m: dict, zones: Iterable[dict], grow: float = 0.0):
     return out
 
 
-PINCH_PASSES = 4                 # 3.196: rounds of `close_pinches` (each settles the cells it touches)
-
-
-def close_pinches(m: dict, cell_value: int, free: int = 0) -> dict:
-    """3.196 D1: a masked map with no diagonal step past a zone's corner.
+def close_pinches(masked: dict, zones: Iterable[dict], cell_value: int, free: int = 0,
+                  occupied: int = 100) -> dict:
+    """3.196 D1: a masked map with no diagonal step through a gap of no width
+    beside a zone.
 
     An 8-connected walk (`brain/frontier.py`'s `reach`) steps diagonally
-    between two free cells whose two shared neighbours are both blocked: a
-    gap of no width. Beside a wall it is old and rare (the simulator's walls
-    are cell-aligned); beside a zone it is how explore reached frontiers
-    behind a zone that filled a door (`procthor:val:15`), which no navigator
-    can. Every 2 x 2 block whose diagonal pair is `free` while the other two
-    are not, at least one of them `cell_value`, gets its free pair set to
-    `cell_value` too, for up to `PINCH_PASSES` rounds (a closed pair can
-    make a new pinch beside it). Returns `m` itself when nothing is closed;
-    otherwise a copy, `cells` of the same type, `pinch_cells` counted."""
-    if not m or not m.get("usable") or "cells" not in m:
-        return m
+    between two free cells whose two shared neighbours are both blocked. Where
+    one of those is a cell whose centre lies in a zone itself (lethal to a
+    navigator, as nav2's keepout is to the robot's centre) and the other is
+    such a cell or `occupied`, the gap is closed for the robot too: explore
+    reached frontiers behind a zone that filled a door that way
+    (`procthor:val:15`), which no navigator can. Every such 2 x 2 block gets
+    its free pair set to `cell_value`. A side that is only the zone's grown
+    band (`masked_map`'s `grow`) is no pinch: a navigator passes there
+    (`procthor:val:9`). Marked cells are not zone cells, so one pass settles
+    it. Returns `masked` itself when nothing is closed; otherwise a copy,
+    `cells` of the same type, `pinch_cells` counted."""
+    zones = list(zones or ())
+    if not zones or not masked or not masked.get("usable") or "cells" not in masked:
+        return masked
     import numpy as np
-    w, h = m["width"], m["height"]
-    cells = m["cells"]
+    w, h = masked["width"], masked["height"]
+    cells = masked["cells"]
     a = np.array(cells).reshape(h, w)          # a copy: the input is never changed
-    closed = 0
-    for _ in range(PINCH_PASSES):
-        ok = a == free
-        zone = a == cell_value
-        shut = ~ok
-        mark = np.zeros_like(ok)
-        tl, tr = (slice(0, -1), slice(0, -1)), (slice(0, -1), slice(1, None))
-        bl, br = (slice(1, None), slice(0, -1)), (slice(1, None), slice(1, None))
-        for p, q, s, t in ((tl, br, tr, bl), (tr, bl, tl, br)):
-            pinch = ok[p] & ok[q] & shut[s] & shut[t] & (zone[s] | zone[t])
-            mark[p] |= pinch
-            mark[q] |= pinch
-        if not mark.any():
-            break
-        closed += int(mark.sum())
-        a[mark] = cell_value
-    if not closed:
-        return m
-    out = dict(m)
+    hard = cell_mask(masked, zones, 0.0)
+    wall = hard | (a == occupied)
+    ok = a == free
+    mark = np.zeros_like(ok)
+    tl, tr = (slice(0, -1), slice(0, -1)), (slice(0, -1), slice(1, None))
+    bl, br = (slice(1, None), slice(0, -1)), (slice(1, None), slice(1, None))
+    for p, q, s_, t in ((tl, br, tr, bl), (tr, bl, tl, br)):
+        pinch = ok[p] & ok[q] & wall[s_] & wall[t] & (hard[s_] | hard[t])
+        mark[p] |= pinch
+        mark[q] |= pinch
+    if not mark.any():
+        return masked
+    a[mark] = cell_value
+    out = dict(masked)
     out["cells"] = a.ravel().tolist() if isinstance(cells, list) else a.ravel()
-    out["pinch_cells"] = closed
+    out["pinch_cells"] = int(mark.sum())
     return out
 
 
