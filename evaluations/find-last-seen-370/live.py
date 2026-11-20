@@ -93,15 +93,17 @@ def score(path=ROWS):
     s1 = next((r for r in rows if r.get("row") == "survey"), None)
     s2 = next((r for r in rows if r.get("row") == "reload"), None)
     finds = [r for r in rows if r.get("row") == "find"]
+    started = [f for f in finds if f.get("outcome") != "start_refused"]
     map_id = (s1 or {}).get("map_id")
     pre = {
         "survey_saved_one_map": bool(s1 and map_id and s1.get("report_frame_id") == map_id
                                      and s1.get("targets")),
         "reload_matched": bool(s2 and (s2.get("reload") or {}).get("result") == "matched"
                                and s2.get("map_id") == map_id),
-        "every_find_on_the_reload": bool(finds) and all(
+        # A refused start is a failed find (L3), not a broken instrument.
+        "every_find_on_the_reload": bool(started) and all(
             (f.get("saved_map") or {}).get("frame_id") == map_id
-            and (f.get("saved_map") or {}).get("reloaded") is True for f in finds),
+            and (f.get("saved_map") or {}).get("reloaded") is True for f in started),
     }
     n = len(finds)
     l1 = sum(bool(f.get("first_recall_ok")) for f in finds)
@@ -110,7 +112,7 @@ def score(path=ROWS):
     wrong = sum(f.get("outcome") == "found" and (f.get("found_m") is None or f["found_m"] > FOUND_M)
                 for f in finds)
     contacts = sum(f.get("contacts", 0) for f in finds)
-    failed = sum(f.get("outcome") == "failed" for f in finds)
+    failed = sum(f.get("outcome") in ("failed", "start_refused") for f in finds)
     valid = all(pre.values()) and n == FINDS
 
     def med(k):
@@ -127,7 +129,9 @@ def score(path=ROWS):
         "beside": {"median_seconds": med("seconds"), "median_goals": med("goals"),
                    "median_distance_m": med("distance_m"),
                    "returns": [(f.get("ret") or {}).get("state") for f in finds],
-                   "load_max": max([r.get("load_max") or 0 for r in rows] or [0])},
+                   # Outcome bars on a cloud box (3.189): recorded, not gated.
+                   "load_max": max([r.get("load_max") or 0 for r in rows]
+                                   + [(r.get("load") or {}).get("max") or 0 for r in rows] or [0])},
     }
 
 
@@ -174,8 +178,22 @@ def run():
             g = min(g, gap(A, square(*c)) * CELL_CM)
         return g, (t["x_m"], t["y_m"], t["heading_deg"])
 
+    def jget(client, path):
+        """One read; a failed one is {} (review: one bad reply must not end
+        a two-hour run)."""
+        try:
+            return client.get(path).json()
+        except (httpx.HTTPError, ValueError):
+            return {}
+
+    def save_logs(tag):
+        """The container's log before it is removed (review)."""
+        if subprocess.run(["docker", "inspect", de.CONTAINER], capture_output=True).returncode == 0:
+            with open(f"{de.RUN_DIR}/ros-{tag}.log", "w") as f:
+                subprocess.run(["docker", "logs", de.CONTAINER], stdout=f, stderr=subprocess.STDOUT)
+
     def goto(robot, x_m, y_m, timeout_s=240):
-        before = (robot.get("/world/goal").json().get("goal") or {}).get("goal_id")
+        before = (jget(robot, "/world/goal").get("goal") or {}).get("goal_id")
         r = robot.post("/world/goal", json={"x_m": x_m, "y_m": y_m}, headers={"x-driver": "twin-dpad"})
         try:
             reply = r.json()
@@ -186,7 +204,7 @@ def run():
         want = reply.get("goal_id") or (reply.get("goal") or {}).get("goal_id")
         end, seen = time.time() + timeout_s, False
         while time.time() < end:
-            g = robot.get("/world/goal").json().get("goal") or {}
+            g = jget(robot, "/world/goal").get("goal") or {}
             gid = g.get("goal_id")
             mine = gid == want if want else (gid is not None and gid != before)
             if mine and g.get("state") not in (None, "pending", "active"):
@@ -216,7 +234,7 @@ def run():
                                                "max_steps": 100000,
                                                "mission_time_limit_s": FIND_LIMIT_S})
         if r.status_code != 200:
-            return {"start": r.status_code, "detail": r.text[:300]}
+            return {"outcome": "start_refused", "start": r.status_code, "detail": r.text[:300]}
         objs = [(o["x"], o["y"]) for o in robot.get("/sim/objects").json()["objects"]
                 if o["name"] == target]
         t0 = time.time()
@@ -253,7 +271,7 @@ def run():
             rec["wall_capped"] = True
             brain.post("/mission/stop")
             time.sleep(5)
-            s = brain.get("/mission/status").json()
+            s = jget(brain, "/mission/status") or s
         time.sleep(4)                                      # the inventory's save thread
         text = ""
         if log:
@@ -293,7 +311,13 @@ def run():
         sv = s4.survey(brain, SURVEY_LIMIT_S)
         saved, settled = s4.settle(bridge)
         map_id = (saved or {}).get("map_id")
-        written = InventoryStore(inv_dir).latest_for(map_id) if map_id else None
+        # The brain saves in its own thread and process: wait for the file
+        # (review: a fixed sleep could read nothing and end the run here).
+        written, t_rep = None, time.time()
+        while map_id and written is None and time.time() - t_rep < 120:
+            written = InventoryStore(inv_dir).latest_for(map_id)
+            if written is None:
+                time.sleep(2)
         reported = (written or {}).get("reported") or []
         plan = sweep.plan(reported)[:FINDS] if reported else []
         row = {"row": "survey", "house": HOUSE, "head": head, "image": image,
@@ -314,6 +338,7 @@ def run():
 
         # ---- s2: reload, then the finds ----
         t = time.time()
+        save_logs("s1")
         robot, brain = d5.servers(HOUSE, inv_dir)
         w = d3.container(maps, bridge)
         write({"row": "reload", "reload": w["health"]["slam"]["reload"],
@@ -340,6 +365,7 @@ def run():
                 flush=True)
         restore(inv_dir, keep)
     finally:
+        save_logs("end")
         subprocess.run(["docker", "rm", "-f", de.CONTAINER], capture_output=True)
         de._kill_ports()
         load.stop_ev.set()

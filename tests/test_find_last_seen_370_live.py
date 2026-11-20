@@ -1,5 +1,4 @@
-"""3.70.M2's live half: the scorer's reading of a find's explore events (L1),
-and the recorded live run scored as the plan file records it (CLAUDE.md 7.3).
+"""3.70.M2's live half: the scorer's reading of a find's explore events (L1).
 The run itself needs the ROS container and is not re-run here."""
 
 import importlib.util
