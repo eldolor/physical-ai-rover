@@ -34,12 +34,14 @@ from brain.goal_policy import prior_is_informative  # noqa: E402
 from brain.room_prior import (MAX_TOKENS, PROMPT, SERVED, TYPES, parse,  # noqa: E402
                               target_key)
 from control.admin_prices import price_of  # noqa: E402
-from vision_core import MODEL_REGIONS, ROOM_MODEL_ID  # noqa: E402
+from vision_core import MODEL_REGIONS  # noqa: E402
 
 sys.path.insert(0, HERE)
 from targets import EXPECTED, TARGETS  # noqa: E402
 
-MODEL_ID = ROOM_MODEL_ID
+# The model B asked (/room's default, 3.116.C's), pinned so the recorded
+# replies are scored under it whatever BEDROCK_ROOM_MODEL_ID holds (review).
+MODEL_ID = "us.anthropic.claude-opus-5-5"
 REGION = MODEL_REGIONS.get(MODEL_ID) or "us-east-2"
 CACHE = os.path.join(HERE, "b", "replies.json")
 SCORE = os.path.join(HERE, "b", "score.json")
@@ -61,7 +63,10 @@ def save(cache: dict) -> None:
 
 
 def cost(usage) -> float:
-    pin, pout = price_of(MODEL_ID)
+    price = price_of(MODEL_ID)
+    if price is None:                      # an unpriced model: no cap can be kept
+        raise SystemExit(f"no billed price for {MODEL_ID} in control/admin_prices.py")
+    pin, pout = price
     u = usage or {}
     return (u.get("inputTokens", 0) * pin + u.get("outputTokens", 0) * pout) / 1e6
 
