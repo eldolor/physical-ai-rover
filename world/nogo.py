@@ -241,6 +241,52 @@ def cell_mask(m: dict, zones: Iterable[dict], grow: float = 0.0):
     return out
 
 
+PINCH_PASSES = 4                 # 3.196: rounds of `close_pinches` (each settles the cells it touches)
+
+
+def close_pinches(m: dict, cell_value: int, free: int = 0) -> dict:
+    """3.196 D1: a masked map with no diagonal step past a zone's corner.
+
+    An 8-connected walk (`brain/frontier.py`'s `reach`) steps diagonally
+    between two free cells whose two shared neighbours are both blocked: a
+    gap of no width. Beside a wall it is old and rare (the simulator's walls
+    are cell-aligned); beside a zone it is how explore reached frontiers
+    behind a zone that filled a door (`procthor:val:15`), which no navigator
+    can. Every 2 x 2 block whose diagonal pair is `free` while the other two
+    are not, at least one of them `cell_value`, gets its free pair set to
+    `cell_value` too, for up to `PINCH_PASSES` rounds (a closed pair can
+    make a new pinch beside it). Returns `m` itself when nothing is closed;
+    otherwise a copy, `cells` of the same type, `pinch_cells` counted."""
+    if not m or not m.get("usable") or "cells" not in m:
+        return m
+    import numpy as np
+    w, h = m["width"], m["height"]
+    cells = m["cells"]
+    a = np.array(cells).reshape(h, w)          # a copy: the input is never changed
+    closed = 0
+    for _ in range(PINCH_PASSES):
+        ok = a == free
+        zone = a == cell_value
+        shut = ~ok
+        mark = np.zeros_like(ok)
+        tl, tr = (slice(0, -1), slice(0, -1)), (slice(0, -1), slice(1, None))
+        bl, br = (slice(1, None), slice(0, -1)), (slice(1, None), slice(1, None))
+        for p, q, s, t in ((tl, br, tr, bl), (tr, bl, tl, br)):
+            pinch = ok[p] & ok[q] & shut[s] & shut[t] & (zone[s] | zone[t])
+            mark[p] |= pinch
+            mark[q] |= pinch
+        if not mark.any():
+            break
+        closed += int(mark.sum())
+        a[mark] = cell_value
+    if not closed:
+        return m
+    out = dict(m)
+    out["cells"] = a.ravel().tolist() if isinstance(cells, list) else a.ravel()
+    out["pinch_cells"] = closed
+    return out
+
+
 def masked_map(m: dict, zones: Iterable[dict], cell_value: int, grow: float = 0.0) -> dict:
     """A copy of a usable map with every cell inside a zone set to
     `cell_value` (explore uses occupied: no frontier, no goal, no path
