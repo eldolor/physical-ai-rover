@@ -170,3 +170,38 @@ def test_off_reads_nothing_late():
     runner, nav, grid, robot, _ = late(5, return_to_dock=False)
     s = run(runner)
     assert s["dock"] is None and s["return"] is None
+
+
+# -- the committed sweep, pinned (L2-L4; tests/dock_late_sweep.py) -----------
+
+def _sweep(arm):
+    import json
+    from pathlib import Path
+    p = Path(__file__).resolve().parents[1] / "evaluations" / "dock-late-394" / f"{arm}.json"
+    return json.loads(p.read_text())
+
+
+def test_the_sweep_returns_every_mission_whose_saved_dock_became_knowable():
+    for arm in ("saved-1", "saved-5", "saved-40"):
+        s = _sweep(arm)["summary"][arm]
+        assert s["missions"] == 60 and s["knowable"] == 60, (arm, s)
+        assert s["return_ran"] == 60 and s["no_dock_when_knowable"] == 0, (arm, s)
+        assert s["wrong_dock"] == 0 and s["dock_err_max_m"] <= 0.01, (arm, s)
+
+
+def test_the_sweep_never_uses_a_start_pose_read_after_a_move():
+    s = _sweep("start-5")["summary"]["start-5"]
+    assert s["missions"] == 60 and s["wrong_dock"] == 0, s
+    assert s["docks_used"] == 0, s          # the robot had always moved first
+
+
+def test_the_sweep_leaves_the_normal_path_as_dev_had_it():
+    """L4: the base arm, mission by mission, equal to `dev` `d291606c`'s."""
+    import json
+    key = lambda r: json.dumps([r["house"], r["start"], r["job"]])   # noqa: E731
+    dev = {key(r): r for r in _sweep("dev-base")["rows"]}
+    now = {key(r): r for r in _sweep("base")["rows"]}
+    assert len(dev) == len(now) == 60 and dev.keys() == now.keys()
+    for k in dev:
+        for f in ("outcome", "return", "return_reason", "dock", "end_s", "end_err_m"):
+            assert dev[k][f] == now[k][f], (k, f)
