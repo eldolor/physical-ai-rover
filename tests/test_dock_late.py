@@ -137,10 +137,14 @@ def test_a_server_restart_after_a_move_is_still_moved():
     runner, nav, grid, robot, _ = late(10 ** 6, saved=False)
     runner.start()
     robot._path_m += 3.0                        # drove 3 m
-    runner._late_dock(force=False)              # pose unusable: nothing read...
-    assert not runner._not_moved()              # ...but motion seen, latched
+    robot.pass_time(1.1)
+    runner._late_dock(force=False)              # pose unusable: no dock, but...
+    assert runner._dock_moved                   # ...the try sampled the motion
     robot._path_m = runner._dock_odom0["distance_m"]   # a restart reads "no path"
-    assert not runner._not_moved()
+    runner.world.n = 0                          # and the pose comes back usable
+    robot.pass_time(1.1)
+    runner._late_dock()
+    assert runner._dock is None
     runner2, _, _, robot2, _ = late(10 ** 6, saved=False)
     runner2.start()
     robot2._path_m = runner2._dock_odom0["distance_m"] - 1.0   # shrank

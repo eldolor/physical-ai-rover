@@ -494,13 +494,16 @@ or Reserve still propagates from the cancel and from each verb.
   the pose again, at most once a `LATE_DOCK_EVERY_S` (1 s, the mission's
   clock), and an end in `RETURNS` reads it once more (forced) in `_finish`
   before `_return_wanted` can answer `no_dock`. The forced read runs before
-  the wheels stop, so it is bounded by `POSE_READ_S` (`call_with_timeout`) and
-  takes a `saved_map` dock only, with no odometry read. A `saved_map` dock is
+  the wheels stop, so it takes a `saved_map` dock only, with no odometry read.
+  Every late pose read is bounded by `POSE_READ_S` (`call_with_timeout`), and
+  each unforced try samples the odometry first, whether or not the pose is
+  usable, so motion latches `_dock_moved` within a second of happening. A `saved_map` dock is
   taken whenever read. A `start` dock is taken only while the odometry says
   the robot has not moved since `start()` (under `LATE_DOCK_MOVED_M` 0.05 m of
   path and `LATE_DOCK_TURNED_DEG` 5 deg); odometry unread at either end, a path
   that shrank (a robot server restart) or any earlier read that showed motion
-  (latched, `_dock_moved`) counts as moved, because a start pose read after a
+  (latched, `_dock_moved`) counts as moved (a move and a restart inside one
+  try's second, or a robot carried with its wheels still, are not seen), because a start pose read after a
   move is not the dock. With the return off, a saved dock that becomes
   readable only later does not reach E2's no-go split (not covered). Taken: `status.dock`
   gains `late_s` (seconds after the start), a log line says how late and from

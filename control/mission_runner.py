@@ -1316,20 +1316,24 @@ class MissionRunner:
         start pose only while the robot has not moved (`_not_moved`). Else
         nothing: the return stays `no_dock`, never guessed (D1). At most once
         a LATE_DOCK_EVERY_S unless `force` (an end that goes home: before the
-        wheels stop, so the read is bounded by POSE_READ_S and takes the
-        saved map's dock only -- no odometry read -- review). With no
+        wheels stop, so it takes the saved map's dock only -- no odometry read
+        -- review). Every pose read is bounded by POSE_READ_S, and each
+        unforced try samples the odometry first, so motion latches
+        `_dock_moved` within a try of happening (Thermos). With no
         navigator the return can only be `no_nav2`: nothing is read."""
         if not self.return_to_dock or self._dock is not None or self._pending_end is not None \
-                or self._started_clock is None or self._navigator is None or not self._running:
+                or self._started_clock is None or self._navigator is None or not self._running \
+                or self._ended():
             return
         now = self.clock()
         if not force and self._dock_late_at is not None \
                 and now - self._dock_late_at < LATE_DOCK_EVERY_S:
             return
         self._dock_late_at = now
+        if not force and not self._dock_moved:
+            self._not_moved()           # Thermos: sample every try, so a move latches
         try:
-            pose = (call_with_timeout(self.world.get_pose, timeout_s=POSE_READ_S) if force
-                    else self.world.get_pose())
+            pose = call_with_timeout(self.world.get_pose, timeout_s=POSE_READ_S)
             found = docking.dock_from_pose(pose)
         except Exception as e:  # noqa: BLE001 -- unread (or timed out): try again later
             logger.warning("late dock: the pose was not read: %s", e)
