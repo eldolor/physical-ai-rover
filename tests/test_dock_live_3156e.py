@@ -40,9 +40,10 @@ def test_g3_missions_that_do_not_explore_go_home():
 
 def test_g4_live_no_goal_before_the_end():
     g4 = _scored()["G4_live"]
+    assert (g4["g3_ten"], g4["g3_ten_goal_posts_before_end"], g4["g3_ten_unmeasured"]) == (10, 0, 0)
     assert (g4["missions"], g4["with_window"], g4["unmeasured"]) == (26, 18, 0)
     assert (g4["goal_posts_before_end"], g4["the_returns_own_before_the_marker"], g4["early"]) == (1, 1, 0)
-    assert g4["pre_end_goal_ids_polled"] == 0
+    assert g4["pre_end_goal_ids_polled"] == 0 and g4["wider_set_clean"]
     assert g4["met"]
 
 
@@ -58,7 +59,7 @@ def test_g4_a_post_before_the_marker_is_early_unless_it_is_the_returns_own():
 def test_g5_a_stop_wins_on_the_new_path():
     g5 = _scored()["G5"]
     assert g5["first_run_invalid"]["return_metres_at_stop"] == [0.0, 0.0, 0.01, 0.0, 0.0]
-    assert (g5["drills"], g5["cancelled"], g5["autonomy_lapsed_in_g3"]) == (5, 5, 0)
+    assert (g5["drills"], g5["cancelled"], g5["gate_kept"], g5["autonomy_lapsed_in_g3"]) == (5, 5, 5, 0)
     assert g5["stopped_while"] == ["driving"] * 5
     assert g5["return_turned_deg_at_stop"] == [15.6, 22.1, 19.5, 17.2, 7.5]
     assert g5["return_moved_m_at_stop"] == [0.017, 0.0, 0.0, 0.0, 0.151]

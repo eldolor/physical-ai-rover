@@ -86,7 +86,10 @@ WALL_S = 600                # one mission's wall-clock cap (the limit, the retur
 FINDS = int(os.environ.get("LIVE_FINDS", 5))
 DRILLS = int(os.environ.get("LIVE_DRILLS", 5))
 OFF_M = (1.0, 4.0)          # G1: a person's goal first moves the robot 1-4 m off the dock
-SEED = int(os.environ.get("LIVE_SEED", 0))   # another run's starts: a nonzero offset
+# Another run's starts: an offset added to the kind's seed (finds 0, drills 1),
+# so LIVE_SEED=1 would repeat the default drills' cells as finds. The G5
+# re-run used 2 (drills from seed 3, cells no earlier run used).
+SEED = int(os.environ.get("LIVE_SEED", 0))
 STOP_WHEN_M, STOP_WHEN_DEG = 0.10, 15.0      # G5: a Stop only once the return truly moves
 DOCK_M, DOCK_DEG = 0.15, 15.0   # C2's every-run bars, as G1 and G3 name them
 _run = subprocess.run
@@ -160,12 +163,22 @@ class Standins(BaseHTTPRequestHandler):
         self._send({"status": "error", "score": None, "reason": "stand-in: not served"})
 
 
+def post_ok(client, path, **kw):
+    """A POST that records a failure instead of ending the run."""
+    try:
+        client.post(path, **kw)
+        return None
+    except httpx.HTTPError as e:
+        return f"{type(e).__name__}: {e}"[:200]
+
+
 def get_json(client, path, tries=4):
     """One reply's JSON, riding out a hiccup (a timeout, a plain-text 503):
     one bad sample must not end an hour's run (review, 2026-11-20)."""
     for i in range(tries):
         try:
             r = client.get(path)
+            r.raise_for_status()           # a 503's JSON body is not a sample
             return r.json()
         except (httpx.HTTPError, ValueError):
             if i == tries - 1:
@@ -223,13 +236,16 @@ def goto(robot, x_m, y_m, timeout_s=180):
     # This goal's own id when the reply names it, so the last mission's
     # finished goal is never read as this one's end (review, 2026-11-20).
     want = reply.get("goal_id") or (reply.get("goal") or {}).get("goal_id")
-    end = time.time() + timeout_s
+    end, seen = time.time() + timeout_s, False
     while time.time() < end:
         g = (get_json(robot, "/world/goal").get("goal") or {})
         gid = g.get("goal_id")
         mine = gid == want if want else (gid is not None and gid != before)
         if mine and g.get("state") not in (None, "pending", "active"):
             return g.get("state")
+        if seen and not mine:
+            return "vanished"              # e.g. the SLAM session changed under it
+        seen = seen or mine
         time.sleep(1.0)
     robot.delete("/world/goal")
     return "timeout"
@@ -276,7 +292,7 @@ def mission(robot, brain, truth, body, tag, dock_truth=None, drill=False, wall_s
         return {"start": r.status_code, "detail": r.text[:300]}
     t0 = time.time()
     rec = {"contacts": 0, "min_gap_cm": math.inf, "return_min_gap_cm": math.inf, "samples": 0,
-           "load_max": 0.0, "goals_seen": {}}
+           "load_max": 0.0, "goals_seen": {}, "prior_goal": prior}
     s, ended_at, ret_pose = {}, None, None
     while time.time() - t0 < wall_s:
         g = truth.gap_cm()
@@ -305,7 +321,9 @@ def mission(robot, brain, truth, body, tag, dock_truth=None, drill=False, wall_s
                 rec.update(drill_at=round(time.time() - t0, 1), drill_phase=ret.get("phase"),
                            drill_return_moved_m=round(far, 3), drill_return_turned_deg=round(turned, 1))
                 p0 = truth.pose()
-                robot.post("/stop")
+                err = post_ok(robot, "/stop")
+                if err:
+                    rec["stop_error"] = err
                 t1, moved, spun, track = time.time(), 0.0, 0.0, []
                 while time.time() - t1 < 10.0:
                     p = truth.pose()
@@ -321,8 +339,10 @@ def mission(robot, brain, truth, body, tag, dock_truth=None, drill=False, wall_s
             break
         time.sleep(0.25)
     else:
-        brain.post("/mission/stop")
         rec["wall_capped"] = True
+        err = post_ok(brain, "/mission/stop")
+        if err:
+            rec["mission_stop_error"] = err
         for _ in range(60):            # the end the stop made, not the last sample
             s = get_json(brain, "/mission/status")
             if not s.get("running"):

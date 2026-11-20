@@ -129,9 +129,15 @@ def score(main_rows, supp_rows=(), g5_rows=()):
     # The cross-check: goal ids seen polling before the return, the goal
     # present at the mission's start left out (in the first run's records,
     # the one first seen in its first 0.1 s).
+    # Rows with `prior_goal` already leave the start's goal out; older rows by
+    # its first-0.1 s sighting.
     early_ids = sum(sum(1 for v in (r.get("goals_seen") or {}).values()
-                        if not v["return"] and v["t"] > 0.1) for r in g4)
-    G4 = {"missions": len(g4), "goal_posts_before_end": sum(b or 0 for b in before),
+                        if not v["return"] and ("prior_goal" in r or v["t"] > 0.1)) for r in g4)
+    # The bar as written (E's table): G3's ten. The wider set is disclosed.
+    ten = [r.get("goal_posts_before_end") for r in finds]
+    G4 = {"g3_ten": len(ten), "g3_ten_goal_posts_before_end": sum(b or 0 for b in ten),
+          "g3_ten_unmeasured": sum(b is None for b in ten),
+          "missions": len(g4), "goal_posts_before_end": sum(b or 0 for b in before),
           "the_returns_own_before_the_marker": sum(lag),
           "early": sum((b or 0) - x for b, x in zip(before, lag)),
           "with_window": sum((r.get("end_decided_s") or 0) >= WINDOW_S for r in g4),
@@ -139,8 +145,11 @@ def score(main_rows, supp_rows=(), g5_rows=()):
           "unmeasured": sum(b is None for b in before),
           "goal_posts_after_end": [r.get("goal_posts_after_end") for r in g4],
           "end_decided_s": [r.get("end_decided_s") for r in g4]}
-    G4["met"] = (G4["missions"] >= 10 and G4["early"] == 0 and G4["unmeasured"] == 0
-                 and early_ids == 0)
+    G4["met"] = (len(ten) == 10 and G4["g3_ten_goal_posts_before_end"] == 0
+                 and G4["g3_ten_unmeasured"] == 0)
+    # Disclosed, not the verdict: the 26 with `_marker_lag`'s attribution
+    # (written after the G5 re-run's row it explains).
+    G4["wider_set_clean"] = G4["early"] == 0 and G4["unmeasured"] == 0 and early_ids == 0
 
     # The first run's drills are kept but not judged: every Stop landed
     # before the return had moved (ret.metres 0.0-0.01), so they could not fail.
@@ -156,7 +165,13 @@ def score(main_rows, supp_rows=(), g5_rows=()):
           "turned_after_stop_deg": [r.get("turned_after_stop_deg") for r in drills],
           "still_after_1s": [_still_after(r) for r in drills],
           "autonomy_lapsed_in_g3": sum(_lapsed(r) for r in both)}
-    G5["met"] = (G5["drills"] == 5 and G5["cancelled"] == 5
+    # The amendment's gate and the Stop as the cause, scored, not only run.
+    G5["gate_kept"] = sum(
+        r.get("drill_phase") in ("driving", "creep", "turn")
+        and ((r.get("drill_return_moved_m") or 0) >= 0.10 or (r.get("drill_return_turned_deg") or 0) >= 15.0)
+        and str((r.get("ret") or {}).get("reason") or "").startswith("stop") and not r.get("stop_error")
+        for r in drills)
+    G5["met"] = (G5["drills"] == 5 and G5["cancelled"] == 5 and G5["gate_kept"] == 5
                  and all(m is not None and m <= STOP_MOVED_CM for m in G5["moved_after_stop_cm"])
                  and all(t is not None and t <= STOP_TURNED_DEG for t in G5["turned_after_stop_deg"])
                  and all(st is not None and st[0] <= STILL_CM and st[1] <= STILL_DEG
