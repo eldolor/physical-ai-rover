@@ -236,7 +236,9 @@ def main(out, old_z3=False):
                 pp = robot.get("/world/pose").json()
                 entries.append({"t": round(time.time() - t0, 2), "at": [t["x_m"], t["y_m"]],
                                 "slam_pose": [pp.get("x_m"), pp.get("y_m")],
-                                "slam_inside": _inside(zones, pp.get("x_m") or 1e9, pp.get("y_m") or 1e9),
+                                "slam_inside": (_inside(zones, pp["x_m"], pp["y_m"])
+                                                if pp.get("x_m") is not None and pp.get("y_m") is not None
+                                                else None),
                                 "zones": ins})
             status = brain.get("/mission/status").json()
             if _ended(status):

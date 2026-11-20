@@ -359,6 +359,10 @@ def test_the_live_runs_met_e3_e4_r2_r3():
         assert z3["events"][1]["clear_m"] >= 0.30 and z3["truth_clear_at_restore_m"] >= 0.30
         assert len(z3["bridge_log"]) == 2
         assert z3["left_after_s"] <= 30                                                    # R3
+        assert r["z6_refused"] == 10 and m["goals_sent"] == 3
+        assert r["store_after_mission"] == 3 and r["bridge_after_mission"]["zones"] == 3
+        assert z3["seen_suspended"]
+        assert z3["counters_after"] == {"suspended_count": 1, "restored": 1}
     assert times[1] <= 114                                                                 # E4 median
 
 
@@ -369,3 +373,5 @@ def test_r1_the_old_z3_zone_was_refused_over_the_dock():
     assert r["explore_nogo"]["dock_refused"] == [zid]
     assert r["bridge_at_draw"]["zones"] == 4 and r["bridge_after_start"]["zones"] == 3
     assert r["bridge_at_end"]["restored"] == 0
+    assert r["store"]["dock_conflicts"][0]["id"] == zid
+    assert r["bridge_at_end"]["last"]["id"] == zid
