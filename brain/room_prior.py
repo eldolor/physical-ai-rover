@@ -127,11 +127,18 @@ def save_cache(cache: dict, path: Optional[Path] = None) -> None:
     p = Path(path or cache_path())
     p.parent.mkdir(parents=True, exist_ok=True)
     tmp = p.with_name(p.name + f".{os.getpid()}.{threading.get_ident()}.tmp")
-    with open(tmp, "w") as f:
-        json.dump(cache, f, indent=1, sort_keys=True)
-        f.flush()
-        os.fsync(f.fileno())
-    os.replace(tmp, p)
+    try:
+        with open(tmp, "w") as f:
+            json.dump(cache, f, indent=1, sort_keys=True)
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(tmp, p)
+    except BaseException:
+        try:
+            tmp.unlink()
+        except OSError:
+            pass
+        raise
 
 
 def cached(target, model_id: str = MODEL_ID, path: Optional[Path] = None) -> Optional[dict]:
@@ -207,10 +214,11 @@ SERVED = "_served_model"          # the cache's record of the model last answeri
 # on that call instead of paying for another.
 _in_flight: dict = {}
 
-# A call that ran out its own HTTP deadline was paid for and lost (Thermos):
-# the same target is not asked again in this process for COOL_S, so a
-# target the service is always too slow for costs one call an hour, not one
-# a find. Kept in memory only; a restart forgets it.
+# A call that was paid for and gave nothing kept -- it ran out its own HTTP
+# deadline, a 5xx, a reply cut short or filtered, a cache that cannot be
+# written (Thermos, review round 2) -- cools its target: not asked again in
+# this process for COOL_S, so a target that always fails costs one call an
+# hour, not one a find. Kept in memory only; a restart forgets it.
 COOL_S = 3600.0
 _cooling: dict = {}
 
@@ -247,8 +255,15 @@ def prior_at_start(target: str, vision_url: Optional[str], secret: Optional[str]
     key = (str(Path(path or cache_path())), target_key(target))
     since = _cooling.get(key)
     if since is not None and time.monotonic() - since < COOL_S:
-        return status("none", "timed out recently: not asked again yet", None, model)
+        return status("none", "failed recently: not asked again yet", None, model)
     with _lock:
+        # Read again under the lock: a call that finished between the first
+        # read and here has cached its reply and left `_in_flight` (review).
+        hit = cached(target, model, path)
+        if hit is not None:
+            ok = hit.get("prior") is not None and valid_rates(hit["prior"])
+            return status("cache" if ok else "none", None if ok else "cached reply is not a prior",
+                          hit["prior"] if ok else None, model)
         job = _in_flight.get(key)
         mine = job is None
         if mine:
@@ -270,15 +285,21 @@ def prior_at_start(target: str, vision_url: Optional[str], secret: Optional[str]
                         job["entry"] = remember(target, answer, path)
                     except OSError as e:
                         # A cache that cannot be written still lets this
-                        # mission use the paid reply (Thermos); the next
-                        # find pays again, and the log says why.
+                        # mission use the paid reply (Thermos); the target
+                        # cools, so it is not paid for every find.
                         logger.warning("room prior cache not written (%s): reply used "
                                        "for this mission only", e)
                         reply = answer.get("reply")
                         job["entry"] = {"prior": parse(reply if isinstance(reply, str) else "")}
+                        _cooling[key] = time.monotonic()
+                else:
+                    _cooling[key] = time.monotonic()      # cut or filtered: paid, not kept
             except BaseException as e:  # noqa: BLE001 -- the start's status names it
                 job["error"] = e
-                if _why_failed(e) == "timeout":
+                why = _why_failed(e)
+                # Paid or possibly paid and lost: a timeout, or a 5xx from the
+                # service or its gateway. Refused connections and 4xx are not.
+                if why == "timeout" or why.startswith("http 5"):
                     _cooling[key] = time.monotonic()
             finally:
                 with _lock:

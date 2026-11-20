@@ -976,12 +976,20 @@ hits its own replies. The call (`prior_at_start`) runs on a daemon thread and
 the start waits at most `find_prior_timeout_s` (4 s, the section's
 proposal): a reply after the deadline is cached for the next find and never
 reaches this mission; a start that finds a call for its target still running
-waits on it rather than paying again; a call that runs out its own HTTP
-deadline (3 x the start's) cools that target for `COOL_S` (an hour, in
-memory); a cache that cannot be written still gives this mission the reply. The
+waits on it rather than paying again (the cache is read again under the
+lock before a call is claimed); a call paid for and not kept -- past its own
+HTTP deadline (3 x the start's), a 5xx, a reply cut short or filtered, a
+cache that cannot be written -- cools that target for `COOL_S` (an hour, in
+memory; a refused connection does not); a cache that cannot be written
+still gives this mission the reply. Known limit: after a redeploy to
+another model, targets cached under the model last served are read from it
+until some target misses and the new model answers. The shipped prior is
+matched on the normalised target, and `shipped` rates are filed under the
+key the policy reads (a known target typed with stray spaces is never paid
+for). The
 result is `status.room_prior` (`{source: shipped | cloud | cache | none,
 why, rates, model_id, acts}`), handed to `MissionRunner(room_prior=)`, which
-for `cloud` or `cache` puts the rates where the shipped prior's would be,
+for `cloud`, `cache` or `shipped` puts the rates where the shipped prior's would be,
 in this mission's own `RoomGoalPolicy` object (`goal_policy_for` loads a new
 one each mission; the shipped file is never written). The asks decision
 (`find_room_labels`' flat-prior skip) stays on the shipped prior. A typed

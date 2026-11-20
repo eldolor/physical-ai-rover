@@ -806,11 +806,13 @@ class MissionRunner:
 
         # 3.190.C: a find's room prior as the brain's start found it
         # (`brain/room_prior.status()`): None with `find_prior_source` off.
-        # Rates from the cloud or its cache stand in for the shipped prior's
-        # for this target, in this mission's own policy object only.
+        # Its rates sit under this target's key in this mission's own policy
+        # object only: the cloud's or the cache's in place of none, or the
+        # shipped rates themselves (the same values; a target typed with
+        # edge or double spaces then reads them too, review round 2).
         if room_prior is not None:
             room_prior = dict(room_prior)
-            if room_prior.get("source") in ("cloud", "cache"):
+            if room_prior.get("source") in ("cloud", "cache", "shipped"):
                 if job != "find" or not valid_prior_rates(room_prior.get("rates")):
                     raise ValueError("room_prior's rates are for a find, as four types in "
                                      f"[0, 1]; got {room_prior.get('rates')!r} on a {job}")
@@ -1084,7 +1086,8 @@ class MissionRunner:
             extra = {"navigator": self._navigator, "clock": self.clock,
                      # 3.65 phase 2: "rule" (None) or the learned goal choice.
                      "goal_policy": goal_policy_for(explore_goal_policy)}
-            if (room_prior is not None and room_prior.get("source") in ("cloud", "cache")
+            if (room_prior is not None and room_prior.get("rates") is not None
+                    and room_prior.get("source") in ("cloud", "cache", "shipped")
                     and getattr(extra["goal_policy"], "rooms", False)):
                 # Only goal order changes: the rates sit where the shipped
                 # prior's would, and the label-asks rule above stays on the

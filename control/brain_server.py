@@ -783,7 +783,11 @@ def create_app(
             return none("none", "explore_goal_policy is not 'rooms'")
         if not target:
             return none("none", "no target object")
-        shipped = shipped_rooms_prior(req.target_object)
+        # The shipped prior is matched on the normalised target, as the
+        # cloud would be asked: a known target typed with stray spaces is
+        # never paid for (review round 2); the runner files the rates under
+        # the key the policy reads.
+        shipped = shipped_rooms_prior(target)
         if shipped is not None:
             return none("shipped", None, shipped)
         if len(target) > room_prior_mod.MAX_TARGET_CHARS:
