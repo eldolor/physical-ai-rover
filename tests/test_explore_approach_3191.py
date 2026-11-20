@@ -137,3 +137,29 @@ def test_an_approach_that_moves_and_succeeds_charges_nothing():
     agent.step()                                  # FakeNav: there on this poll
     assert agent.goals_reached and agent.goals_reached[-1][2] == "approach"
     assert agent.retry.entries == []
+
+
+# ---- the sweep's records, pinned (3.191.A; rows in evaluations/explore-approach-3191/) ----
+
+def _rows(name):
+    import json
+    from pathlib import Path
+    path = Path(__file__).resolve().parents[1] / "evaluations" / "explore-approach-3191" / name
+    with open(path) as f:
+        return {r["k"]: r for r in (json.loads(x) for x in f if x.strip())}
+
+
+def test_the_sweep_records_hold():
+    for nav, found_fix, found_dev in (("inflated", 6, 5), ("fake", 20, 20)):
+        fix, dev = _rows(f"rows-fix-{nav}.jsonl"), _rows(f"rows-dev-{nav}.jsonl")
+        assert len(fix) == len(dev) == 20
+        assert max(r["no_move_max_per_place"] for r in fix.values()) <= RETRY_LIMIT
+        assert sum(r["outcome"] == "found" and not r["wrong_found"] for r in fix.values()) == found_fix
+        assert sum(r["outcome"] == "found" and not r["wrong_found"] for r in dev.values()) == found_dev
+        assert not any(r["wrong_found"] or r["contacts"] for r in fix.values())
+        assert [k for k in fix if fix[k]["outcome"] != dev[k]["outcome"]] == (
+            [19] if nav == "inflated" else [])
+    k19, k19_dev = _rows("rows-fix-inflated.jsonl")[19], _rows("rows-dev-inflated.jsonl")[19]
+    assert k19_dev["goals"] == 4662 and k19_dev["no_move_max_per_place"] == 4657
+    assert k19["outcome"] == "found" and k19["goals"] <= 300 and k19["no_move_max_per_place"] <= 3
+    assert k19["distance_m"] < 10.0            # criterion 3 FAILED as written: found first
