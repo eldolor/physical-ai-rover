@@ -47,3 +47,42 @@ def test_a_frontier_first_or_a_far_place_or_a_far_goal_fails_l1():
     other_label = [{"event": "goal_sent", "kind": "recall", "goal": [1.0, 1.5], "at": [1.0, 2.0]}]
     assert not live.first_act(other_label, MUG, "shoes")["first_recall_ok"]
     assert not live.first_act([], MUG, "mug")["first_recall_ok"]
+
+
+def _rows(tmp_path, finds, reload_result="matched"):
+    import json
+    sm = {"frame_id": "map-a", "reloaded": True}
+    rows = [{"row": "survey", "map_id": "map-a", "report_frame_id": "map-a", "targets": ["mug"],
+             "load": {"max": 3.0}},
+            {"row": "reload", "reload": {"result": reload_result}, "map_id": "map-a"}]
+    rows += [{"row": "find", "saved_map": sm, **f} for f in finds]
+    p = tmp_path / "live.jsonl"
+    p.write_text("".join(json.dumps(r) + "\n" for r in rows))
+    return p
+
+
+GOOD = {"outcome": "found", "found_m": 0.5, "first_recall_ok": True, "contacts": 0,
+        "seconds": 100, "goals": 1}
+
+
+def test_score_five_good_finds_meet_every_bar(tmp_path):
+    s = live.score(_rows(tmp_path, [GOOD] * 5))
+    assert s["valid"] and s["L1_first_goal"]["verdict"] == "MET"
+    assert s["L2_found"]["verdict"] == "MET" and s["L3_stability"]["verdict"] == "MET"
+    assert s["beside"]["median_seconds"] == 100 and s["beside"]["load_max"] == 3.0
+
+
+def test_score_fails_and_invalidates_as_written(tmp_path):
+    far = dict(GOOD, found_m=1.2)                  # a wrong found: L2 and L3 fail
+    s = live.score(_rows(tmp_path, [GOOD] * 4 + [far]))
+    assert s["L2_found"]["verdict"] == "FAILED" and s["L3_stability"]["wrong_found"] == 1
+    unmeasured = dict(GOOD, found_m=None)          # fails L2, not counted wrong
+    s = live.score(_rows(tmp_path, [GOOD] * 4 + [unmeasured]))
+    assert s["L2_found"]["verdict"] == "FAILED" and s["L3_stability"]["verdict"] == "MET"
+    refused = {"outcome": "start_refused"}         # a failed find, the run still valid
+    s = live.score(_rows(tmp_path, [GOOD] * 4 + [refused]))
+    assert s["valid"] and s["L3_stability"]["verdict"] == "FAILED"
+    s = live.score(_rows(tmp_path, [GOOD] * 5, reload_result="fell_back"))
+    assert not s["valid"] and s["L1_first_goal"]["verdict"] == "INVALID"
+    s = live.score(_rows(tmp_path, [GOOD] * 4))    # a run cut short
+    assert s["L2_found"]["verdict"] == "INVALID"

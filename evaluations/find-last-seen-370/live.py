@@ -109,8 +109,11 @@ def score(path=ROWS):
     l1 = sum(bool(f.get("first_recall_ok")) for f in finds)
     found_ok = sum(f.get("outcome") == "found" and f.get("found_m") is not None
                    and f["found_m"] <= FOUND_M for f in finds)
-    wrong = sum(f.get("outcome") == "found" and (f.get("found_m") is None or f["found_m"] > FOUND_M)
-                for f in finds)
+    # A found with no measured distance fails L2 (not shown within 0.9 m)
+    # but is not a wrong found: it is reported apart (Thermos).
+    wrong = sum(f.get("outcome") == "found" and f.get("found_m") is not None
+                and f["found_m"] > FOUND_M for f in finds)
+    unmeasured = sum(f.get("outcome") == "found" and f.get("found_m") is None for f in finds)
     contacts = sum(f.get("contacts", 0) for f in finds)
     failed = sum(f.get("outcome") in ("failed", "start_refused") for f in finds)
     valid = all(pre.values()) and n == FINDS
@@ -125,6 +128,9 @@ def score(path=ROWS):
         "L1_first_goal": {"recall_first": l1, "of": n, "verdict": verdict(l1 == FINDS)},
         "L2_found": {"found": found_ok, "of": n, "verdict": verdict(found_ok == FINDS)},
         "L3_stability": {"contacts": contacts, "wrong_found": wrong, "failed": failed,
+                         "found_unmeasured": unmeasured,
+                         # Beside, no bar: a find the harness had to stop (Thermos).
+                         "wall_capped": sum(bool(f.get("wall_capped")) for f in finds),
                          "verdict": verdict(contacts == 0 and wrong == 0 and failed == 0)},
         "beside": {"median_seconds": med("seconds"), "median_goals": med("goals"),
                    "median_distance_m": med("distance_m"),
@@ -235,8 +241,8 @@ def run():
                                                "mission_time_limit_s": FIND_LIMIT_S})
         if r.status_code != 200:
             return {"outcome": "start_refused", "start": r.status_code, "detail": r.text[:300]}
-        objs = [(o["x"], o["y"]) for o in robot.get("/sim/objects").json()["objects"]
-                if o["name"] == target]
+        objs = [(o["x"], o["y"]) for o in (jget(robot, "/sim/objects").get("objects") or [])
+                if o.get("name") == target]
         t0 = time.time()
         rec = {"contacts": 0, "min_gap_cm": math.inf, "samples": 0, "load_max": 0.0,
                "distance_m": 0.0, "saved_map": None, "found_m": None, "end_seen_s": None}
@@ -245,7 +251,7 @@ def run():
             try:
                 g, p = gap_cm(robot)
                 s = brain.get("/mission/status").json()
-            except (httpx.HTTPError, ValueError):
+            except (httpx.HTTPError, ValueError, KeyError, TypeError):
                 time.sleep(0.5)
                 continue
             rec["samples"] += 1
@@ -348,8 +354,12 @@ def run():
         for m in plan:
             t = time.time()
             sx, sy = (m["start"][0] + 0.5) * 0.3, (m["start"][1] + 0.5) * 0.3
-            reached = goto(robot, sx, sy)
-            st = d3.truth(robot)
+            try:
+                reached = goto(robot, sx, sy)
+            except (httpx.HTTPError, ValueError, KeyError, TypeError) as e:   # Thermos
+                reached = f"error: {e!r}"[:160]
+            t_ = jget(robot, "/world/truth")
+            st = (t_.get("x_m", math.nan), t_.get("y_m", math.nan), t_.get("heading_deg", math.nan))
             # The last find's save has landed (its sleep); put the survey's back.
             restore(inv_dir, keep)
             rec = find(robot, brain, m["k"], m["target"], reported)
