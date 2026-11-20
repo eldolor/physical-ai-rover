@@ -248,3 +248,83 @@ def test_the_lookup_sends_the_robot_server_only_zones_in_force():
 def test_dock_conflicts_report_is_json_plain():
     z = nogo.clean_zone(COVERING["over_the_dock"])
     json.dumps(nogo_store.dock_report([z], DOCK))
+
+
+# ---------- review round 1 ----------
+
+def test_with_no_navigator_there_is_no_trip_home_to_keep_clear():
+    grid = build_world("scaled_house")
+    robot = MockRobot(grid, render=False)
+    runner = MissionRunner(robot, target_object="red backpack", policy="frontier",
+                           world=MockWorld(grid), max_steps=3, clock=lambda: grid.sim_time,
+                           idle=robot.pass_time, return_to_dock=True)
+    x, y = grid.x * 0.3, grid.y * 0.3
+    over = nogo.clean_zone(_z(x - 0.4, y - 0.4, x + 0.4, y + 0.4))
+    runner.set_nogo(FRAME, [over])
+    runner.start()
+    assert runner.nogo_zones == [over] and runner.nogo_dock_refused == []
+
+
+def test_a_dock_read_on_one_saved_map_never_filters_anothers_zones():
+    runner, grid, over, far = _runner()
+
+    class Saved(MockWorld):
+        def get_pose(self):
+            return dict(super().get_pose(), frame_id=FRAME)
+    runner.world = Saved(grid)
+    runner.read_dock(runner.world.get_pose())
+    runner.set_nogo(FRAME, [over, far])
+    assert runner.nogo_dock_refused == [over["id"]]
+    runner.set_nogo("map-other", [over, far])
+    assert runner.nogo_zones == [over, far] and runner.nogo_dock_refused == []
+
+
+def test_start_reads_the_dock_again_when_the_brains_read_was_unusable():
+    runner, grid, over, far = _runner()
+    runner.read_dock({"usable": False})
+    runner.set_nogo(FRAME, [over, far])
+    assert runner.nogo_dock_refused == []
+    sent = []
+    runner.nogo_sink = lambda f, z: sent.append([q["id"] for q in z])
+    runner.start()
+    assert runner.nogo_dock_refused == [over["id"]] and sent == [[far["id"]]]
+
+
+class _Ran:
+    """A mission on FRAME whose dock is its start pose (no saved dock)."""
+    nogo_frame, _saved_map = FRAME, {"frame_id": FRAME}
+    nogo_dock_refused: list = []
+
+    def __init__(self, running):
+        self.running = running
+
+    def is_running(self):
+        return self.running
+
+    def _nogo_dock(self):
+        return {"x_m": 2.0, "y_m": 2.0, "theta": 0.0, "source": docking.START}
+
+    def set_nogo(self, frame_id, zones):
+        self.nogo_zones = list(zones)
+
+
+def test_a_finished_missions_start_is_no_dock_for_the_editor(brain):
+    c = brain(dock=None)
+    c.app.state.brain_state["runner"] = _Ran(running=False)
+    v = c.post("/mission/nogo", json={"frame_id": FRAME, "op": "add", "rev": 0,
+                                      "zone": COVERING["over_the_dock"]}).json()
+    assert len(v["zones"]) == 1 and v["dock_conflicts"] == []
+
+
+def test_a_running_missions_dock_refuses_and_its_own_list_is_reported(brain):
+    c = brain(dock=None)
+    ran = _Ran(running=True)
+    c.app.state.brain_state["runner"] = ran
+    r = c.post("/mission/nogo", json={"frame_id": FRAME, "op": "add", "rev": 0,
+                                      "zone": COVERING["over_the_dock"]})
+    assert r.status_code == 409 and r.json()["detail"] == nogo_store.DOCK_REFUSED
+    v = c.post("/mission/nogo", json={"frame_id": FRAME, "op": "add", "rev": 0,
+                                      "zone": CLEAR}).json()
+    ran.nogo_dock_refused = [v["zones"][0]["id"]]       # the mission's own word
+    v = c.get("/mission/nogo").json()
+    assert [d["id"] for d in v["dock_conflicts"]] == [v["zones"][0]["id"]]

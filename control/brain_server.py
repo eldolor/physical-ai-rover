@@ -1492,12 +1492,12 @@ def create_app(
         # 3.161.B part 2 (E4): the mission's dock is read first, so a zone
         # over it is left out of both (and reported).
         try:
-            frame_id = await asyncio.to_thread(_pose_frame)
+            pose, frame_id = await asyncio.to_thread(_pose_and_frame)
         except Exception as e:  # noqa: BLE001 -- no frame read: no zones, never a refusal
             logger.warning("no-go zones: the pose could not be read at start: %s", e)
-            frame_id = None
-        if hasattr(runner, "read_dock"):
-            await asyncio.to_thread(runner.read_dock)
+            pose, frame_id = None, None
+        if pose and hasattr(runner, "read_dock"):
+            runner.read_dock(pose)          # the same read: no second await (review)
         if frame_id:
             zones = nogo_store_mod.default_store().zones(frame_id)
             runner.set_nogo(frame_id, zones)
@@ -1674,19 +1674,19 @@ def create_app(
         return None
 
     def _known_dock(frame_id, pose=None):
-        """3.161.B part 2 (E2): the dock for `frame_id` -- the saved map's
-        (a matched reload's pose carries it), else the dock of the mission
-        running, or last run, on that map; None when none is known."""
+        """3.161.B part 2 (E2): the dock for `frame_id` -- the dock of the
+        mission running on that map, if its trip home can drive to one; else
+        the saved map's (a matched reload's pose carries it); None when none
+        is known. Never a finished mission's (review: its start pose is no
+        dock once it has ended)."""
+        live = _nogo_running(state.get("runner"), frame_id)
+        if live is not None and hasattr(live, "_nogo_dock"):
+            return live._nogo_dock()
         if pose and pose.get("usable") and pose.get("frame_id") == frame_id \
                 and isinstance(pose.get("dock"), dict):
             d = docking.dock_from_pose(pose)
             if d is not None and d.get("source") == docking.SAVED_MAP:
                 return d
-        runner = state.get("runner")
-        if runner is not None:
-            saved = getattr(runner, "_saved_map", None) or {}
-            if frame_id in (getattr(runner, "nogo_frame", None), saved.get("frame_id")):
-                return getattr(runner, "_dock", None)
         return None
 
     def _nogo_apply(runner, frame_id, zones, dock=None) -> dict:
@@ -1702,6 +1702,14 @@ def create_app(
         state["nogo_sent"] = _nogo_send(frame_id, zones)
         return state["nogo_sent"]
 
+    def _dock_conflicts(frame_id, zones, dock) -> list:
+        live = _nogo_running(state.get("runner"), frame_id)
+        if live is not None and getattr(live, "nogo_frame", None) == frame_id:
+            out = set(getattr(live, "nogo_dock_refused", ()))
+            return [{"id": z["id"], "reason": nogo_store_mod.DOCK_CONFLICT}
+                    for z in zones if z["id"] in out]
+        return nogo_store_mod.dock_report(zones, dock)
+
     def nogo_view(frame_id, doc=None, dock=None) -> dict:
         if not frame_id:
             return {"frame_id": None, "closed": nogo_store_mod.CLOSED_NO_FRAME,
@@ -1710,8 +1718,9 @@ def create_app(
         return {"frame_id": frame_id, "closed": None, "rev": doc["rev"], "zones": doc["zones"],
                 "max": nogo_mod.MAX_ZONES, "unreadable": doc.get("unreadable"),
                 "sent": state.get("nogo_sent"),
-                # E4/E6: stored zones over the dock, not in force (a person deletes them).
-                "dock_conflicts": nogo_store_mod.dock_report(doc["zones"], dock),
+                # E4/E6: stored zones over the dock, not in force (a person deletes them):
+                # the running mission's own list when one is on this map (review).
+                "dock_conflicts": _dock_conflicts(frame_id, doc["zones"], dock),
                 "dock_known": dock is not None}
 
     def _pose_frame():
