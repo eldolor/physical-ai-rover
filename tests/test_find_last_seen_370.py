@@ -37,6 +37,9 @@ def test_run_2_scores_as_the_plan_records():
     assert s["missions"] == {"surveyed": 20, "unsurveyed": 20}
     assert (s["found"]["surveyed"], s["found"]["unsurveyed"], s["found"]["met"]) == (19, 20, True)
     assert (s["first_goal"]["recall_first"], s["first_goal"]["met"]) == (20, True)
+    # Review round 1: the goal sent, not only the place it was for.
+    assert (s["first_goal"]["goal_within_approach"], s["first_goal"]["goal_m_max"]) == (20, 0.59)
+    assert s["median_s"]["met"] is None          # amendment 1: not judgeable
     assert (s["median_s"]["surveyed"], s["median_s"]["unsurveyed"]) == (2.2, 51.2)
     assert (s["beside"]["surveyed"]["median_goals"], s["beside"]["unsurveyed"]["median_goals"]) == (1.0, 25.5)
     st = s["stability"]
