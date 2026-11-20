@@ -325,7 +325,9 @@ def test_a_rotated_zone_is_drawn_rotated():
     poly = [[c * x - s * y, s * x + c * y] for x, y in ((0, 0), (1, 0), (1, 1), (0, 1))]
     m = keepout.mask([], zones=keepout.parse_zones([{"id": "r", "poly": poly}]))
     pts = _marked(m)
-    assert abs(len(pts) * 0.05 ** 2 - 1.0) < 0.08
+    # 3.193: every cell the zone touches -- at least its area, at most a cell
+    # more along each 1 m side (was the centre rule's 1.0 +- 0.08).
+    assert 1.0 <= len(pts) * 0.05 ** 2 <= 1.0 + 4 * 0.05
     for x, y in pts:                                               # back into the unit square
         u, v = c * x + s * y, -s * x + c * y
         assert -0.04 <= u <= 1.04 and -0.04 <= v <= 1.04

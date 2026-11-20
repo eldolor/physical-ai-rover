@@ -335,6 +335,10 @@ class Bridge(Node):
         self.zones_fresh = set()
         self.zones_suspended = set()
         self.zone_events = {"suspended": 0, "restored": 0, "last": None}
+        # 3.193: the keepout mask's lattice follows the SLAM map's, so a mask
+        # cell is a costmap cell (set from each /map; (0, 0) until the first).
+        self.mask_phase = (0.0, 0.0)
+        self._mask_res_warned = False
         self.keepout_info_pub = self.create_publisher(CostmapFilterInfo, "/costmap_filter_info", latched)
         self.keepout_mask_pub = self.create_publisher(OccupancyGrid, "/keepout_mask", latched)
         info = CostmapFilterInfo()
@@ -539,6 +543,9 @@ class Bridge(Node):
         stamp = msg.header.stamp.sec + msg.header.stamp.nanosec * 1e-9
         # 3.124 review: the grid-sized copy before the lock every callback takes.
         data = list(msg.data)
+        pose = self._pose_in("map") if self.zones else None    # 3.193, outside the lock
+        if pose is not None and pose.get("age_s", 0) > 2.0:
+            pose = None
         with self.lock:
             # 3.50.D3: a map the previous slam_toolbox published (a reload
             # that fell back) is not this frame's.
@@ -557,6 +564,20 @@ class Bridge(Node):
             if self.map_version == version:
                 new["data"] = held["data"]
             self.last_map = {**new, "version": self.map_version}
+            if abs(info.resolution - keepout.RES_M) < 1e-9:
+                ph = keepout.phase_of(info.origin.position.x, info.origin.position.y)
+                if keepout.phase_moved(ph, self.mask_phase):
+                    self.mask_phase = ph          # 3.193: redraw on the new lattice
+                    if self.zones or self.keepout_spots:
+                        if self.zones and pose is not None:
+                            self._zones_step(pose)     # review: boxed on the new lattice
+                        self.keepout_spots = keepout.live(self.keepout_spots, time.time())
+                        self._publish_keepout(self.keepout_spots)
+            elif not self._mask_res_warned:
+                self._mask_res_warned = True
+                self.get_logger().warning(
+                    f"the map's resolution {info.resolution:g} m is not the keepout mask's "
+                    f"{keepout.RES_M:g} m: mask cells are not costmap cells (3.193)")
             if first_of_reload:
                 # 3.50.D4 (review): the saved graph's own map, before the
                 # localisation node's rolling buffer fills any unknown cell.
@@ -1016,7 +1037,7 @@ class Bridge(Node):
         Returns whether the drawn set changed."""
         xy = None if pose is None else (pose["x_m"], pose["y_m"])
         before = self.zones_suspended
-        after = keepout.suspend(self.zones, before, xy, self.zones_fresh)
+        after = keepout.suspend(self.zones, before, xy, self.zones_fresh, phase=self.mask_phase)
         if xy is not None:
             self.zones_fresh = set()
         for zid in sorted(after - before):
@@ -1048,13 +1069,18 @@ class Bridge(Node):
 
     def _nogo_view(self):
         """Under self.lock: /health's `nogo` block (3.161 D4)."""
+        # 3.193: the ids list is `suspended`; its counter is `suspended_count`
+        # (before, spreading zone_events wrote the counter over the list).
         return {"zones": len(self.zones), "suspended": sorted(self.zones_suspended),
-                **self.zone_events}
+                "suspended_count": self.zone_events["suspended"],
+                "restored": self.zone_events["restored"], "last": self.zone_events["last"],
+                "lattice_phase_m": [round(v, 4) for v in self.mask_phase]}
 
     def _publish_keepout(self, spots):
         # 3.161: the zones still drawn (not suspended) join the spots.
         m = keepout.mask(spots, zones=[z for z in self.zones
-                                       if z["id"] not in self.zones_suspended])
+                                       if z["id"] not in self.zones_suspended],
+                         phase=self.mask_phase)
         msg = OccupancyGrid()
         msg.header.frame_id = "map"
         msg.header.stamp = self.get_clock().now().to_msg()
