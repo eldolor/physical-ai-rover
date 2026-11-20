@@ -1923,6 +1923,14 @@ class ExploreAgent(MissionAgent):
                 # another approach from here.
                 self._pending = [("FACE", g["target"], 90, False, True)]
                 self._approach = None
+                if g.get("from") and pose.get("usable") and math.hypot(
+                        pose["x_m"] - g["from"][0], pose["y_m"] - g["from"][1]) < STUCK_MOVED_M:
+                    # 3.191: reached without leaving -- the band cell was the
+                    # robot's own, just outside `_at_target`'s band. It made no
+                    # progress, so it is a retry failure of the sighting (cooled,
+                    # dropped at RETRY_LIMIT); uncharged, 3.70.M2's k 19 sent
+                    # it again every other tick, 4,657 times.
+                    self.retry.fail(g["target"][0], g["target"][1], now, known=self._known_at)
             elif g.get("recall"):
                 # 3.172 F5: a remembered place, not a sighting: a refused turn
                 # gives up the look, never counts against the place.
