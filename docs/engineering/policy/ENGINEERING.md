@@ -988,7 +988,16 @@ matched on the normalised target, and `shipped` rates are filed under the
 key the policy reads (a known target typed with stray spaces is never paid
 for). The
 result is `status.room_prior` (`{source: shipped | cloud | cache | none,
-why, rates, model_id, acts}`), handed to `MissionRunner(room_prior=)`, which
+why, rates, model_id, acts}`; `why` with `none`: "not a find", "no explore
+search", "explore_goal_policy is not 'rooms'", "no target object", "target
+too long to ask", "no room-label layer", "no vision service", "timeout",
+"unreachable", "http <code>", "error: <type>", "reply cut (<stop>)",
+"failed recently (<cause>): not asked again yet", "reply is not a prior" or
+"cached reply is not a prior"; `acts` whether it reaches a goal choice; null
+with the key off; the report holds it only with the key on, and the metrics
+row's `config.room_prior` is `source` or `none (<why>)`; the mission spec's
+status list does not name it yet: that file is another open step's, so the
+field is described here), handed to `MissionRunner(room_prior=)`, which
 for `cloud`, `cache` or `shipped` puts the rates where the shipped prior's would be,
 in this mission's own `RoomGoalPolicy` object (`goal_policy_for` loads a new
 one each mission; the shipped file is never written). The asks decision
