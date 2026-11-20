@@ -232,6 +232,8 @@ def run(out, work, workers, nav=NAV):
     import multiprocessing as mp
     work = Path(work)
     sdir = work / "survey"
+    if Path(out).exists():
+        sys.exit(f"{out} exists: rows are never overwritten (pinned data); name a new file")
     if sdir.exists():
         shutil.rmtree(sdir)
     sdir.mkdir(parents=True)
@@ -250,15 +252,17 @@ def run(out, work, workers, nav=NAV):
 
 
 def _censored(r):
-    return r["search_s"] if r["outcome"] == "found" else LIMIT_S
+    return r["search_s"] if r["outcome"] == "found" and not r["wrong_found"] else LIMIT_S
 
 
 def score(path):
-    rows = [json.loads(line) for line in open(path)]
+    with open(path) as f:
+        rows = [json.loads(line) for line in f if line.strip()]
     sv = rows[0]
     arms = {a: sorted((r for r in rows[1:] if r.get("arm") == a), key=lambda r: r["k"]) for a in ARMS}
     s, u = arms["surveyed"], arms["unsurveyed"]
-    found = {a: sum(r["outcome"] == "found" for r in arms[a]) for a in ARMS}
+    # Review: a found at the wrong place is no find (the stability line counts it too).
+    found = {a: sum(r["outcome"] == "found" and not r["wrong_found"] for r in arms[a]) for a in ARMS}
     med = {a: statistics.median(_censored(r) for r in arms[a]) if arms[a] else None for a in ARMS}
     out = {"survey": {k: sv[k] for k in ("outcome", "search_s", "contacts", "capped")},
            "survey_reported": len(sv["reported"]),
@@ -268,11 +272,14 @@ def score(path):
     first = sum(r["first_recall_ok"] for r in s)
     near = [r for r in s if r["first_recall_ok"] and r.get("first_goal_m") is not None]
     out["first_goal"] = {"recall_first": first, "of": len(s),
-                         "goal_within_approach": (sum(r["first_goal_m"] <= APPROACH_M for r in near)
+                         "goal_within_approach": (sum(r["first_goal_m"] <= APPROACH_M + 0.005 for r in near)
                                                   if len(near) == first else None),
                          "goal_m_max": max((r["first_goal_m"] for r in near), default=None),
                          "missed": [[r["k"], r["target"], r["first_act"]] for r in s if not r["first_recall_ok"]],
-                         "met": len(s) == MISSIONS and first == len(s)}
+                         # Reviews: the goal sent must be the approach (within the band;
+                         # half a centimetre for the 2 dp rounding), not only the place.
+                         "met": len(s) == MISSIONS and first == len(s) and len(near) == first
+                         and all(r["first_goal_m"] <= APPROACH_M + 0.005 for r in near)}
     out["median_s"] = {**med, "ratio": (med["surveyed"] / med["unsurveyed"]) if med["unsurveyed"] else None,
                        # amendment 1: not judgeable under FakeNav (no driving time)
                        "met": (None if sv.get("nav") == "fake" else
@@ -290,7 +297,8 @@ def score(path):
     out["stability"] = {"wrong_found": sum(r["wrong_found"] for r in every),
                         "contacts": sum(r["contacts"] for r in every) + sv["contacts"],
                         "capped": sum(r["capped"] for r in every) + sv["capped"],
-                        "met": not any(r["wrong_found"] or r["contacts"] for r in every)
+                        "met": len(s) == MISSIONS and len(u) == MISSIONS
+                        and not any(r["wrong_found"] or r["contacts"] for r in every)
                         and not sv["contacts"]}
     print(json.dumps(out, indent=1))
     return out
