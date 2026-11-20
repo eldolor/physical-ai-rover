@@ -110,6 +110,10 @@ def test_the_verdict_rule(score):
     assert score.verdict(dict(ok, G2=False, G2_ii=False), ok, 20) == "C needed"
     assert score.verdict(ok, dict(ok, G3=False), 12) == "C needed"
     assert score.verdict(dict(ok, G1=False), ok, 30) == "C needed"
+    # A failed G1 or G3 is "C needed" even when D is too small to judge G2.
+    no_g2 = dict(ok, G2=False, G2_ii=False)
+    assert score.verdict(dict(no_g2, G3=False), ok, 12) == "C needed"
+    assert score.verdict(no_g2, dict(ok, G1=False), 12) == "C needed"
 
 
 def test_branch_i_is_too_few_under_twenty(score):
@@ -118,5 +122,8 @@ def test_branch_i_is_too_few_under_twenty(score):
     assert score.bars(v, f)["G2_i"] == "too few to judge"
     f["d"] = v["d"] = 20
     assert score.bars(v, f)["G2_i"] is True
+    v["paid"] = 11         # paid calls over 10% of the tree's local questions
+    assert score.bars(v, f)["G2_i"] is False
+    v["paid"] = 0
     v["local"] = 70        # 30% fewer, no more paid
     assert score.bars(v, f)["G2_ii"] is True

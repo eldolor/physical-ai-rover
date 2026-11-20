@@ -73,7 +73,11 @@ def main():
             base = rec or {"key": f["key"]}
             if rec is not None:
                 base["walk_target_visible"] = rec["target_visible"]
+            # One answer per row: the pilot recorded no reached/direction,
+            # so the walk's (another model's) are not carried over.
             base.update({"target_visible": p["target_visible"], "action": p.get("action"),
+                         "target_reached": p.get("target_reached") is True,
+                         "target_direction": p.get("target_direction"),
                          "model_id": p["model_id"], "prompt_variant": None, "source": "pilot"})
             rec = base
         if rec is not None:

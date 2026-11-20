@@ -247,6 +247,9 @@ def run(data) -> dict:
            "samples": {}, "cells": {}, "fixed": {}}
 
     # Leave one training walk out (cell choice, W only), and the full fit.
+    # Each sample's held-out rule uses its own answers' cloud rates (P's are
+    # the shipped model's); P/train is scored with the W-fitted folds and
+    # is reported, never judged (G1 records both readings).
     full = {s: Model(data, train_keys, [k for k in train_keys if k in smp[s]]) for s in smp}
     lowo = {}
     for w in sorted(data["train"]):
@@ -328,6 +331,17 @@ def cloud_accuracy(data, smp) -> dict:
     return out
 
 
+def finite(x):
+    """`x` with every non-finite float as None (strict JSON)."""
+    if isinstance(x, dict):
+        return {k: finite(v) for k, v in x.items()}
+    if isinstance(x, (list, tuple)):
+        return [finite(v) for v in x]
+    if isinstance(x, float) and not math.isfinite(x):
+        return None
+    return x
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--answers", type=Path, default=None)
@@ -335,7 +349,7 @@ def main():
     ap.add_argument("--out", type=Path, default=VOI / "scores.json")
     args = ap.parse_args()
     out = run(load(args.answers, args.fixed_dir))
-    args.out.write_text(json.dumps(out, indent=1, default=lambda x: x if not isinstance(x, float) or math.isfinite(x) else None) + "\n")
+    args.out.write_text(json.dumps(finite(out), indent=1, allow_nan=False) + "\n")
     j = out["judged"]["cell"]
     brief = {"judged": out["judged"], "verdict": out["verdict"], "samples": out["samples"],
              "cloud_accuracy": out["cloud_accuracy"]}

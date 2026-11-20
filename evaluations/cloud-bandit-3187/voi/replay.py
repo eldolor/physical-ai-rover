@@ -164,13 +164,15 @@ def replay_walk(walk: str, frames: list, arm: str, per: dict, ve: dict, ans: dic
     with patched(perceive, "pipeline_for", lambda t, **kw: pipe), \
             patched(local_vlm, "LocalVLMClient", recorded_local(ve, per, calls)):
         tier = _tiered_vision_fn(target, cloud_stub(ans, target, calls), cfg)
+    # One clock per walk: the recorded `t` only when every frame has one,
+    # else the frame index (a mix would send the tier back in time).
+    stamped = all(ans.get(f["key"], {}).get("t") is not None for f in frames)
     out = []
     try:
         for i, f in enumerate(frames):
             k = f["key"]
-            t = ans.get(k, {}).get("t")
-            frame = {"key": k, "seq": i, "image_base64": "",
-                     "captured_at": float(t if t is not None else i * DEFAULT_SPACING_S)}
+            t = ans[k]["t"] if stamped else i * DEFAULT_SPACING_S
+            frame = {"key": k, "seq": i, "image_base64": "", "captured_at": float(t)}
             try:
                 scene, err = tier(frame), None
             except Exception as e:  # noqa: BLE001 -- a raised call: B3.2 counts it, the mission goes on
