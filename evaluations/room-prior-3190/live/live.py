@@ -156,6 +156,20 @@ def first_goal(run_dir, f, truth):
     return None
 
 
+def named_already(brain):
+    """The names a person gave this saved map are kept (3.160's store): a
+    second stack on it is not named again (the store caps a map at 64)."""
+    t0 = time.time()
+    while time.time() - t0 < D7.READY_S:
+        v = brain.get("/mission/rooms").json()
+        if v.get("frame_id") and v.get("rooms"):
+            break
+        time.sleep(3)
+    person = sorted({r["name"] for r in v.get("rooms") or () if r.get("source") == "person"})
+    return {"named": len(person), "kept": True, "person_rooms": sum(
+        r.get("source") == "person" for r in v.get("rooms") or ()), "names": person} if person else None
+
+
 def find_run(robot, brain, tag):
     f = D7.to_truth(robot.get("/world/pose").json(), robot.get("/world/truth").json())
     m = R.mission(robot, brain, HOUSE, {"job": "find", "target": TARGET})
@@ -200,6 +214,7 @@ def main():
                 time.sleep(0.5)
             print("none", json.dumps(rec["none_shot"]), flush=True)
             # The survey; the bridge saves the map at its end.
+            os.environ["INVENTORY_DIR"] = str(WORK / "inventory-survey")
             de.stack(HOUSE)                  # a fresh robot on the dock after the stop
             robot = httpx.Client(base_url=f"http://127.0.0.1:{de.ROBOT}", timeout=30)
             sv = R.mission(robot, brain, HOUSE, {"job": "survey"})
@@ -219,9 +234,13 @@ def main():
         for tag in ("run1", "run2"):
             if tag in rec:
                 continue
+            # A find of its own, with no memory of the survey's: an empty
+            # inventory, so explore does not recall the target the survey
+            # placed (run 1, 2026-11-20: its first goal was a recall).
+            os.environ["INVENTORY_DIR"] = str(WORK / f"inventory-{tag}")
             robot = de.stack(HOUSE)
             brain = httpx.Client(base_url=f"http://127.0.0.1:{de.BRAIN}", timeout=60)
-            named = D7.name_rooms(robot, brain, HOUSE)
+            named = named_already(brain) or D7.name_rooms(robot, brain, HOUSE)
             if not named.get("named"):
                 rec[tag + "_names_failed"] = named
                 save(rec)

@@ -1,0 +1,174 @@
+{
+ "calls": [
+  {
+   "at": 1795194115,
+   "in": null,
+   "model_id": null,
+   "out": null,
+   "prior": null,
+   "s": 2.15,
+   "status": 401,
+   "stop": null,
+   "target": "refrigerator"
+  }
+ ],
+ "house": "home_first_floor",
+ "image": "vision-picar-ros:plan-3.190",
+ "load": {
+  "max": 4.36,
+  "n": 201,
+  "over_4": 2,
+  "p50": 2.02
+ },
+ "map": {
+  "bridge_map": {
+   "failed": 0,
+   "last_at": 1795194089.4823022,
+   "last_error": null,
+   "last_version": 1,
+   "map_id": "map-ab143044",
+   "saved": 1,
+   "saving": false,
+   "skipped": 0,
+   "store": true
+  },
+  "survey": {
+   "contacts": 0,
+   "docked": true,
+   "end_reason": "return reserve -- time: 111 s left, the trip home 111 s (8.6 m)",
+   "outcome": "out_of_budget",
+   "seconds": 1759
+  }
+ },
+ "none_shot": {
+  "ok": true,
+  "png": "twin-3190d-none.png",
+  "source": "none",
+  "text": "No guess at which room the refrigerator is in (no rooms are named on the map), so every room is searched alike."
+ },
+ "none_start": 200,
+ "none_status": {
+  "acts": false,
+  "model_id": null,
+  "rates": null,
+  "source": "none",
+  "why": "no room-label layer"
+ },
+ "run1": {
+  "budget": {
+   "battery_floor_v": 10.5,
+   "battery_v": 12.44,
+   "cloud_call_limit": null,
+   "cloud_calls": null,
+   "elapsed_s": 173.1,
+   "home": {
+    "drain_v_s": 0.00014,
+    "l_home_m": 12.55,
+    "t_home_s": 127.2,
+    "v_at_dock": 12.41,
+    "v_obs_m_s": 0.194
+   },
+   "paused_s": 0.0,
+   "time_limit_s": 1200
+  },
+  "capped": false,
+  "cloud_triggers": {},
+  "contacts": 0,
+  "dock_err_deg": 0.4,
+  "dock_err_m": 0.059,
+  "docked": true,
+  "end_reason": "Breakfast, family room, foyer, hall, kitchen searched. Found.",
+  "end_target_m": 11.88,
+  "error": null,
+  "fell": false,
+  "first_goal": {
+   "kind": "recall",
+   "map_xy": [
+    13.94,
+    3.97
+   ],
+   "room": "kitchen",
+   "sim_xy": [
+    13.96,
+    3.99
+   ],
+   "type": "kitchen"
+  },
+  "first_goal_in_top": false,
+  "found_target_m": 0.53,
+  "goals_sent": 2,
+  "inside_samples": 0,
+  "local_calls": 1,
+  "min_gap_cm": 15.4,
+  "names": {
+   "named": 64,
+   "names": [
+    "breakfast",
+    "den",
+    "dining room",
+    "family room",
+    "foyer",
+    "garage",
+    "half bath",
+    "kitchen",
+    "living room"
+   ],
+   "person_rooms": 14,
+   "unnamed_left": 0
+  },
+  "outcome": "found",
+  "overhang_cm": 0.0,
+  "ret_reason": "0.063 m, 0.2 deg from the dock",
+  "ret_seconds": 91.1,
+  "ret_state": "docked",
+  "room_labels": null,
+  "room_prior": {
+   "acts": false,
+   "model_id": "us.anthropic.claude-opus-5-5",
+   "rates": null,
+   "source": "none",
+   "why": "http 401"
+  },
+  "rooms_entered": null,
+  "rooms_truth": [
+   "breakfast",
+   "family room",
+   "foyer",
+   "hall",
+   "kitchen"
+  ],
+  "run": "run1",
+  "run_dir": "/tmp/claude-0/-home-user-physical-ai-rover/5fa88648-717d-5799-a903-9e6d113cdcf0/scratchpad/live/runs/run-20261120-170133",
+  "samples": 337,
+  "seconds": 173,
+  "shot": {
+   "ok": false,
+   "png": "twin-3190d-cloud.png",
+   "source": "none",
+   "text": "There was no guess at which room the refrigerator was in (it couldn't ask online), so every room was searched alike."
+  },
+  "standin_calls": {
+   "cloud": 0,
+   "local": 103
+  },
+  "start_truth": [
+   5.25,
+   11.25
+  ],
+  "top_type": null,
+  "v_end": 12.43,
+  "v_min": 12.39,
+  "v_start": 12.45
+ },
+ "run2_names_failed": {
+  "named": 0,
+  "why": "409 {\"detail\":\"at most 64 rooms a map\"}"
+ },
+ "spend": {
+  "calls": 1,
+  "in": 0,
+  "out": 0,
+  "usd": 0.0
+ },
+ "target": "refrigerator"
+}
