@@ -953,6 +953,37 @@ room's own name at its 1.0. A name that only contains a room word ("Kids Den",
 "Bathroom Closet") is not that room; the vocabulary is not edited here.
 `tests/test_goal_policy_synonyms_3185.py`.
 
+**A find's cloud room prior (3.190.C).** Behind `find_prior_source`
+(`off`, the default, or `cloud`). The shipped prior knows ten targets; any
+other target reads `{}` and every goal type reads as no type. With the key
+on, `brain_server`'s start (`_room_prior_at_start`) asks once, and only
+when it can act: a find, explore choosing goals with the `rooms` policy, a
+target (lower case) not in the shipped prior (`goal_policy.shipped_rooms_prior`),
+and a room-label layer -- rooms a person named on the loaded saved map, or
+the find's own asks (which, for a target the shipped prior lacks, 3.116
+amendment 7 skips: so in practice the names). `brain/room_prior.py` holds
+3.116.C's question and reply check, moved unchanged (the harness imports
+them): one JSON object, exactly the four types, each in [0, 1]; anything else
+is no prior. The cache (`ROOM_PRIOR_CACHE`, default
+`recordings/room-prior.json`, git-ignored) is keyed by model id then target
+(lower case, single spaces), in `llm_prior.json`'s shape, so 3.116.C's file
+can seed it; every reply the model gave is kept, parsed or not, and a failed
+call is not. It is read under `room_prior.MODEL_ID`, /room's model; a reply
+from another model is stored under that model and never read as this one's.
+The call (`prior_at_start`) runs on a daemon thread and the start waits at
+most `find_prior_timeout_s` (4 s, the section's proposal): a reply after the
+deadline is cached for the next find and never reaches this mission. The
+result is `status.room_prior` (`{source: shipped | cloud | cache | none,
+why, rates, model_id, acts}`), handed to `MissionRunner(room_prior=)`, which
+for `cloud` or `cache` puts the rates where the shipped prior's would be,
+in this mission's own `RoomGoalPolicy` object (`goal_policy_for` loads a new
+one each mission; the shipped file is never written). The asks decision
+(`find_room_labels`' flat-prior skip) stays on the shipped prior. A typed
+hint is applied on top (`hinted_prior`: the hinted type 1.0, the others the
+cloud's rates). Off: no call, `status.room_prior` null, the report and the
+metrics row without the key -- `dev`'s mission (3.190.C criterion 8: 0 of
+200 differ). `tests/test_room_prior.py`, `tests/test_room_prior_start.py`.
+
 **A find's room hint (3.176).** A start's `room_hint` (`{"type": t}` or
 `{"name": n}`, `brain/request.py` `check_hint`) reaches `ExploreAgent.room_hint`
 and, at each choice, `RoomGoalPolicy.extend(..., hint=)`. `hinted_prior()`

@@ -1405,6 +1405,73 @@ def describe_image_bytes_room(image_bytes: bytes, media_type: str = "image/jpeg"
     return result
 
 
+# 3.190.C: a find's room prior, text only, on /room's model. The prompt is
+# brain/room_prior.py's (3.116.C's, as measured), copied by hand: this build
+# context is self-contained (CLAUDE.md section 6); tests/test_room_prior.py
+# pins the two identical. The reply is returned raw with its stop reason:
+# the brain checks and caches it (`brain/room_prior.parse`); `prior` here is
+# this service's own reading of the same rule, for a caller's log.
+ROOM_PRIOR_TYPES = ("kitchen", "living room", "bedroom", "bathroom")
+ROOM_PRIOR_MAX_TOKENS = 512
+ROOM_PRIOR_PROMPT = """A small robot searches a home for an object. It needs a prior over room types.
+
+Object: {target}
+
+For each of these room types -- kitchen, living room, bedroom, bathroom -- estimate the share of such rooms in typical homes that contain at least one {target} somewhere a person could see it (on the floor, furniture or a counter). Each value is a probability between 0 and 1, judged for that room type on its own: the four values need not add up to 1.
+
+Reply with one JSON object and nothing else, with exactly these keys: "kitchen", "living room", "bedroom", "bathroom"."""
+
+
+def parse_room_prior(text: str):
+    """The reply's four rates, or None if it is not exactly the shape asked
+    (brain/room_prior.py's `parse`, copied)."""
+    t = (text or "").strip()
+    if t.startswith("```"):
+        t = t.strip("`")
+        t = t[t.find("{"):] if "{" in t else t
+    try:
+        obj = json.loads(t[t.find("{"): t.rfind("}") + 1])
+    except ValueError:
+        return None
+    if not isinstance(obj, dict) or set(obj) != set(ROOM_PRIOR_TYPES):
+        return None
+    out = {}
+    for k in ROOM_PRIOR_TYPES:
+        v = obj[k]
+        if isinstance(v, bool) or not isinstance(v, (int, float)) or not 0.0 <= v <= 1.0:
+            return None
+        out[k] = float(v)
+    return out
+
+
+def describe_room_prior(target_object: str) -> dict:
+    """One text-only question: per room type, the share of such rooms that
+    hold the target (3.116.C's question). No image, so no ImageRejected:
+    every failure is the caller's 502."""
+    client = _get_client(ROOM_MODEL_ID)
+    extra = {}
+    if ROOM_MODEL_ID in ROOM_EFFORT_MODELS:
+        extra["additionalModelRequestFields"] = {"output_config": {"effort": ROOM_EFFORT}}
+    response = _converse(client,
+        modelId=ROOM_MODEL_ID,
+        messages=[{"role": "user",
+                   "content": [{"text": ROOM_PRIOR_PROMPT.format(target=target_object)}]}],
+        inferenceConfig={"maxTokens": ROOM_PRIOR_MAX_TOKENS},
+        **extra,
+    )
+    content_blocks = response["output"]["message"]["content"]
+    text = "".join(b["text"] for b in content_blocks if "text" in b)
+    stop = response.get("stopReason")
+    prior = parse_room_prior(text)
+    if prior is None:
+        logger.warning(f"Room prior reply for {target_object!r} is not a prior ({stop}): "
+                       f"{text[:200]!r}")
+    usage = response.get("usage") or {}
+    return {"reply": text[:2000], "stop": stop, "prior": prior, "model_id": ROOM_MODEL_ID,
+            "usage": {"input_tokens": usage.get("inputTokens"),
+                      "output_tokens": usage.get("outputTokens")}}
+
+
 def _parse_room_name(text: str) -> dict:
     """The reply's first line as one short lowercase room name, or
     "unclear". Anything that is not a name -- a sentence, a number, more

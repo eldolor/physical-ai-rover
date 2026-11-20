@@ -91,7 +91,8 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field
 
-from brain.goal_policy import rooms_prior_informative
+from brain.goal_policy import rooms_prior_informative, shipped_rooms_prior
+from brain import room_prior as room_prior_mod
 from brain.request import check_hint, parse as parse_request
 from brain.navigate import MAX_TARGET_CHARS, room_label_fn_for, vision_fn_for
 from brain.perceive import (DEFAULT_CLIP, DEFAULT_DETECTOR,
@@ -761,6 +762,35 @@ def create_app(
             timeout=config["request_timeout_s"],
         )
 
+    def _room_prior_at_start(req, tier_search: str, find_labels: bool,
+                             vision_secret: Optional[str]) -> dict:
+        """3.190.C: this find's room prior, as `status.room_prior` reports it.
+        A call is made only for a find whose explore search chooses goals
+        with the `rooms` policy, whose target the shipped prior lacks, on a
+        mission with a room-label layer (rooms a person named on the loaded
+        saved map, or the find's own asks) -- and not when the cache has it.
+        Waits at most `find_prior_timeout_s`; never refuses a start."""
+        none = room_prior_mod.status
+        target = " ".join((req.target_object or "").split())
+        if req.job != "find":
+            return none("none", "not a find")
+        if not (req.policy == "explore" or tier_search == "explore"):
+            return none("none", "no explore search")
+        if config["explore_goal_policy"] != "rooms":
+            return none("none", "explore_goal_policy is not 'rooms'")
+        if not target:
+            return none("none", "no target object")
+        shipped = shipped_rooms_prior(target)
+        if shipped is not None:
+            return none("shipped", None, shipped)
+        if len(target) > room_prior_mod.MAX_TARGET_CHARS:
+            return none("none", "target too long to ask")
+        if not find_labels and not _map_room_names():
+            return none("none", "no room-label layer")
+        return room_prior_mod.prior_at_start(
+            target, config["vision_url"] or None, secret=vision_secret,
+            deadline_s=float(config["find_prior_timeout_s"]))
+
     def default_runner_factory(robot: RobotInterface, req: MissionStartRequest) -> MissionRunner:
         # 3.90 E: "combine frames" changes the tier's candidate rule; any
         # other policy has none, and an unknown name is refused, not ignored.
@@ -942,10 +972,22 @@ def create_app(
                 navigator.close()      # a refused start keeps no client open
             raise
 
+        # 3.190.C: one bounded cloud question at most, for a find's room
+        # prior, only when it can act; after every refusal above, so a
+        # refused start pays nothing. Off: None, and the mission is dev's.
+        try:
+            room_prior = (_room_prior_at_start(req, tier_search, find_labels, vision_secret)
+                          if config["find_prior_source"] == "cloud" else None)
+        except BaseException:
+            if navigator is not None:
+                navigator.close()      # a refused start keeps no client open
+            raise
+
         kwargs = dict(
             target_object=req.target_object,
             target_room=req.target_room,
             room_hint=room_hint,
+            room_prior=room_prior,
             request=req.request,
             mission=req.mission,
             max_steps=req.max_steps,
@@ -1083,6 +1125,11 @@ def create_app(
             "find_room_label_max_calls": (config["find_room_label_max_calls"]
                                           if find_labels else None),
         }
+        if room_prior is not None:
+            # 3.190.C (key on only, so an off mission's metrics are dev's):
+            # where this mission's prior came from, as one string.
+            runner.metrics_config["room_prior"] = (
+                room_prior["source"] + (f" ({room_prior['why']})" if room_prior.get("why") else ""))
         if req.policy == "tiered":
             # The mission's own vote, not only the config's (3.90 E).
             runner.metrics_config["tier_frame_vote"] = req.frame_vote or config["tier_frame_vote"]

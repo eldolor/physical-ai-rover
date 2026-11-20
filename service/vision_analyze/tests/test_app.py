@@ -1164,3 +1164,60 @@ def test_a_room_reply_drops_a_leading_article(raw, expected):
     import vision_core
 
     assert vision_core._parse_room_name(raw)["room"] == expected
+
+
+# ---------- /room-prior: a find's room prior, text only (3.190.C) ----------
+
+PRIOR_REPLY = '{"kitchen": 0.9, "living room": 0.05, "bedroom": 0.01, "bathroom": 0.02}'
+
+
+def test_room_prior_a_valid_reply_is_returned_raw_and_read(client, monkeypatch):
+    import vision_core
+
+    fake = _stub_converse(monkeypatch, PRIOR_REPLY)
+    r = client.post("/room-prior", json={"target_object": "  oven   mitt "})
+    assert r.status_code == 200, r.text
+    out = r.json()
+    assert out["reply"] == PRIOR_REPLY
+    assert out["prior"] == {"kitchen": 0.9, "living room": 0.05, "bedroom": 0.01,
+                            "bathroom": 0.02}
+    assert out["model_id"] == vision_core.ROOM_MODEL_ID
+    assert out["usage"] == {"input_tokens": 1, "output_tokens": 2}
+    # Text only, on /room's model, with the target (spaces collapsed) in it.
+    assert fake.kwargs["modelId"] == vision_core.ROOM_MODEL_ID
+    content = fake.kwargs["messages"][0]["content"]
+    assert [list(c) for c in content] == [["text"]]
+    assert "Object: oven mitt\n" in content[0]["text"]
+    assert fake.kwargs["inferenceConfig"] == {"maxTokens": 512}
+
+
+def test_room_prior_a_malformed_reply_is_a_200_with_no_prior(client, monkeypatch):
+    _stub_converse(monkeypatch, "Probably the kitchen.")
+    r = client.post("/room-prior", json={"target_object": "oven mitt"})
+    assert r.status_code == 200
+    assert r.json()["prior"] is None and r.json()["reply"] == "Probably the kitchen."
+
+
+def test_room_prior_a_model_error_is_a_502(client, monkeypatch):
+    def boom(*a, **k):
+        raise RuntimeError("bedrock down")
+
+    monkeypatch.setattr(app_module, "describe_room_prior", boom)
+    assert client.post("/room-prior", json={"target_object": "oven mitt"}).status_code == 502
+
+
+@pytest.mark.parametrize("body", [{}, {"target_object": "  "}, {"target_object": 3},
+                                  {"target_object": "x" * 201}, [1]])
+def test_room_prior_a_bad_target_is_a_400_and_no_call(client, monkeypatch, body):
+    monkeypatch.setattr(app_module, "describe_room_prior",
+                        lambda t: pytest.fail("no paid call on a bad request"))
+    assert client.post("/room-prior", json=body).status_code == 400
+
+
+def test_room_prior_requires_the_shared_secret_when_configured(client, monkeypatch):
+    monkeypatch.setenv("APP_SHARED_SECRET", "s3cret")
+    monkeypatch.setattr(app_module, "describe_room_prior", lambda t: {"prior": None})
+    assert client.post("/room-prior", json={"target_object": "cup"}).status_code == 401
+    r = client.post("/room-prior", json={"target_object": "cup"},
+                    headers={"x-app-secret": "s3cret"})
+    assert r.status_code == 200

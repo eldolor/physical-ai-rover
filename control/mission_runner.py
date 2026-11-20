@@ -63,6 +63,7 @@ from brain.intervention_log import (VIA_BRAIN_STOP, VIA_LOOP_CANCELLED, VIA_PREE
                                     VIA_ROBOT_STOP)
 from brain.goal_policy import coarse, goal_policy_for
 from brain.goal_policy import rooms_prior_informative as flat_prior_ok
+from brain.room_prior import valid_rates as valid_prior_rates
 from brain.frontier import RETRY_COOLDOWN_S, RETRY_LIMIT, SET_ASIDE_MIN_FAILURES, SET_ASIDE_MISSIONS
 from brain.inventory import MAX_RANGE_M as INVENTORY_RANGE_M
 from brain.what_i_saw import MAX_THUMBS
@@ -762,6 +763,7 @@ class MissionRunner:
         return_wait_s: float = docking.RETURN_WAIT_S,
         room_hint: Optional[dict] = None,
         request: Optional[str] = None,
+        room_prior: Optional[dict] = None,
     ):
         if job not in JOBS:
             raise ValueError(f"Unknown job: {job!r}. Known: {', '.join(JOBS)}")
@@ -802,8 +804,20 @@ class MissionRunner:
         if room_hint is not None and job != "find":
             raise ValueError("room_hint is for a find (job 'find'), not a survey")
 
+        # 3.190.C: a find's room prior as the brain's start found it
+        # (`brain/room_prior.status()`): None with `find_prior_source` off.
+        # Rates from the cloud or its cache stand in for the shipped prior's
+        # for this target, in this mission's own policy object only.
+        if room_prior is not None:
+            room_prior = dict(room_prior)
+            if room_prior.get("source") in ("cloud", "cache"):
+                if job != "find" or not valid_prior_rates(room_prior.get("rates")):
+                    raise ValueError("room_prior's rates are for a find, as four types in "
+                                     f"[0, 1]; got {room_prior.get('rates')!r} on a {job}")
+
         self.robot = robot
         self.room_hint = room_hint
+        self.room_prior = room_prior
         # 3.161: a person's no-go zones for the saved map the mission runs on
         # (house frame) and that map's frame_id; [] is off (`set_nogo`).
         self.nogo_zones: list = []
@@ -1070,6 +1084,12 @@ class MissionRunner:
             extra = {"navigator": self._navigator, "clock": self.clock,
                      # 3.65 phase 2: "rule" (None) or the learned goal choice.
                      "goal_policy": goal_policy_for(explore_goal_policy)}
+            if (room_prior is not None and room_prior.get("source") in ("cloud", "cache")
+                    and getattr(extra["goal_policy"], "rooms", False)):
+                # Only goal order changes: the rates sit where the shipped
+                # prior's would, and the label-asks rule above stays on the
+                # shipped prior (3.190's scope).
+                extra["goal_policy"].prior[(target_object or "").lower()] = dict(room_prior["rates"])
             if room_hint is not None:
                 extra["room_hint"] = room_hint
             if self.find_room_labels and self.room_labeller is not None:
@@ -1857,6 +1877,8 @@ class MissionRunner:
                 # whether it can act, and the labelled cells it has so far.
                 "request": self.request,
                 "room_hint": self._room_hint_status(),
+                # 3.190.C: the start's room prior (None with the key off).
+                "room_prior": self._room_prior_status(),
                 # 3.162: the name its report is kept under (the twin's match).
                 "mission_id": self.report_id,
                 "mission": self.memory.mission,
@@ -2796,6 +2818,9 @@ class MissionRunner:
             # 3.176: only when given, so a plain find's report is dev's.
             report["request"] = self.request
             report["room_hint"] = self._room_hint_status()
+        if self.room_prior is not None:
+            # 3.190.C: only with the key on, so an off mission's report is dev's.
+            report["room_prior"] = self._room_prior_status()
         try:
             m = self.world.get_map()
             report.update(map_coverage(m, self.nogo_zones))
@@ -3550,6 +3575,19 @@ class MissionRunner:
             self._goal_layer = (key, cm, layer)
         _key, cm, layer = self._goal_layer
         return (cm, layer) if layer else None
+
+    def _room_prior_status(self) -> Optional[dict]:
+        """3.190.C: where this find's room prior came from (shipped, cloud,
+        cache or none), why when none, its rates and the model; and whether
+        it reaches a goal choice (`acts`), which needs explore's `rooms`
+        policy. None with `find_prior_source` off."""
+        if self.room_prior is None:
+            return None
+        out = dict(self.room_prior)
+        out["rates"] = dict(out["rates"]) if out.get("rates") else None
+        out["acts"] = bool(self.explores and self._explore_policy_name == "rooms"
+                           and out.get("source") in ("cloud", "cache", "shipped"))
+        return out
 
     def _room_hint_status(self) -> Optional[dict]:
         """3.176: the hint, whether it can act on this mission, why not, and

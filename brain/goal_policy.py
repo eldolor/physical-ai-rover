@@ -331,6 +331,13 @@ def _shipped_rooms_prior() -> dict:
     return {t.lower(): dict(p) for t, p in data["prior"].items()}
 
 
+def shipped_rooms_prior(target: Optional[str]) -> Optional[dict]:
+    """The shipped `rooms` policy's rates for this target (any case), or None
+    when it does not know the target (3.190: what a cloud prior is for)."""
+    p = _shipped_rooms_prior().get((target or "").strip().lower())
+    return dict(p) if p is not None else None
+
+
 def rooms_prior_informative(target: Optional[str]) -> bool:
     """`prior_is_informative` on the shipped `rooms` policy's prior for this
     target (`ROOMS_PATH`), without building the policy: what a find with

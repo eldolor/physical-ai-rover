@@ -1,0 +1,2313 @@
+{
+ "arm": "wired",
+ "commit": "10136624",
+ "repo": "/home/user/physical-ai-rover",
+ "pairs": 100,
+ "rows": [
+  {
+   "split": "val",
+   "index": 179,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 8.7,
+   "reward": 0.853,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 182,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 11,
+   "metres": 48.9,
+   "reward": 0.291,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.02,
+     "bedroom": 0.15,
+     "kitchen": 0.07,
+     "living room": 0.22
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 5
+  },
+  {
+   "split": "val",
+   "index": 184,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 14.7,
+   "reward": 0.773,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 185,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 9.6,
+   "reward": 0.844,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.55,
+     "bedroom": 0.01,
+     "kitchen": 0.03,
+     "living room": 0.01
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 186,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 62,
+   "metres": 251.1,
+   "reward": -2.751,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 10
+  },
+  {
+   "split": "val",
+   "index": 187,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 9,
+   "metres": 29.4,
+   "reward": 0.526,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 188,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 1,
+   "metres": 0.9,
+   "reward": 0.971,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.5,
+     "kitchen": 0.85,
+     "living room": 0.3
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 0
+  },
+  {
+   "split": "val",
+   "index": 190,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 11,
+   "metres": 30.0,
+   "reward": 0.48,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 191,
+   "mode": "R",
+   "target": "cart",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 6.6,
+   "reward": 0.894,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.06,
+     "bedroom": 0.04,
+     "kitchen": 0.15,
+     "living room": 0.05
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 192,
+   "mode": "R",
+   "target": "garbage bag",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 18.6,
+   "reward": 0.714,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.12,
+     "kitchen": 0.55,
+     "living room": 0.1
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 194,
+   "mode": "R",
+   "target": "laundry hamper",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 15.6,
+   "reward": 0.744,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.4,
+     "bedroom": 0.55,
+     "kitchen": 0.03,
+     "living room": 0.06
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 195,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 6,
+   "metres": 15.6,
+   "reward": 0.724,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.5,
+     "kitchen": 0.85,
+     "living room": 0.3
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 197,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 13.5,
+   "reward": 0.765,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.5,
+     "kitchen": 0.85,
+     "living room": 0.3
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 198,
+   "mode": "R",
+   "target": "cart",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 4.5,
+   "reward": 0.915,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.06,
+     "bedroom": 0.04,
+     "kitchen": 0.15,
+     "living room": 0.05
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 200,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 7,
+   "metres": 28.2,
+   "reward": 0.578,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 201,
+   "mode": "R",
+   "target": "basketball",
+   "outcome": "found",
+   "goals": 11,
+   "metres": 52.2,
+   "reward": 0.258,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.005,
+     "bedroom": 0.1,
+     "kitchen": 0.02,
+     "living room": 0.06
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 204,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 9.3,
+   "reward": 0.847,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 207,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 1,
+   "metres": 1.5,
+   "reward": 0.965,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.02,
+     "bedroom": 0.15,
+     "kitchen": 0.07,
+     "living room": 0.22
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 0
+  },
+  {
+   "split": "val",
+   "index": 208,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 19,
+   "metres": 55.5,
+   "reward": 0.065,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.5,
+     "kitchen": 0.85,
+     "living room": 0.3
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 211,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 7.5,
+   "reward": 0.885,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 212,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 17,
+   "metres": 70.5,
+   "reward": -0.045,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.55,
+     "bedroom": 0.01,
+     "kitchen": 0.03,
+     "living room": 0.01
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 5
+  },
+  {
+   "split": "val",
+   "index": 217,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 11.1,
+   "reward": 0.809,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.5,
+     "kitchen": 0.85,
+     "living room": 0.3
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 219,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 16.5,
+   "reward": 0.735,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.5,
+     "kitchen": 0.85,
+     "living room": 0.3
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 221,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 13.2,
+   "reward": 0.808,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.55,
+     "bedroom": 0.01,
+     "kitchen": 0.03,
+     "living room": 0.01
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 222,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 14.7,
+   "reward": 0.773,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 225,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 7.8,
+   "reward": 0.862,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 227,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 6,
+   "metres": 19.5,
+   "reward": 0.685,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.55,
+     "bedroom": 0.01,
+     "kitchen": 0.03,
+     "living room": 0.01
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 228,
+   "mode": "R",
+   "target": "cart",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 17.7,
+   "reward": 0.723,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.06,
+     "bedroom": 0.04,
+     "kitchen": 0.15,
+     "living room": 0.05
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 231,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 10.8,
+   "reward": 0.832,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 232,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 7,
+   "metres": 18.0,
+   "reward": 0.68,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 233,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 6.3,
+   "reward": 0.897,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.02,
+     "bedroom": 0.15,
+     "kitchen": 0.07,
+     "living room": 0.22
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 234,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 15,
+   "metres": 45.9,
+   "reward": 0.241,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.55,
+     "bedroom": 0.01,
+     "kitchen": 0.03,
+     "living room": 0.01
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 235,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 17.7,
+   "reward": 0.743,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.55,
+     "bedroom": 0.01,
+     "kitchen": 0.03,
+     "living room": 0.01
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 236,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 6,
+   "metres": 32.7,
+   "reward": 0.553,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 237,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 10,
+   "metres": 21.9,
+   "reward": 0.581,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 239,
+   "mode": "R",
+   "target": "basketball",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 12.3,
+   "reward": 0.777,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.005,
+     "bedroom": 0.1,
+     "kitchen": 0.02,
+     "living room": 0.06
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 241,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 8.7,
+   "reward": 0.853,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 243,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 7,
+   "metres": 27.3,
+   "reward": 0.587,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.5,
+     "kitchen": 0.85,
+     "living room": 0.3
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 244,
+   "mode": "R",
+   "target": "garbage bag",
+   "outcome": "found",
+   "goals": 8,
+   "metres": 28.8,
+   "reward": 0.552,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.12,
+     "kitchen": 0.55,
+     "living room": 0.1
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 7
+  },
+  {
+   "split": "val",
+   "index": 247,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 12.3,
+   "reward": 0.817,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 251,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 14,
+   "metres": 48.3,
+   "reward": 0.237,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 254,
+   "mode": "R",
+   "target": "cart",
+   "outcome": "found",
+   "goals": 51,
+   "metres": 206.1,
+   "reward": -2.081,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.06,
+     "bedroom": 0.04,
+     "kitchen": 0.15,
+     "living room": 0.05
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 10
+  },
+  {
+   "split": "val",
+   "index": 258,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 7.8,
+   "reward": 0.882,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 261,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 15.9,
+   "reward": 0.761,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 265,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 6.6,
+   "reward": 0.894,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 266,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 6,
+   "metres": 21.0,
+   "reward": 0.67,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.55,
+     "bedroom": 0.01,
+     "kitchen": 0.03,
+     "living room": 0.01
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 270,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 24,
+   "metres": 67.8,
+   "reward": -0.158,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.5,
+     "kitchen": 0.85,
+     "living room": 0.3
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 5
+  },
+  {
+   "split": "val",
+   "index": 271,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 13.2,
+   "reward": 0.788,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 272,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 10,
+   "metres": 54.0,
+   "reward": 0.26,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.02,
+     "bedroom": 0.15,
+     "kitchen": 0.07,
+     "living room": 0.22
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 273,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 11,
+   "metres": 28.8,
+   "reward": 0.492,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.5,
+     "kitchen": 0.85,
+     "living room": 0.3
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 274,
+   "mode": "R",
+   "target": "basketball",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 12.6,
+   "reward": 0.814,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.005,
+     "bedroom": 0.1,
+     "kitchen": 0.02,
+     "living room": 0.06
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 277,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 1,
+   "metres": 0.9,
+   "reward": 0.971,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.55,
+     "bedroom": 0.01,
+     "kitchen": 0.03,
+     "living room": 0.01
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 278,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 13,
+   "metres": 54.3,
+   "reward": 0.197,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 6
+  },
+  {
+   "split": "val",
+   "index": 282,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 16,
+   "metres": 45.6,
+   "reward": 0.224,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.5,
+     "kitchen": 0.85,
+     "living room": 0.3
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 285,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 6,
+   "metres": 21.6,
+   "reward": 0.664,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 286,
+   "mode": "R",
+   "target": "cart",
+   "outcome": "found",
+   "goals": 7,
+   "metres": 27.9,
+   "reward": 0.581,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.06,
+     "bedroom": 0.04,
+     "kitchen": 0.15,
+     "living room": 0.05
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 290,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 36,
+   "metres": 126.6,
+   "reward": -0.986,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 292,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 1,
+   "metres": 3.3,
+   "reward": 0.947,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 293,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 10,
+   "metres": 28.8,
+   "reward": 0.512,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.5,
+     "kitchen": 0.85,
+     "living room": 0.3
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 296,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 12.0,
+   "reward": 0.82,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.5,
+     "kitchen": 0.85,
+     "living room": 0.3
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 297,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 9.0,
+   "reward": 0.87,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 298,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 10.5,
+   "reward": 0.855,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.02,
+     "bedroom": 0.15,
+     "kitchen": 0.07,
+     "living room": 0.22
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 300,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "exhausted",
+   "goals": 23,
+   "metres": 77.4,
+   "reward": -1.234,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 302,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 13.5,
+   "reward": 0.785,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 305,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 9,
+   "metres": 32.7,
+   "reward": 0.493,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 306,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 11,
+   "metres": 40.5,
+   "reward": 0.375,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.02,
+     "bedroom": 0.15,
+     "kitchen": 0.07,
+     "living room": 0.22
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 5
+  },
+  {
+   "split": "val",
+   "index": 308,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 1,
+   "metres": 1.5,
+   "reward": 0.965,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 0
+  },
+  {
+   "split": "val",
+   "index": 309,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 9.6,
+   "reward": 0.864,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.02,
+     "bedroom": 0.15,
+     "kitchen": 0.07,
+     "living room": 0.22
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 310,
+   "mode": "R",
+   "target": "garbage bag",
+   "outcome": "found",
+   "goals": 7,
+   "metres": 21.9,
+   "reward": 0.641,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.12,
+     "kitchen": 0.55,
+     "living room": 0.1
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 311,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 9,
+   "metres": 35.4,
+   "reward": 0.466,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.55,
+     "bedroom": 0.01,
+     "kitchen": 0.03,
+     "living room": 0.01
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 312,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 7,
+   "metres": 25.8,
+   "reward": 0.602,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.5,
+     "kitchen": 0.85,
+     "living room": 0.3
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 313,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 12.3,
+   "reward": 0.797,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 314,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 6.9,
+   "reward": 0.891,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.55,
+     "bedroom": 0.01,
+     "kitchen": 0.03,
+     "living room": 0.01
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 317,
+   "mode": "R",
+   "target": "basketball",
+   "outcome": "found",
+   "goals": 11,
+   "metres": 50.4,
+   "reward": 0.276,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.005,
+     "bedroom": 0.1,
+     "kitchen": 0.02,
+     "living room": 0.06
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 5
+  },
+  {
+   "split": "val",
+   "index": 318,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 19.8,
+   "reward": 0.702,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.02,
+     "bedroom": 0.15,
+     "kitchen": 0.07,
+     "living room": 0.22
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 5
+  },
+  {
+   "split": "val",
+   "index": 319,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 6,
+   "metres": 25.5,
+   "reward": 0.625,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 320,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 6,
+   "metres": 24.3,
+   "reward": 0.637,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.02,
+     "bedroom": 0.15,
+     "kitchen": 0.07,
+     "living room": 0.22
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 322,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 4.2,
+   "reward": 0.918,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 323,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 11.7,
+   "reward": 0.803,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.55,
+     "bedroom": 0.01,
+     "kitchen": 0.03,
+     "living room": 0.01
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 324,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 7.8,
+   "reward": 0.882,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 325,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 5.1,
+   "reward": 0.909,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 326,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 1,
+   "metres": 4.2,
+   "reward": 0.938,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.55,
+     "bedroom": 0.01,
+     "kitchen": 0.03,
+     "living room": 0.01
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 0
+  },
+  {
+   "split": "val",
+   "index": 327,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 16,
+   "metres": 43.8,
+   "reward": 0.242,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.5,
+     "kitchen": 0.85,
+     "living room": 0.3
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 329,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 9,
+   "metres": 34.8,
+   "reward": 0.472,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 330,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 8,
+   "metres": 33.0,
+   "reward": 0.51,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 334,
+   "mode": "R",
+   "target": "cart",
+   "outcome": "found",
+   "goals": 16,
+   "metres": 64.5,
+   "reward": 0.035,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.06,
+     "bedroom": 0.04,
+     "kitchen": 0.15,
+     "living room": 0.05
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 7
+  },
+  {
+   "split": "val",
+   "index": 335,
+   "mode": "R",
+   "target": "box",
+   "outcome": "exhausted",
+   "goals": 31,
+   "metres": 104.1,
+   "reward": -1.661,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 337,
+   "mode": "R",
+   "target": "garbage bag",
+   "outcome": "found",
+   "goals": 28,
+   "metres": 112.5,
+   "reward": -0.685,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.12,
+     "kitchen": 0.55,
+     "living room": 0.1
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 6
+  },
+  {
+   "split": "val",
+   "index": 338,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 12.9,
+   "reward": 0.791,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 2
+  },
+  {
+   "split": "val",
+   "index": 339,
+   "mode": "R",
+   "target": "basketball",
+   "outcome": "found",
+   "goals": 9,
+   "metres": 46.2,
+   "reward": 0.358,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.005,
+     "bedroom": 0.1,
+     "kitchen": 0.02,
+     "living room": 0.06
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 6
+  },
+  {
+   "split": "val",
+   "index": 340,
+   "mode": "R",
+   "target": "garbage bag",
+   "outcome": "found",
+   "goals": 18,
+   "metres": 76.5,
+   "reward": -0.125,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.12,
+     "kitchen": 0.55,
+     "living room": 0.1
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 342,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 22,
+   "metres": 77.4,
+   "reward": -0.214,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.5,
+     "kitchen": 0.85,
+     "living room": 0.3
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 5
+  },
+  {
+   "split": "val",
+   "index": 344,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 17.1,
+   "reward": 0.729,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.5,
+     "kitchen": 0.85,
+     "living room": 0.3
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 345,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 14,
+   "metres": 57.0,
+   "reward": 0.15,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.5,
+     "kitchen": 0.55,
+     "living room": 0.4
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 7
+  },
+  {
+   "split": "val",
+   "index": 346,
+   "mode": "R",
+   "target": "cart",
+   "outcome": "found",
+   "goals": 10,
+   "metres": 40.5,
+   "reward": 0.395,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.06,
+     "bedroom": 0.04,
+     "kitchen": 0.15,
+     "living room": 0.05
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 348,
+   "mode": "R",
+   "target": "garbage bag",
+   "outcome": "found",
+   "goals": 6,
+   "metres": 21.9,
+   "reward": 0.661,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.3,
+     "bedroom": 0.12,
+     "kitchen": 0.55,
+     "living room": 0.1
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 349,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 21.0,
+   "reward": 0.69,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 350,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 11.4,
+   "reward": 0.806,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.02,
+     "bedroom": 0.15,
+     "kitchen": 0.07,
+     "living room": 0.22
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 3
+  },
+  {
+   "split": "val",
+   "index": 351,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 4.8,
+   "reward": 0.912,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.25,
+     "kitchen": 0.35,
+     "living room": 0.5
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 4
+  },
+  {
+   "split": "val",
+   "index": 352,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 1,
+   "metres": 3.3,
+   "reward": 0.947,
+   "room_prior": {
+    "source": "cache",
+    "why": null,
+    "rates": {
+     "bathroom": 0.02,
+     "bedroom": 0.15,
+     "kitchen": 0.07,
+     "living room": 0.22
+    },
+    "model_id": "us.anthropic.claude-opus-5-5",
+    "acts": true
+   },
+   "person_rooms": 1
+  }
+ ],
+ "R": {
+  "missions": 100,
+  "found": 98,
+  "exceptions": 0
+ }
+}

@@ -279,6 +279,12 @@ DEFAULTS = {
     # survey's.
     "find_room_labels": "off",
     "find_room_label_max_calls": 20,
+    # 3.190.C: a find's room prior from the cloud, once at its start, for a
+    # target the shipped prior lacks: "off" (dev's) or "cloud" (/room-prior,
+    # one paid call, cached on disk by model and target). The start waits at
+    # most `find_prior_timeout_s`; a late reply is cached, not applied.
+    "find_prior_source": "off",
+    "find_prior_timeout_s": 4.0,
     # End a mission `blocked` after this many FORWARDs in a row refused by
     # the safety layer (control/mission_runner.py's BLOCKED). 0 disables.
     # Five because a policy that is merely unlucky gets one or two refusals
@@ -525,6 +531,9 @@ def load_brain_config(config_path=None) -> dict:
     # 3.116.B: the same, for a find mission's own room labels.
     if os.environ.get("FIND_ROOM_LABELS"):
         merged["find_room_labels"] = os.environ["FIND_ROOM_LABELS"]
+    # 3.190.C: the same, for a find's cloud room prior.
+    if os.environ.get("FIND_PRIOR_SOURCE"):
+        merged["find_prior_source"] = os.environ["FIND_PRIOR_SOURCE"]
     # 3.88 A: the same, for ask mode and where its choices are written.
     if os.environ.get("EXPLORE_ASK"):
         raw = os.environ["EXPLORE_ASK"].strip().lower()
@@ -650,6 +659,14 @@ def load_brain_config(config_path=None) -> dict:
     if merged["find_room_labels"] != "off" and merged["explore_goal_policy"] != "rooms":
         raise ValueError("brain.find_room_labels feeds explore_goal_policy 'rooms' only; "
                          f"got {merged['explore_goal_policy']!r}")
+    if merged["find_prior_source"] not in ("off", "cloud"):
+        raise ValueError(f"brain.find_prior_source must be 'off' or 'cloud'; "
+                         f"got {merged['find_prior_source']!r}")
+    deadline = merged["find_prior_timeout_s"]
+    if (isinstance(deadline, bool) or not isinstance(deadline, (int, float))
+            or not 0 < deadline <= 30):
+        raise ValueError(f"brain.find_prior_timeout_s must be a number of seconds in "
+                         f"(0, 30]; got {deadline!r}")
     calls = merged["find_room_label_max_calls"]
     if isinstance(calls, bool) or not isinstance(calls, int) or calls < 0:
         raise ValueError(f"brain.find_room_label_max_calls must be a whole number >= 0 "

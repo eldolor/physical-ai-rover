@@ -761,7 +761,15 @@ search", "explore_goal_policy is not 'rooms'", "no room labels on a find" or
 "no named rooms read on the saved map",
 `cells` the labelled cells in the hinted room on the map the last choice was
 typed on, null before one, 0 while none carries it; the report holds both
-only when given), `mission`, `target_object`,
+only when given), `room_prior` (3.190.C: null with `find_prior_source` off;
+else `{source, why, rates, model_id, acts}` -- `source` `shipped`, `cloud`,
+`cache` or `none`, `why` with `none`: "not a find", "no explore search",
+"explore_goal_policy is not 'rooms'", "no target object", "target too long
+to ask", "no room-label layer", "no vision service", "timeout", "unreachable",
+"http <code>", "error: <type>", "reply is not a prior" or "cached reply is
+not a prior"; `acts` whether it reaches a goal choice; the report holds it
+only with the key on, and the metrics row's `config.room_prior` is
+`source` or `none (<why>)`), `mission`, `target_object`,
 `target_room`, `step`, `max_steps`, `found`, `room_reached`, `complete`,
 `last_action`, `turns` (`count`, `reversals`, `last_turn_deg`, `share`,
 `spinning`), `last_reasoning`, `rooms_visited`, `rooms_searched`,

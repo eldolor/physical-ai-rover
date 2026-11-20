@@ -147,6 +147,24 @@ Response body (JSON):
                                           (not end_turn or stop_sequence); room is then
                                           always "unclear"
     }
+
+POST /room-prior -- 3.190.C: a find's room prior, text only, on /room's model
+(asked once at a find's start, for a target the brain's shipped prior lacks).
+See vision_core.py's describe_room_prior().
+
+Request body (JSON):
+    {"target_object": "spatula"}            // no image; at most 200 characters
+
+Response body (JSON):
+    {
+      "reply": "...",       -- the model's text, raw (the brain checks and caches it)
+      "stop": "end_turn",   -- Bedrock's stopReason
+      "prior": {"kitchen": 0.9, "living room": 0.05, "bedroom": 0.01, "bathroom": 0.01}
+                | null,     -- this service's reading of the reply (null: not a prior)
+      "model_id": "...",
+      "usage": {"input_tokens": int, "output_tokens": int}
+    }
+A model error is a 502, as on every route.
 """
 
 import base64
@@ -164,6 +182,7 @@ from vision_core import (
     describe_image_bytes_navigate,
     describe_image_bytes_guidance,
     describe_image_bytes_room,
+    describe_room_prior,
     NAVIGATE_MODEL_CHOICES,
     NAVIGATE_MODEL_ID,
     NAVIGATE_PROMPT_VARIANTS,
@@ -376,6 +395,22 @@ def create_app() -> FastAPI:
         image_bytes, media_type, _body = await _decode_image(request)
 
         return _vision_call("room", describe_image_bytes_room, image_bytes, media_type)
+
+    @app.post("/room-prior")
+    async def room_prior(request: Request):
+        """3.190.C: a find's room prior, asked once at its start for a target
+        the brain's shipped prior lacks. Text only: no image."""
+        vision_core.mark_request_start()
+        _check_secret(request)
+        try:
+            body = await request.json()
+            if not isinstance(body, dict):
+                raise ValueError("the body must be a JSON object")
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=f"Bad request: {e}")
+        target_object = " ".join(_target_object(body).split())
+
+        return _vision_call("room prior", describe_room_prior, target_object)
 
     @app.post("/guidance")
     async def guidance(request: Request):
