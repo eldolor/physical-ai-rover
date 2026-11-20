@@ -1,0 +1,136 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
+"""3.194: a dock read late (`docs/plans/ros-alignment/3.194-late-dock.md`).
+
+A mission whose pose was not usable at its start (a reload's first seconds,
+a stale estimate under load) used to have no trip home at all: `start()`
+read the dock once and nothing read it again, so `return: skipped, no_dock`.
+These run the real path -- `MissionRunner` -> explore -> `robot/safety.py`
+-> `MockRobot`, nav2 stood in for by `tests/test_dock_return.py`'s RecNav --
+with a world whose first pose reads are unusable.
+
+L1 (red on `dev` `d291606c`): a saved-map dock read late is driven home to.
+L3: a start-pose dock read after the robot moved is never used."""
+
+import math
+
+from brain.dock import DOCK_TOL_DEG, DOCK_TOL_M
+from control.mission_runner import FOUND, OUT_OF_BUDGET
+from tests.test_dock_return import mission, run, truth_error
+from world.interface import unusable_pose
+
+
+def counting(nav):
+    """FakeNav jumps the robot to a goal without touching the wheels; nav2
+    drives them, so its moves reach the odometry. This counts each jump as
+    wheel path (3.194's start-pose rule reads the odometry)."""
+    jump = nav.get_goal
+
+    def get_goal():
+        g = nav.grid
+        before = (g.x, g.y)
+        out = jump()
+        nav.robot._path_m += math.hypot(g.x - before[0], g.y - before[1]) * 0.30
+        return out
+    nav.get_goal = get_goal
+    return nav
+
+
+class LatePose:
+    """A world whose first `n` pose reads are unusable; then the real pose,
+    carrying `saved` as the saved map's dock (3.156.E's field) when given."""
+
+    def __init__(self, world, n, saved=None):
+        self.world, self.n, self.saved, self.calls = world, n, saved, 0
+
+    def __getattr__(self, name):
+        return getattr(self.world, name)
+
+    def get_pose(self):
+        self.calls += 1
+        if self.calls <= self.n:
+            return unusable_pose()
+        pose = self.world.get_pose()
+        if self.saved is not None and pose.get("usable"):
+            pose = {**pose, "dock": dict(self.saved)}
+        return pose
+
+
+def late(n, saved=True, **kw):
+    runner, nav, grid, robot = mission(**kw)
+    counting(nav)
+    x, y = grid.x * 0.30, grid.y * 0.30
+    dock = {"x_m": x, "y_m": y, "heading_deg": grid.heading_deg}
+    runner.world = LatePose(runner.world, n, dock if saved else None)
+    return runner, nav, grid, robot, dock
+
+
+def test_a_saved_dock_read_late_is_driven_home_to():
+    """L1: the pose unusable for the first reads (the robot drives off
+    meanwhile), then usable with the saved map's dock: the mission still
+    goes home, to that dock."""
+    runner, nav, grid, robot, dock = late(5)
+    s = run(runner)
+    assert s["outcome"] == FOUND, s["log_tail"]
+    assert s["return"]["state"] == "docked", s["return"]
+    assert s["dock"]["source"] == "saved_map"
+    assert s["dock"]["late_s"] >= 0
+    assert math.hypot(s["dock"]["x_m"] - dock["x_m"], s["dock"]["y_m"] - dock["y_m"]) < 1e-6
+    m, deg = truth_error(grid, s["dock"])
+    assert m <= DOCK_TOL_M and deg <= DOCK_TOL_DEG, (m, deg)
+    assert any("dock read late" in line for line in runner._log), runner._log[:6]
+
+
+def test_a_start_pose_read_after_the_robot_moved_is_never_the_dock():
+    """L3: no saved dock, and the robot has driven off before the pose is
+    usable: the pose then is not where it started, so no dock -- never a
+    wrong one."""
+    runner, nav, grid, robot, _ = late(5, saved=False)
+    s = run(runner)
+    assert s["outcome"] == FOUND
+    assert s["dock"] is None
+    assert s["return"] == {"state": "skipped", "reason": "no_dock"}
+
+
+def test_a_start_pose_read_late_before_any_move_is_the_dock():
+    """The start pose read late is still the dock while odometry says the
+    robot has not moved since the start."""
+    runner, nav, grid, robot, start = late(1, saved=False)
+    runner.start()
+    assert runner._dock is None
+    runner._late_dock(force=True)               # no tick yet: nothing moved
+    s = runner.status()
+    assert s["dock"]["source"] == "start"
+    assert abs(s["dock"]["x_m"] - start["x_m"]) < 1e-6
+    assert abs(s["dock"]["y_m"] - start["y_m"]) < 1e-6
+
+
+def test_the_end_reads_once_more_before_saying_no_dock():
+    """The pose usable only after the last search read: the end that goes
+    home reads it once more, so `no_dock` means no dock was knowable."""
+    runner, nav, grid, robot, dock = late(10 ** 6)
+    runner.start()
+    for _ in range(4):
+        runner.tick()
+    runner.world.n = runner.world.calls         # usable from the next read
+    runner._dock_late_at = runner.clock()       # the throttle just read
+    runner._finish(OUT_OF_BUDGET, "decided")
+    assert runner.status()["return"]["state"] == "returning"
+    assert runner.status()["dock"]["source"] == "saved_map"
+
+
+def test_a_pose_usable_at_the_start_reads_no_more():
+    """L4: the normal path is unchanged -- the dock is read at the start and
+    never again, and carries no `late_s`."""
+    runner, nav, grid, robot, _ = late(0)
+    s = run(runner)
+    assert s["return"]["state"] == "docked"
+    assert "late_s" not in s["dock"]
+    assert runner.world.calls >= 1
+    assert not any("dock read late" in line for line in runner._log)
+
+
+def test_off_reads_nothing_late():
+    runner, nav, grid, robot, _ = late(5, return_to_dock=False)
+    s = run(runner)
+    assert s["dock"] is None and s["return"] is None
