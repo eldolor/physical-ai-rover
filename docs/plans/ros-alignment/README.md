@@ -198,4 +198,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.193](3.193-nogo-mask-edge-redraw.md) | The bridge's no-go mask: a zone's whole edge, and its redraw after leaving |
 | [3.194](3.194-late-dock.md) | A dock read late: a mission whose pose was unusable at its start still goes home |
 | [3.196](3.196-nogo-abort-loop.md) | Explore gives up a goal that keeps aborting beside a no-go zone |
+| [3.195](3.195-nogo-corner-cut.md) | The robot never cuts a no-go zone's corner |
 <!-- /sections -->

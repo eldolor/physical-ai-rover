@@ -334,6 +334,7 @@ class Bridge(Node):
         self.zones = []
         self.zones_fresh = set()
         self.zones_suspended = set()
+        self.zones_bare = set()      # 3.195: drawn without their margin (keepout.margins_off)
         self.zone_events = {"suspended": 0, "restored": 0, "last": None}
         # 3.193: the keepout mask's lattice follows the SLAM map's, so a mask
         # cell is a costmap cell (set from each /map; (0, 0) until the first).
@@ -1018,13 +1019,17 @@ class Bridge(Node):
         if body.get("session") not in (None, self.session):
             return 409, {"error": "the SLAM session changed", "session": self.session}
         try:
-            zones = keepout.parse_zones(body.get("zones") or [])
+            # 3.195 (D1): drawn grown by keepout.GROW_M; `poly` stays the zone
+            zones = keepout.with_margin(keepout.parse_zones(body.get("zones") or []))
         except (KeyError, TypeError, ValueError, IndexError) as e:
             return 400, {"error": str(e)}
         pose = self._pose_in("map")
         if pose is not None and pose.get("age_s", 0) > 2.0:
             pose = None            # review: a stale pose decides nothing; the watch does
         with self.lock:
+            # review: a zone re-posted with another shape starts with its margin
+            same = {z["id"] for z in zones for o in self.zones if o["id"] == z["id"] and o["poly"] == z["poly"]}
+            self.zones_bare &= same
             self.zones = zones
             self.zones_fresh = {z["id"] for z in zones}
             self._zones_step(pose)
@@ -1037,7 +1042,19 @@ class Bridge(Node):
         Returns whether the drawn set changed."""
         xy = None if pose is None else (pose["x_m"], pose["y_m"])
         before = self.zones_suspended
-        after = keepout.suspend(self.zones, before, xy, self.zones_fresh, phase=self.mask_phase)
+        # 3.195: a margin that alone boxes the robot comes off first; D4's
+        # whole-zone suspension then reads the zones as drawn after that.
+        bare_before = self.zones_bare
+        off = keepout.margins_off(self.zones, bare_before, before, xy, self.mask_phase,
+                                  fresh=self.zones_fresh)
+        after = keepout.suspend(keepout.bare(self.zones, off), before, xy,
+                                self.zones_fresh, phase=self.mask_phase)
+        self.zones_bare = off - after            # review: a zone left out is not also "bare"
+        for zid in sorted(self.zones_bare - bare_before):
+            self.get_logger().warning(f"zone_margin_off {zid}: its margin boxes the robot; drawn "
+                                      f"bare until it would not")
+        for zid in sorted(bare_before - self.zones_bare - after):
+            self.get_logger().info(f"zone_margin_on {zid}")
         if xy is not None:
             self.zones_fresh = set()
         for zid in sorted(after - before):
@@ -1055,7 +1072,7 @@ class Bridge(Node):
                 self.get_logger().warning(f"zone_restored {zid}: the robot is "
                                           f"{d if d is None else round(d, 2)} m clear")
         self.zones_suspended = after
-        return after != before
+        return after != before or self.zones_bare != bare_before
 
     def _watch_zones(self):
         if not self.zones:
@@ -1074,11 +1091,12 @@ class Bridge(Node):
         return {"zones": len(self.zones), "suspended": sorted(self.zones_suspended),
                 "suspended_count": self.zone_events["suspended"],
                 "restored": self.zone_events["restored"], "last": self.zone_events["last"],
-                "lattice_phase_m": [round(v, 4) for v in self.mask_phase]}
+                "lattice_phase_m": [round(v, 4) for v in self.mask_phase],
+                "margin_off": sorted(self.zones_bare)}
 
     def _publish_keepout(self, spots):
         # 3.161: the zones still drawn (not suspended) join the spots.
-        m = keepout.mask(spots, zones=[z for z in self.zones
+        m = keepout.mask(spots, zones=[z for z in keepout.bare(self.zones, self.zones_bare)
                                        if z["id"] not in self.zones_suspended],
                          phase=self.mask_phase)
         msg = OccupancyGrid()
