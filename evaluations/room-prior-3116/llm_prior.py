@@ -33,12 +33,13 @@ LEARNED = os.path.join(ROOT, "evaluations", "goal-learn-396", "prior.json")
 # never drift apart (review).
 sys.path.insert(0, os.path.join(ROOT, "service", "vision_analyze"))
 from vision_core import MODEL_REGIONS, ROOM_MODEL_ID  # noqa: E402
+# 3.190.C: the question, the reply check and the four types live in the
+# brain now (`brain/room_prior.py`), moved unchanged; this harness reads them.
+sys.path.insert(0, ROOT)
+from brain.room_prior import MAX_TOKENS, PROMPT, TYPES, parse  # noqa: E402,F401
 
 MODEL_ID = ROOM_MODEL_ID
 REGION = MODEL_REGIONS.get(MODEL_ID) or os.environ.get("AWS_REGION", "us-east-2")
-MAX_TOKENS = 512
-TYPES = ("kitchen", "living room", "bedroom", "bathroom")
-
 # 3.96's nine real-object categories (criterion 8), then the everyday
 # targets ProcTHOR's floor objects lack (criterion 10), fixed before the
 # first call.
@@ -48,35 +49,6 @@ EVERYDAY = ("knife", "keys", "phone charger", "toothbrush", "remote control",
             "red backpack", "shoes", "reading glasses", "wallet", "laptop",
             "cat toy", "baby bottle", "water bottle", "umbrella", "towel",
             "frying pan", "book", "headphones", "hair dryer", "pillow")
-
-PROMPT = """A small robot searches a home for an object. It needs a prior over room types.
-
-Object: {target}
-
-For each of these room types -- kitchen, living room, bedroom, bathroom -- estimate the share of such rooms in typical homes that contain at least one {target} somewhere a person could see it (on the floor, furniture or a counter). Each value is a probability between 0 and 1, judged for that room type on its own: the four values need not add up to 1.
-
-Reply with one JSON object and nothing else, with exactly these keys: "kitchen", "living room", "bedroom", "bathroom"."""
-
-
-def parse(text: str):
-    """The reply's four rates, or None if it is not exactly the shape asked."""
-    t = (text or "").strip()
-    if t.startswith("```"):
-        t = t.strip("`")
-        t = t[t.find("{"):] if "{" in t else t
-    try:
-        obj = json.loads(t[t.find("{"): t.rfind("}") + 1])
-    except ValueError:
-        return None
-    if not isinstance(obj, dict) or set(obj) != set(TYPES):
-        return None
-    out = {}
-    for k in TYPES:
-        v = obj[k]
-        if isinstance(v, bool) or not isinstance(v, (int, float)) or not 0.0 <= v <= 1.0:
-            return None
-        out[k] = float(v)
-    return out
 
 
 def _load() -> dict:

@@ -63,6 +63,7 @@ from brain.intervention_log import (VIA_BRAIN_STOP, VIA_LOOP_CANCELLED, VIA_PREE
                                     VIA_ROBOT_STOP)
 from brain.goal_policy import coarse, goal_policy_for
 from brain.goal_policy import rooms_prior_informative as flat_prior_ok
+from brain.room_prior import valid_rates as valid_prior_rates
 from brain.frontier import RETRY_COOLDOWN_S, RETRY_LIMIT, SET_ASIDE_MIN_FAILURES, SET_ASIDE_MISSIONS
 from brain.inventory import MAX_RANGE_M as INVENTORY_RANGE_M
 from brain.what_i_saw import MAX_THUMBS
@@ -73,6 +74,7 @@ from brain.memory import MissionMemory
 from brain.mission_report import map_coverage
 from brain.navigate import CloudUnavailable
 from brain import room_names
+from brain import room_labels as room_labels_mod
 from brain.room_labels import RoomLabeller, frame_room
 from brain.request import check_hint
 from brain.vision_agent import VisionAgent
@@ -90,6 +92,8 @@ logger = logging.getLogger("mission_runner")
 # the mission's clock has moved this far -- a simulated clock can stand still
 # or run fast (reviews 3-4).
 SEED_EVERY_S = 2.0
+# 3.70 M1: reads made only to name the map stop after this much mission time.
+NOTE_GIVE_UP_S = 120.0
 
 # Deliberately NOT 30.0, which is exactly one grid cell.
 #
@@ -759,6 +763,7 @@ class MissionRunner:
         return_wait_s: float = docking.RETURN_WAIT_S,
         room_hint: Optional[dict] = None,
         request: Optional[str] = None,
+        room_prior: Optional[dict] = None,
     ):
         if job not in JOBS:
             raise ValueError(f"Unknown job: {job!r}. Known: {', '.join(JOBS)}")
@@ -799,8 +804,32 @@ class MissionRunner:
         if room_hint is not None and job != "find":
             raise ValueError("room_hint is for a find (job 'find'), not a survey")
 
+        # 3.190.C: a find's room prior as the brain's start found it
+        # (`brain/room_prior.status()`): None with `find_prior_source` off.
+        # Its rates sit under this target's key in this mission's own policy
+        # object only: the cloud's or the cache's in place of none, or the
+        # shipped rates themselves (the same values; a target typed with
+        # edge or double spaces then reads them too, review round 2).
+        if room_prior is not None:
+            room_prior = dict(room_prior)
+            if room_prior.get("source") in ("cloud", "cache", "shipped"):
+                if job != "find" or not valid_prior_rates(room_prior.get("rates")):
+                    raise ValueError("room_prior's rates are for a find, as four types in "
+                                     f"[0, 1]; got {room_prior.get('rates')!r} on a {job}")
+
         self.robot = robot
         self.room_hint = room_hint
+        self.room_prior = room_prior
+        # 3.161: a person's no-go zones for the saved map the mission runs on
+        # (house frame) and that map's frame_id; [] is off (`set_nogo`).
+        self.nogo_zones: list = []
+        self.nogo_frame: Optional[str] = None
+        # Review: where a frame's zones come from (the brain's store) and
+        # where a set read mid-mission goes (the robot server). Explore asks
+        # through `_nogo_lookup` when its pose names a saved map these zones
+        # are not for -- a mission started before the pose was usable.
+        self.nogo_source: Optional[Callable[[str], list]] = None
+        self.nogo_sink: Optional[Callable[[str, list], None]] = None
         # 3.176: the sentence a person typed, kept for the record only.
         self.request = request.strip()[:MAX_REQUEST_CHARS] if isinstance(request, str) and request.strip() else None
         self._explore_policy_name = explore_goal_policy
@@ -917,6 +946,21 @@ class MissionRunner:
         # usable pose with a `frame_id`, to seed this mission's inventory.
         # None (sweeps, harnesses) carries nothing and reads nothing extra.
         self.inventory_prior: Optional[Callable[[str], Optional[dict]]] = None
+        # 3.70 S4: the room labels saved with this map, in the inventory
+        # report (one file under the saved map's `frame_id`): carried from
+        # the chain's head when the inventory seeds, replaced by a survey's
+        # own at its end. `inventory_sink_lazy` (the brain server's): the
+        # sink takes a callable, so the survey's map read and cut run on the
+        # save's thread, never on the event loop a Stop ends on.
+        self._labels_block: Optional[dict] = None
+        self._label_seen: Optional[tuple] = None    # (the labeller's last map, its frame_id)
+        # 3.70 M1: the map this mission runs on, from its first usable pose:
+        # the saved map's frame (`frame_id`, the bridge's map_id) and whether
+        # it was RELOADED (the pose carries the saved dock only on a matched
+        # reload, 3.156.E) or is a new map (a first visit or a fall-back).
+        self._saved_map: Optional[dict] = None
+        self._pose_read_error_logged = False
+        self.inventory_sink_lazy = False
         self._inventory_seeded = False
         self._seed_read_at: Optional[tuple] = None   # (wall, mission clock) of the last read
         self.seed_wall_clock: Callable[[], float] = time.monotonic   # a test may replace it
@@ -1042,6 +1086,13 @@ class MissionRunner:
             extra = {"navigator": self._navigator, "clock": self.clock,
                      # 3.65 phase 2: "rule" (None) or the learned goal choice.
                      "goal_policy": goal_policy_for(explore_goal_policy)}
+            if (room_prior is not None and room_prior.get("rates") is not None
+                    and room_prior.get("source") in ("cloud", "cache", "shipped")
+                    and getattr(extra["goal_policy"], "rooms", False)):
+                # Only goal order changes: the rates sit where the shipped
+                # prior's would, and the label-asks rule above stays on the
+                # shipped prior (3.190's scope).
+                extra["goal_policy"].prior[(target_object or "").lower()] = dict(room_prior["rates"])
             if room_hint is not None:
                 extra["room_hint"] = room_hint
             if self.find_room_labels and self.room_labeller is not None:
@@ -1088,6 +1139,8 @@ class MissionRunner:
             arrival_confirm_fn=self._judged_confirm,
             world=self.world,
         )
+        if hasattr(self.agent, "zone_source"):
+            self.agent.zone_source = self._nogo_lookup     # 3.161 review
         if self.vision_fn is None:
             # The UNGATED agent method is fine here: a scene only reads
             # sensors, and `_HaltGate` exists to stop moves, not reads.
@@ -1385,7 +1438,12 @@ class MissionRunner:
                 if self.find_room_labels and m and "cells" in m:
                     # Nothing to coarsen for once asking has ended (review).
                     m = None if (rl.capped or rl.no_source) else self._coarse(m)
-                name = self.room_labeller.observe(m, self.world.get_pose(), self._label_frame,
+                pose = self.world.get_pose()
+                if not self.find_room_labels and m and pose and pose.get("usable"):
+                    # 3.70 S4: the map and its saved frame, kept for the end's
+                    # saved block -- no map read or fine cut at the end.
+                    self._label_seen = (m, pose.get("frame_id"))
+                name = self.room_labeller.observe(m, pose, self._label_frame,
                                                   alive=self.is_running, fits=self._label_fits)
                 if name is not None:
                     self._log_line(f"room label {self.room_labeller.calls}: {name}")
@@ -1756,6 +1814,25 @@ class MissionRunner:
     def last_frame_seq(self) -> Optional[int]:
         return self._last_frame_seq
 
+    def set_nogo(self, frame_id: Optional[str], zones) -> None:
+        """3.161 (D2, D3): a person's zones for the saved map `frame_id`, at
+        the start and on each edit. Explore reads them for its goal choice;
+        the report's coverage counts floor outside them."""
+        zones = list(zones or ())
+        with self._lock:
+            self.nogo_frame, self.nogo_zones = frame_id, zones
+        set_zones = getattr(self.agent, "set_zones", None)
+        if callable(set_zones):
+            set_zones(zones)
+
+    def _nogo_lookup(self, frame_id: str) -> None:
+        if self.nogo_source is None or frame_id == self.nogo_frame:
+            return
+        zones = list(self.nogo_source(frame_id) or ())
+        self.set_nogo(frame_id, zones)
+        if self.nogo_sink is not None:
+            self.nogo_sink(frame_id, zones)
+
     def status(self) -> dict:
         with self._lock:
             elapsed = self._elapsed_s()
@@ -1783,6 +1860,8 @@ class MissionRunner:
                 },
                 "error": self._error,
                 "dock": dict(self._dock) if self._dock else None,
+                # 3.70 M1: the map it runs on (None before a usable pose).
+                "saved_map": dict(self._saved_map) if self._saved_map else None,
                 "return": dict(self._return) if self._return else None,
                 "charge": ({**self._charge, "history": list(self._charge["history"])}
                            if self._charge else None),
@@ -1801,6 +1880,8 @@ class MissionRunner:
                 # whether it can act, and the labelled cells it has so far.
                 "request": self.request,
                 "room_hint": self._room_hint_status(),
+                # 3.190.C: the start's room prior (None with the key off).
+                "room_prior": self._room_prior_status(),
                 # 3.162: the name its report is kept under (the twin's match).
                 "mission_id": self.report_id,
                 "mission": self.memory.mission,
@@ -1872,7 +1953,13 @@ class MissionRunner:
                              "asks": self._ask() is not None,
                              "ask": (self._ask().snapshot()
                                      if self._ask() is not None else None),
-                             "choices": len(self.choices)}
+                             "choices": len(self.choices),
+                             # 3.161: only with zones, so a plain mission's status is dev's.
+                             **({"nogo": {"frame_id": self.nogo_frame,
+                                          "zones": len(self.nogo_zones),
+                                          "refused": getattr(self.agent, "zone_refusals", 0),
+                                          "leaves": getattr(self.agent, "zone_leaves", 0)}}
+                                if self.nogo_zones else {})}
                             if self.explores else None),
                 "tier_search": self.tier_search,
                 # 3.46: counts only; the list is GET /mission/inventory.
@@ -2734,9 +2821,14 @@ class MissionRunner:
             # 3.176: only when given, so a plain find's report is dev's.
             report["request"] = self.request
             report["room_hint"] = self._room_hint_status()
+        if self.room_prior is not None:
+            # 3.190.C: only with the key on, so an off mission's report is dev's.
+            report["room_prior"] = self._room_prior_status()
         try:
             m = self.world.get_map()
-            report.update(map_coverage(m))
+            report.update(map_coverage(m, self.nogo_zones))
+            if self.nogo_zones:
+                report["nogo_zones"] = len(self.nogo_zones)   # 3.161: coverage is outside them
             report["map_id"], report["map_version"] = m.get("map_id"), m.get("map_version")
         except Exception as e:  # noqa: BLE001 -- a report never fails a finish
             logger.warning("report: map unreadable: %s", e)
@@ -3024,7 +3116,8 @@ class MissionRunner:
             if self._ended():
                 return                        # no reads once the mission has ended
             if detections is None:
-                if self.inventory_prior is not None and not self._inventory_seeded:
+                if ((self.inventory_prior is not None and not self._inventory_seeded)
+                        or (self._saved_map is None and self._note_reads_due())):
                     # 3.50.D5: seed on the first usable pose even before the
                     # first detection -- a pose read for it at most every
                     # SEED_EVERY_S until then (a phone walk never has one).
@@ -3032,7 +3125,14 @@ class MissionRunner:
                     last = self._seed_read_at
                     if last is None or any(n - t >= SEED_EVERY_S for n, t in zip(now, last)):
                         self._seed_read_at = now
-                        self._seed_inventory(self.world.get_pose())
+                        try:
+                            pose = self.world.get_pose()
+                        except Exception as e:  # noqa: BLE001 -- 3.70 M1 review 2: its own warning
+                            if not self._pose_read_error_logged:
+                                self._pose_read_error_logged = True
+                                logger.warning("pose not read for the map's name or the seed: %s", e)
+                            return
+                        self._seed_inventory(pose)
                 return
             pose = self.world.get_pose()
             self._seed_inventory(pose)
@@ -3052,6 +3152,38 @@ class MissionRunner:
                 self._inventory_error_logged = True
                 logger.warning("inventory: frame not recorded: %s", e)
 
+    def _note_reads_due(self) -> bool:
+        """3.70 M1 (review): pose reads made only to name the map stop after
+        NOTE_GIVE_UP_S of mission time -- a world that never answers a usable
+        pose (a phone walk) is not polled for the whole mission."""
+        elapsed = self._elapsed_s()
+        if elapsed is None or self._started_at is None:
+            return False               # no mission running: nothing to name
+        # Either clock past the limit stops them (review 2): a simulated
+        # clock can stand still.
+        return elapsed < NOTE_GIVE_UP_S and time.monotonic() - self._started_at < NOTE_GIVE_UP_S
+
+    def _note_map(self, pose: Optional[dict]) -> None:
+        """3.70 M1: once, on the first usable pose, the map this mission
+        STARTED on -- `status()['saved_map']` and a log line; like the
+        inventory's seed it is not revised if SLAM restarts under the
+        mission. Reads nothing more than the pose it is given."""
+        if self._saved_map is not None or not pose or not pose.get("usable"):
+            return
+        frame_id = pose.get("frame_id")
+        note = {"frame_id": frame_id, "map_id": pose.get("map_id"),
+                "reloaded": bool(frame_id) and isinstance(pose.get("dock"), dict)}
+        with self._lock:
+            if self._saved_map is not None or self._ended():
+                return
+            self._saved_map = note
+        if not frame_id:
+            self._log_line("map: not on a saved map's frame (none kept, or not anchored on one)")
+        elif note["reloaded"]:
+            self._log_line(f"map: on the saved map {frame_id}, reloaded")
+        else:
+            self._log_line(f"map: a new map {frame_id} (not a matched reload)")
+
     def _seed_inventory(self, pose: dict) -> None:
         """3.50.D5: once, on the first usable pose: the head of the chain
         saved on this pose's saved map (`frame_id`) seeds this inventory.
@@ -3061,6 +3193,7 @@ class MissionRunner:
         gives up: until a usable pose comes nothing is recorded either, so
         nothing can be saved on the frame without first reading the chain
         (review 2)."""
+        self._note_map(pose)
         if self.inventory_prior is None or self._inventory_seeded:
             return
         if not pose or not pose.get("usable"):
@@ -3076,6 +3209,9 @@ class MissionRunner:
                     self._seed_error_logged = True
                     logger.warning("inventory: earlier landmarks not read, this mission's "
                                    "kept apart from them: %s", e)
+        # 3.70 S4: the saved labels checked here, outside the lock (a decode).
+        labels_ok = (room_labels_mod.read_saved(prior.get("room_labels"))
+                     if isinstance(prior, dict) and prior.get("room_labels") is not None else None)
         with self._lock:
             if self._inventory_seeded or self._ended():
                 return
@@ -3083,17 +3219,91 @@ class MissionRunner:
             if failed:
                 self.inventory.detach()
             n = self.inventory.seed(frame_id, prior) if prior else 0
+            if frame_id and not failed and not prior:
+                self.inventory.adopt(pose)     # 3.70 S4: on the frame with nothing saved
             source = self.inventory.carried_from
+            labels = self._carry_labels(frame_id, prior, labels_ok)
             aside = self._carry_set_aside(frame_id, prior)
             recalled = self._recall_carried() if n else 0
         if n:
             self._log_line(f"inventory: {n} landmarks carried from "
                            f"{source or 'an earlier mission'} on {frame_id}")
+        if labels:
+            self._log_line(f"room labels: {labels} rooms carried from "
+                           f"{(prior or {}).get('room_labels', {}).get('mission_id') or 'a survey'} on {frame_id}")
         if aside:
             self._log_line(f"explore: {aside} stalled places set aside from earlier missions on {frame_id}")
         if recalled:
             self._log_line(f"explore: going first to {recalled} place(s) where earlier missions "
                            f"on {frame_id} saw the {self.memory.target_object}")
+
+    def _carry_labels(self, frame_id, prior, got: Optional[dict]) -> int:
+        """3.70 S4, under `_lock`, just seeded: the saved room labels of the
+        chain's head, kept whole for this mission's report -- only on the
+        frame the inventory took (another map's, or a detached inventory's,
+        are never used), and only a block saved on that frame. `got` is
+        `read_saved()` of it, run outside the lock; None (it did not read
+        back whole) drops it. Returns how many rooms it names."""
+        if (not frame_id or not isinstance(prior, dict) or prior.get("frame_id") != frame_id
+                or self.inventory.frame_id != frame_id):
+            return 0
+        block = prior.get("room_labels")
+        if block is None:
+            return 0
+        if got is None or got.get("frame_id") != frame_id:
+            logger.warning("room labels saved on %s unreadable or another map's: not carried",
+                           frame_id)
+            return 0
+        self._labels_block = block
+        return len(got["names"])
+
+    def _own_labels_due(self) -> bool:
+        """A survey's labeller named at least one room: its layer is saved --
+        over a carried block only when the survey ended `exhausted` (review
+        2: a survey stopped or out of time saw part of the house, and must
+        not wipe a whole earlier survey's labels)."""
+        rl = self.room_labeller
+        if (rl is None or self.find_room_labels
+                or not any(n != room_labels_mod.UNCLEAR for _x, _y, n in rl.seeds)):
+            return False
+        return self._labels_block is None or self._outcome == EXHAUSTED
+
+    def _own_label_block(self, snap: tuple) -> Optional[dict]:
+        """3.70 S4: this survey's labels as the saved block -- the model's
+        layer, not a person's names (3.160 keeps those in its own store) --
+        cut on the last map the labeller saw, at the room policy's grid
+        (`coarse()`, ROOM_RES_M: what a find's room goals read, and a cut of
+        milliseconds, so the save stays far inside the next lookup's
+        PENDING_WAIT_S). Only when that map's frame is the inventory's: a
+        map of another frame (a SLAM restart onto a fresh map mid-survey) is
+        never saved under this one. None, logged, on any error or a layer
+        that names nothing: the inventory is saved without it, and a carried
+        block stays."""
+        try:
+            seen, seeds, frame_id = snap
+            if seen is None or not frame_id or seen[1] != frame_id:
+                if seen is not None and seen[1] and frame_id:
+                    logger.warning("room labels not saved: the map is on %s, the inventory on %s",
+                                   seen[1], frame_id)
+                return None
+            m = coarse(seen[0])
+            layer = self.room_labeller.model_layer(m, seeds)
+            if not layer or not layer["names"]:
+                return None
+            return room_labels_mod.saved_block(layer, m, seeds,
+                                               mode=self.room_labeller.mode,
+                                               mission_id=self.mission_id, frame_id=frame_id)
+        except Exception as e:  # noqa: BLE001 -- a label never costs the inventory
+            logger.warning("room labels not saved: %s", e)
+            return None
+
+    def _with_own_labels(self, report: dict, snap: tuple) -> dict:
+        block = self._own_label_block(snap)
+        if block is not None:
+            with self._lock:
+                self._labels_block = block
+            report["room_labels"] = block
+        return report
 
     def _recall_carried(self) -> int:
         """3.172 F5: the carried landmarks named as the target (the found
@@ -3140,6 +3350,8 @@ class MissionRunner:
             book = getattr(self.agent, "retry", None)
             if book is not None:
                 report["set_aside"] = book.carry_out(SET_ASIDE_MIN_FAILURES, SET_ASIDE_MISSIONS)
+            if self._labels_block is not None:
+                report["room_labels"] = self._labels_block     # 3.70 S4
         return report
 
     def _keep_looks(self, frame: dict, pose: dict, detections: list) -> None:
@@ -3242,7 +3454,21 @@ class MissionRunner:
             self._inventory_save = {"state": "pending", "mission_id": self.mission_id,
                                     "error": None}
         try:
-            self.inventory_sink(self.inventory_report())
+            report = self.inventory_report()
+            if self._own_labels_due():
+                # 3.70 S4: the survey's labels join the same report. A lazy
+                # sink builds them on its save thread (the save is counted
+                # pending from now, so the next lookup waits for it), from
+                # what the labeller holds now (review 2: a late step cannot
+                # change it under the build).
+                with self._lock:
+                    snap = (self._label_seen, [list(sd) for sd in self.room_labeller.seeds],
+                            self.inventory.frame_id)
+                if self.inventory_sink_lazy:
+                    self.inventory_sink(functools.partial(self._with_own_labels, report, snap))
+                    return
+                report = self._with_own_labels(report, snap)
+            self.inventory_sink(report)
         except Exception as e:  # noqa: BLE001
             logger.warning("inventory not saved: %s", e)
             self.inventory_saved(self.mission_id, False, f"sink: {e}")
@@ -3352,6 +3578,19 @@ class MissionRunner:
             self._goal_layer = (key, cm, layer)
         _key, cm, layer = self._goal_layer
         return (cm, layer) if layer else None
+
+    def _room_prior_status(self) -> Optional[dict]:
+        """3.190.C: where this find's room prior came from (shipped, cloud,
+        cache or none), why when none, its rates and the model; and whether
+        it reaches a goal choice (`acts`), which needs explore's `rooms`
+        policy. None with `find_prior_source` off."""
+        if self.room_prior is None:
+            return None
+        out = dict(self.room_prior)
+        out["rates"] = dict(out["rates"]) if out.get("rates") else None
+        out["acts"] = bool(self.explores and self._explore_policy_name == "rooms"
+                           and out.get("source") in ("cloud", "cache", "shipped"))
+        return out
 
     def _room_hint_status(self) -> Optional[dict]:
         """3.176: the hint, whether it can act on this mission, why not, and

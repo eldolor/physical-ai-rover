@@ -52,6 +52,8 @@ FREE_BELOW = 25
 # ros2_control dead that is frozen. Normal ages are under 0.1 s (TF at
 # 20 Hz and slam_toolbox's 0.05 s publish period).
 POSE_STALE_S = 1.0
+# 3.161 review 2: a refused zone resend to a new session waits this long.
+ZONES_RETRY_S = 5.0
 # How often an unanchored session may ask the truth again (3.76 round 7).
 TRUTH_RETRY_S = 1.0
 
@@ -239,6 +241,15 @@ class RosWorld(WorldInterface):
         self._truth_tried: dict = {}     # session -> monotonic time of its last failed read
         self._truth_reading: set = set()     # sessions with a truth read in flight
         self._truth_warned: set = set()          # {(session, kind)}
+        # 3.161 review: the last zone set (zones, frame_id) and the session it
+        # reached. The bridge keeps zones in memory only, so a restarted
+        # container (a new session on the same saved map) is sent them again.
+        self._zones_last: Optional[tuple] = None
+        self._zones_session: Optional[str] = None
+        self._zones_resending = False
+        self._zones_failed_at = -math.inf        # review 2: a refused resend waits ZONES_RETRY_S
+        self._zones_warned: Optional[str] = None
+        self._zones_send_lock = threading.RLock()     # one zone send at a time, the resend's check inside
 
     @property
     def _session(self) -> Optional[str]:
@@ -394,6 +405,7 @@ class RosWorld(WorldInterface):
         est = reply.get("map")
         if anchor is None or est is None or _stale(est):
             return unusable_pose()
+        self._zones_again(anchor)
         x, y, h = self._apply(*_ros_to_ours(est["x_m"], est["y_m"], est["yaw_rad"]), anchor)
         pose = {"usable": True, "map_id": f"slam-{anchor.session}", "frame_id": anchor.frame,
                 "x_m": x, "y_m": y, "heading_deg": round(h, 4)}
@@ -629,6 +641,81 @@ class RosWorld(WorldInterface):
                                f"{body.get('session') if body else None})")}
         r.raise_for_status()
         return {"accepted": True, **r.json()}
+
+    def set_zones(self, zones: list, frame_id: Optional[str]) -> dict:
+        """3.161 (D2): a person's no-go zones (house frame, `world/nogo.py`)
+        for the saved map `frame_id`, the whole set, replacing the last. Each
+        rectangle goes to the bridge as its four corners in ROS's map frame
+        (the anchor may rotate it), and the bridge draws them into the same
+        keepout mask as the robot's spots. Refused unless this session's
+        anchor lays that saved map's frame: on any other they would land in
+        the wrong place. An empty set is sent whatever the frame (a clear)."""
+        reply = self._fetch_pose()
+        anchor = self._ensure_session(reply)
+        if anchor is None:
+            return {"accepted": False, "reason": "no SLAM session yet"}
+        if zones and (frame_id is None or anchor.frame != frame_id):
+            return {"accepted": False, "reason": "another saved map",
+                    "detail": f"the zones are for {frame_id}, the robot is on {anchor.frame}"}
+        out = []
+        for z in zones:
+            poly = []
+            for x, y in ((z["x0"], z["y0"]), (z["x1"], z["y0"]),
+                         (z["x1"], z["y1"]), (z["x0"], z["y1"])):
+                rx, ry = _ours_to_ros(*self._unapply(x, y, anchor))
+                poly.append([round(rx, 4), round(ry, 4)])
+            out.append({"id": z["id"], "poly": poly})
+        with self._zones_send_lock:
+            self._zones_last = (list(zones), frame_id)
+            r = self._http.post("/nav/zones", json={"zones": out, "session": anchor.session})
+            if r.status_code == 409:
+                return {"accepted": False, "reason": "the SLAM session changed"}
+            r.raise_for_status()
+            self._zones_session = anchor.session
+            return {"accepted": True, **_json_object(r)}
+
+    def _zones_again(self, anchor: "Anchor") -> None:
+        """3.161 review: a new session on the saved map the last zone set was
+        for gets that set again, on a thread of its own (a pose read never
+        waits on the post). Once a session; a failed send is tried again on
+        a later read."""
+        last = self._zones_last
+        if (last is None or not last[0] or anchor.frame is None or anchor.frame != last[1]
+                or anchor.session == self._zones_session):
+            return
+        with self._lock:
+            if self._zones_resending or time.monotonic() - self._zones_failed_at < ZONES_RETRY_S:
+                return
+            self._zones_resending = True
+
+        def send():
+            ok = False
+            try:
+                with self._zones_send_lock:
+                    # Review 2: a newer set sent meanwhile (a person's edit)
+                    # is never overwritten by this older one.
+                    if self._zones_last is last and self._zones_session != anchor.session:
+                        ok = bool(self.set_zones(*last).get("accepted"))
+                    else:
+                        ok = True
+            except Exception as e:  # noqa: BLE001 -- tried again after ZONES_RETRY_S
+                if self._zones_warned != anchor.session:
+                    self._zones_warned = anchor.session
+                    logger.warning("no-go zones not re-sent to the new SLAM session: %s", e)
+            finally:
+                with self._lock:
+                    self._zones_resending = False
+                    if not ok:
+                        self._zones_failed_at = time.monotonic()
+        threading.Thread(target=send, daemon=True, name="zones-again").start()
+
+    def zone_status(self) -> Optional[dict]:
+        """3.161 (D4): the bridge's `nogo` block on its /health -- the zones it
+        holds and those it has left out of the mask while the robot is in or
+        near one. None from a bridge that predates it."""
+        r = self._http.get("/health")
+        r.raise_for_status()
+        return _json_object(r).get("nogo")
 
     def remap(self, by: str = "") -> dict:
         """3.50.D4: a person's "re-map now". The bridge maps the reloaded

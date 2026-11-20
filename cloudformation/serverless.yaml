@@ -64,7 +64,8 @@ Parameters:
     Type: String
     Default: us.anthropic.claude-opus-5-5
     Description: >
-      The model /room names a survey's rooms with (3.70 S2). Keep in step
+      The model /room names a survey's rooms with (3.70 S2), and /room-prior
+      asks a find's room prior with (3.190.C). Keep in step
       with vision_core.py's ROOM_MODEL_ID, for NavigateModelId's reason.
   EnvLabel:
     Type: String
@@ -297,6 +298,9 @@ Resources:
   RouteRoom:
     Type: AWS::ApiGatewayV2::Route
     Properties: {ApiId: !Ref Api, RouteKey: "POST /room", Target: !Sub "integrations/${VisionIntegration}"}
+  RouteRoomPrior:
+    Type: AWS::ApiGatewayV2::Route
+    Properties: {ApiId: !Ref Api, RouteKey: "POST /room-prior", Target: !Sub "integrations/${VisionIntegration}"}
   RouteGuidance:
     Type: AWS::ApiGatewayV2::Route
     Properties: {ApiId: !Ref Api, RouteKey: "POST /guidance", Target: !Sub "integrations/${VisionIntegration}"}
@@ -374,6 +378,7 @@ Resources:
           - {PathPattern: "/navigate",         TargetOriginId: api, ViewerProtocolPolicy: https-only, AllowedMethods: [GET,HEAD,OPTIONS,PUT,POST,PATCH,DELETE], CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad, OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac}
           - {PathPattern: "/navigate/*",       TargetOriginId: api, ViewerProtocolPolicy: https-only, AllowedMethods: [GET,HEAD,OPTIONS,PUT,POST,PATCH,DELETE], CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad, OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac}
           - {PathPattern: "/room",             TargetOriginId: api, ViewerProtocolPolicy: https-only, AllowedMethods: [GET,HEAD,OPTIONS,PUT,POST,PATCH,DELETE], CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad, OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac}
+          - {PathPattern: "/room-prior",       TargetOriginId: api, ViewerProtocolPolicy: https-only, AllowedMethods: [GET,HEAD,OPTIONS,PUT,POST,PATCH,DELETE], CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad, OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac}
           - {PathPattern: "/guidance",         TargetOriginId: api, ViewerProtocolPolicy: https-only, AllowedMethods: [GET,HEAD,OPTIONS,PUT,POST,PATCH,DELETE], CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad, OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac}
           - {PathPattern: "/health",           TargetOriginId: api, ViewerProtocolPolicy: https-only, AllowedMethods: [GET,HEAD,OPTIONS],                     CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad, OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac}
           - {PathPattern: "/stats",            TargetOriginId: api, ViewerProtocolPolicy: https-only, AllowedMethods: [GET,HEAD,OPTIONS],                     CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad, OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac}

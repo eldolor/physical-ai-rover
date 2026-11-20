@@ -1,0 +1,113 @@
+{
+ "house": "home_first_floor",
+ "image": "vision-picar-ros:plan-3.70",
+ "find_s": 120,
+ "a": {
+  "reload": {
+   "result": "none"
+  },
+  "bridge_map_id": "map-1b26e026",
+  "mission": {
+   "outcome": "out_of_budget",
+   "seconds": 72,
+   "contact_samples": 0,
+   "min_gap_cm": 12.7
+  },
+  "named": {
+   "saved_map": {
+    "frame_id": "map-1b26e026",
+    "map_id": "slam-9da67fbc",
+    "reloaded": false
+   },
+   "at_s": 0.26,
+   "house_m2": 252.0,
+   "bridge_known_m2": 0.0,
+   "bridge_known": 0,
+   "bridge_cells": 0,
+   "world_known": 0,
+   "log": [
+    "map: a new map map-1b26e026 (not a matched reload)"
+   ],
+   "first_map": {
+    "after_s": 0.43,
+    "bridge_known_1": 1496,
+    "world_known": 1496,
+    "bridge_known_2": 1496,
+    "bridge_known_m2": 3.74
+   }
+  },
+  "map_save": {
+   "map_id": "map-1b26e026",
+   "saving": false,
+   "store": true,
+   "saved": 1,
+   "failed": 0,
+   "skipped": 0,
+   "last_version": 1,
+   "last_at": 1795098035.4214027,
+   "last_error": null
+  },
+  "settled_s": 3.0,
+  "load": {
+   "n": 9,
+   "max": 2.9,
+   "p50": 2.48,
+   "over_4": 0
+  }
+ },
+ "b": {
+  "reload": {
+   "map_id": "map-1b26e026",
+   "version": 1,
+   "took_s": 1.83,
+   "agreement": 1.0,
+   "dock_error_m": 0.0,
+   "dock_error_deg": 0.0,
+   "ok": true,
+   "reason": "matched",
+   "result": "matched"
+  },
+  "bridge_map_id": "map-1b26e026",
+  "mission": {
+   "outcome": "out_of_budget",
+   "seconds": 66,
+   "contact_samples": 0,
+   "min_gap_cm": 16.5
+  },
+  "named": {
+   "saved_map": {
+    "frame_id": "map-1b26e026",
+    "map_id": "slam-a87f3294",
+    "reloaded": true
+   },
+   "at_s": 0.27,
+   "house_m2": 252.0,
+   "bridge_known_m2": 53.14,
+   "bridge_known": 21256,
+   "bridge_cells": 66286,
+   "world_known": 21256,
+   "log": [
+    "map: on the saved map map-1b26e026, reloaded"
+   ],
+   "first_map": {
+    "after_s": 0.04,
+    "bridge_known_1": 21256,
+    "world_known": 21256,
+    "bridge_known_2": 21256,
+    "bridge_known_m2": 53.14
+   }
+  },
+  "load": {
+   "n": 7,
+   "max": 2.89,
+   "p50": 2.2,
+   "over_4": 0
+  }
+ },
+ "verdicts": {
+  "first_visit_new_map": "MET",
+  "first_cells_own_scans": "MET",
+  "saved_map_reloaded": "MET",
+  "missions_ran": "MET"
+ }
+}

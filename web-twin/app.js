@@ -660,6 +660,10 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       roomsMapTap(px, py, scale);
       return;
     }
+    if (state.nogoOpen) {                // 3.161: while editing zones a tap is about zones only
+      nogoMapTap(px, py, scale);
+      return;
+    }
     if (state.brainAskOpen && grid && grid.usable) {
       // 3.88 A: while explore asks, a tap is a pick or nothing -- never a goal.
       var c = askCandidateAt(grid, px, py, scale);
@@ -676,6 +680,8 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       if (r && r.accepted === false
           && Object.prototype.hasOwnProperty.call(GOAL_HOLDS, r.reason)) {
         showToast(t("goal.hold." + r.reason), "info");
+      } else if (r && r.accepted === false && r.reason === "no_go_zone") {
+        showToast(t("goal.noGo"), "warn");        // 3.161 D5
       } else if (r && r.accepted === false) {
         var why = r.detail || r.reason || r.error;
         showToast(why ? t("goal.refused", {why: why}) : t("goal.refusedBare"), "err");
@@ -1136,11 +1142,276 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     roomsEdit({op: "split", room: state.roomsFrom, line: [m({x: d.x0, y: d.y0}), m(p)]});
   }
 
+  // 3.161: no-go zones a person draws (the brain's GET/POST /mission/nogo),
+  // kept with the saved map on the robot's own disk; nothing here is
+  // uploaded. Draw: the panel's Draw, a drag on the map (saved as it ends),
+  // Done (3 taps). Wall: the same, a line. Delete: tap the zone, then
+  // "Delete zone" (2 taps). Zones show on Drive's map whenever the robot is
+  // on a saved map, under the robot's own marks; a zone the robot is inside
+  // is paused (the robot server's GET /world/nogo says which) and drawn dashed.
+  var NOGO_MIN_M = 0.20, NOGO_RELOAD_MS = 10000;
+
+  function nogoOffered() {
+    return !!(state.connected && state.brainConnected && isSlamMap(state.lastMap));
+  }
+
+  function updateNogoButton() {
+    var row = document.querySelector(".nogo-row");
+    if (!row) return;
+    row.style.display = nogoOffered() || state.nogoOpen ? "" : "none";
+    // Kept fresh while the map shows (a second tab's edit, a new saved map),
+    // never under a drag or an edit in flight.
+    if (nogoOffered() && !state.nogoBusy && !state.nogoDrag && !state.nogoLoading
+        && Date.now() - (state.nogoLoadedAt || 0) > NOGO_RELOAD_MS) {
+      loadNogo();
+    }
+  }
+
+  async function openNogo() {
+    state.nogoOpen = true;
+    state.nogoMode = null;
+    state.nogoSel = null;
+    document.getElementById("nogo-panel").hidden = false;
+    document.getElementById("btn-nogo").style.display = "none";   // button styles beat [hidden]
+    renderNogo();
+    await loadNogo();
+  }
+
+  function closeNogo() {
+    state.nogoOpen = false;
+    state.nogoMode = null;
+    state.nogoSel = null;
+    state.nogoDrag = null;
+    document.getElementById("nogo-panel").hidden = true;
+    document.getElementById("btn-nogo").style.display = "";
+    document.getElementById("world-map").classList.remove("drawing");
+    renderMap();
+  }
+
+  async function loadNogo() {
+    var seq = state.nogoSeq = (state.nogoSeq || 0) + 1;
+    var load = state.nogoLoading = {};      // this load's own token (review)
+    state.nogoLoadedAt = Date.now();
+    try {
+      var v = await brainApi("GET", "/mission/nogo");
+      var paused = [];
+      if (v && v.zones && v.zones.length) {
+        try {
+          var r = await apiGet("/world/nogo");
+          paused = (r && r.bridge && r.bridge.suspended) || [];
+        } catch (e) { paused = []; }   // an older robot server: nothing is paused
+      }
+      if (seq === state.nogoSeq) { state.nogoView = v; state.nogoPaused = paused; }
+    } catch (e) {
+      if (state.nogoOpen && seq === state.nogoSeq) {
+        showToast(t("nogo.loadFailed", {why: e.message || e}), "err");
+      }
+    } finally {
+      if (state.nogoLoading === load) state.nogoLoading = null;
+    }
+    renderNogo();
+    renderMap();
+  }
+
+  async function nogoEdit(body, okKey) {
+    var v = state.nogoView;
+    if (!v || !v.frame_id) return;
+    if (state.nogoBusy) { showToast(t("nogo.busy"), "info"); return; }
+    state.nogoBusy = true;
+    var seq = state.nogoSeq = (state.nogoSeq || 0) + 1;
+    try {
+      var got = await brainApi("POST", "/mission/nogo",
+                               Object.assign({frame_id: v.frame_id, rev: v.rev}, body));
+      if (seq === state.nogoSeq) { state.nogoView = got; state.nogoLoadedAt = Date.now(); }
+      var sent = got && got.sent;
+      if (!sent || sent.accepted === false || sent.sent === false) {
+        showToast(t("nogo.notSent", {why: (sent && sent.detail) || "-"}), "warn");
+      } else {
+        showToast(t(okKey), "ok");
+      }
+    } catch (e) {
+      showToast(t(e.status === 409 ? "nogo.refused" : "nogo.failed", {why: e.message || e}),
+                e.status === 409 ? "warn" : "err");
+      state.nogoBusy = false;
+      state.nogoMode = null;
+      state.nogoSel = null;
+      await loadNogo();
+      return;
+    }
+    state.nogoBusy = false;
+    state.nogoMode = null;
+    state.nogoSel = null;
+    renderNogo();
+    renderMap();
+  }
+
+  function nogoHint() {
+    if (state.nogoMode === "area") return "Drag a rectangle on the map over the place to keep out of.";
+    if (state.nogoMode === "wall") return "Drag a line on the map where the robot must not cross.";
+    if (state.nogoSel) return "Delete this zone, or tap another.";
+    var n = ((state.nogoView && state.nogoView.zones) || []).length;
+    return (n ? n + (n === 1 ? " zone" : " zones") + ". Tap one on the map to delete it. "
+              : "No zones yet. ") + "The robot won't plan into a zone; you can still drive it in.";
+  }
+
+  function renderNogo() {
+    var v = state.nogoView;
+    var closed = document.getElementById("nogo-closed");
+    if (!closed) return;
+    var shut = !!(v && v.closed);
+    closed.hidden = !shut;
+    closed.textContent = shut ? v.closed : "";
+    document.getElementById("nogo-hint").textContent = v && !shut ? nogoHint() : "";
+    var paused = (state.nogoPaused || []).length;
+    var p = document.getElementById("nogo-paused");
+    p.hidden = !paused;
+    p.textContent = paused ? "The robot is inside a zone: that zone is paused until it is clear." : "";
+    var full = v && v.zones && v.max && v.zones.length >= v.max;
+    var tools = !shut && !!v;
+    var draw = document.getElementById("nogo-draw"), wall = document.getElementById("nogo-wall");
+    // style.display, not [hidden]: the buttons' own display rule beats it.
+    var show = function (el, on) { el.hidden = !on; el.style.display = on ? "" : "none"; };
+    show(draw, tools && !state.nogoSel);
+    show(wall, tools && !state.nogoSel);
+    draw.disabled = wall.disabled = !!full;
+    draw.classList.toggle("active", state.nogoMode === "area");
+    wall.classList.toggle("active", state.nogoMode === "wall");
+    show(document.getElementById("nogo-delete"), tools && !!state.nogoSel);
+    show(document.getElementById("nogo-cancel"), tools && !!(state.nogoSel || state.nogoMode));
+    document.getElementById("world-map").classList.toggle("drawing", !!state.nogoMode);
+  }
+
+  function nogoSetMode(mode) {
+    state.nogoMode = state.nogoMode === mode ? null : mode;
+    state.nogoSel = null;
+    renderNogo();
+    renderMap();
+    var canvas = document.getElementById("world-map");
+    if (state.nogoMode && canvas && canvas.scrollIntoView) canvas.scrollIntoView({block: "center"});
+  }
+
+  function nogoZones(grid) {
+    var v = state.nogoView;
+    if (!v || !v.zones || !grid || !isSlamMap(grid)) return [];
+    // Another saved map's zones are never drawn over this one (review).
+    var p = state.lastPose;
+    if (p && p.frame_id !== undefined && p.frame_id !== v.frame_id) return [];
+    return v.zones;
+  }
+
+  function nogoZoneAt(grid, px, py, scale) {
+    var x = grid.origin_x_m + (px / scale) * grid.resolution_m;
+    var y = grid.origin_y_m + (py / scale) * grid.resolution_m;
+    var pad = grid.resolution_m;      // a thin wall is still tappable
+    var zs = nogoZones(grid);
+    for (var i = zs.length - 1; i >= 0; i--) {
+      var z = zs[i];
+      if (x >= z.x0 - pad && x <= z.x1 + pad && y >= z.y0 - pad && y <= z.y1 + pad) return z;
+    }
+    return null;
+  }
+
+  function drawNogo(ctx, grid, scale) {
+    var zs = nogoZones(grid);
+    var d = state.nogoDrag;
+    if (!zs.length && !(d && d.x1 !== undefined)) return;
+    var css = getComputedStyle(document.documentElement);
+    var col = (css.getPropertyValue("--map-nogo") || "#FF5C7A").trim();
+    var paused = state.nogoPaused || [];
+    var k = scale / grid.resolution_m;
+    ctx.save();
+    zs.forEach(function (z) {
+      var x = (z.x0 - grid.origin_x_m) * k, y = (z.y0 - grid.origin_y_m) * k;
+      var w = (z.x1 - z.x0) * k, h = (z.y1 - z.y0) * k;
+      var off = paused.indexOf(z.id) >= 0;
+      ctx.globalAlpha = off ? 0.15 : 0.5;
+      ctx.fillStyle = col;
+      ctx.fillRect(x, y, w, h);
+      ctx.globalAlpha = 1;
+      ctx.lineWidth = state.nogoSel === z.id ? Math.max(4, scale * 0.6) : Math.max(2.5, scale * 0.35);
+      ctx.setLineDash(off ? [scale, scale * 0.6] : []);
+      ctx.strokeStyle = col;
+      ctx.strokeRect(x, y, w, h);
+      ctx.setLineDash([]);
+    });
+    if (d && d.x1 !== undefined) {
+      ctx.strokeStyle = col;
+      ctx.lineWidth = Math.max(2, scale * 0.3);
+      ctx.setLineDash([scale * 0.8, scale * 0.5]);
+      if (d.mode === "wall") {
+        ctx.beginPath(); ctx.moveTo(d.x0, d.y0); ctx.lineTo(d.x1, d.y1); ctx.stroke();
+      } else {
+        ctx.strokeRect(Math.min(d.x0, d.x1), Math.min(d.y0, d.y1),
+                       Math.abs(d.x1 - d.x0), Math.abs(d.y1 - d.y0));
+      }
+    }
+    ctx.restore();
+  }
+
+  function nogoMapTap(px, py, scale) {
+    var grid = state.lastMap;
+    if (!grid || state.nogoMode) return;
+    var z = nogoZoneAt(grid, px, py, scale);
+    state.nogoSel = z ? z.id : null;
+    renderNogo();
+    renderMap();
+  }
+
+  function nogoDragStart(ev) {
+    if (!state.nogoOpen || !state.nogoMode) return;
+    var p = roomsCanvasPoint(ev);
+    state.nogoDrag = {x0: p.x, y0: p.y, mode: state.nogoMode};
+    if (ev.currentTarget && ev.currentTarget.setPointerCapture) {
+      try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) { /* not a live pointer */ }
+    }
+    ev.preventDefault();
+  }
+
+  function nogoDragMove(ev) {
+    var d = state.nogoDrag;
+    if (!d) return;
+    var p = roomsCanvasPoint(ev);
+    d.x1 = p.x;
+    d.y1 = p.y;
+    renderMap();
+  }
+
+  function nogoDragCancel() {
+    if (!state.nogoDrag) return;
+    state.nogoDrag = null;
+    renderMap();
+  }
+
+  function nogoDragEnd(ev) {
+    var d = state.nogoDrag;
+    if (!d) return;
+    state.nogoDrag = null;
+    var grid = state.lastMap;
+    if (!grid) { renderMap(); return; }
+    var p = roomsCanvasPoint(ev);
+    var canvas = document.getElementById("world-map");
+    var scale = canvas.width / grid.width;
+    var m = function (q) {
+      return [grid.origin_x_m + (q.x / scale) * grid.resolution_m,
+              grid.origin_y_m + (q.y / scale) * grid.resolution_m];
+    };
+    var a = m({x: d.x0, y: d.y0}), b = m(p);
+    var dx = Math.abs(b[0] - a[0]), dy = Math.abs(b[1] - a[1]);
+    if (d.mode === "wall" ? Math.max(dx, dy) < NOGO_MIN_M : Math.min(dx, dy) < NOGO_MIN_M) {
+      showToast(t("nogo.short"), "info");
+      renderMap();
+      return;
+    }
+    if (d.mode === "wall") nogoEdit({op: "add", line: [a, b]}, "nogo.saved");
+    else nogoEdit({op: "add", zone: {x0: a[0], y0: a[1], x1: b[0], y1: b[1]}}, "nogo.saved");
+  }
+
   function renderMap() {
     var canvas = document.getElementById("world-map");
     var readout = document.getElementById("map-readout");
     updateRemapButton();
     updateRoomsButton();
+    updateNogoButton();
     if (!canvas || !readout) return;
 
     var ctx = canvas.getContext("2d");
@@ -1194,6 +1465,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     if (slam && werr && werr.usable && werr.truth) {
       drawPose(ctx, grid, SCALE, werr.truth, "ghost");
     }
+    drawNogo(ctx, grid, SCALE);       // 3.161: under the robot's own marks
     drawGoal(ctx, grid, SCALE);
     drawAsk(ctx, grid, SCALE);
     drawRooms(ctx, grid, SCALE);
@@ -1212,6 +1484,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       // in operator mode on a SLAM map, M5): Engineer mode only.
       '<span class="src eng-only">' + grid.map_id + " v" + grid.map_version + "</span>" +
       slamErrorText(slam ? werr : null) + (state.roomsOpen ? "<br>tap a room to pick it"
+        : state.nogoOpen ? "<br>" + (state.nogoMode ? "drag on the map" : "tap a zone to pick it")
         : state.brainAskOpen ? askText() : goalText(grid));
   }
 
@@ -2769,6 +3042,11 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       mapCanvas.addEventListener("pointerup", roomsSplitEnd);
       mapCanvas.addEventListener("pointercancel", roomsSplitCancel);
       mapCanvas.addEventListener("pointerleave", roomsSplitCancel);
+      // 3.161: a no-go zone or wall is drawn as a drag.
+      mapCanvas.addEventListener("pointerdown", nogoDragStart);
+      mapCanvas.addEventListener("pointermove", nogoDragMove);
+      mapCanvas.addEventListener("pointerup", nogoDragEnd);
+      mapCanvas.addEventListener("pointercancel", nogoDragCancel);
     }
   })();
   document.getElementById("btn-reverse").onclick = function () { manualAction("REVERSE"); };
@@ -2792,6 +3070,16 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     closeSaw();
   });
   document.getElementById("rooms-done").onclick = closeRooms;
+  document.getElementById("btn-nogo").onclick = openNogo;
+  document.getElementById("nogo-done").onclick = closeNogo;
+  document.getElementById("nogo-draw").onclick = function () { nogoSetMode("area"); };
+  document.getElementById("nogo-wall").onclick = function () { nogoSetMode("wall"); };
+  document.getElementById("nogo-delete").onclick = function () {
+    if (state.nogoSel) nogoEdit({op: "delete", zone_id: state.nogoSel}, "nogo.deleted");
+  };
+  document.getElementById("nogo-cancel").onclick = function () {
+    state.nogoMode = null; state.nogoSel = null; state.nogoDrag = null; renderNogo(); renderMap();
+  };
   document.querySelectorAll(".turn-step-btn").forEach(function (btn) {
     btn.onclick = function () { setTurnStep(Number(btn.dataset.turnDeg)); };
   });

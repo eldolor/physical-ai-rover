@@ -91,7 +91,8 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, ConfigDict, Field
 
-from brain.goal_policy import rooms_prior_informative
+from brain.goal_policy import rooms_prior_informative, shipped_rooms_prior
+from brain import room_prior as room_prior_mod
 from brain.request import check_hint, parse as parse_request
 from brain.navigate import MAX_TARGET_CHARS, room_label_fn_for, vision_fn_for
 from brain.perceive import (DEFAULT_CLIP, DEFAULT_DETECTOR,
@@ -105,6 +106,8 @@ from brain import what_i_saw as what_i_saw_mod
 from brain import last_seen as last_seen_mod
 from brain.inventory import carry_seq_of
 from control import drills
+from control import nogo_store as nogo_store_mod
+from world import nogo as nogo_mod
 from control.brain_config import load_brain_config
 from control.inventory_store import _slug, inventory_store_from_config
 from control import inventory_store as inventory_store_mod
@@ -221,6 +224,16 @@ class RequestParseRequest(BaseModel):
     text: str = Field(max_length=MAX_REQUEST_CHARS)
 
     model_config = ConfigDict(extra="forbid")
+
+
+class NoGoRequest(BaseModel):
+    """3.161: one person's edit of the no-go zones, on the saved map they saw."""
+    frame_id: Optional[str] = None
+    op: str                           # add | delete | clear
+    rev: Optional[int] = None         # the zones' revision the person saw
+    zone: Optional[dict] = None       # {x0, y0, x1, y1} (house frame, metres)
+    line: Optional[list] = None       # [[x_m, y_m], [x_m, y_m]]: a wall
+    zone_id: Optional[str] = None
 
 
 class RoomNamesRequest(BaseModel):
@@ -749,6 +762,42 @@ def create_app(
             timeout=config["request_timeout_s"],
         )
 
+    def _room_prior_at_start(req, tier_search: str, find_labels: bool,
+                             vision_secret: Optional[str]) -> dict:
+        """3.190.C: this find's room prior, as `status.room_prior` reports it.
+        A call is made only for a find whose explore search chooses goals
+        with the `rooms` policy, whose target the shipped prior lacks, on a
+        mission with a room-label layer -- and not when the cache has it.
+        The layer is in practice rooms a person named on the loaded saved
+        map: `find_labels` (the find's own asks) is never true for a target
+        the shipped prior lacks (3.116 amendment 7), and is kept in the test
+        so the gate follows that rule if it changes (open question 1).
+        Waits at most `find_prior_timeout_s`; never refuses a start."""
+        none = room_prior_mod.status
+        target = " ".join((req.target_object or "").split())
+        if req.job != "find":
+            return none("none", "not a find")
+        if not (req.policy == "explore" or tier_search == "explore"):
+            return none("none", "no explore search")
+        if config["explore_goal_policy"] != "rooms":
+            return none("none", "explore_goal_policy is not 'rooms'")
+        if not target:
+            return none("none", "no target object")
+        # The shipped prior is matched on the normalised target, as the
+        # cloud would be asked: a known target typed with stray spaces is
+        # never paid for (review round 2); the runner files the rates under
+        # the key the policy reads.
+        shipped = shipped_rooms_prior(target)
+        if shipped is not None:
+            return none("shipped", None, shipped)
+        if len(target) > room_prior_mod.MAX_TARGET_CHARS:
+            return none("none", "target too long to ask")
+        if not find_labels and not _map_room_names():
+            return none("none", "no room-label layer")
+        return room_prior_mod.prior_at_start(
+            target, config["vision_url"] or None, secret=vision_secret,
+            deadline_s=float(config["find_prior_timeout_s"]))
+
     def default_runner_factory(robot: RobotInterface, req: MissionStartRequest) -> MissionRunner:
         # 3.90 E: "combine frames" changes the tier's candidate rule; any
         # other policy has none, and an unknown name is refused, not ignored.
@@ -930,10 +979,22 @@ def create_app(
                 navigator.close()      # a refused start keeps no client open
             raise
 
+        # 3.190.C: one bounded cloud question at most, for a find's room
+        # prior, only when it can act; after every refusal above, so a
+        # refused start pays nothing. Off: None, and the mission is dev's.
+        try:
+            room_prior = (_room_prior_at_start(req, tier_search, find_labels, vision_secret)
+                          if config["find_prior_source"] == "cloud" else None)
+        except BaseException:
+            if navigator is not None:
+                navigator.close()      # a refused start keeps no client open
+            raise
+
         kwargs = dict(
             target_object=req.target_object,
             target_room=req.target_room,
             room_hint=room_hint,
+            room_prior=room_prior,
             request=req.request,
             mission=req.mission,
             max_steps=req.max_steps,
@@ -1023,6 +1084,8 @@ def create_app(
         # and the last-seen route then reads the ended mission first.
         runner.inventory_sink = lambda report: store.save_async(
             mission_id, report, on_local=functools.partial(runner.inventory_saved, mission_id))
+        # 3.70 S4: a survey hands a callable, built on the save's thread.
+        runner.inventory_sink_lazy = True
         # 3.50.D5: a mission on a saved map starts from the last inventory
         # saved on it (local files only).
         runner.inventory_prior = store.latest_for
@@ -1069,6 +1132,11 @@ def create_app(
             "find_room_label_max_calls": (config["find_room_label_max_calls"]
                                           if find_labels else None),
         }
+        if room_prior is not None:
+            # 3.190.C (key on only, so an off mission's metrics are dev's):
+            # where this mission's prior came from, as one string.
+            runner.metrics_config["room_prior"] = (
+                room_prior["source"] + (f" ({room_prior['why']})" if room_prior.get("why") else ""))
         if req.policy == "tiered":
             # The mission's own vote, not only the config's (3.90 E).
             runner.metrics_config["tier_frame_vote"] = req.frame_vote or config["tier_frame_vote"]
@@ -1419,6 +1487,25 @@ def create_app(
         cancel_reconfirm("a new mission started")
         state["tick_timeout_s"] = getattr(runner, "tick_timeout_s", state["tick_timeout_s"])
         runner.started_by = started_by      # 3.163.B: None for a person's start
+        # 3.161 (D2): the saved map's zones, to the mission and the robot
+        # server, before it can move. No saved map: none (and none sent).
+        try:
+            frame_id = await asyncio.to_thread(_pose_frame)
+        except Exception as e:  # noqa: BLE001 -- no frame read: no zones, never a refusal
+            logger.warning("no-go zones: the pose could not be read at start: %s", e)
+            frame_id = None
+        if frame_id:
+            zones = nogo_store_mod.default_store().zones(frame_id)
+            runner.set_nogo(frame_id, zones)
+            state["nogo_sent"] = await asyncio.to_thread(_nogo_send, frame_id, zones)
+        # Review: a pose not usable at the start (a SLAM restart's first
+        # seconds) is not a mission without zones -- explore asks for the
+        # saved map's zones once its pose names one.
+        runner.nogo_source = nogo_store_mod.default_store().zones
+        # Off the tick's thread (review 2): a slow robot server never holds a tick.
+        runner.nogo_sink = lambda f, z: threading.Thread(
+            target=lambda: state.__setitem__("nogo_sent", _nogo_send(f, z)),
+            daemon=True, name="nogo-send").start()
         runner.start()
         state["fault"] = req.fault or drills.NONE
         state["runner"] = runner
@@ -1561,6 +1648,77 @@ def create_app(
         names = _map_room_names()
         return JSONResponse({**parse_request(req.text, names).to_dict(),
                              "names_read": len(names)})
+
+    # ---- 3.161: no-go zones a person draws on the saved map ----
+
+    def _nogo_send(frame_id, zones) -> dict:
+        """D2: to the robot server, which keeps a copy and passes it to the
+        bridge. Only with a robot server to ask (an in-process robot has no
+        route, and the offline mode dials nothing)."""
+        base = config.get("world_url") or getattr(robot(), "base_url", None)
+        if not base:
+            return {"accepted": False, "detail": "no robot server to send them to"}
+        return nogo_store_mod.push(base, robot_secret, frame_id, zones,
+                                   timeout=config["request_timeout_s"])
+
+    def _nogo_apply(runner, frame_id, zones) -> dict:
+        """The zones for `frame_id` to the running mission (if it is on that
+        map) and to the robot server. Returns the robot server's answer."""
+        if runner is not None and getattr(runner, "is_running", lambda: False)():
+            if getattr(runner, "nogo_frame", None) in (None, frame_id):
+                runner.set_nogo(frame_id, zones)
+        state["nogo_sent"] = _nogo_send(frame_id, zones)
+        return state["nogo_sent"]
+
+    def nogo_view(frame_id, doc=None) -> dict:
+        if not frame_id:
+            return {"frame_id": None, "closed": nogo_store_mod.CLOSED_NO_FRAME,
+                    "zones": [], "rev": 0}
+        doc = doc or nogo_store_mod.default_store().load(frame_id)
+        return {"frame_id": frame_id, "closed": None, "rev": doc["rev"], "zones": doc["zones"],
+                "max": nogo_mod.MAX_ZONES, "unreadable": doc.get("unreadable"),
+                "sent": state.get("nogo_sent")}
+
+    def _pose_frame():
+        pose = world().get_pose() or {}
+        return pose.get("frame_id") if pose.get("usable") else None
+
+    @app.get(prefix + "/mission/nogo", dependencies=[Depends(require_secret)])
+    def nogo_get():
+        """3.161: the zones on the saved map the robot is on. Local only."""
+        try:
+            frame_id = _pose_frame()
+        except Exception as e:  # noqa: BLE001 -- the editor says so, never a 500
+            return {"frame_id": None, "closed": f"The map can't be read now ({e}).",
+                    "zones": [], "rev": 0}
+        return nogo_view(frame_id)
+
+    @app.post(prefix + "/mission/nogo", dependencies=[Depends(require_secret)])
+    def nogo_edit(req: NoGoRequest):
+        """3.161: one edit on the saved map the person saw (409 for another
+        map, or zones another edit changed meanwhile), stored, then sent to
+        the robot server and the running mission."""
+        try:
+            frame_id = _pose_frame()
+        except Exception as e:  # noqa: BLE001
+            raise HTTPException(status_code=503, detail=f"the map can't be read now ({e})")
+        if not frame_id or req.frame_id != frame_id:
+            raise HTTPException(status_code=409, detail=nogo_store_mod.CLOSED_NO_FRAME
+                                if not frame_id else "another saved map: reload")
+        zone = req.zone
+        if req.op == "add" and req.line is not None:
+            try:
+                (xa, ya), (xb, yb) = req.line
+                zone = nogo_mod.wall_from_line(xa, ya, xb, yb)
+            except (TypeError, ValueError, nogo_mod.ZoneRefused) as e:
+                raise HTTPException(status_code=422, detail=f"a wall is two points: {e}")
+        try:
+            doc = nogo_store_mod.default_store().edit(frame_id, req.op, rev=req.rev, zone=zone,
+                                                      zone_id=req.zone_id)
+        except nogo_store_mod.NoGoRefused as e:
+            raise HTTPException(status_code=409, detail=str(e))
+        _nogo_apply(state["runner"], frame_id, doc["zones"])
+        return nogo_view(frame_id, doc)
 
     # ---- 3.160: rooms a person names on the saved map ----
 

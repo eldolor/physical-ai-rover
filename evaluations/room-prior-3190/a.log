@@ -1,0 +1,4 @@
+3.190.A run at 4cfbee47, 588 test houses, WORKERS=4, 2026-11-19 (950 'Blocked' safety lines dropped)
+cloud {'n': 583, 'found': 573, 'exceptions': 0, 'capped': 0, 'median_goals_found': 5.0, 'median_metres_found': 15.6, 'mean_reward': 0.5147}
+none {'n': 583, 'found': 573, 'exceptions': 0, 'capped': 0, 'median_goals_found': 5.0, 'median_metres_found': 19.2, 'mean_reward': 0.4148}
+wrong {'n': 583, 'found': 575, 'exceptions': 0, 'capped': 0, 'median_goals_found': 6.0, 'median_metres_found': 20.7, 'mean_reward': 0.3989}

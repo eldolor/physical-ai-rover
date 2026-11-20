@@ -681,7 +681,7 @@ decision, and its value and evidence are kept in one place,
 | `GOAL_CLEARANCE_M` | 0.22 m | `brain/frontier.py` | 3.31's default: the half-diagonal plus sized as a margin over nav2's old 0.12 m inflation; since 3.67's 0.35 m it sits inside the inflation band at a cost nav2 still plans to (about 149 of 252, below inscribed). Still used by approach points and the boxed-in check |
 | `PASS_CLEARANCE_M` | 0.15 m | `brain/frontier.py` | room to pass through (the den's 0.6 m door) |
 | `GOAL_TIMEOUT_S` | 120 s | `brain/explore.py` | a goal nav2 never finishes is failed |
-| `STALL_S`, `STALL_M` | 20 s, 0.15 m | `brain/explore.py` | 3.83: a live goal during which the robot moved less than `STALL_M` over the last `STALL_S` ends `stalled` (cancelled), and is handled as a wedge: the escape backs out and choosing starts again. The window is anchored at the goal's start pose and moves on whenever the robot gets `STALL_M` from it; an unusable pose or an unreadable bridge decides nothing, and the window starts again when readings return. A stall's back-out is not charged to `MAX_ESCAPES` (`escapes_charged`), which only boxed-in and never-left escapes spend. Since 3.85 a stall after the robot got under way (`STUCK_MOVED_M` from the goal's start) is a retry failure of the goal's place at once; a never-left goal keeps 3.38's first-wedge forgiveness. An escape whose REVERSE the safety layer refuses with room ahead (`forward_clearance()` at least `FORWARD_GAIN_CM`, 5 cm, over the bar the safety layer vets a speed-50 FORWARD against, `required_clearance_cm()`) drives FORWARD once before the creep and the turn (3.83's breakfast pocket: 1.3 cm behind, about 30 cm ahead). An approach counts as made (`_approach`) only once nav2 took its goal, and a refused one clears the record (3.85: the pantry livelock). Beside 3.80.G's close-in (perception sightings only), within `_at_target()`'s band the two 3.85 changes defer to it as `dev` did before: an approach that stalls there after getting under way (`STUCK_MOVED_M`) is a plain failure (a retry failure, no escape: the escape backs and turns the robot away from the target; one that never left still backs out), and a refused approach send there stays on record (`_approach`), so close-in runs on the next frame rather than a goal re-sent on every frame. Under the dining table every goal had run its full 120 s (3.70 M5) |
+| `STALL_S`, `STALL_M` | 20 s, 0.15 m | `brain/explore.py` | 3.83: a live goal during which the robot moved less than `STALL_M` over the last `STALL_S` ends `stalled` (cancelled), and is handled as a wedge: the escape backs out and choosing starts again. The window is anchored at the goal's start pose and moves on whenever the robot gets `STALL_M` from it; an unusable pose or an unreadable bridge decides nothing, and the window starts again when readings return. A stall's back-out is not charged to `MAX_ESCAPES` (`escapes_charged`), which only boxed-in and never-left escapes spend. Since 3.85 a stall after the robot got under way (`STUCK_MOVED_M` from the goal's start) is a retry failure of the goal's place at once; a never-left goal keeps 3.38's first-wedge forgiveness. An escape whose REVERSE the safety layer refuses with room ahead (`forward_clearance()` at least `FORWARD_GAIN_CM`, 5 cm, over the bar the safety layer vets a speed-50 FORWARD against, `required_clearance_cm()`) drives FORWARD once before the creep and the turn (3.83's breakfast pocket: 1.3 cm behind, about 30 cm ahead). An approach counts as made (`_approach`) only once nav2 took its goal, and a refused one clears the record (3.85: the pantry livelock). Beside 3.80.G's close-in (perception sightings only), within `_at_target()`'s band the two 3.85 changes defer to it as `dev` did before: an approach that stalls there after getting under way (`STUCK_MOVED_M`) is a plain failure (a retry failure, no escape: the escape backs and turns the robot away from the target; one that never left still backs out), and a refused approach send there stays on record (`_approach`), so close-in runs on the next frame rather than a goal re-sent on every frame. Under the dining table every goal had run its full 120 s (3.70 M5). Since 3.191 an approach that ends `succeeded` with the robot under `STUCK_MOVED_M` from where the goal started made no progress: within `_at_target()`'s band it stays on record (`_approach`), as a sighting inside the standoff already does, so the next frame takes that same path (close-in, 3.80.G, or in sight and unfound, 3.106; their bounds are unchanged); outside it, it is a retry failure of its sighting (cooled `RETRY_COOLDOWN_S`, dropped at `RETRY_LIMIT`). The face on arrival still runs either way. `_band_point` answers the robot's own cell when that cell's centre is in the band while the robot stands just outside `_at_target()`'s, so nav2 ends the goal at once in place; uncharged, 3.70.M2's unsurveyed k 19 sent it every other tick, 4,657 times in 1,200 s. An approach that moved and succeeded charges nothing |
 | `MAX_ESCAPES` | 3 | `brain/explore.py` | escapes before a search may end while boxed in |
 | `CREEP_SPEED`, `CREEP_PIECES`, `CREEP_ROOM_CM` | 5 (0.03 m/s), 3, 1.0 cm | `brain/explore.py` | 3.44: the escape creeps at creep speed, which the safety layer lets come to 3 cm (`CREEP_MARGIN_CM`), toward an end the full bar refuses. 3.89: a creep its time ran out on (`stopped_short: "timeout"` with the body's `VERB_MAX_TAG` in its reason: the `VERB_MAX_S` cap, not a direct-mode verb that ran out its periods) is followed by another the same way, up to `CREEP_PIECES` in all, while that end still has more than `CREEP_ROOM_CM` over the 3 cm line (a creep that reached the line just before the cut reads as cut too); one that reached the line, stalled or was refused is not, and a later piece never falls back to the other end (it would give back the gain). Under `drive: ros` nav2's collision_monitor halves a forward twist with something 13-33 cm ahead (`PolygonSlow`), so a forward creep from the bar takes two pieces. Each `creep` event carries `piece` and `cut_by_time` |
 | `FACE_MIN_TURN_DEG` | 10 deg | `brain/explore.py` | 3.69 B: a turn to face the target that the pivot guard refuses is retried at half the angle down to this; then REVERSE, face, a guarded FORWARD, once, and the remembered sighting is let go |
@@ -885,6 +885,28 @@ prior of 0, a case training saw only where the prior was 0), and the trail
 is never re-anchored, so after a loop closure or a fresh map an old point
 can mark the wrong room as stood in.
 
+**A person's no-go zones (3.161).** `ExploreAgent.zones` (house frame,
+`world/nogo.py`; `[]` is off and leaves every choice as `dev`'s) is set by
+`MissionRunner.set_nogo()` at the start, from the brain's store for the
+pose's `frame_id`, and on each edit. In `_choose_next`, a robot whose centre
+lies in a zone grown by `HALF_WIDTH_M` (0.12 m) is first sent out
+(`_leave_zone`: the nearest place along the floor, on the map without the
+zones, `LEAVE_GOAL_M` (0.35 m) clear of every zone, sent as kind
+`leave_zone`); then every choice is made on `nogo.masked_map(m, zones,
+CELL_NOGO, grow=HALF_WIDTH_M)` (cached per map version and zone set), so no
+frontier, view gap, room or small-room goal lies in a zone grown by the
+half-width and no reachable path crosses one. `CELL_NOGO` (2) is neither
+free, unknown nor occupied: no frontier forms beside a zone, and no obstacle
+clearance grows around it (nav2's keepout is lethal to the robot's centre and
+is not inflated); marked occupied, the clearance grown round a zone would
+close a doorway beside it to explore while nav2 still passes it. `_send` checks every goal whatever
+chose it (an approach, a recall): one inside a grown zone is moved just out
+of it along the nearest side (`moved_from_zone` on its event), or, with no
+side clear, not sent (`goal_in_zone`, `zone_refusals`, and the place counts
+as failed); a goal the robot server refuses `no_go_zone` counts as a failed place too. A mission that starts before its pose names a saved map asks for that map's zones once it does (`zone_source`, `MissionRunner._nogo_lookup`: the brain's store, then the robot server). `status.explore.nogo` (`frame_id`, `zones`, `refused`, `leaves`)
+appears only with zones. A zone is never a safety veto: the verbs explore
+runs itself (escapes, close-in) are not checked against it.
+
 **A person's room names (3.160).** `brain/room_names.py` keeps the rooms a
 person named on the twin, one file per saved map (`<ROOM_NAMES_DIR>/<frame_id>.json`,
 default `recordings/room-names`, atomic and fsynced; local only), each room
@@ -930,6 +952,60 @@ prior names that type; otherwise none. The order keeps a name hint on the
 room's own name at its 1.0. A name that only contains a room word ("Kids Den",
 "Bathroom Closet") is not that room; the vocabulary is not edited here.
 `tests/test_goal_policy_synonyms_3185.py`.
+
+**A find's cloud room prior (3.190.C).** Behind `find_prior_source`
+(`off`, the default, or `cloud`). The shipped prior knows ten targets; any
+other target reads `{}` and every goal type reads as no type. With the key
+on, `brain_server`'s start (`_room_prior_at_start`) asks once, and only
+when it can act: a find, explore choosing goals with the `rooms` policy, a
+target (lower case) not in the shipped prior (`goal_policy.shipped_rooms_prior`),
+and a room-label layer -- rooms a person named on the loaded saved map, or
+the find's own asks (which, for a target the shipped prior lacks, 3.116
+amendment 7 skips: so in practice the names). `brain/room_prior.py` holds
+3.116.C's question and reply check, moved unchanged (the harness imports
+them): one JSON object, exactly the four types, each in [0, 1]; anything else
+is no prior. The cache (`ROOM_PRIOR_CACHE`, default
+recordings/room-prior.json, git-ignored and made at run time) is keyed by model id then target
+(lower case, single spaces), in `llm_prior.json`'s shape, so 3.116.C's file
+can seed it; every reply the model gave is kept, parsed or not; a failed
+call and a reply cut short (`stop` not `end_turn`/`stop_sequence`) are not.
+Each reply is filed under the model that gave it, and the cache records that
+model (`_served_model`) and is read under it (`MODEL_ID`, /room's default,
+until the service has answered once), so a deployment on another model still
+hits its own replies. The call (`prior_at_start`) runs on a daemon thread and
+the start waits at most `find_prior_timeout_s` (4 s, the section's
+proposal): a reply after the deadline is cached for the next find and never
+reaches this mission; a start that finds a call for its target still running
+waits on it rather than paying again (the cache is read again under the
+lock before a call is claimed); a call paid for and not kept -- past its own
+HTTP deadline (3 x the start's), a 5xx, a reply cut short or filtered, a
+cache that cannot be written -- cools that target for `COOL_S` (an hour, in
+memory; a refused connection does not); a cache that cannot be written
+still gives this mission the reply. Known limit: after a redeploy to
+another model, targets cached under the model last served are read from it
+until some target misses and the new model answers. The shipped prior is
+matched on the normalised target, and `shipped` rates are filed under the
+key the policy reads (a known target typed with stray spaces is never paid
+for). The
+result is `status.room_prior` (`{source: shipped | cloud | cache | none,
+why, rates, model_id, acts}`; `why` with `none`: "not a find", "no explore
+search", "explore_goal_policy is not 'rooms'", "no target object", "target
+too long to ask", "no room-label layer", "no vision service", "timeout",
+"unreachable", "http <code>", "error: <type>", "reply cut (<stop>)",
+"failed recently (<cause>): not asked again yet", "reply is not a prior" or
+"cached reply is not a prior"; `acts` whether it reaches a goal choice; null
+with the key off; the report holds it only with the key on, and the metrics
+row's `config.room_prior` is `source` or `none (<why>)`; the mission spec's
+status list does not name it yet: that file is another open step's, so the
+field is described here), handed to `MissionRunner(room_prior=)`, which
+for `cloud`, `cache` or `shipped` puts the rates where the shipped prior's would be,
+in this mission's own `RoomGoalPolicy` object (`goal_policy_for` loads a new
+one each mission; the shipped file is never written). The asks decision
+(`find_room_labels`' flat-prior skip) stays on the shipped prior. A typed
+hint is applied on top (`hinted_prior`: the hinted type 1.0, the others the
+cloud's rates). Off: no call, `status.room_prior` null, the report and the
+metrics row without the key -- `dev`'s mission (3.190.C criterion 8: 0 of
+200 differ). `tests/test_room_prior.py`, `tests/test_room_prior_start.py`.
 
 **A find's room hint (3.176).** A start's `room_hint` (`{"type": t}` or
 `{"name": n}`, `brain/request.py` `check_hint`) reaches `ExploreAgent.room_hint`

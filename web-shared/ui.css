@@ -44,6 +44,9 @@
   /* 3.88 A: explore's candidate goals while it asks for a pick. */
   --map-ask: #FFC94D;
   --map-ask-ink: #1A1300;
+  /* 3.161: a person's no-go zones (filled faintly, outlined solid; dashed
+     while the robot is inside one and it is paused). */
+  --map-nogo: #FF5C7A;
   --door: #3A4250;
   /* Brand/primary (interactive default, active states) is distinct
      from the semantic accents below -- a single green doing double

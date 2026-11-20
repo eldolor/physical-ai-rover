@@ -565,6 +565,14 @@ class Inventory:
             return True
         return pose.get("map_id") == self.map_id
 
+    def adopt(self, pose: dict) -> None:
+        """3.70 S4: take this pose's map and saved frame now, as the first
+        recorded frame would (`_same_frame`) -- so a mission whose frames
+        carry no detections (the car's, until 3.76 E) still saves on its
+        saved map. A no-op once a map is held or after `detach()`."""
+        if self.map_id is None and self.frame_id is None and not self._detached:
+            self._same_frame(pose)
+
     def detach(self) -> None:
         """3.50.D5: the earlier landmarks could not be read -- record on this
         map only, never as the saved map's head (review 1). Clears a

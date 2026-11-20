@@ -273,9 +273,12 @@ def test_the_brain_process_never_loads_the_simulator():
     # `world.bridge_faults` (3.82) is the one rule for "can waiting mend a
     # bridge error", which the robot server sends and the brain reads: httpx
     # only, and it can reach no backend.
+    # `world.nogo` (3.161) is a person's no-go zones as geometry, which the
+    # robot server, the bridge's sender and explore all read: pure Python
+    # (numpy imported where a map is masked), and it can reach no backend.
     assert set(loaded) <= {
         "robot", "robot.interface", "robot.safety", "robot.identity",
-        "world", "world.interface", "world.bridge_faults",
+        "world", "world.interface", "world.bridge_faults", "world.nogo",
     }, loaded
 
 

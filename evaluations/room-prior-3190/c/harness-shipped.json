@@ -1,0 +1,1013 @@
+{
+ "arm": "harness-shipped",
+ "commit": "10136624",
+ "repo": "/home/user/physical-ai-rover",
+ "pairs": 100,
+ "rows": [
+  {
+   "split": "val",
+   "index": 179,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 8.7,
+   "reward": 0.853
+  },
+  {
+   "split": "val",
+   "index": 182,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 11,
+   "metres": 42.0,
+   "reward": 0.36
+  },
+  {
+   "split": "val",
+   "index": 184,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 16,
+   "metres": 55.2,
+   "reward": 0.128
+  },
+  {
+   "split": "val",
+   "index": 185,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 9.6,
+   "reward": 0.844
+  },
+  {
+   "split": "val",
+   "index": 186,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 11.4,
+   "reward": 0.826
+  },
+  {
+   "split": "val",
+   "index": 187,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 29,
+   "metres": 106.2,
+   "reward": -0.642
+  },
+  {
+   "split": "val",
+   "index": 188,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 1,
+   "metres": 0.9,
+   "reward": 0.971
+  },
+  {
+   "split": "val",
+   "index": 190,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 13.8,
+   "reward": 0.782
+  },
+  {
+   "split": "val",
+   "index": 191,
+   "mode": "R",
+   "target": "cart",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 6.6,
+   "reward": 0.894
+  },
+  {
+   "split": "val",
+   "index": 192,
+   "mode": "R",
+   "target": "garbage bag",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 16.2,
+   "reward": 0.738
+  },
+  {
+   "split": "val",
+   "index": 194,
+   "mode": "R",
+   "target": "laundry hamper",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 15.6,
+   "reward": 0.764
+  },
+  {
+   "split": "val",
+   "index": 195,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 11,
+   "metres": 33.3,
+   "reward": 0.447
+  },
+  {
+   "split": "val",
+   "index": 197,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 11.1,
+   "reward": 0.809
+  },
+  {
+   "split": "val",
+   "index": 198,
+   "mode": "R",
+   "target": "cart",
+   "outcome": "found",
+   "goals": 13,
+   "metres": 50.7,
+   "reward": 0.233
+  },
+  {
+   "split": "val",
+   "index": 200,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 8,
+   "metres": 19.2,
+   "reward": 0.648
+  },
+  {
+   "split": "val",
+   "index": 201,
+   "mode": "R",
+   "target": "basketball",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 20.4,
+   "reward": 0.716
+  },
+  {
+   "split": "val",
+   "index": 204,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 2.4,
+   "reward": 0.936
+  },
+  {
+   "split": "val",
+   "index": 207,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 1,
+   "metres": 1.5,
+   "reward": 0.965
+  },
+  {
+   "split": "val",
+   "index": 208,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 11,
+   "metres": 32.7,
+   "reward": 0.453
+  },
+  {
+   "split": "val",
+   "index": 211,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 14.1,
+   "reward": 0.779
+  },
+  {
+   "split": "val",
+   "index": 212,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 28,
+   "metres": 120.0,
+   "reward": -0.76
+  },
+  {
+   "split": "val",
+   "index": 217,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 11.1,
+   "reward": 0.809
+  },
+  {
+   "split": "val",
+   "index": 219,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 6,
+   "metres": 27.3,
+   "reward": 0.607
+  },
+  {
+   "split": "val",
+   "index": 221,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 13.2,
+   "reward": 0.808
+  },
+  {
+   "split": "val",
+   "index": 222,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 16.2,
+   "reward": 0.758
+  },
+  {
+   "split": "val",
+   "index": 225,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 7.8,
+   "reward": 0.862
+  },
+  {
+   "split": "val",
+   "index": 227,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 9.9,
+   "reward": 0.841
+  },
+  {
+   "split": "val",
+   "index": 228,
+   "mode": "R",
+   "target": "cart",
+   "outcome": "found",
+   "goals": 6,
+   "metres": 18.6,
+   "reward": 0.694
+  },
+  {
+   "split": "val",
+   "index": 231,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 13,
+   "metres": 28.2,
+   "reward": 0.458
+  },
+  {
+   "split": "val",
+   "index": 232,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 12.0,
+   "reward": 0.82
+  },
+  {
+   "split": "val",
+   "index": 233,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 1,
+   "metres": 4.8,
+   "reward": 0.932
+  },
+  {
+   "split": "val",
+   "index": 234,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 20,
+   "metres": 61.2,
+   "reward": -0.012
+  },
+  {
+   "split": "val",
+   "index": 235,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 16.5,
+   "reward": 0.755
+  },
+  {
+   "split": "val",
+   "index": 236,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 32.1,
+   "reward": 0.579
+  },
+  {
+   "split": "val",
+   "index": 237,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 13.5,
+   "reward": 0.765
+  },
+  {
+   "split": "val",
+   "index": 239,
+   "mode": "R",
+   "target": "basketball",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 12.3,
+   "reward": 0.777
+  },
+  {
+   "split": "val",
+   "index": 241,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 8.7,
+   "reward": 0.853
+  },
+  {
+   "split": "val",
+   "index": 243,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 11,
+   "metres": 42.0,
+   "reward": 0.36
+  },
+  {
+   "split": "val",
+   "index": 244,
+   "mode": "R",
+   "target": "garbage bag",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 19.8,
+   "reward": 0.702
+  },
+  {
+   "split": "val",
+   "index": 247,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 12.3,
+   "reward": 0.817
+  },
+  {
+   "split": "val",
+   "index": 251,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 17,
+   "metres": 56.1,
+   "reward": 0.099
+  },
+  {
+   "split": "val",
+   "index": 254,
+   "mode": "R",
+   "target": "cart",
+   "outcome": "found",
+   "goals": 11,
+   "metres": 53.7,
+   "reward": 0.243
+  },
+  {
+   "split": "val",
+   "index": 258,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 7.8,
+   "reward": 0.882
+  },
+  {
+   "split": "val",
+   "index": 261,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 15.9,
+   "reward": 0.761
+  },
+  {
+   "split": "val",
+   "index": 265,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 11.4,
+   "reward": 0.826
+  },
+  {
+   "split": "val",
+   "index": 266,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 18.3,
+   "reward": 0.717
+  },
+  {
+   "split": "val",
+   "index": 270,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 22,
+   "metres": 70.2,
+   "reward": -0.142
+  },
+  {
+   "split": "val",
+   "index": 271,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 7,
+   "metres": 28.2,
+   "reward": 0.578
+  },
+  {
+   "split": "val",
+   "index": 272,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 21.9,
+   "reward": 0.681
+  },
+  {
+   "split": "val",
+   "index": 273,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 11,
+   "metres": 43.8,
+   "reward": 0.342
+  },
+  {
+   "split": "val",
+   "index": 274,
+   "mode": "R",
+   "target": "basketball",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 12.6,
+   "reward": 0.814
+  },
+  {
+   "split": "val",
+   "index": 277,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 1,
+   "metres": 0.9,
+   "reward": 0.971
+  },
+  {
+   "split": "val",
+   "index": 278,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 16,
+   "metres": 69.9,
+   "reward": -0.019
+  },
+  {
+   "split": "val",
+   "index": 282,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 8,
+   "metres": 27.0,
+   "reward": 0.57
+  },
+  {
+   "split": "val",
+   "index": 285,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 12.3,
+   "reward": 0.797
+  },
+  {
+   "split": "val",
+   "index": 286,
+   "mode": "R",
+   "target": "cart",
+   "outcome": "found",
+   "goals": 7,
+   "metres": 27.3,
+   "reward": 0.587
+  },
+  {
+   "split": "val",
+   "index": 290,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 6,
+   "metres": 29.1,
+   "reward": 0.589
+  },
+  {
+   "split": "val",
+   "index": 292,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 1,
+   "metres": 3.3,
+   "reward": 0.947
+  },
+  {
+   "split": "val",
+   "index": 293,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 16.2,
+   "reward": 0.738
+  },
+  {
+   "split": "val",
+   "index": 296,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 12.0,
+   "reward": 0.82
+  },
+  {
+   "split": "val",
+   "index": 297,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 9.6,
+   "reward": 0.844
+  },
+  {
+   "split": "val",
+   "index": 298,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 10.5,
+   "reward": 0.855
+  },
+  {
+   "split": "val",
+   "index": 300,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 5,
+   "metres": 16.8,
+   "reward": 0.732
+  },
+  {
+   "split": "val",
+   "index": 302,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 14,
+   "metres": 56.1,
+   "reward": 0.159
+  },
+  {
+   "split": "val",
+   "index": 305,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 9,
+   "metres": 32.7,
+   "reward": 0.493
+  },
+  {
+   "split": "val",
+   "index": 306,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 11,
+   "metres": 36.3,
+   "reward": 0.417
+  },
+  {
+   "split": "val",
+   "index": 308,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 1,
+   "metres": 1.5,
+   "reward": 0.965
+  },
+  {
+   "split": "val",
+   "index": 309,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 9.6,
+   "reward": 0.864
+  },
+  {
+   "split": "val",
+   "index": 310,
+   "mode": "R",
+   "target": "garbage bag",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 13.5,
+   "reward": 0.785
+  },
+  {
+   "split": "val",
+   "index": 311,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 9,
+   "metres": 28.2,
+   "reward": 0.538
+  },
+  {
+   "split": "val",
+   "index": 312,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 16.2,
+   "reward": 0.758
+  },
+  {
+   "split": "val",
+   "index": 313,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 6,
+   "metres": 26.1,
+   "reward": 0.619
+  },
+  {
+   "split": "val",
+   "index": 314,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 6.9,
+   "reward": 0.891
+  },
+  {
+   "split": "val",
+   "index": 317,
+   "mode": "R",
+   "target": "basketball",
+   "outcome": "found",
+   "goals": 8,
+   "metres": 36.3,
+   "reward": 0.477
+  },
+  {
+   "split": "val",
+   "index": 318,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 14,
+   "metres": 46.2,
+   "reward": 0.258
+  },
+  {
+   "split": "val",
+   "index": 319,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 6,
+   "metres": 25.5,
+   "reward": 0.625
+  },
+  {
+   "split": "val",
+   "index": 320,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 11,
+   "metres": 47.1,
+   "reward": 0.309
+  },
+  {
+   "split": "val",
+   "index": 322,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 4.2,
+   "reward": 0.918
+  },
+  {
+   "split": "val",
+   "index": 323,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 7,
+   "metres": 33.0,
+   "reward": 0.53
+  },
+  {
+   "split": "val",
+   "index": 324,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 7.8,
+   "reward": 0.882
+  },
+  {
+   "split": "val",
+   "index": 325,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 5.1,
+   "reward": 0.909
+  },
+  {
+   "split": "val",
+   "index": 326,
+   "mode": "R",
+   "target": "plunger",
+   "outcome": "found",
+   "goals": 1,
+   "metres": 4.2,
+   "reward": 0.938
+  },
+  {
+   "split": "val",
+   "index": 327,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 10,
+   "metres": 42.9,
+   "reward": 0.371
+  },
+  {
+   "split": "val",
+   "index": 329,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 6.6,
+   "reward": 0.874
+  },
+  {
+   "split": "val",
+   "index": 330,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 11,
+   "metres": 51.0,
+   "reward": 0.27
+  },
+  {
+   "split": "val",
+   "index": 334,
+   "mode": "R",
+   "target": "cart",
+   "outcome": "found",
+   "goals": 14,
+   "metres": 58.8,
+   "reward": 0.132
+  },
+  {
+   "split": "val",
+   "index": 335,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 18,
+   "metres": 59.58,
+   "reward": 0.0442
+  },
+  {
+   "split": "val",
+   "index": 337,
+   "mode": "R",
+   "target": "garbage bag",
+   "outcome": "found",
+   "goals": 6,
+   "metres": 22.2,
+   "reward": 0.658
+  },
+  {
+   "split": "val",
+   "index": 338,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 3,
+   "metres": 12.9,
+   "reward": 0.811
+  },
+  {
+   "split": "val",
+   "index": 339,
+   "mode": "R",
+   "target": "basketball",
+   "outcome": "found",
+   "goals": 6,
+   "metres": 23.4,
+   "reward": 0.646
+  },
+  {
+   "split": "val",
+   "index": 340,
+   "mode": "R",
+   "target": "garbage bag",
+   "outcome": "found",
+   "goals": 15,
+   "metres": 57.9,
+   "reward": 0.121
+  },
+  {
+   "split": "val",
+   "index": 342,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 19,
+   "metres": 56.4,
+   "reward": 0.056
+  },
+  {
+   "split": "val",
+   "index": 344,
+   "mode": "R",
+   "target": "garbage can",
+   "outcome": "found",
+   "goals": 4,
+   "metres": 15.0,
+   "reward": 0.77
+  },
+  {
+   "split": "val",
+   "index": 345,
+   "mode": "R",
+   "target": "box",
+   "outcome": "found",
+   "goals": 13,
+   "metres": 74.4,
+   "reward": -0.004
+  },
+  {
+   "split": "val",
+   "index": 346,
+   "mode": "R",
+   "target": "cart",
+   "outcome": "found",
+   "goals": 14,
+   "metres": 40.5,
+   "reward": 0.315
+  },
+  {
+   "split": "val",
+   "index": 348,
+   "mode": "R",
+   "target": "garbage bag",
+   "outcome": "found",
+   "goals": 6,
+   "metres": 21.9,
+   "reward": 0.661
+  },
+  {
+   "split": "val",
+   "index": 349,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 14,
+   "metres": 63.0,
+   "reward": 0.09
+  },
+  {
+   "split": "val",
+   "index": 350,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 3.9,
+   "reward": 0.921
+  },
+  {
+   "split": "val",
+   "index": 351,
+   "mode": "R",
+   "target": "house plant",
+   "outcome": "found",
+   "goals": 2,
+   "metres": 6.9,
+   "reward": 0.891
+  },
+  {
+   "split": "val",
+   "index": 352,
+   "mode": "R",
+   "target": "dog bed",
+   "outcome": "found",
+   "goals": 1,
+   "metres": 3.3,
+   "reward": 0.947
+  }
+ ],
+ "R": {
+  "missions": 100,
+  "found": 100,
+  "exceptions": 0
+ }
+}

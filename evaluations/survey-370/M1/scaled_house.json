@@ -1,0 +1,113 @@
+{
+ "house": "scaled_house",
+ "image": "vision-picar-ros:plan-3.70",
+ "find_s": 120,
+ "a": {
+  "reload": {
+   "result": "none"
+  },
+  "bridge_map_id": "map-9cc5f1ab",
+  "mission": {
+   "outcome": "out_of_budget",
+   "seconds": 64,
+   "contact_samples": 0,
+   "min_gap_cm": null
+  },
+  "named": {
+   "saved_map": {
+    "frame_id": "map-9cc5f1ab",
+    "map_id": "slam-528ff5c3",
+    "reloaded": false
+   },
+   "at_s": 0.26,
+   "house_m2": 34.0,
+   "bridge_known_m2": 0.0,
+   "bridge_known": 0,
+   "bridge_cells": 0,
+   "world_known": 0,
+   "log": [
+    "map: a new map map-9cc5f1ab (nothing saved matched: built from this run's scans)"
+   ],
+   "first_map": {
+    "after_s": 0.43,
+    "bridge_known_1": 1472,
+    "world_known": 1472,
+    "bridge_known_2": 1472,
+    "bridge_known_m2": 3.68
+   }
+  },
+  "map_save": {
+   "map_id": "map-9cc5f1ab",
+   "saving": false,
+   "store": true,
+   "saved": 1,
+   "failed": 0,
+   "skipped": 0,
+   "last_version": 1,
+   "last_at": 1795097840.7402697,
+   "last_error": null
+  },
+  "settled_s": 3.0,
+  "load": {
+   "n": 7,
+   "max": 2.2,
+   "p50": 1.57,
+   "over_4": 0
+  }
+ },
+ "b": {
+  "reload": {
+   "map_id": "map-9cc5f1ab",
+   "version": 1,
+   "took_s": 1.72,
+   "agreement": 0.694,
+   "dock_error_m": 0.0,
+   "dock_error_deg": 0.0,
+   "ok": true,
+   "reason": "matched",
+   "result": "matched"
+  },
+  "bridge_map_id": "map-9cc5f1ab",
+  "mission": {
+   "outcome": "out_of_budget",
+   "seconds": 99,
+   "contact_samples": 0,
+   "min_gap_cm": 15.8
+  },
+  "named": {
+   "saved_map": {
+    "frame_id": "map-9cc5f1ab",
+    "map_id": "slam-65ab1669",
+    "reloaded": true
+   },
+   "at_s": 0.26,
+   "house_m2": 34.0,
+   "bridge_known_m2": 18.43,
+   "bridge_known": 7370,
+   "bridge_cells": 11023,
+   "world_known": 7370,
+   "log": [
+    "map: on the saved map map-9cc5f1ab, reloaded"
+   ],
+   "first_map": {
+    "after_s": 0.01,
+    "bridge_known_1": 7370,
+    "world_known": 7370,
+    "bridge_known_2": 7370,
+    "bridge_known_m2": 18.43
+   }
+  },
+  "load": {
+   "n": 11,
+   "max": 3.39,
+   "p50": 2.19,
+   "over_4": 0
+  }
+ },
+ "verdicts": {
+  "first_visit_new_map": "MET",
+  "first_cells_own_scans": "MET",
+  "saved_map_reloaded": "MET",
+  "missions_ran": "MET"
+ }
+}

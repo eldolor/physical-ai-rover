@@ -40,6 +40,7 @@ from brain.frontier import _cell_of
 from brain.room_labels import segment
 from brain.request import canonical_room
 from world.interface import CELL_FREE, CELL_OCCUPIED, CELL_UNKNOWN
+from world.nogo import CELL_NOGO
 
 WEIGHTS_PATH = Path(__file__).resolve().parent / "explore_goal_weights.json"
 NET_PATH = Path(__file__).resolve().parent / "explore_goal_net.json"
@@ -247,7 +248,9 @@ def coarse(m: dict, res_m: float = ROOM_RES_M, cells=None) -> dict:
     blocks = cells.reshape(H, k, W, k).swapaxes(1, 2).reshape(H, W, k * k)
     out = np.full((H, W), CELL_UNKNOWN, dtype=cells.dtype)
     out[(blocks == CELL_FREE).sum(axis=2) * 2 >= k * k] = CELL_FREE
-    out[(blocks == CELL_OCCUPIED).any(axis=2)] = CELL_OCCUPIED
+    # 3.161: CELL_NOGO (2, explore's own masked map only) is a wall here;
+    # any other value is as before (the frozen references feed others).
+    out[((blocks == CELL_OCCUPIED) | (blocks == CELL_NOGO)).any(axis=2)] = CELL_OCCUPIED
     return {**m, "width": W, "height": H, "resolution_m": m["resolution_m"] * k,
             "cells": out.ravel().tolist()}
 
@@ -326,6 +329,14 @@ def prior_is_informative(rates: Optional[dict]) -> bool:
 def _shipped_rooms_prior() -> dict:
     data = json.loads(Path(ROOMS_PATH).read_text())
     return {t.lower(): dict(p) for t, p in data["prior"].items()}
+
+
+def shipped_rooms_prior(target: Optional[str]) -> Optional[dict]:
+    """The shipped `rooms` policy's rates for this target (any case), or None
+    when it does not know the target (3.190: what a cloud prior is for),
+    matched without case, edge spaces or doubled spaces."""
+    p = _shipped_rooms_prior().get(" ".join((target or "").split()).lower())
+    return dict(p) if p is not None else None
 
 
 def rooms_prior_informative(target: Optional[str]) -> bool:

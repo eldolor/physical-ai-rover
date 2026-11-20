@@ -192,4 +192,6 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.187](3.187-cloud-call-bandit.md) | When the tier calls the cloud, learned: 3.65 phase 1's contextual bandit |
 | [3.188](3.188-qwen-finetune.md) | Fine-tune the local VLM (Qwen2.5-VL-3B) on real frames for frame identity |
 | [3.189](3.189-cloud-ros-build.md) | Build the ROS image and run the live stack in a cloud session |
+| [3.190](3.190-prior-at-start.md) | A cloud room prior asked once at a find's start, for targets the shipped prior does not know |
+| [3.191](3.191-explore-approach-livelock.md) | Explore's approach livelock: a goal where the robot stands, re-sent every tick |
 <!-- /sections -->

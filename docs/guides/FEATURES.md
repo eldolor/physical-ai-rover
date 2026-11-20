@@ -952,6 +952,20 @@ every room the robot reads is called by the person's name: a survey asks
 the cloud nothing about a named room. With no saved map yet the panel says
 "Survey first". Screenshots: `docs/evaluations/twin-3.160-*.png`.
 
+**No-go zones** (3.161). Under a SLAM map with the autopilot connected, a
+"No-go zones" button opens a small panel: **Draw**, then drag a rectangle on
+the map (a cable nest, a pet's bowl, a rug the robot gets stuck on); **Wall**,
+then drag a line the robot must not cross; **Done**. Tap a zone on the map and
+**Delete zone** removes it. Zones are kept with the saved map on the robot's
+own disk (never uploaded), shown on the Drive map in their own colour, and do
+not expire. Autonomy never plans into one: explore picks no goal in it, nav2
+never routes through it, and a goal tapped inside one is refused ("That's in
+a no-go zone"). A zone is not a safety stop: the D-pad still drives the robot
+into one, and a robot that finds itself inside one (placed there, or after a
+re-map) is let out first -- the zone shows dashed, "paused", until the robot
+is 0.30 m clear. With no saved map the panel says "Survey first".
+Screenshots: `docs/evaluations/twin-3.161-*.png`.
+
 **Schedules** (3.163.B; Settings, and one line on Home). The robot can find
 something or check the house on its own at set times, from its dock. Add a
 schedule (Find something with what to find, or Check the house; a time, 9:00
