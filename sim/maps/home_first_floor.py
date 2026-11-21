@@ -1,7 +1,13 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright (C) 2026 Anshu Gaind
 """
-home_first_floor.py -- the user's own house, first floor, as a simulation.
+home_first_floor.py -- a realistic furnished test house, first floor.
+
+**A test house, not a replica of the user's** (the user, 2026-10-05,
+PLAN-ros-alignment.md 3.39: "The rover will run in different homes"). It
+began from one real home's measured outside walls, which stand; a blocker
+in the inferred interior is fixed by making the house realistic (standard
+interior doors, walkable furniture gaps), not by fitting the robot to it.
 
 **Where the numbers come from.** The EXTERIOR is the measured floor-plan
 sketch in the home's 2012 appraisal (page 29): every wall segment below is a
