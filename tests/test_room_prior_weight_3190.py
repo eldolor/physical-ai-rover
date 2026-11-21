@@ -51,3 +51,28 @@ def test_the_recorded_selection_is_what_the_rows_select():
     rows = weight.load(str(SELECT))
     assert len(rows) == 1 + 2 * len(weight.GRID)
     assert {"commit": rec["commit"], **weight.select(rows)} == rec
+
+
+# The bars as measured on the 588 test houses at w* = 0.5 (the section file,
+# "F results"): F1 and F2 FAILED, so nothing shipped.
+VERDICTS = {"F1": False, "F2": False, "F3": True, "F4": True, "F5": True, "F6": True}
+
+
+def test_the_selection_chose_w_half_by_the_written_rule():
+    rec = json.loads((SELECT / "select.json").read_text())
+    assert rec["w_star"] == 0.5 and rec["stops"] is False
+    assert all(g["cloud"]["n"] == 100 and g["cloud"]["exceptions"] == 0 for g in rec["grid"])
+
+
+def test_the_recorded_score_is_what_the_rows_score():
+    rec = json.loads((TEST / "score.json").read_text())
+    rows = weight.load(str(TEST))
+    assert len(rows) == 10
+    assert {"commit": rec["commit"], **weight.score(rows, 0.5)} == rec
+
+
+def test_each_bar_is_pinned_as_it_came_out():
+    rec = json.loads((TEST / "score.json").read_text())
+    assert {k: rec[k]["met"] for k in VERDICTS} == VERDICTS
+    assert rec["every_bar_met"] is False
+    assert all(v["n"] == 583 and v["exceptions"] == 0 for v in rec["summary"].values())
