@@ -147,7 +147,7 @@ RANGE_GATE_DEG = 2.0
 MAX_RANGE_M = 4.0
 # 3.204.B: with the edge gate on (`inventory_edge_gate`, OFF by default), a
 # gate holding two adjacent returns farther apart than this is a depth edge.
-EDGE_GAP_M = 0.3
+EDGE_GAP_M = 1.0       # chosen on seed 3462 (3.204.B amendment 1)
 MISS_RANGE_M = 3.0
 MISS_FOV_MARGIN_DEG = 5.0
 OCCLUSION_M = 0.3

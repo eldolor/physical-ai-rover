@@ -175,6 +175,9 @@ def test_e5_key_off_is_a_row_for_row():
 # (gap, phantoms, phantoms reported, true carried, true reported, recall found of 894)
 TUNING = [(0.2, 4, 0, 1575, 1161, 850), (0.3, 4, 0, 1585, 1172, 850),
           (0.5, 4, 0, 1595, 1176, 860), (0.8, 5, 0, 1593, 1189, 868)]
+# amendment 1 (E2 met at all three; 1.0 chosen)
+TUNING_A1 = [(1.0, 5, 0, 1589, 1200, 877), (1.5, 6, 0, 1585, 1202, 881),
+             (2.0, 19, 0, 1580, 1203, 884)]
 
 
 @pytest.mark.parametrize("gap, ph, ph_rep, true, true_rep, found", TUNING)
@@ -187,3 +190,19 @@ def test_tuning_seed_3462_as_recorded(gap, ph, ph_rep, true, true_rep, found):
             s["found"], s["seen"]) == (ph, ph_rep, true, true_rep, found, 894)
     off = _score("dev-clean.jsonl")
     assert off["recall_mean"] - s["recall_mean"] > 0.01          # E2 fails
+
+
+@pytest.mark.parametrize("gap, ph, ph_rep, true, true_rep, found", TUNING_A1)
+def test_amendment_1_tuning_as_recorded(gap, ph, ph_rep, true, true_rep, found):
+    s = _score(f"B/tune-clean-edge{gap}.jsonl")
+    assert (s["phantoms"], s["phantoms_reported"], s["true_carried"], s["true_reported"],
+            s["found"], s["seen"]) == (ph, ph_rep, true, true_rep, found, 894)
+    off = _score("dev-clean.jsonl")
+    assert s["recall_mean"] >= off["recall_mean"] - 0.01                # E2 met
+    assert s["true_carried"] >= 0.95 * off["true_carried"]               # E3 met
+    assert s["true_reported"] >= 0.95 * off["true_reported"]
+
+
+def test_the_chosen_gap_is_the_constant():
+    """The fewest phantoms meeting E2 and E3 on seed 3462: 1.0 m."""
+    assert inv.EDGE_GAP_M == 1.0

@@ -313,7 +313,7 @@ them):
 | `MERGE_M`, `RELABEL_M` | 0.5 m, 0.3 m | single linkage within a label; a different label this close is a vote |
 | `FOLD_M`, `MAX_POINTS` | 0.05 m, 32 | 3.165: an observation this close to a same-label member folds into it; members a landmark at most (anchors excepted) |
 | `RANGE_GATE_DEG`, `MAX_RANGE_M` | 2 deg, 4.0 m | lidar return taken for a bearing; beyond it, unplaced |
-| `EDGE_GAP_M` | 0.3 m | 3.204.B, read only with `inventory_edge_gate` on (OFF by default): adjacent returns in a detection's gate farther apart than this are a depth edge, and the detection is left unplaced |
+| `EDGE_GAP_M` | 1.0 m | 3.204.B (chosen on tuning seed 3462, amendment 1), read only with `inventory_edge_gate` on (OFF by default): adjacent returns in a detection's gate farther apart than this are a depth edge, and the detection is left unplaced |
 | `MISS_RANGE_M`, `OCCLUSION_M` | 3.0 m, 0.3 m | a miss needs the place in view, near, and not behind something |
 | `GROUP_DEG` | 8 deg | same-label sim cells this close in bearing are one detection |
 
