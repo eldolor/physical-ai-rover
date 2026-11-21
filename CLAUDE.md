@@ -139,8 +139,9 @@ here to `docs/guides/MERGED-STATE.md`; open work only stays here.**
 **Waiting on the user**
 
 * **Deploys:** the twin is live from `dev` `06c76aa0` (2026-11-21). Cloud
-  sessions can deploy the twin only (IAM `vision-picar-deployer`: S3 put,
-  invalidation, DescribeStacks); each deploy needs the user's go.
+  sessions can deploy the twin only (IAM `vision-picar-deployer`). The
+  orchestrator deploys it unasked once a twin change is on `dev`; every
+  other session asks (the user, 2026-11-21).
 * **The board's brain is `dev` `bdcf782c`** (updated 2026-11-06 for 3.155's
   unit, the user's go): update it only when asked (`tools/jetson/README.md`'s
   update step).

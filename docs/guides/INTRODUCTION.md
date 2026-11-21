@@ -366,7 +366,7 @@ Jetson may be needed, depending on a power test with the motors running.
 ## Where it stands
 
 The software is built and measured in simulation. The robot computer is
-tested. The robot body is in hand (21 Nov 2026); mounting and testing it is the work now.
+tested. The robot body is in hand; mounting and testing it is the work now.
 
 | When | Milestone |
 |---|---|
