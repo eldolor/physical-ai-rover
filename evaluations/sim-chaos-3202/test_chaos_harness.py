@@ -184,6 +184,7 @@ def test_k8_five_xx_fails():
     ms = score.fault_measures(f, _truth(0, 60, 0), {"m1": {"t1": 50.0, "outcome": "found"}})
     assert score.judge_fault(f, ms, CFG, [{"t": 20.0, "dup_copy": 200}])["pass"]
     assert not score.judge_fault(f, dict(ms), CFG, [{"t": 20.0, "dup_copy": 500}])["pass"]
+    assert score.judge_fault(f, dict(ms), CFG, [{"t": 20.0, "p": "/world/goal", "fate": 501}])["pass"]
 
 
 def test_slope_and_memory_growth():
@@ -250,3 +251,43 @@ def test_k11_that_ended_before_its_first_step_is_invalid():
 def test_an_errored_fault_fails():
     v = score.judge_fault({"kind": "K1", "errored": "URLError: timed out"}, {}, CFG)
     assert not v["pass"] and "errored" in v["reasons"][0]
+
+
+def test_found_is_judged_against_where_the_target_was_then(tmp_path):
+    """Amendment 3: after a `target_moved` event a Found is measured from the
+    new cell; one at the old cell after the move is wrong."""
+    run = _run_dir(tmp_path, [], house="scaled_house")
+    tx, ty = score.target_m("scaled_house", "red backpack")
+    nx, ny = (24 + 0.5) * score.CELL_M, (11 + 0.5) * score.CELL_M
+    first = {"id": "a", "outcome": "found", "tags": [], "t0": 0, "t1": 40,
+             "end_truth": {"t": 40, "x": tx, "y": ty}}
+    second = {"id": "b", "outcome": "found", "tags": [], "t0": 41, "t1": 80,
+              "end_truth": {"t": 80, "x": nx + 0.2, "y": ny}}
+    stale = {"id": "c", "outcome": "found", "tags": [], "t0": 81, "t1": 90,
+             "end_truth": {"t": 90, "x": tx, "y": ty}}
+    (run / "missions.jsonl").write_text("".join(json.dumps(x) + "\n" for x in (first, second, stale)))
+    (run / "events.jsonl").write_text(json.dumps(
+        {"t": 40.5, "what": "target_moved", "src": [23, 5], "dst": [24, 11]}) + "\n")
+    res = score.score(run)
+    wrong = " ".join(res["c4"]["wrong_found"])
+    assert "mission c" in wrong and "mission a" not in wrong and "mission b" not in wrong
+    assert res["c4"]["target_moves"] == 1
+
+
+def test_move_target_cycles_and_skips_a_refused_cell(tmp_path, monkeypatch):
+    import chaos
+    from types import SimpleNamespace
+    calls = []
+
+    def fake_http(method, url, body=None, secret="", timeout=5.0):
+        calls.append(tuple(body["dst"]))
+        return (409, "inside the turning circle") if tuple(body["dst"]) == (24, 11) else (200, {})
+    monkeypatch.setattr(chaos, "http", fake_http)
+    c = chaos.Chaos(tmp_path, faults=1, seed=1, house="scaled_house", kinds=("K1",), gap=(1, 2))
+    c.st = SimpleNamespace(urls={"body": "http://x"}, secret="s")
+    c.move_target()
+    assert calls == [(24, 11), (9, 11)] and c.cycle[c.target_i] == (9, 11)
+    c.move_target()                       # on round to the kitchen
+    assert c.cycle[c.target_i] == (23, 5)
+    ev = [json.loads(x) for x in (tmp_path / "events.jsonl").read_text().splitlines()]
+    assert [e["what"] for e in ev] == ["target_move_refused", "target_moved", "target_moved"]
