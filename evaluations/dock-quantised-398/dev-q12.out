@@ -1,0 +1,95 @@
+{
+ "missions": 60,
+ "returns": 60,
+ "reached_approach": 27,
+ "docked": 14,
+ "docked_share": 0.519,
+ "docked_truth_ok": 14,
+ "not_aligned_bare": 13,
+ "not_docked": [
+  [
+   "complex_house",
+   "survey",
+   "failed",
+   "not_aligned"
+  ],
+  [
+   "home_first_floor",
+   "find",
+   "failed",
+   "not_aligned"
+  ],
+  [
+   "scaled_house",
+   "survey",
+   "failed",
+   "not_aligned"
+  ],
+  [
+   "scaled_house",
+   "find",
+   "failed",
+   "not_aligned"
+  ],
+  [
+   "scaled_house",
+   "survey",
+   "failed",
+   "not_aligned"
+  ],
+  [
+   "scaled_house",
+   "find",
+   "failed",
+   "not_aligned"
+  ],
+  [
+   "scaled_house",
+   "survey",
+   "failed",
+   "not_aligned"
+  ],
+  [
+   "scaled_house",
+   "find",
+   "failed",
+   "not_aligned"
+  ],
+  [
+   "scaled_house",
+   "survey",
+   "failed",
+   "not_aligned"
+  ],
+  [
+   "scaled_house",
+   "find",
+   "failed",
+   "not_aligned"
+  ],
+  [
+   "scaled_house",
+   "survey",
+   "failed",
+   "not_aligned"
+  ],
+  [
+   "scaled_house",
+   "find",
+   "failed",
+   "not_aligned"
+  ],
+  [
+   "scaled_house",
+   "survey",
+   "failed",
+   "not_aligned"
+  ]
+ ],
+ "approach_verbs_max": 40,
+ "over_12_verbs": 12,
+ "turn_run_max": 38,
+ "fine_goals": 0,
+ "err_m_median": 0.0932,
+ "err_m_max": 0.0977
+}

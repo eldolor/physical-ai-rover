@@ -591,8 +591,10 @@ or Reserve still propagates from the cancel and from each verb.
       was not taken ...)`. A goal that does not succeed goes to the judge,
       with no back-off beside the dock.
     * `status.return.fine_goals` counts the goals started, taken or not.
-    * `_quantum_m` is the smallest excess move seen, so a creep of two
-      moves does not double it.
+    * `_quantum_m` only says that the moves come whole. "Under half a
+      move" is measured against the last creep's measured step
+      (`_step_m`), because a move cut short (0.186 m in the sweep) is no
+      guide to the next one's size.
     * A verb in the approach refused because the mission's own goal still
       holds the robot (`is_own_goal_refusal`) is a wait, as in `_move`: at
       most `MAX_HOLDS` polls, not counted as an action.

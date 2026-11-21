@@ -620,9 +620,7 @@ class ReturnTrip:
                 moved = abs(self._last_along - along)
                 self._step_m = moved or self._step_m
                 if self._asked_m is not None and moved > self._asked_m + QUANTUM_EXCESS_M:
-                    # 3.198: moves come whole. The smallest seen: a creep of two moves
-                    # must not double it (Thermos 2).
-                    self._quantum_m = moved if self._quantum_m is None else min(self._quantum_m, moved)
+                    self._quantum_m = moved             # 3.198: moves come whole
             self._asked_m = None
             if (dist <= CREEP_TOL_M or (abs(along) <= CREEP_TOL_M and dist <= DOCK_TOL_M)
                     or (self._step_m and abs(along) < 0.5 * self._step_m)):
@@ -652,7 +650,9 @@ class ReturnTrip:
         if self._turn_to(pose, self.dock["theta"]):
             return None
         m, deg = pose_error(self.dock, pose)
-        whole = bool(self._quantum_m) and dist < 0.5 * self._quantum_m
+        # Whole moves seen, and the residual under half the last one (a move
+        # cut short or doubled is still the size the next one may take).
+        whole = bool(self._quantum_m) and bool(self._step_m) and dist < 0.5 * self._step_m
         if whole and m > FINE_ABOVE_M and self.fine_tries < FINE_TRIES:
             # 3.198 D2: under whole moves the creep cannot close this; nav2 can.
             return self._fine(pose, dist, m, deg)

@@ -359,3 +359,16 @@ def test_a_turn_refused_by_the_missions_own_goal_waits():
         if out is not None:
             break
     assert out[0] == dk.DOCKED and body.holds == 0, out
+
+
+@pytest.mark.parametrize("case", [("scaled_house", (2.5, 4.5, 90), "find"),
+                                  ("home_first_floor", (2.5, 26.5, 90), "find")])
+def test_the_sweeps_cut_short_move_still_docks_centred(case):
+    """The q10 sweep (in process, `MissionRunner` -> explore -> safety ->
+    whole-cell `MockRobot`, nav2's 0.10 m): a whole move cut short (0.186 m)
+    once read as the body's move size, and these returns docked by margin,
+    0.094-0.096 m. Under half the LAST measured move, they are corrected."""
+    from tests.dock_quantised_sweep import run_one
+    r = run_one(("q10",) + case)
+    assert r["return"] == "docked" and r["err_m"] <= dk.FINE_ABOVE_M, r
+    assert r["fine_goals"] >= 1 and r["turn_run_max"] <= 2, r
