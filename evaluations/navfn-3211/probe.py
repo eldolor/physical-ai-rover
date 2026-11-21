@@ -76,9 +76,10 @@ def arm(name, maps, out):
     env = {k: v for k, v in os.environ.items() if k not in ("APP_SHARED_SECRET", "LOCAL_SECRET")}
     env.update(SIM_MAP=HOUSE, ROBOT_DRIVE="ros", WORLD_MODE="ros",
                ROS_BRIDGE_URL=f"http://127.0.0.1:{BRIDGE}", PICAR_LOG_LEVEL="WARNING")
+    robot_log = open(out / f"robot-{name}.log", "w")
     robot = subprocess.Popen([PY, "-m", "uvicorn", "robot.server:app", "--port", str(ROBOT),
                               "--host", "127.0.0.1", "--log-level", "warning"], cwd=ROOT, env=env,
-                             stdout=open(out / f"robot-{name}.log", "w"), stderr=subprocess.STDOUT)
+                             stdout=robot_log, stderr=subprocess.STDOUT)
     try:
         time.sleep(4)
         nav = _nav_yaml(name, out)
@@ -123,7 +124,11 @@ def arm(name, maps, out):
     finally:
         subprocess.run(["docker", "rm", "-f", CONTAINER], capture_output=True)
         robot.terminate()
-        robot.wait(10)
+        try:
+            robot.wait(10)
+        except subprocess.TimeoutExpired:
+            robot.kill()
+        robot_log.close()
 
 
 def _legal_times(log_text):
@@ -143,14 +148,19 @@ def load_arm(out, name):
     times = _legal_times((log if log.exists() else out / f"ros-{name}-planner.log").read_text())
     # Each error to the one call in flight: the last call started before it
     # (calls are serial and take milliseconds, so a window would overlap).
+    # An error before the first call (costmap warm-up) is charged to none and
+    # counted as `uncharged`, so the score shows it.
     starts = [r["t0"] for r in rows]
     for r in rows:
         r["legal"] = 0
+    uncharged = 0
     for t in times:
         k = max((j for j, s in enumerate(starts) if s <= t), default=None)
-        if k is not None:
+        if k is None:
+            uncharged += 1
+        else:
             rows[k]["legal"] += 1
-    return rows, len(times)
+    return rows, len(times), uncharged
 
 
 def _pct(xs, q):
@@ -160,8 +170,8 @@ def _pct(xs, q):
 
 def score(out):
     out = Path(out)
-    a, a_legal = load_arm(out, "astar")
-    d, d_legal = load_arm(out, "dijkstra")
+    a, a_legal, a_un = load_arm(out, "astar")
+    d, d_legal, d_un = load_arm(out, "dijkstra")
     assert [r["i"] for r in a] == [r["i"] for r in d], "the arms must ask the same pairs"
     n = len(a)
     both_fail = [x["i"] for x, y in zip(a, d) if not x["ok"] and not y["ok"]]
@@ -179,6 +189,9 @@ def score(out):
                      "legal_lines": d_legal, "planning_ms_p50": _pct([r["planning_ms"] for r in d if r["ok"]], 0.5),
                      "planning_ms_p90": _pct([r["planning_ms"] for r in d if r["ok"]], 0.9),
                      "by_kind_failed": {k: sum(not r["ok"] for r in d if r["kind"] == k) for k in ("pair", "reverse", "staging", "dock")}},
+        "uncharged": {"astar": a_un, "dijkstra": d_un},
+        # every failed row charged with an error, and no successful one
+        "failed_are_legal": ({r["i"] for r in a if not r["ok"]} == {r["i"] for r in a if r["legal"]}),
         "both_failed": len(both_fail), "lost": lost, "gained": len(gained),
         "length_ratio_median": round(statistics.median(ratios), 4) if ratios else None,
     }
@@ -186,7 +199,8 @@ def score(out):
     res["A1"] = ("MET" if a1 else "FAILED (stop: the cause is not shown)")
     res["A2"] = "MET" if res["dijkstra"]["legal_lines"] == 0 and not lost else "FAILED"
     res["A3"] = "MET" if res["length_ratio_median"] is not None and res["length_ratio_median"] <= 1.02 else "FAILED"
-    res["A4"] = "MET" if (res["dijkstra"]["planning_ms_p90"] or 1e9) <= 500 else "FAILED"
+    p90 = res["dijkstra"]["planning_ms_p90"]
+    res["A4"] = "MET" if p90 is not None and p90 <= 500 else "FAILED"
     return res
 
 

@@ -25,7 +25,8 @@ def test_the_records_meet_a1_to_a4():
     s = _probe().score(HERE)
     assert s["pairs"] == 840
     # A1: the defect, at 44 of 840 under A*, every failure NavFn's own error.
-    assert s["astar"]["failed"] == 44 and s["astar"]["legal_rows"] == 44
+    assert s["astar"]["failed"] == 44 and s["astar"]["legal_rows"] == 44 and s["failed_are_legal"]
+    assert s["uncharged"] == {"astar": 0, "dijkstra": 0}
     # A2-A4 under Dijkstra.
     assert s["dijkstra"]["failed"] == 0 and s["dijkstra"]["legal_lines"] == 0 and s["lost"] == []
     assert s["length_ratio_median"] <= 1.02
@@ -42,8 +43,8 @@ def test_each_error_is_charged_to_one_call():
         d = Path(d)
         (d / "rows-a.jsonl").write_text("\n".join(json.dumps(r) for r in rows))
         (d / "ros-a.log").write_text(log)
-        got, n = p.load_arm(d, "a")
-    assert n == 1 and [r["legal"] for r in got] == [1, 0]
+        got, n, un = p.load_arm(d, "a")
+    assert n == 1 and un == 0 and [r["legal"] for r in got] == [1, 0]
 
 
 def test_nav2_ships_dijkstra():

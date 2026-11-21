@@ -120,6 +120,8 @@ def plan(path, out):
             rclpy.spin_until_future_complete(node, fut, timeout_sec=CALL_TIMEOUT_S)
             row = {"i": p["i"], "kind": p["kind"], "t0": t0}
             gh = fut.result() if fut.done() else None
+            if gh is None and not fut.done():
+                raise SystemExit(f"pair {p['i']}: no answer to the goal in {CALL_TIMEOUT_S:.0f} s; stopped")
             if gh is None or not gh.accepted:
                 row.update(ok=False, status="not_accepted")
             else:
@@ -127,6 +129,10 @@ def plan(path, out):
                 rclpy.spin_until_future_complete(node, rf, timeout_sec=CALL_TIMEOUT_S)
                 res = rf.result() if rf.done() else None
                 if res is None:
+                    # Never leave a goal planning beside the next call: the
+                    # driver charges each log error to the one call in flight.
+                    cf = gh.cancel_goal_async()
+                    rclpy.spin_until_future_complete(node, cf, timeout_sec=CALL_TIMEOUT_S)
                     row.update(ok=False, status="timeout")
                 else:
                     poses = res.result.path.poses

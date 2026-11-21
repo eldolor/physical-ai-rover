@@ -93,6 +93,7 @@ used.
 | nav2 `controller_server`, `planner_server`, `behavior_server`, `bt_navigator` | `cmd_vel` is remapped to `cmd_vel/nav`. They run under `lifecycle_manager_navigation` with autostart on. |
 | `nav2_collision_monitor/collision_monitor` | Reads `/cmd_vel_mux` and writes `/diff_drive_controller/cmd_vel_unstamped`. It has its own lifecycle manager. |
 | `foxglove_bridge` | Off unless the container has `PICAR_FOXGLOVE=1` (3.81: the Rover does not need it). Port 8765, address `0.0.0.0`, capabilities `["connectionGraph"]` only. |
+| `service/slam/probe/navfn_probe.py` | Not launched and not in the image: a measuring tool (3.211.A). `evaluations/navfn-3211/probe.py` copies it into a running container (`docker cp`) and runs it (`docker exec`). It asks `planner_server`'s `compute_path_to_pose` with `use_start` for fixed pairs and moves nothing. It lives here because it imports rclpy (rule 3). |
 
 ### On the project's side (no ROS)
 
