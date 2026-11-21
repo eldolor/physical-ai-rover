@@ -1,0 +1,156 @@
+{
+ "K1-shipped": {
+  "pass": false,
+  "reasons": [
+   "moved 24.19 cm in 6 s after the fault (bar 15)"
+  ],
+  "wheels_zero_s": 0.835,
+  "travel_cm": 24.19,
+  "outcome": "idle"
+ },
+ "K1-watchdog": {
+  "pass": false,
+  "reasons": [
+   "moved 24.5 cm in 6 s after the fault (bar 15)"
+  ],
+  "wheels_zero_s": 0.828,
+  "travel_cm": 24.5,
+  "outcome": "idle"
+ },
+ "K10-cloud_deadline": {
+  "pass": false,
+  "reasons": [
+   "the mission took 362.1 s (bar 90.0)"
+  ],
+  "travel_cm": 0.0,
+  "mission_s": 362.1,
+  "outcome": "failed",
+  "end_reason": "vision unavailable 3 times in a row: vision timed out after 120.0s"
+ },
+ "K10-shipped": {
+  "pass": true,
+  "reasons": [],
+  "travel_cm": 0.0,
+  "mission_s": 61.38,
+  "outcome": "failed",
+  "end_reason": "vision unavailable 3 times in a row: vision timed out after 20.0s"
+ },
+ "K11-dead_man": {
+  "pass": false,
+  "reasons": [
+   "the mission took 601.16 s (bar 33.0)"
+  ],
+  "wheels_zero_s": 0.002,
+  "travel_cm": 0.0,
+  "travel_after_hang_cm": 0.0,
+  "mission_s": 601.16,
+  "outcome": "failed",
+  "end_reason": "brain loop hung: tick exceeded 600.0s"
+ },
+ "K11-shipped": {
+  "pass": true,
+  "reasons": [],
+  "wheels_zero_s": 0.002,
+  "travel_cm": 0.0,
+  "travel_after_hang_cm": 0.0,
+  "mission_s": 4.63,
+  "outcome": "failed",
+  "end_reason": "brain loop hung: tick exceeded 3.0s"
+ },
+ "K11-watchdog": {
+  "pass": true,
+  "reasons": [],
+  "wheels_zero_s": 0.001,
+  "travel_cm": 0.0,
+  "travel_after_hang_cm": 0.0,
+  "mission_s": 4.63,
+  "outcome": "failed",
+  "end_reason": "brain loop hung: tick exceeded 3.0s"
+ },
+ "K2-watchdog": {
+  "pass": false,
+  "reasons": [
+   "moved 23.91 cm in 6 s after the fault (bar 15)"
+  ],
+  "wheels_zero_s": 0.81,
+  "travel_cm": 23.91,
+  "outcome": "failed"
+ },
+ "K3-heartbeat": {
+  "pass": false,
+  "reasons": [
+   "wheels zero after None s (bar 1.6)"
+  ],
+  "travel_cm": 144.71,
+  "outcome": "failed"
+ },
+ "K3-shipped": {
+  "pass": true,
+  "reasons": [],
+  "wheels_zero_s": 1.486,
+  "travel_cm": 44.47,
+  "outcome": "failed"
+ },
+ "K4-lidar_fresh": {
+  "pass": false,
+  "reasons": [
+   "moved 19.82 cm while stale (bar 2)"
+  ],
+  "wheels_zero_s": 0.821,
+  "travel_cm": 25.65,
+  "travel_stale_cm": 19.82,
+  "outcome": "cancelled"
+ },
+ "K4-shipped": {
+  "pass": true,
+  "reasons": [],
+  "wheels_zero_s": 0.272,
+  "travel_cm": 7.66,
+  "travel_stale_cm": 0.0,
+  "outcome": "cancelled"
+ },
+ "K5-feedback_fresh": {
+  "pass": false,
+  "reasons": [
+   "moved 25.69 cm while stale (bar 2)"
+  ],
+  "wheels_zero_s": 0.694,
+  "travel_cm": 33.35,
+  "travel_stale_cm": 25.69,
+  "outcome": "cancelled"
+ },
+ "K5-shipped": {
+  "pass": true,
+  "reasons": [],
+  "wheels_zero_s": 0.292,
+  "travel_cm": 7.96,
+  "travel_stale_cm": 0.92,
+  "outcome": "failed"
+ },
+ "K6-shipped": {
+  "pass": false,
+  "reasons": [
+   "moved 24.19 cm in 6 s after the fault (bar 15)"
+  ],
+  "wheels_zero_s": 0.836,
+  "travel_cm": 24.19,
+  "outcome": "failed"
+ },
+ "K6-watchdog": {
+  "pass": false,
+  "reasons": [
+   "moved 24.19 cm in 6 s after the fault (bar 15)"
+  ],
+  "wheels_zero_s": 0.828,
+  "travel_cm": 24.19,
+  "outcome": "failed"
+ },
+ "K9-shipped": {
+  "pass": true,
+  "reasons": [],
+  "travel_cm": 0.0,
+  "mission_s": 2.22,
+  "outcome": "failed",
+  "end_reason": "vision unavailable 3 times in a row: vision call failed: ConnectError: [Errno 111] Connection refused"
+ }
+}

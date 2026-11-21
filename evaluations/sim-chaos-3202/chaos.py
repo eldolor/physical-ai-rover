@@ -131,11 +131,12 @@ class RssSampler:
 
 class Chaos:
     def __init__(self, out: Path, *, faults: int, seed: int, house: str, kinds: tuple,
-                 gap: tuple, plant: str = "", hard_cap_s: float = 6 * 3600):
+                 gap: tuple, plant: str = "", hard_cap_s: float = 6 * 3600,
+                 stop_last: bool = False):
         self.out = Path(out)
         self.out.mkdir(parents=True, exist_ok=True)
         self.n_faults, self.house, self.kinds, self.gap = faults, house, kinds, gap
-        self.plant, self.hard_cap_s = plant, hard_cap_s
+        self.plant, self.hard_cap_s, self.stop_last = plant, hard_cap_s, stop_last
         self.rng = random.Random(seed)
         self.seed = seed
         self.missions = Jsonl(self.out / "missions.jsonl")
@@ -482,8 +483,16 @@ class Chaos:
                                         f"http://127.0.0.1:{PORTS['robot']}"],
                               dict(os.environ, FAULT_PROXY_LOG=str(self.out / "proxy.jsonl")))
             time.sleep(0.5)
-            self.st = Stack(self.out, house=self.house, plant=self.plant, vision_url=STUB_URL,
+            stack_plant = "" if self.plant == "dead_man" else self.plant
+            self.st = Stack(self.out, house=self.house, plant=stack_plant, vision_url=STUB_URL,
                             extra_env={"ROBOT_URL": PROXY_URL, "LOCAL_VLM_URL": ""})
+            if self.plant == "dead_man":             # amendment 2: this section's own brain plant
+                st = self.st
+
+                def _start_brain_planted():
+                    st._spawn("brain", [PY, str(HERE / "dead_man_plant.py"), str(PORTS["brain"])])
+                    st._wait_health("brain", st.urls["brain"])
+                st.start_brain = _start_brain_planted
             self.st.start()
             self.proxy_clear()
             self.sampler = RssSampler(self.st, self.extra, rss).start()
@@ -523,7 +532,10 @@ class Chaos:
                     self.end_mission(s, "hung" if s.get("hung") else "natural")
                     continue
                 time.sleep(1.0)
-            if self.cur is not None:                 # the last mission runs to its end
+            if self.cur is not None and self.stop_last:   # criterion 7's single-fault runs
+                self.stop_mission()
+                self.end_mission(status(self.st), "stopped_at_end")
+            elif self.cur is not None:               # the last mission runs to its end
                 s = self.wait_mission()
                 self.end_mission(s, "hung" if s.get("hung") else "natural")
             end = {"ended": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "t_end": round(now(), 3),
@@ -569,6 +581,8 @@ def main(argv=None) -> int:
     ap.add_argument("--gap", default="120,240")
     ap.add_argument("--plant", default="")
     ap.add_argument("--hard-cap-s", type=float, default=6 * 3600)
+    ap.add_argument("--stop-last", action="store_true",
+                    help="stop the mission running after the last fault (criterion 7's runs)")
     a = ap.parse_args(argv)
     kinds = tuple(k for k in a.kinds.split(",") if k)
     bad = set(kinds) - set(KINDS)
@@ -581,7 +595,8 @@ def main(argv=None) -> int:
     signal.signal(signal.SIGTERM, _term)        # the stack is torn down, end.json written
     signal.signal(signal.SIGHUP, _term)
     return Chaos(Path(a.out), faults=a.faults, seed=a.seed, house=a.house, kinds=kinds,
-                 gap=(lo, hi), plant=a.plant, hard_cap_s=a.hard_cap_s).run()
+                 gap=(lo, hi), plant=a.plant, hard_cap_s=a.hard_cap_s,
+                 stop_last=a.stop_last).run()
 
 
 if __name__ == "__main__":
