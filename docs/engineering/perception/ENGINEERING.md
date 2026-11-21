@@ -2,7 +2,7 @@
 kind: engineering
 domain: perception
 status: current
-verified: 2026-10-08
+verified: 2026-11-21
 parent: docs/perception/ARCHITECTURE.md
 ---
 
@@ -34,6 +34,13 @@ every number here.
 | `control/identity_eval.py` | 3.48: rescores saved `perception_eval` records against today's `labels.json` (counting flips and uncovered frames), adds the cloud's recorded `navigate.target_visible` as a row (only the frames it was asked about, and the command prints how many: 3.76 N1, a never-asked visible frame counted as a cloud miss), and counts YES on the cloud's confabulations, at a fixed gate per model. Measurement only; nothing in the mission path reads it. |
 | `tools/jetson/bench_identity_llama.py` | 3.48 amendments 1-3: one GGUF VLM under llama.cpp's `llama-server` (CUDA, `--cache-ram 0`) on the Jetson, asked `VlmDetector._locate()`'s prompt on each frame; scores P(it localises) from `top_logprobs` at the step the reply commits (deferring through a bare `[` and whitespace; a bare `{"bbox_2d": ...}` object read at its opening step), and records end-to-end latency, time to the deciding token, the drop in `MemAvailable`, unparsed replies and failed calls. Writes records `identity_eval` scores. 3.58: `--stop-at-decision` streams the reply and closes the connection at the deciding token (`decision_reached`, the point past which `p_localised` reads nothing), recording the client-side time to it; a mid-stream error or a cut stream is one failed frame. `compare_decisions` matches two records files frame by frame. Measurement only. |
 | `tools/jetson/headroom_identity.sh`, `tools/jetson/perception_loop.py` | 3.58: 3.33's headroom window on the board (split simulator, robot server, brain, the ROS container with SLAM + nav2 goals, ONE perception pipeline at 4 Hz, desktop off, 15 W) plus `bench_identity_llama --stop-at-decision` resident for the window; samples `MemAvailable` every second, the wheel loop's late ticks, `tegrastats`, OOM events (one per `Killed process` line); perception's p90 from the window's frames only; every wait bounded; stops `picar-local-vlm` and refuses a busy :8090 (3.76 P1: a G4 container left running answered for the run's bridge); tears down and restores the desktop. `tegrastats` on JetPack 6 prints no throttle text, so `throttle_lines` is always 0: thermal headroom is read off temperature. `perception_loop.py` is 3.33's board script, now in the repo. |
+| `service/local_vlm/server.py` | 3.80.B: the local VLM service, a FastAPI app on loopback. `create_app(make_driver, ...)` loads the driver off the event loop, watches it once a second, and ends the process (`_exit_on_death`, exit 3) half a second after it finds the driver gone; `main()` reads the environment and runs uvicorn. See "The local VLM service" below. |
+| `service/local_vlm/driver.py` | `EdgeDriver`: one resident `edgellm_identity` process (TensorRT Edge-LLM), one request at a time under a lock; `ask()` writes the frame and a request file, reads the token stream to the deciding token or the deadline, cancels, and drains the cancelled tail in the background. `DIRECTION_PROMPT`, `direction_of()`, `parse_box()`; `DriverGone`. The prompt, request file, stopping rule and score are imported from `tools/jetson/bench_identity_llama.py` and `tools/jetson/bench_identity_trt.py`, not copied. |
+| `brain/local_vlm.py` | 3.80.C: the brain's client, `LocalVLMClient` (`ask`, `direction`, `healthy`, `close`), `LocalVLMAbsent`, and `model_size()` (the size the model sees a frame at, for a box's fractions). |
+| `tools/jetson/edgellm_identity.cpp`, `tools/jetson/build_edgellm_identity.sh`, `tools/jetson/patch_edgellm_trt103.py` | 3.78: the driver's source, and the script that builds it and the engines on the board (Edge-LLM v0.9.1, patched for JetPack 6.2). |
+| `tools/jetson/systemd/picar-local-vlm.service`, `tools/jetson/install_services.sh` | The board's unit for the service, and the script that installs, enables and restarts it (after the stack answers; without its env file it is disabled with a warning). |
+| `tools/jetson/vlm_hold.sh` | 3.108: sourced by board benches; `vlm_hold` / `vlm_restore` hold the service off for a run and put it back as found. |
+| `tools/jetson/bench_local_vlm.sh`, `tools/jetson/bench_local_vlm.py` | 3.80.B's acceptance (B1-B6) on the board: the 299 pinned frames, the deadline and the driver-death checks, asked through the service's HTTP API under its own `picar-local-vlm-bench` unit. |
 | `control/target_probe.py` | Pre-flight for a target string: firing rate and peak probability over a fixed random sample of existing frames. |
 | `tools/contact_sheet.py`, `tools/label_prepass.py` | Labelling aids for a walk's `labels.json`: contact sheets to adjudicate by eye, and a two-opinion pre-pass (OWLv2 against the shipped tier) that bounds what needs eyeballing. One-off evaluation helpers; the recordings domain owns `labels.json` itself |
 | `tools/clip_rooms_eval.py` | 3.51's early read on room recognition: the whole frame through `ClipScorer`'s RN50 against seven room prompts (`score`, timing the encode), and `report` (accuracy, macro, agreement with the cloud's recorded `room_guess`, causal smoothing) against each walk's `room_labels.json`. Measurement only; not on any shipped path. Results and labels in `docs/evaluations/` |
@@ -79,6 +86,29 @@ With the shipped YOLOE, `detector_for()` wraps `YoloE` in
 returns its boxes labelled with the target string; YOLOE's own threshold
 (0.05) applies and the pipeline's `confidence` is not applied again.
 
+### The local VLM service: where each fact lives
+
+The local VLM is a separate service with no domain of its own: its home is
+this spec, and its what and why are in the
+[architecture spec](../../perception/ARCHITECTURE.md) ("The local VLM: a
+separate service, asked before the cloud"). This spec owns the server, the
+driver, the client, their environment and how the service is run. What
+other domains own is linked, not copied:
+
+| Fact | Where |
+|---|---|
+| The server's routes and statuses; the client | "Interfaces" below |
+| Environment variables and constants | "Parameters and configuration" below |
+| Running it, checking it, holding it off | "Procedures" below |
+| What a score means: yes, no, undecided; the count of unable answers; when the cloud is asked at arrival | [policy](../policy/ENGINEERING.md), "Arrival through the local tier (3.80.C)" |
+| A frame's question, the box and the steer; the direction question | policy, "Every frame's question through the local tier (3.80.D)" and the paragraphs after it |
+| The tier held down while absent, the probe, `stats.local_vlm` | policy, "A local VLM held down while absent (3.152)" |
+| The `tier_local_*` keys' behaviour | policy, "Parameters and configuration" |
+| The twin's Local VLM row and the operator line | [twin](../twin/ENGINEERING.md), "Interfaces", the `GET /mission/status` row (`renderLocalVlm()`) |
+| Installing and updating the board's units; the env file; the service worktree | `tools/jetson/README.md` section 5 |
+| The board lock the benches run under | [operations](../operations/ENGINEERING.md), "Procedures" (the board-side check) |
+| Closing the client with a mission | [mission](../mission/ENGINEERING.md), "In-process" (`discard()`) |
+
 ## Interfaces
 
 **The local VLM service (3.80.B):** `service/local_vlm/server.py`, its
@@ -89,6 +119,17 @@ section 5). It keeps 3.78's `edgellm_identity` driver resident
 file, stopping rule and score, imported from
 `tools/jetson/bench_identity_llama.py` and `bench_identity_trt.py` so the
 service cannot drift from what was measured. `tools/jetson/bench_local_vlm.sh` (3.80.B's acceptance) installs its own `picar-local-vlm-bench` unit and env file, stops the production unit for the run and starts it again after only if it was running (3.76 P1: it deleted the production unit and rewrote its env file).
+* `GET /health` (open, never secret-gated): `service` (`local_vlm`),
+  `ready` (the driver is alive and has loaded), `alive`, `load_s` (null
+  until loaded), `served` (requests answered), and from `main()` `engines`
+  (the engine directory) and `pid`. It answers `ready: false` while the
+  engines load (the load runs on a thread, not the event loop).
+* Request body, both POST routes: `image_b64` (a base64 JPEG, at most
+  `MAX_IMAGE_B64` 4,000,000 characters; not base64 or not a JPEG is a 400),
+  `target` (1-200 characters), `deadline_s` (default 3.0, at most
+  `MAX_DEADLINE_S` 30), `box` (default false). Both are gated by
+  `require_secret()` (header `x-app-secret`), inert when `APP_SHARED_SECRET`
+  is unset. A 503 on either means not ready or the driver gone.
 * `POST /identity` `{image_b64, target, deadline_s}` (secret-gated):
   `status` `answered` with the raw `score`, or `timeout`, `unparsed`,
   `busy`, `error` (each an *unable* answer). 503: absent.
@@ -303,6 +344,51 @@ Known gaps for what that peak actually measures);
 `tools/jetson/bench_perception.py` `BUDGET_MS` 250, `DEFAULT_N` 60,
 `WARMUP` 3.
 
+**The local VLM service's environment** (read by `service/local_vlm/server.py`
+`main()`; on the board from `~/.vision-picar-local-vlm.env`, mode 600):
+
+| Variable | Default | Effect |
+|---|---|---|
+| `LOCAL_VLM_ENGINES` | required (a `KeyError` at start without it) | The engine directory, `~` expanded: its `llm` and `visual` subdirectories are the driver's two arguments, and the tokenizer file in `llm` decodes token ids. On the board `~/bench-378/ws91/q25VE/engines` (3.78's VE) |
+| `LOCAL_VLM_EDGELLM` | required | The Edge-LLM checkout, `~` expanded: the driver is `build/examples/llm/edgellm_identity` under it, and `build/libNvInfer_edgellm_plugin.so` is passed to the driver as `EDGELLM_PLUGIN_PATH`. On the board `~/bench-378/ell91` |
+| `LOCAL_VLM_DRIVER_LOG` | `os.devnull` | A file the driver's stderr is appended to. Unset in production (the unit's env file does not carry it); `tools/jetson/bench_local_vlm.sh` sets it in its own unit's env file |
+| `LOCAL_VLM_PORT` | 8005 (`DEFAULT_PORT`) | The port; the host is always `127.0.0.1` |
+| `APP_SHARED_SECRET` | unset (the gate is inert) | The secret `/identity` and `/direction` require |
+
+**The brain's side** (`control/brain_config.py`, `control/brain_server.py`):
+`LOCAL_VLM_URL` overrides `tier_local_vlm_url` (default `""`: no local
+tier); the board's `picar-stack` unit sets it to `http://127.0.0.1:8005`
+(3.108). `LOCAL_VLM_SECRET` is the secret the client sends; without it the
+brain's own `APP_SHARED_SECRET` is sent, to a loopback URL only
+(`_local_vlm_secret()`). The keys beside the URL, with their defaults in
+`control/brain_config.py`: `tier_local_no_below` 0.1, `tier_local_max_unable`
+2, `tier_local_timeout_s` 3.0, `tier_local_probe_s` 5.0,
+`tier_local_band_low` 0.5, `tier_local_cold_search_after` 1,
+`tier_local_direction` false. What each does is the
+[policy engineering spec](../policy/ENGINEERING.md)'s.
+
+**Local VLM constants:**
+
+| Constant | Value | Where | Meaning |
+|---|---|---|---|
+| `READY_TIMEOUT_S` | 300 s | server | how long the driver may take to load before it is a death (VE loads in about 40 s idle; 3.78.F saw 70 s under load) |
+| `DEATH_DELAY_S` | 0.5 s | server | between finding the driver gone and ending the process, so the request that found it gets its 503 |
+| `CANCEL_GRACE_S` | 3 s | driver | a driver that has not ended a cancelled request by then is killed |
+| `MIN_SEND_S` | 0.1 s | driver | with less than this left when the runtime frees, the answer is `timeout` and nothing is sent |
+| `DIRECTION_MAX_TOKENS`, `DIRECTION_MIN_MASS` | 8, 0.5 | driver | the direction reply's length, and the share of the deciding token's probability the three words must hold |
+| `TAIL_S` | 2 s | client | added to the deadline for the client's own HTTP timeout (the cancelled tail B6 measured) |
+| `PROBE_TIMEOUT_S` | 0.8 s | client | the health probe's phases, summed (3.152) |
+| `PATCH`, `MIN_PIXELS`, `MAX_PIXELS` | 28, 28 x 28 x 128, 28 x 28 x 512 | client | the board engines' image-token bounds, for `model_size()` (3.80.I) |
+
+The unit (`tools/jetson/systemd/picar-local-vlm.service`):
+`OOMScoreAdjust=1000` (`picar-stack` is -900), `OOMPolicy=continue`,
+`Restart=on-failure`, `RestartSec=30`, `StartLimitBurst=4` in
+`StartLimitIntervalSec=900`, `KillMode=mixed`,
+`ConditionPathExists=!/run/picar-vlm-hold`; the log is
+`~/.vision-picar-local-vlm.log`. 3.152.B kept the start limit: no
+restart-forever delay (30, 60, 120 s) met the stack's bars in a board
+crash loop.
+
 **Inventory constants** (`brain/inventory.py`, all `[PLACEHOLDER]`s left
 at their first values because 3.46's tuning half met every bar with
 them):
@@ -331,6 +417,59 @@ the yaml, 3.55),
 (to the second before 3.55, when two quick missions shared a key).
 
 ## Procedures
+
+### The local VLM service
+
+**On the board it runs under systemd**, enabled at boot since 3.108.
+`tools/jetson/install_services.sh` installs the unit, and enables and
+restarts it after the stack answers; installing, the env file and updating
+to a new `dev` are `tools/jetson/README.md` section 5's. It runs nowhere
+else: the driver and the engines exist only on the board.
+
+```bash
+systemctl is-active picar-local-vlm
+curl -s localhost:8005/health        # ready: true about 40 s after a start
+tail ~/.vision-picar-local-vlm.log
+```
+
+**By hand, on the board** (what the unit runs; stop the unit first, the
+port and the memory are the same):
+
+```bash
+LOCAL_VLM_ENGINES=~/bench-378/ws91/q25VE/engines \
+LOCAL_VLM_EDGELLM=~/bench-378/ell91 \
+    python -m service.local_vlm.server
+```
+
+**After its start limit** (four starts in 15 min) systemd leaves it
+stopped, and the brain reads it as absent until a person runs:
+
+```bash
+sudo systemctl reset-failed picar-local-vlm && sudo systemctl start picar-local-vlm
+```
+
+**Holding it off for a bench (3.108).** A board bench sources
+`tools/jetson/vlm_hold.sh` and calls `vlm_hold [log]` after its trap and
+before its first `systemctl isolate`, then `vlm_restore` in its teardown.
+`vlm_hold` notes whether the service was running, writes
+`/run/picar-vlm-hold` (the bench's pid and start time) and stops the
+service; while the flag exists the unit's condition makes every start a
+skipped start. `vlm_restore` removes the flag this bench holds and starts
+the service only if it was running (after `reset-failed`). `/run` is
+cleared at boot, so a killed bench never leaves the VLM off past a reboot;
+a flag whose owner is gone is taken over, and `install_services.sh` clears
+it. `vlm_hold` returns 2 when it cannot hold (a unit without the
+condition, a flag it cannot write, a service it cannot stop). Benches run
+under the board lock ([operations](../operations/ENGINEERING.md)).
+
+**Its acceptance bench:** `bash tools/jetson/bench_local_vlm.sh <out-dir>`
+on the board, under the board lock.
+
+**Off the board** nothing loads the model. `tests/test_local_vlm.py` runs
+the real server and driver class against `tests/fake_edgellm_driver.py`,
+which speaks the driver's protocol; `python -m tests.demo_local_tier` runs
+one simulator mission through the brain's HTTP API with that service
+answering.
 
 **Install and warm the models** (the canonical home of the warm-up command;
 other specs link here. Once per machine; the first run downloads
@@ -448,6 +587,10 @@ on `--seed 3463`.
 | `tests/test_perceive_lab.py` (22) | lab backends and `pipeline_for_spec()` on fakes |
 | `tests/test_bench_identity_llama.py` (21) | 3.48: the localisation score through a bare `[`, merged `[{` / `[]`, a code fence, whitespace before the brace (the smoke test's real reply), a bare object, an empty list; time to decision; the A10G prompt verbatim. 3.58: stopping at the decision changes no score on six reply shapes and stops at the deciding token, a bare `[` alone has not decided, the stream parser and its error chunk, `compare_decisions` |
 | `tests/test_review_376p1.py` (15) | 3.76 P1: the local VLM bench leaves the production unit and env file alone, stops and restores the production service, bounds its driver-death wait; the headroom runs refuse a busy :8090, the identity run stops the production VLM; an OOM kill counts once; identity headroom perception is read inside the window; a list reply is not a bare object; one refused call is one failed frame; a secret on a command line is not recorded; round 1: the headroom runs put a running VLM back, a missing `ss` refuses, a garbled reply or one of the wrong shape is one failed frame; round 2: the mission run waits for its own VLM before restoring the production one |
+| `tests/test_local_vlm.py` (28, counted 2026-11-21) | the service and `EdgeDriver` against `tests/fake_edgellm_driver.py`: the statuses, the deadline and the cancelled tail, one request at a time, the box, the direction, a dead or wedged driver, the 503 and the exit |
+| `tests/test_local_arrival.py` (28), `tests/test_tiered_local.py` (43) | the client and the policy's use of it: absent against unable, the thresholds, the unable count, the cloud after it (policy's rows describe them) |
+| `tests/test_local_vlm_down.py` (29) | 3.152: the tier held down, the probe, the state published |
+| `tests/test_ui_local_vlm.py` (2) | the twin's Local VLM row and the operator line |
 | `tests/test_review_376p2.py` (12) | 3.76 P2: right boxes a frame over the frames the judge read; an interrupted judge run stops paying and keeps its answers; a label-less box is a sighting; paid caches written in one step; a resumed CLIP run scores the rest of a split frame; two walk lists with one name keep separate embeddings; frame tools read frames only; room switches weighted by transitions; round 1: a second Ctrl-C during the wait keeps what landed, any error out of the loop stops the queue, two writers never share a temp file |
 | `tests/test_review_376p3.py` (14) | 3.76 P3: the matrix script reaches the box with its arguments; the pacing stub future answers `exception()`; `down` with an expired session does not claim no instance (both `ec2.sh`); a failed launch names the instance left running; the dead-man switch is armed before the corpus step and said only if armed; `steer_check` scores on the band the policy steers on; `spec_lint` survives a datetime `verified`, ignores headings in fences, checks links with titles |
 | `tests/test_identity_eval.py` (4) | 3.48: the cloud scored by `score_at` with silence never a YES nor a miss; today's labels win, flips and gaps counted; a YES on a confabulated frame is caught at its gate |
@@ -473,6 +616,20 @@ commit.
 
 ## Known gaps
 
+- **The local VLM: "configured" is not "up".** The brain's `/health` and
+  the metrics row report `tier_local_vlm` as whether `tier_local_vlm_url`
+  is non-empty, never whether the service answers. A VLM that is down
+  still reads as configured there, and its questions are going to the paid
+  cloud. The live state is `status.tier.stats.local_vlm` on
+  `GET /mission/status` (a tiered mission's; stale once it has ended).
+- **The local VLM runs only on the board**, so the automated suite covers
+  the server, the driver class and the client against a fake driver, never
+  the model; `main()` is excluded from coverage. Its accuracy and timing
+  are 3.78's and 3.80's board records.
+- **`LOCAL_VLM_ENGINES` and `LOCAL_VLM_EDGELLM` have no default**: a start
+  without either is a `KeyError` traceback, not a message.
+- **The local VLM's direction question is built and off**
+  (`tier_local_direction` false; 3.80.F's criterion F4 failed).
 - **The watch list (3.178) is not in the car's perception yet.** `brain_server` builds `pipeline_for(target)` without `watch` until 3.178 B4-B6 (the target unchanged on 2,261 frames; p90 and `MemAvailable` on the board) are met, and `_HaltGate` calls `_observe` before the tier perceives, so `Perception.watch` has no path into the inventory. In the simulator the inventory already names everything, so the report's `watch` block fills there only. A new list's first frame runs one text-encoder child per uncached text (5 for a new default list), not one: B5's first-frame bar may need a batched encode in `brain/text_encoder.py`.
 - **A watch-list item seen from one viewpoint is never reported, and a one-cell item can be ranged onto a nearer surface** (3.178.F). The report needs two independent looks, by design. The range is the nearest return within `RANGE_GATE_DEG` (2 deg), so under the simulator's 3 deg bearing noise a small item's sighting can land on a nearer edge, and through `RELABEL_M` another label's sighting can land on the item and take its looks as votes. On F's fresh run, 46 of 47 passes with two views reached a report (46 of 53 counting one-view glimpses). Two other range rules did not help on the tuning seeds; ranging by box extent is the open candidate.
 - **The inventory fills only in the simulator.** 3.46 C (a second,
