@@ -573,10 +573,12 @@ class Bridge(Node):
                 ph = keepout.phase_of(info.origin.position.x, info.origin.position.y)
                 if keepout.phase_moved(ph, self.mask_phase):
                     self.mask_phase = ph          # 3.193: redraw on the new lattice
-                    self.zones_vent = frozenset()  # 3.197: not the same cells; the step below re-vents
                     if self.zones or self.keepout_spots:
-                        if self.zones and pose is not None:
-                            self._zones_step(pose)     # review: boxed on the new lattice
+                        if self.zones:
+                            # review: boxed on the new lattice; with no pose
+                            # (3.197) the step still moves the vent's cells
+                            # onto the new lattice, so the mask keeps the way out
+                            self._zones_step(pose)
                         self.keepout_spots = keepout.live(self.keepout_spots, time.time())
                         self._publish_keepout(self.keepout_spots)
             elif not self._mask_res_warned:
@@ -1035,7 +1037,8 @@ class Bridge(Node):
             # review: a zone re-posted with another shape starts with its margin
             same = {z["id"] for z in zones for o in self.zones if o["id"] == z["id"] and o["poly"] == z["poly"]}
             self.zones_bare &= same
-            self.zones_vent = frozenset()        # 3.197: a new set is vented afresh
+            if same != {z["id"] for z in zones} or len(zones) != len(self.zones):
+                self.zones_vent = frozenset()    # 3.197: a changed set is vented afresh (review: not a re-post)
             self.zones = zones
             self.zones_fresh = {z["id"] for z in zones}
             self._zones_step(pose)

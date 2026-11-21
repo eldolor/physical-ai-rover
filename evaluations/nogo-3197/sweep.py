@@ -128,7 +128,7 @@ def zone_points_lethal(zs, state, phase, pose, rng, n=60):
     m = drawn_mask(zs, state, phase)
     global PH
     PH = phase
-    bad = 0
+    bad, tested = 0, 0
     for z in zs:
         if z["id"] in state["suspended"]:
             continue
@@ -138,9 +138,10 @@ def zone_points_lethal(zs, state, phase, pose, rng, n=60):
             x, y = rng.uniform(min(xs), max(xs)), rng.uniform(min(ys), max(ys))
             if keepout.zone_distance(z, x, y) >= 0 or math.hypot(x - pose[0], y - pose[1]) <= FAR_M:
                 continue
+            tested += 1
             if not lethal(m, math.floor((x - phase[0]) / RES), math.floor((y - phase[1]) / RES)):
                 bad += 1
-    return bad
+    return bad, tested
 
 
 def sweep_s1(rng):
@@ -148,7 +149,7 @@ def sweep_s1(rng):
     inside the zone to 0.04 m outside its drawn (grown) edge, around the
     whole boundary (edges and corners): 6 x 4 x 500 = 12,000."""
     rec = {"positions": 0, "boxing_suspensions": 0, "boxing_suspensions_outside": 0,
-           "cannot_plan_out": 0, "vents": 0, "vent_cells_max": 0, "vent_far_m_max": 0.0, "zone_points_unlethal": 0,
+           "cannot_plan_out": 0, "vents": 0, "vent_cells_max": 0, "vent_far_m_max": 0.0, "zone_points_unlethal": 0, "zone_points_tested": 0,
            "by_heading": {}}
     for h in HEADINGS:
         hb = rec["by_heading"].setdefault(str(h), {"positions": 0, "boxing_suspensions": 0})
@@ -180,7 +181,9 @@ def sweep_s1(rng):
                     n, far = vent_far(zs, st, (x, y), phase)
                     rec["vent_cells_max"] = max(rec["vent_cells_max"], n)
                     rec["vent_far_m_max"] = round(max(rec["vent_far_m_max"], far), 4)
-                    rec["zone_points_unlethal"] += zone_points_lethal(zs, st, phase, (x, y), rng)
+                    bad, tested = zone_points_lethal(zs, st, phase, (x, y), rng)
+                    rec["zone_points_unlethal"] += bad
+                    rec["zone_points_tested"] += tested      # review: 0 unlethal of 0 tested is no result
     return rec
 
 

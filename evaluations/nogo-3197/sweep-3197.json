@@ -9,6 +9,7 @@
   "vent_cells_max": 5,
   "vent_far_m_max": 0.2265,
   "zone_points_unlethal": 0,
+  "zone_points_tested": 37842,
   "by_heading": {
    "0.0": {
     "positions": 2000,

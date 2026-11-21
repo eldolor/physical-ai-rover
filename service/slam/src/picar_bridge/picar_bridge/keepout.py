@@ -546,8 +546,9 @@ def _escapes(grid: dict, start: tuple, holes=(), reach: int = VENT_REACH_CELLS) 
 def _cheapest_vent(grid: dict, start: tuple, reach: int = VENT_REACH_CELLS):
     """The drawn cells on the cheapest 4-connected path from `start` to a
     cell `reach` away (each drawn cell costs its grid cost, an undrawn one
-    nothing; fewer steps break ties), plus `start` itself when drawn; or
-    None when that is more than VENT_MAX_CELLS cells."""
+    nothing; fewer steps break ties), plus `start` itself when drawn
+    (_vent applies VENT_MAX_CELLS). None only when no cell `reach` away is
+    in the grid's window (never, for a window of radius `reach` or more)."""
     import heapq
     si, sj = start
     best = {start: (0, 0)}
@@ -579,7 +580,7 @@ def _cheapest_vent(grid: dict, start: tuple, reach: int = VENT_REACH_CELLS):
         c = prev[c]
     if start in grid:
         cells.add(start)
-    return frozenset(cells) if len(cells) <= VENT_MAX_CELLS else None
+    return frozenset(cells)
 
 
 def _vent(drawn: list, pose, phase, vent: frozenset):
@@ -605,12 +606,29 @@ def _vent(drawn: list, pose, phase, vent: frozenset):
     if not vent and _escapes(grid, start):
         return frozenset(), set()
     new = _cheapest_vent(grid, start)
-    if new is not None:
+    if new is not None and len(new) <= VENT_MAX_CELLS:
         return new, set()
-    # no small vent: D4's rule, as before -- every zone drawing one of the
-    # robot's five cells is left out whole
-    by = _boxing(near, _five(x, y, phase))
-    return frozenset(), {z["id"] for zs in by for z in zs}
+    # no small vent: D4's whole-zone rule, as before, for the zones the
+    # cheapest way out runs through (review: not "any of the five cells",
+    # which could name a zone that blocks nothing, or none at all)
+    cells = new or frozenset()
+    return frozenset(), {z["id"] for z in near
+                         if any(_touches(_drawn(z), phase[0] + i * RES_M, phase[1] + j * RES_M, RES_M)
+                                for i, j in cells)}
+
+
+def _relattice(cells, old, new) -> frozenset:
+    """Cells of lattice `old` as the cells of lattice `new` they overlap (a
+    phase move: review, keeping the way out rather than dropping it until the
+    next pose)."""
+    out = set()
+    for i, j in cells:
+        x0, y0 = old[0] + i * RES_M + EDGE_EPS_M, old[1] + j * RES_M + EDGE_EPS_M
+        x1, y1 = x0 + RES_M - 2 * EDGE_EPS_M, y0 + RES_M - 2 * EDGE_EPS_M
+        for a in range(math.floor((x0 - new[0]) / RES_M), math.floor((x1 - new[0]) / RES_M) + 1):
+            for b in range(math.floor((y0 - new[1]) / RES_M), math.floor((y1 - new[1]) / RES_M) + 1):
+                out.add((a, b))
+    return frozenset(out)
 
 
 def step(zones: list, state: dict, pose, phase=(0.0, 0.0), fresh=()) -> dict:
@@ -623,8 +641,9 @@ def step(zones: list, state: dict, pose, phase=(0.0, 0.0), fresh=()) -> dict:
     mask(holes=) leaves undrawn."""
     susp0, bare0 = set(state.get("suspended") or ()), set(state.get("bare") or ())
     vent0 = frozenset(state.get("vent") or ())
-    if vent0 and phase_moved(state.get("vent_phase") or (0.0, 0.0), phase):
-        vent0 = frozenset()                        # a new lattice: the cells are not the same cells
+    old = state.get("vent_phase") or (0.0, 0.0)
+    if vent0 and phase_moved(old, phase):
+        vent0 = _relattice(vent0, old, phase)      # a new lattice: the cells it overlaps
     off = margins_off(zones, bare0, susp0, pose, phase, fresh=fresh)
     view = bare(zones, off)
     after = suspend(view, susp0, pose, fresh, phase=phase, boxed=False)

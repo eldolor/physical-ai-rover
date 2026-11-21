@@ -80,7 +80,8 @@ def test_a_robot_dev_switched_a_zone_off_for_gets_a_vent_instead(heading):
         assert S.plans_out(m, x, y, phase), (x, y)
         n, far = S.vent_far(zs, st, (x, y), phase)
         assert far <= S.FAR_M
-        assert S.zone_points_lethal(zs, st, phase, (x, y), random.Random(1)) == 0
+        bad, tested = S.zone_points_lethal(zs, st, phase, (x, y), random.Random(1))
+        assert bad == 0 and tested > 0
 
 
 def test_a_diagonal_way_out_between_two_zones_is_vented():
@@ -141,6 +142,41 @@ def test_a_new_lattice_drops_the_old_vent():
     st2 = keepout.step(zs, st, cases[0], (0.031, 0.022))
     assert st2["vent_phase"] == (0.031, 0.022)
     assert S.plans_out(S.drawn_mask(zs, st2, (0.031, 0.022)), *cases[0], (0.031, 0.022))
+
+
+def test_a_vent_survives_a_phase_move_with_no_pose():
+    """Review: the bridge redraws on a new lattice even with no pose; the
+    vent's cells move onto it (every new cell they overlap) and the robot can
+    still plan out of the mask published then."""
+    phase, new = (0.013, 0.037), (0.031, 0.022)
+    zs, cases = _boxed_cases(45.0, phase, want=5, seed=9)
+    for x, y in cases:
+        st = keepout.step(zs, {}, (x, y), phase)
+        st2 = keepout.step(zs, st, None, new)
+        assert st2["vent"] and st2["vent_phase"] == new and st2["suspended"] == set()
+        assert S.plans_out(S.drawn_mask(zs, st2, new), x, y, new), (x, y)
+
+
+def test_a_re_post_of_the_same_zones_keeps_the_vent(bridge_mod, monkeypatch):
+    phase = (0.013, 0.037)
+    zs, cases = _boxed_cases(45.0, phase, want=1)
+    b = bridge_mod.Bridge()
+    b.slam_state = "ready"
+    b.mask_phase = phase
+    zone = {"id": "z", "poly": [list(p) for p in zs[0]["poly"]]}
+    monkeypatch.setattr(b, "_pose_in", lambda frame: {"x_m": 3.0, "y_m": 3.0, "age_s": 0.1})
+    b.set_zones({"zones": [zone], "session": b.session})
+    monkeypatch.setattr(b, "_pose_in", lambda frame: {"x_m": cases[0][0], "y_m": cases[0][1], "age_s": 0.1})
+    b._watch_zones()
+    vent = b.zones_vent
+    assert vent and b.zone_events["vents"] == 1
+    # a re-post with the pose unknown (with a fresh pose, 3.161's "arrives
+    # within LEAVE_M" rule leaves the zone out whole, as before)
+    monkeypatch.setattr(b, "_pose_in", lambda frame: None)
+    b.set_zones({"zones": [zone], "session": b.session})
+    assert b.zones_vent == vent and b.zone_events["vents"] == 1
+    b.set_zones({"zones": [{**zone, "id": "y"}], "session": b.session})    # a changed set
+    assert b.zones_vent == frozenset()
 
 
 def test_no_small_vent_falls_back_to_d4s_whole_zone_rule(monkeypatch):
@@ -238,7 +274,7 @@ def test_the_sweeps_met_v1_to_v7():
     assert new["S5_two_zones"]["boxing_suspensions"] <= 510                                   # V4
     assert new["S6_walks"]["steps"] == 10000 and new["S6_walks"]["boxing_suspensions"] == 0   # V5
     assert new["S1"]["vent_cells_max"] <= 10 and new["S1"]["vent_far_m_max"] <= 0.60          # V6
-    assert new["S1"]["zone_points_unlethal"] == 0
+    assert new["S1"]["zone_points_unlethal"] == 0 and new["S1"]["zone_points_tested"] > 10000
     assert new["S7_jitter"]["flaps"] == 0                                                     # V7
 
 

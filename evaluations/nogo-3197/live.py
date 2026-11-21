@@ -55,9 +55,11 @@ if __name__ == "__main__":
     try:
         L5.main(sys.argv[1])
     finally:
-        with open(sys.argv[1]) as fh:
-            res = json.load(fh)
-        res["start_turn_deg"] = os.environ.get("SIM_START_TURN_DEG")
-        with open(sys.argv[1], "w") as fh:
-            json.dump(res, fh, indent=1)
-        print({"start_turn_deg": res["start_turn_deg"]})
+        # review: never hide main()'s own failure behind a missing file
+        if os.path.exists(sys.argv[1]):
+            with open(sys.argv[1]) as fh:
+                res = json.load(fh)
+            res["start_turn_deg"] = os.environ.get("SIM_START_TURN_DEG")
+            with open(sys.argv[1], "w") as fh:
+                json.dump(res, fh, indent=1)
+            print({"start_turn_deg": res["start_turn_deg"]})
