@@ -40,6 +40,8 @@ import sweep                                             # noqa: E402
 
 HOUSE = "scaled_house"
 LIMIT_S = 600
+VOLUME_K = live.VOLUME
+VOLUME_R = VOLUME_K + "-r"
 
 
 def _clients():
@@ -103,6 +105,71 @@ def _wait_saved(bridge, before, limit=60):
     return bridge.get("/health").json().get("map")
 
 
+def _time_to_held(robot, n, t0, limit=20.0):
+    """K2': seconds from `t0` until the robot server's copy and the bridge
+    behind it (its GET /world/nogo) both hold `n` zones; None past `limit`."""
+    last = {}
+    while time.time() - t0 < limit:
+        try:
+            last = robot.get("/world/nogo").json()
+        except Exception:  # noqa: BLE001 -- still coming up
+            last = {}
+        b = last.get("bridge") if isinstance(last.get("bridge"), dict) else {}
+        if len(last.get("zones") or []) == n and b.get("zones") == n:
+            return {"s": round(time.time() - t0, 1), "copy": n, "bridge": n}
+        time.sleep(0.5)
+    b = last.get("bridge") if isinstance(last.get("bridge"), dict) else {}
+    return {"s": None, "copy": len(last.get("zones") or []), "bridge": b.get("zones")}
+
+
+def _keeper_log():
+    """The brain's no-go lines (the keeper's sends and failures)."""
+    try:
+        with open(os.path.join(de.RUN_DIR or de.LOGDIR, "explore_brain.log")) as fh:
+            return [ln.strip()[:240] for ln in fh if "no-go zones" in ln]
+    except OSError as e:
+        return [f"(no log: {e})"]
+
+
+def _r_live(res):
+    """The third session's R check, live: a find with a zone over the
+    mission's start (its dock; no saved dock yet on a fresh map), stopped
+    mid-mission; the copy and the bridge hold the stored set within 5 s."""
+    live.VOLUME = VOLUME_R
+    subprocess.run(["docker", "volume", "rm", VOLUME_R], capture_output=True)
+    robot = de.stack(HOUSE)
+    brain, bridge = _clients()
+    p, h = _wait_pose(robot)
+    v = brain.get("/mission/nogo").json()
+    for z in sweep.place_zones(HOUSE, 0):
+        v = brain.post("/mission/nogo", json={"frame_id": v["frame_id"], "rev": v["rev"], "op": "add",
+                                              "zone": {k: z[k] for k in ("x0", "y0", "x1", "y1")}}).json()
+    r = brain.post("/mission/nogo", json={"frame_id": v["frame_id"], "rev": v["rev"], "op": "add",
+                                          "zone": {"x0": p["x_m"] - 0.4, "y0": p["y_m"] - 0.4,
+                                                   "x1": p["x_m"] + 0.4, "y1": p["y_m"] + 0.4}})
+    out = {"frame_id": p.get("frame_id"), "dock_zone_add": r.status_code}
+    v = brain.get("/mission/nogo").json()
+    n = len(v.get("zones") or [])
+    out["stored"] = n
+    out["held_before_start"] = _time_to_held(robot, n, time.time(), limit=10)
+    s = brain.post("/mission/start", json={"target_object": de.TARGET, "policy": "explore",
+                                           "max_steps": 200, "mission_time_limit_s": LIMIT_S})
+    out["start"] = s.status_code
+    time.sleep(12)
+    st = brain.get("/mission/status").json()
+    out["running_at_stop"] = st.get("running")
+    out["dock_refused"] = ((st.get("explore") or {}).get("nogo") or {}).get("dock_refused")
+    held = robot.get("/world/nogo").json()
+    out["copy_before_stop"] = len(held.get("zones") or [])
+    t0 = time.time()
+    out["stop"] = brain.post("/mission/stop").status_code
+    out["held_after_stop"] = _time_to_held(robot, n, t0, limit=5)
+    out["keeper_log"] = _keeper_log()
+    res["r_live"] = out
+    _teardown()
+    live.VOLUME = VOLUME_K
+
+
 def _teardown():
     subprocess.run(["docker", "rm", "-f", de.CONTAINER], capture_output=True)
     de._kill_ports()
@@ -115,6 +182,8 @@ def main(out):
     live._with_volume()
     res = {"house": HOUSE, "image": os.environ.get("ROS_IMAGE"), "volume": live.VOLUME}
     try:
+        if os.environ.get("REMAP_LIVE_R", "1") == "1":
+            _r_live(res)
         # ---- stack 1 ----
         robot = de.stack(HOUSE)
         brain, bridge = _clients()
@@ -132,13 +201,16 @@ def main(out):
         before = json.dumps(bridge.get("/health").json().get("map"), sort_keys=True)
         s1["find"] = _find(robot, brain, zones)
         s1["map_after_find"] = _wait_saved(bridge, before)
+        s1["keeper_log"] = _keeper_log()
         res["stack1"] = s1
         _teardown()
         # ---- stack 2 ----
         robot = de.stack(HOUSE)
+        t_up = time.time()
         brain, bridge = _clients()
+        k2_start = _time_to_held(robot, len(zones), t_up)
         p, h = _wait_pose(robot)
-        s2 = {"frame_id_reload": p.get("frame_id"), "slam": (h.get("slam") or {}).get("state"),
+        s2 = {"k2_after_start": k2_start, "frame_id_reload": p.get("frame_id"), "slam": (h.get("slam") or {}).get("state"),
               "reload": (h.get("slam") or {}).get("reload"), "map": h.get("map")}
         time.sleep(2)
         s2["zones_after_start"] = _zones(brain, bridge)
@@ -156,6 +228,7 @@ def main(out):
         if not s2["remap_reached_mapping"]:    # K3: no re-map, Z4's re-map not run
             res["stack2"] = s2
             return
+        s2["k2_after_remap"] = _time_to_held(robot, len(zones), time.time())
         s2["remap_health_slam"] = {k: v for k, v in (hh.get("slam") or {}).items() if k != "reload"}
         time.sleep(2)
         s2["frame_id_after_remap"] = robot.get("/world/pose").json().get("frame_id")
@@ -164,14 +237,17 @@ def main(out):
         s2["find"] = _find(robot, brain, zones)
         s2["map_after_find"] = _wait_saved(bridge, before)
         s2["zones_after_find"] = _zones(brain, bridge)
+        s2["keeper_log"] = _keeper_log()
         res["stack2"] = s2
         _teardown()
         # ---- stack 3 ----
         robot = de.stack(HOUSE)
+        t_up = time.time()
         brain, bridge = _clients()
+        k2_start = _time_to_held(robot, len(zones), t_up)
         p, h = _wait_pose(robot)
         time.sleep(3)
-        res["stack3"] = {"frame_id_reload": p.get("frame_id"), "slam": (h.get("slam") or {}).get("state"),
+        res["stack3"] = {"k2_after_start": k2_start, "keeper_log": _keeper_log(), "frame_id_reload": p.get("frame_id"), "slam": (h.get("slam") or {}).get("state"),
                          "reload": (h.get("slam") or {}).get("reload"), "map": h.get("map"),
                          "zones_after_start": _zones(brain, bridge)}
     finally:
