@@ -200,7 +200,8 @@ def test_a_charge_trip_does_not_spend_a_side(rule):
     runner, _, _ = _runner("washer")
     a = runner.agent
     a._recall_tried[(1.0, 1.0)] = [(1.5, 1.0)]
-    a._goal = {"kind": "recall", "recall": (1.0, 1.0), "x_m": 1.5, "y_m": 1.0, "sent_at": 0.0}
+    a._goal = {"kind": "recall", "recall": (1.0, 1.0), "x_m": 1.5, "y_m": 1.0, "sent_at": 0.0,
+               "recall_spot": (1.5, 1.0)}
     a.set_aside()
     assert a.recall == [(1.0, 1.0)] and a._recall_tried[(1.0, 1.0)] == []
 
@@ -211,3 +212,41 @@ def test_other_side_is_ninety_degrees_round_the_place():
     assert ex.ExploreAgent._other_side(-0.5, 0.0, *t, [(0.5, 0.0)])
     assert not ex.ExploreAgent._other_side(0.4, 0.3, *t, [(0.5, 0.0)])
     assert ex.ExploreAgent._other_side(0.4, 0.3, *t, [(0.0, 0.0)])   # a spot on the place has no side
+
+
+def test_review_unknown_band_floor_waits_for_another_side_then_spends(rule, monkeypatch):
+    """Review: floor on the other side not mapped yet is waited for,
+    RECALL_SIDE_WAIT_S at most, then the place is spent."""
+    rule("face")
+    runner, grid, nav = _runner("washer")
+    lx, ly = _far_floor(grid, nav)
+    a = runner.agent
+    a.recall_from([(lx, ly)])
+    a._recall_tried[(lx, ly)] = [(lx + 0.5, ly), (lx, ly + 0.5), (lx - 0.5, ly), (lx, ly - 0.5)]
+    t = [100.0]
+    a.clock = lambda: t[0]
+    a._recall_unlooked_at[(lx, ly)] = 100.0
+    monkeypatch.setattr(a, "_band_unknown", lambda x, y: True)
+    assert a._recall_goal(t[0]) is None and a.recall == [(lx, ly)]
+    t[0] += ex.RECALL_SIDE_WAIT_S
+    assert a._recall_goal(t[0]) is None and a.recall == []
+
+
+def test_review_band_unknown_reads_the_map():
+    runner, grid, nav = _runner("washer")
+    a = runner.agent
+    m = runner.world.get_map()
+    a._last_map = dict(m, cells=[-1] * len(m["cells"]))
+    assert a._band_unknown(2.0, 2.0)
+    a._last_map = dict(m, cells=[0] * len(m["cells"]))
+    assert not a._band_unknown(2.0, 2.0)
+
+
+def test_review_a_charge_trip_restores_a_queued_recall_face(rule):
+    rule("face")
+    runner, _, _ = _runner("washer")
+    a = runner.agent
+    a._recall_tried[(1.0, 1.0)] = [(1.5, 1.0)]
+    a._pending = [("FACE", (1.0, 1.0), 90, False, "recall")]
+    a.set_aside()
+    assert a.recall == [(1.0, 1.0)] and a._recall_tried[(1.0, 1.0)] == [] and a._pending == []

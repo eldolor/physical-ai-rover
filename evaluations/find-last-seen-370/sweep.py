@@ -56,15 +56,15 @@ def _nav(robot, nav):
     return inflated_nav_class()(robot)
 
 
-RULES = {"dev": None, "R1": ("face",), "R2": ("face", "nav")}   # 3.200
+RULES = {"dev": (), "R1": ("face",), "R2": ("face", "nav")}   # 3.200
 
 
 def _rule(rule):
-    """3.200: set explore's recall retry before a survey or find. `dev` sets
-    nothing, so this file also runs against a checkout without the rule."""
-    if RULES[rule] is not None:
-        import brain.explore as ex
-        ex.RECALL_RETRY = RULES[rule]
+    """3.200: set explore's recall retry before a survey or find, always
+    (review: a branch default must not leak into the `dev` arm). On a
+    checkout without the rule the attribute is set and never read."""
+    import brain.explore as ex
+    ex.RECALL_RETRY = RULES[rule]
 
 
 def _quiet():

@@ -168,9 +168,14 @@ RECALL_REFUSED_GAP_S = 3.0
 # 0.3 m over failed). At most RECALL_SIDES goals (a face where it stands counts
 # as one) per place per mission; the next one's band point lies at least
 # RECALL_SIDE_DEG round the place from every earlier one, or the place is spent.
-RECALL_RETRY: tuple = ("face",)
+# Off until 3.200.B's verdict ships one.
+RECALL_RETRY: tuple = ()
 RECALL_SIDES = 2
 RECALL_SIDE_DEG = 90.0
+# Review: no floor on another side on the map yet, but unknown cells in the
+# place's band: kept (frontiers may map that side) for at most this long after
+# the look failed, then spent -- or one place would hold the recall list.
+RECALL_SIDE_WAIT_S = 120.0
 # "Boxed in": fewer reachable stopping places than this around the robot.
 BOXED_CELLS = 40
 # 3.70 E3: a room goal aims at least this far inside the room's label where
@@ -415,6 +420,7 @@ class ExploreAgent(MissionAgent):
         self._recall_refused_at = None      # when that row began
         self._recall_refused_last = None    # its latest refusal
         self._recall_tried: dict = {}       # 3.200: place -> where each try stood (goal or pose)
+        self._recall_unlooked_at: dict = {} # 3.200: place -> when its look last failed
         self._aside_at: list = []           # 3.172.D: this choice's skips for a carried set-aside
         self._stood: set = set()            # 3.173.B: where the robot has stood, STOOD_M squares
         self._stood_in: set = set()         # Thermos 1: those once inside a small-room region
@@ -1168,9 +1174,12 @@ class ExploreAgent(MissionAgent):
             return self._do_pending()
         spot = self._band_point(pose, tx, ty, away=tried)
         if spot is None:
-            if tried and self._band_point(pose, tx, ty) is not None:
-                # 3.200: band floor there is, but none on another side: the
-                # same side again is 3.175.E's failed retry. Spent.
+            if tried and self._band_point(pose, tx, ty) is not None and not (
+                    self._band_unknown(tx, ty) and now - self._recall_unlooked_at.get(
+                        (tx, ty), now) < RECALL_SIDE_WAIT_S):
+                # 3.200: band floor there is, but none on another side (nor,
+                # after RECALL_SIDE_WAIT_S, unknown floor that might be one):
+                # the same side again is 3.175.E's failed retry. Spent.
                 self.recall.pop(0)
                 self._recall_refused, self._recall_refused_at = 0, None
                 self._event("recall_spent", at=[round(tx, 2), round(ty, 2)], tries=len(tried))
@@ -1186,6 +1195,7 @@ class ExploreAgent(MissionAgent):
             self._recall_refused, self._recall_refused_at = 0, None
             self._recall_tried[(tx, ty)] = tried + [spot]
             self._goal["recall"] = (tx, ty)
+            self._goal["recall_spot"] = spot
         else:
             last, self._recall_refused_last = self._recall_refused_last, now
             if self._recall_refused_at is None or (
@@ -1211,8 +1221,29 @@ class ExploreAgent(MissionAgent):
                 and place not in self.recall)
         if kept:
             self.recall.insert(0, place)
+            self._recall_unlooked_at[place] = self.clock()
         self._event("recall_unlooked", at=[round(place[0], 2), round(place[1], 2)],
                     why=why, tries=len(tried), kept=kept)
+
+    def _band_unknown(self, tx: float, ty: float) -> bool:
+        """3.200 review: any unknown cell within APPROACH_FAR_M of the place
+        on this tick's map (`_last_map`): a side frontiers may yet map."""
+        m = self._last_map
+        if not m or not m.get("usable") or not m.get("resolution_m"):
+            return False
+        res, w, h = m["resolution_m"], m["width"], m["height"]
+        r = int(math.ceil(APPROACH_FAR_M / res))
+        ci = int(math.floor((tx - m["origin_x_m"]) / res))
+        cj = int(math.floor((ty - m["origin_y_m"]) / res))
+        cells = m["cells"]
+        for j in range(max(0, cj - r), min(h, cj + r + 1)):
+            for i in range(max(0, ci - r), min(w, ci + r + 1)):
+                px = m["origin_x_m"] + (i + 0.5) * res
+                py = m["origin_y_m"] + (j + 0.5) * res
+                if (math.hypot(px - tx, py - ty) <= APPROACH_FAR_M
+                        and cells[j * w + i] not in (CELL_FREE, CELL_OCCUPIED)):
+                    return True
+        return False
 
     @staticmethod
     def _other_side(px: float, py: float, tx: float, ty: float, away) -> bool:
@@ -1989,8 +2020,17 @@ class ExploreAgent(MissionAgent):
             # its place was popped on send, so it goes back first.
             self.recall.insert(0, place)
             tried = self._recall_tried.get(place)
-            if tried:
-                tried.pop()                     # 3.200: nor does it spend a side
+            if tried and g.get("recall_spot") in tried:
+                tried.remove(g["recall_spot"])  # 3.200: nor does it spend a side
+        for item in self._pending:
+            # 3.200 review: a recall's face queued and not yet turned (its goal
+            # arrived) is unlooked too: its place goes back first, unspent.
+            if (isinstance(item, tuple) and item[0] == "FACE" and len(item) > 4
+                    and item[4] == "recall" and item[1] not in self.recall):
+                self.recall.insert(0, item[1])
+                tried = self._recall_tried.get(item[1])
+                if tried:
+                    tried.pop()
         self._approach = None           # or a re-sighting there sends no approach goal
         self._pending = []
         self._local_wait_since = None
