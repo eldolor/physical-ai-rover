@@ -412,6 +412,7 @@ class ExploreAgent(MissionAgent):
         self._seen_at: list = []            # 3.192.B: where this mission saw the target, latest last
         self._reseen = 0                    # 3.192.B: rounds of looking at them again
         self._carried: list = []            # 3.192.B: the recall's carried places (`recall_from`)
+        self._refused_at: list = []         # 3.192.B: places whose identity the cloud refused
         self._recall_refused = 0            # refusals in a row of recall[0]
         self._recall_refused_at = None      # when that row began
         self._recall_refused_last = None    # its latest refusal
@@ -933,6 +934,8 @@ class ExploreAgent(MissionAgent):
             return
         self._refusal_noted = True
         place = self._last_seen or self._approach
+        if place is None and self._reseen and self._goal is not None:
+            place = self._goal.get("recall")      # 3.192.B review: a look-again's own place
         if place is None:
             return
         while not self.retry.dropped(*place):
@@ -941,6 +944,7 @@ class ExploreAgent(MissionAgent):
         # 3.192.B: not the target -- never looked at again, nor any place of a
         # look-again round already handed to the recall (a carried place stays).
         far = lambda p: math.hypot(p[0] - place[0], p[1] - place[1]) > self.retry.radius_m  # noqa: E731
+        self._refused_at.append(tuple(place))
         self._seen_at = [p for p in self._seen_at if far(p)]
         if self._reseen:
             self.recall = [p for p in self.recall if far(p) or p in self._carried]
@@ -1063,8 +1067,22 @@ class ExploreAgent(MissionAgent):
     def _note_seen_at(self, tx: float, ty: float) -> None:
         """3.192.B: a sighting's place, one per retry radius (the latest)."""
         r = self.retry.radius_m
+        if any(math.hypot(p[0] - tx, p[1] - ty) <= r for p in self._refused_at):
+            return                  # review: the refused object, seen again, is still not it
         self._seen_at = [p for p in self._seen_at if math.hypot(p[0] - tx, p[1] - ty) > r]
         self._seen_at.append((tx, ty))
+
+    def _reseen_places(self, pose: dict) -> list:
+        """3.192.B: the places of a look-again round -- latest first, at most
+        RECALL_MAX, each with reachable floor beside it now (review: one with
+        none would hold the recall, and the round, on it)."""
+        out = []
+        for p in reversed(self._seen_at):
+            if len(out) == RECALL_MAX:
+                break
+            if self._band_point(pose, p[0], p[1]) is not None:
+                out.append(p)
+        return out
 
     def _reset_in_sight(self) -> None:
         self._in_sight_unfound, self._in_sight_at, self._in_sight_tick = 0, None, -1
@@ -1415,7 +1433,9 @@ class ExploreAgent(MissionAgent):
             self._event("resight", frontiers=len(frontiers), seen=len(self.seen))
             self.last_event = "the remembered place was out of date; searching the map by sight"
             return "WAIT", True, self.last_event
-        if self._reseen < RESEEN_ROUNDS and self._seen_at and not self._survey():
+        again = self._reseen_places(pose) \
+            if self._reseen < RESEEN_ROUNDS and self._seen_at and not self._survey() else []
+        if again:
             # 3.192.B: the target was seen this mission and lost (its sighting
             # given up or dropped by the retry rule), and the search ran out.
             # The places it was seen are looked at again from beside it, latest
@@ -1423,11 +1443,10 @@ class ExploreAgent(MissionAgent):
             # only on sightings made during the first. A carried place not yet
             # reached stays after them.
             self._reseen += 1
-            again = list(reversed(self._seen_at))[:RECALL_MAX]
             self.recall = again + [p for p in self.recall if p not in again]
-            self._seen_at = []
-            self._event("reseen", round=self._reseen,
+            self._event("reseen", round=self._reseen, kept_of=len(self._seen_at),
                         places=[[round(x, 2), round(y, 2)] for x, y in again])
+            self._seen_at = []
             self.last_event = "the search ran out; looking again where the target was seen"
             return "WAIT", True, self.last_event
         self.exhausted = True
@@ -2043,7 +2062,9 @@ class ExploreAgent(MissionAgent):
         everything learned stays."""
         g, self._goal = self._goal, None
         place = (g or {}).get("recall")
-        if place is not None and place not in self.recall:
+        if place is not None and place not in self.recall and not any(
+                math.hypot(place[0] - q[0], place[1] - q[1]) <= self.retry.radius_m
+                for q in self._refused_at):
             # 3.175.E review: a recall goal ended by charging is uncounted too;
             # its place was popped on send, so it goes back first.
             self.recall.insert(0, place)

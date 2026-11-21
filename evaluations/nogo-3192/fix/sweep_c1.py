@@ -52,6 +52,8 @@ if __name__ == "__main__":
     argv = sys.argv[1:]
     if "--chooser" in argv:
         i = argv.index("--chooser")
+        if i + 1 >= len(argv):
+            raise SystemExit("--chooser needs rule or rooms")
         os.environ["SWEEP2_CHOOSER"] = argv[i + 1]
         argv = argv[:i] + argv[i + 2:]
     _apply()

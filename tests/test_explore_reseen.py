@@ -25,7 +25,7 @@ from tests.test_explore import FakeNav
 from world.interface import CELL_FREE, CELL_OCCUPIED
 
 ROOT = Path(__file__).resolve().parents[1]
-RES, W, H = 0.05, 40, 28
+RES, W, H = 0.05, 80, 56   # a 4.0 x 2.8 m room
 
 
 def _sweep():
@@ -88,7 +88,7 @@ def test_a_place_seen_is_looked_at_again_before_the_end():
     agent._note_seen_at(1.5, 0.7)
     action, executed, detail = agent._choose_next(0.0)
     assert (action, executed) == ("WAIT", True) and "looking again" in detail
-    assert events[-1] == ("reseen", {"round": 1, "places": [[1.5, 0.7]]})
+    assert events[-1] == ("reseen", {"round": 1, "kept_of": 1, "places": [[1.5, 0.7]]})
     assert agent.recall == [(1.5, 0.7)]
     out = agent._recall_goal(0.0)                         # 3.172's recall goal: beside it
     assert out[0] == "GOAL" and agent._goal["kind"] == "recall"
@@ -156,3 +156,49 @@ def test_a_place_whose_identity_was_refused_is_never_looked_at_again(handed):
     if not handed:
         agent._choose_next(0.0)
         assert events[-1][0] == "reseen" and [1.5, 0.7] not in events[-1][1]["places"]
+
+
+def test_a_refused_object_seen_again_is_still_never_looked_at_again():
+    """Review: the detector keeps firing on the object the cloud refused."""
+    from brain.arrival import REFUSED
+    agent, events = _agent()
+    agent.sight_from = "perception"
+    agent._note_seen_at(1.5, 0.7)
+    agent._last_seen = (1.5, 0.7)
+    agent._note_refusal({"_arrival": {"state": REFUSED}})
+    agent._note_seen_at(1.52, 0.71)                        # the same chair leg, next frame
+    assert agent._seen_at == []
+    assert agent._choose_next(0.0)[0] == "STOP"
+    assert "reseen" not in [n for n, _ in events]
+
+
+def test_a_refusal_during_a_look_again_goal_takes_its_place():
+    """Review: a refusal with no sighting on record (`_last_seen` and
+    `_approach` None) names the look-again goal's own place."""
+    from brain.arrival import REFUSED
+    agent, events = _agent()
+    agent.sight_from = "perception"
+    agent._note_seen_at(1.5, 0.7)
+    agent._choose_next(0.0)
+    assert agent._recall_goal(0.0)[0] == "GOAL"
+    agent._last_seen = agent._approach = None
+    agent._note_refusal({"_arrival": {"state": REFUSED}})
+    agent._note_seen_at(1.5, 0.7)
+    assert agent._seen_at == []
+    agent.set_aside()                                      # a charge trip: not put back
+    assert (1.5, 0.7) not in agent.recall
+
+
+def test_a_place_with_no_floor_beside_it_does_not_hold_the_round():
+    """Review: a place no reachable floor stands beside is left out, so the
+    others still get their look."""
+    agent, events = _agent()
+    agent._note_seen_at(1.0, 0.7)
+    agent._note_seen_at(9.0, 9.0)                          # off the map: no floor beside it
+    agent._choose_next(0.0)
+    assert events[-1][0] == "reseen"
+    assert events[-1][1]["places"] == [[1.0, 0.7]] and events[-1][1]["kept_of"] == 2
+    agent, events = _agent()
+    agent._note_seen_at(9.0, 9.0)
+    assert agent._choose_next(0.0)[0] == "STOP"            # none reachable: no round spent
+    assert agent._reseen == 0
