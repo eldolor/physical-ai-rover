@@ -137,8 +137,8 @@ here to `docs/guides/MERGED-STATE.md`; open work only stays here.**
 
 **Waiting on the user**
 
-* **Deploys:** the twin is live from `dev` `413a806b` (2026-11-18, from a
-  cloud session; 26/26 files match). Cloud sessions can deploy the twin only:
+* **Deploys:** the twin is live from `dev` `b584df63` (2026-11-21, from a
+  cloud session; app.js parity, invalidation Completed). Cloud sessions can deploy the twin only:
   IAM user `vision-picar-deployer` (S3 put, invalidation, DescribeStacks).
   Each deploy still needs the user's go; confirm what ships.
 * **The board's brain is `dev` `bdcf782c`** (updated 2026-11-06 for 3.155's
