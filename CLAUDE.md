@@ -51,8 +51,8 @@ board, D500 lidar, OAK-D Lite, pan-tilt camera) carrying an **NVIDIA Jetson
 Orin Nano Super**. The Jetson runs the robot server, the brain (mission
 policy plus on-board perception) and a ROS 2 container (SLAM, nav2,
 `ros2_control`). A vision LLM on Amazon Bedrock is called only on triggers.
-The Jetson is in hand and measured; the Rover's Oct 19 - Nov 11 window has passed; no arrival
-is recorded as of 2026-11-21.
+The Jetson is in hand and measured; the Rover is in hand (the user,
+2026-11-21); 3b's on-arrival list is the work.
 `docs/ARCHITECTURE.md` is the system on one page.
 
 **Development is simulation-first:** build it, prove it with data in the
@@ -181,9 +181,9 @@ here to `docs/guides/MERGED-STATE.md`; open work only stays here.**
 * Not built: `brain/planner.py`, S7 (chaos and soak), a Stage 1 vision
   re-run on the lit renderer.
 
-**Waiting on the Rover** (window passed; no arrival recorded, 2026-11-21)
+**The Rover** (in hand, the user 2026-11-21; none of this is done yet)
 
-* **Before it arrives:** check with calipers that the devkit's mounting
+* **Before mounting:** check with calipers that the devkit's mounting
   holes match the Rover deck's 86 x 58 mm pattern
   (`UGV-ROVER-MOUNTING.md`); fallback is an adapter plate. Waveshare
   request 258472 (sent 2026-10-06) is open on the same question.
