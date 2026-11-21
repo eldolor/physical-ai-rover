@@ -366,7 +366,7 @@ Jetson may be needed, depending on a power test with the motors running.
 ## Where it stands
 
 The software is built and measured in simulation. The robot computer is
-tested. The robot body has not yet arrived (as of 21 Nov 2026).
+tested. The robot body's delivery window has passed and no arrival is recorded as of 21 Nov 2026.
 
 | When | Milestone |
 |---|---|
