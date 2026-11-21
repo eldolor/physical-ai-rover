@@ -38,6 +38,7 @@ WATCH_S = 6.0
 HOLE_BAR_S = 0.2
 FOUND_RADIUS_M = 1.0         # criterion 4(b)
 FOUND_RATE_BAR = 0.90        # criterion 4(a)
+MISSION_LIMIT_S = 1260.0     # criterion 4(c), amendment 1
 RECOVERY_BAR_S = 90.0        # criterion 3
 UNFIRED_BAR = 0.10           # criterion 1
 MIN_FAULTS = 40              # criterion 1
@@ -118,6 +119,8 @@ def fault_measures(f: dict, tr: Truth, missions: dict) -> dict:
         holes.append(m.gaps_s(rows, t, t1))
         if kind == "K11" and f.get("step1_at") is not None:
             ms["travel_after_hang_cm"] = m.travel_cm(rows, f["step1_at"] + 1.1, t1)
+            ms["wheels_zero_s"] = m.wheels_zero_s(rows, f["step1_at"])     # criterion 6, reported
+        ms["end_reason"] = mis.get("end_reason") or mis.get("error")
     ms["outcome"] = mis.get("outcome")
     ms["how"] = mis.get("how")
     ms["hung"] = bool(mis.get("hung"))
@@ -128,14 +131,19 @@ def fault_measures(f: dict, tr: Truth, missions: dict) -> dict:
 def judge_fault(f: dict, ms: dict, cfg: dict, proxy_rows: Optional[list] = None) -> dict:
     """The fault's own bar (the section's table). Every failed bar is a reason."""
     kind, r = f["kind"], []
+    valid = True
 
     def bar(ok, why):
         if not ok:
             r.append(why)
 
-    valid = True
+    if f.get("errored"):
+        return {"pass": False, "valid": False, "reasons": [f"the harness errored: {f['errored']}"]}
     if f.get("fault_at") is None:
         return {"pass": False, "valid": False, "reasons": ["never fired"]}
+    if kind == "K11" and f.get("ended_before_step1"):
+        valid = False
+        r.append("invalid: the mission ended before its first step (the hang was never reached)")
     if kind in ("K1", "K2", "K3", "K4", "K5", "K6") and ms.get("forward_at_fault") is not True:
         valid = False
         r.append("invalid: the board was not driving forward when the fault fired")
@@ -156,7 +164,13 @@ def judge_fault(f: dict, ms: dict, cfg: dict, proxy_rows: Optional[list] = None)
     if kind in ("K7", "K8"):
         bar(not ms.get("hung") and ms.get("outcome") not in (None, "lost", "harness_timeout"),
             f"the mission did not end on its own ({ms.get('outcome')}, hung={ms.get('hung')})")
-        bar(ms.get("outcome") != "failed", "the mission ended failed under the link fault")
+        # The row: "not `failed` by an unhandled error". A designed end -- B3.2's
+        # consecutive-failure budget ("... N times in a row") or B3.3's dead-man
+        # ("brain loop hung") -- is handled; anything else that ends failed is not.
+        why = str(ms.get("end_reason") or "")
+        handled = "times in a row" in why or "brain loop hung" in why
+        bar(ms.get("outcome") != "failed" or handled,
+            f"the mission ended failed, not by a designed guard: {why[:160]!r}")
         bar(ms.get("contacts") == 0, f"{ms.get('contacts')} contact samples")
     if kind == "K8":
         five = _five_xx(proxy_rows or [], f.get("fault_at"), f.get("cleared_at"))
@@ -329,7 +343,8 @@ def score(out: Path) -> dict:
 
     # Criterion 4
     tgt = target_m(run["house"], run["target"])
-    rate_set = [mm for mm in missions_l if not set(mm.get("tags") or []) & set(EXCLUDE_FROM_RATE)]
+    rate_set = [mm for mm in missions_l if not set(mm.get("tags") or []) & set(EXCLUDE_FROM_RATE)
+                and mm.get("how") != "preempted"]
     found = [mm for mm in rate_set if mm.get("outcome") == "found"]
     rate = len(found) / len(rate_set) if rate_set else None
     c4, wrong = [], []
@@ -352,7 +367,7 @@ def score(out: Path) -> dict:
         c4.append(f"(b) {len(wrong)} wrong Found: " + "; ".join(wrong[:5]))
     hung = [mm.get("id") for mm in missions_l if mm.get("hung")]
     if hung:
-        c4.append(f"(c) {len(hung)} missions hung past {600} s: {hung[:5]}")
+        c4.append(f"(c) {len(hung)} missions hung past {MISSION_LIMIT_S} s: {hung[:5]}")
     outcomes: dict = {}
     for mm in rate_set:
         outcomes[mm.get("outcome")] = outcomes.get(mm.get("outcome"), 0) + 1
@@ -365,6 +380,16 @@ def score(out: Path) -> dict:
                                                         if "t1" in mm]) if rate_set else None,
                  "fails": c4}
 
+    # Amendment 1: true path per mission-minute, clean against recovery missions (reported)
+    def per_min(group):
+        vals = [m.travel_cm(tr.window(mm["t0"], mm["t1"]), mm["t0"], mm["t1"]) / max(1e-6, (mm["t1"] - mm["t0"]) / 60)
+                for mm in group if "t1" in mm and mm["t1"] - mm["t0"] >= 60]
+        return {"n": len(vals), "median_cm_per_min": round(statistics.median(vals), 1) if vals else None}
+    clean = [mm for mm in rate_set if "recovery" not in (mm.get("tags") or [])
+             and not set(mm.get("tags") or []) & {"K7", "K8"}]
+    recov = [mm for mm in rate_set if "recovery" in (mm.get("tags") or [])]
+    res["c4"]["path_per_min"] = {"clean": per_min(clean), "recovery": per_min(recov)}
+
     # Criterion 5
     rss = read_jsonl(out / "rss.jsonl")
     mem = memory(rss, run.get("t_start", sp[0] if sp else 0), end.get("t_end", sp[1] if sp else 0))
@@ -373,7 +398,7 @@ def score(out: Path) -> dict:
     # Criterion 6 (reported)
     lat = {}
     for p in per:
-        if p["kind"] in ("K1", "K2", "K6") and p["measures"].get("wheels_zero_s") is not None:
+        if p["kind"] in ("K1", "K2", "K6", "K11") and p["measures"].get("wheels_zero_s") is not None:
             lat.setdefault(p["kind"], []).append(p["measures"]["wheels_zero_s"])
     late = [((f.get("health_after") or {}).get("wheel_loop") or {}).get("late_ticks") for f in fired]
     res["c6"] = {"stop_latency_s": {k: {"n": len(v), "median": statistics.median(v), "max": max(v)}

@@ -44,6 +44,7 @@ from urllib.parse import urlsplit
 
 HOP = {"connection", "keep-alive", "proxy-connection", "transfer-encoding", "te", "trailer",
        "upgrade", "content-length", "host"}
+OWN = {"date", "server"}         # send_response writes its own: never two of each
 DUP_DELAY_S = 0.05
 UPSTREAM_TIMEOUT_S = 60.0
 
@@ -128,7 +129,7 @@ def make_handler(state: State, upstream: str, log):
         def _reply(self, code: int, headers, body: bytes) -> None:
             self.send_response(code)
             for k, v in headers:
-                if k.lower() not in HOP:
+                if k.lower() not in HOP | OWN:
                     self.send_header(k, v)
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
