@@ -153,7 +153,7 @@ def test_a_gap_that_is_not_a_positive_number_is_refused():
 
 def test_the_code_still_makes_the_recorded_rows():
     """The records below pin the record; this pins the code to it: mission 0
-    of seed 3462, key off, is A's dev row, and with the gate at 0.3 it is the
+    of seed 3462, key off, is A's dev row, and at the shipped EDGE_GAP_M it is the
     tuning arm's row (review: a frozen file cannot catch a regression)."""
     import importlib.util
     spec = importlib.util.spec_from_file_location("phantom_sweep_3204_run", EVAL / "sweep.py")
@@ -161,7 +161,7 @@ def test_the_code_still_makes_the_recorded_rows():
     spec.loader.exec_module(mod)
     first = lambda name: json.loads((EVAL / name).read_text().splitlines()[0])
     assert mod.mission(0, False) == first("dev-clean.jsonl")
-    assert mod.mission(0, False, edge=0.3) == first("B/tune-clean-edge0.3.jsonl")
+    assert mod.mission(0, False, edge=inv.EDGE_GAP_M) == first("B/tune-clean-edge1.0.jsonl")
 
 
 def test_e5_key_off_is_a_row_for_row():
@@ -233,5 +233,5 @@ def test_e6_key_off_rows_are_devs(sweep):
     out = subprocess.run([sys.executable, str(EVAL / "e6_compare.py"),
                           str(EVAL / "B" / "e6" / f"dev-{sweep}"),
                           str(EVAL / "B" / "e6" / f"keyoff-{sweep}")],
-                         capture_output=True, text=True, check=True).stdout
+                         capture_output=True, text=True, check=True).stdout   # exit 1 on DIFFER
     assert "IDENTICAL" in out
