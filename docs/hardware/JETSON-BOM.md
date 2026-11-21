@@ -125,10 +125,11 @@ constraints still explain why the Rover was chosen:
   **It is not a reason to return the Rover.**
 - **Owner and deadline.** The user, with calipers on the devkit already on
   the desk. Due before mounting (the Rover is in hand, the user, 2026-11-21);
-  the hard stop is its return window, 30 days from delivery (the delivery
-  date is not recorded). Waveshare support has the
-  question (sent 2026-10-06 on the 257511 thread; support logged it as
-  request 258472, unanswered as of 10-07).
+  the hard stop is its return window (`ROVER-ARRIVAL-RUNBOOK.md` gives the
+  date it closes). The question went to Waveshare support (sent 2026-10-06
+  on the 257511 thread; logged as request 258472, unanswered as of 10-07;
+  answered 2026-10-09: the dev kit mounts directly, per
+  `docs/plans/ros-alignment/3.140-rover-live-checks.md`).
 
 ---
 
