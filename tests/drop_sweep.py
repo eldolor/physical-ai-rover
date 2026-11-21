@@ -378,6 +378,9 @@ def _vetted_nav_class():
         held back (3.159.B3 missed its bar too; the robot server does not mark)."""
 
         MARKED_NEAR_M = 0.80
+        # Cells from the goal at which a goal ends (nav2's goal checker);
+        # 3.198's sweep sets nav2's own 0.10 m (1/3 of a cell).
+        STOP_CELLS = 0.4
 
         def __init__(self, robot, marks_on=False):
             super().__init__(robot)
@@ -450,7 +453,7 @@ def _vetted_nav_class():
             marked_this_poll = False
             tx, ty = self.goal["x_m"] / 0.3, self.goal["y_m"] / 0.3
             for _ in range(int(1.0 / PERIOD_S)):
-                if math.hypot(tx - g.x, ty - g.y) <= 0.4:
+                if math.hypot(tx - g.x, ty - g.y) <= self.STOP_CELLS:
                     self.robot.set_wheel_velocity(0.0, 0.0)
                     self.goal["state"] = "succeeded"
                     return {"goal": self.goal, "plan": []}

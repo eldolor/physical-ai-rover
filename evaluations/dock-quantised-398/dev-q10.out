@@ -1,0 +1,35 @@
+{
+ "missions": 60,
+ "returns": 60,
+ "reached_approach": 30,
+ "docked": 27,
+ "docked_share": 0.9,
+ "docked_truth_ok": 27,
+ "not_aligned_bare": 3,
+ "not_docked": [
+  [
+   "scaled_house",
+   "find",
+   "failed",
+   "not_aligned"
+  ],
+  [
+   "scaled_house",
+   "survey",
+   "failed",
+   "not_aligned"
+  ],
+  [
+   "scaled_house",
+   "find",
+   "failed",
+   "not_aligned"
+  ]
+ ],
+ "approach_verbs_max": 40,
+ "over_12_verbs": 3,
+ "turn_run_max": 38,
+ "fine_goals": 0,
+ "err_m_median": 0.0935,
+ "err_m_max": 0.0997
+}

@@ -87,8 +87,8 @@ The deck holes are 3.68 mm (M3 clearance); if the kit's are M2.5, they still
 mount through the deck with washers.
 
 If neither lines up, the adapter plate target geometry is the array in
-section 2. The Developer Kit is on the desk now, so do this before the Rover
-arrives (earliest Oct 19); the hard stop is the Rover's Amazon return window,
+section 2. The Rover is in hand (the user, 2026-11-21), so do this before mounting
+anything; the hard stop is the Rover's Amazon return window,
 30 days from delivery. Tracked in `JETSON-BOM.md` section 7.
 
 ## 5. Note on file provenance
