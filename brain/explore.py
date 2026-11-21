@@ -1174,12 +1174,13 @@ class ExploreAgent(MissionAgent):
             return self._do_pending()
         spot = self._band_point(pose, tx, ty, away=tried)
         if spot is None:
-            if tried and self._band_point(pose, tx, ty) is not None and not (
-                    self._band_unknown(tx, ty) and now - self._recall_unlooked_at.get(
-                        (tx, ty), now) < RECALL_SIDE_WAIT_S):
-                # 3.200: band floor there is, but none on another side (nor,
-                # after RECALL_SIDE_WAIT_S, unknown floor that might be one):
-                # the same side again is 3.175.E's failed retry. Spent.
+            if tried and not (self._band_unknown(tx, ty) and now - self._recall_unlooked_at.get(
+                    (tx, ty), now) < RECALL_SIDE_WAIT_S):
+                # 3.200: a tried place with no floor on another side (nor,
+                # inside RECALL_SIDE_WAIT_S, unknown floor that might grow
+                # one): the same side again is 3.175.E's failed retry. Spent
+                # (Thermos: also with no band floor reachable at all, or it
+                # would hold the list behind it).
                 self.recall.pop(0)
                 self._recall_refused, self._recall_refused_at = 0, None
                 self._event("recall_spent", at=[round(tx, 2), round(ty, 2)], tries=len(tried))
@@ -1226,8 +1227,9 @@ class ExploreAgent(MissionAgent):
                     why=why, tries=len(tried), kept=kept)
 
     def _band_unknown(self, tx: float, ty: float) -> bool:
-        """3.200 review: any unknown cell within APPROACH_FAR_M of the place
-        on this tick's map (`_last_map`): a side frontiers may yet map."""
+        """3.200 review: an unknown cell within APPROACH_FAR_M of the place
+        that touches free floor (a frontier cell, not the unknown behind a
+        wall: Thermos) on this tick's map (`_last_map`)."""
         m = self._last_map
         if not m or not m.get("usable") or not m.get("resolution_m"):
             return False
@@ -1241,7 +1243,9 @@ class ExploreAgent(MissionAgent):
                 px = m["origin_x_m"] + (i + 0.5) * res
                 py = m["origin_y_m"] + (j + 0.5) * res
                 if (math.hypot(px - tx, py - ty) <= APPROACH_FAR_M
-                        and cells[j * w + i] not in (CELL_FREE, CELL_OCCUPIED)):
+                        and cells[j * w + i] not in (CELL_FREE, CELL_OCCUPIED)
+                        and any(0 <= a < w and 0 <= b < h and cells[b * w + a] == CELL_FREE
+                                for a, b in ((i + 1, j), (i - 1, j), (i, j + 1), (i, j - 1)))):
                     return True
         return False
 

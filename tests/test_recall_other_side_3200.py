@@ -150,13 +150,14 @@ def test_no_floor_on_another_side_spends_the_place(rule):
     assert [e["event"] for e in ev] == ["recall_set", "recall_spent"]
 
 
-def test_a_place_the_map_cannot_reach_yet_is_kept_on_a_second_side_too(rule):
+def test_thermos_a_tried_place_with_no_band_floor_at_all_is_spent(rule):
+    """Thermos: kept, it held every later place behind it for the mission."""
     rule("face")
     runner, _, _ = _runner("washer")
     a = runner.agent
-    a.recall_from([(-50.0, -50.0)])
+    a.recall_from([(-50.0, -50.0), (1.0, 1.0)])
     a._recall_tried[(-50.0, -50.0)] = [(-50.5, -50.0)]
-    assert a._recall_goal(a.clock()) is None and a.recall == [(-50.0, -50.0)]
+    assert a._recall_goal(a.clock()) is None and a.recall == [(1.0, 1.0)]
 
 
 def _failed_recall(a, state, place=(5.0, 5.0)):
@@ -236,7 +237,17 @@ def test_review_band_unknown_reads_the_map():
     runner, grid, nav = _runner("washer")
     a = runner.agent
     m = runner.world.get_map()
-    a._last_map = dict(m, cells=[-1] * len(m["cells"]))
+    w = m["width"]
+    i = int((2.0 - m["origin_x_m"]) / m["resolution_m"])
+    j = int((2.0 - m["origin_y_m"]) / m["resolution_m"])
+    unknown = [-1] * len(m["cells"])
+    a._last_map = dict(m, cells=unknown)
+    assert not a._band_unknown(2.0, 2.0)          # unknown with no floor beside it: no frontier
+    a._last_map = dict(m, cells=[100] * len(m["cells"]))
+    assert not a._band_unknown(2.0, 2.0)          # Thermos: unknown behind walls is not a side
+    edge = list(unknown)
+    edge[j * w + i] = 0                            # floor at the place, unknown round it
+    a._last_map = dict(m, cells=edge)
     assert a._band_unknown(2.0, 2.0)
     a._last_map = dict(m, cells=[0] * len(m["cells"]))
     assert not a._band_unknown(2.0, 2.0)
