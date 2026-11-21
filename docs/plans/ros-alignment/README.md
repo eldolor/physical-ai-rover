@@ -208,4 +208,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.205](3.205-carried-map-no-memory.md) | A find on a saved map with no memory of the target searches the unseen floor |
 | [3.206](3.206-steer-distill.md) | Qwen's direction answer with the target in view, taught by a frontier model on the frames the local tiers are silent on |
 | [3.207](3.207-docs-gaps.md) | Documentation gaps: stale status, missing rationale, missing doc types (the user, 2026-11-21) |
+| [3.208](3.208-action-failure-budget.md) | A failure budget for POST /action; a failed action is never re-sent |
 <!-- /sections -->
