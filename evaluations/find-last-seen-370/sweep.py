@@ -17,7 +17,8 @@ survey's store and its end map) and *unsurveyed* (nothing), the same
     python tools/desktop_lock.py shared --why "3.70.M2 sweep" -- \\
         python evaluations/find-last-seen-370/sweep.py run ROWS.jsonl WORKDIR [WORKERS [NAV]]
     (NAV: inflated, run 1; fake, amendment 1's run 2)
-    3.200: ... run ROWS.jsonl WORKDIR WORKERS NAV RULE   (RULE: dev, R1, R2)
+    3.200: ... run ROWS.jsonl WORKDIR WORKERS NAV RULE   (RULE: dev, R1, R2;
+    R1/R2 need the rule's code, `d82bcb5f`: it did not ship, and on dev they run dev)
     python evaluations/find-last-seen-370/sweep.py score ROWS.jsonl
 """
 
