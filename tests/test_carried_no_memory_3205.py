@@ -130,3 +130,50 @@ def test_an_agent_without_the_hook_is_not_told():
     runner, *_ = _find("purple elephant", (6.5, 4.5), house="scaled_house", known=False)
     runner.agent = object()
     runner._mark_carried_map()          # no hook: nothing happens, nothing raises
+
+
+# ---------- the recorded sweep, pinned (CLAUDE.md 7.3) ----------
+
+import importlib.util                                    # noqa: E402
+from pathlib import Path                                 # noqa: E402
+
+EVAL = Path(__file__).resolve().parents[1] / "evaluations" / "carried-no-memory-3205"
+_spec = importlib.util.spec_from_file_location("carried_3205", EVAL / "sweep.py")
+sweep = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(sweep)
+
+
+def _common(s):
+    assert s["nav"] == "fake" and s["missions"] == {"carried": 20, "unsurveyed": 20}
+    assert s["survey"] == {"outcome": "exhausted", "search_s": 202.3, "contacts": 0, "capped": False}
+    assert s["survey_reported"] == 56 and len(s["targets"]) == 15
+    assert s["dropped_min"] >= 1                         # every carried find lost X's rows
+
+
+def test_n1_red_on_dev_twelve_carried_finds_end_exhausted():
+    s = sweep.score(EVAL / "rows-dev.jsonl")
+    _common(s)
+    assert s["N1_exhausted_unfound"]["carried"] == [1, 3, 4, 5, 7, 10, 11, 12, 13, 14, 16, 19]
+    assert (s["N2_found"]["carried"], s["N2_found"]["unsurveyed"]) == (8, 20)
+    assert s["beside"]["carried"]["resight"] == 0
+
+
+def test_n2_n3_the_fix_finds_as_many_as_the_unsurveyed_arm():
+    s = sweep.score(EVAL / "rows-fix.jsonl")
+    _common(s)
+    assert (s["N2_found"]["carried"], s["N2_found"]["unsurveyed"]) == (20, 20)
+    assert s["N2_found"]["met_vs_unsurveyed"] and s["N1_exhausted_unfound"]["carried"] == []
+    assert s["N3"] == {"wrong_found": 0, "contacts": 0, "met": True}
+    assert s["beside"]["carried"]["resight"] == 12
+    assert (s["beside"]["carried"]["median_goals"], s["beside"]["unsurveyed"]["median_goals"]) == (46.5, 25.5)
+
+
+def test_n4a_only_the_twelve_exhausted_finds_changed():
+    d = sweep.same(EVAL / "rows-dev.jsonl", EVAL / "rows-fix.jsonl")
+    assert sorted(d["differ"]) == sorted(str(("carried", k)) for k in (1, 3, 4, 5, 7, 10, 11, 12, 13, 14, 16, 19))
+
+
+def test_n4bc_m3s_stale_sweep_and_m2s_sweep_identical_to_dev():
+    for name in ("stale", "m2"):
+        d = sweep.same(EVAL / f"{name}-dev.jsonl", EVAL / f"{name}-fix.jsonl")
+        assert d["identical"] and d["rows"] == 41, name
