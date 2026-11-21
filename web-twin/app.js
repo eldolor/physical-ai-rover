@@ -3522,6 +3522,70 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     line.dataset.state = view.kind;
   }
 
+  // ---------- 3.190.D: the likeliest room for a find's target ----------
+  // `status.room_prior` (present only with find_prior_source on): the
+  // likeliest room types for the target -- the shipped table, a cloud
+  // answer or its cache -- or why there is no guess. One line under the
+  // card; hidden for a survey, a search that cannot use room types, or a
+  // prior that does not reach the goal choice (`acts` false).
+  var PRIOR_TYPES = ["kitchen", "living room", "bedroom", "bathroom"];
+  var PRIOR_SOURCES = ["cloud", "cache", "shipped"];
+  // Causes the person can do nothing about on this mission: no line.
+  var PRIOR_QUIET = ["not a find", "no explore search", "explore_goal_policy is not 'rooms'",
+                     "no target object"];
+  function priorWhyKey(why) {
+    var w = String(why || "");
+    // A cooled target says what cooled it: read that cause (review).
+    var cooled = /^failed recently \((.*)\): not asked again yet$/.exec(w);
+    if (cooled) return cooled[1] === "cache not written" ? "other" : priorWhyKey(cooled[1]);
+    if (w === "no room-label layer") return "layer";
+    if (w === "reply is not a prior" || w === "cached reply is not a prior"
+        || w.indexOf("reply cut") === 0) return "reply";
+    if (w === "no vision service" || w === "unreachable" || w === "timeout"
+        || /^http \d/.test(w) || w.indexOf("error:") === 0) return "offline";
+    return "other";
+  }
+  function roomPriorView(status) {
+    var p = status && status.room_prior;
+    if (!p || status.job !== "find") return null;
+    var target = status.target_object || t("word.target");
+    // An ended find keeps its line, as the card keeps its outcome. `done`
+    // is for the flat and none sentences only, which say how it searched;
+    // the likelihood's words stay the same (there is no prior.<source>Done).
+    var done = status.running ? "" : "Done";
+    if (PRIOR_SOURCES.indexOf(p.source) >= 0) {
+      var rates = p.rates || {};
+      // Highest first; a tie keeps the types' own order (a stable sort).
+      var order = PRIOR_TYPES.filter(function (k) { return typeof rates[k] === "number"; })
+        .sort(function (a, b) { return rates[b] - rates[a]; });
+      if (!p.acts || !order.length) return null;
+      var vals = order.map(function (k) { return rates[k]; });
+      var top = vals[0], low = vals[vals.length - 1];
+      // brain/goal_policy.py prior_is_informative: a flat prior orders nothing.
+      if (top < 2.0 * Math.max(low, 0.01)) return {source: "flat", text: t("prior.flat" + done, {target: target})};
+      // Only the top type is named, and a second only on a true tie: the
+      // goal choice weighs the rates with distance, so no other order is
+      // promised (Thermos).
+      var rooms = order.length > 1 && vals[1] === top
+        ? t("prior.both", {first: order[0], second: order[1]}) : order[0];
+      // A likelihood, never a promised order: the goal choice weighs it with
+      // distance (3.190.D live: the kitchen top, the first goal a dining-room frontier).
+      return {source: p.source, text: t("prior." + p.source, {rooms: rooms, target: target})};
+    }
+    if (p.source !== "none" || PRIOR_QUIET.indexOf(p.why) >= 0) return null;
+    return {source: "none",
+            text: t("prior.none" + done, {target: target, why: t("prior.why." + priorWhyKey(p.why))})};
+  }
+  function renderRoomPrior(status) {
+    var line = document.getElementById("mission-prior");
+    if (!line) return;
+    var view = state.brainConnected ? roomPriorView(status) : null;
+    line.hidden = !view;
+    if (!view) return;
+    if (line.textContent !== view.text) line.textContent = view.text;
+    line.dataset.source = view.source;
+  }
+
   // ---------- 3.132 Stage 3: the mission card ----------
   // The mission in one sentence, for a person at home: what it is doing,
   // for what, and how far it has got. Operator mode's (.op-only); Engineer
@@ -3766,6 +3830,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       const note = document.getElementById("mission-local-down");   // 3.152
       if (note) note.hidden = true;
       renderReturn(null);              // 3.156.E: no stale trip home
+      renderRoomPrior(null);           // 3.190.D
       return;
     }
     const card = missionCardText(state.lastBrainStatus);
@@ -3830,6 +3895,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     renderTierReadouts(status);
     renderLocalVlm(status);
     renderReturn(status);              // 3.156.E
+    renderRoomPrior(status);           // 3.190.D
     renderMissionCard();
 
     // The mission log comes from the brain, so it is rewritten wholesale
@@ -4385,6 +4451,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     const wasRunning = state.brainMissionRunning;
     state.brainMissionRunning = !!status.running;
     setBrainAsk(status.running && status.explore ? status.explore.ask : null);
+    showRunningTarget(status);
     renderBrainStatus(status);
     updateBrainControls();
 
@@ -4574,6 +4641,24 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     brainPollGen++;                  // 3.76: a poll in flight is now stale
     state.brainPollErrored = false;
     setBrainAsk(null);               // 3.88 A: an unwatched choice is not drawn
+  }
+
+  // 3.201: a find started elsewhere (the API) shows its target in the Home
+  // field. Never over a person's words: not while the field has focus or was
+  // edited since this page last started a mission, and not for a mission this
+  // page started (the field may hold the sentence the target was read from).
+  var brainTargetTyped = false, brainRunIsOurs = false;
+  function showRunningTarget(status) {
+    if (!status || !status.running) { brainRunIsOurs = false; return; }   // a later run is a new one
+    if (status.job === "survey") return;
+    const target = (status.target_object || "").trim();
+    const box = document.getElementById("brain-target");
+    if (!target || !box || brainTargetTyped || document.activeElement === box) return;
+    if (brainRunIsOurs) return;
+    if (box.value !== target) {
+      box.value = target;
+      box.dispatchEvent(new Event("input"));   // the readings follow the words
+    }
   }
 
   function updateBrainControls() {
@@ -4766,7 +4851,8 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     hint.innerHTML = t("hint.survey", {cap: cap});
   }
 
-  document.getElementById("brain-target").addEventListener("input", function () {
+  document.getElementById("brain-target").addEventListener("input", function (ev) {
+    if (ev.isTrusted !== false) brainTargetTyped = true;   // 3.201: a person's words
     // Read only with a brain to ask; connecting reads the box (review).
     if (state.brainConnected && findJob()) findReader.edit(this.value);
   });
@@ -4872,16 +4958,20 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     }
     try {
       reportToken++;               // 3.70: an older ending's report draws nothing
+      brainRunIsOurs = true;       // 3.201: before the POST, so a poll in flight cannot rewrite the field
       await brainApi("POST", "/mission/start", body);
       resetSightings();   // 3.76: only once the brain took it; a refused start leaves the watched one's
       state.brainMissionRunning = true;
       state.brainTarget = survey ? null : target.toLowerCase();
+      brainTargetTyped = false;        // 3.201: the next API find may show itself
+      brainRunIsOurs = true;
       state.brainLogSignature = "";
       const drill = fault !== "none";
       const key = survey ? "mission.surveyStarted" : drill ? "mission.drillStarted" : "mission.started";
       showToast(t(key, {fault: fault}), drill ? "info" : "ok");
       startBrainPolling();
     } catch (e) {
+      brainRunIsOurs = false;          // 3.201: nothing of ours is running
       showToast(batteryStartWords(e) || t("mission.startFailed", {why: e.message}), "err");
     } finally {
       brainStartStopBusy = false;
@@ -7894,7 +7984,14 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   // as a local file:// page, the robot server IS this page's own origin --
   // prefill the field instead of making the user type an IP.
   if (location.protocol !== "file:") {
-    cfgServerUrlEl.value = location.origin;
+    // 3.203: only a robot server marks its own page (robot/server.py injects
+    // <meta name="picar-robot-origin">); a static host (the deployed twin on
+    // CloudFront) is not a robot, and polling its /frame and /battery is a
+    // 403 per poll on a first-run page. No marker: the field stays empty
+    // and nothing connects until the person saves a robot.
+    if (document.querySelector('meta[name="picar-robot-origin"]')) {
+      cfgServerUrlEl.value = location.origin;
+    }
 
     // Best-effort default for the vision service URL too, based on this
     // project's own documented conventions (README.md/CLAUDE.md), not a

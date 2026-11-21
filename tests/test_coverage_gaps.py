@@ -235,26 +235,27 @@ def test_the_default_robot_is_a_remote_one(tmp_path):
     config.write_text("brain:\n  robot_url: http://pi.local:8000\n")
     app = create_app(config_path=str(config))
 
-    # Stopping a mission builds the robot to stop it, even with none running.
-    with TestClient(app) as client:
-        built = {}
-        import control.brain_server as bs
+    # The robot is built once, by whoever asks first: the start-up send of
+    # the no-go zones (3.161.B R-f), or a Stop with no mission running.
+    built = {}
+    import control.brain_server as bs
 
-        real = bs.RemoteRobot
+    real = bs.RemoteRobot
 
-        class Spy(real):
-            def __init__(self, *a, **kw):
-                built["url"] = a[0] if a else kw.get("base_url")
-                super().__init__(*a, **kw)
+    class Spy(real):
+        def __init__(self, *a, **kw):
+            built["url"] = a[0] if a else kw.get("base_url")
+            super().__init__(*a, **kw)
 
-            def stop(self):
-                return {"stopped": True}
+        def stop(self):
+            return {"stopped": True}
 
-        bs.RemoteRobot = Spy
-        try:
+    bs.RemoteRobot = Spy
+    try:
+        with TestClient(app) as client:
             client.post("/mission/stop")
-        finally:
-            bs.RemoteRobot = real
+    finally:
+        bs.RemoteRobot = real
 
     assert built["url"] == "http://pi.local:8000"
 

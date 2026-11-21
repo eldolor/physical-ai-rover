@@ -239,3 +239,48 @@ def test_f9_live_as_recorded():
     assert len(m["entries"]) == 1 and m["entries"][0]["zones"] == ["za15d23feaa38"]
     z = next(z for z in d["zones"] if z["id"] == "za15d23feaa38")
     assert 0 < m["entries"][0]["at"][1] - z["y0"] < 0.005
+
+
+# ---------- 3.192.B amendment 2: the re-measure on dev 974ae9bb (2026-11-21) ----------
+
+def _remeasure(name):
+    import json
+    from pathlib import Path
+    return json.loads((Path(__file__).resolve().parents[1] / "evaluations" / "nogo-3192"
+                       / "remeasure" / name).read_text())
+
+
+def test_remeasure_f1_rule_still_fails_by_one():
+    """After 3.193/3.195/3.196 the rule chooser's find rate is unchanged: 86 of
+    96 with zones against 87 -- F1 FAILED, the same three losses."""
+    f = _remeasure("summary.json")["find_rule"]
+    assert (f["found_zones"], f["found_none"], f["n"]) == (86, 87, 96)
+    assert f["lost"] == ["procthor:val:26 s0", "procthor:val:39 s0", "procthor:val:44 s1"]
+    assert f["median_ratio"] == 1.0 and not f["rate_equal"]
+
+
+def test_remeasure_f1_prime_rooms_time_still_over_by_008_points():
+    """Rooms: 81 against 81 (rate met), median +5.08% -- F1' FAILED on time."""
+    f = _remeasure("summary.json")["find_rooms"]
+    assert (f["found_zones"], f["found_none"]) == (81, 81) and f["rate_equal"]
+    assert f["median_ratio"] == 1.0508 and not f["time_within_5pct"]
+
+
+def test_remeasure_f10_now_met_and_the_rest_as_before():
+    """F10: 0 aborted goals within 0.5 m of a zone in every mission, both
+    choosers (3.192: rooms 5). F2/F4/F5/F6 as before."""
+    s = _remeasure("summary.json")
+    assert s["loops_rule"]["worst"] == 0 and s["loops_rooms"]["worst"] == 0
+    for ch in ("rule", "rooms"):
+        assert s[f"safety_{ch}"]["in_zone"] == 0 and s[f"safety_{ch}"]["entries"] == 0
+        assert s[f"identical_{ch}"]["identical"] == 96
+        assert s[f"survey_{ch}"]["houses"] == 12
+    assert (s["leave"]["left"], s["leave"]["entries_after_leaving"]) == (10, 0)
+
+
+def test_remeasure_f9_live_met():
+    """F9 live on the bridge with 3.193 + 3.195: found, 0 entries, 0 goals in a zone."""
+    d = _remeasure("live-1.json")
+    m = d["mission"]
+    assert m["outcome"] == "found" and m["entries"] == [] and m["truth_samples"] >= 100
+    assert d["goals_in_zone"] == [] and d["z6_refused"] == 10 and d["peak_load"] <= 4

@@ -1,0 +1,201 @@
+[
+ {
+  "off_m": 1.15,
+  "label": "mug",
+  "x_m": 5.397,
+  "y_m": 6.309,
+  "step": 98,
+  "bearing_deg": -29.51,
+  "range_m": 0.723,
+  "prev_range_m": null,
+  "turn_deg_s": 0.0,
+  "frame_room": "hall"
+ },
+ {
+  "off_m": 1.83,
+  "label": "toy car",
+  "x_m": 4.827,
+  "y_m": 6.304,
+  "step": 99,
+  "bearing_deg": -77.13,
+  "range_m": 0.687,
+  "prev_range_m": null,
+  "turn_deg_s": 0.0,
+  "frame_room": "hall"
+ },
+ {
+  "off_m": 1.55,
+  "label": "coffee table",
+  "x_m": 3.895,
+  "y_m": 4.816,
+  "step": 128,
+  "bearing_deg": -28.92,
+  "range_m": 0.619,
+  "prev_range_m": 2.141,
+  "turn_deg_s": 7.2,
+  "frame_room": "living room"
+ },
+ {
+  "off_m": 1.45,
+  "label": "pet bowl",
+  "x_m": 7.133,
+  "y_m": 4.355,
+  "step": 214,
+  "bearing_deg": 26.75,
+  "range_m": 2.653,
+  "prev_range_m": null,
+  "turn_deg_s": 9.3,
+  "frame_room": "living room"
+ },
+ {
+  "off_m": 1.35,
+  "label": "kitchen counter",
+  "x_m": 7.085,
+  "y_m": 1.971,
+  "step": 219,
+  "bearing_deg": -16.0,
+  "range_m": 1.605,
+  "prev_range_m": null,
+  "turn_deg_s": -59.8,
+  "frame_room": "living room"
+ },
+ {
+  "off_m": 2.04,
+  "label": "guitar",
+  "x_m": 16.21,
+  "y_m": 4.018,
+  "step": 427,
+  "bearing_deg": -8.96,
+  "range_m": 0.98,
+  "prev_range_m": null,
+  "turn_deg_s": -22.1,
+  "frame_room": "dining room"
+ },
+ {
+  "off_m": 0.62,
+  "label": "guitar",
+  "x_m": 17.379,
+  "y_m": 6.142,
+  "step": 584,
+  "bearing_deg": -29.7,
+  "range_m": 1.568,
+  "prev_range_m": 0.67,
+  "turn_deg_s": 35.2,
+  "frame_room": "study"
+ },
+ {
+  "off_m": 0.69,
+  "label": "chair",
+  "x_m": 15.669,
+  "y_m": 3.725,
+  "step": 590,
+  "bearing_deg": 28.06,
+  "range_m": 1.48,
+  "prev_range_m": 0.925,
+  "turn_deg_s": -2.5,
+  "frame_room": "study"
+ },
+ {
+  "off_m": 0.84,
+  "label": "desk chair",
+  "x_m": 13.287,
+  "y_m": 4.192,
+  "step": 682,
+  "bearing_deg": -29.92,
+  "range_m": 2.082,
+  "prev_range_m": null,
+  "turn_deg_s": 22.1,
+  "frame_room": "study"
+ },
+ {
+  "off_m": 1.06,
+  "label": "chair",
+  "x_m": 17.245,
+  "y_m": 3.717,
+  "step": 802,
+  "bearing_deg": 29.64,
+  "range_m": 1.545,
+  "prev_range_m": 0.362,
+  "turn_deg_s": -35.6,
+  "frame_room": "dining room"
+ },
+ {
+  "off_m": 1.72,
+  "label": "kitchen island",
+  "x_m": 12.367,
+  "y_m": 2.871,
+  "step": 1430,
+  "bearing_deg": 29.05,
+  "range_m": 1.918,
+  "prev_range_m": 3.616,
+  "turn_deg_s": 6.8,
+  "frame_room": "dining room"
+ },
+ {
+  "off_m": 2.08,
+  "label": "bathtub",
+  "x_m": 16.612,
+  "y_m": 9.688,
+  "step": 1863,
+  "bearing_deg": -29.48,
+  "range_m": 1.827,
+  "prev_range_m": 3.79,
+  "turn_deg_s": 6.4,
+  "frame_room": "main bedroom"
+ },
+ {
+  "off_m": 1.59,
+  "label": "bathtub",
+  "x_m": 17.206,
+  "y_m": 9.998,
+  "step": 1965,
+  "bearing_deg": 29.62,
+  "range_m": 1.687,
+  "prev_range_m": null,
+  "turn_deg_s": 18.3,
+  "frame_room": "main bedroom"
+ },
+ {
+  "off_m": 2.53,
+  "label": "pet bowl",
+  "x_m": 10.268,
+  "y_m": 6.564,
+  "step": 2244,
+  "bearing_deg": 26.56,
+  "range_m": 0.967,
+  "prev_range_m": null,
+  "turn_deg_s": 0.3,
+  "frame_room": "hall"
+ },
+ {
+  "off_m": 1.86,
+  "label": "pet bowl",
+  "x_m": 9.67,
+  "y_m": 6.256,
+  "step": 2245,
+  "bearing_deg": 28.88,
+  "range_m": 1.535,
+  "prev_range_m": 0.967,
+  "turn_deg_s": 0.2,
+  "frame_room": "hall"
+ },
+ {
+  "find_starts": true
+ },
+ {
+  "off_m": 11.57,
+  "label": "guitar",
+  "x_m": 6.604,
+  "y_m": 1.806,
+  "step": 74,
+  "bearing_deg": -28.8,
+  "range_m": 3.775,
+  "prev_range_m": null,
+  "turn_deg_s": -24.5,
+  "frame_room": "living room",
+  "note": "the moved guitar (cell 21,5): off_m is against the survey layout; 0.22 m from its new cell's centre -- a true pin"
+ },
+ {
+  "summary": "births 88 off >0.5 m 16"
+ }
+]

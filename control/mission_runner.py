@@ -68,7 +68,8 @@ from brain.room_prior import valid_rates as valid_prior_rates
 from brain.frontier import RETRY_COOLDOWN_S, RETRY_LIMIT, SET_ASIDE_MIN_FAILURES, SET_ASIDE_MISSIONS
 from brain.inventory import MAX_RANGE_M as INVENTORY_RANGE_M
 from brain.what_i_saw import MAX_THUMBS
-from brain.inventory import DEFAULT_FOV_DEG, REPORT_BELIEF, Inventory, _bearing_to, frame_detections
+from brain.inventory import (DEFAULT_FOV_DEG, EDGE_GAP_M, REPORT_BELIEF, Inventory,
+                             _bearing_to, frame_detections)
 from brain.watch_list import normalise as watch_list_normalise
 from brain.watch_list import watch_block
 from brain.memory import MissionMemory
@@ -753,6 +754,7 @@ class MissionRunner:
         inventory: bool = True,
         detections_fn: Optional[Callable[[dict], Optional[list]]] = None,
         watch_list: Optional[Sequence[str]] = None,
+        inventory_edge_gate: bool = False,
         mission_time_limit_s: Optional[float] = None,
         recharge_resume: bool = False,
         resume_v: float = docking.RESUME_V,
@@ -945,7 +947,11 @@ class MissionRunner:
         # reads what the frame carries, which today only a sim frame does.
         # `inventory_sink` is set by the brain server: called once with the
         # report when the mission ends, never allowed to fail it.
-        self.inventory = Inventory() if inventory else None
+        # 3.204.B: `inventory_edge_gate` (OFF by default; the user's word
+        # turns it on) leaves a detection whose range gate straddles a depth
+        # edge unplaced instead of ranging it by the nearer edge.
+        self.inventory = (Inventory(edge_gap_m=EDGE_GAP_M if inventory_edge_gate else None)
+                          if inventory else None)
         self.detections_fn = detections_fn or frame_detections
         # 3.178: the watch list (None: the default five; () : off). Read only
         # by the report's `watch` block: no policy sees it, and the car's

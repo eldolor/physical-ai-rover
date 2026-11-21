@@ -1,0 +1,61 @@
+{
+ "calls": [
+  {
+   "at": 1795237094,
+   "in": 198,
+   "model_id": "us.anthropic.claude-opus-5-5",
+   "out": 45,
+   "prior": {
+    "bathroom": 0.01,
+    "bedroom": 0.05,
+    "kitchen": 0.97,
+    "living room": 0.03
+   },
+   "s": 3.44,
+   "status": 200,
+   "stop": "end_turn",
+   "target": "refrigerator"
+  }
+ ],
+ "names": {
+  "kept": true,
+  "named": 9,
+  "names": [
+   "breakfast",
+   "den",
+   "dining room",
+   "family room",
+   "foyer",
+   "garage",
+   "half bath",
+   "kitchen",
+   "living room"
+  ],
+  "person_rooms": 19
+ },
+ "room_prior": {
+  "acts": true,
+  "model_id": "us.anthropic.claude-opus-5-5",
+  "rates": {
+   "bathroom": 0.01,
+   "bedroom": 0.05,
+   "kitchen": 0.97,
+   "living room": 0.03
+  },
+  "source": "cloud",
+  "why": null
+ },
+ "shot": {
+  "ok": true,
+  "png": "twin-3190d-cloud.png",
+  "source": "cloud",
+  "text": "Likeliest for the refrigerator: the kitchen (asked online)."
+ },
+ "spend": {
+  "calls": 1,
+  "in": 198,
+  "out": 45,
+  "usd": 0.00186
+ },
+ "start": 200
+}

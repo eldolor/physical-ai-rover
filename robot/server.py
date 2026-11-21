@@ -111,7 +111,7 @@ from typing import Annotated, List, Optional
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from pydantic import BaseModel, Field
 
 from robot.factory import get_robot, load_config
@@ -1261,7 +1261,12 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
 
     @app.get(prefix + "/")
     def twin_ui():
-        return FileResponse(_TWIN_INDEX_HTML)
+        # 3.203: the page names itself a robot's. A static host serving the
+        # same file has no such marker, so the twin knows its own origin is
+        # not a robot and polls nothing until one is saved.
+        html = re.sub(r"(<head(?:\s[^>]*)?>)", r'\1\n<meta name="picar-robot-origin" content="1">',
+                      _TWIN_INDEX_HTML.read_text(encoding="utf-8"), count=1)
+        return HTMLResponse(html, headers={"Cache-Control": "no-cache"})
 
     @app.get(prefix + "/app.js")
     def twin_app_js():
@@ -2318,7 +2323,8 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         refused = person_stop_refusal(person, latch)
         if refused:
             return {"accepted": False, **refused}
-        # 3.161 D5: a PERSON's goal inside a no-go zone is refused, before it
+        # 3.161 D5: a PERSON's goal inside a no-go zone (since 3.199, or within
+        # nogo.GOAL_CLEAR_M of one) is refused, before it
         # takes the robot from anyone. Autonomy keeps out of zones by its own
         # choice (explore's check, nav2's mask), and the trip home must never
         # be refused for a zone drawn over the dock (Thermos review). Not a
@@ -2538,11 +2544,14 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             return None
         if not pose.get("usable") or pose.get("frame_id") != frame:
             return None
-        z = nogo_mod.zone_at(zones, x_m, y_m)
+        # 3.199: inside a zone or within GOAL_CLEAR_M of one, where the
+        # bridge's grown mask (3.195) may have drawn the goal's cell
+        z = nogo_mod.goal_zone(zones, x_m, y_m)
         if z is None:
             return None
         return {"reason": "no_go_zone", "zone": z["id"], "retryable": True,
-                "detail": "that point is inside a no-go zone a person drew"}
+                "detail": "that point is inside or beside a no-go zone a person drew"
+                          f" (keep {nogo_mod.GOAL_CLEAR_M:g} m clear of it)"}
 
     @app.put(prefix + "/world/nogo", dependencies=[Depends(require_secret)])
     def world_nogo_set(req: NoGoRequest):

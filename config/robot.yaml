@@ -458,6 +458,11 @@ brain:
   # until 3.137.E) and resumes, the limit paused on the charger, under the
   # wall limit. Off until the Rover: nothing sees a charger yet.
   recharge_resume: false
+  # 3.204.B: leave an inventory detection unplaced when its lidar range gate
+  # straddles a depth edge (a jamb in front of a partly hidden object)
+  # instead of ranging it by the nearer edge. OFF: dev's ranging rule is the
+  # user's (2026-11-17); only the user's word turns it on.
+  inventory_edge_gate: false
   resume_v: 11.8
   mission_wall_limit_s: 14400.0
   charge_stall_s: 300.0

@@ -1,0 +1,249 @@
+{
+ "house": "scaled_house",
+ "image": "vision-picar-ros:plan-3.192",
+ "frame_id": "map-6467d2ad",
+ "zones": [
+  {
+   "id": "zf9e9fb344a0b",
+   "x0": 1.615,
+   "y0": 2.822,
+   "x1": 2.285,
+   "y1": 3.478,
+   "kind": "area",
+   "set_at": 1795256663.951,
+   "by": "person"
+  },
+  {
+   "id": "z4372416cf53b",
+   "x0": 0.532,
+   "y0": 3.455,
+   "x1": 0.968,
+   "y1": 4.045,
+   "kind": "area",
+   "set_at": 1795256663.983,
+   "by": "person"
+  },
+  {
+   "id": "z065f8d1f5dab",
+   "x0": 4.344,
+   "y0": 1.386,
+   "x1": 4.956,
+   "y1": 2.514,
+   "kind": "area",
+   "set_at": 1795256664.009,
+   "by": "person"
+  }
+ ],
+ "sent": {
+  "accepted": true,
+  "frame_id": "map-6467d2ad",
+  "zones": 3,
+  "sent": true,
+  "detail": null
+ },
+ "bridge_after_draw": {
+  "zones": 3,
+  "suspended": [],
+  "suspended_count": 0,
+  "restored": 0,
+  "last": null,
+  "lattice_phase_m": [
+   0.0362,
+   0.035
+  ],
+  "margin_off": [],
+  "vent_cells": 0,
+  "vents": 0
+ },
+ "z6_refused": 10,
+ "z6_taps": [
+  "no_go_zone",
+  "no_go_zone",
+  "no_go_zone",
+  "no_go_zone",
+  "no_go_zone",
+  "no_go_zone",
+  "no_go_zone",
+  "no_go_zone",
+  "no_go_zone",
+  "no_go_zone"
+ ],
+ "start": 200,
+ "mission": {
+  "outcome": "found",
+  "seconds": 76,
+  "goals_sent": 3,
+  "nogo": {
+   "frame_id": "map-6467d2ad",
+   "zones": 3,
+   "refused": 0,
+   "leaves": 0,
+   "dock_refused": []
+  },
+  "truth_samples": 151,
+  "entries": [],
+  "log_tail": [
+   "found: Hallway, kitchen, living room searched. Found. -- returning to the dock",
+   "return: goal to (1.65, 1.35) accepted",
+   "return docked: 0.093 m, 0.3 deg from the dock",
+   "inventory: 2 reported, 1 candidates from 64 frames -- red backpack, refrigerator",
+   "mission ended (found): Hallway, kitchen, living room searched. Found."
+  ]
+ },
+ "goals": [
+  [
+   1.61,
+   1.49
+  ],
+  [
+   5.35,
+   1.49
+  ],
+  [
+   6.3,
+   1.7
+  ]
+ ],
+ "goals_in_zone": [],
+ "bridge_after_mission": {
+  "zones": 3,
+  "suspended": [],
+  "suspended_count": 0,
+  "restored": 0,
+  "last": null,
+  "lattice_phase_m": [
+   0.0253,
+   0.0206
+  ],
+  "margin_off": [],
+  "vent_cells": 0,
+  "vents": 0
+ },
+ "store_after_mission": 3,
+ "z3_bridge_at_draw": {
+  "zones": 4,
+  "suspended": [
+   "z3b1a1287d748"
+  ],
+  "suspended_count": 1,
+  "restored": 0,
+  "last": {
+   "event": "zone_suspended",
+   "id": "z3b1a1287d748",
+   "at": 1795256743.2025483
+  },
+  "lattice_phase_m": [
+   0.0253,
+   0.0206
+  ],
+  "margin_off": [],
+  "vent_cells": 0,
+  "vents": 0
+ },
+ "z3_start": 200,
+ "z3": {
+  "zone": {
+   "id": "z3b1a1287d748",
+   "x0": 1.643,
+   "y0": 0.942,
+   "x1": 2.443,
+   "y1": 1.742,
+   "kind": "area",
+   "set_at": 1795256743.175,
+   "by": "person"
+  },
+  "left_after_s": 7.8,
+  "restored": null
+ },
+ "loadavg_10s": [
+  [
+   1795256652.3,
+   "1.31"
+  ],
+  [
+   1795256662.3,
+   "1.11"
+  ],
+  [
+   1795256672.3,
+   "2.13"
+  ],
+  [
+   1795256682.3,
+   "1.80"
+  ],
+  [
+   1795256692.3,
+   "3.21"
+  ],
+  [
+   1795256702.3,
+   "2.71"
+  ],
+  [
+   1795256712.3,
+   "2.46"
+  ],
+  [
+   1795256722.3,
+   "2.39"
+  ],
+  [
+   1795256732.3,
+   "2.58"
+  ],
+  [
+   1795256742.3,
+   "2.85"
+  ],
+  [
+   1795256752.3,
+   "4.51"
+  ],
+  [
+   1795256762.3,
+   "4.05"
+  ],
+  [
+   1795256772.3,
+   "3.58"
+  ],
+  [
+   1795256782.3,
+   "3.42"
+  ],
+  [
+   1795256792.3,
+   "3.29"
+  ],
+  [
+   1795256802.3,
+   "3.85"
+  ],
+  [
+   1795256812.3,
+   "4.06"
+  ],
+  [
+   1795256822.3,
+   "3.74"
+  ],
+  [
+   1795256832.3,
+   "3.63"
+  ],
+  [
+   1795256842.3,
+   "4.09"
+  ],
+  [
+   1795256852.3,
+   "3.75"
+  ],
+  [
+   1795256862.3,
+   "4.10"
+  ]
+ ],
+ "peak_load": 4.51
+}

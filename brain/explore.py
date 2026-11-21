@@ -66,7 +66,7 @@ from robot.interface import VERB_MAX_TAG, ZONE_UNUSABLE, Preempted, RobotInterfa
 from robot.safety import CREEP_MARGIN_CM, FOOTPRINT_LENGTH_M, SafetyViolation, verb_speed_m_s
 from world.bridge_faults import fault_from_headers, response_detail, setup_fault_message
 from world import nogo
-from world.interface import CELL_FREE, CELL_OCCUPIED
+from world.interface import CELL_FREE, CELL_OCCUPIED, CELL_UNKNOWN
 
 logger = logging.getLogger("explore")
 
@@ -134,6 +134,12 @@ NUDGE_PLACE_M = 0.30
 # 3.172 F5: a find goes first to where earlier missions on the saved map put
 # the target -- at most this many carried landmarks, one goal each.
 RECALL_MAX = 3
+RESEEN_ROUNDS = 2               # 3.192.B: an exhausted find looks again where it saw the target
+# 3.70.M3: a find handed a recall whose search would end `exhausted` with known
+# floor the camera never saw searches once more, that floor read as unknown so
+# frontiers lead the camera to it. Cells this near the robot stay known (the
+# camera looks ahead; the floor under and behind it is where it stands).
+SIGHT_KEEP_M = 0.6
 # 3.173.B: a survey's goal into a room of its map that holds no cell at the
 # goal clearance (laundry and pantry: 0.366 m on truth, the goal's 0.35 m on
 # SLAM's map) may stand at this clearance -- over the chassis' 0.181 m, at which
@@ -401,6 +407,12 @@ class ExploreAgent(MissionAgent):
         self._nudged: list = []             # 3.172: where the robot stood at each nudge
         self._reverse_refused = False       # 3.172: this escape's REVERSE was refused
         self.recall: list = []              # 3.172 F5: carried places of the target, best first
+        self._recalled = False              # 3.70.M3: a recall was handed to this mission
+        self.resight = False                # 3.70.M3: searching the known map by sight
+        self._seen_at: list = []            # 3.192.B: where this mission saw the target, latest last
+        self._reseen = 0                    # 3.192.B: rounds of looking at them again
+        self._carried: list = []            # 3.192.B: the recall's carried places (`recall_from`)
+        self._refused_at: list = []         # 3.192.B: places whose identity the cloud refused
         self._recall_refused = 0            # refusals in a row of recall[0]
         self._recall_refused_at = None      # when that row began
         self._recall_refused_last = None    # its latest refusal
@@ -593,6 +605,7 @@ class ExploreAgent(MissionAgent):
         if sighting is not None:
             tx, ty = sighting
             self._last_seen = (tx, ty)
+            self._note_seen_at(tx, ty)
             moved = (self._approach is None
                      or math.hypot(tx - self._approach[0], ty - self._approach[1]) > APPROACH_MOVED_M)
             if moved and self.retry.available(tx, ty, now, approach=True):
@@ -921,11 +934,20 @@ class ExploreAgent(MissionAgent):
             return
         self._refusal_noted = True
         place = self._last_seen or self._approach
+        if place is None and self._reseen and self._goal is not None:
+            place = self._goal.get("recall")      # 3.192.B review: a look-again's own place
         if place is None:
             return
         while not self.retry.dropped(*place):
             self.retry.fail(place[0], place[1], self.clock(), known=self._known_at)
         self._event("identity_refused", target=[round(place[0], 2), round(place[1], 2)])
+        # 3.192.B: not the target -- never looked at again, nor any place of a
+        # look-again round already handed to the recall (a carried place stays).
+        far = lambda p: math.hypot(p[0] - place[0], p[1] - place[1]) > self.retry.radius_m  # noqa: E731
+        self._refused_at.append(tuple(place))
+        self._seen_at = [p for p in self._seen_at if far(p)]
+        if self._reseen:
+            self.recall = [p for p in self.recall if far(p) or p in self._carried]
         self._last_seen = None
         self._approach = None
         self._close_in_refused = 0
@@ -1042,6 +1064,26 @@ class ExploreAgent(MissionAgent):
         self._reset_in_sight()
         self._pending.insert(0, "REVERSE")
 
+    def _note_seen_at(self, tx: float, ty: float) -> None:
+        """3.192.B: a sighting's place, one per retry radius (the latest)."""
+        r = self.retry.radius_m
+        if any(math.hypot(p[0] - tx, p[1] - ty) <= r for p in self._refused_at):
+            return                  # review: the refused object, seen again, is still not it
+        self._seen_at = [p for p in self._seen_at if math.hypot(p[0] - tx, p[1] - ty) > r]
+        self._seen_at.append((tx, ty))
+
+    def _reseen_places(self, pose: dict) -> list:
+        """3.192.B: the places of a look-again round -- latest first, at most
+        RECALL_MAX, each with reachable floor beside it now (review: one with
+        none would hold the recall, and the round, on it)."""
+        out = []
+        for p in reversed(self._seen_at):
+            if len(out) == RECALL_MAX:
+                break
+            if self._band_point(pose, p[0], p[1]) is not None:
+                out.append(p)
+        return out
+
     def _reset_in_sight(self) -> None:
         self._in_sight_unfound, self._in_sight_at, self._in_sight_tick = 0, None, -1
 
@@ -1133,6 +1175,8 @@ class ExploreAgent(MissionAgent):
         """3.172 F5: where earlier missions on this saved map put the target
         (the runner's carried landmarks of its name, best first)."""
         self.recall = [(float(x), float(y)) for x, y in places][:RECALL_MAX]
+        self._carried = list(self.recall)
+        self._recalled = bool(self.recall)
         if self.recall:
             self._event("recall_set", places=[[round(x, 2), round(y, 2)] for x, y in self.recall])
 
@@ -1277,6 +1321,15 @@ class ExploreAgent(MissionAgent):
                 self._zone_frame_asked = frame      # only once read (review 2: a failure asks again)
             except Exception:  # noqa: BLE001 -- no zones read: the choice goes on without
                 logger.warning("no-go zones unreadable for %s", frame, exc_info=True)
+        raw = m
+        if self.resight:
+            # 3.70.M3: the floor the camera never saw reads as unknown, for
+            # every step below (frontiers, reach and the zones' mask alike) --
+            # but the retry book's growth (`known`), which is the map's.
+            try:
+                m = self._sight_map(m, pose)
+            except Exception:  # noqa: BLE001 -- coverage is advisory: the map as it is
+                logger.warning("sight map failed; choosing on the map", exc_info=True)
         floor = m
         if getattr(self, "zones", None):
             # 3.161 D3/D4: out of a zone first; then every goal below is
@@ -1301,7 +1354,9 @@ class ExploreAgent(MissionAgent):
                 self._floor_of = (m, floor)
 
         def known(x, y):
-            return known_near(floor, x, y, self.retry.radius_m)
+            # 3.70.M3 review: the map's own cells, not the sight map's (a
+            # look must not release a failed place early).
+            return known_near(raw, x, y, self.retry.radius_m)
 
         # One reachability search per choice, shared by every step below (3.77).
         rch = reach(m, pose["x_m"], pose["y_m"], clearance_m=leave)
@@ -1368,6 +1423,32 @@ class ExploreAgent(MissionAgent):
             self._event("set_aside_released", places=len(self.retry.set_aside))
             self.retry.set_aside = []
             return "WAIT", True, "nothing else left; trying the places set aside"
+        if self._recalled and not self.resight and not self._survey() and self._unseen_floor(m, pose):
+            # 3.70.M3: the remembered place was looked at and the search ran
+            # out on a map it did not discover. On a carried map the floor the
+            # camera never saw is one patch, looked at once from its middle
+            # (the giant view gap), so the search would end with most of the
+            # house unseen. Once, it searches again with that floor unknown.
+            self.resight = True
+            self._event("resight", frontiers=len(frontiers), seen=len(self.seen))
+            self.last_event = "the remembered place was out of date; searching the map by sight"
+            return "WAIT", True, self.last_event
+        again = self._reseen_places(pose) \
+            if self._reseen < RESEEN_ROUNDS and self._seen_at and not self._survey() else []
+        if again:
+            # 3.192.B: the target was seen this mission and lost (its sighting
+            # given up or dropped by the retry rule), and the search ran out.
+            # The places it was seen are looked at again from beside it, latest
+            # first, as a carried place is (`_recall_goal`); a second round
+            # only on sightings made during the first. A carried place not yet
+            # reached stays after them.
+            self._reseen += 1
+            self.recall = again + [p for p in self.recall if p not in again]
+            self._event("reseen", round=self._reseen, kept_of=len(self._seen_at),
+                        places=[[round(x, 2), round(y, 2)] for x, y in again])
+            self._seen_at = []
+            self.last_event = "the search ran out; looking again where the target was seen"
+            return "WAIT", True, self.last_event
         self.exhausted = True
         self.last_event = (f"no reachable frontier left ({len(frontiers)} on the map: "
                            f"{skipped['reached twice']} reached twice, "
@@ -1378,6 +1459,53 @@ class ExploreAgent(MissionAgent):
 
     def _survey(self) -> bool:
         return not (self.memory.target_object or self.memory.target_room)
+
+    def _sight_mask(self, m: dict, pose: dict) -> np.ndarray:
+        """3.70.M3: True on the map's free cells the camera has not seen this
+        mission, except within SIGHT_KEEP_M of the robot."""
+        res, w, h = m["resolution_m"], m["width"], m["height"]
+        cells = np.asarray(m["cells"]).reshape(h, w)
+        mask = cells == CELL_FREE
+        if self.seen:
+            # `_to_cell` over every centre, vectorised (review: a SLAM map's
+            # seen set runs to tens of thousands, every choice).
+            c = np.asarray(list(self.seen), dtype=float)
+            xy = np.floor(np.column_stack(((c[:, 0] - m["origin_x_m"]) / res,
+                                           (c[:, 1] - m["origin_y_m"]) / res))).astype(np.int64)
+            on = (xy[:, 0] >= 0) & (xy[:, 0] < w) & (xy[:, 1] >= 0) & (xy[:, 1] < h)
+            mask[xy[on, 1], xy[on, 0]] = False
+        cx, cy = self._to_cell(m, (pose["x_m"], pose["y_m"]))
+        r = int(math.ceil(SIGHT_KEEP_M / res))
+        if cx + r < 0 or cy + r < 0 or cx - r >= w or cy - r >= h:
+            return mask                       # review: the robot off this map keeps nothing
+        ys, xs = np.ogrid[-r:r + 1, -r:r + 1]
+        disk = xs * xs + ys * ys <= r * r
+        y0, x0 = cy - r, cx - r
+        sy, sx = slice(max(0, y0), min(h, cy + r + 1)), slice(max(0, x0), min(w, cx + r + 1))
+        mask[sy, sx] &= ~disk[sy.start - y0:sy.stop - y0, sx.start - x0:sx.stop - x0]
+        return mask
+
+    def _unseen_floor(self, m: dict, pose: dict) -> bool:
+        """3.70.M3: any free cell of the map the camera has not seen."""
+        try:
+            return bool(self._sight_mask(m, pose).any())
+        except Exception:  # noqa: BLE001 -- coverage is advisory: no re-search
+            return False
+
+    def _sight_map(self, m: dict, pose: dict) -> dict:
+        """3.70.M3: `m` with the free cells the camera has not seen made
+        unknown. Its `map_version` also names the seen set's size (which only
+        grows) and the robot's cell (the kept disk moves with it, review), so
+        a cache keyed on the map's version (`_zone_map`, the cut's) never
+        serves another; a map with no version keeps none (those caches are
+        then off, as for the map itself)."""
+        mask = self._sight_mask(m, pose)
+        cells = np.asarray(m["cells"]).reshape(m["height"], m["width"]).copy()
+        cells[mask] = CELL_UNKNOWN
+        v = m.get("map_version")
+        return dict(m, cells=cells.ravel().tolist(),
+                    map_version=None if v is None else (v, "sight", len(self.seen),
+                                                         self._to_cell(m, (pose["x_m"], pose["y_m"]))))
 
     def _small_room_goal(self, m: dict, pose: dict, rch, now: float):
         """3.173.B: a survey's goal into a region of the map no goal stop
@@ -1934,7 +2062,9 @@ class ExploreAgent(MissionAgent):
         everything learned stays."""
         g, self._goal = self._goal, None
         place = (g or {}).get("recall")
-        if place is not None and place not in self.recall:
+        if place is not None and place not in self.recall and not any(
+                math.hypot(place[0] - q[0], place[1] - q[1]) <= self.retry.radius_m
+                for q in self._refused_at):
             # 3.175.E review: a recall goal ended by charging is uncounted too;
             # its place was popped on send, so it goes back first.
             self.recall.insert(0, place)

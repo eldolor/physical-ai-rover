@@ -691,7 +691,13 @@ robot.") or its charge ("Charging on the dock (11.23 of 11.8 volts), then it
 carries on."); it is hidden while the brain is unreachable. Engineer mode's
 **Return** row says the same with the raw state and reason, and where the
 dock came from: `saved_map` (a reloaded map's own dock) or `start` (the
-mission's start pose). Screenshots: `docs/evaluations/twin-3.156e-*.png`. The
+mission's start pose). Screenshots: `docs/evaluations/twin-3.156e-*.png`. With
+`find_prior_source: cloud` (3.190), a find also shows **the likeliest room**
+for its target: "Likeliest for the refrigerator: the kitchen (asked online)."
+(or "remembered from an earlier search" for a cached answer), or why there is
+no guess ("no rooms are named on the map", "it couldn't ask online"). It is a
+likelihood the goal choice weighs with distance, not a promised order.
+Screenshots: `evaluations/room-prior-3190/live/twin-3190d-*.png`. The
 telemetry rows are Engineer mode's, except "Where it looked", shown once
 an ending has one. **Drive** holds Manual control and What the robot
 senses. The watchdog row draws a robot at rest (fired, nothing running)
@@ -959,8 +965,8 @@ then drag a line the robot must not cross; **Done**. Tap a zone on the map and
 **Delete zone** removes it. Zones are kept with the saved map on the robot's
 own disk (never uploaded), shown on the Drive map in their own colour, and do
 not expire. Autonomy never plans into one: explore picks no goal in it, nav2
-never routes through it, and a goal tapped inside one is refused ("That's in
-a no-go zone"). A zone is not a safety stop: the D-pad still drives the robot
+never routes through it, and a goal tapped inside one is refused, as is one within
+0.125 m of its edge ("That's in or too close to a no-go zone"). A zone is not a safety stop: the D-pad still drives the robot
 into one, and a robot that finds itself inside one (placed there, or after a
 re-map) is let out first -- the zone shows dashed, "paused", until the robot
 is 0.30 m clear. With no saved map the panel says "Survey first".
@@ -1006,9 +1012,10 @@ any mission.
 ## 4. Settings tab
 
 - **Robot server connection** -- `serverUrl` + optional secret. Auto-fills
-  to the page's own origin, which is right when `robot/server.py` served
-  the page (local dev) and wrong for the deployed page, which CloudFront
-  serves: there, enter the tunnel URL from `service/tunnel/run.sh`
+  to the page's own origin only when `robot/server.py` served the page (it
+  injects `<meta name="picar-robot-origin">`, 3.203). The deployed page,
+  which CloudFront serves, has no marker: the field is empty and the page
+  makes no robot request until a robot is saved; enter the tunnel URL from `service/tunnel/run.sh`
   (`https://<domain>`).
 - **Brain service connection** -- `brainUrl` + its own, independently
   entered secret (`brainSecret`/`brainAuthHeaders()` -- deliberately not

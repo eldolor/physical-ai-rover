@@ -1,0 +1,266 @@
+{
+ "commit": "2a413908",
+ "model_id": "us.anthropic.claude-opus-5-5",
+ "w": 0.5,
+ "summary": {
+  "names/cloud/w0": {
+   "n": 583,
+   "found": 574,
+   "exceptions": 0,
+   "capped": 0,
+   "median_goals_found": 4.5,
+   "median_metres_found": 15.6,
+   "mean_reward": 0.5358,
+   "first_goal": {
+    "n": 583,
+    "in_top": 259,
+    "rate": 0.4443
+   }
+  },
+  "names/cloud/w0.5": {
+   "n": 583,
+   "found": 573,
+   "exceptions": 0,
+   "capped": 0,
+   "median_goals_found": 4.0,
+   "median_metres_found": 15.6,
+   "mean_reward": 0.5186,
+   "first_goal": {
+    "n": 583,
+    "in_top": 269,
+    "rate": 0.4614
+   }
+  },
+  "names/none/w0": {
+   "n": 583,
+   "found": 571,
+   "exceptions": 0,
+   "capped": 0,
+   "median_goals_found": 5.0,
+   "median_metres_found": 21.6,
+   "mean_reward": 0.442,
+   "first_goal": {
+    "n": 583,
+    "in_top": 157,
+    "rate": 0.2693
+   }
+  },
+  "names/none/w0.5": {
+   "n": 583,
+   "found": 571,
+   "exceptions": 0,
+   "capped": 0,
+   "median_goals_found": 5.0,
+   "median_metres_found": 21.6,
+   "mean_reward": 0.442,
+   "first_goal": {
+    "n": 583,
+    "in_top": 157,
+    "rate": 0.2693
+   }
+  },
+  "names/wrong/w0": {
+   "n": 583,
+   "found": 574,
+   "exceptions": 0,
+   "capped": 0,
+   "median_goals_found": 6.0,
+   "median_metres_found": 21.9,
+   "mean_reward": 0.4198,
+   "first_goal": {
+    "n": 583,
+    "in_top": 92,
+    "rate": 0.1578
+   }
+  },
+  "names/wrong/w0.5": {
+   "n": 583,
+   "found": 574,
+   "exceptions": 0,
+   "capped": 0,
+   "median_goals_found": 7.0,
+   "median_metres_found": 23.25,
+   "mean_reward": 0.3925,
+   "first_goal": {
+    "n": 583,
+    "in_top": 84,
+    "rate": 0.1441
+   }
+  },
+  "stand-in/cloud/w0": {
+   "n": 583,
+   "found": 574,
+   "exceptions": 0,
+   "capped": 0,
+   "median_goals_found": 5.0,
+   "median_metres_found": 15.6,
+   "mean_reward": 0.5249,
+   "first_goal": {
+    "n": 583,
+    "in_top": 204,
+    "rate": 0.3499
+   }
+  },
+  "stand-in/cloud/w0.5": {
+   "n": 583,
+   "found": 572,
+   "exceptions": 0,
+   "capped": 0,
+   "median_goals_found": 5.0,
+   "median_metres_found": 15.6,
+   "mean_reward": 0.514,
+   "first_goal": {
+    "n": 583,
+    "in_top": 217,
+    "rate": 0.3722
+   }
+  },
+  "stand-in/none/w0": {
+   "n": 583,
+   "found": 574,
+   "exceptions": 0,
+   "capped": 0,
+   "median_goals_found": 5.0,
+   "median_metres_found": 19.2,
+   "mean_reward": 0.4223,
+   "first_goal": {
+    "n": 583,
+    "in_top": 149,
+    "rate": 0.2556
+   }
+  },
+  "stand-in/none/w0.5": {
+   "n": 583,
+   "found": 574,
+   "exceptions": 0,
+   "capped": 0,
+   "median_goals_found": 5.0,
+   "median_metres_found": 19.2,
+   "mean_reward": 0.4223,
+   "first_goal": {
+    "n": 583,
+    "in_top": 149,
+    "rate": 0.2556
+   }
+  }
+ },
+ "F1": {
+  "paired_cloud_w_minus_cloud_0": {
+   "n": 583,
+   "mean": -0.0173,
+   "ci95": [
+    -0.0433,
+    0.0096
+   ]
+  },
+  "metres": 15.6,
+  "metres_bar": 15.6,
+  "met": false
+ },
+ "F2": {
+  "rate": 0.4614,
+  "bar": 0.5443,
+  "w0": {
+   "n": 583,
+   "in_top": 259,
+   "rate": 0.4443
+  },
+  "met": false
+ },
+ "F3": {
+  "found": 573,
+  "bar": 568.26,
+  "met": true
+ },
+ "F4": {
+  "found": 574,
+  "found_bar": 559.58,
+  "metres": 23.25,
+  "metres_bar": 27.0,
+  "paired_wrong_w_minus_none": {
+   "n": 583,
+   "mean": -0.0495,
+   "ci95": [
+    -0.105,
+    0.0035
+   ]
+  },
+  "paired_bar": -0.05,
+  "met": true
+ },
+ "F5": {
+  "found": 572,
+  "found_bar": 568.26,
+  "paired_cloud_w_minus_cloud_0": {
+   "n": 583,
+   "mean": -0.0109,
+   "ci95": [
+    -0.0369,
+    0.0144
+   ]
+  },
+  "met": true
+ },
+ "F6": {
+  "names": 0,
+  "stand-in": 0,
+  "met": true
+ },
+ "every_bar_met": false,
+ "reported": {
+  "paired_cloud_w_minus_none_names": {
+   "n": 583,
+   "mean": 0.0766,
+   "ci95": [
+    0.0219,
+    0.1308
+   ]
+  },
+  "paired_wrong_0_minus_none_names": {
+   "n": 583,
+   "mean": -0.0223,
+   "ci95": [
+    -0.0712,
+    0.0265
+   ]
+  },
+  "by_category_names": {
+   "basketball": {
+    "n": 46,
+    "mean": -0.1354
+   },
+   "box": {
+    "n": 59,
+    "mean": -0.0296
+   },
+   "cart": {
+    "n": 29,
+    "mean": 0.1444
+   },
+   "dog bed": {
+    "n": 47,
+    "mean": -0.0207
+   },
+   "garbage bag": {
+    "n": 58,
+    "mean": 0.0086
+   },
+   "garbage can": {
+    "n": 149,
+    "mean": -0.0189
+   },
+   "house plant": {
+    "n": 82,
+    "mean": -0.0502
+   },
+   "laundry hamper": {
+    "n": 13,
+    "mean": -0.0302
+   },
+   "plunger": {
+    "n": 100,
+    "mean": 0.0154
+   }
+  }
+ }
+}
