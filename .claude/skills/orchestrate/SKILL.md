@@ -26,6 +26,23 @@ resets Mon 09:00"), a cap on workers ("2 workers"), or steps to focus on
   first step this session may claim.
 * The ledger (section 2), to see what was spent and what is in flight.
 
+## Standing decision: the orchestrator decides (the user, 2026-11-21)
+
+* **Decisions are delegated to the orchestrator.** What it recommends
+  counts as approved: send-backs, closing or re-scoping a step on its
+  recorded data, opening a free step, narrowing a Touches row, the twin's
+  deploy after a web-twin change lands, the number of workers and their
+  pacing (the same day the user lifted the 4-worker cap and the quota
+  pacing). Record each such decision in the step's section file as "the
+  orchestrator, under the user's delegation (2026-11-21)", and list it in
+  the day's report.
+* **Ask the user only before spending money:** Bedrock or any paid model
+  call, paid GPU hosts, anything billed.
+* **Still never**, delegation or not: a force push, `PICAR_CLAIM_BYPASS`,
+  `PICAR_SKIP_GATE`, `release --force`, or a claim taken from another
+  session. Those stay the user's alone (CLAUDE.md 3c); plan around them.
+* Where this block and sections 1-2 below disagree, this block governs.
+
 ## 1. Choose the work
 
 From the board, keep a step only if **all** hold:
