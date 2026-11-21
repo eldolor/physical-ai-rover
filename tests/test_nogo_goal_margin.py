@@ -79,9 +79,11 @@ def test_the_band_edge_is_goal_clear_m():
 def test_a_brain_goal_in_the_margin_is_not_refused_for_a_zone(zoned_server):
     """G5: autonomy is never refused here (3.161's Thermos finding: the trip
     home over a zone by the dock)."""
-    client, _, _ = zoned_server
+    client, bridge, _ = zoned_server
     client.put("/world/nogo", json={"frame_id": FRAME, "zones": [nogo.clean_zone(ZONE)]})
-    assert _tap(client, 3.05, 1.0, driver="brain").get("reason") != "no_go_zone"
+    r = _tap(client, 3.05, 1.0, driver="brain")
+    assert r["accepted"] is True, r
+    assert bridge.goal is not None
 
 
 def test_a_dpad_press_in_the_margin_drives(zoned_server):
@@ -93,6 +95,7 @@ def test_a_dpad_press_in_the_margin_drives(zoned_server):
     for verb in ("FORWARD", "LEFT", "REVERSE"):
         body = client.post("/action", json={"action": verb}, headers={"x-driver": "twin-dpad"}).json()
         assert "no_go" not in json.dumps(body), body
+        assert body["executed"] is True, body
 
 
 def test_the_simulation_holds_and_dev_fails_it():
@@ -120,7 +123,8 @@ def test_navfn_float_loop_misses_its_far_edge_on_some_goals():
         found.append(g.navfn_plans(lambda x, y, f=free_far: not f(x, y), gx, 0.5))
     assert True in found and False in found
     assert not g.navfn_plans(lambda x, y: True, 1.0, 0.5)
-    assert g.navfn_plans(lambda x, y: x < 0.95, 1.0, 0.5)             # -tolerance is always visited
+    # the goal's cell lethal, only the -tolerance column free: always visited
+    assert g.navfn_plans(lambda x, y: x > 0.9 + 1e-9, 1.0, 0.5)
 
 
 def test_the_recorded_summary_is_pinned():
