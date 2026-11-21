@@ -1,0 +1,60 @@
+{
+ "code": "3.197",
+ "S1": {
+  "positions": 12000,
+  "boxing_suspensions": 0,
+  "boxing_suspensions_outside": 0,
+  "cannot_plan_out": 0,
+  "vents": 2747,
+  "vent_cells_max": 5,
+  "vent_far_m_max": 0.2265,
+  "zone_points_unlethal": 0,
+  "by_heading": {
+   "0.0": {
+    "positions": 2000,
+    "boxing_suspensions": 0
+   },
+   "15.0": {
+    "positions": 2000,
+    "boxing_suspensions": 0
+   },
+   "30.0": {
+    "positions": 2000,
+    "boxing_suspensions": 0
+   },
+   "45.0": {
+    "positions": 2000,
+    "boxing_suspensions": 0
+   },
+   "60.0": {
+    "positions": 2000,
+    "boxing_suspensions": 0
+   },
+   "75.0": {
+    "positions": 2000,
+    "boxing_suspensions": 0
+   }
+  }
+ },
+ "S1b_3195_sampling": {
+  "positions": 12000,
+  "boxing_suspensions": 0,
+  "cannot_plan_out": 0
+ },
+ "S5_two_zones": {
+  "positions": 9000,
+  "boxing_suspensions": 0,
+  "cannot_plan_out": 0,
+  "vents": 6221
+ },
+ "S6_walks": {
+  "steps": 10000,
+  "cannot_plan_out": 0,
+  "boxing_suspensions": 0,
+  "vent_changes": 82
+ },
+ "S7_jitter": {
+  "robots": 900,
+  "flaps": 0
+ }
+}

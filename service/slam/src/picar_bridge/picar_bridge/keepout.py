@@ -285,12 +285,14 @@ def zone_distance(z: dict, x: float, y: float) -> float:
     return -d if _inside_poly(p, x, y) else d
 
 
-def suspend(zones: list, suspended: set, pose, fresh=(), phase=(0.0, 0.0)) -> set:
+def suspend(zones: list, suspended: set, pose, fresh=(), phase=(0.0, 0.0), boxed: bool = True) -> set:
     """D4: the ids left out of the mask after this pose ((x, y) in the map
     frame, or None when unknown: nothing changes). `fresh`: ids that just
     arrived, which the robot within LEAVE_M of also suspends. `phase`: the
     mask's lattice (mask()'s). 3.195: depth and leave measure from the zone
-    (`poly`); boxed tests the cells drawn (`drawn`, the grown polygon)."""
+    (`poly`); boxed tests the cells drawn (`drawn`, the grown polygon).
+    3.197: `boxed=False` skips the boxed rule (the bridge's step() vents
+    instead); the default keeps 3.193's rule for every other caller."""
     if pose is None:
         return {i for i in suspended if any(z["id"] == i for z in zones)}
     x, y = pose
@@ -308,7 +310,7 @@ def suspend(zones: list, suspended: set, pose, fresh=(), phase=(0.0, 0.0)) -> se
     # apart each draw an edge cell; neither alone boxes the robot): every
     # zone that draws one of the five cells is left out.
     drawn = [z for z in near if z["id"] not in out]
-    if drawn:
+    if drawn and boxed:
         px, py = phase
         i, j = math.floor((x - px) / RES_M), math.floor((y - py) / RES_M)
         five = [(px + (i + di) * RES_M, py + (j + dj) * RES_M)
@@ -412,33 +414,17 @@ def boxed(z: dict, x: float, y: float, res: float = RES_M, phase=(0.0, 0.0)) -> 
                for di, dj in ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)))
 
 
-def mask(spots: list, res: float = RES_M, zones=(), phase=(0.0, 0.0)) -> dict:
-    """One grid that covers every disc and zone polygon (a single unknown
-    cell when there are none, so a cleared set still replaces the last
-    mask). Row-major from the origin, +x then +y, as nav_msgs/OccupancyGrid.
-    A zone marks every cell it overlaps (3.193: before, only cells whose
-    centre was inside, which left up to half a cell of its edge passable); a
-    spot marks the cells whose centre is inside its disc."""
-    zones = list(zones or ())
-    if not spots and not zones:
-        return {"origin_x_m": 0.0, "origin_y_m": 0.0, "resolution_m": res,
-                "width": 1, "height": 1, "data": [UNKNOWN]}
-    polys = [_drawn(z) for z in zones]          # 3.195: the grown polygon, when the bridge gave one
-    xs = ([s["x_m"] - s["r_m"] for s in spots] + [s["x_m"] + s["r_m"] for s in spots]
-          + [p[0] for poly in polys for p in poly])
-    ys = ([s["y_m"] - s["r_m"] for s in spots] + [s["y_m"] + s["r_m"] for s in spots]
-          + [p[1] for poly in polys for p in poly])
-    x0, x1 = _lattice(min(xs) - MARGIN_M, res, phase[0]), max(xs) + MARGIN_M
-    y0, y1 = _lattice(min(ys) - MARGIN_M, res, phase[1]), max(ys) + MARGIN_M
-    w, h = int(math.ceil((x1 - x0) / res)), int(math.ceil((y1 - y0) / res))
-    data = [UNKNOWN] * (w * h)
+def _draw(polys, x0: float, y0: float, w: int, h: int, res: float, data: list) -> None:
+    """Mark 100 in `data` (w x h, row-major from (x0, y0)) every cell a
+    polygon overlaps, clipped to the grid: mask()'s zone rule, shared with
+    the vent's window (3.197)."""
     for poly in polys:
         # 3.193: every cell the zone touches. The cells whose centre is
         # inside, then every cell an edge passes through -- a cell that holds
         # part of the zone with its centre outside holds part of its edge.
         px, py = [p[0] for p in poly], [p[1] for p in poly]
-        i0, i1 = max(int((min(px) - x0) / res), 0), min(int((max(px) - x0) / res), w - 1)
-        j0, j1 = max(int((min(py) - y0) / res), 0), min(int((max(py) - y0) / res), h - 1)
+        i0, i1 = max(int(math.floor((min(px) - x0) / res)), 0), min(int(math.floor((max(px) - x0) / res)), w - 1)
+        j0, j1 = max(int(math.floor((min(py) - y0) / res)), 0), min(int(math.floor((max(py) - y0) / res)), h - 1)
         for j in range(j0, j1 + 1):
             # 3.195: the cells whose centre is inside, a row at a time (the
             # even-odd crossings of the row's centre line, as _inside_poly
@@ -453,6 +439,38 @@ def mask(spots: list, res: float = RES_M, zones=(), phase=(0.0, 0.0)) -> dict:
         for k in range(n):
             for i, j in _edge_cells(poly[k], poly[(k + 1) % n], x0, y0, res, w, h):
                 data[j * w + i] = 100
+
+
+def mask(spots: list, res: float = RES_M, zones=(), phase=(0.0, 0.0), holes=()) -> dict:
+    """One grid that covers every disc and zone polygon (a single unknown
+    cell when there are none, so a cleared set still replaces the last
+    mask). Row-major from the origin, +x then +y, as nav_msgs/OccupancyGrid.
+    A zone marks every cell it overlaps (3.193: before, only cells whose
+    centre was inside, which left up to half a cell of its edge passable); a
+    spot marks the cells whose centre is inside its disc. `holes` (3.197):
+    lattice cells (i, j) -- the cell [phase + i * res, phase + (i + 1) * res)
+    each way -- left unknown after the zones are drawn and before the spots
+    (the vent: a spot is never vented)."""
+    zones = list(zones or ())
+    if not spots and not zones:
+        return {"origin_x_m": 0.0, "origin_y_m": 0.0, "resolution_m": res,
+                "width": 1, "height": 1, "data": [UNKNOWN]}
+    polys = [_drawn(z) for z in zones]          # 3.195: the grown polygon, when the bridge gave one
+    xs = ([s["x_m"] - s["r_m"] for s in spots] + [s["x_m"] + s["r_m"] for s in spots]
+          + [p[0] for poly in polys for p in poly])
+    ys = ([s["y_m"] - s["r_m"] for s in spots] + [s["y_m"] + s["r_m"] for s in spots]
+          + [p[1] for poly in polys for p in poly])
+    x0, x1 = _lattice(min(xs) - MARGIN_M, res, phase[0]), max(xs) + MARGIN_M
+    y0, y1 = _lattice(min(ys) - MARGIN_M, res, phase[1]), max(ys) + MARGIN_M
+    w, h = int(math.ceil((x1 - x0) / res)), int(math.ceil((y1 - y0) / res))
+    data = [UNKNOWN] * (w * h)
+    _draw(polys, x0, y0, w, h, res, data)
+    if holes:
+        oi, oj = round((x0 - phase[0]) / res), round((y0 - phase[1]) / res)
+        for i, j in holes:
+            li, lj = i - oi, j - oj
+            if 0 <= li < w and 0 <= lj < h:
+                data[lj * w + li] = UNKNOWN
     for s in spots:
         r2 = s["r_m"] ** 2
         i0, i1 = int((s["x_m"] - s["r_m"] - x0) / res), int((s["x_m"] + s["r_m"] - x0) / res)
@@ -465,3 +483,153 @@ def mask(spots: list, res: float = RES_M, zones=(), phase=(0.0, 0.0)) -> dict:
                     data[j * w + i] = 100
     return {"origin_x_m": x0, "origin_y_m": y0, "resolution_m": res,
             "width": w, "height": h, "data": data}
+
+
+# ---------- 3.197: the vent ----------
+# D4's boxed rule left a zone out WHOLE (until the robot was LEAVE_M clear)
+# whenever the drawn cells boxed the robot, which happens all along a slanted
+# edge and at corners (the Rover's zones are rotated by its start heading);
+# and a slanted gap between two zones could leave the robot a free
+# 4-neighbour that leads nowhere (NavFn's A* is 4-connected), which the
+# boxed rule never saw. Instead, the bridge's step() undraws the fewest
+# cells that give the robot a way out -- a VENT -- and draws everything else.
+
+VENT_REACH_CELLS = 10     # a 4-connected walk this far (Chebyshev, cells) from the robot's cell is out
+VENT_MAX_CELLS = 20       # a vent larger than this: D4's whole-zone rule, as before (amendment 1: 10 left lanes out)
+_COST_MARGIN, _COST_EDGE, _COST_BODY = 1, 4, 16   # freeing a cell drawn by a margin / a zone's edge / its body
+
+
+def _cell_of(x: float, y: float, phase) -> tuple:
+    return math.floor((x - phase[0]) / RES_M), math.floor((y - phase[1]) / RES_M)
+
+
+def _window(view: list, phase, ci: int, cj: int, r: int) -> dict:
+    """{(i, j): cost} for each cell within r (Chebyshev) of (ci, cj) that a
+    zone of `view` draws; an undrawn cell is absent. The cost of freeing it:
+    _COST_MARGIN when only a margin draws it, _COST_EDGE when a zone as the
+    person drew it touches it, _COST_BODY when its centre is inside one."""
+    n = 2 * r + 1
+    x0, y0 = phase[0] + (ci - r) * RES_M, phase[1] + (cj - r) * RES_M
+    drawn, body = [UNKNOWN] * (n * n), [UNKNOWN] * (n * n)
+    _draw([_drawn(z) for z in view], x0, y0, n, n, RES_M, drawn)
+    _draw([z["poly"] for z in view], x0, y0, n, n, RES_M, body)
+    out = {}
+    for lj in range(n):
+        for li in range(n):
+            k = lj * n + li
+            if drawn[k] != 100 and body[k] != 100:
+                continue
+            cost = _COST_MARGIN
+            if body[k] == 100:
+                cx, cy = x0 + (li + 0.5) * RES_M, y0 + (lj + 0.5) * RES_M
+                cost = _COST_BODY if any(_inside_poly(z["poly"], cx, cy) for z in view) else _COST_EDGE
+            out[(ci - r + li, cj - r + lj)] = cost
+    return out
+
+
+def _escapes(grid: dict, start: tuple, holes=(), reach: int = VENT_REACH_CELLS) -> bool:
+    """A 4-connected walk from `start` (free: NavFn frees the robot's own
+    cell) through cells not drawn, or vented, to one `reach` cells away."""
+    si, sj = start
+    seen, todo = {start}, [start]
+    while todo:
+        i, j = todo.pop()
+        if max(abs(i - si), abs(j - sj)) >= reach:
+            return True
+        for c in ((i + 1, j), (i - 1, j), (i, j + 1), (i, j - 1)):
+            if c not in seen and (c not in grid or c in holes):
+                seen.add(c)
+                todo.append(c)
+    return False
+
+
+def _cheapest_vent(grid: dict, start: tuple, reach: int = VENT_REACH_CELLS):
+    """The drawn cells on the cheapest 4-connected path from `start` to a
+    cell `reach` away (each drawn cell costs its grid cost, an undrawn one
+    nothing; fewer steps break ties), plus `start` itself when drawn; or
+    None when that is more than VENT_MAX_CELLS cells."""
+    import heapq
+    si, sj = start
+    best = {start: (0, 0)}
+    prev = {}
+    heap = [(0, 0, start)]
+    goal = None
+    while heap:
+        cost, steps, c = heapq.heappop(heap)
+        if best.get(c, (math.inf, 0)) < (cost, steps):
+            continue
+        if max(abs(c[0] - si), abs(c[1] - sj)) >= reach:
+            goal = c
+            break
+        i, j = c
+        for nb in ((i + 1, j), (i - 1, j), (i, j + 1), (i, j - 1)):
+            if max(abs(nb[0] - si), abs(nb[1] - sj)) > reach:
+                continue
+            key = (cost + grid.get(nb, 0), steps + 1)
+            if key < best.get(nb, (math.inf, 0)):
+                best[nb] = key
+                prev[nb] = c
+                heapq.heappush(heap, (key[0], key[1], nb))
+    if goal is None:
+        return None
+    cells, c = set(), goal
+    while c != start:
+        if c in grid:
+            cells.add(c)
+        c = prev[c]
+    if start in grid:
+        cells.add(start)
+    return frozenset(cells) if len(cells) <= VENT_MAX_CELLS else None
+
+
+def _vent(drawn: list, pose, phase, vent: frozenset):
+    """(the vent after this pose, the ids D4 must leave out whole because no
+    vent of VENT_MAX_CELLS opens a way). `drawn`: the zones as drawn this
+    step (margins and D4's depth and fresh rules already applied)."""
+    x, y = pose
+    reach_m = (VENT_REACH_CELLS + 2) * RES_M * math.sqrt(2)
+    near = [z for z in drawn if zone_distance({"poly": _drawn(z)}, x, y) < reach_m]
+    if not near:
+        return frozenset(), set()
+    start = _cell_of(x, y, phase)
+    r = VENT_REACH_CELLS + 1                       # one more: a HYST_M probe may sit in a neighbour cell
+    grid = _window(near, phase, start[0], start[1], r)
+    if vent and _escapes(grid, start, vent):
+        # kept until the robot could leave with no vent at its pose and
+        # HYST_M round it (3.195's hysteresis: a mm of jitter on a cell
+        # boundary must not open and close it every tick)
+        probes = {_cell_of(x + sx * HYST_M, y + sy * HYST_M, phase) for sx in (-1, 1) for sy in (-1, 1)}
+        if all(_escapes(grid, c) for c in probes | {start}):
+            return frozenset(), set()
+        return vent, set()
+    if not vent and _escapes(grid, start):
+        return frozenset(), set()
+    new = _cheapest_vent(grid, start)
+    if new is not None:
+        return new, set()
+    # no small vent: D4's rule, as before -- every zone drawing one of the
+    # robot's five cells is left out whole
+    by = _boxing(near, _five(x, y, phase))
+    return frozenset(), {z["id"] for zs in by for z in zs}
+
+
+def step(zones: list, state: dict, pose, phase=(0.0, 0.0), fresh=()) -> dict:
+    """The bridge's whole zone step for this pose ((x, y), map frame, or None
+    when unknown): 3.195's margins first, then D4's depth and fresh rules,
+    then the vent (3.197) where 3.193's boxed rule left zones out whole.
+    `state`: {"suspended", "bare", "vent", "vent_phase"} as the last step
+    returned it (a missing key is empty). Returns the same keys: `bare` is
+    3.195's zones_bare (never also suspended); `vent` the lattice cells
+    mask(holes=) leaves undrawn."""
+    susp0, bare0 = set(state.get("suspended") or ()), set(state.get("bare") or ())
+    vent0 = frozenset(state.get("vent") or ())
+    if vent0 and phase_moved(state.get("vent_phase") or (0.0, 0.0), phase):
+        vent0 = frozenset()                        # a new lattice: the cells are not the same cells
+    off = margins_off(zones, bare0, susp0, pose, phase, fresh=fresh)
+    view = bare(zones, off)
+    after = suspend(view, susp0, pose, fresh, phase=phase, boxed=False)
+    vent = vent0
+    if pose is not None:
+        vent, whole = _vent([z for z in view if z["id"] not in after], pose, phase, vent0)
+        after |= whole
+    return {"suspended": after, "bare": off - after, "vent": vent, "vent_phase": tuple(phase)}
