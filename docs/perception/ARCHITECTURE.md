@@ -314,10 +314,8 @@ memory, about half of the 8 GB the CPU and GPU share. The user set a floor
 of 0.5 GB free with the VLM the first thing killed (2026-10-14). A process
 of its own is what lets the kernel take the VLM and nothing else: the
 robot server, the brain and perception keep running, and the identity
-question goes to the cloud. **Rejected:** loading it inside the brain, as
-perception is. Running out of memory would then kill the mission loop and
-its failsafes together with the model, and a robot mid-mission would lose
-its brain to save its least essential part. The price is a second local
+question goes to the cloud (3.80.B: its own process, so that an
+out-of-memory kill takes it and nothing else). The price is a second local
 service with its own liveness, start-up and wire format, which the brain
 must be able to lose at any moment.
 

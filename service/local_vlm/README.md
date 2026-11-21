@@ -14,8 +14,8 @@ asks the cloud.
   `docs/perception/ARCHITECTURE.md`, "The local VLM: a separate service,
   asked before the cloud".
 * The routes, the environment variables, the constants, the procedures and
-  the tests: `docs/engineering/perception/ENGINEERING.md` (search it for
-  "The local VLM service").
+  the tests: `docs/engineering/perception/ENGINEERING.md`, "Interfaces",
+  the paragraph "The local VLM service (3.80.B)".
 
 ## What is here
 
