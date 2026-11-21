@@ -2,7 +2,7 @@
 kind: architecture
 domain: perception
 status: current
-verified: 2026-10-08
+verified: 2026-11-21
 ---
 
 # Perception -- architecture
@@ -13,8 +13,11 @@ It is what lets the tiered policy call the cloud only on events, what gives
 the robot a bearing to steer on, and what the arrival rule pairs with the
 lidar. Since 3.46 it has a second, passive product: an **inventory** of
 every object a mission saw, and where. It does not decide moves ([policy](../policy/ARCHITECTURE.md)) and it
-is not meant to confirm identity -- the cloud model is, at arrival too (see
-"Detect, then verify"). Read this for why the tier
+is not meant to confirm identity -- a vision-language model is, at arrival
+too (see "Detect, then verify"): since 3.80 the **local VLM** on the board
+first, then the cloud. The local VLM is a separate service with its home in
+this spec ("The local VLM: a separate service, asked before the cloud").
+Read this for why the tier
 is a detector plus a verifier with a three-state answer; read the
 [engineering spec](../engineering/perception/ENGINEERING.md) for the shipped
 models, thresholds, commands and recorded numbers.
@@ -49,6 +52,12 @@ measured through the same pipeline the robot runs.
                                v
                      tiered policy, arrival rule, status
 
+  local VLM (3.80; its own process, on the board only):
+    a frame + the target words -> a score for "is this the target?"
+      (and, when asked, where in the frame)
+      -> the tiered policy, which owns the thresholds
+    not there (not installed, loading, killed) -> the cloud is asked instead
+
   object inventory (3.46, recorded and reported only):
     every frame's detections + the lidar + the map pose
       -> placed observations -> landmarks with a belief and a class vote
@@ -68,6 +77,8 @@ measured through the same pipeline the robot runs.
 | Region-proposer seam | class-agnostic regions (a floor mask today; off) | replace the detector's boxes -- only add to them |
 | Pipeline | crop rule, gate, tri-state, bearing | load any model at import time; run on a raycaster render |
 | Frame-reported pipeline | the sim's stand-in, read from frame data | compute anything; claim a model ran |
+| Local VLM service (3.80) | one resident vision-language model on the board, answering one question at a time about one frame with a raw score | decide what its score means (the policy's thresholds do); drive, steer or veto; be needed for a mission to start or to continue; hold memory the robot stack needs (it is the first process killed) |
+| Local VLM client (in the brain) | asking the service, and telling *unable* (it answered, but not usefully) from *absent* (nothing there to answer) | turn a hang into absence, or absence into a "no" |
 | Object inventory | every object a mission saw: placed by the lidar, fused into landmarks, weighted by independent looks | be read by any policy; place an object without a range; store an image |
 | Lab backends | candidates on equal footing (open-vocabulary detectors, a small VLM, SAM) | be imported by the shipped pipeline |
 | Corpus scorer, target probe, latency bench | measurement | feed the robot; the recordings domain owns the corpus itself |
@@ -271,17 +282,125 @@ It is uploaded to the project's private recordings store (decided by the
 user 2026-10-07) as labels and positions only -- never an image -- because
 it is a list of what is in someone's home.
 
-### A local VLM, in its own process, the first thing lost (3.80)
+### The local VLM: a separate service, asked before the cloud (3.80)
 
-The identity question at arrival ("is this the target?") can be answered
-on the board: 3.78 measured a small VLM there more precise than the cloud
-on the same frames, and fast enough to answer while the robot waits. It
-runs as **its own service**, not inside the brain, for one reason: it is
-the largest single user of memory, and when memory runs out the kernel
-must take it and nothing that keeps the robot safe. A VLM that is gone is
-*absent*, and the question goes to the cloud; the robot keeps driving.
-The order of asking is perception, then the local VLM, then the cloud
-(the user, 2026-10-14); the brain decides what each answer means.
+This section is the one place that says what the local VLM is, why it is
+its own service, which questions go to it and which to the cloud, and what
+happens when it is down. How it is built, run and measured is in the
+[engineering spec](../engineering/perception/ENGINEERING.md) ("The local
+VLM service"); the thresholds and the order of asking are the
+[policy](../policy/ARCHITECTURE.md)'s.
+
+**What it is.** A small vision-language model resident on the board's GPU,
+behind an HTTP service on the board's loopback address. It is handed one
+camera frame and the target's words and answers one question at a time. It
+returns a raw score and a status, never a verdict: the brain's tiered
+policy decides what a score means. It is the middle tier of identity, in
+the order the user set (2026-10-13 and 2026-10-14): perception every frame,
+then the local VLM, then the cloud. Which model and runtime fill it is an
+engineering choice (3.78 chose it; 3.80.D-T tried the others and none
+replaced it).
+
+**Why it exists.** 3.78 measured a small VLM on the board that meets the
+identity bars 3.48 set, answers while the robot waits at arrival, and on
+the same 299 frames is more precise than the cloud model (97.2% against
+67.9%). So most identity questions can be answered on the rover, free,
+with the internet unplugged. And so the cloud does not overrule a
+confident local answer: it resolves what the local tiers *could not
+answer* (3.80).
+
+**Why a separate service.** It is the largest single user of the board's
+memory, about half of the 8 GB the CPU and GPU share. The user set a floor
+of 0.5 GB free with the VLM the first thing killed (2026-10-14). A process
+of its own is what lets the kernel take the VLM and nothing else: the
+robot server, the brain and perception keep running, and the identity
+question goes to the cloud. **Rejected:** loading it inside the brain, as
+perception is. Running out of memory would then kill the mission loop and
+its failsafes together with the model, and a robot mid-mission would lose
+its brain to save its least essential part. The price is a second local
+service with its own liveness, start-up and wire format, which the brain
+must be able to lose at any moment.
+
+**Which questions go to it.** With a local VLM configured, every question
+the tiered policy used to send to the cloud goes to the local VLM first:
+
+- **The arrival question** (3.80.C): the lidar rule holds, the robot is
+  stopped, "is this the target?". A confident yes ends the mission
+  **found** with no cloud call; a confident no refuses the arrival, as the
+  cloud's no does.
+- **A frame's question during the search** (3.80.D): when perception has a
+  candidate it is unsure of, when the target is a word the detector has no
+  class for, and on each event that used to trigger a cloud call (mission
+  start, a candidate sighting, a cold search, staleness). Here a yes also
+  says where in the frame, and the policy may steer on it.
+- **A search direction** ("left, right or forward?", 3.80.F) is built and
+  **off**: its acceptance failed (the model said forward on 10 of 10
+  frames). Where to look comes from the map
+  ([policy](../policy/ARCHITECTURE.md), "Where to look is chosen from the
+  map, never from a frame"). Training the model to steer is open work
+  (3.188, 3.206).
+
+**Which go to the cloud.**
+
+- A question the local VLM was **unable** to answer: a score between its
+  yes and its no, a reply that could not be read, its deadline passed, or
+  it was busy with another question. After a small fixed number of unable
+  answers in a row the cloud is asked.
+- Every question while the local VLM is **absent** (below).
+- A local "no" given where the model cannot tell (the candidate too small
+  or too large in the frame, 3.91.C): the cloud is asked once.
+- What was never the local VLM's: room names, and the late confirmation
+  of an arrival that ended unconfirmed (3.53).
+
+A higher tier's answer is never undone by a lower one (the user,
+2026-10-24). Cloud questions keep the cloud's own pace and call cap, so a
+lost local tier makes a mission slower and paid; it does not multiply the
+cloud calls (3.152).
+
+**When it is down.** The brain tells two failures apart, because they call
+for opposite responses:
+
+- **Unable**: the service is there and did not answer usefully, a hang
+  included. Counted, as above. A wedged service costs a bounded number of
+  questions, then the cloud is asked; a slow VLM is kept.
+- **Absent**: there is nothing to ask. The connection is refused or
+  dropped (a kill drops it mid-request), or the service says it is still
+  loading or has lost its model. The question that found it absent is
+  handed to the cloud, and the absence is **remembered** (3.152): until
+  the service's free health check says it is ready, no question is sent
+  to it and every decision is exactly the one a mission with no local
+  tier makes. The first ready answer brings it back, with its counts
+  starting afresh.
+
+A mission never waits for the local VLM: not to start, not to continue.
+If the cloud is unreachable as well, the search goes on with perception
+alone, and an arrival ends **arrived_unconfirmed**, never **found**
+([mission](../mission/ARCHITECTURE.md)).
+
+**Down is not "off".** Whether a local tier is *configured* and whether it
+is *up* are two facts, reported apart. A brain configured for a local VLM
+that is down still says it has one, and its questions are going to the
+paid cloud. The live state (up, down since when, unwatched, off) is in
+the mission's status and on the twin, with a line for the operator while
+it is down (3.152.A).
+
+**Coming back.** The service ends itself when its model process dies, so
+the board's service manager decides on a restart: after a delay, and only
+a few times in a quarter of an hour. Past that it is left stopped, and
+absent, until a person starts it. **Rejected:** restarting for ever with a
+delay (3.152.B). In a crash loop where memory is short, every restart is a
+load the size of half the board; no delay tried met the robot stack's
+bars, and every one lost a mission in a memory squeeze.
+
+**Where it runs.** On the board only, started at boot since 3.108 (the
+user, 2026-10-26). A laptop, the automated suite and the cloud deployment
+have no local VLM, and the shipped configuration leaves it off: there the
+ladder is perception, then the cloud. On the simulator's frames an arrival
+and a local "no" are judged from geometry (3.98, 3.143), so no model is
+asked about a render (see "The simulator reports detections").
+Measurements on the board hold the VLM off for their run and put it back
+as they found it (3.108), because its load is the size of the thing most
+of them measure.
 
 ## Contracts
 
@@ -296,6 +415,10 @@ The order of asking is perception, then the local VLM, then the cloud
 | Simulator ([simulator](../simulator/ARCHITECTURE.md)) | supplies reported detections in sim frames | frame data | the simulator owns visibility geometry |
 | Recordings ([recordings](../recordings/ARCHITECTURE.md)) | instruments read walks and human labels | files | recordings owns the corpus and its labels |
 | Cloud vision ([cloud-vision](../cloud-vision/ARCHITECTURE.md)) | none directly | -- | the cloud owns identity; perception never overrides it |
+| Tiered policy ([policy](../policy/ARCHITECTURE.md)), local VLM | the policy asks the service through the brain's client: at arrival, on a frame's question | HTTP on the board's loopback, behind the shared secret; a frame and the target in, a status and a raw score out | the service owns the model and its answer; the policy owns the thresholds, the count of unable answers, and when the cloud is asked |
+| Mission service ([mission](../mission/ARCHITECTURE.md)), local VLM | builds the client per mission and closes it with the policy; publishes the tier's live state | in-process construction; never probed at start | a local VLM that is not there never refuses or delays a mission's start |
+| Operations ([operations](../operations/ARCHITECTURE.md)), local VLM | the board's service manager starts it at boot, restarts it within a limit, and kills it first when memory runs out | a service unit beside the robot stack's | operations owns the units and the kill order; this domain owns what the service does |
+| Twin ([twin](../twin/ARCHITECTURE.md)), local VLM | reads the tier's state from the mission's status | HTTP, read-only | the twin shows it and decides nothing |
 
 ## Failure modes and resilience targets
 
@@ -311,6 +434,12 @@ The order of asking is perception, then the local VLM, then the cloud
 | Inventory: no range, no pose, or another map | the observation is counted and not placed | no object placed without a lidar range in the current map |
 | Inventory: the detector errs (drops, wrong labels) | belief needs two independent looks; a wrong label is a minority vote | reported landmarks within 1 m of a real object of their class: 95% (3.46) |
 | Inventory: the upload fails | logged; the local file stands | never fails or delays the end of a mission |
+| Local VLM absent: not installed, loading, killed for memory, its model process dead | the question goes to the cloud; the absence is held and health-checked until it is ready again; the policy is the no-local-tier policy meanwhile | no mission waits on it; nothing is sent to a service known to be down (3.152) |
+| Local VLM unable: a hang, an unreadable reply, a score between yes and no, busy | counted; after the limit the cloud is asked | a wedged VLM costs a bounded number of questions, never a mission |
+| Local VLM down and the cloud unreachable | the search continues on perception; an arrival ends **arrived_unconfirmed** | never **found** without an identity answer |
+| Local VLM keeps dying (a memory crash loop) | restarted a few times, then left stopped until a person starts it | a load of half the board's memory is not repeated for ever |
+| Memory runs out on the board | the kernel kills the local VLM first | the robot stack is never killed before it; 0.5 GB free is the floor (the user, 2026-10-14) |
+| Local VLM down, unnoticed | the mission's status and the twin say down, and since when | "configured" is never read as "up" |
 | A real camera mistaken for the sim | provenance read once; failure assumes a real camera | real frames never get synthetic detections |
 
 ## Open questions
@@ -334,6 +463,12 @@ The order of asking is perception, then the local VLM, then the cloud
   (3.46 amendment 2, recall up), a landmark whose labels tie can be
   reported under the wrong one; 3.46 records one such case. Unchanged
   until it is judged on missions it has not seen.
+- **Can the local VLM steer?** Asked for a direction it failed (3.80.F);
+  its box steers only while the target is in view. Training it on a
+  frontier model's direction labels is open (3.188, 3.206).
+- **The local VLM on the Rover's own camera.** Every accuracy number it
+  has comes from phone frames shot at floor height; 3.80.U re-measures
+  them on the Rover's frames.
 - **Its own process** (2.7: features, not frames) so a stalled detector
   degrades perception rather than the control loop -- proposed, not built
   (see "Perception runs in the brain process").
