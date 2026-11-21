@@ -63,8 +63,8 @@ def test_a_first_run_page_on_a_static_host_requests_no_robot_route(browser, stat
     assert page.input_value("#cfg-server-url") == ""
     robot = [p for p in seen if p.startswith(ROBOT_ROUTES)]
     assert robot == [], f"a page with no robot asked: {robot}"
+    assert "picar-robot-origin" not in page.content()
     assert errors == []
-    page.screenshot(path="/tmp/first-run-390.png")
     context.close()
 
 
