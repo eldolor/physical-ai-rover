@@ -121,6 +121,14 @@ class NoGoStore:
             return dict(empty, unreadable=str(e)[:200])
         return {"version": 1, "frame_id": frame_id, "rev": rev, "zones": zones}
 
+    def any_zones(self) -> bool:
+        """3.161.B K2: does any saved map have a zone stored? (The keeper's
+        "is anything owed" before the pose has named a map.)"""
+        for path in self.dir.glob("*.json"):
+            if self.zones(path.stem):
+                return True
+        return False
+
     def zones(self, frame_id: Optional[str]) -> list:
         return self.load(frame_id)["zones"]
 
@@ -247,12 +255,21 @@ def held(base_url: str, secret: Optional[str], timeout: float = 5.0) -> Optional
 
 def lacking(copy: Optional[dict], frame_id: str, zones: list) -> bool:
     """3.161.B K2: does the robot server's answer (`held`) show it, or the
-    bridge behind it, without the set `zones` for `frame_id`? An unreadable
-    answer (None) is not a lack: no information is no reason to send."""
+    bridge behind it, without the set `zones` for `frame_id`? Zones are
+    compared by id and corners (review: an edit whose send failed keeps the
+    id). An unreadable answer (None) is not a lack: no information is no
+    reason to send; nor is an empty set where the copy holds none."""
     if not isinstance(copy, dict):
         return False
-    have = sorted(str(z.get("id")) for z in (copy.get("zones") or []) if isinstance(z, dict))
-    if copy.get("frame_id") != frame_id or have != sorted(str(z.get("id")) for z in zones):
+    have = copy.get("zones") or []
+    if not zones and not have:
+        return False
+
+    def shape(zs):
+        return sorted((str(z.get("id")),) + tuple(round(float(z.get(k) or 0.0), 3)
+                                                  for k in ("x0", "y0", "x1", "y1"))
+                      for z in zs if isinstance(z, dict))
+    if copy.get("frame_id") != frame_id or shape(have) != shape(zones):
         return True
     if copy.get("sent") is False:
         return True

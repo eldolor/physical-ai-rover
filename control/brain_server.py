@@ -141,11 +141,10 @@ logger = logging.getLogger("brain_server")
 # 3.81.E: how long a start waits for the ended mission to finish closing.
 PREVIOUS_CLOSE_WAIT_S = 10.0
 # 3.161.B K2: the no-go keeper's poll, its backoff after a failed send (the
-# last step repeats for ever), how long a start in flight holds it, and how
-# often a repeated failure at the cap is logged again.
+# last step repeats for ever), and how often a repeated failure at the cap is
+# logged again.
 NOGO_KEEP_POLL_S = 2.0
-NOGO_BACKOFF_S = (1.0, 2.0, 4.0, 8.0)
-NOGO_START_HOLD_S = 30.0
+NOGO_BACKOFF_S = (1.0, 2.0, 4.0, 8.0, 16.0, 30.0)
 NOGO_REPEAT_LOG_S = 60.0
 
 
@@ -1167,6 +1166,7 @@ def create_app(
         # that resumes after one of them cannot start a late check for a
         # mission that is no longer the current one.
         "reconfirm": None, "generation": 0,
+        "nogo_starting": 0,     # 3.161.B K2: starts between their bump and their runner
     }
 
     # 3.56: `status.cloud`. Probes the vision service's free /health only
@@ -1503,38 +1503,42 @@ def create_app(
         # before it can move -- and the generation bump stops an old loop
         # still finishing from starting one for itself.
         # 3.161.B K2: from here until the runner is installed the start sends
-        # its own (possibly reduced) set; the keeper holds off.
-        state["nogo_starting"] = time.monotonic()
-        state["generation"] += 1
-        cancel_reconfirm("a new mission started")
-        state["tick_timeout_s"] = getattr(runner, "tick_timeout_s", state["tick_timeout_s"])
-        runner.started_by = started_by      # 3.163.B: None for a person's start
-        # 3.161 (D2): the saved map's zones, to the mission and the robot
-        # server, before it can move. No saved map: none (and none sent).
-        # 3.161.B part 2 (E4): the mission's dock is read first, so a zone
-        # over it is left out of both (and reported).
+        # its own (possibly reduced) set; the keeper holds off. A count, not a
+        # time (review: a slow start outlasted a timed hold), dropped in a
+        # finally (review: a start that raises must not hold it).
+        state["nogo_starting"] = state.get("nogo_starting", 0) + 1
         try:
-            pose, frame_id = await asyncio.to_thread(_pose_and_frame)
-        except Exception as e:  # noqa: BLE001 -- no frame read: no zones, never a refusal
-            logger.warning("no-go zones: the pose could not be read at start: %s", e)
-            pose, frame_id = None, None
-        if pose and hasattr(runner, "read_dock"):
-            runner.read_dock(pose)          # the same read: no second await (review)
-        if frame_id:
-            zones = nogo_store_mod.default_store().zones(frame_id)
-            runner.set_nogo(frame_id, zones)
-            state["nogo_sent"] = await asyncio.to_thread(_nogo_send, frame_id,
-                                                         list(runner.nogo_zones))
-        # Review: a pose not usable at the start (a SLAM restart's first
-        # seconds) is not a mission without zones -- explore asks for the
-        # saved map's zones once its pose names one.
-        runner.nogo_source = nogo_store_mod.default_store().zones
-        # Off the tick's thread (review 2): a slow robot server never holds a tick.
-        runner.nogo_sink = functools.partial(_nogo_sink, runner)
-        runner.start()
-        state["fault"] = req.fault or drills.NONE
-        state["runner"] = runner
-        state["nogo_starting"] = None       # 3.161.B K2: the keeper may send again
+            state["generation"] += 1
+            cancel_reconfirm("a new mission started")
+            state["tick_timeout_s"] = getattr(runner, "tick_timeout_s", state["tick_timeout_s"])
+            runner.started_by = started_by      # 3.163.B: None for a person's start
+            # 3.161 (D2): the saved map's zones, to the mission and the robot
+            # server, before it can move. No saved map: none (and none sent).
+            # 3.161.B part 2 (E4): the mission's dock is read first, so a zone
+            # over it is left out of both (and reported).
+            try:
+                pose, frame_id = await asyncio.to_thread(_pose_and_frame)
+            except Exception as e:  # noqa: BLE001 -- no frame read: no zones, never a refusal
+                logger.warning("no-go zones: the pose could not be read at start: %s", e)
+                pose, frame_id = None, None
+            if pose and hasattr(runner, "read_dock"):
+                runner.read_dock(pose)          # the same read: no second await (review)
+            if frame_id:
+                zones = nogo_store_mod.default_store().zones(frame_id)
+                runner.set_nogo(frame_id, zones)
+                state["nogo_sent"] = await asyncio.to_thread(_nogo_send, frame_id,
+                                                             list(runner.nogo_zones))
+            # Review: a pose not usable at the start (a SLAM restart's first
+            # seconds) is not a mission without zones -- explore asks for the
+            # saved map's zones once its pose names one.
+            runner.nogo_source = nogo_store_mod.default_store().zones
+            # Off the tick's thread (review 2): a slow robot server never holds a tick.
+            runner.nogo_sink = functools.partial(_nogo_sink, runner)
+            runner.start()
+            state["fault"] = req.fault or drills.NONE
+            state["runner"] = runner
+        finally:
+            state["nogo_starting"] -= 1   # the runner is in (or the start failed)
         state["task"] = asyncio.create_task(mission_loop(runner, state["generation"]))
         if state["recorder"] is not None:
             state["recorder"].stop()       # finishes when its runner has stopped
@@ -1760,29 +1764,32 @@ def create_app(
             state["nogo_sent"] = _nogo_send(
                 frame_id, nogo_store_mod.split_for_dock(zones, dock)[0])
 
-    nogo_keeper_stop = threading.Event()
+    nogo_keeper = {"stop": None, "thread": None}
 
     def _nogo_keep_once(last: dict) -> Optional[str]:
         """3.161.B K2 (replaces R-f's single start-up attempt): one pass of
         the keeper. Sends the set in force for the saved map the pose names
         when that (SLAM session, map) has not taken a send yet, or when the
-        robot server's copy or the bridge behind it lacks the set; never
-        anything else, and never a move. Returns None when nothing needed
-        sending or the send was taken, else why it failed (a pose read that
-        fails is a failure only while any zone file exists). `last` carries
-        the (map_id, frame_id) that last took a send."""
+        robot server's copy or the bridge behind it lacks the set; with
+        nothing stored for the map, an empty set only to clear a copy still
+        holding zones (review). Never anything else, never a move. Returns
+        None when nothing needed sending or the send was taken, else why it
+        failed. A pose read that fails is a failure only while zones are
+        stored for the last map the pose named (or, before any, for any map).
+        `last` carries the (map_id, frame_id) that last took a send, and the
+        last frame named."""
         base = config.get("world_url") or getattr(robot(), "base_url", None)
         if not base:
             return None
+        store = nogo_store_mod.default_store()
         try:
             pose, frame_id = _pose_and_frame()
         except Exception as e:  # noqa: BLE001 -- the robot server not up yet
-            store_dir = nogo_store_mod.default_store().dir
-            if any(store_dir.glob("*.json")):
-                return f"the pose could not be read: {e}"[:200]
-            return None
+            owed = store.zones(last["frame"]) if last.get("frame") else store.any_zones()
+            return f"the pose could not be read: {e}"[:200] if owed else None
         if not frame_id:
             return None                     # no saved map named (yet): nothing to keep
+        last["frame"] = frame_id
         key = (pose.get("map_id"), frame_id)
         if key == last.get("key"):
             want = _nogo_in_force(frame_id, pose)
@@ -1790,12 +1797,15 @@ def create_app(
                     nogo_store_mod.held(base, robot_secret, timeout=config["request_timeout_s"]),
                     frame_id, want):
                 return None
-        dock = _known_dock(frame_id, pose)
-        with nogo_push_lock:
-            if not nogo_store_mod.default_store().zones(frame_id):
-                last["key"] = key           # R-f: nothing stored, nothing to give back
+        elif not store.zones(frame_id):
+            # R-f: nothing stored for a new map, nothing to give back -- unless
+            # the copy still holds zones (another map's), which a clear ends.
+            copy = nogo_store_mod.held(base, robot_secret, timeout=config["request_timeout_s"])
+            if not (isinstance(copy, dict) and copy.get("zones")):
+                last["key"] = key
                 return None
-            zones = _nogo_in_force(frame_id, pose, dock)
+        with nogo_push_lock:
+            zones = _nogo_in_force(frame_id, pose)
             if zones is None:
                 return None                 # a start or a mission's own send has it
             reply = _nogo_send(frame_id, zones)
@@ -1807,44 +1817,45 @@ def create_app(
             return None
         return str(reply.get("detail") or "refused")[:200]
 
-    def _nogo_in_force(frame_id, pose, dock=None) -> Optional[list]:
-        """The set in force for `frame_id` now (under the send lock when it is
-        sent): a running mission's own set when it runs on that map (E4: never
-        the stored set over its reduced one), else the stored set split for
-        the saved dock. None while a start is in flight (up to
-        NOGO_START_HOLD_S) or a mission runs that has no saved map yet."""
+    def _nogo_in_force(frame_id, pose) -> Optional[list]:
+        """The set in force for `frame_id` now, decided under the send lock
+        (the dock too: review, a mission ending between the reads): a running
+        mission's own set when it runs on that map (E4: never the stored set
+        over its reduced one), else the stored set split for the saved dock.
+        None while a start is between its generation bump and its runner, or
+        a mission runs that has no saved map yet."""
         with nogo_push_lock:
-            started = state.get("nogo_starting")
-            if started is not None and time.monotonic() - started < NOGO_START_HOLD_S:
+            if state.get("nogo_starting"):
                 return None
             live = _nogo_running(state.get("runner"), frame_id)
             if live is not None:
                 if getattr(live, "nogo_frame", None) != frame_id:
                     return None
                 return list(live.nogo_zones)
-            if dock is None:
-                dock = _known_dock(frame_id, pose)
             return nogo_store_mod.split_for_dock(
-                nogo_store_mod.default_store().zones(frame_id), dock)[0]
+                nogo_store_mod.default_store().zones(frame_id), _known_dock(frame_id, pose))[0]
 
-    def _nogo_keeper() -> None:
+    def _nogo_keeper(stop: threading.Event) -> None:
         """3.161.B K2: a new stack must not run with an empty keepout mask
         while zones are stored. Polls every NOGO_KEEP_POLL_S; after a failed
         send backs off through NOGO_BACKOFF_S (the last step for ever), one
         warning a failed attempt, and at the cap a repeat of the same reason
-        at most every NOGO_REPEAT_LOG_S. Never gives up."""
-        last: dict = {"key": None}
+        at most every NOGO_REPEAT_LOG_S. Never gives up. `stop` is this
+        thread's own (review: a restart's clear never revives an old one)."""
+        last: dict = {"key": None, "frame": None}
         failures, said, said_at = 0, None, 0.0
-        while not nogo_keeper_stop.is_set():
+        while not stop.is_set():
             try:
                 why = _nogo_keep_once(last)
             except Exception as e:  # noqa: BLE001 -- the loop must outlive any one pass
                 why = f"{type(e).__name__}: {e}"[:200]
+            if stop.is_set():
+                return
             if why is None:
                 if failures:
                     logger.info("no-go zones: kept after %d failed attempt(s)", failures)
                 failures, said = 0, None
-                nogo_keeper_stop.wait(NOGO_KEEP_POLL_S)
+                stop.wait(NOGO_KEEP_POLL_S)
                 continue
             step = NOGO_BACKOFF_S[min(failures, len(NOGO_BACKOFF_S) - 1)]
             at_cap = failures >= len(NOGO_BACKOFF_S)
@@ -1854,16 +1865,21 @@ def create_app(
                 logger.warning("no-go zones not taken (attempt %d, next in %.0f s): %s",
                                failures, step, why)
                 said, said_at = why, now
-            nogo_keeper_stop.wait(step)
+            stop.wait(step)
 
     @app.on_event("startup")
     async def _nogo_startup():
-        nogo_keeper_stop.clear()
-        threading.Thread(target=_nogo_keeper, daemon=True, name="nogo-keeper").start()
+        stop = threading.Event()
+        thread = threading.Thread(target=_nogo_keeper, args=(stop,), daemon=True,
+                                  name="nogo-keeper")
+        nogo_keeper.update(stop=stop, thread=thread)
+        thread.start()
 
     @app.on_event("shutdown")
     def _nogo_keeper_end():
-        nogo_keeper_stop.set()
+        if nogo_keeper["stop"] is not None:
+            nogo_keeper["stop"].set()
+            nogo_keeper["thread"].join(timeout=2.0)
 
     app.state.nogo_restore = _nogo_restore          # tests drive mission_loop's end with it
 
