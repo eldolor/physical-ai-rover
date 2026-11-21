@@ -344,7 +344,8 @@ class ReturnTrip:
         self.stuck_rounds = 0
         self.fine = False               # 3.198 D2: the current goal closes the last residual
         self.fine_tries = 0
-        self._fine_refused = 0          # refusals of the current correcting goal
+        self._fine_refused = 0          # refusals of the current correcting goal on an unmoving clock
+        self._fine_clock = None
         self._nav_stop_m = None         # how far from its goal nav2 ended the last one
         self._asked_m = None            # what the last creep asked for
         self._quantum_m = None          # a creep's whole move, once one moved more than asked
@@ -404,14 +405,20 @@ class ReturnTrip:
             self.log.append(f"goal to ({self.target[0]:.2f}, {self.target[1]:.2f}) accepted")
             return None
         if self.fine:
-            self._fine_refused += 1
+            # Counted only while the clock stands still: such a clock must not
+            # hold the approach forever (a test's, or an idle that never waits).
+            now = self.clock()
+            self._fine_refused = self._fine_refused + 1 if now == self._fine_clock else 0
+            self._fine_clock = now
         if (self.clock() - self._wait_from >= self.wait_s
                 or self._fine_refused > self.wait_s / GOAL_RETRY_S):
-            # (Counted too: a clock that does not move must not hold the approach.)
             if self.fine:
-                # The trip home ran: an end of the approach, with its numbers.
-                return FAILED, (f"not_aligned: {self._error()} (the correcting goal was not "
-                                f"taken in {self.wait_s:.0f} s: {reply.get('reason')})")
+                # The trip home ran: the judge decides on the pose as it is
+                # (docked if within the tolerance), the correcting goals spent.
+                self.log.append(f"correcting goal not taken in {self.wait_s:.0f} s "
+                                f"({reply.get('reason')})")
+                self.fine, self.fine_tries, self.state = False, FINE_TRIES, "final"
+                return None
             return SKIPPED, f"no_nav2: goal not taken in {self.wait_s:.0f} s ({reply.get('reason')})"
         if self.idle is not None:
             self.idle(GOAL_RETRY_S)
@@ -423,6 +430,16 @@ class ReturnTrip:
         st = goal.get("state")
         if st in ("pending", "active", None) and goal:
             if self._stalled(pose):
+                if self.fine:
+                    # No back-off beside the dock: the goal is given up, the judge decides.
+                    try:
+                        self.nav.cancel_goal()
+                    except Exception as e:  # noqa: BLE001 -- the judge runs regardless
+                        if type(e).__name__ in _NOT_OURS:
+                            raise
+                    self.log.append("correcting goal stalled")
+                    self.fine, self.state = False, "final"
+                    return None
                 return self._unstick(pose)
             if self.idle is not None:
                 self.idle(POLL_S)
@@ -430,7 +447,7 @@ class ReturnTrip:
         fine, self.fine = self.fine, False
         if st == "succeeded":
             end = self._pose()          # read after the goal's state: where nav2 ended it
-            if end.get("usable"):
+            if end.get("usable") and not fine:      # a trip goal's: nav2's own stop error
                 self._nav_stop_m = math.hypot(end["x_m"] - self.target[0], end["y_m"] - self.target[1])
             # 3.198: after the correcting goal, the dock's heading and the judge.
             self.state = "final" if fine else "turn"
@@ -581,9 +598,11 @@ class ReturnTrip:
             fx, fy = ahead(pose["heading_deg"])
             along = dx * fx + dy * fy
             if self._last_along is not None:
-                self._step_m = abs(self._last_along - along) or self._step_m
-                if self._asked_m is not None and self._step_m > self._asked_m + QUANTUM_EXCESS_M:
-                    self._quantum_m = self._step_m      # 3.198: moves come whole
+                moved = abs(self._last_along - along)
+                self._step_m = moved or self._step_m
+                if self._asked_m is not None and moved > self._asked_m + QUANTUM_EXCESS_M:
+                    self._quantum_m = moved             # 3.198: moves come whole
+            self._asked_m = None
             if (dist <= CREEP_TOL_M or (abs(along) <= CREEP_TOL_M and dist <= DOCK_TOL_M)
                     or (self._step_m and abs(along) < 0.5 * self._step_m)):
                 # Close enough, or the next verb would overshoot by more than
@@ -599,12 +618,14 @@ class ReturnTrip:
             v = verb_speed_m_s(CREEP_SPEED)
             dur = round(min(CREEP_VERB_MAX_S, abs(along) / v), 2)
             self._last_along = along
-            self._asked_m = v * dur
+            before = self.refused
             if along > 0:
                 self._act("FORWARD", speed=CREEP_SPEED, duration=dur)
             else:
                 self.reversals += 1
                 self._act("REVERSE", speed=CREEP_SPEED, duration=dur)
+            # Judged at the next creep only, and only for a creep that ran.
+            self._asked_m = v * dur if self.refused == before else None
             return None
         # final: the dock's heading, then judge.
         if self._turn_to(pose, self.dock["theta"]):
@@ -620,9 +641,12 @@ class ReturnTrip:
             if self._step_m and dist < 0.5 * self._step_m:
                 # 3.198 D1: the creep's guard would skip the move (it would
                 # overshoot by more than it closes), so turning back to the
-                # dock only pivots at one place: c-1's 40 verbs. D2 instead,
-                # and once it is spent, the end.
-                return self._fine(pose, dist, m, deg)
+                # dock only pivots at one place: c-1's 40 verbs.
+                if whole:
+                    return self._fine(pose, dist, m, deg)   # D2, and once spent, the end
+                # Moves that come as asked: the step was the last creep's
+                # size, not the body's; forget it and creep what is left.
+                self._step_m = None
             self.state = "turn"
             return None
         return FAILED, f"not_aligned: {m:.3f} m, {deg:.1f} deg"

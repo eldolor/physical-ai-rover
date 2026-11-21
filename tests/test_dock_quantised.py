@@ -215,3 +215,61 @@ def test_a_correcting_goal_that_ends_off_target_is_bounded():
     assert state == dk.FAILED and reason.startswith("not_aligned: 0.10"), reason
     assert len(nav.sent) == 1 + dk.FINE_TRIES
     assert rt.actions < 12
+
+
+class Holds(Nav2):
+    """nav2 that takes the trip's goal and refuses every correcting one."""
+
+    def set_goal(self, x_m, y_m):
+        if self.sent:
+            self.sent.append((x_m, y_m))
+            self.body.t += 1.0
+            return {"accepted": False, "reason": "preempted"}
+        return super().set_goal(x_m, y_m)
+
+
+def test_inside_the_tolerance_a_correcting_goal_never_taken_still_docks():
+    """Review: 0.08 m off is docked; a correcting goal nav2 never takes must
+    not turn that into `failed`. The judge runs on the pose as it is."""
+    body = Body(6.2, 1.45, 270.0)
+    (state, reason), rt = trip(body, Holds(body, stop_m=0.08))
+    assert state == dk.DOCKED and reason.startswith("0.08"), reason
+
+
+def test_a_correcting_goal_that_stalls_is_judged_never_backed_off():
+    """Review: a correcting goal nav2 holds with the robot still (a dock
+    against a wall) is given up after STUCK_S and the pose judged; no REVERSE
+    beside the dock, no `no_motion`."""
+    class Pinned(Nav2):
+        def get_goal(self):
+            if len(self.sent) > 1 and self.goal["state"] == "active":
+                self.body.t += 0.5
+                return {"goal": self.goal, "plan": []}
+            return super().get_goal()
+
+    body = Body(6.2, 1.45, 270.0)
+    nav = Pinned(body, stop_m=0.08)
+    (state, reason), _ = trip(body, nav)
+    assert state == dk.DOCKED and reason.startswith("0.08"), reason
+    assert nav.goal["state"] == "canceled"
+    assert not [v for v in body.verbs if v[0] == "REVERSE"]
+
+
+def test_a_refused_creep_on_continuous_verbs_is_not_read_as_whole_moves():
+    """Review: a refused creep moved 0, and the step it kept is the creep
+    before's; a body that moves as asked is never taken for one whose moves
+    come whole, and sends no correcting goal."""
+    from robot.safety import SafetyViolation
+
+    class Refuses(Body):
+        def check_and_execute(self, action, **kw):
+            if action == "FORWARD" and sum(v[0] == "FORWARD" for v in self.verbs) == 1:
+                self.verbs.append((action, round(self.x, 4), round(self.y, 4), round(self.h % 360, 1)))
+                raise SafetyViolation("a cushion")
+            return super().check_and_execute(action, **kw)
+
+    body = Refuses(6.2, 1.45, 270.0, quantised=False)
+    nav = Nav2(body, stop_m=0.0)
+    (state, _), rt = trip(body, nav)
+    assert state == dk.DOCKED
+    assert rt._quantum_m is None and len(nav.sent) == 1
