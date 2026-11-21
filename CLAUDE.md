@@ -158,7 +158,6 @@ here to `docs/guides/MERGED-STATE.md`; open work only stays here.**
 * 3.135.B (faults F2-F18; F2's new record, 3.151), 3.137.C (a real
   power-off), 3.142.A.
 * 3.143: V3's slippers miss; the soak keeps no brain log.
-* The twin's 3.152.A readout (Local VLM row, operator line) is not deployed.
 * 3.105: a nav2 never up holds explore to its limit.
 * 3.150 criterion 6: check the Bash hook live in a new session.
 * The tour's goal 6, the garage exit, fails 0/3 (3.57, 3.67, 3.68).
