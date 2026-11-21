@@ -136,38 +136,40 @@ def _r_live(res):
     mission's start (its dock; no saved dock yet on a fresh map), stopped
     mid-mission; the copy and the bridge hold the stored set within 5 s."""
     live.VOLUME = VOLUME_R
-    subprocess.run(["docker", "volume", "rm", VOLUME_R], capture_output=True)
-    robot = de.stack(HOUSE)
-    brain, bridge = _clients()
-    p, h = _wait_pose(robot)
-    v = brain.get("/mission/nogo").json()
-    for z in sweep.place_zones(HOUSE, 0):
-        v = brain.post("/mission/nogo", json={"frame_id": v["frame_id"], "rev": v["rev"], "op": "add",
-                                              "zone": {k: z[k] for k in ("x0", "y0", "x1", "y1")}}).json()
-    r = brain.post("/mission/nogo", json={"frame_id": v["frame_id"], "rev": v["rev"], "op": "add",
-                                          "zone": {"x0": p["x_m"] - 0.4, "y0": p["y_m"] - 0.4,
-                                                   "x1": p["x_m"] + 0.4, "y1": p["y_m"] + 0.4}})
-    out = {"frame_id": p.get("frame_id"), "dock_zone_add": r.status_code}
-    v = brain.get("/mission/nogo").json()
-    n = len(v.get("zones") or [])
-    out["stored"] = n
-    out["held_before_start"] = _time_to_held(robot, n, time.time(), limit=10)
-    s = brain.post("/mission/start", json={"target_object": de.TARGET, "policy": "explore",
-                                           "max_steps": 200, "mission_time_limit_s": LIMIT_S})
-    out["start"] = s.status_code
-    time.sleep(12)
-    st = brain.get("/mission/status").json()
-    out["running_at_stop"] = st.get("running")
-    out["dock_refused"] = ((st.get("explore") or {}).get("nogo") or {}).get("dock_refused")
-    held = robot.get("/world/nogo").json()
-    out["copy_before_stop"] = len(held.get("zones") or [])
-    t0 = time.time()
-    out["stop"] = brain.post("/mission/stop").status_code
-    out["held_after_stop"] = _time_to_held(robot, n, t0, limit=5)
-    out["keeper_log"] = _keeper_log()
-    res["r_live"] = out
-    _teardown()
-    live.VOLUME = VOLUME_K
+    try:
+        subprocess.run(["docker", "volume", "rm", VOLUME_R], capture_output=True)
+        robot = de.stack(HOUSE)
+        brain, bridge = _clients()
+        p, h = _wait_pose(robot)
+        v = brain.get("/mission/nogo").json()
+        for z in sweep.place_zones(HOUSE, 0):
+            v = brain.post("/mission/nogo", json={"frame_id": v["frame_id"], "rev": v["rev"], "op": "add",
+                                                  "zone": {k: z[k] for k in ("x0", "y0", "x1", "y1")}}).json()
+        r = brain.post("/mission/nogo", json={"frame_id": v["frame_id"], "rev": v["rev"], "op": "add",
+                                              "zone": {"x0": p["x_m"] - 0.4, "y0": p["y_m"] - 0.4,
+                                                       "x1": p["x_m"] + 0.4, "y1": p["y_m"] + 0.4}})
+        out = {"frame_id": p.get("frame_id"), "dock_zone_add": r.status_code}
+        v = brain.get("/mission/nogo").json()
+        n = len(v.get("zones") or [])
+        out["stored"] = n
+        out["held_before_start"] = _time_to_held(robot, n, time.time(), limit=10)
+        s = brain.post("/mission/start", json={"target_object": de.TARGET, "policy": "explore",
+                                               "max_steps": 200, "mission_time_limit_s": LIMIT_S})
+        out["start"] = s.status_code
+        time.sleep(12)
+        st = brain.get("/mission/status").json()
+        out["running_at_stop"] = st.get("running")
+        out["dock_refused"] = ((st.get("explore") or {}).get("nogo") or {}).get("dock_refused")
+        held = robot.get("/world/nogo").json()
+        out["copy_before_stop"] = len(held.get("zones") or [])
+        t0 = time.time()
+        out["stop"] = brain.post("/mission/stop").status_code
+        out["held_after_stop"] = _time_to_held(robot, n, t0, limit=5)
+        out["keeper_log"] = _keeper_log()
+        res["r_live"] = out
+        _teardown()
+    finally:
+        live.VOLUME = VOLUME_K   # review: K's stacks never run on R's volume
 
 
 def _teardown():
