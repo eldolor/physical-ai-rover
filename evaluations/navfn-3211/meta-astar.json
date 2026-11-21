@@ -1,0 +1,1 @@
+{"arm": "astar", "use_astar_param": "Boolean value is: True", "image": "vision-picar-ros:plan-3.211", "reload": {"map_id": "map-3859d4ac", "version": 2, "took_s": 1.93, "agreement": 1.0, "dock_error_m": 0.0, "dock_error_deg": 0.0, "ok": true, "reason": "matched", "result": "matched"}, "load1": 1.482421875}
