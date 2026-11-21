@@ -1784,14 +1784,18 @@ def create_app(
         """The zones for `frame_id` to the running mission (if it is on that
         map) and to the robot server -- those in force only (E4: not one
         covering the dock). Returns the robot server's answer."""
-        live = _nogo_running(runner, frame_id)
-        if live is not None:
-            live.set_nogo(frame_id, zones)
-            zones = list(live.nogo_zones)
-        else:
-            zones = nogo_store_mod.split_for_dock(zones, dock)[0]
-        state["nogo_sent"] = _nogo_send(frame_id, zones)
-        return state["nogo_sent"]
+        # 3.161.B review: decided and sent under the send lock, so an edit
+        # begun while a mission ran never lands that mission's reduced set
+        # after the restore that followed its Stop.
+        with nogo_push_lock:
+            live = _nogo_running(runner, frame_id)
+            if live is not None:
+                live.set_nogo(frame_id, zones)
+                zones = list(live.nogo_zones)
+            else:
+                zones = nogo_store_mod.split_for_dock(zones, dock)[0]
+            state["nogo_sent"] = _nogo_send(frame_id, zones)
+            return state["nogo_sent"]
 
     def _dock_conflicts(frame_id, zones, dock) -> list:
         live = _nogo_running(state.get("runner"), frame_id)
