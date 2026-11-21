@@ -2,13 +2,14 @@
 # Copyright (C) 2026 Anshu Gaind
 """
 evaluations/nogo-3199/live.py -- 3.199 G8, once, on the ROS stack: a fresh
-stack (`scaled_house`, `tests/demo_explore.stack`), a zone from
-`sweep.place_zones("scaled_house", seed)` stored through the brain
+stack (`scaled_house`, `tests/demo_explore.stack`), one zone (amendment 2: a
+0.5 m square 0.6 m or more from the robot, beside floor its own map shows
+free 5 s in) stored through the brain
 (`POST /mission/nogo`, so it reaches the robot server and the bridge as a
 person's zone does), then a person's taps (`x-driver: twin-dpad`) beside the
 middle of an edge whose outside is open floor and (amendment 1) already on
 the robot's own map, free (run 1's tap point was in a room SLAM had not yet
-seen, off nav2's costmap): the first such zone over seeds 0-30, the taps 0.02, 0.06 and 0.11 m
+seen, off nav2's costmap), the taps 0.02, 0.06 and 0.11 m
 out (each must be refused `no_go_zone`, with no nav2 goal started), then
 0.30 m out (accepted; nav2 drives there; the truth is read every 0.25 s and
 must never enter the zone).
@@ -40,6 +41,8 @@ VOLUME = os.environ.get("PICAR_MAPS_VOLUME", "picar-maps")
 BAND = (0.02, 0.06, 0.11)
 CLEAR_M = 0.30
 DRIVE_S = 120
+ZONE_M = 0.5          # amendment 2: the zone's side
+AWAY_M = 0.6          # amendment 2: the zone at least this far from the robot (D4's fresh rule: 0.30)
 
 
 def _with_volume():
@@ -100,15 +103,30 @@ def _side(g, z, m=None):
     return None, None
 
 
-def _pick(g, m):
-    """Amendment 1: the first zone of place_zones(HOUSE, seed), seeds 0-30,
-    with such an edge."""
-    for seed in range(31):
-        for z in sweep.place_zones(HOUSE, seed):
-            n, mid = _side(g, z, m)
-            if n is not None:
-                return seed, z, n, mid
-    return None, None, None, None
+def _pick(g, m, robot_xy):
+    """Amendment 2: a ZONE_M square on the robot's own mapped floor (the
+    room SLAM has seen 5 s in), scanned from the map's origin in 0.10 m
+    steps: the first at least AWAY_M from the robot, on the simulator's open
+    floor, with an edge whose point CLEAR_M out is mapped free and open floor
+    (_side) -- the zone itself may lie over cells SLAM has not seen."""
+    res = m["resolution_m"]
+    x_lo, y_lo = m["origin_x_m"], m["origin_y_m"]
+    x_hi, y_hi = x_lo + m["width"] * res, y_lo + m["height"] * res
+    y = y_lo + 0.2
+    while y + ZONE_M < y_hi:
+        x = x_lo + 0.2
+        while x + ZONE_M < x_hi:
+            z = {"x0": round(x, 3), "y0": round(y, 3), "x1": round(x + ZONE_M, 3),
+                 "y1": round(y + ZONE_M, 3)}
+            cx, cy = x + ZONE_M / 2, y + ZONE_M / 2
+            if (sweep._dist(z, *robot_xy) >= AWAY_M
+                    and _open_floor(g, cx, cy, ZONE_M / 2)):
+                n, mid = _side(g, z, m)
+                if n is not None:
+                    return z, n, mid
+            x += 0.10
+        y += 0.10
+    return None, None, None
 
 
 def main(out):
@@ -129,10 +147,9 @@ def main(out):
         result["frame_id"] = p.get("frame_id")
         g = sweep.build_world(HOUSE)
         time.sleep(5)                                    # SLAM's first scans into the map
-        seed, z, n, mid = _pick(g, robot.get("/world/map").json())
+        z, n, mid = _pick(g, robot.get("/world/map").json(), (p["x_m"], p["y_m"]))
         if n is None:
             raise RuntimeError("setup: no zone with a mapped, open side")
-        result["seed"] = seed
         v = brain.get("/mission/nogo").json()
         v = brain.post("/mission/nogo", json={"frame_id": v["frame_id"], "rev": v["rev"], "op": "add",
                                               "zone": {k: z[k] for k in ("x0", "y0", "x1", "y1")}}).json()

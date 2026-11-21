@@ -1,0 +1,6 @@
+{
+ "house": "scaled_house",
+ "image": "vision-picar-ros:plan-3.199",
+ "frame_id": "map-6ef44374",
+ "load_1min_peak": 0.29
+}
