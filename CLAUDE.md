@@ -181,7 +181,7 @@ here to `docs/guides/MERGED-STATE.md`; open work only stays here.**
 * Not built: `brain/planner.py`, S7 (chaos and soak), a Stage 1 vision
   re-run on the lit renderer.
 
-**The Rover** (in hand, the user 2026-11-21; none of this is done yet)
+**The Rover** (in hand, the user 2026-11-21; no item marked done here)
 
 * **Before mounting:** check with calipers that the devkit's mounting
   holes match the Rover deck's 86 x 58 mm pattern
