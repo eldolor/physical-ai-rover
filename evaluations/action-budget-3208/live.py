@@ -50,6 +50,16 @@ def wait(url, timeout=60):
     raise RuntimeError(f"{url} never answered")
 
 
+def merge(seen, tail):
+    """Append the lines of `tail` not yet in `seen`: the longest suffix of
+    `seen` that is a prefix of `tail` is the overlap (identical lines, such
+    as two "robot unreachable 1/3" lines, are kept apart)."""
+    for k in range(min(len(seen), len(tail)), -1, -1):
+        if k == 0 or seen[-k:] == tail[:k]:
+            seen.extend(tail[k:])
+            return
+
+
 def start(cmd, env, log):
     return subprocess.Popen(cmd, cwd=REPO, env=env, stdout=open(log, "w"),
                             stderr=subprocess.STDOUT)
@@ -77,9 +87,11 @@ def one(name, plan):
         r.raise_for_status()
         peak = 0
         status = {}
+        seen_lines = []     # every log line seen while polling (log_tail keeps 20)
         while time.time() - t0 < 600:
             status = httpx.get(f"http://127.0.0.1:{BRAIN}/mission/status", timeout=10).json()
             peak = max(peak, status.get("action_failures") or 0)
+            merge(seen_lines, status.get("log_tail") or [])
             if not status.get("running"):
                 break
             time.sleep(0.25)
@@ -98,7 +110,7 @@ def one(name, plan):
     after = [wire[i + 1]["action"] if i + 1 < len(wire) else None for i in resets]
     # the same move twice in a row with no stop between would be a re-send
     resent = [i for i in resets if i + 1 < len(wire) and wire[i + 1]["action"] == wire[i]["action"]]
-    log = status.get("log_tail") or []
+    log = seen_lines
     return {
         "run": name, "plan": plan, "outcome": status.get("outcome"),
         "end_reason": status.get("error") or status.get("end_reason"),
@@ -109,7 +121,7 @@ def one(name, plan):
         "resets": [wire[i] for i in resets],
         "next_post_after_each_reset": after,
         "resent_same_action_next": len(resent),
-        "log_tail": log,
+        "log_seen": log,
     }
 
 
@@ -117,7 +129,7 @@ def main():
     LOGDIR.mkdir(parents=True, exist_ok=True)
     out = [one(name, plan) for name, plan in RUNS.items()]
     for r in out:
-        print(json.dumps({k: v for k, v in r.items() if k != "log_tail"}, indent=1))
+        print(json.dumps({k: v for k, v in r.items() if k != "log_seen"}, indent=1))
     if len(sys.argv) > 1:
         Path(sys.argv[1]).write_text(json.dumps(out, indent=1) + "\n")
 
