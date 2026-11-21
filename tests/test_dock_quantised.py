@@ -332,3 +332,30 @@ def test_the_return_goal_refused_after_the_find_is_waited_out():
             break
     assert out[0] == dk.DOCKED, out
     assert rt.log[0].startswith("goal to (1.65, 1.35) accepted")
+
+
+def test_a_turn_refused_by_the_missions_own_goal_waits():
+    """Thermos 3: right after a correcting goal ends, the robot server can
+    refuse the next turn because that goal still holds the robot (`ros is
+    driving`); the approach waits, then docks -- not `preempted`."""
+    from robot.interface import Preempted
+
+    class Held(Body):
+        holds = 3
+
+        def check_and_execute(self, action, **kw):
+            if action in ("LEFT", "RIGHT") and len(self.nav.sent) > 1 and self.holds:
+                self.holds -= 1
+                raise Preempted("ros is driving -- one autonomous driver at a time, "
+                                "so brain was refused until it lapses")
+            return super().check_and_execute(action, **kw)
+
+    body = Held(6.2, 1.45, 270.0)
+    body.nav = nav = Nav2(body, stop_m=0.104)
+    rt = ReturnTrip(DOCK, nav, body, body.pose, lambda: body.t,
+                    idle=lambda s: setattr(body, "t", body.t + s))
+    for _ in range(2000):
+        out = rt.step()
+        if out is not None:
+            break
+    assert out[0] == dk.DOCKED and body.holds == 0, out

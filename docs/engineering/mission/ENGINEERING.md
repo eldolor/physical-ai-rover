@@ -590,7 +590,19 @@ or Reserve still propagates from the cancel and from each verb.
       not move) ends it `failed`, `not_aligned: <error> (the correcting goal
       was not taken ...)`. A goal that does not succeed goes to the judge,
       with no back-off beside the dock.
-    * `status.return.fine_goals` counts them.
+    * `status.return.fine_goals` counts the goals started, taken or not.
+    * `_quantum_m` is the smallest excess move seen, so a creep of two
+      moves does not double it.
+    * A verb in the approach refused because the mission's own goal still
+      holds the robot (`is_own_goal_refusal`) is a wait, as in `_move`: at
+      most `MAX_HOLDS` polls, not counted as an action.
+    * Known limits (Thermos):
+      * The correcting goal's aim is not checked against the map, so an aim
+        into the charger can cost two refusals or stalls.
+      * A pose docked at 0.05-0.10 m that a correction leaves worse ends on
+        the second try's judge; the best pose seen is not kept.
+      * A SLAM jump of more than 5 cm between two creeps reads as whole
+        moves, which costs one unneeded goal.
   * Continuous verbs (`exact_verbs`, the car under `drive: direct`) never
     set `_quantum_m` and close the residual with the creep, as before.
     Pinned: `tests/test_dock_quantised.py`. Sweep:

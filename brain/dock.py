@@ -571,6 +571,25 @@ class ReturnTrip:
         return True
 
     def _approach(self):
+        """Thermos 3: a verb refused because the mission's own goal (just
+        cancelled or ended) still holds the robot is a wait, as `_move`'s:
+        at most MAX_HOLDS polls, not counted as an action."""
+        from brain.explore import is_own_goal_refusal
+        from robot.interface import Preempted
+        try:
+            out = self._approach_step()
+        except Preempted as e:
+            if not is_own_goal_refusal(e) or self._holds >= MAX_HOLDS:
+                raise
+            self.actions -= 1
+            self._holds += 1
+            if self.idle is not None:
+                self.idle(POLL_S)
+            return None
+        self._holds = 0
+        return out
+
+    def _approach_step(self):
         self.steps += 1
         if self.actions >= MAX_ACTIONS or self.steps >= 3 * MAX_ACTIONS:
             return FAILED, "not_aligned"
@@ -601,7 +620,9 @@ class ReturnTrip:
                 moved = abs(self._last_along - along)
                 self._step_m = moved or self._step_m
                 if self._asked_m is not None and moved > self._asked_m + QUANTUM_EXCESS_M:
-                    self._quantum_m = moved             # 3.198: moves come whole
+                    # 3.198: moves come whole. The smallest seen: a creep of two moves
+                    # must not double it (Thermos 2).
+                    self._quantum_m = moved if self._quantum_m is None else min(self._quantum_m, moved)
             self._asked_m = None
             if (dist <= CREEP_TOL_M or (abs(along) <= CREEP_TOL_M and dist <= DOCK_TOL_M)
                     or (self._step_m and abs(along) < 0.5 * self._step_m)):
