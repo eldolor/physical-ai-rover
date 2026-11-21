@@ -315,3 +315,18 @@ def test_the_start_turn_hook_turns_the_simulated_robot(monkeypatch):
     assert abs((build_world("scaled_house").heading_deg - base) % 360 - 30) < 1e-9
     monkeypatch.delenv("SIM_START_TURN_DEG")
     assert build_world("scaled_house").heading_deg == base
+
+
+def test_the_live_runs_met_l1_to_l5():
+    s = json.loads((EVAL / "summary.json").read_text())
+    c = s["counted"]
+    assert c["runs"] == 10 and c["invalid_runs"] == [] and c["peak_load"] < 4.0
+    assert s["by_prefix"]["a"]["runs"] == 5 and s["by_prefix"]["r"]["runs"] == 5
+    assert all(r["start_turn_deg"] == "30" for r in s["runs"]["r"])
+    assert c["L1_entries"] == 0
+    assert c["L2_min_m"] >= 0.010
+    assert c["L3_found"] == 10 and c["L3_median_s"] <= 79.5 and c["L3_goals_in_zone"] == 0
+    assert c["L3_docked"] == 10
+    assert c["L4_both_events"] == 10 and min(c["L4_restore_clear_m"]) >= 0.30
+    assert max(c["L4_left_after_s"]) <= 30 and set(c["L4_final"]) == {"cancelled"}
+    assert c["L5_whole_suspensions"] == [0] * 10
