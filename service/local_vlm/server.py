@@ -179,12 +179,30 @@ def _decoder(tokenizer_path: Path) -> Callable[[int], str]:  # pragma: no cover
     return decode
 
 
-def main() -> None:  # pragma: no cover -- needs the board
+REQUIRED_ENV = ("LOCAL_VLM_ENGINES", "LOCAL_VLM_EDGELLM")
+
+
+def _required_env() -> list:
+    """The two directories `main()` cannot run without, in REQUIRED_ENV's
+    order. One missing (unset, or empty: `Path("")` is the working
+    directory) ends the program with a line that names it, not a KeyError
+    (3.209.E)."""
+    missing = [name for name in REQUIRED_ENV if not os.environ.get(name)]
+    if missing:
+        raise SystemExit(f"local VLM server: {' and '.join(missing)} must be set "
+                         f"(see service/local_vlm/README.md); nothing was started")
+    return [Path(os.environ[name]).expanduser() for name in REQUIRED_ENV]
+
+
+def main() -> None:
+    engines, edgellm = _required_env()
+    _serve(engines, edgellm)
+
+
+def _serve(engines: Path, edgellm: Path) -> None:  # pragma: no cover -- needs the board
     import uvicorn
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s")
-    engines = Path(os.environ["LOCAL_VLM_ENGINES"]).expanduser()
-    edgellm = Path(os.environ["LOCAL_VLM_EDGELLM"]).expanduser()
     driver = edgellm / "build/examples/llm/edgellm_identity"
     plugin = edgellm / "build/libNvInfer_edgellm_plugin.so"
     tokenizer = engines / "llm/tokenizer.json"

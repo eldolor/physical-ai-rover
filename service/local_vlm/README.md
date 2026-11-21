@@ -49,7 +49,8 @@ LOCAL_VLM_EDGELLM=~/bench-378/ell91 \
     python -m service.local_vlm.server
 ```
 
-`LOCAL_VLM_ENGINES` and `LOCAL_VLM_EDGELLM` are required;
+`LOCAL_VLM_ENGINES` and `LOCAL_VLM_EDGELLM` are required (unset or empty,
+the server exits naming them: 3.209.E);
 `LOCAL_VLM_DRIVER_LOG` (the driver's stderr, default discarded) and
 `LOCAL_VLM_PORT` (default 8005) are optional. The brain uses the service
 only when `LOCAL_VLM_URL` (or `brain.tier_local_vlm_url`) names it; the

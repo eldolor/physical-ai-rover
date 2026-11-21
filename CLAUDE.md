@@ -51,8 +51,8 @@ board, D500 lidar, OAK-D Lite, pan-tilt camera) carrying an **NVIDIA Jetson
 Orin Nano Super**. The Jetson runs the robot server, the brain (mission
 policy plus on-board perception) and a ROS 2 container (SLAM, nav2,
 `ros2_control`). A vision LLM on Amazon Bedrock is called only on triggers.
-The Jetson is in hand and measured; the Rover is in hand (the user,
-2026-11-21); 3b's on-arrival list is the work.
+The Jetson is in hand and measured; the Rover is in hand, on L0 bring-up
+(3.140's log; 3b).
 `docs/ARCHITECTURE.md` is the system on one page.
 
 **Development is simulation-first:** build it, prove it with data in the
@@ -181,12 +181,11 @@ board` lists open steps. **Whoever merges moves the section's line to
 * Not built: `brain/planner.py`, S7 (chaos and soak), a Stage 1 vision
   re-run on the lit renderer.
 
-**The Rover** (in hand, the user 2026-11-21; no item marked done here)
+**The Rover** (in hand; state: 3.140's log: L0 begun, nothing
+met; the board's feed reaches the Jetson but it acts on nothing sent over serial; no motion until `mainType` reads 2, 3.140)
 
-* **Before mounting:** check with calipers that the devkit's mounting
-  holes match the Rover deck's 86 x 58 mm pattern
-  (`UGV-ROVER-MOUNTING.md`); fallback is an adapter plate. Waveshare
-  request 258472 (sent 2026-10-06) is open on the same question.
+* **Mounting:** the dev kit mounts directly (request 258472 answered,
+  3.140). Open: Waveshare 263625 and 263684, the board's receive path.
 * **On arrival** (`HARDWARE-READINESS.md` section 5; 3.26):
   * Disable Waveshare's stock app and its ROS nodes, which would hold the
     serial port and bypass safety.

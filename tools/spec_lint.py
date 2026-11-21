@@ -75,8 +75,11 @@ MIN_ENGINEERING_FACTS = 15
 # Files under docs/ that are not specs and carry no front matter.
 # docs/ARCHITECTURE.md is the whole-system overview: it spans every domain,
 # so it has no domain to sit under, but its references are still checked
-# (tests/test_spec_lint.py).
-NOT_SPECS = {"docs/README.md", "docs/SPEC_REVIEW_PROMPT.md", "docs/ARCHITECTURE.md"}
+# (tests/test_spec_lint.py). docs/decisions/README.md is the index of the
+# decisions: it lists them and makes none, so it is not a decision record
+# (3.209). The records beside it (docs/decisions/NNNN-*.md) are still specs.
+NOT_SPECS = {"docs/README.md", "docs/SPEC_REVIEW_PROMPT.md", "docs/ARCHITECTURE.md",
+             "docs/decisions/README.md"}
 # Not specs either: the dated plans, hardware records, session handoffs,
 # evaluation write-ups and guides that used to sit at the repo root
 # (moved 2026-10-03). They are history and explainers, cited by name.

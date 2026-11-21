@@ -89,11 +89,10 @@ pytest tests/ -q                      # no API key; every model call is mocked
 pytest service/vision_analyze/tests/ -q   # the cloud vision service's own suite
 ```
 
-* **Always name `tests/`.** Bare `pytest` also collects `evaluations/` and
-  stops on two collection errors (checked 2026-11-21:
-  `evaluations/rover-live-3140/test_rover_live.py`, `AttributeError: module
-  'rows' has no attribute 'load_plan'`; and a duplicate `test_readers.py`
-  basename under `evaluations/tiered-380/`). `pytest tests/` is the suite.
+* **`pytest tests/` is the suite.** Bare `pytest` runs `tests/` only
+  (`pytest.ini`, 3.209.C). Each `evaluations/` directory's tests run
+  alone, by path: they import sibling modules by bare name, so two
+  directories in one run collide.
 * **How many tests?** Ask the tree, not this page: `pytest tests/
   --collect-only -q | tail -1` (it printed `6560 tests collected` here).
 * **It is long.** With `pytest-xdist` (in `requirements.txt`) add `-n 4`
