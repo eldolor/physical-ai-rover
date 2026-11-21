@@ -99,7 +99,7 @@ pytest service/vision_analyze/tests/ -q   # the cloud vision service's own suite
 * **It is long.** With `pytest-xdist` (in `requirements.txt`) add `-n 4`
   (or `-n auto`): the project's fast tier runs on half the cores. On a
   4-core cloud container a full run took well over half an hour (it was at
-  7% after 25 minutes with `-n 4`, and the run was stopped there; so the
+  9% after about 35 minutes with `-n 4`, and the run was stopped there; so the
   completed-suite claim is not made for this page). A UI test that fails
   alone and passes in the suite, or the reverse, is a real finding: run
   timing tests in their module's real order, not only with `-k`
