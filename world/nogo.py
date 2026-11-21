@@ -37,6 +37,16 @@ WALL_WIDTH_M = 0.10
 # D3: explore drops a candidate whose point lies inside a zone grown by the
 # robot's half-width.
 HALF_WIDTH_M = 0.12
+# D5 (3.199): a PERSON's goal this close to a zone, inside it included, is
+# refused. The bridge draws each zone grown by its GROW_M (0.05 m, 3.195) and
+# marks every cell the grown polygon touches, so a drawn cell reaches 0.05 m
+# (0.050242 m: the corner arcs' polygon) plus a cell's diagonal (0.070711 m),
+# 0.120953 m, from the zone; a goal in one plans only if NavFn's 0.10 m
+# tolerance finds a free cell, at the edge of its float loop. 0.125 m clears
+# the reach by 4 mm on any lattice phase and anchor (distance is rigid).
+# Defined across the ROS wall: tests/test_wall_linters.py checks it against
+# the bridge's keepout.grown and RES_M.
+GOAL_CLEAR_M = 0.125
 # D4: the bridge leaves a zone the robot is in out of the mask until the
 # robot is this far clear of it; the brain's way out aims a little further.
 LEAVE_M = 0.30
@@ -167,6 +177,13 @@ def zone_at(zones: Iterable[dict], x: float, y: float, grow: float = 0.0) -> Opt
         if inside(z, x, y, grow):
             return z
     return None
+
+
+def goal_zone(zones: Iterable[dict], x: float, y: float) -> Optional[dict]:
+    """D5 (3.199): the zone a person's goal at (x, y) is refused for -- one
+    it lies in or within GOAL_CLEAR_M of, where the bridge may have drawn
+    its cell -- or None."""
+    return zone_at(zones, x, y, grow=GOAL_CLEAR_M)
 
 
 def nearest_distance(zones: Iterable[dict], x: float, y: float) -> float:

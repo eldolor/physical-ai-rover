@@ -2318,7 +2318,8 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         refused = person_stop_refusal(person, latch)
         if refused:
             return {"accepted": False, **refused}
-        # 3.161 D5: a PERSON's goal inside a no-go zone is refused, before it
+        # 3.161 D5: a PERSON's goal inside a no-go zone (since 3.199, or within
+        # nogo.GOAL_CLEAR_M of one) is refused, before it
         # takes the robot from anyone. Autonomy keeps out of zones by its own
         # choice (explore's check, nav2's mask), and the trip home must never
         # be refused for a zone drawn over the dock (Thermos review). Not a
@@ -2538,11 +2539,14 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             return None
         if not pose.get("usable") or pose.get("frame_id") != frame:
             return None
-        z = nogo_mod.zone_at(zones, x_m, y_m)
+        # 3.199: inside a zone or within GOAL_CLEAR_M of one, where the
+        # bridge's grown mask (3.195) may have drawn the goal's cell
+        z = nogo_mod.goal_zone(zones, x_m, y_m)
         if z is None:
             return None
         return {"reason": "no_go_zone", "zone": z["id"], "retryable": True,
-                "detail": "that point is inside a no-go zone a person drew"}
+                "detail": "that point is inside or beside a no-go zone a person drew"
+                          f" (keep {nogo_mod.GOAL_CLEAR_M:g} m clear of it)"}
 
     @app.put(prefix + "/world/nogo", dependencies=[Depends(require_secret)])
     def world_nogo_set(req: NoGoRequest):
