@@ -220,8 +220,13 @@ def test_a_new_mission_lifts_a_persons_stop(plain, unpaced_config):
 
     robot_client = plain
     robot_client.post("/stop", headers={"x-driver": "twin-dpad"})
+    # The world over the same in-process server (3.208: a world client left
+    # on the default, unreachable socket loses every pose read, and the link
+    # gate then refuses every move -- before 3.208 those reads were swallowed).
     app = brain_app(config_path=unpaced_config,
-                    robot_factory=lambda: RemoteRobot(ASGI_BASE_URL, client=robot_client))
+                    robot_factory=lambda: RemoteRobot(ASGI_BASE_URL, client=robot_client),
+                    world_factory=lambda robot: RemoteWorld(ASGI_BASE_URL, client=robot_client,
+                                                            link=robot.link))
     with TestClient(app) as brain:
         # A short budget: the test needs the mission to run, not to search.
         # BUDGET's 400 steps outlast the 60 s wait on a loaded machine
