@@ -117,7 +117,7 @@ Phase IDs: `R*`/`3.*` = `PLAN-ros-alignment.md` (the governing plan since
 |---|---|---|
 | Simulator | Continuous pose and differential-drive kinematics (R0). Solid objects (3.9). People and pets that move (3.30, `SIM_MOVERS`). Four houses via `SIM_MAP`: `starter_house` (30 cm doors), `scaled_house` (90 cm doors; nav2 is judged here), `home_first_floor` (a realistic furnished test house, not a replica of the user's), `complex_house` (3.46: a loop, dead ends, 16 small things on the floor). Plus 1,000 imported floor plans: `SIM_MAP=procthor:val:<0-999>` (3.66, ProcTHOR-10K, offline). Under `SIM_MOTOR_BOARD=fake` the body runs as its own programs (3.36). | `sim/`, R0, 3.30, 3.36 |
 | Robot server and safety | Arbitration by driver rank (M4). A depth-grid cone plus the chassis' swept corridor off the 360-degree scan (3.18), a pivot guard (3.19), guarded verbs (3.22), a settle pass (3.29), no motion without fresh wheel feedback (3.34) and stall detection (3.35). The watchdog is B3.1. | `robot/`, `docs/safety/` |
-| Brain service | `MissionRunner` behind `control/brain_server.py` on :8001. Three failsafes (B3). Policies: `frontier` (rule-based), `vision` (cloud per step) and `tiered` (local YOLOE + CLIP, cloud only on triggers). | `control/`, `AGENT-HARNESS.md` |
+| Brain service | `MissionRunner` behind `control/brain_server.py` on :8001. Three failsafes (B3). Policies: `frontier` (rule-based), `vision` (cloud per step), `tiered` (local YOLOE + CLIP, cloud only on triggers) and `explore`. | `control/`, `AGENT-HARNESS.md` |
 | Perception | YOLOE-11s-seg crops, then CLIP RN50, gate P >= 0.8. On the Jetson at 15 W: median 61 ms, p90 110 ms a frame. | P22-P24, 3.33 |
 | Arrival | The target centred and the lidar under 0.40 m for two frames, then one cloud call confirms identity (3.11, 3.32, handoff 1a). Cloud unreachable at arrival: `arrived_unconfirmed`, never `found` (3.47). | `brain/arrival.py` |
 | ROS stack | URDF/TF (R3, Rover CAD geometry since 3.27); `ros2_control` + `twist_mux` (R4); `slam_toolbox` (R5); nav2 + `collision_monitor` (R6). Off by default (`ROBOT_DRIVE=ros`, `WORLD_MODE=ros`). `drive: ros` gates G1-G4 all met (G4 on the Jetson, 2026-10-05). | `service/slam/README.md`, `docs/ros/` |
@@ -139,8 +139,8 @@ here to `docs/guides/MERGED-STATE.md`; open work only stays here.**
 **Waiting on the user**
 
 * **Deploys:** the twin is live from `dev` `06c76aa0` (2026-11-21). Cloud
-  sessions can deploy the twin only (IAM user `vision-picar-deployer`: S3
-  put, invalidation, DescribeStacks); each deploy needs the user's go.
+  sessions can deploy the twin only (IAM `vision-picar-deployer`: S3 put,
+  invalidation, DescribeStacks); each deploy needs the user's go.
 * **The board's brain is `dev` `bdcf782c`** (updated 2026-11-06 for 3.155's
   unit, the user's go): update it only when asked (`tools/jetson/README.md`'s
   update step).
@@ -171,12 +171,12 @@ here to `docs/guides/MERGED-STATE.md`; open work only stays here.**
   bars first): 3.175 a moved target's memory; 3.176 a find in plain words
   (the model arm asks first); 3.178 a watch list (needs the Rover's frames).
 * 3.190 (the user, 2026-11-19): one cloud call at a find's start for the
-  room prior of a target the shipped prior lacks (3.116.C, wired; off by
-  default). F (a heavier weight) FAILED: nothing ships; B's call 7 and C's
-  Lambda deploy wait on the user.
+  room prior of a target the shipped prior lacks (3.116.C; off by default).
+  Route deployed 2026-11-20; D's find FAILED 14 (first goal); F FAILED:
+  nothing ships. B's call 7: the user; E: the Rover.
 * 3.206 (the user, 2026-11-21): a frontier model's direction labels train
-  Qwen's steering (with 3.188). A is free; B-C's
-  calls wait on the user; D waits on 3.188.B.
+  Qwen's steering (with 3.188). A is free; B-C's calls wait on the user;
+  D on 3.188.B.
 * 3.161: Z5 FAILED (82 of 96 vs 87; a design question) and Z4's live re-map.
 * Not built: `brain/planner.py`, S7 (chaos and soak), a Stage 1 vision
   re-run on the lit renderer.
