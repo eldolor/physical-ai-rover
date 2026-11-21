@@ -220,9 +220,17 @@ def test_a_goal_tap_refused_for_a_zone_is_worded(browser, twin_server, brain):
     page.evaluate("document.getElementById('world-map').scrollIntoView({block: 'center'})")
     x, y = _to_px(page, m, 2.0, 2.0)
     page.mouse.click(x, y)
-    # The operator's words for D5's reason, not the server's detail.
+    # The operator's words for D5's reason, not the server's detail. 3.201:
+    # 3.199 refuses a tap beside a zone too, so the words cover both.
     sync_api.expect(page.locator(".toast").last).to_contain_text(
-        "That's in a no-go zone", timeout=3000)
+        "That's in or too close to a no-go zone", timeout=3000)
+    d = os.environ.get("UI_SHOTS")
+    if d:
+        Path(d).mkdir(parents=True, exist_ok=True)
+        page.evaluate("document.querySelectorAll('.toast').forEach((t, i, all) => "
+                      "{ if (i < all.length - 1) t.remove(); })")
+        page.wait_for_timeout(500)
+        page.screenshot(path=str(Path(d) / "twin-3.201-toast.png"))
     assert len(taps) == 1 and 1.9 < taps[0]["x_m"] < 2.1
     assert not errors, errors
     page.context.close()

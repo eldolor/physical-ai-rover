@@ -965,8 +965,8 @@ then drag a line the robot must not cross; **Done**. Tap a zone on the map and
 **Delete zone** removes it. Zones are kept with the saved map on the robot's
 own disk (never uploaded), shown on the Drive map in their own colour, and do
 not expire. Autonomy never plans into one: explore picks no goal in it, nav2
-never routes through it, and a goal tapped inside one is refused ("That's in
-a no-go zone"). A zone is not a safety stop: the D-pad still drives the robot
+never routes through it, and a goal tapped inside one is refused, as is one within
+0.125 m of its edge ("That's in or too close to a no-go zone"). A zone is not a safety stop: the D-pad still drives the robot
 into one, and a robot that finds itself inside one (placed there, or after a
 re-map) is let out first -- the zone shows dashed, "paused", until the robot
 is 0.30 m clear. With no saved map the panel says "Survey first".
