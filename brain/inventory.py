@@ -23,7 +23,10 @@ answer. The scan sees the nearest surface at the D500's height, which for
 an object partly behind another is the one in front: that is an error the
 car will make too, so it is measured rather than hidden. No return there,
 or one beyond `MAX_RANGE_M`, leaves the observation bearing-only; it is
-counted and never placed alone.
+counted and never placed alone. **The edge gate** (3.204.B, `edge_gap_m`,
+OFF unless `inventory_edge_gate` is set): with it on, a gate whose adjacent
+returns differ by more than the gap straddles a depth edge, and the
+detection is left unplaced as if it had no return (it still spares a miss).
 
 The pose is the WORLD's (`get_pose()`) at the moment the frame was taken,
 not after the step's move -- `MissionMemory`'s sighting pose is read after
@@ -142,6 +145,9 @@ MAX_POINTS = 32         # 3.165: members a landmark at most
 DISPUTE_SHARE = 1 / 3
 RANGE_GATE_DEG = 2.0
 MAX_RANGE_M = 4.0
+# 3.204.B: with the edge gate on (`inventory_edge_gate`, OFF by default), a
+# gate holding two adjacent returns farther apart than this is a depth edge.
+EDGE_GAP_M = 1.0       # chosen on seed 3462 (3.204.B amendment 1)
 MISS_RANGE_M = 3.0
 MISS_FOV_MARGIN_DEG = 5.0
 OCCLUSION_M = 0.3
@@ -228,6 +234,17 @@ def range_at(returns: list, bearing_deg: float,
     """Nearest return within `gate_deg` of a body bearing, or None."""
     near = [r for b, r in returns if abs(_wrap(b - bearing_deg)) <= gate_deg]
     return min(near) if near else None
+
+
+def straddles_edge(returns: list, bearing_deg: float, gap_m: float,
+                   gate_deg: float = RANGE_GATE_DEG) -> bool:
+    """3.204.B: whether the returns within `gate_deg` of a body bearing, in
+    bearing order, hold two adjacent ones more than `gap_m` apart -- a nearer
+    edge (a jamb, furniture) in front of what the detector saw, where the
+    nearest return ranges the edge and not the object."""
+    near = sorted((_wrap(b - bearing_deg), r) for b, r in returns
+                  if abs(_wrap(b - bearing_deg)) <= gate_deg)
+    return any(abs(r1 - r0) > gap_m for (_, r0), (_, r1) in zip(near, near[1:]))
 
 
 def _place(pose: dict, bearing_deg: float, range_m: float) -> tuple:
@@ -463,8 +480,16 @@ class Inventory:
     `report()`. Holds no reference to a robot or a world -- the caller hands
     in the pose and scan it took with the frame."""
 
-    def __init__(self, map_id: Optional[str] = None):
+    def __init__(self, map_id: Optional[str] = None,
+                 edge_gap_m: Optional[float] = None):
         self.map_id = map_id
+        # 3.204.B: None (the default, dev's rule) ranges every detection by
+        # the nearest return in its gate; a number leaves a detection whose
+        # gate straddles a depth edge that wide unplaced (`straddles_edge`).
+        if edge_gap_m is not None and not (math.isfinite(edge_gap_m) and edge_gap_m > 0):
+            # NaN would switch the gate off silently, 0 would drop everything.
+            raise ValueError(f"edge_gap_m must be None or a finite number > 0; got {edge_gap_m!r}")
+        self.edge_gap_m = edge_gap_m
         # 3.50.D5: the saved map whose frame the positions are in (the pose's
         # `frame_id`), the same across sessions; None when the frame lives
         # only with this map. With one, frames are accepted by it, so a
@@ -515,6 +540,12 @@ class Inventory:
             self.observations += 1
             bearing = _wrap(pan_deg + float(d["bearing_deg"]))
             rng = range_at(returns, bearing)
+            if (rng is not None and rng <= MAX_RANGE_M and self.edge_gap_m is not None
+                    and straddles_edge(returns, bearing, self.edge_gap_m)):
+                # 3.204.B: the nearest return may be an edge in front of it;
+                # held as a bearing with no return, so it still spares a miss.
+                # Only a range that would be placed: a far one spares nothing.
+                rng = None
             if rng is None or rng > MAX_RANGE_M:
                 self.unplaced += 1
                 if rng is None:

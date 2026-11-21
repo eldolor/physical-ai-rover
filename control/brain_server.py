@@ -1030,6 +1030,8 @@ def create_app(
             resume_v=config["resume_v"],
             # 3.178: the report's `watch` block (not the car's perception yet).
             watch_list=config["watch_list"],
+            # 3.204.B: the inventory's depth-edge gate, off unless set.
+            inventory_edge_gate=config["inventory_edge_gate"],
             mission_wall_limit_s=config["mission_wall_limit_s"],
             charge_stall_s=config["charge_stall_s"],
         )
