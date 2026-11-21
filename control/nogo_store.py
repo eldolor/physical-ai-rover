@@ -225,3 +225,37 @@ def push(base_url: str, secret: Optional[str], frame_id: Optional[str], zones: l
     except Exception as e:  # noqa: BLE001 -- see the docstring
         logger.warning("no-go zones not sent to the robot server: %s", e)
         return {"accepted": False, "detail": str(e)[:200]}
+
+
+def held(base_url: str, secret: Optional[str], timeout: float = 5.0) -> Optional[dict]:
+    """3.161.B K2: what the robot server holds (`GET /world/nogo`): its copy
+    (`frame_id`, `zones`, `sent`) and the bridge's `nogo` block behind it
+    (`bridge`: None without ROS, `{"error": ...}` when the bridge did not
+    answer). None when it cannot be read -- no reason to send (the brain's
+    keeper). Never raises."""
+    import httpx
+    headers = {"x-app-secret": secret} if secret else {}
+    try:
+        r = httpx.get(base_url.rstrip("/") + "/world/nogo", headers=headers, timeout=timeout)
+        if r.status_code != 200:
+            return None
+        body = r.json()
+        return body if isinstance(body, dict) else None
+    except Exception:  # noqa: BLE001 -- see the docstring
+        return None
+
+
+def lacking(copy: Optional[dict], frame_id: str, zones: list) -> bool:
+    """3.161.B K2: does the robot server's answer (`held`) show it, or the
+    bridge behind it, without the set `zones` for `frame_id`? An unreadable
+    answer (None) is not a lack: no information is no reason to send."""
+    if not isinstance(copy, dict):
+        return False
+    have = sorted(str(z.get("id")) for z in (copy.get("zones") or []) if isinstance(z, dict))
+    if copy.get("frame_id") != frame_id or have != sorted(str(z.get("id")) for z in zones):
+        return True
+    if copy.get("sent") is False:
+        return True
+    bridge = copy.get("bridge")
+    n = bridge.get("zones") if isinstance(bridge, dict) else None
+    return isinstance(n, int) and n < len(zones)
