@@ -1,0 +1,159 @@
+{
+ "summary": {
+  "runs": 3,
+  "invalid_runs": [],
+  "C1_entries": 1,
+  "C2_closest_true_m": [
+   0.0036,
+   0.0025,
+   -0.0053
+  ],
+  "C2_min_m": -0.0053,
+  "C3_found": 3,
+  "C3_median_s": 75.0,
+  "C3_goals_in_zone": 0,
+  "C3_docked": 3,
+  "C4_both_events": 3,
+  "C4_restore_clear_m": [
+   0.337,
+   0.351,
+   0.325
+  ],
+  "C5_left_after_s": [
+   8.58,
+   2.12,
+   8.06
+  ],
+  "C5_final": [
+   "cancelled",
+   "cancelled",
+   "cancelled"
+  ],
+  "slam_closest_m": [
+   -0.0028,
+   0.0013,
+   0.0004
+  ],
+  "C10_mission_suspensions": [
+   0,
+   0,
+   0
+  ],
+  "C10_mission_zone_log": [
+   null,
+   null,
+   null
+  ],
+  "peak_load": 2.82
+ },
+ "runs": [
+  {
+   "run": "m1-1.json",
+   "valid": true,
+   "outcome": "found",
+   "seconds": 75.0,
+   "goals_sent": 3,
+   "goals_in_zone": 0,
+   "docked": true,
+   "peak_load": 2.25,
+   "samples": 280,
+   "entries": 0,
+   "closest_true_m": 0.0036,
+   "slam_d_at_closest_m": -0.0022,
+   "closest_at": [
+    4.916,
+    1.3824
+   ],
+   "closest_t_s": 47.19,
+   "slam_closest_m": -0.0028,
+   "slam_closest_at": [
+    4.3468,
+    1.3912
+   ],
+   "offset_toward_zone_median_m": 0.00525,
+   "offset_median_m": 0.005458937625582473,
+   "offset_max_m": 0.020339370688396433,
+   "z3_seen_suspended": true,
+   "z3_restored_after_s": 26.5,
+   "z3_restore_clear_m": 0.337,
+   "z3_left_after_s": 8.58,
+   "z3_final": "cancelled",
+   "z3_ended": null,
+   "z3_bridge_log": 2,
+   "mission_suspensions": 0,
+   "mission_zone_log": null
+  },
+  {
+   "run": "m1-2.json",
+   "valid": true,
+   "outcome": "found",
+   "seconds": 76.2,
+   "goals_sent": 3,
+   "goals_in_zone": 0,
+   "docked": true,
+   "peak_load": 2.24,
+   "samples": 285,
+   "entries": 0,
+   "closest_true_m": 0.0025,
+   "slam_d_at_closest_m": 0.0013,
+   "closest_at": [
+    4.9361,
+    1.3835
+   ],
+   "closest_t_s": 48.26,
+   "slam_closest_m": 0.0013,
+   "slam_closest_at": [
+    4.9573,
+    1.3881
+   ],
+   "offset_toward_zone_median_m": 0.0033,
+   "offset_median_m": 0.00425440947723653,
+   "offset_max_m": 0.021693316943243144,
+   "z3_seen_suspended": true,
+   "z3_restored_after_s": 4.97,
+   "z3_restore_clear_m": 0.351,
+   "z3_left_after_s": 2.12,
+   "z3_final": "cancelled",
+   "z3_ended": null,
+   "z3_bridge_log": 2,
+   "mission_suspensions": 0,
+   "mission_zone_log": null
+  },
+  {
+   "run": "m1-3.json",
+   "valid": true,
+   "outcome": "found",
+   "seconds": 74.6,
+   "goals_sent": 3,
+   "goals_in_zone": 0,
+   "docked": true,
+   "peak_load": 2.82,
+   "samples": 280,
+   "entries": 1,
+   "closest_true_m": -0.0053,
+   "slam_d_at_closest_m": 0.0004,
+   "closest_at": [
+    4.9247,
+    1.3913
+   ],
+   "closest_t_s": 48.19,
+   "slam_closest_m": 0.0004,
+   "slam_closest_at": [
+    4.934,
+    1.3856
+   ],
+   "offset_toward_zone_median_m": -0.0052,
+   "offset_median_m": 0.006723094525588644,
+   "offset_max_m": 0.02438462630429263,
+   "z3_seen_suspended": true,
+   "z3_restored_after_s": 26.31,
+   "z3_restore_clear_m": 0.325,
+   "z3_left_after_s": 8.06,
+   "z3_final": "cancelled",
+   "z3_ended": null,
+   "z3_bridge_log": 2,
+   "mission_suspensions": 0,
+   "mission_zone_log": null
+  }
+ ]
+}

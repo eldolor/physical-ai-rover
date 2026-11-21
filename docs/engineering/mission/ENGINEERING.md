@@ -486,7 +486,31 @@ or Reserve still propagates from the cancel and from each verb.
   carries a readable one, `source: saved_map` (3.156.E: under `world: ros` on
   a matched reload, the saved map's `dock_pose`, the same point for every
   mission on that map); else the pose itself, `source: start`. None when the
-  pose was not usable: the return is then `skipped`, `no_dock`.
+  pose was not usable: the return is then `skipped`, `no_dock`, unless the
+  dock is read late.
+* **A dock read late** (3.194, `_late_dock`): with `return_to_dock` on, a
+  navigator, and no dock at `start()`, `start()` logs it and keeps the wheel
+  odometry (`robot.get_odometry()`, usable only); each search tick then reads
+  the pose again, at most once a `LATE_DOCK_EVERY_S` (1 s, the mission's
+  clock), and an end in `RETURNS` reads it once more (forced) in `_finish`
+  before `_return_wanted` can answer `no_dock`. The forced read runs before
+  the wheels stop, so it takes a `saved_map` dock only, with no odometry read.
+  Every late pose read is bounded by `POSE_READ_S` (`call_with_timeout`), and
+  each unforced try samples the odometry first, whether or not the pose is
+  usable, so motion latches `_dock_moved` within a second of happening. A `saved_map` dock is
+  taken whenever read. A `start` dock is taken only while the odometry says
+  the robot has not moved since `start()` (under `LATE_DOCK_MOVED_M` 0.05 m of
+  path and `LATE_DOCK_TURNED_DEG` 5 deg); odometry unread at either end, a path
+  that shrank (a robot server restart) or any earlier read that showed motion
+  (latched, `_dock_moved`) counts as moved (a move and a restart inside one
+  try's second, or a robot carried with its wheels still, are not seen), because a start pose read after a
+  move is not the dock. With the return off, a saved dock that becomes
+  readable only later does not reach E2's no-go split (not covered). Taken: `status.dock`
+  gains `late_s` (seconds after the start), a log line says how late and from
+  which source, `HomeBudget` starts, and E4's no-go split runs again (and the
+  robot server is sent the zones in force if they changed). Never read during
+  the return, the charge or after the end; the pose read and the odometry run
+  off the lock.
 * **When** (`_return_wanted`, `RETURNS`): after `found`, `room_reached`,
   `exhausted`, `out_of_budget`, `arrived_unconfirmed` and `blocked`, with
   `return_to_dock` on (the constructor's default is off; the brain config's

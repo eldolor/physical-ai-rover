@@ -1,0 +1,215 @@
+{
+ "house": "scaled_house",
+ "image": "vision-picar-ros:plan-3.193",
+ "truth_every_s": 0.25,
+ "frame_id": "map-75979df5",
+ "zones": [
+  {
+   "id": "zd16a941442d7",
+   "x0": 1.615,
+   "y0": 2.822,
+   "x1": 2.285,
+   "y1": 3.478,
+   "kind": "area",
+   "set_at": 1795190922.989,
+   "by": "person"
+  },
+  {
+   "id": "z3bbc17e04667",
+   "x0": 0.532,
+   "y0": 3.455,
+   "x1": 0.968,
+   "y1": 4.045,
+   "kind": "area",
+   "set_at": 1795190923.025,
+   "by": "person"
+  },
+  {
+   "id": "zc6749e6efd5f",
+   "x0": 4.344,
+   "y0": 1.386,
+   "x1": 4.956,
+   "y1": 2.514,
+   "kind": "area",
+   "set_at": 1795190923.059,
+   "by": "person"
+  }
+ ],
+ "bridge_after_draw": {
+  "zones": 3,
+  "suspended": [],
+  "suspended_count": 0,
+  "restored": 0,
+  "last": null,
+  "lattice_phase_m": [
+   0.0362,
+   0.035
+  ]
+ },
+ "z6_refused": 10,
+ "start": 200,
+ "mission": {
+  "outcome": "found",
+  "seconds": 74.9,
+  "goals_sent": 3,
+  "nogo": {
+   "frame_id": "map-75979df5",
+   "zones": 3,
+   "refused": 0,
+   "leaves": 0,
+   "dock_refused": []
+  },
+  "truth_samples": 293,
+  "entries": [],
+  "closest_outside_m": 0.0142,
+  "log_tail": [
+   "found: Hallway, kitchen, living room searched. Found. -- returning to the dock",
+   "return: goal to (1.65, 1.35) accepted",
+   "return docked: 0.099 m, 1.9 deg from the dock",
+   "inventory: 2 reported, 1 candidates from 66 frames -- red backpack, refrigerator",
+   "mission ended (found): Hallway, kitchen, living room searched. Found."
+  ]
+ },
+ "goals": [
+  [
+   1.61,
+   1.49
+  ],
+  [
+   5.41,
+   0.9
+  ],
+  [
+   6.3,
+   1.7
+  ]
+ ],
+ "goals_in_zone": 0,
+ "bridge_after_mission": {
+  "zones": 3,
+  "suspended": [],
+  "suspended_count": 0,
+  "restored": 0,
+  "last": null,
+  "lattice_phase_m": [
+   0.0191,
+   0.0084
+  ]
+ },
+ "store_after_mission": 3,
+ "z3": {
+  "start": 200,
+  "start_truth": [
+   2.0468731201376964,
+   1.350131051624004
+  ],
+  "truth_at_draw": [
+   3.3884323428120373,
+   1.358807373062066
+  ],
+  "zone": {
+   "id": "zbfc4fce57e00",
+   "x0": 2.988,
+   "y0": 0.969,
+   "x1": 3.788,
+   "y1": 1.769,
+   "kind": "area",
+   "set_at": 1795191041.667,
+   "by": "person"
+  },
+  "refused_adds": [],
+  "left_after_s": 2.08,
+  "events": [
+   {
+    "event": "zone_suspended",
+    "id": "zbfc4fce57e00",
+    "at": 1795191041.6844761,
+    "t": 0.26,
+    "truth_clear_m": 0.0
+   },
+   {
+    "event": "zone_restored",
+    "id": "zbfc4fce57e00",
+    "at": 1795191046.6967552,
+    "clear_m": 0.311,
+    "t": 5.2,
+    "truth_clear_m": 0.34
+   }
+  ],
+  "seen_suspended": true,
+  "restored_after_s": 5.2,
+  "truth_clear_at_restore_m": 0.34,
+  "counters_at_suspended": {
+   "suspended_count": 1,
+   "restored": 0
+  },
+  "counters_after": {
+   "suspended_count": 1,
+   "restored": 1
+  },
+  "bridge_log": [
+   "[bridge-6] [WARN] [1795191041.684974043] [picar_bridge]: zone_suspended zbfc4fce57e00: the robot is in it; left out of the mask until it is 0.3 m clear",
+   "[bridge-6] [WARN] [1795191046.699118094] [picar_bridge]: zone_restored zbfc4fce57e00: the robot is 0.31 m clear"
+  ],
+  "final_outcome": "cancelled"
+ },
+ "loadavg_10s": [
+  [
+   1795190912.5,
+   "2.09"
+  ],
+  [
+   1795190922.5,
+   "1.85"
+  ],
+  [
+   1795190932.5,
+   "1.57"
+  ],
+  [
+   1795190942.5,
+   "1.32"
+  ],
+  [
+   1795190952.5,
+   "1.12"
+  ],
+  [
+   1795190962.5,
+   "1.10"
+  ],
+  [
+   1795190972.5,
+   "1.16"
+  ],
+  [
+   1795190982.5,
+   "2.00"
+  ],
+  [
+   1795190992.5,
+   "1.99"
+  ],
+  [
+   1795191002.5,
+   "1.68"
+  ],
+  [
+   1795191012.5,
+   "1.42"
+  ],
+  [
+   1795191022.5,
+   "1.20"
+  ],
+  [
+   1795191032.5,
+   "1.17"
+  ],
+  [
+   1795191042.5,
+   "1.23"
+  ]
+ ],
+ "peak_load": 2.09
+}

@@ -241,6 +241,54 @@ def cell_mask(m: dict, zones: Iterable[dict], grow: float = 0.0):
     return out
 
 
+def close_pinches(masked: dict, zones: Iterable[dict], cell_value: int, free: int = 0,
+                  occupied: int = 100, floor: Optional[dict] = None) -> dict:
+    """3.196 D1: a masked map with no diagonal step through a gap of no width
+    beside a zone.
+
+    An 8-connected walk (`brain/frontier.py`'s `reach`) steps diagonally
+    between two free cells whose two shared neighbours are both blocked. Where
+    one of those is a cell whose centre lies in a zone itself (lethal to a
+    navigator, as nav2's keepout is to the robot's centre) and the other is
+    such a cell or `occupied`, the gap is closed for the robot too: explore
+    reached frontiers behind a zone that filled a door that way
+    (`procthor:val:15`), which no navigator can. Every such 2 x 2 block gets
+    its free pair set to `cell_value`. A side that is only the zone's grown
+    band (`masked_map`'s `grow`) is no pinch: a navigator passes there
+    (`procthor:val:9`). Marked cells are not zone cells, so one pass settles
+    it. `floor` is the map before masking (`masked_map` writes over a wall
+    inside a zone; a wall there is still a wall, never a zone side); without
+    it, `masked` is read for walls. Returns `masked` itself when nothing is closed; otherwise a copy,
+    `cells` of the same type, `pinch_cells` counted."""
+    zones = list(zones or ())
+    if not zones or not masked or not masked.get("usable") or "cells" not in masked:
+        return masked
+    import numpy as np
+    w, h = masked["width"], masked["height"]
+    cells = masked["cells"]
+    a = np.array(cells).reshape(h, w)          # a copy: the input is never changed
+    wall = a == occupied
+    if floor is not None and floor is not masked:
+        wall |= np.asarray(floor["cells"]).reshape(h, w) == occupied
+    hard = cell_mask(masked, zones, 0.0) & ~wall     # review: a wall in a zone is still a wall
+    wall |= hard
+    ok = a == free
+    mark = np.zeros_like(ok)
+    tl, tr = (slice(0, -1), slice(0, -1)), (slice(0, -1), slice(1, None))
+    bl, br = (slice(1, None), slice(0, -1)), (slice(1, None), slice(1, None))
+    for p, q, s_, t in ((tl, br, tr, bl), (tr, bl, tl, br)):
+        pinch = ok[p] & ok[q] & wall[s_] & wall[t] & (hard[s_] | hard[t])
+        mark[p] |= pinch
+        mark[q] |= pinch
+    if not mark.any():
+        return masked
+    a[mark] = cell_value
+    out = dict(masked)
+    out["cells"] = a.ravel().tolist() if isinstance(cells, list) else a.ravel()
+    out["pinch_cells"] = int(mark.sum())
+    return out
+
+
 def masked_map(m: dict, zones: Iterable[dict], cell_value: int, grow: float = 0.0) -> dict:
     """A copy of a usable map with every cell inside a zone set to
     `cell_value` (explore uses occupied: no frontier, no goal, no path

@@ -1,0 +1,2 @@
+image vision-picar-ros:plan-3.195 sha256:b1e7a501259c29d2abdc636d0ceff8505e942ace3686a76a093f1ecd9ad1e5e8
+built from: this branch's working tree at 5f94bc64 + the uncommitted margin diff (sha256 of git diff, first 16: 043f2cd729316e72), committed as the 3.195.B code commit
