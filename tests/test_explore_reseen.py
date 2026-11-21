@@ -247,3 +247,14 @@ def test_c2_to_c8_met():
         assert s[k]["met"] and s[k]["changed"] == []
         assert s[k]["found_branch_vs_dev"] == {"surveyed": {"branch": 20, "dev": 20},
                                                "unsurveyed": {"branch": 20, "dev": 20}}
+
+
+def test_c11_live_find_as_recorded():
+    import json
+    d = json.loads((ROOT / "evaluations" / "nogo-3192" / "fix" / "live.json").read_text())
+    m = d["mission"]
+    assert (m["outcome"], m["seconds"], m["goals_sent"]) == ("found", 75, 3)
+    assert m["entries"] == [] and m["truth_samples"] == 148 and d["goals_in_zone"] == []
+    assert d["z6_refused"] == 10 and d["peak_load"] == 3.05 <= 4
+    bad = json.loads((ROOT / "evaluations" / "nogo-3192" / "fix" / "live-1-invalid-load.json").read_text())
+    assert bad["peak_load"] == 4.51 > 4                     # invalid (3.79), re-run
