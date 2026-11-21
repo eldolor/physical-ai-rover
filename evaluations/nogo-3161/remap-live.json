@@ -1,0 +1,320 @@
+{
+ "house": "scaled_house",
+ "image": "vision-picar-ros:plan-3.161",
+ "volume": "picar-maps-3161-remap",
+ "zones": [
+  {
+   "id": "z444d49f91f3d",
+   "x0": 1.615,
+   "y0": 2.822,
+   "x1": 2.285,
+   "y1": 3.478,
+   "kind": "area",
+   "set_at": 1795269393.921,
+   "by": "person"
+  },
+  {
+   "id": "z2224df0163f6",
+   "x0": 0.532,
+   "y0": 3.455,
+   "x1": 0.968,
+   "y1": 4.045,
+   "kind": "area",
+   "set_at": 1795269393.963,
+   "by": "person"
+  },
+  {
+   "id": "z5a0a41b30034",
+   "x0": 4.344,
+   "y0": 1.386,
+   "x1": 4.956,
+   "y1": 2.514,
+   "kind": "area",
+   "set_at": 1795269393.99,
+   "by": "person"
+  }
+ ],
+ "stack1": {
+  "frame_id": "map-07cdbf33",
+  "slam": "ready",
+  "map": {
+   "map_id": "map-07cdbf33",
+   "saving": false,
+   "store": true,
+   "saved": 0,
+   "failed": 0,
+   "skipped": 0,
+   "last_version": null,
+   "last_at": null,
+   "last_error": null
+  },
+  "zones_after_draw": {
+   "bridge": 3,
+   "store": 3,
+   "store_frame_id": "map-07cdbf33"
+  },
+  "find": {
+   "start": 200,
+   "outcome": "found",
+   "seconds": 76,
+   "truth_samples": 151,
+   "entries": [],
+   "log_tail": [
+    "found: Hallway, kitchen, living room searched. Found. -- returning to the dock",
+    "return: goal to (1.65, 1.35) accepted",
+    "return docked: 0.094 m, 0.1 deg from the dock",
+    "inventory: 2 reported, 1 candidates from 63 frames -- red backpack, refrigerator",
+    "mission ended (found): Hallway, kitchen, living room searched. Found."
+   ]
+  },
+  "map_after_find": {
+   "map_id": "map-07cdbf33",
+   "saving": false,
+   "store": true,
+   "saved": 1,
+   "failed": 0,
+   "skipped": 0,
+   "last_version": 1,
+   "last_at": 1795269471.6585238,
+   "last_error": null
+  }
+ },
+ "stack2": {
+  "frame_id_reload": "map-07cdbf33",
+  "slam": "ready",
+  "reload": {
+   "map_id": "map-07cdbf33",
+   "version": 1,
+   "took_s": 1.79,
+   "agreement": 0.694,
+   "dock_error_m": 0.0,
+   "dock_error_deg": 0.0,
+   "ok": true,
+   "reason": "matched",
+   "result": "matched"
+  },
+  "map": {
+   "map_id": "map-07cdbf33",
+   "saving": false,
+   "store": true,
+   "saved": 0,
+   "failed": 0,
+   "skipped": 0,
+   "last_version": null,
+   "last_at": null,
+   "last_error": null
+  },
+  "zones_after_start": {
+   "bridge": 0,
+   "store": 3,
+   "store_frame_id": "map-07cdbf33"
+  },
+  "remap_reply": {
+   "status": 200,
+   "body": {
+    "remapping": true,
+    "trigger": "request",
+    "at": 1795269493.1156032,
+    "map_id": "map-07cdbf33",
+    "version": 1,
+    "detail": "twin-dpad"
+   }
+  },
+  "remap_record": {
+   "trigger": "request",
+   "at": 1795269493.1156032,
+   "map_id": "map-07cdbf33",
+   "version": 1,
+   "detail": "twin-dpad",
+   "waited_s": 0.0,
+   "cancelled_goal": false,
+   "at_rest": true,
+   "from_pose": [
+    -0.0,
+    -0.0,
+    0.0
+   ],
+   "result": "mapping",
+   "mapping_at": 1795269493.6382124,
+   "took_s": 0.52
+  },
+  "remap_health_slam": {
+   "state": "ready",
+   "mode": "mapping",
+   "starts": 2,
+   "remap": {
+    "trigger": "request",
+    "at": 1795269493.1156032,
+    "map_id": "map-07cdbf33",
+    "version": 1,
+    "detail": "twin-dpad",
+    "waited_s": 0.0,
+    "cancelled_goal": false,
+    "at_rest": true,
+    "from_pose": [
+     -0.0,
+     -0.0,
+     0.0
+    ],
+    "result": "mapping",
+    "mapping_at": 1795269493.6382124,
+    "took_s": 0.52
+   },
+   "watch": null,
+   "remap_contradiction": false,
+   "remap_latched": false,
+   "remap_stale_refused": 0,
+   "remap_deferrals": 0
+  },
+  "frame_id_after_remap": "map-07cdbf33",
+  "zones_after_remap": {
+   "bridge": 0,
+   "store": 3,
+   "store_frame_id": "map-07cdbf33"
+  },
+  "find": {
+   "start": 200,
+   "outcome": "found",
+   "seconds": 61,
+   "truth_samples": 121,
+   "entries": [],
+   "log_tail": [
+    "found: Hallway, kitchen, living room searched. Found. -- returning to the dock",
+    "return: goal to (1.65, 1.35) accepted",
+    "return docked: 0.090 m, 1.9 deg from the dock",
+    "inventory: 2 reported, 1 candidates from 38 frames -- red backpack, refrigerator",
+    "mission ended (found): Hallway, kitchen, living room searched. Found."
+   ]
+  },
+  "map_after_find": {
+   "map_id": "map-07cdbf33",
+   "saving": false,
+   "store": true,
+   "saved": 1,
+   "failed": 0,
+   "skipped": 0,
+   "last_version": 2,
+   "last_at": 1795269557.3058035,
+   "last_error": null
+  },
+  "zones_after_find": {
+   "bridge": 3,
+   "store": 3,
+   "store_frame_id": "map-07cdbf33"
+  }
+ },
+ "stack3": {
+  "frame_id_reload": "map-07cdbf33",
+  "slam": "ready",
+  "reload": {
+   "map_id": "map-07cdbf33",
+   "version": 2,
+   "took_s": 1.71,
+   "agreement": 0.692,
+   "dock_error_m": 0.0,
+   "dock_error_deg": 0.0,
+   "ok": true,
+   "reason": "matched",
+   "result": "matched"
+  },
+  "map": {
+   "map_id": "map-07cdbf33",
+   "saving": false,
+   "store": true,
+   "saved": 0,
+   "failed": 0,
+   "skipped": 0,
+   "last_version": null,
+   "last_at": null,
+   "last_error": null
+  },
+  "zones_after_start": {
+   "bridge": 0,
+   "store": 3,
+   "store_frame_id": "map-07cdbf33"
+  }
+ },
+ "loadavg_10s": [
+  [
+   1795269381.0,
+   "1.20"
+  ],
+  [
+   1795269391.0,
+   "1.38"
+  ],
+  [
+   1795269401.0,
+   "1.61"
+  ],
+  [
+   1795269411.0,
+   "1.44"
+  ],
+  [
+   1795269421.0,
+   "1.69"
+  ],
+  [
+   1795269431.0,
+   "3.52"
+  ],
+  [
+   1795269441.0,
+   "3.05"
+  ],
+  [
+   1795269451.0,
+   "2.65"
+  ],
+  [
+   1795269461.0,
+   "2.32"
+  ],
+  [
+   1795269471.0,
+   "2.11"
+  ],
+  [
+   1795269481.0,
+   "1.79"
+  ],
+  [
+   1795269491.0,
+   "1.51"
+  ],
+  [
+   1795269501.0,
+   "1.36"
+  ],
+  [
+   1795269511.0,
+   "1.15"
+  ],
+  [
+   1795269521.0,
+   "1.12"
+  ],
+  [
+   1795269531.0,
+   "1.10"
+  ],
+  [
+   1795269541.0,
+   "1.48"
+  ],
+  [
+   1795269551.0,
+   "1.41"
+  ],
+  [
+   1795269561.0,
+   "1.26"
+  ],
+  [
+   1795269571.0,
+   "1.15"
+  ]
+ ],
+ "peak_load": 3.52
+}
