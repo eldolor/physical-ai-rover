@@ -83,6 +83,10 @@ environment variable (`require_secret()` in `robot/server.py`,
 
 * **It is inert when the variable is unset.** That is how local
   development and the test suite run (`CLAUDE.md` section 6).
+* **One route is stricter.** `POST /power/shutdown` uses
+  `require_shutdown_secret()` (3.170): with no secret set it answers 403
+  on a robot that has a power-off command, and is open only where nothing
+  can power off (`robot/server.py`).
 * **There are three different secrets on purpose.** The local one gates
   driving the robot; the vision one gates asking the model; the walks one
   gates reviewing and deleting recordings, "a different privilege than
@@ -190,10 +194,15 @@ none is answered or changed here.
 4. **The stack's two secrets default to empty, which the template itself
    calls "NO AUTH".** Nothing in the template refuses an empty one, as
    `run.sh` does for the local secret.
-5. **The secret is compared in constant time only in the vision service**
-   (`hmac.compare_digest`, 3.76 H2-9). The robot server, the brain, the
-   admin console, the local VLM and the simulator servers compare with
-   `!=`.
+5. **The secret is compared in constant time in two checks and with `!=`
+   in the rest.** Constant time (`hmac.compare_digest`): the vision
+   service's `_check_secret()` (`service/vision_analyze/app.py`, 3.76
+   H2-9) and the robot server's `require_shutdown_secret()`
+   (`robot/server.py`, 3.170). With `!=`: `require_secret()` in
+   `robot/server.py`, `control/brain_server.py`,
+   `control/admin_server.py`, `service/local_vlm/server.py`,
+   `sim/body_server.py` and `sim/sensor_server.py`, and the ROS bridge's
+   handler (`bridge.py`).
 6. **Any web origin may call the brain** (`allow_origins=["*"]` in
    `control/brain_server.py`; the robot server's default is the same), so
    the secret is the only control on a reachable server.
