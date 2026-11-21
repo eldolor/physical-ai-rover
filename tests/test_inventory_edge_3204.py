@@ -145,8 +145,28 @@ def _score(name):
     return mod.score(EVAL / name)
 
 
+def test_a_gap_that_is_not_a_positive_number_is_refused():
+    for bad in (float("nan"), 0.0, -0.3, float("inf")):
+        with pytest.raises(ValueError, match="edge_gap_m"):
+            Inventory(edge_gap_m=bad)
+
+
+def test_the_code_still_makes_the_recorded_rows():
+    """The records below pin the record; this pins the code to it: mission 0
+    of seed 3462, key off, is A's dev row, and with the gate at 0.3 it is the
+    tuning arm's row (review: a frozen file cannot catch a regression)."""
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("phantom_sweep_3204_run", EVAL / "sweep.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    first = lambda name: json.loads((EVAL / name).read_text().splitlines()[0])
+    assert mod.mission(0, False) == first("dev-clean.jsonl")
+    assert mod.mission(0, False, edge=0.3) == first("B/tune-clean-edge0.3.jsonl")
+
+
 def test_e5_key_off_is_a_row_for_row():
-    """E5: the key-off rows on seed 3462 are 3.204.A's dev rows, byte for byte."""
+    """E5: the key-off rows on seed 3462 are 3.204.A's dev rows, byte for byte
+    (the record; `test_the_code_still_makes_the_recorded_rows` ties the code to it)."""
     for arm in ("clean", "noisy"):
         assert (EVAL / "B" / f"off-{arm}-3462.jsonl").read_bytes() == \
             (EVAL / f"dev-{arm}.jsonl").read_bytes()

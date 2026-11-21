@@ -486,6 +486,9 @@ class Inventory:
         # 3.204.B: None (the default, dev's rule) ranges every detection by
         # the nearest return in its gate; a number leaves a detection whose
         # gate straddles a depth edge that wide unplaced (`straddles_edge`).
+        if edge_gap_m is not None and not (math.isfinite(edge_gap_m) and edge_gap_m > 0):
+            # NaN would switch the gate off silently, 0 would drop everything.
+            raise ValueError(f"edge_gap_m must be None or a finite number > 0; got {edge_gap_m!r}")
         self.edge_gap_m = edge_gap_m
         # 3.50.D5: the saved map whose frame the positions are in (the pose's
         # `frame_id`), the same across sessions; None when the frame lives

@@ -49,9 +49,16 @@ def mission(k: int, noisy: bool, seed: int = SEED, edge=None) -> dict:
         # then the gap under test set on the inventory it built.
         real = sw.MissionRunner
 
+        from brain.inventory import Inventory
+        gap = float(edge)
+        Inventory(edge_gap_m=gap)              # refuses NaN, 0, negatives
+
         def gated(*a, **kw):
-            runner = real(*a, inventory_edge_gate=True, **kw)
-            runner.inventory.edge_gap_m = float(edge)
+            kw["inventory_edge_gate"] = True
+            runner = real(*a, **kw)
+            if runner.inventory is None:
+                raise SystemExit("--edge needs the inventory on")
+            runner.inventory.edge_gap_m = gap
             return runner
         sw.MissionRunner = gated
         try:
@@ -96,13 +103,16 @@ def main(argv):
     logging.disable(logging.WARNING)
     if argv[:1] == ["run"]:
         out = Path(argv[1])
-        if out.exists() and "--from" not in argv:
-            raise SystemExit(f"{out} exists: never overwritten")
+        k0 = int(argv[argv.index("--from") + 1]) if "--from" in argv else 0
+        if out.exists():
+            # Appending is only continuing: the file holds exactly missions 0..k0-1.
+            ks = [json.loads(x)["k"] for x in out.read_text().splitlines() if x.strip()]
+            if k0 == 0 or ks != list(range(k0)):
+                raise SystemExit(f"{out} exists (missions {ks[:3]}...): never overwritten")
         noisy = "--noisy" in argv
         n = int(argv[argv.index("--n") + 1]) if "--n" in argv else MISSIONS
         seed = int(argv[argv.index("--seed") + 1]) if "--seed" in argv else SEED
         edge = float(argv[argv.index("--edge") + 1]) if "--edge" in argv else None
-        k0 = int(argv[argv.index("--from") + 1]) if "--from" in argv else 0
         for k in range(k0, n):
             row = mission(k, noisy, seed, edge)
             with open(out, "a") as f:
