@@ -1285,10 +1285,15 @@ class ExploreAgent(MissionAgent):
                 self._zone_frame_asked = frame      # only once read (review 2: a failure asks again)
             except Exception:  # noqa: BLE001 -- no zones read: the choice goes on without
                 logger.warning("no-go zones unreadable for %s", frame, exc_info=True)
+        raw = m
         if self.resight:
             # 3.70.M3: the floor the camera never saw reads as unknown, for
-            # every step below (frontiers, reach and the zones' mask alike).
-            m = self._sight_map(m, pose)
+            # every step below (frontiers, reach and the zones' mask alike) --
+            # but the retry book's growth (`known`), which is the map's.
+            try:
+                m = self._sight_map(m, pose)
+            except Exception:  # noqa: BLE001 -- coverage is advisory: the map as it is
+                logger.warning("sight map failed; choosing on the map", exc_info=True)
         floor = m
         if getattr(self, "zones", None):
             # 3.161 D3/D4: out of a zone first; then every goal below is
@@ -1313,7 +1318,9 @@ class ExploreAgent(MissionAgent):
                 self._floor_of = (m, floor)
 
         def known(x, y):
-            return known_near(floor, x, y, self.retry.radius_m)
+            # 3.70.M3 review: the map's own cells, not the sight map's (a
+            # look must not release a failed place early).
+            return known_near(raw, x, y, self.retry.radius_m)
 
         # One reachability search per choice, shared by every step below (3.77).
         rch = reach(m, pose["x_m"], pose["y_m"], clearance_m=leave)
@@ -1408,11 +1415,17 @@ class ExploreAgent(MissionAgent):
         cells = np.asarray(m["cells"]).reshape(h, w)
         mask = cells == CELL_FREE
         if self.seen:
-            xy = np.asarray([self._to_cell(m, c) for c in self.seen], dtype=np.int64)
+            # `_to_cell` over every centre, vectorised (review: a SLAM map's
+            # seen set runs to tens of thousands, every choice).
+            c = np.asarray(list(self.seen), dtype=float)
+            xy = np.floor(np.column_stack(((c[:, 0] - m["origin_x_m"]) / res,
+                                           (c[:, 1] - m["origin_y_m"]) / res))).astype(np.int64)
             on = (xy[:, 0] >= 0) & (xy[:, 0] < w) & (xy[:, 1] >= 0) & (xy[:, 1] < h)
             mask[xy[on, 1], xy[on, 0]] = False
         cx, cy = self._to_cell(m, (pose["x_m"], pose["y_m"]))
         r = int(math.ceil(SIGHT_KEEP_M / res))
+        if cx + r < 0 or cy + r < 0 or cx - r >= w or cy - r >= h:
+            return mask                       # review: the robot off this map keeps nothing
         ys, xs = np.ogrid[-r:r + 1, -r:r + 1]
         disk = xs * xs + ys * ys <= r * r
         y0, x0 = cy - r, cx - r
@@ -1430,15 +1443,17 @@ class ExploreAgent(MissionAgent):
     def _sight_map(self, m: dict, pose: dict) -> dict:
         """3.70.M3: `m` with the free cells the camera has not seen made
         unknown. Its `map_version` also names the seen set's size (which only
-        grows), so a cache keyed on the map's version (`_zone_map`, the cut's)
-        never serves an older one; a map with no version keeps none (those
-        caches are then off, as for the map itself)."""
+        grows) and the robot's cell (the kept disk moves with it, review), so
+        a cache keyed on the map's version (`_zone_map`, the cut's) never
+        serves another; a map with no version keeps none (those caches are
+        then off, as for the map itself)."""
         mask = self._sight_mask(m, pose)
         cells = np.asarray(m["cells"]).reshape(m["height"], m["width"]).copy()
         cells[mask] = CELL_UNKNOWN
         v = m.get("map_version")
         return dict(m, cells=cells.ravel().tolist(),
-                    map_version=None if v is None else (v, "sight", len(self.seen)))
+                    map_version=None if v is None else (v, "sight", len(self.seen),
+                                                         self._to_cell(m, (pose["x_m"], pose["y_m"]))))
 
     def _small_room_goal(self, m: dict, pose: dict, rch, now: float):
         """3.173.B: a survey's goal into a region of the map no goal stop

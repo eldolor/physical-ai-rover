@@ -123,7 +123,8 @@ def end_belief(row, lm):
     nearest its survey place within inventory's MERGE_M (it is not seen
     again, so it does not move), or None if the report no longer holds it."""
     near = [(math.dist((lm["x_m"], lm["y_m"]), (e["x_m"], e["y_m"])), e) for e in row["end_landmarks"]]
-    near = [t for t in near if t[0] <= 0.5]
+    from brain.inventory import MERGE_M
+    near = [t for t in near if t[0] <= MERGE_M]
     return min(near, key=lambda t: t[0])[1]["belief"] if near else None
 
 
@@ -169,7 +170,7 @@ def score(path):
     out["K1_found"] = {**found, "bar": 19,
                        "met": (len(s) == n and len(u) == n and found["surveyed"] >= 19
                                and found["surveyed"] >= found["unsurveyed"])}
-    fell, under, none, ends = 0, 0, [], []
+    fell, under, none, ends, absent = 0, 0, [], [], []
     for r in s:
         lm = stale_landmark(sv["reported"], r["target"], r["move"]["p0"])
         if lm is None:
@@ -177,11 +178,14 @@ def score(path):
             continue
         b = end_belief(r, lm)
         ends.append([r["k"], lm["belief"], b])
+        if b is None:
+            absent.append(r["k"])     # review: counted fallen (the bars' rule), listed apart
         fell += b is None or b < lm["belief"]
         under += b is None or b < REPORT_BELIEF
     out["K2_belief"] = {"fell": fell, "of": len(s) - len(none), "no_stale_landmark": none,
-                        "under_report": under, "ends": ends,
-                        "met": len(s) == n and fell == len(s) - len(none)}
+                        "under_report": under, "ends": ends, "absent": absent,
+                        # review: never met on nothing counted
+                        "met": len(s) == n and len(s) > len(none) and fell == len(s) - len(none)}
     every = rows[1:]
     out["K3_memory_alone"] = {"wrong_found": {a: sum(r["wrong_found"] for r in arms[a]) for a in sweep.ARMS},
                               "wrong": [[r["arm"], r["k"], r["target"], r["target_m"]]

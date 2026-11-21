@@ -166,4 +166,19 @@ def test_the_sight_map_unknowns_only_unseen_floor_away_from_the_robot():
     assert ((before == CELL_OCCUPIED) == (cells == CELL_OCCUPIED)).all()     # walls stay walls
     assert ((cells == CELL_UNKNOWN) <= ((before == CELL_FREE) | (before == CELL_UNKNOWN))).all()
     v = agent._sight_map(dict(m, map_version=7), pose)["map_version"]
-    assert v == (7, "sight", 1)
+    assert v == (7, "sight", 1, (3, 3))
+    # Review: the robot moved, nothing more seen -- another version (the
+    # zones' cache must not serve the old disk).
+    moved = {"x_m": 20.5 * CELL, "y_m": 10.5 * CELL}
+    assert agent._sight_map(dict(m, map_version=7), moved)["map_version"] != v
+
+
+def test_a_pose_off_the_map_keeps_nothing_and_does_not_raise():
+    """Review: a robot localised wholly off the carried grid."""
+    runner, grid, _ = _find("purple elephant", None, (6.5, 4.5), recall=False, house="scaled_house")
+    agent = runner.agent
+    m = runner.world.get_map()
+    agent.seen = set()
+    for x_m, y_m in ((-10.0, 1.0), (1.0, -10.0), (40.0, 1.0), (1.0, 40.0)):
+        mask = agent._sight_mask(m, {"x_m": x_m, "y_m": y_m})
+        assert mask.sum() == (np.asarray(m["cells"]) == CELL_FREE).sum()
