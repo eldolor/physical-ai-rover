@@ -9,6 +9,7 @@ corners; the Rover's zones are rotated by its start heading, so every edge is
 slanted against the costmap's lattice.
 """
 
+import importlib.util
 import json
 import math
 import random
@@ -19,9 +20,12 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "service/slam/src/picar_bridge"))
-sys.path.insert(0, str(ROOT / "evaluations/nogo-3197"))
 from picar_bridge import keepout  # noqa: E402
-import sweep as S  # noqa: E402
+
+# review: by path, under its own name (four other evaluations have a sweep.py)
+_spec = importlib.util.spec_from_file_location("sweep3197", ROOT / "evaluations/nogo-3197/sweep.py")
+S = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(S)
 from tests.test_review_376h1 import bridge_mod  # noqa: E402,F401  (the fixture: bridge.py on stubs)
 
 RES = keepout.RES_M
@@ -155,6 +159,25 @@ def test_a_vent_survives_a_phase_move_with_no_pose():
         st2 = keepout.step(zs, st, None, new)
         assert st2["vent"] and st2["vent_phase"] == new and st2["suspended"] == set()
         assert S.plans_out(S.drawn_mask(zs, st2, new), x, y, new), (x, y)
+        st3 = keepout.step(zs, st2, (x, y), new)        # the next pose bounds it again
+        assert len(st3["vent"]) <= keepout.VENT_MAX_CELLS
+        assert keepout._far(st3["vent"], x, y, new) <= keepout.VENT_FAR_M
+
+
+def test_a_vent_left_behind_along_an_edge_is_re_derived():
+    """Review: a robot sliding along a slanted edge never keeps a vent that
+    reaches farther than VENT_FAR_M from it."""
+    phase = (0.013, 0.037)
+    zs = S.zones_of(S.rotated(0.0, 0.0, 2.0, 0.8, 30.0, "z"))
+    c, s_ = math.cos(math.radians(30)), math.sin(math.radians(30))
+    st = {}
+    for k in range(120):
+        u, v = -0.9 + 0.015 * k, -0.4 + 0.03            # 3 cm inside the long edge
+        x, y = c * u - s_ * v, s_ * u + c * v
+        st = keepout.step(zs, st, (x, y), phase)
+        assert st["suspended"] == set()
+        assert keepout._far(st["vent"], x, y, phase) <= keepout.VENT_FAR_M + 1e-9
+        assert S.plans_out(S.drawn_mask(zs, st, phase), x, y, phase)
 
 
 def test_a_re_post_of_the_same_zones_keeps_the_vent(bridge_mod, monkeypatch):
@@ -276,6 +299,13 @@ def test_the_sweeps_met_v1_to_v7():
     assert new["S1"]["vent_cells_max"] <= 10 and new["S1"]["vent_far_m_max"] <= 0.60          # V6
     assert new["S1"]["zone_points_unlethal"] == 0 and new["S1"]["zone_points_tested"] > 10000
     assert new["S7_jitter"]["flaps"] == 0                                                     # V7
+
+
+def test_the_start_turn_hook_refuses_a_value_that_is_not_a_number(monkeypatch):
+    from sim.maps import build_world
+    monkeypatch.setenv("SIM_START_TURN_DEG", "30deg")
+    with pytest.raises(ValueError, match="SIM_START_TURN_DEG"):
+        build_world("scaled_house")
 
 
 def test_the_start_turn_hook_turns_the_simulated_robot(monkeypatch):

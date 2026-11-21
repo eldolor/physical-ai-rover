@@ -10,7 +10,8 @@ read back.
 Per position it records whether a zone was left out WHOLE because it boxed
 the robot (not for depth, not fresh), whether the robot can plan out of the
 mask (a 4-connected walk through undrawn cells from the robot's own cell --
-NavFn frees that one -- to a cell VENT_OPEN_CELLS away), and what the vent
+NavFn frees that one -- to a cell OPEN_CELLS away, the bridge's
+keepout.VENT_REACH_CELLS), and what the vent
 freed. Runs on `dev`'s keepout (no `keepout.step`) for the baseline and on
 3.197's for the result.
 

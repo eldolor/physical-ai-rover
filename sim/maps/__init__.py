@@ -7,8 +7,6 @@ read the same variable, so the robot and its judge are in the same house."""
 import math
 import os
 
-from sim import renderer
-
 
 # 3.159: a house with a stairwell -- `v` cells (`sim/grid_world.py`
 # CELL_DROP) stamped over its floor, as cell ranges (x0, x1, y0, y1),
@@ -74,7 +72,12 @@ def _start_turn(world) -> None:
     against the costmap's lattice. Unset (the default), nothing changes."""
     turn = os.environ.get("SIM_START_TURN_DEG")
     if turn:
-        world.theta = renderer.normalize_angle(world.theta + math.radians(float(turn)))
+        from sim import renderer          # review: no PIL import for a hook that is off
+        try:
+            deg = float(turn)
+        except ValueError:
+            raise ValueError(f"SIM_START_TURN_DEG={turn!r}: a number of degrees") from None
+        world.theta = renderer.normalize_angle(world.theta + math.radians(deg))
 
 
 def build_movers(house: str, scenario: str):

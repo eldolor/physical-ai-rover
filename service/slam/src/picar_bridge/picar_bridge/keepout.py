@@ -495,6 +495,7 @@ def mask(spots: list, res: float = RES_M, zones=(), phase=(0.0, 0.0), holes=()) 
 # cells that give the robot a way out -- a VENT -- and draws everything else.
 
 VENT_REACH_CELLS = 10     # a 4-connected walk this far (Chebyshev, cells) from the robot's cell is out
+VENT_FAR_M = 0.60         # a kept vent with a cell farther than this from the robot is re-derived (review)
 VENT_MAX_CELLS = 20       # a vent larger than this: D4's whole-zone rule, as before (amendment 1: 10 left lanes out)
 _COST_MARGIN, _COST_EDGE, _COST_BODY = 1, 4, 16   # freeing a cell drawn by a margin / a zone's edge / its body
 
@@ -595,6 +596,8 @@ def _vent(drawn: list, pose, phase, vent: frozenset):
     start = _cell_of(x, y, phase)
     r = VENT_REACH_CELLS + 1                       # one more: a HYST_M probe may sit in a neighbour cell
     grid = _window(near, phase, start[0], start[1], r)
+    if vent and (len(vent) > VENT_MAX_CELLS or _far(vent, x, y, phase) > VENT_FAR_M):
+        vent = frozenset()   # review: a vent carried along an edge, or grown by a phase move, is re-derived
     if vent and _escapes(grid, start, vent):
         # kept until the robot could leave with no vent at its pose and
         # HYST_M round it (3.195's hysteresis: a mm of jitter on a cell
@@ -608,13 +611,21 @@ def _vent(drawn: list, pose, phase, vent: frozenset):
     new = _cheapest_vent(grid, start)
     if new is not None and len(new) <= VENT_MAX_CELLS:
         return new, set()
-    # no small vent: D4's whole-zone rule, as before, for the zones the
-    # cheapest way out runs through (review: not "any of the five cells",
-    # which could name a zone that blocks nothing, or none at all)
+    # no small vent: D4's whole-zone suspension (left out until LEAVE_M
+    # clear), for the zones the cheapest way out runs through. Broader than
+    # 3.193's "all five cells drawn" test on purpose (amendment 2): the robot
+    # here may have a free 4-neighbour and still no way out, and "any of the
+    # five cells" could name a zone that blocks nothing, or none at all.
     cells = new or frozenset()
     return frozenset(), {z["id"] for z in near
                          if any(_touches(_drawn(z), phase[0] + i * RES_M, phase[1] + j * RES_M, RES_M)
                                 for i, j in cells)}
+
+
+def _far(cells, x: float, y: float, phase) -> float:
+    """The farthest corner of any of `cells` from (x, y)."""
+    return max((math.hypot(phase[0] + (i + ci) * RES_M - x, phase[1] + (j + cj) * RES_M - y)
+                for i, j in cells for ci in (0, 1) for cj in (0, 1)), default=0.0)
 
 
 def _relattice(cells, old, new) -> frozenset:
