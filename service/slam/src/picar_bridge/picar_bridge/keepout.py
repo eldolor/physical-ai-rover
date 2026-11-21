@@ -596,17 +596,21 @@ def _vent(drawn: list, pose, phase, vent: frozenset):
     start = _cell_of(x, y, phase)
     r = VENT_REACH_CELLS + 1                       # one more: a HYST_M probe may sit in a neighbour cell
     grid = _window(near, phase, start[0], start[1], r)
-    if vent and (len(vent) > VENT_MAX_CELLS or _far(vent, x, y, phase) > VENT_FAR_M):
-        vent = frozenset()   # review: a vent carried along an edge, or grown by a phase move, is re-derived
-    if vent and _escapes(grid, start, vent):
-        # kept until the robot could leave with no vent at its pose and
+    probes = {_cell_of(x + sx * HYST_M, y + sy * HYST_M, phase) for sx in (-1, 1) for sy in (-1, 1)}
+    # review: a vent carried along an edge, or grown by a phase move, is
+    # STALE: re-derived, never kept -- but it still closes only by the
+    # hysteresis test below, so jitter cannot drop and re-open it each tick
+    stale = bool(vent) and (len(vent) > VENT_MAX_CELLS or _far(vent, x, y, phase) > VENT_FAR_M)
+    if vent:
+        # closed once the robot could leave with no vent at its pose and
         # HYST_M round it (3.195's hysteresis: a mm of jitter on a cell
-        # boundary must not open and close it every tick)
-        probes = {_cell_of(x + sx * HYST_M, y + sy * HYST_M, phase) for sx in (-1, 1) for sy in (-1, 1)}
+        # boundary must not open and close it every tick); else kept while
+        # it is a way out and not stale
         if all(_escapes(grid, c) for c in probes | {start}):
             return frozenset(), set()
-        return vent, set()
-    if not vent and _escapes(grid, start):
+        if not stale and _escapes(grid, start, vent):
+            return vent, set()
+    elif _escapes(grid, start):
         return frozenset(), set()
     new = _cheapest_vent(grid, start)
     if new is not None and len(new) <= VENT_MAX_CELLS:
