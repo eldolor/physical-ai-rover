@@ -4451,6 +4451,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     const wasRunning = state.brainMissionRunning;
     state.brainMissionRunning = !!status.running;
     setBrainAsk(status.running && status.explore ? status.explore.ask : null);
+    showRunningTarget(status);
     renderBrainStatus(status);
     updateBrainControls();
 
@@ -4640,6 +4641,24 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     brainPollGen++;                  // 3.76: a poll in flight is now stale
     state.brainPollErrored = false;
     setBrainAsk(null);               // 3.88 A: an unwatched choice is not drawn
+  }
+
+  // 3.201: a find started elsewhere (the API) shows its target in the Home
+  // field. Never over a person's words: not while the field has focus or was
+  // edited since this page last started a mission, and not for a mission this
+  // page started (the field may hold the sentence the target was read from).
+  var brainTargetTyped = false, brainRunIsOurs = false;
+  function showRunningTarget(status) {
+    if (!status || !status.running) { brainRunIsOurs = false; return; }   // a later run is a new one
+    if (status.job === "survey") return;
+    const target = (status.target_object || "").trim();
+    const box = document.getElementById("brain-target");
+    if (!target || !box || brainTargetTyped || document.activeElement === box) return;
+    if (brainRunIsOurs) return;
+    if (box.value !== target) {
+      box.value = target;
+      box.dispatchEvent(new Event("input"));   // the readings follow the words
+    }
   }
 
   function updateBrainControls() {
@@ -4832,7 +4851,8 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     hint.innerHTML = t("hint.survey", {cap: cap});
   }
 
-  document.getElementById("brain-target").addEventListener("input", function () {
+  document.getElementById("brain-target").addEventListener("input", function (ev) {
+    if (ev.isTrusted !== false) brainTargetTyped = true;   // 3.201: a person's words
     // Read only with a brain to ask; connecting reads the box (review).
     if (state.brainConnected && findJob()) findReader.edit(this.value);
   });
@@ -4938,16 +4958,20 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     }
     try {
       reportToken++;               // 3.70: an older ending's report draws nothing
+      brainRunIsOurs = true;       // 3.201: before the POST, so a poll in flight cannot rewrite the field
       await brainApi("POST", "/mission/start", body);
       resetSightings();   // 3.76: only once the brain took it; a refused start leaves the watched one's
       state.brainMissionRunning = true;
       state.brainTarget = survey ? null : target.toLowerCase();
+      brainTargetTyped = false;        // 3.201: the next API find may show itself
+      brainRunIsOurs = true;
       state.brainLogSignature = "";
       const drill = fault !== "none";
       const key = survey ? "mission.surveyStarted" : drill ? "mission.drillStarted" : "mission.started";
       showToast(t(key, {fault: fault}), drill ? "info" : "ok");
       startBrainPolling();
     } catch (e) {
+      brainRunIsOurs = false;          // 3.201: nothing of ours is running
       showToast(batteryStartWords(e) || t("mission.startFailed", {why: e.message}), "err");
     } finally {
       brainStartStopBusy = false;
