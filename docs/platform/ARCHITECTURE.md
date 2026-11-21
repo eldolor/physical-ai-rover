@@ -19,7 +19,7 @@ board's protocol and firmware belong to the motor-board domain
 
 **State.** The compute board (a Jetson Orin Nano Super dev kit) is in hand
 and is brought up before the chassis (`PLAN-ros-alignment.md` 3.33). The
-chassis (the Waveshare UGV Rover kit) is ordered and not delivered. A
+chassis (the Waveshare UGV Rover kit) is in hand (the user, 2026-11-21). A
 separate battery for the Jetson is conditional and not bought. Nothing has
 been mounted, wired or measured on a car. Dates, delivery windows and
 return terms are in the engineering spec's inventory, because they change

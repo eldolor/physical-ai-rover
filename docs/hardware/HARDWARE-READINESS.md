@@ -201,7 +201,7 @@ The genuinely unbuyable-around items -- coasting distance against
 `PLAN-onboard-perception.md` 3.8's five seller questions and 1.10's
 ordering-time checks; none blocks anything else. (**Moot 2026-10-05:** those
 were the Pi-era items. The Jetson is bought, brought up and kept, with its
-two risks closed on the board, and the Rover is ordered --
+two risks closed on the board, and the Rover is ordered (in hand, the user, 2026-11-21) --
 `PLAN-ros-alignment.md` 3.33, `JETSON-BOM.md` section 9.)
 
 ---

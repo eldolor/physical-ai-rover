@@ -87,8 +87,10 @@ The deck holes are 3.68 mm (M3 clearance); if the kit's are M2.5, they still
 mount through the deck with washers.
 
 If neither lines up, the adapter plate target geometry is the array in
-section 2. The Developer Kit is on the desk now, so do this before the Rover
-arrives (earliest Oct 19); the hard stop is the Rover's Amazon return window,
+section 2. The Rover is in hand (the user, 2026-11-21). `3.140-rover-live-checks.md`'s
+log has the Jetson running on the Rover from 2026-11-09 and records no caliper
+result for its L0.1, so the measurement is still owed, and the adapter plate
+is needed only if it fails; the hard stop is the Rover's Amazon return window,
 30 days from delivery. Tracked in `JETSON-BOM.md` section 7.
 
 ## 5. Note on file provenance
@@ -130,6 +132,11 @@ carry the top plate too, not just the Jetson.
   believed to ship with its card already fitted -- check ours, and whether
   the Rover's box holds a separate card. A card in the box points to
   Waveshare's own carrier.
+
+**Settled by Waveshare, 2026-10-09 (log 2026-11-09):** support's answer to
+request 258472 was that the dev kit mounts directly. The Jetson has run on
+the Rover since 2026-11-09 (`3.140-rover-live-checks.md`). That log records no
+caliper result for L0.1, so the hole pattern itself is not yet measured.
 
 **Also settled by the video:**
 

@@ -544,7 +544,7 @@ Consequences worth knowing:
 | Field | Meaning |
 |---|---|
 | `running` | is a mission in flight |
-| `outcome` | `idle` / `running` / `found` / `room_reached` / `stopped` / `max_steps` / `blocked` / `searched` / `arrived_unconfirmed` / `preempted` / `failed` |
+| `outcome` | `idle` / `running` / `found` / `room_reached` / `exhausted` / `out_of_budget` / `cancelled` / `blocked` / `arrived_unconfirmed` / `failed`; the pre-3.70 `searched`, `max_steps`, `stopped` and `preempted` are never written now, only read through `read_outcome()` (section 4) |
 | `error` | why, when `outcome` is `failed`; `null` otherwise |
 | `policy`, `mission`, `target_object`, `target_room` | what was asked for |
 | `step`, `max_steps` | progress against the budget |

@@ -42,7 +42,7 @@ specified by the motor-board domain (docs/engineering/motor-board/ENGINEERING.md
 | Item | Part | Status | Source of record |
 |---|---|---|---|
 | Compute | NVIDIA Jetson Orin Nano Super Developer Kit, 945-13766-0000-000, $399 (Amazon, ordered 2026-09-27) | [in hand] since 2026-09-30; opened 2026-10-02, KEPT 2026-10-05 (the return window no longer applies). JetPack 6.2.1 (L4T R36.4.4, UEFI 36.4.4), at 15 W | `JETSON-BOM.md` section 1, `CLAUDE.md` section 3b |
-| Chassis kit | Waveshare UGV Rover PT Jetson Orin ROS2 Kit Acce, SKU 29227, ~$730 delivered (Amazon) | [planned] ordered 2026-09-30, expected Oct 19 - Nov 11, 30-day return. Bought on Amazon rather than from Waveshare direct, whose returns were reported as 15 days, shipped to China [U] (`JETSON-BOM.md` 9.7, a search not re-checked): too short for the on-arrival checks | `JETSON-BOM.md` 9.1, 9.7 |
+| Chassis kit | Waveshare UGV Rover PT Jetson Orin ROS2 Kit Acce, SKU 29227, ~$730 delivered (Amazon) | [in hand] ordered 2026-09-30 (expected Oct 19 - Nov 11 when ordered), in hand (the user, 2026-11-21), 30-day return. Bought on Amazon rather than from Waveshare direct, whose returns were reported as 15 days, shipped to China [U] (`JETSON-BOM.md` 9.7, a search not re-checked): too short for the on-arrival checks | `JETSON-BOM.md` 9.1, 9.7 |
 | Motor board | Waveshare "ROS Driver for Robots" (ESP32, closed loop), firmware `ugv_base_ros` | [planned] with the kit | `JETSON-BOM.md` 9.3, motor-board domain |
 | Lidar | D500 (LDROBOT STL-19P), 360 degrees, 12 m, 10 Hz | [planned] with the kit | `PLAN-ros-alignment.md` 3.21 |
 | Depth camera | Luxonis OAK-D Lite (passive stereo) | [planned] with the kit; which sensors ship is an arrival check | 3.21, 3.26 |
@@ -202,7 +202,7 @@ must show:
    said); one median / p90 line per key; then `budget 250 ms: WITHIN` or
    `OVER`. The first run downloads about 600 MB of weights.
 6. **Suite**: `pytest tests/ -q` from `.venv`, with Chromium installed for
-   Playwright first, or the browser tests ERROR rather than skip.
+   Playwright first. Without the `playwright` package the UI tests skip (`importorskip`). With the package but no browser binary, `tests/test_ui.py`'s `browser` fixture calls `chromium.launch()` with no handler, so by the code they ERROR; not verified by a run here (the image has Chromium).
 7. **G4**: the live chain and nav suites, 5 runs in a row, against the
    fake motor board. The commands are below this list. **A skip is not a
    pass**: a run counts only if pytest's summary reads `18 passed` with 0
@@ -268,8 +268,8 @@ in-process simulator was what held the robot server at 98% of a core with
 chain suite's first test fails if the bridge has not heard `/odom` within
 0.5 s (3.36's bridge fixes, [ros engineering](../ros/ENGINEERING.md)).
 
-**On arrival of the Rover** [planned] (`JETSON-BOM.md` 9.5), inside the
-30-day window:
+**Now that the Rover is in hand** (the user, 2026-11-21) [planned]
+(`JETSON-BOM.md` 9.5), this is the work, inside the 30-day window:
 
 1. Stress test at 15 W with the motors working hard, logging the Jetson's
    input voltage. Any sag means buy the separate pack, unplug the kit's

@@ -600,6 +600,57 @@ or Reserve still propagates from the cancel and from each verb.
   acting or not, ends `not_aligned` (review 1: it could loop with no verb).
   A goal under way is polled every `POLL_S` (0.5 s). Then `_end` with the
   decided outcome.
+* **Whole-move verbs in the approach** (3.198). Under `drive: ros` a straight
+  verb is whole 0.30 m moves (`robot/ros_drive.py` `moves_for`), so a creep
+  cannot close a residual under half a move. nav2 ends a goal on its checker's
+  circle (0.10 m), so before 3.198 the dock error was nav2's stop error at the
+  staging point, mirrored past the dock. 3.195's ten live finds ended
+  0.088-0.103 m past it.
+  * **D1, no pivot cycle.** The creep's guard (the next move would overshoot
+    by more than it closes, `abs(along) < 0.5 * _step_m`) sends it to `final`.
+    If `final` then finds the error above `DOCK_TOL_M` and under half the last
+    move, it never turns back to the dock: the turn and the skipped creep
+    pivoted 180 degrees back and forth at one place until 40 verbs
+    (3.195 c-1, 3.156.D run 2). It sends D2's goal instead. Once D2 is
+    spent, it ends `not_aligned: <m> m, <deg> deg`.
+  * **D2, a correcting goal.** `_fine()` sends one nav2 goal past the dock,
+    on the line from the robot through it, by how far from its target nav2
+    ended its last goal (`_nav_stop_m`, read after that goal's `succeeded`,
+    at most `FINE_AIM_MAX_M` 0.20 m). nav2's checker then ends it on the
+    dock, and the approach goes to `final`: the dock's heading, then the
+    judge.
+    * At most `FINE_TRIES` (2).
+    * It is sent once a creep has moved more than `QUANTUM_EXCESS_M`
+      (0.05 m) beyond what it asked (`_quantum_m`: the body's moves come
+      whole) and the error is over `FINE_ABOVE_M` (0.05 m), even inside
+      the tolerance. It is also D1's answer on any body.
+    * The goal goes through the gated navigator like the trip's own. A
+      refusal is retried every `GOAL_RETRY_S` (the brain's last verb holds
+      the robot until it lapses). A person's refusal raises `Preempted`,
+      which ends the return `cancelled`. A goal not taken within
+      `return_wait_s` (or after that many refusals, for a clock that does
+      not move) ends it `failed`, `not_aligned: <error> (the correcting goal
+      was not taken ...)`. A goal that does not succeed goes to the judge,
+      with no back-off beside the dock.
+    * `status.return.fine_goals` counts the goals started, taken or not.
+    * `_quantum_m` only says that the moves come whole. "Under half a
+      move" is measured against the last creep's measured step
+      (`_step_m`), because a move cut short (0.186 m in the sweep) is no
+      guide to the next one's size.
+    * A verb in the approach refused because the mission's own goal still
+      holds the robot (`is_own_goal_refusal`) is a wait, as in `_move`: at
+      most `MAX_HOLDS` polls, not counted as an action.
+    * Known limits (Thermos):
+      * The correcting goal's aim is not checked against the map, so an aim
+        into the charger can cost two refusals or stalls.
+      * A pose docked at 0.05-0.10 m that a correction leaves worse ends on
+        the second try's judge; the best pose seen is not kept.
+      * A SLAM jump of more than 5 cm between two creeps reads as whole
+        moves, which costs one unneeded goal.
+  * Continuous verbs (`exact_verbs`, the car under `drive: direct`) never
+    set `_quantum_m` and close the residual with the creep, as before.
+    Pinned: `tests/test_dock_quantised.py`. Sweep:
+    `tests/dock_quantised_sweep.py`, records in `evaluations/dock-quantised-398/`.
 * **Who still wins:** an end landing during the return (`stop()`, `abort()`)
   ends the return `cancelled` (by `stop`/`dpad`) or `failed` and the mission
   with the decided outcome and note. In `_return_tick`: `BatteryReserve` ->

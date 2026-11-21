@@ -309,11 +309,6 @@ literal in `twin.css`; the page is checked in both themes
   the same 500ms cadence" (true per Guide tick under Drive via brain; the
   Sim panel polls at 700 ms). Section 4's banner text inherits the false
   premise above.
-- **Tap-to-goal is arbitrated as autonomous.** `onMapTap()` sends no
-  `x-driver`, and the server ranks every goal as `ros`, so a person's
-  tap cannot pre-empt a mission and is refused `preempted` while one
-  holds the robot. The architecture spec records the exception and the
-  open question; the driver order is the safety domain's.
 - **The vision connection check misdiagnoses a working cross-origin
   setup.** `checkVision()` treats any URL failing `sameOrigin()` as
   "Reachable, but blocked by the browser ... publishes no CORS headers",

@@ -274,6 +274,11 @@ Continuing an existing section: work in its worktree
    through the gate. Still the user's call, and asked: anything that
    spends money (Bedrock, paid GPU hosts), a deploy (Lambda, CloudFront,
    the twin), a force push or a deleted `dev`, and `PICAR_SKIP_GATE=1`.
+   One exception (the user, 2026-11-21): the orchestrator
+   (`.claude/skills/orchestrate/SKILL.md`) may deploy the twin without
+   asking, after a web-twin change has landed on `dev` and having
+   confirmed what ships. Every other session asks before any deploy, and
+   a Lambda or CloudFormation deploy is asked of everyone.
    Merge `origin/dev` in (or rebase) first.
 11. **Delete a branch once its work is in `dev`** (the user, 2026-10-15).
    After your push lands, delete your section's branch on `origin`
