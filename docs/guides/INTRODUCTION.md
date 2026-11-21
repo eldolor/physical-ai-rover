@@ -10,7 +10,7 @@ anything.
 |---|---|
 | **Simulator** | Working |
 | **Robot computer** (NVIDIA Jetson Orin Nano Super) | Bought and tested |
-| **Robot body** (Waveshare UGV Rover) | In hand (21 Nov 2026) |
+| **Robot body** (Waveshare UGV Rover) | In hand |
 
 **How to read this page.** Each section starts in plain language. The
 **More detail** part under it says how it works and what was measured. A
@@ -328,7 +328,7 @@ robot base with wheels, a laser and a camera.
 | Part | Status | What it is |
 |---|---|---|
 | **NVIDIA Jetson Orin Nano Super** | Bought and tested | A palm-sized computer with a graphics chip. It runs the on-board AI well inside its time budget. |
-| **Waveshare UGV Rover** | In hand (21 Nov 2026) | A wheeled base that turns on the spot, with a laser scanner, a depth camera and a camera that pans and tilts. |
+| **Waveshare UGV Rover** | In hand | A wheeled base that turns on the spot, with a laser scanner, a depth camera and a camera that pans and tilts. |
 
 ### More detail: why these parts
 
