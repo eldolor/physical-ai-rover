@@ -4,6 +4,9 @@
 SIM_MAP and builds one of these; the demos that score against ground truth
 read the same variable, so the robot and its judge are in the same house."""
 
+import math
+import os
+
 
 # 3.159: a house with a stairwell -- `v` cells (`sim/grid_world.py`
 # CELL_DROP) stamped over its floor, as cell ranges (x0, x1, y0, y1),
@@ -56,8 +59,25 @@ def build_world(name: str = "starter_house"):
     if build is not None:
         world = build()
         world.map_name = name
+        _start_turn(world)
         return world
     raise ValueError(f"unknown SIM_MAP {name!r} (starter_house | scaled_house | home_first_floor | complex_house | complex_house_hazards | scaled_house_stairs | home_first_floor_stairs | procthor:val:<0-999> | procthor:test:<0-999> | procthor:train:<0-999>)")
+
+
+def _start_turn(world) -> None:
+    """3.197: SIM_START_TURN_DEG turns the robot's start heading clockwise
+    (a compass turn) by that many degrees, so SLAM's map frame -- the robot's
+    start -- lies at a slant to the house, as the Rover's start heading will
+    put it, and a no-go zone drawn in the house reaches the bridge rotated
+    against the costmap's lattice. Unset (the default), nothing changes."""
+    turn = os.environ.get("SIM_START_TURN_DEG")
+    if turn:
+        from sim import renderer          # review: no PIL import for a hook that is off
+        try:
+            deg = float(turn)
+        except ValueError:
+            raise ValueError(f"SIM_START_TURN_DEG={turn!r}: a number of degrees") from None
+        world.theta = renderer.normalize_angle(world.theta + math.radians(deg))
 
 
 def build_movers(house: str, scenario: str):

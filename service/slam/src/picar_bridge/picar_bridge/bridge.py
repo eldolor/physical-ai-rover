@@ -335,7 +335,11 @@ class Bridge(Node):
         self.zones_fresh = set()
         self.zones_suspended = set()
         self.zones_bare = set()      # 3.195: drawn without their margin (keepout.margins_off)
-        self.zone_events = {"suspended": 0, "restored": 0, "last": None}
+        # 3.197: the lattice cells left undrawn so a boxed robot can plan out
+        # (keepout.step's vent), and the phase they are cells of
+        self.zones_vent = frozenset()
+        self.vent_phase = (0.0, 0.0)
+        self.zone_events = {"suspended": 0, "restored": 0, "vents": 0, "last": None}
         # 3.193: the keepout mask's lattice follows the SLAM map's, so a mask
         # cell is a costmap cell (set from each /map; (0, 0) until the first).
         self.mask_phase = (0.0, 0.0)
@@ -570,8 +574,11 @@ class Bridge(Node):
                 if keepout.phase_moved(ph, self.mask_phase):
                     self.mask_phase = ph          # 3.193: redraw on the new lattice
                     if self.zones or self.keepout_spots:
-                        if self.zones and pose is not None:
-                            self._zones_step(pose)     # review: boxed on the new lattice
+                        if self.zones:
+                            # review: boxed on the new lattice; with no pose
+                            # (3.197) the step still moves the vent's cells
+                            # onto the new lattice, so the mask keeps the way out
+                            self._zones_step(pose)
                         self.keepout_spots = keepout.live(self.keepout_spots, time.time())
                         self._publish_keepout(self.keepout_spots)
             elif not self._mask_res_warned:
@@ -1030,6 +1037,8 @@ class Bridge(Node):
             # review: a zone re-posted with another shape starts with its margin
             same = {z["id"] for z in zones for o in self.zones if o["id"] == z["id"] and o["poly"] == z["poly"]}
             self.zones_bare &= same
+            if same != {z["id"] for z in zones} or len(zones) != len(self.zones):
+                self.zones_vent = frozenset()    # 3.197: a changed set is vented afresh (review: not a re-post)
             self.zones = zones
             self.zones_fresh = {z["id"] for z in zones}
             self._zones_step(pose)
@@ -1042,19 +1051,32 @@ class Bridge(Node):
         Returns whether the drawn set changed."""
         xy = None if pose is None else (pose["x_m"], pose["y_m"])
         before = self.zones_suspended
-        # 3.195: a margin that alone boxes the robot comes off first; D4's
-        # whole-zone suspension then reads the zones as drawn after that.
-        bare_before = self.zones_bare
-        off = keepout.margins_off(self.zones, bare_before, before, xy, self.mask_phase,
-                                  fresh=self.zones_fresh)
-        after = keepout.suspend(keepout.bare(self.zones, off), before, xy,
-                                self.zones_fresh, phase=self.mask_phase)
-        self.zones_bare = off - after            # review: a zone left out is not also "bare"
+        # 3.195: a margin that alone boxes the robot comes off first; then
+        # D4's depth and fresh rules; then (3.197) where the zones as drawn
+        # leave the robot no way out, a vent -- the fewest cells undrawn --
+        # instead of leaving a whole zone out (keepout.step).
+        bare_before, vent_before = self.zones_bare, self.zones_vent
+        st = keepout.step(self.zones, {"suspended": before, "bare": bare_before,
+                                       "vent": vent_before, "vent_phase": self.vent_phase},
+                          xy, phase=self.mask_phase, fresh=self.zones_fresh)
+        after = st["suspended"]
+        self.zones_bare = st["bare"]             # never also suspended (3.195 review)
+        self.zones_vent, self.vent_phase = st["vent"], st["vent_phase"]
         for zid in sorted(self.zones_bare - bare_before):
             self.get_logger().warning(f"zone_margin_off {zid}: its margin boxes the robot; drawn "
                                       f"bare until it would not")
         for zid in sorted(bare_before - self.zones_bare - after):
             self.get_logger().info(f"zone_margin_on {zid}")
+        if self.zones_vent != vent_before:
+            if self.zones_vent and not vent_before:
+                self.zone_events["vents"] += 1
+                self.get_logger().warning(
+                    f"zone_vent {len(self.zones_vent)} cells: the drawn zones leave the robot no way "
+                    f"out; those cells undrawn until it could leave without them")
+            elif self.zones_vent:
+                self.get_logger().info(f"zone_vent_moved {len(self.zones_vent)} cells")
+            else:
+                self.get_logger().info("zone_vent_closed")
         if xy is not None:
             self.zones_fresh = set()
         for zid in sorted(after - before):
@@ -1072,7 +1094,7 @@ class Bridge(Node):
                 self.get_logger().warning(f"zone_restored {zid}: the robot is "
                                           f"{d if d is None else round(d, 2)} m clear")
         self.zones_suspended = after
-        return after != before or self.zones_bare != bare_before
+        return after != before or self.zones_bare != bare_before or self.zones_vent != vent_before
 
     def _watch_zones(self):
         if not self.zones:
@@ -1092,13 +1114,14 @@ class Bridge(Node):
                 "suspended_count": self.zone_events["suspended"],
                 "restored": self.zone_events["restored"], "last": self.zone_events["last"],
                 "lattice_phase_m": [round(v, 4) for v in self.mask_phase],
-                "margin_off": sorted(self.zones_bare)}
+                "margin_off": sorted(self.zones_bare),
+                "vent_cells": len(self.zones_vent), "vents": self.zone_events["vents"]}
 
     def _publish_keepout(self, spots):
         # 3.161: the zones still drawn (not suspended) join the spots.
         m = keepout.mask(spots, zones=[z for z in keepout.bare(self.zones, self.zones_bare)
                                        if z["id"] not in self.zones_suspended],
-                         phase=self.mask_phase)
+                         phase=self.mask_phase, holes=self.zones_vent)
         msg = OccupancyGrid()
         msg.header.frame_id = "map"
         msg.header.stamp = self.get_clock().now().to_msg()
