@@ -14,7 +14,7 @@ Missions run back to back; a fault kind is drawn (seeded, uniform over
 (3.202-sim-chaos-soak.md, "The faults").
 
     python evaluations/sim-chaos-3202/chaos.py <out> [--faults 40] [--seed 3202]
-        [--house starter_house] [--kinds K1,K2,...] [--gap 120,240] [--plant watchdog]
+        [--house scaled_house] [--kinds K1,K2,...] [--gap 120,240] [--plant watchdog]
         [--stop-last]
 
 The run only records; `score.py <out>` judges it. What lands in <out>:
@@ -155,7 +155,11 @@ class Chaos:
         self.st: Optional[Stack] = None
         self.sampler: Optional[RssSampler] = None
         self.cycle = TARGET_CYCLE.get(house, [])
+        if not self.cycle:                       # amendment 3: the first find would park the car
+            raise ValueError(f"no TARGET_CYCLE for {house!r}; a soak there parks on its first find")
+        self._check_cycle_start()
         self.target_i = 0                        # the target sits at cycle[target_i]
+        self.move_pending = False                # a find whose move every cell refused
 
     # ------------------------------------------------------------ helpers
 
@@ -204,6 +208,8 @@ class Chaos:
 
     def start_mission(self, policy: str = "frontier", tags: Optional[list] = None,
                       fault: str = "") -> dict:
+        if self.move_pending:                    # a refused move, tried again before it matters
+            self.move_target()
         body = {"target_object": TARGET, "policy": policy}
         if fault:
             body["fault"] = fault
@@ -241,14 +247,25 @@ class Chaos:
         self.cur = None
         if self.sampler:
             self.sampler.mission = None
-        if rec.get("outcome") == "found" or s.get("found"):
+        if rec.get("outcome") == "found":       # the outcome: status's `found` is a sighting
             self.move_target()
+
+    def _check_cycle_start(self) -> None:
+        sys.path.insert(0, str(ROOT))
+        from sim.maps import build_world
+        cells = [c for c, label in build_world(self.house).objects.items()
+                 if TARGET in str(label).lower()]
+        if cells != [self.cycle[0]]:
+            raise ValueError(f"{self.house}: {TARGET} at {cells}, TARGET_CYCLE starts {self.cycle[0]}")
 
     def move_target(self) -> None:
         """Amendment 3: the target on to the next cycle cell after a find (a
-        cell refused -- the car's turning circle -- is skipped for the next)."""
-        if not self.cycle or self.st is None:
+        cell refused -- the car's turning circle -- is skipped for the next).
+        If every cell refuses, `move_pending` stays set and the next mission's
+        start tries again first."""
+        if self.st is None:
             return
+        self.move_pending = True
         src = self.cycle[self.target_i]
         for k in range(1, len(self.cycle)):
             j = (self.target_i + k) % len(self.cycle)
@@ -259,6 +276,7 @@ class Chaos:
                 code, body = None, str(e)
             if code == 200:
                 self.target_i = j
+                self.move_pending = False
                 self.note("target_moved", src=list(src), dst=list(self.cycle[j]))
                 return
             self.note("target_move_refused", src=list(src), dst=list(self.cycle[j]),
@@ -613,7 +631,7 @@ def main(argv=None) -> int:
     ap.add_argument("out")
     ap.add_argument("--faults", type=int, default=40)
     ap.add_argument("--seed", type=int, default=3202)
-    ap.add_argument("--house", default="starter_house")
+    ap.add_argument("--house", default="scaled_house")
     ap.add_argument("--kinds", default=",".join(KINDS))
     ap.add_argument("--gap", default="120,240")
     ap.add_argument("--plant", default="")
