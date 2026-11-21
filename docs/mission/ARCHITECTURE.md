@@ -374,8 +374,7 @@ because a start pose read after a move is not the dock.
 home is predicted to cost, with a margin. The prediction comes from the
 path home on the brain's own map and this mission's own speed and drain.
 **Rejected:** a fixed reserve (3.156's scope: "a budget from the distance
-home, not a fixed number"), which is too much beside the dock and too
-little across the house. **Trade-off, measured and recorded as failed:**
+home, not a fixed number"). **Trade-off, measured and recorded as failed:**
 ending early costs searching. In 3.156.B's paired sweep six missions ended
 at the reserve where the other arm went on, finds were 18 against 19 and a
 survey's rooms 259 against 263 (C6 FAILED). And a battery that drains fast
