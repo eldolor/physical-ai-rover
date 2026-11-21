@@ -146,9 +146,10 @@ def _run(out: str, which: str, cells: list) -> None:
     os.makedirs(out, exist_ok=True)
     meta, head = os.path.join(out, "run.json"), _head()
     if os.path.exists(meta):
-        began = json.load(open(meta))["commit"]
-        if began != head:
-            raise SystemExit(f"{out} began at {began}, HEAD is {head}: start a new OUT_DIR")
+        began = json.load(open(meta))
+        if began["commit"] != head or began.get("houses") != which:
+            raise SystemExit(f"{out} began at {began['commit']} on {began.get('houses')} houses; "
+                             f"HEAD is {head}, asked {which}: start a new OUT_DIR")
     else:
         T.save_atomic(meta, lambda p: json.dump({"commit": head, "houses": which}, open(p, "w")))
     hs = A.houses(which)
