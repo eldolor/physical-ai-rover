@@ -1012,9 +1012,10 @@ any mission.
 ## 4. Settings tab
 
 - **Robot server connection** -- `serverUrl` + optional secret. Auto-fills
-  to the page's own origin, which is right when `robot/server.py` served
-  the page (local dev) and wrong for the deployed page, which CloudFront
-  serves: there, enter the tunnel URL from `service/tunnel/run.sh`
+  to the page's own origin only when `robot/server.py` served the page (it
+  injects `<meta name="picar-robot-origin">`, 3.203). The deployed page,
+  which CloudFront serves, has no marker: the field is empty and the page
+  makes no robot request until a robot is saved; enter the tunnel URL from `service/tunnel/run.sh`
   (`https://<domain>`).
 - **Brain service connection** -- `brainUrl` + its own, independently
   entered secret (`brainSecret`/`brainAuthHeaders()` -- deliberately not
