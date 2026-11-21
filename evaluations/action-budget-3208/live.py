@@ -12,8 +12,9 @@ brain's HTTP API -- with reset_proxy.py between the brain and the robot.
         python evaluations/action-budget-3208/live.py out.json
 
 Run A: two non-consecutive moves reset (the 5th before the robot sees it,
-the 12th after the robot answered); expected `found`. Run B: every move from
-the 3rd on reset; expected `failed`, "robot unreachable 3 times in a row".
+the 12th after the robot answered); expected `found`. Run B: EVERY request
+reset from the 3rd move on (the link dead); expected `failed`, "robot link
+lost", within LINK_DEAD_S + one request timeout of the first reset.
 Each run gets a fresh robot server (there is no reset endpoint, on purpose).
 """
 
@@ -90,13 +91,15 @@ def one(name, plan):
         seen_lines = []     # every log line seen while polling (log_tail keeps 20)
         while time.time() - t0 < 600:
             status = httpx.get(f"http://127.0.0.1:{BRAIN}/mission/status", timeout=10).json()
-            peak = max(peak, status.get("action_failures") or 0)
+            peak = max(peak, status.get("link_failures") or 0)
             merge(seen_lines, status.get("log_tail") or [])
             if not status.get("running"):
                 break
             time.sleep(0.25)
         wall = time.time() - t0
-        wire = httpx.get(f"http://127.0.0.1:{PROXY}/__plan", timeout=5).json()["wire"]
+        plan_state = httpx.get(f"http://127.0.0.1:{PROXY}/__plan", timeout=5).json()
+        wire = plan_state["wire"]
+        ended_at = time.time()
     finally:
         for p in reversed(procs):
             p.terminate()
@@ -105,7 +108,7 @@ def one(name, plan):
                 p.wait(10)
             except subprocess.TimeoutExpired:
                 p.kill()
-    resets = [i for i, w in enumerate(wire) if w["how"]]
+    resets = [i for i, w in enumerate(wire) if w["how"] and w["n"]]
     # what crossed the wire right after each reset POST
     after = [wire[i + 1]["action"] if i + 1 < len(wire) else None for i in resets]
     # the same move twice in a row with no stop between would be a re-send
@@ -115,8 +118,11 @@ def one(name, plan):
         "run": name, "plan": plan, "outcome": status.get("outcome"),
         "end_reason": status.get("error") or status.get("end_reason"),
         "steps": status.get("step"), "wall_s": round(wall, 1),
-        "action_failures_peak_seen": peak,
-        "unreachable_lines": [line for line in log if "robot unreachable" in line],
+        "link_failures_peak_seen": peak,
+        "link_lines": [line for line in log if line.startswith("robot link")
+                       or "robot link lost" in line or "robot link failing" in line],
+        "dead_to_end_s": (round(ended_at - plan_state["dead_at"], 1)
+                          if plan_state.get("dead_at") else None),
         "moves_on_wire": sum(1 for w in wire if w["n"]),
         "resets": [wire[i] for i in resets],
         "next_post_after_each_reset": after,

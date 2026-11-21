@@ -18,8 +18,9 @@ arrive. The plan is set on the proxy's own route, never forwarded:
 
 `before`: the request is read and the connection reset; the robot never
 sees it. `after`: the request is forwarded, the robot's answer read, and the
-connection reset instead of answering. `from: k` resets every move from the
-k-th on, `before`. Nothing is ever re-sent by the proxy.
+connection reset instead of answering. `from: k` resets EVERY request
+(any method and path) from the k-th move on, `before`: the link is dead.
+Nothing is ever re-sent by the proxy.
 """
 
 import http.client
@@ -28,6 +29,7 @@ import socket
 import struct
 import sys
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 
@@ -42,6 +44,8 @@ class State:
         self.reset_from = None
         self.moves = 0
         self.wire = []
+        self.dead = False
+        self.dead_at = None      # wall time of the first reset of the dead link
 
 
 STATE = State()
@@ -75,8 +79,19 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/__plan":
             with STATE.lock:
                 return self._reply(200, {"resets": STATE.resets, "from": STATE.reset_from,
-                                         "moves": STATE.moves, "wire": STATE.wire})
+                                         "moves": STATE.moves, "wire": STATE.wire,
+                                         "dead_at": STATE.dead_at})
+        if self._dead_reset():
+            return
         self._forward(b"")
+
+    def _dead_reset(self) -> bool:
+        with STATE.lock:
+            dead = STATE.dead
+        if dead:
+            self.close_connection = True
+            _rst(self.connection)
+        return dead
 
     def do_POST(self):
         body = self._body()
@@ -87,6 +102,8 @@ class Handler(BaseHTTPRequestHandler):
                 STATE.reset_from = plan.get("from")
                 STATE.moves = 0
                 STATE.wire = []
+                STATE.dead = False
+                STATE.dead_at = None
             return self._reply(200, {"ok": True})
         how, rec = None, None
         if self.path.split("?")[0] in ("/action", "/stop"):
@@ -104,9 +121,15 @@ class Handler(BaseHTTPRequestHandler):
                     how = STATE.resets.get(n)
                     if STATE.reset_from is not None and n >= STATE.reset_from:
                         how = "before"
+                        if not STATE.dead:
+                            STATE.dead, STATE.dead_at = True, time.time()
+                if STATE.dead and how is None:
+                    how = "before"
                 rec = {"n": n, "path": self.path, "action": action or "STOP", "how": how,
-                       "forwarded": how != "before"}
+                       "forwarded": how != "before", "t": time.time()}
                 STATE.wire.append(rec)
+        elif self._dead_reset():
+            return
         if how == "before":
             self.close_connection = True
             _rst(self.connection)
