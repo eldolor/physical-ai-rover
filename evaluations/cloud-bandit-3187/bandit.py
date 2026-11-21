@@ -18,6 +18,7 @@ import argparse
 import importlib.util
 import json
 import math
+import re
 import sys
 from pathlib import Path
 
@@ -32,12 +33,13 @@ _spec = importlib.util.spec_from_file_location("cloud_bandit_3187_voi_score_d", 
 voi = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(voi)
 fit_logistic, predict_logistic, logit = voi.fit_logistic, voi.predict_logistic, voi.logit
-COST, LAMBDAS, MUS, D_MIN = voi.COST, voi.LAMBDAS, voi.MUS, voi.D_MIN
+COST, LAMBDAS, MUS = voi.COST, voi.LAMBDAS, voi.MUS
 
 sys.path.insert(0, str(ROOT))
 from brain.perceive import coco_class_for  # noqa: E402
 
 RECENT = 5               # "the gate passed in the 5 frames before"
+FRAME_NO = re.compile(r"frame-(\d+)\.")
 VOI_CELL = "lambda=50,mu=0"   # G's judged cell, reported beside
 
 
@@ -53,7 +55,10 @@ def contexts(data) -> dict:
     for walk, fs in by_walk.items():
         streak, history = 0, []
         coco = float(coco_class_for(fs[0]["target"]) is not None)
-        for i, f in enumerate(fs):
+        for f in fs:
+            # Frames since mission start: the recording's own frame number,
+            # not the index among labelled frames (a walk's labels can skip).
+            i = int(FRAME_NO.search(f["key"]).group(1))
             prow = data["per"][f["key"]]
             det = prow["status"] == "detected"
             streak = streak + 1 if det else 0
@@ -102,7 +107,6 @@ class Bandit:
         def b1(k):
             kind = local_kind(ve[k])
             return b0[k] if kind == "unable" else kind == "yes"
-        self.rL = _fit([ctx[k] for k in ks], [b1(k) == vis[k] for k in ks])
         dec = [k for k in ks if local_kind(ve[k]) != "unable"]
         self.pv = _fit([ctx[k] for k in dec], [local_kind(ve[k]) == "yes" for k in dec])
         self.sLk = _fit([ctx[k] + ve_part(ve[k], False) for k in dec], [b1(k) == vis[k] for k in dec])

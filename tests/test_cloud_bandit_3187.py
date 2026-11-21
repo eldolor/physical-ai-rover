@@ -68,13 +68,13 @@ def test_the_judged_cell_is_chosen_on_training(out):
 
 def test_held_out_w_criterion_1a_fails(out):
     v = out["cells"][out["judged"]["cell"]]["W/held_out"]
-    assert _t(v) == {"useful": 30, "harmful": 6, "net": 24, "paid": 10, "local": 314,
+    assert _t(v) == {"useful": 30, "harmful": 6, "net": 24, "paid": 9, "local": 314,
                      "d": 12, "d_right": 5, "frames": 800}
     assert _t(out["fixed"]["W/held_out"]["F"])["net"] == 26
     c = v["criteria"]
     assert c["C1a"] is False
     assert c["C1b_i"] == "too few to judge"
-    assert c["C1b_ii"] is False          # local 314 <= 423 holds; paid 10 > the tree's 0 fails it
+    assert c["C1b_ii"] is False          # local 314 <= 423 holds; paid 9 > the tree's 0 fails it
     assert (c["C2"], c["C2_walks_checked"], c["C2_abandoned"]) == (True, 3, [])
     assert (c["C3"], c["C3_walks_checked"]) == (True, 8)
     assert c["vs_F0_3_65"] == {"useful_ge": True, "paid_30pct_fewer": True}

@@ -929,8 +929,8 @@
     "useful": 35,
     "harmful": 26,
     "paid": 18,
-    "local": 545,
-    "local_s": 712.1,
+    "local": 543,
+    "local_s": 709.8,
     "d": 34,
     "d_right": 10,
     "frames": 1443,
@@ -961,8 +961,8 @@
       "useful": 8,
       "harmful": 1,
       "paid": 0,
-      "local": 24,
-      "local_s": 40.0,
+      "local": 23,
+      "local_s": 38.9,
       "d": 5,
       "d_right": 0,
       "dollars": 0.0
@@ -1061,8 +1061,8 @@
       "useful": 5,
       "harmful": 1,
       "paid": 1,
-      "local": 219,
-      "local_s": 267.0,
+      "local": 218,
+      "local_s": 265.9,
       "d": 0,
       "d_right": 0,
       "dollars": 0.0106
@@ -1092,15 +1092,15 @@
    },
    "W/held_out": {
     "useful": 31,
-    "harmful": 19,
-    "paid": 48,
-    "local": 322,
-    "local_s": 409.5,
+    "harmful": 14,
+    "paid": 42,
+    "local": 321,
+    "local_s": 408.4,
     "d": 12,
     "d_right": 6,
     "frames": 800,
-    "net": 12,
-    "dollars": 0.511,
+    "net": 17,
+    "dollars": 0.4471,
     "per_walk": {
      "a-white-phone-charger-ca-20260921-203355": {
       "useful": 15,
@@ -1115,12 +1115,12 @@
      "blue-bottle-20260907-142454": {
       "useful": 0,
       "harmful": 0,
-      "paid": 0,
+      "paid": 3,
       "local": 10,
       "local_s": 9.8,
       "d": 0,
       "d_right": 0,
-      "dollars": 0.0
+      "dollars": 0.0319
      },
      "blue-shoes-20260907-152528": {
       "useful": 1,
@@ -1164,23 +1164,23 @@
      },
      "woven-laundry-basket-20260912-231358": {
       "useful": 5,
-      "harmful": 8,
-      "paid": 25,
+      "harmful": 5,
+      "paid": 19,
       "local": 145,
       "local_s": 169.1,
       "d": 1,
       "d_right": 1,
-      "dollars": 0.2661
+      "dollars": 0.2023
      },
      "woven-laundry-basket-20260913-115703": {
       "useful": 10,
-      "harmful": 6,
-      "paid": 14,
-      "local": 126,
-      "local_s": 157.6,
+      "harmful": 4,
+      "paid": 11,
+      "local": 125,
+      "local_s": 156.4,
       "d": 0,
       "d_right": 0,
-      "dollars": 0.149
+      "dollars": 0.1171
      }
     },
     "criteria": {
@@ -1201,16 +1201,16 @@
     },
     "sign_test_vs_tree": {
      "bandit_right_tree_wrong": 2,
-     "tree_right_bandit_wrong": 16,
-     "p_two_sided": 0.0013
+     "tree_right_bandit_wrong": 11,
+     "p_two_sided": 0.0225
     }
    },
    "P/train": {
     "useful": 11,
     "harmful": 1,
     "paid": 3,
-    "local": 29,
-    "local_s": 46.5,
+    "local": 28,
+    "local_s": 45.3,
     "d": 9,
     "d_right": 3,
     "frames": 300,
@@ -1241,8 +1241,8 @@
       "useful": 8,
       "harmful": 1,
       "paid": 0,
-      "local": 24,
-      "local_s": 40.0,
+      "local": 23,
+      "local_s": 38.9,
       "d": 5,
       "d_right": 0,
       "dollars": 0.0
@@ -1354,8 +1354,8 @@
     "useful": 2,
     "harmful": 1,
     "paid": 24,
-    "local": 24,
-    "local_s": 32.9,
+    "local": 17,
+    "local_s": 25.9,
     "d": 8,
     "d_right": 6,
     "frames": 86,
@@ -1376,8 +1376,8 @@
       "useful": 0,
       "harmful": 0,
       "paid": 15,
-      "local": 16,
-      "local_s": 22.9,
+      "local": 12,
+      "local_s": 19.1,
       "d": 0,
       "d_right": 0,
       "dollars": 0.1597
@@ -1386,8 +1386,8 @@
       "useful": 1,
       "harmful": 0,
       "paid": 2,
-      "local": 3,
-      "local_s": 2.9,
+      "local": 1,
+      "local_s": 0.9,
       "d": 2,
       "d_right": 1,
       "dollars": 0.0213
@@ -1396,8 +1396,8 @@
       "useful": 1,
       "harmful": 1,
       "paid": 6,
-      "local": 4,
-      "local_s": 5.9,
+      "local": 3,
+      "local_s": 4.7,
       "d": 6,
       "d_right": 5,
       "dollars": 0.0639
@@ -1624,15 +1624,15 @@
    },
    "W/held_out": {
     "useful": 31,
-    "harmful": 19,
-    "paid": 47,
+    "harmful": 14,
+    "paid": 42,
     "local": 319,
     "local_s": 406.1,
     "d": 12,
     "d_right": 6,
     "frames": 800,
-    "net": 12,
-    "dollars": 0.5003,
+    "net": 17,
+    "dollars": 0.4471,
     "per_walk": {
      "a-white-phone-charger-ca-20260921-203355": {
       "useful": 15,
@@ -1647,12 +1647,12 @@
      "blue-bottle-20260907-142454": {
       "useful": 0,
       "harmful": 0,
-      "paid": 0,
+      "paid": 3,
       "local": 10,
       "local_s": 9.8,
       "d": 0,
       "d_right": 0,
-      "dollars": 0.0
+      "dollars": 0.0319
      },
      "blue-shoes-20260907-152528": {
       "useful": 1,
@@ -1696,23 +1696,23 @@
      },
      "woven-laundry-basket-20260912-231358": {
       "useful": 5,
-      "harmful": 8,
-      "paid": 25,
+      "harmful": 5,
+      "paid": 19,
       "local": 144,
       "local_s": 168.0,
       "d": 1,
       "d_right": 1,
-      "dollars": 0.2661
+      "dollars": 0.2023
      },
      "woven-laundry-basket-20260913-115703": {
       "useful": 10,
-      "harmful": 6,
-      "paid": 13,
+      "harmful": 4,
+      "paid": 11,
       "local": 124,
       "local_s": 155.3,
       "d": 0,
       "d_right": 0,
-      "dollars": 0.1384
+      "dollars": 0.1171
      }
     },
     "criteria": {
@@ -1733,8 +1733,8 @@
     },
     "sign_test_vs_tree": {
      "bandit_right_tree_wrong": 2,
-     "tree_right_bandit_wrong": 16,
-     "p_two_sided": 0.0013
+     "tree_right_bandit_wrong": 11,
+     "p_two_sided": 0.0225
     }
    },
    "P/train": {
@@ -1990,16 +1990,16 @@
   },
   "lambda=0,mu=0.05": {
    "W/train": {
-    "useful": 27,
+    "useful": 29,
     "harmful": 17,
-    "paid": 27,
-    "local": 64,
-    "local_s": 119.7,
+    "paid": 19,
+    "local": 74,
+    "local_s": 136.5,
     "d": 34,
     "d_right": 17,
     "frames": 1443,
-    "net": 10,
-    "dollars": 0.2874,
+    "net": 12,
+    "dollars": 0.2023,
     "per_walk": {
      "a-white-phone-charger-ca-20260921-203250": {
       "useful": 10,
@@ -2122,14 +2122,14 @@
       "dollars": 0.0745
      },
      "woven-laundry-basket-20260913-115414": {
-      "useful": 0,
+      "useful": 2,
       "harmful": 0,
-      "paid": 9,
-      "local": 4,
-      "local_s": 7.4,
+      "paid": 1,
+      "local": 14,
+      "local_s": 24.3,
       "d": 0,
       "d_right": 0,
-      "dollars": 0.0958
+      "dollars": 0.0106
      }
     },
     "criteria": {
@@ -2137,10 +2137,8 @@
      "C1b": true,
      "C1b_i": true,
      "C1b_ii": false,
-     "C2": false,
-     "C2_abandoned": [
-      "woven-laundry-basket-20260913-115414"
-     ],
+     "C2": true,
+     "C2_abandoned": [],
      "C2_walks_checked": 7,
      "vs_F0_3_65": {
       "useful_ge": true,
@@ -2152,21 +2150,21 @@
     },
     "sign_test_vs_tree": {
      "bandit_right_tree_wrong": 9,
-     "tree_right_bandit_wrong": 20,
-     "p_two_sided": 0.0614
+     "tree_right_bandit_wrong": 18,
+     "p_two_sided": 0.1221
     }
    },
    "W/held_out": {
     "useful": 30,
-    "harmful": 16,
-    "paid": 51,
+    "harmful": 11,
+    "paid": 45,
     "local": 82,
     "local_s": 125.7,
     "d": 12,
     "d_right": 8,
     "frames": 800,
-    "net": 14,
-    "dollars": 0.5429,
+    "net": 19,
+    "dollars": 0.479,
     "per_walk": {
      "a-white-phone-charger-ca-20260921-203355": {
       "useful": 15,
@@ -2181,12 +2179,12 @@
      "blue-bottle-20260907-142454": {
       "useful": 0,
       "harmful": 0,
-      "paid": 1,
+      "paid": 3,
       "local": 8,
       "local_s": 7.7,
       "d": 0,
       "d_right": 0,
-      "dollars": 0.0106
+      "dollars": 0.0319
      },
      "blue-shoes-20260907-152528": {
       "useful": 1,
@@ -2230,23 +2228,23 @@
      },
      "woven-laundry-basket-20260912-231358": {
       "useful": 5,
-      "harmful": 7,
-      "paid": 22,
+      "harmful": 4,
+      "paid": 16,
       "local": 25,
       "local_s": 30.8,
       "d": 1,
       "d_right": 1,
-      "dollars": 0.2342
+      "dollars": 0.1703
      },
      "woven-laundry-basket-20260913-115703": {
       "useful": 9,
-      "harmful": 6,
-      "paid": 14,
+      "harmful": 4,
+      "paid": 12,
       "local": 23,
       "local_s": 37.5,
       "d": 0,
       "d_right": 0,
-      "dollars": 0.149
+      "dollars": 0.1277
      }
     },
     "criteria": {
@@ -2267,8 +2265,8 @@
     },
     "sign_test_vs_tree": {
      "bandit_right_tree_wrong": 4,
-     "tree_right_bandit_wrong": 16,
-     "p_two_sided": 0.0118
+     "tree_right_bandit_wrong": 11,
+     "p_two_sided": 0.1185
     }
    },
    "P/train": {
@@ -2419,24 +2417,24 @@
    "P/held_out": {
     "useful": 2,
     "harmful": 1,
-    "paid": 24,
+    "paid": 25,
     "local": 3,
     "local_s": 3.1,
     "d": 8,
     "d_right": 6,
     "frames": 86,
     "net": 1,
-    "dollars": 0.2555,
+    "dollars": 0.2661,
     "per_walk": {
      "a-white-phone-charger-ca-20260921-203355": {
       "useful": 0,
       "harmful": 0,
-      "paid": 0,
+      "paid": 1,
       "local": 0,
       "local_s": 0.0,
       "d": 0,
       "d_right": 0,
-      "dollars": 0.0
+      "dollars": 0.0106
      },
      "blue-bottle-20260907-142454": {
       "useful": 0,
@@ -2527,8 +2525,8 @@
     "useful": 35,
     "harmful": 22,
     "paid": 2,
-    "local": 545,
-    "local_s": 713.9,
+    "local": 543,
+    "local_s": 711.6,
     "d": 34,
     "d_right": 9,
     "frames": 1443,
@@ -2559,8 +2557,8 @@
       "useful": 8,
       "harmful": 1,
       "paid": 0,
-      "local": 24,
-      "local_s": 40.0,
+      "local": 23,
+      "local_s": 38.9,
       "d": 5,
       "d_right": 0,
       "dollars": 0.0
@@ -2659,8 +2657,8 @@
       "useful": 6,
       "harmful": 1,
       "paid": 0,
-      "local": 219,
-      "local_s": 267.0,
+      "local": 218,
+      "local_s": 265.9,
       "d": 0,
       "d_right": 0,
       "dollars": 0.0
@@ -2691,14 +2689,14 @@
    "W/held_out": {
     "useful": 30,
     "harmful": 7,
-    "paid": 12,
-    "local": 322,
-    "local_s": 409.5,
+    "paid": 11,
+    "local": 321,
+    "local_s": 408.4,
     "d": 12,
     "d_right": 5,
     "frames": 800,
     "net": 23,
-    "dollars": 0.1277,
+    "dollars": 0.1171,
     "per_walk": {
      "a-white-phone-charger-ca-20260921-203355": {
       "useful": 15,
@@ -2773,12 +2771,12 @@
      "woven-laundry-basket-20260913-115703": {
       "useful": 10,
       "harmful": 1,
-      "paid": 3,
-      "local": 126,
-      "local_s": 157.6,
+      "paid": 2,
+      "local": 125,
+      "local_s": 156.4,
       "d": 0,
       "d_right": 0,
-      "dollars": 0.0319
+      "dollars": 0.0213
      }
     },
     "criteria": {
@@ -2807,8 +2805,8 @@
     "useful": 11,
     "harmful": 1,
     "paid": 0,
-    "local": 32,
-    "local_s": 51.8,
+    "local": 31,
+    "local_s": 50.6,
     "d": 9,
     "d_right": 3,
     "frames": 300,
@@ -2839,8 +2837,8 @@
       "useful": 8,
       "harmful": 1,
       "paid": 0,
-      "local": 24,
-      "local_s": 40.0,
+      "local": 23,
+      "local_s": 38.9,
       "d": 5,
       "d_right": 0,
       "dollars": 0.0
@@ -2952,8 +2950,8 @@
     "useful": 1,
     "harmful": 0,
     "paid": 16,
-    "local": 16,
-    "local_s": 16.2,
+    "local": 9,
+    "local_s": 9.2,
     "d": 8,
     "d_right": 6,
     "frames": 86,
@@ -2974,8 +2972,8 @@
       "useful": 0,
       "harmful": 0,
       "paid": 9,
-      "local": 10,
-      "local_s": 9.8,
+      "local": 6,
+      "local_s": 5.9,
       "d": 0,
       "d_right": 0,
       "dollars": 0.0958
@@ -2984,8 +2982,8 @@
       "useful": 1,
       "harmful": 0,
       "paid": 2,
-      "local": 3,
-      "local_s": 2.9,
+      "local": 1,
+      "local_s": 0.9,
       "d": 2,
       "d_right": 1,
       "dollars": 0.0213
@@ -2994,8 +2992,8 @@
       "useful": 0,
       "harmful": 0,
       "paid": 4,
-      "local": 2,
-      "local_s": 2.4,
+      "local": 1,
+      "local_s": 1.1,
       "d": 6,
       "d_right": 5,
       "dollars": 0.0426
@@ -3591,8 +3589,8 @@
     "useful": 29,
     "harmful": 13,
     "paid": 5,
-    "local": 80,
-    "local_s": 142.1,
+    "local": 81,
+    "local_s": 144.7,
     "d": 34,
     "d_right": 16,
     "frames": 1443,
@@ -3723,8 +3721,8 @@
       "useful": 3,
       "harmful": 0,
       "paid": 0,
-      "local": 13,
-      "local_s": 21.6,
+      "local": 14,
+      "local_s": 24.3,
       "d": 0,
       "d_right": 0,
       "dollars": 0.0
@@ -4123,8 +4121,8 @@
     "useful": 35,
     "harmful": 22,
     "paid": 2,
-    "local": 542,
-    "local_s": 710.7,
+    "local": 540,
+    "local_s": 708.4,
     "d": 34,
     "d_right": 9,
     "frames": 1443,
@@ -4155,8 +4153,8 @@
       "useful": 8,
       "harmful": 1,
       "paid": 0,
-      "local": 24,
-      "local_s": 40.0,
+      "local": 23,
+      "local_s": 38.9,
       "d": 5,
       "d_right": 0,
       "dollars": 0.0
@@ -4255,8 +4253,8 @@
       "useful": 6,
       "harmful": 1,
       "paid": 0,
-      "local": 219,
-      "local_s": 267.0,
+      "local": 218,
+      "local_s": 265.9,
       "d": 0,
       "d_right": 0,
       "dollars": 0.0
@@ -4287,14 +4285,14 @@
    "W/held_out": {
     "useful": 30,
     "harmful": 6,
-    "paid": 10,
-    "local": 319,
-    "local_s": 406.6,
+    "paid": 9,
+    "local": 318,
+    "local_s": 405.5,
     "d": 12,
     "d_right": 5,
     "frames": 800,
     "net": 24,
-    "dollars": 0.1065,
+    "dollars": 0.0958,
     "per_walk": {
      "a-white-phone-charger-ca-20260921-203355": {
       "useful": 15,
@@ -4359,19 +4357,19 @@
      "woven-laundry-basket-20260912-231358": {
       "useful": 5,
       "harmful": 0,
-      "paid": 3,
+      "paid": 2,
       "local": 145,
       "local_s": 169.1,
       "d": 1,
       "d_right": 1,
-      "dollars": 0.0319
+      "dollars": 0.0213
      },
      "woven-laundry-basket-20260913-115703": {
       "useful": 10,
       "harmful": 1,
       "paid": 2,
-      "local": 126,
-      "local_s": 157.6,
+      "local": 125,
+      "local_s": 156.4,
       "d": 0,
       "d_right": 0,
       "dollars": 0.0213
@@ -4403,8 +4401,8 @@
     "useful": 11,
     "harmful": 1,
     "paid": 0,
-    "local": 30,
-    "local_s": 49.8,
+    "local": 29,
+    "local_s": 48.7,
     "d": 9,
     "d_right": 3,
     "frames": 300,
@@ -4435,8 +4433,8 @@
       "useful": 8,
       "harmful": 1,
       "paid": 0,
-      "local": 24,
-      "local_s": 40.0,
+      "local": 23,
+      "local_s": 38.9,
       "d": 5,
       "d_right": 0,
       "dollars": 0.0
@@ -4547,14 +4545,14 @@
    "P/held_out": {
     "useful": 1,
     "harmful": 0,
-    "paid": 7,
-    "local": 16,
-    "local_s": 16.2,
+    "paid": 11,
+    "local": 9,
+    "local_s": 9.2,
     "d": 8,
     "d_right": 6,
     "frames": 86,
     "net": 1,
-    "dollars": 0.0745,
+    "dollars": 0.1171,
     "per_walk": {
      "a-white-phone-charger-ca-20260921-203355": {
       "useful": 0,
@@ -4569,19 +4567,19 @@
      "blue-bottle-20260907-142454": {
       "useful": 0,
       "harmful": 0,
-      "paid": 0,
-      "local": 10,
-      "local_s": 9.8,
+      "paid": 4,
+      "local": 6,
+      "local_s": 5.9,
       "d": 0,
       "d_right": 0,
-      "dollars": 0.0
+      "dollars": 0.0426
      },
      "blue-shoes-20260907-152528": {
       "useful": 1,
       "harmful": 0,
       "paid": 2,
-      "local": 3,
-      "local_s": 2.9,
+      "local": 1,
+      "local_s": 0.9,
       "d": 2,
       "d_right": 1,
       "dollars": 0.0213
@@ -4590,8 +4588,8 @@
       "useful": 0,
       "harmful": 0,
       "paid": 4,
-      "local": 2,
-      "local_s": 2.4,
+      "local": 1,
+      "local_s": 1.1,
       "d": 6,
       "d_right": 5,
       "dollars": 0.0426
@@ -4637,7 +4635,7 @@
      "C2_walks_checked": 0,
      "vs_F0_3_65": {
       "useful_ge": true,
-      "paid_30pct_fewer": true
+      "paid_30pct_fewer": false
      },
      "C3": true,
      "C3_walks_checked": 3,
@@ -4819,14 +4817,14 @@
    "W/held_out": {
     "useful": 30,
     "harmful": 6,
-    "paid": 10,
+    "paid": 9,
     "local": 314,
     "local_s": 401.2,
     "d": 12,
     "d_right": 5,
     "frames": 800,
     "net": 24,
-    "dollars": 0.1065,
+    "dollars": 0.0958,
     "per_walk": {
      "a-white-phone-charger-ca-20260921-203355": {
       "useful": 15,
@@ -4891,12 +4889,12 @@
      "woven-laundry-basket-20260912-231358": {
       "useful": 5,
       "harmful": 0,
-      "paid": 3,
+      "paid": 2,
       "local": 144,
       "local_s": 168.0,
       "d": 1,
       "d_right": 1,
-      "dollars": 0.0319
+      "dollars": 0.0213
      },
      "woven-laundry-basket-20260913-115703": {
       "useful": 10,
@@ -5187,8 +5185,8 @@
     "useful": 27,
     "harmful": 13,
     "paid": 2,
-    "local": 81,
-    "local_s": 143.1,
+    "local": 82,
+    "local_s": 145.8,
     "d": 34,
     "d_right": 16,
     "frames": 1443,
@@ -5319,8 +5317,8 @@
       "useful": 3,
       "harmful": 0,
       "paid": 0,
-      "local": 13,
-      "local_s": 21.6,
+      "local": 14,
+      "local_s": 24.3,
       "d": 0,
       "d_right": 0,
       "dollars": 0.0
@@ -5723,8 +5721,8 @@
     "useful": 33,
     "harmful": 22,
     "paid": 1,
-    "local": 540,
-    "local_s": 706.4,
+    "local": 538,
+    "local_s": 704.1,
     "d": 34,
     "d_right": 9,
     "frames": 1443,
@@ -5755,8 +5753,8 @@
       "useful": 8,
       "harmful": 1,
       "paid": 0,
-      "local": 24,
-      "local_s": 40.0,
+      "local": 23,
+      "local_s": 38.9,
       "d": 5,
       "d_right": 0,
       "dollars": 0.0
@@ -5855,8 +5853,8 @@
       "useful": 6,
       "harmful": 1,
       "paid": 0,
-      "local": 219,
-      "local_s": 267.0,
+      "local": 218,
+      "local_s": 265.9,
       "d": 0,
       "d_right": 0,
       "dollars": 0.0
@@ -5890,8 +5888,8 @@
     "useful": 29,
     "harmful": 5,
     "paid": 1,
-    "local": 317,
-    "local_s": 404.7,
+    "local": 316,
+    "local_s": 403.5,
     "d": 12,
     "d_right": 4,
     "frames": 800,
@@ -5972,8 +5970,8 @@
       "useful": 10,
       "harmful": 0,
       "paid": 0,
-      "local": 126,
-      "local_s": 157.6,
+      "local": 125,
+      "local_s": 156.4,
       "d": 0,
       "d_right": 0,
       "dollars": 0.0
@@ -6005,8 +6003,8 @@
     "useful": 9,
     "harmful": 1,
     "paid": 0,
-    "local": 28,
-    "local_s": 45.5,
+    "local": 27,
+    "local_s": 44.4,
     "d": 9,
     "d_right": 3,
     "frames": 300,
@@ -6037,8 +6035,8 @@
       "useful": 8,
       "harmful": 1,
       "paid": 0,
-      "local": 24,
-      "local_s": 40.0,
+      "local": 23,
+      "local_s": 38.9,
       "d": 5,
       "d_right": 0,
       "dollars": 0.0
@@ -6795,8 +6793,8 @@
     "useful": 27,
     "harmful": 13,
     "paid": 1,
-    "local": 81,
-    "local_s": 143.1,
+    "local": 82,
+    "local_s": 145.8,
     "d": 34,
     "d_right": 16,
     "frames": 1443,
@@ -6927,8 +6925,8 @@
       "useful": 3,
       "harmful": 0,
       "paid": 0,
-      "local": 13,
-      "local_s": 21.6,
+      "local": 14,
+      "local_s": 24.3,
       "d": 0,
       "d_right": 0,
       "dollars": 0.0
@@ -7331,8 +7329,8 @@
     "useful": 33,
     "harmful": 22,
     "paid": 0,
-    "local": 540,
-    "local_s": 706.4,
+    "local": 538,
+    "local_s": 704.1,
     "d": 34,
     "d_right": 9,
     "frames": 1443,
@@ -7363,8 +7361,8 @@
       "useful": 8,
       "harmful": 1,
       "paid": 0,
-      "local": 24,
-      "local_s": 40.0,
+      "local": 23,
+      "local_s": 38.9,
       "d": 5,
       "d_right": 0,
       "dollars": 0.0
@@ -7463,8 +7461,8 @@
       "useful": 6,
       "harmful": 1,
       "paid": 0,
-      "local": 219,
-      "local_s": 267.0,
+      "local": 218,
+      "local_s": 265.9,
       "d": 0,
       "d_right": 0,
       "dollars": 0.0
@@ -7498,8 +7496,8 @@
     "useful": 29,
     "harmful": 5,
     "paid": 0,
-    "local": 317,
-    "local_s": 404.7,
+    "local": 316,
+    "local_s": 403.5,
     "d": 12,
     "d_right": 4,
     "frames": 800,
@@ -7580,8 +7578,8 @@
       "useful": 10,
       "harmful": 0,
       "paid": 0,
-      "local": 126,
-      "local_s": 157.6,
+      "local": 125,
+      "local_s": 156.4,
       "d": 0,
       "d_right": 0,
       "dollars": 0.0
@@ -7613,8 +7611,8 @@
     "useful": 9,
     "harmful": 1,
     "paid": 0,
-    "local": 28,
-    "local_s": 45.5,
+    "local": 27,
+    "local_s": 44.4,
     "d": 9,
     "d_right": 3,
     "frames": 300,
@@ -7645,8 +7643,8 @@
       "useful": 8,
       "harmful": 1,
       "paid": 0,
-      "local": 24,
-      "local_s": 40.0,
+      "local": 23,
+      "local_s": 38.9,
       "d": 5,
       "d_right": 0,
       "dollars": 0.0
@@ -8403,8 +8401,8 @@
     "useful": 27,
     "harmful": 13,
     "paid": 0,
-    "local": 81,
-    "local_s": 143.1,
+    "local": 82,
+    "local_s": 145.8,
     "d": 34,
     "d_right": 16,
     "frames": 1443,
@@ -8535,8 +8533,8 @@
       "useful": 3,
       "harmful": 0,
       "paid": 0,
-      "local": 13,
-      "local_s": 21.6,
+      "local": 14,
+      "local_s": 24.3,
       "d": 0,
       "d_right": 0,
       "dollars": 0.0
@@ -8939,8 +8937,8 @@
     "useful": 33,
     "harmful": 22,
     "paid": 0,
-    "local": 540,
-    "local_s": 706.4,
+    "local": 538,
+    "local_s": 704.1,
     "d": 34,
     "d_right": 9,
     "frames": 1443,
@@ -8971,8 +8969,8 @@
       "useful": 8,
       "harmful": 1,
       "paid": 0,
-      "local": 24,
-      "local_s": 40.0,
+      "local": 23,
+      "local_s": 38.9,
       "d": 5,
       "d_right": 0,
       "dollars": 0.0
@@ -9071,8 +9069,8 @@
       "useful": 6,
       "harmful": 1,
       "paid": 0,
-      "local": 219,
-      "local_s": 267.0,
+      "local": 218,
+      "local_s": 265.9,
       "d": 0,
       "d_right": 0,
       "dollars": 0.0
@@ -9106,8 +9104,8 @@
     "useful": 29,
     "harmful": 5,
     "paid": 0,
-    "local": 317,
-    "local_s": 404.7,
+    "local": 316,
+    "local_s": 403.5,
     "d": 12,
     "d_right": 4,
     "frames": 800,
@@ -9188,8 +9186,8 @@
       "useful": 10,
       "harmful": 0,
       "paid": 0,
-      "local": 126,
-      "local_s": 157.6,
+      "local": 125,
+      "local_s": 156.4,
       "d": 0,
       "d_right": 0,
       "dollars": 0.0
@@ -9221,8 +9219,8 @@
     "useful": 9,
     "harmful": 1,
     "paid": 0,
-    "local": 28,
-    "local_s": 45.5,
+    "local": 27,
+    "local_s": 44.4,
     "d": 9,
     "d_right": 3,
     "frames": 300,
@@ -9253,8 +9251,8 @@
       "useful": 8,
       "harmful": 1,
       "paid": 0,
-      "local": 24,
-      "local_s": 40.0,
+      "local": 23,
+      "local_s": 38.9,
       "d": 5,
       "d_right": 0,
       "dollars": 0.0
@@ -10011,8 +10009,8 @@
     "useful": 27,
     "harmful": 13,
     "paid": 0,
-    "local": 81,
-    "local_s": 143.1,
+    "local": 82,
+    "local_s": 145.8,
     "d": 34,
     "d_right": 16,
     "frames": 1443,
@@ -10143,8 +10141,8 @@
       "useful": 3,
       "harmful": 0,
       "paid": 0,
-      "local": 13,
-      "local_s": 21.6,
+      "local": 14,
+      "local_s": 24.3,
       "d": 0,
       "d_right": 0,
       "dollars": 0.0
