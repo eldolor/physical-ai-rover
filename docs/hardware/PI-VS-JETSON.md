@@ -191,7 +191,7 @@ a 61 ms frame, and 25 W bought nothing.)* Treat 7 W as a battery-saver, not an o
 autonomy.
 
 **Before buying the separate Jetson battery** (`JETSON-BOM.md` 9.5, still to
-buy): when the Rover and Jetson arrive, run the Jetson at 15 W off the Rover's
+buy): now that the Rover and Jetson are in hand (the user, 2026-11-21), run the Jetson at 15 W off the Rover's
 own supply under a mission load, logging input voltage. If it holds, the
 battery may not be needed. If it sags, buy the battery as planned.
 
