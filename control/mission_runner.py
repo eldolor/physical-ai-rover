@@ -3390,6 +3390,8 @@ class MissionRunner:
             source = self.inventory.carried_from
             labels = self._carry_labels(frame_id, prior, labels_ok)
             aside = self._carry_set_aside(frame_id, prior)
+            if n:
+                self._mark_carried_map()       # 3.205: before the recall, under the same lock
             recalled = self._recall_carried() if n else 0
         if n:
             self._log_line(f"inventory: {n} landmarks carried from "
@@ -3470,6 +3472,15 @@ class MissionRunner:
                 self._labels_block = block
             report["room_labels"] = block
         return report
+
+    def _mark_carried_map(self) -> None:
+        """3.205: landmarks were carried from the chain saved on this pose's
+        saved map, so the map is carried, not discovered; told to the agent
+        (`carried_map()`, explore's; an agent without it is not told). Under
+        `_lock`, just seeded."""
+        fn = getattr(self.agent, "carried_map", None)
+        if fn is not None:
+            fn()
 
     def _recall_carried(self) -> int:
         """3.172 F5: the carried landmarks named as the target (the found

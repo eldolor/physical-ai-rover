@@ -234,7 +234,10 @@ is read. Since 3.172 F5, right after the seed (`_recall_carried()`, under the
 lock) the carried landmarks named as the target (`MissionMemory.names_target`)
 with belief at least `REPORT_BELIEF` go to explore's `recall_from()`, best first
 (since 3.175.B: newest sighting first by `seen_seq`, one with none last, then by
-belief); none for a survey. `MissionRunner(..., inventory=True, detections_fn=None)`:
+belief); none for a survey. Since 3.205, when any landmark was carried, the
+agent is first told the map is carried (`_mark_carried_map()`, explore's
+`carried_map()`; an agent without it is not told), so explore's re-search by
+sight may fire with no recall. `MissionRunner(..., inventory=True, detections_fn=None)`:
 `detections_fn(frame) -> [{label, bearing_deg}] | None`, bearings off the
 camera axis; None means the detector did not run on that frame, so no
 miss is inferred from it.
