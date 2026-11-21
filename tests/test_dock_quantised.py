@@ -273,3 +273,62 @@ def test_a_refused_creep_on_continuous_verbs_is_not_read_as_whole_moves():
     (state, _), rt = trip(body, nav)
     assert state == dk.DOCKED
     assert rt._quantum_m is None and len(nav.sent) == 1
+
+
+@pytest.mark.parametrize("stop", [0.0, 0.05, 0.09, 0.104, 0.12])
+def test_a_residual_short_of_the_dock_closes_too(stop):
+    """Amendment 1: home from the WEST (behind the dock), nav2 stops short of
+    the staging point on the far side, so the creep's whole move leaves the
+    robot SHORT of the dock: it closes as well."""
+    body = Body(0.30, 1.40, 90.0)
+    (state, reason), _ = trip(body, Nav2(body, stop_m=stop))
+    assert state == dk.DOCKED, (stop, state, reason)
+    m, _ = err(body)
+    assert m <= dk.FINE_ABOVE_M + 1e-9, (stop, m)
+
+
+@pytest.mark.parametrize("start,stop", [((6.2, 1.45, 270.0), 0.104), ((6.2, 1.45, 270.0), 0.09),
+                                        ((0.30, 1.40, 90.0), 0.104), ((0.30, 1.40, 90.0), 0.12)])
+def test_the_correcting_goal_never_carries_the_robot_past_the_dock_by_more_than_the_tolerance(start, stop):
+    """Amendment 1: the robot's end of a correcting goal is never further than
+    nav2's goal tolerance past the dock, along the goal's direction."""
+    body = Body(*start)
+    nav = Nav2(body, stop_m=stop)
+    rt = ReturnTrip(DOCK, nav, body, body.pose, lambda: body.t, idle=None)
+    crossings = []
+    for _ in range(2000):
+        before = (body.x, body.y)
+        fine = rt.fine and rt.state == "driving"
+        out = rt.step()
+        if fine and rt.state == "final":
+            ux, uy = DOCK["x_m"] - before[0], DOCK["y_m"] - before[1]
+            d = math.hypot(ux, uy)
+            crossings.append(((body.x - DOCK["x_m"]) * ux + (body.y - DOCK["y_m"]) * uy) / d)
+        if out is not None:
+            break
+    assert out[0] == dk.DOCKED, out
+    assert crossings and max(crossings) <= NAV2_XY_TOL_M + 1e-9, crossings
+
+
+def test_the_return_goal_refused_after_the_find_is_waited_out():
+    """Amendment 1, c-1's 3.5 s: the trip's first goal refused `preempted`
+    (the brain's own stop still holds the robot) is retried every
+    GOAL_RETRY_S and taken; the return then docks."""
+    class Held(Nav2):
+        def set_goal(self, x_m, y_m):
+            if self.body.t < 3.5:
+                return {"accepted": False, "reason": "preempted",
+                        "detail": "brain is driving -- one autonomous driver at a time, "
+                                  "so ros was refused until it lapses"}
+            return super().set_goal(x_m, y_m)
+
+    body = Body(6.2, 1.45, 270.0)
+    nav = Held(body, stop_m=0.104)
+    rt = ReturnTrip(DOCK, nav, body, body.pose, lambda: body.t,
+                    idle=lambda s: setattr(body, "t", body.t + s))
+    for _ in range(2000):
+        out = rt.step()
+        if out is not None:
+            break
+    assert out[0] == dk.DOCKED, out
+    assert rt.log[0].startswith("goal to (1.65, 1.35) accepted")
