@@ -11,6 +11,13 @@ bars are read is in `docs/plans/ros-alignment/3.70-survey-and-mission-ends.md`,
         python evaluations/find-last-seen-370/stale.py run ROWS.jsonl WORKDIR [WORKERS [trust]]
     (trust: the red run -- the surveyed arm only, under a policy that trusts the memory)
     python evaluations/find-last-seen-370/stale.py score ROWS.jsonl
+
+The live find ("M3's live find: how it is measured"):
+
+    eval "$(python tools/plan_section.py env)"
+    PICAR_ROS_NETWORK=host python tools/desktop_lock.py exclusive --why "3.70.M3 live" -- \\
+        python evaluations/find-last-seen-370/stale.py live
+    python evaluations/find-last-seen-370/stale.py live-score
 """
 
 import importlib.util
@@ -43,15 +50,16 @@ def _moved_3175():
     return mod
 
 
-def move_for(m):
+def move_for(m, at=None):
     """X's new cell for plan entry `m`: another room, then a cell in it, both
     drawn from Random(MOVE_SEED + k); the draws `move_object` would refuse
-    (the robot's turning circle at its start) are skipped."""
+    (the robot's turning circle at its start, or at `at`, (x, y) in cells,
+    where the live robot stands) are skipped."""
     from sim.grid_world import movers_point_to_cell
     from sim.maps import build_world
     moved = _moved_3175()
     grid = build_world(sweep.HOUSE)
-    grid.x, grid.y = m["start"][0] + 0.5, m["start"][1] + 0.5
+    grid.x, grid.y = at if at is not None else (m["start"][0] + 0.5, m["start"][1] + 0.5)
     p0 = next(c for c, n in grid.objects.items() if n == m["target"])
     room = grid.room_at(*p0)
     by_room = {}
@@ -194,11 +202,77 @@ def score(path):
     return out
 
 
+# ---------------------------------------------------------------- the live find
+
+LIVE_ROWS = Path(__file__).parent / "live-m3.jsonl"
+LIVE_FINDS = 1
+LIVE_LIMIT_S = 1200.0     # the sim's find limit (3.175's)
+
+
+def _live_move(m, truth):
+    at = None
+    if truth.get("x_m") is not None and truth.get("y_m") is not None:
+        at = (truth["x_m"] / sweep.CELL, truth["y_m"] / sweep.CELL)
+    return move_for(m, at)
+
+
+def live_run(rows=LIVE_ROWS):
+    """M3's live find: M2's live harness (`live.py`), one find (plan entry
+    k 0), its target moved by `move_for` before the find starts."""
+    spec = importlib.util.spec_from_file_location("live_370", Path(__file__).parent / "live.py")
+    live = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(live)
+    live.run(rows=rows, finds=LIVE_FINDS, find_limit_s=LIVE_LIMIT_S, move=_live_move)
+
+
+def live_score(path=LIVE_ROWS):
+    """The bars of "M3's live find: how it is measured"."""
+    rows = [json.loads(x) for x in Path(path).read_text().splitlines() if x.strip()]
+    s1 = next((r for r in rows if r.get("row") == "survey"), None)
+    s2 = next((r for r in rows if r.get("row") == "reload"), None)
+    finds = [r for r in rows if r.get("row") == "find"]
+    map_id = (s1 or {}).get("map_id")
+    f = finds[0] if len(finds) == 1 else None
+    pre = {"survey_saved_one_map": bool(s1 and map_id and s1.get("report_frame_id") == map_id
+                                        and s1.get("targets")),
+           "reload_matched": bool(s2 and (s2.get("reload") or {}).get("result") == "matched"
+                                  and s2.get("map_id") == map_id),
+           "one_find_moved": bool(f and (f.get("moved") or {}).get("status") == 200
+                                  and f["moved"]["from_room"] != f["moved"]["to_room"]),
+           "find_on_the_reload": bool(f and (f.get("saved_map") or {}).get("frame_id") == map_id
+                                      and (f.get("saved_map") or {}).get("reloaded") is True)}
+    valid = all(pre.values())
+    verdict = (lambda ok: ("MET" if ok else "FAILED") if valid else "INVALID")
+    f = f or {}
+    found_ok = f.get("outcome") == "found" and f.get("found_m") is not None and f["found_m"] <= sweep.FOUND_M
+    wrong = f.get("outcome") == "found" and f.get("found_m") is not None and f["found_m"] > sweep.FOUND_M
+    stale_lm = (stale_landmark(s1["reported_rows"], f["target"], f["moved"]["p0"])
+                if valid else None)
+    end_b = end_belief(f, stale_lm) if (stale_lm and "end_landmarks" in f) else None
+    return {"preconditions": pre, "valid": valid,
+            "LM1_found": {"found_m": f.get("found_m"), "outcome": f.get("outcome"), "verdict": verdict(found_ok)},
+            "LM2_stability": {"contacts": f.get("contacts"), "wrong_found": wrong,
+                              "failed": f.get("outcome") in ("failed", "start_refused"),
+                              "verdict": verdict(f.get("contacts") == 0 and not wrong
+                                                 and f.get("outcome") not in ("failed", "start_refused"))},
+            "beside": {"target": f.get("target"), "moved": f.get("moved"), "first_act": f.get("first_act"),
+                       "first_recall_ok": f.get("first_recall_ok"), "resight": f.get("resight"),
+                       "stale_belief": [stale_lm and stale_lm["belief"], end_b],
+                       "seconds": f.get("seconds"), "mission_s": f.get("mission_s"),
+                       "goals": f.get("goals"), "distance_m": f.get("distance_m"),
+                       "min_gap_cm": f.get("min_gap_cm"), "ret": f.get("ret"),
+                       "end_reason": f.get("end_reason"), "wall_capped": f.get("wall_capped", False)}}
+
+
 if __name__ == "__main__":
     a = sys.argv[1:]
     if a and a[0] == "run":
         run(a[1], a[2], int(a[3]) if len(a) > 3 else 4, len(a) > 4 and a[4] == "trust")
     elif a and a[0] == "score":
         score(a[1])
+    elif a and a[0] == "live":
+        live_run()
+    elif a and a[0] == "live-score":
+        print(json.dumps(live_score(Path(a[1]) if len(a) > 1 else LIVE_ROWS), indent=1))
     else:
         sys.exit(__doc__)

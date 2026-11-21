@@ -144,10 +144,16 @@ def score(path=ROWS):
 # ---------------------------------------------------------------- the run
 
 
-def run():
+def run(rows=ROWS, finds=FINDS, find_limit_s=FIND_LIMIT_S, move=None):
+    """M2's live half; 3.70.M3 reuses it with its own `rows`, one find, its
+    limit, and `move(m, truth)` -> {"p0", "p1"} cells: X moved through the
+    robot server's `/sim/objects/move` after the inventory is put back and
+    before the find starts (None: nothing moved, M2's run)."""
     assert os.environ.get("ROS_IMAGE", "").endswith("plan-3.70"), "run with this branch's env"
-    if ROWS.exists():
-        raise SystemExit(f"{ROWS} exists: move it aside first (never overwritten)")
+    rows = Path(rows)
+    wall_s = find_limit_s + 600
+    if rows.exists():
+        raise SystemExit(f"{rows} exists: move it aside first (never overwritten)")
     image = os.environ["ROS_IMAGE"]
     sys.path.insert(0, str(ROOT))
     sys.path.insert(0, str(ROOT / "evaluations" / "map-350"))
@@ -169,7 +175,7 @@ def run():
     walls = {(x, y) for y, row in enumerate(world.layout) for x, c in enumerate(row) if c == CELL_WALL}
 
     def write(row):
-        with open(ROWS, "a") as f:
+        with open(rows, "a") as f:
             f.write(json.dumps(row) + "\n")
 
     def gap_cm(robot):
@@ -238,7 +244,7 @@ def run():
         off = os.path.getsize(log) if log else 0
         r = brain.post("/mission/start", json={"target_object": target, "policy": "explore",
                                                "max_steps": 100000,
-                                               "mission_time_limit_s": FIND_LIMIT_S})
+                                               "mission_time_limit_s": find_limit_s})
         if r.status_code != 200:
             return {"outcome": "start_refused", "start": r.status_code, "detail": r.text[:300]}
         objs = [(o["x"], o["y"]) for o in (jget(robot, "/sim/objects").get("objects") or [])
@@ -247,7 +253,7 @@ def run():
         rec = {"contacts": 0, "min_gap_cm": math.inf, "samples": 0, "load_max": 0.0,
                "distance_m": 0.0, "saved_map": None, "found_m": None, "end_seen_s": None}
         last, s = None, {}
-        while time.time() - t0 < WALL_S:
+        while time.time() - t0 < wall_s:
             try:
                 g, p = gap_cm(robot)
                 s = brain.get("/mission/status").json()
@@ -291,6 +297,7 @@ def run():
                    seconds=round(time.time() - t0), mission_s=(s.get("budget") or {}).get("elapsed_s"),
                    goals=len(goals), recall_goals=sum(g.get("kind") == "recall" for g in goals),
                    goal_kinds=[g.get("kind") for g in goals][:30],
+                   resight=sum(e.get("event") == "resight" for e in ev),
                    ret={k: (s.get("return") or {}).get(k) for k in ("state", "reason")},
                    target_cells=objs, steps=s.get("step"))
         rec["min_gap_cm"] = None if rec["min_gap_cm"] == math.inf else round(rec["min_gap_cm"], 1)
@@ -325,7 +332,7 @@ def run():
             if written is None:
                 time.sleep(2)
         reported = (written or {}).get("reported") or []
-        plan = sweep.plan(reported)[:FINDS] if reported else []
+        plan = sweep.plan(reported)[:finds] if reported else []
         row = {"row": "survey", "house": HOUSE, "head": head, "image": image,
                "outcome": sv.get("outcome"), "seconds": sv.get("seconds"), "end": sv.get("end"),
                "map_id": map_id, "saved_version": (saved or {}).get("last_version"),
@@ -362,7 +369,26 @@ def run():
             st = (t_.get("x_m", math.nan), t_.get("y_m", math.nan), t_.get("heading_deg", math.nan))
             # The last find's save has landed (its sleep); put the survey's back.
             restore(inv_dir, keep)
+            moved = None
+            if move is not None:
+                try:
+                    moved = move(m, t_)
+                    r_ = robot.post("/sim/objects/move", json={"src": moved["p0"], "dst": moved["p1"]})
+                    moved["status"] = r_.status_code
+                except (httpx.HTTPError, ValueError, KeyError, TypeError) as e:
+                    moved = {"error": f"{e!r}"[:160]}
+                if moved.get("status") != 200:
+                    write({"row": "find", "k": m["k"], "target": m["target"], "outcome": "not_moved",
+                           "moved": moved})
+                    continue
             rec = find(robot, brain, m["k"], m["target"], reported)
+            if moved is not None:
+                rec["moved"] = moved
+                head_rep = InventoryStore(inv_dir).latest_for(map_id) or {}
+                rec["end_landmarks"] = [
+                    {k: d[k] for k in ("label", "x_m", "y_m", "belief")}
+                    for d in (head_rep.get("reported") or []) + (head_rep.get("candidates") or [])
+                    if d.get("label") == m["target"]]
             rec.update(row="find", k=m["k"], target=m["target"], start_room=m["room"],
                        start_cell=m["start"], start_goal=reached,
                        start_truth=[round(v, 3) for v in st],
