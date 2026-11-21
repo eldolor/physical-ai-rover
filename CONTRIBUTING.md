@@ -22,3 +22,18 @@ By opening a pull request, you agree to these terms.
 
 You keep the copyright in your contribution. Please ask before opening a
 substantial pull request.
+
+## Working rules
+
+Where the rules live (read them there; they are not copied here):
+
+* **Parallel sessions and claiming work:** `docs/guides/PARALLEL-SESSIONS.md`.
+  Claim a plan step first (`python tools/plan_section.py claim <step>`, rule
+  12); if it is refused, stop and report.
+* **Code review:** `CLAUDE.md` section 6, "Code review" (`/code-review` on
+  every code change; the Thermos bug pass on a risky one).
+* **The push gate:** `tools/hooks/pre-push` runs the checks described in
+  `docs/guides/PARALLEL-SESSIONS.md` rule 6.
+* **Two specs per component:** an architecture spec (what and why) and an
+  engineering spec (how), kept in step with the code. See `docs/README.md`
+  and `docs/decisions/0001-architecture-vs-engineering-specs.md`.
