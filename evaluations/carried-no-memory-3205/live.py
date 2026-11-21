@@ -62,7 +62,11 @@ def score(path=ROWS):
            and (f.get("saved_map") or {}).get("reloaded") is True,
            "no_recall": f.get("recall_goals") == 0}
     wrong = f.get("outcome") == "found" and (f.get("found_m") is None or f["found_m"] > FOUND_M)
-    return {"preconditions": pre, "valid": all(pre.values()),
+    loads = [r.get("load") or {} for r in rows if r.get("row") in ("survey", "reload", "find")]
+    load_max = max((ld.get("max") or 0.0 for ld in loads), default=None)
+    # The orchestrator, 2026-11-21: a live run above ~4 (CLAUDE.md 6, 3.79) is invalid, not met.
+    return {"preconditions": pre, "valid": all(pre.values()), "load_max": load_max,
+            "load_ok": load_max is not None and load_max <= 4.0,
             "N8": {"outcome": f.get("outcome"), "found_m": f.get("found_m"), "contacts": f.get("contacts"),
                    "wrong_found": wrong, "resight": f.get("resight"),
                    "met": all(pre.values()) and f.get("contacts") == 0 and not wrong},
