@@ -1,10 +1,3 @@
----
-kind: decision
-domain: decisions
-status: current
-verified: 2026-11-21
----
-
 # The decision index
 
 An index of the project's dated decisions, one row each, pointing at the
@@ -12,7 +5,7 @@ file that records it. It is not a decision record and makes no decision.
 The one full record is
 [0001](0001-architecture-vs-engineering-specs.md).
 
-## Context
+## What is indexed, and how to read it
 
 Most of this project's decisions were never written as records. They live
 as dated asides in the working files: "decided 2026-10-02", "the user,
@@ -100,7 +93,7 @@ section 6 are questions "for the user to decide" and so have no row: 10
 |---|---|---|---|---|
 | The ECS/NLB/ALB stacks "were deleted 2026-09-05" | 2026-09-05 | not stated | stands | `CLAUDE.md` section 6, "Cloud and deployment", History; `docs/plans/PLAN-aws-cost-redesign.md` |
 | 3.56: "re-check the 8 s arrival deadline after 500+ real calls" | 2026-11-07 | the user | open, waiting on its trigger | `CLAUDE.md` section 3b, "Decided, each waiting on its trigger" |
-| "Cloud sessions can deploy the twin only"; "each deploy needs the user's go" | not dated | not stated | see "Where the sources disagree", 1 | `CLAUDE.md` section 3b, "Waiting on the user" |
+| "Cloud sessions can deploy the twin only"; "each deploy needs the user's go" | not dated | not stated | stands for every session but the orchestrator (see the 2026-11-21 deploy row, Working rules) | `CLAUDE.md` section 3b, "Waiting on the user" |
 | The board's brain: "update it only when asked" | not dated | not stated | stands | same place |
 | 3.190: "one cloud call at a find's start for the room prior of a target the shipped prior lacks"; wired, off by default | 2026-11-19 | the user | open (F FAILED: nothing ships; B's call 7 and C's Lambda deploy wait on the user) | `CLAUDE.md` section 3b, "Open now" |
 | 3.206: "a frontier model's direction labels train Qwen's steering" | 2026-11-21 | the user | open (B-C's calls wait on the user) | same place |
@@ -116,7 +109,7 @@ section 6 are questions "for the user to decide" and so have no row: 10
 | An unrecorded review warns at the push and never blocks: "warn first, block only if warnings are pushed past" | 2026-10-09 | the user | stands | same place, "Record it" |
 | The merge gate is "fast on push, full at night"; the full suite on every push was "too heavy". "Only the user overrides the gate (`PICAR_SKIP_GATE=1`)." | 2026-10-09 | the user | stands (it replaced a gate that ran the full suite on every push) | `docs/guides/PARALLEL-SESSIONS.md` rule 6 |
 | Claim a step before working on it (3.75) | 2026-10-12 (the day its Why records) | not stated | stands, extended by rule 12 | same file, rule 8 |
-| "Each session pushes to `dev` on its own judgement"; "Spending, deploys, force pushes and `PICAR_SKIP_GATE=1` are still asked." | 2026-10-15 | the user | see "Where the sources disagree", 1 | same file, rule 10; `CLAUDE.md` section 3c |
+| "Each session pushes to `dev` on its own judgement"; "Spending, deploys, force pushes and `PICAR_SKIP_GATE=1` are still asked." | 2026-10-15 | the user | stands; a deploy is still asked, except the orchestrator's twin deploy (the 2026-11-21 row below) | same file, rule 10; `CLAUDE.md` section 3c |
 | "Delete a branch once its work is in `dev`"; a branch with work not in `dev` only on the user's word | 2026-10-15 | the user | stands | same file, rule 11; `CLAUDE.md` section 3c |
 | "Reviewers run on Sonnet" | 2026-10-18 | the user | stands | `CLAUDE.md` section 6, "Code review" |
 | The desktop lock: "timed runs alone, other heavy work together" (3.128) | 2026-10-31 | the user | stands | `docs/guides/PARALLEL-SESSIONS.md` rule 7; `CLAUDE.md` section 3c |
@@ -125,11 +118,13 @@ section 6 are questions "for the user to decide" and so have no row: 10
 | "A detached run's end is checked, not awaited" (3.174.B) | 2026-11-11 | not stated | stands | `docs/guides/PARALLEL-SESSIONS.md` rule 13 |
 | `CLAUDE.md` has a size budget and a weekly trim; merged sections' lines moved to `docs/guides/MERGED-STATE.md` | 2026-11-12 | not stated | stands | `CLAUDE.md` section 6, "CLAUDE.md's size", and section 3b |
 | The plan's open-step count is "Updated at merge by whoever changes the counts" | 2026-11-15 | the user | stands | `docs/plans/PLAN-ros-alignment.md`, the "Open steps" line; `.claude/skills/orchestrate/SKILL.md` section 4 |
-| The orchestrator runs "at most 4 workers at once", on a daily budget (default "6 worker runs a day") | not dated | not stated | reversed 2026-11-21: "the user lifted the 4-worker cap and the quota pacing"; see "Where the sources disagree", 2 | `.claude/skills/orchestrate/SKILL.md`, opening and section 2 |
-| "At most two worker sessions at once by default"; "More only on the user's word and a fresh `/usage` reading." | 2026-11-15 | not stated | see "Where the sources disagree", 2 | same file, section 2 |
+| The orchestrator runs "at most 4 workers at once", on a daily budget (default "6 worker runs a day") | not dated | not stated | reversed 2026-11-21: no fixed worker cap (the worker-count row below) | `.claude/skills/orchestrate/SKILL.md`, opening and section 2 |
+| "At most two worker sessions at once by default"; "More only on the user's word and a fresh `/usage` reading." | 2026-11-15 | not stated | reversed 2026-11-21 (the worker-count row below) | same file, section 2 |
 | "every new step starts in a FRESH session" | 2026-11-16 | the user | stands | same file, section 3 |
 | "The orchestrator's own size: check it, and hand over early" (above 300K tokens hand over; no new batch above 400K) | 2026-11-16 | the user | stands | same file, section 2 |
-| "Standing decision: the orchestrator decides": what it recommends counts as approved, recorded as "the orchestrator, under the user's delegation (2026-11-21)"; "Ask the user only before spending money"; still never a force push, `PICAR_CLAIM_BYPASS`, `PICAR_SKIP_GATE`, `release --force`, or a claim taken from another session | 2026-11-21 | the user | stands; see "Where the sources disagree", 1 | same file, "Standing decision" |
+| "Standing decision: the orchestrator decides": what it recommends counts as approved, recorded as "the orchestrator, under the user's delegation (2026-11-21)"; "Ask the user only before spending money"; still never a force push, `PICAR_CLAIM_BYPASS`, `PICAR_SKIP_GATE`, `release --force`, or a claim taken from another session | 2026-11-21 | the user | stands | same file, "Standing decision" |
+| The orchestrator may deploy the twin without asking, after a web-twin change has landed on `dev`; every other session asks the user before any deploy; Lambda and CloudFormation deploys unchanged; spending still asked by everyone | 2026-11-21 | the user | stands | `docs/plans/ros-alignment/3.207-docs-gaps.md` ("The user's answers"), answer 4; `.claude/skills/orchestrate/SKILL.md`, "Standing decision"; `docs/guides/PARALLEL-SESSIONS.md` rule 10 |
+| The orchestrate skill states no fixed worker cap: the orchestrator chooses the number of workers and the pacing; the 15% weekly reserve and the runaway-worker rule stay | 2026-11-21 | the user | stands | `docs/plans/ros-alignment/3.207-docs-gaps.md` ("The user's answers"), answer 7; `.claude/skills/orchestrate/SKILL.md`, opening and section 2 |
 
 ### Definition of done
 
@@ -142,28 +137,11 @@ section 6 are questions "for the user to decide" and so have no row: 10
 
 ## Where the sources disagree
 
-Listed, not resolved. Resolving one is the user's call.
+None listed as of 2026-11-21. The two that were here (who approves a twin
+deploy; how many workers) were decided by the user that day and are rows
+above.
 
-1. **Who approves a twin deploy.**
-   * `CLAUDE.md` section 3b: "each deploy needs the user's go". Section
-     3c and `docs/guides/PARALLEL-SESSIONS.md` rule 10: a deploy ("Lambda,
-     CloudFront, the twin") is "Still the user's call, and asked".
-   * `.claude/skills/orchestrate/SKILL.md`, "Standing decision" (the user,
-     2026-11-21): "the twin's deploy after a web-twin change lands" counts
-     as approved on the orchestrator's recommendation, and "Ask the user
-     only before spending money".
-   * The skill's own section 0 says that where it and those two files
-     disagree, "they govern"; its standing block says it governs only over
-     the skill's sections 1-2. The skill's section 1 (item 2) and section 3
-     (item 5) still list "no deploy" for a step and a worker.
-2. **How many workers.** Inside `.claude/skills/orchestrate/SKILL.md`: the
-   description and opening say "at most 4 workers at once"; section 2 says
-   "At most two worker sessions at once by default (2026-11-15)"; the
-   standing block says the user lifted the 4-worker cap and the quota
-   pacing on 2026-11-21. The block governs sections 1-2; the opening line
-   is in neither.
-
-## Alternatives rejected
+## Why the rows point at their sources
 
 This index rejects nothing about the robot. Each row's own source holds
 the alternatives that decision rejected. About the index itself, plan
@@ -171,10 +149,10 @@ section 3.207's brief ruled out one thing: writing a new numbered record
 for every row. The rows point at their sources instead, and a decision is
 not restated in a second place that could drift from the first.
 
-## Consequences
+## How far to trust it
 
 * The source file governs. A row that disagrees with its source is wrong.
-* The index is true as of the `dev` commit named under Context. A decision
+* The index is true as of the `dev` commit named under "What is indexed". A decision
   made after it is not here until someone adds its row; this file sets no
   rule about who does.
 * A decision significant enough for a full record still gets one, as

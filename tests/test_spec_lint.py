@@ -207,6 +207,25 @@ def test_e1_missing_front_matter(repo):
     assert "E1" in codes(spec_lint.lint(repo, today=TODAY))
 
 
+def test_the_decision_index_is_not_a_decision_record(repo):
+    # 3.209 A2: docs/decisions/README.md lists the decisions and makes none.
+    # Linted as a record it had to carry front matter and a record's four
+    # headings to pass. The skip names the file, not the directory: a
+    # record that loses its front matter is still E1.
+    write(repo, "docs/decisions/README.md", "# The decision index\n\n| Decision | Where |\n")
+    rep = spec_lint.lint(repo, today=TODAY)
+    assert rep.errors == [] and rep.warnings == [], rep.errors + rep.warnings
+    write(repo, "docs/decisions/0002-y.md", DECISION.split("---\n", 2)[2])
+    errs = spec_lint.lint(repo, today=TODAY).errors
+    assert [(f.code, f.path) for f in errs] == [("E1", "docs/decisions/0002-y.md")]
+
+
+def test_the_real_decision_index_claims_no_front_matter():
+    text = (spec_lint.REPO / "docs" / "decisions" / "README.md").read_text(encoding="utf-8")
+    assert not text.startswith("---"), "the index is not a spec: no front matter (3.209 A2)"
+    assert "kind: decision" not in text
+
+
 def test_e1_missing_field_and_bad_values(repo):
     edit(repo, A, "status: current\n", "")
     edit(repo, E, "status: current", "status: shipped")

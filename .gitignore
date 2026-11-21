@@ -7,11 +7,13 @@ venv/
 .DS_Store
 
 # Claude Code: session-local state stays out (settings.local.json and the
-# like); the project's skills and shared settings are project content.
+# like); the project's skills, commands, hooks and shared settings are
+# project content.
 .claude/*
 !.claude/skills/
 !.claude/settings.json
 !.claude/hooks/
+!.claude/commands/
 
 # Never commit secrets
 .env

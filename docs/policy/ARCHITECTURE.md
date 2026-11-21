@@ -446,33 +446,102 @@ mostly a guess. With the target in view the same models steer well (Astra
 | Source of the answer | What it adds | State |
 |---|---|---|
 | **A map of what's unexplored** -- explore's frontier, view and approach goals over SLAM's map | the candidate places to go; coverage that eventually finds anything reachable | **built, the design** (3.80.G: arrivals 2 -> 16, cloud calls 765 -> 6) |
-| **A learned choice among those frontiers** -- explore's goal policy (3.65) | the order in which the frontier's candidates are visited | built; default `rooms` since 3.125 (the user, 2026-10-31: without room labels on 588 test houses, median goals -14% in mode R and -22% in U, finds within 1%, mean metres +10% in R; choice 132.9 ms p90 on the Jetson, bar 100). Before it, `rule` (3.65's network saved 11% of median goals on fresh houses, bar 20%; 3.96's room-feature network, `rooms`, saved 43% with room labels but, without them, nothing when the target is in a room type that suits it (20% when it is not), and a find mission has none until a survey's labels reach its map) |
-| **Memory of where things were seen** -- the object inventory (3.46) | a candidate's distance to the last place the target, or something like it, was seen | built; empty on real frames until a namer for camera frames passes |
+| **A learned choice among those frontiers** -- explore's goal policy (3.65) | the order in which the frontier's candidates are visited | built; the room-feature ranker is the default since 3.125 (the user, 2026-10-31: without room labels on 588 test houses, median goals -14% in mode R and -22% in U, finds within 1%, mean metres +10% in R). Its whole choice on the Jetson under the full stack is 95.2 ms p90 on the benchmark maps (bar 100, met in 3.131 with about 5 ms to spare; 132.9 in 3.125); with the cells explore's camera has really seen, a live choice there still runs over 100 ms (3.130's caveat). Before it, the hand-written order (3.65's network saved 11% of median goals on fresh houses, bar 20%). With every room labelled 3.96's ranker saved 43%, but a find's map has room types only from a person's names on a saved map (3.160.D) or from its own asks, which are off by default (3.116.B) |
+| **Memory of where things were seen** -- the object inventory (3.46) | a find's first goals: the places earlier missions on the saved map saw the target. A candidate's distance to such a place, as a ranker input, is not built | built as a rule ahead of the ranker, not as an input to it (3.172.C: live in the simulator, 8 of 8 found, every first goal a remembered place, median 134 s against 502). A target moved between missions FAILED its bars (3.175.A, B). Empty on real frames: naming every object was closed (3.46.C) and the car's watch list notices nothing yet (3.178) |
 | **Common sense about rooms** -- one language-model call ranks room types for the target ("a charger: office, kitchen, bedroom") | a candidate's room prior | built: the default ranker's prior knows ten targets (3.96); for any other target the one-call ranking is built and off by default, and acts only on a map with room labels (3.190, "A room prior for a target the shipped prior lacks", below) |
-| **What is visible toward a frontier** -- a model rates how promising each unexplored edge looks for this target (published object-goal navigation work) | a candidate's visual promise | not built |
+| **What is visible toward a frontier** -- a model rates how promising each unexplored edge looks for this target (published object-goal navigation work) | a candidate's visual promise | not built: the one scorer tried FAILED offline and its build step was dropped (3.177) |
 
 **How reinforcement learning ties to the frontier.** The frontier map is
 where the candidates come from; RL only decides their order. 3.65's policy
 scores each candidate the rules allow (unleavable, set-aside and
 twice-reached places are never offered) and explore sends the best one;
-training rewards finding the target in fewer goals and metres. Today its
-ten inputs are all geometric -- path length, turn, frontier length, view-gap
+training rewards finding the target in fewer goals and metres. 3.65's
+ten inputs were all geometric -- path length, turn, frontier length, view-gap
 area, unknown and unseen share nearby, past failures and reaches nearby
-(`brain/goal_policy.py` `FEATURES`) -- which is why it gained so little over the rule: from
-geometry alone, one frontier looks much like another. The layers above are
-new inputs to that same ranker: a room prior, an inventory distance, a
-visual promise become columns beside the geometric facts, and training
-learns how much each is worth. So the search improves without a new policy
-or a new safety argument: the ranker still only orders places the rules
-already allow, and a bad weight makes a search slower, never a move unsafe.
+(`brain/goal_policy.py` `FEATURES`) -- which is why it gained so little over
+the rule: from geometry alone, one frontier looks much like another. The
+layers above enter as new inputs to that same ranker, and training learns
+how much each is worth. The first has entered: since 3.96 the default ranker
+reads seven facts about a candidate's room beside the ten (whether the robot
+has stood in it, its size, whether its type is known, and the target's prior
+for that type). An inventory distance and a visual promise would be further
+columns; neither is built. So the search improves without a new policy or a
+new safety argument: the ranker still only orders places the rules already
+allow, and a bad weight makes a search slower, never a move unsafe.
 
-**Next, in order:** (1) the room prior as a ranker input, trained and judged
-on the ProcTHOR sweeps (their imports carry room types), against today's
-`rule` on goals and time to find, on houses it was not trained on; (2) the
-inventory distance, once real frames name objects; (3) visual promise, only
-if (1) and (2) leave a gap, since it costs a model call per frontier.
-3.177.A found no such signal in CLIP RN50's whole-frame score on the rig
-walks (FAILED, 2026-11-12), so (3) needs another scorer.
+**What has been built, what failed, and what is next** (2026-11-21; the
+three steps are the order this decision first set):
+
+1. **The room prior as a ranker input: built (3.96), and the default
+   (3.125).** Trained on 5,464 ProcTHOR houses and tested once on 588 it had
+   not seen, against the hand-written order. With every room labelled:
+   median goals 7 to 4 where the target is one of the house's own objects
+   and 9 to 5 for a backpack in a random room, finds held (3.96's criteria
+   2-4 met; with half the labels withheld, 7 to 5). Recorded as FAILED in
+   the same section: criterion 1 (the new facts pick the oracle's candidate
+   on 31.0% of held-out choices, bar 50%), criterion 5 (1 of 1,171 missions
+   hit the tick cap, a close-in livelock in explore's approach), criterion 6
+   (the choice took 312.9 ms p90 on the Jetson, bar 100; the bar was met
+   later, on the same benchmark, in 3.131)
+   and criterion 8 (three tests that pin the hand-written order's own
+   choices). Live on nav2: found 3 of 3 with no contact (criterion 7 met).
+   * **The prior acts only where the map has room types,** and a find's
+     map has them only from the two sources below. Without labels the
+     ranker still beat the hand-written order (3.125, the figures in the
+     table above), which is why it became the default; with no label the
+     prior reads as nothing, so that saving is not the prior's.
+   * **Labels asked during a find: built, off by default (3.116.B).** In the
+     simulator, true answers kept about 61% of the full-label gain (reward
+     +0.091, interval +0.032 to +0.151) at a median of 5 asks a mission;
+     with 15% of answers wrong the gain was +0.034, its interval spanning 0
+     (3.116.A). For the backpack, whose prior is nearly flat, the asked
+     labels cost reward (-0.080), so a find asks nothing for a target whose
+     prior is flat or missing (3.116's amendment 7, criteria 11-13 met).
+   * **On real frames the labeller failed its bar.** The cloud's room answer
+     was wrong on 51.4% of 734 recorded rig-walk frames (interval 34.3 to
+     66.2; bar 15%), nearly all of it one open basement and gym; the living
+     room and stair hall were right on 106 of 107. That path waits for the
+     Rover's camera and frames of the rooms the walks lack (3.122).
+   * **Rooms a person names once: built (3.160.B), and a find reads them
+     without asking anything (3.160.D).** In process, with each house's true
+     names: reward +0.18 (interval +0.08 to +0.30), finds unchanged. Its one
+     live find FAILED (D7: it ran out of time; the target's room was not on
+     the saved map). Naming the real house's rooms waits on the Rover
+     (3.160.C).
+   * **A prior for any other target** is the next decision's subject
+     (3.190): built, off by default.
+   * **More learning did not close the gap.** No later chooser beat 3.96's:
+     more facts (3.101, criterion 1 FAILED; 3.117, both arms FAILED), the
+     evolutionary method on the same facts (3.102: worse than its gradient
+     twins where the target is one of the house's own objects), the
+     network's shape and attention over the pool (3.103, criterion 1 FAILED
+     for each), tie-aware labels (3.114, FAILED), the chooser's own states
+     (3.115, criterion 3 FAILED) and per-choice credit (3.119, both arms
+     FAILED). They land at 0.55-0.56 mean reward on the test houses where
+     the oracle scores 0.78 (3.111). The line is closed until the Rover's
+     data exists; the next lever named there is the target's room from real
+     perception, not the learner (3.119).
+2. **The inventory distance: not built as a ranker input.** Its condition,
+   real frames that name objects, has not been met: naming every object was
+   closed (3.46.C), and the car's watch list notices nothing yet (3.178).
+   What was built instead is a rule ahead of the ranker: a find goes first
+   to where earlier missions on the saved map saw the target, one try a
+   place, and only then to the ranked frontiers (3.172.C; the table above).
+   Stale memory is recorded as failed, not solved: with the target moved
+   between missions the sweep FAILED its bars on `dev` and with the first
+   fix (3.175.A, B), and two further rules FAILED and did not ship (3.175.E,
+   F). A real object moved between two finds waits on the Rover (3.175.D).
+3. **Visual promise: tried offline, FAILED, not built.** CLIP RN50's
+   whole-frame score does not rise before the target comes into view on the
+   rig walks (object-balanced AUROC 0.45, bar 0.65; 3.177.A, 2026-11-12), so
+   the step that would have built it was dropped (3.177.B). Another scorer
+   would need new bars.
+
+**Still next, each waiting on the Rover:** the asked labels and both priors
+in a real house (3.116.D, 3.190.E), the person's names on the real map
+(3.160.C), room answers on frames of the rooms the walks lack (3.122), and
+a moved target (3.175.D). Learning the choice from a person's goal taps is
+parked until a learned chooser on the board shows a gap there (3.112).
 
 ### A room prior for a target the shipped prior lacks is asked once, at the start
 
@@ -709,12 +778,21 @@ move changed no decision.
 ## Open questions
 
 - **The room-level planner** -- an LLM reasoning over mission memory to
-  choose which room to search next -- is designed and not built; it is the
-  main gap on the hardware path. Since 3.80.I it is the second-to-last layer of
-  "where to look is chosen from the map" (above): a room prior fed to
-  explore's goal ranker, not a policy of its own. Decided by the user; it has a slot (the
-  vision function) and a prompt shape (mission memory's context block)
-  waiting.
+  choose which room to search next -- is not built as a planner, and since
+  3.80.I it is not meant to be one: it became the second-to-last layer of
+  "where to look is chosen from the map" (above), a room prior fed to
+  explore's goal ranker (decided by the user). That layer is built. The
+  ranker reads a prior learned from the training houses for ten targets
+  (3.96), and for any other target one text-only cloud question at a find's
+  start, built and off by default (3.190; 3.116.C measured the question
+  first, and its agreement bar, criterion 8, FAILED). Which rooms were
+  already searched reaches the ranker as a fact from the robot's own trail
+  (3.96), not from a model. What stays open:
+  * whether either prior helps in a real house (3.116.D and 3.190.E, on the
+    Rover). In the simulator a prior acts only where the map has room types,
+    and on real frames the room labeller failed its bar (3.122);
+  * the language-model half as first designed: mission memory's context
+    block still feeds nothing (the engineering spec's known gaps).
 - **Dead-reckoned bearing**: stays off until a run both ways shows the run
   length of commands rise without losing arrival.
 - **Arrival on real pixels**: needs the real detector to keep recognising the

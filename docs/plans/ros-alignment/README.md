@@ -200,6 +200,7 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.195](3.195-nogo-corner-cut.md) | The robot never cuts a no-go zone's corner |
 | [3.196](3.196-nogo-abort-loop.md) | Explore gives up a goal that keeps aborting beside a no-go zone |
 | [3.197](3.197-nogo-local-free.md) | A boxed robot frees only its own neighbourhood, not the whole zone |
+| [3.198](3.198-return-goal-race.md) | The final approach on whole-move verbs: c-1's 40 pivots, and docking by margin |
 | [3.199](3.199-nogo-goal-margin.md) | A person's goal beside a no-go zone never lands in its drawn margin |
 | [3.200](3.200-recall-other-side.md) | A recall whose view is refused tries another side |
 | [3.201](3.201-twin-nogo-toast-target.md) | The twin: the toast beside a zone, and the target field during an API find |
@@ -208,4 +209,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.205](3.205-carried-map-no-memory.md) | A find on a saved map with no memory of the target searches the unseen floor |
 | [3.206](3.206-steer-distill.md) | Qwen's direction answer with the target in view, taught by a frontier model on the frames the local tiers are silent on |
 | [3.207](3.207-docs-gaps.md) | Documentation gaps: stale status, missing rationale, missing doc types (the user, 2026-11-21) |
+| [3.209](3.209-small-faults.md) | Small faults the documentation review found (the user, 2026-11-21) |
 <!-- /sections -->

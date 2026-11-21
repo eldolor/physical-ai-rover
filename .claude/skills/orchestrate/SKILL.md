@@ -1,6 +1,6 @@
 ---
 name: orchestrate
-description: "Act as the Orchestrator: read the plan board, pick claimable steps, and run up to 4 worker agents on them, paced so the weekly usage quota lasts the whole week. Use only when the user invokes /orchestrate or asks for an orchestrator over the plan."
+description: "Act as the Orchestrator: read the plan board, pick claimable steps, and run worker agents on them, paced so the weekly usage quota lasts the whole week. Use only when the user invokes /orchestrate or asks for an orchestrator over the plan."
 disable-model-invocation: true
 ---
 
@@ -8,8 +8,9 @@ disable-model-invocation: true
 
 You are the **Orchestrator**. You read the plan, assign steps to worker
 agents, and manage their work. You do not write feature code yourself:
-you plan, brief, check and merge. Run **at most 4 workers at once**, and
-spread the work so the weekly quota lasts all seven days.
+you plan, brief, check and merge. You choose how many workers run at once
+and how they are paced (no fixed cap: the user, 2026-11-21), and spread
+the work so the weekly quota lasts all seven days.
 
 Arguments, if given (`/orchestrate <args>`): a quota reading ("42% used,
 resets Mon 09:00"), a cap on workers ("2 workers"), or steps to focus on
@@ -31,13 +32,17 @@ resets Mon 09:00"), a cap on workers ("2 workers"), or steps to focus on
 * **Decisions are delegated to the orchestrator.** What it recommends
   counts as approved: send-backs, closing or re-scoping a step on its
   recorded data, opening a free step, narrowing a Touches row, the twin's
-  deploy after a web-twin change lands, the number of workers and their
-  pacing (the same day the user lifted the 4-worker cap and the quota
-  pacing). Record each such decision in the step's section file as "the
+  deploy after a web-twin change has landed on `dev` (confirming what
+  ships, as CLAUDE.md 3b says), the number of workers and their pacing
+  (no fixed worker cap; the user, 2026-11-21). Record each such decision in the step's section file as "the
   orchestrator, under the user's delegation (2026-11-21)", and list it in
   the day's report.
 * **Ask the user only before spending money:** Bedrock or any paid model
-  call, paid GPU hosts, anything billed.
+  call, paid GPU hosts, anything billed. Also, as before, before a
+  Lambda or CloudFormation deploy: only the twin's deploy is delegated.
+* **Only the orchestrator deploys the twin** (the user, 2026-11-21).
+  Every other session, a worker included, asks the user before any
+  deploy.
 * **Still never**, delegation or not: a force push, `PICAR_CLAIM_BYPASS`,
   `PICAR_SKIP_GATE`, `release --force`, or a claim taken from another
   session. Those stay the user's alone (CLAUDE.md 3c); plan around them.
@@ -52,8 +57,11 @@ From the board, keep a step only if **all** hold:
    never run `release --force`, `PICAR_CLAIM_BYPASS`, `PICAR_CLAIM_PID`
    or `PICAR_CLAIM_SESSION`.
 2. It can be finished without the user: no spending (Bedrock, paid GPU
-   hosts), no deploy, no force push, no `PICAR_SKIP_GATE`. Those are the
-   user's call (rule 10); list them for the user instead.
+   hosts), no deploy by the worker (the twin's deploy is the
+   orchestrator's own, per the standing decision; a Lambda or
+   CloudFormation deploy is the user's), no force push, no
+   `PICAR_SKIP_GATE`. The rest are the user's call (rule 10); list them
+   for the user instead.
 3. It needs no hardware this machine lacks (the Rover; the Jetson unless
    `board_lock.py status` reaches it).
 4. Its `Touches` do not overlap another chosen step's. Two workers never
@@ -89,9 +97,12 @@ You cannot read the quota yourself. The user sees it with `/usage`.
   * A worker that runs past ~2x its estimate without a commit is stopped
     and its state reported, not left to burn.
 
-* **At most two worker sessions at once by default** (2026-11-15: four
-  Opus sessions spent about 3% of the week an hour). More only on the
-  user's word and a fresh `/usage` reading.
+* **No fixed worker count** (the user, 2026-11-21): the orchestrator
+  chooses how many workers run at once and the pacing. Still holding:
+  the 15% weekly reserve, the rule on a worker past ~2x its estimate, the
+  ledger as a record, the fresh-session rule (section 3) and the
+  orchestrator's own context limits (below). (2026-11-15 measured four
+  Opus sessions spending about 3% of the week an hour.)
 
 **The orchestrator's own size: check it, and hand over early** (the user,
 2026-11-16). Every turn re-reads the whole conversation, so a long-lived
@@ -164,8 +175,8 @@ If the claim is refused it stops and reports; never work around a refusal
    CLAUDE.md section 6) and recorded with `plan_section.py reviewed
    [--thermos]`; `plan_section.py ready` passing.
 5. **What it must not do**: push to `dev` before the orchestrator's "push
-   to dev" for that step, deploy, spend, force push, or start a second
-   step. Once its work is on `dev` it releases its own claim
+   to dev" for that step, deploy (only the orchestrator deploys the twin), spend, force push, or
+   start a second step. Once its work is on `dev` it releases its own claim
    (`plan_section.py release <step>`).
 6. **The report**: commits (sha, one line each), criteria met / failed
    with the numbers, review findings and what was fixed, what is left,

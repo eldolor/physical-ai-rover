@@ -348,3 +348,35 @@ def test_f_http_direction_route(tmp_path, monkeypatch):
         assert c.post("/direction", json=body).status_code == 401
         r = c.post("/direction", json=body, headers={"x-app-secret": "s3cret"})
         assert r.status_code == 200 and r.json()["direction"] == "right"
+
+
+# ---------- 3.209.E: a missing variable is named, not a KeyError ----------
+
+@pytest.mark.parametrize("unset", [("LOCAL_VLM_ENGINES",), ("LOCAL_VLM_EDGELLM",),
+                                   ("LOCAL_VLM_ENGINES", "LOCAL_VLM_EDGELLM")])
+def test_main_names_the_variables_it_needs(monkeypatch, capsys, unset):
+    """`python -m service.local_vlm.server` without its two required
+    variables used to end in a bare `KeyError: 'LOCAL_VLM_ENGINES'`. It exits
+    with one line naming every missing one and where they are documented --
+    before anything is opened or started."""
+    from service.local_vlm import server
+    monkeypatch.setenv("LOCAL_VLM_ENGINES", "/nowhere/engines")
+    monkeypatch.setenv("LOCAL_VLM_EDGELLM", "/nowhere/edgellm")
+    for name in unset:
+        monkeypatch.delenv(name)
+    with pytest.raises(SystemExit) as stop:
+        server.main()
+    message = stop.value.code
+    assert isinstance(message, str) and "\n" not in message      # exit status 1, one line on stderr
+    for name in ("LOCAL_VLM_ENGINES", "LOCAL_VLM_EDGELLM"):
+        assert (name in message) == (name in unset)
+    assert "service/local_vlm/README.md" in message
+
+
+def test_main_refuses_an_empty_variable_too(monkeypatch):
+    from service.local_vlm import server
+    monkeypatch.setenv("LOCAL_VLM_ENGINES", "")          # Path("") is the working directory
+    monkeypatch.setenv("LOCAL_VLM_EDGELLM", "/nowhere/edgellm")
+    with pytest.raises(SystemExit) as stop:
+        server.main()
+    assert "LOCAL_VLM_ENGINES" in stop.value.code and "LOCAL_VLM_EDGELLM" not in stop.value.code

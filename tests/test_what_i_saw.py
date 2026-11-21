@@ -213,3 +213,28 @@ def test_review2_clean_keeps_big_ints_and_bools_and_a_bad_belief_saves(tmp_path)
     (tmp_path / "junk" / "report.json").write_text("[1, 2]")       # valid JSON, not a report
     wis.ReportStore(tmp_path).save("m-2", {"outcome": "found"})
     assert [r["mission_id"] for r in wis.ReportStore(tmp_path).list()] == ["m-2", "m-1"]
+
+
+# ---------- 3.209.B: one default for the store's directory ----------
+
+def test_the_module_names_no_directory_of_its_own():
+    """3.162: "The store is `WHAT_I_SAW_DIR`, else beside `inventory_dir`" --
+    the brain server's rule (`_saw_store`, pinned by
+    test_what_i_saw_live.py::test_the_store_defaults_beside_the_inventory).
+    This module once had a second default (`<repo>/recordings/what-i-saw`)
+    that agreed with it only for the shipped config run from the repo root.
+    A store, and a writer, are given their directory."""
+    with pytest.raises(TypeError):
+        wis.ReportStore()
+    with pytest.raises(TypeError):
+        wis.ReportWriter()
+    for nothing in (None, ""):          # never the working directory by accident
+        with pytest.raises(ValueError):
+            wis.ReportStore(nothing)
+    assert not hasattr(wis, "DEFAULT_DIR") and not hasattr(wis, "default_dir")
+    # ...and nothing but the server reads the variable (tests and an
+    # evaluation's harness only SET it, for the server they start).
+    out = subprocess.run(["git", "grep", "--untracked", "-l", "-E",
+                          r"(environ\.get|getenv)\(\s*[\"']WHAT_I_SAW_DIR", "--", "*.py"],
+                         cwd=ROOT, capture_output=True, text=True).stdout.split()
+    assert out == ["control/brain_server.py"]

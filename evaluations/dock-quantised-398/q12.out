@@ -1,0 +1,16 @@
+{
+ "missions": 60,
+ "returns": 60,
+ "reached_approach": 27,
+ "docked": 27,
+ "docked_share": 1.0,
+ "docked_truth_ok": 27,
+ "not_aligned_bare": 0,
+ "not_docked": [],
+ "approach_verbs_max": 4,
+ "over_12_verbs": 0,
+ "turn_run_max": 1,
+ "fine_goals": 23,
+ "err_m_median": 0.0265,
+ "err_m_max": 0.0293
+}
