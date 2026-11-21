@@ -177,3 +177,25 @@ def test_n4bc_m3s_stale_sweep_and_m2s_sweep_identical_to_dev():
     for name in ("stale", "m2"):
         d = sweep.same(EVAL / f"{name}-dev.jsonl", EVAL / f"{name}-fix.jsonl")
         assert d["identical"] and d["rows"] == 41, name
+
+
+def test_n8_the_live_find_scores_as_the_plan_records():
+    live = importlib.util.spec_from_file_location("carried_3205_live", EVAL / "live.py")
+    mod = importlib.util.module_from_spec(live)
+    live.loader.exec_module(mod)
+    s = mod.score(EVAL / "live.jsonl")
+    assert s["valid"] and all(s["preconditions"].values())
+    assert s["N8"] == {"outcome": "found", "found_m": 0.842, "contacts": 0, "wrong_found": False,
+                       "resight": 0, "met": True}
+    assert s["beside"]["target"] == "guitar" and s["beside"]["goals"] == 37
+
+
+def test_n4d_n5_3192s_sweeps_identical_and_no_goal_in_a_zone():
+    spec = importlib.util.spec_from_file_location("same_3192", EVAL / "same3192.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    pinned = EVAL.parent / "nogo-3192" / "fix"
+    for name, n in (("find_rule", 192), ("find_rooms", 192), ("survey_rule", 24), ("survey_rooms", 24)):
+        d = mod.same(pinned / f"{name}.json", EVAL / "nogo-3192" / f"{name}.json")
+        assert d["identical"] and d["rows"] == n, name
+        assert d["N5"] == {"goals_in_zone": 0, "goals_in_grown": 0, "entries": 0}, name
