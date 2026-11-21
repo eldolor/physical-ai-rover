@@ -1264,7 +1264,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         # 3.203: the page names itself a robot's. A static host serving the
         # same file has no such marker, so the twin knows its own origin is
         # not a robot and polls nothing until one is saved.
-        html = re.sub(r"(<head[^>]*>)", r'\1\n<meta name="picar-robot-origin" content="1">',
+        html = re.sub(r"(<head(?:\s[^>]*)?>)", r'\1\n<meta name="picar-robot-origin" content="1">',
                       _TWIN_INDEX_HTML.read_text(encoding="utf-8"), count=1)
         return HTMLResponse(html, headers={"Cache-Control": "no-cache"})
 
