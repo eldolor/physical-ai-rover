@@ -4,10 +4,14 @@
 evaluations/sim-chaos-3202/dead_man_plant.py
 
 3.202 criterion 7's plant for K11 (amendment 2): the shipped brain with B3.3's
-dead-man pushed out of reach -- `drill_tick_timeout_s` (the `tick_hang`
-drill's deadline) and `tick_timeout_s` raised to 600 s -- so a hung tick is
-never caught and K11's "the mission ends within drill_tick_timeout_s + 30 s"
-must FAIL. Started by `chaos.py --plant dead_man` in place of the brain.
+dead-man pushed out past K11's bar -- `drill_tick_timeout_s` (the deadline a
+`tick_hang` drill runs under; `drills.apply` uses it in place of
+`tick_timeout_s`) raised to 600 s -- so K11's "the mission ends within
+drill_tick_timeout_s + 30 s" must FAIL. The guard is still there, 600 s out:
+the planted run ends "brain loop hung: tick exceeded 600.0s". The drill's
+own hang is drill_tick_timeout_s x OVERSHOOT, so it grows with it (1,800 s);
+the brain's abandoned tick thread outlives the mission. Started by
+`chaos.py --plant dead_man` in place of the brain.
 
     python evaluations/sim-chaos-3202/dead_man_plant.py <port>
 """
@@ -27,8 +31,7 @@ _load = brain_config.load_brain_config
 
 def _load_unguarded(*a, **k):
     cfg = _load(*a, **k)
-    cfg["drill_tick_timeout_s"] = 600.0      # planted: the drill's dead-man out of reach
-    cfg["tick_timeout_s"] = 600.0            # and the generic one, so neither catches the hang
+    cfg["drill_tick_timeout_s"] = 600.0      # planted: the drill's dead-man past K11's 33 s bar
     return cfg
 
 

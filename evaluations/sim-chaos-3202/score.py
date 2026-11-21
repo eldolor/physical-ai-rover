@@ -344,7 +344,7 @@ def score(out: Path) -> dict:
     # Criterion 4
     tgt = target_m(run["house"], run["target"])
     rate_set = [mm for mm in missions_l if not set(mm.get("tags") or []) & set(EXCLUDE_FROM_RATE)
-                and mm.get("how") != "preempted"]
+                and mm.get("how") not in ("preempted", "stopped_at_end")]
     found = [mm for mm in rate_set if mm.get("outcome") == "found"]
     rate = len(found) / len(rate_set) if rate_set else None
     c4, wrong = [], []

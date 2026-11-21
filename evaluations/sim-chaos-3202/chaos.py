@@ -15,6 +15,7 @@ Missions run back to back; a fault kind is drawn (seeded, uniform over
 
     python evaluations/sim-chaos-3202/chaos.py <out> [--faults 40] [--seed 3202]
         [--house starter_house] [--kinds K1,K2,...] [--gap 120,240] [--plant watchdog]
+        [--stop-last]
 
 The run only records; `score.py <out>` judges it. What lands in <out>:
   run.json        the arguments, ports, config values the bars read
@@ -475,7 +476,9 @@ class Chaos:
                "ports": PORTS, "proxy": PROXY_URL, "stub": STUB_URL, "host": os.uname().nodename,
                "git": subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True,
                                      text=True).stdout.strip(),
-               "config": self.config_values(), "target": TARGET}
+               "config": self.config_values(), "target": TARGET, "stop_last": self.stop_last,
+               "planted_config": {"drill_tick_timeout_s": 600.0}
+               if "dead_man" in self.plant.split(",") else None}
         (self.out / "run.json").write_text(json.dumps(run, indent=1))
         rss = Jsonl(self.out / "rss.jsonl")
         try:
@@ -483,10 +486,11 @@ class Chaos:
                                         f"http://127.0.0.1:{PORTS['robot']}"],
                               dict(os.environ, FAULT_PROXY_LOG=str(self.out / "proxy.jsonl")))
             time.sleep(0.5)
-            stack_plant = "" if self.plant == "dead_man" else self.plant
+            plants = [p for p in self.plant.split(",") if p]
+            stack_plant = ",".join(p for p in plants if p != "dead_man")
             self.st = Stack(self.out, house=self.house, plant=stack_plant, vision_url=STUB_URL,
                             extra_env={"ROBOT_URL": PROXY_URL, "LOCAL_VLM_URL": ""})
-            if self.plant == "dead_man":             # amendment 2: this section's own brain plant
+            if "dead_man" in plants:                 # amendment 2: this section's own brain plant
                 st = self.st
 
                 def _start_brain_planted():
@@ -532,6 +536,9 @@ class Chaos:
                     self.end_mission(s, "hung" if s.get("hung") else "natural")
                     continue
                 time.sleep(1.0)
+            s_last = self.poll_end() if self.cur is not None else None
+            if s_last is not None:                   # it ended on its own meanwhile
+                self.end_mission(s_last, "hung" if s_last.get("hung") else "natural")
             if self.cur is not None and self.stop_last:   # criterion 7's single-fault runs
                 self.stop_mission()
                 self.end_mission(status(self.st), "stopped_at_end")
