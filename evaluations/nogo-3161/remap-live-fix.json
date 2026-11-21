@@ -1,0 +1,391 @@
+{
+ "house": "scaled_house",
+ "image": "vision-picar-ros:plan-3.161",
+ "volume": "picar-maps-3161-remap",
+ "r_live": {
+  "frame_id": "map-f2ac2a68",
+  "dock_zone_add": 200,
+  "stored": 4,
+  "held_before_start": {
+   "s": 0.0,
+   "copy": 4,
+   "bridge": 4
+  },
+  "start": 200,
+  "running_at_stop": true,
+  "dock_refused": [
+   "zd3cc6dd374f6"
+  ],
+  "copy_before_stop": 3,
+  "stop": 200,
+  "held_after_stop": {
+   "s": 0.1,
+   "copy": 4,
+   "bridge": 4
+  },
+  "keeper_log": [
+   "1795273558.661 INFO brain_server no-go zones: 3 kept at the robot server (map-f2ac2a68, slam-465992bd)"
+  ]
+ },
+ "zones": [
+  {
+   "id": "z32c5aa748182",
+   "x0": 1.615,
+   "y0": 2.822,
+   "x1": 2.285,
+   "y1": 3.478,
+   "kind": "area",
+   "set_at": 1795273587.236,
+   "by": "person"
+  },
+  {
+   "id": "z4c03d8350124",
+   "x0": 0.532,
+   "y0": 3.455,
+   "x1": 0.968,
+   "y1": 4.045,
+   "kind": "area",
+   "set_at": 1795273587.267,
+   "by": "person"
+  },
+  {
+   "id": "z511849c696b1",
+   "x0": 4.344,
+   "y0": 1.386,
+   "x1": 4.956,
+   "y1": 2.514,
+   "kind": "area",
+   "set_at": 1795273587.303,
+   "by": "person"
+  }
+ ],
+ "stack1": {
+  "frame_id": "map-5673d217",
+  "slam": "ready",
+  "map": {
+   "map_id": "map-5673d217",
+   "saving": false,
+   "store": true,
+   "saved": 0,
+   "failed": 0,
+   "skipped": 0,
+   "last_version": null,
+   "last_at": null,
+   "last_error": null
+  },
+  "zones_after_draw": {
+   "bridge": 3,
+   "store": 3,
+   "store_frame_id": "map-5673d217"
+  },
+  "find": {
+   "start": 200,
+   "outcome": "found",
+   "seconds": 76,
+   "truth_samples": 151,
+   "entries": [],
+   "log_tail": [
+    "found: Hallway, kitchen, living room searched. Found. -- returning to the dock",
+    "return: goal to (1.65, 1.35) accepted",
+    "return docked: 0.092 m, 0.5 deg from the dock",
+    "inventory: 2 reported, 1 candidates from 63 frames -- red backpack, refrigerator",
+    "mission ended (found): Hallway, kitchen, living room searched. Found."
+   ]
+  },
+  "map_after_find": {
+   "map_id": "map-5673d217",
+   "saving": false,
+   "store": true,
+   "saved": 1,
+   "failed": 0,
+   "skipped": 0,
+   "last_version": 1,
+   "last_at": 1795273664.9573793,
+   "last_error": null
+  },
+  "keeper_log": [
+   "1795273579.370 WARNING brain_server no-go zones not taken (attempt 1, next in 1 s): the pose could not be read: GET /world/pose failed: [Errno 111] Connection refused",
+   "1795273580.390 INFO brain_server no-go zones: kept after 1 failed attempt(s)"
+  ]
+ },
+ "stack2": {
+  "k2_after_start": {
+   "s": 1.6,
+   "copy": 3,
+   "bridge": 3
+  },
+  "frame_id_reload": "map-5673d217",
+  "slam": "ready",
+  "reload": {
+   "map_id": "map-5673d217",
+   "version": 1,
+   "took_s": 1.72,
+   "agreement": 0.708,
+   "dock_error_m": 0.0,
+   "dock_error_deg": 0.0,
+   "ok": true,
+   "reason": "matched",
+   "result": "matched"
+  },
+  "map": {
+   "map_id": "map-5673d217",
+   "saving": false,
+   "store": true,
+   "saved": 0,
+   "failed": 0,
+   "skipped": 0,
+   "last_version": null,
+   "last_at": null,
+   "last_error": null
+  },
+  "zones_after_start": {
+   "bridge": 3,
+   "store": 3,
+   "store_frame_id": "map-5673d217"
+  },
+  "remap_reply": {
+   "status": 200,
+   "body": {
+    "remapping": true,
+    "trigger": "request",
+    "at": 1795273688.1164749,
+    "map_id": "map-5673d217",
+    "version": 1,
+    "detail": "twin-dpad"
+   }
+  },
+  "remap_record": {
+   "trigger": "request",
+   "at": 1795273688.1164749,
+   "map_id": "map-5673d217",
+   "version": 1,
+   "detail": "twin-dpad",
+   "waited_s": 0.0,
+   "cancelled_goal": false,
+   "at_rest": true,
+   "from_pose": [
+    -0.0,
+    -0.0,
+    0.0
+   ],
+   "result": "mapping",
+   "mapping_at": 1795273688.4271765,
+   "took_s": 0.31
+  },
+  "remap_reached_mapping": true,
+  "k2_after_remap": {
+   "s": 0.0,
+   "copy": 3,
+   "bridge": 3
+  },
+  "remap_health_slam": {
+   "state": "ready",
+   "mode": "mapping",
+   "starts": 2,
+   "remap": {
+    "trigger": "request",
+    "at": 1795273688.1164749,
+    "map_id": "map-5673d217",
+    "version": 1,
+    "detail": "twin-dpad",
+    "waited_s": 0.0,
+    "cancelled_goal": false,
+    "at_rest": true,
+    "from_pose": [
+     -0.0,
+     -0.0,
+     0.0
+    ],
+    "result": "mapping",
+    "mapping_at": 1795273688.4271765,
+    "took_s": 0.31
+   },
+   "watch": null,
+   "remap_contradiction": false,
+   "remap_latched": false,
+   "remap_stale_refused": 0,
+   "remap_deferrals": 0
+  },
+  "frame_id_after_remap": "map-5673d217",
+  "zones_after_remap": {
+   "bridge": 3,
+   "store": 3,
+   "store_frame_id": "map-5673d217"
+  },
+  "find": {
+   "start": 200,
+   "outcome": "found",
+   "seconds": 63,
+   "truth_samples": 125,
+   "entries": [],
+   "log_tail": [
+    "found: Hallway, kitchen, living room searched. Found. -- returning to the dock",
+    "return: goal to (1.65, 1.35) accepted",
+    "return docked: 0.089 m, 0.3 deg from the dock",
+    "inventory: 2 reported, 1 candidates from 39 frames -- red backpack, refrigerator",
+    "mission ended (found): Hallway, kitchen, living room searched. Found."
+   ]
+  },
+  "map_after_find": {
+   "map_id": "map-5673d217",
+   "saving": false,
+   "store": true,
+   "saved": 1,
+   "failed": 0,
+   "skipped": 0,
+   "last_version": 2,
+   "last_at": 1795273753.8132768,
+   "last_error": null
+  },
+  "zones_after_find": {
+   "bridge": 3,
+   "store": 3,
+   "store_frame_id": "map-5673d217"
+  },
+  "keeper_log": [
+   "1795273676.800 WARNING brain_server no-go zones not taken (attempt 1, next in 1 s): the pose could not be read: GET /world/pose failed: [Errno 111] Connection refused",
+   "1795273677.822 INFO brain_server no-go zones: kept after 1 failed attempt(s)",
+   "1795273685.877 INFO brain_server no-go zones: 3 kept at the robot server (map-5673d217, slam-8a1a1332)"
+  ]
+ },
+ "stack3": {
+  "k2_after_start": {
+   "s": 1.5,
+   "copy": 3,
+   "bridge": 3
+  },
+  "keeper_log": [
+   "1795273765.907 WARNING brain_server no-go zones not taken (attempt 1, next in 1 s): the pose could not be read: GET /world/pose failed: [Errno 111] Connection refused",
+   "1795273766.930 INFO brain_server no-go zones: kept after 1 failed attempt(s)",
+   "1795273774.976 INFO brain_server no-go zones: 3 kept at the robot server (map-5673d217, slam-ae1212a0)"
+  ],
+  "frame_id_reload": "map-5673d217",
+  "slam": "ready",
+  "reload": {
+   "map_id": "map-5673d217",
+   "version": 2,
+   "took_s": 1.78,
+   "agreement": 0.694,
+   "dock_error_m": 0.0,
+   "dock_error_deg": 0.0,
+   "ok": true,
+   "reason": "matched",
+   "result": "matched"
+  },
+  "map": {
+   "map_id": "map-5673d217",
+   "saving": false,
+   "store": true,
+   "saved": 0,
+   "failed": 0,
+   "skipped": 0,
+   "last_version": null,
+   "last_at": null,
+   "last_error": null
+  },
+  "zones_after_start": {
+   "bridge": 3,
+   "store": 3,
+   "store_frame_id": "map-5673d217"
+  }
+ },
+ "loadavg_10s": [
+  [
+   1795273547.7,
+   "0.43"
+  ],
+  [
+   1795273557.7,
+   "0.45"
+  ],
+  [
+   1795273567.7,
+   "0.61"
+  ],
+  [
+   1795273577.7,
+   "0.59"
+  ],
+  [
+   1795273587.7,
+   "0.66"
+  ],
+  [
+   1795273597.7,
+   "0.64"
+  ],
+  [
+   1795273607.7,
+   "0.62"
+  ],
+  [
+   1795273617.7,
+   "0.61"
+  ],
+  [
+   1795273627.7,
+   "1.55"
+  ],
+  [
+   1795273637.7,
+   "1.72"
+  ],
+  [
+   1795273647.7,
+   "3.13"
+  ],
+  [
+   1795273657.7,
+   "3.46"
+  ],
+  [
+   1795273667.7,
+   "2.93"
+  ],
+  [
+   1795273677.7,
+   "2.48"
+  ],
+  [
+   1795273687.7,
+   "2.10"
+  ],
+  [
+   1795273697.7,
+   "1.77"
+  ],
+  [
+   1795273707.7,
+   "2.02"
+  ],
+  [
+   1795273717.7,
+   "1.86"
+  ],
+  [
+   1795273727.7,
+   "1.89"
+  ],
+  [
+   1795273737.7,
+   "3.08"
+  ],
+  [
+   1795273747.7,
+   "2.60"
+  ],
+  [
+   1795273757.7,
+   "2.20"
+  ],
+  [
+   1795273767.7,
+   "1.86"
+  ],
+  [
+   1795273777.7,
+   "1.65"
+  ]
+ ],
+ "peak_load": 3.46
+}
