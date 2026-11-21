@@ -577,6 +577,10 @@ def test_a_world_on_its_own_server_failing_is_not_the_robot_links():
     runner = runner_for(robot, apart)
     assert not runner._is_link_failure(lost), "a world elsewhere: the old fault"
     assert runner._is_link_failure(RobotUnreachable("POST", "/action", "reset"))
+    from tests.conftest import fresh_mock_robot, mock_world_for
+    body = fresh_mock_robot()                       # in process: no link at all
+    runner = MissionRunner(body, target_object="red backpack", world=mock_world_for(body))
+    assert not runner._is_link_failure(lost), "no link: a lost world read ends as before 3.208"
 
 
 def test_time_paused_for_a_person_is_not_silence():

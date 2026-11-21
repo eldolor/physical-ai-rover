@@ -1706,9 +1706,12 @@ class MissionRunner:
             # link's budget. After a find: what it saw stands.
             self._finish(FAILED, link_end)
             return False
-        if self._link_tally is not None and self._link_tally.unanswered:
-            # ...or it did not: paced like a failed tick, so reads that fail
-            # at once cannot run the count up in milliseconds (Thermos 4).
+        blind = self._link_tally is not None and bool(self._link_tally.unanswered)
+        if blind:
+            # ...or it did not: the car is stopped and the tick paced like a
+            # failed one, so reads that fail at once cannot run the count up
+            # in milliseconds (Thermos 4, review 2).
+            self._safe_stop()
             self.idle(LINK_RETRY_S)
         if self.room_labeller is not None and self.is_running():
             # The pose now, and -- only if it asks -- a frame taken now: the
@@ -1737,7 +1740,10 @@ class MissionRunner:
         if getattr(self.agent, "exhausted", False):
             self._finish(EXHAUSTED, self.agent.last_event or "no reachable frontier left")
             return False
-        if self.stuck_after and self._refused_forwards >= self.stuck_after:
+        # 3.208: no stuck verdict and no back-off on a tick that lost a read --
+        # already counted against the link, and the gate would refuse the
+        # REVERSE (review 2); the next tick judges again.
+        if self.stuck_after and self._refused_forwards >= self.stuck_after and not blind:
             if (self._arrival or {}).get("state") == "refused":
                 # Not an obstacle: the robot reached what it was steering at
                 # and the cloud said it is not the target (spec review 3,

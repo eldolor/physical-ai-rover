@@ -748,6 +748,7 @@ class ExploreAgent(MissionAgent):
         # 3.76: remembered BEFORE the call. A send whose answer is lost (a
         # read timeout after the bridge took the goal) leaves that goal
         # driving; it is still the mission's own, never "someone else's".
+        held = list(self._attempts)
         self._attempts.append((x_m, y_m))
         try:
             reply = self.navigator.set_goal(x_m, y_m) or {}
@@ -758,7 +759,8 @@ class ExploreAgent(MissionAgent):
                 # 3.208: refused before it left the brain (the runner's link
                 # gate): not an attempt, so no goal there is the mission's,
                 # and not a bridge blip either -- the runner budgets it.
-                self._attempts.pop()
+                self._attempts.clear()
+                self._attempts.extend(held)       # as it was, an evicted one kept
                 raise
             self._bridge_blip(exc)
             self.last_event = f"goal not sent: {exc}"
