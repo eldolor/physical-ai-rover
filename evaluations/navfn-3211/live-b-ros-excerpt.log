@@ -1,0 +1,343 @@
+# 3.211.B live run (2026-11-21, vision-picar-ros:plan-3.211 = s3211-plan-3.70, branch f9b85e2e): planner failures, aborts, goal lines.
+
+## ros-s1.log
+[planner_server-8] [WARN] [1795278124.836658704] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bridge-6] [INFO] [1795278125.688340612] [picar_bridge]: nav2 active: goals taken
+[bt_navigator-10] [INFO] [1795278126.526928272] [bt_navigator]: Begin navigating from current location (0.00, 0.00) to (-0.29, 0.11)
+[bt_navigator-10] [INFO] [1795278133.537327762] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278135.689142319] [bt_navigator]: Begin navigating from current location (-0.20, 0.11) to (3.46, 0.23)
+[bt_navigator-10] [INFO] [1795278158.599429241] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278161.317622455] [bt_navigator]: Begin navigating from current location (3.37, 0.20) to (4.01, -2.05)
+[planner_server-8] [WARN] [1795278180.785203905] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[controller_server-7] [ERROR] [1795278192.478667816] [controller_server]: Failed to make progress
+[controller_server-7] [WARN] [1795278192.478947796] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795278195.850823750] [bt_navigator]: Goal canceled
+[bt_navigator-10] [INFO] [1795278202.953346928] [bt_navigator]: Begin navigating from current location (4.31, -1.84) to (4.10, -8.76)
+[planner_server-8] [WARN] [1795278210.339606047] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278213.334800016] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278214.330665528] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278217.332518153] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bt_navigator-10] [INFO] [1795278242.123667952] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278244.394775004] [bt_navigator]: Begin navigating from current location (4.14, -8.67) to (5.20, -8.59)
+[bt_navigator-10] [INFO] [1795278262.445043076] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278264.387879247] [bt_navigator]: Begin navigating from current location (5.27, -8.53) to (7.55, -9.24)
+[bt_navigator-10] [INFO] [1795278281.798259662] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278284.412199805] [bt_navigator]: Begin navigating from current location (7.46, -9.21) to (8.75, -11.09)
+[planner_server-8] [WARN] [1795278287.341643440] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278288.346157410] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278289.341669139] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278290.342786798] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bt_navigator-10] [INFO] [1795278297.222454592] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278299.334288916] [bt_navigator]: Begin navigating from current location (8.72, -11.01) to (9.45, -12.91)
+[planner_server-8] [WARN] [1795278307.346429501] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278310.347115464] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bt_navigator-10] [INFO] [1795278319.964725253] [bt_navigator]: Goal succeeded
+[planner_server-8] [WARN] [1795278320.356366570] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bt_navigator-10] [INFO] [1795278322.719922479] [bt_navigator]: Begin navigating from current location (9.39, -12.83) to (8.00, -14.89)
+[planner_server-8] [WARN] [1795278334.350241801] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278338.360959071] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bt_navigator-10] [INFO] [1795278348.930169820] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278351.179400374] [bt_navigator]: Begin navigating from current location (7.91, -14.91) to (6.80, -13.24)
+[planner_server-8] [WARN] [1795278375.433268929] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bt_navigator-10] [INFO] [1795278375.999737540] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278378.267213606] [bt_navigator]: Begin navigating from current location (6.67, -13.31) to (6.15, -12.24)
+[bt_navigator-10] [INFO] [1795278387.647563585] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278389.605046679] [bt_navigator]: Begin navigating from current location (6.24, -12.27) to (6.35, -11.09)
+[bt_navigator-10] [INFO] [1795278402.155321669] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278404.628037513] [bt_navigator]: Begin navigating from current location (6.44, -11.12) to (5.80, -12.89)
+[bt_navigator-10] [INFO] [1795278419.888341868] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278422.472262690] [bt_navigator]: Begin navigating from current location (5.85, -12.81) to (5.30, -12.79)
+[bt_navigator-10] [INFO] [1795278428.182659460] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278430.653666287] [bt_navigator]: Begin navigating from current location (5.37, -12.85) to (5.45, -15.09)
+[bt_navigator-10] [INFO] [1795278445.664008535] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278447.867343372] [bt_navigator]: Begin navigating from current location (5.43, -15.00) to (6.20, -10.99)
+[bt_navigator-10] [INFO] [1795278476.777811629] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278478.962857050] [bt_navigator]: Begin navigating from current location (6.29, -11.03) to (10.50, -15.49)
+[planner_server-8] [WARN] [1795278480.894655282] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278522.371402976] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278523.373323289] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278524.367972745] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278525.369594175] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bt_navigator-10] [INFO] [1795278525.773198170] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278528.059489980] [bt_navigator]: Begin navigating from current location (10.43, -15.55) to (10.60, -13.62)
+[planner_server-8] [WARN] [1795278537.370129943] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[controller_server-7] [ERROR] [1795278551.631129376] [controller_server]: Failed to make progress
+[controller_server-7] [WARN] [1795278551.631323779] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795278568.782646933] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278586.379563125] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bt_navigator-10] [INFO] [1795278599.989878523] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278602.731859295] [bt_navigator]: Begin navigating from current location (10.51, -13.60) to (10.55, -14.96)
+[controller_server-7] [WARN] [1795278605.504099830] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[controller_server-7] [WARN] [1795278606.225008985] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795278606.250364573] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[controller_server-7] [WARN] [1795278606.644197063] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[controller_server-7] [WARN] [1795278606.964520049] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[controller_server-7] [WARN] [1795278620.484482578] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[controller_server-7] [WARN] [1795278620.804599486] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[controller_server-7] [WARN] [1795278626.174216792] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795278626.233681288] [bt_navigator]: Goal canceled
+[bt_navigator-10] [INFO] [1795278633.643190666] [bt_navigator]: Begin navigating from current location (10.44, -13.49) to (10.10, -4.56)
+[planner_server-8] [WARN] [1795278671.392802172] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278675.894450639] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bt_navigator-10] [INFO] [1795278689.053482529] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278691.046897671] [bt_navigator]: Begin navigating from current location (10.01, -4.54) to (7.90, -2.40)
+[planner_server-8] [WARN] [1795278714.890010376] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[controller_server-7] [ERROR] [1795278726.568262211] [controller_server]: Failed to make progress
+[controller_server-7] [WARN] [1795278726.568485048] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795278731.889293655] [bt_navigator]: Goal canceled
+[bt_navigator-10] [INFO] [1795278738.973888522] [bt_navigator]: Begin navigating from current location (8.20, -2.01) to (9.35, -0.55)
+[bt_navigator-10] [INFO] [1795278756.584185345] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278758.547911295] [bt_navigator]: Begin navigating from current location (9.44, -0.57) to (9.05, 0.40)
+[bt_navigator-10] [INFO] [1795278766.408232207] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278768.375739275] [bt_navigator]: Begin navigating from current location (9.11, 0.32) to (8.70, 0.45)
+[bt_navigator-10] [INFO] [1795278772.286074830] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278774.572509923] [bt_navigator]: Begin navigating from current location (8.79, 0.45) to (6.00, 1.15)
+[bt_navigator-10] [INFO] [1795278792.142848515] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278794.680751672] [bt_navigator]: Begin navigating from current location (6.04, 1.06) to (2.95, -3.20)
+[planner_server-8] [WARN] [1795278807.407344173] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278808.409420676] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278810.403563524] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278818.408133473] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278820.412417444] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795278821.452754317] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bt_navigator-10] [INFO] [1795278843.941168787] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278846.311472532] [bt_navigator]: Begin navigating from current location (2.90, -3.28) to (1.36, -1.98)
+[bt_navigator-10] [INFO] [1795278862.572403544] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278864.783963816] [bt_navigator]: Begin navigating from current location (1.29, -2.05) to (2.36, -1.98)
+[planner_server-8] [WARN] [1795278868.894532646] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bt_navigator-10] [INFO] [1795278879.894240434] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278882.280282568] [bt_navigator]: Begin navigating from current location (2.39, -2.07) to (1.36, -1.98)
+[bt_navigator-10] [INFO] [1795278898.850591832] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278900.990564925] [bt_navigator]: Begin navigating from current location (1.29, -2.05) to (2.36, -1.98)
+[bt_navigator-10] [INFO] [1795278916.510923026] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278918.879643013] [bt_navigator]: Begin navigating from current location (2.39, -2.07) to (-0.09, -3.13)
+[bt_navigator-10] [INFO] [1795278938.689957836] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278941.250343098] [bt_navigator]: Begin navigating from current location (-0.02, -3.19) to (0.31, -2.03)
+[planner_server-8] [WARN] [1795278952.188098620] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bt_navigator-10] [INFO] [1795278952.670720637] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795278954.660103439] [bt_navigator]: Begin navigating from current location (0.14, -2.08) to (-0.59, -4.73)
+[planner_server-8] [WARN] [1795278976.883409303] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[controller_server-7] [ERROR] [1795278988.332009232] [controller_server]: Failed to make progress
+[controller_server-7] [WARN] [1795278988.332236251] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795278993.602068806] [bt_navigator]: Goal canceled
+[bt_navigator-10] [INFO] [1795279001.059172166] [bt_navigator]: Begin navigating from current location (-0.99, -4.52) to (-0.94, -3.73)
+[bt_navigator-10] [INFO] [1795279006.329503285] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279008.334093154] [bt_navigator]: Begin navigating from current location (-0.91, -3.82) to (-0.34, -3.23)
+[planner_server-8] [WARN] [1795279014.894480146] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bt_navigator-10] [INFO] [1795279017.694471799] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279020.169372950] [bt_navigator]: Begin navigating from current location (-0.32, -3.32) to (-0.94, -3.73)
+[bt_navigator-10] [INFO] [1795279029.230544713] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279031.511682519] [bt_navigator]: Begin navigating from current location (-0.85, -3.75) to (3.16, -6.18)
+[planner_server-8] [WARN] [1795279065.532437366] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bt_navigator-10] [INFO] [1795279084.831939240] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279086.891677228] [bt_navigator]: Begin navigating from current location (3.08, -6.24) to (1.36, -6.43)
+[bt_navigator-10] [INFO] [1795279107.152018857] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279109.669697060] [bt_navigator]: Begin navigating from current location (1.28, -6.49) to (4.01, -12.88)
+[bt_navigator-10] [INFO] [1795279163.231448971] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279165.712627005] [bt_navigator]: Begin navigating from current location (4.10, -12.85) to (4.31, -13.13)
+[bt_navigator-10] [INFO] [1795279170.932978825] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279173.451255016] [bt_navigator]: Begin navigating from current location (4.24, -13.07) to (2.56, -13.03)
+[planner_server-8] [WARN] [1795279177.576969213] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795279177.577048136] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.56, -13.03)
+[planner_server-8] [WARN] [1795279177.577062322] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795279177.601078013] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279178.867325829] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795279178.867427785] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.56, -13.03)
+[planner_server-8] [WARN] [1795279178.867447513] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795279178.889285683] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279179.331091923] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795279179.331193795] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.56, -13.03)
+[planner_server-8] [WARN] [1795279179.331215730] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795279186.079703826] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795279186.079780294] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.56, -13.03)
+[planner_server-8] [WARN] [1795279186.079792983] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795279186.101811502] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279186.324172296] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795279186.324244994] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.56, -13.03)
+[planner_server-8] [WARN] [1795279186.324261289] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795279186.352996219] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279186.825135964] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795279186.825791023] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.56, -13.03)
+[planner_server-8] [WARN] [1795279186.825820219] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795279186.851509515] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279187.324028202] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795279187.324699956] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.56, -13.03)
+[planner_server-8] [WARN] [1795279187.324718172] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795279189.061022160] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795279189.061107915] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.56, -13.03)
+[planner_server-8] [WARN] [1795279189.061122985] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795279189.081453172] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279189.326075910] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795279189.326143188] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.56, -13.03)
+[planner_server-8] [WARN] [1795279189.326159043] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795279194.379788457] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795279194.379881792] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.56, -13.03)
+[planner_server-8] [WARN] [1795279194.379896754] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795279194.407497849] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279194.829992288] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795279194.830102562] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.56, -13.03)
+[planner_server-8] [WARN] [1795279194.830118537] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795279201.079773761] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795279201.079867998] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.56, -13.03)
+[planner_server-8] [WARN] [1795279201.079883863] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795279201.101687386] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279201.323925173] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795279201.323999304] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.56, -13.03)
+[planner_server-8] [WARN] [1795279201.324018641] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795279201.333724051] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279201.825881610] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795279201.825953487] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.56, -13.03)
+[planner_server-8] [WARN] [1795279201.825968424] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795279201.850769313] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279202.322387140] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795279202.322460421] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.56, -13.03)
+[planner_server-8] [WARN] [1795279202.322475422] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [WARN] [1795279202.344993576] [bt_navigator]: [navigate_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [ERROR] [1795279202.345191422] [bt_navigator]: Goal failed
+[bt_navigator-10] [INFO] [1795279203.130172705] [bt_navigator]: Begin navigating from current location (3.86, -12.92) to (1.96, -15.23)
+[bt_navigator-10] [INFO] [1795279221.590547109] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279223.662380409] [bt_navigator]: Begin navigating from current location (2.00, -15.15) to (0.46, -15.58)
+[bt_navigator-10] [INFO] [1795279238.182718462] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279240.316455364] [bt_navigator]: Begin navigating from current location (0.50, -15.50) to (0.21, -15.68)
+[bt_navigator-10] [INFO] [1795279244.426738698] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279246.882459148] [bt_navigator]: Begin navigating from current location (0.30, -15.66) to (0.71, -12.78)
+[planner_server-8] [WARN] [1795279252.894189102] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279276.894222225] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bt_navigator-10] [INFO] [1795279280.946577802] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279282.748072579] [bt_navigator]: Begin navigating from current location (0.65, -12.86) to (-0.94, -13.53)
+[bt_navigator-10] [INFO] [1795279297.358405950] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279299.810833888] [bt_navigator]: Begin navigating from current location (-0.86, -13.58) to (0.21, -12.78)
+[bt_navigator-10] [INFO] [1795279318.821409199] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279321.051996735] [bt_navigator]: Begin navigating from current location (0.25, -12.88) to (0.21, -13.18)
+[bt_navigator-10] [INFO] [1795279327.212437248] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279329.093408941] [bt_navigator]: Begin navigating from current location (0.20, -13.10) to (3.06, -10.98)
+[bt_navigator-10] [INFO] [1795279377.513750963] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279379.580392975] [bt_navigator]: Begin navigating from current location (3.02, -10.90) to (2.11, -8.28)
+[bt_navigator-10] [INFO] [1795279399.690730310] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279401.723125143] [bt_navigator]: Begin navigating from current location (2.19, -8.33) to (-0.14, -7.33)
+[bt_navigator-10] [INFO] [1795279418.533468049] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279420.616949614] [bt_navigator]: Begin navigating from current location (-0.11, -7.42) to (-0.29, -6.23)
+[bt_navigator-10] [INFO] [1795279430.377277807] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279432.659318213] [bt_navigator]: Begin navigating from current location (-0.20, -6.26) to (-0.89, -11.33)
+[planner_server-8] [WARN] [1795279466.437640502] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[controller_server-7] [ERROR] [1795279478.280949230] [controller_server]: Failed to make progress
+[controller_server-7] [WARN] [1795279478.281167006] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795279483.830991160] [bt_navigator]: Goal canceled
+[bt_navigator-10] [INFO] [1795279501.172482970] [bt_navigator]: Begin navigating from current location (-0.97, -11.24) to (10.56, -14.93)
+[planner_server-8] [WARN] [1795279553.546177982] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279601.084058453] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279612.584625647] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bt_navigator-10] [INFO] [1795279616.234263751] [bt_navigator]: Goal canceled
+[bt_navigator-10] [INFO] [1795279623.141152155] [bt_navigator]: Begin navigating from current location (9.30, -14.60) to (6.16, -15.68)
+[bt_navigator-10] [INFO] [1795279651.493967313] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279653.772239096] [bt_navigator]: Begin navigating from current location (6.21, -15.61) to (5.61, -15.08)
+[bt_navigator-10] [INFO] [1795279663.433021027] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279665.596388749] [bt_navigator]: Begin navigating from current location (5.70, -15.06) to (6.16, -15.68)
+[bt_navigator-10] [INFO] [1795279675.356734107] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279677.508932884] [bt_navigator]: Begin navigating from current location (6.18, -15.59) to (10.56, -14.93)
+[bt_navigator-10] [INFO] [1795279684.381702451] [bt_navigator]: Goal canceled
+[bt_navigator-10] [INFO] [1795279684.655745134] [bt_navigator]: Begin navigating from current location (6.32, -15.05) to (-0.30, -0.00)
+[planner_server-8] [WARN] [1795279705.544516801] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279737.520556591] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279738.545206461] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279739.524385678] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279740.528371195] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279741.566708814] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279742.576298613] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279744.579855609] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279746.527989771] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279748.536440831] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279749.640415622] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279750.547770889] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279751.626976763] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279758.603807737] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279759.635343435] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279760.581039390] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795279766.894667991] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bt_navigator-10] [INFO] [1795279799.216169820] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279811.492837885] [bt_navigator]: Begin navigating from current location (0.06, 0.02) to (-0.09, -0.03)
+[bt_navigator-10] [INFO] [1795279816.354273791] [bt_navigator]: Goal succeeded
+[planner_server-8] [WARN] [1795279821.878696742] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+
+## ros-end.log
+[bridge-6] [INFO] [1795279836.753522310] [picar_bridge]: reloaded map map-eddd9288 v1 at the dock (100% of returns on the map)
+[planner_server-8] [WARN] [1795279836.961779023] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[bridge-6] [INFO] [1795279837.070689744] [picar_bridge]: nav2 active: goals taken
+[bt_navigator-10] [INFO] [1795279838.583070611] [bt_navigator]: Begin navigating from current location (-0.00, 0.00) to (6.01, -14.99)
+[bt_navigator-10] [INFO] [1795279953.293398275] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279954.256087990] [bt_navigator]: Begin navigating from current location (6.06, -14.92) to (5.31, -12.79)
+[bt_navigator-10] [INFO] [1795279969.466445352] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279971.680494989] [bt_navigator]: Begin navigating from current location (5.37, -12.87) to (5.66, -12.79)
+[bt_navigator-10] [INFO] [1795279977.190764034] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279979.304018152] [bt_navigator]: Begin navigating from current location (5.56, -12.78) to (6.21, -11.04)
+[bt_navigator-10] [INFO] [1795279993.364389247] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795279995.417130026] [bt_navigator]: Begin navigating from current location (6.30, -11.07) to (6.16, -15.69)
+[bt_navigator-10] [INFO] [1795280024.337431604] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280026.813248806] [bt_navigator]: Begin navigating from current location (6.21, -15.62) to (6.21, -11.04)
+[bt_navigator-10] [INFO] [1795280055.773681882] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280057.826147967] [bt_navigator]: Begin navigating from current location (6.29, -11.07) to (6.16, -15.69)
+[bt_navigator-10] [INFO] [1795280086.836453885] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280088.717254531] [bt_navigator]: Begin navigating from current location (6.21, -15.62) to (5.46, -14.69)
+[bt_navigator-10] [INFO] [1795280098.877546155] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280106.184876239] [bt_navigator]: Begin navigating from current location (5.54, -14.74) to (10.61, -13.59)
+[bt_navigator-10] [INFO] [1795280136.845836972] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280139.201995812] [bt_navigator]: Begin navigating from current location (10.52, -13.56) to (10.56, -13.54)
+[bt_navigator-10] [INFO] [1795280139.252315590] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280143.777095216] [bt_navigator]: Begin navigating from current location (10.52, -13.56) to (10.21, -11.79)
+[bt_navigator-10] [INFO] [1795280162.737419477] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280166.529165511] [bt_navigator]: Begin navigating from current location (10.13, -11.85) to (10.61, -13.59)
+[bt_navigator-10] [INFO] [1795280186.089565729] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280188.306917447] [bt_navigator]: Begin navigating from current location (10.51, -13.57) to (9.81, -15.69)
+[bt_navigator-10] [INFO] [1795280229.467365371] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280232.320897151] [bt_navigator]: Begin navigating from current location (9.71, -15.72) to (8.66, -13.99)
+[bt_navigator-10] [INFO] [1795280262.481312131] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280266.254310074] [bt_navigator]: Begin navigating from current location (8.64, -13.90) to (-0.39, -7.34)
+[bt_navigator-10] [INFO] [1795280355.815040517] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280358.105283497] [bt_navigator]: Begin navigating from current location (-0.33, -7.42) to (-0.39, -6.34)
+[bt_navigator-10] [INFO] [1795280372.215599137] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280374.595230543] [bt_navigator]: Begin navigating from current location (-0.30, -6.31) to (-0.39, -7.34)
+[bt_navigator-10] [INFO] [1795280388.755598407] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280390.891097732] [bt_navigator]: Begin navigating from current location (-0.31, -7.38) to (-0.39, -6.34)
+[bt_navigator-10] [INFO] [1795280405.751585428] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280408.151836887] [bt_navigator]: Begin navigating from current location (-0.30, -6.31) to (0.16, -15.69)
+[bt_navigator-10] [INFO] [1795280485.812194479] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280488.081849333] [bt_navigator]: Begin navigating from current location (0.22, -15.62) to (0.51, -15.69)
+[bt_navigator-10] [INFO] [1795280493.193036326] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280495.172051667] [bt_navigator]: Begin navigating from current location (0.41, -15.69) to (0.21, -12.74)
+[bt_navigator-10] [INFO] [1795280527.933302288] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280530.029057363] [bt_navigator]: Begin navigating from current location (0.27, -12.82) to (0.21, -13.14)
+[bt_navigator-10] [INFO] [1795280535.939380140] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280538.280893932] [bt_navigator]: Begin navigating from current location (0.20, -13.05) to (4.11, -11.64)
+[bt_navigator-10] [INFO] [1795280568.581325741] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280570.578202231] [bt_navigator]: Begin navigating from current location (4.17, -11.71) to (4.31, -11.39)
+[bt_navigator-10] [INFO] [1795280576.088632482] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280578.483336287] [bt_navigator]: Begin navigating from current location (4.24, -11.45) to (4.11, -13.29)
+[bt_navigator-10] [INFO] [1795280592.044095760] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280599.262482849] [bt_navigator]: Begin navigating from current location (4.13, -13.20) to (3.86, 1.11)
+[bt_navigator-10] [INFO] [1795280673.882977803] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280675.951666401] [bt_navigator]: Begin navigating from current location (3.92, 1.04) to (2.86, 1.11)
+[bt_navigator-10] [INFO] [1795280682.902499974] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280685.319643517] [bt_navigator]: Begin navigating from current location (2.92, 1.18) to (-0.44, 1.31)
+[bt_navigator-10] [INFO] [1795280708.869958521] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280711.143246944] [bt_navigator]: Begin navigating from current location (-0.51, 1.25) to (-2.14, -0.49)
+[bt_navigator-10] [INFO] [1795280728.703605958] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280731.499578558] [bt_navigator]: Begin navigating from current location (-2.18, -0.40) to (-0.44, 1.31)
+[bt_navigator-10] [INFO] [1795280757.510011944] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280759.587720436] [bt_navigator]: Begin navigating from current location (-0.52, 1.26) to (2.86, 1.11)
+[bt_navigator-10] [INFO] [1795280783.998167835] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280786.247100070] [bt_navigator]: Begin navigating from current location (2.77, 1.07) to (3.86, 1.11)
+[bt_navigator-10] [INFO] [1795280793.857519130] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280796.247534955] [bt_navigator]: Begin navigating from current location (3.81, 1.19) to (4.36, 0.71)
+[bt_navigator-10] [INFO] [1795280800.707844402] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280803.007775625] [bt_navigator]: Begin navigating from current location (4.28, 0.77) to (4.36, 0.46)
+[bt_navigator-10] [INFO] [1795280806.368120334] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280808.722197905] [bt_navigator]: Begin navigating from current location (4.37, 0.55) to (-0.94, -3.74)
+[bt_navigator-10] [INFO] [1795280862.479556540] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280864.739262107] [bt_navigator]: Begin navigating from current location (-0.85, -3.77) to (-0.34, -3.24)
+[bt_navigator-10] [INFO] [1795280874.899652222] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280877.359006034] [bt_navigator]: Begin navigating from current location (-0.32, -3.33) to (-0.94, -3.74)
+[bt_navigator-10] [INFO] [1795280886.831182603] [bt_navigator]: Goal canceled
+[bt_navigator-10] [INFO] [1795280887.079292749] [bt_navigator]: Begin navigating from current location (-0.82, -3.78) to (-0.30, -0.00)
+[bt_navigator-10] [INFO] [1795280957.290462958] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795280969.863117938] [bt_navigator]: Begin navigating from current location (0.07, 0.02) to (-0.09, -0.02)
+[bt_navigator-10] [INFO] [1795280974.823480068] [bt_navigator]: Goal succeeded

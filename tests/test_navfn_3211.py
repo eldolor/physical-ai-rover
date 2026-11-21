@@ -50,3 +50,13 @@ def test_each_error_is_charged_to_one_call():
 def test_nav2_ships_dijkstra():
     found = re.findall(r"\n\s*use_astar:\s*(true|false)", NAV_YAML.read_text())
     assert found == ["false"]
+
+
+def test_the_live_run_meets_b2_b3():
+    import json
+    text = (HERE / "live-b-ros-excerpt.log").read_text()
+    assert "nav2 active" in text and "legal potential" not in text          # B2
+    find = next(json.loads(x) for x in (HERE / "live-b.jsonl").read_text().splitlines()
+                if json.loads(x).get("row") == "find")
+    assert find["contacts"] == 0 and find["outcome"] != "failed"           # B3
+    assert find["ret"]["state"] == "docked"
