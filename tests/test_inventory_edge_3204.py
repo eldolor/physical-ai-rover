@@ -130,3 +130,40 @@ def test_key_on_a_far_return_is_still_far():
         i.observe(MUG, _pose(), _scan(far))
         assert i.landmarks == [] and i.unplaced == 1
         assert captured == [[]]            # spares nothing, key on or off
+
+
+# ---------- the recorded sweeps (evaluations/phantom-landmark-3204/B/) ----------
+
+EVAL = Path(__file__).resolve().parents[1] / "evaluations" / "phantom-landmark-3204"
+
+
+def _score(name):
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("phantom_sweep_3204", EVAL / "sweep.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod.score(EVAL / name)
+
+
+def test_e5_key_off_is_a_row_for_row():
+    """E5: the key-off rows on seed 3462 are 3.204.A's dev rows, byte for byte."""
+    for arm in ("clean", "noisy"):
+        assert (EVAL / "B" / f"off-{arm}-3462.jsonl").read_bytes() == \
+            (EVAL / f"dev-{arm}.jsonl").read_bytes()
+
+
+# (gap, phantoms, phantoms reported, true carried, true reported, recall found of 894)
+TUNING = [(0.2, 4, 0, 1575, 1161, 850), (0.3, 4, 0, 1585, 1172, 850),
+          (0.5, 4, 0, 1595, 1176, 860), (0.8, 5, 0, 1593, 1189, 868)]
+
+
+@pytest.mark.parametrize("gap, ph, ph_rep, true, true_rep, found", TUNING)
+def test_tuning_seed_3462_as_recorded(gap, ph, ph_rep, true, true_rep, found):
+    """The tuning arms (clean, seed 3462): phantoms fall from 50 to 4-5 at
+    every gap, but recall (found of 894) stays under E2's 0.979 at every one:
+    tuning FAILED as the bars wrote it."""
+    s = _score(f"B/tune-clean-edge{gap}.jsonl")
+    assert (s["phantoms"], s["phantoms_reported"], s["true_carried"], s["true_reported"],
+            s["found"], s["seen"]) == (ph, ph_rep, true, true_rep, found, 894)
+    off = _score("dev-clean.jsonl")
+    assert off["recall_mean"] - s["recall_mean"] > 0.01          # E2 fails
