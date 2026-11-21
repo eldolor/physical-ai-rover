@@ -3,7 +3,7 @@
 """3.200.C's recorded sweeps, pinned (CLAUDE.md 7.3): the comparison over the
 committed rows gives the numbers and verdicts the plan file records
 (docs/plans/ros-alignment/3.200-recall-other-side.md, "3.200.C results"). R1
-did not ship; its code and unit tests live at `9648d570`."""
+did not ship; its code and unit tests live at `fa85662e`."""
 
 import contextlib
 import importlib.util
