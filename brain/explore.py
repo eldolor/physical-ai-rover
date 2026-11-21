@@ -95,6 +95,7 @@ LOOK_AROUND = ("LOOK_LEFT", "LOOK_RIGHT", "LOOK_CENTER")
 # A goal that fails with the robot no further than this from where it was
 # sent is the ROBOT's problem (wedged in furniture), not the place's.
 STUCK_MOVED_M = 0.15
+NEAR_ZONE_M = 0.5               # 3.196 D2: an unmoved abort this near a zone is charged at once (3.192 F10)
 # 3.83: a goal during which the robot has moved less than STALL_M over the
 # last STALL_S is ended as `stalled` and backed out of. Wedged under the
 # dining table, every goal ran its full GOAL_TIMEOUT_S: 14 in a row, 28 min.
@@ -894,6 +895,10 @@ class ExploreAgent(MissionAgent):
         if self._masked is not None and self._masked[:4] == key and m.get("map_version") is not None:
             return self._masked[5]
         out = nogo.masked_map(m, zones, nogo.CELL_NOGO, grow=nogo.HALF_WIDTH_M)
+        # 3.196 D1: and no diagonal step past a zone's corner (a gap of no
+        # width: val:15's reach went round a zone that filled the only door).
+        out = nogo.close_pinches(out, zones, nogo.CELL_NOGO, free=CELL_FREE,
+                                  occupied=CELL_OCCUPIED, floor=m)
         if out is m:
             out = dict(m)
         out["nogo_rev"] = self._zones_rev
@@ -2022,6 +2027,11 @@ class ExploreAgent(MissionAgent):
             left = (g.get("from") is not None and pose.get("usable") and math.hypot(
                 pose["x_m"] - g["from"][0], pose["y_m"] - g["from"][1]) >= STUCK_MOVED_M)
             again = again or (state == "stalled" and left)
+            # 3.196 D2: refused at once beside a zone, unmoved, is the place
+            # the navigator cannot plan to (val:15: three places round one
+            # zone, each forgiven once as a wedge), not a wedge.
+            again = again or (state in ("aborted", "rejected") and not left
+                              and self._near_zone(g["x_m"], g["y_m"], pose))
             self._wedged.append(target)
             if g["kind"] == "approach":
                 self._approach = None
@@ -2044,6 +2054,17 @@ class ExploreAgent(MissionAgent):
             self._approach = None
         self.last_event = f"{g['kind']} goal {state}; set aside (failure {n})"
         logger.info(self.last_event)
+
+    def _near_zone(self, x_m: float, y_m: float, pose: dict) -> bool:
+        """3.196 D2: within `NEAR_ZONE_M` of a zone (3.192 F10's distance),
+        leaving out a zone the robot itself stands in (grown by the
+        half-width): that one is suspended, not a wall (review)."""
+        zones = getattr(self, "zones", None)
+        if not zones:
+            return False
+        here = ((pose["x_m"], pose["y_m"]) if pose.get("usable") else None)
+        return any(nogo.distance(z, x_m, y_m) <= NEAR_ZONE_M for z in zones
+                   if here is None or nogo.distance(z, *here) > nogo.HALF_WIDTH_M)
 
     def _room_failed(self, g: dict) -> None:
         """A room goal's failure counts against the room only when it counts

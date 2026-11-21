@@ -1,0 +1,2 @@
+image vision-picar-ros:plan-3.195 sha256:45afe89a44f62d29db31938782a29d76d963810a8fa81cdeaf34382bbf98890d
+built from amendment 3's code (sha256 of git diff -- service/slam, first 16: 5d3e6f1b17215f1c), committed as the 3.195.B code commit

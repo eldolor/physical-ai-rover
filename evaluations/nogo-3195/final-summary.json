@@ -1,0 +1,73 @@
+{
+ "summary": {
+  "runs": 1,
+  "invalid_runs": [],
+  "C1_entries": 0,
+  "C2_closest_true_m": [
+   0.038
+  ],
+  "C2_min_m": 0.038,
+  "C3_found": 1,
+  "C3_median_s": 75.9,
+  "C3_goals_in_zone": 0,
+  "C3_docked": 1,
+  "C4_both_events": 1,
+  "C4_restore_clear_m": [
+   0.318
+  ],
+  "C5_left_after_s": [
+   2.08
+  ],
+  "C5_final": [
+   "cancelled"
+  ],
+  "slam_closest_m": [
+   0.0237
+  ],
+  "C10_mission_suspensions": [
+   0
+  ],
+  "C10_mission_zone_log": [
+   []
+  ],
+  "peak_load": 4.68
+ },
+ "runs": [
+  {
+   "run": "final-1.json",
+   "valid": true,
+   "outcome": "found",
+   "seconds": 75.9,
+   "goals_sent": 3,
+   "goals_in_zone": 0,
+   "docked": true,
+   "peak_load": 4.68,
+   "samples": 286,
+   "entries": 0,
+   "closest_true_m": 0.038,
+   "slam_d_at_closest_m": 0.0237,
+   "closest_at": [
+    4.9397,
+    1.348
+   ],
+   "closest_t_s": 47.7,
+   "slam_closest_m": 0.0237,
+   "slam_closest_at": [
+    4.9312,
+    1.3623
+   ],
+   "offset_toward_zone_median_m": 0.0143,
+   "offset_median_m": 0.009847842403288143,
+   "offset_max_m": 0.024520399670478456,
+   "z3_seen_suspended": true,
+   "z3_restored_after_s": 4.68,
+   "z3_restore_clear_m": 0.318,
+   "z3_left_after_s": 2.08,
+   "z3_final": "cancelled",
+   "z3_ended": null,
+   "z3_bridge_log": 2,
+   "mission_suspensions": 0,
+   "mission_zone_log": []
+  }
+ ]
+}

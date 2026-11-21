@@ -1,0 +1,2 @@
+image vision-picar-ros:plan-3.195 sha256:afa733f4ca0cae63b6e37e2cb62b48eb3f31549e51a6c08d74ed2028d7402e11
+built from this branch's working tree (5f94bc64 + the rounded-margin diff, sha256 of git diff -- service/slam first 16: 1a8305a4c27fb3d6), committed as the 3.195.B code commit
