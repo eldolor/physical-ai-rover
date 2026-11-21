@@ -186,14 +186,15 @@ def test_n8_the_live_find_scores_as_the_plan_records():
     # Run 2 (on an idle container): outcomes held, but the load went over 4,
     # so N8 is recorded INVALID (load), not met (the orchestrator's rule).
     s = mod.score(EVAL / "live.jsonl")
-    assert s["valid"] and all(s["preconditions"].values())
+    assert all(s["preconditions"].values()) and s["valid"] is False
     assert s["N8"] == {"outcome": "found", "found_m": 0.878, "contacts": 0, "wrong_found": False,
-                       "resight": 0, "met": True}
+                       "resight": 0, "met": False, "verdict": "INVALID (load)"}
     assert s["beside"]["target"] == "guitar" and s["beside"]["goals"] == 33
     assert (s["load_max"], s["load_ok"]) == (5.96, False)
     # Run 1, set aside for its load (6.4).
     s1 = mod.score(EVAL / "live-1-invalid-load.jsonl")
     assert s1["N8"]["found_m"] == 0.842 and s1["N8"]["contacts"] == 0
+    assert s1["N8"]["verdict"] == "INVALID (load)" and s1["N8"]["met"] is False
     assert (s1["load_max"], s1["load_ok"]) == (6.4, False)
 
 

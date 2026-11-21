@@ -62,14 +62,19 @@ def score(path=ROWS):
            and (f.get("saved_map") or {}).get("reloaded") is True,
            "no_recall": f.get("recall_goals") == 0}
     wrong = f.get("outcome") == "found" and (f.get("found_m") is None or f["found_m"] > FOUND_M)
-    loads = [r.get("load") or {} for r in rows if r.get("row") in ("survey", "reload", "find")]
-    load_max = max((ld.get("max") or 0.0 for ld in loads), default=None)
-    # The orchestrator, 2026-11-21: a live run above ~4 (CLAUDE.md 6, 3.79) is invalid, not met.
-    return {"preconditions": pre, "valid": all(pre.values()), "load_max": load_max,
-            "load_ok": load_max is not None and load_max <= 4.0,
+    # The orchestrator, 2026-11-21: a live run above ~4 (CLAUDE.md 6, 3.79) is
+    # invalid, not met. Review: every part must carry its load; none missing reads 0.
+    loads = [(r.get("load") or {}).get("max") for r in (s1, s2, f)]
+    load_max = None if any(v is None for v in loads) else max(loads)
+    load_ok = load_max is not None and load_max <= 4.0
+    met = all(pre.values()) and f.get("contacts") == 0 and not wrong
+    return {"preconditions": pre, "valid": all(pre.values()) and load_ok, "load_max": load_max,
+            "load_ok": load_ok,
             "N8": {"outcome": f.get("outcome"), "found_m": f.get("found_m"), "contacts": f.get("contacts"),
                    "wrong_found": wrong, "resight": f.get("resight"),
-                   "met": all(pre.values()) and f.get("contacts") == 0 and not wrong},
+                   "met": met and load_ok,
+                   "verdict": ("MET" if met else "FAILED") if load_ok and all(pre.values()) else
+                              "INVALID (load)" if all(pre.values()) else "INVALID"},
             "beside": {k: f.get(k) for k in ("target", "seconds", "mission_s", "goals", "goal_kinds",
                                              "distance_m", "min_gap_cm", "ret", "end_reason", "load_max")},
             "survey": {k: s1.get(k) for k in ("outcome", "seconds", "reported", "map_id")}}
