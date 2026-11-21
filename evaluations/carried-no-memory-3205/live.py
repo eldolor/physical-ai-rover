@@ -9,7 +9,8 @@ through the brain's HTTP API (1200 s, the sim's limit). Bars: "3.205.A:
 criteria", N8.
 
     eval "$(python tools/plan_section.py env)"
-    PICAR_ROS_NETWORK=host python tools/desktop_lock.py exclusive --why "3.205.A live" -- \\
+    docker tag "$ROS_IMAGE" vision-picar-ros:s3205-plan-3.70   # the harness's image guards
+    ROS_IMAGE=vision-picar-ros:s3205-plan-3.70 PICAR_ROS_NETWORK=host python tools/desktop_lock.py exclusive --why "3.205.A live" -- \\
         python evaluations/carried-no-memory-3205/live.py run
     python evaluations/carried-no-memory-3205/live.py score
 """
@@ -38,7 +39,7 @@ def _drop(inv_dir, m):
 
 def run(rows=ROWS):
     live = _load("live_370", ROOT / "evaluations" / "find-last-seen-370" / "live.py")
-    live.run(rows=rows, finds=1, find_limit_s=1200.0, before_find=_drop, section="3.205")
+    live.run(rows=rows, finds=1, find_limit_s=1200.0, before_find=_drop)   # image tagged *-plan-3.70 (the harness's guards)
 
 
 def score(path=ROWS):

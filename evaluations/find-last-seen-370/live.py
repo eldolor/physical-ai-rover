@@ -144,16 +144,15 @@ def score(path=ROWS):
 # ---------------------------------------------------------------- the run
 
 
-def run(rows=ROWS, finds=FINDS, find_limit_s=FIND_LIMIT_S, move=None, before_find=None,
-        section="3.70"):
+def run(rows=ROWS, finds=FINDS, find_limit_s=FIND_LIMIT_S, move=None, before_find=None):
     """M2's live half; 3.70.M3 reuses it with its own `rows`, one find, its
     limit, and `move(m, truth)` -> {"p0", "p1"} cells: X moved through the
     robot server's `/sim/objects/move` after the inventory is put back and
     before the find starts (None: nothing moved, M2's run). 3.205.A:
     `before_find(inv_dir, m)` -> dict, run right after the inventory is put
     back (it drops X's rows), its answer kept in the find's row as
-    `before_find`; `section`, the plan section whose image runs."""
-    assert os.environ.get("ROS_IMAGE", "").endswith(f"plan-{section}"), "run with this branch's env"
+    `before_find`."""
+    assert os.environ.get("ROS_IMAGE", "").endswith("plan-3.70"), "run with this branch's env"
     rows = Path(rows)
     wall_s = find_limit_s + 600
     if rows.exists():
