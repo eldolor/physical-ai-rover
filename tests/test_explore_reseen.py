@@ -202,3 +202,48 @@ def test_a_place_with_no_floor_beside_it_does_not_hold_the_round():
     agent._note_seen_at(9.0, 9.0)
     assert agent._choose_next(0.0)[0] == "STOP"            # none reachable: no round spent
     assert agent._reseen == 0
+
+
+# ---------- amendment 3's sweep, pinned (evaluations/nogo-3192/fix/summary.json) ----------
+
+def _summary():
+    import json
+    return json.loads((ROOT / "evaluations" / "nogo-3192" / "fix" / "summary.json").read_text())
+
+
+def test_f1_rule_met_with_c1_90_of_96_each_arm():
+    f = _summary()["F1_rule"]
+    assert (f["found_zones"], f["found_none"]) == (90, 90) and f["lost"] == [] == f["gained"]
+    assert (f["median_zones_s"], f["median_none_s"]) == (131.4, 130.6) and f["time_met"]
+    d = _summary()["F1_rule_dev"]
+    assert (d["found_zones"], d["found_none"]) == (86, 87)          # dev's control, as re-measured
+
+
+def test_f1_prime_rooms_still_failed_on_time():
+    f = _summary()["F1_rooms"]
+    assert (f["found_zones"], f["found_none"]) == (89, 87)
+    assert f["lost"] == ["procthor:val:26 s0"]
+    assert f["gained"] == ["procthor:val:44 s0", "procthor:val:44 s1", "procthor:val:44 s2"]
+    assert (f["median_zones_s"], f["median_none_s"], f["time_ratio"]) == (127.0, 109.2, 1.163)
+    assert not f["rate_met"] and not f["time_met"]
+    d = _summary()["F1_rooms_dev"]
+    assert (d["found_zones"], d["found_none"], d["time_ratio"]) == (81, 81, 1.0508)
+
+
+def test_c2_to_c8_met():
+    s = _summary()
+    assert s["C2"]["met"] and len(s["C2"]["changed"]) == 25
+    assert all(c["dev"] == "exhausted" for c in s["C2"]["changed"])
+    assert sum(c["branch"] == "found" for c in s["C2"]["changed"]) == 21
+    assert s["C3_rule"] == {"rows": 24, "identical": 24} == s["C3_rooms"]
+    assert s["C4"]["arms"] == {"rule_zones": {"branch": 90, "dev": 86},
+                               "rule_none": {"branch": 90, "dev": 87},
+                               "rooms_zones": {"branch": 89, "dev": 81},
+                               "rooms_none": {"branch": 87, "dev": 81}}
+    assert s["C5"] == {"goals_in_zone": 0, "goals_in_grown": 0, "entries": 0, "met": True}
+    assert s["C6"]["most_near_one_zone"] == 0
+    assert (s["C7"]["most_rounds"], s["C7"]["most_places"]) == (2, 6)
+    for k in ("C8_M3", "C8_M2"):
+        assert s[k]["met"] and s[k]["changed"] == []
+        assert s[k]["found_branch_vs_dev"] == {"surveyed": {"branch": 20, "dev": 20},
+                                               "unsurveyed": {"branch": 20, "dev": 20}}

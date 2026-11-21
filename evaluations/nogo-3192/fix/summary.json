@@ -1,0 +1,398 @@
+{
+ "F1_rule": {
+  "found_zones": 90,
+  "found_none": 90,
+  "median_zones_s": 131.4,
+  "median_none_s": 130.6,
+  "time_ratio": 1.0061,
+  "lost": [],
+  "gained": [],
+  "rate_met": true,
+  "time_met": true
+ },
+ "F1_rule_dev": {
+  "found_zones": 86,
+  "found_none": 87,
+  "median_zones_s": 130.7,
+  "median_none_s": 130.7,
+  "time_ratio": 1.0,
+  "lost": [
+   "procthor:val:26 s0",
+   "procthor:val:39 s0",
+   "procthor:val:44 s1"
+  ],
+  "gained": [
+   "scaled_house s1",
+   "scaled_house s2"
+  ],
+  "rate_met": false,
+  "time_met": true
+ },
+ "C3_rule": {
+  "rows": 24,
+  "identical": 24
+ },
+ "F1_rooms": {
+  "found_zones": 89,
+  "found_none": 87,
+  "median_zones_s": 127.0,
+  "median_none_s": 109.2,
+  "time_ratio": 1.163,
+  "lost": [
+   "procthor:val:26 s0"
+  ],
+  "gained": [
+   "procthor:val:44 s0",
+   "procthor:val:44 s1",
+   "procthor:val:44 s2"
+  ],
+  "rate_met": false,
+  "time_met": false
+ },
+ "F1_rooms_dev": {
+  "found_zones": 81,
+  "found_none": 81,
+  "median_zones_s": 111.7,
+  "median_none_s": 106.3,
+  "time_ratio": 1.0508,
+  "lost": [
+   "procthor:val:39 s0",
+   "procthor:val:39 s2",
+   "procthor:val:53 s1"
+  ],
+  "gained": [
+   "procthor:val:3 s0",
+   "procthor:val:44 s0",
+   "procthor:val:44 s1"
+  ],
+  "rate_met": true,
+  "time_met": false
+ },
+ "C3_rooms": {
+  "rows": 24,
+  "identical": 24
+ },
+ "C2": {
+  "changed": [
+   {
+    "mission": "scaled_house s0",
+    "arm": "zones",
+    "chooser": "rule",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 26.0,
+    "reseen": 1,
+    "places": 2
+   },
+   {
+    "mission": "scaled_house s0",
+    "arm": "none",
+    "chooser": "rule",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 17.0,
+    "reseen": 1,
+    "places": 2
+   },
+   {
+    "mission": "scaled_house s1",
+    "arm": "none",
+    "chooser": "rule",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 17.0,
+    "reseen": 1,
+    "places": 2
+   },
+   {
+    "mission": "scaled_house s2",
+    "arm": "none",
+    "chooser": "rule",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 17.0,
+    "reseen": 1,
+    "places": 2
+   },
+   {
+    "mission": "procthor:val:26 s0",
+    "arm": "zones",
+    "chooser": "rule",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 65.1,
+    "reseen": 1,
+    "places": 3
+   },
+   {
+    "mission": "procthor:val:39 s0",
+    "arm": "zones",
+    "chooser": "rule",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 97.2,
+    "reseen": 1,
+    "places": 3
+   },
+   {
+    "mission": "procthor:val:44 s1",
+    "arm": "zones",
+    "chooser": "rule",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 155.5,
+    "reseen": 2,
+    "places": 6
+   },
+   {
+    "mission": "procthor:val:3 s0",
+    "arm": "none",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 99.1,
+    "reseen": 1,
+    "places": 3
+   },
+   {
+    "mission": "procthor:val:3 s1",
+    "arm": "zones",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 27.8,
+    "reseen": 1,
+    "places": 3
+   },
+   {
+    "mission": "procthor:val:3 s1",
+    "arm": "none",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 99.1,
+    "reseen": 1,
+    "places": 3
+   },
+   {
+    "mission": "procthor:val:3 s2",
+    "arm": "zones",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 27.9,
+    "reseen": 1,
+    "places": 3
+   },
+   {
+    "mission": "procthor:val:3 s2",
+    "arm": "none",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 99.1,
+    "reseen": 1,
+    "places": 3
+   },
+   {
+    "mission": "procthor:val:26 s0",
+    "arm": "zones",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "exhausted",
+    "extra_s": 106.3,
+    "reseen": 2,
+    "places": 6
+   },
+   {
+    "mission": "procthor:val:26 s0",
+    "arm": "none",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 65.1,
+    "reseen": 1,
+    "places": 3
+   },
+   {
+    "mission": "procthor:val:26 s1",
+    "arm": "zones",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 65.1,
+    "reseen": 1,
+    "places": 3
+   },
+   {
+    "mission": "procthor:val:26 s1",
+    "arm": "none",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 65.1,
+    "reseen": 1,
+    "places": 3
+   },
+   {
+    "mission": "procthor:val:26 s2",
+    "arm": "zones",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 66.3,
+    "reseen": 1,
+    "places": 3
+   },
+   {
+    "mission": "procthor:val:26 s2",
+    "arm": "none",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 65.1,
+    "reseen": 1,
+    "places": 3
+   },
+   {
+    "mission": "procthor:val:39 s0",
+    "arm": "zones",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 99.3,
+    "reseen": 1,
+    "places": 3
+   },
+   {
+    "mission": "procthor:val:39 s2",
+    "arm": "zones",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 106.8,
+    "reseen": 1,
+    "places": 3
+   },
+   {
+    "mission": "procthor:val:44 s0",
+    "arm": "none",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "exhausted",
+    "extra_s": 15.2,
+    "reseen": 1,
+    "places": 3
+   },
+   {
+    "mission": "procthor:val:44 s1",
+    "arm": "none",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "exhausted",
+    "extra_s": 15.2,
+    "reseen": 1,
+    "places": 3
+   },
+   {
+    "mission": "procthor:val:44 s2",
+    "arm": "zones",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 99.0,
+    "reseen": 2,
+    "places": 6
+   },
+   {
+    "mission": "procthor:val:44 s2",
+    "arm": "none",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "exhausted",
+    "extra_s": 15.2,
+    "reseen": 1,
+    "places": 3
+   },
+   {
+    "mission": "procthor:val:53 s1",
+    "arm": "zones",
+    "chooser": "rooms",
+    "dev": "exhausted",
+    "branch": "found",
+    "extra_s": 35.8,
+    "reseen": 1,
+    "places": 3
+   }
+  ],
+  "changed_not_exhausted_on_dev": [],
+  "met": true
+ },
+ "C3_met": true,
+ "C4": {
+  "arms": {
+   "rule_zones": {
+    "branch": 90,
+    "dev": 86
+   },
+   "rule_none": {
+    "branch": 90,
+    "dev": 87
+   },
+   "rooms_zones": {
+    "branch": 89,
+    "dev": 81
+   },
+   "rooms_none": {
+    "branch": 87,
+    "dev": 81
+   }
+  },
+  "met": true
+ },
+ "C5": {
+  "goals_in_zone": 0,
+  "goals_in_grown": 0,
+  "entries": 0,
+  "met": true
+ },
+ "C6": {
+  "most_near_one_zone": 0,
+  "met": true
+ },
+ "C7": {
+  "most_rounds": 2,
+  "most_places": 6,
+  "met": true
+ },
+ "C8_M3": {
+  "found_branch_vs_dev": {
+   "surveyed": {
+    "branch": 20,
+    "dev": 20
+   },
+   "unsurveyed": {
+    "branch": 20,
+    "dev": 20
+   }
+  },
+  "changed": [],
+  "changed_not_exhausted_on_dev": [],
+  "met": true
+ },
+ "C8_M2": {
+  "found_branch_vs_dev": {
+   "surveyed": {
+    "branch": 20,
+    "dev": 20
+   },
+   "unsurveyed": {
+    "branch": 20,
+    "dev": 20
+   }
+  },
+  "changed": [],
+  "changed_not_exhausted_on_dev": [],
+  "met": true
+ }
+}
