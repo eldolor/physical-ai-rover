@@ -10,7 +10,8 @@ harness, 3.192's chooser and goal ends, C1's round count).
 Read only, for the go's sizing of the false short-range sightings: every
 approach explore sends is recorded with its sighting's distance from the
 target's true cell (`err_m`) and whether a live approach goal was replaced by
-it (`replaced`, with the replaced one's `err_m`). Nothing else is changed.
+it (`replaced`, with the replaced goal's own `replaced_err_m`); only goals
+actually sent. Nothing else is changed.
 
     SWEEP_WORKERS=4 python evaluations/reseen-3210/broad.py OUT.json --chooser rooms|rule
 
@@ -42,12 +43,18 @@ def _setup(chooser):
     orig = ex.ExploreAgent._send_approach
 
     def _send_approach(self, tx, ty, now, scene=None):
-        if state["log"] is not None and state["truth"]:
-            err = min(math.hypot(tx - x, ty - y) for x, y in state["truth"])
-            live = self._goal if (self._goal or {}).get("kind") == "approach" else None
+        live = self._goal if (self._goal or {}).get("kind") == "approach" else None
+        out = orig(self, tx, ty, now, scene)
+        if state["log"] is not None and state["truth"] and out and out[0] == "GOAL":
+            # Review: only an approach goal actually sent; the replaced one is
+            # the approach goal that was live, its own sighting's error.
+            def err(p):
+                return round(min(math.hypot(p[0] - x, p[1] - y) for x, y in state["truth"]), 2)
+            was = (live or {}).get("target")
             state["log"].append({"t": round(now, 1), "at": [round(tx, 2), round(ty, 2)],
-                                 "err_m": round(err, 2), "replaced": live is not None})
-        return orig(self, tx, ty, now, scene)
+                                 "err_m": err((tx, ty)), "replaced": live is not None,
+                                 "replaced_err_m": err(was) if was else None})
+        return out
 
     ex.ExploreAgent._send_approach = _send_approach
     ex.ExploreAgent._broad3210 = True
@@ -62,10 +69,6 @@ def _setup(chooser):
             row = run_c1(house, seed, arm, **kw)
         finally:
             log, state["log"] = state["log"], None
-        prev = None
-        for a in log:                       # the replaced approach's own sighting error
-            a["replaced_err_m"] = prev["err_m"] if (a["replaced"] and prev) else None
-            prev = a
         row["approaches"] = log
         return row
 
