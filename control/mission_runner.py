@@ -1706,6 +1706,10 @@ class MissionRunner:
             # link's budget. After a find: what it saw stands.
             self._finish(FAILED, link_end)
             return False
+        if self._link_tally is not None and self._link_tally.unanswered:
+            # ...or it did not: paced like a failed tick, so reads that fail
+            # at once cannot run the count up in milliseconds (Thermos 4).
+            self.idle(LINK_RETRY_S)
         if self.room_labeller is not None and self.is_running():
             # The pose now, and -- only if it asks -- a frame taken now: the
             # step's own frame was taken before its move. A label is never
