@@ -29,6 +29,7 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+HERE = Path(__file__).resolve().parent
 PROBE = ROOT / "service" / "slam" / "probe" / "navfn_probe.py"
 NAV_YAML = ROOT / "service" / "slam" / "src" / "picar_bringup" / "config" / "nav2.yaml"
 HOUSE = "complex_house"
@@ -67,11 +68,18 @@ def arm(name, maps, out):
     import httpx
     assert name in ("astar", "dijkstra")
     assert os.environ.get("ROS_IMAGE", "").endswith("plan-3.211"), "run with this branch's env"
+    # The defaults are explore's shared names: never `docker rm -f` another
+    # session's container or take its ports (review).
+    for k in ("PICAR_ROS_CONTAINER", "PICAR_ROBOT_PORT", "PICAR_BRIDGE_PORT"):
+        assert os.environ.get(k), f"{k} unset: eval \"$(python tools/plan_section.py env)\" first"
     out = Path(out)
+    if out.resolve() == HERE.resolve():
+        raise SystemExit("OUT_DIR is the committed records' directory: run into a scratch directory")
     out.mkdir(parents=True, exist_ok=True)
+    for f in (f"rows-{name}.jsonl", f"ros-{name}.log", f"meta-{name}.json"):
+        if (out / f).exists():
+            raise SystemExit(f"{out / f} exists: never overwritten")
     rows = out / f"rows-{name}.jsonl"
-    if rows.exists():
-        raise SystemExit(f"{rows} exists: never overwritten")
     subprocess.run(["docker", "rm", "-f", CONTAINER], capture_output=True)
     env = {k: v for k, v in os.environ.items() if k not in ("APP_SHARED_SECRET", "LOCAL_SECRET")}
     env.update(SIM_MAP=HOUSE, ROBOT_DRIVE="ros", WORLD_MODE="ros",
