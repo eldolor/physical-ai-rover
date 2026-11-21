@@ -228,3 +228,25 @@ def test_planted_wrong_found_is_caught(tmp_path):
     assert not res["c4"]["met"]
     res_ok = score.score(_run_dir(tmp_path, [near]))
     assert res_ok["c4"]["wrong_found"] == [] and res_ok["c4"]["rate"] == 1.0
+
+
+def test_k7_failed_by_a_designed_guard_passes_and_by_anything_else_fails():
+    f = {"kind": "K7", "fault_at": 10.0, "cleared_at": 50.0, "mission": "m1"}
+    budget = {"m1": {"t1": 50.0, "outcome": "failed",
+                     "end_reason": "camera unavailable 3 times in a row: GET /frame failed"}}
+    assert score.judge_fault(f, score.fault_measures(f, _truth(0, 60, 0), budget), CFG)["pass"]
+    crash = {"m1": {"t1": 50.0, "outcome": "failed", "end_reason": "KeyError: 'scan'"}}
+    assert not score.judge_fault(f, score.fault_measures(f, _truth(0, 60, 0), crash), CFG)["pass"]
+
+
+def test_k11_that_ended_before_its_first_step_is_invalid():
+    f = {"kind": "K11", "fault_at": 10.0, "cleared_at": 12.0, "mission": "m1",
+         "ended_before_step1": True}
+    ms = score.fault_measures(f, _truth(0, 30, 0), {"m1": {"t1": 12.0, "outcome": "failed"}})
+    v = score.judge_fault(f, ms, CFG)
+    assert v["valid"] is False and not v["pass"]
+
+
+def test_an_errored_fault_fails():
+    v = score.judge_fault({"kind": "K1", "errored": "URLError: timed out"}, {}, CFG)
+    assert not v["pass"] and "errored" in v["reasons"][0]

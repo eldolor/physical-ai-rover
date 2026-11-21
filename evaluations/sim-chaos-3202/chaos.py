@@ -59,7 +59,7 @@ MID_MOVE = ("K1", "K2", "K3", "K4", "K5", "K6")
 WHOLE = ("K7", "K8", "K9", "K10", "K11")
 KINDS = MID_MOVE + WHOLE
 TARGET = "red backpack"
-MISSION_LIMIT_S = 600.0       # criterion 4(c)
+MISSION_LIMIT_S = 1260.0      # criterion 4(c), amendment 1: the brain's own 1200 s limit + 60 s
 RECOVERY_BAR_S = 90.0         # criterion 3 (judged in score.py; the wait runs a little past it)
 FIRE_TRIES = 10               # criterion 1: a FORWARD that lasts 0.15 s, in 10 tries
 HOLD_S = {"K2": 30.0, "K4": 10.0, "K5": 5.0, "K6": 10.0}
@@ -106,14 +106,18 @@ class RssSampler:
 
     def _run(self) -> None:
         while not self._stop.is_set():
-            roles = {r: p.pid for r, p in list(self.st.procs.items()) if p.poll() is None}
-            roles.update({r: p.pid for r, p in self.extra.items() if p.poll() is None})
-            try:
-                oom = next(int(l.split()[1]) for l in open("/proc/vmstat") if l.startswith("oom_kill "))
-            except (OSError, StopIteration):
-                oom = None
-            self.out.write({"t": round(now(), 3), "mission": self.mission, "oom_kill": oom,
-                            "rss": {r: [pid, self.rss_kb(pid)] for r, pid in roles.items()}})
+            try:                       # the main thread changes both dicts: copy, and never die
+                roles = {r: p.pid for r, p in list(self.st.procs.items()) if p.poll() is None}
+                roles.update({r: p.pid for r, p in list(self.extra.items()) if p.poll() is None})
+                try:
+                    oom = next(int(l.split()[1]) for l in open("/proc/vmstat")
+                               if l.startswith("oom_kill "))
+                except (OSError, StopIteration):
+                    oom = None
+                self.out.write({"t": round(now(), 3), "mission": self.mission, "oom_kill": oom,
+                                "rss": {r: [pid, self.rss_kb(pid)] for r, pid in roles.items()}})
+            except Exception as e:     # noqa: BLE001 -- a missed sample, recorded
+                self.out.write({"t": round(now(), 3), "sampler_error": f"{type(e).__name__}: {e}"})
             self._stop.wait(self.period)
 
     def start(self) -> "RssSampler":
@@ -198,8 +202,15 @@ class Chaos:
         code, got = self.st.brain("POST", "/mission/start", body, timeout=30)
         if code != 200:
             raise StackError(f"mission start: {code} {str(got)[:300]}")
-        s = status(self.st)
-        rec = {"id": s.get("mission_id"), "policy": policy, "t0": round(t0, 3),
+        mid = (got.get("status") or {}).get("mission_id") if isinstance(got, dict) else None
+        end = now() + 30
+        while mid is None and now() < end:      # the start answer should name it; else ask
+            mid = status(self.st).get("mission_id")
+            if mid is None:
+                time.sleep(0.5)
+        if mid is None:
+            raise StackError("the started mission has no mission_id after 30 s")
+        rec = {"id": mid, "policy": policy, "t0": round(t0, 3),
                "tags": list(tags or []), "house": self.house}
         self.cur = rec
         if self.sampler:
@@ -228,13 +239,14 @@ class Chaos:
             return None
         s = status(self.st)
         if s.get("mission_id") not in (None, self.cur["id"]):
+            self.stop_mission()
             return {"outcome": "lost", "error": f"status names mission {s.get('mission_id')}"}
         if s.get("running") is False and s.get("outcome") not in (None, "idle", "running"):
             return s
         if now() - self.cur["t0"] > MISSION_LIMIT_S:
             self.cur["hung"] = True
             self.stop_mission()
-            return {**status(self.st), "outcome_before_stop": s.get("outcome")}
+            return {**status(self.st), "outcome_before_stop": s.get("outcome"), "hung": True}
         return None
 
     def wait_mission(self, limit_s: float = MISSION_LIMIT_S + 60) -> dict:
@@ -294,7 +306,7 @@ class Chaos:
             except StackError:
                 s = self.poll_end()
                 if s is not None:
-                    self.end_mission(s, "natural")
+                    self.end_mission(s, "hung" if s.get("hung") else "natural")
                 continue
             time.sleep(0.15)
             n = self.st.now()
@@ -352,8 +364,15 @@ class Chaos:
 
     def run_whole(self, kind: str) -> dict:
         """A fault that spans one whole mission (K7-K11)."""
-        if self.cur is not None:                     # let the running mission end first
-            self.end_mission(self.wait_mission(), "natural")
+        if self.cur is not None:                     # amendment 1: preempted, not waited for
+            s0 = self.poll_end()
+            if s0 is None:
+                self.cur.setdefault("tags", []).append("preempted")
+                self.stop_mission()
+                s0 = status(self.st)
+                self.end_mission(s0, "preempted")
+            else:
+                self.end_mission(s0, "hung" if s0.get("hung") else "natural")
         frec = {"kind": kind}
         policy, fault = "frontier", ""
         if kind == "K7":
@@ -381,8 +400,11 @@ class Chaos:
             end = now() + 60
             while now() < end:
                 st = status(self.st)
-                if (st.get("step") or 0) >= 1 or not st.get("running"):
+                if (st.get("step") or 0) >= 1:
                     frec["step1_at"] = round(now(), 4)
+                    break
+                if st.get("running") is False:      # ended before its first step: invalid
+                    frec["ended_before_step1"] = True
                     break
                 time.sleep(0.1)
         s = self.wait_mission()
@@ -393,7 +415,7 @@ class Chaos:
         frec["health_after"] = _health_counts(robot_health(self.st))
         frec["status_after"] = {k: s.get(k) for k in ("running", "outcome", "end_state", "end_reason",
                                                       "mission_id", "error")}
-        self.end_mission(s, "natural" if not s.get("outcome_before_stop") else "hung")
+        self.end_mission(s, "hung" if s.get("hung") else "natural")
         # The recovery for a whole-mission fault: the next mission drives.
         try:
             self.st.robot("POST", "/autonomy/resume", {})
@@ -404,6 +426,31 @@ class Chaos:
         except Exception as e:                       # noqa: BLE001
             frec["recovery_error"] = f"{type(e).__name__}: {e}"
         return frec
+
+    def _settle(self) -> None:
+        """After a harness error: links clear, stubs gone, dead roles back,
+        no mission running -- so the next draw starts from a known state."""
+        for step in (self.proxy_clear, lambda: self._stop_extra("stub")):
+            try:
+                step()
+            except Exception as e:          # noqa: BLE001
+                self.note("settle_error", error=f"{type(e).__name__}: {e}")
+        try:
+            for role, starter in (("robot", self.st.start_robot), ("brain", self.st.start_brain)):
+                if not self.st.alive(role):
+                    starter()
+                    self.note("settle_restart", role=role)
+            if self.st.alive("lidar"):
+                self.st.signal("lidar", signal.SIGCONT)
+            if self.st.alive("brain"):
+                self.st.signal("brain", signal.SIGCONT)
+            if self.cur is not None:
+                self.stop_mission()
+                self.end_mission(status(self.st), "harness_error")
+        except Exception as e:              # noqa: BLE001
+            self.note("settle_error", error=f"{type(e).__name__}: {e}")
+            self.cur = None
+        time.sleep(5.0)
 
     # ------------------------------------------------------------------ run
 
@@ -445,10 +492,12 @@ class Chaos:
             while self.fired < self.n_faults and now() - t_start < self.hard_cap_s:
                 if now() >= due:
                     self.note("fault_due", kind=kind)
-                    if kind in MID_MOVE:
-                        frec = self.fire_mid_move(kind)
-                    else:
-                        frec = self.run_whole(kind)
+                    try:
+                        frec = self.fire_mid_move(kind) if kind in MID_MOVE else self.run_whole(kind)
+                    except Exception as e:           # noqa: BLE001 -- the fault errors; the soak goes on
+                        frec = {"kind": kind, "errored": f"{type(e).__name__}: {e}"}
+                        self.note("fault_error", kind=kind, error=frec["errored"])
+                        self._settle()
                     if frec is None:
                         self.unfired += 1
                         self.faults.write({"kind": kind, "unfired": True, "t": round(now(), 3)})
@@ -463,14 +512,20 @@ class Chaos:
                     kind = self.rng.choice(self.kinds)
                     continue
                 if self.cur is None:
-                    self.start_mission("frontier")
+                    try:
+                        self.start_mission("frontier")
+                    except Exception as e:           # noqa: BLE001 -- recorded; settle and retry
+                        self.note("start_error", error=f"{type(e).__name__}: {e}")
+                        self._settle()
+                        continue
                 s = self.poll_end()
                 if s is not None:
-                    self.end_mission(s, "hung" if s.get("outcome_before_stop") else "natural")
+                    self.end_mission(s, "hung" if s.get("hung") else "natural")
                     continue
                 time.sleep(1.0)
             if self.cur is not None:                 # the last mission runs to its end
-                self.end_mission(self.wait_mission(), "natural")
+                s = self.wait_mission()
+                self.end_mission(s, "hung" if s.get("hung") else "natural")
             end = {"ended": time.strftime("%Y-%m-%dT%H:%M:%S%z"), "t_end": round(now(), 3),
                    "fired": self.fired, "unfired": self.unfired,
                    "alive": {r: self.st.alive(r) for r in self.st.procs},
