@@ -1,0 +1,174 @@
+[
+ {
+  "run": "A_two_resets",
+  "plan": {
+   "resets": {
+    "5": "before",
+    "12": "after"
+   }
+  },
+  "outcome": "found",
+  "end_reason": "Hallway, living room searched. Found.",
+  "steps": 60,
+  "wall_s": 55.2,
+  "link_failures_peak_seen": 1,
+  "link_lines": [
+   "robot link 1/20: POST /action failed: [Errno 104] Connection reset by peer (no answer for 0.0 s)",
+   "robot link 1/20: POST /action failed: [Errno 104] Connection reset by peer (no answer for 0.0 s)"
+  ],
+  "dead_to_end_s": null,
+  "moves_on_wire": 56,
+  "resets": [
+   {
+    "n": 5,
+    "path": "/action",
+    "action": "FORWARD",
+    "how": "before",
+    "forwarded": false,
+    "t": 1795275748.0392811
+   },
+   {
+    "n": 12,
+    "path": "/action",
+    "action": "RIGHT",
+    "how": "after",
+    "forwarded": true,
+    "t": 1795275754.8191237
+   }
+  ],
+  "next_post_after_each_reset": [
+   "STOP",
+   "STOP"
+  ],
+  "resent_same_action_next": 0,
+  "log_seen": [
+   "mission started: Find the red backpack. (time limit 1200 s, step backstop 4800, battery floor 10.5 V)",
+   "map: not on a saved map's frame (none kept, or not anchored on one)",
+   "step 0: LOOK_LEFT (ok) -- living room, facing ?, free space clear, sees nothing of note",
+   "step 1: LOOK_RIGHT (ok) -- living room, facing ?, free space clear, sees nothing of note",
+   "step 2: LOOK_CENTER (ok) -- living room, facing ?, free space clear, sees nothing of note",
+   "step 3: FORWARD (ok) -- living room, facing ?, free space clear, sees nothing of note",
+   "step 4: FORWARD (ok) -- living room, facing ?, free space clear, sees nothing of note",
+   "step 5: LOOK_LEFT (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 6: LOOK_RIGHT (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 7: LOOK_CENTER (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 8: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 9: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "robot link 1/20: POST /action failed: [Errno 104] Connection reset by peer (no answer for 0.0 s)",
+   "step 10: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 11: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 12: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 13: FORWARD (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 14: RIGHT (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 15: FORWARD (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "robot link 1/20: POST /action failed: [Errno 104] Connection reset by peer (no answer for 0.0 s)",
+   "step 16: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 17: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 18: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 19: FORWARD (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 20: LEFT (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 21: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 22: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 23: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 24: FORWARD (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 25: RIGHT (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 26: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 27: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 28: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 29: FORWARD (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 30: RIGHT (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 31: FORWARD (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 32: RIGHT (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 33: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 34: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 35: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 36: LEFT (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 37: FORWARD (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 38: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 39: FORWARD (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 40: FORWARD (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 41: RIGHT (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 42: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 43: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 44: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 45: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 46: FORWARD (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 47: RIGHT (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 48: FORWARD (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 49: RIGHT (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 50: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 51: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 52: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 53: LEFT (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 54: FORWARD (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 55: FORWARD (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 56: FORWARD (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 57: FORWARD (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 58: LEFT (ok) -- hallway, facing ?, free space some, sees nothing of note",
+   "step 59: FORWARD (ok) -- hallway, facing ?, free space some, sees red backpack",
+   "inventory: 2 reported, 0 candidates from 62 frames -- sofa, red backpack",
+   "mission ended (found): Hallway, living room searched. Found."
+  ]
+ },
+ {
+  "run": "B_link_gone",
+  "plan": {
+   "from": 3
+  },
+  "outcome": "failed",
+  "end_reason": "robot link lost: no answer for 3.0 s, 5 failed ticks in a row: GET /frame failed: [Errno 104] Connection reset by peer",
+  "steps": 8,
+  "wall_s": 9.4,
+  "link_failures_peak_seen": 5,
+  "link_lines": [
+   "robot link 1/20: POST /action failed: [Errno 104] Connection reset by peer (no answer for 0.0 s)",
+   "robot link 2/20: GET /frame failed: [Errno 104] Connection reset by peer (no answer for 0.8 s)",
+   "robot link 3/20: GET /frame failed: [Errno 104] Connection reset by peer (no answer for 1.5 s)",
+   "robot link 4/20: GET /frame failed: [Errno 104] Connection reset by peer (no answer for 2.3 s)",
+   "robot link 5/20: GET /frame failed: [Errno 104] Connection reset by peer (no answer for 3.0 s)",
+   "mission ended (failed): robot link lost: no answer for 3.0 s, 5 failed ticks in a row: GET /frame failed: [Errno 104] Connection reset by peer"
+  ],
+  "dead_to_end_s": 3.1,
+  "moves_on_wire": 3,
+  "resets": [
+   {
+    "n": 3,
+    "path": "/action",
+    "action": "FORWARD",
+    "how": "before",
+    "forwarded": false,
+    "t": 1795275802.82063
+   }
+  ],
+  "next_post_after_each_reset": [
+   "STOP"
+  ],
+  "resent_same_action_next": 0,
+  "log_seen": [
+   "mission started: Find the red backpack. (time limit 1200 s, step backstop 4800, battery floor 10.5 V)",
+   "map: not on a saved map's frame (none kept, or not anchored on one)",
+   "step 0: LOOK_LEFT (ok) -- living room, facing ?, free space clear, sees nothing of note",
+   "step 1: LOOK_RIGHT (ok) -- living room, facing ?, free space clear, sees nothing of note",
+   "step 2: LOOK_CENTER (ok) -- living room, facing ?, free space clear, sees nothing of note",
+   "step 3: FORWARD (ok) -- living room, facing ?, free space clear, sees nothing of note",
+   "step 4: FORWARD (ok) -- living room, facing ?, free space clear, sees nothing of note",
+   "step 5: LOOK_LEFT (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 6: LOOK_RIGHT (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "step 7: LOOK_CENTER (ok) -- hallway, facing ?, free space clear, sees nothing of note",
+   "robot link 1/20: POST /action failed: [Errno 104] Connection reset by peer (no answer for 0.0 s)",
+   "WARNING: stop command failed: POST /stop failed: [Errno 104] Connection reset by peer",
+   "battery unreadable: GET /battery failed: [Errno 104] Connection reset by peer",
+   "robot link 2/20: GET /frame failed: [Errno 104] Connection reset by peer (no answer for 0.8 s)",
+   "WARNING: stop command failed: POST /stop failed: [Errno 104] Connection reset by peer",
+   "robot link 3/20: GET /frame failed: [Errno 104] Connection reset by peer (no answer for 1.5 s)",
+   "WARNING: stop command failed: POST /stop failed: [Errno 104] Connection reset by peer",
+   "robot link 4/20: GET /frame failed: [Errno 104] Connection reset by peer (no answer for 2.3 s)",
+   "WARNING: stop command failed: POST /stop failed: [Errno 104] Connection reset by peer",
+   "robot link 5/20: GET /frame failed: [Errno 104] Connection reset by peer (no answer for 3.0 s)",
+   "WARNING: stop command failed: POST /stop failed: [Errno 104] Connection reset by peer",
+   "inventory: 0 reported, 1 candidates from 9 frames",
+   "mission ended (failed): robot link lost: no answer for 3.0 s, 5 failed ticks in a row: GET /frame failed: [Errno 104] Connection reset by peer",
+   "WARNING: stop command failed: POST /stop failed: [Errno 104] Connection reset by peer"
+  ]
+ }
+]
