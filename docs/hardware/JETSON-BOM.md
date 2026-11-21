@@ -5,8 +5,8 @@ ROS2 Kit Acce** carrying an **NVIDIA Jetson Orin Nano Super Developer
 Kit**.
 
 * **Jetson:** bought, measured and kept (2026-10-05).
-* **Rover:** ordered 2026-09-30, due Oct 19 - Nov 11, with a 30-day
-  return.
+* **Rover:** ordered 2026-09-30, in hand (the user, 2026-11-21), with a
+  30-day return.
 * **Still conditional:**
   * a separate Jetson battery, decided by a stress test on arrival (9.5);
   * an adapter plate, if the devkit does not bolt onto the Rover's deck
@@ -37,7 +37,7 @@ brief are archived verbatim in `docs/archive/JETSON-BOM-2026-10-06.md`.
 | Item | Part | Price | Ordered | State |
 |---|---|---|---|---|
 | Jetson Orin Nano Super Developer Kit | NVIDIA 945-13766-0000-000 | $399 | 2026-09-27, Amazon | Arrived 09-30, opened 10-02, **kept 10-05** |
-| Robot base | Waveshare UGV Rover PT Jetson Orin ROS2 Kit Acce, SKU 29227 | ~$730 delivered | 2026-09-30, Amazon | Due Oct 19 - Nov 11; 30-day return |
+| Robot base | Waveshare UGV Rover PT Jetson Orin ROS2 Kit Acce, SKU 29227 | ~$730 delivered | 2026-09-30, Amazon | In hand (the user, 2026-11-21); 30-day return |
 | NVMe | SanDisk Optimus 5100 500 GB, SDSP51500GAN (M.2 2280, PCIe 4.0) | $110 + tax | 2026-10-03, Amazon | Installed; the board boots from it since 10-05 |
 | microSD + USB-C reader | 128 GB A2 / U3 / V30 | -- | 2026-10-02 | The fallback boot device |
 | Rover cells | 4x Molicel P26A 18650 (flat-top, unprotected, 2600 mAh, 35 A) | $34 shipped | 2026-10-03, IMR Batteries | Three go in the pack, one is a spare (9.5) |
@@ -124,8 +124,9 @@ constraints still explain why the Rover was chosen:
 
   **It is not a reason to return the Rover.**
 - **Owner and deadline.** The user, with calipers on the devkit already on
-  the desk. Due before the Rover's earliest arrival (Oct 19); the hard stop
-  is its return window, Nov 18 at the earliest. Waveshare support has the
+  the desk. Due before mounting (the Rover is in hand, the user, 2026-11-21);
+  the hard stop is its return window, 30 days from delivery (the delivery
+  date is not recorded). Waveshare support has the
   question (sent 2026-10-06 on the 257511 thread; support logged it as
   request 258472, unanswered as of 10-07).
 
