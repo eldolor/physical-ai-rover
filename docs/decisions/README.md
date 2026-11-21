@@ -1,10 +1,3 @@
----
-kind: decision
-domain: decisions
-status: current
-verified: 2026-11-21
----
-
 # The decision index
 
 An index of the project's dated decisions, one row each, pointing at the
@@ -12,7 +5,7 @@ file that records it. It is not a decision record and makes no decision.
 The one full record is
 [0001](0001-architecture-vs-engineering-specs.md).
 
-## Context
+## What is indexed, and how to read it
 
 Most of this project's decisions were never written as records. They live
 as dated asides in the working files: "decided 2026-10-02", "the user,
@@ -163,7 +156,7 @@ Listed, not resolved. Resolving one is the user's call.
    pacing on 2026-11-21. The block governs sections 1-2; the opening line
    is in neither.
 
-## Alternatives rejected
+## Why the rows point at their sources
 
 This index rejects nothing about the robot. Each row's own source holds
 the alternatives that decision rejected. About the index itself, plan
@@ -171,10 +164,10 @@ section 3.207's brief ruled out one thing: writing a new numbered record
 for every row. The rows point at their sources instead, and a decision is
 not restated in a second place that could drift from the first.
 
-## Consequences
+## How far to trust it
 
 * The source file governs. A row that disagrees with its source is wrong.
-* The index is true as of the `dev` commit named under Context. A decision
+* The index is true as of the `dev` commit named under "What is indexed". A decision
   made after it is not here until someone adds its row; this file sets no
   rule about who does.
 * A decision significant enough for a full record still gets one, as
