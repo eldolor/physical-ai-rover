@@ -72,6 +72,8 @@ def _zones(brain, bridge):
 def _find(robot, brain, zones):
     r = brain.post("/mission/start", json={"target_object": de.TARGET, "policy": "explore",
                                            "max_steps": 200, "mission_time_limit_s": LIMIT_S})
+    if r.status_code != 200:                 # review: a refused start is no find
+        return {"start": r.status_code, "refused": r.text[:300], "outcome": None, "entries": []}
     t0, entries, samples, status = time.time(), [], 0, {}
     while time.time() - t0 < LIMIT_S + 30:
         t = robot.get("/world/truth").json()
@@ -150,6 +152,10 @@ def main(out):
                 break
             time.sleep(1)
         s2["remap_record"] = rec
+        s2["remap_reached_mapping"] = rec.get("result") == "mapping"
+        if not s2["remap_reached_mapping"]:    # K3: no re-map, Z4's re-map not run
+            res["stack2"] = s2
+            return
         s2["remap_health_slam"] = {k: v for k, v in (hh.get("slam") or {}).items() if k != "reload"}
         time.sleep(2)
         s2["frame_id_after_remap"] = robot.get("/world/pose").json().get("frame_id")
