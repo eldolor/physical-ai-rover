@@ -182,3 +182,15 @@ def test_a_pose_off_the_map_keeps_nothing_and_does_not_raise():
     for x_m, y_m in ((-10.0, 1.0), (1.0, -10.0), (40.0, 1.0), (1.0, 40.0)):
         mask = agent._sight_mask(m, {"x_m": x_m, "y_m": y_m})
         assert mask.sum() == (np.asarray(m["cells"]) == CELL_FREE).sum()
+
+
+def test_the_live_find_scores_as_the_plan_records():
+    s = stale.live_score(EVAL / "live-m3.jsonl")
+    assert s["valid"] and all(s["preconditions"].values())
+    assert s["LM1_found"] == {"found_m": 0.838, "outcome": "found", "verdict": "MET"}
+    assert s["LM2_stability"]["verdict"] == "MET" and s["LM2_stability"]["contacts"] == 0
+    b = s["beside"]
+    assert b["target"] == "guitar" and (b["moved"]["from_room"], b["moved"]["to_room"]) == ("study", "living room")
+    assert (b["first_act"], b["resight"], b["goals"]) == ("recall", 0, 40)
+    assert b["stale_belief"] == [0.982, 0.982]
+
