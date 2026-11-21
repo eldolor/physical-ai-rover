@@ -137,10 +137,9 @@ here to `docs/guides/MERGED-STATE.md`; open work only stays here.**
 
 **Waiting on the user**
 
-* **Deploys:** the twin is live from `dev` `b584df63` (2026-11-21, from a
-  cloud session; app.js parity, invalidation Completed). Cloud sessions can deploy the twin only:
-  IAM user `vision-picar-deployer` (S3 put, invalidation, DescribeStacks).
-  Each deploy still needs the user's go; confirm what ships.
+* **Deploys:** the twin is live from `dev` `06c76aa0` (2026-11-21). Cloud
+  sessions can deploy the twin only (IAM user `vision-picar-deployer`: S3
+  put, invalidation, DescribeStacks); each deploy needs the user's go.
 * **The board's brain is `dev` `bdcf782c`** (updated 2026-11-06 for 3.155's
   unit, the user's go): update it only when asked (`tools/jetson/README.md`'s
   update step).
@@ -154,32 +153,23 @@ here to `docs/guides/MERGED-STATE.md`; open work only stays here.**
 **Open now** (claim first)
 
 * 3.136.B-E, R: the board's steady state, latencies, heat and power; the
-  sudo revert. 3.141.E1's board checks (criteria 3-4) after 3.136.B run 2
-  (3.141.D closed unmet: `pivot_scale`'s arithmetic, inferred).
+  sudo revert. 3.141.E1's board checks (criteria 3-4) after 3.136.B run 2.
 * 3.144.B: F9 on the board.
-* 3.135.B (faults F2-F18), 3.137.C (a real power-off), 3.142.A.
-  3.151 (merged 2026-11-05): F2's truth recorder holds under memory
-  pressure (sampling apart from the writes; the body memory-locked, `FMEA_TRUTH_LOCK`);
-  F2's new record is 3.135.B's.
+* 3.135.B (faults F2-F18; F2's new record, 3.151), 3.137.C (a real
+  power-off), 3.142.A.
 * 3.143: V3's slippers miss; the soak keeps no brain log.
-* The twin's 3.152.A readout (the Local VLM row, the operator line) is
-  not yet deployed.
+* The twin's 3.152.A readout (Local VLM row, operator line) is not deployed.
 * 3.105: a nav2 never up holds explore to its limit.
-* 3.150 criterion 6: the first session started after it merged checks the
-  Bash hook live (hooks load at session start).
+* 3.150 criterion 6: check the Bash hook live in a new session.
 * The tour's goal 6, the garage exit, fails 0/3 (3.57, 3.67, 3.68).
-* 3.70: the live survey ran out of time; room labels 46 of 90 rooms (bar
-  95%); S4 and M1-M3 wait on missions on a saved map.
+* 3.70: the live survey ran out of time; room labels 46 of 90 (bar 95%);
+  S4 and M1-M3 wait on missions on a saved map.
 * **Explore reads `frame["detections"]`, which only the simulator
   provides** (3.76 E): on the car explore cannot see the target until
   perception on real frames is built.
-* 3.175-3.178 (the user, 2026-11-12: features from similar products and
-  projects, buildable while the Rover waits on Waveshare; each step A writes
-  the bars first): 3.175 a find's memory when the target moved, and "where
-  did you last see it" without driving; 3.176 a find asked in plain words
-  (a free rule parser, a room hint into goal choice; the model arm asks
-  first); 3.178 a watch list of valuables (its real test needs the
-  Rover's frames).
+* 3.175-3.178 (the user, 2026-11-12: features from similar products,
+  bars first): 3.175 a moved target's memory; 3.176 a find in plain words
+  (the model arm asks first); 3.178 a watch list (needs the Rover's frames).
 * 3.190 (the user, 2026-11-19): one cloud call at a find's start for the
   room prior of a target the shipped prior lacks (3.116.C, wired; off by
   default). F (a heavier weight) FAILED: nothing ships; B's call 7 and C's
