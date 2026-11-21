@@ -5,6 +5,7 @@ For 3.140.B (L0). Run from the repository root on the Jetson with its
 serial tools (they refuse a held port); run them under `sudo` so a holder
 cannot hide. **Each serial tool opens its port read-only:
 none can send the board a wheel or servo command.** Flashing is not here.
+The day's order and the checks around these tools: `docs/hardware/ROVER-ARRIVAL-RUNBOOK.md`.
 
 | Row | Tool | What it needs from the day |
 |---|---|---|

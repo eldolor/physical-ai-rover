@@ -688,7 +688,13 @@ says the return to the dock in plain words ("Going back to the dock.",
 "Back on the dock.", "Couldn't get back to the dock -- the way back was
 blocked.", "Didn't go back to the dock -- it can't plan a route on this
 robot.") or its charge ("Charging on the dock (11.23 of 11.8 volts), then it
-carries on."); it is hidden while the brain is unreachable. Engineer mode's
+carries on."); it is hidden while the brain is unreachable. Also under the
+card, **the local VLM line** (3.152.A): while a tiered mission runs with its
+local VLM held down, operator mode says "The robot's own check of what it
+sees is restarting. Until it is back, the robot asks the cloud when it can
+(each cloud check costs a little)."; it goes when the VLM is back, the
+mission ends or the brain is unreachable (the Local VLM row, below, is
+Engineer mode's). Engineer mode's
 **Return** row says the same with the raw state and reason, and where the
 dock came from: `saved_map` (a reloaded map's own dock) or `start` (the
 mission's start pose). Screenshots: `docs/evaluations/twin-3.156e-*.png`. With
@@ -873,6 +879,22 @@ present only under this policy:
 - **Corroboration** -- §1.11a's verdict, **reported and not enforced**.
 - **Cloud pacing / in flight** -- which rule is pacing the cloud, and what
   the robot does while a call is outstanding.
+- **Local VLM** (3.152.A; Engineer mode, on Home beside the Cloud row) --
+  whether the mission has its local VLM, the model on the robot that
+  answers the tier's questions before the paid cloud is asked
+  (`status.tier.stats.local_vlm`): `up` in green; `down since 09:02:11:
+  questions go as with no local tier; /health probed 3 times` in yellow,
+  from the first question that found it absent until its free `/health`
+  answers ready again (the brain probes it; nothing is sent to it
+  meanwhile); `off (no tier_local_vlm_url)` when none is configured;
+  `unwatched (no /health probe: an absent VLM is asked every question)`
+  when nothing can probe it. Drawn only while the mission runs -- an ended
+  mission's state is its last, and nothing probes after it -- so an idle
+  brain, a mission under another policy and a brain older than 3.152 all
+  show a dash. In operator mode the row is hidden and a `down` VLM is the
+  one plain line under the mission card (above); the other states say
+  nothing there. Screenshots:
+  `docs/evaluations/local-vlm-3152/twin-{operator,engineer}-down-390.png`.
 
 A turn the tier chooses from a measured bearing turns **by** that bearing
 (R1); a search turn goes out at 45° so consecutive views overlap under the
@@ -906,12 +928,15 @@ draw the goal and its state. A person's STOP ends it (since 2026-10-02:
 the server cancels it and holds nav2 at zero until it is over; the brain's
 stop spares it), and a person's D-pad move (forward, reverse or a turn;
 not a camera pan) ends it too, under either drive (3.97, the user
-2026-10-24) -- tap the goal again to resume. **Since
-`PLAN-ros-alignment.md` 3.23 a goal is an autonomous driver**
-(`ros`), arbitrated like the brain: while a mission holds the robot the
-goal is refused with `accepted: false` and reason `preempted`, and the twin
-shows that reason in an error toast rather than "Sending the robot there".
-A world with no nav2 answers 501, and the map is simply not tappable.
+2026-10-24) -- tap the goal again to resume. **A goal tapped here is a
+person driving** (the user, 2026-10-05, handoff 3b): the tap goes out as
+`x-driver: twin-dpad`, so during a mission it takes the robot and the
+mission ends Cancelled, as a D-pad press does. A goal sent with no driver
+named (a program's) is still an autonomous one (`ros`,
+`PLAN-ros-alignment.md` 3.23), refused `preempted` while a mission holds
+the robot. A goal the server does refuse (`accepted: false`) shows its
+reason in a toast rather than "Sending the robot there". A world with no
+nav2 answers 501, and the map is simply not tappable.
 
 **Random house** (3.72). Under the map, a "Random house" button and a
 `house:` readout. One tap and the robot server puts the simulated robot in a
