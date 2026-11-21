@@ -10,7 +10,7 @@ anything.
 |---|---|
 | **Simulator** | Working |
 | **Robot computer** (NVIDIA Jetson Orin Nano Super) | Bought and tested |
-| **Robot body** (Waveshare UGV Rover) | Ordered, arriving Oct 19 – Nov 11, 2026 |
+| **Robot body** (Waveshare UGV Rover) | Ordered; the Oct 19 – Nov 11 window has passed and no arrival is recorded as of 21 Nov 2026 |
 
 **How to read this page.** Each section starts in plain language. The
 **More detail** part under it says how it works and what was measured. A
@@ -311,7 +311,7 @@ door frame. Hundreds of logged runs do not hide it.
 
 Failures are recorded as failures. Several phases list a criterion that was
 missed, with the reason, instead of quietly moving the bar. The suite has
-about 1,700 automated tests, including ones that drive the phone app in a real
+about 6,500 automated tests, including ones that drive the phone app in a real
 browser at phone size.
 
 Until 25 September 2026 a feature counted as done when someone had watched it
@@ -328,7 +328,7 @@ robot base with wheels, a laser and a camera.
 | Part | Status | What it is |
 |---|---|---|
 | **NVIDIA Jetson Orin Nano Super** | Bought and tested | A palm-sized computer with a graphics chip. It runs the on-board AI well inside its time budget. |
-| **Waveshare UGV Rover** | Ordered, arriving Oct 19 – Nov 11 | A wheeled base that turns on the spot, with a laser scanner, a depth camera and a camera that pans and tilts. |
+| **Waveshare UGV Rover** | Ordered; the Oct 19 – Nov 11 window has passed, no arrival recorded as of 21 Nov 2026 | A wheeled base that turns on the spot, with a laser scanner, a depth camera and a camera that pans and tilts. |
 
 ### More detail: why these parts
 
@@ -366,7 +366,7 @@ Jetson may be needed, depending on a power test with the motors running.
 ## Where it stands
 
 The software is built and measured in simulation. The robot computer is
-tested. The robot body is on its way.
+tested. The robot body's delivery window has passed and no arrival is recorded as of 21 Nov 2026.
 
 | When | Milestone |
 |---|---|
@@ -375,7 +375,7 @@ tested. The robot body is on its way.
 | Sep 2026 | **Seeing on board.** Fast on-board AI with the cloud model asked only at key moments. The Jetson chosen over the Pi. |
 | Sep 2026 | **A real robot toolkit.** Smooth driving, mapping and route planning with ROS 2. Arrival recognition. Safety tested on thousands of runs. |
 | Oct 2026 | **The Jetson in hand.** Everything runs on the robot's own computer, inside its time budgets. |
-| **Oct–Nov 2026 (now)** | **The robot body arrives.** Mount the computer, check the motors and sensors, measure the real chassis, then drive the same tests on a real floor. |
+| **Now (21 Nov 2026)** | **The robot body: its Oct 19 – Nov 11 window has passed and no arrival is recorded.** When it arrives: mount the computer, check the motors and sensors, measure the real chassis, then drive the same tests on a real floor. |
 | Early 2027 | **Software platform upgrade.** The current robot toolkit version stops getting updates in May 2027. The move to a newer one is planned for after the robot is driving. |
 
 ### More detail: what hardware day involves
@@ -444,4 +444,4 @@ expects to meet, and the ones it already knows about.
 one page), `docs/plans/PLAN-ros-alignment.md` (every phase, its criteria and
 its measured results), `docs/plans/PLAN-onboard-perception.md` (how the
 on-board AI was chosen), and `docs/hardware/JETSON-BOM.md` (what was bought,
-and why). Updated 7 October 2026.*
+and why). Updated 7 October 2026; the status lines and test count 21 November 2026.*

@@ -78,6 +78,13 @@ flowchart LR
 | **Vision service** (cloud) | The last tier of the identity question, and room names on request | Run unless the tiers below it cannot answer |
 | **Phone (the twin)** | Drawing what the servers report; the D-pad; starting and stopping missions | Decide anything |
 
+That is six processes: four on the Jetson, one in the cloud, and the phone.
+The **local VLM** is the one the rest can lose. It runs on the Jetson only
+and starts at boot there; a laptop, the test suite and the cloud deployment
+run without it, and then the brain asks the cloud instead. No mission waits
+on it to start or to continue
+([perception](perception/ARCHITECTURE.md), "The local VLM").
+
 ## The walls
 
 Four boundaries keep the system honest, and each is enforced by a test.

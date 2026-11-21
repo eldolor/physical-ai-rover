@@ -150,9 +150,11 @@ What leaves the house today, traced to the code:
 |---|---|---|
 | A camera frame, the target string, searched rooms | the cloud `/navigate` route (Bedrock), from `brain/navigate.py` | tiered: only on a trigger (mission start, candidate sighting, cold search, staleness, arrival confirmation); the `vision` policy: every step |
 | A phone frame | `/navigate` or `/guidance`, straight from the twin's Guide tab | every guidance step |
-| Recorded walk frames and answers | the brain's walk store: local disk, or the private recordings bucket when `recording_backend` is `s3` | only while a walk is being recorded |
-| The object inventory (3.46): labels and positions of what that mission saw itself, no pixels (since 3.50.D5 a mission also carries landmarks from earlier missions on the same saved map, with the map's and the mission's ids; those stay in the robot's local file, the user's call 2026-10-31) | the recordings bucket under `inventory/`, when `INVENTORY_BUCKET` is set | at mission end |
-| A metrics row: outcome, counts, timings, config; no pixels | the metrics route, when `metrics_url` is set | at mission end |
+| Recorded walk frames and answers | the brain's walk store: local disk, or the private recordings bucket when the walk store is set to it | only while a walk is being recorded |
+| The object inventory (3.46): labels and positions of what that mission saw itself, no pixels (since 3.50.D5 a mission also carries landmarks from earlier missions on the same saved map, with the map's and the mission's ids; those stay in the robot's local file, the user's call 2026-10-31) | the recordings bucket, under its inventory prefix, only when the deployment names a bucket for it | at mission end |
+| A metrics row: outcome, counts, timings, config; no pixels | the metrics route, only when the deployment names one | at mission end |
+| The target's words, no image (3.190) | the cloud vision service's room-prior question | once, at a find's start, only when that question is switched on and can act (see "A room prior for a target the shipped prior lacks") |
+| The frame a mission's arrival was judged on, and thumbnails of what it saw (3.162) | the person's own phone, through the brain's authenticated route; kept on the robot's disk, never in a bucket | when the person opens the report ([mission](../mission/ARCHITECTURE.md), "What a mission saw") |
 
 Nothing else sends pixels. `brain/vision.py`'s direct Anthropic call is
 reached only from a manual test.
@@ -282,9 +284,8 @@ photograph, and a paid call on a flat-shaded billboard tied every sim
 outcome to how a model reads it. As the sim reports detections from its
 geometry rather than run a detector on a render (1.12), it answers the
 identity question from the same ground truth: the nearest object at the
-centre of the arrival frame must be the target. A setting
-(`sim_arrival_confirm: cloud`) keeps the real call for a run that means to
-test it. Frames that are not the simulator's always go to the tiers below.
+centre of the arrival frame must be the target. A setting keeps the real
+call for a run that means to test it. Frames that are not the simulator's always go to the tiers below.
 **Trade-off:** sim missions no longer exercise the real confirmation call
 by default, so it is measured on purpose (Stage 1's lit-renderer re-run,
 the car), not in passing.
@@ -394,8 +395,9 @@ rule judges them at the lidar's 0.40 m, and they are not left again.
 ### Explore's next goal may be learned; nothing else in explore is
 
 **Decision (3.65 phase 2, 2026-10-11).** Which goal explore sends next may
-come from a learned score instead of the hand-written order, behind
-`explore_goal_policy` (default `rooms` since 3.125; `rule` before). The learning is reinforcement
+come from a learned score instead of the hand-written order, behind a
+setting (the room-feature score, `rooms`, is the default since 3.125; the
+hand-written order, `rule`, before). The learning is reinforcement
 learning in its evolutionary form: a linear score over ten facts explore
 already has about each candidate, its weights found by the cross-entropy
 method on simulated missions, each mission scored +1 if found, minus 0.02
@@ -444,9 +446,9 @@ mostly a guess. With the target in view the same models steer well (Astra
 | Source of the answer | What it adds | State |
 |---|---|---|
 | **A map of what's unexplored** -- explore's frontier, view and approach goals over SLAM's map | the candidate places to go; coverage that eventually finds anything reachable | **built, the design** (3.80.G: arrivals 2 -> 16, cloud calls 765 -> 6) |
-| **A learned choice among those frontiers** -- `explore_goal_policy` (3.65) | the order in which the frontier's candidates are visited | built; default `rooms` since 3.125 (the user, 2026-10-31: without room labels on 588 test houses, median goals -14% in mode R and -22% in U, finds within 1%, mean metres +10% in R; choice 132.9 ms p90 on the Jetson, bar 100). Before it, `rule` (3.65's network saved 11% of median goals on fresh houses, bar 20%; 3.96's room-feature network, `rooms`, saved 43% with room labels but, without them, nothing when the target is in a room type that suits it (20% when it is not), and a find mission has none until a survey's labels reach its map) |
+| **A learned choice among those frontiers** -- explore's goal policy (3.65) | the order in which the frontier's candidates are visited | built; default `rooms` since 3.125 (the user, 2026-10-31: without room labels on 588 test houses, median goals -14% in mode R and -22% in U, finds within 1%, mean metres +10% in R; choice 132.9 ms p90 on the Jetson, bar 100). Before it, `rule` (3.65's network saved 11% of median goals on fresh houses, bar 20%; 3.96's room-feature network, `rooms`, saved 43% with room labels but, without them, nothing when the target is in a room type that suits it (20% when it is not), and a find mission has none until a survey's labels reach its map) |
 | **Memory of where things were seen** -- the object inventory (3.46) | a candidate's distance to the last place the target, or something like it, was seen | built; empty on real frames until a namer for camera frames passes |
-| **Common sense about rooms** -- one language-model call ranks room types for the target ("a charger: office, kitchen, bedroom") | a candidate's room prior | rooms from CLIP (3.51) built, not wired; the ranking not built |
+| **Common sense about rooms** -- one language-model call ranks room types for the target ("a charger: office, kitchen, bedroom") | a candidate's room prior | built: the default ranker's prior knows ten targets (3.96); for any other target the one-call ranking is built and off by default, and acts only on a map with room labels (3.190, "A room prior for a target the shipped prior lacks", below) |
 | **What is visible toward a frontier** -- a model rates how promising each unexplored edge looks for this target (published object-goal navigation work) | a candidate's visual promise | not built |
 
 **How reinforcement learning ties to the frontier.** The frontier map is
@@ -471,6 +473,132 @@ inventory distance, once real frames name objects; (3) visual promise, only
 if (1) and (2) leave a gap, since it costs a model call per frontier.
 3.177.A found no such signal in CLIP RN50's whole-frame score on the rig
 walks (FAILED, 2026-11-12), so (3) needs another scorer.
+
+### A room prior for a target the shipped prior lacks is asked once, at the start
+
+**Decision** (3.190, asked by the user 2026-11-19: "What if we made a cloud
+call to find out which room type a target is likely to be in, before
+starting a mission?"; built on 3.116.C's question). The default goal ranker
+orders explore's goals by how likely each room type is to hold the target,
+and the prior it ships with knows ten targets. A find's target is free
+text: any other target reads an empty prior, and the ranker then runs as if
+the map had no room labels at all. So for such a target the brain may ask
+the cloud one text-only question as the find starts: for each room type the
+ranker knows, what share of such rooms hold at least one such object. The
+answer sits where the shipped prior's rates would, for that mission only.
+It is off by default.
+
+**Why it is shaped this way.**
+
+- **Asked only when it can act.** The job is a find, the room ranker is the
+  one choosing goals, the target is not one the shipped prior knows, and
+  the map has room labels (without them the prior is inert, 3.176.A).
+  Otherwise no call is made, and the status says why.
+- **It only reorders goals.** It never ends a search and never adds a goal,
+  so the argument that keeps the learned ranker safe covers it unchanged: a
+  bad prior makes a search slower, never a move unsafe. Measured on 583
+  test houses (3.190.A): against no prior, reward +0.100 (interval +0.051
+  to +0.150) and 19% fewer median metres; a deliberately wrong prior still
+  found as many targets, at more metres.
+- **The start never waits long, and the prior never arrives mid-mission.**
+  The call has a short deadline inside the start. A reply after it is kept
+  for the next find of that target and is not applied to this one, so a
+  mission's goal order does not change under it part way.
+- **A bad reply is no prior, never a guess.** Anything but the expected
+  rates, a refusal, a timeout or no connection: the mission starts as it
+  does today, and the status records which. Offline never blocks a start
+  (3.49).
+- **Paid for once.** Replies are kept by model and target, so a repeat find
+  costs nothing and needs no connection.
+- **It goes through the cloud vision service,** as every paid call does,
+  on the model the question was measured on.
+- **A person's typed room hint goes first** and the prior orders the rooms
+  after it (the user, 2026-11-20; 3.190's criterion 12 stays FAILED as
+  written, and this is the design that answers it).
+- **It never unlocks more paid calls.** Whether a find asks for room labels
+  is still decided on the shipped prior alone (3.190's open question 1,
+  assumed, not yet answered by the user).
+
+**Rejected.**
+
+- **Weighting the cloud's prior more, so the first goal goes to its top
+  room.** Live, the prior's top room was the kitchen and the first goal was
+  a near frontier in the dining room beside it (criterion 14 FAILED on that
+  clause). The user's answer was "measure first" (2026-11-21); 3.190.F
+  swept a heavier weight, and it lost reward (-0.017) and sent the first
+  goal to the top room no more often (0.46 against 0.44; F1 and F2 FAILED).
+  The learned ranker's balance stays: a prior reorders, it does not force.
+- **A prior shown before Start.** Reading a typed request makes no paid
+  call (3.176), and this keeps that.
+- **The local VLM as the source.** Text-only questions were never measured
+  on it; a new section if wanted.
+
+**What leaves the house:** the target's words, no image (the privacy table
+above).
+
+### A short watch list rides along on every mission
+
+**Decision** (3.178, asked by the user 2026-11-12, from a robot vacuum that
+notices wallets and keys while it cleans and pins them on its map). A
+search drives through most of a house while perception asks about one
+thing, the day's target. Beside the target, a mission also watches for a
+short list of things people lose (by default keys, wallet, phone, glasses
+and remote; a handful at most; set in the brain's configuration, and from
+the phone later). A sighting is placed
+by the lidar and remembered in the object inventory like any other, and the
+mission's report lists where each item was pinned. That is the memory
+"where did you last see it" (3.175) and a find's recall (3.172.C) read.
+
+**Why a short list, and not everything.** Naming every object on real
+frames failed its bar with every namer tried and was closed by the user
+(3.46.C, 2026-10-10), which left the car's memory knowing only the target
+of the day. A short fixed list is an easier problem: the on-board pipeline
+is already asked one name a mission, and this asks it a handful.
+
+**Why it is shaped this way** (3.178.A's design, written before measuring).
+
+- **One pass, no new model.** The list rides on the detector and encoder
+  the target already uses. A design that needed another model was to fail
+  as written and stop for the user.
+- **The target's answer cannot move.** A crop's probability of being the
+  target is computed exactly as without the list; the list's words never
+  enter it.
+- **Precision first.** A wrong pin costs trust and, through recall, a
+  drive. So list items compete with each other, the target and the
+  distractors for one crop, and the list's gate is stricter than the
+  target's, fixed before the frames that judge it.
+- **An item that names the day's target is counted once,** as the target.
+- **No policy reads the list.** It changes what is remembered, never what
+  the robot does next (3.178's stability bars: actions and outcomes equal
+  with the list on and off, 40 of 40 in the simulator).
+
+**State, as the code behaves.** In the simulator the inventory reads the
+simulator's own labels, so the list tests the plumbing and the report, not
+a namer. On the car the on-board pipeline is not prompted with the list
+yet (the user, 2026-11-20): on recorded frames, prompting the detector with
+the list changed its boxes and cost target detections (413 against 422
+without it, bar 417; 3.178.B's B4 FAILED). The fix is judged on the Jetson,
+where its cost per frame can be measured. Until then the car's watch list
+notices nothing. This is the same gap as explore's (3.76 E): a detection
+from a real frame has no path into the inventory yet.
+
+**Rejected.**
+
+- **Naming every object** (above).
+- **A stricter pin: at least two looks voting for the item's own name and
+  no dispute** (3.178.D, E). It cut wrong pins, but it pinned 41 of 50 true
+  passes against a bar of 90%, fewer than the shipped rule's 44, so it did
+  not ship. Its verdict is parked until list items can be ranged on real
+  frames (3.178.G, H, on the Rover).
+
+**Failure mode, measured and open.** A wrong pin. In the simulator, with
+false list labels injected on 5% of frames, 6 wrong pins reached reports in
+40 missions (0.15 a mission against a bar of 0.1; B2 FAILED). Two different
+false labels ranged to one wall spot fuse into one remembered thing and are
+reported under one of the names. A thing seen from one viewpoint only is
+never reported, by the inventory's own rule that a report needs two
+independent looks (3.178.F). Recall on real frames is unmeasured: the
+recorded walks hold no list item (3.178.A).
 
 ## Contracts
 
@@ -541,6 +669,42 @@ richer trees still to come need what it already has: nodes that span frames,
 decorators such as timeouts and retries, and drawings of the tree. It also
 reads BehaviorTree.CPP's XML, the format nav2's trees are written in. The
 move changed no decision.
+
+**Rejected.**
+* **Leaving the ladder as nested code,** for the reasons under "Why".
+* **A tree module of our own.** 3.94 first built the trees on a small
+  module of the project's, to avoid a new dependency on the Jetson, with
+  the library's semantics so that a move would be mechanical. The user
+  reversed that the next day (3.95, 2026-10-23), for the reasons in the
+  paragraph above.
+* **Changing behaviour in the same step as the redraw.** A redraw that also
+  changed a decision could not be checked against the code it replaced.
+* **Not drawn as a tree, on purpose:** what an answer changes (the held
+  goal, the remembered "no", the pacing) stays code that the nodes call
+  (3.94), as does the plumbing around the trees.
+
+**When it goes wrong.**
+* **A tree that could not decide is refused before a mission runs.** A
+  configured tree with no default branch, an unknown or repeated node, a
+  setting that names a hard rule, or a steering band wider than the
+  arrival rule's is refused when the configuration is loaded (3.94.D:
+  sixteen bad trees, each refused). The band may only narrow: a wider one
+  would stop turning toward a target the arrival rule never counts as
+  centred, and the robot would never arrive.
+* **An error inside a node is never swallowed.** It reaches the policy's
+  caller unchanged (3.95's criterion 3), and a tree whose branches choose
+  nothing raises instead of skipping the move.
+* **A wrong redraw is caught by the frozen reference.** The code the trees
+  replaced is kept as a reference, and the suite compares the two on random
+  states (0 differences on 10,000; planted bugs were each caught). On
+  recorded missions, 0 of 41,585 frames differed from the code before the
+  trees (3.94 2b, 3.95 2b).
+* **Recorded as failed:** 3.94's one live mission ended out of budget, not
+  found (its criterion 6). The cause traced to explore's close-in move near
+  furniture, not to a node; two diagnostic runs on the tree both ended
+  found, and the criterion stays failed as written.
+* **Cost:** the three trees together take under a millisecond a frame on
+  the Jetson at 15 W (p90 0.85 ms, bar 5 ms; 3.95).
 
 ## Open questions
 

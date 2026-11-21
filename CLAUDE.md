@@ -17,7 +17,7 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-pytest tests/ -q                          # ~1755 tests; `pytest --collect-only` for today's count
+pytest tests/ -q                          # 6,560 collected 2026-11-21; `--collect-only -q` counts
 pytest service/vision_analyze/tests/ -v   # the cloud vision service's own suite (section 6)
 python -m playwright install chromium     # once: the UI tests SKIP without a browser
 ```
@@ -51,7 +51,8 @@ board, D500 lidar, OAK-D Lite, pan-tilt camera) carrying an **NVIDIA Jetson
 Orin Nano Super**. The Jetson runs the robot server, the brain (mission
 policy plus on-board perception) and a ROS 2 container (SLAM, nav2,
 `ros2_control`). A vision LLM on Amazon Bedrock is called only on triggers.
-The Jetson is in hand and measured; the Rover is due Oct 19 - Nov 11.
+The Jetson is in hand and measured; the Rover's Oct 19 - Nov 11 window has passed; no arrival
+is recorded as of 2026-11-21.
 `docs/ARCHITECTURE.md` is the system on one page.
 
 **Development is simulation-first:** build it, prove it with data in the
@@ -102,7 +103,7 @@ car uses.
 
 ---
 
-## 3. Current state (2026-11-04)
+## 3. Current state (2026-11-21)
 
 ### 3a. What is built
 
@@ -178,9 +179,9 @@ here to `docs/guides/MERGED-STATE.md`; open work only stays here.**
   calls wait on the user; D waits on 3.188.B.
 * 3.161: Z5 FAILED (82 of 96 vs 87; a design question) and Z4's live re-map.
 * Not built: `brain/planner.py`, S7 (chaos and soak), a Stage 1 vision
-  re-run against the lit renderer.
+  re-run on the lit renderer.
 
-**Waiting on the Rover** (due Oct 19 - Nov 11)
+**Waiting on the Rover** (window passed; no arrival recorded, 2026-11-21)
 
 * **Before it arrives:** check with calipers that the devkit's mounting
   holes match the Rover deck's 86 x 58 mm pattern
@@ -265,10 +266,9 @@ merges adds the section's line there, not here.
     `PICAR_CLAIM_BYPASS=1` is the user's alone. `PARALLEL-SESSIONS.md` rule 12.
   * `overlap` before editing a shared file.
   * `ready` (rebase check + full suite) before pushing to `dev`; a
-    pre-push hook enforces it. Since 3.121 (merged 2026-10-30) the fast
-    tier runs on pytest-xdist workers, half the cores: ~3.5 min, was
-    ~17.6 (`pip install -r requirements.txt` once; without xdist it runs
-    serially).
+    pre-push hook enforces it. Since 3.121 the fast tier runs on
+    pytest-xdist workers (half the cores; `pip install -r
+    requirements.txt` once, else it runs serially).
   * **Each session pushes to `dev` on its own judgement; no go-ahead is
     asked** (the user, 2026-10-15): a finished, reviewed step that passes
     the gate. Spending, deploys, force pushes and `PICAR_SKIP_GATE=1` are
@@ -322,6 +322,9 @@ brain/        decisions and perception, hardware-agnostic
   perceive_lab.py   candidate detectors that are not shipped (Grounding DINO, OWLv2, YOLO-World, SAM)
   arrival.py        the lidar-confirmed arrival rule
   goal_pose.py      a sighting anchored in odometry
+  explore, frontier, goal_policy, choice_log   the `explore` policy (.py)
+  local_vlm.py, dock.py, request.py, tree.py   local VLM client, dock return, plain-words find, behaviour tree
+  inventory, last_seen, watch_list, what_i_saw, mission_report, room_*   what a mission keeps (.py)
   memory.py, rooms.py, vision.py   mission memory, room recognition, direct Anthropic API
 sim/          the grid-world simulator
   grid_world.py, mock_robot.py, mock_world.py, renderer.py, sensors.py, movers.py
@@ -330,7 +333,7 @@ sim/          the grid-world simulator
   fake_esp32.py     the Rover's motor-board firmware on a pty
   fake_lidar.py     the D500 on a pty, every point cast at its own instant (3.42)
   body_server.py, sensor_server.py, body_state.py, body_client.py   the body in its own processes (3.36)
-  maps/             starter_house, scaled_house, home_first_floor
+  maps/             starter_house, scaled_house, home_first_floor, complex_house, procthor
 control/      the brain as a service; robot reachable only over HTTP
   brain_server.py, mission_runner.py, brain_config.py, remote_robot.py, remote_world.py
   drills.py         fault injection for the failsafes
@@ -341,12 +344,17 @@ service/
   slam/             the ROS 2 Humble container: the only place ROS exists
   vision_analyze/   the cloud vision service (Bedrock), its own copies of vision/rooms code, its own tests
   lambda/, static/  build and sync for the serverless deployment
+  local_vlm/        the local VLM tier as its own process (3.80.B)
   tunnel/           run.sh / restart.sh: robot + brain locally, one ngrok domain split by path
   admin/, brain/, twin/   ECS images for stacks deleted 2026-09-05 (kept for B5)
 firmware/ugv_base_ros/    our GPL-3.0 patch to the Rover's ESP32 firmware, and build.sh
-tools/        spec_lint.py; jetson/ (setup, perception benches); hailo/ (closed path, kept as record)
+tools/        spec_lint.py, plan_section.py; jetson/ (setup, benches); rover/ (bring-up, 3.168);
+              gpu/ (paid eval hosts: the user's call); trt/; hooks/; hailo/ (closed path, kept as record)
 cloudformation/   serverless.yaml, recordings-s3.yaml, deploy-bucket.yaml are live; the rest are deleted stacks
 web-twin/     the phone UI (index.html, app.js), a client of both servers
+web-shared/   ui.css, design tokens
+evaluations/  scored records, a directory per section
+docs-review/  spec and bug-pass reviews
 config/robot.yaml   mode, safety thresholds, the brain: and world: blocks
 tests/        the suite, plus demo_*/manual_* scripts that are run by hand
 docs/         ARCHITECTURE.md first, then README.md (the index): specs, plans, guides,
@@ -547,11 +555,10 @@ project coherent. Their full narrative is in the archive copy.
   2026-10-09 after a session pushed three commits unreviewed; the user's
   call: warn first, block only if warnings are pushed past.
 - **Reviewers run on Sonnet** (the user, 2026-10-18, to spend less quota).
-- **Why both:** measured on six commits, `/code-review` found 17 of 18
-  real bugs and the bug pass 15. Together they found all 18. The file
-  above has the numbers. A finding only one of them raised is a claim to
-  verify, not an order. Thermos's code-quality pass is not used; it added
-  no bug and much noise.
+- **Why both:** on six commits `/code-review` found 17 of 18 real bugs,
+  the bug pass 15, together all 18 (numbers in the rubric file). A finding
+  only one raised is a claim to verify, not an order. Thermos's
+  code-quality pass is not used; it added no bug and much noise.
 
 **CLAUDE.md's size** (2026-11-12): every session loads this file, so it
 has a budget (`python tools/claude_md_budget.py`; the suite fails above
