@@ -202,7 +202,7 @@ must show:
    said); one median / p90 line per key; then `budget 250 ms: WITHIN` or
    `OVER`. The first run downloads about 600 MB of weights.
 6. **Suite**: `pytest tests/ -q` from `.venv`, with Chromium installed for
-   Playwright first, or the browser tests ERROR rather than skip.
+   Playwright first. Without the `playwright` package the UI tests skip (`importorskip`). With the package but no browser binary, `tests/test_ui.py`'s `browser` fixture calls `chromium.launch()` with no handler, so by the code they ERROR; not verified by a run here (the image has Chromium).
 7. **G4**: the live chain and nav suites, 5 runs in a row, against the
    fake motor board. The commands are below this list. **A skip is not a
    pass**: a run counts only if pytest's summary reads `18 passed` with 0
