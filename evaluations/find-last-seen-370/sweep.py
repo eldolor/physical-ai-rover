@@ -17,6 +17,7 @@ survey's store and its end map) and *unsurveyed* (nothing), the same
     python tools/desktop_lock.py shared --why "3.70.M2 sweep" -- \\
         python evaluations/find-last-seen-370/sweep.py run ROWS.jsonl WORKDIR [WORKERS [NAV]]
     (NAV: inflated, run 1; fake, amendment 1's run 2)
+    3.200: ... run ROWS.jsonl WORKDIR WORKERS NAV RULE   (RULE: dev, R1, R2)
     python evaluations/find-last-seen-370/sweep.py score ROWS.jsonl
 """
 
@@ -55,6 +56,17 @@ def _nav(robot, nav):
     return inflated_nav_class()(robot)
 
 
+RULES = {"dev": None, "R1": ("face",), "R2": ("face", "nav")}   # 3.200
+
+
+def _rule(rule):
+    """3.200: set explore's recall retry before a survey or find. `dev` sets
+    nothing, so this file also runs against a checkout without the rule."""
+    if RULES[rule] is not None:
+        import brain.explore as ex
+        ex.RECALL_RETRY = RULES[rule]
+
+
 def _quiet():
     import logging
     logging.disable(logging.WARNING)
@@ -81,10 +93,11 @@ def _contacts(grid):
     return out
 
 
-def survey(store_dir, seed=DET_SEED, nav=NAV):
+def survey(store_dir, seed=DET_SEED, nav=NAV, rule="dev"):
     """The survey: job survey from the dock, S3's noisy detector, saved to
     `store_dir`. Returns (its row, the map it ended with)."""
     _quiet()
+    _rule(rule)
     from control.inventory_store import InventoryStore
     from control.mission_runner import MissionRunner
     from sim.maps import build_world
@@ -145,10 +158,11 @@ def plan(reported):
     return out
 
 
-def find(m, arm, store_dir, cells, reported, nav=NAV):
+def find(m, arm, store_dir, cells, reported, nav=NAV, rule="dev"):
     """One find. `store_dir` already holds the survey's report (surveyed) or
     nothing; `cells` the survey's end map or None."""
     _quiet()
+    _rule(rule)
     from control.inventory_store import InventoryStore
     from control.mission_runner import MissionRunner
     from sim.maps import build_world
@@ -201,6 +215,13 @@ def find(m, arm, store_dir, cells, reported, nav=NAV):
     first_goal = None if first is None else first.get("goal")
     first_goal_m = (None if not first_ok else
                     0.0 if first_goal is None else round(math.dist(first_goal, first_at), 2))
+    # 3.200: recall goals per carried place, faces given up, second sides, spent.
+    per_place = {}
+    for g in goals:
+        if g.get("kind") == "recall":
+            key = tuple(g.get("at") or ())
+            per_place[key] = per_place.get(key, 0) + 1
+    here = sum(e["event"] == "recall" and bool(e.get("here")) for e in events)
     tx, ty = next(c for c, n in grid.objects.items() if n == m["target"])
     target_m = math.dist((grid.x, grid.y), (tx + 0.5, ty + 0.5)) * CELL
     return {"arm": arm, "k": m["k"], "target": m["target"], "start_room": m["room"],
@@ -213,11 +234,17 @@ def find(m, arm, store_dir, cells, reported, nav=NAV):
             "first_goal": first_goal, "first_goal_m": first_goal_m,
             "goals": len(goals), "recall_goals": sum(g.get("kind") == "recall" for g in goals),
             "contacts": sum(c.startswith("BLOCKED at") for c in contacts),
-            "blocked_turning": sum(c.startswith("BLOCKED turning") for c in contacts)}
+            "blocked_turning": sum(c.startswith("BLOCKED turning") for c in contacts),
+            "recall_here": here,
+            "recall_unlooked": sum(e["event"] == "recall_unlooked" for e in events),
+            "recall_retries": sum(e["event"] == "goal_sent" and e.get("kind") == "recall"
+                                  and e.get("side", 1) > 1 for e in events),
+            "recall_spent": sum(e["event"] == "recall_spent" for e in events),
+            "recall_most_per_place": max(per_place.values(), default=0)}
 
 
 def _job(args):
-    m, arm, work, cells, reported, nav = args
+    m, arm, work, cells, reported, nav, rule = args
     d = Path(work) / f"{arm}-{m['k']}"
     if d.exists():
         shutil.rmtree(d)
@@ -225,10 +252,10 @@ def _job(args):
         shutil.copytree(Path(work) / "survey", d)
     else:
         d.mkdir(parents=True)
-    return find(m, arm, d, cells if arm == "surveyed" else None, reported, nav)
+    return find(m, arm, d, cells if arm == "surveyed" else None, reported, nav, rule)
 
 
-def run(out, work, workers, nav=NAV):
+def run(out, work, workers, nav=NAV, rule="dev"):
     import multiprocessing as mp
     work = Path(work)
     sdir = work / "survey"
@@ -237,12 +264,12 @@ def run(out, work, workers, nav=NAV):
     if sdir.exists():
         shutil.rmtree(sdir)
     sdir.mkdir(parents=True)
-    row, cells = survey(sdir, nav=nav)
+    row, cells = survey(sdir, nav=nav, rule=rule)
     print(json.dumps({k: v for k, v in row.items() if k != "reported"}), flush=True)
     plans = plan(row["reported"])
     with open(out, "w") as f:
-        f.write(json.dumps({**row, "plan": plans, "nav": nav}) + "\n")
-        jobs = [(m, arm, str(work), cells, row["reported"], nav) for m in plans for arm in ARMS]
+        f.write(json.dumps({**row, "plan": plans, "nav": nav, "rule": rule}) + "\n")
+        jobs = [(m, arm, str(work), cells, row["reported"], nav, rule) for m in plans for arm in ARMS]
         with mp.Pool(workers) as pool:
             for r in pool.imap_unordered(_job, jobs):
                 f.write(json.dumps(r) + "\n")
@@ -307,7 +334,8 @@ def score(path):
 if __name__ == "__main__":
     a = sys.argv[1:]
     if a and a[0] == "run":
-        run(a[1], a[2], int(a[3]) if len(a) > 3 else 4, a[4] if len(a) > 4 else NAV)
+        run(a[1], a[2], int(a[3]) if len(a) > 3 else 4, a[4] if len(a) > 4 else NAV,
+            a[5] if len(a) > 5 else "dev")
     elif a and a[0] == "score":
         score(a[1])
     else:

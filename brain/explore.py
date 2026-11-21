@@ -161,6 +161,16 @@ RECALL_REFUSED = 5
 RECALL_REFUSED_S = 10.0
 # Review 3: a refusal more than this after the last one starts the row again.
 RECALL_REFUSED_GAP_S = 3.0
+# 3.200: a recall place whose look never happened keeps its place for one more
+# goal, from ANOTHER SIDE of it. "face": the goal arrived and every turn to face
+# the place was refused down to FACE_MIN_TURN_DEG (3.70.M2 run 2, k 11); "nav":
+# the goal ended aborted, stalled or rejected (3.175.E's case, which a point
+# 0.3 m over failed). At most RECALL_SIDES goals (a face where it stands counts
+# as one) per place per mission; the next one's band point lies at least
+# RECALL_SIDE_DEG round the place from every earlier one, or the place is spent.
+RECALL_RETRY: tuple = ("face",)
+RECALL_SIDES = 2
+RECALL_SIDE_DEG = 90.0
 # "Boxed in": fewer reachable stopping places than this around the robot.
 BOXED_CELLS = 40
 # 3.70 E3: a room goal aims at least this far inside the room's label where
@@ -404,6 +414,7 @@ class ExploreAgent(MissionAgent):
         self._recall_refused = 0            # refusals in a row of recall[0]
         self._recall_refused_at = None      # when that row began
         self._recall_refused_last = None    # its latest refusal
+        self._recall_tried: dict = {}       # 3.200: place -> where each try stood (goal or pose)
         self._aside_at: list = []           # 3.172.D: this choice's skips for a carried set-aside
         self._stood: set = set()            # 3.173.B: where the robot has stood, STOOD_M squares
         self._stood_in: set = set()         # Thermos 1: those once inside a small-room region
@@ -1147,22 +1158,33 @@ class ExploreAgent(MissionAgent):
         if not pose.get("usable"):
             return None
         tx, ty = self.recall[0]
-        if self._at_target(tx, ty):
+        tried = self._recall_tried.get((tx, ty), [])
+        if not tried and self._at_target(tx, ty):
             self.recall.pop(0)
             self._recall_refused, self._recall_refused_at = 0, None
-            self._pending = [("FACE", (tx, ty))]
+            self._recall_tried[(tx, ty)] = [(pose["x_m"], pose["y_m"])]
+            self._pending = [("FACE", (tx, ty), 90, False, "recall")]
             self._event("recall", pose=pose, at=[round(tx, 2), round(ty, 2)], here=True)
             return self._do_pending()
-        spot = self._band_point(pose, tx, ty)
+        spot = self._band_point(pose, tx, ty, away=tried)
         if spot is None:
+            if tried and self._band_point(pose, tx, ty) is not None:
+                # 3.200: band floor there is, but none on another side: the
+                # same side again is 3.175.E's failed retry. Spent.
+                self.recall.pop(0)
+                self._recall_refused, self._recall_refused_at = 0, None
+                self._event("recall_spent", at=[round(tx, 2), round(ty, 2)], tries=len(tried))
+                return None
             # Review: no reachable floor beside it on this map yet. Kept, not
             # spent on a straight-line goal through walls: frontiers grow the
             # map, and the next choice asks again.
             return None
-        out = self._send(spot[0], spot[1], "recall", now, at=[round(tx, 2), round(ty, 2)])
+        extra = {"side": len(tried) + 1} if tried else {}
+        out = self._send(spot[0], spot[1], "recall", now, at=[round(tx, 2), round(ty, 2)], **extra)
         if out[0] == "GOAL":
             self.recall.pop(0)
             self._recall_refused, self._recall_refused_at = 0, None
+            self._recall_tried[(tx, ty)] = tried + [spot]
             self._goal["recall"] = (tx, ty)
         else:
             last, self._recall_refused_last = self._recall_refused_last, now
@@ -1180,9 +1202,35 @@ class ExploreAgent(MissionAgent):
                 self._recall_refused, self._recall_refused_at = 0, None
         return out
 
-    def _band_point(self, pose: dict, tx: float, ty: float) -> Optional[tuple]:
+    def _recall_unlooked(self, place: tuple, why: str) -> None:
+        """3.200: a recall's look never happened (`why`: "face", its turns
+        refused; "nav", its goal failed). Kept for one more goal from another
+        side while RECALL_RETRY names `why` and the place has tries left."""
+        tried = self._recall_tried.get(place, [])
+        kept = (why in RECALL_RETRY and len(tried) < RECALL_SIDES
+                and place not in self.recall)
+        if kept:
+            self.recall.insert(0, place)
+        self._event("recall_unlooked", at=[round(place[0], 2), round(place[1], 2)],
+                    why=why, tries=len(tried), kept=kept)
+
+    @staticmethod
+    def _other_side(px: float, py: float, tx: float, ty: float, away) -> bool:
+        """3.200: is (px, py) at least RECALL_SIDE_DEG round (tx, ty) from
+        every earlier try's spot? A spot on the place itself has no side."""
+        a = math.atan2(py - ty, px - tx)
+        for ax, ay in away:
+            if math.hypot(ax - tx, ay - ty) < 0.05:
+                continue
+            d = abs((a - math.atan2(ay - ty, ax - tx) + math.pi) % (2 * math.pi) - math.pi)
+            if math.degrees(d) < RECALL_SIDE_DEG - 1e-6:
+                return False
+        return True
+
+    def _band_point(self, pose: dict, tx: float, ty: float, away=()) -> Optional[tuple]:
         """Reachable floor within APPROACH_NEAR_M..APPROACH_FAR_M of the
-        target, nearest the robot by path; None if the map offers none."""
+        target, nearest the robot by path; None if the map offers none.
+        `away` (3.200): earlier tries' spots; only floor on another side."""
         try:
             m = self.world.get_map()
         except Exception:  # noqa: BLE001
@@ -1196,6 +1244,8 @@ class ExploreAgent(MissionAgent):
             px = m["origin_x_m"] + (cx + 0.5) * res
             py = m["origin_y_m"] + (cy + 0.5) * res
             if APPROACH_NEAR_M <= math.hypot(px - tx, py - ty) <= APPROACH_FAR_M:
+                if away and not self._other_side(px, py, tx, ty, away):
+                    continue
                 if best is None or n < best[0]:
                     best = (n, px, py)
         return None if best is None else (best[1], best[2])
@@ -1938,6 +1988,9 @@ class ExploreAgent(MissionAgent):
             # 3.175.E review: a recall goal ended by charging is uncounted too;
             # its place was popped on send, so it goes back first.
             self.recall.insert(0, place)
+            tried = self._recall_tried.get(place)
+            if tried:
+                tried.pop()                     # 3.200: nor does it spend a side
         self._approach = None           # or a re-sighting there sends no approach goal
         self._pending = []
         self._local_wait_since = None
@@ -1993,13 +2046,18 @@ class ExploreAgent(MissionAgent):
                         self.retry.fail(g["target"][0], g["target"][1], now, known=self._known_at)
             elif g.get("recall"):
                 # 3.172 F5: a remembered place, not a sighting: a refused turn
-                # gives up the look, never counts against the place.
-                self._pending = [("FACE", g["recall"])]
+                # gives up the look, never counts against the place (3.200:
+                # it may keep the place for another side).
+                self._pending = [("FACE", g["recall"], 90, False, "recall")]
             elif g.get("look_at"):
                 self._pending = [("FACE", g.get("face") or g["look_at"])]
             return
         target = g.get("target") or (g["x_m"], g["y_m"])
         self.goals_failed += 1
+        if g.get("recall") and state in ("aborted", "stalled", "rejected"):
+            # 3.200: not `canceled` or `lost` (not the place's failure: 3.175.F).
+            # Queued after whatever escape the failure below sets.
+            self._recall_unlooked(g["recall"], "nav")
         # 3.85 at merge: with 3.80.G's close-in (perception sightings), an
         # approach stalled with the robot already in the band is a plain
         # failure (one retry failure), as its timeout was before the stall
@@ -2217,6 +2275,8 @@ class ExploreAgent(MissionAgent):
                     self._pending.insert(0, ("FACE", (tx, ty), tried / 2, backed, kind))
                 elif kind is None:
                     pass                          # an unseen patch: give up the look
+                elif kind == "recall":
+                    self._recall_unlooked((tx, ty), "face")   # 3.200
                 elif kind == "glimpse":
                     # Back off and turn once more -- once per place the robot
                     # stands; never a retry failure or a forgotten sighting:
