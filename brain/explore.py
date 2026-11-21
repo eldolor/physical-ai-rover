@@ -408,6 +408,7 @@ class ExploreAgent(MissionAgent):
         self._reverse_refused = False       # 3.172: this escape's REVERSE was refused
         self.recall: list = []              # 3.172 F5: carried places of the target, best first
         self._recalled = False              # 3.70.M3: a recall was handed to this mission
+        self._carried_map = False           # 3.205: the runner carried landmarks on this saved map
         self.resight = False                # 3.70.M3: searching the known map by sight
         self._seen_at: list = []            # 3.192.B: where this mission saw the target, latest last
         self._reseen = 0                    # 3.192.B: rounds of looking at them again
@@ -1180,6 +1181,12 @@ class ExploreAgent(MissionAgent):
         if self.recall:
             self._event("recall_set", places=[[round(x, 2), round(y, 2)] for x, y in self.recall])
 
+    def carried_map(self) -> None:
+        """3.205: the runner seeded this mission's inventory with landmarks
+        an earlier mission saved on this saved map, so the map is carried, not
+        discovered: the re-search by sight (3.70.M3) may fire with no recall."""
+        self._carried_map = True
+
     def _recall_goal(self, now: float):
         """3.172 F5: with nothing of this mission's in sight or remembered, go
         to the first carried place of the target and face it: one try each,
@@ -1423,15 +1430,19 @@ class ExploreAgent(MissionAgent):
             self._event("set_aside_released", places=len(self.retry.set_aside))
             self.retry.set_aside = []
             return "WAIT", True, "nothing else left; trying the places set aside"
-        if self._recalled and not self.resight and not self._survey() and self._unseen_floor(m, pose):
-            # 3.70.M3: the remembered place was looked at and the search ran
-            # out on a map it did not discover. On a carried map the floor the
-            # camera never saw is one patch, looked at once from its middle
-            # (the giant view gap), so the search would end with most of the
-            # house unseen. Once, it searches again with that floor unknown.
+        if ((self._recalled or self._carried_map) and not self.resight and not self._survey()
+                and self._unseen_floor(m, pose)):
+            # 3.70.M3: the search ran out on a map it did not discover. On a
+            # carried map the floor the camera never saw is one patch, looked
+            # at once from its middle (the giant view gap), so the search would
+            # end with most of the house unseen. Once, it searches again with
+            # that floor unknown. 3.205: on any carried map, recall or not.
             self.resight = True
-            self._event("resight", frontiers=len(frontiers), seen=len(self.seen))
-            self.last_event = "the remembered place was out of date; searching the map by sight"
+            self._event("resight", frontiers=len(frontiers), seen=len(self.seen),
+                        recalled=self._recalled)
+            self.last_event = ("the remembered place was out of date; searching the map by sight"
+                               if self._recalled else
+                               "the saved map ran out of frontiers; searching it by sight")
             return "WAIT", True, self.last_event
         again = self._reseen_places(pose) \
             if self._reseen < RESEEN_ROUNDS and self._seen_at and not self._survey() else []
