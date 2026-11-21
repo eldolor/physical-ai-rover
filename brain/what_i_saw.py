@@ -7,8 +7,11 @@ brain/what_i_saw.py
 frame its arrival's identity check judged, a thumbnail of each thing it
 placed on the map, and the rooms.
 
-One directory per mission, `<WHAT_I_SAW_DIR>/<mission_id>/` (default
-`recordings/what-i-saw`, ignored by git):
+One directory per mission, `<store>/<mission_id>/`. The caller names the
+store; this module has no default of its own (3.209.B). The brain server's
+is `WHAT_I_SAW_DIR`, else `what-i-saw` beside `inventory_dir`
+(`control/brain_server.py` `_saw_store()`; shipped: `recordings/what-i-saw`,
+ignored by git):
 
 * `report.json` -- the end state, job, target, times, the saved map's
   `frame_id`, the rooms entered, the found frame's record (its SHA-256 as
@@ -63,15 +66,10 @@ REPORT_MAX_BYTES = 20_000        # report.json's share of a mission's bytes
 ORPHAN_S = 600.0                 # a hidden temp or half-deleted directory older than this is swept
 ID_RE = re.compile(r"[A-Za-z0-9_.-]{1,80}")
 THUMB_RE = re.compile(r"thumbs/([0-9]{1,3})\.jpg")
-DEFAULT_DIR = Path(__file__).resolve().parents[1] / "recordings" / "what-i-saw"
 
 
 class ReportRefused(ValueError):
     """A request for a report that is not there, or a name that is not one."""
-
-
-def default_dir() -> Path:
-    return Path(os.environ.get("WHAT_I_SAW_DIR") or DEFAULT_DIR)
 
 
 def _jpeg(img, limit: int) -> bytes:
@@ -174,8 +172,10 @@ def _lock_for(d: Path) -> threading.Lock:
 
 
 class ReportStore:
-    def __init__(self, directory=None):
-        self.dir = Path(directory) if directory else default_dir()
+    def __init__(self, directory):
+        if not directory or not str(directory):
+            raise ValueError("ReportStore needs its directory: this module has no default (3.209.B)")
+        self.dir = Path(directory)
         self._lock = _lock_for(self.dir)
 
     def _sweep(self) -> None:
@@ -384,8 +384,8 @@ class ReportWriter:
     """Saves reports on a thread of its own. `submit()` never blocks the
     mission and never raises; a failed save is logged (once per mission)."""
 
-    def __init__(self, store: Optional[ReportStore] = None):
-        self.store = store or ReportStore()     # the routes' store shares its lock (one per directory)
+    def __init__(self, store: ReportStore):
+        self.store = store                      # the routes' store shares its lock (one per directory)
         # Two at most: each holds its frames (the judged one and every look's)
         # in the brain's memory until written; the board's floor is 0.5 GB.
         self._q: "queue.Queue" = queue.Queue(maxsize=2)
