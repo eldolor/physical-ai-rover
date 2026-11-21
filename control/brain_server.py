@@ -1208,10 +1208,15 @@ def create_app(
         if rc is not None and rc is not _CLAIMED:
             rc.cancel(reason)
 
+    # 3.161.B review: robot() and world() are built once even when a thread
+    # (the start-up send of the no-go zones) asks beside a request.
+    build_lock = threading.RLock()
+
     def robot() -> RobotInterface:
-        if state["robot"] is None:
-            state["robot"] = make_robot()
-        return state["robot"]
+        with build_lock:
+            if state["robot"] is None:
+                state["robot"] = make_robot()
+            return state["robot"]
 
     def battery_too_low(r: RobotInterface) -> Optional[str]:
         """3.137: why a mission may not start on this battery, or None."""
@@ -1258,15 +1263,16 @@ def create_app(
         refusal to start, which is the same trade this file already refuses
         to make for an unreachable /navigate/models endpoint.
         """
-        if state["world"] is None:
-            try:
-                state["world"] = make_world(robot())
-            except Exception as exc:  # noqa: BLE001 -- see docstring
-                logger.warning(
-                    "could not build a world client (%s) -- missions will "
-                    "explore by the right-hand rule instead of the map", exc)
-                state["world"] = NullWorld()
-        return state["world"]
+        with build_lock:
+            if state["world"] is None:
+                try:
+                    state["world"] = make_world(robot())
+                except Exception as exc:  # noqa: BLE001 -- see docstring
+                    logger.warning(
+                        "could not build a world client (%s) -- missions will "
+                        "explore by the right-hand rule instead of the map", exc)
+                    state["world"] = NullWorld()
+            return state["world"]
 
     app = FastAPI(title="vision-picar brain server")
     # 3.61: the process's mission state, readable by tests and diagnostics
@@ -1580,11 +1586,6 @@ def create_app(
             # that mission running with no task a later Stop could cancel.
             if state["task"] is task:
                 state["task"] = None
-            if runner is not None and (cancelled or not ended_already):
-                try:
-                    await asyncio.to_thread(_nogo_restore, runner, generation)
-                except Exception as e:  # noqa: BLE001 -- the store keeps them; the next start sends
-                    logger.warning("no-go zones not restored to the robot server: %s", e)
             if claimed:
                 # The tick thread may still be inside _finish (closing the
                 # policy, building the metrics row); wait for its last act.
@@ -1605,6 +1606,14 @@ def create_app(
         # (its poll stops), so it carries `cloud` like every other status.
         if runner is not None:
             await asyncio.to_thread(runner.stop)
+            # 3.161.B (R-a): after the car's stop (review: never before it),
+            # and with the mission no longer running, so its own start-pose
+            # dock is out of the split and its late sends are shut out.
+            if cancelled or not ended_already:
+                try:
+                    await asyncio.to_thread(_nogo_restore, runner, generation)
+                except Exception as e:  # noqa: BLE001 -- the store keeps them; the next start sends
+                    logger.warning("no-go zones not restored to the robot server: %s", e)
             # 3.70: the report is built after the stop, off this loop; give
             # it a moment so the Stop's answer usually carries it.
             done = getattr(runner, "report_done", None)
@@ -1727,13 +1736,16 @@ def create_app(
         pose, now = _pose_and_frame()
         if now != frame_id:
             return
-        zones = nogo_store_mod.default_store().zones(frame_id)
-        zones = nogo_store_mod.split_for_dock(zones, _known_dock(frame_id, pose))[0]
+        dock = _known_dock(frame_id, pose)
         with nogo_push_lock:
             if state.get("runner") is not runner or (
                     generation is not None and state["generation"] != generation):
                 return
-            state["nogo_sent"] = _nogo_send(frame_id, zones)
+            # Read under the lock (review): an edit stored meanwhile is sent
+            # by its own route under this lock, and never undone by this one.
+            zones = nogo_store_mod.default_store().zones(frame_id)
+            state["nogo_sent"] = _nogo_send(
+                frame_id, nogo_store_mod.split_for_dock(zones, dock)[0])
 
     def _nogo_at_startup(generation) -> None:
         """3.161.B (R-f): a brain that died mid-mission left the robot server
@@ -1747,13 +1759,14 @@ def create_app(
             pose, frame_id = _pose_and_frame()
             if not frame_id:
                 return
-            zones = nogo_store_mod.default_store().zones(frame_id)
-            if not zones:
-                return
-            zones = nogo_store_mod.split_for_dock(zones, _known_dock(frame_id, pose))[0]
+            dock = _known_dock(frame_id, pose)
             with nogo_push_lock:
                 if state.get("runner") is not None or state["generation"] != generation:
                     return
+                zones = nogo_store_mod.default_store().zones(frame_id)   # under the lock
+                if not zones:
+                    return
+                zones = nogo_store_mod.split_for_dock(zones, dock)[0]
                 state["nogo_sent"] = _nogo_send(frame_id, zones)
             logger.info("no-go zones: %d sent to the robot server at start-up (%s)",
                         len(zones), frame_id)

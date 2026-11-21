@@ -131,18 +131,56 @@ def test_a_restored_set_never_overwrites_a_newer_missions(rig):
         c.post("/mission/stop")
 
 
-def test_a_stopped_missions_late_lookup_sends_nothing(rig):
-    """R-e: a tick still in flight after the Stop never sends the reduced set
-    over the restored one."""
+def test_a_stopped_missions_late_lookup_sends_nothing(rig, monkeypatch):
+    """R-e: a send a tick still in flight makes after the Stop -- queued
+    behind the restore on the send lock -- never lands its reduced set last."""
+    import threading
     over, far = rig["ids"]
+    gate, restoring, armed = threading.Event(), threading.Event(), threading.Event()
+    real = nogo_store.push
+
+    def push(base, secret, f, zones, **kw):
+        if armed.is_set() and len(zones) == 2 and not restoring.is_set():
+            restoring.set()
+            gate.wait(5.0)                  # the restore holds the send lock
+        return real(base, secret, f, zones, **kw)
+    monkeypatch.setattr(nogo_store, "push", push)
     with TestClient(rig["make"](tick=_slow)) as c:
         assert c.post("/mission/start", json=START).status_code == 200
         sink = rig["runner"].nogo_sink
+        armed.set()                                      # past the start-up send and the start's
+        stopped = {}
+        t = threading.Thread(target=lambda: stopped.setdefault(
+            "r", c.post("/mission/stop")))
+        t.start()
+        assert restoring.wait(5.0)
+        sink(FRAME, [{"id": far}])                       # the late tick's send
+        time.sleep(0.1)
+        gate.set()
+        t.join(10.0)
+        assert stopped["r"].status_code == 200
+        time.sleep(0.3)
+        assert rig["sent"][-1] == (FRAME, [over, far]), rig["sent"]
+
+
+def test_a_stop_with_no_live_loop_stops_first_and_restores(rig):
+    """R-a, review: the loop task gone while the mission still runs. The
+    restore comes after the car's stop, so the mission's own start-pose dock
+    no longer filters the set it sends."""
+    over, far = rig["ids"]
+    with TestClient(rig["make"](tick=_slow)) as c:
+        assert c.post("/mission/start", json=START).status_code == 200
+        st = c.app.state.brain_state
+        task = st["task"]
+        st["task"] = None                                # as if the loop had died
+        order = []
+        real_stop = rig["runner"].stop
+        rig["runner"].stop = lambda *a, **k: (order.append("stop"), real_stop(*a, **k))[1]
+        n = len(rig["sent"])
         assert c.post("/mission/stop").status_code == 200
-        rig["sent"].clear()
-        sink(FRAME, [{"id": far}])                       # what a late tick would send
-        time.sleep(0.2)
-        assert rig["sent"] == []
+        assert rig["sent"][-1] == (FRAME, [over, far]), rig["sent"]
+        assert order and order[0] == "stop" and len(rig["sent"]) > n
+        task.cancel()
 
 
 def test_a_restarted_brain_gives_the_robot_server_the_stored_set(rig):
