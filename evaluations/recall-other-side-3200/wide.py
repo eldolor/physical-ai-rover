@@ -21,6 +21,7 @@ identical but for wall-clock `search_s`).
     (RULE: off -- the R1 code with the rule off, which counts refused faces;
      on -- R1; dev -- run from a checkout of dev, where the rule's attribute is never read)
     python evaluations/recall-other-side-3200/wide.py score ROWS.jsonl
+    python evaluations/recall-other-side-3200/wide.py compare DEV.jsonl OFF.jsonl R1.jsonl
 """
 
 import importlib.util
@@ -142,10 +143,62 @@ def score(path):
     return out
 
 
+SAME = ("outcome", "goals", "steps", "distance_m")
+NOISE_S = 0.3              # the runner's wall-clock guard (M2's re-run 0.3 s, 3.200.B 0.2 s)
+
+
+def same(a, b):
+    """C5's reading: outcome, goals, steps and distance identical; search_s
+    within NOISE_S."""
+    return all(a[f] == b[f] for f in SAME) and abs(a["search_s"] - b["search_s"]) <= NOISE_S + 1e-9
+
+
+def compare(dev_path, off_path, r1_path):
+    """3.200.C's bars C1-C6 (C7, C8 are not in the rows)."""
+    dsv, dev = rows(dev_path)
+    osv, off = rows(off_path)
+    rsv, r1 = rows(r1_path)
+    strip = lambda s: {k: v for k, v in s.items() if k != "rule"}   # noqa: E731
+    refused = {k for k, r in off.items() if r["recall_unlooked"]}
+    found = {n: sum(ok(r) for r in x.values()) for n, x in (("dev", dev), ("off", off), ("R1", r1))}
+    out = {"finds": {n: len(x) for n, x in (("dev", dev), ("off", off), ("R1", r1))},
+           "refused": len(refused), "found": found,
+           "C1": {"bar": found["dev"] + 4, "met": len(r1) == len(dev) == 240 and found["R1"] >= found["dev"] + 4},
+           "won": sorted(k for k in r1 if ok(r1[k]) and not ok(dev[k])),
+           "lost": sorted(k for k in r1 if ok(dev[k]) and not ok(r1[k])),
+           "refused_found": {"dev": sum(ok(dev[k]) for k in refused), "R1": sum(ok(r1[k]) for k in refused)}}
+    out["C2"] = {"met": not out["lost"]}
+    every = list(r1.values())
+    out["C3"] = {"wrong_found": sum(r["wrong_found"] for r in every),
+                 "contacts": sum(r["contacts"] for r in every) + sum(s["contacts"] for s in rsv.values())}
+    out["C3"]["met"] = out["C3"]["wrong_found"] == 0 and out["C3"]["contacts"] == 0
+    out["C4"] = {"per_place": max(r["recall_most_per_place"] for r in every),
+                 "per_mission": max(r["recall_goals"] for r in every),
+                 "capped": sum(r["capped"] for r in every) + sum(s["capped"] for s in rsv.values()),
+                 "retries": sum(r["recall_retries"] for r in every),
+                 "spent": sum(r["recall_spent"] for r in every)}
+    out["C4"]["met"] = out["C4"]["per_place"] <= 2 and out["C4"]["per_mission"] <= 6 and not out["C4"]["capped"]
+    unref = sorted(set(dev) - refused)
+    c5_diff = [k for k in unref if not same(dev[k], r1[k])]
+    out["C5"] = {"missions": len(unref), "differ": c5_diff,
+                 "max_search_s_delta": round(max(abs(dev[k]["search_s"] - r1[k]["search_s"]) for k in unref), 2),
+                 "surveys_identical": {i: strip(s) for i, s in rsv.items()} == {i: strip(s) for i, s in dsv.items()}}
+    out["C5"]["met"] = not c5_diff and out["C5"]["surveys_identical"]
+    c6_diff = [k for k in dev if not same(dev[k], off[k])]
+    out["C6"] = {"differ": c6_diff,
+                 "max_search_s_delta": round(max(abs(dev[k]["search_s"] - off[k]["search_s"]) for k in dev), 2),
+                 "surveys_identical": {i: strip(s) for i, s in osv.items()} == {i: strip(s) for i, s in dsv.items()}}
+    out["C6"]["met"] = len(off) == len(dev) and not c6_diff and out["C6"]["surveys_identical"]
+    print(json.dumps(out, indent=1))
+    return out
+
+
 if __name__ == "__main__":
     a = sys.argv[1:]
     if a and a[0] == "run":
         run(a[1], a[2], int(a[3]), a[4], *(int(x) for x in a[5:7]))
+    elif a and a[0] == "compare":
+        compare(a[1], a[2], a[3])
     elif a and a[0] == "score":
         score(a[1])
     else:
