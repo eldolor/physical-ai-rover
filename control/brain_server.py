@@ -665,6 +665,18 @@ def _write_saw(writer, mission_id: str, payload: dict) -> None:
         logger.warning("report %s not handed to the writer: %s", mission_id, e)
 
 
+def remote_world_for(robot: RobotInterface, config: dict,
+                     secret: Optional[str]) -> WorldInterface:
+    """The brain's default world client (see `default_world_factory` in
+    `create_app`). 3.208: a world served by the robot's own server shares
+    the robot's link record, so a lost pose read counts against the same
+    link budget; a world elsewhere (`brain.world_url`) keeps its own."""
+    url = config.get("world_url") or getattr(robot, "base_url", None) or config["robot_url"]
+    same = url.rstrip("/") == (getattr(robot, "base_url", None) or "").rstrip("/")
+    return RemoteWorld(url, secret=secret, timeout=config["request_timeout_s"],
+                       link=getattr(robot, "link", None) if same else None)
+
+
 def create_app(
     config_path: Optional[str] = None,
     robot_factory: Optional[Callable[[], RobotInterface]] = None,
@@ -755,12 +767,7 @@ def create_app(
         `robot_secret` rather than a third one: the world routes are gated by
         whichever server hosts them, and today that is the robot's.
         """
-        return RemoteWorld(
-            config.get("world_url") or getattr(robot, "base_url", None)
-            or config["robot_url"],
-            secret=robot_secret,
-            timeout=config["request_timeout_s"],
-        )
+        return remote_world_for(robot, config, robot_secret)
 
     def _room_prior_at_start(req, tier_search: str, find_labels: bool,
                              vision_secret: Optional[str]) -> dict:

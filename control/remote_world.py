@@ -33,6 +33,7 @@ from typing import Optional
 
 import httpx
 
+from control.remote_robot import LinkHealth, is_unanswered
 from world.interface import WorldInterface, unusable_map, unusable_pose, unusable_truth
 
 logger = logging.getLogger("remote_world")
@@ -59,6 +60,12 @@ class WorldTransportError(RuntimeError):
         self.status = status
 
 
+class WorldUnreachable(WorldTransportError):
+    """3.208: a world request that got no HTTP answer (`is_unanswered`):
+    the robot server's link, when it serves the world, and counted against
+    MissionRunner's link budget like `RobotUnreachable`. `status` is None."""
+
+
 class RemoteWorld(WorldInterface):
     """HTTP client of `robot/server.py`'s `/world/*` routes."""
 
@@ -68,8 +75,13 @@ class RemoteWorld(WorldInterface):
         secret: Optional[str] = None,
         timeout: float = DEFAULT_TIMEOUT_S,
         client: Optional[httpx.Client] = None,
+        link: Optional[LinkHealth] = None,
     ):
         self.base_url = base_url.rstrip("/")
+        # 3.208: the robot's `LinkHealth` when this world is served by the
+        # robot's own server (the brain server passes it), else this
+        # client's own.
+        self.link = link if link is not None else LinkHealth()
         self.headers = {}
         if secret:
             self.headers["x-app-secret"] = secret
@@ -157,7 +169,11 @@ class RemoteWorld(WorldInterface):
         try:
             response = self._client.request("GET", f"{self.base_url}{path}", headers=headers)
         except httpx.HTTPError as e:
+            if is_unanswered(e):            # 3.208: the link, not our URL or code
+                self.link.note_lost(f"GET {path}: {e}")
+                raise WorldUnreachable(f"GET {path} failed: {e}") from e
             raise WorldTransportError(f"GET {path} failed: {e}") from e
+        self.link.note_answer()
         if response.status_code >= 400:
             raise WorldTransportError(f"GET {path} failed: HTTP {response.status_code}",
                                       response.status_code)

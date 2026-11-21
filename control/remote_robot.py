@@ -37,6 +37,7 @@ Two details are load-bearing for that transparency:
 
 import logging
 import re
+import threading
 import time
 from typing import Optional
 
@@ -77,14 +78,50 @@ class RobotUnreachable(RobotTransportError):
     broke the protocol (`httpx.TransportError`, but `UnsupportedProtocol`
     and `LocalProtocolError`, which are our own URL or code). A subclass, so
     every `except RobotTransportError` still catches it; MissionRunner
-    budgets it on `POST /action` (`DEFAULT_MAX_ACTION_FAILURES`). Whether
-    the robot executed a lost POST is unknown -- which is why nothing
-    re-sends one. Every answer the server GAVE (any status) is not this."""
+    counts it against the robot link's budget, on any route. Whether the
+    robot executed a lost POST is unknown -- which is why nothing re-sends
+    one. Every answer the server GAVE (any status) is not this."""
 
     def __init__(self, method: str, path: str, message: str):
         super().__init__(message)
         self.method = method
         self.path = path
+
+
+def is_unanswered(error: BaseException) -> bool:
+    """3.208: did this `httpx` error leave the request with no answer from
+    the far end (the link), rather than come from our own URL or code?"""
+    return (isinstance(error, httpx.TransportError)
+            and not isinstance(error, (httpx.UnsupportedProtocol, httpx.LocalProtocolError)))
+
+
+class LinkHealth:
+    """3.208: the brain's record of its link to the robot server, shared by
+    the clients that talk to it (`RemoteRobot`, and `RemoteWorld` when the
+    world is served there). Two counters, only ever increased: requests that
+    got an HTTP answer (any status) and requests that got none
+    (`is_unanswered`). MissionRunner compares them across a tick: a tick in
+    which `unanswered` moved sends no move, and the runner's link budget is
+    judged from them. Reports only; it changes no request."""
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self.answered = 0
+        self.unanswered = 0
+        self.last_error: Optional[str] = None
+
+    def note_answer(self) -> None:
+        with self._lock:
+            self.answered += 1
+
+    def note_lost(self, error: str) -> None:
+        with self._lock:
+            self.unanswered += 1
+            self.last_error = error
+
+    def counts(self) -> tuple:
+        with self._lock:
+            return self.answered, self.unanswered
 
 
 # A `_tupleize` helper used to live here, turning a JSON list back into the
@@ -116,6 +153,9 @@ class RemoteRobot(RobotInterface):
         self._client = client or httpx.Client(base_url=self.base_url, timeout=timeout)
         self._owns_client = client is None
         self.mission_id: Optional[int] = None   # 3.171: the last Start's
+        # 3.208: what this client's requests got back; RemoteWorld shares it
+        # when the world is served by the same robot server.
+        self.link = LinkHealth()
 
     # ---------- driving ----------
 
@@ -374,13 +414,12 @@ class RemoteRobot(RobotInterface):
             response = self._client.request(
                 method, f"{self.base_url}{path}", json=json, headers=self.headers
             )
-        except (httpx.UnsupportedProtocol, httpx.LocalProtocolError) as e:
-            # Our own URL or request, not the link (3.208).
-            raise RobotTransportError(f"{method} {path} failed: {e}") from e
-        except httpx.TransportError as e:
-            raise RobotUnreachable(method, path, f"{method} {path} failed: {e}") from e
         except httpx.HTTPError as e:
+            if is_unanswered(e):            # 3.208: the link, not our URL or code
+                self.link.note_lost(f"{method} {path}: {e}")
+                raise RobotUnreachable(method, path, f"{method} {path} failed: {e}") from e
             raise RobotTransportError(f"{method} {path} failed: {e}") from e
+        self.link.note_answer()
 
         if response.status_code == 400:
             # Matches robot/safety.py's own dispatch error for an unknown verb.
