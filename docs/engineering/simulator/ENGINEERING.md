@@ -254,8 +254,8 @@ curl -s http://127.0.0.1:8000/health | python -m json.tool | grep sim_map
 ```
 
 Expect `"sim_map": "scaled_house"`. An unknown name fails at start-up
-with `ValueError: unknown SIM_MAP '...' (starter_house | scaled_house |
-home_first_floor)`. There is no reset route: restart the server to put the
+with `ValueError: unknown SIM_MAP '...' (` and the valid names (the full list
+is `sim/maps/README.md`; the code is `sim/maps/__init__.py`). There is no reset route: restart the server to put the
 robot back at its start pose. If another session owns port 8000, use the
 parallel-session ports in the operations spec
 (docs/engineering/operations/ENGINEERING.md).
