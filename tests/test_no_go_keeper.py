@@ -228,3 +228,45 @@ def test_the_keeper_stops_with_the_app(rig):
     rig["world"].session = "slam-z"
     time.sleep(0.2)
     assert len(bot.sends) == n
+
+
+def test_a_copy_holding_zones_with_nothing_stored_is_cleared(rig):
+    """Review (both reviewers): another map's zones left at the robot server
+    are cleared with an empty set; once clear, nothing more."""
+    (rig["tmp"] / f"{FRAME}.json").unlink()
+    bot = rig["bot"]
+    bot.copy = {"frame_id": "map-0ther000", "zones": [{"id": "zold", "x0": 0, "y0": 0,
+                                                       "x1": 1, "y1": 1}], "sent": True}
+    with TestClient(rig["make"]()):
+        assert _wait(lambda: bot.sends == [(FRAME, [])]), bot.sends
+        time.sleep(0.3)
+    assert bot.sends == [(FRAME, [])]
+
+
+def test_a_zone_changed_under_the_same_id_is_sent_again(rig):
+    """Review: an edit whose own send failed keeps the zone's id."""
+    bot = rig["bot"]
+    with TestClient(rig["make"]()):
+        assert _wait(lambda: len(bot.sends) == 1)
+        with bot.lock:
+            bot.copy["zones"][1]["x1"] += 0.5
+        assert _wait(lambda: len(bot.sends) == 2), bot.sends
+
+
+def test_a_start_that_fails_does_not_hold_the_keeper(rig, monkeypatch):
+    """Review: a start that raises after its generation bump must not leave
+    the keeper held off."""
+    bot = rig["bot"]
+    runner = rig["runner"]
+
+    def boom():
+        raise RuntimeError("start failed (test)")
+    monkeypatch.setattr(runner, "start", boom)
+    with TestClient(rig["make"](), raise_server_exceptions=False) as c:
+        assert _wait(lambda: len(bot.sends) == 1)
+        r = c.post("/mission/start", json={"target_object": "red backpack", "policy": "explore"})
+        assert r.status_code >= 500
+        assert c.app.state.brain_state["nogo_starting"] == 0
+        n = len(bot.sends)
+        rig["world"].session = "slam-c"
+        assert _wait(lambda: len(bot.sends) > n), bot.sends
