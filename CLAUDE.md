@@ -183,6 +183,9 @@ here to `docs/guides/MERGED-STATE.md`; open work only stays here.**
 * 3.190 (the user, 2026-11-19): one cloud call at a find's start for the
   room prior of a target the shipped prior lacks (3.116.C, wired; off by
   default). A is free; B's calls and C's Lambda deploy wait on the user.
+* 3.206 (the user, 2026-11-21): a frontier model's direction labels train
+  Qwen's steering with the target in view (with 3.188). A is free; B-C's
+  calls wait on the user; D waits on 3.188.B.
 * Not built: `brain/planner.py`, S7 (chaos and soak), a Stage 1 vision
   re-run against the lit renderer.
 
