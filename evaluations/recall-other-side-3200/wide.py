@@ -19,7 +19,8 @@ identical but for wall-clock `search_s`).
     python tools/desktop_lock.py shared --why "3.200.C sweep" -- \\
         python evaluations/recall-other-side-3200/wide.py run ROWS.jsonl WORKDIR WORKERS RULE [SURVEYS STARTS]
     (RULE: off -- the R1 code with the rule off, which counts refused faces;
-     on -- R1; dev -- run from a checkout of dev, where the rule's attribute is never read)
+     on -- R1; both need R1's code, `9648d570`: it did not ship, and on dev
+     every RULE runs dev, the attribute set and never read)
     python evaluations/recall-other-side-3200/wide.py score ROWS.jsonl
     python evaluations/recall-other-side-3200/wide.py compare DEV.jsonl OFF.jsonl R1.jsonl
 """
