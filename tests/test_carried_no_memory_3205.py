@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-only
+# Copyright (C) 2026 Anshu Gaind
 """3.205.A: a find on a saved map whose inventory has no memory of the target
 searches the floor the camera has not seen (3.70.M3's re-search by sight,
 `ExploreAgent.resight`, widened from "handed a recall" to "on a carried map").
@@ -78,6 +80,7 @@ def test_red_on_dev_a_carried_map_with_no_memory_ends_exhausted():
     the whole house one unseen patch looked at once: the find gives up."""
     runner, grid, names, _ = _find("laptop bag", (35.5, 38.5), resight=False)
     assert runner.inventory.carried == 1 and runner.agent.recall == []
+    assert runner.agent._carried_map is False          # review: the stub held (seeded after it)
     assert runner.status()["outcome"] == EXHAUSTED
     assert "resight" not in names
 
@@ -108,6 +111,7 @@ def test_a_survey_on_a_carried_map_never_re_searches():
     runner, grid, names, _ = _find(None, (6.5, 4.5), job="survey", house="scaled_house")
     assert runner.agent._carried_map
     assert "resight" not in names
+    assert runner.status()["outcome"] == EXHAUSTED      # review: it ends as a survey does
 
 
 def test_a_find_with_a_recall_re_searches_once_as_before():
