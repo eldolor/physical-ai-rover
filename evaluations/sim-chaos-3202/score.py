@@ -203,7 +203,9 @@ def _five_xx(proxy_rows: list, t0, t1) -> int:
             continue
         for k in ("fate", "dup_copy"):
             v = p.get(k)
-            if isinstance(v, int) and v >= 500:
+            # 501 is the designed "no world goal" answer each mission start
+            # reads with no nav world (soak1: all 950 were GET /world/goal).
+            if isinstance(v, int) and v >= 500 and v != 501:
                 n += 1
     return n
 
@@ -342,7 +344,18 @@ def score(out: Path) -> dict:
                  "recovery_s_median": statistics.median(rec_s) if rec_s else None, "fails": c3}
 
     # Criterion 4
-    tgt = target_m(run["house"], run["target"])
+    tgt0 = target_m(run["house"], run["target"])
+    moves = sorted((e["t"], ((e["dst"][0] + 0.5) * CELL_M, (e["dst"][1] + 0.5) * CELL_M))
+                   for e in read_jsonl(out / "events.jsonl") if e.get("what") == "target_moved")
+
+    def target_at(t):
+        """Amendment 3: where the target was at `t` (the house's cell before any move)."""
+        at = tgt0
+        for tm, xy in moves:
+            if tm > t:
+                break
+            at = xy
+        return at
     rate_set = [mm for mm in missions_l if not set(mm.get("tags") or []) & set(EXCLUDE_FROM_RATE)
                 and mm.get("how") not in ("preempted", "stopped_at_end")]
     found = [mm for mm in rate_set if mm.get("outcome") == "found"]
@@ -357,6 +370,7 @@ def score(out: Path) -> dict:
         if tags & set(NO_FOUND):
             wrong.append(f"mission {mm.get('id')} found under {sorted(tags & set(NO_FOUND))}")
         et = mm.get("end_truth") or {}
+        tgt = target_at(et.get("t") if et.get("t") is not None else mm.get("t1", 0))
         d = (math.hypot(et["x"] - tgt[0], et["y"] - tgt[1])
              if tgt and et.get("x") is not None else None)
         mm["target_dist_m"] = None if d is None else round(d, 2)
@@ -373,7 +387,7 @@ def score(out: Path) -> dict:
         outcomes[mm.get("outcome")] = outcomes.get(mm.get("outcome"), 0) + 1
     res["c4"] = {"met": not c4, "missions": len(missions_l), "rate_set": len(rate_set),
                  "found": len(found), "rate": None if rate is None else round(rate, 3),
-                 "outcomes": outcomes, "wrong_found": wrong, "hung": hung,
+                 "outcomes": outcomes, "wrong_found": wrong, "hung": hung, "target_moves": len(moves),
                  "found_dist_m": sorted(mm["target_dist_m"] for mm in missions_l
                                         if mm.get("target_dist_m") is not None),
                  "mission_s_median": statistics.median([mm["t1"] - mm["t0"] for mm in rate_set

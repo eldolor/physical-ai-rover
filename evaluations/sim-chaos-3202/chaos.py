@@ -66,6 +66,11 @@ FIRE_TRIES = 10               # criterion 1: a FORWARD that lasts 0.15 s, in 10 
 HOLD_S = {"K2": 30.0, "K4": 10.0, "K5": 5.0, "K6": 10.0}
 WATCH_S = 6.0
 K7_LINK = {"latency_ms": 200, "jitter_ms": 50, "drop": 0.05}
+# Amendment 3: after a find the car is parked at the target, and every later
+# mission would end found at step 1 (soak1). So the target moves on after each
+# find, round these cells (x, y) in other rooms; the scorer judges a Found
+# against where the target was at that mission's end (`target_moved` events).
+TARGET_CYCLE = {"scaled_house": [(23, 5), (24, 11), (9, 11)]}
 
 
 def now() -> float:
@@ -149,6 +154,8 @@ class Chaos:
         self.extra: dict = {}                    # proxy, stub: this harness's own processes
         self.st: Optional[Stack] = None
         self.sampler: Optional[RssSampler] = None
+        self.cycle = TARGET_CYCLE.get(house, [])
+        self.target_i = 0                        # the target sits at cycle[target_i]
 
     # ------------------------------------------------------------ helpers
 
@@ -234,6 +241,28 @@ class Chaos:
         self.cur = None
         if self.sampler:
             self.sampler.mission = None
+        if rec.get("outcome") == "found" or s.get("found"):
+            self.move_target()
+
+    def move_target(self) -> None:
+        """Amendment 3: the target on to the next cycle cell after a find (a
+        cell refused -- the car's turning circle -- is skipped for the next)."""
+        if not self.cycle or self.st is None:
+            return
+        src = self.cycle[self.target_i]
+        for k in range(1, len(self.cycle)):
+            j = (self.target_i + k) % len(self.cycle)
+            try:
+                code, body = http("POST", self.st.urls["body"] + "/sim/objects/move",
+                                  {"src": list(src), "dst": list(self.cycle[j])}, self.st.secret, 5.0)
+            except OSError as e:
+                code, body = None, str(e)
+            if code == 200:
+                self.target_i = j
+                self.note("target_moved", src=list(src), dst=list(self.cycle[j]))
+                return
+            self.note("target_move_refused", src=list(src), dst=list(self.cycle[j]),
+                      code=code, detail=str(body)[:200])
 
     def poll_end(self) -> Optional[dict]:
         """The current mission's status once it has ended (None while it runs)."""
@@ -477,6 +506,7 @@ class Chaos:
                "git": subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True,
                                      text=True).stdout.strip(),
                "config": self.config_values(), "target": TARGET, "stop_last": self.stop_last,
+               "target_cycle": self.cycle,
                "planted_config": {"drill_tick_timeout_s": 600.0}
                if "dead_man" in self.plant.split(",") else None}
         (self.out / "run.json").write_text(json.dumps(run, indent=1))
