@@ -1055,7 +1055,7 @@ class Bridge(Node):
         bare_before, vent_before = self.zones_bare, self.zones_vent
         st = keepout.step(self.zones, {"suspended": before, "bare": bare_before,
                                        "vent": vent_before, "vent_phase": self.vent_phase},
-                          xy, self.mask_phase, fresh=self.zones_fresh)
+                          xy, phase=self.mask_phase, fresh=self.zones_fresh)
         after = st["suspended"]
         self.zones_bare = st["bare"]             # never also suspended (3.195 review)
         self.zones_vent, self.vent_phase = st["vent"], st["vent_phase"]
