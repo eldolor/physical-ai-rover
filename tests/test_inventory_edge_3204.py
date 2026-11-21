@@ -206,3 +206,32 @@ def test_amendment_1_tuning_as_recorded(gap, ph, ph_rep, true, true_rep, found):
 def test_the_chosen_gap_is_the_constant():
     """The fewest phantoms meeting E2 and E3 on seed 3462: 1.0 m."""
     assert inv.EDGE_GAP_M == 1.0
+
+
+# ---------- judging: fresh seed 32042, gap 1.0 (E1-E4), and E6 ----------
+
+def test_judging_seed_32042_meets_e1_to_e4():
+    off_c, on_c = _score("B/judge-off-clean-32042.jsonl"), _score("B/judge-on-clean-32042.jsonl")
+    off_n, on_n = _score("B/judge-off-noisy-32042.jsonl"), _score("B/judge-on-noisy-32042.jsonl")
+    assert (off_c["phantoms"], on_c["phantoms"]) == (51, 4)                  # E1: 92% fewer
+    assert on_c["phantoms"] <= off_c["phantoms"] / 2
+    assert (off_c["found"], on_c["found"], on_c["seen"]) == (876, 869, 891)
+    assert on_c["recall_mean"] >= off_c["recall_mean"] - 0.01                # E2 (0.9752 vs 0.983)
+    assert on_c["true_carried"] >= 0.95 * off_c["true_carried"]              # E3 (1568 vs 1561)
+    assert on_c["true_reported"] >= 0.95 * off_c["true_reported"]            # (1202 vs 1204)
+    assert (off_n["phantoms"], on_n["phantoms"]) == (233, 174)               # E4
+    assert on_n["recall_mean"] >= off_n["recall_mean"] - 0.02                # (0.9227 vs 0.9293)
+    assert on_n["true_carried"] >= 0.90 * off_n["true_carried"]              # (1577 vs 1553)
+
+
+@pytest.mark.parametrize("sweep", ["3192-find-rooms.json", "m2.jsonl", "m3.jsonl"])
+def test_e6_key_off_rows_are_devs(sweep):
+    """E6: 3.192.B's find (rooms chooser), 3.70.M2 and 3.70.M3, run on dev
+    b27fddc2 and on d5b81cd9 with the key off: identical but for wall time."""
+    import subprocess
+    import sys
+    out = subprocess.run([sys.executable, str(EVAL / "e6_compare.py"),
+                          str(EVAL / "B" / "e6" / f"dev-{sweep}"),
+                          str(EVAL / "B" / "e6" / f"keyoff-{sweep}")],
+                         capture_output=True, text=True, check=True).stdout
+    assert "IDENTICAL" in out
