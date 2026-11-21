@@ -134,6 +134,7 @@ NUDGE_PLACE_M = 0.30
 # 3.172 F5: a find goes first to where earlier missions on the saved map put
 # the target -- at most this many carried landmarks, one goal each.
 RECALL_MAX = 3
+RESEEN_ROUNDS = 2               # 3.192.B: an exhausted find looks again where it saw the target
 # 3.70.M3: a find handed a recall whose search would end `exhausted` with known
 # floor the camera never saw searches once more, that floor read as unknown so
 # frontiers lead the camera to it. Cells this near the robot stay known (the
@@ -408,6 +409,9 @@ class ExploreAgent(MissionAgent):
         self.recall: list = []              # 3.172 F5: carried places of the target, best first
         self._recalled = False              # 3.70.M3: a recall was handed to this mission
         self.resight = False                # 3.70.M3: searching the known map by sight
+        self._seen_at: list = []            # 3.192.B: where this mission saw the target, latest last
+        self._reseen = 0                    # 3.192.B: rounds of looking at them again
+        self._carried: list = []            # 3.192.B: the recall's carried places (`recall_from`)
         self._recall_refused = 0            # refusals in a row of recall[0]
         self._recall_refused_at = None      # when that row began
         self._recall_refused_last = None    # its latest refusal
@@ -600,6 +604,7 @@ class ExploreAgent(MissionAgent):
         if sighting is not None:
             tx, ty = sighting
             self._last_seen = (tx, ty)
+            self._note_seen_at(tx, ty)
             moved = (self._approach is None
                      or math.hypot(tx - self._approach[0], ty - self._approach[1]) > APPROACH_MOVED_M)
             if moved and self.retry.available(tx, ty, now, approach=True):
@@ -933,6 +938,12 @@ class ExploreAgent(MissionAgent):
         while not self.retry.dropped(*place):
             self.retry.fail(place[0], place[1], self.clock(), known=self._known_at)
         self._event("identity_refused", target=[round(place[0], 2), round(place[1], 2)])
+        # 3.192.B: not the target -- never looked at again, nor any place of a
+        # look-again round already handed to the recall (a carried place stays).
+        far = lambda p: math.hypot(p[0] - place[0], p[1] - place[1]) > self.retry.radius_m  # noqa: E731
+        self._seen_at = [p for p in self._seen_at if far(p)]
+        if self._reseen:
+            self.recall = [p for p in self.recall if far(p) or p in self._carried]
         self._last_seen = None
         self._approach = None
         self._close_in_refused = 0
@@ -1049,6 +1060,12 @@ class ExploreAgent(MissionAgent):
         self._reset_in_sight()
         self._pending.insert(0, "REVERSE")
 
+    def _note_seen_at(self, tx: float, ty: float) -> None:
+        """3.192.B: a sighting's place, one per retry radius (the latest)."""
+        r = self.retry.radius_m
+        self._seen_at = [p for p in self._seen_at if math.hypot(p[0] - tx, p[1] - ty) > r]
+        self._seen_at.append((tx, ty))
+
     def _reset_in_sight(self) -> None:
         self._in_sight_unfound, self._in_sight_at, self._in_sight_tick = 0, None, -1
 
@@ -1140,6 +1157,7 @@ class ExploreAgent(MissionAgent):
         """3.172 F5: where earlier missions on this saved map put the target
         (the runner's carried landmarks of its name, best first)."""
         self.recall = [(float(x), float(y)) for x, y in places][:RECALL_MAX]
+        self._carried = list(self.recall)
         self._recalled = bool(self.recall)
         if self.recall:
             self._event("recall_set", places=[[round(x, 2), round(y, 2)] for x, y in self.recall])
@@ -1396,6 +1414,21 @@ class ExploreAgent(MissionAgent):
             self.resight = True
             self._event("resight", frontiers=len(frontiers), seen=len(self.seen))
             self.last_event = "the remembered place was out of date; searching the map by sight"
+            return "WAIT", True, self.last_event
+        if self._reseen < RESEEN_ROUNDS and self._seen_at and not self._survey():
+            # 3.192.B: the target was seen this mission and lost (its sighting
+            # given up or dropped by the retry rule), and the search ran out.
+            # The places it was seen are looked at again from beside it, latest
+            # first, as a carried place is (`_recall_goal`); a second round
+            # only on sightings made during the first. A carried place not yet
+            # reached stays after them.
+            self._reseen += 1
+            again = list(reversed(self._seen_at))[:RECALL_MAX]
+            self.recall = again + [p for p in self.recall if p not in again]
+            self._seen_at = []
+            self._event("reseen", round=self._reseen,
+                        places=[[round(x, 2), round(y, 2)] for x, y in again])
+            self.last_event = "the search ran out; looking again where the target was seen"
             return "WAIT", True, self.last_event
         self.exhausted = True
         self.last_event = (f"no reachable frontier left ({len(frontiers)} on the map: "
