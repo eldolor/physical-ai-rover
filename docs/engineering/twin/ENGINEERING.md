@@ -125,6 +125,13 @@ The page also fetches a relative `GET <page dir>/health` for the
 environment banner (`env_label`). Deployed, that is the vision service's
 `/health`, which returns `env_label` since 3.64.
 
+**Same origin is a robot only when it says so (3.203).** `robot/server.py`
+serves `index.html` with `<meta name="picar-robot-origin">` injected; the
+prefill section sets `#cfg-server-url` to `location.origin` only when that
+marker exists. A static host has none, so a first-run page connects, and
+polls `/frame` and `/battery`, nothing. Pinned by
+`tests/test_ui_first_run_polls.py`.
+
 **Magic-link query parameters:** `secret` (vision), `robotSecret`,
 `brainSecret`, `visionUrl`, `serverUrl`, `brainUrl`. They are read once
 at load by the prefill section. **A link that moves a service to another

@@ -7984,7 +7984,14 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   // as a local file:// page, the robot server IS this page's own origin --
   // prefill the field instead of making the user type an IP.
   if (location.protocol !== "file:") {
-    cfgServerUrlEl.value = location.origin;
+    // 3.203: only a robot server marks its own page (robot/server.py injects
+    // <meta name="picar-robot-origin">); a static host (the deployed twin on
+    // CloudFront) is not a robot, and polling its /frame and /battery is a
+    // 403 per poll on a first-run page. No marker: the field stays empty
+    // and nothing connects until the person saves a robot.
+    if (document.querySelector('meta[name="picar-robot-origin"]')) {
+      cfgServerUrlEl.value = location.origin;
+    }
 
     // Best-effort default for the vision service URL too, based on this
     // project's own documented conventions (README.md/CLAUDE.md), not a
