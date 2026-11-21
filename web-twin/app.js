@@ -4647,13 +4647,14 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   // field. Never over a person's words: not while the field has focus or was
   // edited since this page last started a mission, and not for a mission this
   // page started (the field may hold the sentence the target was read from).
-  var brainTargetTyped = false;
+  var brainTargetTyped = false, brainRunIsOurs = false;
   function showRunningTarget(status) {
-    if (!status || !status.running || status.job === "survey") return;
+    if (!status || !status.running) { brainRunIsOurs = false; return; }   // a later run is a new one
+    if (status.job === "survey") return;
     const target = (status.target_object || "").trim();
     const box = document.getElementById("brain-target");
     if (!target || !box || brainTargetTyped || document.activeElement === box) return;
-    if (state.brainTarget === target.toLowerCase()) return;
+    if (brainRunIsOurs) return;
     if (box.value !== target) {
       box.value = target;
       box.dispatchEvent(new Event("input"));   // the readings follow the words
@@ -4962,6 +4963,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       state.brainMissionRunning = true;
       state.brainTarget = survey ? null : target.toLowerCase();
       brainTargetTyped = false;        // 3.201: the next API find may show itself
+      brainRunIsOurs = true;
       state.brainLogSignature = "";
       const drill = fault !== "none";
       const key = survey ? "mission.surveyStarted" : drill ? "mission.drillStarted" : "mission.started";
