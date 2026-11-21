@@ -32,12 +32,18 @@ def _load(name, path):
     return mod
 
 
+_SWEEP = []
+
+
 def _drop(inv_dir, m):
-    sweep = _load("carried_3205", HERE / "sweep.py")
-    return {"dropped": sweep.drop_target(inv_dir, m["target"])}
+    if not _SWEEP:
+        _SWEEP.append(_load("carried_3205", HERE / "sweep.py"))
+    return {"dropped": _SWEEP[0].drop_target(inv_dir, m["target"])}
 
 
 def run(rows=ROWS):
+    # One find only: the drop rewrites the survey's own files, which the
+    # harness's put-back (it removes files added since) does not undo (review).
     live = _load("live_370", ROOT / "evaluations" / "find-last-seen-370" / "live.py")
     live.run(rows=rows, finds=1, find_limit_s=1200.0, before_find=_drop)   # image tagged *-plan-3.70 (the harness's guards)
 

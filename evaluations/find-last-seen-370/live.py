@@ -151,7 +151,9 @@ def run(rows=ROWS, finds=FINDS, find_limit_s=FIND_LIMIT_S, move=None, before_fin
     before the find starts (None: nothing moved, M2's run). 3.205.A:
     `before_find(inv_dir, m)` -> dict, run right after the inventory is put
     back (it drops X's rows), its answer kept in the find's row as
-    `before_find`."""
+    `before_find`; one that raises writes a `not_prepared` row and the next
+    find runs. The put-back removes files added since the survey only, so a
+    hook that rewrites the survey's files is for a one-find run."""
     assert os.environ.get("ROS_IMAGE", "").endswith("plan-3.70"), "run with this branch's env"
     rows = Path(rows)
     wall_s = find_limit_s + 600
@@ -372,7 +374,14 @@ def run(rows=ROWS, finds=FINDS, find_limit_s=FIND_LIMIT_S, move=None, before_fin
             st = (t_.get("x_m", math.nan), t_.get("y_m", math.nan), t_.get("heading_deg", math.nan))
             # The last find's save has landed (its sleep); put the survey's back.
             restore(inv_dir, keep)
-            prep = before_find(inv_dir, m) if before_find is not None else None
+            prep = None
+            if before_find is not None:
+                try:
+                    prep = before_find(inv_dir, m)
+                except Exception as e:  # noqa: BLE001 -- review: a row, then the next find
+                    write({"row": "find", "k": m["k"], "target": m["target"], "outcome": "not_prepared",
+                           "before_find": {"error": f"{e!r}"[:160]}})
+                    continue
             moved = None
             if move is not None:
                 try:
@@ -383,7 +392,7 @@ def run(rows=ROWS, finds=FINDS, find_limit_s=FIND_LIMIT_S, move=None, before_fin
                     moved = {"error": f"{e!r}"[:160]}
                 if moved.get("status") != 200:
                     write({"row": "find", "k": m["k"], "target": m["target"], "outcome": "not_moved",
-                           "moved": moved})
+                           "moved": moved, **({"before_find": prep} if prep is not None else {})})
                     continue
             rec = find(robot, brain, m["k"], m["target"], reported)
             if prep is not None:

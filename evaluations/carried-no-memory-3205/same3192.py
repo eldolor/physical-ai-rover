@@ -15,8 +15,11 @@ KEYS = ("outcome", "sim_s", "goals", "goals_in_zone", "goals_in_grown", "entries
 
 def same(a, b):
     def load(p):
-        d = json.load(open(p))
-        return {(r["house"], r["seed"], r["arm"], r.get("chooser")): r for r in d["rows"]}
+        with open(p) as f:
+            d = json.load(f)
+        out = {(r["house"], r["seed"], r["arm"], r.get("chooser")): r for r in d["rows"]}
+        assert len(out) == len(d["rows"]), f"{p}: rows share a key"   # review: none collapse
+        return out
     ra, rb = load(a), load(b)
     differ = {}
     for k in sorted(set(ra) | set(rb), key=str):

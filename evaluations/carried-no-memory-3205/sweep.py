@@ -37,18 +37,30 @@ SAME = ("outcome", "search_s", "goals", "steps", "target_m", "contacts", "end_re
 
 def drop_target(store_dir, target):
     """Every saved row the found rule names as `target` removed from every
-    report in `store_dir`; returns how many were removed."""
+    report in `store_dir`; returns how many were removed. Review: only a
+    report that changed is rewritten, through a temporary file and a rename,
+    its mtime kept (the store's head breaks a `carry_seq` tie by mtime)."""
+    import os
     from brain.memory import MissionMemory
     names = MissionMemory(mission="3.205", target_object=target).names_target
     gone = 0
-    for p in Path(store_dir).glob("*.json"):
+    for p in sorted(Path(store_dir).glob("*.json")):
         rep = json.loads(p.read_text())
+        if not isinstance(rep, dict):
+            continue
+        n = 0
         for key in ("reported", "candidates"):
             rows = rep.get(key) or []
             keep = [r for r in rows if not names(r.get("label"))]
-            gone += len(rows) - len(keep)
+            n += len(rows) - len(keep)
             rep[key] = keep
-        p.write_text(json.dumps(rep, indent=1, sort_keys=True))
+        if n:
+            st = p.stat()
+            tmp = p.with_name(f".{p.name}.tmp")
+            tmp.write_text(json.dumps(rep, indent=1, sort_keys=True))
+            os.replace(tmp, p)
+            os.utime(p, ns=(st.st_atime_ns, st.st_mtime_ns))
+            gone += n
     return gone
 
 
@@ -144,7 +156,9 @@ def same(a, b, keys=SAME):
     position for a run's first row, the survey), the fields that differ."""
     def load(p):
         rows = [json.loads(x) for x in Path(p).read_text().splitlines() if x.strip()]
-        return {("survey",): rows[0], **{(r.get("arm"), r.get("k")): r for r in rows[1:]}}
+        out = {("survey",): rows[0], **{(r.get("arm"), r.get("k")): r for r in rows[1:]}}
+        assert len(out) == len(rows), f"{p}: rows share a key"      # review: none collapse
+        return out
     ra, rb = load(a), load(b)
     diff = {}
     for key in sorted(set(ra) | set(rb), key=str):
