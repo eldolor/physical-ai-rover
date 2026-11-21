@@ -21,7 +21,7 @@ the same commit that changes it.
 | `robot/interface.py` | `RobotInterface` (ABC), the honest defaults (`unusable_grid()`, `unusable_odometry()`, `unusable_wheels()`, `unusable_scan()`), zone statuses, `NO_SENSOR_CM`, the driver-rank table used by [safety](../../safety/ARCHITECTURE.md) (`DRIVER_PRIORITY`, `driver_priority()`, `Preempted`), and `carry_out_verb()`, the one loop every guarded or unguarded plan-based verb runs through |
 | `robot/factory.py` | `get_robot()`: picks the backend (`_backend()`), builds the simulated house (`_sim_world()`), and wraps it for ROS drive if asked (`_with_drive()`) |
 | `sim/mock_robot.py` | `MockRobot`: the sim body. Wheel velocities integrated by `step()` with exact differential-drive kinematics, sub-stepped against the grid world's collision. Camera via `sim/renderer.py`, an 8-column depth grid, a 360-beam scan from the lidar's mount point |
-| `control/remote_robot.py` | `RemoteRobot`: the contract over `robot/server.py`'s HTTP API, sending `x-driver` (default `brain`) and `x-app-secret`. `RobotTransportError` for "nobody heard it" |
+| `control/remote_robot.py` | `RemoteRobot`: the contract over `robot/server.py`'s HTTP API, sending `x-driver` (default `brain`) and `x-app-secret`. `RobotTransportError` for "nobody heard it"; its subclass `RobotUnreachable` (3.208) for "no answer came back" |
 | `sim/replay_robot.py` | `ReplayRobot`: a directory of images, one frame per movement verb; `loop=True` wraps at the end. Open loop. Not selectable from the factory; constructed directly, by `tests/demo_replay_mission.py` and the tests |
 | `sim/teleop_robot.py` | `TeleopRobot`: the latest frame pushed through `POST /teleop/frame`, stamped `captured_at` on arrival (3.90); the last `FRAME_BUFFER` (16) kept for `frames_after()` / `GET /teleop/frames`, a recorder's read (3.90 E), with `boot_id` so a restart is seen; verbs are acks; `TeleopStall` once the last push is older than the stall timeout |
 | `robot/hardware_robot.py` | `HardwareRobot`: the motors over the ESP32 board's serial line (protocol: [motor-board engineering](../motor-board/ENGINEERING.md)). Sensing comes from an optional `sensors` body; without one, the defaults (and `get_distance()` 0.0). An optional `lidar` (3.42) is THE scan when present; `sensor_age_s()` is the older of the lidar's and the sensors' ages, and `turn_since_scan()` the encoder heading change since the scan's oldest point. With a lidar the safety cone reads its forward beams, so the 0.0 scalar no longer vetoes every forward move |
@@ -218,7 +218,13 @@ wheels, then sleeps (`wall_clock`) or calls `advance()`.
 `failed`; `no_feedback` (3.34) raises `RobotTransportError("no_feedback:
 ...")`, likewise; anything else, including no reason (a pre-M4 server), raises
 `SafetyViolation`. HTTP 400 raises `ValueError`; any other status of 400 or
-above raises `RobotTransportError`. Sensing routes catch only `HTTP 404`.
+above raises `RobotTransportError`. Sensing routes catch only `HTTP 404`. A request that got no
+HTTP answer (3.208: `httpx.TransportError` -- refused, reset, a read or
+write error, a timeout, a protocol error -- but `UnsupportedProtocol` and
+`LocalProtocolError`) raises `RobotUnreachable(method, path, msg)`, a
+`RobotTransportError` subclass with the same `"<METHOD> <path> failed:
+<error>"` message; MissionRunner budgets it on `POST /action` only.
+`RemoteRobot` never retries a request.
 
 ## Parameters and configuration
 

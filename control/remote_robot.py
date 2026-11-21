@@ -71,6 +71,22 @@ class RobotTransportError(RuntimeError):
     heard the command and refused it, this means nobody heard it."""
 
 
+class RobotUnreachable(RobotTransportError):
+    """3.208: the request got no HTTP answer at all -- the connection was
+    refused or reset, a read or write failed, it timed out, or the reply
+    broke the protocol (`httpx.TransportError`, but `UnsupportedProtocol`
+    and `LocalProtocolError`, which are our own URL or code). A subclass, so
+    every `except RobotTransportError` still catches it; MissionRunner
+    budgets it on `POST /action` (`DEFAULT_MAX_ACTION_FAILURES`). Whether
+    the robot executed a lost POST is unknown -- which is why nothing
+    re-sends one. Every answer the server GAVE (any status) is not this."""
+
+    def __init__(self, method: str, path: str, message: str):
+        super().__init__(message)
+        self.method = method
+        self.path = path
+
+
 # A `_tupleize` helper used to live here, turning a JSON list back into the
 # tuple `MissionAgent` keyed its visited set with. Gone with the grid cell it
 # existed for (`PLAN-ros-alignment.md`): the agent buckets a world pose now,
@@ -358,6 +374,11 @@ class RemoteRobot(RobotInterface):
             response = self._client.request(
                 method, f"{self.base_url}{path}", json=json, headers=self.headers
             )
+        except (httpx.UnsupportedProtocol, httpx.LocalProtocolError) as e:
+            # Our own URL or request, not the link (3.208).
+            raise RobotTransportError(f"{method} {path} failed: {e}") from e
+        except httpx.TransportError as e:
+            raise RobotUnreachable(method, path, f"{method} {path} failed: {e}") from e
         except httpx.HTTPError as e:
             raise RobotTransportError(f"{method} {path} failed: {e}") from e
 

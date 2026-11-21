@@ -80,6 +80,7 @@ from brain import room_labels as room_labels_mod
 from brain.room_labels import RoomLabeller, frame_room
 from brain.request import check_hint
 from brain.vision_agent import VisionAgent
+from control.remote_robot import RobotUnreachable
 from robot.interface import (AUTONOMY_LAPSED, BATTERY_CHECK, BATTERY_POWEROFF, BATTERY_RESERVE,
                              DRIVER_MANUAL, PERSON_STOP,
                              AutonomyLapsed, BatteryReserve, Preempted, RobotInterface, StoppedByPerson,
@@ -167,6 +168,18 @@ DEFAULT_MAX_CAMERA_FAILURES = 3
 # `idle`), so a read that fails at once (the car's stale-frame 503,
 # robot/camera_stream.py) cannot spend the budget in milliseconds.
 CAMERA_RETRY_S = 0.5
+# 3.208: a `POST /action` that got no HTTP answer (`RobotUnreachable`: reset,
+# refused, timed out) is a transient fault with its own budget, like the
+# camera's: this many consecutive failed ticks end the mission `failed`
+# ("robot unreachable n times in a row"). The lost action is NEVER re-sent:
+# there is no idempotency key and the robot may have executed it. The tick
+# stops the car, records no step, and the next tick decides again from fresh
+# sensing. An answer the robot server gave (a veto, a preemption, any status)
+# is not this and keeps its meaning.
+DEFAULT_MAX_ACTION_FAILURES = 3
+# ...and waits this long first, so a refused connection (milliseconds) cannot
+# spend the budget at once.
+ACTION_RETRY_S = 0.5
 
 LOG_TAIL_LINES = 20
 
@@ -299,6 +312,19 @@ def derived_max_steps(time_limit_s: Optional[float]) -> int:
     if not time_limit_s or time_limit_s <= 0 or not math.isfinite(time_limit_s):
         return DEFAULT_MAX_STEPS
     return int(round(time_limit_s / STEP_BACKSTOP_FRAME_S * STEP_BACKSTOP_FACTOR))
+
+
+def _lost_action(error: BaseException) -> Optional[BaseException]:
+    """3.208: the `RobotUnreachable` of a lost `POST /action` in `error`'s
+    chain of explicit causes, or None. A lost read (any other path) is not
+    budgeted here: it still ends the mission at once."""
+    seen = set()
+    while error is not None and id(error) not in seen:
+        if isinstance(error, RobotUnreachable):
+            return error if (error.method, error.path) == ("POST", "/action") else None
+        seen.add(id(error))
+        error = error.__cause__
+    return None
 
 
 def _caused_by(error: BaseException, kind: type) -> bool:
@@ -742,6 +768,7 @@ class MissionRunner:
         arrival_confirm_timeout_s: float = DEFAULT_ARRIVAL_CONFIRM_TIMEOUT_S,
         max_vision_failures: int = DEFAULT_MAX_VISION_FAILURES,
         max_camera_failures: int = DEFAULT_MAX_CAMERA_FAILURES,
+        max_action_failures: int = DEFAULT_MAX_ACTION_FAILURES,
         world: Optional[WorldInterface] = None,
         stuck_after: Optional[int] = DEFAULT_STUCK_AFTER,
         navigator=None,
@@ -1065,6 +1092,7 @@ class MissionRunner:
         self._late_box: Optional[dict] = None
         self.max_vision_failures = max_vision_failures
         self.max_camera_failures = max_camera_failures
+        self.max_action_failures = max_action_failures
         # 3.88 A: who and where, on every recorded choice; the file is set by
         # the brain server (`choice_log`), and the records kept here as well.
         self.mission_id: Optional[str] = None
@@ -1188,6 +1216,7 @@ class MissionRunner:
         self._error: Optional[str] = None
         self._vision_failures = 0
         self._camera_failures = 0
+        self._action_failures = 0
         self._failed_arrival: Optional[dict] = None
         # 3.53: the frame that arrival was judged on, held with it, and kept
         # by _finish for a late confirmation (control/reconfirm.py).
@@ -1478,6 +1507,9 @@ class MissionRunner:
             self._finish_preempted(e)
             return False
         except Exception as e:  # noqa: BLE001
+            if _lost_action(e) is not None:
+                # 3.208: a POST /action with no answer -- budgeted, never re-sent.
+                return self._handle_action_failure(e)
             # Anything else -- a dead robot link, a backend fault -- is a
             # reason to stop the car, not to keep looping blind.
             logger.exception("mission step failed")
@@ -1497,6 +1529,7 @@ class MissionRunner:
             self._ticks += 1
             self._vision_failures = 0
             self._camera_failures = 0
+            self._action_failures = 0
             self._failed_arrival = None
             self._failed_arrival_frame = None
             self._last_action = result.action
@@ -1806,6 +1839,13 @@ class MissionRunner:
             self._finish_preempted(e)
             return
         except Exception as e:  # noqa: BLE001 -- same rule as a step that fails
+            if _lost_action(e) is not None:
+                # 3.208: a lost REVERSE is a lost action like any other --
+                # counted, never re-sent; the cooldown still follows.
+                if not self._handle_action_failure(e):
+                    return
+                self._cooldown_until = self.clock() + self.retry_cooldown_s
+                return
             logger.exception("back-off failed")
             self._finish(FAILED, f"back-off failed: {e}")
             return
@@ -2068,6 +2108,7 @@ class MissionRunner:
                 "rooms_searched": sorted(self.memory.searched_rooms),
                 "vision_failures": self._vision_failures,
                 "camera_failures": self._camera_failures,
+                "action_failures": self._action_failures,
                 # Phase P2 / 6.3. `tier` carries the deliberation-call
                 # counter -- *"that single number makes the whole
                 # architecture watchable"* -- and the model names beside
@@ -2488,6 +2529,29 @@ class MissionRunner:
             self.idle(CAMERA_RETRY_S)
             return self._running
         self._finish(FAILED, f"camera unavailable {failures} times in a row: {error}")
+        return False
+
+    def _handle_action_failure(self, error: Exception) -> bool:
+        """3.208: a `POST /action` that got no answer (`_lost_action`). The
+        tick records no step; the car is stopped (a stop is idempotent; the
+        lost action itself is never sent again), it waits `ACTION_RETRY_S`,
+        and the next tick decides afresh from new sensing.
+        `max_action_failures` in a row end the mission `failed`. A failure
+        after stop()/abort() ended it does nothing, for the reason
+        _handle_vision_failure gives."""
+        with self._lock:
+            running = self._running
+            if running:
+                self._action_failures += 1
+                failures, budget = self._action_failures, self.max_action_failures
+                self._log_line(f"robot unreachable {failures}/{budget}: {error}")
+        if not running:
+            return False
+        self._safe_stop()
+        if failures < budget:
+            self.idle(ACTION_RETRY_S)
+            return self._running
+        self._finish(FAILED, f"robot unreachable {failures} times in a row: {error}")
         return False
 
     def _policy_stats(self) -> Optional[dict]:

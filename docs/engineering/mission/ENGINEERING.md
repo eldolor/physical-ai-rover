@@ -124,7 +124,25 @@ end at `_finish`, and the status's `explore` block). With no
    active nav2 goal), then `idle(CAMERA_RETRY_S)` (0.5 s: a read that fails
    at once cannot spend the budget in milliseconds); `max_camera_failures`
    (`DEFAULT_MAX_CAMERA_FAILURES`, 3) in a row end `failed` (`camera unavailable 3 times in a row: <error>`);
-   one landing after `stop()`/`abort()` does nothing. Every other robot
+   one landing after `stop()`/`abort()` does nothing. A lost action
+   (3.208: `_lost_action()` finds a `RobotUnreachable` -- `RemoteRobot`
+   got NO HTTP answer: `httpx.TransportError` but `UnsupportedProtocol` and
+   `LocalProtocolError`, which stay plain `RobotTransportError` -- with
+   method/path `POST /action` in the explicit-cause chain; caught in the
+   step's catch-all, and in `_back_off()`'s, where the cooldown still
+   follows) -> `_handle_action_failure()`, the camera's shape: under the
+   lock count `action_failures` and log `robot unreachable n/budget:
+   <error>`, `_safe_stop()`, `idle(ACTION_RETRY_S)` (0.5 s);
+   `max_action_failures` (`DEFAULT_MAX_ACTION_FAILURES`, 3) in a row end
+   `failed` (`robot unreachable 3 times in a row: <error>`); one after
+   `stop()`/`abort()` does nothing. **The lost action is never re-sent**
+   (no idempotency key; the robot may have run it): no step is recorded
+   and the next tick decides again from fresh sensing. A frontier peek
+   (`LOOK_*` inside `decide()`) and the first tick's `look_center()` are
+   actions too and count the same. Any answer the server gave (an
+   `executed: false` reason, 400, any other 4xx or 5xx) and a lost GET
+   keep their meaning (a lost scan read inside the frontier's `vision_fn`
+   is B3.2's vision failure). Every other robot
    error still ends the mission at once; `Preempted` ->
    `_finish_preempted()` (3.70 E5): `cancelled` with `cancelled_by: "dpad"`;
    a `StoppedByPerson` (the robot server refused the brain `person_stop`: a
@@ -141,7 +159,7 @@ end at `_finish`, and the status's `explore` block). With no
    `brain_stop`, or `loop_cancelled` when the brain server set
    `runner.loop_cancelled` because its loop was cancelled without a
    person's Stop -- no intervention), for 3.99's intervention line.
-4. Under the lock: bump `ticks`, reset `vision_failures` and `camera_failures`, record the action,
+4. Under the lock: bump `ticks`, reset `vision_failures`, `camera_failures` and `action_failures`, record the action,
    the turn counters, and copy `_tier`, `_perception` and `_arrival` off the
    scene (held, not overwritten with None); `last_frame_seq` is read from
    `result.frame`'s `metadata.seq`, not from the scene.
@@ -789,7 +807,7 @@ only when given), `mission`, `target_object`,
 `target_room`, `step`, `max_steps`, `found`, `room_reached`, `complete`,
 `last_action`, `turns` (`count`, `reversals`, `last_turn_deg`, `share`,
 `spinning`), `last_reasoning`, `rooms_visited`, `rooms_searched`,
-`vision_failures`, `camera_failures` (3.153), `dock`, `return` and `charge` (3.156), `saved_map` (3.70 M1), `tier`, `perception`, `arrival`, `arrival_verdicts`,
+`vision_failures`, `camera_failures` (3.153), `action_failures` (3.208), `dock`, `return` and `charge` (3.156), `saved_map` (3.70 M1), `tier`, `perception`, `arrival`, `arrival_verdicts`,
 `late_confirmation`, `last_frame_seq`, `ticks`, `seconds_since_last_tick`, `tick_rate_hz`,
 `sighting`, `explore` (null unless explore searches: `goals_sent`,
 3.136.G's `sent` -- the last `SENT_IDS_KEPT` (64) accepted sends as
@@ -828,7 +846,7 @@ cancelled_by)` (`stopped` -> `cancelled`/`stop`, `preempted` ->
 
 ### In-process
 
-- `MissionRunner(robot, target_object=None, target_room=None, mission=None, max_steps=None, min_distance_cm=20.0, policy="frontier", vision_fn=None, vision_timeout_s=20.0, max_vision_failures=3, max_camera_failures=3, world=None, stuck_after=5, ..., inventory=True, detections_fn=None, watch_list=None, inventory_edge_gate=False, mission_time_limit_s=None, battery_floor_v=None)` (3.70: with no time limit -- the in-process harnesses -- the backstop is 120 and no clock limit applies; the brain server always passes the config's) (3.46: the object inventory, recorded and reported only; `runner.inventory_sink` is set by the brain server like the metrics fields) (3.175.H: `inventory_save_state()` is `{state, mission_id, error}`: `none` until the end hands the report to the sink, `pending` set just before the sink is called, then `saved` or `failed` when `inventory_saved(mission_id, ok, error)` is called -- once, for that mission's pending save -- or `failed` when the sink raises; its own lock, never the tick lock. The brain server's sink passes `on_local=functools.partial(runner.inventory_saved, mission_id)` to `InventoryStore.save_async`, which calls it once when the local file settles, before the pending count drops; a callback that raises is logged, never the save's failure; S3 is not part of it. A sink that never reports, as the in-process harnesses' plain `store.save`, leaves `pending`) (3.178: `watch_list` None is the default five, `()` off; `inventory_report()` then carries `watch`, `brain.watch_list.watch_block()` over the report with the target excluded; no policy reads it);
+- `MissionRunner(robot, target_object=None, target_room=None, mission=None, max_steps=None, min_distance_cm=20.0, policy="frontier", vision_fn=None, vision_timeout_s=20.0, max_vision_failures=3, max_camera_failures=3, max_action_failures=3, world=None, stuck_after=5, ..., inventory=True, detections_fn=None, watch_list=None, inventory_edge_gate=False, mission_time_limit_s=None, battery_floor_v=None)` (3.70: with no time limit -- the in-process harnesses -- the backstop is 120 and no clock limit applies; the brain server always passes the config's) (3.46: the object inventory, recorded and reported only; `runner.inventory_sink` is set by the brain server like the metrics fields) (3.175.H: `inventory_save_state()` is `{state, mission_id, error}`: `none` until the end hands the report to the sink, `pending` set just before the sink is called, then `saved` or `failed` when `inventory_saved(mission_id, ok, error)` is called -- once, for that mission's pending save -- or `failed` when the sink raises; its own lock, never the tick lock. The brain server's sink passes `on_local=functools.partial(runner.inventory_saved, mission_id)` to `InventoryStore.save_async`, which calls it once when the local file settles, before the pending count drops; a callback that raises is logged, never the save's failure; S3 is not part of it. A sink that never reports, as the in-process harnesses' plain `store.save`, leaves `pending`) (3.178: `watch_list` None is the default five, `()` off; `inventory_report()` then carries `watch`, `brain.watch_list.watch_block()` over the report with the target excluded; no policy reads it);
   `start()`, `tick() -> bool`, `stop(reason)`, `abort(reason)`,
   `is_running()`, `status()`. `start()` on a used runner raises.
 - `vision_fn(frame: dict) -> dict` -- the scene schema (policy domain).
@@ -919,6 +937,7 @@ The `brain:` block of `config/robot.yaml`, read by
 | `mission_wall_limit_s` | 14400 | 14400 | s | 3.156 D7d: the total a charged mission may last | the time limit is paused while charging; this is not |
 | `charge_stall_s` | 300 | 300 | s | 3.156 D7d: no 0.05 V rise in this long is `no_charge` | |
 | `max_camera_failures` | 3 | -- (constructor only) | ticks | 3.153: consecutive failed frame reads | one 503 in a VE kill's OOM squeeze ended a mission (3.152.B); a camera gone for three ticks still ends it |
+| `max_action_failures` | 3 | -- (constructor only) | ticks | 3.208: consecutive `POST /action`s with no HTTP answer | one connection reset ended a mission (3.202 K7); a link gone for three ticks still ends it, and the watchdog (B3.1) stops the motors meanwhile |
 | `reconfirm_probe_s` | 15.0 | 15.0 | s | `start_reconfirm` | 3.53: one free `/health` probe this often after an `arrived_unconfirmed` ending |
 | `reconfirm_window_s` | 600.0 | 600.0 | s | `start_reconfirm` | 3.53: give up (`expired`) after this; 0 turns the late check off. Worst case 41 probes and 2 paid calls per arrival |
 | `tick_timeout_s` | 30.0 | 30.0 | s | B3.3 dead-man | must stay above `teleop.stall_timeout_s` (15 s) so the specific teleop error fires first. **Not** above two `vision_timeout_s` (40 s): under a SYNCHRONOUS tier a tick that judges an arrival holds the vision call and the confirmation, each up to 20 s, so a slow pair is ended by B3.3 as "loop hung" rather than counted by B3.2. The shipped asynchronous tier has only the confirmation in the tick (review 3, fix 18; left as is, recorded) |
@@ -1045,6 +1064,7 @@ tests/test_mission_guarded_verbs.py -q`.
 | `tests/test_dock_navigator.py` (18) | 3.156.E D2/G4 (red first, 6 failed on `dev`): a frontier mission goes home on a return-only navigator, no goal before the end, the agent never holds it, its end leaves the keepout marks (explore's still clears them), off holds none, no navigator `no_nav2`, the time reserve now ends it early; the brain server builds it only with the return on and a world that takes goals, starts anyway otherwise, warns on a refused secret, asks no server for an in-process robot; a return that sent goals clears its marks; G4's four pinned rows |
 | `tests/test_resume_recharge.py` (28) | 3.156.D (red first): a battery end charges and resumes with what it kept; time never charges; `no_charge`, `left_dock`, `no_time`, the wall limit, a failed return, the fourth charge; a Stop and a D-pad while charging; off is off; a never-charged `SimBattery` exact |
 | `tests/test_camera_budget_3153.py` (6) | 3.153: one failed frame read mid-mission keeps the outcome (red before), the car stopped on that tick and the count reset; a camera never back ends `failed` after exactly 3 with no move; only consecutive failures count; any other robot error still ends at once; a Stop during a failed read is unchanged; a read failing at once waits `CAMERA_RETRY_S` between tries |
+| `tests/test_action_budget_3208.py` (12) | 3.208, over a real `RemoteRobot` against an in-process robot server with faults in the client: one lost `POST /action` (lost before the server saw it, and lost after it ran) keeps `found` (red before: `step failed`), counted and reset, and no decision's move reaches the server twice; the POST after a lost one is the stop, never the verb again; a link never back ends `failed` after exactly 3 with `ACTION_RETRY_S` between and no move after the first; only consecutive failures count; a 503 answer still ends at once; a lost scan read is still B3.2's vision failure; a Stop during a lost POST is unchanged; `RobotUnreachable` only for no answer (not `UnsupportedProtocol`, not a 503); two seeded 5%-loss missions still find with no action sent twice |
 | `tests/test_failsafes.py` (15) | B3.2 budget and hang; one failure survivable; no movement after stop; B3.3 dead-man; every drill ends `failed` with the robot stopped; no-fault builds the ordinary mission; drills can be switched off |
 | `tests/test_camera_centred_start.py` (11) | 3.20's four criteria: centred first decision under `frontier` and `vision` (tiered is not parametrised), no step or vision call spent, centred start unchanged against `tests/data/frontier_trace_centred.json`, a refused centring ends the mission like any refused move |
 | `tests/test_mission_guarded_verbs.py` (3) | 3.32: a mission's verbs go through the safety layer's guarded plan; the gate forwards plan and stop count; a finished mission refuses a plan |

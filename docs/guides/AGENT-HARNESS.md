@@ -482,7 +482,7 @@ robot is told to stop.
 | | Failure | Guard | Lives in |
 |---|---|---|---|
 | **B3.1** | A move energises the motors, then the process dies before stopping them | Watchdog -- no `/action`, `/stop` or `/wheels` for `watchdog_timeout_s` (1.0 s), motors stop | `robot/server.py` |
-| **B3.2** | The car goes blind -- vision errors, or never answers | Per-call timeout plus a consecutive-failure budget (default 3). Every blind step stops the car; a run of them ends the mission | `mission_runner.py` |
+| **B3.2** | The car goes blind -- vision errors, or never answers; the frame read fails (3.153); a `POST /action` gets no answer (3.208) | Per-call timeout plus a consecutive-failure budget for each (default 3). Every failed step stops the car; a run of them ends the mission. A lost action is never re-sent: the next tick decides again | `mission_runner.py` |
 | **B3.3** | The loop is alive but stuck | Per-tick dead-man. A tick that overruns `tick_timeout_s` triggers `abort()` | `brain_server.py` |
 
 They do not substitute for each other. The watchdog cannot see a loop
@@ -551,7 +551,7 @@ Consequences worth knowing:
 | `found`, `room_reached`, `complete` | the mission's own completion flags |
 | `last_action`, `last_reasoning` | the most recent move and why |
 | `rooms_visited`, `rooms_searched` | sorted, from `MissionMemory` |
-| `vision_failures` | the consecutive-failure count, reset by any success |
+| `vision_failures`, `camera_failures`, `action_failures` | the consecutive-failure counts (vision, 3.153's frame read, 3.208's lost `POST /action`), reset by any completed tick |
 | `sighting` | step, object, room, position -- when found |
 | `log_tail` | the last 20 log lines |
 | `fault` | which drill, or `none` (added by the server, not the runner) |
