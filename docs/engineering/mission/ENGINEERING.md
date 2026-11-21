@@ -134,24 +134,37 @@ end at `_finish`, and the status's `explore` block). With no
    `_back_off()`'s catch-all, where the cooldown still follows) ->
    `_handle_link_failure()`: under the lock note any answers since last
    looked (`_note_link_answers()`: the robot's `LinkHealth.answered` moved,
-   so the silence restarts at `clock()`), count `link_failures`, log
-   `robot link n/3: <error> (no answer for <s> s)`; `_safe_stop()`; then
-   `failed` with `robot link failing: <n> ticks in a row with an unanswered
-   request: <error>` at `link_max_failed_ticks` (`LINK_MAX_FAILED_TICKS`,
-   20), or `robot link lost: no answer for <s> s, <n> failed ticks in a
-   row: <error>` once `n >= LINK_MIN_FAILED_TICKS` (3) AND the silence
-   (runner clock, from the last noted answer or the mission's start) is at
-   least `link_dead_s` (`LINK_DEAD_S`, 3.0 s); else `idle(LINK_RETRY_S)`
-   (0.5 s). One landing after `stop()`/`abort()` does nothing. **Nothing
-   is re-sent**: a failed tick records no step and the next decides again
-   from fresh sensing. **No move from partial sensing**: `tick()` takes
-   `LinkHealth.counts()` as a step tick begins (`_link_mark`; cleared in a
-   `finally`, so the trip home and the charge wait are never gated), and
+   from any thread, so the silence restarts at `clock()` and time paused
+   from then on, `_paused_s()`, is not silence), then `_count_link_failure()`:
+   count `link_failures`, log `robot link n/20: <error> (no answer for <s>
+   s)` (n over `link_max_failed_ticks`); `_safe_stop()`; then `failed` with
+   `robot link failing: <n> ticks in a row with an unanswered request:
+   <error>` at `link_max_failed_ticks` (`LINK_MAX_FAILED_TICKS`, 20), or
+   `robot link lost: no answer for <s> s, <n> failed ticks in a row:
+   <error>` once `n >= link_min_failed_ticks` (`LINK_MIN_FAILED_TICKS`, 3)
+   AND the silence is at least `link_dead_s` (`LINK_DEAD_S`, 3.0 s); else
+   `idle(LINK_RETRY_S)` (0.5 s). One landing after `stop()`/`abort()` does
+   nothing. A `WorldUnreachable` counts only when `world.link` is the
+   robot's (`_is_link_failure`); a world on its own server failing ends the
+   mission as before. **Nothing is re-sent**: a failed tick records no step
+   and the next decides again from fresh sensing; the first tick's
+   `look_center()` (3.20) is marked done only once it returned, so a lost
+   one is sent again next tick (an absolute pan, not a decided move).
+   **No move from partial sensing**: `tick()` opens a tally for the step
+   tick (`LinkHealth.begin_tick()`, a context variable: the tick's thread
+   and the vision call, which `call_with_timeout` runs in a copy of the
+   caller's context; closed in a `finally`, so the trip home and the charge
+   wait are never gated, and a request lost on another thread -- a brain
+   route, a closing mission -- is in no tick's tally), and
    `_HaltGate._guard()` (every movement and pan command) and
    `_GatedNavigator.set_goal()` call `_check_link()`, which raises
-   `LinkLost` once `unanswered` has moved -- a read that code swallowed
+   `LinkLost` (`never_sent = True`; brain/explore.py drops such a goal from
+   its attempts) once the tally is non-zero -- a read that code swallowed
    (`_guarded_vision`'s odometry, `robot/safety.py`'s `_has_wheels()`, the
-   frontier's `_pose()`) included. A body with no `link` (in process) skips
+   frontier's `_pose()`) included. A tick that completes with a non-zero
+   tally (it moved nothing) is a link-failed tick too (`_link_tick_done()`
+   counts it and, if the budget is spent, the mission ends after a find
+   has had its say). A body with no `link` (in process) skips
    all of it. Any answer the server gave (an `executed: false` reason, 400,
    any other 4xx or 5xx) keeps its meaning. Every other robot
    error still ends the mission at once; `Preempted` ->
@@ -170,7 +183,7 @@ end at `_finish`, and the status's `explore` block). With no
    `brain_stop`, or `loop_cancelled` when the brain server set
    `runner.loop_cancelled` because its loop was cancelled without a
    person's Stop -- no intervention), for 3.99's intervention line.
-4. Under the lock: bump `ticks`, reset `vision_failures` and `camera_failures`, `_link_tick_done()` (3.208: notes answers; `link_failures` resets only if no request went unanswered this tick, else it stays), record the action,
+4. Under the lock: bump `ticks`, reset `vision_failures` and `camera_failures`, `_link_tick_done()` (3.208: notes answers; `link_failures` resets only if no request went unanswered this tick, else the tick is counted as a link failure), record the action,
    the turn counters, and copy `_tier`, `_perception` and `_arrival` off the
    scene (held, not overwritten with None); `last_frame_seq` is read from
    `result.frame`'s `metadata.seq`, not from the scene.
@@ -1076,7 +1089,7 @@ tests/test_mission_guarded_verbs.py -q`.
 | `tests/test_dock_navigator.py` (18) | 3.156.E D2/G4 (red first, 6 failed on `dev`): a frontier mission goes home on a return-only navigator, no goal before the end, the agent never holds it, its end leaves the keepout marks (explore's still clears them), off holds none, no navigator `no_nav2`, the time reserve now ends it early; the brain server builds it only with the return on and a world that takes goals, starts anyway otherwise, warns on a refused secret, asks no server for an in-process robot; a return that sent goals clears its marks; G4's four pinned rows |
 | `tests/test_resume_recharge.py` (28) | 3.156.D (red first): a battery end charges and resumes with what it kept; time never charges; `no_charge`, `left_dock`, `no_time`, the wall limit, a failed return, the fourth charge; a Stop and a D-pad while charging; off is off; a never-charged `SimBattery` exact |
 | `tests/test_camera_budget_3153.py` (6) | 3.153: one failed frame read mid-mission keeps the outcome (red before), the car stopped on that tick and the count reset; a camera never back ends `failed` after exactly 3 with no move; only consecutive failures count; any other robot error still ends at once; a Stop during a failed read is unchanged; a read failing at once waits `CAMERA_RETRY_S` between tries |
-| `tests/test_action_budget_3208.py` (17) | 3.208 with amendment 1, over a real `RemoteRobot` and `RemoteWorld` (one `LinkHealth`) against an in-process robot server, faults in the client, the runner on a fake clock: one lost `POST /action` (before the server saw it, and after it ran) keeps `found` (red before: `step failed`), counted and reset, no decision's move reaching the server twice; the POST after a lost one is the stop; a dead link (every request reset) ends `robot link lost` within `LINK_DEAD_S` + one request timeout with no move after; a blackholed one after 3 failed ticks; reads answered and every POST lost ends `robot link failing` after exactly 20; only consecutive failures count; a 503 still ends at once; a lost scan inside vision and a lost frame land in `link_failures`, not vision's or the camera's; a swallowed lost odometry read sends no move that tick (fails without the gate); a Stop during a lost POST is unchanged; the clients' classification and shared link; the brain server shares the link only with a world on the robot's server; 5% loss on all requests and on `/action` still find |
+| `tests/test_action_budget_3208.py` (22) | 3.208 with amendment 1, over a real `RemoteRobot` and `RemoteWorld` (one `LinkHealth`) against an in-process robot server, faults in the client, the runner on a fake clock: one lost `POST /action` (before the server saw it, and after it ran) keeps `found` (red before: `step failed`), counted and reset, no decision's move reaching the server twice; the POST after a lost one is the stop; a dead link (every request reset) ends `robot link lost` within `LINK_DEAD_S` + one request timeout with no move after; a blackholed one after 3 failed ticks; reads answered and every POST lost ends `robot link failing` after exactly 20; only consecutive failures count; a 503 still ends at once; a lost scan inside vision and a lost frame land in `link_failures`, not vision's or the camera's; a swallowed lost odometry read sends no move that tick (fails without the gate); a Stop during a lost POST is unchanged; the clients' classification and shared link; the brain server shares the link only with a world on the robot's server; 5% loss on all requests and on `/action` still find; review fixes: a request lost on another thread never gates the mission, a lost first centring is sent again, completed ticks on blind sensing spend the budget, a world on its own server is not the robot link, paused time is not silence |
 | `tests/test_failsafes.py` (15) | B3.2 budget and hang; one failure survivable; no movement after stop; B3.3 dead-man; every drill ends `failed` with the robot stopped; no-fault builds the ordinary mission; drills can be switched off |
 | `tests/test_camera_centred_start.py` (11) | 3.20's four criteria: centred first decision under `frontier` and `vision` (tiered is not parametrised), no step or vision call spent, centred start unchanged against `tests/data/frontier_trace_centred.json`, a refused centring ends the mission like any refused move |
 | `tests/test_mission_guarded_verbs.py` (3) | 3.32: a mission's verbs go through the safety layer's guarded plan; the gate forwards plan and stop count; a finished mission refuses a plan |

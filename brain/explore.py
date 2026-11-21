@@ -754,6 +754,10 @@ class ExploreAgent(MissionAgent):
         except Preempted:
             raise
         except Exception as exc:  # noqa: BLE001 -- judged by _bridge_blip
+            if getattr(exc, "never_sent", False):
+                # 3.208: refused before it left the brain (the runner's link
+                # gate): not an attempt, so no goal there is the mission's.
+                self._attempts.pop()
             self._bridge_blip(exc)
             self.last_event = f"goal not sent: {exc}"
             self._event("goal_refused", kind=kind, goal=[round(x_m, 2), round(y_m, 2)],

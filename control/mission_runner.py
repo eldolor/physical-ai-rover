@@ -49,6 +49,7 @@ import logging
 import math
 import re
 import collections
+import contextvars
 import threading
 from concurrent.futures import CancelledError
 import time
@@ -330,16 +331,20 @@ def derived_max_steps(time_limit_s: Optional[float]) -> int:
     return int(round(time_limit_s / STEP_BACKSTOP_FRAME_S * STEP_BACKSTOP_FACTOR))
 
 
-def _link_failure(error: BaseException) -> Optional[BaseException]:
+def _link_failure(error: BaseException, world_on_link: bool = True) -> Optional[BaseException]:
     """3.208: the link failure in `error`'s chain of explicit causes -- a
     request with no answer (`RobotUnreachable`, `WorldUnreachable`) or the
     halt gate's `LinkLost` -- or None. Found through any wrapper, so a lost
     frame read (`CameraUnavailable`) or a lost scan inside a `vision_fn`
     (`VisionUnavailable`) lands in the link budget, not the camera's or
-    vision's."""
+    vision's. A `WorldUnreachable` counts only when the world shares the
+    robot's link (`world_on_link`); a world on its own server failing is the
+    old fault (the mission ends), not the robot link's."""
+    kinds = (RobotUnreachable, WorldUnreachable, LinkLost) if world_on_link \
+        else (RobotUnreachable, LinkLost)
     seen = set()
     while error is not None and id(error) not in seen:
-        if isinstance(error, (RobotUnreachable, WorldUnreachable, LinkLost)):
+        if isinstance(error, kinds):
             return error
         seen.add(id(error))
         error = error.__cause__
@@ -386,7 +391,11 @@ class LinkLost(RuntimeError):
     """3.208: raised by the halt gate (and the gated navigator) instead of a
     move, in a step tick in which a robot request went unanswered -- even a
     read some code swallowed. No decision is acted on from partial
-    sensing; the tick counts against the link's budget."""
+    sensing; the tick counts against the link's budget. `never_sent`: the
+    refused command never left the brain (brain/explore.py reads it
+    duck-typed, as brain/ may not import control/)."""
+
+    never_sent = True
 
 
 class MissionHalted(RuntimeError):
@@ -747,7 +756,10 @@ def call_with_timeout(fn: Callable, *args, timeout_s: Optional[float] = None,
         except BaseException as e:  # noqa: BLE001 -- re-raised on the caller's thread
             box["error"] = e
 
-    thread = threading.Thread(target=run, daemon=True, name="vision-call")
+    # 3.208: the call runs in a copy of the caller's context, so a robot
+    # request it makes is counted in the caller's tick (LinkHealth's tally).
+    ctx = contextvars.copy_context()
+    thread = threading.Thread(target=ctx.run, args=(run,), daemon=True, name="vision-call")
     thread.start()
     if on_start is not None:
         on_start(thread)  # 3.56: a caller that must not start a second call beside it
@@ -804,6 +816,7 @@ class MissionRunner:
         max_vision_failures: int = DEFAULT_MAX_VISION_FAILURES,
         max_camera_failures: int = DEFAULT_MAX_CAMERA_FAILURES,
         link_dead_s: float = LINK_DEAD_S,
+        link_min_failed_ticks: int = LINK_MIN_FAILED_TICKS,
         link_max_failed_ticks: int = LINK_MAX_FAILED_TICKS,
         world: Optional[WorldInterface] = None,
         stuck_after: Optional[int] = DEFAULT_STUCK_AFTER,
@@ -1129,6 +1142,7 @@ class MissionRunner:
         self.max_vision_failures = max_vision_failures
         self.max_camera_failures = max_camera_failures
         self.link_dead_s = link_dead_s
+        self.link_min_failed_ticks = link_min_failed_ticks
         self.link_max_failed_ticks = link_max_failed_ticks
         # 3.88 A: who and where, on every recorded choice; the file is set by
         # the brain server (`choice_log`), and the records kept here as well.
@@ -1259,9 +1273,10 @@ class MissionRunner:
         # 3.208: the robot's LinkHealth (RemoteRobot's; None for an
         # in-process body, which has no link). Duck-typed: control/ reads it.
         self._link = getattr(robot, "link", None)
-        self._link_mark: Optional[tuple] = None      # counts at a step tick's start
+        self._link_tally = None                      # this step tick's LinkTally
         self._link_answers_seen: Optional[int] = None
         self._link_answered_at: Optional[float] = None
+        self._link_paused_at: float = 0.0            # _paused_s() when that was set
         self._failed_arrival: Optional[dict] = None
         # 3.53: the frame that arrival was judged on, held with it, and kept
         # by _finish for a late confirmation (control/reconfirm.py).
@@ -1458,6 +1473,7 @@ class MissionRunner:
             self._started_clock = self.clock()
             # 3.208: the link's silence is counted from here at the latest.
             self._link_answered_at = self._started_clock
+            self._link_paused_at = 0.0
             self._link_answers_seen = self._link.counts()[0] if self._link is not None else None
             self._last_tick_at = time.monotonic()
             limits = [f"step backstop {self.max_steps}"]
@@ -1495,13 +1511,18 @@ class MissionRunner:
             return self._charge_tick()
         if self._pending_end is not None:
             return self._return_tick()
-        # 3.208: the link's counts as this step tick begins. Only a step tick
-        # is gated on them (the trip home and the charge wait are not).
-        self._link_mark = self._link.counts() if self._link is not None else None
+        # 3.208: this step tick's own tally of unanswered robot requests (its
+        # context: this thread and the vision call's). Only a step tick is
+        # gated on it (the trip home and the charge wait are not).
+        token = None
+        if self._link is not None:
+            self._link_tally, token = self._link.begin_tick()
         try:
             self._step_tick()
         finally:
-            self._link_mark = None
+            self._link_tally = None
+            if token is not None:
+                self._link.end_tick(token)
         return self._running
 
     def _step_tick(self) -> bool:
@@ -1538,19 +1559,22 @@ class MissionRunner:
                 # the first tick and through the gate -- not at the end of the
                 # last mission, which by then may no longer hold authority --
                 # and not counted as a step: it is not a decision.
-                self._camera_centred = True
+                # 3.208: marked done only once it returned, so a centring lost
+                # to the link is tried on the next tick. An absolute pan, not
+                # a decided move: sent twice it is the same as once.
                 self._gated.look_center()
+                self._camera_centred = True
             result = self.agent.step()
         except MissionHalted:
             # stop()/abort() landed while this tick was in flight. The
             # gate refused the action, which is the point.
             return False
         except VisionUnavailable as e:
-            if _link_failure(e) is not None:     # 3.208: a lost robot read inside it
+            if self._is_link_failure(e):     # 3.208: a lost robot read inside it
                 return self._handle_link_failure(e)
             return self._handle_vision_failure(e)
         except CameraUnavailable as e:
-            if _link_failure(e) is not None:     # 3.208: no answer, not a 503
+            if self._is_link_failure(e):     # 3.208: no answer, not a 503
                 return self._handle_link_failure(e)
             return self._handle_camera_failure(e)
         except Preempted as e:
@@ -1565,7 +1589,7 @@ class MissionRunner:
             self._finish_preempted(e)
             return False
         except Exception as e:  # noqa: BLE001
-            if _link_failure(e) is not None:
+            if self._is_link_failure(e):
                 # 3.208: a robot request with no answer, or the gate's
                 # refusal after one -- budgeted; nothing is re-sent.
                 return self._handle_link_failure(e)
@@ -1588,7 +1612,7 @@ class MissionRunner:
             self._ticks += 1
             self._vision_failures = 0
             self._camera_failures = 0
-            self._link_tick_done()
+            link_end = self._link_tick_done()
             self._failed_arrival = None
             self._failed_arrival_frame = None
             self._last_action = result.action
@@ -1676,6 +1700,11 @@ class MissionRunner:
                 self._finish_preempted(e)
                 return False
             self._finish(FOUND if self.memory.found else ROOM_REACHED, self.memory.summary())
+            return False
+        if link_end is not None:
+            # 3.208: a completed tick that lost a (swallowed) read spent the
+            # link's budget. After a find: what it saw stands.
+            self._finish(FAILED, link_end)
             return False
         if self.room_labeller is not None and self.is_running():
             # The pose now, and -- only if it asks -- a frame taken now: the
@@ -1898,7 +1927,7 @@ class MissionRunner:
             self._finish_preempted(e)
             return
         except Exception as e:  # noqa: BLE001 -- same rule as a step that fails
-            if _link_failure(e) is not None:
+            if self._is_link_failure(e):
                 # 3.208: a lost REVERSE (or one refused after a lost read) is
                 # a link failure like any other -- counted, never re-sent;
                 # the cooldown still follows.
@@ -2591,68 +2620,86 @@ class MissionRunner:
         self._finish(FAILED, f"camera unavailable {failures} times in a row: {error}")
         return False
 
+    def _is_link_failure(self, error: BaseException) -> bool:
+        """3.208: does this error end the tick as a robot-link failure?"""
+        if self._link is None:
+            return False
+        shared = getattr(self.world, "link", None) is self._link
+        return _link_failure(error, world_on_link=shared) is not None
+
     def _check_link(self, name: str) -> None:
         """3.208: the halt gate's question before a move -- did a robot
-        request go unanswered in this step tick? If so, raise LinkLost: no
+        request this step tick made go unanswered? If so, raise LinkLost: no
         move is made from partial sensing (a read some code swallowed counts
-        too). Outside a step tick (no mark) it never refuses."""
-        mark = self._link_mark
-        if mark is None or self._link is None:
-            return
-        if self._link.counts()[1] != mark[1]:
+        too). Outside a step tick (no tally) it never refuses; requests from
+        other threads are in no tick's tally."""
+        tally = self._link_tally
+        if tally is not None and tally.unanswered:
             raise LinkLost(f"a robot request went unanswered this tick "
-                           f"({self._link.last_error}); refusing {name}")
+                           f"({tally.last_error}); refusing {name}")
 
     def _note_link_answers(self) -> None:
         """3.208: if the link has answered anything since last looked at,
-        it was alive then: its silence restarts now (runner clock). Under
-        the lock."""
+        it was alive then: its silence restarts now (runner clock), and time
+        paused from here on is not silence. Under the lock."""
         if self._link is None:
             return
         answered = self._link.counts()[0]
         if answered != self._link_answers_seen:
             self._link_answers_seen = answered
             self._link_answered_at = self.clock()
+            self._link_paused_at = self._paused_s()
 
-    def _link_tick_done(self) -> None:
+    def _count_link_failure(self, error) -> Optional[str]:
+        """3.208: one more link-failed tick. Under the lock. Returns the end
+        reason when the budget is spent, else None."""
+        self._note_link_answers()
+        self._link_failures += 1
+        failures = self._link_failures
+        since = self._link_answered_at
+        silent = 0.0
+        if since is not None:
+            silent = max(0.0, self.clock() - since - (self._paused_s() - self._link_paused_at))
+        self._log_line(f"robot link {failures}/{self.link_max_failed_ticks}: {error} "
+                       f"(no answer for {silent:.1f} s)")
+        if failures >= self.link_max_failed_ticks:
+            return (f"{LINK_FAILING}: {failures} ticks in a row with an "
+                    f"unanswered request: {error}")
+        if failures >= self.link_min_failed_ticks and silent >= self.link_dead_s:
+            return (f"{LINK_LOST}: no answer for {silent:.1f} s, "
+                    f"{failures} failed ticks in a row: {error}")
+        return None
+
+    def _link_tick_done(self) -> Optional[str]:
         """3.208: a step tick completed. Every request answered: the link's
         count resets. One went unanswered (a read swallowed; the gate made
-        sure nothing moved): the count stays as it is. Under the lock."""
+        sure nothing moved): it is a link-failed tick all the same -- counted,
+        and the end reason returned if that spends the budget. Under the
+        lock; the caller finishes outside it."""
         self._note_link_answers()
-        mark = self._link_mark
-        if mark is None or self._link is None or self._link.counts()[1] == mark[1]:
-            self._link_failures = 0
+        tally = self._link_tally
+        if tally is not None and tally.unanswered:
+            return self._count_link_failure(f"a robot request went unanswered "
+                                            f"({tally.last_error})")
+        self._link_failures = 0
+        return None
 
     def _handle_link_failure(self, error: Exception) -> bool:
         """3.208: a step tick that a robot request with no answer ended
-        (`_link_failure`). The tick records no step; the car is stopped (a
+        (`_is_link_failure`). The tick records no step; the car is stopped (a
         stop is idempotent; the lost request itself is never sent again),
         and the next tick, after LINK_RETRY_S, decides afresh from new
-        sensing. Ends the mission `failed` when no robot request has been
-        answered for `link_dead_s` AND LINK_MIN_FAILED_TICKS failed in a row
-        (LINK_LOST), or after `link_max_failed_ticks` in a row (LINK_FAILING).
-        A failure after stop()/abort() ended it does nothing, for the reason
+        sensing. `_count_link_failure` says when the budget is spent. A
+        failure after stop()/abort() ended it does nothing, for the reason
         _handle_vision_failure gives."""
         with self._lock:
             running = self._running
-            if running:
-                self._note_link_answers()
-                self._link_failures += 1
-                failures = self._link_failures
-                since = self._link_answered_at
-                silent = self.clock() - since if since is not None else 0.0
-                self._log_line(f"robot link {failures}/{LINK_MIN_FAILED_TICKS}: {error} "
-                               f"(no answer for {silent:.1f} s)")
+            end = self._count_link_failure(error) if running else None
         if not running:
             return False
         self._safe_stop()
-        if failures >= self.link_max_failed_ticks:
-            self._finish(FAILED, f"{LINK_FAILING}: {failures} ticks in a row with an "
-                                 f"unanswered request: {error}")
-            return False
-        if failures >= LINK_MIN_FAILED_TICKS and silent >= self.link_dead_s:
-            self._finish(FAILED, f"{LINK_LOST}: no answer for {silent:.1f} s, "
-                                 f"{failures} failed ticks in a row: {error}")
+        if end is not None:
+            self._finish(FAILED, end)
             return False
         self.idle(LINK_RETRY_S)
         return self._running

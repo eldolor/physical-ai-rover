@@ -35,6 +35,7 @@ Two details are load-bearing for that transparency:
    meant to pin down properly; until it does, the coercion lives here.
 """
 
+import contextvars
 import logging
 import re
 import threading
@@ -95,29 +96,57 @@ def is_unanswered(error: BaseException) -> bool:
             and not isinstance(error, (httpx.UnsupportedProtocol, httpx.LocalProtocolError)))
 
 
+class LinkTally:
+    """3.208: one step tick's unanswered requests (`LinkHealth.begin_tick`)."""
+
+    __slots__ = ("unanswered", "last_error")
+
+    def __init__(self):
+        self.unanswered = 0
+        self.last_error: Optional[str] = None
+
+
 class LinkHealth:
     """3.208: the brain's record of its link to the robot server, shared by
     the clients that talk to it (`RemoteRobot`, and `RemoteWorld` when the
-    world is served there). Two counters, only ever increased: requests that
-    got an HTTP answer (any status) and requests that got none
-    (`is_unanswered`). MissionRunner compares them across a tick: a tick in
-    which `unanswered` moved sends no move, and the runner's link budget is
-    judged from them. Reports only; it changes no request."""
+    world is served there). `answered` counts requests that got an HTTP
+    answer (any status), from any thread: any answer means the link is up.
+    Unanswered requests (`is_unanswered`) are counted globally AND in the
+    tally of the step tick whose context made them (`begin_tick`, a context
+    variable: the tick's thread and anything it runs under
+    `contextvars.copy_context()`), so a request lost on another thread -- a
+    brain-server route, a closing mission's retries -- never gates the
+    mission's move. MissionRunner reads both. Reports only; it changes no
+    request."""
 
     def __init__(self):
         self._lock = threading.Lock()
         self.answered = 0
         self.unanswered = 0
         self.last_error: Optional[str] = None
+        self._tally: contextvars.ContextVar = contextvars.ContextVar("link_tally", default=None)
+
+    def begin_tick(self) -> tuple:
+        """A fresh tally for the current context: `(tally, token)`; hand the
+        token to `end_tick`."""
+        tally = LinkTally()
+        return tally, self._tally.set(tally)
+
+    def end_tick(self, token) -> None:
+        self._tally.reset(token)
 
     def note_answer(self) -> None:
         with self._lock:
             self.answered += 1
 
     def note_lost(self, error: str) -> None:
+        tally = self._tally.get()
         with self._lock:
             self.unanswered += 1
             self.last_error = error
+            if tally is not None:
+                tally.unanswered += 1
+                tally.last_error = error
 
     def counts(self) -> tuple:
         with self._lock:

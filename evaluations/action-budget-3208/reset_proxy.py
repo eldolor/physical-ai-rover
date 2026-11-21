@@ -136,6 +136,15 @@ class Handler(BaseHTTPRequestHandler):
             return
         self._forward(body, reset_after=(how == "after"))
 
+    def _other(self):
+        """PUT, PATCH, DELETE: forwarded (reset once the link is dead)."""
+        body = self._body()
+        if self._dead_reset():
+            return
+        self._forward(body)
+
+    do_PUT = do_PATCH = do_DELETE = _other
+
     def _forward(self, body: bytes, reset_after: bool = False):
         u = urlsplit(UPSTREAM)
         conn = http.client.HTTPConnection(u.hostname, u.port, timeout=60)

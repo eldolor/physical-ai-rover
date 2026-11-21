@@ -186,7 +186,7 @@ def test_one_reset_on_post_action_does_not_end_the_mission(how):
     assert status["outcome"] == FOUND, status["error"]
     counted = [s for s in seen if s["link_failures"] == 1]
     assert counted, "the lost action was never counted"
-    assert any(f"robot link 1/{LINK_MIN_FAILED_TICKS}" in line for line in counted[0]["log_tail"])
+    assert any(f"robot link 1/{LINK_MAX_FAILED_TICKS}" in line for line in counted[0]["log_tail"])
     assert status["link_failures"] == 0, "a completed tick resets the count"
     per = moves_reached_per_decision(link)
     assert per and max(per.values()) == 1, "an action reached the robot twice"
@@ -486,3 +486,110 @@ def test_five_percent_loss_still_finds_and_nothing_is_sent_twice(model):
     assert link.failed, "no fault was injected"
     assert status["outcome"] == FOUND, status["error"]
     assert max(moves_reached_per_decision(link).values()) == 1
+
+
+# -- review fixes (2026-11-21) -------------------------------------------------
+
+def test_a_request_lost_on_another_thread_never_gates_the_mission():
+    """A brain-server route (or a closing mission's retries) shares the
+    robot's client. Its lost request is in no tick's tally: the mission's
+    moves go on and its link budget is never spent."""
+    import threading
+    state = {"frames": 0}
+
+    def plan(i, method, path, body):
+        if threading.current_thread().name == "elsewhere":
+            return "before"
+        if path == "/frame":
+            state["frames"] += 1
+            if state["frames"] in (5, 6, 7, 8):
+                t = threading.Thread(target=lambda: _swallow(robot.get_scan), name="elsewhere")
+                t.start()
+                t.join()
+        return None
+    link, robot, world = stack(plan)
+    runner = runner_for(robot, world)
+    runner.start()
+    seen = []
+    status = drive(runner, seen=seen)
+    assert len(link.failed) == 4
+    assert status["outcome"] == FOUND, status["error"]
+    assert not any(s["link_failures"] for s in seen)
+
+
+def _swallow(fn):
+    try:
+        fn()
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def test_a_first_centring_lost_to_the_link_is_tried_again():
+    """3.20's first-tick look_center, lost: the next tick centres again
+    (an absolute pan) before anything moves."""
+    state = {"lost": False}
+
+    def plan(i, method, path, body):
+        if path == "/action" and body.get("action") == "LOOK_CENTER" and not state["lost"]:
+            state["lost"] = True
+            return "after"
+        return None
+    link, robot, world = stack(plan)
+    runner = runner_for(robot, world)
+    runner.start()
+    status = drive(runner)
+    assert status["outcome"] == FOUND, status["error"]
+    first_moves = [a for a in link.wire if a not in ("STOP",)][:2]
+    assert first_moves == ["LOOK_CENTER", "LOOK_CENTER"], link.wire[:4]
+
+
+def test_completed_ticks_on_blind_sensing_still_spend_the_budget():
+    """A policy that only waits (no move for the gate to refuse) on a dead
+    link: each tick completes with its reads lost and swallowed; those are
+    link-failed ticks, and the mission ends "robot link lost"."""
+    from brain.agent import StepResult
+    clock = FakeClock()
+    state = {"dead": False}
+    link, robot, world = stack(lambda *a: "before" if state["dead"] else None, clock=clock)
+    runner = runner_for(robot, world, clock=clock)
+
+    def waiting_step():
+        try:
+            world.get_pose()
+        except Exception:  # noqa: BLE001 -- swallowed, as the frontier's _pose() does
+            pass
+        state["dead"] = True     # dead from the first tick's end
+        return StepResult(step=0, frame={}, scene={}, action="WAIT", executed=True, detail="")
+    runner._camera_centred = True
+    runner.agent.step = waiting_step
+    runner.start()
+    status = drive(runner)
+    assert status["outcome"] == FAILED
+    assert status["error"].startswith(f"{LINK_LOST}: no answer for "), status["error"]
+
+
+def test_a_world_on_its_own_server_failing_is_not_the_robot_links():
+    link, robot, world = stack()
+    runner = runner_for(robot, world)
+    lost = WorldUnreachable("GET /world/map failed: reset")
+    assert runner._is_link_failure(lost), "a world sharing the robot's link"
+    apart = RemoteWorld(ASGI_BASE_URL, client=link)       # its own LinkHealth
+    runner = runner_for(robot, apart)
+    assert not runner._is_link_failure(lost), "a world elsewhere: the old fault"
+    assert runner._is_link_failure(RobotUnreachable("POST", "/action", "reset"))
+
+
+def test_time_paused_for_a_person_is_not_silence():
+    link, robot, world = stack()
+    clock = FakeClock()
+    runner = runner_for(robot, world, clock=clock)
+    runner.start()
+    paused = {"s": 0.0}
+    runner._paused_s = lambda: paused["s"]
+    with runner._lock:
+        runner._note_link_answers()
+        clock.idle(60.0)
+        paused["s"] = 60.0           # a minute waiting on a person's pick
+        runner._link_failures = LINK_MIN_FAILED_TICKS - 1
+        end = runner._count_link_failure("reset")
+    assert end is None, "a paused minute read as a dead link"
