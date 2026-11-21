@@ -205,4 +205,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.201](3.201-twin-nogo-toast-target.md) | The twin: the toast beside a zone, and the target field during an API find |
 | [3.203](3.203-twin-first-run-polls.md) | The twin polls no robot before one is connected |
 | [3.204](3.204-phantom-landmark.md) | A landmark pinned where the object never was |
+| [3.206](3.206-steer-distill.md) | Qwen's direction answer with the target in view, taught by a frontier model on the frames the local tiers are silent on |
 <!-- /sections -->
