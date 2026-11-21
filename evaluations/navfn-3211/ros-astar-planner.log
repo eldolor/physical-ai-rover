@@ -1,0 +1,178 @@
+[bridge-6] [INFO] [1795277901.119427041] [picar_bridge]: reloaded map map-3859d4ac v2 at the dock (100% of returns on the map)
+[bridge-6] [INFO] [1795277901.909062962] [picar_bridge]: nav2 active: goals taken
+[planner_server-8] [ERROR] [1795277912.721386886] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277912.721482488] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277912.721497113] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.52, -1.92)
+[planner_server-8] [WARN] [1795277912.721508352] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277912.990814953] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277912.990894760] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277912.990907325] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (1.72, -14.32)
+[planner_server-8] [WARN] [1795277912.990917281] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277913.488004461] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277913.488084652] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277913.488100461] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (1.72, -8.72)
+[planner_server-8] [WARN] [1795277913.488114948] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277913.917472915] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277913.917544172] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277913.917556580] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (8.62, -4.47)
+[planner_server-8] [WARN] [1795277913.917566326] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277914.564220364] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277914.564322953] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277914.564342510] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.72, -4.77)
+[planner_server-8] [WARN] [1795277914.564356413] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277914.785583440] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277914.785681026] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277914.785696326] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (8.27, -10.87)
+[planner_server-8] [WARN] [1795277914.785706810] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277915.432883855] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277915.432962724] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277915.432976461] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (3.27, -13.27)
+[planner_server-8] [WARN] [1795277915.432988579] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277915.934818428] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277915.934925431] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277915.934944386] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.67, -15.82)
+[planner_server-8] [WARN] [1795277915.934956348] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277915.999907204] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277915.999996463] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277916.000017200] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.72, -6.52)
+[planner_server-8] [WARN] [1795277916.000033081] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277916.108969658] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277916.109074293] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277916.109093058] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (1.52, -14.77)
+[planner_server-8] [WARN] [1795277916.109109075] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277916.703225673] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277916.703302164] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277916.703314521] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.07, -14.92)
+[planner_server-8] [WARN] [1795277916.703324814] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277916.829612129] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277916.829700674] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277916.829713746] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (1.52, -8.82)
+[planner_server-8] [WARN] [1795277916.829724658] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277916.883826445] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277916.883901398] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277916.883913986] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (3.12, -9.02)
+[planner_server-8] [WARN] [1795277916.883924115] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277917.541926074] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277917.542020033] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277917.542070156] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (1.27, -13.67)
+[planner_server-8] [WARN] [1795277917.542085933] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277917.547044816] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277917.547104018] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277917.547120817] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (7.77, -15.37)
+[planner_server-8] [WARN] [1795277917.547135956] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277917.558948656] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277917.559020855] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277917.559038331] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.57, -14.52)
+[planner_server-8] [WARN] [1795277917.559053933] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277917.761976680] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277917.762085725] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277917.762173040] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.72, -1.87)
+[planner_server-8] [WARN] [1795277917.762184956] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277918.792562098] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277918.792681140] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277918.792703774] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (1.37, -13.47)
+[planner_server-8] [WARN] [1795277918.792716736] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277919.074942697] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277919.075035501] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277919.075054517] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (-0.43, -7.92)
+[planner_server-8] [WARN] [1795277919.075069084] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277920.912654016] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277920.912737135] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277920.912751363] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (-0.93, -15.02)
+[planner_server-8] [WARN] [1795277920.912763638] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277921.141443814] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277921.141531769] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277921.141547346] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.62, -3.57)
+[planner_server-8] [WARN] [1795277921.141558144] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277921.221925198] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277921.222054435] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277921.222078827] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (9.42, -13.77)
+[planner_server-8] [WARN] [1795277921.222095724] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277921.830966389] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277921.831041737] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277921.831054747] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.07, -15.27)
+[planner_server-8] [WARN] [1795277921.831066448] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277921.931426161] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277921.931500792] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277921.931515772] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.77, -15.67)
+[planner_server-8] [WARN] [1795277921.931526988] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277921.985815399] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277921.985900667] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277921.985928477] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (1.07, -2.77)
+[planner_server-8] [WARN] [1795277921.985943922] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277923.192294955] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277923.192377213] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277923.192391715] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (9.82, -15.17)
+[planner_server-8] [WARN] [1795277923.192403867] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277923.478693145] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277923.478789384] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277923.478808141] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (-0.63, -13.62)
+[planner_server-8] [WARN] [1795277923.478824466] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277926.487018540] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277926.487090452] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277926.487104437] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.97, -3.97)
+[planner_server-8] [WARN] [1795277926.487116391] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277927.374816530] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277927.374904724] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277927.374923960] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (-1.33, -0.67)
+[planner_server-8] [WARN] [1795277927.374940811] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277927.697850575] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277927.698745573] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277927.698772139] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (8.47, -13.32)
+[planner_server-8] [WARN] [1795277927.698789786] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277929.292528773] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277929.292614768] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277929.292628470] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.37, -4.77)
+[planner_server-8] [WARN] [1795277929.292661666] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277929.745107018] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277929.745181257] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277929.745195962] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (1.22, -7.37)
+[planner_server-8] [WARN] [1795277929.745207388] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277930.627373723] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277930.627461211] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277930.627477291] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.02, -14.87)
+[planner_server-8] [WARN] [1795277930.627488276] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277930.707145727] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277930.707217879] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277930.707233257] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (3.87, -13.52)
+[planner_server-8] [WARN] [1795277930.707245915] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277931.455157213] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277931.455248457] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277931.455263367] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (-0.48, -13.62)
+[planner_server-8] [WARN] [1795277931.455276162] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277932.668131032] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277932.668222031] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277932.668238818] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.57, -14.67)
+[planner_server-8] [WARN] [1795277932.668250933] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277934.253300883] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277934.253396598] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277934.253413794] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (-0.13, -15.12)
+[planner_server-8] [WARN] [1795277934.253428723] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277936.053423724] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277936.053526447] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277936.053546030] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (-0.63, -10.32)
+[planner_server-8] [WARN] [1795277936.053562029] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277936.236743992] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277936.236849401] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277936.236875254] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (1.87, -8.22)
+[planner_server-8] [WARN] [1795277936.236894504] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277936.968264704] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277936.968356619] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277936.968378003] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.57, -15.47)
+[planner_server-8] [WARN] [1795277936.968394242] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277939.122987111] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277939.123102846] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277939.123129032] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.52, -12.77)
+[planner_server-8] [WARN] [1795277939.123145924] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277939.473432225] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277939.474326255] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277939.474353447] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.37, -12.87)
+[planner_server-8] [WARN] [1795277939.474365313] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277939.505117297] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277939.505178774] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277939.505191502] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (1.67, -7.22)
+[planner_server-8] [WARN] [1795277939.505202345] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277940.214734196] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277940.214824205] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277940.214837215] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.12, -10.82)
+[planner_server-8] [WARN] [1795277940.214848397] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
