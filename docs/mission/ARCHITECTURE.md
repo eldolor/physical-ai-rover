@@ -237,177 +237,6 @@ costs a third of the calls and labels far worse). Rooms with no wall
 between them (open plans) cannot be told apart by the map's shape, so
 labels there land by distance at best.
 
-### A mission that did not find says where it looked
-
-**Decision** (3.70 E4 and E5, with the end states above). A mission that
-ends **exhausted**, **out_of_budget** or **cancelled** carries a report of
-where it looked: the rooms it entered, the goal points it reached, the map
-it ran on, and how much floor that map holds. Without it "not found" would
-tell a person nothing about where to look themselves or whether to run it
-again.
-
-**How much floor is an estimate on the robot's own map, and says so.** The
-brain cannot know the house's true floor. Its share is the floor the map
-knows, over that plus the unknown patches the map has walled in and that
-touch known floor. Unknown space that reaches the map's edge counts as
-outside the house; a patch walled in by obstacles alone is the inside of a
-sofa, which no robot reaches. Floor inside a person's no-go zones counts
-neither way (3.161).
-
-**The report is built after the stop, never in its way.** Reading the map
-can be a network call, and a person's Stop must not wait on it (3.70's bug
-pass found the map read running on the path that answers Stop). The robot
-is stopped first; the report follows, and a reader who asks in the moment
-between gets none yet and asks again.
-
-**Rejected: showing the share as "coverage".** 3.70 set the bar at within
-2 points of the simulator's truth, and it FAILED: at the end of a finished
-search the estimate was within 1.5 points, but part way through it read 20
-to 77 points high, because the estimate cannot count floor the map has not
-reached yet -- and "part way" is exactly when an out-of-budget or cancelled
-mission reports. So the phone shows square metres mapped, a figure that is
-true whenever it is read, and the share stays in the report for a finished
-search. Whether to keep the share at all was left open for the user in
-3.70's record.
-
-### What a mission saw is kept on the robot for the person to check
-
-**Decision** (3.162, asked by the user 2026-11-06, from a robot vacuum's
-app that shows a photo of each obstacle on its map: people trust what they
-can check). Every mission's end keeps, on the robot, what it saw: the frame
-its arrival's identity check judged, a thumbnail of each thing it placed on
-the map with its room and position, and the rooms. The phone shows the
-judged frame on the ended mission's card, one tap away, and the rest as a
-list. Before it the twin showed only an end state, and the object inventory
-every mission already kept was read by nobody. It is also the instrument
-the autonomy rehearsal is judged with: the user checks each **found**
-against the frame shown here (3.158).
-
-**Why it is shaped this way.**
-
-- **The frame shown is the frame judged, byte for byte.** A re-rendered or
-  later frame would show what the robot sees now, not what it called
-  found. The stored frame carries the fingerprint of the one the identity
-  check was sent (accepted at 24 of 24 in 3.162.C, 12 **found** and 12
-  **arrived_unconfirmed**).
-- **Local only.** Frames and thumbnails leave the robot only to the
-  person's own phone, through the brain's authenticated route. They never
-  go to a bucket, a log or the repository. This keeps 3.46's decision (the
-  uploaded inventory carries labels and positions, no image) and the
-  privacy rule in [policy](../policy/ARCHITECTURE.md).
-- **Bounded, and whole or absent.** A mission's pictures are capped (at most
-  1 MB), the store keeps the newest 50 missions (at most 50 MB) and deletes
-  the oldest first, and a person can delete one from the phone, every file
-  with it. A report is written whole or not at all, so no reader sees half
-  of one.
-- **Never in the mission's way.** It is written on a thread of its own,
-  once, at the mission's real end: after the drive home, and not at a
-  recharge that resumes. A save that fails is logged and never changes an
-  outcome (the rule 3.99's log set). It reads and shows; nothing it writes
-  reaches the robot.
-- **It does not rewrite history.** A late confirmation (3.53) leaves the
-  report saying the arrival could not be confirmed, as the outcome does.
-
-**Rejected.** Uploading the frames beside the inventory: nothing new leaves
-the house unless the user says so (3.162's scope). Showing only the end
-state, as before: a person cannot tell a right **found** from a wrong one
-without the picture.
-
-**What it cannot show yet, recorded.** On the simulator's frames the list
-names every object. On real frames it holds the target only: no namer for
-camera frames passed its bar (3.46, closed by the user 2026-10-10). A
-listed thing's room is the room the robot stood in when it first saw it, so
-a thing seen through a doorway is filed under the wrong room: 81 of 123
-right against a bar of 95%, FAILED (3.162.C); rooms a person named are
-looked up by the thing's own position and do not have this error. A policy
-with no identity check has no judged frame and shows the last frame it
-took. The judged frame carries no box around the target yet.
-
-### A mission's end goes home
-
-**Decision** (3.156, asked by the user 2026-11-06 as part of full autonomy).
-After an end that leaves the robot in the brain's hands, the brain drives
-it back to the dock before the mission is over. Two reasons: a robot left
-where it stopped needs a person to fetch it, and the saved map assumes the
-robot starts on the dock (3.50.D: a reload localises from there), so a
-robot that does not come back also breaks the next mission's start.
-
-**The outcome is decided first, and the trip home never changes it.** The
-return is a phase between the end's decision and the end itself, with its
-own record beside the outcome: docked, failed, cancelled or skipped, each
-with its reason. A **found** whose trip home failed is still **found**.
-
-**Which ends go home.** Found, a room reached, exhausted, out of budget, an
-unconfirmed arrival, and blocked (routing is the planner's, so a
-straight-line wedge is no reason to stay). Not **cancelled**: the person
-has the robot. Not **failed**: a fault wants a person. Not a battery at
-its reserve level or below: the robot server refuses autonomy there, and
-the brain does not ask.
-
-**The route is the planner's; only the last stretch is the brain's.** The
-trip is a navigation goal to a point just short of the dock, then a turn, a
-short creep on the same guarded moves a mission uses, and a final turn to
-the dock's heading. With no planner to ask, the return is skipped and says
-so. **Rejected:** driving home in straight lines on the brain's own moves
-(3.156 D2): going around things is route planning, and the brain has none.
-
-**Safety and who-drives are unchanged.** The return is the brain driving,
-so every move and goal is vetted and arbitrated as a mission's are: a
-person's Stop or D-pad ends the return and leaves the robot where it is,
-and the battery's reserve refuses it. It runs inside the tick loop, so the
-three failsafes cover it, and the halt gate shuts after it. 3.156.B changed
-nothing in the safety layer or the arbitration (its criterion C8), and
-live a Stop and a D-pad each ended the return 10 times of 10.
-
-**The dock is a known pose, never a guess.** On a saved map that reloaded
-and matched, it is the map's own dock: the same point for every mission on
-that map. Otherwise it is where the mission started, marked as such so
-that a report never calls it verified. With neither, the return is skipped.
-When the pose was unusable at the start, the dock is read again while the
-mission runs (3.194, after a live find that found its target and then did
-not go home). A saved map's dock is taken whenever it is read. A start
-pose is taken late only while the wheels say the robot has not moved,
-because a start pose read after a move is not the dock.
-
-**The search ends early enough to get home.** A mission ends
-**out_of_budget** when the time or the battery left is less than the trip
-home is predicted to cost, with a margin. The prediction comes from the
-path home on the brain's own map and this mission's own speed and drain.
-**Rejected:** a fixed reserve (3.156's scope: "a budget from the distance
-home, not a fixed number"), which is too much beside the dock and too
-little across the house. **Trade-off, measured and recorded as failed:**
-ending early costs searching. In 3.156.B's paired sweep six missions ended
-at the reserve where the other arm went on, finds were 18 against 19 and a
-survey's rooms 259 against 263 (C6 FAILED). And a battery that drains fast
-from a low start passes its reserve before the drain can be estimated (C5
-FAILED at the two faster rates). Both are open for the Rover's step.
-
-**Recharge and resume: built, off until the Rover** (3.156.D, the user's
-call 2026-11-06, from a vacuum's "recharge and resume"). When the battery
-is what ended the search, the mission may wait on the dock, charge, and
-carry on with what it kept: the places visited and refused, the rooms, the
-memory.
-
-- Only a battery end charges. Time does not come back, so a time-caused
-  end never does.
-- The end already decided is the fallback: anything that stops the charge
-  (a failed return, a Stop, no rise in voltage, the overall limit) ends
-  the mission with it.
-- The mission's time limit pauses only while charging, under a separate
-  limit on the whole, and a mission charges a bounded number of times.
-- A person still wins while nothing moves: the brain keeps asking the robot
-  server for a harmless command, and a Stop or a D-pad refuses it.
-- **Rejected:** a separate drive back to where the search stopped. A
-  frontier search has no row to rejoin as a vacuum has, and the leg is
-  wasted when that point was a dead end; the next goal is the drive back.
-
-It is off because nothing yet sees a charger and its voltage levels are
-placeholders (3.137.E). In the simulator 45 of 45 charges resumed, but the
-progress bar FAILED (rooms 78% and finds 79% of a mission with no drain),
-one live return ended unaligned with the cause not established, and a
-D-pad tap that lapses between the brain's probes is seen only once the
-robot has moved (3.156.D's known limit).
-
 ### An unconfirmed arrival is asked again when the cloud is back
 
 **Decision** (3.53, approved by the user 2026-10-09). After an
@@ -478,9 +307,9 @@ tiered policy already searches without the cloud.
 the board the local VLM's yes, in the simulator geometry. Without the local
 VLM (off the board, or killed for memory), or on an arrival only the cloud
 may confirm, identity stays the cloud's question. A hanging cloud costs up to the failure budget times the
-confirmation's deadline of parked time at arrival: about 25 s at the
-confirmation's own 8 s deadline (3.56, the user's choice), down from 60 s
-when the confirmation shared the 20 s vision timeout. 8 s sits above the slowest
+confirmation's deadline of parked time at arrival: about 25 s at the 8 s
+`arrival_confirm_timeout_s` (3.56, the user's choice), down from 60 s when
+the confirmation shared the 20 s vision timeout. 8 s sits above the slowest
 cloud call recorded (6.78 s of 98); a slower but live cloud costs a retry,
 never a wrong **found**.
 
@@ -537,10 +366,6 @@ tools, a tool runner belongs inside the vision function, below the runner.
 | Bad model, wording, missing models or vision service | refused at start with the cause | no misconfiguration is discovered after a motor turns |
 | A late async cloud answer arrives after the mission ends | the policy is closed on finish, so the answer is dropped | no decision from an ended mission is applied |
 | The stop command itself fails | logged and swallowed | a failsafe never raises |
-| The trip home cannot start, fails or is interrupted | the return is recorded as skipped, failed or cancelled with its reason; the robot is stopped where it is | the outcome decided before the trip is never changed by it, and the brain never drives home without the route planner |
-| The dock is unknown at the start | read again while the mission runs; a start pose read after the robot moved is never used | no return to a guessed dock |
-| The map is unusable when the where-it-looked report is built | the report carries no floor figures | a report never invents coverage |
-| Saving what the mission saw fails | logged; the mission's outcome and its stop are untouched | a report is whole or absent, and never fails a mission |
 | Brain restart | the mission is lost; the robot keeps its own state | accepted gap, see below |
 
 ## Open questions
@@ -550,12 +375,6 @@ tools, a tool runner belongs inside the vision function, below the runner.
   home moved from a Pi to the Jetson on 2026-09-19. Decided by the user on
   hardware day; settled when a mission starts from a phone after a reboot with
   no laptop on the network.
-- **The dock on the car (3.156.C, on the Rover).** "Docked" there is
-  charging seen on the board, not a pose. A physical dock is an obstacle to
-  the safety layer, so the last centimetres may be vetoed; whether the
-  car's dock needs a reversed entry or anything else is a safety decision
-  with its own criteria, not made yet. No path around the safety layer is
-  on the table (3.156 D4).
 - **Mission persistence.** A brain restart loses the mission. Worth revisiting
   only if a field run shows restarts happen.
 - **Chaos and soak (S7).** Added latency, dropped requests and a 1000-step run
