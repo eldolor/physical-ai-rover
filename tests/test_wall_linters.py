@@ -39,6 +39,7 @@ All static: nothing here needs ROS or the container.
 Run with: pytest tests/test_wall_linters.py -v
 """
 
+import math
 import re
 from pathlib import Path
 
@@ -68,7 +69,12 @@ CONSUMER_DIRS = PROJECT_DIRS + ("tests", "web-twin")
 # needs it for direct-mode turns and odometry (which never pass through ROS)
 # and diff_drive_controller needs it for twists, so it exists on both sides;
 # both read one env var at start-up, and this pins their defaults.
-MAX_DUPLICATES = 12
+# 2026-11-21 (3.199): thirteen -- the no-go margin. The bridge draws each zone
+# grown (keepout.GROW_M, 3.195) and the robot server refuses a person's goal
+# within world/nogo.py GOAL_CLEAR_M of a zone, which must cover the cells the
+# bridge draws; the refusal is the robot server's (a person's goal, before
+# arbitration), the drawing the bridge's, so the margin exists on both sides.
+MAX_DUPLICATES = 13
 # 2026-09-27: thirteen method+path pairs (R4-R6). A fourteenth is a decision.
 # 14 since 3.68: POST /nav/keepout, the one way the robot server's refusals
 # reach nav2's planner (a wedge it cannot otherwise hear of).
@@ -258,7 +264,28 @@ def _lidar_offset():
     return len(set(values.values())) == 1, values
 
 
+def _nogo_goal_margin():
+    """3.199: a person's goal is refused within GOAL_CLEAR_M of a zone, and
+    the bridge's drawn cells reach GROW_M (its corner arcs' polygon) plus a
+    cell's diagonal from the zone: the refusal must cover that reach, and by
+    no more than 5 mm (a wider band would refuse taps nav2 could reach)."""
+    import importlib.util
+    from world.nogo import GOAL_CLEAR_M
+    spec = importlib.util.spec_from_file_location(
+        "keepout_wall", SLAM / "src/picar_bridge/picar_bridge/keepout.py")
+    keepout = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(keepout)
+    square = [(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)]
+    arc = max(max(-x, x - 1.0, -y, y - 1.0, math.hypot(max(-x, 0, x - 1), max(-y, 0, y - 1)))
+              for x, y in keepout.grown(square))
+    reach = arc + math.hypot(keepout.RES_M, keepout.RES_M)
+    values = {"world/nogo.py GOAL_CLEAR_M": GOAL_CLEAR_M,
+              "keepout drawn reach (grown + a cell's diagonal)": round(reach, 6)}
+    return reach <= GOAL_CLEAR_M <= reach + 0.005, values
+
+
 DUPLICATES = {
+    "no-go goal margin (D5 vs the drawn mask)": _nogo_goal_margin,
     "lidar mounting offset": _lidar_offset,
     "wheel radius": _wheel_radius,
     "wheel separation": _wheel_separation,

@@ -1,0 +1,118 @@
+{
+ "house": "scaled_house",
+ "image": "vision-picar-ros:plan-3.199",
+ "frame_id": "map-90bd13c4",
+ "zone": {
+  "id": "zde9937265ed6",
+  "x0": 1.615,
+  "y0": 2.822,
+  "x1": 2.285,
+  "y1": 3.478,
+  "kind": "area",
+  "set_at": 1795239025.584,
+  "by": "person"
+ },
+ "normal": [
+  1,
+  0
+ ],
+ "bridge_after_draw": {
+  "zones": 1,
+  "suspended": [],
+  "suspended_count": 0,
+  "restored": 0,
+  "last": null,
+  "lattice_phase_m": [
+   0.0362,
+   0.035
+  ],
+  "margin_off": []
+ },
+ "band_taps": [
+  {
+   "d_m": 0.02,
+   "at": [
+    2.305,
+    3.1500000000000004
+   ],
+   "reply": {
+    "accepted": false,
+    "reason": "no_go_zone",
+    "zone": "zde9937265ed6",
+    "retryable": true,
+    "detail": "that point is inside or beside a no-go zone a person drew (keep 0.125 m clear of it)"
+   },
+   "goal_before": null,
+   "goal_after": null,
+   "reached_nav2": false
+  },
+  {
+   "d_m": 0.06,
+   "at": [
+    2.345,
+    3.1500000000000004
+   ],
+   "reply": {
+    "accepted": false,
+    "reason": "no_go_zone",
+    "zone": "zde9937265ed6",
+    "retryable": true,
+    "detail": "that point is inside or beside a no-go zone a person drew (keep 0.125 m clear of it)"
+   },
+   "goal_before": null,
+   "goal_after": null,
+   "reached_nav2": false
+  },
+  {
+   "d_m": 0.11,
+   "at": [
+    2.395,
+    3.1500000000000004
+   ],
+   "reply": {
+    "accepted": false,
+    "reason": "no_go_zone",
+    "zone": "zde9937265ed6",
+    "retryable": true,
+    "detail": "that point is inside or beside a no-go zone a person drew (keep 0.125 m clear of it)"
+   },
+   "goal_before": null,
+   "goal_after": null,
+   "reached_nav2": false
+  }
+ ],
+ "band_refused": 3,
+ "band_reached_nav2": 0,
+ "clear_tap": {
+  "at": [
+   2.585,
+   3.1500000000000004
+  ],
+  "reply": {
+   "accepted": true,
+   "state": "pending",
+   "goal_id": "ddee32e04fde4de3b89e0ab7de2adb9b"
+  }
+ },
+ "drive": {
+  "seconds": 18.7,
+  "samples": 74,
+  "entries": [],
+  "closest_outside_m": 1.1643867117145652,
+  "end_truth": [
+   1.981492891763641,
+   1.6576132882854349
+  ],
+  "end_to_goal_m": 1.6098,
+  "goal_status": {
+   "x_m": 0.635,
+   "y_m": -1.8000000000000005,
+   "yaw_rad": 0.0,
+   "state": "aborted",
+   "since": 1795239028.6510823,
+   "goal_id": "ddee32e04fde4de3b89e0ab7de2adb9b",
+   "ended": 1795239047.103945
+  }
+ },
+ "load_1min_peak": 1.45
+}
