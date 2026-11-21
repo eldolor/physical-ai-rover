@@ -159,9 +159,12 @@ def plan(reported):
     return out
 
 
-def find(m, arm, store_dir, cells, reported, nav=NAV, rule="dev"):
+def find(m, arm, store_dir, cells, reported, nav=NAV, rule="dev", prepare=None, watch=None):
     """One find. `store_dir` already holds the survey's report (surveyed) or
-    nothing; `cells` the survey's end map or None."""
+    nothing; `cells` the survey's end map or None. 3.70.M3: `prepare(grid)`
+    runs once the robot stands at its start, before the mission is built (it
+    moves the target); `watch(runner, name, fields)` sees every explore event
+    (the red run's memory-trusting policy). Both default to M2's find."""
     _quiet()
     _rule(rule)
     from control.inventory_store import InventoryStore
@@ -172,6 +175,8 @@ def find(m, arm, store_dir, cells, reported, nav=NAV, rule="dev"):
 
     grid = build_world(HOUSE)
     grid.x, grid.y, grid.theta = m["start"][0] + 0.5, m["start"][1] + 0.5, m["theta"]
+    if prepare is not None:
+        prepare(grid)
     contacts = _contacts(grid)
     world = _saved_map_world(grid)
     if cells is not None:
@@ -192,6 +197,8 @@ def find(m, arm, store_dir, cells, reported, nav=NAV, rule="dev"):
     def kept(name, pose=None, **fields):
         events.append({"event": name, **fields})
         note(name, pose, **fields)
+        if watch is not None:
+            watch(runner, name, fields)
     agent._event = kept
     path, last = 0.0, (grid.x, grid.y)
     ticks = 0
@@ -241,7 +248,16 @@ def find(m, arm, store_dir, cells, reported, nav=NAV, rule="dev"):
             "recall_retries": sum(e["event"] == "goal_sent" and e.get("kind") == "recall"
                                   and e.get("side", 1) > 1 for e in events),
             "recall_spent": sum(e["event"] == "recall_spent" for e in events),
-            "recall_most_per_place": max(per_place.values(), default=0)}
+            "recall_most_per_place": max(per_place.values(), default=0),
+            # 3.70.M3: the find's own end report (the stale landmark's belief).
+            "end_landmarks": [{"label": d["label"], "x_m": d["x_m"], "y_m": d["y_m"],
+                               "belief": d["belief"]}
+                              for d in _end_items(runner) if d["label"] == m["target"]]}
+
+
+def _end_items(runner):
+    rep = runner.inventory.report() if runner.inventory is not None else None
+    return (rep["reported"] + rep["candidates"]) if rep else []
 
 
 def _job(args):
