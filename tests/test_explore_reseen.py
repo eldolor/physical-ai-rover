@@ -312,27 +312,17 @@ def test_3210_round_one_holding_everything_ends_as_before():
     assert agent._choose_next(0.0)[0] == "STOP"
 
 
-def _sweep2():
-    import sys
-    sys.path.insert(0, str(ROOT / "evaluations" / "nogo-3192"))
-    import os
-    os.environ.setdefault("SWEEP2_CHOOSER", "rule")
-    spec = importlib.util.spec_from_file_location(
-        "nogo_sweep2_3210", ROOT / "evaluations" / "nogo-3192" / "sweep2.py")
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-
-def test_3210_val44_rooms_no_zones_is_found(monkeypatch):
-    """3.210 E1, pinned: `dev` ended it `exhausted` (770.6 s), the true place
-    crowded out of the one round by three false sightings after it."""
-    monkeypatch.setenv("SWEEP2_CHOOSER", "rooms")
-    s2 = _sweep2()
-    s2._apply()
-    try:
-        row = s2.sw.run("procthor:val:44", 0, "none")
-    finally:
-        monkeypatch.setenv("SWEEP2_CHOOSER", "rule")
-        s2._apply()
-    assert row["outcome"] == "found", row["outcome"]
+def test_3210_false_places_seen_again_do_not_crowd_out_a_left_out_one():
+    """Review: round 1 looks at the false places, sees them again there (the
+    latest sightings now), and round 2 must still give the left-out one its look."""
+    agent, events = _agent()
+    true = _four_places(agent)
+    agent._choose_next(0.0)
+    falses = [tuple(p) for p in events[-1][1]["places"]]
+    agent.recall = []
+    for x, y in falses:                                    # seen again, a little off
+        agent._note_seen_at(x + 0.02, y)
+    agent._choose_next(0.0)
+    assert events[-1][0] == "reseen" and events[-1][1]["round"] == 2
+    assert events[-1][1]["places"][0] == list(true)
+    assert len(events[-1][1]["places"]) == explore_mod.RECALL_MAX

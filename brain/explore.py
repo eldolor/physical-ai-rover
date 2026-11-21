@@ -412,6 +412,7 @@ class ExploreAgent(MissionAgent):
         self.resight = False                # 3.70.M3: searching the known map by sight
         self._seen_at: list = []            # 3.192.B: where it saw the target, not yet looked again (3.210)
         self._reseen = 0                    # 3.192.B: rounds of looking at them again
+        self._left_out: list = []           # 3.210: places a round did not hand up; the next one's first
         self._carried: list = []            # 3.192.B: the recall's carried places (`recall_from`)
         self._refused_at: list = []         # 3.192.B: places whose identity the cloud refused
         self._recall_refused = 0            # refusals in a row of recall[0]
@@ -1076,9 +1077,16 @@ class ExploreAgent(MissionAgent):
     def _reseen_places(self, pose: dict) -> list:
         """3.192.B: the places of a look-again round -- latest first, at most
         RECALL_MAX, each with reachable floor beside it now (review: one with
-        none would hold the recall, and the round, on it)."""
+        none would hold the recall, and the round, on it). 3.210: places an
+        earlier round left out go first (latest first, then the rest latest
+        first), so the false places that round looked at, seen again there,
+        cannot crowd them out a second time; with none left out the order is
+        3.192.B's."""
+        r = self.retry.radius_m
+        left = [p for p in reversed(self._seen_at)
+                if any(math.hypot(p[0] - q[0], p[1] - q[1]) <= r for q in self._left_out)]
         out = []
-        for p in reversed(self._seen_at):
+        for p in left + [p for p in reversed(self._seen_at) if p not in left]:
             if len(out) == RECALL_MAX:
                 break
             if self._band_point(pose, p[0], p[1]) is not None:
@@ -1460,6 +1468,7 @@ class ExploreAgent(MissionAgent):
             self._event("reseen", round=self._reseen, kept_of=len(self._seen_at),
                         places=[[round(x, 2), round(y, 2)] for x, y in again])
             self._seen_at = [p for p in self._seen_at if p not in again]   # 3.210: kept, not lost
+            self._left_out = list(self._seen_at)
             self.last_event = "the search ran out; looking again where the target was seen"
             return "WAIT", True, self.last_event
         self.exhausted = True
