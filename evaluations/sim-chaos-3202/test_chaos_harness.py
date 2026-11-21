@@ -184,7 +184,8 @@ def test_k8_five_xx_fails():
     ms = score.fault_measures(f, _truth(0, 60, 0), {"m1": {"t1": 50.0, "outcome": "found"}})
     assert score.judge_fault(f, ms, CFG, [{"t": 20.0, "dup_copy": 200}])["pass"]
     assert not score.judge_fault(f, dict(ms), CFG, [{"t": 20.0, "dup_copy": 500}])["pass"]
-    assert score.judge_fault(f, dict(ms), CFG, [{"t": 20.0, "p": "/world/goal", "fate": 501}])["pass"]
+    assert score.judge_fault(f, dict(ms), CFG, [{"t": 20.0, "m": "GET", "p": "/world/goal", "fate": 501}])["pass"]
+    assert not score.judge_fault(f, dict(ms), CFG, [{"t": 20.0, "m": "POST", "p": "/action", "dup_copy": 501}])["pass"]
 
 
 def test_slope_and_memory_growth():
@@ -291,3 +292,18 @@ def test_move_target_cycles_and_skips_a_refused_cell(tmp_path, monkeypatch):
     assert c.cycle[c.target_i] == (23, 5)
     ev = [json.loads(x) for x in (tmp_path / "events.jsonl").read_text().splitlines()]
     assert [e["what"] for e in ev] == ["target_move_refused", "target_moved", "target_moved"]
+
+
+def test_every_cell_refused_leaves_the_move_pending_and_a_house_without_a_cycle_refuses(tmp_path, monkeypatch):
+    import chaos
+    from types import SimpleNamespace
+    monkeypatch.setattr(chaos, "http", lambda *a, **k: (409, "refused"))
+    c = chaos.Chaos(tmp_path, faults=1, seed=1, house="scaled_house", kinds=("K1",), gap=(1, 2))
+    c.st = SimpleNamespace(urls={"body": "http://x"}, secret="s")
+    c.move_target()
+    assert c.move_pending and c.target_i == 0
+    monkeypatch.setattr(chaos, "http", lambda *a, **k: (200, {}))
+    c.move_target()
+    assert not c.move_pending and c.target_i == 1
+    with pytest.raises(ValueError):
+        chaos.Chaos(tmp_path, faults=1, seed=1, house="starter_house", kinds=("K1",), gap=(1, 2))
