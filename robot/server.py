@@ -111,7 +111,7 @@ from typing import Annotated, List, Optional
 from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 from pydantic import BaseModel, Field
 
 from robot.factory import get_robot, load_config
@@ -1261,7 +1261,12 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
 
     @app.get(prefix + "/")
     def twin_ui():
-        return FileResponse(_TWIN_INDEX_HTML)
+        # 3.203: the page names itself a robot's. A static host serving the
+        # same file has no such marker, so the twin knows its own origin is
+        # not a robot and polls nothing until one is saved.
+        html = re.sub(r"(<head(?:\s[^>]*)?>)", r'\1\n<meta name="picar-robot-origin" content="1">',
+                      _TWIN_INDEX_HTML.read_text(encoding="utf-8"), count=1)
+        return HTMLResponse(html, headers={"Cache-Control": "no-cache"})
 
     @app.get(prefix + "/app.js")
     def twin_app_js():
