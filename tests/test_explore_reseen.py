@@ -258,3 +258,81 @@ def test_c11_live_find_as_recorded():
     assert d["z6_refused"] == 10 and d["peak_load"] == 3.05 <= 4
     bad = json.loads((ROOT / "evaluations" / "nogo-3192" / "fix" / "live-1-invalid-load.json").read_text())
     assert bad["peak_load"] == 4.51 > 4                     # invalid (3.79), re-run
+
+
+# ---------- 3.210: a round's left-out places are kept for the next ----------
+
+def _four_places(agent):
+    """The true place seen first, three false ones after it (3.210's val:44)."""
+    r = agent.retry.radius_m
+    true = (0.6, 0.6)
+    agent._note_seen_at(*true)
+    for k in range(1, 4):
+        agent._note_seen_at(0.6 + k * (r + 0.05), 1.8)
+    assert len(agent._seen_at) == 4 and agent._seen_at[0] == true
+    return true
+
+
+def test_3210_a_place_the_first_round_left_out_gets_the_second():
+    agent, events = _agent()
+    true = _four_places(agent)
+    agent._choose_next(0.0)
+    assert len(events[-1][1]["places"]) == explore_mod.RECALL_MAX
+    assert list(true) not in events[-1][1]["places"]       # crowded out of round 1
+    agent.recall = []                                      # the round's goals spent; nothing new seen
+    action, executed, detail = agent._choose_next(0.0)
+    assert (action, executed) == ("WAIT", True) and "looking again" in detail
+    assert events[-1][0] == "reseen"
+    assert events[-1][1]["round"] == 2 and events[-1][1]["places"] == [list(true)]
+    agent.recall = []
+    assert agent._choose_next(0.0)[0] == "STOP"            # RESEEN_ROUNDS spent
+    assert [n for n, _ in events].count("reseen") == 2
+
+
+def test_3210_a_left_out_place_refused_is_never_looked_at():
+    from brain.arrival import REFUSED
+    agent, events = _agent()
+    agent.sight_from = "perception"
+    true = _four_places(agent)
+    agent._choose_next(0.0)
+    agent.recall = []
+    agent._last_seen = true                                # the cloud refuses what stood there
+    agent._note_refusal({"_arrival": {"state": REFUSED}})
+    assert agent._choose_next(0.0)[0] == "STOP"
+    assert [n for n, _ in events].count("reseen") == 1
+
+
+def test_3210_round_one_holding_everything_ends_as_before():
+    agent, events = _agent()
+    agent._note_seen_at(1.5, 0.7)
+    agent._note_seen_at(0.6, 1.8)
+    agent._choose_next(0.0)
+    assert agent._seen_at == []
+    agent.recall = []
+    assert agent._choose_next(0.0)[0] == "STOP"
+
+
+def _sweep2():
+    import sys
+    sys.path.insert(0, str(ROOT / "evaluations" / "nogo-3192"))
+    import os
+    os.environ.setdefault("SWEEP2_CHOOSER", "rule")
+    spec = importlib.util.spec_from_file_location(
+        "nogo_sweep2_3210", ROOT / "evaluations" / "nogo-3192" / "sweep2.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_3210_val44_rooms_no_zones_is_found(monkeypatch):
+    """3.210 E1, pinned: `dev` ended it `exhausted` (770.6 s), the true place
+    crowded out of the one round by three false sightings after it."""
+    monkeypatch.setenv("SWEEP2_CHOOSER", "rooms")
+    s2 = _sweep2()
+    s2._apply()
+    try:
+        row = s2.sw.run("procthor:val:44", 0, "none")
+    finally:
+        monkeypatch.setenv("SWEEP2_CHOOSER", "rule")
+        s2._apply()
+    assert row["outcome"] == "found", row["outcome"]

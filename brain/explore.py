@@ -410,7 +410,7 @@ class ExploreAgent(MissionAgent):
         self._recalled = False              # 3.70.M3: a recall was handed to this mission
         self._carried_map = False           # 3.205: the runner carried landmarks on this saved map
         self.resight = False                # 3.70.M3: searching the known map by sight
-        self._seen_at: list = []            # 3.192.B: where this mission saw the target, latest last
+        self._seen_at: list = []            # 3.192.B: where it saw the target, not yet looked again (3.210)
         self._reseen = 0                    # 3.192.B: rounds of looking at them again
         self._carried: list = []            # 3.192.B: the recall's carried places (`recall_from`)
         self._refused_at: list = []         # 3.192.B: places whose identity the cloud refused
@@ -1451,13 +1451,15 @@ class ExploreAgent(MissionAgent):
             # given up or dropped by the retry rule), and the search ran out.
             # The places it was seen are looked at again from beside it, latest
             # first, as a carried place is (`_recall_goal`); a second round
-            # only on sightings made during the first. A carried place not yet
+            # only on sightings made during the first, or on places the first
+            # left out (3.210: at RECALL_MAX a round, later false sightings
+            # crowded out the one true place). A carried place not yet
             # reached stays after them.
             self._reseen += 1
             self.recall = again + [p for p in self.recall if p not in again]
             self._event("reseen", round=self._reseen, kept_of=len(self._seen_at),
                         places=[[round(x, 2), round(y, 2)] for x, y in again])
-            self._seen_at = []
+            self._seen_at = [p for p in self._seen_at if p not in again]   # 3.210: kept, not lost
             self.last_event = "the search ran out; looking again where the target was seen"
             return "WAIT", True, self.last_event
         self.exhausted = True
