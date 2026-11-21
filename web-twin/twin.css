@@ -1114,7 +1114,7 @@ body.stop-bar-on .toast-stack { bottom: calc(160px + env(safe-area-inset-bottom)
 .mission-return[data-state="docked"] { border-left-color: var(--accent-safe); }
 .mission-return[data-state="charging"] { border-left-color: var(--accent-primary); color: var(--text); }
 .mission-return[data-state="failed"] { border-left-color: var(--accent-warn); color: var(--text); }
-/* 3.190.D: where a find looks first, one line under the card. */
+/* 3.190.D: the likeliest room for a find's target, one line under the card. */
 .mission-prior {
   margin: -4px 0 10px; padding: 8px 14px;
   border-left: 3px solid var(--border); color: var(--text-dim);

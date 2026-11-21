@@ -138,12 +138,12 @@
    "kitchen"
   ],
   "run": "run1",
-  "run_dir": "/tmp/claude-0/-home-user-physical-ai-rover/5fa88648-717d-5799-a903-9e6d113cdcf0/scratchpad/live/runs/run-20261120-170133",
+  "run_dir": "run-20261120-170133",
   "samples": 337,
   "seconds": 173,
   "shot": {
    "ok": false,
-   "png": "twin-3190d-cloud.png",
+   "png": "twin-3190d-none-ended-401.png",
    "source": "none",
    "text": "There was no guess at which room the refrigerator was in (it couldn't ask online), so every room was searched alike."
   },

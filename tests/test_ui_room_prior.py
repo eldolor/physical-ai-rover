@@ -4,7 +4,7 @@
 tests/test_ui_room_prior.py
 
 3.190.D (criterion 15's page half): the twin's mission card gains one line
-in operator mode saying where a find looks first -- the likeliest room types
+in operator mode saying the likeliest room type
 for its target from `status.room_prior` (a cloud answer, its cache or the
 shipped table), or, with no prior, why not, in plain words. Hidden with the
 key off (no `room_prior` in the status), for a survey, for a cause the
@@ -28,8 +28,10 @@ MODEL = "us.anthropic.claude-opus-5-5"
 FRIDGE = {"kitchen": 0.95, "living room": 0.05, "bedroom": 0.02, "bathroom": 0.01}
 
 
-def status(prior, job="find", target="refrigerator", running=True):
+def status(prior, job="find", target="refrigerator", running=True, outcome=None):
     body = tiered_status(running=running)
+    if outcome:
+        body["outcome"] = outcome
     body["job"], body["target_object"] = job, target
     if prior is not None:
         body["room_prior"] = prior
@@ -44,24 +46,23 @@ def prior(source, rates=None, why=None, acts=None):
 
 SHOWN = {
     "cloud": (prior("cloud", FRIDGE), "cloud",
-              "Likeliest for the refrigerator: the kitchen (asked online), so it looks there first."),
+              "Likeliest for the refrigerator: the kitchen (asked online)."),
     "cache": (prior("cache", FRIDGE), "cache",
               "Likeliest for the refrigerator: the kitchen "
-              "(remembered from an earlier search), so it looks there first."),
+              "(remembered from an earlier search)."),
     "shipped": (prior("shipped", {"kitchen": 0.2, "living room": 0.6, "bedroom": 0.1,
                                   "bathroom": 0.05}), "shipped",
-                "Likeliest for the refrigerator: the living room, so it looks there first."),
+                "Likeliest for the refrigerator: the living room."),
     # Only a true tie names two, in the types' order (3.116.C's garbage can:
     # kitchen and bathroom at 0.85); a near second is not named (Thermos: the
     # goal choice promises no order past the top).
     "near tie": (prior("cloud", {"kitchen": 0.85, "living room": 0.4, "bedroom": 0.3,
                                  "bathroom": 0.80}), "cloud",
-                 "Likeliest for the refrigerator: the kitchen (asked online), so it looks "
-                 "there first."),
+                 "Likeliest for the refrigerator: the kitchen (asked online)."),
     "two rooms": (prior("cloud", {"kitchen": 0.85, "living room": 0.4, "bedroom": 0.3,
                                   "bathroom": 0.85}), "cloud",
                   "Likeliest for the refrigerator: the kitchen and the bathroom (asked "
-                  "online), so it looks there first."),
+                  "online)."),
     # 3.190.B's one flat reply (candle): orders nothing, so says so.
     "flat": (prior("cloud", {"kitchen": 0.30, "living room": 0.45, "bedroom": 0.30,
                              "bathroom": 0.35}), "flat",
@@ -101,22 +102,17 @@ HIDDEN = {
     "survey with a prior": status(prior("cloud", FRIDGE), job="survey"),
 }
 
-# Review: an ended find keeps its line in the past tense, under the card's
+# Review: an ended find says how it searched in the past tense, under the card's
 # outcome, never "Looking ... first" under "Found the ...".
 ENDED = {
-    "cloud": (prior("cloud", FRIDGE), "cloud",
-              "Likeliest for the refrigerator: the kitchen (asked online), so it looked there first."),
-    "cache": (prior("cache", FRIDGE), "cache",
-              "Likeliest for the refrigerator: the kitchen "
-              "(remembered from an earlier search), so it looked there first."),
-    "shipped": (prior("shipped", FRIDGE), "shipped",
-                "Likeliest for the refrigerator: the kitchen, so it looked there first."),
     "flat": (SHOWN["flat"][0], "flat",
              "No room stood out for the refrigerator, so every room was searched alike."),
     "none": (prior("none", why="timeout"), "none",
              "There was no guess at which room the refrigerator was in (it couldn't ask "
              "online), so every room was searched alike."),
 }
+# A likelihood is still true once the find ends: the same words, still shown.
+KEPT = ("cloud", "cache", "shipped")
 
 
 def _connect(page, twin_server, current):
@@ -132,7 +128,7 @@ def _connect(page, twin_server, current):
 
 
 @pytest.mark.parametrize("case", list(SHOWN))
-def test_operator_line_says_where_the_find_looks_first(browser, twin_server, case):
+def test_operator_line_says_the_likeliest_room(browser, twin_server, case):
     body, source, words = SHOWN[case]
     current = {"body": status(None)}
     page, errors = open_twin(browser, twin_server, engineer=False)
@@ -160,6 +156,23 @@ def test_an_ended_find_says_it_in_the_past(browser, twin_server, case):
     sync_api.expect(line).not_to_have_text(words)    # running: the present tense
     current["body"] = status(body, running=False)
     sync_api.expect(line).to_have_text(words, timeout=5000)
+    sync_api.expect(line).to_have_attribute("data-source", source)
+    assert not jargon_hits(line.inner_text()), jargon_hits(line.inner_text())
+    assert not errors, errors
+    page.close()
+
+
+@pytest.mark.parametrize("case", KEPT)
+def test_an_ended_find_keeps_its_likeliest_room(browser, twin_server, case):
+    body, source, words = SHOWN[case]
+    current = {"body": status(body)}
+    page, errors = open_twin(browser, twin_server, engineer=False)
+    _connect(page, twin_server, current)
+    line = page.locator("#mission-prior")
+    sync_api.expect(line).to_have_text(words, timeout=5000)
+    current["body"] = status(body, running=False, outcome="cancelled")
+    sync_api.expect(page.locator("#mission-card")).not_to_contain_text("Searching", timeout=5000)
+    sync_api.expect(line).to_have_text(words)
     sync_api.expect(line).to_have_attribute("data-source", source)
     assert not jargon_hits(line.inner_text()), jargon_hits(line.inner_text())
     assert not errors, errors
