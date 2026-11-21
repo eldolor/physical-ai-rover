@@ -1,0 +1,40 @@
+[planner_server-8] [WARN] [1795239037.122785676] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1795239037.122844520] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795239037.122854523] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.64, -1.80)
+[planner_server-8] [WARN] [1795239037.122863704] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795239037.149369582] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795239037.576651884] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1795239037.576729446] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795239037.576743213] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.64, -1.80)
+[planner_server-8] [WARN] [1795239037.576758883] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795239039.545257162] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795239043.822708004] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1795239043.822778714] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795239043.822788674] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.64, -1.80)
+[planner_server-8] [WARN] [1795239043.822797908] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795239043.849226030] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795239044.076649209] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1795239044.076726125] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795239044.076736776] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.64, -1.80)
+[planner_server-8] [WARN] [1795239044.076749214] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795239044.098840403] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795239044.575822159] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1795239044.575889371] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795239044.575900062] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.64, -1.80)
+[planner_server-8] [WARN] [1795239044.575911865] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795239044.598638537] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795239045.076934326] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1795239045.077006015] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795239045.077016179] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.64, -1.80)
+[planner_server-8] [WARN] [1795239045.077029027] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795239046.923277372] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1795239046.923352332] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795239046.923388572] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.64, -1.80)
+[planner_server-8] [WARN] [1795239046.923399682] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [WARN] [1795239046.949094521] [global_costmap.global_costmap]: KeepoutFilter: New filter mask arrived from /keepout_mask topic. Updating old filter mask.
+[planner_server-8] [WARN] [1795239047.076795991] [planner_server]: The goal sent to the planner is off the global costmap. Planning will always fail to this goal.
+[planner_server-8] [WARN] [1795239047.076894762] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795239047.076910505] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.64, -1.80)
+[planner_server-8] [WARN] [1795239047.076927341] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [WARN] [1795239047.102314101] [bt_navigator]: [navigate_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [ERROR] [1795239047.102540536] [bt_navigator]: Goal failed

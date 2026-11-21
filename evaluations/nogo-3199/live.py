@@ -2,11 +2,13 @@
 # Copyright (C) 2026 Anshu Gaind
 """
 evaluations/nogo-3199/live.py -- 3.199 G8, once, on the ROS stack: a fresh
-stack (`scaled_house`, `tests/demo_explore.stack`), the first of
-`sweep.place_zones("scaled_house", 0)` stored through the brain
+stack (`scaled_house`, `tests/demo_explore.stack`), a zone from
+`sweep.place_zones("scaled_house", seed)` stored through the brain
 (`POST /mission/nogo`, so it reaches the robot server and the bridge as a
 person's zone does), then a person's taps (`x-driver: twin-dpad`) beside the
-middle of the first edge whose outside is open floor: 0.02, 0.06 and 0.11 m
+middle of an edge whose outside is open floor and (amendment 1) already on
+the robot's own map, free (run 1's tap point was in a room SLAM had not yet
+seen, off nav2's costmap): the first such zone over seeds 0-30, the taps 0.02, 0.06 and 0.11 m
 out (each must be refused `no_go_zone`, with no nav2 goal started), then
 0.30 m out (accepted; nav2 drives there; the truth is read every 0.25 s and
 must never enter the zone).
@@ -67,15 +69,46 @@ def _open_floor(g, x, y, r=0.35):
     return True
 
 
-def _side(g, z):
-    """The first edge (E, W, N, S) whose middle has open floor CLEAR_M out:
+def _mapped_free(m, x, y, r=0.20):
+    """Amendment 1: every cell of the robot's own map (`/world/map`, the
+    house frame a tap is in) within r of (x, y) is known free -- so the goal
+    is on nav2's global costmap, not in a room SLAM has not seen."""
+    if not m.get("usable"):
+        return False
+    res, w, h = m["resolution_m"], m["width"], m["height"]
+    steps = int(math.ceil(r / res))
+    i0 = int(math.floor((x - m["origin_x_m"]) / res))
+    j0 = int(math.floor((y - m["origin_y_m"]) / res))
+    for dj in range(-steps, steps + 1):
+        for di in range(-steps, steps + 1):
+            i, j = i0 + di, j0 + dj
+            if not (0 <= i < w and 0 <= j < h) or m["cells"][j * w + i] != 0:
+                return False
+    return True
+
+
+def _side(g, z, m=None):
+    """The first edge (E, W, N, S) whose middle has open floor CLEAR_M out
+    (and, amendment 1, mapped free there when a map is given):
     (unit normal, the edge's middle)."""
     mx, my = (z["x0"] + z["x1"]) / 2, (z["y0"] + z["y1"]) / 2
     for n, mid in (((1, 0), (z["x1"], my)), ((-1, 0), (z["x0"], my)),
                    ((0, 1), (mx, z["y1"])), ((0, -1), (mx, z["y0"]))):
-        if _open_floor(g, mid[0] + n[0] * CLEAR_M, mid[1] + n[1] * CLEAR_M):
+        px, py = mid[0] + n[0] * CLEAR_M, mid[1] + n[1] * CLEAR_M
+        if _open_floor(g, px, py) and (m is None or _mapped_free(m, px, py)):
             return n, mid
     return None, None
+
+
+def _pick(g, m):
+    """Amendment 1: the first zone of place_zones(HOUSE, seed), seeds 0-30,
+    with such an edge."""
+    for seed in range(31):
+        for z in sweep.place_zones(HOUSE, seed):
+            n, mid = _side(g, z, m)
+            if n is not None:
+                return seed, z, n, mid
+    return None, None, None, None
 
 
 def main(out):
@@ -95,10 +128,11 @@ def main(out):
             time.sleep(2)
         result["frame_id"] = p.get("frame_id")
         g = sweep.build_world(HOUSE)
-        z = sweep.place_zones(HOUSE, 0)[0]
-        n, mid = _side(g, z)
+        time.sleep(5)                                    # SLAM's first scans into the map
+        seed, z, n, mid = _pick(g, robot.get("/world/map").json())
         if n is None:
-            raise RuntimeError(f"setup: no open side beside {z}")
+            raise RuntimeError("setup: no zone with a mapped, open side")
+        result["seed"] = seed
         v = brain.get("/mission/nogo").json()
         v = brain.post("/mission/nogo", json={"frame_id": v["frame_id"], "rev": v["rev"], "op": "add",
                                               "zone": {k: z[k] for k in ("x0", "y0", "x1", "y1")}}).json()
