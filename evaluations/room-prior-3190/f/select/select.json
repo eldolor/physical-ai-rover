@@ -1,0 +1,272 @@
+{
+ "commit": "2a413908",
+ "none": {
+  "n": 100,
+  "found": 100,
+  "exceptions": 0,
+  "capped": 0,
+  "median_goals_found": 6.0,
+  "median_metres_found": 24.15,
+  "mean_reward": 0.4384
+ },
+ "grid": [
+  {
+   "w": 0.0,
+   "cloud": {
+    "n": 100,
+    "found": 98,
+    "exceptions": 0,
+    "capped": 0,
+    "median_goals_found": 5.0,
+    "median_metres_found": 17.85,
+    "mean_reward": 0.5037,
+    "first_goal": {
+     "n": 100,
+     "in_top": 43,
+     "rate": 0.43
+    }
+   },
+   "wrong": {
+    "n": 100,
+    "found": 98,
+    "exceptions": 0,
+    "capped": 0,
+    "median_goals_found": 7.0,
+    "median_metres_found": 25.5,
+    "mean_reward": 0.2944,
+    "first_goal": {
+     "n": 100,
+     "in_top": 17,
+     "rate": 0.17
+    }
+   },
+   "wrong_guard": true
+  },
+  {
+   "w": 0.25,
+   "cloud": {
+    "n": 100,
+    "found": 98,
+    "exceptions": 0,
+    "capped": 0,
+    "median_goals_found": 5.0,
+    "median_metres_found": 17.7,
+    "mean_reward": 0.5157,
+    "first_goal": {
+     "n": 100,
+     "in_top": 43,
+     "rate": 0.43
+    }
+   },
+   "wrong": {
+    "n": 100,
+    "found": 98,
+    "exceptions": 0,
+    "capped": 0,
+    "median_goals_found": 7.0,
+    "median_metres_found": 25.8,
+    "mean_reward": 0.302,
+    "first_goal": {
+     "n": 100,
+     "in_top": 16,
+     "rate": 0.16
+    }
+   },
+   "wrong_guard": true
+  },
+  {
+   "w": 0.5,
+   "cloud": {
+    "n": 100,
+    "found": 98,
+    "exceptions": 0,
+    "capped": 0,
+    "median_goals_found": 5.0,
+    "median_metres_found": 17.4,
+    "mean_reward": 0.524,
+    "first_goal": {
+     "n": 100,
+     "in_top": 43,
+     "rate": 0.43
+    }
+   },
+   "wrong": {
+    "n": 100,
+    "found": 99,
+    "exceptions": 0,
+    "capped": 0,
+    "median_goals_found": 7.0,
+    "median_metres_found": 25.5,
+    "mean_reward": 0.3381,
+    "first_goal": {
+     "n": 100,
+     "in_top": 16,
+     "rate": 0.16
+    }
+   },
+   "wrong_guard": true
+  },
+  {
+   "w": 1.0,
+   "cloud": {
+    "n": 100,
+    "found": 98,
+    "exceptions": 0,
+    "capped": 0,
+    "median_goals_found": 5.0,
+    "median_metres_found": 17.7,
+    "mean_reward": 0.5075,
+    "first_goal": {
+     "n": 100,
+     "in_top": 46,
+     "rate": 0.46
+    }
+   },
+   "wrong": {
+    "n": 100,
+    "found": 100,
+    "exceptions": 0,
+    "capped": 0,
+    "median_goals_found": 7.0,
+    "median_metres_found": 25.5,
+    "mean_reward": 0.4004,
+    "first_goal": {
+     "n": 100,
+     "in_top": 14,
+     "rate": 0.14
+    }
+   },
+   "wrong_guard": true
+  },
+  {
+   "w": 2.0,
+   "cloud": {
+    "n": 100,
+    "found": 97,
+    "exceptions": 0,
+    "capped": 0,
+    "median_goals_found": 6.0,
+    "median_metres_found": 18.6,
+    "mean_reward": 0.5019,
+    "first_goal": {
+     "n": 100,
+     "in_top": 48,
+     "rate": 0.48
+    }
+   },
+   "wrong": {
+    "n": 100,
+    "found": 100,
+    "exceptions": 0,
+    "capped": 0,
+    "median_goals_found": 7.0,
+    "median_metres_found": 25.8,
+    "mean_reward": 0.3915,
+    "first_goal": {
+     "n": 100,
+     "in_top": 12,
+     "rate": 0.12
+    }
+   },
+   "wrong_guard": true
+  },
+  {
+   "w": 4.0,
+   "cloud": {
+    "n": 100,
+    "found": 97,
+    "exceptions": 0,
+    "capped": 0,
+    "median_goals_found": 6.0,
+    "median_metres_found": 18.3,
+    "mean_reward": 0.4818,
+    "first_goal": {
+     "n": 100,
+     "in_top": 49,
+     "rate": 0.49
+    }
+   },
+   "wrong": {
+    "n": 100,
+    "found": 99,
+    "exceptions": 0,
+    "capped": 0,
+    "median_goals_found": 8.0,
+    "median_metres_found": 28.5,
+    "mean_reward": 0.2756,
+    "first_goal": {
+     "n": 100,
+     "in_top": 11,
+     "rate": 0.11
+    }
+   },
+   "wrong_guard": true
+  },
+  {
+   "w": 8.0,
+   "cloud": {
+    "n": 100,
+    "found": 100,
+    "exceptions": 0,
+    "capped": 0,
+    "median_goals_found": 6.0,
+    "median_metres_found": 20.1,
+    "mean_reward": 0.4761,
+    "first_goal": {
+     "n": 100,
+     "in_top": 50,
+     "rate": 0.5
+    }
+   },
+   "wrong": {
+    "n": 100,
+    "found": 99,
+    "exceptions": 0,
+    "capped": 0,
+    "median_goals_found": 11.0,
+    "median_metres_found": 33.6,
+    "mean_reward": 0.2104,
+    "first_goal": {
+     "n": 100,
+     "in_top": 10,
+     "rate": 0.1
+    }
+   },
+   "wrong_guard": false
+  },
+  {
+   "w": 1000.0,
+   "cloud": {
+    "n": 100,
+    "found": 99,
+    "exceptions": 0,
+    "capped": 0,
+    "median_goals_found": 9.0,
+    "median_metres_found": 23.4,
+    "mean_reward": 0.4102,
+    "first_goal": {
+     "n": 100,
+     "in_top": 51,
+     "rate": 0.51
+    }
+   },
+   "wrong": {
+    "n": 100,
+    "found": 99,
+    "exceptions": 0,
+    "capped": 0,
+    "median_goals_found": 14.0,
+    "median_metres_found": 37.8,
+    "mean_reward": 0.0314,
+    "first_goal": {
+     "n": 100,
+     "in_top": 10,
+     "rate": 0.1
+    }
+   },
+   "wrong_guard": false
+  }
+ ],
+ "w_star": 0.5,
+ "stops": false
+}
