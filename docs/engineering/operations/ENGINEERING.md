@@ -28,7 +28,8 @@ file that holds it.
 `cloudformation/network.yaml`, `service.yaml`, `twin.yaml`, `brain.yaml`,
 `admin.yaml`, `recordings.yaml`, `cdn.yaml`, `teleop-robot.yaml`,
 `teleop-brain.yaml`. Their images are `service/twin/`, `service/brain/` and
-`service/admin/`; `service/twin/` is kept for B5.
+`service/admin/`; all three are kept for B5 (`CLAUDE.md` section 4 and each
+directory's README agree).
 
 **Build and publish scripts:**
 
@@ -239,7 +240,8 @@ In the twin's Settings: robot URL `https://<tunnel domain>`, brain URL
 `https://<tunnel domain>/brain`, the local secret in both. Before a rig
 walk, warm the perception models once, as the perception spec's
 Procedures say (docs/engineering/perception/ENGINEERING.md), or the first
-`POST /mission/start` sits on "Starting..." while weights download. Failure signatures: `missing ~/.vision-picar-local-secrets` from
+`POST /mission/start` leaves the Start button busy, labelled "Starting…"
+(`web-twin/app.js`, `setButtonBusy`), while weights download. Failure signatures: `missing ~/.vision-picar-local-secrets` from
 `run.sh`; `ERR_NGROK_334` from a second tunnel on the domain; a bare "Load
 failed" on the phone when the servers were restarted under it.
 
@@ -249,8 +251,10 @@ failed" on the phone when the servers were restarted under it.
 bash service/tunnel/restart.sh
 ```
 
-Expected: `OK: robot and brain both running <rev>`. `FAILED: expected both
-servers on <rev>` prints the log's errors.
+Expected: `OK: robot and brain both running <rev>`. `FAILED: expected every
+server on <rev>; robot reports '...', brain '...', sim body '...'.` names
+what each server reports (`service/tunnel/restart.sh`), then prints the
+log's path and its errors.
 
 **Check health:**
 
