@@ -72,6 +72,17 @@ STUCK_ROUNDS = 3
 NUDGE_SPEED = 5             # 0.03 m/s: the creep bar
 NUDGE_S = 3.3               # about 10 cm: brain/explore.py's NUDGE_S, and why
 MAX_HOLDS = 20              # polls a move waits for the mission's own cancelled goal to let go
+# 3.198 D2. A residual the creep's moves cannot close (under `drive: ros` a
+# straight verb is whole 0.30 m moves) is closed by a nav2 goal aimed past the
+# dock by how short of its last goal nav2 stopped, at most FINE_AIM_MAX_M; at
+# most FINE_TRIES of them, then `not_aligned` with its numbers.
+FINE_TRIES = 2
+FINE_AIM_MAX_M = 0.20
+# A creep that moved this much more than it asked shows a body whose moves come
+# whole; on such a body a docked error over FINE_ABOVE_M is corrected too, so
+# the dock is not passed by margin (3.195: 0.088-0.103 m, against 0.10).
+QUANTUM_EXCESS_M = 0.05
+FINE_ABOVE_M = 0.05
 _NOT_OURS = ("StoppedByPerson", "AutonomyLapsed", "BatteryReserve", "Preempted", "MissionHalted")
 # 3.156.D (D7d). `RESUME_V` is a placeholder until 3.137.E.
 RESUME_V = 11.8
@@ -331,11 +342,17 @@ class ReturnTrip:
         self._still = None              # (xy, t) the pose last moved from
         self._stuck_at = None           # where the current run of stalls began
         self.stuck_rounds = 0
+        self.fine = False               # 3.198 D2: the current goal closes the last residual
+        self.fine_tries = 0
+        self._fine_refused = 0          # refusals of the current correcting goal
+        self._nav_stop_m = None         # how far from its goal nav2 ended the last one
+        self._asked_m = None            # what the last creep asked for
+        self._quantum_m = None          # a creep's whole move, once one moved more than asked
 
     def summary(self) -> dict:
         return {"phase": self.state, "actions": self.actions, "reversals": self.reversals,
                 "metres": round(self.metres, 2), "elapsed_s": round(self.clock() - self.t0, 1),
-                "goal_id": self.goal_id, "direct": self.direct}
+                "goal_id": self.goal_id, "direct": self.direct, "fine_goals": self.fine_tries}
 
     def _pose(self) -> dict:
         p = self.get_pose() or {}
@@ -386,7 +403,15 @@ class ReturnTrip:
             self._still, self.refused, self._holds, self._wait_from = None, 0, 0, self.clock()
             self.log.append(f"goal to ({self.target[0]:.2f}, {self.target[1]:.2f}) accepted")
             return None
-        if self.clock() - self._wait_from >= self.wait_s:
+        if self.fine:
+            self._fine_refused += 1
+        if (self.clock() - self._wait_from >= self.wait_s
+                or self._fine_refused > self.wait_s / GOAL_RETRY_S):
+            # (Counted too: a clock that does not move must not hold the approach.)
+            if self.fine:
+                # The trip home ran: an end of the approach, with its numbers.
+                return FAILED, (f"not_aligned: {self._error()} (the correcting goal was not "
+                                f"taken in {self.wait_s:.0f} s: {reply.get('reason')})")
             return SKIPPED, f"no_nav2: goal not taken in {self.wait_s:.0f} s ({reply.get('reason')})"
         if self.idle is not None:
             self.idle(GOAL_RETRY_S)
@@ -402,8 +427,18 @@ class ReturnTrip:
             if self.idle is not None:
                 self.idle(POLL_S)
             return None
+        fine, self.fine = self.fine, False
         if st == "succeeded":
-            self.state = "turn"
+            end = self._pose()          # read after the goal's state: where nav2 ended it
+            if end.get("usable"):
+                self._nav_stop_m = math.hypot(end["x_m"] - self.target[0], end["y_m"] - self.target[1])
+            # 3.198: after the correcting goal, the dock's heading and the judge.
+            self.state = "final" if fine else "turn"
+            return None
+        if fine:
+            # Not a trip to recover (no back-off beside the dock): the judge decides.
+            self.log.append(f"correcting goal {st or 'lost'}")
+            self.state = "final"
             return None
         # aborted, canceled or gone: back off (the runner's 3.31 move, as
         # nav2's own recovery would) and try again; the staging point twice,
@@ -495,7 +530,7 @@ class ReturnTrip:
         return None
 
     def _to_dock(self, why: str) -> None:
-        self.direct, self.tries, self.refused = True, 0, 0
+        self.direct, self.tries, self.refused, self.fine = True, 0, 0, False
         self._wait_from = self.clock()  # the turns before it can outlast the wait
         self.target, self.state = (self.dock["x_m"], self.dock["y_m"]), "goal"
         self.log.append(f"{why}; a goal to the dock itself")
@@ -547,6 +582,8 @@ class ReturnTrip:
             along = dx * fx + dy * fy
             if self._last_along is not None:
                 self._step_m = abs(self._last_along - along) or self._step_m
+                if self._asked_m is not None and self._step_m > self._asked_m + QUANTUM_EXCESS_M:
+                    self._quantum_m = self._step_m      # 3.198: moves come whole
             if (dist <= CREEP_TOL_M or (abs(along) <= CREEP_TOL_M and dist <= DOCK_TOL_M)
                     or (self._step_m and abs(along) < 0.5 * self._step_m)):
                 # Close enough, or the next verb would overshoot by more than
@@ -562,6 +599,7 @@ class ReturnTrip:
             v = verb_speed_m_s(CREEP_SPEED)
             dur = round(min(CREEP_VERB_MAX_S, abs(along) / v), 2)
             self._last_along = along
+            self._asked_m = v * dur
             if along > 0:
                 self._act("FORWARD", speed=CREEP_SPEED, duration=dur)
             else:
@@ -572,9 +610,44 @@ class ReturnTrip:
         if self._turn_to(pose, self.dock["theta"]):
             return None
         m, deg = pose_error(self.dock, pose)
+        whole = bool(self._quantum_m) and dist < 0.5 * self._quantum_m
+        if whole and m > FINE_ABOVE_M and self.fine_tries < FINE_TRIES:
+            # 3.198 D2: under whole moves the creep cannot close this; nav2 can.
+            return self._fine(pose, dist, m, deg)
         if m <= DOCK_TOL_M and deg <= DOCK_TOL_DEG:
             return DOCKED, f"{m:.3f} m, {deg:.1f} deg from the dock"
         if dist > DOCK_TOL_M:
+            if self._step_m and dist < 0.5 * self._step_m:
+                # 3.198 D1: the creep's guard would skip the move (it would
+                # overshoot by more than it closes), so turning back to the
+                # dock only pivots at one place: c-1's 40 verbs. D2 instead,
+                # and once it is spent, the end.
+                return self._fine(pose, dist, m, deg)
             self.state = "turn"
             return None
         return FAILED, f"not_aligned: {m:.3f} m, {deg:.1f} deg"
+
+    def _error(self) -> str:
+        p = self.get_pose() or {}
+        if not p.get("usable"):
+            return "no pose"
+        m, deg = pose_error(self.dock, p)
+        return f"{m:.3f} m, {deg:.1f} deg"
+
+    def _fine(self, pose: dict, dist: float, m: float, deg: float) -> Optional[tuple]:
+        """3.198 D2: one nav2 goal past the dock, on the line from the robot
+        through it, by how short of its last goal nav2 stopped: its goal
+        checker then ends the goal on the dock. A nav2 goal like the trip's
+        own (arbitrated, refused while the brain's last verb holds the robot,
+        retried), never a motion of its own."""
+        if self.fine_tries >= FINE_TRIES:
+            return FAILED, f"not_aligned: {m:.3f} m, {deg:.1f} deg"
+        self.fine_tries += 1
+        aim = min(max(self._nav_stop_m or 0.0, 0.0), FINE_AIM_MAX_M)
+        ux, uy = (self.dock["x_m"] - pose["x_m"]) / dist, (self.dock["y_m"] - pose["y_m"]) / dist
+        self.target = (self.dock["x_m"] + aim * ux, self.dock["y_m"] + aim * uy)
+        self.fine, self.tries, self.state, self._fine_refused = True, 0, "goal", 0
+        self._wait_from, self._still, self._last_along = self.clock(), None, None
+        self.log.append(f"{m:.3f} m off, under one move: a goal {aim:.3f} m past the dock "
+                        f"({self.fine_tries} of {FINE_TRIES})")
+        return None

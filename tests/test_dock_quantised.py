@@ -145,6 +145,8 @@ def test_every_nav2_stop_within_its_tolerance_docks(stop):
     assert state == dk.DOCKED, (stop, state, reason)
     m, deg = err(body)
     assert m <= DOCK_TOL_M and deg <= DOCK_TOL_DEG, (stop, m, deg)
+    # And not by margin: whole moves leave nav2's stop error, which D2 closes.
+    assert m <= dk.FINE_ABOVE_M + 1e-9, (stop, m)
 
 
 def test_continuous_verbs_are_unchanged():
@@ -156,3 +158,60 @@ def test_continuous_verbs_are_unchanged():
     (state, _), _ = trip(body, nav)
     assert state == dk.DOCKED
     assert len(nav.sent) == 1
+
+
+def test_a_person_who_takes_the_robot_during_the_correcting_goal_still_wins():
+    """Q6: the correcting goal is a nav2 goal through the gated navigator; a
+    person's refusal of it (`Preempted`, raised for a MANUAL holder) ends the
+    return there, for the runner to read as `cancelled` -- never retried."""
+    from robot.interface import Preempted
+
+    class Taken(Nav2):
+        def set_goal(self, x_m, y_m):
+            if self.sent:
+                self.sent.append((x_m, y_m))
+                raise Preempted("twin-dpad is driving -- brain is lower priority and was refused")
+            return super().set_goal(x_m, y_m)
+
+    body = Body(6.2, 1.45, 270.0)
+    nav = Taken(body, stop_m=0.104)
+    rt = ReturnTrip(DOCK, nav, body, body.pose, lambda: body.t, idle=None)
+    with pytest.raises(Preempted):
+        for _ in range(2000):
+            assert rt.step() is None
+    assert len(nav.sent) == 2
+
+
+def test_a_correcting_goal_never_taken_ends_with_its_numbers():
+    """nav2 holds the correcting goal (refused) past the wait: the return
+    ran, so it is `failed`, `not_aligned` with the error -- not `skipped`."""
+    class Holds(Nav2):
+        def set_goal(self, x_m, y_m):
+            if self.sent:
+                self.sent.append((x_m, y_m))
+                self.body.t += 1.0
+                return {"accepted": False, "reason": "preempted"}
+            return super().set_goal(x_m, y_m)
+
+    body = Body(6.2, 1.45, 270.0)
+    (state, reason), _ = trip(body, Holds(body, stop_m=0.104))
+    assert state == dk.FAILED and reason.startswith("not_aligned: 0.10"), reason
+
+
+def test_a_correcting_goal_that_ends_off_target_is_bounded():
+    """A correcting goal that nav2 ends at once with the robot unmoved: the
+    residual ends the return after FINE_TRIES goals, with its numbers, never
+    after 40 verbs."""
+    class Frozen(Nav2):
+        def get_goal(self):
+            if len(self.sent) > 1 and self.goal["state"] == "active":
+                self.goal["state"] = "succeeded"   # ends at once, the robot unmoved
+                return {"goal": self.goal, "plan": []}
+            return super().get_goal()
+
+    body = Body(6.2, 1.45, 270.0)
+    nav = Frozen(body, stop_m=0.104)
+    (state, reason), rt = trip(body, nav)
+    assert state == dk.FAILED and reason.startswith("not_aligned: 0.10"), reason
+    assert len(nav.sent) == 1 + dk.FINE_TRIES
+    assert rt.actions < 12
