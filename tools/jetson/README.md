@@ -231,8 +231,11 @@ cd ~/vision-picar-service && bash tools/jetson/install_services.sh
 ```
 
 **The secret must be the Mac's.** The twin's Settings hold the Mac's
-`LOCAL_SECRET`; a Jetson with its own file answers "Secret rejected"
-(2026-10-11).
+`LOCAL_SECRET`; a Jetson with its own file is refused: the twin
+says "The robot didn't accept that access code." (operator voice) or "The
+robot server rejected that secret." (Engineer voice), under a "Secret
+rejected" status label (`web-twin/strings.js`, `robot.secretRejected`;
+2026-10-11).
 
 **One tunnel at a time.** ngrok's free plan gives one domain to one
 running agent: stop ngrok on the Mac (`pkill -x ngrok`) before the
