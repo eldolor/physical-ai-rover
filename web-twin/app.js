@@ -4958,6 +4958,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     }
     try {
       reportToken++;               // 3.70: an older ending's report draws nothing
+      brainRunIsOurs = true;       // 3.201: before the POST, so a poll in flight cannot rewrite the field
       await brainApi("POST", "/mission/start", body);
       resetSightings();   // 3.76: only once the brain took it; a refused start leaves the watched one's
       state.brainMissionRunning = true;
@@ -4970,6 +4971,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       showToast(t(key, {fault: fault}), drill ? "info" : "ok");
       startBrainPolling();
     } catch (e) {
+      brainRunIsOurs = false;          // 3.201: nothing of ours is running
       showToast(batteryStartWords(e) || t("mission.startFailed", {why: e.message}), "err");
     } finally {
       brainStartStopBusy = false;
