@@ -143,7 +143,7 @@ planner_server:
     GridBased:
       plugin: nav2_navfn_planner/NavfnPlanner
       tolerance: 0.10
-      use_astar: true
+      use_astar: false             # 3.211: A* failed 44 of 840 plans offline ("legal potential"); Dijkstra 0
       allow_unknown: true
 
 behavior_server:
