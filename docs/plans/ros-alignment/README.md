@@ -199,8 +199,8 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.194](3.194-late-dock.md) | A dock read late: a mission whose pose was unusable at its start still goes home |
 | [3.195](3.195-nogo-corner-cut.md) | The robot never cuts a no-go zone's corner |
 | [3.196](3.196-nogo-abort-loop.md) | Explore gives up a goal that keeps aborting beside a no-go zone |
-| [3.198](3.198-return-goal-race.md) | A find that ends with its nav2 goal in flight still goes home |
 | [3.197](3.197-nogo-local-free.md) | A boxed robot frees only its own neighbourhood, not the whole zone |
+| [3.198](3.198-return-goal-race.md) | The final approach on whole-move verbs: c-1's 40 pivots, and docking by margin |
 | [3.199](3.199-nogo-goal-margin.md) | A person's goal beside a no-go zone never lands in its drawn margin |
 | [3.200](3.200-recall-other-side.md) | A recall whose view is refused tries another side |
 | [3.201](3.201-twin-nogo-toast-target.md) | The twin: the toast beside a zone, and the target field during an API find |
