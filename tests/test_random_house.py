@@ -92,7 +92,16 @@ def test_not_under_another_backend(monkeypatch):
         assert r.status_code == 409 and r.json()["detail"]["reason"] == "not_sim"
 
 
-def test_random_over_the_list_never_the_same_twice_running(client):
+def test_random_over_the_list_never_the_same_twice_running(client, monkeypatch):
+    # The server picks with the module-level `random.choice`. Unseeded, 200
+    # draws over 100 houses leave about 86.6 distinct on average (SD ~3), so
+    # "distinct >= 80" fails roughly 1-2% of runs by chance alone (seen: 79).
+    # Give the server's choice its own seeded generator: the draw sequence is
+    # then fixed, and the test pins the property (never the same house twice
+    # running, and the choice reaches the whole list) without a flake.
+    import random
+    rng = random.Random(72)
+    monkeypatch.setattr(random, "choice", rng.choice)
     seen, last = set(), None
     for _ in range(200):
         name = client.post("/sim/house/random").json()["sim_map"]
