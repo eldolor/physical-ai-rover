@@ -5,6 +5,7 @@ class ever was? The bars are in docs/plans/ros-alignment/3.204-phantom-landmark.
 written before the fix was measured.
 
     python evaluations/phantom-landmark-3204/sweep.py run OUT.jsonl [--noisy] [--n 20]
+        [--seed S] [--edge GAP] [--from K]
     python evaluations/phantom-landmark-3204/sweep.py score OUT.jsonl
 
 Each mission is 3.46's survey (`tests.inventory_sweep.run_one(survey=True)`):
@@ -13,6 +14,12 @@ the whole path, `MissionRunner` -> explore (FakeNav) -> `robot/safety.py` ->
 hook and ranged by the scan. Starts: `inventory_sweep.starts(seed=3462)`.
 The detector is the sim's own (clean, as the live stack's) unless --noisy
 (3.46's erring detector: bearing noise, drops, relabels).
+
+3.204.B added two arguments and nothing else: `--seed` (default 3462, A's)
+and `--edge GAP`, which turns the inventory's depth-edge gate on at GAP
+metres (`MissionRunner(inventory_edge_gate=True)`, its `edge_gap_m` set to
+GAP); absent, the key is off and the run is A's. `--from K` starts at
+mission K (rows are appended, so a run can be split across processes).
 
 A PHANTOM is a landmark a later mission would carry (belief at least
 `CARRY_MIN_BELIEF`) farther than `MERGE_M` from every instance of its class
@@ -31,11 +38,26 @@ SEED = 3462
 MISSIONS = 20
 
 
-def mission(k: int, noisy: bool) -> dict:
+def mission(k: int, noisy: bool, seed: int = SEED, edge=None) -> dict:
     from brain import inventory as inv
     from tests import inventory_sweep as sw
-    st = sw.starts(seed=SEED)
-    r = sw.run_one(st[k], noisy=noisy, seed=SEED * 100 + k, survey=True)
+    st = sw.starts(seed=seed)
+    if edge is None:
+        r = sw.run_one(st[k], noisy=noisy, seed=seed * 100 + k, survey=True)
+    else:
+        # 3.204.B: the key on, through the runner's own constructor argument,
+        # then the gap under test set on the inventory it built.
+        real = sw.MissionRunner
+
+        def gated(*a, **kw):
+            runner = real(*a, inventory_edge_gate=True, **kw)
+            runner.inventory.edge_gap_m = float(edge)
+            return runner
+        sw.MissionRunner = gated
+        try:
+            r = sw.run_one(st[k], noisy=noisy, seed=seed * 100 + k, survey=True)
+        finally:
+            sw.MissionRunner = real
     rep = r["report"]
     rows = []
     for lm in rep["reported"] + rep["candidates"]:
@@ -74,12 +96,15 @@ def main(argv):
     logging.disable(logging.WARNING)
     if argv[:1] == ["run"]:
         out = Path(argv[1])
-        if out.exists():
+        if out.exists() and "--from" not in argv:
             raise SystemExit(f"{out} exists: never overwritten")
         noisy = "--noisy" in argv
         n = int(argv[argv.index("--n") + 1]) if "--n" in argv else MISSIONS
-        for k in range(n):
-            row = mission(k, noisy)
+        seed = int(argv[argv.index("--seed") + 1]) if "--seed" in argv else SEED
+        edge = float(argv[argv.index("--edge") + 1]) if "--edge" in argv else None
+        k0 = int(argv[argv.index("--from") + 1]) if "--from" in argv else 0
+        for k in range(k0, n):
+            row = mission(k, noisy, seed, edge)
             with open(out, "a") as f:
                 f.write(json.dumps(row) + "\n")
             print(k, row["outcome"], len(row["carried"]), file=sys.stderr)

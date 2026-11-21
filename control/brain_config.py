@@ -244,6 +244,11 @@ DEFAULTS = {
     # by the inventory report's `watch` block; the car's perception is not
     # prompted with it until 3.178 B4-B6 are met on the desktop and board.
     "watch_list": ["keys", "wallet", "phone", "glasses", "remote"],
+    # 3.204.B: leave a detection unplaced when its lidar range gate straddles
+    # a depth edge (brain/inventory.py `straddles_edge`, EDGE_GAP_M) instead
+    # of ranging it by the nearer edge. OFF: dev's ranging rule is the
+    # user's (2026-11-17); only the user's word turns it on.
+    "inventory_edge_gate": False,
     "mission_wall_limit_s": 14400.0,
     "charge_stall_s": 300.0,
     # A `vision` mission's paid /navigate calls (one per step), counted per
@@ -697,6 +702,9 @@ def load_brain_config(config_path=None) -> dict:
     if (isinstance(wait, bool) or not isinstance(wait, (int, float))
             or not 0 < wait < float("inf")):
         raise ValueError(f"brain.return_wait_s must be a number > 0; got {wait!r}")
+    if not isinstance(merged["inventory_edge_gate"], bool):
+        raise ValueError(f"brain.inventory_edge_gate must be true or false; "
+                         f"got {merged['inventory_edge_gate']!r}")
     if not isinstance(merged["recharge_resume"], bool):
         raise ValueError(f"brain.recharge_resume must be true or false; "
                          f"got {merged['recharge_resume']!r}")
