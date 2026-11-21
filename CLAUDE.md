@@ -182,10 +182,12 @@ here to `docs/guides/MERGED-STATE.md`; open work only stays here.**
   Rover's frames).
 * 3.190 (the user, 2026-11-19): one cloud call at a find's start for the
   room prior of a target the shipped prior lacks (3.116.C, wired; off by
-  default). A is free; B's calls and C's Lambda deploy wait on the user.
+  default). F (a heavier weight) FAILED: nothing ships; B's call 7 and C's
+  Lambda deploy wait on the user.
 * 3.206 (the user, 2026-11-21): a frontier model's direction labels train
-  Qwen's steering with the target in view (with 3.188). A is free; B-C's
+  Qwen's steering (with 3.188). A is free; B-C's
   calls wait on the user; D waits on 3.188.B.
+* 3.161: Z5 FAILED (82 of 96 vs 87; a design question) and Z4's live re-map.
 * Not built: `brain/planner.py`, S7 (chaos and soak), a Stage 1 vision
   re-run against the lit renderer.
 
@@ -215,6 +217,7 @@ here to `docs/guides/MERGED-STATE.md`; open work only stays here.**
   * 3.81.F: `MemAvailable` over a full tiered mission with VE resident and
     one change of target; below 500 MB (or trending there inside 1,200 s)
     reopens 3.81.D, in amendment 4's order.
+* 3.204.C: `inventory_edge_gate` on the Rover's scans.
 * Then, on its data: 3.140.B-J, 3.80.U (`evaluations/tiered-380/U/`),
   3.116.D, room labels' accuracy (3.122, 3.70.S2), 3.50.D4b, 3.90.C-D,
   3.74.C-D, 3.41 part B, 3.46.C, the sim-honesty section (3.76
