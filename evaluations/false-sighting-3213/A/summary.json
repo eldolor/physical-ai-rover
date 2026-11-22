@@ -1,0 +1,237 @@
+{
+ "rooms": {
+  "rows": 180,
+  "found_dev": 176,
+  "found_oracle": 180,
+  "gained": [
+   "procthor:val:102",
+   "procthor:val:122",
+   "procthor:val:171",
+   "procthor:val:173"
+  ],
+  "lost": [],
+  "affected_rows": 100,
+  "affected_not_found_dev": [
+   "procthor:val:102",
+   "procthor:val:122",
+   "procthor:val:171",
+   "procthor:val:173"
+  ],
+  "affected_both_found": 96,
+  "A1_median_saving": 0.1058,
+  "saving_affected": {
+   "n": 96,
+   "median": 0.106,
+   "p10": -0.002,
+   "p90": 0.859
+  },
+  "saving_mean": 0.2741,
+  "seconds_saved_affected": {
+   "n": 96,
+   "median": 14.05,
+   "p10": -0.25,
+   "p90": 318.2
+  },
+  "median_sim_s_both": [
+   124.30000000000001,
+   87.0
+  ],
+  "p90_sim_s_both": [
+   429.2,
+   314.9
+  ],
+  "A2_p90_fall": 0.2663,
+  "A3_found_gain": 4,
+  "total_sim_s_both": [
+   31678.4,
+   23811.6
+  ],
+  "oracle_kept": 137,
+  "unaffected_identical": 80,
+  "unaffected": 80,
+  "triggers": {
+   "A1": true,
+   "A2": true,
+   "A3": true
+  },
+  "characterise": {
+   "events": 420,
+   "false_replacing": {
+    "n": 420,
+    "range_m": {
+     "n": 420,
+     "median": 3.33,
+     "p10": 0.8,
+     "p90": 3.86
+    },
+    "range_over_det": {
+     "n": 420,
+     "median": 1.04,
+     "p10": 0.359,
+     "p90": 1.904
+    },
+    "abs_bearing_deg": {
+     "n": 420,
+     "median": 18.72,
+     "p10": 5.85,
+     "p90": 27.22
+    },
+    "edge": 173,
+    "under_0_3_m": 12,
+    "lies_on": {
+     "object": 131,
+     "wall": 289
+    }
+   },
+   "good": {
+    "n": 1185,
+    "range_m": {
+     "n": 1185,
+     "median": 1.82,
+     "p10": 0.5,
+     "p90": 3.55
+    },
+    "range_over_det": {
+     "n": 1185,
+     "median": 0.816,
+     "p10": 0.639,
+     "p90": 0.926
+    },
+    "abs_bearing_deg": {
+     "n": 1185,
+     "median": 14.12,
+     "p10": 0.0,
+     "p90": 24.22
+    },
+    "edge": 516,
+    "under_0_3_m": 26,
+    "lies_on": {
+     "target": 1185
+    }
+   },
+   "later_agrees_with_replaced_good": 392,
+   "later_agrees_with_false": 281
+  }
+ },
+ "rule": {
+  "rows": 180,
+  "found_dev": 173,
+  "found_oracle": 180,
+  "gained": [
+   "procthor:val:102",
+   "procthor:val:171",
+   "procthor:val:173",
+   "procthor:val:222",
+   "procthor:val:233",
+   "procthor:val:236",
+   "procthor:val:297"
+  ],
+  "lost": [],
+  "affected_rows": 104,
+  "affected_not_found_dev": [
+   "procthor:val:102",
+   "procthor:val:171",
+   "procthor:val:173",
+   "procthor:val:222",
+   "procthor:val:233",
+   "procthor:val:236",
+   "procthor:val:297"
+  ],
+  "affected_both_found": 97,
+  "A1_median_saving": 0.102,
+  "saving_affected": {
+   "n": 97,
+   "median": 0.102,
+   "p10": -0.016,
+   "p90": 0.848
+  },
+  "saving_mean": 0.2708,
+  "seconds_saved_affected": {
+   "n": 97,
+   "median": 11.2,
+   "p10": -1.0,
+   "p90": 297.86
+  },
+  "median_sim_s_both": [
+   131.9,
+   91.0
+  ],
+  "p90_sim_s_both": [
+   390.5,
+   272.5
+  ],
+  "A2_p90_fall": 0.3021,
+  "A3_found_gain": 7,
+  "total_sim_s_both": [
+   32495.7,
+   23007.0
+  ],
+  "oracle_kept": 140,
+  "unaffected_identical": 76,
+  "unaffected": 76,
+  "triggers": {
+   "A1": true,
+   "A2": true,
+   "A3": true
+  },
+  "characterise": {
+   "events": 548,
+   "false_replacing": {
+    "n": 548,
+    "range_m": {
+     "n": 548,
+     "median": 3.05,
+     "p10": 1.111,
+     "p90": 3.53
+    },
+    "range_over_det": {
+     "n": 548,
+     "median": 1.009,
+     "p10": 0.431,
+     "p90": 1.904
+    },
+    "abs_bearing_deg": {
+     "n": 548,
+     "median": 20.06,
+     "p10": 8.851,
+     "p90": 28.82
+    },
+    "edge": 313,
+    "under_0_3_m": 18,
+    "lies_on": {
+     "object": 261,
+     "wall": 287
+    }
+   },
+   "good": {
+    "n": 1363,
+    "range_m": {
+     "n": 1363,
+     "median": 2.02,
+     "p10": 0.76,
+     "p90": 3.64
+    },
+    "range_over_det": {
+     "n": 1363,
+     "median": 0.816,
+     "p10": 0.639,
+     "p90": 0.893
+    },
+    "abs_bearing_deg": {
+     "n": 1363,
+     "median": 14.22,
+     "p10": 0.0,
+     "p90": 24.51
+    },
+    "edge": 667,
+    "under_0_3_m": 22,
+    "lies_on": {
+     "target": 1363
+    }
+   },
+   "later_agrees_with_replaced_good": 522,
+   "later_agrees_with_false": 407
+  }
+ },
+ "continue": true
+}
