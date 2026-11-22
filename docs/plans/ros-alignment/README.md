@@ -211,7 +211,7 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.206](3.206-steer-distill.md) | Qwen's direction answer with the target in view, taught by a frontier model on the frames the local tiers are silent on |
 | [3.207](3.207-docs-gaps.md) | Documentation gaps: stale status, missing rationale, missing doc types (the user, 2026-11-21) |
 | [3.209](3.209-small-faults.md) | Small faults the documentation review found (the user, 2026-11-21) |
+| [3.210](3.210-reseen-crowded-out.md) | A re-search's places crowded out by later false sightings |
 | [3.211](3.211-navfn-plan-failures.md) | nav2's NavFn A* fails to extract plans: the trip home aborts |
 | [3.212](3.212-keep-live-logs.md) | Every live run keeps its full ROS, robot and brain logs beside its rows |
-| [3.210](3.210-reseen-crowded-out.md) | A re-search's places crowded out by later false sightings |
 <!-- /sections -->
