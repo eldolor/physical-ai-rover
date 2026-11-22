@@ -1,0 +1,146 @@
+{
+ "pin_val44": {
+  "rows": [
+   [
+    0,
+    "found",
+    394.8
+   ],
+   [
+    1,
+    "found",
+    394.8
+   ],
+   [
+    2,
+    "found",
+    394.8
+   ]
+  ],
+  "met": true
+ },
+ "time": {
+  "rooms": {
+   "median_sim_s_both": [
+    124.30000000000001,
+    89.19999999999999
+   ],
+   "p90_sim_s_both": [
+    429.2,
+    295.5
+   ],
+   "median_saving_affected": 0.1058,
+   "affected_both_found": 96,
+   "gained": [
+    "procthor:val:102",
+    "procthor:val:122",
+    "procthor:val:171",
+    "procthor:val:173"
+   ],
+   "lost": [],
+   "met": true
+  },
+  "rule": {
+   "median_sim_s_both": [
+    131.9,
+    89.6
+   ],
+   "p90_sim_s_both": [
+    390.5,
+    260.9
+   ],
+   "median_saving_affected": 0.0984,
+   "affected_both_found": 97,
+   "gained": [
+    "procthor:val:102",
+    "procthor:val:171",
+    "procthor:val:173",
+    "procthor:val:222",
+    "procthor:val:233",
+    "procthor:val:236",
+    "procthor:val:297"
+   ],
+   "lost": [],
+   "met": true
+  },
+  "met": true
+ },
+ "found": {
+  "dev_branch": {
+   "find_rooms_none": [
+    90,
+    93
+   ],
+   "find_rooms_zones": [
+    89,
+    93
+   ],
+   "find_rule_none": [
+    90,
+    93
+   ],
+   "find_rule_zones": [
+    89,
+    93
+   ],
+   "broad_rooms": [
+    176,
+    180
+   ],
+   "broad_rule": [
+    173,
+    180
+   ]
+  },
+  "met": true
+ },
+ "wrong_found": {
+  "rows": [
+   "find rule home_first_floor s0 none 1.27",
+   "find rule home_first_floor s1 none 1.27",
+   "find rule home_first_floor s2 none 1.27",
+   "broad rooms procthor:val:251 1.08",
+   "broad rule procthor:val:306 1.08"
+  ],
+  "met": false
+ },
+ "surveys": {
+  "rooms": {
+   "rows": 24,
+   "identical": 24
+  },
+  "rule": {
+   "rows": 24,
+   "identical": 24
+  },
+  "met": true
+ },
+ "M3": {
+  "found_branch_vs_dev": {
+   "surveyed": {
+    "branch": 20,
+    "dev": 20
+   },
+   "unsurveyed": {
+    "branch": 20,
+    "dev": 20
+   }
+  },
+  "changed": 0,
+  "met": true
+ },
+ "M2": {
+  "found_branch_vs_dev": {
+   "surveyed": {
+    "branch": 20,
+    "dev": 20
+   },
+   "unsurveyed": {
+    "branch": 20,
+    "dev": 20
+   }
+  },
+  "changed": 0,
+  "met": true
+ }
+}
