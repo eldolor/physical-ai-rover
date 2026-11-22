@@ -156,6 +156,16 @@ def _setup(chooser, arm):
     ex.ExploreAgent._send_approach = _send_approach
     ex.ExploreAgent._measure3213 = True
     run_c1 = sw.run
+    # 3.213.B's wrong-found bar: the world handed to the body, for the
+    # robot's final pose (`place_zones` may build its own).
+    base_robot = sw.MockRobot
+
+    class _Robot(base_robot):
+        def __init__(self, world, *a, **kw):
+            state["live"] = world
+            super().__init__(world, *a, **kw)
+
+    sw.MockRobot = _Robot
 
     def run(house, seed, a, **kw):
         from sim.maps import build_world
@@ -169,6 +179,9 @@ def _setup(chooser, arm):
             s, ap, k = state["sightings"], state["approaches"], state["kept"]
             state["sightings"] = state["approaches"] = None
         row["sightings"], row["approaches"], row["oracle_kept"] = s, ap, k
+        live = state.get("live")
+        if live is not None:
+            row["final_d_m"] = err((live.x * sw.CELL, live.y * sw.CELL))
         return row
 
     sw.run = run

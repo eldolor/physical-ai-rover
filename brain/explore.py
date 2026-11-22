@@ -87,6 +87,12 @@ APPROACH_STANDOFF_M = 0.5
 APPROACH_NEAR_M, APPROACH_FAR_M = 0.35, 0.6
 # A sighting this far from the last approach point is a new one.
 APPROACH_MOVED_M = 0.5
+# 3.213.B: a place's support is the mission's sightings within this of it. A
+# new place replaces a LIVE approach only if it is better supported (strictly):
+# a true detection ranged on a wall or furniture past or short of the target
+# replaced a good approach in about half of 180 ProcTHOR finds (3.213.A), and
+# a good place is seen again far more often than such a false one.
+SUPPORT_M = 0.5
 # 3.69 B: a turn to face the target that the pivot guard refuses is tried
 # again at half the angle, down to this, before the robot backs off.
 FACE_MIN_TURN_DEG = 10
@@ -411,6 +417,7 @@ class ExploreAgent(MissionAgent):
         self._carried_map = False           # 3.205: the runner carried landmarks on this saved map
         self.resight = False                # 3.70.M3: searching the known map by sight
         self._seen_at: list = []            # 3.192.B: where it saw the target, not yet looked again (3.210)
+        self._sighted: list = []            # 3.213.B: every sighting of the mission, one a tick
         self._reseen = 0                    # 3.192.B: rounds of looking at them again
         self._left_out: list = []           # 3.210: places a round did not hand up; the next one's first
         self._carried: list = []            # 3.192.B: the recall's carried places (`recall_from`)
@@ -610,6 +617,10 @@ class ExploreAgent(MissionAgent):
             self._note_seen_at(tx, ty)
             moved = (self._approach is None
                      or math.hypot(tx - self._approach[0], ty - self._approach[1]) > APPROACH_MOVED_M)
+            if moved and self._keeps_approach(tx, ty):
+                # 3.213.B: the live approach is better supported; wait on it
+                # (below) as for a sighting that has not moved. Kept as seen.
+                moved = False
             if moved and self.retry.available(tx, ty, now, approach=True):
                 return self._send_approach(tx, ty, now, scene)
             if (self._goal is None and self._at_target(tx, ty)
@@ -1081,6 +1092,20 @@ class ExploreAgent(MissionAgent):
             return                  # review: the refused object, seen again, is still not it
         self._seen_at = [p for p in self._seen_at if math.hypot(p[0] - tx, p[1] - ty) > r]
         self._seen_at.append((tx, ty))
+
+    def _keeps_approach(self, tx: float, ty: float) -> bool:
+        """3.213.B: whether a live approach goal stays, rather than be replaced
+        by a sighting at (tx, ty) -- unless that place has strictly more of
+        the mission's sightings within SUPPORT_M than the live approach's
+        own place. No live approach goal, nothing kept."""
+        g = self._goal
+        if g is None or g.get("kind") != "approach" or not g.get("target"):
+            return False
+
+        def support(p):
+            return sum(1 for q in self._sighted
+                       if math.hypot(q[0] - p[0], q[1] - p[1]) <= SUPPORT_M)
+        return support((tx, ty)) <= support(g["target"])
 
     def _reseen_places(self, pose: dict) -> list:
         """3.192.B: the places of a look-again round -- latest first, at most
@@ -2669,6 +2694,8 @@ class ExploreAgent(MissionAgent):
             # The objects themselves are held, so a later tick's frame can
             # never be mistaken for this one's.
             self._sighting_memo = m = (self._ticks, frame, self._scene, self._sighting_now(frame))
+            if m[3] is not None:
+                self._sighted.append(m[3])      # 3.213.B: counted once a tick
         return m[3]
 
     def _pan(self) -> float:

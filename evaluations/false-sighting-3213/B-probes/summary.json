@@ -1,0 +1,353 @@
+{
+ "c1": {
+  "rooms": {
+   "found": [
+    176,
+    180
+   ],
+   "gained": [
+    "procthor:val:102",
+    "procthor:val:122",
+    "procthor:val:171",
+    "procthor:val:173"
+   ],
+   "lost": [],
+   "median_sim_s_both": [
+    124.30000000000001,
+    89.19999999999999
+   ],
+   "p90_sim_s_both": [
+    429.2,
+    295.5
+   ],
+   "total_sim_s_both": [
+    31678.4,
+    22836.6
+   ],
+   "median_saving_affected": 0.1058,
+   "saving_affected": {
+    "n": 96,
+    "median": 0.106,
+    "p10": -0.005,
+    "p90": 0.871
+   },
+   "changed_unaffected": [
+    "procthor:val:125",
+    "procthor:val:160",
+    "procthor:val:164",
+    "procthor:val:176",
+    "procthor:val:195",
+    "procthor:val:232",
+    "procthor:val:244",
+    "procthor:val:251",
+    "procthor:val:271",
+    "procthor:val:278",
+    "procthor:val:292",
+    "procthor:val:298",
+    "procthor:val:337",
+    "procthor:val:354",
+    "procthor:val:359",
+    "procthor:val:368",
+    "procthor:val:60",
+    "procthor:val:71",
+    "procthor:val:72",
+    "procthor:val:77",
+    "procthor:val:87",
+    "procthor:val:98"
+   ],
+   "kept": 187,
+   "ok": {
+    "found": true,
+    "median": true,
+    "p90": true,
+    "saving": true
+   }
+  },
+  "rule": {
+   "found": [
+    173,
+    180
+   ],
+   "gained": [
+    "procthor:val:102",
+    "procthor:val:171",
+    "procthor:val:173",
+    "procthor:val:222",
+    "procthor:val:233",
+    "procthor:val:236",
+    "procthor:val:297"
+   ],
+   "lost": [],
+   "median_sim_s_both": [
+    131.9,
+    89.6
+   ],
+   "p90_sim_s_both": [
+    390.5,
+    260.9
+   ],
+   "total_sim_s_both": [
+    32495.7,
+    22193.9
+   ],
+   "median_saving_affected": 0.0984,
+   "saving_affected": {
+    "n": 97,
+    "median": 0.098,
+    "p10": -0.016,
+    "p90": 0.859
+   },
+   "changed_unaffected": [
+    "procthor:val:125",
+    "procthor:val:164",
+    "procthor:val:176",
+    "procthor:val:186",
+    "procthor:val:195",
+    "procthor:val:197",
+    "procthor:val:217",
+    "procthor:val:237",
+    "procthor:val:244",
+    "procthor:val:254",
+    "procthor:val:271",
+    "procthor:val:278",
+    "procthor:val:310",
+    "procthor:val:339",
+    "procthor:val:352",
+    "procthor:val:354",
+    "procthor:val:60",
+    "procthor:val:77",
+    "procthor:val:87",
+    "procthor:val:88",
+    "procthor:val:98"
+   ],
+   "kept": 194,
+   "ok": {
+    "found": true,
+    "median": true,
+    "p90": true,
+    "saving": true
+   }
+  },
+  "qualifies": true,
+  "total_saved_s": 19143.6
+ },
+ "c2": {
+  "rooms": {
+   "found": [
+    176,
+    177
+   ],
+   "gained": [
+    "procthor:val:102"
+   ],
+   "lost": [],
+   "median_sim_s_both": [
+    124.30000000000001,
+    123.35
+   ],
+   "p90_sim_s_both": [
+    429.2,
+    387.2
+   ],
+   "total_sim_s_both": [
+    31678.4,
+    30474.0
+   ],
+   "median_saving_affected": 0.0,
+   "saving_affected": {
+    "n": 96,
+    "median": 0.0,
+    "p10": 0.0,
+    "p90": 0.0
+   },
+   "changed_unaffected": [
+    "procthor:val:125",
+    "procthor:val:244"
+   ],
+   "kept": 23,
+   "ok": {
+    "found": true,
+    "median": true,
+    "p90": true,
+    "saving": false
+   }
+  },
+  "rule": {
+   "found": [
+    173,
+    174
+   ],
+   "gained": [
+    "procthor:val:102"
+   ],
+   "lost": [],
+   "median_sim_s_both": [
+    131.9,
+    130.4
+   ],
+   "p90_sim_s_both": [
+    390.5,
+    390.5
+   ],
+   "total_sim_s_both": [
+    32495.7,
+    31982.4
+   ],
+   "median_saving_affected": 0.0,
+   "saving_affected": {
+    "n": 97,
+    "median": 0.0,
+    "p10": 0.0,
+    "p90": 0.0
+   },
+   "changed_unaffected": [
+    "procthor:val:125",
+    "procthor:val:244",
+    "procthor:val:352",
+    "procthor:val:77"
+   ],
+   "kept": 24,
+   "ok": {
+    "found": true,
+    "median": true,
+    "p90": true,
+    "saving": false
+   }
+  },
+  "qualifies": false,
+  "total_saved_s": 1717.7
+ },
+ "c1c2": {
+  "rooms": {
+   "found": [
+    176,
+    180
+   ],
+   "gained": [
+    "procthor:val:102",
+    "procthor:val:122",
+    "procthor:val:171",
+    "procthor:val:173"
+   ],
+   "lost": [],
+   "median_sim_s_both": [
+    124.30000000000001,
+    89.19999999999999
+   ],
+   "p90_sim_s_both": [
+    429.2,
+    295.5
+   ],
+   "total_sim_s_both": [
+    31678.4,
+    22832.7
+   ],
+   "median_saving_affected": 0.1058,
+   "saving_affected": {
+    "n": 96,
+    "median": 0.106,
+    "p10": -0.005,
+    "p90": 0.871
+   },
+   "changed_unaffected": [
+    "procthor:val:125",
+    "procthor:val:160",
+    "procthor:val:164",
+    "procthor:val:176",
+    "procthor:val:195",
+    "procthor:val:232",
+    "procthor:val:244",
+    "procthor:val:251",
+    "procthor:val:271",
+    "procthor:val:278",
+    "procthor:val:292",
+    "procthor:val:298",
+    "procthor:val:337",
+    "procthor:val:354",
+    "procthor:val:359",
+    "procthor:val:368",
+    "procthor:val:60",
+    "procthor:val:71",
+    "procthor:val:72",
+    "procthor:val:77",
+    "procthor:val:87",
+    "procthor:val:98"
+   ],
+   "kept": 190,
+   "ok": {
+    "found": true,
+    "median": true,
+    "p90": true,
+    "saving": true
+   }
+  },
+  "rule": {
+   "found": [
+    173,
+    180
+   ],
+   "gained": [
+    "procthor:val:102",
+    "procthor:val:171",
+    "procthor:val:173",
+    "procthor:val:222",
+    "procthor:val:233",
+    "procthor:val:236",
+    "procthor:val:297"
+   ],
+   "lost": [],
+   "median_sim_s_both": [
+    131.9,
+    89.6
+   ],
+   "p90_sim_s_both": [
+    390.5,
+    260.9
+   ],
+   "total_sim_s_both": [
+    32495.7,
+    22194.6
+   ],
+   "median_saving_affected": 0.0984,
+   "saving_affected": {
+    "n": 97,
+    "median": 0.098,
+    "p10": -0.016,
+    "p90": 0.859
+   },
+   "changed_unaffected": [
+    "procthor:val:125",
+    "procthor:val:164",
+    "procthor:val:176",
+    "procthor:val:186",
+    "procthor:val:195",
+    "procthor:val:197",
+    "procthor:val:217",
+    "procthor:val:237",
+    "procthor:val:244",
+    "procthor:val:254",
+    "procthor:val:271",
+    "procthor:val:278",
+    "procthor:val:310",
+    "procthor:val:339",
+    "procthor:val:352",
+    "procthor:val:354",
+    "procthor:val:60",
+    "procthor:val:77",
+    "procthor:val:87",
+    "procthor:val:88",
+    "procthor:val:98"
+   ],
+   "kept": 193,
+   "ok": {
+    "found": true,
+    "median": true,
+    "p90": true,
+    "saving": true
+   }
+  },
+  "qualifies": true,
+  "total_saved_s": 19146.8
+ },
+ "winner": "c1"
+}

@@ -36,13 +36,21 @@ def _sweep():
     return mod
 
 
+def _without_3213(monkeypatch):
+    # 3.213.B keeps this find's good approach, so it is found (27.9 s) before
+    # it can lose the target; held off, it witnesses 3.192.B's rule alone.
+    monkeypatch.setattr(ExploreAgent, "_keeps_approach", lambda self, tx, ty: False)
+
+
 def test_red_without_c1_a_seen_target_ends_exhausted(monkeypatch):
+    _without_3213(monkeypatch)
     monkeypatch.setattr(explore_mod, "RESEEN_ROUNDS", 0)       # dev before 3.192.B
     row = _sweep().run("scaled_house", 0, "none")
     assert row["outcome"] == "exhausted"
 
 
-def test_a_seen_target_lost_is_looked_at_again_and_found():
+def test_a_seen_target_lost_is_looked_at_again_and_found(monkeypatch):
+    _without_3213(monkeypatch)
     row = _sweep().run("scaled_house", 0, "none")
     assert row["outcome"] == "found"
     assert row["goals_in_zone"] == [] and row["entries"] == []
