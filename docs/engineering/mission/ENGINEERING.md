@@ -2,7 +2,7 @@
 kind: engineering
 domain: mission
 status: current
-verified: 2026-10-08
+verified: 2026-11-22
 parent: docs/mission/ARCHITECTURE.md
 ---
 
@@ -75,13 +75,14 @@ end at `_finish`, and the status's `explore` block). With no
    last confirmation's thread is still alive, the next waits for it up to
    one guard, and still out starts no call and fails from
    `CloudUnavailable`; then, if the runner has stopped during those waits,
-   a refusal with no call (on every path since 3.76 K2: only a local-led
-   arrival re-read it, so a Stop during them bought one); then the call,
+   an undecided verdict with no call (on every path since 3.76 K2: only a
+   local-led arrival re-read it, so a Stop during them bought one); then the call,
    its guard cut to what is left. Each
    wait draws on what is left, and none is ever passed a zero timeout
    (which `call_with_timeout` would run unbounded). `late_ask()` (3.53)
-   honours the same thread: it waits up to `vision_timeout_s`, then raises
-   `TimeoutError` with nothing sent, and registers its own call's thread.
+   honours the same thread: while it is alive it raises `LateCallInFlight`
+   at once with nothing sent (3.76 G1: it used to wait up to
+   `vision_timeout_s`), and it registers its own call's thread.
    **3.80.C:** when the policy has `confirm_local` and `confirm_cloud` and a
    local tier is configured (`local_identity_fn`; without one, nothing here
    changes),
@@ -201,9 +202,17 @@ end at `_finish`, and the status's `explore` block). With no
    count -- an autonomous holder
    (`ros`'s lapsing authority included; logged) or any other error (logged)
    keeps the found;
+   then `failed` if `_link_tick_done()` spent the link's budget (3.208), and
+   on a tick that lost a read with budget left `_safe_stop()` and
+   `idle(LINK_RETRY_S)`;
    a survey's room labeller looks (below); `exhausted` if the explore agent
-   set `exhausted`; `blocked` if the
-   refused count reaches `stuck_after`; then the budget check again; then
+   set `exhausted`; when the refused count reaches `stuck_after` (never on a
+   tick that lost a read) the stuck rule of 3.31: `blocked` at once if the
+   arrival's identity was refused, else one episode -- `_back_off()`, one
+   guarded REVERSE and a wait of `retry_cooldown_s` (`RETRY_COOLDOWN_S`,
+   30 s, `brain/frontier.py`; ticks in it move nothing) with the count reset
+   -- and `blocked` on episode `retry_limit` (`RETRY_LIMIT`, 3); a WAIT step
+   idles 0.25 s; then the budget check again; then
    `out_of_budget` if `len(agent.history) >= max_steps` (the step backstop).
 
 **The budget (3.70 E4).** `_out_of_budget()` runs at the top of every tick
@@ -346,7 +355,9 @@ raises keeps its call counted (sent may be billed) and backs off `RETRY_S`
 outage spends a few calls, not the cap. The cap is checked first (no cut,
 no frame once reached), and `capped` is set on the ask that reaches it.
 The map is re-cut at most every `RESEGMENT_S` (5 s, on the runner's clock)
--- a cut is pure Python, 0.2-0.9 s on a 200-400 cell square map, and a SLAM
+-- a cut of a mapped house at 0.05 m takes 0.18-0.37 s on the Jetson at
+15 W since 3.118 (1.45-2.77 s before it; 3.70 measured 0.2-0.9 s of pure
+Python on the laptop), and a SLAM
 map changes size and origin about once a second while exploring. Between
 cuts a place is looked up by POSITION in the last cut's own grid (`_Cut`),
 and floor that cut has not seen is never asked about until the next;
@@ -369,8 +380,9 @@ once -- never the survey. `MissionRunner.room_labels()` is the map's
 (`_note_map()`, from the inventory's frame path, so only a runner with an
 inventory that reads camera frames names it: on frames with no detections
 the pose is read for it at most every `SEED_EVERY_S`, with or without
-`inventory_prior`, and those reads stop once either the mission clock or
-the wall clock passes `NOTE_GIVE_UP_S`, 120 s; a read that raises logs its
+`inventory_prior`, and the reads made only for the note stop once either the
+mission clock or the wall clock passes `NOTE_GIVE_UP_S`, 120 s (an
+`inventory_prior` not yet seeded keeps reading); a read that raises logs its
 own warning once, never the inventory's) the runner records the map it STARTED on -- not revised if
 SLAM restarts under the mission, like the inventory's seed -- as
 `status.saved_map` = `{frame_id, map_id, reloaded}`: the saved map's
@@ -488,8 +500,9 @@ present, then ship one metrics row if `metrics_url` is set (kept as
 `control/scheduler.py` decides when; the brain server checks and starts. A
 `Scheduler` task on the brain's event loop ticks every `TICK_S` (10 s) on the
 local wall clock (`SCHEDULE_CLOCK_FILE` adds an offset, for an accelerated
-harness only). At each tick it first notes the dock (the SLAM pose, until a
-mission's `status.dock` is known), then for each schedule's due times since it
+harness only). At each tick it first notes the dock (in the simulator only:
+the first usable SLAM pose, used until a mission's `status.dock` is known; on
+a robot the dock is only ever a mission's own), then for each schedule's due times since it
 was saved (at most a day back): a due time already ended is passed; one older
 than `GRACE_S` (600 s) ends `skipped` with the last reason it waited on
 (`mission_running` recorded as `busy`), or `missed_down` if no tick saw it;
@@ -571,8 +584,8 @@ or Reserve still propagates from the cancel and from each verb.
   refused secret is also none, logged as a warning. Off builds none. The
   runner wraps it as `_GatedNavigator(goals_allowed=..., clears_keepout=False)`:
   the agent never holds it, a goal before the return phase answers
-  `{"accepted": false, "reason": "not_returning"}`, and its end does not clear
-  the robot server's keepout marks. **One intended change, pinned**
+  `{"accepted": false, "reason": "not_returning"}`, and its end clears
+  the robot server's keepout marks only if the trip home sent a goal. **One intended change, pinned**
   (`test_the_time_reserve_now_ends_a_mission_that_does_not_explore`): with a
   navigator home, D3's return reserve now ends such a mission early too, as
   it ends explore's. G4's in-process half (`evaluations/dock-3156e/`): with
@@ -629,8 +642,10 @@ or Reserve still propagates from the cancel and from each verb.
       the robot until it lapses). A person's refusal raises `Preempted`,
       which ends the return `cancelled`. A goal not taken within
       `return_wait_s` (or after that many refusals, for a clock that does
-      not move) ends it `failed`, `not_aligned: <error> (the correcting goal
-      was not taken ...)`. A goal that does not succeed goes to the judge,
+      not move) spends the correcting goals and goes to the judge on the
+      pose as it is: docked inside the tolerance, else `failed`,
+      `not_aligned: <m> m, <deg> deg` (the trip's log says the correcting
+      goal was not taken). A goal that does not succeed goes to the judge,
       with no back-off beside the dock.
     * `status.return.fine_goals` counts the goals started, taken or not.
     * `_quantum_m` only says that the moves come whole. "Under half a
@@ -655,7 +670,9 @@ or Reserve still propagates from the cancel and from each verb.
   ends the return `cancelled` (by `stop`/`dpad`) or `failed` and the mission
   with the decided outcome and note. In `_return_tick`: `BatteryReserve` ->
   `failed`, `battery_reserve`; `AutonomyLapsed` -> `failed`;
-  `StoppedByPerson` -> `cancelled`, `stop: ...`; another `Preempted` ->
+  `StoppedByPerson` -> `cancelled`, `stop: ...`; a `Preempted` naming an
+  autonomous holder -> `failed`, `error: preempted by an autonomous driver:
+  ...`; another `Preempted` ->
   `cancelled`, `preempted: ...`; `MissionHalted` returns; any other error ->
   `failed`, `error: ...`. A person's end (a Stop, a D-pad) still writes its
   3.99 intervention line (`interrupt`): the line keeps the decided outcome,
@@ -663,10 +680,10 @@ or Reserve still propagates from the cancel and from each verb.
   fault during the return sets `status.error` (`during the return: ...`).
 * **The return reserve** (D3, `_return_reserve` in `_out_of_budget`, every
   tick, only with a dock and a navigator): `HomeBudget` keeps this mission's
-  driving speed (metres over seconds of ticks that moved 1 cm or more; 0.10
+  driving speed (metres over seconds of ticks that moved 1 cm or more, a
+  gap between reads counting 10 s at most, a verb running up to 7 s; 0.10
   m/s before 30 s of driving, never under 0.05) and drain rate (distinct
-  battery samples 60 s or more apart; a gap between reads counts 10 s at
-  most, a verb running up to 7 s). Within 0.5 m of the dock there is no reserve (`at_dock`): nothing to
+  battery samples 60 s or more apart). Within 0.5 m of the dock there is no reserve (`at_dock`): nothing to
   drive home, so a short limit is not ended at once. `T_home = 1.5 * L_home / v + 30 s`,
   `L_home` the path home on the brain's map (`reach` from the dock at
   `PASS_CLEARANCE_M`, recomputed after 0.5 m or 30 s; 1.5 x the straight line
@@ -705,7 +722,7 @@ or Reserve still propagates from the cancel and from each verb.
   the drive back. `HomeBudget.recharged()` keeps the prior drain rate until a
   new 60 s span exists.
 * `status.charge`: `state` (`charging`, `resumed`, `not_docked`, `no_time`,
-  `no_charge`, `left_dock`, `wall_limit`, `cancelled`), `reason`, `cycles`,
+  `no_charge`, `left_dock`, `wall_limit`, `cancelled`, `failed`), `reason`, `cycles`,
   `resume_v`, `v`, `from_v`, `charging_s`, and `history` (one row a completed
   charge: `from_v`, `to_v`, `seconds`, `at_s`, `after`).
 * **The stand-in**: `SimBattery(charge_v_per_s)` (`SIM_BATTERY_CHARGE_V_PER_S`),
@@ -871,12 +888,21 @@ null), `end_reason`, `cancelled_by` (`stop`, `dpad` or null), `report`
 (above; null until built, and for other outcomes), `budget`
 (`time_limit_s`, `elapsed_s`, `paused_s` -- 3.88 A: of the elapsed time,
 how much was paused on a person's pick, which the time limit leaves out --
-`battery_floor_v`, `battery_v`,
+`battery_floor_v`, `battery_v`, `home` -- 3.156 D3's last prediction, null
+with no dock --,
 `cloud_calls`, `cloud_call_limit`; both null except under `vision`, and
 the limit null with the cap off), `error`,
-`policy`, `job` (3.70: `find` or `survey`), `survey` (null for `find`;
-`{mode, label_calls, label_call_limit, capped, rooms_named, seeds}`, each
-seed `[x_m, y_m, name]`), `request` and `room_hint` (3.176: null without
+`policy`, `job` (3.70: `find` or `survey`), `started_by` (3.163.B: null for
+a person's start, `schedule:<id>` for a schedule's), `survey` (null for `find`;
+`{mode, label_calls, label_call_limit, capped, no_source, source_error,
+skipped_for_time, rooms_named, person_named, seeds}`, each
+seed `[x_m, y_m, name]`), `room_labels` (3.116.B: a find's own asks, in
+`survey`'s shape; `{"skipped": "flat_prior", "label_calls": 0}` for a flat
+prior; with `person_rooms`, 3.160.D, once a find with no labeller read rooms
+a person named; null otherwise), `room_prior` (3.190.C: null with
+`find_prior_source` off; else `{source, why, rates, model_id, acts}`, the
+policy spec's "A find's cloud room prior"), `mission_id` (3.162: the name
+this mission's report is kept under), `request` and `room_hint` (3.176: null without
 one; else `{hint, acts, why, cells}` -- `acts` false with `why` "no explore
 search", "explore_goal_policy is not 'rooms'", "no room labels on a find" or
 "no named rooms read on the saved map",
@@ -888,7 +914,12 @@ only when given), `mission`, `target_object`,
 `spinning`), `last_reasoning`, `rooms_visited`, `rooms_searched`,
 `vision_failures`, `camera_failures` (3.153), `link_failures` (3.208), `dock`, `return` and `charge` (3.156), `saved_map` (3.70 M1), `tier`, `perception`, `arrival`, `arrival_verdicts`,
 `late_confirmation`, `last_frame_seq`, `ticks`, `seconds_since_last_tick`, `tick_rate_hz`,
-`sighting`, `explore` (null unless explore searches: `goals_sent`,
+`sighting`, `stuck_episodes` and `cooling_down_s` (3.31: the stuck rule's
+episodes so far, and the seconds left of a cooldown or null), `tier_search`
+(3.80.G: `cloud` or `explore` under `tiered`, else null), `inventory` (3.46:
+the inventory's counts -- `frames`, `observations`, `unplaced`, `no_pose`,
+`landmarks`, `reported`, `carried` -- or null with none; the list is `GET
+/mission/inventory`), `explore` (null unless explore searches: `goals_sent`,
 3.136.G's `sent` -- the last `SENT_IDS_KEPT` (64) accepted sends as
 `[n, goal_id, kind]`, `n` the send's number, `goal_id` the bridge's id for
 the goal it gave nav2 or null from an older bridge --, 3.136.B amendment 6's
@@ -900,8 +931,12 @@ the bridge's `cancelled`, the entry kept only if the call returned
 its way, so every cancel is recorded), `goal_id` that of the mission's last accepted goal
 (null if its answer was lost) --, `goals_failed`, `last_event`, `camera_seen_m2`, `choice_ms`, and 3.88 A's
 `asks`, `ask` -- the open choice, `{choice, candidates, default, picked,
-waited_s, timeout_s, remaining_s}`, or null -- and `choices`, the count
-recorded), `log_tail` (last `LOG_TAIL_LINES` = 20). `tier`/`perception`
+waited_s, timeout_s, remaining_s}`, or null -- `choices`, the count
+recorded, and, only with zones in force or left out, 3.161's `nogo`:
+`{frame_id, zones, refused, leaves, dock_refused}`), `log_tail` (last
+`LOG_TAIL_LINES` = 20). `GET /mission/status` adds `fault`, `cloud`
+(3.56, above) and `recording` (3.90 E: this mission's stream recorder's
+counts, null without `record_walk`; recordings spec). `tier`/`perception`
 are null under any policy without a perception tier. `late_confirmation`
 (3.53) is null except after an `arrived_unconfirmed` ending: `{state,
 probes, paid_calls, reason, at, confirmed?}`, `state` one of `waiting`,
@@ -949,7 +984,8 @@ cancelled_by)` (`stopped` -> `cancelled`/`stop`, `preempted` ->
   clears, when the navigator has `clear_keepout` (`RemoteNavigator`:
   `DELETE /world/keepout`), the keepout marks the mission's wedges left
   (3.76 K5.3, the user 2026-10-21; a failure is logged, never raised).
-  3.156.E: a return-only gate (`clears_keepout=False`) skips that clear,
+  3.156.E: a return-only gate (`clears_keepout=False`) skips that clear
+  unless it sent a goal itself (`sent_goal`),
   and its `goals_allowed` refuses goals outside the return phase
   (`not_returning`).
 - The intervention line (3.99, `brain/intervention_log.py`): `_finish`
@@ -998,6 +1034,10 @@ The `brain:` block of `config/robot.yaml`, read by
 | `room_label_source` | `frame` | `frame` | -- | brain_server | 3.70 S2: who names a survey's rooms -- the frame's own `room` (the simulator's, free; on the car nothing is asked) or `cloud` (`/room`, one paid call an ask). Off by default until the user approves the cost |
 | `find_room_labels` | `"off"` | `"off"` | -- | brain_server (`control/brain_config.py`, env `FIND_ROOM_LABELS`, which overrides the yaml) | 3.116.B: who names a find mission's rooms, for `explore_goal_policy: rooms` only: `off`, `frame` (the simulator's own `room`, free) or `cloud` (`/room`, one paid call an ask, at most `find_room_label_max_calls` 20 a mission). Refused at load unless one of the three, and unless `explore_goal_policy` is `rooms` when it is not `off`. Built only for a find whose explore search chooses goals and whose target's shipped prior is not flat (3.116 amendment 7). How a find uses the asks: the policy spec's room-labelled find |
 | `find_prior_source` | `"off"` | `"off"` | -- | brain_server (`_room_prior_at_start()`; `control/brain_config.py`, env `FIND_PRIOR_SOURCE`, which overrides the yaml) | 3.190.C: a find's room prior from the cloud, once at its start, for a target the shipped prior lacks: `off` or `cloud` (`/room-prior`, one paid call, cached on disk). Refused at load unless one of the two. The start waits at most `find_prior_timeout_s` (4.0 s); a late reply is cached and never applied mid-mission. The routine is the policy spec's ("A find's cloud room prior") |
+| `find_room_label_max_calls` | 20 | 20 | calls | brain_server (the runner's `room_label_max_calls` for a find that asks) | 3.116.B: asks per find mission (3.116.A: a median of 5, p90 13 on 583 houses). 0 = no cap; a negative or fractional value is refused at load. A find's metrics row records it, null when the mission asks nothing |
+| `find_prior_timeout_s` | 4.0 | 4.0 | s | brain_server (`_room_prior_at_start()`) | 3.190.C: the longest a start waits for `/room-prior`. Refused at load unless a number in (0, 30]. The routine is the policy spec's ("A find's cloud room prior") |
+| `explore_goal_policy` | `rooms` | `rooms` | -- | brain_server (`MissionRunner(explore_goal_policy=...)`, the room-prior gate), `load_brain_config` | 3.65 phase 2, 3.96; `rooms` the default since 3.125: how explore picks its next goal -- `rule`, `learned`, `network` or `rooms`; env `EXPLORE_GOAL_POLICY`. Refused at load unless one of the four. The chooser is the [policy spec](../policy/ENGINEERING.md)'s ("Explore's learned goal choice"); here it gates `find_room_labels`, a room hint and the room prior, which act under `rooms` only. The runner's own default is `rule` |
+| `sim_arrival_confirm` | `geometry` | `geometry` | -- | brain_server (`_tiered_vision_fn()`) | 3.98: how a tiered mission on the simulator's frames confirms its arrival -- `geometry` (the sim's ground truth, no paid call) or `cloud` (one real call); env `SIM_ARRIVAL_CONFIRM`. Refused at load unless one of the two. Real frames always ask. The policy spec's `sim_arrival_confirm` row |
 | `room_label_timeout_s` | 15 | 15.0 | s | brain_server | 3.70 S2: the `/room` call's HTTP timeout, held to half of `tick_timeout_s` at use (not refused at load, 3.56's reason) |
 | `room_label_max_calls` | 60 | 60 | calls | runner | 3.70 S2: asks per survey; `spacing`'s 9 sim surveys' median (29) x 2, rounded up to the most any of 100 ProcTHOR surveys asked (60). Each is a paid call on the car. Reaching it leaves the rest unlabelled. 0 = no cap. Published on the brain's `/health` (null for 0) so the phone states it before a survey (3.70 S5) |
 | `vision_max_calls` | 120 | 120 | paid calls | runner | 3.70: the user's call 2026-10-12, what the 120-step cap allowed before 3.70; `vision` only. Ends `out_of_budget`. 0 = no cap; a negative or fractional value is refused at load |
@@ -1005,13 +1045,15 @@ The `brain:` block of `config/robot.yaml`, read by
 | `min_distance_cm` | 20.0 | 20.0 | cm | agent's brain-side pre-check | 20 matches `safety.min_distance_cm` (the same number since S5); 30 is one sim cell and vetoed ~half of legal moves with sensor noise on |
 | `request_timeout_s` | 10.0 | 10.0 | s | robot and world clients, allow-list check | |
 | `vision_timeout_s` | 20.0 | 20.0 | s | B3.2 per-call timeout | `load_brain_config()` refuses one that is not a finite number > 0, as it does `tick_timeout_s`, `request_timeout_s` and the two drill deadlines (3.76 N1: 0 timed out every call, or aborted every mission on its first tick); `arrival_confirm_timeout_s` must be finite too |
+| `arrival_confirm_timeout_s` | 8.0 | 8.0 | s | brain_server (the confirmation client's HTTP timeout), runner (`confirm_timeout_s()`) | 3.56: the arrival confirmation's own deadline, used as min(this, `vision_timeout_s`): one longer than B3.2's is clamped at use, never refused (a deployment that lowers only `vision_timeout_s` must still load). Refused at load unless finite and > 0 |
+| `cloud_probe_s` | 15.0 | 15.0 | s | `create_app` (`CloudWatch`) | 3.56: how often the vision service's free `/health` is probed while a `vision`/`tiered` mission runs, for `status.cloud`; the probe's timeout is min(3, this). 0 = no watch (`cloud: null`); a negative value is refused at load |
 | `max_vision_failures` | 3 | 3 | calls | B3.2 budget | B3 plan's suggestion; three abandoned threads at most |
 | `return_to_dock` | False | true | -- | 3.156 D2: drive home after the end | the runner's own default is off so the in-process harnesses keep today's end; the brain config turns it on |
 | `schedules_on_robot` | False | false | -- | 3.163.B: a robot server whose mode is not `sim` runs schedules only when true (`not_allowed_here`) | stays false until 3.158.D is met, on the user's word |
 | `schedule_dir` | recordings/schedules | recordings/schedules | -- | 3.163.B: `schedules.json` and `runs.jsonl`, local only (git-ignored, never uploaded) | `SCHEDULE_DIR` |
 | `schedule_find_policy`, `schedule_survey_policy` | tiered, explore | tiered, explore | -- | 3.163.B: the policy a scheduled find or survey runs | refused at load unless a policy |
 | `return_wait_s` | 30.0 | 30.0 | s | 3.156 D2: a return goal nav2 never takes is `skipped` | refused at load unless a finite number > 0 |
-| `watch_list` | keys, wallet, phone, glasses, remote | same | names | 3.178: the inventory report's `watch` block (`MissionRunner(watch_list=...)`) | at most 8, refused at load otherwise (`_watch_list()` restates `brain.watch_list.normalise`'s rules: the walks Lambda ships no `brain/`); `[]` off; not passed to the car's perception until 3.178 B4-B6 |
+| `watch_list` | (unset) | keys, wallet, phone, glasses, remote | names | 3.178: the inventory report's `watch` block (`MissionRunner(watch_list=...)`) | at most 8, refused at load otherwise (`_watch_list()` restates `brain.watch_list.normalise`'s rules: the walks Lambda ships no `brain/`); `[]` off; not passed to the car's perception until 3.178 B4-B6 |
 | `inventory_edge_gate` | False | false | -- | 3.204.B: the inventory leaves a detection whose range gate straddles a depth edge unplaced (`MissionRunner(inventory_edge_gate=...)`, `brain.inventory.EDGE_GAP_M`) | refused at load unless true or false; OFF: dev's ranging rule is the user's (2026-11-17), and only the user's word turns it on |
 | `recharge_resume` | False | false | -- | 3.156 D7a: a battery end charges at the dock and resumes | off until the Rover; `RECHARGE_RESUME=1` |
 | `resume_v` | 11.8 | 11.8 | V | 3.156 D7d: leave the charger | a placeholder until 3.137.E |
@@ -1028,25 +1070,62 @@ The `brain:` block of `config/robot.yaml`, read by
 | `drill_vision_timeout_s` | 2.0 | 2.0 | s | vision drills | a demo in seconds, same guard |
 | `drill_tick_timeout_s` | 3.0 | 3.0 | s | `tick_hang` drill | the hang lasts 3x this (`drills.OVERSHOOT`) |
 | `metrics_url`, `metrics_secret` | `""` | `""` | -- | `_ship_metrics` | empty disables shipping |
+| `allow_recording` | true | true | -- | brain_server (`record_walk` at start; the mounted recording routes, per request; `/health` `recording_allowed`, `records_streams`) | whether this brain stores recorded walks; env `ALLOW_RECORDING` (`1`, `true` or `yes`; anything else is false). The [recordings spec](../recordings/ENGINEERING.md) owns it |
+| `recording_dir`, `recording_backend`, `recording_bucket`, `recording_prefix` | `recordings`, (unset), (unset), (unset) | `recordings`, `local`, `""`, `recordings` | -- | `control/walk_store.py` `walk_store_from_config()` (built in `create_app`) | where recorded walks are kept; env `RECORDING_BACKEND` (lower-cased), `RECORDING_BUCKET`, `RECORDING_PREFIX` (none for `recording_dir`). The recordings spec's parameters |
+| `recording_proxy_url`, `recording_proxy_secret`, `recording_proxy_timeout_s` | (unset) | `""`, `""`, 10.0 | URL, --, s | brain_server (`_proxy_recording`) | a brain that stores no walks forwards `/recording/*` to a peer that does; env `RECORDING_PROXY_URL`, `RECORDING_PROXY_SECRET` (none for the timeout). The recordings spec's parameters |
+| `replay_timeout_s` | 60.0 | 60.0 | s | `control/admin_server.py` (a replay's `/navigate` call); no mission reads it | a replay's own deadline, not the mission's `vision_timeout_s`. The recordings spec's row |
 | `explore_ask` | false | false | -- | brain_server | 3.88 A: explore pauses at each goal choice for a person's pick; env `EXPLORE_ASK` (0/1/true/false). A start's `explore_ask` overrides it |
 | `explore_ask_timeout_s` | 60.0 | 60.0 | s | runner (`GoalAsk`) | 3.88 criterion 1: no pick in this long takes the rule's (`rule_timeout`). Must be > 0 |
 | `explore_choice_dir` | `recordings/explore-choices` | same | path | brain_server | 3.88 A: one `<mission id>.jsonl` a mission asked in; env `EXPLORE_CHOICE_DIR`. `recordings/` is git-ignored |
 | `intervention_dir` | `recordings/interventions` | same | path | brain_server | 3.99: `interventions.jsonl`, one line per mission end; env `INTERVENTION_DIR`. Local only, never uploaded; the suite points it at a temporary directory (`tests/conftest.py`) |
 | `inventory_dir` | `recordings/inventory` | same | path | `control/inventory_store.py`, `control/brain_server.py` | 3.46: the local file every mission's object inventory is written to when it ends (labels and map positions, no images); env `INVENTORY_DIR` overrides the yaml (`control/brain_config.py`; empty is unset). Also `s3://<inventory_bucket>/<inventory_prefix>/<robot>/` when `inventory_bucket` / `INVENTORY_BUCKET` is set; the perception spec describes the store. The what-I-saw directory defaults beside it (next row) |
-| `WHAT_I_SAW_DIR` (env; no yaml key) | `<inventory_dir's parent>/what-i-saw` (`recordings/what-i-saw`) | path | `control/brain_server.py` `_saw_store()` (made at first use, so an app that runs no mission starts no writer thread): the only reader (3.209.B) | 3.162: where each mission's what-it-saw report (`<dir>/<mission_id>/`) is kept: local only, the newest 50, `STORE_MAX_BYTES` 50 MB. The brain server's default follows `inventory_dir` (so `INVENTORY_DIR` moves both); `brain/what_i_saw.py` has no default of its own since 3.209.B: `ReportStore(directory)` needs its directory. `tests/test_what_i_saw.py` |
+| `inventory_bucket`, `inventory_prefix` | (unset), `inventory` | `""`, `inventory` | name, key prefix | `control/inventory_store.py` `inventory_store_from_config()` | 3.46: with a bucket set every mission's inventory is also uploaded under `s3://<inventory_bucket>/<inventory_prefix>/<robot>/`; empty uploads nothing. Env `INVENTORY_BUCKET` wins when set at all: set but empty means no bucket (3.55), even over a bucket in the yaml. No env for the prefix. The [perception spec](../perception/ENGINEERING.md) ("Inventory") describes the store |
+| `WHAT_I_SAW_DIR` (env; no yaml key) | `<inventory_dir's parent>/what-i-saw` (`recordings/what-i-saw`) | same | path | `control/brain_server.py` `_saw_store()` (made at first use, so an app that runs no mission starts no writer thread): the only reader (3.209.B) | 3.162: where each mission's what-it-saw report (`<dir>/<mission_id>/`) is kept: local only, the newest 50, `STORE_MAX_BYTES` 50 MB. The brain server's default follows `inventory_dir` (so `INVENTORY_DIR` moves both); `brain/what_i_saw.py` has no default of its own since 3.209.B: `ReportStore(directory)` needs its directory. `tests/test_what_i_saw.py` |
 
 The `tier_*` and `perception_*` keys are passed straight through to the
 policy and perception pipeline; see [policy](../policy/ENGINEERING.md) and
 [perception](../perception/ENGINEERING.md). Recording keys belong to the
 recordings domain.
 
-**Environment variables:** `ROBOT_URL`, `VISION_URL`, `NAVIGATE_MODEL_ID`,
-`NAVIGATE_PROMPT_VARIANT`, `METRICS_URL`, `METRICS_SECRET` override the yaml
-(`load_brain_config`). `APP_SHARED_SECRET` gates callers of the brain;
+**Environment variables.** `load_brain_config` lets these override the
+yaml, after the merge over `DEFAULTS` and before the checks, so a bad value
+is refused at load like a bad key:
+
+| Variable | Key | How it is read |
+|---|---|---|
+| `ROBOT_URL`, `VISION_URL` | `robot_url`, `vision_url` | when non-empty |
+| `NAVIGATE_MODEL_ID`, `NAVIGATE_PROMPT_VARIANT` | `navigate_model_id`, `navigate_prompt_variant` | when non-empty |
+| `LOCAL_VLM_URL` | `tier_local_vlm_url` | when set at all, stripped: set but empty turns the local tier off |
+| `TIER_SEARCH`, `SIM_ARRIVAL_CONFIRM` | `tier_search`, `sim_arrival_confirm` | when non-blank, stripped |
+| `TIER_LOCAL_DIRECTION`, `TIER_STEER_ON_CANDIDATE` | the keys of those names | `true`/`false`/`1`/`0`; anything else is a `ValueError` |
+| `TIER_COLD_SEARCH_AFTER`, `TIER_LOCAL_COLD_SEARCH_AFTER` | the keys of those names | a whole number >= 1; anything else is a `ValueError` |
+| `RECHARGE_RESUME` | `recharge_resume` | when non-blank: `1` is on, anything else off |
+| `EXPLORE_GOAL_POLICY`, `FIND_ROOM_LABELS`, `FIND_PRIOR_SOURCE` | the keys of those names | when non-empty |
+| `EXPLORE_ASK` | `explore_ask` | `0`/`1`/`true`/`false`; anything else is a `ValueError` |
+| `EXPLORE_CHOICE_DIR`, `INTERVENTION_DIR`, `INVENTORY_DIR`, `SCHEDULE_DIR` | the keys of those names | when non-empty |
+| `ALLOW_RECORDING` | `allow_recording` | when non-empty: `1`, `true` or `yes` is on, anything else off |
+| `RECORDING_BACKEND`, `RECORDING_BUCKET`, `RECORDING_PREFIX` | the keys of those names | when non-empty (the backend stripped and lower-cased) |
+| `RECORDING_PROXY_URL`, `RECORDING_PROXY_SECRET` | the keys of those names | when non-empty |
+| `INVENTORY_BUCKET` | `inventory_bucket` | when set at all, stripped: set but empty means no bucket (3.55) |
+| `METRICS_URL`, `METRICS_SECRET` | `metrics_url`, `metrics_secret` | when non-empty, stripped |
+
+The `TIER_*` and `LOCAL_VLM_URL` rows belong to the [policy
+spec](../policy/ENGINEERING.md), the `RECORDING_*` rows to
+[recordings](../recordings/ENGINEERING.md). No other key has a variable.
+
+The brain server reads its own: `APP_SHARED_SECRET` gates callers of the brain;
 `ROBOT_SHARED_SECRET` and `VISION_SHARED_SECRET` gate the brain's own
 outbound calls and default to `APP_SHARED_SECRET`; `WALKS_SHARED_SECRET` is
 the metrics fallback secret; `ROUTE_PREFIX` prefixes every route (the tunnel
-uses `/brain`).
+uses `/brain`); `WHAT_I_SAW_DIR` (the table above); `LOCAL_VLM_SECRET` (the
+local VLM client's secret; unset, `APP_SHARED_SECRET` goes only to a service
+on this machine) and `SIM_PERCEPTION_BLIND` (`1`: 3.80.O's evaluation
+switch, the simulator's perception blind to the target), both the policy
+spec's. Read elsewhere on a mission's path: `NOGO_DIR`
+(`control/nogo_store.py`), `SCHEDULE_CLOCK_FILE` (`control/scheduler.py`),
+`ROOM_NAMES_DIR` (`brain/room_names.py`), `ROOM_PRIOR_CACHE`
+(`brain/room_prior.py`) and `PICAR_LOG_LEVEL` (`robot/identity.py`
+`configure_logging()`).
 
 **Constants:** `LOG_TAIL_LINES` 20; `SPIN_MIN_STEPS` 10,
 `SPIN_TURN_SHARE` 0.75, `SPIN_MAX_REVERSAL_SHARE` 0.1 (the `turns.spinning`
@@ -1152,7 +1231,7 @@ tests/test_mission_guarded_verbs.py -q`.
 | `tests/test_failsafes.py` (15) | B3.2 budget and hang; one failure survivable; no movement after stop; B3.3 dead-man; every drill ends `failed` with the robot stopped; no-fault builds the ordinary mission; drills can be switched off |
 | `tests/test_camera_centred_start.py` (11) | 3.20's four criteria: centred first decision under `frontier` and `vision` (tiered is not parametrised), no step or vision call spent, centred start unchanged against `tests/data/frontier_trace_centred.json`, a refused centring ends the mission like any refused move |
 | `tests/test_mission_guarded_verbs.py` (3) | 3.32: a mission's verbs go through the safety layer's guarded plan; the gate forwards plan and stop count; a finished mission refuses a plan |
-| `tests/test_bearing_turns.py` | `blocked` after `stuck_after` refusals, never on an arrival, switchable off, reset by progress |
+| `tests/test_bearing_turns.py` | `blocked` after `stuck_after` refusals `RETRY_LIMIT` times over (3.31: `stuck_episodes` 3, a back-off between), never on an arrival, switchable off, reset by progress |
 | `tests/test_arrival_reconfirm.py` (26) | 3.53: once the cloud is back, exactly one paid call on all 12 clear starts for a cloud that sees the target and one that does not; the outcome unchanged; no robot method called; free and bounded probing (`expired`); two paid attempts, half a window apart, then `failed`, and a server-side outage that clears in the window `confirmed`; a cancel never pays, also when it lands between the probe and the call; a cap refusal counts no paid call; a hung call is never doubled (a second attempt only once it has ended, 3.76 G1); only an unconfirmed arrival records anything; the metrics row re-sent, not added; through `brain_server`, a new mission drops it, a refused start and a Stop after the ending (also one in the loop's last sleep) do not; the brain's own loop asks |
 | `tests/test_review_376g.py` (14) | 3.76 G1, G4: a late answer that outlived its guard is used once it lands (not paid twice, not held to the retry), also on the last attempt, in the window's last interval, and when it lands at the guard itself; its error landing during a probe is not counted twice, and the attempt then due is sent at once; a last call ending in an error ends the check with that error; a call ending after a cancel ships its cost; a call out all window with the cloud never up is `expired`; a confirmation still out delays the ask without ending the window or blocking a probe; a window that ends with nothing out is not "still in flight"; the cloud watch's `age_s` survives a wall-clock step |
 | `tests/test_robot_contract.py` | `_HaltGate` passes the body conformance suite as a backend |
@@ -1160,7 +1239,7 @@ tests/test_mission_guarded_verbs.py -q`.
 | `tests/test_review_376k2.py` (8) | 3.76 K2: a Stop during the arrival's waits (a trigger call still out, the last confirmation) sends no cloud confirmation; a start refused (400, 403) or stopped during its build leaves a person's Stop latched, a started one lifts it; a start during a stopped build's discard gets the 409; a late call ending at its guard after a cancel still ships its cost (a guard) |
 | `tests/test_review_376n1.py` (14) | 3.76 N1: a guarded verb on the wall clock stops at an aged line (a guard); feedback lost on the verb's last read keeps a stopped or completed verb's outcome, and a short end reads `no_feedback`; the tick-hang drill centres the camera and counts each tick once; a deadline of 0 is refused; a tick inside its deadline is not a loop not turning; the ROS world follows the drive's bridge URL; an empty `TRACK_SCRUB` is unset |
 | `tests/test_remote_robot.py` | an identical action sequence and step count in-process, over ASGI and over a live socket |
-| `tests/test_offline_mode.py` (15) | 3.49, with every socket connect refused and the real HTTP cloud client: the robot server loads no cloud client (a subprocess's `sys.modules`, and every file under `robot/`); `frontier`/`explore` still `found`; tiered (sync, async) searches from out of sight and ends `arrived_unconfirmed` at the target; `vision` fails without moving; no offline tiered run `failed`; a hanging cloud parks for at most budget x timeout + 1 s; the twin references no external host |
+| `tests/test_offline_mode.py` (15) | 3.49, with every socket connect refused and the real HTTP cloud client: the robot server loads no cloud client (a subprocess's `sys.modules`, and every file under `robot/`); `frontier`/`explore` still `found`; tiered (sync, async) searches from out of sight and ends `found` on the sim's geometry (3.98, the brain's default) and, with the confirmation left to the cloud, `arrived_unconfirmed` at the target; `vision` fails without moving; no offline tiered run `failed`; a hanging cloud parks for at most budget x timeout + 1 s; the twin references no external host |
 
 **Checklist for a change here:** a new movement method on `RobotInterface`
 must be added to `_HaltGate.MOVEMENT`; a new sensing method must be passed

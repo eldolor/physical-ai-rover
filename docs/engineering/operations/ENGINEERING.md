@@ -43,7 +43,7 @@ directory's README agree).
 
 | File | What it does |
 |---|---|
-| `service/tunnel/run.sh` | Sources the secrets files, exports the variables below, sets `WORLD_MODE` from `ROBOT_MODE` (sim -> sim, anything else -> none), then starts three uvicorns on 127.0.0.1: robot :8000 (through `robot/locked_serve.py` since 3.155, its command line still `... uvicorn robot.server:app ...`: the robot server's touched pages are memory-locked first, `mlockall(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT)`, when the memlock limit is unlimited -- `picar-stack.service`'s `LimitMEMLOCK=infinity` -- and otherwise it serves unlocked; one `robot server memory lock:` line says which), brain :8001 with `ROUTE_PREFIX=/brain`, proxy :8080. With `SIM_MOTOR_BOARD=fake` it first starts the simulated body's programs (`PLAN-ros-alignment.md` 3.36): `sim/body_server.py` on `SIM_BODY_URL` (default :8002) and one `sim/sensor_server.py` per entry of `SIM_SENSORS_URL` (default :8003 and :8004), exporting both URLs and `SIM_BODY_SHM` (default `picar_sim_body`) for the robot server. Refuses to start when `LOCAL_SECRET` is empty or under 16 characters (an empty one left `require_secret()` inert on the public tunnel; 3.76 H3-1); `VISION_SECRET` is optional (3.76 H3-3). The inventory-bucket lookup is bounded (`--cli-connect-timeout 3 --cli-read-timeout 5`, one attempt; 3.76 H3-14). Under `SIM_LIDAR=fake` it removes a stale link first and exits if none appears in 5 s (3.76 H3-17). Its cleanup kills only its own children, so the ngrok agent survives, and waits up to 8 s for them to finish, once (the INT/TERM trap only exits; the EXIT trap cleans up) (3.76 H3-15) |
+| `service/tunnel/run.sh` | Sources the secrets files, exports the variables below, sets `WORLD_MODE` from `ROBOT_MODE` when it is unset or empty (sim -> sim, anything else -> none), then starts three uvicorns on 127.0.0.1: robot :8000 (through `robot/locked_serve.py` since 3.155, its command line still `... uvicorn robot.server:app ...`: the robot server's touched pages are memory-locked first, `mlockall(MCL_CURRENT | MCL_FUTURE | MCL_ONFAULT)`, when the memlock limit is unlimited -- `picar-stack.service`'s `LimitMEMLOCK=infinity` -- and otherwise it serves unlocked; one `robot server memory lock:` line says which), brain :8001 with `ROUTE_PREFIX=/brain`, proxy :8080. With `SIM_MOTOR_BOARD=fake` it first starts the simulated body's programs (`PLAN-ros-alignment.md` 3.36): `sim/body_server.py` on `SIM_BODY_URL` (default :8002) and one `sim/sensor_server.py` per entry of `SIM_SENSORS_URL` (default :8003 and :8004), exporting both URLs and `SIM_BODY_SHM` (default `picar_sim_body`) for the robot server. Refuses to start when `LOCAL_SECRET` is empty or under 16 characters (an empty one left `require_secret()` inert on the public tunnel; 3.76 H3-1); `VISION_SECRET` is optional (3.76 H3-3). With `INVENTORY_BUCKET` unset it looks the bucket up (3.46: `aws cloudformation list-exports`, the recordings stack's `vision-picar-recordings-s3-BucketName` export) and exports it for the brain; set, even to empty (3.55: local only), it is exported as given and nothing is looked up; a lookup that fails or finds none leaves it unset, so the brain falls back to `config/robot.yaml`'s `inventory_bucket`, never to the opt-out. The lookup is bounded (`--cli-connect-timeout 3 --cli-read-timeout 5`, one attempt; 3.76 H3-14). Under `SIM_LIDAR=fake` it removes a stale link first and exits if none appears in 5 s (3.76 H3-17). Its cleanup kills only its own children, so the ngrok agent survives, and waits up to 8 s for them to finish, once (the INT/TERM trap only exits; the EXIT trap cleans up) (3.76 H3-15) |
 | `service/tunnel/proxy.py` | FastAPI catch-all. `/brain/*` -> brain; `/vision/*` -> the deployed vision service, answering `OPTIONS` itself with 204; everything else -> robot. Forwards the path as sent (`raw_path`, so `%2F`/`%23` stay encoded; a raw non-ASCII byte is percent-encoded once). On the REQUEST it drops `host`, `content-length` and the hop-by-hop headers (RFC 9110 7.6.1, plus any `connection` names), and refuses a body over `MAX_BODY_BYTES` (16 MB) with 413 before buffering it, and answers 503 while more than `MAX_INFLIGHT_BYTES` (48 MB) of bodies are buffered across requests; on the RESPONSE it drops `content-encoding`, `content-length` and the hop-by-hop headers, rewrites a `location` naming the robot or brain upstream to a path on the tunnel, and adds permissive CORS headers to `/vision/*` replies and to robot or brain 5xx (the robot and brain answer CORS themselves, except on an unhandled 500). The `/vision` preflight echoes the requested headers. An upstream error (or an invalid URL) becomes a JSON 502 `upstream <url> unreachable`; the proxy's own 413/503/502 carry `access-control-allow-origin: *`. Timeout 120 s. 3.76 H3 |
 | `service/tunnel/restart.sh` | Stops whatever holds :8000/:8001/:8080 (graceful, then `kill -9` after 5 s), plus the simulator programs' ports under `SIM_MOTOR_BOARD=fake` (3.36; :8002-8004 unless the URLs say otherwise), restarts `run.sh` detached (log `~/.vision-picar-tunnel.log`), then polls both `/health` routes, and under the fake board the body program's too, until each reports the checkout's `git rev-parse --short HEAD`. The robot and brain are polled THROUGH the proxy (:8080), the secret goes to curl on stdin (never the command line), and it asks both again through the proxy 5 s later before saying OK. Where `picar-stack` is a systemd unit in any state but stopped (the Jetson) it refuses, naming the bench's stop and the unit's restart. 3.76 H3 |
 
@@ -131,6 +131,7 @@ page) on the robot server.
 | `~/.vision-picar-local-secrets` | must exist (mode 600) | file | `run.sh`, `restart.sh` | Holds `LOCAL_SECRET` (16 characters at least: `run.sh` refuses less) and `VISION_SECRET` (optional). Never in the repo |
 | `~/.vision-picar-serverless-secrets` | optional | file | `run.sh` | Holds `WALKS_SECRET` for metrics |
 | `NavigateModelId` | `us.anthropic.claude-opus-4-5-20251101-v1:0` | model id | `serverless.yaml` -> `BEDROCK_NAVIGATE_MODEL_ID` | Chosen by measurement; owned by cloud-vision. Keep in step with the code default |
+| `RoomModelId` | `us.anthropic.claude-opus-5-5` | model id | `serverless.yaml` -> `BEDROCK_ROOM_MODEL_ID` on the vision function | The model `/room` names a survey's rooms with (3.70 S2) and `/room-prior` asks a find's room prior with (3.190.C); owned by cloud-vision. Keep in step with `vision_core.py`'s `ROOM_MODEL_ID` default, for `NavigateModelId`'s reason: the variable wins over the code |
 | `VisionSharedSecret` / `WalksSharedSecret` | `""` | secret | `serverless.yaml` | Empty means the function runs with NO auth. `build.sh` says so |
 | `VisionFunction` `Timeout` | 30 | s | `serverless.yaml` | A vision call is 1-3 s and Robot view allows two in flight |
 | `WalksFunction` `Timeout` | 900 | s | `serverless.yaml` | Lambda's ceiling, sized for a replay, which re-asks every frame and outlived the old 60 s load-balancer limit. Deployed replay is off unless the stack is given `ReplayVisionUrl` (see Known gaps) |
@@ -275,11 +276,13 @@ machine-readable form. Expected first line `OK`, then each part with `build git=
 exe=<python>`. `UNHEALTHY  (brain)` with the robot ok when the brain is
 down. A robot parked against a wall stays `OK`.
 
-**B5 on the Jetson (first half built, 3.71).** Since 2026-10-11 three
+**B5 on the Jetson (first half built, 3.71).** Since 2026-10-11
 systemd units from `tools/jetson/systemd/`, installed by
 `tools/jetson/install_services.sh`, start at boot: `picar-stack` (`run.sh`:
-robot server, brain and proxy, in simulator mode, `Restart=on-failure`),
-`picar-ngrok` and `picar-local-vlm` (`tools/jetson/README.md` section 5).
+robot server, brain and proxy, in simulator mode, `Restart=on-failure`) and
+`picar-ngrok`, and since 3.108 (2026-10-26) `picar-local-vlm`, enabled only
+where its `~/.vision-picar-local-vlm.env` exists (`tools/jetson/README.md`
+section 5).
 The rest is not built. `PLAN-brain-relocation.md` B5 lists what the units
 must cover: the robot server first, and the ROS
 container started only after `GET /wheels` reports `usable: true` (the
@@ -314,9 +317,9 @@ platform domain's procedure (`tools/jetson/README.md`).
   * Busy is exit 75.
 * **Exit codes.** 75 means another session holds the board; 1 means the
   board could not be reached (ssh, a missing `python3`).
-* **`run`.** It forwards SIGTERM and SIGHUP to its command before letting
-  go. If the hold ends under a running command (`--max`, silence), it
-  warns.
+* **`run`.** It forwards SIGTERM to its command before letting
+  go (a SIGHUP, like a Ctrl-C, only keeps it waiting: see Signals). If the
+  hold ends under a running command (`--max`, silence), it warns.
 * **`hold`.** Interrupted or timed out, it stops its waiting keeper, so the
   keeper never takes the board later. A `_keep` pid is trusted only if its
   command line says so, so a reused pid is never taken for a hold.
@@ -394,8 +397,9 @@ and are not repeated here. These are the implementation gaps:
 
 - **Deployed replay is off unless the stack is given `ReplayVisionUrl`.**
   The parameter's default is empty, so the walks function has no
-  `VISION_URL` and answers 503. Given a value, `WalksFunction` also gets
-  `VISION_SHARED_SECRET` from `VisionSharedSecret` (handoff 3c), and the
+  `VISION_URL` and answers 503. `WalksFunction` gets
+  `VISION_SHARED_SECRET` from `VisionSharedSecret` whenever that is set,
+  with or without the URL (handoff 3c), and the
   printed deploy command carries `ReplayVisionUrl`. The recordings spec's
   Known gaps (docs/engineering/recordings/ENGINEERING.md) is the canonical
   home for replay's behaviour.
