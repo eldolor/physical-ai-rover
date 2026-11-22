@@ -6,6 +6,9 @@ the plan file defines them) and the false sightings' characterisation, from
 measure.py's four files.
 
     python evaluations/false-sighting-3213/score.py DIR   (writes DIR/summary.json)
+    python evaluations/false-sighting-3213/score.py probes DEV_DIR PROBE_DIR
+        (3.213.B: each probe arm against step A's `dev`, the plan's selection
+        rule; writes PROBE_DIR/summary.json)
 """
 
 import json
@@ -130,5 +133,49 @@ def main(d):
     print(json.dumps(out, indent=1))
 
 
+def probes(dev_dir, probe_dir):
+    out = {}
+    for arm in ("c1", "c2", "c1c2"):
+        res, qual, saved = {}, True, 0.0
+        for c in ("rooms", "rule"):
+            dev = {r["house"]: r for r in json.load(open(os.path.join(dev_dir, f"{c}_dev.json")))["rows"]}
+            pr = {r["house"]: r for r in json.load(open(os.path.join(probe_dir, f"{c}_{arm}.json")))["rows"]}
+            both = [h for h in dev if dev[h]["outcome"] == "found" and pr[h]["outcome"] == "found"]
+            affected = [h for h in dev if any(gbf(a) for a in dev[h]["approaches"])]
+            sav = [(dev[h]["sim_s"] - pr[h]["sim_s"]) / dev[h]["sim_s"] for h in affected if h in both]
+            fd = sum(1 for r in dev.values() if r["outcome"] == "found")
+            fp = sum(1 for r in pr.values() if r["outcome"] == "found")
+            med = [statistics.median([dev[h]["sim_s"] for h in both]),
+                   statistics.median([pr[h]["sim_s"] for h in both])]
+            p90 = [round(pct([dev[h]["sim_s"] for h in both], 0.9), 1),
+                   round(pct([pr[h]["sim_s"] for h in both], 0.9), 1)]
+            tot = [round(sum(dev[h]["sim_s"] for h in both), 1), round(sum(pr[h]["sim_s"] for h in both), 1)]
+            ms = statistics.median(sav) if sav else 0.0
+            ok = {"found": fp >= fd, "median": med[1] <= med[0], "p90": p90[1] <= p90[0],
+                  "saving": ms >= 0.01}
+            qual = qual and all(ok.values())
+            saved += tot[0] - tot[1]
+            res[c] = {"found": [fd, fp],
+                      "gained": sorted(h for h in dev if dev[h]["outcome"] != "found" and pr[h]["outcome"] == "found"),
+                      "lost": sorted(h for h in dev if dev[h]["outcome"] == "found" and pr[h]["outcome"] != "found"),
+                      "median_sim_s_both": med, "p90_sim_s_both": p90, "total_sim_s_both": tot,
+                      "median_saving_affected": round(ms, 4), "saving_affected": summarise(sav),
+                      "changed_unaffected": sorted(h for h in dev if h not in affected and
+                                                   (dev[h]["outcome"], dev[h]["sim_s"]) != (pr[h]["outcome"], pr[h]["sim_s"])),
+                      "kept": sum(r["oracle_kept"] for r in pr.values()), "ok": ok}
+        out[arm] = {**res, "qualifies": qual, "total_saved_s": round(saved, 1)}
+    q = [a for a in out if out[a]["qualifies"]]
+    best = max(q, key=lambda a: out[a]["total_saved_s"]) if q else None
+    if best and best != "c1" and "c1" in q and out["c1"]["total_saved_s"] >= 0.99 * out[best]["total_saved_s"]:
+        best = "c1"                                   # a tie within 1% goes to the one without C2
+    out["winner"] = best
+    with open(os.path.join(probe_dir, "summary.json"), "w") as fh:
+        json.dump(out, fh, indent=1)
+    print(json.dumps(out, indent=1))
+
+
 if __name__ == "__main__":
-    main(sys.argv[1])
+    if sys.argv[1] == "probes":
+        probes(sys.argv[2], sys.argv[3])
+    else:
+        main(sys.argv[1])
