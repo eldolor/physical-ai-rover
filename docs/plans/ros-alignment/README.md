@@ -215,4 +215,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.210](3.210-reseen-crowded-out.md) | A re-search's places crowded out by later false sightings |
 | [3.211](3.211-navfn-plan-failures.md) | nav2's NavFn A* fails to extract plans: the trip home aborts |
 | [3.212](3.212-keep-live-logs.md) | Every live run keeps its full ROS, robot and brain logs beside its rows |
+| [3.214](3.214-teacher-probe.md) | A larger open teacher for the local VLM: Qwen2.5-VL-72B and Alpamayo 2 Super measured on our frames first |
 <!-- /sections -->
