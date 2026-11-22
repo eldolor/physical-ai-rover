@@ -82,4 +82,40 @@ def test_every_sighting_is_counted_once_a_tick(monkeypatch):
     assert a._sighting(frame) == (2.0, 2.0)              # memoised: not counted again
     a._ticks = 2
     a._sighting(frame)
-    assert a._sighted == [(2.0, 2.0), (2.1, 2.0)]
+    assert list(a._sighted) == [(2.0, 2.0), (2.1, 2.0)]
+
+
+def test_a_refused_place_supports_nothing():
+    """Review: the refused object's ticks must not out-vote a live approach."""
+    from brain.arrival import REFUSED
+    a = _agent()
+    a.sight_from = "perception"
+    a._sighted.extend([(3.0, 1.0)] * 5 + [(1.0, 1.0)] * 2)
+    a._last_seen = (3.0, 1.0)
+    a._note_refusal({"_arrival": {"state": REFUSED}})
+    assert list(a._sighted) == [(1.0, 1.0)] * 2
+    _live(a, (1.0, 1.0))
+    assert a._keeps_approach(3.0 + a.retry.radius_m + 0.01, 1.0) is True
+
+
+def test_the_sightings_kept_are_capped_newest_kept():
+    a = _agent()
+    for i in range(explore_mod.SIGHTED_MAX + 5):
+        a._sighted.append((float(i), 0.0))
+    assert len(a._sighted) == explore_mod.SIGHTED_MAX
+    assert a._sighted[0] == (5.0, 0.0)
+
+
+def test_scaled_house_is_found_before_the_target_is_lost():
+    """Thermos review: 3.192.B's scaled_house witnesses hold C1 off
+    (`tests/test_explore_reseen.py`); with it on, the good approach is kept
+    and the find never needs the look-again rounds (C1 off: 114.8 s)."""
+    import importlib.util
+    from pathlib import Path
+    spec = importlib.util.spec_from_file_location(
+        "nogo_sweep_3161_supersede_fast",
+        Path(__file__).resolve().parents[1] / "evaluations" / "nogo-3161" / "sweep.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    row = mod.run("scaled_house", 0, "none")
+    assert row["outcome"] == "found" and row["sim_s"] < 60     # 27.9 s

@@ -25,9 +25,12 @@ The sighting is still kept as seen (`_note_seen_at` runs before the
 decision) in both arms; only the goal replacement is withheld.
 
     SWEEP_WORKERS=4 python evaluations/false-sighting-3213/measure.py OUT.json \\
-        --chooser rooms|rule --arm dev|oracle|c1|c2|c1c2
+        --chooser rooms|rule --arm dev|oracle|c1|c2|c1c2|c1s
 
 Run from the checkout under test (the harness refuses another's packages).
+The probe arms (`c1`, `c2`, `c1c2`, `c1s`) and `oracle` patch `dev` as it
+was before 3.213.B: run them from a checkout without `_keeps_approach`. On
+the branch, `--arm dev` measures explore as built (step B's broad bar).
 """
 
 import json
@@ -41,7 +44,7 @@ ROOT = os.path.realpath(os.path.join(HERE, "..", ".."))
 FIRST, LAST = 30, 210
 GOOD_M, FALSE_M = 0.5, 1.0          # 3.210's sizing: good within 0.5 m, false beyond 1.0 m
 SUPPORT_M = 0.5                     # 3.213.B C1: a place's support radius
-ARMS = ("dev", "oracle", "c1", "c2", "c1c2")
+ARMS = ("dev", "oracle", "c1", "c2", "c1c2", "c1s")
 
 
 def _setup(chooser, arm):
@@ -81,7 +84,7 @@ def _setup(chooser, arm):
 
     def _sighting_now(self, frame):
         out = orig_now(self, frame)
-        if out is not None and arm in ("c1", "c2", "c1c2"):
+        if out is not None and arm in ("c1", "c2", "c1c2", "c1s"):
             # 3.213.B probes: every sighting counted (one a tick: memoised),
             # and whether this tick's gate straddles a depth edge (3.204.B).
             sup = self.__dict__.setdefault("_p3213_support", [])
@@ -125,13 +128,18 @@ def _setup(chooser, arm):
         if arm == "oracle":
             keep = (state["truth"] and was is not None
                     and err(was) <= GOOD_M and err((tx, ty)) > FALSE_M)
-        elif arm in ("c1", "c2", "c1c2") and was is not None:
-            if arm in ("c1", "c1c2"):
+        elif arm in ("c1", "c2", "c1c2", "c1s") and was is not None:
+            if arm in ("c1", "c1c2", "c1s"):
                 sup = self.__dict__.get("_p3213_support", [])
 
                 def support(p):
                     return sum(1 for q in sup if math.hypot(q[0] - p[0], q[1] - p[1]) <= SUPPORT_M)
                 keep = support((tx, ty)) <= support(was)
+                if arm == "c1s" and keep:
+                    # 3.213.B amendment 1: never inside the standoff.
+                    pose = self._pose()
+                    keep = not (pose.get("usable") and math.hypot(tx - pose["x_m"], ty - pose["y_m"])
+                                <= ex.APPROACH_STANDOFF_M + 0.05)
             if arm in ("c2", "c1c2") and not keep:
                 e = self.__dict__.get("_p3213_edge")
                 keep = bool(e and e[0] == self._ticks and e[1] == (tx, ty) and e[2])

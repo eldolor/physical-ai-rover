@@ -93,6 +93,10 @@ APPROACH_MOVED_M = 0.5
 # replaced a good approach in about half of 180 ProcTHOR finds (3.213.A), and
 # a good place is seen again far more often than such a false one.
 SUPPORT_M = 0.5
+# 3.213.B review: the sightings support is counted over, newest kept. A
+# ProcTHOR find made at most 192 (3.213.A), so the cap changes no measured row
+# and bounds `_keeps_approach`'s scan on a long mission.
+SIGHTED_MAX = 1000
 # 3.69 B: a turn to face the target that the pivot guard refuses is tried
 # again at half the angle, down to this, before the robot backs off.
 FACE_MIN_TURN_DEG = 10
@@ -417,7 +421,7 @@ class ExploreAgent(MissionAgent):
         self._carried_map = False           # 3.205: the runner carried landmarks on this saved map
         self.resight = False                # 3.70.M3: searching the known map by sight
         self._seen_at: list = []            # 3.192.B: where it saw the target, not yet looked again (3.210)
-        self._sighted: list = []            # 3.213.B: every sighting of the mission, one a tick
+        self._sighted = collections.deque(maxlen=SIGHTED_MAX)   # 3.213.B: sightings read, one a tick
         self._reseen = 0                    # 3.192.B: rounds of looking at them again
         self._left_out: list = []           # 3.210: places a round did not hand up; the next one's first
         self._carried: list = []            # 3.192.B: the recall's carried places (`recall_from`)
@@ -967,6 +971,9 @@ class ExploreAgent(MissionAgent):
         far = lambda p: math.hypot(p[0] - place[0], p[1] - place[1]) > self.retry.radius_m  # noqa: E731
         self._refused_at.append(tuple(place))
         self._seen_at = [p for p in self._seen_at if far(p)]
+        # 3.213.B review: a refused place supports nothing (a sighting near it
+        # must not out-vote a live approach on the refused object's ticks).
+        self._sighted = collections.deque((p for p in self._sighted if far(p)), maxlen=SIGHTED_MAX)
         if self._reseen:
             self.recall = [p for p in self.recall if far(p) or p in self._carried]
         self._last_seen = None
@@ -1096,8 +1103,14 @@ class ExploreAgent(MissionAgent):
     def _keeps_approach(self, tx: float, ty: float) -> bool:
         """3.213.B: whether a live approach goal stays, rather than be replaced
         by a sighting at (tx, ty) -- unless that place has strictly more of
-        the mission's sightings within SUPPORT_M than the live approach's
-        own place. No live approach goal, nothing kept."""
+        the sightings read (`_sighted`) within SUPPORT_M than the live
+        approach's own place. No live approach goal, nothing kept.
+
+        Support counts ticks on which a sighting was read (`_sighting()`, once
+        a tick), not distinct views: a place the robot dwells in sight of
+        gains weight with every tick (both reviews). Measured as built, in the
+        simulator only; its tick rate and noise-free lidar are not the car's
+        (3.213.B known limit)."""
         g = self._goal
         if g is None or g.get("kind") != "approach" or not g.get("target"):
             return False
@@ -2695,7 +2708,7 @@ class ExploreAgent(MissionAgent):
             # never be mistaken for this one's.
             self._sighting_memo = m = (self._ticks, frame, self._scene, self._sighting_now(frame))
             if m[3] is not None:
-                self._sighted.append(m[3])      # 3.213.B: counted once a tick
+                self._sighted.append(m[3])      # 3.213.B: counted once a tick it is read
         return m[3]
 
     def _pan(self) -> float:
