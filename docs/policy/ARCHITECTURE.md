@@ -364,11 +364,12 @@ range-anchored point, not a direction (R1).
 
 ### A model's distance guess is never a safety input
 
-**Decision.** An optional brain-side veto stops a forward when the model says
-the obstacle is within one step, only on a backend with no distance sensor,
-and off by default. It exists to exercise the veto path on photograph-driven
-backends; models disagree on obstacle presence from about 0% to about 100% on
-the same frames, so it must never be copied onto the hardware backend.
+**Decision.** No brain-side veto reads the model's obstacle or distance
+claim. One once stopped a forward when the model said the obstacle was within
+one step, on a backend with no distance sensor and off by default; it was
+deleted in 3.64 (the user, 2026-10-09), because models disagree on obstacle
+presence from about 0% to about 100% on the same frames and the lidar is the
+obstacle sensor. The field is kept as a report and never acted on.
 
 ### Explore's goals are places the robot can drive away from
 
