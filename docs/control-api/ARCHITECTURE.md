@@ -2,7 +2,7 @@
 kind: architecture
 domain: control-api
 status: current
-verified: 2026-11-22
+verified: 2026-10-02
 ---
 
 # Control API (the robot server) -- architecture

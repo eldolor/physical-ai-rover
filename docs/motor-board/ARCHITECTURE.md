@@ -2,7 +2,7 @@
 kind: architecture
 domain: motor-board
 status: current
-verified: 2026-11-22
+verified: 2026-10-02
 ---
 
 # Motor board -- architecture
@@ -229,9 +229,10 @@ their own drivers, and none of them is this domain's. The lidar driver
 backend when configured; a stand-in body supplies the sensors in the
 simulator. A sensor with no driver answers the body contract's defaults on
 the car, and those are not all silent: the distance sensor reads as an
-obstacle at zero range, which refuses every forward move. Where the lidar
-driver lives is decided by the [ros architecture](../ros/ARCHITECTURE.md)
-(D3).
+obstacle at zero range, which refuses every forward move, and a request
+for a camera frame with no camera driver fails rather than answering
+"unusable". Where the lidar driver lives is decided by the
+[ros architecture](../ros/ARCHITECTURE.md) (D3).
 
 ## Contracts
 
