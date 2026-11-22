@@ -2,7 +2,7 @@
 kind: architecture
 domain: mission
 status: current
-verified: 2026-10-02
+verified: 2026-11-22
 ---
 
 # Mission -- architecture
@@ -544,11 +544,12 @@ tools, a tool runner belongs inside the vision function, below the runner.
 
 ## Open questions
 
-- **Boot-time start on the robot (B5).** The units that start the robot
-  server, the brain and the ROS container at boot are not written; the brain's
-  home moved from a Pi to the Jetson on 2026-09-19. Decided by the user on
-  hardware day; settled when a mission starts from a phone after a reboot with
-  no laptop on the network.
+- **Boot-time start on the robot (B5).** On the Jetson, units start the
+  robot server, the brain and the tunnel at boot and restart them on failure
+  (the brain's home moved from a Pi to the Jetson on 2026-09-19); none starts
+  the ROS container yet. Settled when a mission starts from a phone after a
+  reboot with no laptop on the network, on the Rover, decided by the user on
+  hardware day.
 - **The dock on the car (3.156.C, on the Rover).** "Docked" there is
   charging seen on the board, not a pose. A physical dock is an obstacle to
   the safety layer, so the last centimetres may be vetoed; whether the
