@@ -90,8 +90,10 @@ class Truth:
 
 
 def goto(robot, x_m, y_m, timeout_s=240):
-    """A person's nav2 goal (tap-to-goal, no driver: ranked a person)."""
-    r = robot.post("/world/goal", json={"x_m": x_m, "y_m": y_m})
+    """A person's nav2 goal (tap-to-goal: `x-driver: twin-dpad`, ranked a person;
+    a goal naming no driver ranks as `ros` and is refused while the brain holds)."""
+    r = robot.post("/world/goal", json={"x_m": x_m, "y_m": y_m},
+                   headers={"x-driver": "twin-dpad"})
     if r.status_code != 200 or not r.json().get("accepted"):
         return f"refused: {r.status_code} {r.text[:120]}"
     end = time.time() + timeout_s

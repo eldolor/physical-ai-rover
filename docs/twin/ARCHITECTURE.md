@@ -2,7 +2,7 @@
 kind: architecture
 domain: twin
 status: current
-verified: 2026-10-02
+verified: 2026-11-22
 ---
 
 # Web twin -- architecture
@@ -509,8 +509,12 @@ setup.
   one; 3.64's deploy left it unset. Whether the live stack has one is
   unchecked, and operations decides.
 - **The health line re-implements the verdict thresholds** rather than
-  reading a verdict. It agrees with the command today. Whether the
-  servers should publish the verdict itself is open.
+  reading a verdict. It has already drifted from the command
+  (`control/health.py`): the page judges only the watchdog loop and the
+  brain's tick against its bare deadline, where the command also counts a
+  robot with ROS down under the ROS drive (handoff 4e) and gives the tick
+  deadline a second of slack (3.76 N1). Whether the servers should publish
+  the verdict itself is open.
 - **The dock is not drawn on the map.** `3.156-return-to-dock.md` D6
   names the dock "painted on the twin's map"; the page draws no dock
   mark, only the return's words. Whether the map should show it is the

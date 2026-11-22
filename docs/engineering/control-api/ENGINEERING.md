@@ -2,7 +2,7 @@
 kind: engineering
 domain: control-api
 status: current
-verified: 2026-10-04
+verified: 2026-11-22
 parent: docs/control-api/ARCHITECTURE.md
 ---
 
@@ -24,8 +24,10 @@ until the implementation changes.
 | `robot/ros_drive.py` | Under `drive: ros`, the body is a `RosDriveRobot`. The server detects it by `drives_by_velocity`, names each verb's driver with `robot.driving_as(driver)`, and builds `fallback_safety` over `robot.inner`. Its `stop()` returns once the wrapped body has stopped and zeroes the ROS inputs on a background thread, so neither `/stop` nor the watchdog ever waits on the bridge ([body engineering](../body/ENGINEERING.md), "The ROS drive stop") |
 | `web-twin/` | `web-twin/index.html`, `web-twin/app.js`, `web-twin/strings.js`, `web-twin/js/*.js`, the stylesheets (`ui.css`, `twin.css`), `web-twin/manifest.json` and `web-twin/icons/`, served from the same origin (deployed copies come from S3/CloudFront; see [twin](../twin/ENGINEERING.md)) |
 
-Concurrency: route handlers are sync and run on the threadpool; the loops run
-on the event loop. `motion_lock` (a `threading.Lock`) serialises everything
+Concurrency: route handlers are sync and run on the threadpool (except
+`/autonomy/heartbeat` and `/autonomy/mission-closed`, `async` on the event
+loop: nothing in them waits); the watchdog and wheel loops run on the event
+loop, and the battery loop does its read in a thread (`asyncio.to_thread`). `motion_lock` (a `threading.Lock`) serialises everything
 that moves the body. Direct-mode verbs hold it for their whole duration and
 set `state["verb_active"]`. The wheel loop takes it with
 `acquire(blocking=False)` and skips the tick if a verb holds it. `/stop`
@@ -51,11 +53,11 @@ applies: 401 `Missing or invalid x-app-secret header.` when
 |---|---|---|---|
 | `POST /action` | yes | `{"action", "speed": 50, "duration": 0.5, "angle": 90}`, header `x-driver` | `{"executed": true, "result", "driver"}`; refusal `{"executed": false, "reason", "detail"}` (200); 400 on an unknown action. On the ROS fallback `result` gains `"via": "direct-fallback"` |
 | `POST /wheels` | yes | `{"left_rad_s", "right_rad_s"}`, `x-driver` | `{"executed": true, "driver", "applied": {...}, "clamped": reason or null}`. In direct drive a zero is never arbitrated and claims nothing: from the holder it zeroes the wheels, from anyone else it gives `{"executed": true, "ignored": true, ...}`. Under ROS drive only `ros` may post, unarbitrated, and a zero is not special; refusals as above (`not_the_actuator` under ROS drive for any driver but `ros`; `unsupported` on a body without motors)  A non-finite speed (JSON's `NaN`, `Infinity`; also `/action`'s `duration`) is a 422 before the body sees it, its input left out of the reply (3.76 M1: on the car the board was sent NaN and kept its last setpoint). |
-| `POST /stop` | yes | `x-driver` (echoed only) | `{"executed": true, "result", "driver"}`. A person's `POST /action {"action": "STOP"}` is answered by this route too (3.76 K1: through the verb path it latched nothing and ended no goal). Never arbitrated; feeds the watchdog; claims nothing; then, unless the driver is the brain, ends any nav2 goal from a background thread, holding `ros` wheel commands at zero until nav2 reports it over ([safety engineering](../safety/ENGINEERING.md), "Stop ends a nav2 goal") |
+| `POST /stop` | yes | `x-driver` (its rank decides the latch and whether a goal ends; never refused) | `{"executed": true, "result", "driver"}`. A `POST /action {"action": "STOP"}`, from anyone, is answered by this route too (3.76 K1: through the verb path a person's latched nothing and ended no goal, and the brain's could be refused). Never arbitrated; feeds the watchdog; claims nothing; then, unless the driver is the brain, ends any nav2 goal from a background thread, holding `ros` wheel commands at zero until nav2 reports it over ([safety engineering](../safety/ENGINEERING.md), "Stop ends a nav2 goal") |
 | `POST /power/shutdown` | **stricter** (3.170) | `x-driver` (a person's rank only: else 403 `shutdown_not_a_person`) | `{"started", "request"}`: a person's Stop, then 3.137's power-off, once; a repeat answers `started: false`. With no `APP_SHARED_SECRET` it is 403 `shutdown_no_secret` wherever a power-off command is set, and served only on the stub. `request` is `/battery`'s `ladder.request` ([safety engineering](../safety/ENGINEERING.md), "A person's shutdown") |
-| `POST /autonomy/resume` | yes | `x-driver` (logged) | `{"resumed", "driver", "stopped_by", "mission_id"}`: lifts a person's Stop's latch (3.84); sent by the brain only when a mission starts ([safety engineering](../safety/ENGINEERING.md)). `mission_id` (3.171) numbers an autonomy driver's Start, else null |
+| `POST /autonomy/resume` | yes | `x-driver` (logged) | `{"resumed", "driver", "stopped_by", "mission_id"}`: lifts a person's Stop's latch (3.84); sent by the brain only when a mission starts ([safety engineering](../safety/ENGINEERING.md)). `mission_id` (3.171) numbers an autonomy driver's Start, else null. While a person's shutdown runs (3.170) it lifts nothing and answers `resumed: false` |
 | `POST /autonomy/resume {"lift": false}` | yes | `x-driver` | 3.163.B, a schedule's start: lifts no latch. Under one it opens no mission and answers `{"resumed": false, "refused": "person_stop", "stopped_by", "mission_id": null}`, read and decided in one locked step; otherwise as above. `/health` carries `autonomy_latch` (`{by, lapsed}` or null) |
-| `POST /autonomy/mission-closed` | yes | `{"mission_id"}`, `x-driver` | `{"closed", "driver"}`: 3.171, the brain's mission is over: closes that Start's mission, only if still open and this driver's. Reports only ([safety engineering](../safety/ENGINEERING.md)) |
+| `POST /autonomy/mission-closed` | yes (checked on the event loop) | `{"mission_id"}`, `x-driver` | `{"closed", "driver"}`: 3.171, the brain's mission is over: closes that Start's mission, only if still open and this driver's. Reports only ([safety engineering](../safety/ENGINEERING.md)) |
 | `POST /autonomy/heartbeat` | yes (checked on the event loop) | `x-driver`, `x-lease-id` | `{"driver", "lease_s", "lapsed"}`: 3.145, a brain's navigator says it is alive; a nav2 goal it sends holds a lease that lapses `watchdog_timeout_s` after the last beat. Not arbitrated, moves nothing. `lapsed` tells a thawed brain its goal was ended |
 | `DELETE /autonomy/heartbeat` | yes (event loop) | `x-driver`, `x-lease-id` | `{"driver", "released"}`: 3.145, the navigator closed: no more beats, and a lease it holds is released (the goal is ended, no latch, no lapse counted) |
 | `POST /autonomy/relatch` | yes | `{"by"}`, `x-driver` (logged) | `{"latched", "driver"}`: puts back a latch `resume` lifted for a start that was then refused (3.76 K2). Only latches; a latch set since is kept |
@@ -80,10 +82,10 @@ Actions: `FORWARD`, `REVERSE`, `LEFT`, `RIGHT`, `STOP`, `LOOK_LEFT`,
 | Route | Returns |
 |---|---|
 | `GET /world/pose`, `GET /world/map` | pass-through of `get_pose()` / `get_map()` |
-| `POST /sim/house/random` | 3.72: the plain in-process sim only -- puts the robot in a random one of the first `RANDOM_HOUSES` (100) usable ProcTHOR houses, in place (`MockRobot.load_house`, `MockWorld.load_house`: motors stopped, odometry zeroed, map unknown again); returns `sim_map`, `previous`. 409 `not_sim` under any other backend, 409 `driving` while a driver holds the robot or a verb runs; never a caller-supplied name. The one reset route, and narrow on purpose |
+| `POST /sim/house/random` | 3.72: the plain in-process sim only -- puts the robot in a random one of the first `RANDOM_HOUSES` (100) usable ProcTHOR houses, in place (`MockRobot.load_house`, `MockWorld.load_house`: motors stopped, odometry zeroed, map unknown again); returns `sim_map`, `previous`. 409 `not_sim` under any other backend, 409 `driving` while a driver holds the robot or a verb runs, 409 `mission` for `MISSION_QUIET_S` (30 s) after the brain or nav2 last drove; never a caller-supplied name. The one reset route, and narrow on purpose |
 | `GET /world/truth` | pass-through; `usable: false` off the sim. No decision may read it |
 | `GET /world/error` | `{"usable", "source", "position_error_m", "heading_error_deg", "odom_position_error_m", "odom_heading_error_deg", "truth"}` |
-| `POST /world/goal` | `{"x_m", "y_m"}` -> the world's `set_goal()`, or `{"accepted": false, "executed": false, "reason": "preempted", ...}`. Arbitrated as driver `ros`  A non-finite coordinate is a 422 (3.76 M1). |
+| `POST /world/goal` | `{"x_m", "y_m"}`, headers `x-driver` and `x-lease-id` -> the world's `set_goal()`, or `{"accepted": false, "executed": false, "reason": "preempted", ...}`. Arbitrated as driver `ros`, or as the person its `x-driver` names (handoff 3b). A brain navigator's accepted goal gains `leased` (3.145; [safety engineering](../safety/ENGINEERING.md)). A non-finite coordinate is a 422 (3.76 M1). |
 | `GET` / `DELETE /world/goal` | `get_goal()` / `cancel_goal()` |
 | `POST /world/remap` | 3.50.D4: a person's "re-map now" (`RosWorld.remap()` -> the bridge's `POST /slam/remap`, its `x-driver` passed as `by`). Not arbitrated: nothing moves. The bridge's reply when it starts; **409** with the bridge's reason unless it is localising on a reloaded map; **501** on a world without SLAM; **503** `ros_unavailable` as `GET /world/goal`. |
 | `DELETE /world/keepout` | 3.76 K5.3: empties the server's `SpotBook` and, when it held a live spot, sends the bridge an empty set. `{"cleared": n, "sent": bool, "detail"?}`; `{"cleared": 0, "sent": false}` with nothing marked or on a world with no keepout. The brain calls it at every mission end, after its own goal |
@@ -111,7 +113,10 @@ Goal routes answer **501** on a world without `set_goal` (anything but
 `wheel_loop` (`moving_ticks`, `late_ticks`, `max_dt_s`, `period_s`),
 `motor_board` (the body's `feedback_status()`, or null for a body without
 a board: `fresh`, `age_s`, `stale_after_s`, `frames`, `board_reboots`,
-`stale_zeroed`, `fork_firmware`, `link_error`; 3.34), `min_distance_cm`, `mode`, `sim_map`, `identity`,
+`stale_zeroed`, `frames_dropped`, `last_drop`, `fork_firmware`, `track_scrub`, `link_error`; 3.34),
+`goal_lease` (`owner`, `lapses`, `last_lapse`, `lease_s`; 3.145), `lidar` and `camera` (the body's
+`lidar_status()` / `camera_status()`, or null; 3.42, 3.90 A), `battery` (`/battery`'s `ladder` block; 3.137),
+`autonomy_latch`, `nogo`, `min_distance_cm`, `mode`, `sim_map`, `identity`,
 `seconds_since_watchdog_poll`, `watchdog_poll_interval_s`, `driver`,
 `authority_holder`, `refusal_counts`, `last_refusal` (with `seconds_ago`),
 `last_stop_reason` and `watchdog` (3.164; [safety engineering](../safety/ENGINEERING.md)),
@@ -135,8 +140,9 @@ description.
 
 | Loop | Period | Each period |
 |---|---|---|
-| `watchdog_loop` | `WATCHDOG_POLL_INTERVAL_S` | Stamp `watchdog_polled_at`; skip while `verb_active`; if `now - last_command_at > watchdog_timeout_s`, call `robot.stop()` and record a `watchdog` refusal once per silence |
-| `wheel_loop` | `WHEEL_LOOP_INTERVAL_S` | If the lock is free and the wheels are usable: zero command -> `pass_time(dt)` (sim movers); otherwise count the tick (late past twice the period), `vet_wheel_velocity()`, apply the vetted speeds if they differ, record a `safety_distance` refusal once per command, then `advance(dt)` |
+| `watchdog_loop` | `WATCHDOG_POLL_INTERVAL_S` | Stamp `watchdog_polled_at`; unless this wake came more than three periods late (skipped once, never twice running), end a lapsed or released goal lease (`lease_lapsed()`, 3.145) and record a hung brain (`note_hang()`, 3.164); then skip while `verb_active`; if `now - last_command_at > watchdog_timeout_s`, call `robot.stop()` and record a `watchdog` refusal once per silence |
+| `wheel_loop` | `WHEEL_LOOP_INTERVAL_S` | If the lock is free and the wheels are usable: zero command -> `pass_time(dt)` (sim movers); otherwise count the tick (late past twice the period), `vet_wheel_velocity()`, apply the vetted speeds if they differ (never over a `/stop` that landed meanwhile: `stop_count`, 3.76 A2), record a `safety_distance` refusal once per command, then `advance(dt)`. An exception is logged and the loop goes on |
+| `battery_loop` | `BATTERY_POLL_S` | 3.137: `battery_poll(force=True)` in a thread: read the pack, feed `BatteryLadder.observe()`, act on what it answers ([safety engineering](../safety/ENGINEERING.md), "The battery ladder"). While it runs, the moving routes do not poll |
 
 The periods and the late-tick rule are safety parameters, listed in
 [safety engineering](../safety/ENGINEERING.md).
@@ -228,10 +234,13 @@ twin; it reads `APP_SHARED_SECRET` from `~/.vision-picar-local-secrets`
 **Under ROS drive:** `ROBOT_DRIVE=ros uvicorn robot.server:app --port 8000`
 with the container running (`service/slam/README.md`). `/health`'s
 `drive.ros_up` turns true at the actuator's first `/wheels` post. Another
-session may already own ports 8000/8090; use 8100/8101/8190 with a separate
-`ROS_DOMAIN_ID`.
+session may already own ports 8000/8090; take your own ports, ROS domain and
+container from `eval "$(python tools/plan_section.py env)"`
+(`docs/guides/PARALLEL-SESSIONS.md`).
 
-**Reset the robot:** restart the server. There is no reset route.
+**Reset the robot:** restart the server. There is no reset route on any
+body but the plain in-process simulator, whose `POST /sim/house/random`
+(above) puts it in another house.
 
 **Failure signatures:**
 
@@ -247,7 +256,7 @@ session may already own ports 8000/8090; use 8100/8101/8190 with a separate
 | FORWARD vetoed everywhere under the fake board, the scan `usable: false` | The sensor programs' safety bundle is older than `SENSOR_STALE_S` (0.15 s): the first program in `SIM_SENSORS_URL` is dead or overloaded. Fail-safe by design (3.36) |
 | `/health` `sim_map` null where a live suite expects a house | No sim house behind the body. The live ROS suites skip on it; a skip is not a pass |
 | `seconds_since_watchdog_poll` growing | The watchdog task is dead; restart the server |
-| `wheel_loop.late_ticks` > 0 | The event loop was starved while the wheels turned. A sync route's plain return value is encoded (`jsonable_encoder`) on the event loop, so a large reply returns a `JSONResponse` built in the route (3.87: `/world/map`, 131-218 ms a fetch on the Jetson before) |
+| `wheel_loop.late_ticks` > 0 | The event loop was starved while the wheels turned. A sync route's plain return value is encoded (`jsonable_encoder`) on the event loop, so a large reply returns a response built in the route (3.87: `/world/map`, 131-218 ms a fetch on the Jetson before; its body is now `map_json()`, the same bytes encoded in slices, and since 3.123 an unchanged map is a 304 on its ETag) |
 | `/action` or `/wheels` refused `no_feedback`; `motor_board.fresh` false | The motor board has not reported for `stale_after_s`. `link_error` set: the serial line is gone. Null, with `age_s` growing: the board hears commands and no longer reports. Nothing moves until frames return |
 
 ## Verification
@@ -278,10 +287,15 @@ path to this server except `/brain`, `/brain/...`, `/vision` and
 
 ## Known gaps
 
-- **CORS omits `DELETE`**, so a cross-origin browser cannot cancel a goal
-  with `DELETE /world/goal`. The twin does not call it today.
-- **No reset route**, deliberately; a test needing a fresh robot builds a
-  fresh app.
-- **Unnamed and teleop drivers under ROS drive** are refused; the gap is
-  recorded once, in [safety engineering](../safety/ENGINEERING.md), Known
-  gaps.
+- **CORS omits `DELETE` and `PUT`**, so a cross-origin browser cannot cancel
+  a goal with `DELETE /world/goal`, nor call `DELETE /world/keepout`,
+  `DELETE /autonomy/heartbeat` or `PUT /world/nogo`. The twin calls none of
+  them on this server today; the brain does, server to server, where CORS
+  does not apply.
+- **No reset route**, deliberately, but for the sim-only
+  `POST /sim/house/random` (3.72, narrow on purpose); a test needing a fresh
+  robot builds a fresh app.
+- **Unnamed and teleop drivers under ROS drive** were refused until
+  2026-10-05; each now drives on its rank's ROS input (`ros_input_for()`).
+  The closed gap is recorded once, in
+  [safety engineering](../safety/ENGINEERING.md), Known gaps.

@@ -2,7 +2,7 @@
 kind: architecture
 domain: safety
 status: current
-verified: 2026-10-02
+verified: 2026-11-22
 ---
 
 # Safety -- architecture
@@ -85,7 +85,7 @@ because this layer must keep working when ROS hangs
 
 The layer never takes a distance from a policy. Model-reported obstacle
 fields disagree from about 0% to about 100% across models on the same frames
-(CLAUDE.md section 5, Stage 0), so on the car the range sensors decide.
+(CLAUDE.md section 3c), so on the car the range sensors decide.
 
 ### What the sensor could not see is neither clear nor blocked
 

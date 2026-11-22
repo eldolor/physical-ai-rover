@@ -23,7 +23,7 @@ changes it.
 | `robot/server.py`, inside `create_app()` | `authority_holder()`, `arbitrate()`, `refuse()`, `goal_in_progress()`, `ros_up()`, `watchdog_loop()`, `wheel_loop()`, and the `motion_lock` that serialises everything that moves the robot. Under ROS drive, a second `SafetyController` (`fallback_safety`) runs over the wrapped body |
 | `robot/battery_ladder.py` | 3.137: `BatteryLadder`, the battery ladder's rules (pure, no I/O): two distinct samples per level, the read at rest, Reserve's timer |
 | `robot/server.py`, inside `create_app()`, 3.137 | `battery_poll()`, `enter_reserve()`, `battery_refusal()`, `power_off()`, `battery_loop()`; `battery_settings()` at module level |
-| `control/remote_robot.py` | Maps refusal reasons to `Preempted` / `StoppedByPerson` / `BatteryReserve` / `RobotTransportError` / `SafetyViolation` |
+| `control/remote_robot.py` | Maps refusal reasons to `Preempted` / `StoppedByPerson` / `AutonomyLapsed` / `BatteryReserve` / `RobotTransportError` / `SafetyViolation` |
 | `brain/agent.py` | The brain's own `SafetyController` (an early out; the server's is authoritative). Its `min_distance_cm` comes from the `brain:` block |
 | `tests/footprint_sweep.py`, `tests/verb_sweep.py`, `tests/ros_verb_sweep.py` | Ground-truth instruments: the URDF rectangle against the house's occupied cells, sharing no geometry code with `robot/safety.py` |
 
@@ -46,7 +46,7 @@ within range, never "unknown".
 
 | Method | Sources | Meaning |
 |---|---|---|
-| `path_clearance()` | `depth_grid_facing_away`, `depth_grid`, `depth_grid_no_target`, `scan_path`, `scan_path_no_target`, `distance_sensor` | The cone, tried in that order. A panned grid with no path zones left is no opinion (`None`); otherwise the nearest `ZONE_RANGE` in the path zones; otherwise, if any path zone answered, no target; otherwise, with a usable scan, its beams within `PATH_HALF_ANGLE_DEG` of ahead minus `LIDAR_TO_FRONT_BUMPER_CM` (3.42: without it a lidar-only car fell to the scalar's 0.0 and could never drive forward); otherwise the scalar `get_distance()`. Unusable zones are dropped. All values are bumper-relative (`sensor_to_bumper_cm` subtracted, floored at 0) |
+| `path_clearance()` | `depth_grid_facing_away`, `depth_grid`, `depth_grid_no_target`, `scan_path`, `scan_path_no_target`, `distance_sensor` | The cone, tried in that order. A panned grid with no path zones left is no opinion (`None`); otherwise the nearest `ZONE_RANGE` in the path zones; otherwise, if any path zone answered, no target; otherwise, with a usable scan, its beams within `PATH_HALF_ANGLE_DEG` of ahead minus `LIDAR_TO_FRONT_BUMPER_CM` (3.42: without it a lidar-only car fell to the scalar's 0.0 and could never drive forward); otherwise the scalar `get_distance()`. Unusable zones are dropped. All values are bumper-relative (the grid's and the scalar's with `sensor_to_bumper_cm` subtracted, the scan's with the lidar's own offset; floored at 0) |
 | `footprint_clearance(+1 / -1)` | `scan_footprint`, `scan_footprint_no_target`, `no_scan` | Returns in the body frame within half-width + 3 cm of the centre-line and beyond the leading edge: distance past the edge. A return inside the outline reads 0.0 |
 | `rear_clearance()` | `scan_rear`, `scan_rear_no_target`, `no_rear_sensor` | Beams within `PATH_HALF_ANGLE_DEG` of astern, minus `LIDAR_TO_REAR_BUMPER_CM` |
 | `floor_clearance(grid)` | `floor_band`, `floor_band_no_target`, `floor_band_unusable`, `no_floor_band` | 3.74. The depth grid's `floor` block (the depth camera's floor band: body-fixed, `origin_x_cm` ahead of `base_link`, `fov_deg`, `min_range_cm`, zones of `{status, distance_cm, bearing_deg?}`; fields in `RobotInterface.get_depth_grid()`). Each `ZONE_RANGE` zone is a point in the body frame -- range from the origin along the zone's `bearing_deg` (null or absent: its centre) -- judged by `_corridor_room()`, the one corridor rule the scan's `footprint_clearance()` uses too: ahead of the front edge within half-width + 3 cm, the room past the edge; beside the body only within the half-width (0.0). Inside the band's minimum range nothing is seen or carried (Known gaps). Unusable zones never compared. `no_floor_band` for a grid without the block or with no usable `fov_deg` (every real body today). `floor_band_unusable` (3.76 K1) when no zone could be read (blind is not clear) or the band itself cannot be: a field that does not parse, or zones that disagree with its `cols`; a malformed zone is skipped as unusable, never raised out of the check (a raise made every FORWARD a 400 and skipped the wheel loop's re-vet) |
@@ -83,7 +83,7 @@ clamps at `<= need` and otherwise limits speed to `(clearance - need) /
 `CREEP_MARGIN_CM` (3 cm) when `creep` and `|v| <= CREEP_M_S` (0.03 m/s),
 else `max(min_distance_cm, stop_distance_cm(v))` with
 `stop_distance_cm(v) = 3 + 100 (|v| x 0.15 + v^2 / (2 x 0.5))` cm -- 20 cm
-up to about 0.39 m/s, 25 at 0.4, 35.5 at 0.5, 48 at 0.6. `v` unknown
+up to about 0.34 m/s, 25 at 0.4, 35.5 at 0.5, 48 at 0.6. `v` unknown
 (None): `min_distance_cm`. `creep` is true only while a straight verb
 ASKED at creep speed runs: `check_and_execute()` sets `_asked_v_m_s` and
 `_creep_asked` through `_asking()` for the verb's whole run and clears them
@@ -114,7 +114,7 @@ and sampled at the poll; unusable wheel state counts as turning.
 | Low, `low_v` 10.5 | Two distinct samples under it; not latched | Reports it (`/battery` `level`); the brain refuses a start (`battery_low`) and its own `battery_floor_v` ends a mission | none here |
 | Reserve, `reserve_v` 10.2 | Two distinct samples under it, at rest (else CHECK); latched | `enter_reserve()`: lapses an autonomous claim, counts a goal end (the Stop's goal-ending loop and hold, no person's latch), `robot.stop()`. Autonomy refused; a person's verb has its `speed` capped at `reserve_speed` (30), a person's `/wheels` scaled by it; no goal from anyone; `ros` wheel posts zeroed under `drive: direct` (under `drive: ros` they carry the person's verbs) | `battery_reserve` (autonomy only) |
 | Power-off, `poweroff_v` 10.0, or Reserve held `reserve_max_s` (120 s) | As Reserve; latched | Everything Reserve does, then `power_off()` on its own thread, once: the wheels at rest (up to 2 s), each `shutdown_steps` command in order (60 s each), `os.sync()`, `poweroff_cmd`. Every step is recorded (`/battery` `ladder.shutdown`) | `battery_poweroff` (everyone; `/stop` still answers) |
-| CHECK (a crossing read with the wheels turning) | -- | `robot.stop()`; autonomy held, and under `drive: ros` every `ros` wheel post zeroed (nav2's goal held still, not ended), until the next distinct sample: over every level clears it (a sag), under one and at rest fires the highest level the last two distinct samples are both under (one glitch at rest is not two); `check_max_s` (15 s) without a sample at rest fires if the last two are still under | `battery_check` (autonomy only, and never a camera pan; the brain reads it as a veto it does not count toward `stuck_after`) |
+| CHECK (a crossing read with the wheels turning) | -- | `robot.stop()`; autonomy held, and under `drive: ros` every `ros` wheel post zeroed (nav2's goal held still, not ended) except while a person's body verb runs (`ros_battery_hold()`), until the next distinct sample: over every level clears it (a sag), under one and at rest fires the highest level the last two distinct samples are both under (one glitch at rest is not two); `check_max_s` (15 s) without a sample at rest fires if the last two are still under | `battery_check` (autonomy only, and never a camera pan; the brain reads it as a veto it does not count toward `stuck_after`) |
 
 **A person's shutdown (3.170).** `POST /power/shutdown` sets `batt["requested"]`,
 calls `stop()` under the person's name, then starts the same `power_off()`; a lock
@@ -206,13 +206,13 @@ Allowed `/action` and non-zero direct `/wheels` set `driver`, `driver_at`
 and `last_command_at` as soon as `arbitrate()` passes, before the command
 runs. The claim stands even if the command is then refused or fails:
 `ros_unavailable`, `safety_distance`, `no_feedback`, a 400 for an unknown
-action, or `unsupported` from `/wheels` on a body without motors. `/stop` sets only `last_command_at`. A zero direct
+action, or `unsupported` from `/wheels` on a body without motors. `/stop` sets only `last_command_at` of the three; a person's also lapses the brain's claim at once unless a verb is running (3.76 K1). A zero direct
 `/wheels` is never arbitrated and sets none of the three: from the holder
 it zeroes the wheels, from anyone else it returns `ignored: true` (direct
 drive only). Under ROS drive, `/wheels` is accepted only from `ros`, is not
 arbitrated, and sets `last_command_at` and `last_ros_post_at`, never
-authority. `POST /world/goal` arbitrates as `ros` and does not feed the
-watchdog.
+authority. `POST /world/goal` arbitrates as `ros`, or as the person its
+`x-driver` names (handoff 3b, Known gaps), and does not feed the watchdog.
 
 **A person's move ends a nav2 goal too** (3.97, the user 2026-10-24:
 one rule under every drive). `do_action` calls `begin_goal_end()` for a
@@ -230,11 +230,12 @@ Under `drive: ros` the bridge's cancel on a `twin-dpad` twist (3.15) is
 kept; the two cancels are harmless together.
 
 **Stop ends a nav2 goal** (handoff 2026-10-02 1b; completed after
-`docs-review/SPEC-REVIEW-3.md` V1-V2). After `robot.stop()` returns,
-`POST /stop` -- unless its `x-driver` is autonomous and not `ros` (the
-brain), which spares the goal -- bumps `goal_stop["gen"]`, sets
-`goal_stop["hold"]`, and starts a daemon thread `_end_goal_after_stop(gen)`
-(`stop-end-goal`) when the world has `cancel_goal` (`RosWorld`). Every
+`docs-review/SPEC-REVIEW-3.md` V1-V2). `POST /stop` -- unless its
+`x-driver` is autonomous and not `ros` (the brain), which spares the goal
+-- bumps `goal_stop["gen"]` and sets `goal_stop["hold"]` before
+`robot.stop()` (3.76 K1, below), and after it starts a daemon thread
+`_end_goal_after_stop(gen)` (`stop-end-goal`), when the world has
+`cancel_goal` (`RosWorld`). Every
 `GOAL_STOP_POLL_S` the thread, under `goal_stop_lock` (held across the
 bridge calls), reads
 `world_model.get_goal()` and re-sends `cancel_goal()` (`DELETE /goal`)
@@ -260,7 +261,7 @@ a refused goal (bridge unreachable, its 409, nav2 down, `accepted: false`)
 never existed, so the stop's loop keeps ending the goal it was for and
 keeps its hold; and a stop that landed while `set_goal()` was in flight owns the
 newer generation, so its loop, waiting on `goal_stop_lock`, ends the goal
-just taken. `goal_stop`'s two fields have their own lock,
+just taken. `goal_stop` has its own lock,
 `goal_gen_lock`, never held across a bridge call; `/stop` takes only that
 one, so it answers at once while the bridge hangs (3.76 A8). The loop
 clears the hold only if its generation is still current (and then sets
@@ -277,8 +278,8 @@ neither counts nor re-holds), the hold is set again if a stop's
 loop is still ending a goal and is the current one (`ending == gen`; an
 accepted goal clears `ending`), so nav2's `ros` commands for the stopped goal
 stay at zero after a person's move; the loop keeps cancelling and lifts it
-when it settles. The `/action` STOP verb and the watchdog do none of this; they
-call `robot.stop()`.
+when it settles. The watchdog does none of this; it calls `robot.stop()`.
+(An `/action` STOP is answered by `/stop` itself since 3.76 K1, below.)
 
 **A person's Stop is the last word over autonomy** (3.84, decided with the
 user 2026-10-15). A `POST /stop` whose driver ranks as a person
@@ -330,7 +331,7 @@ any `/stop`, `DELETE /world/goal`, a person's verbs and goals, unnamed
 goals (ranked `ros`, today's behaviour), and `ros`'s `/wheels` (the hold
 governs those). `brain`, `teleop` and `ros` stops set nothing. Only
 `POST /autonomy/resume` clears it, which the brain sends when a mission
-starts (`RemoteRobot.resume_autonomy()`, first in `start_mission`): a
+starts (`RemoteRobot.resume_autonomy()`, in the brain's start route once the start is not refused, before the mission is built): a
 person's next verb or goal does not, so a mission the person stopped can
 never drive again. A start refused after the lift (400, 403, 409, any
 error) began no mission, so the brain puts the latch back with
@@ -390,7 +391,8 @@ the fallback is the only writer. `/health` publishes `drive.bridge_up` and
 `drive.ros_post_age_s` beside `drive.ros_up`.
 
 **The watchdog** (`watchdog_loop()`): every `WATCHDOG_POLL_INTERVAL_S` it
-skips while `verb_active`, else calls `robot.stop()` once
+judges the goal lease and a hung brain (above and below; a running verb
+does not skip those), then skips while `verb_active`, else calls `robot.stop()` once
 `now - last_command_at > watchdog_timeout_s`. Detection is therefore the
 timeout plus up to one poll (1.1 s today). Under ROS drive the actuator's
 20 Hz posts feed it, so it fires only when the actuator itself goes silent;
@@ -406,8 +408,12 @@ counted in `/health` `refusal_counts`, last one in `last_refusal`):
 `safety_distance`, `preempted`, `ros_unavailable`, `not_the_actuator`,
 `unsupported`, `no_feedback` (3.34: the body's wheel feedback is stale, so
 it refuses to move them; from driver `ros` on `/wheels` it is answered
-unlogged, as `ros_unavailable` is), and `watchdog` (recorded in
-`last_refusal` only, once per silence).
+unlogged, as `ros_unavailable` is), `person_stop`, `autonomy_lapsed` and
+`stopped` (a command a stop overtook), the battery ladder's
+`battery_reserve`, `battery_poweroff`, `battery_check` and `shutting_down`
+(each in its section above), and `watchdog` (recorded in `last_refusal`
+only, once per silence). A goal's `no_go_zone` is answered without being
+recorded or counted.
 
 **The watchdog's record beside the reason (3.164).** `last_refusal` is
 replaced by the watchdog's record about a second after whatever stopped the
@@ -629,7 +635,7 @@ order; record the table in the plan entry.
   against everything but its own kind, so a wrong edge (drift, one noisy
   frame) blocks that way until its cell is pruned; an edge remembered
   beyond a wall still shortens a move toward the wall; the turn looks
-  0.1 s ahead, so a wheel-loop tick that is very late (3.153's 0.95 s)
+  0.1 s ahead, so a wheel-loop tick that is very late (3.152's 0.95 s inside a memory squeeze, carried into 3.153)
   can turn past its look; the corridor search reads every line out to
   60 cm each tick (no early end), unmeasured on the board.
 
@@ -679,7 +685,7 @@ order; record the table in the plan entry.
   is refused `ros_unavailable`. That window is inside G3's 2 s bar. The
   bridge-failure rule (built 2026-10-02) shortens it: the first failed send
   marks ROS down, so only that one verb is refused.
-- **`DECEL_M_S2` is a placeholder** (3.44). Above about 0.39 m/s the bar
+- **`DECEL_M_S2` is a placeholder** (3.44). Above about 0.34 m/s the bar
   is set by it, unmeasured; raising nav2's speed also waits on 3.42's
   relayed-scan time stamp (6.9).
 - **A creep verb plans a whole 30 cm cell**, as every verb does

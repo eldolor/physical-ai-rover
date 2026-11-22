@@ -58,7 +58,7 @@ measured through the same pipeline the robot runs.
       -> the tiered policy, which owns the thresholds
     not there (not installed, loading, killed) -> the cloud is asked instead
 
-  object inventory (3.46, recorded and reported only):
+  object inventory (3.46; reported, and carried to later missions on a saved map):
     every frame's detections + the lidar + the map pose
       -> placed observations -> landmarks with a belief and a class vote
       -> the mission's report (local file, private bucket)
@@ -79,7 +79,7 @@ measured through the same pipeline the robot runs.
 | Frame-reported pipeline | the sim's stand-in, read from frame data | compute anything; claim a model ran |
 | Local VLM service (3.80) | one resident vision-language model on the board, answering one question at a time about one frame with a raw score | decide what its score means (the policy's thresholds do); drive, steer or veto; be needed for a mission to start or to continue; hold memory the robot stack needs (it is the first process killed) |
 | Local VLM client (in the brain) | asking the service, and telling *unable* (it answered, but not usefully) from *absent* (nothing there to answer) | turn a hang into absence, or absence into a "no" |
-| Object inventory | every object a mission saw: placed by the lidar, fused into landmarks, weighted by independent looks | be read by any policy; place an object without a range; store an image |
+| Object inventory | every object a mission saw: placed by the lidar, fused into landmarks, weighted by independent looks | be read by a policy within the mission that built it (a later mission's recall reads what was saved); place an object without a range; store an image |
 | Lab backends | candidates on equal footing (open-vocabulary detectors, a small VLM, SAM) | be imported by the shipped pipeline |
 | Corpus scorer, target probe, latency bench | measurement | feed the robot; the recordings domain owns the corpus itself |
 
@@ -123,7 +123,8 @@ and since 2026-10-02 for arrival as well. On the tiered path the arrival
 rule ([policy](../policy/ARCHITECTURE.md)) judges distance from a local
 detection centred at close lidar range; before that ends a mission `found`,
 one paid cloud call on the arrival frame must agree the target is in it
-(decided by the user 2026-10-02, built the same day). Until then a verifier
+(decided by the user 2026-10-02, built the same day); since 3.80 the local
+VLM is asked first and the cloud only when it cannot answer (below). Until then a verifier
 false positive that kept passing the gate could end a mission at the wrong
 object. Corroboration (below) still measures the local tier's agreement and
 is not enforced. The rule, its rejected
@@ -255,15 +256,17 @@ without committing. **Rejected also, on 2026-10-02, as the guard on a wrong
 net-negative and unproven; the user chose a cloud identity check at arrival
 instead ([policy](../policy/ARCHITECTURE.md)).
 
-### Every object seen is kept, and nothing acts on it (3.46)
+### Every object seen is kept (3.46)
 
 A search walks most of a house and used to remember only its target. The
 inventory keeps the rest so a person can ask what the robot saw, and so a
-later search could start where a thing was last seen (not built: it needs
-a map that survives a restart, open question 6 of the ROS plan). It is
-**recorded and reported only**: no policy is handed it, and a test pins
-that a mission is move-for-move identical with it on and off. Three
-choices carry it:
+later search can start where a thing was last seen: a mission on a saved
+map starts from the last inventory saved on it (3.50.D5), and a find goes
+first to the places earlier missions on that map saw its target (3.172.C,
+owned by the [policy](../policy/ARCHITECTURE.md)). A mission's own
+inventory is **recorded and reported only**: no policy is handed it, and a
+test pins that a search is move-for-move identical with it on and off.
+Three choices carry it:
 
 - **The detector points, the lidar measures** -- the rule the target has
   followed since R1. A detection without a lidar range is never placed; a
@@ -343,7 +346,7 @@ the tiered policy used to send to the cloud goes to the local VLM first:
 - A question the local VLM was **unable** to answer: a score between its
   yes and its no, a reply that could not be read, its deadline passed, or
   it was busy with another question. After a small fixed number of unable
-  answers in a row the cloud is asked.
+  answers in one arrival the cloud is asked.
 - Every question while the local VLM is **absent** (below).
 - A local "no" given where the model cannot tell (the candidate too small
   or too large in the frame, 3.91.C): the cloud is asked once.
@@ -455,8 +458,8 @@ of them measure.
   Rover's camera differs from the one the field of view was set for.
 - **The inventory on the car.** Real frames carry no detections of
   anything but the target until an on-board detector that names
-  everything exists (3.46 C, not built), so today the inventory fills only
-  in the simulator.
+  everything exists (3.46 C was closed on 2026-10-10 after every namer tried
+  failed its bar), so today the inventory fills only in the simulator.
 - **Should a tied class vote be reported?** Since one miss is forgiven
   (3.46 amendment 2, recall up), a landmark whose labels tie can be
   reported under the wrong one; 3.46 records one such case. Unchanged
