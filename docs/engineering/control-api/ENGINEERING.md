@@ -19,10 +19,10 @@ until the implementation changes.
 
 | Where | What |
 |---|---|
-| `robot/server.py` | `create_app(config_path=None)` builds one FastAPI app with its own body (`robot.factory.get_robot`), world (`world.factory.get_world`), `SafetyController`, state dict and two asyncio tasks (`watchdog_loop`, `wheel_loop`) started in the lifespan. The module-level `app = create_app(os.environ.get("ROBOT_CONFIG_PATH"))` is what `uvicorn robot.server:app` serves |
+| `robot/server.py` | `create_app(config_path=None)` builds one FastAPI app with its own body (`robot.factory.get_robot`), world (`world.factory.get_world`), `SafetyController`, state dict and three asyncio tasks (`watchdog_loop`, `wheel_loop`, `battery_loop`) started in the lifespan. The module-level `app = create_app(os.environ.get("ROBOT_CONFIG_PATH"))` is what `uvicorn robot.server:app` serves |
 | `robot/identity.py` | `log_identity()` logs one warning-level line at start-up (`<service> starting -- git=... executable=... config=...`) and returns the dict `/health` serves as `identity`. Revision from `GIT_REVISION`, else `git rev-parse --short HEAD`, else `unknown` |
 | `robot/ros_drive.py` | Under `drive: ros`, the body is a `RosDriveRobot`. The server detects it by `drives_by_velocity`, names each verb's driver with `robot.driving_as(driver)`, and builds `fallback_safety` over `robot.inner`. Its `stop()` returns once the wrapped body has stopped and zeroes the ROS inputs on a background thread, so neither `/stop` nor the watchdog ever waits on the bridge ([body engineering](../body/ENGINEERING.md), "The ROS drive stop") |
-| `web-twin/` | `web-twin/index.html`, `web-twin/app.js`, `web-twin/manifest.json` and `web-twin/icons/`, served from the same origin (deployed copies come from S3/CloudFront; see [twin](../twin/ENGINEERING.md)) |
+| `web-twin/` | `web-twin/index.html`, `web-twin/app.js`, `web-twin/strings.js`, `web-twin/js/*.js`, the stylesheets (`ui.css`, `twin.css`), `web-twin/manifest.json` and `web-twin/icons/`, served from the same origin (deployed copies come from S3/CloudFront; see [twin](../twin/ENGINEERING.md)) |
 
 Concurrency: route handlers are sync and run on the threadpool; the loops run
 on the event loop. `motion_lock` (a `threading.Lock`) serialises everything
@@ -56,6 +56,8 @@ applies: 401 `Missing or invalid x-app-secret header.` when
 | `POST /autonomy/resume` | yes | `x-driver` (logged) | `{"resumed", "driver", "stopped_by", "mission_id"}`: lifts a person's Stop's latch (3.84); sent by the brain only when a mission starts ([safety engineering](../safety/ENGINEERING.md)). `mission_id` (3.171) numbers an autonomy driver's Start, else null |
 | `POST /autonomy/resume {"lift": false}` | yes | `x-driver` | 3.163.B, a schedule's start: lifts no latch. Under one it opens no mission and answers `{"resumed": false, "refused": "person_stop", "stopped_by", "mission_id": null}`, read and decided in one locked step; otherwise as above. `/health` carries `autonomy_latch` (`{by, lapsed}` or null) |
 | `POST /autonomy/mission-closed` | yes | `{"mission_id"}`, `x-driver` | `{"closed", "driver"}`: 3.171, the brain's mission is over: closes that Start's mission, only if still open and this driver's. Reports only ([safety engineering](../safety/ENGINEERING.md)) |
+| `POST /autonomy/heartbeat` | yes (checked on the event loop) | `x-driver`, `x-lease-id` | `{"driver", "lease_s", "lapsed"}`: 3.145, a brain's navigator says it is alive; a nav2 goal it sends holds a lease that lapses `watchdog_timeout_s` after the last beat. Not arbitrated, moves nothing. `lapsed` tells a thawed brain its goal was ended |
+| `DELETE /autonomy/heartbeat` | yes (event loop) | `x-driver`, `x-lease-id` | `{"driver", "released"}`: 3.145, the navigator closed: no more beats, and a lease it holds is released (the goal is ended, no latch, no lapse counted) |
 | `POST /autonomy/relatch` | yes | `{"by"}`, `x-driver` (logged) | `{"latched", "driver"}`: puts back a latch `resume` lifted for a start that was then refused (3.76 K2). Only latches; a latch set since is kept |
 
 Actions: `FORWARD`, `REVERSE`, `LEFT`, `RIGHT`, `STOP`, `LOOK_LEFT`,
@@ -71,7 +73,7 @@ Actions: `FORWARD`, `REVERSE`, `LEFT`, `RIGHT`, `STOP`, `LOOK_LEFT`,
 | `/odometry` | `{"usable", "distance_m", "heading_deg"}` |
 | `/wheels` | the wheel state (read by `picar_sim_hardware`) |
 | `/battery` | `{"usable", "v", "level", "ladder"}` -- the motor board's pack voltage (3.70 E4; read by the brain against `battery_floor_v`); `usable: false`, `v: null` on a body with no board. 3.137: `level` is the battery ladder's (`ok`, `low`, `reserve`, `poweroff`) and `ladder` its detail (levels, the check in progress, `poweroff_in_s` under Reserve, the power-off's steps); the same block is `/health`'s `battery`. Moving routes refuse `battery_reserve` (autonomy), `battery_poweroff` (everyone) and `battery_check` (autonomy, a moment) -- [safety engineering](../safety/ENGINEERING.md). ALB patterns in the kept `twin.yaml`/`teleop-robot.yaml` |
-| `/scan?max_range_m=` | the scan plus `stamp_unix` (capture time) |
+| `/scan?max_range_m=` | the scan plus `stamp_unix`: the time the request was handled, read before the scan is taken, not the capture time (3.42 / 3.76 A4: fixing it is open) |
 
 ### World (all secret)
 
@@ -97,9 +99,9 @@ Goal routes answer **501** on a world without `set_goal` (anything but
 | `POST /teleop/frame` | yes | `{"image_base64" (at most 4 MB as base64, 3.90 E), "media_type"}` -> `{"received": true, "seq"}`; **400** if the body has no `push_frame` |
 | `GET /teleop/frames?after=<seq>` | yes | 3.90 E: the teleop body's kept frames (the last 16) newer than `seq`, oldest first -> `{"frames", "latest_seq", "lost", "reset", "boot_id"}`. For the brain's walk recorder; decisions read `/frame`. `latest_only=true` answers `{"latest_seq", "boot_id"}` without frames (the start's probe). Each frame's `metadata.boot_id` names the body's life, so a decision is never joined across a restart. `lost` counts frames that fell out of the buffer; `reset` and `boot_id` say the robot server restarted. **400** if the body keeps no frames |
 | `GET /sim/objects` | yes | `{"sim_time_s", "objects": [{"x", "y", "name", "mover"}]}`; **501** with no simulated house (searched through `.inner` up to 3 levels) |
-| `POST /sim/battery` | yes | 3.163.B: `{"v"}` (0-30) sets the simulated pack (`SimBattery.set_v`), answers `{"v"}`; **501** on a robot with no simulated pack. A harness's injected Low |
+| `POST /sim/battery` | yes | 3.163.B: `{"v"}` (0-30) sets the simulated pack (`SimBattery.set_v`), answers `{"v"}`; **404** on a robot with no simulated pack. A harness's injected Low |
 | `POST /sim/objects/move` | yes | `{"src": [x, y], "dst": [x, y]}`; 422 if not pairs, 409 if the move is illegal. Both sim routes answer with `GridWorld.describe_objects()`; under the fake board (3.36) they are forwarded to the body program's own `/sim/objects` routes through `RemoteGrid` |
-| `GET /`, `/app.js`, `/manifest.json`, `/icons/icon-192.png`, `/icons/icon-512.png`, `/icons/apple-touch-icon.png` | no | the twin. `app.js` is served `Cache-Control: no-cache` |
+| `GET /`, `/app.js`, `/ui.css`, `/twin.css`, `/strings.js`, `/js/<name>.js`, `/manifest.json`, `/icons/icon-192.png`, `/icons/icon-512.png`, `/icons/apple-touch-icon.png` | no | the twin. `/`, `app.js`, the stylesheets, `strings.js` and the modules are served `Cache-Control: no-cache`; `/js/` answers 404 for any name that is not a plain `*.js` file in `web-twin/js/` |
 
 ### `GET /health` (no secret)
 
@@ -125,8 +127,9 @@ house stands behind the body (`mode: teleop`, a real board). Changing
 `SIM_MAP` and only under `mode: sim`, so under the fake board it was null and
 the live ROS suites skipped (`docs-review/SPEC-REVIEW.md` finding 2).
 `control/health.py` marks the robot UNHEALTHY when
-`seconds_since_watchdog_poll > watchdog_poll_interval_s x 10`; every other
-field is description.
+`seconds_since_watchdog_poll > watchdog_poll_interval_s x 10`, and under
+`drive.mode: ros` when `drive.ros_up` is false; every other field is
+description.
 
 ### Control loops
 
@@ -251,12 +254,12 @@ session may already own ports 8000/8090; use 8100/8101/8190 with a separate
 
 | Test (collected) | What it proves |
 |---|---|
-| `tests/test_server.py` (23) | Routes, 400 on unknown action, the secret gate (protected routes 401, `/health` and `/` open), CORS headers, `ROUTE_PREFIX`, teleop push/pull and 503 on a stall, sensing does not feed the watchdog, the twin's script |
+| `tests/test_server.py` (24) | Routes, 400 on unknown action, the secret gate (protected routes 401, `/health` and `/` open), CORS headers, `ROUTE_PREFIX`, teleop push/pull and 503 on a stall, sensing does not feed the watchdog, the twin's script |
 | `tests/test_watchdog_integration.py` (6) | The watchdog and its liveness against a live `uvicorn` subprocess, `sim.realtime`, and the health command against it |
-| `tests/test_authority.py` (13), `tests/test_wheels_command.py` (8), `tests/test_goal_arbitration.py` (9), `tests/test_ros_fallback.py` (10), `tests/test_stop_cancels_goal.py` (13) | Arbitration, `/wheels`, goals and the ROS fallback through a real app |
+| `tests/test_authority.py` (13), `tests/test_wheels_command.py` (8), `tests/test_goal_arbitration.py` (12), `tests/test_ros_fallback.py` (10), `tests/test_stop_cancels_goal.py` (13) | Arbitration, `/wheels`, goals and the ROS fallback through a real app |
 | `tests/test_health.py` (19) | `control/health.py`'s verdict rules over `/health`, including ROS down under `drive: ros` (handoff 4e); `room_label_source` described, never judged (3.70 S2) |
 | `tests/test_health_sim_map.py` (4) | `sim_map` names the house built, for `mode: sim` and `mode: hardware` with the fake board; null for teleop; unchanged by a later `SIM_MAP` |
-| `tests/test_ros_drive.py` (14) | Among the ROS wrapper's tests, a stop that returns in under 0.1 s against a hung bridge ([body engineering](../body/ENGINEERING.md)) |
+| `tests/test_ros_drive.py` (28) | Among the ROS wrapper's tests, a stop that returns in under 0.1 s against a hung bridge ([body engineering](../body/ENGINEERING.md)) |
 | `tests/test_r2_routes.py`, `tests/test_ros_goals.py` | `/wheels`, `/scan`, `/world/truth`, goal conversion |
 | `tests/test_bridge_keepalive.py` (7) | The bridge polls this server over kept-open connections (3.24 G1) |
 | `tests/test_http_rate_live.py` | Live HTTP rate: a bare app holds 200 Hz at p99 1.6-4 ms over the Docker hop; this server's 20-34 ms p99 tail is the simulator sharing the process (3.17). Skips without the stack |

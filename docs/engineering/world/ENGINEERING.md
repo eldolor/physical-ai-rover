@@ -2,7 +2,7 @@
 kind: engineering
 domain: world
 status: current
-verified: 2026-10-04
+verified: 2026-11-22
 parent: docs/world/ARCHITECTURE.md
 ---
 
@@ -20,12 +20,12 @@ as the code.
 | `world/interface.py` | `WorldInterface`, an ABC with no abstract methods: `get_pose()`, `get_map()` and `get_truth()`. The tri-state constants `CELL_UNKNOWN` (-1), `CELL_FREE` (0) and `CELL_OCCUPIED` (1). The defaults `unusable_pose()`, `unusable_map()` and `unusable_truth()`. `NullWorld`, the named "no mapper" backend. The docstrings are the contract; `tests/test_world_contract.py` requires every method to have one. |
 | `world/factory.py` | `get_world(config_path, robot)` picks the backend from `WORLD_MODE`, or else the `world.mode` key. The code default is `none`; `config/robot.yaml` ships `sim`. |
 | `sim/mock_world.py` | `MockWorld(world: GridWorld)`, the simulator world. `observe()` casts a 360-ray ring from the robot's continuous position and marks each cell the ring crosses as free, or as occupied where a wall or a solid object stops it. `get_map()` calls `observe()` first. The pose and the truth are both exact, read off `GridWorld.x`, `.y` and `.heading_deg`. |
-| `world/ros_world.py` | `RosWorld(bridge_url, secret, truth, timeout_s, client)`, the SLAM world. An httpx client of the ROS bridge. It converts ROS's frame to ours (`_ros_to_ours()` and `_ours_to_ros()`, kept side by side), anchors SLAM's frame to the house per bridge session, and resamples SLAM's grid into the house frame (`_resample()`, nearest neighbour, in numpy since 3.87: cell-for-cell the old per-cell loop, 141 -> 11 ms on the Jetson, off the robot server's GIL). Since 3.141.F1 the bridge's `/slam/map` body is parsed by `_map_body()` (its flat `data` list in comma-cut pieces of `MAP_PARSE_SLICE_BYTES`, exactly `json.loads`'s values; any other shape in one parse) and made an array by `_as_array()` (`MAP_ARRAY_SLICE` elements a call), so no one C call holds the GIL for a whole grid. It also carries nav2 goals (`set_goal`, `get_goal`, `cancel_goal`), `get_odom_pose()` and, since 3.50.D4, `remap(by)` (a person's "re-map now"; a 409 from the bridge is returned as `{remapping: false, reason}`, any other error raises). None of those five are on the interface. |
-| `world/bridge_faults.py` | 3.82: whether waiting can mend a bridge error. `retryable_status(status)` (no status, a 5xx, 408, 409 or 429), `classify(exc)` -> `{bridge_status, retryable}` (a transport or protocol error may pass; a 200 that is not JSON, a URL with no scheme or a redirect loop may not), `headers_for(fault)` and its inverse `fault_from_headers(headers)` (`x-bridge-retryable`, `x-bridge-status`; a status that is not a number reads as none), `hint(status)` (what to check: the secret only for 401/403) `setup_fault_message()`, the one wording explore and `RemoteNavigator` report, and `response_detail(r)` (an error reply's JSON `detail`, never a proxy's page). Imported by `RosWorld`, the robot server's goal routes, `RemoteNavigator` and `brain/explore.py`; httpx only, so the brain may import it (`tests/test_brain_server.py`). |
+| `world/ros_world.py` | `RosWorld(bridge_url, secret, truth, timeout_s, client)`, the SLAM world. An httpx client of the ROS bridge. It converts ROS's frame to ours (`_ros_to_ours()` and `_ours_to_ros()`, kept side by side), anchors SLAM's frame to the house per bridge session, and resamples SLAM's grid into the house frame (`_resample()`, nearest neighbour, in numpy since 3.87: cell-for-cell the old per-cell loop, 141 -> 11 ms on the Jetson, off the robot server's GIL). Since 3.141.F1 the bridge's `/slam/map` body is parsed by `_map_body()` (its flat `data` list in comma-cut pieces of `MAP_PARSE_SLICE_BYTES`, exactly `json.loads`'s values; any other shape in one parse) and made an array by `_as_array()` (`MAP_ARRAY_SLICE` elements a call), so no one C call holds the GIL for a whole grid. It also carries nav2 goals (`set_goal`, `get_goal`, `cancel_goal`), `get_odom_pose()` and, since 3.50.D4, `remap(by)` (a person's "re-map now"; a 409 from the bridge is returned as `{remapping: false, reason}`, any other error raises). `set_keepout()` (3.68), `set_zones()` and `zone_status()` (3.161) go to the bridge's `/nav/keepout`, `/nav/zones` and `/health`. None of these eight is on the interface. |
+| `world/bridge_faults.py` | 3.82: whether waiting can mend a bridge error. `retryable_status(status)` (no status, a 5xx, 408, 409 or 429), `classify(exc)` -> `{bridge_status, retryable}` (a transport or protocol error may pass; a 200 that is not JSON, a URL with no scheme or a redirect loop may not), `headers_for(fault)` and its inverse `fault_from_headers(headers)` (`x-bridge-retryable`, `x-bridge-status`; a status that is not a number reads as none), `hint(status)` (what to check: the secret only for 401/403), `hold_reason(exc)` (a bridge 503's named `hold`, 3.133), `setup_fault_message()`, the one wording explore and `RemoteNavigator` report, and `response_detail(r)` (an error reply's JSON `detail`, never a proxy's page). Imported by `RosWorld`, the robot server's goal routes, `RemoteNavigator` and `brain/explore.py`; httpx only, so the brain may import it (`tests/test_brain_server.py`). |
 | `control/remote_world.py` | `RemoteWorld(base_url, secret, timeout, client, link)`, the world over HTTP for the brain. It maps a 404 to the unusable default and raises `WorldTransportError` on any other failure; a request with no HTTP answer raises its subclass `WorldUnreachable` (status None) and is counted in `link`, a `LinkHealth` shared with the robot's client when both are on one server (3.208). It does no caching: `get_map()` revalidates instead, naming the last map's ETag, and on a 304 naming that tag returns that map again: a new dict sharing its `cells` list (never stale; callers must not modify `cells`; 3.123). Any other reply but 200 or a 404 raises. |
 | `control/remote_navigator.py` | 3.31: `RemoteNavigator(base_url, secret, timeout, client, driver, heartbeat_s)`, the `Navigator` that `brain/explore.py` declares, over the robot server's `/world/goal` routes (`set_goal(x_m, y_m)` POST, `get_goal()` GET, `cancel_goal()` DELETE, `clear_keepout()`; house frame). `RemoteWorld`'s sibling and deliberately not part of it: `WorldInterface` is asked what is true and never to drive, and a goal is a drive command (`tests/test_world_contract.py`). Sends `x-driver` (default `brain`), `x-app-secret` and, since 3.145, `x-lease-id` (a uuid per navigator). `available()` is a GET: 200 is true, 501 is false (no nav2 behind the world), a 401/403 or a non-retryable bridge fault (503 with `x-bridge-retryable` false) raises `PermissionError` (3.76, 3.82: a wrong secret read as no nav2). `start_heartbeat()` beats `POST /autonomy/heartbeat` every `HEARTBEAT_S` (0.25 s; timeout `HEARTBEAT_TIMEOUT_S` 0.2 s) on its own thread, so a goal's 1.0 s lease lapses only when the brain does; a 404/405 from an older robot server stops the beats with a warning; `stop_heartbeat()` releases the lease (`heartbeat_s=None` never beats). Built by `control/brain_server.py` `_new_navigator()` for explore, the dock return and `MissionRunner`; the brain imports no backend (CLAUDE.md rule 5). `tests/test_keepout_clear.py`, `tests/test_refused_goal_hold.py`, `tests/test_review_376c.py`, `tests/test_dock_navigator.py`, `tests/test_brain_server.py` |
 | `robot/server.py` | The `/world/*` routes are pass-throughs to `world_model = get_world(config_path, robot=robot)`. It also computes `/world/error`, and `goal_in_progress()` feeds driver arbitration. |
-| `web-twin/app.js` | The consumer that draws the pose, map, error and goal (polls `/world/pose`, `/world/map`, `/world/error` and `/world/goal`, and posts tap-to-goal). Owned by the twin domain. |
+| `web-twin/app.js` | The consumer that draws the pose, map, error and goal (polls `/world/pose`, `/world/map`, `/world/error`, `/world/goal` and `/world/nogo`, and posts tap-to-goal and `/world/remap`). Owned by the twin domain. |
 
 `MockWorld` and `RosWorld` never import a body backend. `get_world()` reads
 the body's `robot.world` attribute, which is the `GridWorld`, and nothing
@@ -93,6 +93,8 @@ header) whenever `APP_SHARED_SECRET` is set.
 | `GET /world/goal` | **501** as above. Otherwise `{"goal": {...state, x_m, y_m} or None, "plan": [[x, y], ...]}`, in the house frame. A goal from an earlier session reads as `None`. **503** `ros_unavailable: <the bridge error>` when the bridge does not answer or answers an error status (handoff 4d), with headers `x-bridge-retryable` (`true`/`false`, by `classify()`) and `x-bridge-status` (the bridge's status, when it gave one; 3.82). `RemoteNavigator.available()` raises `PermissionError` on `x-bridge-retryable: false`, so an explore start names the fault instead of a missing nav2, with `hint()`'s advice: the secret for a 401 or 403, `ROS_BRIDGE_URL` or an old image otherwise. |
 | `DELETE /world/goal` | **501** as above. Otherwise the bridge's `{"cancelled": bool}`; **503** `ros_unavailable: ...` as for `GET`. `RosWorld.cancel_goal()` and `get_goal()` raise on an error status (a 401, a 5xx) instead of returning its body, so a refused cancel never reads as done. |
 | `PUT /world/nogo` `{frame_id, zones}` | 3.161 (D2): a person's no-go zones for one saved map, the whole set, replacing the last (`world/nogo.py` checks each: an axis-aligned rectangle `{id, x0, y0, x1, y1, kind: area\|wall, set_at, by}` in the house frame, at least 0.20 m and at most 15 m a side (a wall 0.10 m wide), at most 30; **422** otherwise, or for zones with no `frame_id`). The server keeps a copy and, on a world with `set_zones` (`RosWorld`), sends it on: `{"accepted": true, "frame_id", "zones": n, "sent": bool or null, "detail"}`. `RosWorld.set_zones(zones, frame_id)` refuses ("another saved map") unless this session's anchor lays that saved map's frame, and sends each rectangle's four corners, rotated through the anchor into ROS's map frame, to the bridge's `POST /nav/zones`; an empty set is sent whatever the frame. The bridge holds zones in memory only, so `RosWorld` keeps the last set and, when a pose read installs a new session on that same saved map (a restarted container), sends it again on a thread of its own, once a session. Sends are serialised; the copy's lock is never held across the bridge call. |
+| `POST /world/remap` | 3.50.D4: a person's "re-map now" (`x-driver` names who). **501** if the world has no `remap`; otherwise `RosWorld.remap()`'s reply, and **409** with its `reason` when the bridge refuses (it is not localising on a saved map). Not arbitrated. |
+| `DELETE /world/keepout` | 3.76 K5.3: ends a mission's keepout marks. Empties the server's book and, if any were live and the world has `set_keepout`, sends the empty set: `{"cleared": n, "sent": bool}` (`detail` when the send raised). |
 | `GET /world/nogo` | 3.161: the copy (`frame_id`, `zones`, `sent`, `detail`) and `bridge`: `RosWorld.zone_status()`, the bridge's `/health` `nogo` block (`zones`, `suspended` ids, `suspended`/`restored` counts, `last`), or null on a world without one. |
 
 What `GET /world/error` answers:
@@ -117,7 +119,8 @@ the world feeds.
 The bridge's routes and their fields are specified once, in the
 [ros engineering spec](../ros/ENGINEERING.md) ("The bridge's HTTP routes").
 `RosWorld` uses `GET /slam/pose`, `GET /slam/map`, and `POST`, `GET` and
-`DELETE /goal`. Two things are specific to this side of the wall:
+`DELETE /goal`, plus `POST /slam/remap`, `POST /nav/keepout`,
+`POST /nav/zones` and `GET /health` (its `nogo` block). Two things are specific to this side of the wall:
 
 - **Goals carry no heading.** `RosWorld` always sends `yaw_rad` 0.0, because
   nav2's yaw tolerance is 6.28: position goals only.
@@ -193,7 +196,7 @@ The bridge's routes and their fields are specified once, in the
   before SLAM is up.
 - **On hardware** (no truth): `alpha = 0`, `t = 0`, `anchored_at = None`.
 - **One anchor per reader** (3.76 H1-5). The anchor is one `Anchor`
-  NamedTuple (session, alpha, t, anchored_at, epoch), replaced whole under a
+  NamedTuple (session, alpha, t, anchored_at, epoch, frame), replaced whole under a
   lock and never mutated;
   every conversion uses the tuple it read, so FastAPI's threadpool never
   mixes a new session with an old alpha.
@@ -291,7 +294,7 @@ bridge has no `start_truth`) are in the ROS chain's one table,
 ## Verification
 
 The world tests and what each pins (test counts from `pytest
---collect-only`, 2026-10-02):
+--collect-only`, 2026-11-22):
 
 | Test file | Tests | What it pins |
 |---|---|---|
@@ -299,8 +302,8 @@ The world tests and what each pins (test counts from `pytest
 | `tests/test_map_etag.py` | 9 | 3.123: `/world/map`'s ETag and 304 -- the same bytes for a plain fetch, a 304 only for the same `map_id` and `map_version`, a changed, re-named or unusable map always in full, no tag on an unusable or unnamed map, the kept body follows its tag, `RemoteWorld` returns the server's current map, a restarted server never answers 304 to the old tag, a 304 naming another tag is not taken, and a redirect, a 304 for no held map or a 5xx raises `WorldTransportError`. |
 | `tests/test_ros_world.py` | 13 | The anchor at the session's start, not at the first question. Left turns are counter-clockwise in ROS and clockwise on the compass. The map is not mirrored. A sideways displacement lands on the correct side. A restart is a new map and a new anchor. No anchor and no truth on hardware. Odometry is in the same frame. |
 | `tests/test_ros_goals.py` | 29 | Goal conversion both ways, plans converted point by point, an earlier session's goal hidden, no goal sent before a session exists, cancel, 501 for a world that cannot plan, the secret, and `/world/error` with and without truth. Handoff 4d: the routes refuse by name with the bridge down; `RosWorld` raises on an error status. |
-| `tests/test_goal_arbitration.py` | 9 | `PLAN-ros-alignment.md` 3.23: a goal is refused while the brain holds the robot; brain and teleop are refused during a goal; a person never is; an ended goal blocks nothing; a lapsed claim does not block a goal. |
-| `tests/test_wall_linters.py` | (1 of 18) | The occupancy thresholds exist only in `world/ros_world.py`. |
+| `tests/test_goal_arbitration.py` | 12 | `PLAN-ros-alignment.md` 3.23: a goal is refused while the brain holds the robot; brain and teleop are refused during a goal; a person never is; an ended goal blocks nothing; a lapsed claim does not block a goal. |
+| `tests/test_wall_linters.py` | (1 of 20) | The occupancy thresholds exist only in `world/ros_world.py`. |
 | `tests/test_slam_live.py` | 3 | The live SLAM lap. It skips without the stack and wants `starter_house` with `WORLD_MODE=ros`. |
 
 The recorded numbers (`PLAN-ros-alignment.md` 3.14, eighteen laps with
@@ -344,9 +347,11 @@ Checklist for a change here:
   house the simulator world discovers less than SLAM would from the same
   scans.
 - **No version-only route.** The twin re-fetches the whole map on a timer.
-- **A non-JSON bridge reply** on a goal route still fails as a 500 (a
-  `ValueError`, not an `httpx` error). `goal_in_progress()` catches it, so
-  arbitration fails open as the architecture spec says.
+- **A non-JSON bridge reply** on a goal route is an `httpx.DecodingError`
+  (`_json_object()`), so the route refuses it by name with `retryable`
+  false, a setup fault no wait mends (`tests/test_refused_goal_hold.py`).
+  `goal_in_progress()` catches it, so arbitration fails open as the
+  architecture spec says.
 - **`start_truth` has a window.** The bridge's own thread retries for
   `START_TRUTH_WINDOW_S` (30 s) from node start, then gives up for the
   container's life and logs an error; see `service/slam/README.md`
@@ -357,5 +362,8 @@ Checklist for a change here:
 - **Map resampling.** `_resample()` is nearest-neighbour. It is exact only
   for the rotations a cardinal start produces; otherwise it is honest, never
   inventing a state, but blocky.
-- **No persistence.** The map lives for the container's lifetime
+- **No persistence here.** `RosWorld` keeps no map of its own. The bridge
+  saves the pose graph at a mission's end and reloads it from the dock at
+  the next start (3.50.D; `docs/guides/MERGED-STATE.md`, "ROS and maps"). The S3
+  backup of saved maps is decided and not built
   (`PLAN-ros-alignment.md` section 6, question 6).

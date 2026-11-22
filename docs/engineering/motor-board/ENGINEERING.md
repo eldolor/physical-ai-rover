@@ -2,7 +2,7 @@
 kind: engineering
 domain: motor-board
 status: current
-verified: 2026-10-04
+verified: 2026-11-22
 parent: docs/motor-board/ARCHITECTURE.md
 ---
 
@@ -24,9 +24,9 @@ command table for the Rover.
 
 | File | What it does |
 |---|---|
-| `robot/hardware_robot.py` | `HardwareRobot(port, sensors=None, baud=115200)`, a `RobotInterface` backend. It opens the tty raw at 115200 and starts a `select()`-polling reader thread, which parses only `T:1001` frames and drops (counts) bad lines: not JSON, not an object, a missing or non-finite speed (3.76 B2). It ends, zeroing any standing command, on a read error or an empty read from a hung-up line (3.76 B3). It sends its set-up (`T:136`, `T:131`) at start and again after a detected reboot. It turns wheel commands into `T:1`; deciding a command and writing it are one step under `_write_lock` (with `advance()`'s re-send, `stop()` and `_run()`'s stop check), so the board's last command is always `_cmd` (3.76 B1). A zero-degree pivot sends nothing (B6). It estimates each wheel's travel: a trapezoidal speed integral, clamped by `_anchor()`, with `_absorb_reboot()` and `_track_board_clock()` for the fork; the host-minus-board offset keeps its minimum but may rise by `CLOCK_DRIFT_MAX` (200 ppm) of board time, so a slow crystal does not age every frame with uptime (3.76 B7). The cost: the least-delayed frame is forgotten within tens of seconds (about 25 s at 5 ms of jitter), so a sustained rise in host latency reads as a younger frame by that latency, milliseconds against `EXTRAPOLATE_MAX_S`. `verb_plan()` and `verb_done()` let `SafetyController.run_verb()` carry verbs out on the wall clock. Camera, lidar, depth and pan are delegated to `sensors`; with none, they answer the interface's unusable defaults (`get_camera_frame()` raises). |
-| `sim/fake_esp32.py` | `FakeEsp32(body, main_type=2, drop_rate=0.0, seed=0, firmware=None, millis_at_boot=0)`. It opens a pty (`.path`) and runs a firmware loop thread that turns `body`'s wheels through `set_wheel_velocity()` and `advance()`. It keeps integer encoder counts and measures speeds from count deltas. It sends rate-limited `1001` frames, runs the heartbeat, and has `reboot()`. Its wire is lossy (`drop_rate`) and loses only whole lines. `sent_truth` records the body's wheel travel at each frame actually sent, which is what tests judge against. |
-| `robot/factory.py` | `mode: hardware`. With `SIM_MOTOR_BOARD=fake` (`PLAN-ros-alignment.md` 3.36), it builds `SimBodyClient(SIM_BODY_URL, SIM_SENSORS_URL)`, then `HardwareRobot(client.board_path, sensors=client, track_scrub=1.0)`: the board and its body are in `sim/body_server.py`'s process, and the robot server opens the board's pty as a serial device, as it opens the real one on the car. Without both URLs it raises. `build_fake_body(config)` (`MockRobot` in the `SIM_MAP` house, then `FakeEsp32(body)`) is what the body program calls. Otherwise it builds `HardwareRobot(ROBOT_SERIAL or hardware.serial_port)`, and raises if neither is set. |
+| `robot/hardware_robot.py` | `HardwareRobot(port, sensors=None, baud=115200, track_scrub=1.0, lidar=None, camera=None)`, a `RobotInterface` backend. It opens the tty raw at 115200 and starts a `select()`-polling reader thread, which parses only `T:1001` frames and drops (counts, with the last reason for `/health`) bad lines: not JSON, or a `T:1001` frame with a missing or non-finite speed (3.76 B2); a line that is JSON but not an object, or not `T:1001`, is ignored and not counted. It ends, zeroing any standing command, on a read error or an empty read from a hung-up line (3.76 B3). It sends its set-up (`T:136`, `T:131`) at start and again after a detected reboot. It turns wheel commands into `T:1`; deciding a command and writing it are one step under `_write_lock` (with `advance()`'s re-send, `stop()` and `_run()`'s stop check), so the board's last command is always `_cmd` (3.76 B1). A zero-degree pivot sends nothing (B6). It estimates each wheel's travel: a trapezoidal speed integral, clamped by `_anchor()`, with `_absorb_reboot()` and `_track_board_clock()` for the fork; the host-minus-board offset keeps its minimum but may rise by `CLOCK_DRIFT_MAX` (200 ppm) of board time, so a slow crystal does not age every frame with uptime (3.76 B7). The cost: the least-delayed frame is forgotten within tens of seconds (about 25 s at 5 ms of jitter), so a sustained rise in host latency reads as a younger frame by that latency, milliseconds against `EXTRAPOLATE_MAX_S`. `verb_plan()` and `verb_done()` let `SafetyController.run_verb()` carry verbs out on the wall clock. The scan is `lidar`'s when one is given (3.42) and the frame `camera`'s (3.90 A); otherwise camera, lidar, depth and pan are delegated to `sensors`; with none, they answer the interface's unusable defaults (`get_camera_frame()` raises). |
+| `sim/fake_esp32.py` | `FakeEsp32(body, main_type=2, drop_rate=0.0, seed=0, firmware=None, millis_at_boot=0, battery_v=None, drain_v_per_s=None)`. It opens a pty (`.path`) and runs a firmware loop thread that turns `body`'s wheels through `set_wheel_velocity()` and `advance()`. It keeps integer encoder counts and measures speeds from count deltas. It sends rate-limited `1001` frames, runs the heartbeat, and has `reboot()`. Its wire is lossy (`drop_rate`) and loses only whole lines. `sent_truth` records the body's wheel travel at each frame actually sent, which is what tests judge against. |
+| `robot/factory.py` | `mode: hardware`. With `SIM_MOTOR_BOARD=fake` (`PLAN-ros-alignment.md` 3.36), it builds `SimBodyClient(SIM_BODY_URL, SIM_SENSORS_URL)`, then `HardwareRobot(client.board_path, sensors=client, track_scrub=1.0)`: the board and its body are in `sim/body_server.py`'s process, and the robot server opens the board's pty as a serial device, as it opens the real one on the car. Without both URLs it raises. `build_fake_body(config)` (`MockRobot` in the `SIM_MAP` house, then `FakeEsp32(body)`) is what the body program calls. Otherwise it builds `HardwareRobot(ROBOT_SERIAL or hardware.serial_port, track_scrub=...)`, and raises if neither is set. Both branches add the lidar (`ROBOT_LIDAR`) and camera (`ROBOT_CAMERA`) drivers when configured. |
 | `firmware/ugv_base_ros/0001-feedback-fine-odometers-and-board-time.patch` | Our GPL-3.0 fork. It adds 13 lines inside `baseInfoFeedback()` (`ROS_Driver/ugv_advance.h`) and removes none. |
 | `firmware/ugv_base_ros/build.sh` | Compiles a checkout, stock or patched, with `arduino-cli`. Compile only. |
 | `firmware/ugv_base_ros/README.md` | How to apply, build, dump and restore the firmware. |
@@ -95,7 +95,7 @@ The shapes are owned by the body contract.
   carried forward up to `EXTRAPOLATE_MAX_S`. Its `velocity_rad_s` is the
   last *commanded* speed, not a measured one. It also gives `counts` (from
   the estimate, at 660/rev), `wheel_radius_m`, `track_width_m` and
-  `counts_per_rev`. `usable` turns true at the first frame.
+  `counts_per_rev`. `usable` turns true at the first frame and goes false again, with `awaiting_feedback: true`, when no frame has arrived for `FEEDBACK_STALE_S` (3.34).
 - **`get_odometry()`** gives `distance_m`, the body path: the change in the
   wheels' average, so a pivot adds nothing. Its `heading_deg` comes from
   the wheel difference, clockwise, measured from where the process started.
@@ -114,6 +114,8 @@ The shapes are owned by the body contract.
 | `SIM_BOARD_FIRMWARE` | `stock` | -- | `sim/fake_esp32.py`, in the body program | `fork` adds `odlt`, `odrt` and `ms`. It re-runs any suite over the fork. |
 | `SIM_BOARD_SILENT_S` | 0 | s | `sim/fake_esp32.py` (`silent_until`), in the body program | The fake board sends no feedback frame for this long after power-up, to reproduce the start-up race a ROS container started first must ride out (handoff 2a; `tests/test_startup_race.py`). |
 | `WHEEL_RADIUS_M`, `TRACK_WIDTH_M`, `COUNTS_PER_REV` | 0.040, 0.172, 660 | m, m, edges/rev | `robot/hardware_robot.py` | What the backend converts with: mainType 2's `WHEEL_D` / 2, `TRACK_WIDTH` and pulses (table above). The physical facts, their sources and every other copy are in the [platform engineering spec](../platform/ENGINEERING.md); `tests/test_wall_linters.py` and `tests/test_ros_driver_board.py` pin the copies equal. |
+| `FEEDBACK_STALE_S` | 0.25 | s | `robot/hardware_robot.py` | 3.34: no frame for this long and the wheels and odometry answer "unusable", a standing command is zeroed by this process, and a non-zero command or a verb raises `WheelFeedbackLost`. Five feedback intervals, below the server's 1.0 s watchdog and the board's 1.5 s heartbeat, so it acts first. |
+| `TRACK_SCRUB` env, else `hardware.track_scrub` | 1.0 | ratio | `robot/factory.py` | Skid steer's effective track over the geometric one. `[PLACEHOLDER]` until measured on the Rover. Pinned to 1.0 for the fake board (its sim body does not scrub). The ROS container reads the same `TRACK_SCRUB`. |
 | `HEARTBEAT_MS` | 1500 | ms | `robot/hardware_robot.py` | Longer than the robot server's 1.0 s `watchdog_timeout_s`, so the server acts first. The firmware default is 3000. |
 | `REBOOT_JUMP_M` | 0.03 | m | `robot/hardware_robot.py` | On stock firmware, a reboot needs both odometers near zero AND the estimate this far outside their bucket. A rule on the distance alone fired falsely in 1 of 6 runs (3.25). |
 | `EXTRAPOLATE_MAX_S` | 0.10 | s | `robot/hardware_robot.py` | Two feedback intervals. Without carry-forward, a FORWARD overshot to 30.6-32.8 cm (3.25). |
@@ -297,7 +299,7 @@ ROBOT_MODE=hardware ROBOT_SERIAL=/dev/picar-motor-board WORLD_MODE=none uvicorn 
 ```
 
 `GET /wheels` should turn `usable: true` within one feedback interval, and
-turns run (FORWARD and REVERSE are refused until the lidar driver lands).
+turns run (FORWARD and REVERSE are refused until a lidar is configured: `ROBOT_LIDAR`, 3.42).
 **Free the port** first: the stock `ugv_jetson` app must be disabled, or it
 holds the port (3.26).
 
@@ -309,15 +311,15 @@ holds the port (3.26).
 | Start-up `ValueError: SIM_MOTOR_BOARD=fake runs the simulated body as separate programs` | The URLs are unset: start `sim/body_server.py` and `sim/sensor_server.py` and set `SIM_BODY_URL` / `SIM_SENSORS_URL`, or use `service/tunnel/run.sh` (3.36). |
 | Start-up `RuntimeError: no sim/body_server.py at ...` (or `sim/sensor_server.py`) | `SimBodyClient` waited 30 s for that program's `/health`: it is not running or is on another port. A sensor program that itself dies with `no simulated body state ...` waited 30 s for the body's shared memory: start the body first, with the same `SIM_BODY_SHM`. |
 | Start-up `ValueError: world mode 'sim' needs the grid-world robot` | A real board with the shipped `world.mode: sim`. Add `WORLD_MODE=none`. |
-| A FORWARD blocked with `Blocked FORWARD: distance=0.0cm < min=...cm (distance_sensor)`, or a standing forward `/wheels` answered `forward clamped: 0.0cm <= ...cm (distance_sensor)` | The real board with no sensors: `get_distance()` is 0.0, which reads as an obstacle at the bumper. Expected until the lidar driver lands; only turns move (safety domain). |
-| A REVERSE blocked with `rear clearance=0.0cm ... (astern_not_observed)`, or a settle ending "settle refused" | The real board with no lidar scan yet: the safety layer will not back up blind, and a straight correction either way is refused (safety domain). Expected until the lidar driver lands. |
+| A FORWARD blocked with `Blocked FORWARD: distance=0.0cm < min=...cm (distance_sensor)`, or a standing forward `/wheels` answered `forward clamped: 0.0cm <= ...cm (distance_sensor)` | The real board with no sensors: `get_distance()` is 0.0, which reads as an obstacle at the bumper. Expected with no lidar configured (`ROBOT_LIDAR`, 3.42); only turns move (safety domain). |
+| A REVERSE blocked with `rear clearance=0.0cm ... (astern_not_observed)`, or a settle ending "settle refused" | The real board with no lidar scan yet: the safety layer will not back up blind, and a straight correction either way is refused (safety domain). Expected with no lidar configured (`ROBOT_LIDAR`, 3.42). |
 | `PermissionError` / EACCES on open | The user is not in `dialout`, or the udev rule is missing. |
 | `get_wheel_state()` stays `usable: false` | No `1001` frames are arriving: wrong port or baud, feedback off, or another process holds the port. |
 | `board_reboots` climbing | Brownouts. Check the pack and the motor stall current. |
 
 ## Verification
 
-Counts are from `pytest --collect-only`, 2026-10-02.
+Counts are from `pytest --collect-only`, 2026-11-22.
 
 | Test file | Tests | What it pins |
 |---|---|---|
@@ -364,9 +366,9 @@ Checklist for a change:
   `2e7df97`; settled 2026-10-18, 3.76 M2.8). The fake does the wheel half.
   The host never sends it.
 - **The fake's limits.** Its PID is ideal: no `THRESHOLD_PWM` deadband, no
-  dynamics. Its IMU fields are zero and its voltage is constant. Its loop
+  dynamics. Its IMU fields are zero and its voltage is constant unless given a drain. Its loop
   and feedback timing are assumed.
-- **No straight driving before the lidar.** On the car with no sensors,
+- **No straight driving without a lidar.** On the car with no lidar configured and no sensors,
   every FORWARD is refused (`get_distance()` 0.0) and every REVERSE too
   (`astern_not_observed`), so no straight verb runs and no straight
   correction either; only turns move and settle. The rule is the safety

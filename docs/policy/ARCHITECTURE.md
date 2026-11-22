@@ -57,7 +57,7 @@ counters, arrival) are its outputs.
 | Constrained agent | the allowed action set, the capture -> scene -> decide -> vet -> execute step, a stuck-breaker | bypass the safety layer; trust a model's distance claim over a sensor |
 | Mission agent | recording every step into mission memory, arrival review, room backfill from the cloud's room guess, sighting poses from the world | read simulator state; import a world backend |
 | Frontier explorer | rule-based coverage: peek, prefer unvisited directions | grow; it is kept, not extended (`PLAN-sim-hardening.md` 2.2) |
-| Explore policy (`explore`) | a search over SLAM's map: frontier, view and approach goals sent to nav2, the retry rule, the escape when wedged | send a verb while a goal is live; choose a goal the robot could not drive away from (3.45) |
+| Explore policy (`explore`) | a search over SLAM's map: frontier, view and approach goals sent to nav2, the retry rule, the escape when wedged; a find's first goals to places earlier missions on the saved map saw the target, tried once each (recall, 3.172.C: a find used nothing earlier missions had seen); in a survey, a goal into a room the usual goal clearance reaches no place in (small-room, 3.173.B: such rooms were never entered) | send a verb while a goal is live; choose a goal the robot could not drive away from (3.45) |
 | Vision agent | trusting the model's action unless the mission is complete | peek (a pan costs a real move and buys nothing a photograph lacks) |
 | Cloud vision step | one frame -> one cloud navigation answer -> the scene schema | retry; the mission's failure budget is the retry policy |
 | Tier (trigger discipline) | when to spend a cloud call, and what to do on free frames | become a planner or a reactive goal executor |
@@ -364,11 +364,12 @@ range-anchored point, not a direction (R1).
 
 ### A model's distance guess is never a safety input
 
-**Decision.** An optional brain-side veto stops a forward when the model says
-the obstacle is within one step, only on a backend with no distance sensor,
-and off by default. It exists to exercise the veto path on photograph-driven
-backends; models disagree on obstacle presence from about 0% to about 100% on
-the same frames, so it must never be copied onto the hardware backend.
+**Decision.** No brain-side veto reads the model's obstacle or distance
+claim. One once stopped a forward when the model said the obstacle was within
+one step, on a backend with no distance sensor and off by default; it was
+deleted in 3.64 (the user, 2026-10-09), because models disagree on obstacle
+presence from about 0% to about 100% on the same frames and the lidar is the
+obstacle sensor. The field is kept as a report and never acted on.
 
 ### Explore's goals are places the robot can drive away from
 
@@ -396,12 +397,17 @@ rule judges them at the lidar's 0.40 m, and they are not left again.
 
 **Decision (3.65 phase 2, 2026-10-11).** Which goal explore sends next may
 come from a learned score instead of the hand-written order, behind a
-setting (the room-feature score, `rooms`, is the default since 3.125; the
-hand-written order, `rule`, before). The learning is reinforcement
-learning in its evolutionary form: a linear score over ten facts explore
-already has about each candidate, its weights found by the cross-entropy
-method on simulated missions, each mission scored +1 if found, minus 0.02
-per goal and 0.01 per metre.
+setting. The default is the room-feature ranker (since 3.125): a small
+network over seventeen facts explore has about each candidate -- ten
+geometric ones and seven about the candidate's room (3.96). The two
+earlier scores stay as settings: the hand-written order, and 3.65's
+first learned score, a linear one over the ten geometric facts, with a
+variant that adds a small network to it (`brain/goal_policy.py`
+`POLICIES`). The learning is reinforcement learning, first in its
+evolutionary form: the linear score's weights were found by the
+cross-entropy method on simulated missions, each mission scored +1 if
+found, minus 0.02 per goal and 0.01 per metre. The network variants were
+trained by a gradient method, the room-feature one by cloning and then PPO.
 
 **Why this decision and not the driving.** The misses 3.69 fixed were all
 decisions; nav2 reaches every goal it is sent; and the simulator is
@@ -409,12 +415,13 @@ kinematic, so a learned controller would learn a world without slip. The
 choice of goal is where better data changes the outcome, and it is scored
 by a fast sweep against ground-truth reachability.
 
-**Why evolutionary, not a gradient method.** Ten weights, a reward mostly
-decided at the mission's end, and missions about a second each: scoring
-whole missions avoids per-step credit assignment, and the result is ten
-numbers anyone can read. A small network (and a gradient method such as
-PPO to train it) is allowed only after the linear score fails its
-criteria on record.
+**Why evolutionary first, then a network.** With ten weights, a reward
+mostly decided at the mission's end, and missions about a second each,
+scoring whole missions avoids per-step credit assignment, and the result
+is ten numbers anyone can read. The decision allowed a small network, and
+a gradient method such as PPO to train it, only after the linear score
+failed its criteria on record. It did (3.65, phase 2 results: criterion 1
+FAILED), and the network was then built (3.65, amendment 2).
 
 **What keeps it safe.** The policy only ranks candidates the rules would
 send: unleavable, set-aside and twice-reached places are never offered.
@@ -826,7 +833,8 @@ move changed no decision.
     those facts loses exactly that, so the payoff is unknown until
     measured.
   * *How much data.* About 10-30 choices a mission: a few hundred taps can
-    fit the ten-weight linear score, not the network.
+    fit the linear score over the ten geometric facts, not the default
+    ranker's network over seventeen.
 
   **Decided by the user (2026-10-20): corrections are goal taps, never
   takeovers.** A person's Stop and D-pad still end explore and keep the
@@ -836,14 +844,21 @@ move changed no decision.
   safety rule. It must be its own explicit message, not the person's map
   goal, which explore deliberately neither adopts nor cancels (3.76 E).
   Not built; no criteria yet.
-- **Learning the tiered ladder** (raised 2026-10-22, after 3.91 B6; not
-  built). The ladder's numbers are config (the `tier_*` keys), but its flow
-  is code: who is asked, and what an answer does. B6 showed a local "no"
-  changes no steering. The user asked whether the rules could be learned.
+- **Learning the tiered ladder** (raised 2026-10-22, after 3.91 B6; the
+  tree is built, nothing learns on it yet). The ladder's numbers are config
+  (the `tier_*` keys); its flow was code: who is asked, and what an answer
+  does. B6 showed a local "no" changes no steering, and the user asked
+  whether the rules could be learned. What was built since: the decisions
+  are behavior trees whose order and numbers are settings, redrawn with no
+  change of behaviour (3.94), on a standard library (3.95; "The tiered
+  ladder is a behavior tree", above). That was the prerequisite the survey
+  below names for tuning or learning a node. Recorded as failed: 3.94's one
+  live mission (its criterion 6; the cause was explore's close-in move, not
+  a node). Still open: every learner.
   [`LEARNING-APPROACHES-2026-10-22.md`](../evaluations/LEARNING-APPROACHES-2026-10-22.md)
   surveys twelve ways and orders them:
   * value of information over calibrated confidences;
-  * then the ladder as a behaviour tree whose numbers are tuned black-box,
+  * then the ladder as a behavior tree whose numbers are tuned black-box,
     against a simulator that emulates perception's reports calibrated on
     real frames;
   * then, on the Rover, conformal bounds on the local tier's unchecked

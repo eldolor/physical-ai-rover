@@ -177,7 +177,7 @@ default shown.
 | `stop()` | dict; zeroes any standing wheel command and increments `stop_count` where the backend keeps one | abstract |
 | `get_camera_frame()` | `{"image_base64", "media_type", "room", "metadata", ...}`, plus `captured_at` where the pixels come from a real camera (3.90); may raise | abstract |
 | `get_distance()` | float, cm | abstract |
-| `get_depth_grid()` | `{"rows", "cols", "fov_deg"?, "pan_deg"?, "zones": [{"status", "distance_cm"}]}`, row-major | `unusable_grid()`: 1 x 8, all `unusable`, no `fov_deg` |
+| `get_depth_grid()` | `{"rows", "cols", "fov_deg"?, "pan_deg"?, "zones": [{"status", "distance_cm"}], "floor"?}`, row-major. `floor` (3.74) is an optional block, a depth camera's floor band as its own sensor: `cols`, `fov_deg`, `pan_deg`, `origin_x_cm`, `min_range_cm`, `max_range_cm`, `zones` (`robot/safety.py` `floor_clearance()` reads it); `MockRobot` publishes one | `unusable_grid()`: 1 x 8, all `unusable`, no `fov_deg` |
 | `get_odometry()` | `{"usable", "distance_m", "heading_deg"}`. Path length, never decreasing. Heading is degrees turned since start, clockwise-positive, in [0, 360), on every body that measures it (handoff 2d, 2026-10-03; `MockRobot` used to report its compass bearing). `tests/test_robot_contract.py` pins it on all six backends: 0 at start, 90 after a RIGHT 90 | `unusable_odometry()` |
 | `get_wheel_state()` | `{"usable", "left": {"position_rad", "velocity_rad_s", "counts"}, "right": {...}, "wheel_radius_m", "track_width_m", "counts_per_rev"}` | `unusable_wheels()` |
 | `get_battery()` | `{"usable", "v"}`, volts (3.70 E4). `HardwareRobot`: the last `T:1001` frame's `v` / 100 while frames are fresh; `RemoteRobot`: `GET /battery` (a 404 reads as no battery), which since 3.137 adds the robot server's ladder `level` (`ok`/`low`/`reserve`/`poweroff`) and a `ladder` block; `RosDriveRobot` and `_HaltGate` pass it through; `MockRobot` reads a `sim/battery.py` pack when it has one (the factory gives one only when `SIM_BATTERY_V` is set, on the simulator's clock); every other backend has no board | `unusable_battery()`: `{"usable": false, "v": null}` |
@@ -253,7 +253,7 @@ budgets both. `RemoteRobot` never retries a request.
 | `SIM_CAMERA=fake`, `SIM_CAMERA_FPS` | unset; 30 | With `SIM_CAMERA` equal to `fake` exactly (any other value is off), `robot/factory.py`'s `_camera()` builds the car's camera stream from `sim/fake_camera.py` instead of `ROBOT_CAMERA`'s device (3.90 A; `ROBOT_CAMERA` is then not read). `SIM_CAMERA_FPS` is its frame rate (a float; unset or empty is `fake_camera.DEFAULT_FPS`, 30; a non-number raises `ValueError` at build). The pictures are noise, so a mission sees nothing: for the stream's own measurements only. `tests/test_camera_stream.py` |
 | `TRACK_SCRUB` / `hardware.track_scrub` | 1.0 | Skid steer's effective/geometric track for a real board (3.35); ignored for the fake board. Set the env var for the ROS container too. `[PLACEHOLDER]` |
 | `SIM_MOTOR_BOARD=fake` | unset | `mode: hardware` against `sim/fake_esp32.py` on a pty, the board and its sim body in **another program** (`PLAN-ros-alignment.md` 3.36): `sim/body_server.py` for physics and the board, `sim/sensor_server.py` for the sensors, read through `sim/body_client.py`'s `SimBodyClient` as `sensors`. Requires the two URLs below; a `ValueError` without them. The in-process build is gone from the factory |
-| `SIM_BATTERY_V`, `SIM_BATTERY_DRAIN_V_PER_S`, `SIM_BATTERY_REFRESH_S`, `SIM_BATTERY_SAG_V`, `SIM_BATTERY_SAG_S` | 12.0 / 0 / 0 / 0 / 1.0 | The simulated pack (`sim/battery.py`, 3.70 E4, 3.137): start volts, a straight-line drain, the board's refresh period (0 measures every read; the Rover's board is 10 s), and a sag under motor start (for `SAG_S` after the wheels start, while they turn). The fake board always has one; `mode: sim` only when `SIM_BATTERY_V` is set, on the simulator's clock |
+| `SIM_BATTERY_V`, `SIM_BATTERY_DRAIN_V_PER_S`, `SIM_BATTERY_REFRESH_S`, `SIM_BATTERY_SAG_V`, `SIM_BATTERY_SAG_S`, `SIM_BATTERY_CHARGE_V_PER_S` | 12.0 / 0 / 0 / 0 / 1.0 / 0 | The simulated pack (`sim/battery.py`, 3.70 E4, 3.137): start volts, a straight-line drain, the board's refresh period (0 measures every read; the Rover's board is 10 s), and a sag under motor start (for `SAG_S` after the wheels start, while they turn). The fake board always has one; `mode: sim` only when `SIM_BATTERY_V` is set, on the simulator's clock |
 | `SIM_BODY_URL` | none (required with `SIM_MOTOR_BOARD=fake`) | The body program; `service/tunnel/run.sh` defaults it to `http://127.0.0.1:8002` |
 | `SIM_SENSORS_URL` | none (required with `SIM_MOTOR_BOARD=fake`) | One or more sensor programs, comma-separated: the FIRST serves the 20 Hz safety bundle, the LAST full scans (ROS) and camera frames. `run.sh` defaults to `http://127.0.0.1:8003,http://127.0.0.1:8004` |
 
@@ -358,7 +358,7 @@ the user is not in `dialout`.
 
 **Add a backend:** add a branch to `robot/factory.py`'s `_backend()`, add it
 to `BACKENDS` in `tests/test_robot_contract.py` (with a fixture branch that
-builds it), and run the suite. Expected: 22 more tests collected (one per
+builds it), and run the suite. Expected: 23 more tests collected (one per
 parametrized contract test) and all of them passing, or skipping only with
 "backend reports no ..., which this suite allows". A failure naming a shape
 key means the new body returns something the contract does not allow.
@@ -367,11 +367,11 @@ key means the new body returns something the contract does not allow.
 
 | Test | What it pins |
 |---|---|
-| `tests/test_robot_contract.py` (163 collected) | Over seven backends since handoff 2e (`RosDriveRobot` over a fake ROS chain joined the six): return shapes, units, `stop()` idempotency, decodable pixels plus media type, depth tri-state, odometry monotonic and pivot-invariant, odometry heading 0 at start and clockwise-positive (2d), wheels/scan shapes, wrappers reporting what they wrap |
+| `tests/test_robot_contract.py` (186 collected) | Over eight backends (`RosDriveRobot` over a fake ROS chain joined the six in handoff 2e, `hardware_remote_body` in 3.36): return shapes, units, `stop()` idempotency, decodable pixels plus media type, depth tri-state, odometry monotonic and pivot-invariant, odometry heading 0 at start and clockwise-positive (2d), wheels/scan shapes, wrappers reporting what they wrap |
 | `tests/test_remote_robot.py` (10) | The same mission gives an identical action sequence in-process and over HTTP; refusal mapping |
 | `tests/test_teleop_robot.py` (8) | Staleness, the non-blocking read, push/pull |
-| `tests/test_config_and_factory.py` (22) | Mode and drive selection, env overrides, errors on an unknown mode |
-| `tests/test_ros_drive.py` (20) | The ROS wrapper's verbs, encoder closure, reads to the wrapped body; the stop: direct and under 0.1 s against a bridge that hangs, all three ROS inputs zeroed in the background, no thread pile-up over 20 stops, a stale ROS command held at zero, and the hold lifted by the next verb or by `STOP_HOLD_S`; a 4xx from the bridge does not mark it down, a 5xx or a transport error does |
+| `tests/test_config_and_factory.py` (25) | Mode and drive selection, env overrides, errors on an unknown mode |
+| `tests/test_ros_drive.py` (28) | The ROS wrapper's verbs, encoder closure, reads to the wrapped body; the stop: direct and under 0.1 s against a bridge that hangs, all three ROS inputs zeroed in the background, no thread pile-up over 20 stops, a stale ROS command held at zero, and the hold lifted by the next verb or by `STOP_HOLD_S`; a 4xx from the bridge does not mark it down, a 5xx or a transport error does |
 | `tests/test_verb_stop_race.py` (2) | Handoff 2c: a `stop()` injected between `carry_out_verb()`'s `stop_count` check and its re-command (a body that stops itself on the third command) leaves the wheels at zero, FORWARD and LEFT; `carry_out_verb()` re-checks `stop_count` after each re-command and zeroes if it changed |
 | `tests/test_startup_race.py` (4) | Handoffs 2a-2b: `HardwareRobot` before its first frame answers `awaiting_feedback: true` (a teleop body does not); `POST /wheels` then is refused `no_feedback` and vetted as usual after the first frame; the live half (skips without the stack) starts a container inside `SIM_BOARD_SILENT_S` and drives a LEFT 45 through ROS once frames arrive |
 | `tests/test_blind_reverse.py` (5) | `HardwareRobot` with no sensors refuses reverse; a body without wheels still reverses (rule in [safety engineering](../safety/ENGINEERING.md)) |
@@ -385,7 +385,7 @@ key means the new body returns something the contract does not allow.
 | `tests/test_brain_server.py` | The brain imports no backend (a subprocess `sys.modules` check) |
 | `tests/test_wall_linters.py` | Chassis constants and `LIDAR_X_M` agree across the ROS wall |
 
-Change checklist: the contract suite passes for all six bodies. A new field
+Change checklist: the contract suite passes for all eight bodies. A new field
 is added to the remote body and every wrapper. No body returns a number it
 did not measure.
 

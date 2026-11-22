@@ -204,6 +204,7 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.199](3.199-nogo-goal-margin.md) | A person's goal beside a no-go zone never lands in its drawn margin |
 | [3.200](3.200-recall-other-side.md) | A recall whose view is refused tries another side |
 | [3.201](3.201-twin-nogo-toast-target.md) | The twin: the toast beside a zone, and the target field during an API find |
+| [3.202](3.202-sim-chaos-soak.md) | S7: chaos and soak in the simulator |
 | [3.203](3.203-twin-first-run-polls.md) | The twin polls no robot before one is connected |
 | [3.204](3.204-phantom-landmark.md) | A landmark pinned where the object never was |
 | [3.205](3.205-carried-map-no-memory.md) | A find on a saved map with no memory of the target searches the unseen floor |
@@ -211,4 +212,7 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.207](3.207-docs-gaps.md) | Documentation gaps: stale status, missing rationale, missing doc types (the user, 2026-11-21) |
 | [3.208](3.208-action-failure-budget.md) | A failure budget for POST /action; a failed action is never re-sent |
 | [3.209](3.209-small-faults.md) | Small faults the documentation review found (the user, 2026-11-21) |
+| [3.210](3.210-reseen-crowded-out.md) | A re-search's places crowded out by later false sightings |
+| [3.211](3.211-navfn-plan-failures.md) | nav2's NavFn A* fails to extract plans: the trip home aborts |
+| [3.212](3.212-keep-live-logs.md) | Every live run keeps its full ROS, robot and brain logs beside its rows |
 <!-- /sections -->

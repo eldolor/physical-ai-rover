@@ -2,7 +2,7 @@
 kind: architecture
 domain: recordings
 status: current
-verified: 2026-10-02
+verified: 2026-11-22
 ---
 
 # Recordings -- architecture
@@ -290,9 +290,11 @@ a walk that cannot be repeated cheaply.
   decides.
 - **Should replay become a job?** A job would return an id to poll, where
   today one synchronous request outlives its HTTP response.
-- **Is replay a deployed feature or a local-only tool?** As templated,
-  the deployed walks service cannot replay. Either the deployment is given
-  what replay needs, or replay is declared local-only. The analysis, the
+- **Is replay a deployed feature or a local-only tool?** The
+  template can now give the deployed walks service what replay needs (the
+  vision URL and the vision secret, as stack parameters), but whether the
+  live stack was deployed with them is unchecked. Either it is, or replay
+  is declared local-only. The analysis, the
   failure signatures and how to check the live stack are in the
   [engineering spec's Known gaps](../engineering/recordings/ENGINEERING.md#known-gaps).
 - **Is the judge on in the deployed walks service?** The template does not

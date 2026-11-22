@@ -114,7 +114,7 @@ other tag stays in the recovered target (Known gaps).
 | `brain.recording_proxy_url` / `RECORDING_PROXY_URL`, `brain.recording_proxy_secret` / `RECORDING_PROXY_SECRET`, `brain.recording_proxy_timeout_s` | empty, empty, 10.0 | URL, secret, s | `brain_config.py`, `brain_server.py` | Forward writes to a peer that owns storage. The timeout has NO environment override; change it in `config/robot.yaml`. |
 | `brain.vision_url` / `VISION_URL` | empty | URL | `admin_server.py` | Replay and `/recording/models`. Empty makes replay answer 503. |
 | `brain.replay_timeout_s` | 60.0 | s | `post_navigate` | The mission's 20 s cost one 22-frame replay 21 frames to read timeouts |
-| `VISION_SHARED_SECRET` (else `APP_SHARED_SECRET`) | unset | string | `post_navigate`, `/recording/models` | The vision service's own secret. The fallback is the walks service's OWN secret, which the vision service rejects unless the two happen to match. `cloudformation/serverless.yaml` sets neither this nor `VISION_URL` on `WalksFunction` (Known gaps). |
+| `VISION_SHARED_SECRET` (else `APP_SHARED_SECRET`) | unset | string | `post_navigate`, `/recording/models` | The vision service's own secret. The fallback is the walks service's OWN secret, which the vision service rejects unless the two happen to match. `cloudformation/serverless.yaml` sets this on `WalksFunction` from `VisionSharedSecret` when that is non-empty, and `VISION_URL` from `ReplayVisionUrl` when that is non-empty (Known gaps). |
 | `APP_SHARED_SECRET` | unset | string | `admin_server.require_secret` | The walks service's secret, deliberately not the brain's. Template: `WalksSharedSecret`. |
 | `WALK_JUDGE_ENABLED` | off | bool | `admin_server.py` | The judge and the collision check run only when on |
 | `BEDROCK_JUDGE_MODEL_ID` | `us.anthropic.claude-opus-4-5-20251101-v1:0` | id | same | |
@@ -263,8 +263,9 @@ Nothing printed means the deployed template is not the one in git.
 The walks function is built and deployed together with the vision
 function; the procedure is "Deploy the functions" in the
 [operations engineering spec](../operations/ENGINEERING.md#procedures).
-Pass `WalksSharedSecret`. As templated, that deploy does not enable
-replay (Known gaps).
+Pass `WalksSharedSecret`. That deploy enables replay only when it is also
+given `ReplayVisionUrl` (the site URL) and `VisionSharedSecret` (Known
+gaps).
 
 **Recover a deleted object** (within the 90-day noncurrent window). A
 delete on the versioned bucket leaves a delete marker on top of the old
@@ -309,7 +310,7 @@ Expected: a JSON reply with `CopyObjectResult.ETag` and a new `VersionId`.
 |---|---|
 | The console shows 0 walks after a walk | The twin's brain URL pointed at a brain with recording off |
 | Every save fails with 403 | `allow_recording` is false and no proxy is set |
-| Replay answers 503 "No vision service configured" | `vision_url` is empty in this process. Expected on the deployed walks function as templated. |
+| Replay answers 503 "No vision service configured" | `vision_url` is empty in this process. On the deployed walks function: the stack was deployed with `ReplayVisionUrl` empty. |
 | Replay answers 200 but the sidecar is `unusable` and the failed frames' `diff[].error` read `RuntimeError: HTTP 401: ...` | `VISION_SHARED_SECRET` is unset, so frames were signed with the walks secret |
 | Replay answers 200 but the sidecar is `unusable` and the failed frames' `diff[].error` read `RuntimeError: HTTP 404: ...` | `VISION_URL` points at something other than the vision service, typically the tunnel proxy on :8080 |
 | `aws s3 sync` reports nothing to upload after a label edit | `--size-only` was used and the edit kept the file's size |
@@ -320,14 +321,14 @@ Expected: a JSON reply with `CopyObjectResult.ETag` and a new `VersionId`.
 
 | Test | What it proves |
 |---|---|
-| `tests/test_walk_store.py` (76) | Both backends through one conformance suite, S3 via an in-memory client double: layout, names refused with separators or `..`, append, delete, and `download_url` (none locally, presigned on S3, keyed outside the walk prefix) |
-| `tests/test_admin_server.py` (80) | The review routes, label vocabulary, lazy scoring, the replay coverage guard (`unusable`), replay's own timeout, retry on a read timeout and no retry on a 4xx, download as a zip, frame delete removing its `walk.jsonl` row, an unknown walk deleting nothing |
+| `tests/test_walk_store.py` (78) | Both backends through one conformance suite, S3 via an in-memory client double: layout, names refused with separators or `..`, append, delete, and `download_url` (none locally, presigned on S3, keyed outside the walk prefix) |
+| `tests/test_admin_server.py` (94) | The review routes, label vocabulary, lazy scoring, the replay coverage guard (`unusable`), replay's own timeout, retry on a read timeout and no retry on a 4xx, download as a zip, frame delete removing its `walk.jsonl` row, an unknown walk deleting nothing |
 | `tests/test_walk_eval.py` (41) | Metrics, flags, score weights, the collision cap, judge parsing |
 | `tests/test_brain_server.py` | Recording switched off, the proxy forwarding and surfacing the peer's errors (502 when unreachable), names unable to escape the directory, `finish` recording the model and capture size |
 | `tests/test_serverless_routes.py` | The write routes are present in the walks service, and every walks route has an API Gateway route and a CloudFront behaviour |
 | `tests/test_lambda_packaging.py` | Every third-party import under `control/` is in `requirements-walks.txt` |
-| `tests/test_ui_lab.py` (19) | 3.132 Stage 4, red first: opening spends nothing; Score them, Evaluate, Re-score and a Replay pick each ask with the cost and Cancel sends nothing; a failed estimate still asks; a newer question stays; a second click while the estimate loads asks once; one secret for both tabs (the old metrics key too); a pasted line cleaned; each old address opens its tab; an open walk survives a search; the name is a keyboard button; Metrics with no secret asks to connect; every control named; the slideshow traps and returns focus; filters; runs as cards at 390 px |
-| `tests/test_ui_admin.py` (11) | The console at 390 px: replay dropdown fills even when the model list is slow, newest-first by recording time, score and label as separate controls, no sideways scroll |
+| `tests/test_ui_lab.py` (21) | 3.132 Stage 4, red first: opening spends nothing; Score them, Evaluate, Re-score and a Replay pick each ask with the cost and Cancel sends nothing; a failed estimate still asks; a newer question stays; a second click while the estimate loads asks once; one secret for both tabs (the old metrics key too); a pasted line cleaned; each old address opens its tab; an open walk survives a search; the name is a keyboard button; Metrics with no secret asks to connect; every control named; the slideshow traps and returns focus; filters; runs as cards at 390 px |
+| `tests/test_ui_admin.py` (16) | The console at 390 px: replay dropdown fills even when the model list is slow, newest-first by recording time, score and label as separate controls, no sideways scroll |
 | `tests/test_review_376n2.py` (25) | 3.76 N2: stored token counts are text, not markup; bulk delete asks again after it ran; a replay out survives a search and lands in the new row; a queued score cannot be clicked into a second run and a failed one says Evaluate; a Refresh during scoring keeps the scores (since 3.132 Stage 4 these start the queue from Score them, and a replay or score answers the confirm); Download works when the store hands out a link, and the route hands it out on `?link=1`; a card opens its own frame after a frame delete; the slideshow shows the picture of the frame it names; a Refresh shows a walk's new frames; a failed tag puts the stored label back; a failed Connect keeps the saved secret; a walk with no time sorts last; the metrics page paints only its newest load and clears on an error; round 1: a secret being tried goes on its own request only, Play waits for a slow frame, bulk delete skips a walk whose own delete is out, a failed manual score is not retried by itself, a tag that crosses a Refresh is shown (badge and dropdown); round 2: a second Next does not close the slideshow, Play gives a frame its time from when it lands, a frame that never answers does not stop Play, a 404 that is not the server's is not a delete; round 3: Play moves on from a frame that failed while paused, and from one whose body stalls |
 | `tests/test_ui.py` | The twin side: recording reports when it cannot start, and a double tap does not begin two walks |
 | `tests/test_ui_pipeline.py` | Overlapping frames get distinct sequence numbers |
@@ -344,26 +345,27 @@ import is added to `requirements-walks.txt`; a `SCHEMA_VERSION` bump if
 
 ## Known gaps
 
-- **Deployed replay is disabled as templated, and would fail on auth if
-  half-enabled.** `serverless.yaml`'s `WalksFunction` sets neither
-  `VISION_URL` nor `VISION_SHARED_SECRET` (nor `WALK_JUDGE_ENABLED`), and
-  the shipped `config/robot.yaml` has `vision_url: ""`. So:
-  - as templated, `POST .../replay` answers 503 "No vision service
-    configured", `/recording/models` returns an empty list, and scoring is
+- **Deployed replay is enabled only by two stack parameters, and whether
+  the live stack has them is unchecked.** `serverless.yaml`'s
+  `WalksFunction` sets `VISION_URL` from `ReplayVisionUrl` and
+  `VISION_SHARED_SECRET` from `VisionSharedSecret`, each only when the
+  parameter is non-empty (handoff 2026-10-02 fix 12, template fixed
+  2026-10-05). It still sets no `WALK_JUDGE_ENABLED`, and the shipped
+  `config/robot.yaml` has `vision_url: ""`. So:
+  - a stack deployed with `ReplayVisionUrl` empty answers
+    `POST .../replay` 503 "No vision service configured",
+    `/recording/models` returns an empty list, and scoring is
     metrics-only, even though `WalksRole` grants Bedrock for the judge;
-  - if `VISION_URL` were added alone, `post_navigate()` would fall back to
-    the function's own `APP_SHARED_SECRET` (the walks secret), the vision
-    function would answer 401 on every frame, 4xx is not retried, and
-    every replay would be stored `unusable` with a 200.
+  - a stack given `ReplayVisionUrl` but an empty `VisionSharedSecret`
+    would sign with the walks secret, the vision function would answer 401
+    on every frame, 4xx is not retried, and every replay would be stored
+    `unusable` with a 200.
 
-  The fix is to template both `VISION_URL` (the site URL) and
-  `VISION_SHARED_SECRET` (the `VisionSharedSecret` parameter) on
-  `WalksFunction`, or to declare replay local-only. The architecture
-  spec carries this as an open question, and the operations specs record
-  the same gap. **UNCONFIRMED against the live stack**: no AWS call was
-  made, and values set outside the template would change the answer.
-  `aws lambda get-function-configuration` on the walks function settles
-  it.
+  The architecture spec carries this as an open question, and the
+  operations specs record the same gap. **UNCONFIRMED against the live
+  stack**: no AWS call was made, and the deployed parameters decide the
+  answer. `aws lambda get-function-configuration` on the walks function
+  settles it.
 - **The bucket-missing refusal keys on `RECORDING_BACKEND=s3`, and its
   own guard is dead code.** With `s3` and no bucket, `create_app()` raises
   `WalkStoreError` before `walks_handler._assert_configured()` runs, so

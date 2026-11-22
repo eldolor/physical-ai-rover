@@ -1,0 +1,427 @@
+# 3.211: an excerpt of the 3.70.M3 reproduction's ROS logs (2026-11-21, vision-picar-ros:trace-plan-3.70 from dev f8fa8ef9).
+# Only planner failures, aborts and bt_navigator goal lines; timestamps are ROS wall time (s). Survey = ros-s1.log, find and return = ros-end.log.
+
+## ros-s1.log
+[bridge-6] [INFO] [1795274596.274182767] [picar_bridge]: nav2 active: goals taken
+[bt_navigator-10] [INFO] [1795274598.138583999] [bt_navigator]: Begin navigating from current location (0.00, 0.00) to (-0.29, 0.11)
+[bt_navigator-10] [INFO] [1795274605.249583996] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795274607.542429008] [bt_navigator]: Begin navigating from current location (-0.20, 0.11) to (3.21, -0.54)
+[bt_navigator-10] [INFO] [1795274629.902771312] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795274632.041491823] [bt_navigator]: Begin navigating from current location (3.15, -0.47) to (4.25, -1.99)
+[bt_navigator-10] [INFO] [1795274642.951824048] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795274645.250742381] [bt_navigator]: Begin navigating from current location (4.23, -1.90) to (4.10, -9.95)
+[bt_navigator-10] [INFO] [1795274686.411011937] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795274689.099325624] [bt_navigator]: Begin navigating from current location (4.15, -9.87) to (2.85, -9.65)
+[bt_navigator-10] [INFO] [1795274698.599617267] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795274701.363476218] [bt_navigator]: Begin navigating from current location (2.90, -9.72) to (1.65, -8.56)
+[bt_navigator-10] [INFO] [1795274713.783779383] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795274716.773925578] [bt_navigator]: Begin navigating from current location (1.70, -8.63) to (-0.10, -7.36)
+[bt_navigator-10] [INFO] [1795274731.734258277] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795274734.311517867] [bt_navigator]: Begin navigating from current location (-0.07, -7.44) to (-0.30, -6.26)
+[bt_navigator-10] [INFO] [1795274743.571823917] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795274746.187522987] [bt_navigator]: Begin navigating from current location (-0.22, -6.29) to (-0.90, -11.41)
+[controller_server-7] [ERROR] [1795274792.308782258] [controller_server]: Failed to make progress
+[controller_server-7] [WARN] [1795274792.308991595] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795274797.674516945] [bt_navigator]: Goal canceled
+[bt_navigator-10] [INFO] [1795274812.403123728] [bt_navigator]: Begin navigating from current location (-1.09, -11.11) to (7.95, -5.11)
+[planner_server-8] [ERROR] [1795274815.495157020] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795274815.495275154] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795274815.495287624] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (7.95, -5.11)
+[planner_server-8] [WARN] [1795274815.495297969] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795274817.965012121] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795274817.965118385] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795274817.965133624] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (7.95, -5.11)
+[planner_server-8] [WARN] [1795274817.965147356] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795274819.434760381] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795274819.434845164] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795274819.434856973] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (7.95, -5.11)
+[planner_server-8] [WARN] [1795274819.434867322] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795274820.944920796] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795274820.945010625] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795274820.945022235] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (7.95, -5.11)
+[planner_server-8] [WARN] [1795274820.945033349] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795274821.407013945] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795274821.407115303] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795274821.407128510] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (7.95, -5.11)
+[planner_server-8] [WARN] [1795274821.407140731] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795274822.945419785] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795274822.945501698] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795274822.945512641] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (7.95, -5.11)
+[planner_server-8] [WARN] [1795274822.945521836] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795274826.495521765] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795274826.495624851] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795274826.495640489] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (7.95, -5.11)
+[planner_server-8] [WARN] [1795274826.495654860] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795274827.935693492] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795274827.935818939] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795274827.935841436] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (7.95, -5.11)
+[planner_server-8] [WARN] [1795274827.935856458] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795274829.434979065] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795274829.435060274] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795274829.435071536] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (7.95, -5.11)
+[planner_server-8] [WARN] [1795274829.435081055] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795274844.324549050] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795274844.324622778] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795274844.324633844] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (7.95, -5.11)
+[planner_server-8] [WARN] [1795274844.324644196] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795274845.436857333] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795274845.436964833] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795274845.436977441] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (7.95, -5.11)
+[planner_server-8] [WARN] [1795274845.436987749] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795274845.907417158] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795274845.907493003] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795274845.907505737] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (7.95, -5.11)
+[planner_server-8] [WARN] [1795274845.907517980] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795274849.715213644] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795274849.715298129] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795274849.715310115] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (7.95, -5.11)
+[planner_server-8] [WARN] [1795274849.715320173] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795274854.024922916] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795274854.025016874] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795274854.025029232] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (7.95, -5.11)
+[planner_server-8] [WARN] [1795274854.025040068] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795274885.383469782] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795274887.756232725] [bt_navigator]: Begin navigating from current location (7.88, -5.18) to (5.40, -5.56)
+[bt_navigator-10] [INFO] [1795274905.110700918] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795274907.081546645] [bt_navigator]: Begin navigating from current location (5.49, -5.56) to (5.65, -4.56)
+[bt_navigator-10] [INFO] [1795274939.141880031] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795274941.301180780] [bt_navigator]: Begin navigating from current location (5.74, -4.53) to (8.35, -2.31)
+[bt_navigator-10] [INFO] [1795274971.361587941] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795274973.672445025] [bt_navigator]: Begin navigating from current location (8.44, -2.30) to (9.10, -0.16)
+[bt_navigator-10] [INFO] [1795274993.132862072] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795274995.293977550] [bt_navigator]: Begin navigating from current location (9.18, -0.20) to (10.65, 0.24)
+[bt_navigator-10] [INFO] [1795275006.954334411] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275009.415562120] [bt_navigator]: Begin navigating from current location (10.56, 0.26) to (8.30, 0.39)
+[bt_navigator-10] [INFO] [1795275025.075904946] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275027.697683055] [bt_navigator]: Begin navigating from current location (8.38, 0.42) to (6.15, 1.34)
+[bt_navigator-10] [INFO] [1795275045.307959454] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275047.531005848] [bt_navigator]: Begin navigating from current location (6.09, 1.26) to (2.85, -3.16)
+[planner_server-8] [ERROR] [1795275061.943582585] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795275061.943673416] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795275061.943690007] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.85, -3.16)
+[planner_server-8] [WARN] [1795275061.943704351] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795275064.473478224] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795275064.473591629] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795275064.473610406] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.85, -3.16)
+[planner_server-8] [WARN] [1795275064.473626423] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795275064.907135132] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795275064.907277494] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795275064.907299984] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.85, -3.16)
+[planner_server-8] [WARN] [1795275064.907318525] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795275072.036434672] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795275072.037262597] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795275072.037289984] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.85, -3.16)
+[planner_server-8] [WARN] [1795275072.037307368] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795275074.465524571] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795275074.465609145] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795275074.465620785] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (2.85, -3.16)
+[planner_server-8] [WARN] [1795275074.465629705] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795275102.794330022] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275104.749664514] [bt_navigator]: Begin navigating from current location (2.80, -3.24) to (1.35, -1.96)
+[bt_navigator-10] [INFO] [1795275120.710075104] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275123.245080532] [bt_navigator]: Begin navigating from current location (1.28, -2.03) to (2.35, -1.96)
+[bt_navigator-10] [INFO] [1795275138.555379591] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275140.542916877] [bt_navigator]: Begin navigating from current location (2.38, -2.05) to (-0.10, -3.16)
+[bt_navigator-10] [INFO] [1795275160.253335076] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275162.781932361] [bt_navigator]: Begin navigating from current location (-0.03, -3.23) to (0.30, -2.11)
+[bt_navigator-10] [INFO] [1795275174.192393925] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275176.777936604] [bt_navigator]: Begin navigating from current location (0.11, -2.15) to (-0.55, -4.76)
+[controller_server-7] [ERROR] [1795275209.899405802] [controller_server]: Failed to make progress
+[controller_server-7] [WARN] [1795275209.899609053] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795275215.359533985] [bt_navigator]: Goal canceled
+[bt_navigator-10] [INFO] [1795275222.539694308] [bt_navigator]: Begin navigating from current location (-0.98, -4.59) to (3.15, -6.16)
+[bt_navigator-10] [INFO] [1795275276.250013966] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275278.226460142] [bt_navigator]: Begin navigating from current location (3.07, -6.22) to (1.35, -6.71)
+[bt_navigator-10] [INFO] [1795275297.036907163] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275299.831573400] [bt_navigator]: Begin navigating from current location (1.31, -6.80) to (8.25, -8.96)
+[planner_server-8] [ERROR] [1795275324.550882330] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795275324.551001280] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795275324.551019604] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (8.25, -8.96)
+[planner_server-8] [WARN] [1795275324.551035683] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[controller_server-7] [ERROR] [1795275364.403850485] [controller_server]: Failed to make progress
+[controller_server-7] [WARN] [1795275364.404101713] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795275370.273213890] [bt_navigator]: Goal canceled
+[bt_navigator-10] [INFO] [1795275377.789953175] [bt_navigator]: Begin navigating from current location (8.00, -9.42) to (8.35, -11.10)
+[bt_navigator-10] [INFO] [1795275388.850373074] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275391.053159260] [bt_navigator]: Begin navigating from current location (8.43, -11.05) to (9.35, -12.48)
+[bt_navigator-10] [INFO] [1795275402.663526766] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275405.091846303] [bt_navigator]: Begin navigating from current location (9.26, -12.44) to (8.00, -13.59)
+[bt_navigator-10] [INFO] [1795275417.512405608] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275419.877015692] [bt_navigator]: Begin navigating from current location (8.08, -13.54) to (8.80, -15.19)
+[bt_navigator-10] [INFO] [1795275435.677477964] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275438.176720745] [bt_navigator]: Begin navigating from current location (8.72, -15.24) to (6.85, -13.20)
+[bt_navigator-10] [INFO] [1795275466.047219830] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275468.344034913] [bt_navigator]: Begin navigating from current location (6.71, -13.28) to (6.20, -12.25)
+[bt_navigator-10] [INFO] [1795275477.504393457] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275480.246231254] [bt_navigator]: Begin navigating from current location (6.29, -12.27) to (6.40, -11.10)
+[bt_navigator-10] [INFO] [1795275492.606649183] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275495.167463495] [bt_navigator]: Begin navigating from current location (6.48, -11.13) to (6.25, -12.15)
+[bt_navigator-10] [INFO] [1795275508.427863701] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275511.181588733] [bt_navigator]: Begin navigating from current location (6.33, -12.19) to (6.25, -10.95)
+[bt_navigator-10] [INFO] [1795275523.841929567] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275526.372777728] [bt_navigator]: Begin navigating from current location (6.33, -10.99) to (5.35, -12.75)
+[controller_server-7] [WARN] [1795275533.628995586] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795275553.026450772] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275555.674881732] [bt_navigator]: Begin navigating from current location (5.42, -12.80) to (5.75, -12.75)
+[bt_navigator-10] [INFO] [1795275561.135336215] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275563.757813921] [bt_navigator]: Begin navigating from current location (5.66, -12.74) to (5.55, -15.05)
+[bt_navigator-10] [INFO] [1795275578.468174381] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275580.942553359] [bt_navigator]: Begin navigating from current location (5.60, -14.98) to (6.20, -15.65)
+[bt_navigator-10] [INFO] [1795275590.552967215] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275592.778346226] [bt_navigator]: Begin navigating from current location (6.22, -15.56) to (5.60, -15.05)
+[bt_navigator-10] [INFO] [1795275602.538664464] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275604.974820062] [bt_navigator]: Begin navigating from current location (5.69, -15.03) to (6.20, -15.65)
+[bt_navigator-10] [INFO] [1795275614.885168346] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275617.167493315] [bt_navigator]: Begin navigating from current location (6.22, -15.57) to (10.25, -14.95)
+[planner_server-8] [ERROR] [1795275617.169841186] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795275617.169915170] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795275617.169928756] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.25, -14.95)
+[planner_server-8] [WARN] [1795275617.169940559] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795275718.567926165] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275721.231302858] [bt_navigator]: Begin navigating from current location (10.27, -15.04) to (10.40, -15.67)
+[bt_navigator-10] [INFO] [1795275734.701632192] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275737.165817598] [bt_navigator]: Begin navigating from current location (10.35, -15.58) to (10.05, -15.67)
+[bt_navigator-10] [INFO] [1795275742.326147584] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275744.658124273] [bt_navigator]: Begin navigating from current location (10.14, -15.66) to (10.65, -13.57)
+[bt_navigator-10] [INFO] [1795275805.418505782] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275808.036417311] [bt_navigator]: Begin navigating from current location (10.55, -13.54) to (10.60, -14.92)
+[planner_server-8] [ERROR] [1795275816.280266149] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795275816.280406549] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795275816.280428004] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.60, -14.92)
+[planner_server-8] [WARN] [1795275816.280448051] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795275824.648618390] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795275824.648708492] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795275824.648720413] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.60, -14.92)
+[planner_server-8] [WARN] [1795275824.648733109] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795275850.746768803] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275853.151299566] [bt_navigator]: Begin navigating from current location (10.53, -14.99) to (10.65, -13.57)
+[bt_navigator-10] [INFO] [1795275896.104981587] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275898.358262245] [bt_navigator]: Begin navigating from current location (10.56, -13.55) to (10.65, -12.37)
+[bt_navigator-10] [INFO] [1795275920.818568930] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275923.473577892] [bt_navigator]: Begin navigating from current location (10.59, -12.29) to (4.00, -13.02)
+[bt_navigator-10] [INFO] [1795275994.234582179] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795275996.345258982] [bt_navigator]: Begin navigating from current location (4.07, -12.95) to (2.45, -13.17)
+[controller_server-7] [ERROR] [1795276020.717328815] [controller_server]: Failed to make progress
+[controller_server-7] [WARN] [1795276020.717554293] [controller_server]: [follow_path] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795276026.077876193] [bt_navigator]: Goal canceled
+[bt_navigator-10] [INFO] [1795276033.630175377] [bt_navigator]: Begin navigating from current location (2.71, -13.63) to (0.35, -12.82)
+[bt_navigator-10] [INFO] [1795276049.740576197] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276052.223275905] [bt_navigator]: Begin navigating from current location (0.40, -12.90) to (0.65, -14.97)
+[bt_navigator-10] [INFO] [1795276081.933662867] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276084.231090776] [bt_navigator]: Begin navigating from current location (0.73, -14.93) to (-0.90, -13.57)
+[bt_navigator-10] [INFO] [1795276119.891527467] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276122.644786798] [bt_navigator]: Begin navigating from current location (-0.83, -13.60) to (0.25, -12.77)
+[bt_navigator-10] [INFO] [1795276142.355235919] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276144.827938956] [bt_navigator]: Begin navigating from current location (0.29, -12.85) to (4.35, -11.62)
+[planner_server-8] [ERROR] [1795276146.889884739] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276146.889975140] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276146.889987719] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (4.35, -11.62)
+[planner_server-8] [WARN] [1795276146.889998653] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276147.414288310] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276147.414417576] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276147.414438975] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (4.35, -11.62)
+[planner_server-8] [WARN] [1795276147.414458005] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[behavior_server-9] [WARN] [1795276157.451689090] [behavior_server]: [backup] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276160.991039206] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276160.991144654] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276160.991158642] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (4.35, -11.62)
+[planner_server-8] [WARN] [1795276160.991170286] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795276189.268019780] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276191.653153193] [bt_navigator]: Begin navigating from current location (4.30, -11.71) to (4.35, -11.42)
+[bt_navigator-10] [INFO] [1795276193.773489880] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276195.810715441] [bt_navigator]: Begin navigating from current location (4.35, -11.51) to (10.65, -12.37)
+[planner_server-8] [ERROR] [1795276196.842806515] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276196.842899098] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276196.842912859] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.65, -12.37)
+[planner_server-8] [WARN] [1795276196.842924250] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276197.933218898] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276197.937614044] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276197.937759996] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.65, -12.37)
+[planner_server-8] [WARN] [1795276197.937774075] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276205.614128037] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276205.614246671] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276205.614524647] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.65, -12.37)
+[planner_server-8] [WARN] [1795276205.614553244] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276206.923100226] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276206.923222306] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276206.923235988] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.65, -12.37)
+[planner_server-8] [WARN] [1795276206.923249205] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795276234.284023124] [bt_navigator]: Goal canceled
+[bt_navigator-10] [INFO] [1795276234.539167955] [bt_navigator]: Begin navigating from current location (7.74, -9.39) to (-0.30, -0.00)
+[bt_navigator-10] [INFO] [1795276322.110669241] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276334.246773369] [bt_navigator]: Begin navigating from current location (0.07, 0.02) to (-0.09, -0.02)
+[bt_navigator-10] [INFO] [1795276339.357121508] [bt_navigator]: Goal succeeded
+
+## ros-end.log
+[bridge-6] [INFO] [1795276359.995207303] [picar_bridge]: reloaded map map-3859d4ac v1 at the dock (100% of returns on the map)
+[bridge-6] [INFO] [1795276360.302079643] [picar_bridge]: nav2 active: goals taken
+[bt_navigator-10] [INFO] [1795276361.777350724] [bt_navigator]: Begin navigating from current location (-0.00, 0.00) to (6.05, -15.02)
+[planner_server-8] [ERROR] [1795276388.560600438] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276388.560696329] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276388.560709636] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (6.05, -15.02)
+[planner_server-8] [WARN] [1795276388.560722625] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276410.530284213] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276410.530366010] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276410.530379798] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (6.05, -15.02)
+[planner_server-8] [WARN] [1795276410.530392015] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276416.040176601] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276416.040273677] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276416.040292557] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (6.05, -15.02)
+[planner_server-8] [WARN] [1795276416.040304397] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276419.501192716] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276419.501408463] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276419.501460161] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (6.05, -15.02)
+[planner_server-8] [WARN] [1795276419.501478612] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276419.912606340] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276419.912714818] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276419.912734460] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (6.05, -15.02)
+[planner_server-8] [WARN] [1795276419.912749539] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276421.447951142] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276421.448047968] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276421.448061940] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (6.05, -15.02)
+[planner_server-8] [WARN] [1795276421.448075427] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795276481.125111263] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276481.920647761] [bt_navigator]: Begin navigating from current location (6.11, -14.95) to (6.25, -10.97)
+[bt_navigator-10] [INFO] [1795276510.740947189] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276512.581541196] [bt_navigator]: Begin navigating from current location (6.33, -11.01) to (6.20, -15.67)
+[bt_navigator-10] [INFO] [1795276544.141870976] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276545.999976006] [bt_navigator]: Begin navigating from current location (6.22, -15.58) to (6.25, -10.97)
+[planner_server-8] [ERROR] [1795276549.092064724] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276549.092166682] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276549.092181089] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (6.25, -10.97)
+[planner_server-8] [WARN] [1795276549.092193197] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795276578.510918488] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276580.622842980] [bt_navigator]: Begin navigating from current location (6.33, -11.01) to (6.20, -15.67)
+[bt_navigator-10] [INFO] [1795276613.784097771] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276615.794724124] [bt_navigator]: Begin navigating from current location (6.22, -15.58) to (10.65, -13.57)
+[bt_navigator-10] [INFO] [1795276649.400946493] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276651.245578355] [bt_navigator]: Begin navigating from current location (10.56, -13.54) to (10.60, -14.92)
+[planner_server-8] [ERROR] [1795276670.787260092] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276670.787355694] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276670.787368999] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.60, -14.92)
+[planner_server-8] [WARN] [1795276670.787381474] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276676.037884699] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276676.037987511] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276676.038005229] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.60, -14.92)
+[planner_server-8] [WARN] [1795276676.038117353] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276687.727267227] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276687.727384056] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276687.727396412] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.60, -14.92)
+[planner_server-8] [WARN] [1795276687.727406623] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276695.107706077] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276695.107805348] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276695.107823065] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.60, -14.92)
+[planner_server-8] [WARN] [1795276695.107838475] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795276723.205892515] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276724.998450633] [bt_navigator]: Begin navigating from current location (10.53, -14.99) to (10.65, -13.57)
+[bt_navigator-10] [INFO] [1795276767.708761554] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276769.794000294] [bt_navigator]: Begin navigating from current location (10.56, -13.54) to (10.60, -14.92)
+[planner_server-8] [ERROR] [1795276787.305755784] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276787.305842954] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276787.305854758] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.60, -14.92)
+[planner_server-8] [WARN] [1795276787.305865773] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795276816.354339719] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276818.257899685] [bt_navigator]: Begin navigating from current location (10.53, -14.99) to (9.90, -15.67)
+[bt_navigator-10] [INFO] [1795276827.519425490] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276832.264384504] [bt_navigator]: Begin navigating from current location (9.96, -15.61) to (4.35, -13.07)
+[bt_navigator-10] [INFO] [1795276926.423142717] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276928.683736631] [bt_navigator]: Begin navigating from current location (4.30, -12.99) to (4.35, -11.62)
+[bt_navigator-10] [INFO] [1795276939.944038641] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276942.279224472] [bt_navigator]: Begin navigating from current location (4.32, -11.71) to (4.35, -11.42)
+[bt_navigator-10] [INFO] [1795276944.449738791] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276946.372953348] [bt_navigator]: Begin navigating from current location (4.35, -11.51) to (4.35, -13.07)
+[bt_navigator-10] [INFO] [1795276959.793270298] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795276962.215350779] [bt_navigator]: Begin navigating from current location (4.30, -12.99) to (0.25, -12.77)
+[planner_server-8] [ERROR] [1795276963.247846816] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276963.247949040] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276963.247965381] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.25, -12.77)
+[planner_server-8] [WARN] [1795276963.247980356] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276963.410786680] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276963.410906852] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276963.410925943] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.25, -12.77)
+[planner_server-8] [WARN] [1795276963.410942508] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276965.267878510] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276965.267973453] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276965.267990911] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.25, -12.77)
+[planner_server-8] [WARN] [1795276965.268006613] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276965.411546856] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276965.411654108] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276965.411671192] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.25, -12.77)
+[planner_server-8] [WARN] [1795276965.411688186] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276970.457272986] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276970.457382646] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276970.457398861] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.25, -12.77)
+[planner_server-8] [WARN] [1795276970.457410657] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276970.911179183] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276970.911275935] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276970.911288181] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.25, -12.77)
+[planner_server-8] [WARN] [1795276970.911303127] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795276981.267284142] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795276981.267374579] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795276981.267386857] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (0.25, -12.77)
+[planner_server-8] [WARN] [1795276981.267397400] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795277002.710231015] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795277005.200226330] [bt_navigator]: Begin navigating from current location (0.30, -12.84) to (0.25, -13.12)
+[bt_navigator-10] [INFO] [1795277011.310578855] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795277013.494598531] [bt_navigator]: Begin navigating from current location (0.24, -13.03) to (0.25, -15.67)
+[bt_navigator-10] [INFO] [1795277047.514986481] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795277049.944633474] [bt_navigator]: Begin navigating from current location (0.30, -15.60) to (0.60, -15.67)
+[bt_navigator-10] [INFO] [1795277054.894969032] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795277056.861802539] [bt_navigator]: Begin navigating from current location (0.50, -15.67) to (0.60, -15.42)
+[bt_navigator-10] [INFO] [1795277061.972168844] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795277069.871272957] [bt_navigator]: Begin navigating from current location (0.59, -15.51) to (3.00, -13.42)
+[planner_server-8] [ERROR] [1795277070.904473925] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277070.904609554] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277070.904628038] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (3.00, -13.42)
+[planner_server-8] [WARN] [1795277070.904645827] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277072.435741615] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277072.436053350] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277072.436071784] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (3.00, -13.42)
+[planner_server-8] [WARN] [1795277072.436086195] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795277092.231602141] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795277093.254293147] [bt_navigator]: Begin navigating from current location (2.95, -13.49) to (10.65, -12.37)
+[planner_server-8] [ERROR] [1795277095.317403094] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277095.317498791] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277095.317533591] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.65, -12.37)
+[planner_server-8] [WARN] [1795277095.317549531] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277095.412365857] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277095.412499706] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277095.412542977] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.65, -12.37)
+[planner_server-8] [WARN] [1795277095.412562108] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277096.928463736] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277096.928602607] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277096.928620274] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.65, -12.37)
+[planner_server-8] [WARN] [1795277096.928636858] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277100.497933937] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277100.499671203] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277100.499720545] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.65, -12.37)
+[planner_server-8] [WARN] [1795277100.499740049] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[planner_server-8] [ERROR] [1795277120.467085422] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277120.467168689] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277120.467180534] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (10.65, -12.37)
+[planner_server-8] [WARN] [1795277120.467191834] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795277168.855491018] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795277170.995591242] [bt_navigator]: Begin navigating from current location (10.58, -12.30) to (9.60, -11.02)
+[bt_navigator-10] [INFO] [1795277183.605971726] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795277190.867129938] [bt_navigator]: Begin navigating from current location (9.67, -11.07) to (10.65, -12.37)
+[bt_navigator-10] [INFO] [1795277201.727442608] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795277203.794593538] [bt_navigator]: Begin navigating from current location (10.58, -12.30) to (5.75, -9.02)
+[bt_navigator-10] [INFO] [1795277239.505017574] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795277243.873307349] [bt_navigator]: Begin navigating from current location (5.82, -9.08) to (-2.05, -0.47)
+[planner_server-8] [ERROR] [1795277249.025952533] [planner_server]: Failed to create a plan from potential when a legal potential was found. This shouldn't happen.
+[planner_server-8] [WARN] [1795277249.026060577] [planner_server]: GridBased: failed to create plan with tolerance 0.10.
+[planner_server-8] [WARN] [1795277249.026075700] [planner_server]: Planning algorithm GridBased failed to generate a valid path to (-2.05, -0.47)
+[planner_server-8] [WARN] [1795277249.026085906] [planner_server]: [compute_path_to_pose] [ActionServer] Aborting handle.
+[bt_navigator-10] [INFO] [1795277329.676914091] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795277331.995908849] [bt_navigator]: Begin navigating from current location (-2.18, -0.56) to (-1.80, 0.23)
+[bt_navigator-10] [INFO] [1795277338.117914593] [bt_navigator]: Goal canceled
+[bt_navigator-10] [INFO] [1795277340.966628710] [bt_navigator]: Begin navigating from current location (-2.00, 0.24) to (-2.15, -0.47)
+[bt_navigator-10] [INFO] [1795277349.526977708] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795277351.465417413] [bt_navigator]: Begin navigating from current location (-2.18, -0.38) to (2.32, -1.97)
+[bt_navigator-10] [INFO] [1795277422.825773634] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795277424.809475025] [bt_navigator]: Begin navigating from current location (2.38, -2.04) to (1.32, -1.97)
+[bt_navigator-10] [INFO] [1795277434.583400794] [bt_navigator]: Goal canceled
+[bt_navigator-10] [INFO] [1795277434.824675455] [bt_navigator]: Begin navigating from current location (1.53, -2.70) to (-0.30, -0.00)
+[bt_navigator-10] [INFO] [1795277495.645271263] [bt_navigator]: Goal succeeded
+[bt_navigator-10] [INFO] [1795277507.949475964] [bt_navigator]: Begin navigating from current location (0.07, 0.02) to (-0.09, -0.02)
+[bt_navigator-10] [INFO] [1795277512.909848950] [bt_navigator]: Goal succeeded

@@ -2,7 +2,7 @@
 kind: architecture
 domain: platform
 status: current
-verified: 2026-10-02
+verified: 2026-11-22
 ---
 
 # Platform -- architecture
@@ -65,7 +65,7 @@ configuration points at. It must:
 | Compute board | All on-car software: robot server, brain, ROS container | Runs no vendor robot software that writes to the motors |
 | Chassis and motor board | Turning wheel commands into wheel speeds, and reporting measured odometry | Sees no obstacles. Its heartbeat is a backstop, never the safety layer |
 | Lidar | The 360-degree range ring for the safety corridor, pivot guard, arrival and SLAM | Read by the robot server, not only by ROS, because it feeds a veto |
-| Cameras | Pixels for perception, and (proposed) depth below the lidar's plane | Which camera feeds perception on the car is still to be measured |
+| Cameras | Pixels for perception, and depth below the lidar's plane (a floor band, built in the safety layer, 3.74 A-B) | Which camera feeds perception on the car is still to be measured |
 | Power | Feeding motors, sensors and the computer through peaks | A battery's protection board does not protect the computer. Software must |
 
 ## Decisions
@@ -158,8 +158,9 @@ not the camera.
 **Also decided: software battery protection is required.** A 3S pack's
 protection board cuts off at or below the Jetson's 9 V input floor, so it
 protects the cells and not the board. Only a software cutoff can shut the
-computer down cleanly first (`HARDWARE-BOM.md` editor's caution). It is not
-built.
+computer down cleanly first (`HARDWARE-BOM.md` editor's caution). It is
+built, with placeholder thresholds (3.137.A-B); the real power-off and the
+Rover's own thresholds are still open (3.137.C, 3.137.E).
 
 ### The vendor's Jetson software is not used
 
@@ -188,7 +189,8 @@ the safety layer would then disagree, in the unsafe direction astern and on
 pivots.
 
 **Trade-off.** Every CAD value is unverified until measured on the car. The
-lidar's 90-degree mounting yaw is not modelled yet.
+lidar's 90-degree mounting yaw is not in the robot description; the lidar
+driver corrects for it, unverified on the real unit (3.42 criterion 7).
 
 ### Sensors that feed a veto are read by the robot process
 
@@ -200,12 +202,15 @@ the robot server, and ROS receives the scan through the bridge
 robot server to read. The safety layer would then depend on the ROS
 container being up.
 
-**Trade-off.** The lidar's serial protocol must be ported out of the vendor's
-ROS driver, and the simulator needs a matching fake lidar first.
+**Trade-off.** The lidar's serial protocol had to be ported out of the
+vendor's ROS driver, and the simulator needed a matching fake lidar first
+(both built, 3.42).
 
-**Consequence for bring-up.** Until that driver exists the car has no
-usable scan, so the safety layer lets it pivot but not drive forward or
-back; the rule, and the window before the board's first feedback frame,
+**Consequence for bring-up.** The driver is built (3.42). On the real unit
+its packets have been read on the bench; its checks there are not yet met
+(3.42 criterion 7; 3.140, L0.6). With no usable
+scan the safety layer lets the car pivot but not drive forward or back; the
+rule, and the window before the board's first feedback frame,
 are recorded in the safety engineering spec
 (docs/engineering/safety/ENGINEERING.md). Anything but a turn is a bench
 test with the wheels off the floor (the motor-board domain's first-contact
@@ -241,13 +246,13 @@ the headroom run passed on it by 2026-10-05; the user kept the board on
 |---|---|---|
 | The host stops commanding (process dies, link drops) | Robot server watchdog first; motor board heartbeat if the server itself is gone | Wheels stop within one watchdog period while the server is alive. The board's own heartbeat is set longer than that period, as a backstop |
 | Pack voltage sags under motor peaks | 15 W start; stress test with logged input voltage on arrival | Buy the separate Jetson pack if any sag is seen; never move to 25 W without it |
-| Pack runs flat | Software cutoff (planned) | Clean shutdown before the Jetson's 9 V floor. Not built: until it is, watch the pack |
+| Pack runs flat | Software battery ladder (built, placeholder thresholds; 3.137.A-B) | Clean shutdown before the Jetson's 9 V floor. The real power-off (3.137.C) and the Rover's thresholds (3.137.E) are open: until they are, watch the pack |
 | No working CUDA torch for the JetPack, or a model silently falling back to the CPU | Stop the bring-up at the torch check, which must show every network of the shipped pipeline on the GPU | Met on the board 2026-10-04 (3.33); the setup script now asserts it, so a JetPack upgrade that breaks it stops at the same check |
 | Perception too slow on the board | Measure on the pinned frames | Budget: 250 ms a frame at 15 W (user, 2026-10-02). Over it, move image handling off the CPU first |
 | Everything at once overloads the board | A headroom run with the whole stack loaded | 0 late safety-loop ticks over 10 minutes, at least 1 GB free, no thermal throttling |
 | A CAD offset is wrong on the real car | Measure every CAD value on arrival | The lidar offset is measured before the safety sweep runs on the car |
 | The lidar's zero faces left, not ahead | Set its angle offset before the first scan is used | No scan is used by safety or SLAM before the yaw is set |
-| No usable scan yet (lidar driver not written) | FORWARD and REVERSE are refused; turns are allowed | Once wheel feedback arrives, the car never translates unobserved. Before the board's first feedback frame the reverse refusal does not yet apply (a known gap in the safety spec) |
+| No usable scan (lidar stalled or unplugged, or its driver not yet checked on the real unit) | FORWARD and REVERSE are refused; turns are allowed | Once wheel feedback arrives, the car never translates unobserved. Before the board's first feedback frame, and whenever its feedback is stale, every non-zero command is refused (3.34, safety spec) |
 | Vendor software holds the serial port | Disable it on arrival | Only one process opens the motor board |
 | The chassis fails the on-arrival checks | Return it within the retailer's window | The checks finish inside the window |
 
@@ -259,11 +264,12 @@ the headroom run passed on it by 2026-10-05; the user kept the board on
   by recording walks through the candidate and scoring them. Owner: the
   user, on data.
 - **Depth below the lidar's plane.** A floor band from the depth camera is
-  proposed (`PLAN-ros-alignment.md` section 6, question 8), with criteria to
-  confirm.
+  built in the safety layer (3.74 A-B; `PLAN-ros-alignment.md` section 6,
+  question 8). Its criteria on the car's own data are open (3.74 C-D).
 - **Skid-steer slip and the effective track.** Measured on the car (R8).
-- **The battery cutoff.** Required, not designed: thresholds, the voltage
-  source on the board, and a readout on the twin.
+- **The battery cutoff.** Designed and built as a ladder reading the motor
+  board's pack voltage, with a banner on the twin (3.137.A-B). Open: the
+  Rover's real thresholds (3.137.E) and a real power-off (3.137.C).
 - **The 15 W result.** Half answered: 15 W meets the 250 ms budget with
   room to spare (3.33, measured on the board 2026-10-04). Whether the kit's
   supply holds at 15 W with the motors working is measured on the Rover's

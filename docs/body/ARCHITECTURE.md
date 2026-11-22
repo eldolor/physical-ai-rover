@@ -2,7 +2,7 @@
 kind: architecture
 domain: body
 status: current
-verified: 2026-10-02
+verified: 2026-11-22
 ---
 
 # Body -- architecture
@@ -205,7 +205,7 @@ Both wrappers are in it, the ROS drive wrapper since 2026-10-03.
 | A teleop phone stops sending | The frame read fails immediately after a staleness window. It never blocks | A stalled phone ends the mission at its first read |
 | Sensor absent | The honest "unusable" answer | No consumer ever reads an absent sensor as clear, as blocked, or as zero motion |
 | Motor board reboots mid-run | The odometer jump is absorbed and the board is set up again | Odometry never decreases and never jumps |
-| Someone calls stop during a verb | The shared verb loop ends at its next period | A stop ends any verb within one control period, and is never overwritten. **Not yet met in one window:** a stop landing between the loop's check and its next wheel command is overwritten, and the wheels run until the watchdog stops them (see Open questions) |
+| Someone calls stop during a verb | The shared verb loop ends at its next period | A stop ends any verb within one control period, and is never overwritten. Met (handoff 2c, 2026-10-03): the loop re-checks after each wheel command and zeroes the wheels if a stop landed in between |
 | Robot server unreachable | The remote body raises a transport error distinct from a refusal | "Nobody heard it" is never mistaken for "it was refused" |
 | ROS chain dead, or hung, under ROS drive | The wrapper stops the wrapped body first and directly; telling ROS its inputs are zero happens afterwards and cannot hold the stop up. For a short hold after the stop, motion from ROS still in flight from the stopped verb is turned into a zero | A stop never depends on the container, dead or merely not answering |
 | Stop while a nav2 goal is active | Not the body's: the body's stop zeroes the wheels; ending the goal is the robot server's, after the body has stopped | See [safety](../safety/ARCHITECTURE.md)'s failure row and "Who drives" |
@@ -221,22 +221,20 @@ Both wrappers are in it, the ROS drive wrapper since 2026-10-03.
 ## Open questions
 
 - **The car's lidar driver** is placed by [ros](../ros/ARCHITECTURE.md)
-  (D3) and not built. Until it is, the car's body has no scan; what that
-  costs, and the build plan, are in the
+  (D3) and is built (3.42); its checks on the real unit are not yet met
+  (3.42 criterion 7; 3.140, L0.6). What the body offers without a scan is in the
   [engineering spec](../engineering/body/ENGINEERING.md), Known gaps.
-- **Where the depth camera's driver lives**, and whether its floor band
-  reaches the body as a second depth grid (`PLAN-ros-alignment.md` 6,
-  question 8).
+- **Where the depth camera's driver lives.** The floor band reaches the body
+  as an optional block inside the depth grid, not as a second grid (3.74;
+  `PLAN-ros-alignment.md` 6, question 8). No driver feeds it on the car yet.
 - **A per-sensor mounting offset on the grid.** Today one sensor-to-bumper
   offset serves both the grid and the scalar. A car with a deck lidar and a
   front depth sensor needs the offset to travel with each reading, as the
   field of view already does. Settled on hardware day, when both are fitted.
 - **The stop race inside the shared verb loop** (`docs-review/SPEC-REVIEW.md`
-  fix-list 7, not fixed). A stop that lands between the loop's check and its
-  next wheel command is overwritten. Until the loop re-checks after
-  commanding, the failure table's "never overwritten" is a target, not a
-  fact. Mechanism and fix: the
-  [engineering spec](../engineering/body/ENGINEERING.md), Known gaps.
+  fix-list 7) is closed: the loop re-checks after commanding (handoff 2c,
+  2026-10-03), pinned by a test. Listed only so the old finding is not
+  re-opened.
 - **Two numbers the car must supply** (3.35). The stall window is 0.6 s, a
   placeholder until the board's low-speed deadband is measured. The
   skid-steer scrub factor is 1.0 until the effective track is measured.

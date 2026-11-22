@@ -258,3 +258,71 @@ def test_c11_live_find_as_recorded():
     assert d["z6_refused"] == 10 and d["peak_load"] == 3.05 <= 4
     bad = json.loads((ROOT / "evaluations" / "nogo-3192" / "fix" / "live-1-invalid-load.json").read_text())
     assert bad["peak_load"] == 4.51 > 4                     # invalid (3.79), re-run
+
+
+# ---------- 3.210: a round's left-out places are kept for the next ----------
+
+def _four_places(agent):
+    """The true place seen first, three false ones after it (3.210's val:44)."""
+    r = agent.retry.radius_m
+    true = (0.6, 0.6)
+    agent._note_seen_at(*true)
+    for k in range(1, 4):
+        agent._note_seen_at(0.6 + k * (r + 0.05), 1.8)
+    assert len(agent._seen_at) == 4 and agent._seen_at[0] == true
+    return true
+
+
+def test_3210_a_place_the_first_round_left_out_gets_the_second():
+    agent, events = _agent()
+    true = _four_places(agent)
+    agent._choose_next(0.0)
+    assert len(events[-1][1]["places"]) == explore_mod.RECALL_MAX
+    assert list(true) not in events[-1][1]["places"]       # crowded out of round 1
+    agent.recall = []                                      # the round's goals spent; nothing new seen
+    action, executed, detail = agent._choose_next(0.0)
+    assert (action, executed) == ("WAIT", True) and "looking again" in detail
+    assert events[-1][0] == "reseen"
+    assert events[-1][1]["round"] == 2 and events[-1][1]["places"] == [list(true)]
+    agent.recall = []
+    assert agent._choose_next(0.0)[0] == "STOP"            # RESEEN_ROUNDS spent
+    assert [n for n, _ in events].count("reseen") == 2
+
+
+def test_3210_a_left_out_place_refused_is_never_looked_at():
+    from brain.arrival import REFUSED
+    agent, events = _agent()
+    agent.sight_from = "perception"
+    true = _four_places(agent)
+    agent._choose_next(0.0)
+    agent.recall = []
+    agent._last_seen = true                                # the cloud refuses what stood there
+    agent._note_refusal({"_arrival": {"state": REFUSED}})
+    assert agent._choose_next(0.0)[0] == "STOP"
+    assert [n for n, _ in events].count("reseen") == 1
+
+
+def test_3210_round_one_holding_everything_ends_as_before():
+    agent, events = _agent()
+    agent._note_seen_at(1.5, 0.7)
+    agent._note_seen_at(0.6, 1.8)
+    agent._choose_next(0.0)
+    assert agent._seen_at == []
+    agent.recall = []
+    assert agent._choose_next(0.0)[0] == "STOP"
+
+
+def test_3210_false_places_seen_again_do_not_crowd_out_a_left_out_one():
+    """Review: round 1 looks at the false places, sees them again there (the
+    latest sightings now), and round 2 must still give the left-out one its look."""
+    agent, events = _agent()
+    true = _four_places(agent)
+    agent._choose_next(0.0)
+    falses = [tuple(p) for p in events[-1][1]["places"]]
+    agent.recall = []
+    for x, y in falses:                                    # seen again, a little off
+        agent._note_seen_at(x + 0.02, y)
+    agent._choose_next(0.0)
+    assert events[-1][0] == "reseen" and events[-1][1]["round"] == 2
+    assert events[-1][1]["places"][0] == list(true)
+    assert len(events[-1][1]["places"]) == explore_mod.RECALL_MAX

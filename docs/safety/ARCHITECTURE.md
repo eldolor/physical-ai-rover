@@ -70,11 +70,11 @@ heartbeat ([motor-board](../motor-board/ARCHITECTURE.md)).
 Every motion, from any driver and through any route, passes the vet on the
 robot. That covers verbs, standing wheel commands, and the ROS chain's wheel
 posts. A person on the D-pad gets the same collision protection as an AI
-decision. **Two exceptions today, in one window:** on a body that cannot
-yet report its own wheels (a real motor board before its first feedback),
-a standing wheel command passes unvetted, and a reverse verb runs unguarded
-astern, because until the wheels report the layer cannot tell that the body
-really moves. That is a gap, not a decision (see Open questions). **Rejected:** trusting the brain's own check. The brain keeps one
+decision. **No exception for a body that cannot report its wheels** (3.34): a real
+motor board before its first feedback, or with feedback gone stale, refuses
+every non-zero command and verb `no_feedback`, so nothing moves on it
+unvetted, and the blind-reverse rule never has to guess whether the body
+moves. **Rejected:** trusting the brain's own check. The brain keeps one
 as an early out, but the robot's check is authoritative, and both must be
 able to veto. **Rejected:** relying on ROS's `collision_monitor` on the
 navigation path. The two collars run in series with this layer last,
@@ -185,7 +185,8 @@ moves (it reports its own wheels), every way of backing up is refused: the
 reverse verb, a standing reverse command, and a guarded verb's corrective
 pass astern. This is "unobserved is not clear", applied astern exactly as it
 already applied ahead. On the car it means: no reversing until its rear
-sensing lands. A body that moves nothing (a recorded walk), or whose motion
+sensing gives a usable scan. The lidar driver is built; its checks on the
+real D500 are not yet met (3.42 criterion 7). A body that moves nothing (a recorded walk), or whose motion
 is a person who can see (a phone walk), keeps reversing, because its
 reverse cannot hit anything the robot is responsible for. Turns stay
 allowed blind.
@@ -197,7 +198,7 @@ a robot pinned against something must always be able to turn away.
 backs the robot into whatever it cannot see; the rear is exactly where a
 forward-facing robot has the least idea what is there.
 
-**Trade-off accepted:** until rear sensing is fitted, the car cannot back
+**Trade-off accepted:** until rear sensing works on the car, it cannot back
 out of a dead end, and a guarded move that overshoots forward cannot correct
 itself backwards; it stops where it is. A person may still turn it.
 
@@ -438,13 +439,6 @@ are commitments, not tuning.
 - **Closed 2026-10-05: a person's goal outranks the brain.** A goal that
   names a person is that person driving, arbitrated at their rank; one that
   names no one stays an autonomous `ros` goal (3.23). Handoff 3b.
-- **Motion before a body can report its wheels.** Until a real motor board
-  sends its first feedback, a standing command passes unvetted and a
-  reverse verb runs unguarded, because the blind-reverse rule cannot tell
-  the body moves. Refuse instead, or accept and record
-  (`docs-review/SPEC-REVIEW.md` fix-list 6). Owner: the user. Where in the
-  code: the [engineering spec](../engineering/safety/ENGINEERING.md),
-  Known gaps.
 - **Safety-loop timing on the car.** Answered on the Jetson against the
   fake motor board: zero late safety ticks under full perception, SLAM and
   nav2 load (`PLAN-ros-alignment.md` 3.33, met with 3.37). Still open with

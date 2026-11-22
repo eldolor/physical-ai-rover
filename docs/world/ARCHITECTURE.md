@@ -2,7 +2,7 @@
 kind: architecture
 domain: world
 status: current
-verified: 2026-10-02
+verified: 2026-11-22
 ---
 
 # World -- architecture
@@ -37,8 +37,8 @@ Who depends on it:
 - The robot server passes world answers through to HTTP.
 - The brain reads them over HTTP.
 - The twin draws the map, the pose, the error readout and nav2 goals.
-- The proposed frontier search would read the map and send goals
-  (`PLAN-ros-alignment.md` section 6, question 6).
+- The frontier search (the brain's explore policy, 3.31) reads the map and
+  sends goals (`PLAN-ros-alignment.md` section 6, question 6).
 
 ## Components and boundaries
 
@@ -263,7 +263,7 @@ plausible.
 | The ROS bridge is unreachable | The SLAM world answers "unusable" pose and map | No stale or invented pose is ever reported |
 | The ROS container restarts | A new session means a new map name and a new anchor | A consumer can always tell yesterday's coordinates from today's |
 | The goal state cannot be read during arbitration | It counts as "no goal in progress" (fail-open) | An outage never locks every autonomous driver out |
-| A goal is sent, read or cancelled while the bridge is down | Today the route fails with a server error (see Open questions) | Target: refused by name, like a world that cannot plan. Not met |
+| A goal is sent, read or cancelled while the bridge is down | The route refuses it by name, and says whether waiting may help (handoff 4d, built 2026-10-03) | Refused by name, like a world that cannot plan. Met |
 | A simulator world on a body with no simulated house | Refused at start-up | Never a plausible map of the wrong house |
 | Hardware | Truth and error answer "unusable" | Never a plausible number to be proud of |
 
@@ -281,21 +281,17 @@ These bars were set and measured as the SLAM world's acceptance
 
 ## Open questions
 
-- **Keeping the map across sessions.** Saving it, reloading the pose graph
-  and keeping mapping on top of it, and the S3 backup are all decided in
-  principle and none is built (`PLAN-ros-alignment.md` section 6, question
-  6). Open within that: where the robot starts on a reloaded map. The user
-  decides, on the criteria written there.
-- **A frontier search over this map.** It would read the map and send goals
-  from the brain. It reopens whether the tiered policy steers by verbs or by
-  goals (question 2).
+- **Keeping the map across sessions.** Saving the map at a mission's end,
+  reloading it from the dock at the next start, and re-mapping on request
+  are built (3.50.D; `docs/guides/MERGED-STATE.md`, "ROS and maps"). The S3
+  backup is decided and not built (`PLAN-ros-alignment.md` section 6,
+  question 6).
+- **A frontier search over this map.** Built as the brain's explore policy
+  (3.31). Whether the tiered policy steers by verbs or by goals stays open
+  (question 2).
 - **Fetching only on a version change.** It needs a cheap route that returns
   the version alone. Deferred until a real house makes the map's size matter
   (`PLAN-mapping.md` section 4).
 - **The at-rest error of about one map cell** with drift off: the 5 cm bar
   was met on only 2 of 9 laps (`PLAN-ros-alignment.md` 3.14). Its cause is
   not established.
-- **Goals during a bridge outage.** The goal routes answer a server error
-  instead of a named refusal. The fix is not scheduled; the
-  [engineering spec](../engineering/world/ENGINEERING.md)'s Known gaps has
-  the code reference.

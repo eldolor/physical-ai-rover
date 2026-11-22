@@ -203,12 +203,12 @@ The driver order itself, including that a nav2 goal is an autonomous driver, is
 owned by the [safety architecture](../safety/ARCHITECTURE.md); this domain
 only mirrors it inside ROS.
 
-**Not yet true for every person.** Today only the twin's D-pad has a
-multiplexer input. Other callers that rank as a person (a teleop operator,
-or a caller that does not name itself) and the teleop driver are refused
-under the ROS drive mode. Until every arbitrated driver has an input, "people
-reach the wheels through the verb route" holds for the D-pad only (open
-questions; `docs-review/REPORT.md` V10).
+**True for every person** (closed 2026-10-05, handoff 3a). The multiplexer
+input is chosen by a driver's rank, not its name: every driver that ranks as a
+person (the twin's D-pad, a teleop operator, a caller that does not name
+itself) reaches the wheels through the person's input, and so "people reach
+the wheels through the verb route" holds for all of them
+(`docs-review/REPORT.md` V10).
 
 **The multiplexer's inputs.** The brain and nav2 share a rank inside it.
 That tie never arises through the supported routes, because the robot
@@ -331,17 +331,14 @@ the wheels, one that skips arbitration (3.17).
 All open questions here come from `PLAN-ros-alignment.md` section 6, except
 where noted.
 
-- **Every person, not just the D-pad, under the ROS drive mode** (D6;
-  `docs-review/REPORT.md` V10). Either give every manual-rank driver a
-  multiplexer input, or narrow D6 for good. The user decides.
 - **Sighting geometry inside ROS.** A route would turn a camera bearing plus
   the lidar's range into a point on the map, composed through the transform
   tree. It is decided in principle (1.1), has no criteria yet, and would
   raise the bridge's route budget.
 - **Saving and reloading the map** (question 6): decided as option D
   (localise on the saved map by default, re-map on entering unknown space,
-  the dock as the start; the user, 2026-10-09 and 2026-10-11). Being built
-  in 3.50.D: the bridge saves at every mission end into a private volume
+  the dock as the start; the user, 2026-10-09 and 2026-10-11). Built
+  in 3.50.D (merged; `docs/guides/MERGED-STATE.md`): the bridge saves at every mission end into a private volume
   (D2); slam_toolbox maps with its async node and is restarted in
   localisation mode for a reload (D3), because the node that switches
   without a restart mapped the furnished home worse (D2-b). Localisation

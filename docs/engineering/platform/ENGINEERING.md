@@ -14,8 +14,8 @@ This document is true only until the hardware or its description changes.
 
 **Much of this is PLANNED.** On 2026-10-06 the Jetson is in hand, brought
 up and kept: `PLAN-ros-alignment.md` 3.33's criteria are met on the board
-(both risks, the suite, G4, headroom). The Rover is ordered and not
-delivered. Every item below is tagged:
+(both risks, the suite, G4, headroom). The Rover is in hand (the user,
+2026-11-21). Every item below is tagged:
 
 - **[built]** exists in the repo and is tested;
 - **[in hand]** the part has arrived;
@@ -74,7 +74,7 @@ Physical and host-side interfaces. Device names are expected, not seen.
 | Jetson power input | Barrel 5.5 x 2.5 mm, 9-20 V | [V] devkit spec |
 | Rover supply to Jetson | DC5525 lead from the kit's UPS board | [unmeasured] |
 | Motor board serial | Which device, how it is named (a udev symlink, never enumeration order) and `ROBOT_SERIAL` are owned by the motor-board spec (docs/engineering/motor-board/ENGINEERING.md). Which route the kit wires is an arrival check | [planned] |
-| Lidar serial | LD19 protocol at 230400 baud, read by the robot process. Opened by a udev symlink (name to be chosen), never by enumeration order such as `ttyACM0`, the same rule as the motor board's | [planned]; protocol inferred from `ldlidar` |
+| Lidar serial | LD19 protocol at 230400 baud (`robot/lidar_ld19.py` `BAUD`), read by the robot process. Opened by `ROBOT_LIDAR` (or `hardware.lidar_port`; `robot/factory.py`): a udev symlink (name to be chosen), never by enumeration order such as `ttyACM0`, the same rule as the motor board's | [built] and run on a fake lidar (`sim/fake_lidar.py`); the protocol and baud are inferred from `ldlidar`, unverified on the real D500 (3.42 criterion 7) |
 | Serial permissions | Service user in `dialout`; udev rules for stable names (the motor board's in motor-board ENG §Procedures, docs/engineering/motor-board/ENGINEERING.md; B5 in operations) | [planned] |
 | SSH | `Host picar-jetson`, user `picar`, key `~/.ssh/id_ed25519_jetson`. `picar-jetson.local` does not resolve from the Mac on this network, so the entry points at the board's LAN address (a DHCP reservation is still to make, 3.33) | [built] on the Mac |
 | Code delivery | The Mac pushes over SSH to a non-bare repo on the board (`receive.denyCurrentBranch updateInstead`, a `jetson` remote on the Mac). No GitHub credentials on the robot. One-time setup and the push command: `tools/jetson/README.md` section 2 | [built], used for 3.33 |
@@ -119,7 +119,7 @@ and `slam.yaml` beside it.
 |---|---|---|---|---|
 | `wheel_radius` / `WHEEL_RADIUS_M` | 0.040 m | [BOM] | xacro, `controllers.yaml`, `sim/mock_robot.py`, `robot/hardware_robot.py`, `sim/fake_esp32.py` (diameter) | 80 mm tyres; firmware mainType 2 `WHEEL_D`. One number (copies table above) |
 | `wheel_separation` / `TRACK_WIDTH_M` | 0.172 m | [BOM] | same five | Firmware `TRACK_WIDTH`. CAD's wheel centres are 0.1745 m apart (1.5%); the effective skid-steer track is measured on the car |
-| `wheel_separation_multiplier` | not set (controller default) | [planned] | `controllers.yaml` | R8: set from a measured pivot on the car |
+| `wheel_separation_multiplier` | 1.0 (set explicitly; the launch file overrides it from `TRACK_SCRUB`) | [PLACEHOLDER] | `controllers.yaml` | 3.35, R8: set from a measured pivot on the car |
 | Encoder pulses per wheel rev (`ENCODER_COUNTS_PER_REV`, `COUNTS_PER_REV`) | 660 | [V] Waveshare support | `sim/mock_robot.py`, `robot/hardware_robot.py`, `sim/fake_esp32.py` | Two channels, left and right (3.25). Pinned only by `tests/test_ros_driver_board.py` |
 | `body_length` x `body_width` / `FOOTPRINT_LENGTH_M` x `FOOTPRINT_WIDTH_M` | 0.253 x 0.231 m | [BOM] | xacro; `robot/safety.py` (imported by `sim/grid_world.py`) | Product page |
 | Corner radius from the rotation centre | 17.1 cm | derived | not a constant; follows from the footprint | What a pivot sweeps; the old 2WD chassis was 15.1 cm (3.19, 3.21) |
@@ -128,7 +128,7 @@ and `slam.yaml` beside it.
 | `laser_x` / `LIDAR_X_M` | 0.040 m | [CAD] | xacro, `robot/safety.py`, sim scan origin | One number (`tests/test_cad_geometry.py`, wall-linter registry) |
 | `laser_z` | 0.080 m (0.120 m off the floor) | [CAD] | xacro | The lidar's scan plane. Anything lower is invisible to it |
 | Lidar range (`LIDAR_RANGE_M`) | 12.0 m | [V] datasheet | `sim/mock_robot.py`, `slam.yaml` `max_laser_range` | D500 rated range; the sim's scan and SLAM use it |
-| Lidar mounting yaw | +90 deg (zero faces left) | [CAD] | NOT modelled | Must go into the driver's angle offset or the URDF before the first scan is used |
+| Lidar mounting yaw | +90 deg (zero faces left) | [CAD] | not in the xacro or the sim; `robot/lidar_ld19.py` `LIDAR_YAW_DEG` (-90.0) applies it in the driver | The sign and value are unverified on the real unit (3.42 criterion 7). The xacro's comment on `laser_x` says it is not modelled there |
 | `pan_x` / `pan_z` | -0.009 m / 0.128 m (0.168 m off the floor) | [CAD] | xacro | Pan axis almost over the rotation centre, which is why R3 criterion 4 now passes (1.89 deg at 1 m, was 4.59) |
 | `camera_x` / `camera_up` | 0.048 m / 0.042 m (lens 0.210 m off the floor) | [CAD] | xacro | About double the Stage 0 rig height of 10-13 cm |
 | `camera_pitch` | 0.2618 rad (15 deg down) | [PLACEHOLDER] | xacro | The mount's tilt is unmeasured |
@@ -284,12 +284,13 @@ chain suite's first test fails if the bridge has not heard `/odom` within
    `ugv_driver` service, so only our backend opens the port.
 5. Measure the CAD geometry: lidar offset and height, pan axis, lens height,
    and the lidar's zero direction.
-6. Expect no translation under the safety layer until the lidar driver
-   exists; only turns move. The rule and its refusals are canonical in the
-   safety spec's Known gaps (docs/engineering/safety/ENGINEERING.md). Wheel
-   tests before then are on the stand, wheels off the floor.
-7. Once the lidar driver lands, run the safety sweep against the real
-   lidar.
+6. Expect no translation under the safety layer while there is no usable
+   scan (the driver is built, 3.42, and unverified on the real D500); only
+   turns move. The rule and its refusals are canonical in the safety spec's
+   Known gaps (docs/engineering/safety/ENGINEERING.md). Wheel tests before
+   the driver is verified are on the stand, wheels off the floor.
+7. Once the lidar driver is verified on the real unit (3.42 criterion 7),
+   run the safety sweep against the real lidar.
 8. Before any firmware change, dump the stock ESP32 image. The command and
    the restore path are the motor-board spec's flash procedure; do not
    copy them here.
@@ -315,14 +316,18 @@ lidar's plane, skid-steer slip, the battery cutoff, the 15 W result) are
 the [architecture spec's open questions](../../platform/ARCHITECTURE.md#open-questions)
 and are not repeated here. These are the implementation gaps:
 
-- **No battery cutoff code.** Nothing reads pack voltage, warns, stops or
-  shuts down before 9 V, and the twin has no readout
-  (`HARDWARE-BOM.md` editor's caution).
-- **The lidar driver in the robot process is not written**, and the
-  simulator has no fake lidar on a pty yet (`PLAN-ros-alignment.md`
-  section 6, question 5). What the safety layer then refuses is canonical
-  in the safety spec's Known gaps (docs/engineering/safety/ENGINEERING.md).
-- **The lidar's +90 degree yaw is not modelled** in the xacro or the sim.
+- **The battery ladder's thresholds are placeholders and its power-off is
+  not proven on the car.** `robot/battery_ladder.py` (3.137.A-B) reads the
+  board's pack voltage and the twin shows a banner; the levels (10.5 / 10.2 /
+  10.0 V) wait on the Rover's discharge curve (3.137.E) and a real power-off
+  is open (3.137.C). The ladder is in the safety spec's domain.
+- **The lidar driver in the robot process is built** (`robot/lidar_ld19.py`,
+  with `sim/fake_lidar.py` on a pty; 3.42), **and not yet checked on the real
+  D500** (3.42 criterion 7). What the safety layer refuses with no usable
+  scan is canonical in the safety spec's Known gaps
+  (docs/engineering/safety/ENGINEERING.md).
+- **The lidar's +90 degree yaw is not modelled** in the xacro or the sim;
+  the driver applies it (`LIDAR_YAW_DEG`), unverified on the real unit.
 - **Every `[CAD]` value is unmeasured**, and three geometry values are
   still `[PLACEHOLDER]`.
 - **On-board latency is measured only for the shipped YOLOE + CLIP

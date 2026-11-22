@@ -14,7 +14,8 @@ docs/plans/ros-alignment/3.70-survey-and-mission-ends.md, written before this ra
 
 Rows: evaluations/find-last-seen-370/live.jsonl (one per session or find).
 The maps and inventories stay under EXPLORE_LOGDIR (a sim house's floor
-plan, never committed).
+plan, never committed). 3.212: the run's logs, gzipped, are kept beside the
+rows in `<rows stem>-logs/`.
 
     eval "$(python tools/plan_section.py env)"
     PICAR_ROS_NETWORK=host python tools/desktop_lock.py exclusive --why "3.70.M2 live" -- \\
@@ -416,11 +417,19 @@ def run(rows=ROWS, finds=FINDS, find_limit_s=FIND_LIMIT_S, move=None, before_fin
                 flush=True)
         restore(inv_dir, keep)
     finally:
-        save_logs("end")
-        subprocess.run(["docker", "rm", "-f", de.CONTAINER], capture_output=True)
-        de._kill_ports()
-        load.stop_ev.set()
-        print("load", json.dumps(load.summary()), flush=True)
+        try:
+            save_logs("end")
+            subprocess.run(["docker", "rm", "-f", de.CONTAINER], capture_output=True)
+            de._kill_ports()
+            load.stop_ev.set()
+            print("load", json.dumps(load.summary()), flush=True)
+        finally:
+            # 3.212: the logs beside the rows (logs only: maps and inventory
+            # stay under EXPLORE_LOGDIR), also when the teardown above raises
+            # (review); keep_logs never raises.
+            kept = de.keep_logs(rows.parent / f"{rows.stem}-logs")
+            print("logs", json.dumps({"kept": len(kept["kept"]), "lost": len(kept["lost"])}),
+                  flush=True)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@
 kind: architecture
 domain: operations
 status: current
-verified: 2026-10-02
+verified: 2026-11-22
 ---
 
 # Operations -- architecture
@@ -10,8 +10,8 @@ verified: 2026-10-02
 Operations is how the system is deployed, reached and kept healthy. It
 covers the cloud deployment, the tunnel that lets the deployed page reach
 the local robot and brain, the shared secrets, the single health verdict,
-build identity, mission metrics, and the planned boot-time deployment on
-the car. Read this to understand where each process runs and why, and what
+build identity, mission metrics, and the boot-time deployment on the car
+(half built). Read this to understand where each process runs and why, and what
 "healthy" is allowed to mean. Commands, stack names, routes and variables
 are in the [engineering spec](../engineering/operations/ENGINEERING.md).
 
@@ -23,8 +23,9 @@ The system has two halves with different homes.
   the recorded-walk and metrics storage. These are small, bursty and cheap
   to run serverless.
 - **On a machine you control:** the robot server, the brain, and (under the
-  ROS drive) the ROS container. Today that machine is a laptop. On hardware
-  day it is the Jetson on the car.
+  ROS drive) the ROS container. Today that machine is a laptop, or the
+  Jetson on the bench, which has served the deployed twin from boot since
+  2026-10-11 (3.71). On hardware day it is the Jetson on the car.
 
 Operations joins the two. Without it, the deployed twin could not reach a
 mission. Nobody could tell which build a process is running. A health check
@@ -63,7 +64,7 @@ record to compare across releases.
 | Health verdict | One answer for both halves, with an exit code | Only conditions a release can be blamed for may change it |
 | Build identity | Which build is running, from where, logged first and published on health | Lives on the robot side of the code, because both servers report it and the robot server may never depend on the brain's code |
 | Mission metrics | One summary row per mission, shipped at the end and stored with the walks | The shipper can never fail a mission |
-| Boot-time deployment (B5, planned) | Starting the robot server, brain and ROS container on the car at boot, the container last | Nothing it restarts may move the robot on its own |
+| Boot-time deployment (B5, first half built) | Starting the robot server, brain and ROS container on the car at boot, the container last | Nothing it restarts may move the robot on its own |
 
 The recordings domain owns the walk store, the walk console and the
 evaluation tools (docs/recordings/ARCHITECTURE.md). This domain owns where
@@ -118,8 +119,9 @@ then deleted 2026-09-05). Its home is the car. The tiered policy loads the
 detector and CLIP into the brain process, which a small cloud function
 cannot host.
 
-**Trade-off.** The deployed twin works only while a laptop is running the
-stack and the tunnel. That gap closes with B5.
+**Trade-off.** The deployed twin works only while the stack and the tunnel
+are running: a laptop, or the Jetson's boot-time services (3.71). The gap
+closes for the car with the rest of B5.
 
 ### One tunnel domain, split by path
 
@@ -191,16 +193,19 @@ That is accepted: a robot that stopped because a dashboard was down would be
 worse. Sharing the walk bucket also means every reader of walks must tell a
 metrics record from a walk. Operations owns the storage layout that makes
 the two distinguishable; the recordings domain implements the walk list's
-filter. The current state is in the engineering spec's Known gaps.
+filter, and it is built (handoff 4c).
 
-### Boot-time deployment on the car uses the OS service manager (B5, planned)
+### Boot-time deployment on the car uses the OS service manager (B5, first half built)
 
 **Decision.** On the car, the robot server, the brain and the ROS container
 start as separate supervised services, the robot server first and the ROS
 container after it, because the container's actuator talks to the robot
 server.
 Secrets and modes come from an environment file, not the unit files or the
-repo (`PLAN-brain-relocation.md` B5). Not built.
+repo (`PLAN-brain-relocation.md` B5). Built for the Jetson's first half
+(3.71): the robot server, brain and proxy, the tunnel and the local VLM
+start at boot, in simulator mode. The ROS container's start, the car's
+serial access and its mode set-up are not built.
 
 **Alternative rejected.** One supervisor process hosting everything, which
 loses the two-process watchdog guarantee.
@@ -219,7 +224,7 @@ move the robot on its own.
 | Brain and walks function | Brain posts one metrics row per mission | HTTP/JSON with the walks secret | The walks function owns storage. Unknown fields are refused |
 | Twin and local stack | Phone calls the tunnel. The proxy fans out by path | HTTPS to the tunnel, then HTTP on loopback | The proxy owns only routing. The servers own authentication |
 | Health command and both servers | The command reads each server's health route | HTTP/JSON. Health stays unauthenticated on both servers | The command owns the verdict rule. The servers own the fields |
-| Operator and boot services (B5) | Service manager starts and restarts the processes | OS service manager | Planned |
+| Operator and boot services (B5) | Service manager starts and restarts the processes | OS service manager | First half built (3.71); the ROS container and the car's set-up are planned |
 
 ## Failure modes and resilience targets
 
@@ -239,9 +244,10 @@ move the robot on its own.
 ## Open questions
 
 - **B5 on the Jetson.** The start order is decided above, and this domain
-  owns it. Unit layout, environment file, serial device access and restart
-  semantics are listed in `PLAN-brain-relocation.md` B5 and not built. It
-  needs the board and the Rover.
+  owns it. The Jetson's units for the servers, tunnel and local VLM are
+  built (3.71). The ROS container's unit, the environment file, serial
+  device access and restart semantics are listed in
+  `PLAN-brain-relocation.md` B5 and not built. They need the Rover.
 - **Cross-origin support on the serverless stack.** It would retire the
   proxy's vision shim. It needs a deploy and the route tests.
 - **Deployed replay, and replay as a job.** Whether the deployed walks

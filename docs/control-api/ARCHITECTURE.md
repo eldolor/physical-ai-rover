@@ -222,10 +222,6 @@ Restarting the server is the reset.
   fixed: the simulated body now runs as separate programs (3.36), and with
   the full stack loaded the control loop ran no late ticks (3.33, 3.37). A
   real serial reader's share is still to be measured on the car.
-- **Manual drivers other than the D-pad under ROS drive** are refused,
-  because the ROS bridge has an input only for the D-pad
-  (`docs-review/REPORT.md` V10). Owned by [safety](../safety/ARCHITECTURE.md)
-  (driver order) and [ros](../ros/ARCHITECTURE.md) (the bridge).
 - **Bridge route budget.** New world features (sighting geometry, map
   save) add bridge routes against a deliberate budget
   (`PLAN-ros-alignment.md` 1.1).
