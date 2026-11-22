@@ -95,7 +95,9 @@ def test_a_refused_place_supports_nothing():
     a._note_refusal({"_arrival": {"state": REFUSED}})
     assert list(a._sighted) == [(1.0, 1.0)] * 2
     _live(a, (1.0, 1.0))
-    assert a._keeps_approach(3.1, 1.0) is True           # unpruned: 5 > 2, replaced
+    # Pruned: (3.1, 1.0) has 0 support against 2, so the approach is kept
+    # (without the prune it would have 5 > 2 and replace it).
+    assert a._keeps_approach(3.1, 1.0) is True
 
 
 def test_the_sightings_kept_are_capped_newest_kept():
