@@ -194,7 +194,8 @@ nav2 goal inside ROS.
 **A stop ends a goal.** Decided by the user 2026-10-02 as the safety
 domain's rule ([safety architecture](../safety/ARCHITECTURE.md), "Who
 drives"); built 2026-10-02. The robot server cancels any active goal after
-it has zeroed the wheels, and never makes the stop wait on ROS; a person
+it has zeroed the wheels, and never makes the stop wait on ROS (a stop from
+the brain spares the goal: spec review 3, V1); a person
 re-sends a goal to resume. Rejected there: a stop that only pauses the goal
 plus a separate cancel control. Before it was built a stop only paused a
 goal: nothing cancelled it, so nav2 kept publishing and the wheels resumed
@@ -237,7 +238,7 @@ the verb vocabulary never enters ROS.
 - **G3, a real fallback.**
 - **G4, the same suites on the Jetson.**
 
-All four are met: G1-G3 in the simulator (2026-09-30), G4 on the Jetson
+All four are met: G1-G3 in the simulator (2026-09-29 and 2026-09-30), G4 on the Jetson
 (2026-10-05, 3.33) -- judged on the fork firmware the Rover will be
 flashed with; on the stock firmware the turn test fails about one run in
 three (3.25).
@@ -324,7 +325,7 @@ the wheels, one that skips arbitration (3.17).
 | A goal nav2 cannot reach | nav2 aborts, and the wheels are at zero | Aborted and stopped within 60 s (R6: 19-24 s) |
 | A person taps during a goal | The goal is cancelled inside ROS | Cancelled within 1 s (R6: 0.04-0.05 s) |
 | tf2 or a transform goes stale | Prevented by the distro defect fix (D10) | Not a runtime guard: the symptom is a goal "reached" instantly |
-| SLAM loses its place in a large, furnished room | Scan matching locks onto the wrong one of many similar patterns (rows of chair and table legs, far walls); the pose drifts or jumps while odometry stays right, and nav2 "reaches" goals that far from the real spot | Jumps: none, by limiting how far one loop closure may move the robot (3.38, met). Drift: not met -- 0.45-0.86 m in the furnished home's open rooms with odometry within 3 cm (3.39, open) |
+| SLAM loses its place in a large, furnished room | Scan matching locks onto the wrong one of many similar patterns (rows of chair and table legs, far walls); the pose drifts or jumps while odometry stays right, and nav2 "reaches" goals that far from the real spot | Jumps: none, by limiting how far one loop closure may move the robot (3.38: 0 jumps in its kept runs; its home-house criterion 1 failed, 4 of 6, at a provisional door and the user accepted it). Drift: met by 3.40 (closed 2026-10-06). 3.39 had found 0.45-0.86 m in the furnished home's open rooms with odometry within 3 cm; narrowing the scan matcher's blur brought the east rooms' error to 0.042 and 0.028 m, every room's walls true |
 
 ## Open questions
 
@@ -351,16 +352,16 @@ where noted.
   every moved object, and also fired on a fixed wall. So a moved object
   in known space sets nothing off: it heals when a person asks for a
   re-map, or by chance on a re-map that entering unknown started.
-- **How the robot keeps its place in large furnished rooms** (3.39). This is
-  a problem every indoor robot with a low 2D lidar meets: repeated features
-  confuse scan matching, open space gives it little to hold, and SLAM must
-  weigh odometry against scans. The candidates, in order of cost: tune SLAM
-  for such rooms; fuse an IMU into odometry (the Rover's board reports a
-  gyro); localise on a saved map rather than mapping continuously; add
-  visual or depth SLAM from the Rover's depth camera on the Jetson's GPU.
-  The simulator's odometry is exact, so any candidate is judged with
-  simulated encoder drift too -- a fix that needs perfect odometry is not
-  one. Undecided; the user chooses once 3.39 has isolated the cause.
+- **How the robot keeps its place in large furnished rooms** (3.39, closed by
+  3.40 on 2026-10-06). This is a problem every indoor robot with a low 2D
+  lidar meets: repeated features confuse scan matching, open space gives it
+  little to hold, and SLAM must weigh odometry against scans. The first
+  candidate, tuning SLAM for such rooms (the matcher's blur), met the bars in
+  the simulator's furnished home. The costlier candidates, an IMU fused into
+  odometry and visual or depth SLAM, were not needed; the gyro fusion is
+  still the smaller decision below, if the car shows the drift again. The
+  simulator's odometry is exact, so any candidate is judged with simulated
+  encoder drift too -- a fix that needs perfect odometry is not one.
 - **Whether the tiered policy steers by verbs or by nav2 goals** (question 2).
 - **Smaller decisions:**
   - Rename the service directory now that it holds nav2 (question 1).
