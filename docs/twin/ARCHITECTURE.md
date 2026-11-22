@@ -199,10 +199,9 @@ tunnel is a legitimate reason for them to differ.
 **Decision.** On the deployed site, pages and scripts are served
 "revalidate every time". An explicit manifest lists every published file
 with its type and cache policy. A test checks the manifest against what
-the pages reference. Locally, only the script is marked "revalidate"; the
-page itself carries no cache instruction, so a browser may reuse a stale
-page against a fresh script. The decision's guarantee (page and script
-never a version apart) is therefore met on the deployed site only.
+the pages reference. Locally the robot server marks the page, the scripts and the
+stylesheets "revalidate" too, so the decision's guarantee (page and
+script never a version apart) holds on both.
 
 **Rejected.** Hashed filenames. They need HTML templating and a build
 step, for one page served to one household. Also rejected: a guessing
@@ -503,11 +502,12 @@ setup.
 
 ## Open questions
 
-- **The environment banner cannot fire on the deployed twin.** It asks
-  the origin that served the page. Under the CDN that origin is the vision
-  service, which reports no environment label. The banner works only when
-  the robot server serves the page. Fix it in the vision service or in
-  the page; operations decides.
+- **The environment banner fires on the deployed twin only if the stack
+  is labelled.** It asks the origin that served the page. Under the CDN
+  that origin is the vision service, which reports an environment label
+  since 3.64 (`3.64-older-review-bugs.md` B1), empty unless the stack sets
+  one; 3.64's deploy left it unset. Whether the live stack has one is
+  unchecked, and operations decides.
 - **The health line re-implements the verdict thresholds** rather than
   reading a verdict. It agrees with the command today. Whether the
   servers should publish the verdict itself is open.
