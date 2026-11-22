@@ -19,9 +19,13 @@ bridge 8190) and its own ROS domain (73), so it never touches a stack
 another session has up on the defaults. One JSON line per mission.
 """
 
+import atexit
+import gzip
 import json
 import math
 import os
+import shutil
+import stat
 import subprocess
 import sys
 import time
@@ -61,6 +65,10 @@ HOST_NETWORK = os.environ.get("PICAR_ROS_NETWORK") == "host"
 # They were overwritten at every new stack, so a batch of three kept only
 # the last run's -- and the brain's held nothing at INFO anyway.
 RUN_DIR = None
+# 3.212: every run directory this process made, for keep_logs.
+RUN_DIRS = []
+_KEPT = set()            # (run dir, destination) pairs already kept
+_ATEXIT = []             # the PICAR_KEEP_LOGS hook, registered once
 
 
 def _new_run_dir():
@@ -72,7 +80,89 @@ def _new_run_dir():
         n += 1
         RUN_DIR = f"{base}-{n}"
     os.makedirs(RUN_DIR)
+    RUN_DIRS.append(RUN_DIR)
+    keep_to = os.environ.get("PICAR_KEEP_LOGS")
+    if keep_to and not _ATEXIT:
+        _ATEXIT.append(keep_to)
+        atexit.register(keep_logs, keep_to)
     return RUN_DIR
+
+
+def keep_logs(dest, run_dirs=None):
+    """3.212: copy each run directory's logs to `dest/<run-dir-name>/`,
+    gzipped, so they outlive a container that is reclaimed after its session.
+
+    Only regular `*.log` files directly in a run directory are copied. A
+    subdirectory (`maps-*`, `inventory-*`: a home's floor plan), any other
+    file and any symlink stay where they are. An existing `dest/<run>/` is
+    never written into: the copy goes to `<run>-2/`, `-3/`, and so on. A run
+    directory already kept to this `dest` in this process is skipped, so the
+    PICAR_KEEP_LOGS hook does not copy again what a harness kept itself.
+    Never raises. Each file it could not keep is named on stderr. Returns
+    {"kept": [paths written], "lost": [(source, reason)]}."""
+    out = {"kept": [], "lost": []}
+    try:
+        dest = os.path.abspath(dest)
+        runs = list(RUN_DIRS if run_dirs is None else run_dirs)
+    except Exception as e:  # noqa: BLE001 -- never raise out of a finally
+        out["lost"].append((str(dest), repr(e)))
+        print(f"keep_logs: nothing kept ({e!r})", file=sys.stderr, flush=True)
+        return out
+    for run in runs:
+        key = (os.path.abspath(run), dest)
+        if key in _KEPT:
+            continue
+        try:
+            names = sorted(n for n in os.listdir(run) if n.endswith(".log"))
+        except OSError as e:
+            out["lost"].append((run, repr(e)))
+            print(f"keep_logs: {run} not read ({e!r})", file=sys.stderr, flush=True)
+            continue
+        logs = []
+        for n in names:
+            src = os.path.join(run, n)
+            try:
+                st = os.lstat(src)
+            except OSError as e:
+                out["lost"].append((src, repr(e)))
+                continue
+            if stat.S_ISREG(st.st_mode):     # lstat: a symlink is never followed
+                logs.append(src)
+        if not logs:
+            _KEPT.add(key)
+            continue
+        base = os.path.join(dest, os.path.basename(os.path.normpath(run)))
+        target, k = base, 1
+        try:
+            os.makedirs(dest, exist_ok=True)
+            while True:
+                try:
+                    os.mkdir(target)         # never into an existing directory
+                    break
+                except FileExistsError:
+                    k += 1
+                    target = f"{base}-{k}"
+        except OSError as e:
+            out["lost"].extend((src, repr(e)) for src in logs)
+            print(f"keep_logs: {run} not kept, {target} not made ({e!r})",
+                  file=sys.stderr, flush=True)
+            continue
+        for src in logs:
+            to = os.path.join(target, os.path.basename(src) + ".gz")
+            try:
+                fd = os.open(src, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+                with os.fdopen(fd, "rb") as fi, gzip.open(to, "wb") as fo:
+                    shutil.copyfileobj(fi, fo)
+                out["kept"].append(to)
+            except Exception as e:  # noqa: BLE001 -- one lost file, not the run
+                out["lost"].append((src, repr(e)))
+                try:
+                    os.remove(to)            # no half-written copy left looking whole
+                except OSError:
+                    pass
+                print(f"keep_logs: {src} not kept ({e!r})", file=sys.stderr, flush=True)
+        _KEPT.add(key)
+    return out
 
 
 def _kill_ports():
