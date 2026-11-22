@@ -170,16 +170,14 @@ board` lists open steps. **Whoever merges moves the section's line to
 * 3.175-3.178 (the user, 2026-11-12: features from similar products,
   bars first): 3.175 a moved target's memory; 3.176 a find in plain words
   (the model arm asks first); 3.178 a watch list (needs the Rover's frames).
-* 3.190 (the user, 2026-11-19): one cloud call at a find's start for the
-  room prior of a target the shipped prior lacks (3.116.C; off by default).
-  Route deployed 2026-11-20; D's find FAILED 14 (first goal); F FAILED:
-  nothing ships. B's call 7: the user; E: the Rover.
+* 3.190 (the user, 2026-11-19): a cloud room prior for a target the
+  shipped prior lacks (off by default). D FAILED 14, F FAILED: nothing
+  ships. B's call 7: the user; E: the Rover.
+* 3.202.C soak: waits on 3.208 and the desktop's exclusive lock. 3.208: built, held from `dev` by 3.178.B's Touches (the user's call).
+* ROS image: rebuild `:latest` and the Jetson's from `dev` after 3.211's `scaled_house` check.
 * 3.206 (the user, 2026-11-21): a frontier model's direction labels train
-  Qwen's steering (with 3.188). A is free; B-C's calls wait on the user;
-  D on 3.188.B.
-* 3.161: Z5 FAILED (82 of 96 vs 87; a design question) and Z4's live re-map.
-* Not built: `brain/planner.py`, S7 (chaos and soak), a Stage 1 vision
-  re-run on the lit renderer.
+  Qwen's steering (3.188). A free; B-C's calls: the user; D: 3.188.B.
+* Not built: `brain/planner.py`, a Stage 1 vision re-run on the lit renderer.
 
 **The Rover** (in hand; state: 3.140's log: L0 begun, nothing
 met; the board's feed reaches the Jetson but it acts on nothing sent over serial; no motion until `mainType` reads 2, 3.140)
