@@ -3,11 +3,12 @@
 # this directory copied in), into OUT, under the shared desktop lock.
 # bash evaluations/false-sighting-3213/run_bars.sh CHECKOUT OUT
 set -euo pipefail
+SELF="$(realpath "$0")"; CHECKOUT="$(realpath "$1")"; mkdir -p "$2"; OUT="$(realpath "$2")"   # review
 if [ -z "${PICAR_3213_LOCKED:-}" ]; then
-  cd "$(dirname "$0")/../.."
-  exec env PICAR_3213_LOCKED=1 python tools/desktop_lock.py shared --why "3.213.B bars" -- bash "$0" "$@"
+  cd "$(dirname "$SELF")/../.."
+  exec env PICAR_3213_LOCKED=1 python tools/desktop_lock.py shared --why "3.213.B bars" -- bash "$SELF" "$CHECKOUT" "$OUT"
 fi
-cd "$1"; OUT="$2"; mkdir -p "$OUT"
+cd "$CHECKOUT"
 export SWEEP_WORKERS="${SWEEP_WORKERS:-4}"
 B=evaluations/false-sighting-3213/bars_find.py
 python $B find "$OUT/find_rooms.json" --chooser rooms
