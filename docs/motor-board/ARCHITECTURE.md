@@ -2,7 +2,7 @@
 kind: architecture
 domain: motor-board
 status: current
-verified: 2026-10-02
+verified: 2026-11-22
 ---
 
 # Motor board -- architecture
@@ -204,7 +204,7 @@ itself about 1.5 degrees out, so a settle chases noise and adds about
 **A correction is a move like any other.** It is vetted by the safety
 domain's rules for driving with no sensors, which belong to that domain
 ([safety engineering](../engineering/safety/ENGINEERING.md), Known gaps). On
-the car before its lidar driver lands, nothing can see ahead or behind, so
+the car with no lidar configured, nothing can see ahead or behind, so
 the car cannot drive straight at all: every forward and every reverse is
 refused, and only turns, and turn corrections, run.
 
@@ -224,12 +224,14 @@ feedback rate, partial lines (3.16, 3.25).
 ### D9. The board is only the motors
 
 **Decision.** The camera, lidar and depth camera are separate devices, with
-their own drivers, and none of them is this domain's. Until those exist, a
-stand-in body supplies them in the simulator. On the car they answer the
-body contract's defaults, and those are not all silent: the distance sensor
-reads as an obstacle at zero range, which refuses every forward move, and a
-request for a camera frame fails rather than answering "unusable". Where the lidar driver lives is decided by the
-[ros architecture](../ros/ARCHITECTURE.md) (D3).
+their own drivers, and none of them is this domain's. The lidar driver
+(3.42) and the camera stream (3.90 A) now exist and are handed to this
+backend when configured; a stand-in body supplies the sensors in the
+simulator. A sensor with no driver answers the body contract's defaults on
+the car, and those are not all silent: the distance sensor reads as an
+obstacle at zero range, which refuses every forward move. Where the lidar
+driver lives is decided by the [ros architecture](../ros/ARCHITECTURE.md)
+(D3).
 
 ## Contracts
 
@@ -270,5 +272,6 @@ request for a camera frame fails rather than answering "unusable". Where the lid
   - the effective skid-steer track width. Where it goes is settled
     (`PLAN-ros-alignment.md` 3.35): one setting, the track scrub, read by
     the robot server and the ROS container; only the value is owed.
-- **Battery voltage.** The board reports it. A software cutoff is owed by
-  the platform and safety domains, not here.
+- **Battery voltage.** The board reports it. The software cutoff is built
+  by the platform and safety domains, not here (3.137.A-B); its levels are
+  placeholders until the Rover's discharge curve is measured (3.137.E).
