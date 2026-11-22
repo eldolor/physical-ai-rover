@@ -35,27 +35,27 @@ def _live(agent, target, kind="approach"):
 def test_a_better_supported_live_approach_is_kept():
     a = _agent()
     _live(a, (1.0, 1.0))
-    a._sighted = [(1.0, 1.0), (1.1, 1.0), (3.0, 1.0)]
+    a._sighted.extend([(1.0, 1.0), (1.1, 1.0), (3.0, 1.0)])
     assert a._keeps_approach(3.0, 1.0) is True
 
 
 def test_a_tie_keeps_the_live_approach():
     a = _agent()
     _live(a, (1.0, 1.0))
-    a._sighted = [(1.0, 1.0), (3.0, 1.0)]
+    a._sighted.extend([(1.0, 1.0), (3.0, 1.0)])
     assert a._keeps_approach(3.0, 1.0) is True
 
 
 def test_a_better_supported_new_place_replaces_it():
     a = _agent()
     _live(a, (1.0, 1.0))
-    a._sighted = [(1.0, 1.0), (3.0, 1.0), (3.2, 1.0)]
+    a._sighted.extend([(1.0, 1.0), (3.0, 1.0), (3.2, 1.0)])
     assert a._keeps_approach(3.0, 1.0) is False
 
 
 def test_nothing_is_kept_without_a_live_approach_goal():
     a = _agent()
-    a._sighted = [(1.0, 1.0)] * 5 + [(3.0, 1.0)]
+    a._sighted.extend([(1.0, 1.0)] * 5 + [(3.0, 1.0)])
     assert a._keeps_approach(3.0, 1.0) is False          # no goal
     _live(a, (1.0, 1.0), kind="frontier")
     assert a._keeps_approach(3.0, 1.0) is False          # a goal, not an approach
@@ -65,7 +65,7 @@ def test_support_counts_within_support_m():
     a = _agent()
     _live(a, (1.0, 1.0))
     off = explore_mod.SUPPORT_M + 0.01
-    a._sighted = [(1.0, 1.0), (1.0 + off, 1.0), (1.0 + off, 1.0), (3.0, 1.0)]
+    a._sighted.extend([(1.0, 1.0), (1.0 + off, 1.0), (1.0 + off, 1.0), (3.0, 1.0)])
     # The two just outside SUPPORT_M of the live place support neither.
     assert a._keeps_approach(3.0, 1.0) is True
     a._sighted.append((3.0 + explore_mod.SUPPORT_M - 0.01, 1.0))
@@ -95,7 +95,7 @@ def test_a_refused_place_supports_nothing():
     a._note_refusal({"_arrival": {"state": REFUSED}})
     assert list(a._sighted) == [(1.0, 1.0)] * 2
     _live(a, (1.0, 1.0))
-    assert a._keeps_approach(3.0 + a.retry.radius_m + 0.01, 1.0) is True
+    assert a._keeps_approach(3.1, 1.0) is True           # unpruned: 5 > 2, replaced
 
 
 def test_the_sightings_kept_are_capped_newest_kept():
@@ -119,3 +119,18 @@ def test_scaled_house_is_found_before_the_target_is_lost():
     spec.loader.exec_module(mod)
     row = mod.run("scaled_house", 0, "none")
     assert row["outcome"] == "found" and row["sim_s"] < 60     # 27.9 s
+
+
+def test_a_refusal_at_the_kept_approach_drops_that_place_not_the_last_seen():
+    """Review 2: a withheld far sighting is `_last_seen`; refused while standing
+    at the approach kept, the approach's place is the one dropped."""
+    from brain.arrival import REFUSED
+    a = _agent()
+    a.sight_from = "perception"
+    here = (2.0, 2.0)
+    a._approach, a._last_seen = here, (5.0, 2.0)
+    a._sighted.extend([here] * 3 + [(5.0, 2.0)])
+    a._at_target = lambda tx, ty: (tx, ty) == here
+    a._note_refusal({"_arrival": {"state": REFUSED}})
+    assert here in a._refused_at and (5.0, 2.0) not in a._refused_at
+    assert list(a._sighted) == [(5.0, 2.0)]

@@ -959,6 +959,11 @@ class ExploreAgent(MissionAgent):
             return
         self._refusal_noted = True
         place = self._last_seen or self._approach
+        if self._approach is not None and self._at_target(*self._approach):
+            # 3.213.B review 2: a sighting `_keeps_approach` withheld is still
+            # `_last_seen`, so standing at the approach kept, the refused
+            # object is the approach's, not the far place last seen.
+            place = self._approach
         if place is None and self._reseen and self._goal is not None:
             place = self._goal.get("recall")      # 3.192.B review: a look-again's own place
         if place is None:
