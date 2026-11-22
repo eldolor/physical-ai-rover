@@ -80,6 +80,7 @@ Continuing an existing section: work in its worktree
    * logs in `/tmp/vision-picar-3.N`.
 
    `tests/demo_explore.stack()` and everything built on it read these.
+   Since 3.212, `PICAR_KEEP_LOGS=<dir>` keeps a run's `*.log` files, gzipped, in `<dir>` at exit (never its maps or inventory).
    Never rebuild `vision-picar-ros:latest` from a branch; it is built from
    `dev`. *Why:* two ROS containers on one domain crossed topics (8 of 13
    tests failed), and a branch rebuilt the shared image under another
