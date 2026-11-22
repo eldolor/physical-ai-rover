@@ -2,7 +2,7 @@
 kind: architecture
 domain: policy
 status: current
-verified: 2026-10-02
+verified: 2026-11-22
 ---
 
 # Policy -- architecture
@@ -62,7 +62,7 @@ counters, arrival) are its outputs.
 | Cloud vision step | one frame -> one cloud navigation answer -> the scene schema | retry; the mission's failure budget is the retry policy |
 | Tier (trigger discipline) | when to spend a cloud call, and what to do on free frames | become a planner or a reactive goal executor |
 | Arrival check | "arrived" from detection + bearing + lidar range | read the detector's own distance, or any simulator fact; call the cloud |
-| Identity confirmation (the mission agent) | asking the cloud, once per arrival, whether the arrival frame shows the target; "found" only on its yes | end a mission on a judgement it did not ask the cloud for |
+| Identity confirmation (the mission agent) | asking the cloud, once per arrival, whether the arrival frame shows the target; "found" only on its yes (with a local VLM on board that tier is asked first, and in the simulator the geometry answers: "The cloud confirms identity at arrival", below) | end a mission on a judgement it did not ask the cloud for |
 | Goal pose | holding an anchored sighting across rotation | decide anything |
 | Mission memory, room matching | rooms visited/searched, sightings, action history | drive control flow beyond completion |
 
@@ -132,6 +132,36 @@ field flicker; hysteresis took the saving from 2.8x to 4.1x. The three other
 triggers in 2.4 (goal achieved, goal impossible, room change) need tiers that
 do not exist and are named as unavailable rather than faked.
 
+**With a local VLM on board, a question goes to it first** (3.80.D, approved
+by the user 2026-10-14; it is off unless a local VLM is configured). The
+order is strict: perception, then the local VLM, then the cloud. The four
+events above are then asked of the local VLM, which costs no money and sends
+no frame out of the house, and two more questions exist only for it: a
+candidate that perception rates just under its gate, and a target outside
+the detector's vocabulary that has stayed out of view. A frame's question
+reaches the cloud in three cases only:
+
+- **The local VLM did not answer at all** (its service is away). The cloud
+  is asked about the same frame. A local VLM found away is held as if none
+  were configured, and probed, until it is back (3.152).
+- **It answered, but could not decide, a set number of times in a row.**
+  The next question is the cloud's.
+- **The tiers disagree** (3.91.C, the user 2026-10-23/24): the local VLM
+  said no about a candidate perception still passes, in a view where its no
+  cannot be trusted, or said yes about a candidate the cloud's no still
+  holds. The cloud is asked once for that candidate. 3.92 measured why this
+  and not the local VLM's own doubt: a learned router of its confidence
+  reached AUROC 0.70 against a bar of 0.80, and the plain rule "ask when
+  the tiers disagree" caught as many errors while flagging half as many
+  frames.
+
+Two limits keep these from becoming a cloud call per frame. A question the
+local VLM asks at its own, faster pace reaches the cloud only once the
+cloud's own bar for that event is met (3.80.P). And while explore closes in
+on a target only the local VLM has seen, the local VLM is asked on every
+frame it is free, and that question never goes to the cloud (3.80.O). The
+mission's cap on paid calls stands over all of them.
+
 **Scope of the hysteresis.** It gates *when the cloud is called*, and nothing
 else. It does not gate steering: the next decision makes that explicit.
 
@@ -148,9 +178,11 @@ What leaves the house today, traced to the code:
 
 | What | Where it goes | When |
 |---|---|---|
-| A camera frame, the target string, searched rooms | the cloud `/navigate` route (Bedrock), from `brain/navigate.py` | tiered: only on a trigger (mission start, candidate sighting, cold search, staleness, arrival confirmation); the `vision` policy: every step |
+| A camera frame, the target string, searched rooms | the cloud `/navigate` route (Bedrock), from `brain/navigate.py` | tiered: only on a trigger (mission start, candidate sighting, cold search, staleness, arrival confirmation; after an arrival the cloud could not be reached for, that one frame is asked about once more when the cloud is back, 3.53). With a local VLM configured those questions go to it first, on the robot, and a frame leaves only when it did not answer, could not decide, or disagrees with another tier ("Deliberation is event-driven", above; 3.80.D, 3.91.C). The `vision` policy: every step |
 | A phone frame | `/navigate` or `/guidance`, straight from the twin's Guide tab | every guidance step |
+| A camera frame, for the name of the room it shows (3.70 S2, 3.116.B) | the cloud vision service's room question | only when a survey's, or a find's, room labels are set to ask the cloud (both off by default); a capped number of asks a mission |
 | Recorded walk frames and answers | the brain's walk store: local disk, or the private recordings bucket when the walk store is set to it | only while a walk is being recorded |
+| Frames of a recorded walk, sent again | the cloud `/navigate` route (a replay), or the model service directly (label proposals) | only when a person replays a recorded walk under another model or wording, or asks for label proposals ([recordings](../recordings/ARCHITECTURE.md)) |
 | The object inventory (3.46): labels and positions of what that mission saw itself, no pixels (since 3.50.D5 a mission also carries landmarks from earlier missions on the same saved map, with the map's and the mission's ids; those stay in the robot's local file, the user's call 2026-10-31) | the recordings bucket, under its inventory prefix, only when the deployment names a bucket for it | at mission end |
 | A metrics row: outcome, counts, timings, config; no pixels | the metrics route, only when the deployment names one | at mission end |
 | The target's words, no image (3.190) | the cloud vision service's room-prior question | once, at a find's start, only when that question is switched on and can act (see "A room prior for a target the shipped prior lacks") |
@@ -176,8 +208,10 @@ model; bearing to the local detector; range to the lidar; collision to the
 safety layer, which never votes. On a frame where local perception has a
 measured bearing, that bearing steers -- ahead of a cloud direction several
 seconds old. The full precedence on a free frame is: a bearing measured this
-frame, then a dead-reckoned bearing to an anchored sighting (built, off),
-then the last cloud goal, then a search turn.
+frame, then the local VLM's located yes (3.80.O), then a dead-reckoned
+bearing to an anchored sighting (built, off), then the bearing of a
+candidate perception rates just under its gate (3.80.F), then the last held
+goal, then a search turn.
 
 **Rejected.** Letting the cloud keep both identity and direction: on the rig
 walk that motivated the change, the robot turned right 28 times and forward
@@ -312,6 +346,22 @@ arbitration above splits steering:
   lidar-judged arrival rule stays the only way a tiered mission ends `found`
   on the car.
 
+**Amended 2026-10-14 (3.80.C) and 2026-10-17 (3.80.O): with a local VLM on
+board, it is asked the identity question first.** Its clear yes confirms an
+arrival and its clear no refuses one, with no cloud call. An answer in
+between is no verdict: the arrival is asked again, and after a set number of
+such answers, or when the local VLM does not answer at all, the cloud is
+asked as above. Three limits keep the tiers' order. An arrival whose bearing
+came from the local VLM's own box is confirmed by the cloud alone, because
+the same model would confirm its own mistake (3.80.O). Once the cloud has
+spoken about the candidate in view, the identity question is the cloud's:
+its held no refuses the arrival without a call (3.91.C). And a local VLM
+that is away or cannot decide never ends a mission; 3.47's
+`arrived_unconfirmed` stays the end when the cloud cannot be reached either.
+It is off unless a local VLM is configured. Measured on the board (3.80.E):
+precision 97.2% and recall 94.6% on the 299 pinned frames with no cloud
+call, and the verdict in 1.91 s at p90.
+
 **Rejected, for identity:**
 
 - Enforcing the corroboration verdict ([perception](../perception/ARCHITECTURE.md))
@@ -444,7 +494,7 @@ the majority side's share plus 15 points (58%). Nothing passed: the best
 were RoboBrain2.0-3B 41% and Opus 4.5 38%, then GPT-6 Astra 29% and Opus
 5.5 21%, all below always naming the more common side (43%); the local
 Qwens said FORWARD on all 42. The mirror test shows why: flipped left to
-right, the out-of-view answer swaps sides only 36-67% of the time, so it is
+right, the out-of-view answer swaps sides only 21-67% of the time, so it is
 mostly a guess. With the target in view the same models steer well (Astra
 56 / 60): seeing is solved, searching is not a vision question.
 
@@ -455,7 +505,7 @@ mostly a guess. With the target in view the same models steer well (Astra
 | **A map of what's unexplored** -- explore's frontier, view and approach goals over SLAM's map | the candidate places to go; coverage that eventually finds anything reachable | **built, the design** (3.80.G: arrivals 2 -> 16, cloud calls 765 -> 6) |
 | **A learned choice among those frontiers** -- explore's goal policy (3.65) | the order in which the frontier's candidates are visited | built; the room-feature ranker is the default since 3.125 (the user, 2026-10-31: without room labels on 588 test houses, median goals -14% in mode R and -22% in U, finds within 1%, mean metres +10% in R). Its whole choice on the Jetson under the full stack is 95.2 ms p90 on the benchmark maps (bar 100, met in 3.131 with about 5 ms to spare; 132.9 in 3.125); with the cells explore's camera has really seen, a live choice there still runs over 100 ms (3.130's caveat). Before it, the hand-written order (3.65's network saved 11% of median goals on fresh houses, bar 20%). With every room labelled 3.96's ranker saved 43%, but a find's map has room types only from a person's names on a saved map (3.160.D) or from its own asks, which are off by default (3.116.B) |
 | **Memory of where things were seen** -- the object inventory (3.46) | a find's first goals: the places earlier missions on the saved map saw the target. A candidate's distance to such a place, as a ranker input, is not built | built as a rule ahead of the ranker, not as an input to it (3.172.C: live in the simulator, 8 of 8 found, every first goal a remembered place, median 134 s against 502). A target moved between missions FAILED its bars (3.175.A, B). Empty on real frames: naming every object was closed (3.46.C) and the car's watch list notices nothing yet (3.178) |
-| **Common sense about rooms** -- one language-model call ranks room types for the target ("a charger: office, kitchen, bedroom") | a candidate's room prior | built: the default ranker's prior knows ten targets (3.96); for any other target the one-call ranking is built and off by default, and acts only on a map with room labels (3.190, "A room prior for a target the shipped prior lacks", below) |
+| **Common sense about rooms** -- one language-model call ranks room types for the target ("a charger: office, kitchen, bedroom") | a candidate's room prior | built for ten targets: the default ranker's prior knows them (3.96); for any other target the one-call ranking is wired in the code and off by default, and acts only on a map with room labels (3.190, "A room prior for a target the shipped prior lacks", below) |
 | **What is visible toward a frontier** -- a model rates how promising each unexplored edge looks for this target (published object-goal navigation work) | a candidate's visual promise | not built: the one scorer tried FAILED offline and its build step was dropped (3.177) |
 
 **How reinforcement learning ties to the frontier.** The frontier map is
@@ -516,7 +566,7 @@ three steps are the order this decision first set):
      the saved map). Naming the real house's rooms waits on the Rover
      (3.160.C).
    * **A prior for any other target** is the next decision's subject
-     (3.190): built, off by default.
+     (3.190): the wiring is in the code, off by default.
    * **More learning did not close the gap.** No later chooser beat 3.96's:
      more facts (3.101, criterion 1 FAILED; 3.117, both arms FAILED), the
      evolutionary method on the same facts (3.102: worse than its gradient
@@ -562,7 +612,11 @@ the map had no room labels at all. So for such a target the brain may ask
 the cloud one text-only question as the find starts: for each room type the
 ranker knows, what share of such rooms hold at least one such object. The
 answer sits where the shipped prior's rates would, for that mission only.
-It is off by default.
+
+**State (2026-11-22).** The wiring is in the code, off by default. Of
+3.190's steps, A, C, D and F are done and B and E are open. D and F are
+recorded as FAILED (D on criterion 14's first-goal clause, F on F1 and F2):
+nothing ships from them.
 
 **Why it is shaped this way.**
 
@@ -691,7 +745,7 @@ recorded walks hold no list item (3.178.A).
 
 | Failure | Response | Target |
 |---|---|---|
-| Cloud call errors or hangs | raised to the mission's failure budget (an async failure on the next frame) | every blind step is counted, never swallowed |
+| Cloud call errors or hangs | raised to the mission's failure budget (an async failure on the next frame). Under explore's search, where the map and the local tiers carry the mission, a trigger's failed call is counted and not charged to the budget (3.80.G); the arrival's identity call is charged either way | every blind step is counted, never swallowed |
 | Cloud unreachable at arrival | the identity confirmation raises into the same budget and is retried while the arrival holds; when the budget runs out the mission ends `arrived_unconfirmed` | an offline mission that reaches the target says so, and never says `found` (3.47: 24 / 24 offline arrivals, sync and async) |
 | Local perception unavailable (camera wedged, model error) | never a trigger, never advances the cold-search count, never read as absent | a dead camera never looks like an empty room |
 | Detector misses frames | trigger hysteresis, held goals, degree-counted spin guard | at 90% per-frame detection, at least 95% of missions arrive (3.6b's bar) |
@@ -725,7 +779,8 @@ code. As a tree:
   * the safety veto;
   * a person's Stop;
   * the arrival rule;
-  * "`found` needs the cloud";
+  * "`found` needs the identity check", and the cloud's alone for an
+    arrival the local VLM's box led to (3.80.O);
   * B3's failsafes;
   * the order of who-to-ask's guards (the call cap, one call at a time
     and "mission ended" come before any question).
@@ -788,11 +843,11 @@ move changed no decision.
   choose which room to search next -- is not built as a planner, and since
   3.80.I it is not meant to be one: it became the second-to-last layer of
   "where to look is chosen from the map" (above), a room prior fed to
-  explore's goal ranker (decided by the user). That layer is built. The
-  ranker reads a prior learned from the training houses for ten targets
-  (3.96), and for any other target one text-only cloud question at a find's
-  start, built and off by default (3.190; 3.116.C measured the question
-  first, and its agreement bar, criterion 8, FAILED). Which rooms were
+  explore's goal ranker (decided by the user). That layer is built for
+  the ten targets the ranker's prior was learned for on the training houses
+  (3.96). For any other target, one text-only cloud question at a find's
+  start is wired in the code and off by default (3.190; 3.116.C measured
+  the question first, and its agreement bar, criterion 8, FAILED). Which rooms were
   already searched reaches the ranker as a fact from the robot's own trail
   (3.96), not from a model. What stays open:
   * whether either prior helps in a real house (3.116.D and 3.190.E, on the
