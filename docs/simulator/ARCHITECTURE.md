@@ -2,7 +2,7 @@
 kind: architecture
 domain: simulator
 status: current
-verified: 2026-10-04
+verified: 2026-11-22
 ---
 
 # Simulator -- architecture
