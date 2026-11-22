@@ -25,6 +25,7 @@ import json
 import math
 import os
 import shutil
+import signal
 import stat
 import subprocess
 import sys
@@ -82,10 +83,33 @@ def _new_run_dir():
     os.makedirs(RUN_DIR)
     RUN_DIRS.append(RUN_DIR)
     keep_to = os.environ.get("PICAR_KEEP_LOGS")
-    if keep_to and not _ATEXIT:
-        _ATEXIT.append(keep_to)
-        atexit.register(keep_logs, keep_to)
+    if keep_to:
+        keep_to = os.path.abspath(keep_to)      # review: before any chdir
+        if not _ATEXIT:
+            _ATEXIT.append(keep_to)
+            atexit.register(keep_logs, keep_to)
+            _exit_on_signals()
+        elif keep_to != _ATEXIT[0]:
+            print(f"keep_logs: PICAR_KEEP_LOGS changed to {keep_to}; this process keeps "
+                  f"to {_ATEXIT[0]}, the first", file=sys.stderr, flush=True)
     return RUN_DIR
+
+
+def _exit_on_signals():
+    """3.212 (review): SIGTERM and SIGHUP end a process without running atexit
+    hooks. Where they are still Python's default, make them a SystemExit, so
+    the PICAR_KEEP_LOGS hook runs (a `timeout`, a `kill`, a closed terminal).
+    SIGKILL keeps nothing; a harness's own handler is left alone."""
+    def bye(signum, _frame):
+        raise SystemExit(128 + signum)
+    for sig in (signal.SIGTERM, getattr(signal, "SIGHUP", None)):
+        if sig is None:
+            continue
+        try:
+            if signal.getsignal(sig) == signal.SIG_DFL:
+                signal.signal(sig, bye)
+        except ValueError:          # not the main thread: left as it was
+            pass
 
 
 def keep_logs(dest, run_dirs=None):
@@ -96,8 +120,10 @@ def keep_logs(dest, run_dirs=None):
     subdirectory (`maps-*`, `inventory-*`: a home's floor plan), any other
     file and any symlink stay where they are. An existing `dest/<run>/` is
     never written into: the copy goes to `<run>-2/`, `-3/`, and so on. A run
-    directory already kept to this `dest` in this process is skipped, so the
-    PICAR_KEEP_LOGS hook does not copy again what a harness kept itself.
+    directory already kept whole to this `dest` in this process is skipped,
+    so the PICAR_KEEP_LOGS hook does not copy again what a harness kept
+    itself; one with a lost file, or with no logs yet, is tried again by the
+    next call.
     Never raises. Each file it could not keep is named on stderr. Returns
     {"kept": [paths written], "lost": [(source, reason)]}."""
     out = {"kept": [], "lost": []}
@@ -129,8 +155,7 @@ def keep_logs(dest, run_dirs=None):
             if stat.S_ISREG(st.st_mode):     # lstat: a symlink is never followed
                 logs.append(src)
         if not logs:
-            _KEPT.add(key)
-            continue
+            continue                         # review: nothing yet; a later call looks again
         base = os.path.join(dest, os.path.basename(os.path.normpath(run)))
         target, k = base, 1
         try:
@@ -147,6 +172,7 @@ def keep_logs(dest, run_dirs=None):
             print(f"keep_logs: {run} not kept, {target} not made ({e!r})",
                   file=sys.stderr, flush=True)
             continue
+        whole = True
         for src in logs:
             to = os.path.join(target, os.path.basename(src) + ".gz")
             try:
@@ -155,13 +181,20 @@ def keep_logs(dest, run_dirs=None):
                     shutil.copyfileobj(fi, fo)
                 out["kept"].append(to)
             except Exception as e:  # noqa: BLE001 -- one lost file, not the run
+                whole = False
                 out["lost"].append((src, repr(e)))
                 try:
                     os.remove(to)            # no half-written copy left looking whole
                 except OSError:
                     pass
                 print(f"keep_logs: {src} not kept ({e!r})", file=sys.stderr, flush=True)
-        _KEPT.add(key)
+        if whole:
+            _KEPT.add(key)
+        else:
+            try:
+                os.rmdir(target)             # review: only if nothing at all was kept
+            except OSError:
+                pass
     return out
 
 

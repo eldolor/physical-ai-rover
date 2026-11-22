@@ -80,12 +80,17 @@ def test_a1_live_harness_keeps_logs_in_its_outer_finally():
     tree = ast.parse((ROOT / "evaluations/find-last-seen-370/live.py").read_text())
     run = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "run")
     outer = [n for n in run.body if isinstance(n, ast.Try)]
-    assert len(outer) == 1 and outer[0].finalbody
-    calls = [ast.unparse(c.func) for st in outer[0].finalbody for c in ast.walk(st)
-             if isinstance(c, ast.Call)]
-    assert "de.keep_logs" in calls
-    assert calls.index("de.keep_logs") > calls.index("save_logs")
-    assert calls.index("de.keep_logs") > calls.index("de._kill_ports")
+    assert len(outer) == 1 and len(outer[0].finalbody) == 1
+    teardown = outer[0].finalbody[0]
+    # review: the teardown in its own try, keep_logs in ITS finally, so a
+    # teardown that raises (`_kill_ports`' "ports still held") keeps the logs
+    assert isinstance(teardown, ast.Try)
+
+    def calls(body):
+        return [ast.unparse(c.func) for st in body for c in ast.walk(st) if isinstance(c, ast.Call)]
+    assert {"save_logs", "de._kill_ports"} <= set(calls(teardown.body))
+    assert "de.keep_logs" not in calls(teardown.body)
+    assert "de.keep_logs" in calls(teardown.finalbody)
 
 
 def test_a2_nothing_but_top_level_regular_logs(tmp_path, monkeypatch):
@@ -125,7 +130,7 @@ def test_a3_a_failing_copy_is_reported_not_raised(tmp_path, monkeypatch, capsys)
     out = de.keep_logs(tmp_path / "rows-logs")
     assert out["kept"] == [] and len(out["lost"]) == 4
     assert "disk full" in capsys.readouterr().err
-    assert list((tmp_path / "rows-logs" / run.name).iterdir()) == []   # no half copies
+    assert not (tmp_path / "rows-logs" / run.name).exists()   # no half copies, no empty dir
 
 
 def test_a3_an_unwritable_destination_is_reported_not_raised(tmp_path, monkeypatch, capsys):
@@ -156,6 +161,30 @@ def test_a4_never_overwrites(tmp_path, monkeypatch):
     assert len(list((dest / f"{run.name}-2").iterdir())) == 4
 
 
+def test_a3_a_lost_run_is_tried_again(tmp_path, monkeypatch):
+    run = _run(tmp_path, monkeypatch)
+    dest = tmp_path / "rows-logs"
+    real = de.shutil.copyfileobj
+
+    def boom(*a, **k):
+        raise OSError("disk full")
+    monkeypatch.setattr(de.shutil, "copyfileobj", boom)
+    de.keep_logs(dest)
+    assert not (dest / run.name).exists()          # nothing kept: no empty directory
+    monkeypatch.setattr(de.shutil, "copyfileobj", real)
+    out = de.keep_logs(dest)
+    assert len(out["kept"]) == 4 and out["lost"] == []
+
+
+def test_a3_a_run_with_no_logs_yet_is_looked_at_again(tmp_path, monkeypatch):
+    monkeypatch.setattr(de, "LOGDIR", str(tmp_path / "logs"))
+    run = Path(de._new_run_dir())
+    dest = tmp_path / "rows-logs"
+    assert de.keep_logs(dest) == {"kept": [], "lost": []}
+    (run / "ros-end.log").write_text("late")
+    assert len(de.keep_logs(dest)["kept"]) == 1
+
+
 def test_a4_a_second_keep_to_the_same_dest_copies_nothing_again(tmp_path, monkeypatch):
     run = _run(tmp_path, monkeypatch)
     dest = tmp_path / "rows-logs"
@@ -183,6 +212,32 @@ def _child(tmp_path, keep):
         env["PICAR_KEEP_LOGS"] = str(keep)
     return subprocess.run([sys.executable, "-c", code], cwd=ROOT, env=env,
                           capture_output=True, text=True, timeout=120)
+
+
+def test_a5_set_keeps_on_sigterm(tmp_path):
+    """review: Python's default SIGTERM runs no atexit hook; the hook's
+    process turns it into a SystemExit so the logs are kept."""
+    code = ("import os, signal\n"
+            "from tests import demo_explore as de\n"
+            "r = de._new_run_dir()\n"
+            "open(os.path.join(r, 'ros-end.log'), 'w').write('killed')\n"
+            "os.kill(os.getpid(), signal.SIGTERM)\n"
+            "import time; time.sleep(30)\n")
+    keep = tmp_path / "kept"
+    env = dict(os.environ, EXPLORE_LOGDIR=str(tmp_path / "logdir"), PICAR_KEEP_LOGS=str(keep))
+    p = subprocess.run([sys.executable, "-c", code], cwd=ROOT, env=env,
+                       capture_output=True, text=True, timeout=120)
+    assert p.returncode == 128 + 15, p.stderr
+    assert list(_gunzip_tree(keep).values()) == [b"killed"]
+
+
+def test_a5_a_relative_dest_is_fixed_when_registered(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("PICAR_KEEP_LOGS", "kept")
+    monkeypatch.setattr(de.atexit, "register", lambda *a: None)
+    monkeypatch.setattr(de, "_exit_on_signals", lambda: None)
+    _run(tmp_path, monkeypatch)
+    assert de._ATEXIT == [str(tmp_path / "kept")]
 
 
 def test_a5_set_keeps_at_exit(tmp_path):
