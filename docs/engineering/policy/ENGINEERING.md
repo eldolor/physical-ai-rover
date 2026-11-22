@@ -603,10 +603,10 @@ runner: `usable`, `distance_m`, `heading_deg`).
 
 **Signatures:**
 `vision_fn_for(target_object, vision_url=None, secret=None, timeout_s=60.0, client=None, model_id=None, prompt_variant=None)`;
-`TieredVision(pipeline, cloud_vision_fn, *, consecutive_frames=2, cold_search_after=6, cold_search_after_cm=None, stale_after=8, max_calls=None, corroboration_bar=0.5, oov_cold_search_after=None, async_cloud=False, hold_goal=True, steer_on_sight=True, spin_guard_after=8, hold_bearing=False, hold_bearing_max_m=1.0)`
+`TieredVision(pipeline, cloud_vision_fn, *, consecutive_frames=2, sighting_span_s=0.25, frame_vote=None, cold_search_after=6, cold_search_after_cm=None, stale_after=8, max_calls=None, corroboration_bar=0.5, oov_cold_search_after=None, local_cold_search_after=None, async_cloud=False, hold_goal=True, steer_on_sight=True, spin_guard_after=8, hold_bearing=False, hold_bearing_max_m=1.0, confirm_vision_fn=None, sim_identity_fn=None, local_identity_fn=None, local_no_below=0.1, local_max_unable=2, local_sighting_fn=None, local_band_low=0.5, local_direction_fn=None, steer_on_candidate=False, cloud_errors_fatal=True, tree=None, remember_no=True, reject_hold_s=20.0, reject_move_m=0.5, reject_turn_deg=30.0, no_box_range=(0.15, 0.95), local_health_fn=None, local_probe_s=5.0)`
 with `close()`, `reset_epoch()`, `set_searched_rooms()`, `confirm_arrival(frame) -> {confirmed, cloud_called, reason, cloud_reasoning, stats}`;
-`ArrivalCheck(radius_m=0.40, centre_deg=3.0, frames=2)`;
-`MissionAgent(robot, memory, side_clearance_cm=30.0, world=None, arrival_confirm_fn=None, min_distance_cm=20.0, vision_fn=None, max_consecutive_stops=3)`.
+`ArrivalCheck(radius_m=0.40, centre_deg=3.0, frames=2, clock=None, local_fresh_s=3.0, span_s=0.25)`;
+`MissionAgent(robot, memory, side_clearance_cm=30.0, world=None, arrival_confirm_fn=None, **kwargs)` (the keywords go to `ConstrainedAgent(robot, min_distance_cm=20.0, vision_fn=None, max_consecutive_stops=3)`).
 
 ## Parameters and configuration
 

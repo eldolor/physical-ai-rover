@@ -71,15 +71,16 @@ either way, because no move depends on this service being up.
   model and costs nothing. It does not check that the bytes are an image:
   that is first discovered by the provider, as a server error.
 - **Question layer.** One prompt and one response schema per question.
-  The four questions are: what the robot's scene contains, a description
-  of the photo for a person, the robot's next move, and which way to
-  steer a person. The engineering spec maps each question to its route.
+  The six questions are: what the robot's scene contains, a description
+  of the photo for a person, the robot's next move, which way to
+  steer a person, which room a frame was taken in, and which room types a
+  target is likely to be in (text only, no image). The engineering spec maps each question to its route.
 - **Model layer.** Calls a managed model API under the service's own
   cloud identity, with no API key in the service. Each route has its own
   default model.
 - **Parsing.** Turns free text into a fixed schema. It fails towards "do
-  not act on this", with three fields not yet covered and one only
-  partly covered (see Decisions).
+  not act on this". One field, the room guess, is only partly covered
+  (see Decisions).
 - **Room guesser.** A deterministic object-to-room matcher, a copy of the
   brain's.
 - **The brain-side scene describer** (`brain/vision.py`). It calls the
@@ -119,8 +120,9 @@ seconds and money. That cost is why the tiered policy exists.
 
 ### One route per question, not a mode flag
 
-**Decision.** The robot's move, steering a person, the robot's scene and a
-description for a person are four separate routes. Each has its own
+**Decision.** The robot's move, steering a person, the robot's scene, a
+description for a person, a frame's room and a target's room prior are
+six separate routes. Each has its own
 prompt, its own schema and its own default model.
 
 **Rejected.** A target-object mode on the scene question, which
@@ -129,7 +131,7 @@ a request field mean different things. A flag would couple their prompts
 and their models, and a per-route model choice was later measured to
 matter.
 
-**Trade-off.** Four routes to route, test and keep in step with the
+**Trade-off.** Six routes to route, test and keep in step with the
 gateway's route table.
 
 ### Arrival is its own field, and it is never inferred from STOP
@@ -290,7 +292,7 @@ is no VPC.
 - **A function URL, or any invocation that relies on the function's
   resource policy.** Measured on 2026-09-04: resource-based policies do
   not grant invocation on this account, so the call is refused and the
-  function never runs (`README.md`, "History: why not Lambda?", and
+  function never runs (the archived README build journal, `../archive/README-build-journal-2026-10-06.md`, "History: why not Lambda?", and
   `PLAN-aws-cost-redesign.md` section 6).
 - **Opening CORS** so the twin could be served from anywhere. Same-origin
   hosting removes the need, and an open CORS policy is one more thing to
@@ -318,7 +320,8 @@ small delay to a call that already takes seconds.
 | The provider errors, throttles or times out | The service answers with a server error. The caller counts it against its own budget. | No vision failure can move or strand the robot. Stopping is the brain's guard, not this service's. |
 | The model replies with something that is not JSON | Safe default: STOP, not visible, not reached | A malformed reply never reads as arrival. |
 | The model volunteers an obstacle answer the wording did not ask for | The field is removed | "Not asked" is never reported as "false". |
-| The model returns an off-vocabulary direction, a non-boolean visibility or obstacle flag, or an invented room name | Passed through unchanged (known gap) | Target: no field a caller acts on is trusted as typed. Not met for these four. |
+| The model returns an off-vocabulary direction or a non-boolean visibility or obstacle flag | Coerced in the service to the vocabulary or a real boolean (handoff 4b) | No field a caller acts on is trusted as typed. Met for these three. |
+| The model returns an invented room name | Passed on as a room label (known gap) | Same target. Not met for the room guess. |
 | A model id or wording not on the allow-list | Refused as a client error before any model call | An invalid choice never reaches the provider and never costs money. |
 | A missing or wrong shared secret | Refused | When a secret is configured, no unauthenticated call is billed. A deployment with no secret is open, and the deploy instructions say so. |
 | An image over the size cap, or an upload whose text encoding does not decode | Refused before any model call | |

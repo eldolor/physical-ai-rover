@@ -200,7 +200,7 @@ thresholds are the policy's
 `GET /mission/status` as `perception`): `status`, `crop_source`, `reason`,
 `synthesised`, `pan_deg`, `tilt_deg`, `bearing_deg` (degrees, negative left,
 null when unmeasurable), `match_margin`, `match_probability`, `similarity`,
-`label`, `candidates`.
+`label`, `candidates`, `box_share` (3.91.C: the best box's area as a share of the frame, null with no best box or no frame size).
 
 **Protocols:**
 `Detector.detect(image: bytes, confidence: float) -> Sequence[Detection]`;
@@ -209,7 +209,7 @@ null when unmeasurable), `match_margin`, `match_probability`, `similarity`,
 `TextScorer.text_similarity(anchor: str, texts) -> Sequence[float]` (optional).
 
 **Factories:**
-`pipeline_for(target, *, weights="yoloe-11s-seg.pt", clip_model="RN50", device=None, floor_mask=False, segmenter=DEFAULT_SEGMENTER, **kwargs)`
+`pipeline_for(target, *, weights="yoloe-11s-seg.pt", clip_model="RN50", device=None, floor_mask=False, segmenter=DEFAULT_SEGMENTER, watch=(), **kwargs)`
 raises `PerceptionUnavailable` naming the pip command when a library is
 missing. Before it loads it waits until no `PerceptionPipeline.perceive` is
 in flight in the process (a Stop cancels the loop, not the tick thread still
@@ -217,7 +217,7 @@ inside the ended mission's frame), up to `PERCEIVE_WAIT_S` (30 s, then it
 builds anyway with a warning; frames given up on are not waited for again), runs `gc.collect()` and, when torch is already
 imported and has CUDA, `torch.cuda.empty_cache()` (3.81.E), so the previous
 mission's models, released by its policy's `close()`, are gone before the
-next are built. `PerceptionPipeline(detector, scorer, target, *, hfov_deg=66.0, match_margin=None, match_probability=0.8, distractors=DEFAULT_DISTRACTORS, max_crops=None, crop_path="low_confidence", proposer=None, affinity_k=8, confidence=None)`.
+next are built. `PerceptionPipeline(detector, scorer, target, *, hfov_deg=66.0, match_margin=None, match_probability=0.8, distractors=DEFAULT_DISTRACTORS, max_crops=None, crop_path="low_confidence", proposer=None, affinity_k=8, confidence=None, watch=())`.
 
 **Sim frames.** `FrameReportedPipeline` reads `frame["detections"]`, a list
 of `{label, bearing_deg, distance_m}` written by `sim/grid_world.py`
@@ -583,13 +583,13 @@ on `--seed 3463`.
 
 ## Verification
 
-| Test file (count 2026-10-02) | What it pins |
+| Test file (collected 2026-11-22, where a count is given) | What it pins |
 |---|---|
 | `tests/test_perceive.py` (57) | tri-state (an empty good frame is `absent`; missing, undecodable, wedged detector or scorer is `unavailable`); open vocabulary is the default and `auto` still means 4.2's rule (for a closed-vocabulary detector; a text-prompted one gates only a target that is its COCO word, 3.76 L1); probability over every score; margin override; crop cap and its growth with a second source; bearing from centre, pan added, width read from the image; soft gate and vocabulary verdict; real backends say what to install |
 | `tests/test_review_376l1.py` (8) | 3.76 L1: a frame still in perception keeps the next one out (`unavailable`, the detector entered once) and the pipeline opens again after it; past `BUSY_WEDGED_S` it raises `PerceptionWedged`; `auto` with a text-prompted detector takes the open-vocabulary path; `label_gate` and `soft_gate` on one are refused for a multi-word target, a one-word target keeps the label gate; a closed-vocabulary detector keeps it too |
 | `tests/test_perceive_lab.py` (22) | lab backends and `pipeline_for_spec()` on fakes |
 | `tests/test_bench_identity_llama.py` (21) | 3.48: the localisation score through a bare `[`, merged `[{` / `[]`, a code fence, whitespace before the brace (the smoke test's real reply), a bare object, an empty list; time to decision; the A10G prompt verbatim. 3.58: stopping at the decision changes no score on six reply shapes and stops at the deciding token, a bare `[` alone has not decided, the stream parser and its error chunk, `compare_decisions` |
-| `tests/test_review_376p1.py` (15) | 3.76 P1: the local VLM bench leaves the production unit and env file alone, stops and restores the production service, bounds its driver-death wait; the headroom runs refuse a busy :8090, the identity run stops the production VLM; an OOM kill counts once; identity headroom perception is read inside the window; a list reply is not a bare object; one refused call is one failed frame; a secret on a command line is not recorded; round 1: the headroom runs put a running VLM back, a missing `ss` refuses, a garbled reply or one of the wrong shape is one failed frame; round 2: the mission run waits for its own VLM before restoring the production one |
+| `tests/test_review_376p1.py` (29) | 3.76 P1: the local VLM bench leaves the production unit and env file alone, stops and restores the production service, bounds its driver-death wait; the headroom runs refuse a busy :8090, the identity run stops the production VLM; an OOM kill counts once; identity headroom perception is read inside the window; a list reply is not a bare object; one refused call is one failed frame; a secret on a command line is not recorded; round 1: the headroom runs put a running VLM back, a missing `ss` refuses, a garbled reply or one of the wrong shape is one failed frame; round 2: the mission run waits for its own VLM before restoring the production one |
 | `tests/test_local_vlm.py` (28, counted 2026-11-21) | the service and `EdgeDriver` against `tests/fake_edgellm_driver.py`: the statuses, the deadline and the cancelled tail, one request at a time, the box, the direction, a dead or wedged driver, the 503 and the exit |
 | `tests/test_local_arrival.py` (28), `tests/test_tiered_local.py` (43) | the client and the policy's use of it: absent against unable, the thresholds, the unable count, the cloud after it (policy's rows describe them) |
 | `tests/test_local_vlm_down.py` (29) | 3.152: the tier held down, the probe, the state published |
@@ -689,7 +689,7 @@ commit.
   module default 0.05" (0 means the probability gate); `requirements-perception.txt` and
   `brain/perceive_lab.py`'s docstring still describe YOLO11s and the floor
   mask as the shipped tier. `YoloE`'s class docstring in
-  `brain/perceive.py` (around lines 1316-1333) gives P22's numbers for the
+  `brain/perceive.py` (around lines 1510-1535) gives P22's numbers for the
   `26l` checkpoint (91% vs 90%, a 3-FP gate at 0.391, "74% at the old
   P>=0.8 ... 91% at a gate near 0.4") as if they described the shipped
   `11s`, which P23 found calibrated at 0.8.

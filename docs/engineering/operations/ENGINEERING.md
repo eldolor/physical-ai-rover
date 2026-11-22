@@ -83,7 +83,7 @@ required):
 
 | Path | Function | Notes |
 |---|---|---|
-| `POST /analyze`, `POST /describe`, `POST /navigate`, `GET /navigate/models`, `POST /room`, `POST /guidance`, `GET /health` | vision | cloud-vision owns their behaviour |
+| `POST /analyze`, `POST /describe`, `POST /navigate`, `GET /navigate/models`, `POST /room`, `POST /room-prior`, `POST /guidance`, `GET /health` | vision | cloud-vision owns their behaviour |
 | `ANY /recording/{proxy+}`, `GET /stats` | walks | recordings owns their behaviour |
 | `ANY /metrics/{proxy+}` | walks | see below |
 | everything else | static bucket | default behaviour, `index.html` at `/` |
@@ -99,8 +99,8 @@ required):
 
 | Server | Verdict inputs | Description fields |
 |---|---|---|
-| Robot `GET /health` | `seconds_since_watchdog_poll` against `watchdog_poll_interval_s` x 10; and `drive.ros_up` false when `drive.mode` is `ros`, named by half (`drive.bridge_up` false: the bridge; else the plugin's posts, with `drive.ros_post_age_s`) | `mode`, `seconds_since_last_command`, `watchdog_timeout_s`, `driver`, `authority_holder`, `last_refusal`, `last_stop_reason`, `watchdog` (3.164), `env_label`; also on the route: `drive`, `wheel_loop`, `motor_board`, `min_distance_cm`, `sim_map`, `refusal_counts`, `identity` |
-| Brain `GET /health` (under `/brain` behind the tunnel) | `mission_running` and `seconds_since_last_tick` against `tick_timeout_s` plus `TICK_SLACK_S` (1 s, the loop's own sleep between ticks; 3.76 N1) | `robot_url`, `tick_rate_hz`, `navigate_model_id`, `navigate_prompt_variant`; also on the route, among others: `drills_allowed`, `identity`, `perception_available`, the `perception_*` settings, the `tier_*` settings (`tier_consecutive_frames` and others), `recording_allowed`, `faults` (`control/brain_server.py`'s `health()` is the full list) |
+| Robot `GET /health` | `seconds_since_watchdog_poll` against `watchdog_poll_interval_s` x 10; and `drive.ros_up` false when `drive.mode` is `ros`, named by half (`drive.bridge_up` false: the bridge; else the plugin's posts, with `drive.ros_post_age_s`) | `mode`, `seconds_since_last_command`, `watchdog_timeout_s`, `watchdog_poll_age_s`, `driver`, `authority_holder`, `autonomy_latch`, `last_refusal`, `last_stop_reason`, `watchdog` (3.164), `env_label`, `nogo`, `motor_board`, `camera`, `battery`, `drive`, `goal_lease`; also on the route: `wheel_loop`, `lidar`, `min_distance_cm`, `sim_map`, `refusal_counts`, `identity` |
+| Brain `GET /health` (under `/brain` behind the tunnel) | `mission_running` and `seconds_since_last_tick` against `tick_timeout_s` plus `TICK_SLACK_S` (1 s, the loop's own sleep between ticks; 3.76 N1) | `robot_url`, `mission_running`, `seconds_since_last_tick`, `tick_rate_hz`, `navigate_model_id`, `navigate_prompt_variant`, `room_label_source`; also on the route, among others: `drills_allowed`, `identity`, `perception_available`, the `perception_*` settings, the `tier_*` settings (`tier_consecutive_frames` and others), `recording_allowed`, `faults` (`control/brain_server.py`'s `health()` is the full list) |
 
 `control.health` output: `{status: ok|unhealthy, failed: [names],
 parts: [{name, url, status: ok|unhealthy|unreachable, problems, identity,
@@ -124,7 +124,7 @@ page) on the robot server.
 | `VISION_URL` | config `brain.vision_url` (empty) | URL | `control/brain_config.py`, `control/admin_server.py` | `run.sh` defaults it to a hard-coded literal: the distribution's address as it was when written, not read from the `SiteUrl` output (see Known gaps) |
 | `ROUTE_PREFIX` | empty | path | `robot/server.py`, `control/brain_server.py` | Lets two servers share one front door. The brain runs with `/brain` |
 | `PROXY_ROBOT_URL` / `PROXY_BRAIN_URL` / `PROXY_VISION_URL` | `http://127.0.0.1:8000` / `:8001` / a hard-coded literal, as `VISION_URL` | URL | `service/tunnel/proxy.py` | Upstreams of the fan-out |
-| `ENV_LABEL` | unset | text | robot server; the walks function (`control/admin_server.py`). Both Lambdas receive it from the `EnvLabel` stack parameter, but the vision function never reads it | Shows a non-production banner on the twin |
+| `ENV_LABEL` | unset | text | robot server; the walks function (`control/admin_server.py`). Both Lambdas receive it from the `EnvLabel` stack parameter; the vision function reads it only to answer `GET /health` | Shows a non-production banner on the twin |
 | `GIT_REVISION` | unset | text | `robot/identity.py` | Set at image build time; no `.git` in a container |
 | `TUNNEL_LOG` | `~/.vision-picar-tunnel.log` | path | `service/tunnel/restart.sh` | Where `restart.sh` sends the detached `run.sh`'s output and says to look (`OK: ... (log: <path>)`). Only `restart.sh` reads it: a `run.sh` started by hand logs to the terminal. Not a spec of the log's content |
 | `PICAR_MEMLOCK`, `PICAR_MEMLOCK_WAIT_S` | unset; `0` | `0` / seconds | `robot/locked_serve.py` | 3.155: `PICAR_MEMLOCK=0` (exactly `0`) skips the robot server's `mlockall`, for a harness's planted check; anything else locks. `PICAR_MEMLOCK_WAIT_S` is how long the lock waits for an unlimited memlock limit to appear (a harness's `prlimit` after the spawn) before serving unlocked; a value that is not a number is ignored (waits 0) and the line says `wait_s_ignored`. `picar-stack.service` sets neither. One stderr line, `robot server memory lock: {json}`, says what happened. `tests/test_locked_serve_3155.py` |
@@ -133,7 +133,7 @@ page) on the robot server.
 | `NavigateModelId` | `us.anthropic.claude-opus-4-5-20251101-v1:0` | model id | `serverless.yaml` -> `BEDROCK_NAVIGATE_MODEL_ID` | Chosen by measurement; owned by cloud-vision. Keep in step with the code default |
 | `VisionSharedSecret` / `WalksSharedSecret` | `""` | secret | `serverless.yaml` | Empty means the function runs with NO auth. `build.sh` says so |
 | `VisionFunction` `Timeout` | 30 | s | `serverless.yaml` | A vision call is 1-3 s and Robot view allows two in flight |
-| `WalksFunction` `Timeout` | 900 | s | `serverless.yaml` | Lambda's ceiling, sized for a replay, which re-asks every frame and outlived the old 60 s load-balancer limit. As templated, deployed replay is disabled anyway (see Known gaps) |
+| `WalksFunction` `Timeout` | 900 | s | `serverless.yaml` | Lambda's ceiling, sized for a replay, which re-asks every frame and outlived the old 60 s load-balancer limit. Deployed replay is off unless the stack is given `ReplayVisionUrl` (see Known gaps) |
 | `ExpireAfterDays` (deploy bucket) | 365 | days | `deploy-bucket.yaml` | The zips are the only pre-built rollback path, at about 39 MB a build, and what a failed `serverless.yaml` update rolls back to: 30 days left a deploy a month after the last build unable to roll back (3.76 H2-7). Applies only once the deploy-bucket stack is updated with `ExpireAfterDays=365`. |
 | `WATCHDOG_POLL_SLACK` | 10 | polls | `control/health.py` | The watchdog loop wakes every 0.1 s (`WATCHDOG_POLL_INTERVAL_S`); a stall is ten missed polls, 1 s |
 | `DEFAULT_TIMEOUT_S` | 5.0 | s | `control/health.py`, `control/metrics_client.py` | One health or metrics request |
@@ -144,9 +144,11 @@ page) on the robot server.
 board the sim body :8002 and sensors :8003/:8004 (3.36; a parallel stack
 moves them with `SIM_BODY_URL` / `SIM_SENSORS_URL` and needs its own
 `SIM_BODY_SHM`, or two body programs share one state block). When another session owns
-those, run your own stack on robot :8100, brain :8101, bridge :8190 with
-`ROS_DOMAIN_ID=73`, bind to 127.0.0.1, and point the live tests at a dead
-port so they cannot drive someone else's robot:
+those, take your own set with `eval "$(python tools/plan_section.py env)"`
+(`PICAR_ROBOT_PORT`, `PICAR_BRAIN_PORT`, `PICAR_BRIDGE_PORT`,
+`ROS_DOMAIN_ID` and the container and image names, from your section's
+number; `docs/guides/PARALLEL-SESSIONS.md`), bind to 127.0.0.1, and point
+the live tests at a dead port so they cannot drive someone else's robot:
 
 ```bash
 PICAR_ROBOT_URL=http://127.0.0.1:9 PICAR_BRAIN_URL=http://127.0.0.1:9/brain \
@@ -273,8 +275,13 @@ machine-readable form. Expected first line `OK`, then each part with `build git=
 exe=<python>`. `UNHEALTHY  (brain)` with the robot ok when the brain is
 down. A robot parked against a wall stays `OK`.
 
-**B5 on the Jetson (planned, not built).** `PLAN-brain-relocation.md` B5
-lists what the units must cover: the robot server first, and the ROS
+**B5 on the Jetson (first half built, 3.71).** Since 2026-10-11 three
+systemd units from `tools/jetson/systemd/`, installed by
+`tools/jetson/install_services.sh`, start at boot: `picar-stack` (`run.sh`:
+robot server, brain and proxy, in simulator mode, `Restart=on-failure`),
+`picar-ngrok` and `picar-local-vlm` (`tools/jetson/README.md` section 5).
+The rest is not built. `PLAN-brain-relocation.md` B5 lists what the units
+must cover: the robot server first, and the ROS
 container started only after `GET /wheels` reports `usable: true` (the
 order docs/engineering/ros/ENGINEERING.md's Procedures and
 `service/slam/README.md` section 3 require until
@@ -283,9 +290,10 @@ the robot server's unit is not enough, the unit must wait on `/wheels`), an
 `EnvironmentFile` for `APP_SHARED_SECRET`, `ROBOT_MODE`,
 `ROBOT_DRIVE`, `WORLD_MODE` and `ROBOT_SERIAL`, `dialout` group and a udev
 rule for the motor board, and `Restart=on-failure` that never brings back
-anything that moves on its own. There is no `deploy` directory yet. The
-bring-up that precedes it is the platform domain's procedure
-(`tools/jetson/README.md`).
+anything that moves on its own. No unit starts the ROS container, and
+`picar-stack` takes its modes and secrets from `run.sh`'s files and the
+shell, not an `EnvironmentFile`. The bring-up that precedes it is the
+platform domain's procedure (`tools/jetson/README.md`).
 
 **One session on the board at a time (3.93).**
 * **The lock.** `tools/jetson/board_lock.py` holds `flock(2)` on the
@@ -313,7 +321,8 @@ bring-up that precedes it is the platform domain's procedure
   keeper never takes the board later. A `_keep` pid is trusted only if its
   command line says so, so a reused pid is never taken for a hold.
 * **The board-side check.** `board_lock_check.sh` is sourced by
-  `headroom_identity.sh`, `headroom_mission.sh` and `bench_local_vlm.sh`.
+  `headroom_identity.sh`, `headroom_mission.sh`, `bench_local_vlm.sh` and
+  `install_services.sh`.
   It exits 75 under another session's hold, or under a token whose
   `until` has passed. The holder writes `until` on the board's clock, so
   the two clocks never meet. If the check itself fails, it exits 1.
@@ -354,13 +363,13 @@ bring-up that precedes it is the platform domain's procedure
 
 | Test | What it proves |
 |---|---|
-| `tests/test_serverless_routes.py` | Every public route crosses both the CloudFront behaviour and the API Gateway route to the right function; the vision zip's flat layout imports (6 tests) |
+| `tests/test_serverless_routes.py` | Every public route crosses both the CloudFront behaviour and the API Gateway route to the right function; the vision zip's flat layout imports (7 tests) |
 | `tests/test_static_assets.py` | Every file `web-twin/index.html` and `control/lab.html` reference is in `service/static/assets.json` (the Lab page is both consoles since 3.132 Stage 4), plus the PWA manifest's icons, the manifest's keys and cache policies, and that `sync.sh` reads the same manifest |
 | `tests/test_board_lock.py` | 3.93: a second hold is refused with the owner's line, by hand or by the tool; the lock frees on SIGKILL, on a silent heartbeat and at `--max`; the board-side check refuses a missing, wrong or expired token; review fixes: unreachable is not busy, SIGTERM ends the command first, a waiting or abandoned `hold` never takes the board later, a reused pid is not a hold, a bench keeps the board on its own, after its session's hold ends and against a waiting session, an orphan of the bench holds nothing, a Ctrl-C or SIGTERM reaches the command once and the hold outlasts its teardown, `run` never leaves its group, `release` reports a keeper that did not stop (30 tests, ~70 s, a local shell for ssh; on `SLOW_FILES`) |
 | `tests/test_alb_routes.py` | The same check against the deleted ECS templates. History, still green |
 | `tests/test_tunnel_proxy.py` | The proxy's prefix routing and header handling, no network (8 tests) |
-| `tests/test_health.py` | Non-zero exit when either half is unreachable or broken, and the verdict's silence for a parked robot, an idle robot and a recorded veto (15 tests) |
-| `tests/test_metrics.py` | Store and read a run, refuse unknown fields, the client never raises, and percentiles are never blended (14 tests) |
+| `tests/test_health.py` | Non-zero exit when either half is unreachable or broken, and the verdict's silence for a parked robot, an idle robot and a recorded veto (19 tests) |
+| `tests/test_metrics.py` | Store and read a run, refuse unknown fields, the client never raises, and percentiles are never blended (21 tests) |
 | `tests/test_brain_server.py` | The brain imports no backend or simulator (checked in a subprocess) |
 | `tests/test_watchdog_integration.py` | The watchdog loop runs against a real uvicorn subprocess |
 
@@ -383,24 +392,22 @@ job, map backup, M11 rollback) are in the
 [architecture spec's open questions](../../operations/ARCHITECTURE.md#open-questions)
 and are not repeated here. These are the implementation gaps:
 
-- **Deployed replay is disabled as templated, and would fail on auth if
-  half-enabled.** Both halves (no `VISION_URL`, so a 503; `VISION_URL`
-  alone, so the walks secret is sent to the vision service and every frame
-  is refused) are recorded in the recordings spec's Known gaps
-  (docs/engineering/recordings/ENGINEERING.md), the canonical home. The
-  fix touches `WalksFunction` in `cloudformation/serverless.yaml`, which
-  this domain deploys.
+- **Deployed replay is off unless the stack is given `ReplayVisionUrl`.**
+  The parameter's default is empty, so the walks function has no
+  `VISION_URL` and answers 503. Given a value, `WalksFunction` also gets
+  `VISION_SHARED_SECRET` from `VisionSharedSecret` (handoff 3c), and the
+  printed deploy command carries `ReplayVisionUrl`. The recordings spec's
+  Known gaps (docs/engineering/recordings/ENGINEERING.md) is the canonical
+  home for replay's behaviour.
 - **Hostnames are hard-coded as defaults** in `service/tunnel/run.sh`
   (`VISION_URL`) and `service/tunnel/proxy.py` (`PROXY_VISION_URL`). They
   should come from the `SiteUrl` output; a new distribution would leave both
   pointing at the old one.
-- **`run.sh`'s warm-up hint is stale.** It says the first mission downloads
-  `yolo11s.pt` (18 MB); the shipped detector is `yoloe-11s-seg.pt`, plus a
-  text encoder of about 572 MB (`tools/jetson/README.md`).
 - **`control/health.py` reads no wheel-loop field.** Late safety ticks
   (`wheel_loop.late_ticks`) show only on the robot's health route.
 - **`control.health`'s default brain URL does not match `run.sh`.** The
   default is `http://127.0.0.1:8001` with no prefix, so against the tunnel
   stack it needs `--brain-url .../brain` (see Procedures).
-- **No `deploy` directory for B5 yet**, so the deployed twin needs a laptop
-  running `service/tunnel/run.sh` and ngrok.
+- **Only the Jetson's first half of B5 is built** (3.71), so off the
+  Jetson the deployed twin needs a laptop running `service/tunnel/run.sh`
+  and ngrok, and the car has no unit for the ROS container.
