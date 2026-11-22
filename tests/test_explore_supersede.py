@@ -9,14 +9,10 @@ or farther than the target replaced a good approach in about half of 180
 ProcTHOR finds; at the oracle's bound the cost was 4-7 finds and a quarter
 of the slow tail.
 
-* in process, on 3.161's sweep harness: `procthor:val:102`'s find, which
-  ran out of budget on `dev` (3.213.A), is found;
 * the rule itself, on its helper: strict, live approach goals only, every
-  sighting counted once a tick.
+  sighting counted once a tick. The in-process find is
+  `tests/test_explore_supersede_sweep.py` (slow tier).
 """
-
-import importlib.util
-from pathlib import Path
 
 import brain.explore as explore_mod
 from brain.explore import ExploreAgent
@@ -24,22 +20,6 @@ from brain.memory import MissionMemory
 from sim.maps import build_world
 from sim.mock_robot import MockRobot
 from tests.test_explore import FakeNav
-
-ROOT = Path(__file__).resolve().parents[1]
-
-
-def _sweep():
-    spec = importlib.util.spec_from_file_location(
-        "nogo_sweep_3161_supersede", ROOT / "evaluations" / "nogo-3161" / "sweep.py")
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-
-def test_a_good_approach_is_kept_and_val102_is_found():
-    row = _sweep().run("procthor:val:102", 0, "none")
-    assert row["outcome"] == "found"
-    assert row["sim_s"] < 300                 # dev: out_of_budget at 1,588 s
 
 
 def _agent():

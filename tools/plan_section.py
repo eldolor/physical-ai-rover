@@ -394,6 +394,7 @@ SLOW_FILES = [
     "test_startup_race.py", "test_wheel_feedback.py",
     "test_survey_sweep.py",
     "test_explore_reseen_sweep.py",    # 3.210: one ProcTHOR find in process (~25 s)
+    "test_explore_supersede_sweep.py", # 3.213: one ProcTHOR find in process (~50 s)
     "test_room_cut_sweep.py",          # 3.118: the frozen cut on 120 houses, 500 grids, 9 surveys (~4 min)
     "test_walk_dist_sweep.py",         # 3.120: the frozen walk on the same maps and surveys (~8 min)
     "test_review_376j_nightly.py",     # 3.76 J: the nightly script's stops and limits (~35 s)
