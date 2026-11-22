@@ -43,8 +43,22 @@ sensor reads queued behind the board loop. See "The split simulator" below.
 | `sim/maps/scaled_house.py` | 27 x 14 cells, 90 cm doors (R6). Robot at (6, 4) facing east, backpack at (23, 5). The only house with a mover scenario (`hallway_crossing`) |
 | `sim/maps/complex_house.py` | 3.46's test house: 60 x 44 ft, a loop (living room - kitchen - hall), an L-shaped hall, three dead ends (study, closet, ensuite), an L-shaped bedroom, 33 pieces of furniture and 16 one-cell small things on the floor. Exposes `INSTANCES` (cells grouped by piece, so a table's four legs are one table) and `SMALL_NAMES` for scoring. Its variant `complex_house_hazards` (3.74) adds six hazards on the routes (`HAZARDS_FT`) and heights (`LOW_HEIGHTS_M`) that put them and ten of the small things under the lidar |
 | `sim/maps/__init__.py` `STAIRS` | 3.159: `scaled_house_stairs` (a 0.9 m stairwell 60 cm inside the bedroom door, cells x 6-8, y 10-12) and `home_first_floor_stairs` (1.2 m along the living room's south wall, x 4-7, y 39-40): the base house with `v` cells stamped over empty floor (`_stamp_stairs` refuses anything else); movers are the base house's |
-| `sim/maps/procthor.py`, `sim/maps/procthor_data/` | 3.66: ProcTHOR-10K's 1,000 `val` houses (Apache-2.0, `LICENSE` beside the data) as `procthor:val:<index>`. `convert(index)` returns the world and what a judge needs (ProcTHOR's own room joins, source areas, object counts); `usable()` is the pinned list of houses with three or more rooms that the Rover reaches in full (`tests/chassis_fit.py`). The data is `val.json.gz`, written by `tools/procthor_import.py` from sha256-pinned sources; the suite never fetches |
+| `sim/maps/procthor.py`, `sim/maps/procthor_data/` | 3.66: ProcTHOR-10K's 1,000 `val` houses (Apache-2.0, `LICENSE` beside the data) as `procthor:val:<index>`. `convert(index)` returns the world and what a judge needs (ProcTHOR's own room joins, source areas, object counts); `usable()` is the pinned list of houses with three or more rooms that the Rover reaches in full (`tests/chassis_fit.py`). The data is `val.json.gz`, written by `tools/procthor_import.py` from sha256-pinned sources; the suite never fetches. Two more splits use the same converter: `procthor:test:<n>` (3.65 amendment 3: 1,000 houses kept out of every tuning run) and `procthor:train:<n>` (3.88 B's fresh test houses; `train.json.gz` now holds 10,000, so `n` runs to 9,999). Each split has its own `usable_<split>.json` (570 val, 613 test, 6,097 train houses) and `usable(split)`. `parse_split_name()` accepts exactly `procthor:(val\|test\|train):<digits>`; an index past the split's length is the same `unknown SIM_MAP` `ValueError` as any other bad name. No ProcTHOR house has movers |
 | `sim/maps/home_first_floor.py` | The user's first floor, rasterised from feet (appraisal sketch, exterior measured, interior provisional), furnished with solid objects. Tables are four legs |
+
+**The simulated battery** (`sim/battery.py` `SimBattery`, 3.70 E4, 3.137). A
+straight-line drain in time, not a discharge curve, with the two things that
+make a real board's reading harder to trust than the true voltage: a refresh
+period (the Rover's board measures every 10 s and repeats that value in each
+frame between; 0 measures on every read) and a sag, `SIM_BATTERY_SAG_V` lower
+for `SIM_BATTERY_SAG_S` after the wheels start turning, only while they turn.
+`charging(True)` raises the pack at `SIM_BATTERY_CHARGE_V_PER_S` up to
+`FULL_V` (12.6 V), the charger stand-in for `MockRobot` at rest on its pad
+(3.156.D); `set_v()` puts it at a given voltage (3.163.B). `FakeEsp32` always
+has one (12.00 V and no drain unless told) and reports it as `v` in the
+`T:1001` frame; `MockRobot` has one only when `SIM_BATTERY_V` is set, on the
+simulator's clock. The variables, defaults and effects are in the body
+spec's selection table (`SIM_BATTERY_*`, docs/engineering/body/ENGINEERING.md).
 
 Owned by other domains but built on this one: `sim/mock_world.py` (world),
 `sim/fake_esp32.py` (motor-board; since 3.36 it runs only in the body
@@ -163,12 +177,13 @@ follows is the sim-specific shape of each answer. The routes are served by
 | `get_camera_frame()` | `room`, `pan_deg` (3.46; clockwise, as `get_depth_grid()` publishes it), `objects_visible`, `detections`, `image_base64` (320 x 200 JPEG), `media_type: image/jpeg`, `metadata` |
 | `GridWorld.move_object(src, dst)` | Raises `ValueError` when there is no object at `src`, for a mover, onto a cell that is not floor, onto another object, or inside the robot's turning circle |
 
-Sim-only routes on the robot server (501 on a backend with no house):
+Sim-only routes on the robot server (the object routes answer 501 on a backend with no house):
 
 | Method, path | Body | Response |
 |---|---|---|
 | `GET /sim/objects` | -- | `{sim_time_s, objects: [{x, y, name, mover}]}` |
 | `POST /sim/objects/move` | `{src: [x, y], dst: [x, y]}` | The same listing; 409 naming the reason for an impossible move; 422 for a malformed cell |
+| `POST /sim/battery` | `{v}` (0 to 30) | `{v}`: the simulated pack (`SimBattery.set_v()`, 3.163.B) is put at that voltage and drains or charges from there; 404, not 501, on a robot with no simulated pack |
 
 Routes of the split simulator's programs (3.36; all but `/health` behind
 `APP_SHARED_SECRET` when it is set):
@@ -181,7 +196,7 @@ Routes of the split simulator's programs (3.36; all but `/health` behind
 | body, `GET /sim/objects`, `POST /sim/objects/move` | As on the robot server (both compute it with `GridWorld.describe_objects()`) |
 | sensors, `GET /health` | `{ok, pid, house, seq}`; `ok: false` while no consistent snapshot is readable |
 | sensors, `GET /scan`, `/depth`, `/distance`, `/frame` | One reading each, cast from the latest snapshot |
-| sensors, `GET /safety?max_range_m=` | `{scan, depth, distance_cm, state_seq, pid}` from one snapshot: the bundle `SimBodyClient` polls |
+| sensors, `GET /safety?max_range_m=` | `{captured_at, scan, depth, distance_cm, state_seq, pid}` from one snapshot: the bundle `SimBodyClient` polls |
 
 `GET /health` on the robot server carries `sim_map`: the `map_name` of the
 world the factory built, read as `robot.world.map_name` (the ROS-drive
@@ -201,7 +216,7 @@ differs, both are given.
 
 | Key or constant | Default | Unit | Read in | Why that value |
 |---|---|---|---|---|
-| `SIM_MAP` (env) | `starter_house` | name | `robot/factory.py` (`_sim_world()`); the live suites and sweeps in `tests/` read it too | Most tests were measured in the starter house. `scaled_house` for nav2 and R1 sweeps; `home_first_floor` for the furnished house; `complex_house` for 3.46's inventory sweep; `procthor:val:<0-999>` for sweeps across many generated houses (3.66) |
+| `SIM_MAP` (env) | `starter_house` | name | `robot/factory.py` (`_sim_world()`); the live suites and sweeps in `tests/` read it too | Most tests were measured in the starter house. `scaled_house` for nav2 and R1 sweeps; `home_first_floor` for the furnished house; `complex_house` for 3.46's inventory sweep; `procthor:val:<0-999>` for sweeps across many generated houses (3.66); `procthor:test:<n>` and `procthor:train:<n>` for houses a tuning run has not seen, and for a large training set (`sim/maps/procthor.py`) |
 | `SIM_MOVERS` (env) | unset | scenario name | `robot/factory.py` | Off means off (3.30 criterion 4). Only `scaled_house` defines one, `hallway_crossing` |
 | `SIM_LIDAR_DROP`, `SIM_LIDAR_CORRUPT` (env) | 0, 0 | probability per byte, 0-1 | `sim/fake_lidar.py` `main()`, as the defaults of `--drop` and `--corrupt` (a flag wins; `service/tunnel/run.sh` passes neither, so the variables reach it through the inherited environment) | `LossyLine`, the UART the fake D500 writes through (3.42 criterion 3): each byte is dropped with probability `drop`, else (`drop` + `corrupt` together) has one random bit flipped with probability `corrupt`, from a seeded `random.Random` (`--seed`, default 0). 0 and 0 pass every byte unchanged. Both unset, the fake lidar is clean. `tests/test_lidar_ld19.py` drives `LossyLine` directly (1% drop and 1% corrupt) against the driver |
 | `PROCTHOR_CACHE` (env) | `~/.cache/vision-picar/procthor` | path | `tools/procthor_import.py` `main()` (a hand-run tool, never the suite) | Where the importer keeps the pinned ProcTHOR source files it downloads (the split's and the asset database's, named by their URLs' basenames; made if missing). A cached file is reused, and checked against its pinned sha256 on every run; a file that fails is deleted and the run raises `ValueError`, so a truncated download is fetched again. The output, `sim/maps/procthor_data/<split>.json.gz`, is written where `OUT_DIR` says, not here. `tests/test_procthor_houses.py` pins the fetch's sha check |

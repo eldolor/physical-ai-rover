@@ -52,7 +52,9 @@ While the hold is in force (same generation as the stop, and before its
 deadline), `set_wheel_velocity()` turns any **non-zero** command into a zero
 on the wrapped body. That is the stopped verb's last twist still on its way
 through `twist_mux`, `diff_drive_controller` and the plugin's `POST /wheels`.
-The next verb (`_begin()`, a new generation) lifts the hold at once.
+The next verb (`_begin()`, a new generation) lifts the hold at once, unless a
+stop has landed since the robot server last checked for a person's: that verb
+is superseded before it moves and the stop keeps its hold (3.84).
 
 A verb's twists and the stop's zeros share `_send_lock`: a verb checks its
 generation and posts under it, and each zero is posted under it, so a zero
@@ -85,7 +87,7 @@ while it is measuring them: a `T:1001` frame arrived within
 |---|---|
 | `get_wheel_state()`, `get_odometry()` | `unusable_wheels()`, `unusable_odometry()` |
 | `get_battery()` | `unusable_battery()` (a stale `v` is no reading) |
-| `set_wheel_velocity()` non-zero | sends a zero, raises `WheelFeedbackLost` |
+| `set_wheel_velocity()` non-zero | sends a zero, raises `WheelFeedbackLost` (it also raises, with the command zeroed, if the serial write of a non-zero command fails) |
 | `set_wheel_velocity(0, 0)`, `stop()` | always succeed; `_send()` returns False on `OSError` instead of raising, and records `link_error` |
 | `verb_plan()` for a motion verb | raises `WheelFeedbackLost` |
 | a standing command | zeroed by `_zero_if_stale()`, which the reader thread runs every pass (at most 0.1 s apart); counted in `stale_zeroed`. A reader that ends (a read error, or an empty read from a hung-up line) zeroes it on the way out (`_link_lost()`, 3.76 B3) |
@@ -213,7 +215,12 @@ wheels, then sleeps (`wall_clock`) or calls `advance()`.
 ### Remote body: refusal mapping
 
 `RemoteRobot._action()` reads `{"executed": false, "reason"}` from
-`POST /action`: `preempted` raises `Preempted`; `ros_unavailable` raises
+`POST /action`: `preempted` raises `Preempted`; `person_stop` raises
+`StoppedByPerson` and `autonomy_lapsed` raises `AutonomyLapsed` (3.84, 3.145);
+`battery_reserve` and `battery_poweroff` raise `BatteryReserve` (3.137), all
+three subclasses of `Preempted` that end the mission; `battery_check` raises
+`SafetyViolation` with the reason in front of its detail (a veto for that move
+only); `ros_unavailable` raises
 `RobotTransportError("ros_unavailable: ...")`, which ends a mission
 `failed`; `no_feedback` (3.34) raises `RobotTransportError("no_feedback:
 ...")`, likewise; anything else, including no reason (a pre-M4 server), raises
@@ -391,9 +398,12 @@ did not measure.
 
 ## Known gaps
 
-- **The camera driver is untried on a real camera.** `robot/camera_stream.py`
-  (3.90 A) is measured on a fake source; its CPU cost and the MJPEG
-  pass-through wait for the Rover's camera (3.90 C). `ROBOT_CAMERA` unset
+- **The camera driver has met one real camera, not the Rover's cameras.**
+  `robot/camera_stream.py` (3.90 A) is measured on a fake source; on the
+  Rover a USB camera on `/dev/video0` passed 3.140 L0.8's stale-frame check
+  (620 s, 6,154 reads, 0 stale served, age p90 45.28 ms, 2026-11-09). The
+  OAK-D is not a V4L device and was not judged; the CPU cost and the MJPEG
+  pass-through wait for 3.90 C. `ROBOT_CAMERA` unset
   leaves the frame as before.
 - **No depth driver on the car yet.** `HardwareRobot` without `sensors`
   answers 0.0 for `get_distance()`. What the car may then do is the

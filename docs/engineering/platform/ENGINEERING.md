@@ -43,11 +43,11 @@ specified by the motor-board domain (docs/engineering/motor-board/ENGINEERING.md
 |---|---|---|---|
 | Compute | NVIDIA Jetson Orin Nano Super Developer Kit, 945-13766-0000-000, $399 (Amazon, ordered 2026-09-27) | [in hand] since 2026-09-30; opened 2026-10-02, KEPT 2026-10-05 (the return window no longer applies). JetPack 6.2.1 (L4T R36.4.4, UEFI 36.4.4), at 15 W | `JETSON-BOM.md` section 1, `CLAUDE.md` section 3b |
 | Chassis kit | Waveshare UGV Rover PT Jetson Orin ROS2 Kit Acce, SKU 29227, ~$730 delivered (Amazon) | [in hand] ordered 2026-09-30 (expected Oct 19 - Nov 11 when ordered), in hand (the user, 2026-11-21), 30-day return. Bought on Amazon rather than from Waveshare direct, whose returns were reported as 15 days, shipped to China [U] (`JETSON-BOM.md` 9.7, a search not re-checked): too short for the on-arrival checks | `JETSON-BOM.md` 9.1, 9.7 |
-| Motor board | Waveshare "ROS Driver for Robots" (ESP32, closed loop), firmware `ugv_base_ros` | [planned] with the kit | `JETSON-BOM.md` 9.3, motor-board domain |
-| Lidar | D500 (LDROBOT STL-19P), 360 degrees, 12 m, 10 Hz | [planned] with the kit | `PLAN-ros-alignment.md` 3.21 |
-| Depth camera | Luxonis OAK-D Lite (passive stereo) | [planned] with the kit; which sensors ship is an arrival check | 3.21, 3.26 |
-| Pan-tilt camera | the kit's pan-tilt module | [planned] with the kit | 3.26 |
-| IMU | ICM-20948 on the motor board | [planned] with the kit | 3.21, 3.26 |
+| Motor board | Waveshare "ROS Driver for Robots" (ESP32, closed loop), firmware `ugv_base_ros` | [in hand]; seen on the bench (3.140, 2026-11-09): on `/dev/ttyTHS1` at 115200 it sends the `T:1001` feed (119 frames in 6 s; 1,192 in 60 s, every stock field present, p50 period 49.98 ms). Its UART receive does not act on what the Jetson sends (no reply to `T:602` or `T:900`; the ESP32 does obey over Wi-Fi), and it reads `mainType` 3, not 2. L0.5 is not met and no wheel has been driven | `JETSON-BOM.md` 9.3, motor-board domain, 3.140 status notes |
+| Lidar | D500 (LDROBOT STL-19P), 360 degrees, 12 m, 10 Hz | [in hand]; seen on the bench (3.140, 2026-11-08 to 11-10): `/dev/ttyACM0` (CH343 `1a86:55d3`, through the driver board's USB hub) at 230400 baud, 12,483 packets in 30 s with 0 CRC failures at 9.903 Hz. L0.6 is part met: the wall row is not measured and the mounting yaw is not confirmed | `PLAN-ros-alignment.md` 3.21, 3.140 |
+| Depth camera | Luxonis OAK-D Lite (passive stereo) | [in hand]; it enumerates on USB (`03e7:2485`) but is not a V4L device, so the camera check could not judge it; no depth frame has been read (3.140 L0.8, 2026-11-09) | 3.21, 3.26, 3.140 |
+| Pan-tilt camera | the kit's pan-tilt module | [in hand], not yet checked: no pan-tilt command has been sent (3.140, 2026-11-10). A USB camera on `/dev/video0` passed L0.8's stale-frame check (6,154 reads, 0 stale, age p90 45.28 ms); the notes do not say it is the pan-tilt module's | 3.26, 3.140 |
+| IMU | ICM-20948 on the motor board | [in hand], not yet checked: no 3.140 note reads the IMU | 3.21, 3.26, 3.140 |
 | Jetson battery | e.g. Wheeltec E351S 3S 5100 mAh plus a fused 5.5 x 2.1 to 5.5 x 2.5 mm cable, ~$100-110 | [planned] CONDITIONAL on the arrival stress test | `JETSON-BOM.md` 9.5 |
 | microSD | 128 GB A2 | [in hand]; the first boot device, the fallback since 2026-10-05 | `tools/jetson/README.md` |
 | NVMe | SanDisk Optimus 5100 500 GB, M.2 2280 | [in hand]; the boot device since 2026-10-05 | `JETSON-BOM.md` 9.1 |
@@ -67,15 +67,15 @@ specified by the motor-board domain (docs/engineering/motor-board/ENGINEERING.md
 
 ## Interfaces
 
-Physical and host-side interfaces. Device names are expected, not seen.
+Physical and host-side interfaces. The board and lidar device names were seen on the Rover (3.140, 2026-11-09); the rest are expected.
 
 | Interface | Value | Status |
 |---|---|---|
 | Jetson power input | Barrel 5.5 x 2.5 mm, 9-20 V | [V] devkit spec |
 | Rover supply to Jetson | DC5525 lead from the kit's UPS board | [unmeasured] |
-| Motor board serial | Which device, how it is named (a udev symlink, never enumeration order) and `ROBOT_SERIAL` are owned by the motor-board spec (docs/engineering/motor-board/ENGINEERING.md). Which route the kit wires is an arrival check | [planned] |
-| Lidar serial | LD19 protocol at 230400 baud (`robot/lidar_ld19.py` `BAUD`), read by the robot process. Opened by `ROBOT_LIDAR` (or `hardware.lidar_port`; `robot/factory.py`): a udev symlink (name to be chosen), never by enumeration order such as `ttyACM0`, the same rule as the motor board's | [built] and run on a fake lidar (`sim/fake_lidar.py`); the protocol and baud are inferred from `ldlidar`, unverified on the real D500 (3.42 criterion 7) |
-| Serial permissions | Service user in `dialout`; udev rules for stable names (the motor board's in motor-board ENG §Procedures, docs/engineering/motor-board/ENGINEERING.md; B5 in operations) | [planned] |
+| Motor board serial | Which device, how it is named (a udev symlink, never enumeration order) and `ROBOT_SERIAL` are owned by the motor-board spec (docs/engineering/motor-board/ENGINEERING.md). The route is `/dev/ttyTHS1` at 115200 (the feed was heard, 3.140 2026-11-09); the name is `/dev/picar-board` | [in hand]; the Jetson hears the board, the board does not act on what the Jetson sends (3.140) |
+| Lidar serial | LD19 protocol at 230400 baud (`robot/lidar_ld19.py` `BAUD`), read by the robot process. Opened by `ROBOT_LIDAR` (or `hardware.lidar_port`; `robot/factory.py`): a udev symlink, `/dev/picar-lidar` (3.140, 2026-11-09), never by enumeration order such as `ttyACM0`, the same rule as the motor board's | [built] and run on a fake lidar (`sim/fake_lidar.py`); the protocol and baud are inferred from `ldlidar`, 3.140 read 230400-baud packets from the real D500 with 0 CRC failures, but 3.42 criterion 7 is not recorded as met |
+| Serial permissions | Service user in `dialout`; udev rules for stable names (the motor board's in motor-board ENG §Procedures, docs/engineering/motor-board/ENGINEERING.md; B5 in operations) | [built] on the Rover 2026-11-09 (3.140): `/etc/udev/rules.d/99-picar-rover.rules` gives `/dev/picar-board` -> `ttyTHS1` and `/dev/picar-lidar` -> `ttyACM0`, and `picar` is in `dialout`; the three-reboot check is not done (one reboot held). Service user and B5 units still [planned] |
 | SSH | `Host picar-jetson`, user `picar`, key `~/.ssh/id_ed25519_jetson`. `picar-jetson.local` does not resolve from the Mac on this network, so the entry points at the board's LAN address (a DHCP reservation is still to make, 3.33) | [built] on the Mac |
 | Code delivery | The Mac pushes over SSH to a non-bare repo on the board (`receive.denyCurrentBranch updateInstead`, a `jetson` remote on the Mac). No GitHub credentials on the robot. One-time setup and the push command: `tools/jetson/README.md` section 2 | [built], used for 3.33 |
 | Power mode | `sudo nvpmodel -q` / `sudo nvpmodel -m <id>`; ids from `/etc/nvpmodel.conf`. On this board 15 W is id 0; it shipped in 25 W (id 1) | [built], set to 15 W 2026-10-04 |

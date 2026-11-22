@@ -131,6 +131,11 @@ for the wheels and drops the camera; 3.26 read it as the arm's alone, which
 commanding zero speed.
 Nothing replaces the safety layer: the board sees no obstacle.
 
+The backend adds a rule of its own on the host side (3.34): it commands no
+wheel and runs no verb unless it has lately heard the board's feedback, and
+it stops the wheels itself when that feedback goes stale, so a silent board
+is never driven blind.
+
 ### D4. Odometry is a speed integral clamped by the board's odometers
 
 **Decision.** The host integrates the measured wheel speeds. On every frame
