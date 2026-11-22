@@ -18,16 +18,16 @@ in the same commit as the code.
 | File | What it does |
 |---|---|
 | `service/vision_analyze/app.py` | FastAPI app. `create_app()` builds the routes. `_decode_image()` does the shared auth, JSON parse, base64 decode and size check. `_check_secret()` compares `x-app-secret` in constant time (`hmac.compare_digest`, 3.76 H2-9). `_target_object()` bounds the target and refuses a blank one (3.76 H2-8, round 2). Every route's model call goes through `_vision_call()` (round 3 P5): an `ImageRejected` from `vision_core` maps to its own 400/413; every other failure, Bedrock's `ValidationException` included, is 502 (round 3 P1). The request gate is `MAX_REQUEST_IMAGE_BYTES` (the Lambda payload); Bedrock's `MAX_IMAGE_BYTES` is checked by `vision_core` after conversion (round 3 P3). |
-| `service/vision_analyze/vision_core.py` | Prompts, the model allow-list, prompt variants, region pins, one `bedrock-runtime` client per region (`_get_client(model_id)`), the four `describe_image_bytes*()` calls and their `_parse_*_json()` parsers. |
+| `service/vision_analyze/vision_core.py` | Prompts, the model allow-list, prompt variants, region pins, one `bedrock-runtime` client per region (`_get_client(model_id)`), the five `describe_image_bytes*()` calls (scene, person, navigate, guidance, room), `describe_room_prior()` and their `_parse_*_json()` parsers. |
 | `service/vision_analyze/rooms_core.py` | `identify_room()` and `ROOM_FEATURES`, a hand-kept copy of `brain/rooms.py`. Since 3.76 H2-5 both copies drop non-string and empty items and refuse a non-list (here the list is the model's unvalidated output; mirrored into `brain/rooms.py` in round 2). |
 | `service/vision_analyze/requirements.txt` | `fastapi`, `uvicorn[standard]`, `boto3`, `pillow-heif`, `pillow` |
 | `service/vision_analyze/Dockerfile` | `python:3.12-slim`, flat `/app`, `uvicorn app:app` on port 8080. Used for local container runs. There is no ECS deployment since 2026-09-05. |
-| `service/vision_analyze/tests/` | The service's own suite (`test_app.py`, `conftest.py` puts the service dir on `sys.path` so the flat imports resolve) |
+| `service/vision_analyze/tests/` | The service's own suite (`test_app.py`, `test_review_376h2.py`; `conftest.py` puts the service dir on `sys.path` so the flat imports resolve) |
 | `service/lambda/vision_handler.py` | `handler = Mangum(app, lifespan="off")`, with `from app import app` as a FLAT import |
 | `service/lambda/requirements-vision.txt` | Only what Lambda adds: `mangum`. Its comment says `boto3` comes from the runtime, but `build.sh` also installs `service/vision_analyze/requirements.txt`, which lists `boto3`, so the vision zip DOES bundle `boto3` (and `botocore`). See Known gaps. |
 | `service/lambda/build.sh` | Builds both Lambda zips for `manylinux2014_aarch64` / CPython 3.12 with `--only-binary=:all:`, copies `app.py`, `vision_core.py`, `rooms_core.py` and `vision_handler.py` to the zip ROOT, uploads to the deploy bucket, and prints the deploy command |
 | `cloudformation/serverless.yaml` | `VisionFunction`, `VisionRole` (`bedrock:InvokeModel` on `*`), `ApiInvokeRole`, the HTTP API with `CredentialsArn` integrations, the routes, and the CloudFront behaviours |
-| `brain/vision.py` | Manual only: no mission, sim run or hardware path calls it. `describe_image()`, `describe_frame()` and `describe_base64()` call the Anthropic Messages API with `MODEL = "claude-sonnet-5"`, `max_tokens=500` and `ANTHROPIC_API_KEY`. Only `tests/manual_describe_image.py` and the mocked `tests/test_vision.py` / `tests/test_coverage_gaps.py` use it. |
+| `brain/vision.py` | Manual only: no mission, sim run or hardware path calls it. `describe_image()`, `describe_frame()` and `describe_base64()` call the Anthropic Messages API with `MODEL = "claude-sonnet-5"`, `max_tokens=500` and `ANTHROPIC_API_KEY`. Only `tests/manual_describe_image.py` and the mocked `tests/test_vision.py` / `tests/test_coverage_gaps.py` use it, and `tests/test_review_376h2.py` imports its parser (`_parse_scene_json`). |
 
 The client of `/navigate` in the brain (`brain/navigate.py`) belongs to
 the policy domain. The replay client (`control/admin_server.py`'s
@@ -42,7 +42,7 @@ route requires header `x-app-secret`. `GET /health` and
 | Method, path | Request | 200 response | Errors |
 |---|---|---|---|
 | `GET /health` | none | `{"status": "ok", "env_label": <ENV_LABEL, stripped; "" when unset>}` (3.64: behind CloudFront this is what the twin's and the console's banners read) | none |
-| `POST /analyze` | `image_base64`, `media_type` (default `image/jpeg`) | `obstacles_ahead[]`, `free_space`, `doorway_visible`, `important_objects[]`, `safest_direction`, `room_guess` (from `identify_room`) | 400 bad JSON, a body that is not a JSON object, a non-string `media_type`, missing `image_base64`, base64 that cannot be decoded at all, or a non-native image (HEIC) Pillow cannot read; 401 secret; 413 a request image over `MAX_REQUEST_IMAGE_BYTES` (4.5 MB), or a native-format image over `MAX_IMAGE_BYTES` (3.75 MB; a converted one is shrunk to fit instead); 502 model failure, any Bedrock refusal included. Native formats are never opened locally: non-image bytes labelled `image/jpeg`, a mismatched `media_type` or a side over 8000 px go to Bedrock and come back 502 (Known gaps). |
+| `POST /analyze` | `image_base64`, `media_type` (default `image/jpeg`) | `obstacles_ahead[]`, `free_space`, `doorway_visible`, `important_objects[]`, `safest_direction`, `room_guess` (from `identify_room`) | 400 bad JSON, a body that is not a JSON object, a non-string `media_type`, missing `image_base64`, base64 that cannot be decoded at all, or a non-native image (HEIC) Pillow cannot read; 401 secret; 413 a request image over `MAX_REQUEST_IMAGE_BYTES` (4.5 MB), an image that would decode to more than `MAX_DECODE_PIXELS`, or bytes Pillow cannot open that are over `MAX_IMAGE_BYTES` (3.75 MB; a readable image over it is shrunk to fit instead, converted or native); 502 model failure, any Bedrock refusal included. Native-format bytes Pillow cannot open (non-image bytes labelled `image/jpeg`) and a mismatched `media_type` go to Bedrock and come back 502 (Known gaps); a native image with a side over 8000 px is shrunk and sent as JPEG, not sent as is. |
 | `POST /describe` | same as `/analyze` | `summary`, `room_type`, `objects[]` | same as `/analyze` |
 | `GET /navigate/models` | none | `default`, `models[{id,label}]`, `default_prompt`, `prompts[]` (sorted) | none |
 | `POST /navigate` | `image_base64`, `media_type`, `target_object` (required), `searched_rooms[]` (optional; non-strings dropped), `model_id` (optional, must be in the list), `prompt_variant` (optional, must be in the list) | see the schema below | 400 missing or blank target, a target that is not a string or is over 200 characters (`MAX_TARGET_CHARS`), `model_id`/`prompt_variant` not a string or off the list (all checked before any Bedrock call); 401; 413; 502 (any Bedrock refusal). `searched_rooms` keeps non-blank strings, each cut to 64 characters, de-duplicated, the first 20 (the brain sends them sorted, so which 20 is arbitrary; 3.76 H2-8). |
@@ -55,7 +55,7 @@ the model's JSON, then coerced by `_parse_navigate_json()`:
 
 | Field | Values | Coercion |
 |---|---|---|
-| `target_visible` | bool | coerced to a real bool (handoff 4b): `true` or the string `"true"` (any case, trimmed) is true, anything else false -- before the reached-implies-visible check below. `brain/navigate.py` reads it with `is True`; `brain/tiered.py`'s `confirm_arrival()` reads the normalised `_navigate.target_visible` as the arrival's identity verdict (handoff 1a); `web-twin/app.js` reads it by truthiness (Robot view's zone highlight, `const zone = result.target_visible ? ...`). |
+| `target_visible` | bool | coerced to a real bool (handoff 4b): `true` or the string `"true"` (any case, trimmed) is true, anything else false -- before the reached-implies-visible check below. `brain/navigate.py` reads it with `is True`; `brain/tiered.py`'s `confirm_cloud()` (the cloud half of `confirm_arrival()`) reads the normalised `_navigate.target_visible` as the arrival's identity verdict (handoff 1a); `web-twin/app.js` reads it by truthiness (Robot view's zone highlight, `const zone = result.target_visible ? ...`). |
 | `target_direction` | `left`, `center`, `right`, `not_visible` | trimmed and lower-cased, then anything off `TARGET_DIRECTIONS` becomes `not_visible` (handoff 4b) |
 | `target_reached` | bool | `is True` only. Forced `false` when `target_visible` is false. |
 | `obstacle_ahead` | bool | REMOVED when the variant's template does not ask for it (`variant_asks_obstacle()`). Otherwise coerced like `target_visible` (handoff 4b). `brain/navigate.py` reads it with `is True`; in Robot view the OBSTACLE banner is strict (`=== true`) while the HUD's OBS row and the haptic/audio cue read it by truthiness -- harmless since the service coerces it (handoff 4b). |
@@ -78,7 +78,7 @@ list, `null`, a number) is a parse failure like any other: the empty
 schema plus `_raw`, HTTP 200. It used to escape as a `TypeError` and a
 502, which the brain reads as the cloud being unreachable. A parse
 failure is the model's answer, not an outage: at arrival it reads as "not
-confirmed" (`confirm_arrival()` needs an explicit `target_visible: true`),
+confirmed" (`confirm_cloud()` needs an explicit `target_visible: true`),
 which is the documented fail-safe direction (3.47's rule: only transport,
 5xx, 408 and 429 are unreachable).
 
@@ -150,7 +150,7 @@ API Gateway answer 403).
 | `_RETRYABLE_CODES`, `_RETRY_BACKOFF_S`, `_CALL_BUDGET_S` | `ThrottlingException`, `ServiceUnavailableException`; 1; 28 | -; s; s | `vision_core._converse()` | One attempt also dropped botocore's retry of a throttle, so `_converse()` retries those two codes (refusals before any work) ONCE, after 1 s, only if elapsed + 1 s + a whole attempt (25 s) still fits 28 s; otherwise the error stands (502). Round 3 P2. Elapsed runs from the request's entry (`mark_request_start()` in `_decode_image()`, a context variable), so decoding and any conversion count (round 4, G1). |
 | `maxTokens` | 500 (`/analyze`, `/describe`), 300 (`/navigate`, `/guidance`), 256 (`/room`, `ROOM_MAX_TOKENS`), 512 (`/room-prior`, `ROOM_PRIOR_MAX_TOKENS`: 3.116.C's, as measured) | tokens | `vision_core.py` | All three models added on 2026-09-21 answered inside the 300 cap. `/room` asks for a name alone (3.70 S2): Opus 5.5 wrote 230-300 tokens of `/navigate` reply a call. Opus 5.5 always thinks and its thinking counts against the cap: at 16 every real `/room` call stopped on `max_tokens` with no text (3.70 S2b), so `/room` sends `output_config.effort` `low` (`ROOM_EFFORT`, through `additionalModelRequestFields`; 57 tokens out on a real call), only to the ids in `ROOM_EFFORT_MODELS`, each confirmed by a real Converse call (`us.anthropic.claude-opus-5-5` today; older Claude models and other vendors refuse the field, which would make every `/room` a 502; an Opus 5.5 id not listed gets no effort and shows as cut replies with `_stop` until a real call confirms it and it is added; start-up logs a warning naming an id off the list). A test pins `ROOM_MODEL_ID`'s default and the template's `RoomModelId` default to `ROOM_EFFORT_MODELS`. `BEDROCK_ROOM_MODEL_ID` is stripped where it is read, and an empty one is the default. The 256 only bounds the cost |
 | `BEDROCK_ROOM_MODEL_ID` (`ROOM_MODEL_ID`) | `us.anthropic.claude-opus-5-5` | Bedrock id | `vision_core.py`, `serverless.yaml` `RoomModelId` | `/room`'s and `/room-prior`'s model (3.190.C: the one 3.116.C measured; the brain reads its cache under the same id, `brain/room_prior.py` `MODEL_ID`, pinned equal): the user's choice for room labels (2026-10-13), confirmed with two real Converse calls on walk frames from us-east-2 that day. Code default and template parameter kept in step |
-| `VisionFunction` `Timeout` / `MemorySize` | 30 / 1024 | s / MB | `serverless.yaml` | A call takes 1-3 s, with up to two in flight from Robot view. 30 s bounds a hung call. |
+| `VisionFunction` `Timeout` / `MemorySize` | 30 / 1024 | s / MB | `serverless.yaml` | A `/navigate` call to Opus 4.5 took 3.6 s a step when measured (`PLAN-onboard-perception.md`; the three 2026-09-21 models answered in 2.7-5.9 s), with up to two calls in flight from Robot view. 30 s bounds a hung call. |
 | `VisionFunction` runtime / architecture | `python3.12` / `arm64` | | `serverless.yaml`, `build.sh` | arm64 is cheaper and must match the wheels `build.sh` pulls |
 
 **The `/navigate` allow-list** (`_DEFAULT_NAVIGATE_MODEL_CHOICES`, in picker order):
@@ -241,7 +241,7 @@ gateway without CloudFront) and then the `SiteUrl` output (which already
 ends in `/`):
 
 ```bash
-curl -s <ApiEndpoint>/health                 # {"status":"ok"}
+curl -s <ApiEndpoint>/health                 # {"status":"ok","env_label":""} (the label, when the stack sets one)
 curl -s <SiteUrl>navigate/models             # default + 7 models + 6 prompts
 ```
 
@@ -316,7 +316,7 @@ diff <(sed -n '/^SCENE_PROMPT = /,/"""$/p' brain/vision.py) \
      <(sed -n '/^SCENE_PROMPT = /,/"""$/p' service/vision_analyze/vision_core.py)
 ```
 
-Expected as of 2026-10-13: the first prints `ROOM_FEATURES match`; the
+Expected as of 2026-11-22: the first prints `ROOM_FEATURES match`; the
 second differs by `identify_room()`'s docstring (seven `<` lines,
 present in `brain/rooms.py` and absent from the copy) and by the two
 3.76 comments above the (identical) input filter; the third differs
@@ -340,7 +340,7 @@ change.
 
 | Test | What it proves |
 |---|---|
-| `service/vision_analyze/tests/test_app.py` (129 collected, passing 2026-11-22) | Each route's validation and status codes (400/401/413/502); every `describe_*` judges the image before it makes a Bedrock client, so a too-large image is a 413 even where no client can be made (the Jetson, no AWS region: was a 502, 2026-11-01); searched rooms forwarded and sanitised; `model_id` and `prompt_variant` rejected off-list before any model call; `/navigate/models` publishes both lists; each variant changes only what it claims (string-surgery tests); `distance_estimate` and `path_ahead` always present and coerced; `obstacle_ahead` stripped under `bearing-only` even when volunteered; region pins and per-region client caching; pins emptied by env; `/room` (3.70 S2): the name verbatim, no target needed, 400/401/502 as the others, a reply cut to one short lowercase name or `unclear` (with `_raw`); 3.70 S2b: low effort and a 256-512 cap on `ROOM_MODEL_ID`, effort only to `ROOM_EFFORT_MODELS` (near misses and unconfirmed spellings pinned without it; both defaults pinned on it; a warning at start-up otherwise), a reply not ending cleanly is `unclear` with `_stop` and one warning, the id stripped and never empty |
+| `service/vision_analyze/tests/test_app.py` (129 collected, passing 2026-11-22) | Each route's validation and status codes (400/401/413/502); every `describe_*` judges the image before it makes a Bedrock client, so a too-large image is a 413 even where no client can be made (the Jetson, no AWS region: was a 502, 2026-11-01); searched rooms forwarded and sanitised; `model_id` and `prompt_variant` rejected off-list before any model call; `/navigate/models` publishes both lists; each variant changes only what it claims (string-surgery tests); `distance_estimate` and `path_ahead` always present and coerced; `obstacle_ahead` stripped under `bearing-only` even when volunteered; region pins and per-region client caching; pins emptied by env; `/room` (3.70 S2): the name verbatim, no target needed, 400/401/502 as the others, a reply cut to one short lowercase name or `unclear` (with `_raw`); 3.70 S2b: low effort and a 256-512 cap on `ROOM_MODEL_ID`, effort only to `ROOM_EFFORT_MODELS` (near misses and unconfirmed spellings pinned without it; both defaults pinned on it; a warning at start-up otherwise), a reply not ending cleanly is `unclear` with `_stop` and one warning, the id stripped and never empty; `/room-prior` (3.190.C): the reply returned raw with the service's reading of it, a malformed reply a 200 with `prior` null, a model error a 502, a bad target a 400 with no call, the secret enforced |
 | `service/vision_analyze/tests/test_review_376h2.py` (86) | 3.76 H2: non-object JSON replies and fenced replies with trailing prose parse; unreadable or oversized (3.75 MB, also after conversion) images are 400/413 with no Bedrock call; any `important_objects` survives `/analyze`; `identify_room()` ignores empty and non-string items; non-object bodies and a non-string `media_type` are 400; an unknown default variant and a default model missing from the picker are corrected; target and room lengths bounded; the client's timeouts fit in Lambda's. Round 2: a read timeout is attempted once (local socket); unhashable `model_id`/`prompt_variant` are 400; converted images are shrunk under the byte and 8000 px limits; JSON with prose around it parses; the navigate call refuses an unknown variant; one image limit; a blank target is 400. Round 3: every Bedrock refusal (ValidationException, AccessDenied) is 502 on all four routes; a throttle or ServiceUnavailable is retried once, only once, not for other codes, and not when the budget is spent (stub client); a 4.2 MB BMP declared non-native is shrunk and sent; the request gate is the Lambda bound and fits 6 MB; shrinking takes at most 3 encodes. Round 4: the retry budget counts a slow conversion before the call (a clock stub); a native image over 8000 px or over the byte limit is shrunk to JPEG; a small one is sent untouched; unreadable native bytes are sent as before. Round 5: an image over Pillow's bomb limit is still measured and shrunk; over `MAX_DECODE_PIXELS` is a 413 (native and converted); a JPEG is decoded at reduced size |
 | `tests/test_review_376h2.py` | 3.76 H2: the deploy bucket keeps Lambda zips at least 365 days (rollback; the text only -- the live value needs the explicit deploy in the operations spec), `sync.sh` waits for the invalidation to complete, attempts x Bedrock timeouts fit the template's `Timeout`; round 2: the `brain/rooms.py` and `brain/vision.py` mirrors, and (round 3 P4) `/mission/start` refusing a blank target or one over `brain.navigate.MAX_TARGET_CHARS` for the cloud policies (`vision`, `tiered`) with 400, while a 250-character `frontier` target still starts |
 | `tests/test_serverless_routes.py` | Every vision route has an API Gateway route and a CloudFront behaviour, and no gateway route points at a path no app serves |
@@ -366,10 +366,11 @@ template parameter agree; a live reply echoes the expected `model_id` and
   service "ECS Fargate replacement", says `ANTHROPIC_API_KEY` is required,
   and shows `amazon.nova-lite-v1:0` as the `/navigate` default.
   `vision_core.py`'s header still describes a private subnet and a VPC
-  endpoint, and the comment above `NAVIGATE_MODEL_ID` (`vision_core.py:69`)
-  says to keep it in step with `cloudformation/service.yaml`'s
-  `NavigateModelId`. That template's stack was deleted on 2026-09-05; the
-  live parameter is `NavigateModelId` in `cloudformation/serverless.yaml`.
+  endpoint, and its model note (`vision_core.py:43`) names
+  `cloudformation/service.yaml`'s `NavigateModelId`. That template's stack
+  was deleted on 2026-09-05; the live parameter is `NavigateModelId` in
+  `cloudformation/serverless.yaml`, which the comment above
+  `NAVIGATE_MODEL_ID` (`vision_core.py:75-80`) already names.
   The code below all of them is current.
 - **`boto3` is bundled although the packaging says it is not.**
   `service/vision_analyze/requirements.txt` lists `boto3`, and `build.sh`

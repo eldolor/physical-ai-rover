@@ -2,7 +2,7 @@
 kind: architecture
 domain: cloud-vision
 status: current
-verified: 2026-10-02
+verified: 2026-11-22
 ---
 
 # Cloud vision -- architecture
@@ -21,29 +21,39 @@ A floor robot needs to be told which way to go, and nothing on the robot
 can read a room the way a large vision-language model can. This service is
 where that judgement is bought, one call per question.
 
-Three callers depend on it:
+Four callers depend on it:
 
 - **The brain's paid policies.** The vision policy and the tiered policy
   (the policy domain) send a frame and a target and get back one move. The
-  tiered policy calls only on a trigger, and once at each arrival, when it
-  reads only the visibility flag: that flag is its identity verdict and
-  decides `found` (the policy domain's rule, 2026-10-02). The vision policy
-  calls on every step.
+  tiered policy calls only on a trigger, and at an arrival that the local
+  vision model (the perception domain) does not settle, which is every
+  arrival when none is configured. There it reads only the visibility flag:
+  that flag is its identity verdict and decides `found` (the policy
+  domain's rule, 2026-10-02). The vision policy calls on every step.
 - **The twin's Guide tab** (the twin domain). "Guide me" steers a person
   to an object and "Robot view" shows the move the robot would make, both
   on the phone's real camera.
 - **Walk replay** (the recordings domain) re-asks a recorded walk's frames
   under another model or wording. It goes through this service on purpose,
   so a replay measures the service and not a copy of its prompt.
+- **The brain's room calls** (the mission domain). A survey can ask for
+  a frame's room name, one photograph in and a short name out (3.70), and
+  a find can ask once, at its start, which room types a target it has no
+  prior for is likely to be in, a text-only question (3.190.C). Both are
+  built and both are off by default: a survey takes its room names from
+  the simulator's frame, and a find asks for no prior. The room prior is
+  not shipped: 3.190's live check and its weighting sweep (steps D and
+  F) are recorded as failed, so it stays behind its switch.
 
 Without the service, the vision and tiered policies cannot run, both Guide
-modes are dead, and no two models can be compared. The robot stays safe
+modes are dead, no two models can be compared, and the room calls (when
+switched on) get no answer. The robot stays safe
 either way, because no move depends on this service being up.
 
 ## Components and boundaries
 
 ```text
- brain (vision / tiered policy) --+
+ brain (policies, room calls) -----+
  twin (Guide me, Robot view) -----+--> edge (CDN, same origin as the twin)
  walk replay (walks service) -----+          |
                                              v
@@ -68,16 +78,20 @@ either way, because no move depends on this service being up.
 - **Route layer.** Owns authentication by shared secret, decoding the
   upload's text encoding, the image size cap, and the two allow-lists
   (models and prompt wordings). A request that fails here never reaches a
-  model and costs nothing. It does not check that the bytes are an image:
-  that is first discovered by the provider, as a server error.
+  model and costs nothing. It does not check that bytes in a format the
+  provider takes are an image: the provider finds that out, and the
+  service answers with a server error. A phone format that has to be
+  converted is opened first, and bytes that cannot be read as that format
+  are a client error.
 - **Question layer.** One prompt and one response schema per question.
   The six questions are: what the robot's scene contains, a description
   of the photo for a person, the robot's next move, which way to
   steer a person, which room a frame was taken in, and which room types a
   target is likely to be in (text only, no image). The engineering spec maps each question to its route.
 - **Model layer.** Calls a managed model API under the service's own
-  cloud identity, with no API key in the service. Each route has its own
-  default model.
+  cloud identity, with no API key in the service. The default model is
+  set per route; the scene and description questions share one default
+  and the two room questions share another.
 - **Parsing.** Turns free text into a fixed schema. It fails towards "do
   not act on this". One field, the room guess, is only partly covered
   (see Decisions).
@@ -123,7 +137,7 @@ seconds and money. That cost is why the tiered policy exists.
 **Decision.** The robot's move, steering a person, the robot's scene, a
 description for a person, a frame's room and a target's room prior are
 six separate routes. Each has its own
-prompt, its own schema and its own default model.
+prompt and its own schema, and the default model is set per route.
 
 **Rejected.** A target-object mode on the scene question, which
 `PLAN-ar-guidance.md` section 4.2 first proposed. Two questions that share
@@ -199,8 +213,8 @@ each client, which drift.
 **Why the echo is a commitment.** For about a week, the code default and
 the deployment template disagreed about the navigate model. The
 environment variable won silently, and every walk recorded before
-2026-08-29 was attributed to the wrong model (`CLAUDE.md` section 5,
-Stage 0). The only trustworthy answer to "what produced this decision" is
+2026-08-29 was attributed to the wrong model (the archived
+`CLAUDE.md`, `../archive/CLAUDE-2026-10-06.md`). The only trustworthy answer to "what produced this decision" is
 the one carried on the reply.
 
 ### The default model is chosen by replay, never by catalogue or reputation
@@ -213,10 +227,10 @@ and stayed aware of obstacles; which model that is, and the replay's
 numbers, are in the engineering spec. A model enters the allow-list only
 after a real call with a real walk frame, from the deployed region, has
 succeeded. It stays labelled "unmeasured" until a replay has ranked it.
-The person-steering question runs on a cheaper model. A measurement that
-it is faster and matches accuracy for that task is claimed in the
-service's own notes but recorded nowhere (UNCONFIRMED); the choice has
-not been through a replay.
+The person-steering question runs on a cheaper model. The service's own
+notes claim a measurement for that choice, matching accuracy at about 3x
+Sonnet's latency (the note does not say which way), but it is recorded
+nowhere (UNCONFIRMED); the choice has not been through a replay.
 
 **Rejected.** Promoting a model because it is newer or appears in the
 provider's catalogue. Several catalogue entries returned access-denied on
@@ -325,7 +339,8 @@ small delay to a call that already takes seconds.
 | A model id or wording not on the allow-list | Refused as a client error before any model call | An invalid choice never reaches the provider and never costs money. |
 | A missing or wrong shared secret | Refused | When a secret is configured, no unauthenticated call is billed. A deployment with no secret is open, and the deploy instructions say so. |
 | An image over the size cap, or an upload whose text encoding does not decode | Refused before any model call | |
-| Bytes that decode but are not an image the provider accepts (or a phone format that fails conversion) | Sent on; the provider or the conversion fails, and the service answers with a server error | Costs a call attempt, never a move. Whether to validate the image before the call is open. |
+| Bytes that decode but are not an image the provider accepts | Sent on; the provider fails, and the service answers with a server error | Costs a call attempt, never a move. Whether to validate the image before the call is open. |
+| A phone format that fails conversion, or is too many pixels to decode | Refused before any model call, as a client error | Never reads as the cloud being unreachable. |
 | A phone uploads a format the provider rejects | Converted to an accepted format before the call | Real phone photos work. |
 | The page is served from a different origin | The browser blocks the call. The twin's own connection check names that as the fault. | Never misreported as a bad secret. |
 | A model the local region refuses | Pinned to a region that accepts it | Every listed model answers from the deployed region. |
