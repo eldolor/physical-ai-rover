@@ -83,7 +83,11 @@ def main():
     out["surveys"] = {**sv, "met": all(v["rows"] == v["identical"] for v in sv.values())}
     for m in ("m3", "m2"):
         r = sc._c8(b / f"rows-{m}.jsonl", d / f"rows-{m}.jsonl")
-        out[m.upper()] = r
+        # This section's bar is found >= dev per arm only (3.192's C8 `met`
+        # also asks that a changed row ended `exhausted` on dev).
+        fb = r["found_branch_vs_dev"]
+        out[m.upper()] = {"found_branch_vs_dev": fb, "changed": len(r["changed"]),
+                          "met": all(v["branch"] >= v["dev"] for v in fb.values())}
     (HERE / "B-bars" / "summary.json").write_text(json.dumps(out, indent=1, default=str) + "\n")
     print(json.dumps(out, indent=1, default=str))
 
