@@ -173,7 +173,7 @@ board` lists open steps. **Whoever merges moves the section's line to
 * 3.190 (the user, 2026-11-19): a cloud room prior for a target the
   shipped prior lacks (off by default). D FAILED 14, F FAILED: nothing
   ships. B's call 7: the user; E: the Rover.
-* 3.202.C soak: waits on 3.208 and the desktop's exclusive lock. 3.208: built, held from `dev` by 3.178.B's Touches (the user's call).
+* 3.202.C soak: waits on the desktop's exclusive lock.
 * ROS image: rebuild `:latest` and the Jetson's from `dev` after 3.211's `scaled_house` check.
 * 3.206 (the user, 2026-11-21): a frontier model's direction labels train
   Qwen's steering (3.188). A free; B-C's calls: the user; D: 3.188.B.
