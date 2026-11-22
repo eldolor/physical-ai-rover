@@ -1,0 +1,303 @@
+{
+ "E1": {
+  "rows": [
+   [
+    0,
+    "found",
+    790.6
+   ],
+   [
+    1,
+    "found",
+    790.6
+   ],
+   [
+    2,
+    "found",
+    790.6
+   ]
+  ],
+  "met": true
+ },
+ "E2": {
+  "found": {
+   "find_rooms_none": {
+    "branch": 90,
+    "dev": 87
+   },
+   "find_rooms_zones": {
+    "branch": 89,
+    "dev": 89
+   },
+   "find_rule_none": {
+    "branch": 90,
+    "dev": 90
+   },
+   "find_rule_zones": {
+    "branch": 89,
+    "dev": 90
+   },
+   "broad_rooms_none": {
+    "branch": 176,
+    "dev": 175
+   },
+   "broad_rule_none": {
+    "branch": 173,
+    "dev": 173
+   }
+  },
+  "met": false
+ },
+ "E3": {
+  "changed_outside_dev_exhausted_reseen": [
+   {
+    "set": "find_rooms",
+    "mission": "procthor:val:44 s2",
+    "arm": "zones",
+    "dev": "found",
+    "branch": "found",
+    "dev_s": 769.1,
+    "branch_s": 759.3,
+    "extra_s": -9.8,
+    "dev_reseen": 2,
+    "reseen": 2,
+    "places": 6
+   },
+   {
+    "set": "find_rule",
+    "mission": "procthor:val:44 s1",
+    "arm": "zones",
+    "dev": "found",
+    "branch": "exhausted",
+    "dev_s": 819.1,
+    "branch_s": 800.5,
+    "extra_s": -18.6,
+    "dev_reseen": 2,
+    "reseen": 2,
+    "places": 6
+   }
+  ],
+  "met": false
+ },
+ "E4": {
+  "changed": [
+   {
+    "set": "find_rooms",
+    "mission": "procthor:val:44 s0",
+    "arm": "none",
+    "dev": "exhausted",
+    "branch": "found",
+    "dev_s": 770.6,
+    "branch_s": 790.6,
+    "extra_s": 20.0,
+    "dev_reseen": 1,
+    "reseen": 2,
+    "places": 4
+   },
+   {
+    "set": "find_rooms",
+    "mission": "procthor:val:44 s1",
+    "arm": "none",
+    "dev": "exhausted",
+    "branch": "found",
+    "dev_s": 770.6,
+    "branch_s": 790.6,
+    "extra_s": 20.0,
+    "dev_reseen": 1,
+    "reseen": 2,
+    "places": 4
+   },
+   {
+    "set": "find_rooms",
+    "mission": "procthor:val:44 s2",
+    "arm": "zones",
+    "dev": "found",
+    "branch": "found",
+    "dev_s": 769.1,
+    "branch_s": 759.3,
+    "extra_s": -9.8,
+    "dev_reseen": 2,
+    "reseen": 2,
+    "places": 6
+   },
+   {
+    "set": "find_rooms",
+    "mission": "procthor:val:44 s2",
+    "arm": "none",
+    "dev": "exhausted",
+    "branch": "found",
+    "dev_s": 770.6,
+    "branch_s": 790.6,
+    "extra_s": 20.0,
+    "dev_reseen": 1,
+    "reseen": 2,
+    "places": 4
+   },
+   {
+    "set": "find_rule",
+    "mission": "procthor:val:44 s1",
+    "arm": "zones",
+    "dev": "found",
+    "branch": "exhausted",
+    "dev_s": 819.1,
+    "branch_s": 800.5,
+    "extra_s": -18.6,
+    "dev_reseen": 2,
+    "reseen": 2,
+    "places": 6
+   },
+   {
+    "set": "broad_rooms",
+    "mission": "procthor:val:167 s0",
+    "arm": "none",
+    "dev": "exhausted",
+    "branch": "found",
+    "dev_s": 409.5,
+    "branch_s": 410.1,
+    "extra_s": 0.6,
+    "dev_reseen": 2,
+    "reseen": 2,
+    "places": 5
+   },
+   {
+    "set": "broad_rule",
+    "mission": "procthor:val:297 s0",
+    "arm": "none",
+    "dev": "exhausted",
+    "branch": "exhausted",
+    "dev_s": 173.6,
+    "branch_s": 224.1,
+    "extra_s": 50.5,
+    "dev_reseen": 1,
+    "reseen": 2,
+    "places": 5
+   }
+  ],
+  "all_exhausted_on_dev": false,
+  "median_found_s": {
+   "find_rooms_none_branch": 125.0,
+   "find_rooms_none_dev": 109.2,
+   "find_rooms_zones_branch": 127.0,
+   "find_rooms_zones_dev": 127.0,
+   "find_rule_none_branch": 130.6,
+   "find_rule_none_dev": 130.6,
+   "find_rule_zones_branch": 130.7,
+   "find_rule_zones_dev": 131.4,
+   "broad_rooms_none_branch": 124.3,
+   "broad_rooms_none_dev": 123.9,
+   "broad_rule_none_branch": 131.9,
+   "broad_rule_none_dev": 131.9
+  }
+ },
+ "E5": {
+  "rooms": {
+   "rows": 24,
+   "identical": 24
+  },
+  "rule": {
+   "rows": 24,
+   "identical": 24
+  },
+  "met": true
+ },
+ "E6": {
+  "most_rounds": 2,
+  "most_places": 6,
+  "met": true
+ },
+ "E7": {
+  "goals_in_zone": 0,
+  "goals_in_grown": 0,
+  "entries": 0,
+  "met": true
+ },
+ "E8_M3": {
+  "found_branch_vs_dev": {
+   "surveyed": {
+    "branch": 20,
+    "dev": 20
+   },
+   "unsurveyed": {
+    "branch": 20,
+    "dev": 20
+   }
+  },
+  "changed": [],
+  "changed_not_exhausted_on_dev": [],
+  "met": true
+ },
+ "E8_M2": {
+  "found_branch_vs_dev": {
+   "surveyed": {
+    "branch": 20,
+    "dev": 20
+   },
+   "unsurveyed": {
+    "branch": 20,
+    "dev": 20
+   }
+  },
+  "changed": [],
+  "changed_not_exhausted_on_dev": [],
+  "met": true
+ },
+ "sizing_dev": {
+  "rooms": {
+   "rows": 180,
+   "rows_with_an_approach": 173,
+   "approaches": 1139,
+   "false_approaches_gt_1m": 555,
+   "replacements": 501,
+   "good_replaced_by_false": 389,
+   "rows_with_good_replaced": 90,
+   "their_outcomes": {
+    "exhausted": 1,
+    "found": 85,
+    "out_of_budget": 4
+   }
+  },
+  "rule": {
+   "rows": 180,
+   "rows_with_an_approach": 177,
+   "approaches": 1390,
+   "false_approaches_gt_1m": 668,
+   "replacements": 619,
+   "good_replaced_by_false": 511,
+   "rows_with_good_replaced": 91,
+   "their_outcomes": {
+    "exhausted": 1,
+    "found": 84,
+    "out_of_budget": 6
+   }
+  }
+ },
+ "sizing_branch": {
+  "rooms": {
+   "rows": 180,
+   "rows_with_an_approach": 173,
+   "approaches": 1140,
+   "false_approaches_gt_1m": 555,
+   "replacements": 501,
+   "good_replaced_by_false": 389,
+   "rows_with_good_replaced": 90,
+   "their_outcomes": {
+    "found": 86,
+    "out_of_budget": 4
+   }
+  },
+  "rule": {
+   "rows": 180,
+   "rows_with_an_approach": 177,
+   "approaches": 1394,
+   "false_approaches_gt_1m": 670,
+   "replacements": 621,
+   "good_replaced_by_false": 513,
+   "rows_with_good_replaced": 91,
+   "their_outcomes": {
+    "exhausted": 1,
+    "found": 84,
+    "out_of_budget": 6
+   }
+  }
+ }
+}
