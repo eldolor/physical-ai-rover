@@ -25,7 +25,7 @@ The sighting is still kept as seen (`_note_seen_at` runs before the
 decision) in both arms; only the goal replacement is withheld.
 
     SWEEP_WORKERS=4 python evaluations/false-sighting-3213/measure.py OUT.json \\
-        --chooser rooms|rule --arm dev|oracle
+        --chooser rooms|rule --arm dev|oracle|c1|c2|c1c2
 
 Run from the checkout under test (the harness refuses another's packages).
 """
@@ -40,6 +40,8 @@ HERE = os.path.dirname(os.path.realpath(__file__))
 ROOT = os.path.realpath(os.path.join(HERE, "..", ".."))
 FIRST, LAST = 30, 210
 GOOD_M, FALSE_M = 0.5, 1.0          # 3.210's sizing: good within 0.5 m, false beyond 1.0 m
+SUPPORT_M = 0.5                     # 3.213.B C1: a place's support radius
+ARMS = ("dev", "oracle", "c1", "c2", "c1c2")
 
 
 def _setup(chooser, arm):
@@ -75,9 +77,24 @@ def _setup(chooser, arm):
         return "free"
 
     orig_now = ex.ExploreAgent._sighting_now
+    from brain import inventory as inv
 
     def _sighting_now(self, frame):
         out = orig_now(self, frame)
+        if out is not None and arm in ("c1", "c2", "c1c2"):
+            # 3.213.B probes: every sighting counted (one a tick: memoised),
+            # and whether this tick's gate straddles a depth edge (3.204.B).
+            sup = self.__dict__.setdefault("_p3213_support", [])
+            sup.append(out)
+            hits = self._hits(frame)
+            straddles = False
+            try:
+                if hits:
+                    straddles = inv.straddles_edge(inv.scan_returns(self.robot.get_scan()),
+                                                   hits[0]["bearing_deg"], inv.EDGE_GAP_M)
+            except Exception:  # noqa: BLE001 -- no scan: no edge known
+                straddles = False
+            self._p3213_edge = (self._ticks, out, straddles)
         if out is not None and state["sightings"] is not None and state["truth"]:
             pose = self._pose()
             hits = self._hits(frame)
@@ -104,10 +121,23 @@ def _setup(chooser, arm):
     def _send_approach(self, tx, ty, now, scene=None):
         live = self._goal if (self._goal or {}).get("kind") == "approach" else None
         was = (live or {}).get("target")
-        if (arm == "oracle" and state["truth"] and was is not None
-                and err(was) <= GOOD_M and err((tx, ty)) > FALSE_M):
+        keep = False
+        if arm == "oracle":
+            keep = (state["truth"] and was is not None
+                    and err(was) <= GOOD_M and err((tx, ty)) > FALSE_M)
+        elif arm in ("c1", "c2", "c1c2") and was is not None:
+            if arm in ("c1", "c1c2"):
+                sup = self.__dict__.get("_p3213_support", [])
+
+                def support(p):
+                    return sum(1 for q in sup if math.hypot(q[0] - p[0], q[1] - p[1]) <= SUPPORT_M)
+                keep = support((tx, ty)) <= support(was)
+            if arm in ("c2", "c1c2") and not keep:
+                e = self.__dict__.get("_p3213_edge")
+                keep = bool(e and e[0] == self._ticks and e[1] == (tx, ty) and e[2])
+        if keep:
             state["kept"] += 1
-            return "WAIT", True, f"nav2 {live.get('state', 'live')}: approach (3.213 oracle kept it)"
+            return "WAIT", True, f"nav2 live: approach (3.213 {arm} kept it)"
         out = orig_send(self, tx, ty, now, scene)
         # `kind`: `goal`, an approach goal sent (what `broad.py` counted);
         # `at_target`, the sighting was within the standoff, so the live goal
@@ -158,8 +188,8 @@ def main(argv):
     out = argv[0]
     chooser = argv[argv.index("--chooser") + 1] if "--chooser" in argv else "rooms"
     arm = argv[argv.index("--arm") + 1] if "--arm" in argv else "dev"
-    if chooser not in ("rooms", "rule") or arm not in ("dev", "oracle"):
-        raise SystemExit("--chooser rooms|rule --arm dev|oracle")
+    if chooser not in ("rooms", "rule") or arm not in ARMS:
+        raise SystemExit("--chooser rooms|rule --arm " + "|".join(ARMS))
     _setup(chooser, arm)
     from sim.maps.procthor import usable
     houses = [f"procthor:val:{i}" for i in usable()[FIRST:LAST]]
