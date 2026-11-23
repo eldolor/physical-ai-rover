@@ -24,18 +24,22 @@ too.
 |---|---|---|---|---|---|---|---|---|
 | Opus 5.5 (default) | 40 | 20 | 39 | 574 | 0.524 | +0.101 [+0.055, +0.149] | -- | $0.0018 |
 | Fable 5.1 | 40 | 20 | 40 | 576 | 0.495 | +0.071 [+0.025, +0.119] | **-0.030 [-0.053, -0.007]** | $0.0046 |
-| Sonnet 5 | running (3.190.G) | | | | | | | |
+| Sonnet 5 | 40 | 20 | 40 | 576 | 0.506 | +0.083 [+0.032, +0.134] | -0.019 [-0.054, +0.016] (tie) | $0.00096 |
 | No hint | -- | -- | -- | 575 | 0.423 | -- | -- | $0 |
 | Sonnet 5.5 | not reachable: not yet on the account's Bedrock (one pilot call answered, the next refused) | | | | | | | |
 | Fable 5.2 | not reachable: not yet on the account's Bedrock (one pilot call answered, the next refused) | | | | | | | |
 
-Arms on one commit (`56d44ef`); the brackets are 95% intervals of the
+Arms on one commit per run (`56d44ef`; step G re-ran Opus and none identically); the brackets are 95% intervals of the
 paired reward difference over houses.
 
 ## What it says
 
 * **Every model reached helps.** A prior from Opus or Fable 5.1 finds
   targets with less driving than no prior (reward +0.10 and +0.07).
+* **Sonnet 5 ties Opus at about half the cost per call.** Its gap to Opus
+  (-0.019) is within noise: the interval crosses 0. It does not beat Opus, so
+  it does not replace the default under criterion 7; a switch for cost would
+  need its own bars and the user's word.
 * **Opus 5.5 stays the default.** Fable 5.1 answers the 40 targets as well
   as Opus does, but its priors steer the simulator robot measurably worse
   (the interval is wholly below 0), and it costs 2.5x a call. It loses on
@@ -49,6 +53,6 @@ paired reward difference over houses.
 
 ## Cost
 
-The whole of 3.190 B spent $0.31 of its $2 cap through Fable 5.1's run
-(Opus's 40 calls $0.074; Fable 5.1's 49 $0.227; two refused-model pilots
-$0.005). Sonnet 5's run is capped at $0.50.
+3.190 has spent $0.36 of its $2 cap: Opus's 40 calls $0.074, Fable 5.1's
+49 $0.227, Sonnet 5's 49 $0.047 (step G, model `us.anthropic.claude-sonnet-5`,
+us-east-2, derived $2.20/$11 per M), two refused-model pilots $0.005.
