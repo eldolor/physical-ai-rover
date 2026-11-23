@@ -174,7 +174,7 @@ board` lists open steps. **Whoever merges moves the section's line to
   (the model arm asks first); 3.178 a watch list (needs the Rover's frames).
 * 3.190 (the user, 2026-11-19): a cloud room prior for a target the
   shipped prior lacks (off by default). D FAILED 14, F FAILED: nothing
-  ships. B's call 7: the user; E: the Rover.
+  ships. E: the Rover.
 * 3.202.C soak: waits on the desktop's exclusive lock.
 * ROS image: rebuild `:latest` and the Jetson's from `dev` after 3.211's `scaled_house` check.
 * 3.206 (the user, 2026-11-21): a frontier model's direction labels train
