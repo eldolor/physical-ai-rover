@@ -469,7 +469,11 @@ of them measure.
   frontier model's direction labels is open (3.188, 3.206). A larger open
   teacher was measured first (3.214): Qwen2.5-VL-72B missed the steering
   bar by one frame (54 of 57; the user reads it as inside chance) and
-  Alpamayo 2 Super failed every bar; no teacher is proposed yet.
+  Alpamayo 2 Super failed every bar. Then 3.206.B0-B1: Florence-2, the
+  72B and Qwen3-VL-235B (Bedrock), alone and in pairs, each fail the 95%
+  bar by one to four frames, every miss on a frame whose label sits on a
+  third's line; how such frames count is decided before the next test set
+  is measured. No teacher is proposed yet.
 - **More image detail.** The board sees at most 512 image tokens (about
   0.4 MP) whatever the camera's resolution; the camera is not the limit.
   A crop around a candidate is the untested way to use more detail
