@@ -107,9 +107,14 @@ no objects (only the target, at arrival), so it feeds nothing here.
 
 ## Not here
 
-Persistence across missions (it needs map save/reload, open question 6),
-re-projection after a loop closure (3.46 decides it on criterion 4's data),
-and any use of the inventory to search.
+Re-projection after a loop closure (3.46 decides it on criterion 4's data).
+
+The store, and the search that uses what is kept. Carrying landmarks across
+missions on the same saved map IS here since 3.50.D5 (`seed()`, `detach()`,
+`carry_seq`), but the file they are saved in is `control/inventory_store.py`'s
+and the lookup the brain server's. Going first to where a target was last
+seen is `MissionRunner._recall_carried` and `brain/explore.py` (3.175.B,
+3.205), which read this module's report; nothing here chooses a move.
 """
 from __future__ import annotations
 

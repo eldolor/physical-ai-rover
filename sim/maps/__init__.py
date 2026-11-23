@@ -61,7 +61,7 @@ def build_world(name: str = "starter_house"):
         world.map_name = name
         _start_turn(world)
         return world
-    raise ValueError(f"unknown SIM_MAP {name!r} (starter_house | scaled_house | home_first_floor | complex_house | complex_house_hazards | scaled_house_stairs | home_first_floor_stairs | procthor:val:<0-999> | procthor:test:<0-999> | procthor:train:<0-999>)")
+    raise ValueError(f"unknown SIM_MAP {name!r} (starter_house | scaled_house | home_first_floor | complex_house | complex_house_hazards | scaled_house_stairs | home_first_floor_stairs | procthor:val:<0-999> | procthor:test:<0-999> | procthor:train:<0-9999>)")
 
 
 def _start_turn(world) -> None:

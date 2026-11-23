@@ -4,8 +4,9 @@
 procthor.py -- ProcTHOR-10K houses as simulator houses
 (PLAN-ros-alignment.md 3.66). Selected with SIM_MAP=procthor:val:<index>, or
 procthor:test:<index> for the `test` split (3.65 amendment 3: houses kept
-out of every tuning run), or procthor:train:<index> for the first 1,000 of
-the `train` split (3.88 B's fresh test houses).
+out of every tuning run), or procthor:train:<index> for the `train` split
+(3.88 B's fresh test houses; `train.json.gz` holds all 10,000, so the index
+runs to 9,999 where `val` and `test` stop at 999).
 
 **Why.** Four hand-drawn houses are four chances to tune a policy to a
 house. ProcTHOR-10K (AI2, Apache-2.0, `procthor_data/LICENSE`) is ten
