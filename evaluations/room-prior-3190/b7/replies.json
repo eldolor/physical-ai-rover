@@ -1,5 +1,24 @@
 {
- "_served_model": "us.anthropic.claude-sonnet-5-5",
+ "_served_model": "us.anthropic.claude-fable-5-2",
+ "us.anthropic.claude-fable-5-2": {
+  "spatula": {
+   "prior": {
+    "bathroom": 0.005,
+    "bedroom": 0.01,
+    "kitchen": 0.6,
+    "living room": 0.02
+   },
+   "reply": "{\"kitchen\": 0.6, \"living room\": 0.02, \"bedroom\": 0.01, \"bathroom\": 0.005}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 194,
+    "outputTokens": 45,
+    "totalTokens": 239
+   }
+  }
+ },
  "us.anthropic.claude-sonnet-5-5": {
   "spatula": {
    "prior": {
