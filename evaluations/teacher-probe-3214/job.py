@@ -204,6 +204,10 @@ def main_qwen() -> dict:  # pragma: no cover -- needs the GPU
          "--limit-mm-per-prompt", "image=1", "--max-logprobs", str(TOP_LOGPROBS),
          "--mm-processor-kwargs",
          json.dumps({"min_pixels": MIN_PIXELS, "max_pixels": MAX_PIXELS}),
+         # The plain AWQ kernel: the second pilot loaded the model and then
+         # died in vLLM's faster `awq_marlin` kernel (a CUDA illegal memory
+         # access on its first forward pass).
+         "--quantization", "awq",
          "--gpu-memory-utilization", "0.92"])
     base = f"http://127.0.0.1:{PORT}"
     for _ in range(360):                       # up to an hour: 43 GB to fetch and load
