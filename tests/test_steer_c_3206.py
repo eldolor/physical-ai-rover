@@ -93,6 +93,8 @@ def test_c_pinned():
     assert (c2["frames"], c2["kept"], c2["kept_right"], c2["wrong"]) == (118, 106, 106, [])
     assert scores["criterion_2_met"]
     assert len(scores["audit"]["keys"]) == 50
+    a = scores["audit"]
+    assert (a["judged"], a["right"], a["criterion_3_met"], a["not_right"]) == (True, 50, True, [])
     assert scores["kept_with_a_clipped_teacher_box"] == [
         "woven-laundry-basket-20260913-115703/frame-0193.jpg"]
     kept = {r["key"] for r in labels["rows"] if r["kept"]}

@@ -114,8 +114,9 @@
    "woven-laundry-basket-20260913-115703/frame-0197.jpg",
    "woven-laundry-basket-20260913-115703/frame-0198.jpg"
   ],
-  "judged": false,
-  "right": null,
-  "criterion_3_met": null
+  "judged": true,
+  "right": 50,
+  "criterion_3_met": true,
+  "not_right": []
  }
 }
