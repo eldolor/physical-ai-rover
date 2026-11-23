@@ -1,0 +1,185 @@
+{
+ "coverage": {
+  "expected": 2368,
+  "missing": 0,
+  "errors": 0,
+  "whole": true,
+  "first_missing": [],
+  "first_errors": []
+ },
+ "pooled": {
+  "frames": 2261,
+  "in_view": 535,
+  "yes": 551,
+  "false_yes": 28,
+  "missed": 12,
+  "mistakes": 40,
+  "precision": 0.9492,
+  "recall": 0.9776
+ },
+ "per_object": {
+  "a white phone charger cable": {
+   "frames": 176,
+   "in_view": 118,
+   "yes": 126,
+   "false_yes": 10,
+   "missed": 2,
+   "mistakes": 12,
+   "precision": 0.9206,
+   "recall": 0.9831
+  },
+  "blue and yellow running shoes": {
+   "frames": 63,
+   "in_view": 38,
+   "yes": 39,
+   "false_yes": 1,
+   "missed": 0,
+   "mistakes": 1,
+   "precision": 0.9744,
+   "recall": 1.0
+  },
+  "blue bottle": {
+   "frames": 242,
+   "in_view": 28,
+   "yes": 29,
+   "false_yes": 1,
+   "missed": 0,
+   "mistakes": 1,
+   "precision": 0.9655,
+   "recall": 1.0
+  },
+  "grey backpack": {
+   "frames": 211,
+   "in_view": 94,
+   "yes": 101,
+   "false_yes": 8,
+   "missed": 1,
+   "mistakes": 9,
+   "precision": 0.9208,
+   "recall": 0.9894
+  },
+  "red backpack": {
+   "frames": 678,
+   "in_view": 33,
+   "yes": 33,
+   "false_yes": 0,
+   "missed": 0,
+   "mistakes": 0,
+   "precision": 1.0,
+   "recall": 1.0
+  },
+  "woven laundry basket": {
+   "frames": 891,
+   "in_view": 224,
+   "yes": 223,
+   "false_yes": 8,
+   "missed": 9,
+   "mistakes": 17,
+   "precision": 0.9641,
+   "recall": 0.9598
+  }
+ },
+ "ve_pooled": {
+  "frames": 2261,
+  "in_view": 535,
+  "yes": 508,
+  "false_yes": 26,
+  "missed": 53,
+  "mistakes": 79,
+  "precision": 0.9488,
+  "recall": 0.9009
+ },
+ "ve_per_object": {
+  "a white phone charger cable": {
+   "frames": 176,
+   "in_view": 118,
+   "yes": 128,
+   "false_yes": 12,
+   "missed": 2,
+   "mistakes": 14,
+   "precision": 0.9062,
+   "recall": 0.9831
+  },
+  "blue and yellow running shoes": {
+   "frames": 63,
+   "in_view": 38,
+   "yes": 33,
+   "false_yes": 1,
+   "missed": 6,
+   "mistakes": 7,
+   "precision": 0.9697,
+   "recall": 0.8421
+  },
+  "blue bottle": {
+   "frames": 242,
+   "in_view": 28,
+   "yes": 29,
+   "false_yes": 1,
+   "missed": 0,
+   "mistakes": 1,
+   "precision": 0.9655,
+   "recall": 1.0
+  },
+  "grey backpack": {
+   "frames": 211,
+   "in_view": 94,
+   "yes": 91,
+   "false_yes": 12,
+   "missed": 15,
+   "mistakes": 27,
+   "precision": 0.8681,
+   "recall": 0.8404
+  },
+  "red backpack": {
+   "frames": 678,
+   "in_view": 33,
+   "yes": 30,
+   "false_yes": 0,
+   "missed": 3,
+   "mistakes": 3,
+   "precision": 1.0,
+   "recall": 0.9091
+  },
+  "woven laundry basket": {
+   "frames": 891,
+   "in_view": 224,
+   "yes": 197,
+   "false_yes": 0,
+   "missed": 27,
+   "mistakes": 27,
+   "precision": 1.0,
+   "recall": 0.8795
+  }
+ },
+ "lookalike_yes": {
+  "teal": 1,
+  "taupe": 0
+ },
+ "disagreement": {
+  "frames": 59,
+  "teacher_right": 49,
+  "share": 0.8305
+ },
+ "steering": {
+  "s1": 60,
+  "answered": 59,
+  "right_all": 56,
+  "kept": 57,
+  "kept_right": 54,
+  "kept_share": 0.95,
+  "kept_right_share": 0.9474,
+  "s2": 40,
+  "s2_boxes": 1
+ },
+ "criteria": {
+  "1 mistakes <= 59": true,
+  "2 precision >= 95% and recall >= 90.1%": false,
+  "3 lookalikes 0 yes": false,
+  "4 no object worse": false,
+  "5 right on >= 75% of >= 30 disagreements": true,
+  "6 steering kept >= 70%, right >= 95% of kept, S2 boxes <= 2": false
+ },
+ "objects_worse": [
+  "woven laundry basket"
+ ]
+}
