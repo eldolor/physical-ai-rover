@@ -73,13 +73,26 @@ def _objects() -> dict:
 
 
 # ------------------------------------------------------ replies -> answers
+# vLLM returns each token as the tokenizer's raw piece, where llama.cpp and
+# the board's engine return decoded text: a space is "Ġ", a newline "Ċ"
+# (found on the pilot: "[Ċ" was not read as a bare "[" before a newline).
+_PIECE = str.maketrans({"Ġ": " ", "Ċ": "\n", "ĉ": "\t", "č": "\r"})
+
+
+def decoded(content: list) -> list:
+    """`logprobs.content` with every token piece as the text it stands for."""
+    return [{"token": c["token"].translate(_PIECE), "logprob": c["logprob"],
+             "top_logprobs": [{"token": a["token"].translate(_PIECE), "logprob": a["logprob"]}
+                              for a in c.get("top_logprobs") or []]} for c in content]
+
+
 def qwen_answer(row: dict) -> dict:
     """One 72B reply as VE's answer is read: `p_localised`'s score, a yes
     at `LOCAL_YES_AT`, the box's centre as a fraction of the width the
     model saw (`model_size`, VE's pixel bounds)."""
     if "error" in row:
         return {"status": "error", "score": None, "yes": False, "frac_x": None}
-    score, parsed, _ = p_localised(row["lp"])
+    score, parsed, _ = p_localised(decoded(row["lp"]))
     box = parse_box(row["text"])
     frac = None
     if box and row.get("size"):
