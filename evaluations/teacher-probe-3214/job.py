@@ -47,6 +47,9 @@ MIN_PIXELS, MAX_PIXELS = 128 * 28 * 28, 512 * 28 * 28
 QWEN_MODEL = "Qwen/Qwen2.5-VL-72B-Instruct-AWQ"
 # Pinned: a release that serves Qwen2.5-VL and AutoAWQ checkpoints.
 VLLM = "vllm==0.8.5.post1"
+# vLLM 0.8.5 reads tokenizer attributes transformers 5 dropped (the first
+# pilot died on `all_special_tokens_extended`): hold transformers to 4.x.
+VLLM_TRANSFORMERS = "transformers==4.51.3"
 SUPER_MODEL = "nvidia/Alpamayo2-Super"
 SUPER_COMMIT = "59776920bbd981f2c989213bba5ee8594e71ed1d"
 SUPER_TARBALL = f"https://github.com/NVlabs/alpamayo2/archive/{SUPER_COMMIT}.tar.gz"
@@ -193,7 +196,7 @@ def qwen_row(reply: dict) -> dict:
 
 def main_qwen() -> dict:  # pragma: no cover -- needs the GPU
     t0 = time.time()
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", VLLM, "pillow"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "-q", VLLM, VLLM_TRANSFORMERS, "pillow"])
     installed = time.time() - t0
     server = subprocess.Popen(
         [sys.executable, "-m", "vllm.entrypoints.openai.api_server",
