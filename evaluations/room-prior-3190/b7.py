@@ -3,7 +3,8 @@
 """
 evaluations/room-prior-3190/b7.py -- 3.190.B criterion 7 (amendment 5): the
 same question asked of another model (Sonnet 5.5 in amendment 5, stopped in
-its pilot; Claude Fable 5.2 in amendment 6, `ACTIVE`), then compared with
+its pilot; Claude Fable 5.2 in amendment 6, likewise; Claude Fable 5.1 in amendment 7,
+`ACTIVE`), then compared with
 Opus 5.5 on criterion 1's arm.
 
     python evaluations/room-prior-3190/b7.py ask [N]     # paid: the next N of the 40, then the nine
@@ -32,6 +33,7 @@ from arms import A, T, PROCTHOR, TYPES                        # noqa: E402
 from calls import (MAX_TOKENS, PROMPT, SERVED, parse,         # noqa: E402
                    prior_is_informative, target_key)
 from targets import EXPECTED, TARGETS                         # noqa: E402
+from calls import MODEL_REGIONS, price_of                     # noqa: E402
 
 # model key -> (Bedrock id, region, $/M (in, out)). Prices are list + this
 # account's 10% Bedrock mark-up (amendments 5-6), derived, not billed figures.
@@ -41,8 +43,14 @@ MODELS = {
     # Amendment 6 (the user's choice, 2026-11-23): pinned to us-east-1 as
     # vision_core.MODEL_REGIONS pins Fable 5.1, the only region Fable answered from.
     "fable": ("us.anthropic.claude-fable-5-2", "us-east-1", (8.80, 44.00)),
+    # Amendment 7 (the user, 2026-11-23: Sonnet 5.5 and Fable 5.2 not yet on
+    # this account's Bedrock): vision_core's own Fable 5.1 id, its region pin,
+    # and its billed rate from control/admin_prices.py.
+    "fable51": ("us.anthropic.claude-fable-5-1",
+                MODEL_REGIONS["us.anthropic.claude-fable-5-1"],
+                price_of("us.anthropic.claude-fable-5-1")),
 }
-ACTIVE = "fable"
+ACTIVE = "fable51"
 MODEL_ID, REGION, PRICE = MODELS[ACTIVE]
 CAP_USD = 1.00                  # this run's cap, over every model asked here
 CACHE = os.path.join(HERE, "b7", "replies.json")
