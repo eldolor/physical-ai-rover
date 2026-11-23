@@ -48,8 +48,15 @@ DRAW = HERE / "a-draw.json"
 LABELS = HERE / "a-labels.json"
 S1_LABELS = ROOT / "evaluations/tiered-380/I/labels-s1.json"
 T392 = ROOT / "evaluations/tier-calibration-392"
-NEIGHBOURS = {"LEFT": {"LEFT", "FORWARD"}, "RIGHT": {"RIGHT", "FORWARD"},
-              "FORWARD": {"LEFT", "FORWARD", "RIGHT"}}
+SPOT_N, SPOT_MAX_DIFFER = 20, 2      # amendment 6: 3 or more unflagged differences void the labels
+
+
+def accepted(truth: str, centre: float, border: bool) -> set:
+    """The answers counted right: the truth, and on a border frame also the
+    third across the line its centre is near -- never the far third."""
+    if not border:
+        return {truth}
+    return {"LEFT", "FORWARD"} if abs(centre - 1 / 3) <= abs(centre - 2 / 3) else {"FORWARD", "RIGHT"}
 
 
 def draw() -> list:
@@ -88,7 +95,10 @@ def box_frac(row: dict) -> Optional[float]:
     if not box:
         return None
     width = row.get("w") or s3214.model_size(*_size(row["key"]))[0]
-    return min(1.0, max(0.0, (box[0] + box[2]) / 2 / width))
+    # Each edge is clipped to the frame before the middle is taken, as the
+    # shipped reading does (`brain.local_vlm._box_frac`).
+    x0, x1 = (min(float(width), max(0.0, v)) for v in (box[0], box[2]))
+    return (x0 + x1) / 2 / width
 
 
 def _size(key: str) -> tuple:
@@ -116,25 +126,34 @@ def local_order(key: str) -> Optional[str]:
     return None
 
 
+def _labels() -> dict:
+    return json.loads(LABELS.read_text()) if LABELS.exists() else {"rows": [], "dropped": []}
+
+
+def spot_check_draw() -> list:
+    """The 20 labelled new frames shown to the user (amendment 6), by `i`."""
+    rows = _labels()["rows"]
+    pick = sorted(random.Random(SEED).sample(range(len(rows)), SPOT_N))
+    return [rows[k]["i"] for k in pick]
+
+
 def test_set() -> list:
-    """S1's 60 and A's labelled new frames: `[{"key", "truth", "border", "set"}]`."""
-    out = [{"key": f"{r['walk']}/{r['frame']}", "truth": r["truth"], "border": r["border"],
-            "set": "S1"} for r in json.loads(S1_LABELS.read_text())["rows"]]
-    if LABELS.exists():
-        out += [{"key": f"{r['walk']}/{r['frame']}", "truth": r["truth"], "border": r["border"],
-                 "set": "new"} for r in json.loads(LABELS.read_text())["rows"]]
-    return out
+    """S1's 60 and A's labelled new frames:
+    `[{"key", "truth", "centre", "border", "wide", "set"}]`."""
+    def one(r, name):
+        return {"key": f"{r['walk']}/{r['frame']}", "truth": r["truth"],
+                "centre": r["centre_x_frac"], "border": r["border"], "wide": r["wide"], "set": name}
+    return ([one(r, "S1") for r in json.loads(S1_LABELS.read_text())["rows"]]
+            + [one(r, "new") for r in _labels()["rows"]])
 
 
 def tally(frames: list, answer) -> dict:
-    """Right, silent and wrong-side counts for `answer(key)` over `frames`;
-    on border frames either adjacent third is right."""
+    """Right, silent and wrong-side counts for `answer(key)` over `frames`."""
     right = silent = 0
     for f in frames:
         a = answer(f["key"])
-        ok = NEIGHBOURS[f["truth"]] if f["border"] else {f["truth"]}
         silent += a is None
-        right += a in ok
+        right += a in accepted(f["truth"], f["centre"], f["border"])
     n = len(frames)
     wrong = n - right - silent
     half = 1.96 * math.sqrt(right / n * (1 - right / n) / n) if n else None
@@ -144,15 +163,32 @@ def tally(frames: list, answer) -> dict:
 
 
 def scores() -> dict:
+    labels = _labels()
     frames = test_set()
     clear = [f for f in frames if not f["border"]]
     edge = [f for f in frames if f["border"]]
-    out = {"frames": len(frames), "new": sum(f["set"] == "new" for f in frames),
-           "unflagged": tally(clear, local_order), "border": tally(edge, local_order),
-           "unflagged_s1_only": tally([f for f in clear if f["set"] == "S1"], local_order),
-           "unflagged_new_only": tally([f for f in clear if f["set"] == "new"], local_order)}
-    out["criterion_1_stop"] = (out["unflagged"]["right_share"] or 0) >= STOP_AT
-    return out
+    u = tally(clear, local_order)
+    dropped = [{"key": f"{r['walk']}/{r['frame']}",
+                "local_order": local_order(f"{r['walk']}/{r['frame']}")} for r in labels["dropped"]]
+    spot = labels.get("spot_check")
+    return {
+        "frames": len(frames), "new": sum(f["set"] == "new" for f in frames),
+        "unflagged": u, "border": tally(edge, local_order),
+        "unflagged_s1_only": tally([f for f in clear if f["set"] == "S1"], local_order),
+        "unflagged_new_only": tally([f for f in clear if f["set"] == "new"], local_order),
+        # Reported: frames where the target fills the view have no clear third.
+        "unflagged_wide": tally([f for f in clear if f["wide"]], local_order),
+        "unflagged_not_wide": tally([f for f in clear if not f["wide"]], local_order),
+        # Drawn frames people labelled in view where no target could be placed:
+        # not in the tallies above, counted here with the local order's answer.
+        "dropped": dropped,
+        "unflagged_right_share_with_dropped_as_silent":
+            round(u["right"] / (u["frames"] + len(dropped)), 4),
+        # Amendment 6: the new frames' labels stand only after the user's spot-check.
+        "provisional": spot is None,
+        "spot_check": spot,
+        "criterion_1_stop": u["right"] >= STOP_AT * u["frames"],
+    }
 
 
 def main(argv: Optional[list] = None) -> None:
@@ -165,6 +201,8 @@ def main(argv: Optional[list] = None) -> None:
         DRAW.write_text(json.dumps({"seed": SEED, "per_walk": PER_WALK, "rows": rows}, indent=1) + "\n")
         print(len(rows), "frames;", dict(Counter(r["target"] for r in rows)))
     if args.score:
+        if not LABELS.exists():
+            raise SystemExit(f"refused: {LABELS.name} is missing -- the new frames are not labelled")
         out = scores()
         (HERE / "a-scores.json").write_text(json.dumps(out, indent=1) + "\n")
         print(json.dumps(out, indent=1))

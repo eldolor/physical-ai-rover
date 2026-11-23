@@ -1,0 +1,70 @@
+{
+ "frames": 197,
+ "new": 137,
+ "unflagged": {
+  "frames": 163,
+  "right": 139,
+  "silent": 19,
+  "wrong_side": 5,
+  "right_share": 0.8528,
+  "half_width_95": 0.0544
+ },
+ "border": {
+  "frames": 34,
+  "right": 34,
+  "silent": 0,
+  "wrong_side": 0,
+  "right_share": 1.0,
+  "half_width_95": 0.0
+ },
+ "unflagged_s1_only": {
+  "frames": 45,
+  "right": 40,
+  "silent": 5,
+  "wrong_side": 0,
+  "right_share": 0.8889,
+  "half_width_95": 0.0918
+ },
+ "unflagged_new_only": {
+  "frames": 118,
+  "right": 99,
+  "silent": 14,
+  "wrong_side": 5,
+  "right_share": 0.839,
+  "half_width_95": 0.0663
+ },
+ "unflagged_wide": {
+  "frames": 27,
+  "right": 22,
+  "silent": 0,
+  "wrong_side": 5,
+  "right_share": 0.8148,
+  "half_width_95": 0.1465
+ },
+ "unflagged_not_wide": {
+  "frames": 136,
+  "right": 117,
+  "silent": 19,
+  "wrong_side": 0,
+  "right_share": 0.8603,
+  "half_width_95": 0.0583
+ },
+ "dropped": [
+  {
+   "key": "woven-laundry-basket-20260908-215252/frame-0021.jpg",
+   "local_order": null
+  },
+  {
+   "key": "woven-laundry-basket-20260908-215252/frame-0022.jpg",
+   "local_order": null
+  },
+  {
+   "key": "woven-laundry-basket-20260912-231358/frame-0125.jpg",
+   "local_order": null
+  }
+ ],
+ "unflagged_right_share_with_dropped_as_silent": 0.8373,
+ "provisional": true,
+ "spot_check": null,
+ "criterion_1_stop": false
+}
