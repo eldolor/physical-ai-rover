@@ -32,6 +32,14 @@ too.
 Arms on one commit per run (`56d44ef`; step G re-ran Opus and none identically); the brackets are 95% intervals of the
 paired reward difference over houses.
 
+## Decision
+
+**The user, 2026-11-23: keep Opus 5.5 as the default.** Sonnet 5 ties it
+(the best estimate slightly favours Opus) and would save under a tenth of a
+cent a call; the prior is asked about once per new target and cached, so the
+saving is negligible. Revisit only if answer speed matters or calls become
+frequent, with its own bars.
+
 ## What it says
 
 * **Every model reached helps.** A prior from Opus or Fable 5.1 finds
