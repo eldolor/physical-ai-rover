@@ -1,0 +1,9870 @@
+{
+"how": "3.206.C: the 72B's box on each in-view training frame (fractions of the frame; `label` in the student's pixels), kept when the 235B's box overlaps it (IoU >= 0.5). No frame is in this file.",
+"rows": [
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0014.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6881,
+0.4375,
+0.8024,
+0.4978
+],
+"other": [
+0.688,
+0.436,
+0.803,
+0.503
+],
+"iou": 0.8939,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+578,
+196,
+674,
+223
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0018.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5357,
+0.4375,
+0.6321,
+0.4955
+],
+"other": [
+0.527,
+0.436,
+0.632,
+0.5
+],
+"iou": 0.8305,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+450,
+196,
+531,
+222
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0019.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.494,
+0.4308,
+0.5952,
+0.4821
+],
+"other": [
+0.49,
+0.425,
+0.597,
+0.489
+],
+"iou": 0.7586,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+415,
+193,
+500,
+216
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0020.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.469,
+0.442,
+0.5702,
+0.5022
+],
+"other": [
+0.462,
+0.441,
+0.568,
+0.507
+],
+"iou": 0.8363,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+394,
+198,
+479,
+225
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0021.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4798,
+0.442,
+0.5893,
+0.5045
+],
+"other": [
+0.477,
+0.438,
+0.583,
+0.506
+],
+"iou": 0.8489,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+403,
+198,
+495,
+226
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0022.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.469,
+0.4576,
+0.5845,
+0.5268
+],
+"other": [
+0.47,
+0.452,
+0.58,
+0.53
+],
+"iou": 0.8496,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+394,
+205,
+491,
+236
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0023.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5,
+0.4933,
+0.6226,
+0.5759
+],
+"other": [
+0.5,
+0.492,
+0.622,
+0.579
+],
+"iou": 0.9448,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+420,
+221,
+523,
+258
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0027.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.425,
+0.3795,
+0.5726,
+0.4732
+],
+"other": [
+0.425,
+0.379,
+0.573,
+0.47
+],
+"iou": 0.9586,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+357,
+170,
+481,
+212
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0028.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4274,
+0.4107,
+0.5917,
+0.4821
+],
+"other": [
+0.432,
+0.403,
+0.595,
+0.5
+],
+"iou": 0.7066,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+359,
+184,
+497,
+216
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0030.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4524,
+0.3683,
+0.6393,
+0.4911
+],
+"other": [
+0.448,
+0.364,
+0.64,
+0.488
+],
+"iou": 0.9176,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+380,
+165,
+537,
+220
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0031.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4381,
+0.4018,
+0.6357,
+0.529
+],
+"other": [
+0.433,
+0.403,
+0.634,
+0.53
+],
+"iou": 0.9501,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+368,
+180,
+534,
+237
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0032.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4214,
+0.4107,
+0.6381,
+0.5424
+],
+"other": [
+0.419,
+0.406,
+0.636,
+0.542
+],
+"iou": 0.9429,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+354,
+184,
+536,
+243
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0033.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4012,
+0.4241,
+0.631,
+0.567
+],
+"other": [
+0.402,
+0.42,
+0.632,
+0.564
+],
+"iou": 0.9444,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+337,
+190,
+530,
+254
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0034.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3929,
+0.4353,
+0.6512,
+0.5982
+],
+"other": [
+0.396,
+0.433,
+0.652,
+0.597
+],
+"iou": 0.9642,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+330,
+195,
+547,
+268
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0035.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3905,
+0.3906,
+0.6774,
+0.5737
+],
+"other": [
+0.389,
+0.389,
+0.677,
+0.573
+],
+"iou": 0.9813,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+328,
+175,
+569,
+257
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0036.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3917,
+0.4107,
+0.7024,
+0.6161
+],
+"other": [
+0.392,
+0.405,
+0.705,
+0.614
+],
+"iou": 0.9541,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+329,
+184,
+590,
+276
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0038.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.381,
+0.3929,
+0.7405,
+0.6451
+],
+"other": [
+0.379,
+0.394,
+0.74,
+0.639
+],
+"iou": 0.965,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+320,
+176,
+622,
+289
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0039.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3786,
+0.3996,
+0.7429,
+0.6585
+],
+"other": [
+0.378,
+0.395,
+0.745,
+0.662
+],
+"iou": 0.9626,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+318,
+179,
+624,
+295
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0040.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.369,
+0.3839,
+0.8202,
+0.7009
+],
+"other": [
+0.37,
+0.379,
+0.82,
+0.699
+],
+"iou": 0.9763,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+310,
+172,
+689,
+314
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0041.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3369,
+0.3884,
+0.8274,
+0.7478
+],
+"other": [
+0.335,
+0.385,
+0.828,
+0.747
+],
+"iou": 0.9835,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+283,
+174,
+695,
+335
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0044.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2738,
+0.4866,
+0.8881,
+0.9933
+],
+"other": [
+0.274,
+0.48,
+0.889,
+0.991
+],
+"iou": 0.9809,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+230,
+218,
+746,
+445
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0045.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2226,
+0.5357,
+0.825,
+1.0
+],
+"other": [
+0.222,
+0.535,
+0.906,
+0.999
+],
+"iou": 0.8777,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+187,
+240,
+693,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0046.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2,
+0.567,
+0.8738,
+1.0
+],
+"other": [
+0.198,
+0.569,
+0.873,
+0.999
+],
+"iou": 0.9889,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+168,
+254,
+734,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203250/frame-0050.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5536,
+0.692,
+1.0,
+1.0
+],
+"other": [
+0.554,
+0.692,
+0.998,
+0.999
+],
+"iou": 0.9912,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+465,
+310,
+840,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0000.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4643,
+0.433,
+0.5976,
+0.5312
+],
+"other": [
+0.467,
+0.428,
+0.597,
+0.535
+],
+"iou": 0.8968,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+390,
+194,
+502,
+238
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0001.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4524,
+0.4107,
+0.5786,
+0.5112
+],
+"other": [
+0.452,
+0.407,
+0.58,
+0.509
+],
+"iou": 0.9305,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+380,
+184,
+486,
+229
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0002.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4381,
+0.4219,
+0.5655,
+0.5179
+],
+"other": [
+0.437,
+0.417,
+0.565,
+0.517
+],
+"iou": 0.9319,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+368,
+189,
+475,
+232
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0003.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4524,
+0.3929,
+0.5833,
+0.5022
+],
+"other": [
+0.451,
+0.397,
+0.583,
+0.498
+],
+"iou": 0.9122,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+380,
+176,
+490,
+225
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0004.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3786,
+0.3728,
+0.5179,
+0.5491
+],
+"other": [
+0.377,
+0.366,
+0.513,
+0.485
+],
+"iou": 0.588,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+318,
+167,
+435,
+246
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0005.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2607,
+0.3795,
+0.4107,
+0.5089
+],
+"other": [
+0.263,
+0.377,
+0.41,
+0.507
+],
+"iou": 0.9477,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+219,
+170,
+345,
+228
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0007.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1667,
+0.3683,
+0.331,
+0.4933
+],
+"other": [
+0.169,
+0.367,
+0.33,
+0.492
+],
+"iou": 0.96,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+140,
+165,
+278,
+221
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0010.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3405,
+0.4018,
+0.4798,
+0.5246
+],
+"other": [
+0.34,
+0.407,
+0.478,
+0.522
+],
+"iou": 0.9219,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+286,
+180,
+403,
+235
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0011.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3929,
+0.4219,
+0.531,
+0.5357
+],
+"other": [
+0.395,
+0.42,
+0.531,
+0.53
+],
+"iou": 0.9198,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+330,
+189,
+446,
+240
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0012.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4643,
+0.3884,
+0.6024,
+0.4955
+],
+"other": [
+0.462,
+0.388,
+0.597,
+0.495
+],
+"iou": 0.9374,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+390,
+174,
+506,
+222
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0013.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4595,
+0.3906,
+0.5952,
+0.5045
+],
+"other": [
+0.457,
+0.397,
+0.594,
+0.503
+],
+"iou": 0.9069,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+386,
+175,
+500,
+226
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0014.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4512,
+0.4018,
+0.5857,
+0.5134
+],
+"other": [
+0.448,
+0.405,
+0.584,
+0.514
+],
+"iou": 0.9322,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+379,
+180,
+492,
+230
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0015.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5226,
+0.3906,
+0.6714,
+0.5
+],
+"other": [
+0.53,
+0.386,
+0.677,
+0.498
+],
+"iou": 0.8651,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+439,
+175,
+564,
+224
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0016.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.569,
+0.2656,
+0.7298,
+0.3839
+],
+"other": [
+0.57,
+0.263,
+0.728,
+0.391
+],
+"iou": 0.9098,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+478,
+119,
+613,
+172
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0017.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6702,
+0.3192,
+0.8429,
+0.4397
+],
+"other": [
+0.672,
+0.32,
+0.84,
+0.442
+],
+"iou": 0.9494,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+563,
+143,
+708,
+197
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0020.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4952,
+0.3103,
+0.6583,
+0.4509
+],
+"other": [
+0.494,
+0.313,
+0.659,
+0.443
+],
+"iou": 0.9146,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+416,
+139,
+553,
+202
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0022.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3988,
+0.3438,
+0.569,
+0.4688
+],
+"other": [
+0.399,
+0.345,
+0.569,
+0.473
+],
+"iou": 0.9562,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+335,
+154,
+478,
+210
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0023.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4405,
+0.317,
+0.619,
+0.4598
+],
+"other": [
+0.44,
+0.31,
+0.62,
+0.452
+],
+"iou": 0.8945,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+370,
+142,
+520,
+206
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0024.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4631,
+0.3125,
+0.6512,
+0.4598
+],
+"other": [
+0.462,
+0.316,
+0.652,
+0.457
+],
+"iou": 0.9479,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+389,
+140,
+547,
+206
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0025.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4643,
+0.3438,
+0.6619,
+0.4844
+],
+"other": [
+0.465,
+0.339,
+0.659,
+0.482
+],
+"iou": 0.9341,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+390,
+154,
+556,
+217
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0026.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.45,
+0.3125,
+0.65,
+0.4665
+],
+"other": [
+0.448,
+0.312,
+0.645,
+0.46
+],
+"iou": 0.922,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+378,
+140,
+546,
+209
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0028.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4405,
+0.2634,
+0.65,
+0.4107
+],
+"other": [
+0.44,
+0.26,
+0.649,
+0.408
+],
+"iou": 0.9529,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+370,
+118,
+546,
+184
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0029.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4107,
+0.2433,
+0.6214,
+0.3973
+],
+"other": [
+0.407,
+0.245,
+0.62,
+0.397
+],
+"iou": 0.9634,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+345,
+109,
+522,
+178
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0030.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4452,
+0.2344,
+0.6679,
+0.3973
+],
+"other": [
+0.442,
+0.233,
+0.66,
+0.397
+],
+"iou": 0.9414,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+374,
+105,
+561,
+178
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0031.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.381,
+0.2054,
+0.6238,
+0.3728
+],
+"other": [
+0.381,
+0.205,
+0.621,
+0.37
+],
+"iou": 0.9699,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+320,
+92,
+524,
+167
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0032.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.381,
+0.2656,
+0.65,
+0.442
+],
+"other": [
+0.381,
+0.265,
+0.632,
+0.44
+],
+"iou": 0.9195,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+320,
+119,
+546,
+198
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0034.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3631,
+0.1652,
+0.6429,
+0.3772
+],
+"other": [
+0.362,
+0.16,
+0.645,
+0.372
+],
+"iou": 0.9414,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+305,
+74,
+540,
+169
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0035.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3738,
+0.192,
+0.6833,
+0.4018
+],
+"other": [
+0.373,
+0.19,
+0.682,
+0.407
+],
+"iou": 0.9604,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+314,
+86,
+574,
+180
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0036.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3583,
+0.1429,
+0.6833,
+0.3616
+],
+"other": [
+0.357,
+0.145,
+0.685,
+0.365
+],
+"iou": 0.9662,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+301,
+64,
+574,
+162
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0037.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4,
+0.2009,
+0.7429,
+0.4397
+],
+"other": [
+0.4,
+0.2,
+0.738,
+0.447
+],
+"iou": 0.9537,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+336,
+90,
+624,
+197
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0038.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3524,
+0.2098,
+0.7012,
+0.5067
+],
+"other": [
+0.352,
+0.209,
+0.701,
+0.502
+],
+"iou": 0.9799,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+296,
+94,
+589,
+227
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0040.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3857,
+0.2188,
+0.7976,
+0.5469
+],
+"other": [
+0.382,
+0.216,
+0.797,
+0.552
+],
+"iou": 0.9664,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+324,
+98,
+670,
+245
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0041.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.325,
+0.1875,
+0.7619,
+0.5469
+],
+"other": [
+0.324,
+0.182,
+0.76,
+0.545
+],
+"iou": 0.9734,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+273,
+84,
+640,
+245
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0042.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2321,
+0.1741,
+0.7548,
+0.6451
+],
+"other": [
+0.233,
+0.173,
+0.757,
+0.641
+],
+"iou": 0.9832,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+195,
+78,
+634,
+289
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0043.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.219,
+0.2165,
+0.7952,
+0.8147
+],
+"other": [
+0.218,
+0.217,
+0.79,
+0.808
+],
+"iou": 0.9772,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+184,
+97,
+668,
+365
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0047.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.106,
+0.2545,
+0.8762,
+1.0
+],
+"other": [
+0.104,
+0.255,
+0.874,
+0.999
+],
+"iou": 0.9926,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+89,
+114,
+736,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0048.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0667,
+0.2433,
+0.9048,
+1.0
+],
+"other": [
+0.069,
+0.247,
+0.9,
+0.999
+],
+"iou": 0.9854,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+56,
+109,
+760,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0049.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.3058,
+1.0,
+1.0
+],
+"other": [
+0.013,
+0.304,
+0.999,
+0.999
+],
+"iou": 0.9821,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+137,
+840,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0050.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0357,
+0.3192,
+1.0,
+1.0
+],
+"other": [
+0.035,
+0.317,
+0.999,
+0.999
+],
+"iou": 0.9936,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+30,
+143,
+840,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0051.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2476,
+0.4241,
+0.9,
+1.0
+],
+"other": [
+0.244,
+0.42,
+0.899,
+0.999
+],
+"iou": 0.9842,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+208,
+190,
+756,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0052.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.175,
+0.3415,
+1.0,
+1.0
+],
+"other": [
+0.16,
+0.344,
+0.999,
+0.999
+],
+"iou": 0.9759,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+147,
+153,
+840,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0055.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1429,
+0.2165,
+1.0,
+1.0
+],
+"other": [
+0.138,
+0.218,
+0.998,
+0.997
+],
+"iou": 0.9864,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+120,
+97,
+840,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0056.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.1138,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.125,
+0.998,
+0.999
+],
+"iou": 0.9843,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+51,
+840,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0057.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.1071,
+0.8298,
+1.0
+],
+"other": [
+0.0,
+0.104,
+0.83,
+0.999
+],
+"iou": 0.9951,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+48,
+697,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0058.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.096,
+0.6548,
+1.0
+],
+"other": [
+0.0,
+0.092,
+0.66,
+0.999
+],
+"iou": 0.9866,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+43,
+550,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0060.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.1406,
+0.7071,
+1.0
+],
+"other": [
+0.0,
+0.131,
+0.709,
+0.999
+],
+"iou": 0.9852,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+63,
+594,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0062.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.2812,
+0.6274,
+1.0
+],
+"other": [
+0.0,
+0.279,
+0.632,
+0.999
+],
+"iou": 0.9882,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+126,
+527,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0063.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.2076,
+0.7548,
+1.0
+],
+"other": [
+0.0,
+0.26,
+0.753,
+0.999
+],
+"iou": 0.9304,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+93,
+634,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0064.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.2857,
+0.8869,
+1.0
+],
+"other": [
+0.0,
+0.288,
+0.888,
+0.999
+],
+"iou": 0.9942,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+128,
+745,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0065.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1429,
+0.3415,
+0.9631,
+1.0
+],
+"other": [
+0.137,
+0.338,
+0.97,
+0.999
+],
+"iou": 0.978,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+120,
+153,
+809,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0066.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4643,
+0.4911,
+1.0,
+1.0
+],
+"other": [
+0.467,
+0.485,
+0.999,
+0.999
+],
+"iou": 0.9795,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+390,
+220,
+840,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0068.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5595,
+0.5915,
+0.9988,
+1.0
+],
+"other": [
+0.567,
+0.595,
+0.999,
+0.999
+],
+"iou": 0.9718,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+470,
+265,
+839,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0069.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5929,
+0.4375,
+0.9988,
+1.0
+],
+"other": [
+0.597,
+0.435,
+0.999,
+0.999
+],
+"iou": 0.9832,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+498,
+196,
+839,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0084.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.192,
+0.9083,
+1.0
+],
+"other": [
+0.0,
+0.197,
+0.907,
+0.999
+],
+"iou": 0.9911,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+86,
+763,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0085.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4286,
+0.1652,
+0.8429,
+1.0
+],
+"other": [
+0.425,
+0.165,
+0.841,
+0.999
+],
+"iou": 0.9856,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+360,
+74,
+708,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0086.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+0.8964,
+1.0
+],
+"other": [
+0.257,
+0.0,
+0.607,
+0.997
+],
+"iou": 0.3893,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "IoU under 0.5",
+"label": null,
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0087.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2214,
+0.0,
+0.8869,
+1.0
+],
+"other": [
+0.22,
+0.0,
+0.555,
+0.999
+],
+"iou": 0.4997,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "IoU under 0.5",
+"label": null,
+"target": "a white phone charger cable"
+},
+{
+"key": "a-white-phone-charger-ca-20260921-203355/frame-0089.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4333,
+0.0,
+0.5774,
+1.0
+],
+"other": [
+0.447,
+0.0,
+0.592,
+0.997
+],
+"iou": 0.8195,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+364,
+0,
+485,
+448
+],
+"target": "a white phone charger cable"
+},
+{
+"key": "blue-bottle-20260907-142454/frame-0004.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.9286,
+0.2794,
+0.9736,
+0.4286
+],
+"other": [
+0.928,
+0.275,
+0.975,
+0.423
+],
+"iou": 0.8972,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+598,
+133,
+627,
+204
+],
+"target": "blue bottle"
+},
+{
+"key": "blue-bottle-20260907-142454/frame-0012.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.8634,
+0.3466,
+0.8975,
+0.4874
+],
+"other": [
+0.86,
+0.342,
+0.898,
+0.489
+],
+"iou": 0.8608,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+556,
+165,
+578,
+232
+],
+"target": "blue bottle"
+},
+{
+"key": "blue-bottle-20260907-142454/frame-0013.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.9006,
+0.334,
+0.9379,
+0.4811
+],
+"other": [
+0.9,
+0.33,
+0.94,
+0.477
+],
+"iou": 0.8832,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+580,
+159,
+604,
+229
+],
+"target": "blue bottle"
+},
+{
+"key": "blue-bottle-20260907-142454/frame-0020.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.5528,
+0.3445,
+0.5839,
+0.479
+],
+"other": [
+0.55,
+0.34,
+0.587,
+0.48
+],
+"iou": 0.8061,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+356,
+164,
+376,
+228
+],
+"target": "blue bottle"
+},
+{
+"key": "blue-bottle-20260907-142454/frame-0022.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.4938,
+0.4391,
+0.5217,
+0.5777
+],
+"other": [
+0.495,
+0.439,
+0.525,
+0.579
+],
+"iou": 0.8488,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+318,
+209,
+336,
+275
+],
+"target": "blue bottle"
+},
+{
+"key": "blue-bottle-20260907-142454/frame-0024.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.4767,
+0.3067,
+0.5248,
+0.5189
+],
+"other": [
+0.476,
+0.308,
+0.53,
+0.52
+],
+"iou": 0.8821,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+307,
+146,
+338,
+247
+],
+"target": "blue bottle"
+},
+{
+"key": "blue-bottle-20260907-142454/frame-0026.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.4798,
+0.2416,
+0.5606,
+0.6261
+],
+"other": [
+0.48,
+0.242,
+0.562,
+0.628
+],
+"iou": 0.9743,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+309,
+115,
+361,
+298
+],
+"target": "blue bottle"
+},
+{
+"key": "blue-bottle-20260907-142454/frame-0028.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.4767,
+0.1134,
+0.6009,
+0.7353
+],
+"other": [
+0.477,
+0.112,
+0.604,
+0.737
+],
+"iou": 0.9687,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+307,
+54,
+387,
+350
+],
+"target": "blue bottle"
+},
+{
+"key": "blue-bottle-20260907-142454/frame-0030.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.4037,
+0.0,
+0.6413,
+0.9979
+],
+"other": [
+0.402,
+0.0,
+0.644,
+0.997
+],
+"iou": 0.9809,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+260,
+0,
+413,
+475
+],
+"target": "blue bottle"
+},
+{
+"key": "blue-bottle-20260907-142454/frame-0032.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.3851,
+0.0,
+0.8525,
+1.0
+],
+"other": [
+0.382,
+0.0,
+0.858,
+0.999
+],
+"iou": 0.981,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+248,
+0,
+549,
+476
+],
+"target": "blue bottle"
+},
+{
+"key": "blue-bottle-20260907-185007/frame-0202.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.0264,
+0.3782,
+0.0559,
+0.5063
+],
+"other": [
+0.024,
+0.376,
+0.058,
+0.507
+],
+"iou": 0.8489,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+17,
+180,
+36,
+241
+],
+"target": "blue bottle"
+},
+{
+"key": "blue-bottle-20260907-185007/frame-0203.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.427,
+0.3992,
+0.4503,
+0.5105
+],
+"other": [
+0.428,
+0.397,
+0.454,
+0.508
+],
+"iou": 0.7959,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+275,
+190,
+290,
+243
+],
+"target": "blue bottle"
+},
+{
+"key": "blue-bottle-20260907-185007/frame-0205.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.5652,
+0.3929,
+0.5885,
+0.5
+],
+"other": [
+0.565,
+0.388,
+0.592,
+0.5
+],
+"iou": 0.8253,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+364,
+187,
+379,
+238
+],
+"target": "blue bottle"
+},
+{
+"key": "blue-bottle-20260907-185007/frame-0206.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.5031,
+0.3739,
+0.5264,
+0.4958
+],
+"other": [
+0.503,
+0.374,
+0.529,
+0.494
+],
+"iou": 0.8836,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+324,
+178,
+339,
+236
+],
+"target": "blue bottle"
+},
+{
+"key": "blue-bottle-20260907-185007/frame-0211.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.4503,
+0.0,
+0.6118,
+0.8298
+],
+"other": [
+0.452,
+0.0,
+0.613,
+0.83
+],
+"iou": 0.9821,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+290,
+0,
+394,
+395
+],
+"target": "blue bottle"
+},
+{
+"key": "blue-shoes-20260907-152528/frame-0012.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.4286,
+0.4055,
+0.5668,
+0.542
+],
+"other": [
+0.425,
+0.404,
+0.572,
+0.542
+],
+"iou": 0.9301,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+276,
+193,
+365,
+258
+],
+"target": "blue and yellow running shoes"
+},
+{
+"key": "blue-shoes-20260907-152528/frame-0016.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.3494,
+0.313,
+0.6366,
+0.6071
+],
+"other": [
+0.348,
+0.314,
+0.642,
+0.605
+],
+"iou": 0.967,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+225,
+149,
+410,
+289
+],
+"target": "blue and yellow running shoes"
+},
+{
+"key": "blue-shoes-20260907-152528/frame-0018.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.2531,
+0.2059,
+0.7904,
+0.729
+],
+"other": [
+0.248,
+0.462,
+0.642,
+0.69
+],
+"iou": 0.3142,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "IoU under 0.5",
+"label": null,
+"target": "blue and yellow running shoes"
+},
+{
+"key": "blue-shoes-20260908-210511/frame-0020.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.7679,
+0.2656,
+0.8667,
+0.375
+],
+"other": [
+0.764,
+0.327,
+0.836,
+0.373
+],
+"iou": 0.2854,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "IoU under 0.5",
+"label": null,
+"target": "blue and yellow running shoes"
+},
+{
+"key": "blue-shoes-20260908-210511/frame-0023.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.381,
+0.3661,
+0.4464,
+0.4062
+],
+"other": [
+0.38,
+0.359,
+0.44,
+0.403
+],
+"iou": 0.7056,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+320,
+164,
+375,
+182
+],
+"target": "blue and yellow running shoes"
+},
+{
+"key": "blue-shoes-20260908-210511/frame-0024.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1762,
+0.2567,
+0.2738,
+0.3661
+],
+"other": [
+0.174,
+0.259,
+0.27,
+0.368
+],
+"iou": 0.9052,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+148,
+115,
+230,
+164
+],
+"target": "blue and yellow running shoes"
+},
+{
+"key": "blue-shoes-20260908-210511/frame-0025.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1631,
+0.3125,
+0.244,
+0.3638
+],
+"other": [
+0.162,
+0.255,
+0.26,
+0.362
+],
+"iou": 0.3768,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "IoU under 0.5",
+"label": null,
+"target": "blue and yellow running shoes"
+},
+{
+"key": "blue-shoes-20260908-210511/frame-0026.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4345,
+0.2634,
+0.4667,
+0.375
+],
+"other": [
+0.373,
+0.267,
+0.464,
+0.375
+],
+"iou": 0.3111,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "IoU under 0.5",
+"label": null,
+"target": "blue and yellow running shoes"
+},
+{
+"key": "blue-shoes-20260908-210511/frame-0027.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4333,
+0.2701,
+0.4631,
+0.3862
+],
+"other": [
+0.367,
+0.275,
+0.462,
+0.385
+],
+"iou": 0.2933,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "IoU under 0.5",
+"label": null,
+"target": "blue and yellow running shoes"
+},
+{
+"key": "blue-shoes-20260908-210511/frame-0031.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5226,
+0.2188,
+0.6381,
+0.3661
+],
+"other": [
+0.522,
+0.222,
+0.637,
+0.37
+],
+"iou": 0.9388,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+439,
+98,
+536,
+164
+],
+"target": "blue and yellow running shoes"
+},
+{
+"key": "blue-shoes-20260908-210511/frame-0032.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2202,
+0.3326,
+0.3643,
+0.5067
+],
+"other": [
+0.225,
+0.333,
+0.365,
+0.5
+],
+"iou": 0.9231,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+185,
+149,
+306,
+227
+],
+"target": "blue and yellow running shoes"
+},
+{
+"key": "blue-shoes-20260908-210511/frame-0035.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5,
+0.2188,
+0.6821,
+0.4464
+],
+"other": [
+0.503,
+0.222,
+0.68,
+0.449
+],
+"iou": 0.9475,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+420,
+98,
+573,
+200
+],
+"target": "blue and yellow running shoes"
+},
+{
+"key": "blue-shoes-20260908-210511/frame-0036.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.7119,
+0.1853,
+0.9357,
+0.4487
+],
+"other": [
+0.711,
+0.185,
+0.936,
+0.448
+],
+"iou": 0.9912,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+598,
+83,
+786,
+201
+],
+"target": "blue and yellow running shoes"
+},
+{
+"key": "blue-shoes-20260908-210511/frame-0037.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6821,
+0.1875,
+0.9119,
+0.4598
+],
+"other": [
+0.683,
+0.189,
+0.909,
+0.46
+],
+"iou": 0.9776,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+573,
+84,
+766,
+206
+],
+"target": "blue and yellow running shoes"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0002.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4857,
+0.3482,
+0.6631,
+0.5201
+],
+"other": [
+0.486,
+0.348,
+0.664,
+0.519
+],
+"iou": 0.9858,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+408,
+156,
+557,
+233
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0003.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4976,
+0.2746,
+0.6833,
+0.4665
+],
+"other": [
+0.5,
+0.275,
+0.685,
+0.46
+],
+"iou": 0.9432,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+418,
+123,
+574,
+209
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0006.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4631,
+0.3237,
+0.6881,
+0.5357
+],
+"other": [
+0.463,
+0.325,
+0.69,
+0.536
+],
+"iou": 0.9837,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+389,
+145,
+578,
+240
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0010.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4464,
+0.2321,
+0.6857,
+0.4866
+],
+"other": [
+0.42,
+0.233,
+0.686,
+0.497
+],
+"iou": 0.8616,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+375,
+104,
+576,
+218
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0011.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4345,
+0.2165,
+0.6905,
+0.4888
+],
+"other": null,
+"iou": null,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "no 235B box",
+"label": null,
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0012.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4345,
+0.2321,
+0.6988,
+0.5335
+],
+"other": [
+0.405,
+0.235,
+0.7,
+0.54
+],
+"iou": 0.8694,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+365,
+104,
+587,
+239
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0013.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4167,
+0.2098,
+0.7429,
+0.5246
+],
+"other": [
+0.418,
+0.21,
+0.742,
+0.527
+],
+"iou": 0.9851,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+350,
+94,
+624,
+235
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0014.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4,
+0.2165,
+0.744,
+0.5446
+],
+"other": null,
+"iou": null,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "no 235B box",
+"label": null,
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0015.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3786,
+0.1384,
+0.75,
+0.5223
+],
+"other": null,
+"iou": null,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "no 235B box",
+"label": null,
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0016.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2845,
+0.183,
+0.7048,
+0.6228
+],
+"other": [
+0.287,
+0.185,
+0.705,
+0.623
+],
+"iou": 0.9886,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+239,
+82,
+592,
+279
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0019.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2857,
+0.1339,
+0.7738,
+0.654
+],
+"other": [
+0.287,
+0.138,
+0.773,
+0.655
+],
+"iou": 0.9861,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+240,
+60,
+650,
+293
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0020.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3881,
+0.1049,
+0.8357,
+0.558
+],
+"other": [
+0.264,
+0.105,
+0.836,
+0.698
+],
+"iou": 0.5978,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+326,
+47,
+702,
+250
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0021.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1905,
+0.1183,
+0.8262,
+0.7656
+],
+"other": [
+0.19,
+0.119,
+0.824,
+0.762
+],
+"iou": 0.9892,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+160,
+53,
+694,
+343
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0023.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.096,
+0.6857,
+0.8817
+],
+"other": [
+0.154,
+0.094,
+0.684,
+0.63
+],
+"iou": 0.5243,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+43,
+576,
+395
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0024.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.096,
+0.6214,
+0.8683
+],
+"other": [
+0.0,
+0.094,
+0.62,
+0.866
+],
+"iou": 0.9922,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+43,
+522,
+389
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0025.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0804,
+0.6833,
+0.8616
+],
+"other": [
+0.0,
+0.08,
+0.684,
+0.865
+],
+"iou": 0.9943,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+36,
+574,
+386
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0026.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.1004,
+0.7595,
+0.9085
+],
+"other": [
+0.208,
+0.1,
+0.759,
+0.845
+],
+"iou": 0.6682,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+45,
+638,
+407
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0027.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2893,
+0.1004,
+0.8571,
+0.6696
+],
+"other": [
+0.028,
+0.098,
+0.857,
+0.986
+],
+"iou": 0.4389,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "IoU under 0.5",
+"label": null,
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0028.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0446,
+0.8964,
+1.0
+],
+"other": [
+0.248,
+0.047,
+0.894,
+0.71
+],
+"iou": 0.5001,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+20,
+753,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0030.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1548,
+0.0156,
+0.9357,
+1.0
+],
+"other": [
+0.155,
+0.017,
+0.934,
+0.999
+],
+"iou": 0.9951,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+130,
+7,
+786,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0031.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1667,
+0.0558,
+0.9988,
+1.0
+],
+"other": [
+0.165,
+0.056,
+0.998,
+0.997
+],
+"iou": 0.9937,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+140,
+25,
+839,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0032.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2071,
+0.0,
+0.9988,
+1.0
+],
+"other": [
+0.206,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.9965,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+174,
+0,
+839,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0033.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0929,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.089,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.9926,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+78,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0035.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0357,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.035,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.9962,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+30,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0037.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0038.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0040.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+0.8917,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.89,
+0.999
+],
+"iou": 0.9971,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+749,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0042.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+0.8369,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.835,
+0.999
+],
+"iou": 0.9967,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+703,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0043.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+0.8643,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.862,
+0.999
+],
+"iou": 0.9964,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+726,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0046.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0047.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0048.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0049.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0050.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0051.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0052.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0054.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0060.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0061.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0062.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0064.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0065.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0067.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+0.9595,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.959,
+0.999
+],
+"iou": 0.9985,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+806,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0068.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0069.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0070.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+0.9375
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.9367,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+420
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0072.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+0.9929,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.99,
+0.999
+],
+"iou": 0.9961,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+834,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0082.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0083.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0084.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.997,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-20260921-203748/frame-0085.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+1.0,
+0.9375
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.9367,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+840,
+420
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-opus-4-5-20260921-210743/frame-0002.jpg",
+"size": [
+1280,
+720
+],
+"teacher": null,
+"other": null,
+"iou": null,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "no 72B box",
+"label": null,
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-opus-4-5-20260921-210743/frame-0008.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2619,
+0.3103,
+0.45,
+0.5112
+],
+"other": [
+0.237,
+0.309,
+0.45,
+0.519
+],
+"iou": 0.8448,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+220,
+139,
+378,
+229
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-opus-4-5-20260921-210743/frame-0011.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4857,
+0.3192,
+0.7071,
+0.5491
+],
+"other": [
+0.487,
+0.32,
+0.708,
+0.547
+],
+"iou": 0.9779,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+408,
+143,
+594,
+246
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-opus-4-5-20260921-210743/frame-0016.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.8274,
+0.2545,
+0.9988,
+0.5134
+],
+"other": [
+0.815,
+0.257,
+0.999,
+0.517
+],
+"iou": 0.9105,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+695,
+114,
+839,
+230
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-opus-4-5-20260921-210743/frame-0017.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6595,
+0.2589,
+0.9083,
+0.5022
+],
+"other": [
+0.66,
+0.258,
+0.907,
+0.5
+],
+"iou": 0.9799,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+554,
+116,
+763,
+225
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-opus-4-5-20260921-210743/frame-0021.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6357,
+0.2656,
+0.956,
+0.5714
+],
+"other": [
+0.593,
+0.267,
+0.956,
+0.635
+],
+"iou": 0.7274,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+534,
+119,
+803,
+256
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-opus-4-5-20260921-210743/frame-0024.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3571,
+0.2143,
+0.8024,
+0.7321
+],
+"other": [
+0.354,
+0.214,
+0.801,
+0.736
+],
+"iou": 0.9821,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+300,
+96,
+674,
+328
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-opus-4-5-20260921-210743/frame-0025.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2143,
+0.2165,
+0.6714,
+0.7522
+],
+"other": [
+0.213,
+0.222,
+0.673,
+0.757
+],
+"iou": 0.975,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+180,
+97,
+564,
+337
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-opus-4-5-20260921-210743/frame-0026.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.2076,
+0.4667,
+0.8147
+],
+"other": [
+0.0,
+0.205,
+0.466,
+0.815
+],
+"iou": 0.9939,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+93,
+392,
+365
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-opus-4-5-20260921-210743/frame-0028.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0357,
+0.0,
+0.8095,
+1.0
+],
+"other": [
+0.035,
+0.0,
+0.809,
+0.999
+],
+"iou": 0.9974,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+30,
+0,
+680,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "grey-backpack-opus-4-5-20260921-210743/frame-0029.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+0.7179,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.715,
+0.999
+],
+"iou": 0.995,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+603,
+448
+],
+"target": "Grey backpack"
+},
+{
+"key": "red-backpack-20260907-144856/frame-0007.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.7438,
+0.3487,
+0.9441,
+0.4685
+],
+"other": [
+0.747,
+0.353,
+0.945,
+0.462
+],
+"iou": 0.892,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+479,
+166,
+608,
+223
+],
+"target": "burgundy backpack"
+},
+{
+"key": "red-backpack-20260907-144856/frame-0009.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.5466,
+0.3782,
+0.7205,
+0.4874
+],
+"other": [
+0.55,
+0.378,
+0.725,
+0.489
+],
+"iou": 0.9408,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+352,
+180,
+464,
+232
+],
+"target": "burgundy backpack"
+},
+{
+"key": "red-backpack-20260907-144856/frame-0012.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.3152,
+0.4727,
+0.4876,
+0.5735
+],
+"other": [
+0.31,
+0.47,
+0.49,
+0.575
+],
+"iou": 0.9196,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+203,
+225,
+314,
+273
+],
+"target": "burgundy backpack"
+},
+{
+"key": "red-backpack-20260907-144856/frame-0014.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.3307,
+0.4496,
+0.5062,
+0.5567
+],
+"other": [
+0.332,
+0.446,
+0.505,
+0.554
+],
+"iou": 0.9302,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+213,
+214,
+326,
+265
+],
+"target": "burgundy backpack"
+},
+{
+"key": "red-backpack-20260907-144856/frame-0015.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.4969,
+0.437,
+0.6724,
+0.5462
+],
+"other": [
+0.5,
+0.437,
+0.675,
+0.548
+],
+"iou": 0.9523,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+320,
+208,
+433,
+260
+],
+"target": "burgundy backpack"
+},
+{
+"key": "red-backpack-20260907-144856/frame-0017.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.8137,
+0.4559,
+1.0,
+0.5735
+],
+"other": [
+0.812,
+0.456,
+1.0,
+0.577
+],
+"iou": 0.9618,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+524,
+217,
+644,
+273
+],
+"target": "burgundy backpack"
+},
+{
+"key": "red-backpack-20260907-144856/frame-0018.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.7733,
+0.5105,
+1.0,
+0.645
+],
+"other": [
+0.775,
+0.508,
+1.0,
+0.645
+],
+"iou": 0.9742,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+498,
+243,
+644,
+307
+],
+"target": "burgundy backpack"
+},
+{
+"key": "red-backpack-20260907-144856/frame-0019.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.778,
+0.458,
+1.0,
+0.6029
+],
+"other": [
+0.775,
+0.458,
+1.0,
+0.602
+],
+"iou": 0.9805,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+501,
+218,
+644,
+287
+],
+"target": "burgundy backpack"
+},
+{
+"key": "red-backpack-20260907-144856/frame-0022.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.0202,
+0.3739,
+0.295,
+0.5168
+],
+"other": [
+0.02,
+0.372,
+0.294,
+0.519
+],
+"iou": 0.9676,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+13,
+178,
+190,
+246
+],
+"target": "burgundy backpack"
+},
+{
+"key": "red-backpack-20260907-144856/frame-0023.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.0699,
+0.3782,
+0.3307,
+0.5315
+],
+"other": [
+0.07,
+0.38,
+0.335,
+0.528
+],
+"iou": 0.9496,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+45,
+180,
+213,
+253
+],
+"target": "burgundy backpack"
+},
+{
+"key": "red-backpack-20260907-144856/frame-0025.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.0668,
+0.3151,
+0.4193,
+0.5168
+],
+"other": [
+0.065,
+0.31,
+0.42,
+0.517
+],
+"iou": 0.9674,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+43,
+150,
+270,
+246
+],
+"target": "burgundy backpack"
+},
+{
+"key": "red-backpack-20260907-144856/frame-0026.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.3043,
+0.3739,
+0.6087,
+0.563
+],
+"other": [
+0.305,
+0.372,
+0.612,
+0.56
+],
+"iou": 0.9616,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+196,
+178,
+392,
+268
+],
+"target": "burgundy backpack"
+},
+{
+"key": "red-backpack-20260907-144856/frame-0030.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.4286,
+0.313,
+0.8742,
+0.5987
+],
+"other": [
+0.427,
+0.312,
+0.873,
+0.599
+],
+"iou": 0.9893,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+276,
+149,
+563,
+285
+],
+"target": "burgundy backpack"
+},
+{
+"key": "red-backpack-20260907-144856/frame-0031.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.3075,
+0.2521,
+0.8121,
+0.5798
+],
+"other": [
+0.308,
+0.25,
+0.81,
+0.573
+],
+"iou": 0.9678,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+198,
+120,
+523,
+276
+],
+"target": "burgundy backpack"
+},
+{
+"key": "red-backpack-20260907-144856/frame-0032.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.222,
+0.2626,
+0.8354,
+0.6555
+],
+"other": [
+0.222,
+0.26,
+0.838,
+0.656
+],
+"iou": 0.9878,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+143,
+125,
+538,
+312
+],
+"target": "burgundy backpack"
+},
+{
+"key": "red-backpack-20260907-144856/frame-0034.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.0,
+0.0798,
+0.9922,
+0.9496
+],
+"other": [
+0.0,
+0.079,
+0.991,
+0.935
+],
+"iou": 0.9811,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+38,
+639,
+452
+],
+"target": "burgundy backpack"
+},
+{
+"key": "red-backpack-20260907-144856/frame-0035.jpg",
+"size": [
+640,
+480
+],
+"teacher": [
+0.0,
+0.0273,
+1.0,
+1.0
+],
+"other": [
+0.0,
+0.024,
+1.0,
+0.996
+],
+"iou": 0.9925,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+13,
+644,
+476
+],
+"target": "burgundy backpack"
+},
+{
+"key": "woven-laundry-basket-20260908-215252/frame-0007.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.7917,
+0.4531,
+0.85,
+0.5469
+],
+"other": [
+0.79,
+0.45,
+0.848,
+0.547
+],
+"iou": 0.9084,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+665,
+203,
+714,
+245
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215252/frame-0008.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.7321,
+0.4397,
+0.7905,
+0.5312
+],
+"other": [
+0.735,
+0.437,
+0.789,
+0.532
+],
+"iou": 0.8942,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+615,
+197,
+664,
+238
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215252/frame-0009.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6786,
+0.4375,
+0.731,
+0.5312
+],
+"other": [
+0.679,
+0.439,
+0.73,
+0.532
+],
+"iou": 0.9507,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+570,
+196,
+614,
+238
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215252/frame-0010.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6226,
+0.433,
+0.6762,
+0.5246
+],
+"other": [
+0.625,
+0.433,
+0.675,
+0.522
+],
+"iou": 0.907,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+523,
+194,
+568,
+235
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215252/frame-0011.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.575,
+0.4487,
+0.6298,
+0.5379
+],
+"other": [
+0.577,
+0.448,
+0.625,
+0.538
+],
+"iou": 0.8704,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+483,
+201,
+529,
+241
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215252/frame-0012.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5476,
+0.442,
+0.5988,
+0.529
+],
+"other": [
+0.547,
+0.444,
+0.596,
+0.53
+],
+"iou": 0.9026,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+460,
+198,
+503,
+237
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215252/frame-0016.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.325,
+0.3326,
+0.381,
+0.4286
+],
+"other": [
+0.323,
+0.333,
+0.376,
+0.428
+],
+"iou": 0.8713,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+273,
+149,
+320,
+192
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215252/frame-0017.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2179,
+0.3125,
+0.2798,
+0.4107
+],
+"other": [
+0.216,
+0.312,
+0.266,
+0.41
+],
+"iou": 0.7467,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+183,
+140,
+235,
+184
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215252/frame-0020.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.4152,
+0.0131,
+0.4754
+],
+"other": null,
+"iou": null,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "no 235B box",
+"label": null,
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215252/frame-0081.jpg",
+"size": [
+1280,
+720
+],
+"teacher": null,
+"other": [
+0.928,
+0.308,
+0.998,
+0.418
+],
+"iou": null,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "no 72B box",
+"label": null,
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215252/frame-0083.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.7655,
+0.375,
+0.8214,
+0.4754
+],
+"other": [
+0.763,
+0.374,
+0.819,
+0.472
+],
+"iou": 0.8775,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+643,
+168,
+690,
+213
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215252/frame-0084.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.7464,
+0.4018,
+0.8012,
+0.5
+],
+"other": null,
+"iou": null,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "no 235B box",
+"label": null,
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215252/frame-0085.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6643,
+0.3996,
+0.719,
+0.4911
+],
+"other": [
+0.666,
+0.398,
+0.719,
+0.489
+],
+"iou": 0.9306,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+558,
+179,
+604,
+220
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0000.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.9583,
+0.433,
+1.0,
+0.6161
+],
+"other": [
+0.955,
+0.432,
+0.999,
+0.616
+],
+"iou": 0.8984,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+805,
+194,
+840,
+276
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0002.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.9262,
+0.433,
+1.0,
+0.6161
+],
+"other": [
+0.922,
+0.435,
+0.999,
+0.619
+],
+"iou": 0.9096,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+778,
+194,
+840,
+276
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0003.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.9286,
+0.4554,
+1.0,
+0.6384
+],
+"other": [
+0.927,
+0.455,
+0.999,
+0.64
+],
+"iou": 0.9547,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+780,
+204,
+840,
+286
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0004.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.9202,
+0.4576,
+1.0,
+0.6384
+],
+"other": [
+0.917,
+0.457,
+0.999,
+0.639
+],
+"iou": 0.9428,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+773,
+205,
+840,
+286
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0007.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.8036,
+0.4688,
+0.9095,
+0.654
+],
+"other": [
+0.805,
+0.468,
+0.909,
+0.647
+],
+"iou": 0.9407,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+675,
+210,
+764,
+293
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0008.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.7786,
+0.4308,
+0.881,
+0.6094
+],
+"other": [
+0.775,
+0.432,
+0.879,
+0.608
+],
+"iou": 0.9347,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+654,
+193,
+740,
+273
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0010.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6893,
+0.4375,
+0.7833,
+0.6094
+],
+"other": [
+0.686,
+0.437,
+0.784,
+0.608
+],
+"iou": 0.9495,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+579,
+196,
+658,
+273
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0012.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.606,
+0.4688,
+0.6988,
+0.6339
+],
+"other": [
+0.608,
+0.466,
+0.697,
+0.634
+],
+"iou": 0.943,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+509,
+210,
+587,
+284
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0015.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4369,
+0.4509,
+0.5226,
+0.625
+],
+"other": [
+0.435,
+0.45,
+0.527,
+0.619
+],
+"iou": 0.8971,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+367,
+202,
+439,
+280
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0016.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3976,
+0.3996,
+0.4881,
+0.5714
+],
+"other": [
+0.397,
+0.402,
+0.489,
+0.57
+],
+"iou": 0.9616,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+334,
+179,
+410,
+256
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0020.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1405,
+0.4085,
+0.2488,
+0.5915
+],
+"other": [
+0.138,
+0.405,
+0.249,
+0.59
+],
+"iou": 0.95,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+118,
+183,
+209,
+265
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0021.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0357,
+0.4107,
+0.1619,
+0.6138
+],
+"other": [
+0.034,
+0.415,
+0.155,
+0.609
+],
+"iou": 0.8913,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+30,
+184,
+136,
+275
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0022.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.4174,
+0.0583,
+0.6317
+],
+"other": [
+0.0,
+0.422,
+0.054,
+0.626
+],
+"iou": 0.8813,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+187,
+49,
+283
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0072.jpg",
+"size": [
+1280,
+720
+],
+"teacher": null,
+"other": null,
+"iou": null,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "no 72B box",
+"label": null,
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0076.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.7179,
+0.3973,
+0.8381,
+0.6049
+],
+"other": [
+0.713,
+0.394,
+0.837,
+0.607
+],
+"iou": 0.9284,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+603,
+178,
+704,
+271
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0077.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6429,
+0.3929,
+0.7595,
+0.6004
+],
+"other": [
+0.643,
+0.39,
+0.762,
+0.599
+],
+"iou": 0.9582,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+540,
+176,
+638,
+269
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0082.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.325,
+0.3661,
+0.4345,
+0.5714
+],
+"other": [
+0.325,
+0.367,
+0.437,
+0.573
+],
+"iou": 0.9662,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+273,
+164,
+365,
+256
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0084.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.225,
+0.3996,
+0.3405,
+0.6138
+],
+"other": [
+0.224,
+0.402,
+0.346,
+0.614
+],
+"iou": 0.9356,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+189,
+179,
+286,
+275
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260908-215351/frame-0085.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2298,
+0.3973,
+0.3405,
+0.6116
+],
+"other": [
+0.227,
+0.4,
+0.348,
+0.61
+],
+"iou": 0.8982,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+193,
+178,
+286,
+274
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0005.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.8643,
+0.4665,
+1.0,
+0.721
+],
+"other": [
+0.863,
+0.464,
+0.999,
+0.721
+],
+"iou": 0.9737,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+726,
+209,
+840,
+323
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0006.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.8012,
+0.4576,
+0.9524,
+0.7121
+],
+"other": [
+0.8,
+0.457,
+0.952,
+0.709
+],
+"iou": 0.9756,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+673,
+205,
+800,
+319
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0007.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.744,
+0.4308,
+0.8857,
+0.6741
+],
+"other": [
+0.74,
+0.427,
+0.885,
+0.672
+],
+"iou": 0.9445,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+625,
+193,
+744,
+302
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0008.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6833,
+0.4219,
+0.825,
+0.6652
+],
+"other": [
+0.682,
+0.42,
+0.822,
+0.666
+],
+"iou": 0.9593,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+574,
+189,
+693,
+298
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0009.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6238,
+0.4085,
+0.75,
+0.654
+],
+"other": [
+0.621,
+0.41,
+0.758,
+0.654
+],
+"iou": 0.9158,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+524,
+183,
+630,
+293
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0011.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5238,
+0.4241,
+0.6524,
+0.6629
+],
+"other": [
+0.525,
+0.423,
+0.653,
+0.663
+],
+"iou": 0.9813,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+440,
+190,
+548,
+297
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0012.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4643,
+0.3929,
+0.5893,
+0.6362
+],
+"other": [
+0.464,
+0.395,
+0.59,
+0.634
+],
+"iou": 0.9747,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+390,
+176,
+495,
+285
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0013.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4167,
+0.3884,
+0.5381,
+0.6317
+],
+"other": [
+0.416,
+0.389,
+0.545,
+0.63
+],
+"iou": 0.9329,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+350,
+174,
+452,
+283
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0014.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3738,
+0.3772,
+0.5,
+0.6205
+],
+"other": [
+0.371,
+0.377,
+0.502,
+0.62
+],
+"iou": 0.9603,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+314,
+169,
+420,
+278
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0017.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0821,
+0.3415,
+0.2429,
+0.6205
+],
+"other": [
+0.081,
+0.34,
+0.246,
+0.62
+],
+"iou": 0.9669,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+69,
+153,
+204,
+278
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0054.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.1629,
+0.0667,
+0.6562
+],
+"other": [
+0.0,
+0.293,
+0.065,
+0.65
+],
+"iou": 0.7056,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+73,
+56,
+294
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0122.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.8845,
+0.2634,
+1.0,
+0.5781
+],
+"other": [
+0.881,
+0.262,
+0.999,
+0.577
+],
+"iou": 0.9545,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+743,
+118,
+840,
+259
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0123.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.8071,
+0.2746,
+0.9929,
+0.5804
+],
+"other": [
+0.807,
+0.273,
+0.991,
+0.58
+],
+"iou": 0.9831,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+678,
+123,
+834,
+260
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0124.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.869,
+0.2701,
+1.0,
+0.5915
+],
+"other": [
+0.867,
+0.273,
+0.999,
+0.59
+],
+"iou": 0.9638,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+730,
+121,
+840,
+265
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0142.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.8036,
+0.2321,
+1.0,
+0.5804
+],
+"other": [
+0.805,
+0.231,
+0.999,
+0.577
+],
+"iou": 0.975,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+675,
+104,
+840,
+260
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0143.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.7619,
+0.2746,
+0.95,
+0.6138
+],
+"other": [
+0.758,
+0.276,
+0.948,
+0.609
+],
+"iou": 0.9516,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+640,
+123,
+798,
+275
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0144.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6714,
+0.308,
+0.8452,
+0.6228
+],
+"other": [
+0.67,
+0.308,
+0.847,
+0.623
+],
+"iou": 0.9811,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+564,
+138,
+710,
+279
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0146.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5119,
+0.3013,
+0.6774,
+0.6049
+],
+"other": [
+0.517,
+0.298,
+0.679,
+0.606
+],
+"iou": 0.9464,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+430,
+135,
+569,
+271
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0147.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4643,
+0.308,
+0.619,
+0.6027
+],
+"other": [
+0.464,
+0.308,
+0.621,
+0.606
+],
+"iou": 0.9746,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+390,
+138,
+520,
+270
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260912-231358/frame-0151.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.3013,
+0.2,
+0.6496
+],
+"other": [
+0.0,
+0.301,
+0.2,
+0.649
+],
+"iou": 0.9974,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+135,
+168,
+291
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115414/frame-0157.jpg",
+"size": [
+1280,
+720
+],
+"teacher": null,
+"other": [
+0.945,
+0.354,
+0.999,
+0.446
+],
+"iou": null,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "no 72B box",
+"label": null,
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115414/frame-0158.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.869,
+0.3482,
+0.9214,
+0.4308
+],
+"other": [
+0.871,
+0.344,
+0.925,
+0.427
+],
+"iou": 0.8217,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+730,
+156,
+774,
+193
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115414/frame-0195.jpg",
+"size": [
+1280,
+720
+],
+"teacher": null,
+"other": null,
+"iou": null,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "no 72B box",
+"label": null,
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115414/frame-0196.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5571,
+0.3683,
+0.606,
+0.4621
+],
+"other": [
+0.558,
+0.368,
+0.607,
+0.459
+],
+"iou": 0.9282,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+468,
+165,
+509,
+207
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115414/frame-0197.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5,
+0.3638,
+0.5464,
+0.4576
+],
+"other": [
+0.502,
+0.36,
+0.552,
+0.452
+],
+"iou": 0.7778,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+420,
+163,
+459,
+205
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115414/frame-0199.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4333,
+0.3862,
+0.4821,
+0.4777
+],
+"other": [
+0.432,
+0.385,
+0.48,
+0.476
+],
+"iou": 0.9031,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+364,
+173,
+405,
+214
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115414/frame-0200.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3179,
+0.3527,
+0.3679,
+0.4509
+],
+"other": [
+0.314,
+0.353,
+0.367,
+0.445
+],
+"iou": 0.8586,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+267,
+158,
+309,
+202
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115414/frame-0201.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2,
+0.3237,
+0.2619,
+0.4263
+],
+"other": [
+0.204,
+0.321,
+0.262,
+0.425
+],
+"iou": 0.9,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+168,
+145,
+220,
+191
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115414/frame-0202.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1298,
+0.3304,
+0.1917,
+0.4397
+],
+"other": [
+0.127,
+0.33,
+0.19,
+0.438
+],
+"iou": 0.9145,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+109,
+148,
+161,
+197
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115414/frame-0203.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.044,
+0.3438,
+0.1107,
+0.4554
+],
+"other": [
+0.042,
+0.344,
+0.112,
+0.455
+],
+"iou": 0.9474,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+37,
+154,
+93,
+204
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115414/frame-0218.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.2143,
+0.0476,
+0.3504
+],
+"other": null,
+"iou": null,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "no 235B box",
+"label": null,
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115414/frame-0223.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.25,
+0.2879,
+0.3155,
+0.4107
+],
+"other": [
+0.247,
+0.287,
+0.319,
+0.412
+],
+"iou": 0.8932,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+210,
+129,
+265,
+184
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115414/frame-0224.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3452,
+0.3192,
+0.406,
+0.4375
+],
+"other": [
+0.342,
+0.317,
+0.407,
+0.436
+],
+"iou": 0.9062,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+290,
+143,
+341,
+196
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115414/frame-0226.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4381,
+0.3504,
+0.4964,
+0.4665
+],
+"other": [
+0.435,
+0.352,
+0.498,
+0.465
+],
+"iou": 0.9032,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+368,
+157,
+417,
+209
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115414/frame-0228.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5333,
+0.3638,
+0.5917,
+0.4799
+],
+"other": [
+0.532,
+0.362,
+0.593,
+0.477
+],
+"iou": 0.9188,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+448,
+163,
+497,
+215
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115414/frame-0229.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5595,
+0.3527,
+0.6226,
+0.471
+],
+"other": [
+0.56,
+0.352,
+0.625,
+0.467
+],
+"iou": 0.9201,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+470,
+158,
+523,
+211
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0008.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.8929,
+0.4464,
+0.9679,
+0.5714
+],
+"other": [
+0.891,
+0.447,
+0.967,
+0.569
+],
+"iou": 0.9421,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+750,
+200,
+813,
+256
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0009.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.8381,
+0.4754,
+0.9083,
+0.5915
+],
+"other": [
+0.838,
+0.476,
+0.909,
+0.597
+],
+"iou": 0.9402,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+704,
+213,
+763,
+265
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0010.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.7905,
+0.4688,
+0.8583,
+0.5915
+],
+"other": [
+0.789,
+0.47,
+0.859,
+0.589
+],
+"iou": 0.9405,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+664,
+210,
+721,
+265
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0011.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.7345,
+0.4888,
+0.7952,
+0.6027
+],
+"other": [
+0.734,
+0.488,
+0.8,
+0.603
+],
+"iou": 0.9106,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+617,
+219,
+668,
+270
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0012.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6548,
+0.4665,
+0.719,
+0.5804
+],
+"other": [
+0.656,
+0.47,
+0.718,
+0.579
+],
+"iou": 0.9234,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+550,
+209,
+604,
+260
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0013.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6024,
+0.4487,
+0.6595,
+0.558
+],
+"other": [
+0.603,
+0.448,
+0.661,
+0.555
+],
+"iou": 0.9326,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+506,
+201,
+554,
+250
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0014.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5238,
+0.4375,
+0.581,
+0.5469
+],
+"other": [
+0.526,
+0.439,
+0.58,
+0.545
+],
+"iou": 0.9158,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+440,
+196,
+488,
+245
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0015.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4917,
+0.4018,
+0.5476,
+0.5134
+],
+"other": [
+0.493,
+0.405,
+0.548,
+0.512
+],
+"iou": 0.9298,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+413,
+180,
+460,
+230
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0017.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4798,
+0.4062,
+0.5393,
+0.5223
+],
+"other": [
+0.48,
+0.41,
+0.539,
+0.52
+],
+"iou": 0.9394,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+403,
+182,
+453,
+234
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0018.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.375,
+0.4286,
+0.4369,
+0.5424
+],
+"other": [
+0.377,
+0.428,
+0.437,
+0.54
+],
+"iou": 0.9412,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+315,
+192,
+367,
+243
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0019.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3155,
+0.4174,
+0.3762,
+0.5357
+],
+"other": [
+0.315,
+0.417,
+0.379,
+0.532
+],
+"iou": 0.9172,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+265,
+187,
+316,
+240
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0022.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1821,
+0.3929,
+0.25,
+0.5223
+],
+"other": [
+0.178,
+0.392,
+0.253,
+0.518
+],
+"iou": 0.8716,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+153,
+176,
+210,
+234
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0027.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.3058,
+0.0214,
+0.4576
+],
+"other": null,
+"iou": null,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "no 235B box",
+"label": null,
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0028.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0667,
+0.3415,
+0.1476,
+0.4777
+],
+"other": [
+0.068,
+0.34,
+0.153,
+0.477
+],
+"iou": 0.9079,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+56,
+153,
+124,
+214
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0029.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.3527,
+0.0286,
+0.5045
+],
+"other": null,
+"iou": null,
+"teacher_past_the_image": false,
+"kept": false,
+"why_not": "no 235B box",
+"label": null,
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0132.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.3237,
+0.144,
+0.7545
+],
+"other": [
+0.0,
+0.322,
+0.145,
+0.752
+],
+"iou": 0.984,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+145,
+121,
+338
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0134.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1071,
+0.3192,
+0.3369,
+0.7188
+],
+"other": [
+0.105,
+0.318,
+0.337,
+0.72
+],
+"iou": 0.9843,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+90,
+143,
+283,
+322
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0135.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1952,
+0.3103,
+0.4083,
+0.6964
+],
+"other": [
+0.193,
+0.308,
+0.409,
+0.697
+],
+"iou": 0.9794,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+164,
+139,
+343,
+312
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0136.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2548,
+0.3013,
+0.4595,
+0.6786
+],
+"other": [
+0.252,
+0.3,
+0.457,
+0.677
+],
+"iou": 0.9671,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+214,
+135,
+386,
+304
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0137.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3179,
+0.2902,
+0.5179,
+0.6607
+],
+"other": [
+0.317,
+0.288,
+0.515,
+0.661
+],
+"iou": 0.9751,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+267,
+130,
+435,
+296
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0138.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3571,
+0.3259,
+0.5476,
+0.6942
+],
+"other": [
+0.355,
+0.325,
+0.547,
+0.695
+],
+"iou": 0.9812,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+300,
+146,
+460,
+311
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0140.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.45,
+0.3125,
+0.6381,
+0.6987
+],
+"other": [
+0.447,
+0.315,
+0.635,
+0.698
+],
+"iou": 0.9603,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+378,
+140,
+536,
+313
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0141.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5952,
+0.2165,
+0.7893,
+0.5938
+],
+"other": [
+0.593,
+0.21,
+0.79,
+0.595
+],
+"iou": 0.9651,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+500,
+97,
+663,
+266
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0142.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6762,
+0.2679,
+0.8821,
+0.6496
+],
+"other": [
+0.677,
+0.269,
+0.88,
+0.652
+],
+"iou": 0.9765,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+568,
+120,
+741,
+291
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0143.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6976,
+0.2746,
+0.9095,
+0.6607
+],
+"other": [
+0.7,
+0.272,
+0.91,
+0.661
+],
+"iou": 0.9794,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+586,
+123,
+764,
+296
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0145.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5429,
+0.308,
+0.7464,
+0.7121
+],
+"other": [
+0.542,
+0.305,
+0.747,
+0.713
+],
+"iou": 0.9833,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+456,
+138,
+627,
+319
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0146.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5821,
+0.3013,
+0.7917,
+0.7143
+],
+"other": [
+0.58,
+0.299,
+0.798,
+0.72
+],
+"iou": 0.9427,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+489,
+135,
+665,
+320
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0147.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6619,
+0.2768,
+0.8905,
+0.692
+],
+"other": [
+0.663,
+0.277,
+0.887,
+0.697
+],
+"iou": 0.968,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+556,
+124,
+748,
+310
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0149.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4798,
+0.279,
+0.6774,
+0.6853
+],
+"other": [
+0.477,
+0.276,
+0.676,
+0.683
+],
+"iou": 0.9668,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+403,
+125,
+569,
+307
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0150.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4595,
+0.2656,
+0.6667,
+0.6964
+],
+"other": [
+0.457,
+0.265,
+0.667,
+0.697
+],
+"iou": 0.9837,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+386,
+119,
+560,
+312
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0151.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4476,
+0.2679,
+0.6667,
+0.7188
+],
+"other": [
+0.449,
+0.266,
+0.667,
+0.72
+],
+"iou": 0.9854,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+376,
+120,
+560,
+322
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0153.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1298,
+0.2143,
+0.3905,
+0.7009
+],
+"other": [
+0.131,
+0.214,
+0.387,
+0.693
+],
+"iou": 0.9654,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+109,
+96,
+328,
+314
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0154.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0179,
+0.1942,
+0.3012,
+0.7009
+],
+"other": [
+0.017,
+0.193,
+0.3,
+0.695
+],
+"iou": 0.979,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+15,
+87,
+253,
+314
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0155.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1786,
+0.2165,
+0.4381,
+0.7165
+],
+"other": [
+0.177,
+0.215,
+0.435,
+0.715
+],
+"iou": 0.9762,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+150,
+97,
+368,
+321
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0156.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2,
+0.2098,
+0.4702,
+0.7433
+],
+"other": [
+0.2,
+0.21,
+0.47,
+0.743
+],
+"iou": 0.9982,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+168,
+94,
+395,
+333
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0157.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2357,
+0.1272,
+0.5393,
+0.7589
+],
+"other": [
+0.235,
+0.125,
+0.537,
+0.759
+],
+"iou": 0.9866,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+198,
+57,
+453,
+340
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0158.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3179,
+0.1897,
+0.6238,
+0.8482
+],
+"other": [
+0.319,
+0.185,
+0.624,
+0.852
+],
+"iou": 0.983,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+267,
+85,
+524,
+380
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0160.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.794,
+0.1071,
+1.0,
+0.8996
+],
+"other": [
+0.798,
+0.106,
+0.999,
+0.899
+],
+"iou": 0.9739,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+667,
+48,
+840,
+403
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0164.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.8524,
+0.1116,
+1.0,
+0.9353
+],
+"other": [
+0.852,
+0.117,
+0.999,
+0.935
+],
+"iou": 0.9839,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+716,
+50,
+840,
+419
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0165.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.8738,
+0.0201,
+1.0,
+0.8393
+],
+"other": [
+0.873,
+0.017,
+0.999,
+0.84
+],
+"iou": 0.9812,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+734,
+9,
+840,
+376
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0167.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.9143,
+0.0558,
+1.0,
+0.8683
+],
+"other": [
+0.913,
+0.053,
+0.999,
+0.865
+],
+"iou": 0.9665,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+768,
+25,
+840,
+389
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0169.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.881,
+0.0335,
+1.0,
+0.8527
+],
+"other": [
+0.882,
+0.033,
+0.999,
+0.854
+],
+"iou": 0.9807,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+740,
+15,
+840,
+382
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0170.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.8798,
+0.0223,
+1.0,
+0.8482
+],
+"other": [
+0.879,
+0.02,
+0.999,
+0.845
+],
+"iou": 0.9789,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+739,
+10,
+840,
+380
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0172.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.7238,
+0.0156,
+1.0,
+0.904
+],
+"other": [
+0.723,
+0.012,
+0.999,
+0.906
+],
+"iou": 0.9873,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+608,
+7,
+840,
+405
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0174.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5536,
+0.0,
+0.9845,
+0.8817
+],
+"other": [
+0.555,
+0.0,
+0.983,
+0.88
+],
+"iou": 0.9912,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+465,
+0,
+827,
+395
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0176.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4167,
+0.0134,
+0.8202,
+0.8862
+],
+"other": [
+0.418,
+0.006,
+0.82,
+0.888
+],
+"iou": 0.9857,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+350,
+6,
+689,
+397
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0177.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3679,
+0.0089,
+0.7643,
+0.8817
+],
+"other": [
+0.366,
+0.0,
+0.765,
+0.883
+],
+"iou": 0.982,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+309,
+4,
+642,
+395
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0178.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2655,
+0.0,
+0.6595,
+0.8616
+],
+"other": [
+0.261,
+0.0,
+0.654,
+0.862
+],
+"iou": 0.9745,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+223,
+0,
+554,
+386
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0179.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1881,
+0.0,
+0.5833,
+0.8393
+],
+"other": [
+0.185,
+0.0,
+0.582,
+0.84
+],
+"iou": 0.988,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+158,
+0,
+490,
+376
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0180.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0702,
+0.0,
+0.4881,
+0.8839
+],
+"other": [
+0.069,
+0.0,
+0.487,
+0.88
+],
+"iou": 0.99,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+59,
+0,
+410,
+396
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0181.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0476,
+0.0,
+0.4738,
+0.846
+],
+"other": [
+0.05,
+0.0,
+0.476,
+0.847
+],
+"iou": 0.9881,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+40,
+0,
+398,
+379
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0182.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.081,
+0.0,
+0.5226,
+0.8638
+],
+"other": [
+0.082,
+0.0,
+0.523,
+0.868
+],
+"iou": 0.992,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+68,
+0,
+439,
+387
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0183.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.106,
+0.0,
+0.5905,
+0.9442
+],
+"other": [
+0.104,
+0.0,
+0.589,
+0.945
+],
+"iou": 0.9921,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+89,
+0,
+496,
+423
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0185.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0869,
+0.0,
+0.6714,
+1.0
+],
+"other": [
+0.078,
+0.0,
+0.67,
+0.999
+],
+"iou": 0.9816,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+73,
+0,
+564,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0186.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1,
+0.0,
+0.7321,
+1.0
+],
+"other": [
+0.097,
+0.0,
+0.732,
+0.999
+],
+"iou": 0.9941,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+84,
+0,
+615,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0187.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2452,
+0.0,
+0.9143,
+1.0
+],
+"other": [
+0.246,
+0.0,
+0.91,
+0.999
+],
+"iou": 0.9915,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+206,
+0,
+768,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0188.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.381,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.387,
+0.0,
+0.999,
+0.999
+],
+"iou": 0.9876,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+320,
+0,
+840,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0189.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.5119,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.51,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.991,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+430,
+0,
+840,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0191.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.6524,
+0.0,
+1.0,
+0.9978
+],
+"other": [
+0.657,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.9798,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+548,
+0,
+840,
+447
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0192.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.575,
+0.0,
+0.9655,
+1.0
+],
+"other": [
+0.575,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.9223,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+483,
+0,
+811,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0193.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.4643,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.47,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.9846,
+"teacher_past_the_image": true,
+"kept": true,
+"why_not": null,
+"label": [
+390,
+0,
+840,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0194.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.3905,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.387,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.9901,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+328,
+0,
+840,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0195.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1786,
+0.0,
+0.9988,
+1.0
+],
+"other": [
+0.178,
+0.0,
+0.995,
+0.999
+],
+"iou": 0.9937,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+150,
+0,
+839,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0196.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1702,
+0.0,
+0.9714,
+1.0
+],
+"other": [
+0.173,
+0.0,
+0.97,
+0.999
+],
+"iou": 0.9938,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+143,
+0,
+816,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0197.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1238,
+0.0,
+0.9,
+1.0
+],
+"other": [
+0.125,
+0.0,
+0.897,
+0.999
+],
+"iou": 0.9936,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+104,
+0,
+756,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0198.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+0.7655,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.764,
+0.999
+],
+"iou": 0.9971,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+643,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0199.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+0.6702,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.675,
+0.999
+],
+"iou": 0.992,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+563,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0201.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+0.7714,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.772,
+0.999
+],
+"iou": 0.9983,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+648,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0202.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+0.8905,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.892,
+0.999
+],
+"iou": 0.9973,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+748,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0203.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0,
+0.0,
+0.9655,
+1.0
+],
+"other": [
+0.0,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.9665,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+0,
+0,
+811,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0204.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.0548,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.054,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.9961,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+46,
+0,
+840,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0205.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.194,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.19,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.9915,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+163,
+0,
+840,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0206.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1607,
+0.0,
+0.9655,
+1.0
+],
+"other": [
+0.159,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.9583,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+135,
+0,
+811,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0207.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1726,
+0.0,
+0.9988,
+1.0
+],
+"other": [
+0.173,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.9976,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+145,
+0,
+839,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0208.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.1548,
+0.0,
+1.0,
+1.0
+],
+"other": [
+0.151,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.9922,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+130,
+0,
+840,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0210.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.2417,
+0.0,
+0.9655,
+1.0
+],
+"other": [
+0.234,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.9465,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+203,
+0,
+811,
+448
+],
+"target": "woven laundry basket"
+},
+{
+"key": "woven-laundry-basket-20260913-115703/frame-0211.jpg",
+"size": [
+1280,
+720
+],
+"teacher": [
+0.231,
+0.0,
+0.9655,
+1.0
+],
+"other": [
+0.222,
+0.0,
+0.998,
+0.999
+],
+"iou": 0.9457,
+"teacher_past_the_image": false,
+"kept": true,
+"why_not": null,
+"label": [
+194,
+0,
+811,
+448
+],
+"target": "woven laundry basket"
+}
+]
+}

@@ -1,0 +1,121 @@
+{
+ "training_frames": 335,
+ "kept": 314,
+ "not_kept": {
+  "IoU under 0.5": 8,
+  "no 235B box": 8,
+  "no 72B box": 5
+ },
+ "kept_by_target": {
+  "a white phone charger cable": 80,
+  "blue bottle": 15,
+  "blue and yellow running shoes": 9,
+  "Grey backpack": 57,
+  "burgundy backpack": 17,
+  "woven laundry basket": 136
+ },
+ "frames_by_target": {
+  "a white phone charger cable": 82,
+  "blue bottle": 15,
+  "blue and yellow running shoes": 14,
+  "Grey backpack": 62,
+  "burgundy backpack": 17,
+  "woven laundry basket": 145
+ },
+ "criterion_2_new_unflagged": {
+  "frames": 118,
+  "kept": 106,
+  "kept_right": 106,
+  "kept_share": 0.8983,
+  "kept_right_share": 1.0,
+  "not_kept": {
+   "no 72B box": 3,
+   "IoU under 0.5": 7,
+   "no 235B box": 2
+  },
+  "wrong": []
+ },
+ "criterion_2_met": true,
+ "reported_new_border": {
+  "frames": 19,
+  "kept": 19,
+  "kept_right": 19,
+  "kept_share": 1.0,
+  "kept_right_share": 1.0,
+  "not_kept": {},
+  "wrong": []
+ },
+ "reported_s1_unflagged": {
+  "frames": 45,
+  "kept": 41,
+  "kept_right": 41,
+  "kept_share": 0.9111,
+  "kept_right_share": 1.0,
+  "not_kept": {
+   "no 72B box": 1,
+   "IoU under 0.5": 3
+  },
+  "wrong": []
+ },
+ "kept_with_a_clipped_teacher_box": [
+  "woven-laundry-basket-20260913-115703/frame-0193.jpg"
+ ],
+ "audit": {
+  "n": 50,
+  "keys": [
+   "a-white-phone-charger-ca-20260921-203250/frame-0020.jpg",
+   "a-white-phone-charger-ca-20260921-203250/frame-0031.jpg",
+   "a-white-phone-charger-ca-20260921-203250/frame-0035.jpg",
+   "a-white-phone-charger-ca-20260921-203250/frame-0038.jpg",
+   "a-white-phone-charger-ca-20260921-203355/frame-0014.jpg",
+   "a-white-phone-charger-ca-20260921-203355/frame-0016.jpg",
+   "a-white-phone-charger-ca-20260921-203355/frame-0020.jpg",
+   "a-white-phone-charger-ca-20260921-203355/frame-0035.jpg",
+   "a-white-phone-charger-ca-20260921-203355/frame-0037.jpg",
+   "a-white-phone-charger-ca-20260921-203355/frame-0041.jpg",
+   "a-white-phone-charger-ca-20260921-203355/frame-0049.jpg",
+   "a-white-phone-charger-ca-20260921-203355/frame-0050.jpg",
+   "a-white-phone-charger-ca-20260921-203355/frame-0057.jpg",
+   "blue-bottle-20260907-142454/frame-0012.jpg",
+   "blue-bottle-20260907-142454/frame-0022.jpg",
+   "blue-bottle-20260907-142454/frame-0028.jpg",
+   "blue-bottle-20260907-185007/frame-0211.jpg",
+   "blue-shoes-20260908-210511/frame-0024.jpg",
+   "blue-shoes-20260908-210511/frame-0036.jpg",
+   "grey-backpack-20260921-203748/frame-0002.jpg",
+   "grey-backpack-20260921-203748/frame-0019.jpg",
+   "grey-backpack-20260921-203748/frame-0024.jpg",
+   "grey-backpack-20260921-203748/frame-0025.jpg",
+   "grey-backpack-20260921-203748/frame-0037.jpg",
+   "grey-backpack-20260921-203748/frame-0038.jpg",
+   "grey-backpack-20260921-203748/frame-0051.jpg",
+   "grey-backpack-20260921-203748/frame-0070.jpg",
+   "grey-backpack-20260921-203748/frame-0072.jpg",
+   "grey-backpack-20260921-203748/frame-0082.jpg",
+   "grey-backpack-opus-4-5-20260921-210743/frame-0016.jpg",
+   "grey-backpack-opus-4-5-20260921-210743/frame-0029.jpg",
+   "woven-laundry-basket-20260908-215252/frame-0009.jpg",
+   "woven-laundry-basket-20260908-215351/frame-0008.jpg",
+   "woven-laundry-basket-20260912-231358/frame-0013.jpg",
+   "woven-laundry-basket-20260912-231358/frame-0054.jpg",
+   "woven-laundry-basket-20260912-231358/frame-0123.jpg",
+   "woven-laundry-basket-20260913-115414/frame-0197.jpg",
+   "woven-laundry-basket-20260913-115414/frame-0223.jpg",
+   "woven-laundry-basket-20260913-115414/frame-0229.jpg",
+   "woven-laundry-basket-20260913-115703/frame-0012.jpg",
+   "woven-laundry-basket-20260913-115703/frame-0145.jpg",
+   "woven-laundry-basket-20260913-115703/frame-0153.jpg",
+   "woven-laundry-basket-20260913-115703/frame-0154.jpg",
+   "woven-laundry-basket-20260913-115703/frame-0164.jpg",
+   "woven-laundry-basket-20260913-115703/frame-0169.jpg",
+   "woven-laundry-basket-20260913-115703/frame-0187.jpg",
+   "woven-laundry-basket-20260913-115703/frame-0191.jpg",
+   "woven-laundry-basket-20260913-115703/frame-0193.jpg",
+   "woven-laundry-basket-20260913-115703/frame-0197.jpg",
+   "woven-laundry-basket-20260913-115703/frame-0198.jpg"
+  ],
+  "judged": false,
+  "right": null,
+  "criterion_3_met": null
+ }
+}
