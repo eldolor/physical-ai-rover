@@ -64,7 +64,35 @@
   }
  ],
  "unflagged_right_share_with_dropped_as_silent": 0.8373,
- "provisional": true,
- "spot_check": null,
+ "provisional": false,
+ "spot_check": {
+  "date": "2026-11-23",
+  "by": "the user, marking a third for each frame without seeing its label",
+  "marks": {
+   "18": "FORWARD",
+   "28": "FORWARD",
+   "30": "FORWARD",
+   "31": "FORWARD",
+   "33": "RIGHT",
+   "40": "RIGHT",
+   "42": "FORWARD",
+   "43": "FORWARD",
+   "49": "FORWARD",
+   "52": "FORWARD",
+   "55": "FORWARD",
+   "67": "RIGHT",
+   "72": "RIGHT",
+   "76": "FORWARD",
+   "98": "LEFT",
+   "110": "RIGHT",
+   "112": "RIGHT",
+   "124": "FORWARD",
+   "134": "RIGHT",
+   "137": "LEFT"
+  },
+  "differs": [],
+  "unflagged_differs": [],
+  "labels_stand": true
+ },
  "criterion_1_stop": false
 }

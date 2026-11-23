@@ -143,8 +143,19 @@ def test_set() -> list:
     def one(r, name):
         return {"key": f"{r['walk']}/{r['frame']}", "truth": r["truth"],
                 "centre": r["centre_x_frac"], "border": r["border"], "wide": r["wide"], "set": name}
-    return ([one(r, "S1") for r in json.loads(S1_LABELS.read_text())["rows"]]
-            + [one(r, "new") for r in _labels()["rows"]])
+    labels = _labels()
+    out = ([one(r, "S1") for r in json.loads(S1_LABELS.read_text())["rows"]]
+           + [one(r, "new") for r in labels["rows"]])
+    # A person's correction to an S1 label is applied here only;
+    # `labels-s1.json` stays as 3.80.I recorded it.
+    fixes = labels.get("s1_corrections", {})
+    unknown = set(fixes) - {f["key"] for f in out if f["set"] == "S1"}
+    if unknown:
+        raise ValueError(f"s1_corrections names frames that are not in S1: {sorted(unknown)}")
+    for f in out:
+        if f["set"] == "S1" and f["key"] in fixes:
+            f["truth"] = fixes[f["key"]]["truth"]
+    return out
 
 
 def tally(frames: list, answer) -> dict:
@@ -185,7 +196,7 @@ def scores() -> dict:
         "unflagged_right_share_with_dropped_as_silent":
             round(u["right"] / (u["frames"] + len(dropped)), 4),
         # Amendment 6: the new frames' labels stand only after the user's spot-check.
-        "provisional": spot is None,
+        "provisional": spot is None or not spot.get("labels_stand"),
         "spot_check": spot,
         "criterion_1_stop": u["right"] >= STOP_AT * u["frames"],
     }

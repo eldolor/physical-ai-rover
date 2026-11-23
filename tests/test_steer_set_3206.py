@@ -81,5 +81,23 @@ def test_a_scores_pinned():
     assert [d["local_order"] for d in out["dropped"]] == [None, None, None]
     assert out["unflagged_right_share_with_dropped_as_silent"] == round(139 / 166, 4)
     assert not out["criterion_1_stop"]
-    # The new frames' labels are a model's until the user's spot-check is recorded.
-    assert out["provisional"] == ("spot_check" not in labels)
+    assert not out["provisional"]
+
+
+def test_the_spot_check_is_recorded_and_the_labels_stand():
+    labels = json.loads(a.LABELS.read_text())
+    spot = labels["spot_check"]
+    assert sorted(int(i) for i in spot["marks"]) == a.spot_check_draw()
+    rows = {r["i"]: r for r in labels["rows"]}
+    differs = [int(i) for i, v in spot["marks"].items() if rows[int(i)]["truth"] != v]
+    assert differs == spot["differs"] == []
+    assert len(spot["unflagged_differs"]) <= a.SPOT_MAX_DIFFER and spot["labels_stand"]
+
+
+def test_the_users_correction_to_s1_is_applied_here_only():
+    labels = json.loads(a.LABELS.read_text())
+    (key, fix), = labels["s1_corrections"].items()
+    assert key.endswith("frame-0184.jpg") and (fix["was"], fix["truth"]) == ("RIGHT", "FORWARD")
+    assert next(f for f in a.test_set() if f["key"] == key)["truth"] == "FORWARD"
+    s1 = json.loads(a.S1_LABELS.read_text())["rows"]
+    assert next(r for r in s1 if f"{r['walk']}/{r['frame']}" == key)["truth"] == "RIGHT"

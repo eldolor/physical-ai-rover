@@ -27,6 +27,42 @@
    "i": 111
   }
  ],
+ "spot_check": {
+  "date": "2026-11-23",
+  "by": "the user, marking a third for each frame without seeing its label",
+  "marks": {
+   "18": "FORWARD",
+   "28": "FORWARD",
+   "30": "FORWARD",
+   "31": "FORWARD",
+   "33": "RIGHT",
+   "40": "RIGHT",
+   "42": "FORWARD",
+   "43": "FORWARD",
+   "49": "FORWARD",
+   "52": "FORWARD",
+   "55": "FORWARD",
+   "67": "RIGHT",
+   "72": "RIGHT",
+   "76": "FORWARD",
+   "98": "LEFT",
+   "110": "RIGHT",
+   "112": "RIGHT",
+   "124": "FORWARD",
+   "134": "RIGHT",
+   "137": "LEFT"
+  },
+  "differs": [],
+  "unflagged_differs": [],
+  "labels_stand": true
+ },
+ "s1_corrections": {
+  "woven-laundry-basket-20260913-115703/frame-0184.jpg": {
+   "truth": "FORWARD",
+   "was": "RIGHT",
+   "why": "the user's mark at the spot-check (2026-11-23); the recorded centre 0.354 is in the middle third. labels-s1.json itself is left as 3.80.I recorded it, so earlier sections' pinned numbers do not move."
+  }
+ },
  "rows": [
   {
    "walk": "a-white-phone-charger-ca-20260921-203250",
