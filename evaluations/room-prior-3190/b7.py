@@ -2,20 +2,22 @@
 # Copyright (C) 2026 Anshu Gaind
 """
 evaluations/room-prior-3190/b7.py -- 3.190.B criterion 7 (amendment 5): the
-same question asked of Claude Sonnet 5.5, then compared with Opus 5.5 on
-criterion 1's arm.
+same question asked of another model (Sonnet 5.5 in amendment 5, stopped in
+its pilot; Claude Fable 5.2 in amendment 6, `ACTIVE`), then compared with
+Opus 5.5 on criterion 1's arm.
 
     python evaluations/room-prior-3190/b7.py ask [N]     # paid: the next N of the 40, then the nine
     python evaluations/room-prior-3190/b7.py spend
-    python evaluations/room-prior-3190/b7.py score       # criteria 4-6 for Sonnet (free) -> b7/score.json
-    python evaluations/room-prior-3190/b7.py run OUT     # free: opus / sonnet / none arms, one commit
+    python evaluations/room-prior-3190/b7.py score       # criteria 4-6 for ACTIVE (free) -> b7/score.json
+    python evaluations/room-prior-3190/b7.py run OUT     # free: opus / challenger / none arms, one commit
     python evaluations/room-prior-3190/b7.py arms OUT    # free: (a) and (b) -> OUT/score.json
 
 Only the model differs from B's Opus run: the question, the reply check, the
 token cap and effort are `calls.py`'s (the brain's `room_prior`). Replies are
-kept in the brain's cache shape (`b7/replies.json`). Spend is priced at
-Sonnet 5.5's list plus this account's 10% Bedrock mark-up ($2.20/M in,
-$11/M out; amendment 5), and `ask` refuses a call that could pass CAP_USD.
+kept in the brain's cache shape (`b7/replies.json`, keyed by model id).
+Spend is priced at each model's list plus this account's 10% Bedrock
+mark-up (`MODELS`), and `ask` refuses a call that could take every model's
+spend here past CAP_USD.
 """
 import json
 import os
@@ -31,14 +33,22 @@ from calls import (MAX_TOKENS, PROMPT, SERVED, parse,         # noqa: E402
                    prior_is_informative, target_key)
 from targets import EXPECTED, TARGETS                         # noqa: E402
 
-MODEL_ID = "us.anthropic.claude-sonnet-5-5"
-REGION = "us-east-2"            # /room's region; MODEL_REGIONS pins no Sonnet
-PRICE = (2.20, 11.00)           # $/M (in, out): list $2/$10 + 10% (amendment 5)
-CAP_USD = 1.00
+# model key -> (Bedrock id, region, $/M (in, out)). Prices are list + this
+# account's 10% Bedrock mark-up (amendments 5-6), derived, not billed figures.
+MODELS = {
+    # Amendment 5: stopped in its pilot (AWS Marketplace AccessDenied).
+    "sonnet": ("us.anthropic.claude-sonnet-5-5", "us-east-2", (2.20, 11.00)),
+    # Amendment 6 (the user's choice, 2026-11-23): pinned to us-east-1 as
+    # vision_core.MODEL_REGIONS pins Fable 5.1, the only region Fable answered from.
+    "fable": ("us.anthropic.claude-fable-5-2", "us-east-1", (8.80, 44.00)),
+}
+ACTIVE = "fable"
+MODEL_ID, REGION, PRICE = MODELS[ACTIVE]
+CAP_USD = 1.00                  # this run's cap, over every model asked here
 CACHE = os.path.join(HERE, "b7", "replies.json")
 SCORE = os.path.join(HERE, "b7", "score.json")
 ASK_ORDER = tuple(TARGETS) + PROCTHOR      # the 40 (pilot first), then the nine
-ARMS = ("opus", "sonnet", "none")
+ARMS = ("opus", "challenger", "none")   # challenger = MODELS[ACTIVE]
 
 
 def load() -> dict:
@@ -55,15 +65,20 @@ def save(cache: dict) -> None:
     os.replace(tmp, CACHE)
 
 
-def cost(usage) -> float:
+def cost(usage, price=PRICE) -> float:
     u = usage or {}
-    return (u.get("inputTokens", 0) * PRICE[0] + u.get("outputTokens", 0) * PRICE[1]) / 1e6
+    return (u.get("inputTokens", 0) * price[0] + u.get("outputTokens", 0) * price[1]) / 1e6
 
 
-def spend(cache: dict) -> dict:
-    got = cache.get(MODEL_ID, {})
-    costs = [cost(e.get("usage")) for e in got.values()]
+def spend(cache: dict, model_id: str = MODEL_ID) -> dict:
+    """One model's calls; `usd_all` is every model's, which CAP_USD bounds."""
+    prices = {mid: pr for mid, _, pr in MODELS.values()}
+    got = cache.get(model_id, {})
+    costs = [cost(e.get("usage"), prices[model_id]) for e in got.values()]
+    every = sum(cost(e.get("usage"), prices[mid])
+                for mid in prices for e in cache.get(mid, {}).values())
     return {"calls": len(costs), "usd": sum(costs), "dearest": max(costs, default=0.0),
+            "usd_all": every,
             "in": sum((e.get("usage") or {}).get("inputTokens", 0) for e in got.values()),
             "out": sum((e.get("usage") or {}).get("outputTokens", 0) for e in got.values())}
 
@@ -89,8 +104,8 @@ def cmd_ask(limit: int) -> None:
     for t in todo:
         s = spend(cache)
         worst = s["dearest"] or (2000 * PRICE[0] + MAX_TOKENS * PRICE[1]) / 1e6
-        if s["usd"] + worst > CAP_USD:
-            print(f"STOP: ${s['usd']:.4f} spent, the next call could pass ${CAP_USD}", flush=True)
+        if s["usd_all"] + worst > CAP_USD:
+            print(f"STOP: ${s['usd_all']:.4f} spent, the next call could pass ${CAP_USD}", flush=True)
             return
         got[target_key(t)] = ask_one(client, t)
         cache[SERVED] = MODEL_ID
@@ -132,13 +147,13 @@ def score(cache: dict) -> dict:
 
 # ---- criterion 1's arm (free) ----
 
-def sonnet_prior() -> dict:
+def challenger_prior() -> dict:
     got = load().get(MODEL_ID, {})
     out = {}
     for t in PROCTHOR:
         p = (got.get(target_key(t)) or {}).get("prior")
         if p is None:
-            raise SystemExit(f"no parsed Sonnet prior for {t!r}")
+            raise SystemExit(f"no parsed {ACTIVE} prior for {t!r}")
         out[t] = dict(p)
     return out
 
@@ -146,8 +161,8 @@ def sonnet_prior() -> dict:
 def arm_prior(arm: str) -> dict:
     if arm == "opus":
         return arms.arm_prior("cloud")
-    if arm == "sonnet":
-        return sonnet_prior()
+    if arm == "challenger":
+        return challenger_prior()
     if arm == "none":
         return {}
     raise ValueError(f"unknown arm {arm!r}")
@@ -194,20 +209,20 @@ def check(rows: dict) -> None:
 def score_arms(rows: dict) -> dict:
     check(rows)
     s = {a: T.summary(rs) for a, rs in rows.items()}
-    p_sn = arms.paired(rows["sonnet"], rows["none"])
+    p_sn = arms.paired(rows["challenger"], rows["none"])
     p_on = arms.paired(rows["opus"], rows["none"])
-    p_so = arms.paired(rows["sonnet"], rows["opus"])
-    a = {"paired_sonnet_minus_none": p_sn, "goals": s["sonnet"]["median_goals_found"],
+    p_so = arms.paired(rows["challenger"], rows["opus"])
+    a = {"paired_challenger_minus_none": p_sn, "goals": s["challenger"]["median_goals_found"],
          "goals_bar": s["none"]["median_goals_found"]}
     a["met"] = p_sn["ci95"][0] > 0 and a["goals"] <= a["goals_bar"]
-    b = {"paired_sonnet_minus_opus": p_so, "met": p_so["ci95"][0] > 0}
+    b = {"paired_challenger_minus_opus": p_so, "met": p_so["ci95"][0] > 0}
     return {"model_id": MODEL_ID, "summary": s, "a": a, "b": b,
             "beats_opus": a["met"] and b["met"],
             "reported": {"paired_opus_minus_none": p_on,
-                         "by_category_sonnet_minus_opus":
-                             arms.by_category(rows["sonnet"], rows["opus"]),
-                         "by_category_sonnet_minus_none":
-                             arms.by_category(rows["sonnet"], rows["none"])}}
+                         "by_category_challenger_minus_opus":
+                             arms.by_category(rows["challenger"], rows["opus"]),
+                         "by_category_challenger_minus_none":
+                             arms.by_category(rows["challenger"], rows["none"])}}
 
 
 def cmd_arms(out: str) -> dict:
