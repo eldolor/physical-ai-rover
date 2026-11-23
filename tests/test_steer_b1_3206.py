@@ -61,3 +61,15 @@ def test_load_skips_only_a_torn_last_line(tmp_path):
 def test_scores_refuse_a_partial_run():
     out = b1.scores([{**T, "id": b1.tasks()[0]["id"], "status": "answered", "frac_x": 0.9}])
     assert not out["coverage"]["whole"] and out["coverage"]["missing"] == 199
+
+
+def test_b1_scores_pinned():
+    """The committed run (200 calls, 2026-11-23), judged whole."""
+    out = b1.scores(b1._load(b1.ROWS))
+    assert out["coverage"]["whole"]
+    c = out["criterion_2"]
+    assert (c["kept"], c["kept_right"], c["meets_criterion_2"]) == (59, 55, False)
+    assert out["s2_boxes"] == 0 and out["s1_right_without_mirror_rule"] == 56
+    assert len(out["border_wrong_kept"]) == 4 and out["nonborder_wrong_kept"] == []
+    assert {k: (v["kept"], v["kept_right"]) for k, v in out["pairs"].items()} == {
+        "Qwen3-VL + 72B": (57, 54), "Qwen3-VL + Florence-2-large": (58, 55)}

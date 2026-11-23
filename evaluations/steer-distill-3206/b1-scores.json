@@ -1,0 +1,46 @@
+{
+ "coverage": {
+  "expected": 200,
+  "answered": 200,
+  "missing": 0,
+  "whole": true,
+  "first_missing": [],
+  "unresolved": []
+ },
+ "cost_usd": 0.1051,
+ "criterion_2": {
+  "frames": 60,
+  "kept": 59,
+  "kept_right": 55,
+  "kept_share": 0.9833,
+  "kept_right_share": 0.9322,
+  "meets_criterion_2": false
+ },
+ "s1_right_without_mirror_rule": 56,
+ "s2_boxes": 0,
+ "border_wrong_kept": [
+  "red-backpack-20260907-144856/frame-0033.jpg",
+  "woven-laundry-basket-20260913-115703/frame-0148.jpg",
+  "woven-laundry-basket-20260913-115703/frame-0159.jpg",
+  "woven-laundry-basket-20260913-115703/frame-0184.jpg"
+ ],
+ "nonborder_wrong_kept": [],
+ "pairs": {
+  "Qwen3-VL + 72B": {
+   "frames": 60,
+   "kept": 57,
+   "kept_right": 54,
+   "kept_share": 0.95,
+   "kept_right_share": 0.9474,
+   "meets_criterion_2": false
+  },
+  "Qwen3-VL + Florence-2-large": {
+   "frames": 60,
+   "kept": 58,
+   "kept_right": 55,
+   "kept_share": 0.9667,
+   "kept_right_share": 0.9483,
+   "meets_criterion_2": false
+  }
+ }
+}
