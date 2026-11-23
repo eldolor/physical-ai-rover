@@ -1,0 +1,42 @@
+{
+ "72B": {
+  "frames": 60,
+  "kept": 57,
+  "kept_right": 54,
+  "kept_share": 0.95,
+  "kept_right_share": 0.9474,
+  "meets_criterion_2": false
+ },
+ "Florence-2-base": {
+  "frames": 60,
+  "kept": 58,
+  "kept_right": 55,
+  "kept_share": 0.9667,
+  "kept_right_share": 0.9483,
+  "meets_criterion_2": false
+ },
+ "Florence-2-large": {
+  "frames": 60,
+  "kept": 59,
+  "kept_right": 56,
+  "kept_share": 0.9833,
+  "kept_right_share": 0.9492,
+  "meets_criterion_2": false
+ },
+ "72B + Florence-2-base": {
+  "frames": 60,
+  "kept": 56,
+  "kept_right": 53,
+  "kept_share": 0.9333,
+  "kept_right_share": 0.9464,
+  "meets_criterion_2": false
+ },
+ "72B + Florence-2-large": {
+  "frames": 60,
+  "kept": 57,
+  "kept_right": 54,
+  "kept_share": 0.95,
+  "kept_right_share": 0.9474,
+  "meets_criterion_2": false
+ }
+}
