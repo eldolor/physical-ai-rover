@@ -1,6 +1,193 @@
 {
  "_served_model": "us.anthropic.claude-fable-5-1",
  "us.anthropic.claude-fable-5-1": {
+  "alarm clock": {
+   "prior": {
+    "bathroom": 0.02,
+    "bedroom": 0.55,
+    "kitchen": 0.05,
+    "living room": 0.08
+   },
+   "reply": "{\"kitchen\": 0.05, \"living room\": 0.08, \"bedroom\": 0.55, \"bathroom\": 0.02}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 198,
+    "outputTokens": 45,
+    "totalTokens": 243
+   }
+  },
+  "baseball cap": {
+   "prior": {
+    "bathroom": 0.03,
+    "bedroom": 0.3,
+    "kitchen": 0.08,
+    "living room": 0.15
+   },
+   "reply": "{\"kitchen\": 0.08, \"living room\": 0.15, \"bedroom\": 0.30, \"bathroom\": 0.03}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 198,
+    "outputTokens": 45,
+    "totalTokens": 243
+   }
+  },
+  "basketball": {
+   "prior": {
+    "bathroom": 0.005,
+    "bedroom": 0.06,
+    "kitchen": 0.01,
+    "living room": 0.03
+   },
+   "reply": "{\"kitchen\": 0.01, \"living room\": 0.03, \"bedroom\": 0.06, \"bathroom\": 0.005}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 194,
+    "outputTokens": 45,
+    "totalTokens": 239
+   }
+  },
+  "bath mat": {
+   "prior": {
+    "bathroom": 0.85,
+    "bedroom": 0.04,
+    "kitchen": 0.03,
+    "living room": 0.02
+   },
+   "reply": "{\"kitchen\": 0.03, \"living room\": 0.02, \"bedroom\": 0.04, \"bathroom\": 0.85}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 196,
+    "outputTokens": 45,
+    "totalTokens": 241
+   }
+  },
+  "batteries": {
+   "prior": {
+    "bathroom": 0.05,
+    "bedroom": 0.15,
+    "kitchen": 0.35,
+    "living room": 0.2
+   },
+   "reply": "{\"kitchen\": 0.35, \"living room\": 0.2, \"bedroom\": 0.15, \"bathroom\": 0.05}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 194,
+    "outputTokens": 45,
+    "totalTokens": 239
+   }
+  },
+  "blanket": {
+   "prior": {
+    "bathroom": 0.03,
+    "bedroom": 0.9,
+    "kitchen": 0.03,
+    "living room": 0.65
+   },
+   "reply": "{\"kitchen\": 0.03, \"living room\": 0.65, \"bedroom\": 0.9, \"bathroom\": 0.03}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 194,
+    "outputTokens": 45,
+    "totalTokens": 239
+   }
+  },
+  "board game": {
+   "prior": {
+    "bathroom": 0.01,
+    "bedroom": 0.15,
+    "kitchen": 0.05,
+    "living room": 0.35
+   },
+   "reply": "{\"kitchen\": 0.05, \"living room\": 0.35, \"bedroom\": 0.15, \"bathroom\": 0.01}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 192,
+    "outputTokens": 45,
+    "totalTokens": 237
+   }
+  },
+  "box": {
+   "prior": {
+    "bathroom": 0.3,
+    "bedroom": 0.5,
+    "kitchen": 0.55,
+    "living room": 0.45
+   },
+   "reply": "{\"kitchen\": 0.55, \"living room\": 0.45, \"bedroom\": 0.5, \"bathroom\": 0.3}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 190,
+    "outputTokens": 45,
+    "totalTokens": 235
+   }
+  },
+  "candle": {
+   "prior": {
+    "bathroom": 0.3,
+    "bedroom": 0.35,
+    "kitchen": 0.25,
+    "living room": 0.55
+   },
+   "reply": "{\"kitchen\": 0.25, \"living room\": 0.55, \"bedroom\": 0.35, \"bathroom\": 0.3}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 192,
+    "outputTokens": 45,
+    "totalTokens": 237
+   }
+  },
+  "cart": {
+   "prior": {
+    "bathroom": 0.04,
+    "bedroom": 0.03,
+    "kitchen": 0.15,
+    "living room": 0.06
+   },
+   "reply": "{\"kitchen\": 0.15, \"living room\": 0.06, \"bedroom\": 0.03, \"bathroom\": 0.04}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 192,
+    "outputTokens": 45,
+    "totalTokens": 237
+   }
+  },
+  "coffee mug": {
+   "prior": {
+    "bathroom": 0.05,
+    "bedroom": 0.2,
+    "kitchen": 0.85,
+    "living room": 0.35
+   },
+   "reply": "{\"kitchen\": 0.85, \"living room\": 0.35, \"bedroom\": 0.2, \"bathroom\": 0.05}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 198,
+    "outputTokens": 45,
+    "totalTokens": 243
+   }
+  },
   "cutting board": {
    "prior": {
     "bathroom": 0.005,
@@ -18,6 +205,482 @@
     "totalTokens": 241
    }
   },
+  "dish soap": {
+   "prior": {
+    "bathroom": 0.08,
+    "bedroom": 0.01,
+    "kitchen": 0.85,
+    "living room": 0.02
+   },
+   "reply": "{\"kitchen\": 0.85, \"living room\": 0.02, \"bedroom\": 0.01, \"bathroom\": 0.08}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 196,
+    "outputTokens": 45,
+    "totalTokens": 241
+   }
+  },
+  "dog bed": {
+   "prior": {
+    "bathroom": 0.02,
+    "bedroom": 0.18,
+    "kitchen": 0.12,
+    "living room": 0.25
+   },
+   "reply": "{\"kitchen\": 0.12, \"living room\": 0.25, \"bedroom\": 0.18, \"bathroom\": 0.02}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 196,
+    "outputTokens": 45,
+    "totalTokens": 241
+   }
+  },
+  "dog leash": {
+   "prior": {
+    "bathroom": 0.02,
+    "bedroom": 0.05,
+    "kitchen": 0.12,
+    "living room": 0.15
+   },
+   "reply": "{\"kitchen\": 0.12, \"living room\": 0.15, \"bedroom\": 0.05, \"bathroom\": 0.02}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 196,
+    "outputTokens": 45,
+    "totalTokens": 241
+   }
+  },
+  "duvet": {
+   "prior": {
+    "bathroom": 0.01,
+    "bedroom": 0.75,
+    "kitchen": 0.01,
+    "living room": 0.08
+   },
+   "reply": "{\"kitchen\": 0.01, \"living room\": 0.08, \"bedroom\": 0.75, \"bathroom\": 0.01}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 194,
+    "outputTokens": 45,
+    "totalTokens": 239
+   }
+  },
+  "dvd case": {
+   "prior": {
+    "bathroom": 0.01,
+    "bedroom": 0.25,
+    "kitchen": 0.04,
+    "living room": 0.45
+   },
+   "reply": "{\"kitchen\": 0.04, \"living room\": 0.45, \"bedroom\": 0.25, \"bathroom\": 0.01}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 196,
+    "outputTokens": 45,
+    "totalTokens": 241
+   }
+  },
+  "fireplace poker": {
+   "prior": {
+    "bathroom": 0.002,
+    "bedroom": 0.02,
+    "kitchen": 0.01,
+    "living room": 0.15
+   },
+   "reply": "{\"kitchen\": 0.01, \"living room\": 0.15, \"bedroom\": 0.02, \"bathroom\": 0.002}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 200,
+    "outputTokens": 45,
+    "totalTokens": 245
+   }
+  },
+  "flashlight": {
+   "prior": {
+    "bathroom": 0.03,
+    "bedroom": 0.1,
+    "kitchen": 0.12,
+    "living room": 0.08
+   },
+   "reply": "{\"kitchen\": 0.12, \"living room\": 0.08, \"bedroom\": 0.1, \"bathroom\": 0.03}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 196,
+    "outputTokens": 45,
+    "totalTokens": 241
+   }
+  },
+  "garbage bag": {
+   "prior": {
+    "bathroom": 0.3,
+    "bedroom": 0.08,
+    "kitchen": 0.55,
+    "living room": 0.08
+   },
+   "reply": "{\"kitchen\": 0.55, \"living room\": 0.08, \"bedroom\": 0.08, \"bathroom\": 0.3}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 198,
+    "outputTokens": 45,
+    "totalTokens": 243
+   }
+  },
+  "garbage can": {
+   "prior": {
+    "bathroom": 0.85,
+    "bedroom": 0.45,
+    "kitchen": 0.93,
+    "living room": 0.25
+   },
+   "reply": "{\"kitchen\": 0.93, \"living room\": 0.25, \"bedroom\": 0.45, \"bathroom\": 0.85}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 196,
+    "outputTokens": 45,
+    "totalTokens": 241
+   }
+  },
+  "hairbrush": {
+   "prior": {
+    "bathroom": 0.6,
+    "bedroom": 0.45,
+    "kitchen": 0.05,
+    "living room": 0.1
+   },
+   "reply": "{\"kitchen\": 0.05, \"living room\": 0.1, \"bedroom\": 0.45, \"bathroom\": 0.6}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 198,
+    "outputTokens": 45,
+    "totalTokens": 243
+   }
+  },
+  "house plant": {
+   "prior": {
+    "bathroom": 0.25,
+    "bedroom": 0.35,
+    "kitchen": 0.45,
+    "living room": 0.7
+   },
+   "reply": "{\"kitchen\": 0.45, \"living room\": 0.7, \"bedroom\": 0.35, \"bathroom\": 0.25}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 194,
+    "outputTokens": 45,
+    "totalTokens": 239
+   }
+  },
+  "jacket": {
+   "prior": {
+    "bathroom": 0.05,
+    "bedroom": 0.55,
+    "kitchen": 0.15,
+    "living room": 0.4
+   },
+   "reply": "{\"kitchen\": 0.15, \"living room\": 0.4, \"bedroom\": 0.55, \"bathroom\": 0.05}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 194,
+    "outputTokens": 45,
+    "totalTokens": 239
+   }
+  },
+  "jewelry box": {
+   "prior": {
+    "bathroom": 0.06,
+    "bedroom": 0.45,
+    "kitchen": 0.02,
+    "living room": 0.08
+   },
+   "reply": "{\"kitchen\": 0.02, \"living room\": 0.08, \"bedroom\": 0.45, \"bathroom\": 0.06}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 198,
+    "outputTokens": 45,
+    "totalTokens": 243
+   }
+  },
+  "kettle": {
+   "prior": {
+    "bathroom": 0.01,
+    "bedroom": 0.03,
+    "kitchen": 0.85,
+    "living room": 0.04
+   },
+   "reply": "{\"kitchen\": 0.85, \"living room\": 0.04, \"bedroom\": 0.03, \"bathroom\": 0.01}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 194,
+    "outputTokens": 45,
+    "totalTokens": 239
+   }
+  },
+  "laundry hamper": {
+   "prior": {
+    "bathroom": 0.35,
+    "bedroom": 0.55,
+    "kitchen": 0.05,
+    "living room": 0.04
+   },
+   "reply": "{\"kitchen\": 0.05, \"living room\": 0.04, \"bedroom\": 0.55, \"bathroom\": 0.35}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 200,
+    "outputTokens": 45,
+    "totalTokens": 245
+   }
+  },
+  "magazine rack": {
+   "prior": {
+    "bathroom": 0.1,
+    "bedroom": 0.04,
+    "kitchen": 0.04,
+    "living room": 0.18
+   },
+   "reply": "{\"kitchen\": 0.04, \"living room\": 0.18, \"bedroom\": 0.04, \"bathroom\": 0.10}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 198,
+    "outputTokens": 45,
+    "totalTokens": 243
+   }
+  },
+  "medicine bottle": {
+   "prior": {
+    "bathroom": 0.55,
+    "bedroom": 0.4,
+    "kitchen": 0.45,
+    "living room": 0.2
+   },
+   "reply": "{\"kitchen\": 0.45, \"living room\": 0.2, \"bedroom\": 0.4, \"bathroom\": 0.55}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 200,
+    "outputTokens": 45,
+    "totalTokens": 245
+   }
+  },
+  "notebook": {
+   "prior": {
+    "bathroom": 0.03,
+    "bedroom": 0.45,
+    "kitchen": 0.25,
+    "living room": 0.35
+   },
+   "reply": "{\"kitchen\": 0.25, \"living room\": 0.35, \"bedroom\": 0.45, \"bathroom\": 0.03}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 194,
+    "outputTokens": 45,
+    "totalTokens": 239
+   }
+  },
+  "oven mitt": {
+   "prior": {
+    "bathroom": 0.005,
+    "bedroom": 0.01,
+    "kitchen": 0.55,
+    "living room": 0.03
+   },
+   "reply": "{\"kitchen\": 0.55, \"living room\": 0.03, \"bedroom\": 0.01, \"bathroom\": 0.005}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 198,
+    "outputTokens": 45,
+    "totalTokens": 243
+   }
+  },
+  "pajamas": {
+   "prior": {
+    "bathroom": 0.15,
+    "bedroom": 0.55,
+    "kitchen": 0.02,
+    "living room": 0.08
+   },
+   "reply": "{\"kitchen\": 0.02, \"living room\": 0.08, \"bedroom\": 0.55, \"bathroom\": 0.15}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 196,
+    "outputTokens": 45,
+    "totalTokens": 241
+   }
+  },
+  "pen": {
+   "prior": {
+    "bathroom": 0.08,
+    "bedroom": 0.55,
+    "kitchen": 0.65,
+    "living room": 0.6
+   },
+   "reply": "{\"kitchen\": 0.65, \"living room\": 0.6, \"bedroom\": 0.55, \"bathroom\": 0.08}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 192,
+    "outputTokens": 45,
+    "totalTokens": 237
+   }
+  },
+  "piano bench": {
+   "prior": {
+    "bathroom": 0.0005,
+    "bedroom": 0.008,
+    "kitchen": 0.002,
+    "living room": 0.06
+   },
+   "reply": "{\"kitchen\": 0.002, \"living room\": 0.06, \"bedroom\": 0.008, \"bathroom\": 0.0005}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 196,
+    "outputTokens": 46,
+    "totalTokens": 242
+   }
+  },
+  "plunger": {
+   "prior": {
+    "bathroom": 0.45,
+    "bedroom": 0.01,
+    "kitchen": 0.03,
+    "living room": 0.01
+   },
+   "reply": "{\"kitchen\": 0.03, \"living room\": 0.01, \"bedroom\": 0.01, \"bathroom\": 0.45}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 194,
+    "outputTokens": 45,
+    "totalTokens": 239
+   }
+  },
+  "razor": {
+   "prior": {
+    "bathroom": 0.65,
+    "bedroom": 0.1,
+    "kitchen": 0.02,
+    "living room": 0.02
+   },
+   "reply": "{\"kitchen\": 0.02, \"living room\": 0.02, \"bedroom\": 0.10, \"bathroom\": 0.65}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 192,
+    "outputTokens": 45,
+    "totalTokens": 237
+   }
+  },
+  "scissors": {
+   "prior": {
+    "bathroom": 0.08,
+    "bedroom": 0.12,
+    "kitchen": 0.35,
+    "living room": 0.15
+   },
+   "reply": "{\"kitchen\": 0.35, \"living room\": 0.15, \"bedroom\": 0.12, \"bathroom\": 0.08}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 194,
+    "outputTokens": 45,
+    "totalTokens": 239
+   }
+  },
+  "sewing kit": {
+   "prior": {
+    "bathroom": 0.01,
+    "bedroom": 0.1,
+    "kitchen": 0.04,
+    "living room": 0.07
+   },
+   "reply": "{\"kitchen\": 0.04, \"living room\": 0.07, \"bedroom\": 0.10, \"bathroom\": 0.01}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 198,
+    "outputTokens": 45,
+    "totalTokens": 243
+   }
+  },
+  "shampoo bottle": {
+   "prior": {
+    "bathroom": 0.85,
+    "bedroom": 0.08,
+    "kitchen": 0.03,
+    "living room": 0.02
+   },
+   "reply": "{\"kitchen\": 0.03, \"living room\": 0.02, \"bedroom\": 0.08, \"bathroom\": 0.85}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 202,
+    "outputTokens": 45,
+    "totalTokens": 247
+   }
+  },
+  "slippers": {
+   "prior": {
+    "bathroom": 0.12,
+    "bedroom": 0.6,
+    "kitchen": 0.08,
+    "living room": 0.25
+   },
+   "reply": "{\"kitchen\": 0.08, \"living room\": 0.25, \"bedroom\": 0.6, \"bathroom\": 0.12}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 194,
+    "outputTokens": 45,
+    "totalTokens": 239
+   }
+  },
   "spatula": {
    "prior": {
     "bathroom": 0.005,
@@ -33,6 +696,142 @@
     "inputTokens": 194,
     "outputTokens": 45,
     "totalTokens": 239
+   }
+  },
+  "spray bottle": {
+   "prior": {
+    "bathroom": 0.4,
+    "bedroom": 0.07,
+    "kitchen": 0.55,
+    "living room": 0.08
+   },
+   "reply": "{\"kitchen\": 0.55, \"living room\": 0.08, \"bedroom\": 0.07, \"bathroom\": 0.4}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 198,
+    "outputTokens": 45,
+    "totalTokens": 243
+   }
+  },
+  "stuffed animal": {
+   "prior": {
+    "bathroom": 0.04,
+    "bedroom": 0.55,
+    "kitchen": 0.05,
+    "living room": 0.3
+   },
+   "reply": "{\"kitchen\": 0.05, \"living room\": 0.3, \"bedroom\": 0.55, \"bathroom\": 0.04}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 200,
+    "outputTokens": 45,
+    "totalTokens": 245
+   }
+  },
+  "tablet": {
+   "prior": {
+    "bathroom": 0.03,
+    "bedroom": 0.28,
+    "kitchen": 0.18,
+    "living room": 0.35
+   },
+   "reply": "{\"kitchen\": 0.18, \"living room\": 0.35, \"bedroom\": 0.28, \"bathroom\": 0.03}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 194,
+    "outputTokens": 45,
+    "totalTokens": 239
+   }
+  },
+  "tape measure": {
+   "prior": {
+    "bathroom": 0.01,
+    "bedroom": 0.05,
+    "kitchen": 0.08,
+    "living room": 0.06
+   },
+   "reply": "{\"kitchen\": 0.08, \"living room\": 0.06, \"bedroom\": 0.05, \"bathroom\": 0.01}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 196,
+    "outputTokens": 45,
+    "totalTokens": 241
+   }
+  },
+  "tissue box": {
+   "prior": {
+    "bathroom": 0.5,
+    "bedroom": 0.55,
+    "kitchen": 0.25,
+    "living room": 0.55
+   },
+   "reply": "{\"kitchen\": 0.25, \"living room\": 0.55, \"bedroom\": 0.55, \"bathroom\": 0.5}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 196,
+    "outputTokens": 45,
+    "totalTokens": 241
+   }
+  },
+  "toilet paper": {
+   "prior": {
+    "bathroom": 0.95,
+    "bedroom": 0.06,
+    "kitchen": 0.05,
+    "living room": 0.04
+   },
+   "reply": "{\"kitchen\": 0.05, \"living room\": 0.04, \"bedroom\": 0.06, \"bathroom\": 0.95}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 198,
+    "outputTokens": 45,
+    "totalTokens": 243
+   }
+  },
+  "toothpaste": {
+   "prior": {
+    "bathroom": 0.85,
+    "bedroom": 0.06,
+    "kitchen": 0.03,
+    "living room": 0.02
+   },
+   "reply": "{\"kitchen\": 0.03, \"living room\": 0.02, \"bedroom\": 0.06, \"bathroom\": 0.85}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 198,
+    "outputTokens": 45,
+    "totalTokens": 243
+   }
+  },
+  "wristwatch": {
+   "prior": {
+    "bathroom": 0.06,
+    "bedroom": 0.3,
+    "kitchen": 0.05,
+    "living room": 0.08
+   },
+   "reply": "{\"kitchen\": 0.05, \"living room\": 0.08, \"bedroom\": 0.3, \"bathroom\": 0.06}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 198,
+    "outputTokens": 45,
+    "totalTokens": 243
    }
   }
  },

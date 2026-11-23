@@ -1,0 +1,528 @@
+{
+ "model_id": "us.anthropic.claude-fable-5-1",
+ "asked": 40,
+ "of": 40,
+ "criterion_4": {
+  "valid": 40,
+  "bar": 38,
+  "met": true
+ },
+ "criterion_5": {
+  "matched": 20,
+  "of": 20,
+  "bar": 18,
+  "met": true,
+  "rows": {
+   "spatula": {
+    "expected": "kitchen",
+    "top": "kitchen",
+    "rates": {
+     "bathroom": 0.005,
+     "bedroom": 0.01,
+     "kitchen": 0.75,
+     "living room": 0.03
+    }
+   },
+   "cutting board": {
+    "expected": "kitchen",
+    "top": "kitchen",
+    "rates": {
+     "bathroom": 0.005,
+     "bedroom": 0.01,
+     "kitchen": 0.65,
+     "living room": 0.03
+    }
+   },
+   "oven mitt": {
+    "expected": "kitchen",
+    "top": "kitchen",
+    "rates": {
+     "bathroom": 0.005,
+     "bedroom": 0.01,
+     "kitchen": 0.55,
+     "living room": 0.03
+    }
+   },
+   "dish soap": {
+    "expected": "kitchen",
+    "top": "kitchen",
+    "rates": {
+     "bathroom": 0.08,
+     "bedroom": 0.01,
+     "kitchen": 0.85,
+     "living room": 0.02
+    }
+   },
+   "kettle": {
+    "expected": "kitchen",
+    "top": "kitchen",
+    "rates": {
+     "bathroom": 0.01,
+     "bedroom": 0.03,
+     "kitchen": 0.85,
+     "living room": 0.04
+    }
+   },
+   "toilet paper": {
+    "expected": "bathroom",
+    "top": "bathroom",
+    "rates": {
+     "bathroom": 0.95,
+     "bedroom": 0.06,
+     "kitchen": 0.05,
+     "living room": 0.04
+    }
+   },
+   "shampoo bottle": {
+    "expected": "bathroom",
+    "top": "bathroom",
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.08,
+     "kitchen": 0.03,
+     "living room": 0.02
+    }
+   },
+   "bath mat": {
+    "expected": "bathroom",
+    "top": "bathroom",
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.04,
+     "kitchen": 0.03,
+     "living room": 0.02
+    }
+   },
+   "toothpaste": {
+    "expected": "bathroom",
+    "top": "bathroom",
+    "rates": {
+     "bathroom": 0.85,
+     "bedroom": 0.06,
+     "kitchen": 0.03,
+     "living room": 0.02
+    }
+   },
+   "razor": {
+    "expected": "bathroom",
+    "top": "bathroom",
+    "rates": {
+     "bathroom": 0.65,
+     "bedroom": 0.1,
+     "kitchen": 0.02,
+     "living room": 0.02
+    }
+   },
+   "alarm clock": {
+    "expected": "bedroom",
+    "top": "bedroom",
+    "rates": {
+     "bathroom": 0.02,
+     "bedroom": 0.55,
+     "kitchen": 0.05,
+     "living room": 0.08
+    }
+   },
+   "pajamas": {
+    "expected": "bedroom",
+    "top": "bedroom",
+    "rates": {
+     "bathroom": 0.15,
+     "bedroom": 0.55,
+     "kitchen": 0.02,
+     "living room": 0.08
+    }
+   },
+   "jewelry box": {
+    "expected": "bedroom",
+    "top": "bedroom",
+    "rates": {
+     "bathroom": 0.06,
+     "bedroom": 0.45,
+     "kitchen": 0.02,
+     "living room": 0.08
+    }
+   },
+   "duvet": {
+    "expected": "bedroom",
+    "top": "bedroom",
+    "rates": {
+     "bathroom": 0.01,
+     "bedroom": 0.75,
+     "kitchen": 0.01,
+     "living room": 0.08
+    }
+   },
+   "slippers": {
+    "expected": "bedroom",
+    "top": "bedroom",
+    "rates": {
+     "bathroom": 0.12,
+     "bedroom": 0.6,
+     "kitchen": 0.08,
+     "living room": 0.25
+    }
+   },
+   "magazine rack": {
+    "expected": "living room",
+    "top": "living room",
+    "rates": {
+     "bathroom": 0.1,
+     "bedroom": 0.04,
+     "kitchen": 0.04,
+     "living room": 0.18
+    }
+   },
+   "board game": {
+    "expected": "living room",
+    "top": "living room",
+    "rates": {
+     "bathroom": 0.01,
+     "bedroom": 0.15,
+     "kitchen": 0.05,
+     "living room": 0.35
+    }
+   },
+   "piano bench": {
+    "expected": "living room",
+    "top": "living room",
+    "rates": {
+     "bathroom": 0.0005,
+     "bedroom": 0.008,
+     "kitchen": 0.002,
+     "living room": 0.06
+    }
+   },
+   "dvd case": {
+    "expected": "living room",
+    "top": "living room",
+    "rates": {
+     "bathroom": 0.01,
+     "bedroom": 0.25,
+     "kitchen": 0.04,
+     "living room": 0.45
+    }
+   },
+   "fireplace poker": {
+    "expected": "living room",
+    "top": "living room",
+    "rates": {
+     "bathroom": 0.002,
+     "bedroom": 0.02,
+     "kitchen": 0.01,
+     "living room": 0.15
+    }
+   }
+  }
+ },
+ "criterion_6": {
+  "informative": 40,
+  "bar": 30,
+  "met": true,
+  "flat": []
+ },
+ "nine": {
+  "basketball": {
+   "bathroom": 0.005,
+   "bedroom": 0.06,
+   "kitchen": 0.01,
+   "living room": 0.03
+  },
+  "box": {
+   "bathroom": 0.3,
+   "bedroom": 0.5,
+   "kitchen": 0.55,
+   "living room": 0.45
+  },
+  "cart": {
+   "bathroom": 0.04,
+   "bedroom": 0.03,
+   "kitchen": 0.15,
+   "living room": 0.06
+  },
+  "dog bed": {
+   "bathroom": 0.02,
+   "bedroom": 0.18,
+   "kitchen": 0.12,
+   "living room": 0.25
+  },
+  "garbage bag": {
+   "bathroom": 0.3,
+   "bedroom": 0.08,
+   "kitchen": 0.55,
+   "living room": 0.08
+  },
+  "garbage can": {
+   "bathroom": 0.85,
+   "bedroom": 0.45,
+   "kitchen": 0.93,
+   "living room": 0.25
+  },
+  "house plant": {
+   "bathroom": 0.25,
+   "bedroom": 0.35,
+   "kitchen": 0.45,
+   "living room": 0.7
+  },
+  "laundry hamper": {
+   "bathroom": 0.35,
+   "bedroom": 0.55,
+   "kitchen": 0.05,
+   "living room": 0.04
+  },
+  "plunger": {
+   "bathroom": 0.45,
+   "bedroom": 0.01,
+   "kitchen": 0.03,
+   "living room": 0.01
+  }
+ },
+ "spend": {
+  "calls": 49,
+  "usd": 0.2269,
+  "input_tokens": 9600,
+  "output_tokens": 2206
+ },
+ "priors": {
+  "spatula": {
+   "bathroom": 0.005,
+   "bedroom": 0.01,
+   "kitchen": 0.75,
+   "living room": 0.03
+  },
+  "cutting board": {
+   "bathroom": 0.005,
+   "bedroom": 0.01,
+   "kitchen": 0.65,
+   "living room": 0.03
+  },
+  "oven mitt": {
+   "bathroom": 0.005,
+   "bedroom": 0.01,
+   "kitchen": 0.55,
+   "living room": 0.03
+  },
+  "dish soap": {
+   "bathroom": 0.08,
+   "bedroom": 0.01,
+   "kitchen": 0.85,
+   "living room": 0.02
+  },
+  "kettle": {
+   "bathroom": 0.01,
+   "bedroom": 0.03,
+   "kitchen": 0.85,
+   "living room": 0.04
+  },
+  "toilet paper": {
+   "bathroom": 0.95,
+   "bedroom": 0.06,
+   "kitchen": 0.05,
+   "living room": 0.04
+  },
+  "shampoo bottle": {
+   "bathroom": 0.85,
+   "bedroom": 0.08,
+   "kitchen": 0.03,
+   "living room": 0.02
+  },
+  "bath mat": {
+   "bathroom": 0.85,
+   "bedroom": 0.04,
+   "kitchen": 0.03,
+   "living room": 0.02
+  },
+  "toothpaste": {
+   "bathroom": 0.85,
+   "bedroom": 0.06,
+   "kitchen": 0.03,
+   "living room": 0.02
+  },
+  "razor": {
+   "bathroom": 0.65,
+   "bedroom": 0.1,
+   "kitchen": 0.02,
+   "living room": 0.02
+  },
+  "alarm clock": {
+   "bathroom": 0.02,
+   "bedroom": 0.55,
+   "kitchen": 0.05,
+   "living room": 0.08
+  },
+  "pajamas": {
+   "bathroom": 0.15,
+   "bedroom": 0.55,
+   "kitchen": 0.02,
+   "living room": 0.08
+  },
+  "jewelry box": {
+   "bathroom": 0.06,
+   "bedroom": 0.45,
+   "kitchen": 0.02,
+   "living room": 0.08
+  },
+  "duvet": {
+   "bathroom": 0.01,
+   "bedroom": 0.75,
+   "kitchen": 0.01,
+   "living room": 0.08
+  },
+  "slippers": {
+   "bathroom": 0.12,
+   "bedroom": 0.6,
+   "kitchen": 0.08,
+   "living room": 0.25
+  },
+  "magazine rack": {
+   "bathroom": 0.1,
+   "bedroom": 0.04,
+   "kitchen": 0.04,
+   "living room": 0.18
+  },
+  "board game": {
+   "bathroom": 0.01,
+   "bedroom": 0.15,
+   "kitchen": 0.05,
+   "living room": 0.35
+  },
+  "piano bench": {
+   "bathroom": 0.0005,
+   "bedroom": 0.008,
+   "kitchen": 0.002,
+   "living room": 0.06
+  },
+  "dvd case": {
+   "bathroom": 0.01,
+   "bedroom": 0.25,
+   "kitchen": 0.04,
+   "living room": 0.45
+  },
+  "fireplace poker": {
+   "bathroom": 0.002,
+   "bedroom": 0.02,
+   "kitchen": 0.01,
+   "living room": 0.15
+  },
+  "coffee mug": {
+   "bathroom": 0.05,
+   "bedroom": 0.2,
+   "kitchen": 0.85,
+   "living room": 0.35
+  },
+  "scissors": {
+   "bathroom": 0.08,
+   "bedroom": 0.12,
+   "kitchen": 0.35,
+   "living room": 0.15
+  },
+  "tape measure": {
+   "bathroom": 0.01,
+   "bedroom": 0.05,
+   "kitchen": 0.08,
+   "living room": 0.06
+  },
+  "flashlight": {
+   "bathroom": 0.03,
+   "bedroom": 0.1,
+   "kitchen": 0.12,
+   "living room": 0.08
+  },
+  "notebook": {
+   "bathroom": 0.03,
+   "bedroom": 0.45,
+   "kitchen": 0.25,
+   "living room": 0.35
+  },
+  "pen": {
+   "bathroom": 0.08,
+   "bedroom": 0.55,
+   "kitchen": 0.65,
+   "living room": 0.6
+  },
+  "sewing kit": {
+   "bathroom": 0.01,
+   "bedroom": 0.1,
+   "kitchen": 0.04,
+   "living room": 0.07
+  },
+  "wristwatch": {
+   "bathroom": 0.06,
+   "bedroom": 0.3,
+   "kitchen": 0.05,
+   "living room": 0.08
+  },
+  "tablet": {
+   "bathroom": 0.03,
+   "bedroom": 0.28,
+   "kitchen": 0.18,
+   "living room": 0.35
+  },
+  "baseball cap": {
+   "bathroom": 0.03,
+   "bedroom": 0.3,
+   "kitchen": 0.08,
+   "living room": 0.15
+  },
+  "jacket": {
+   "bathroom": 0.05,
+   "bedroom": 0.55,
+   "kitchen": 0.15,
+   "living room": 0.4
+  },
+  "dog leash": {
+   "bathroom": 0.02,
+   "bedroom": 0.05,
+   "kitchen": 0.12,
+   "living room": 0.15
+  },
+  "candle": {
+   "bathroom": 0.3,
+   "bedroom": 0.35,
+   "kitchen": 0.25,
+   "living room": 0.55
+  },
+  "tissue box": {
+   "bathroom": 0.5,
+   "bedroom": 0.55,
+   "kitchen": 0.25,
+   "living room": 0.55
+  },
+  "blanket": {
+   "bathroom": 0.03,
+   "bedroom": 0.9,
+   "kitchen": 0.03,
+   "living room": 0.65
+  },
+  "hairbrush": {
+   "bathroom": 0.6,
+   "bedroom": 0.45,
+   "kitchen": 0.05,
+   "living room": 0.1
+  },
+  "medicine bottle": {
+   "bathroom": 0.55,
+   "bedroom": 0.4,
+   "kitchen": 0.45,
+   "living room": 0.2
+  },
+  "batteries": {
+   "bathroom": 0.05,
+   "bedroom": 0.15,
+   "kitchen": 0.35,
+   "living room": 0.2
+  },
+  "stuffed animal": {
+   "bathroom": 0.04,
+   "bedroom": 0.55,
+   "kitchen": 0.05,
+   "living room": 0.3
+  },
+  "spray bottle": {
+   "bathroom": 0.4,
+   "bedroom": 0.07,
+   "kitchen": 0.55,
+   "living room": 0.08
+  }
+ }
+}
