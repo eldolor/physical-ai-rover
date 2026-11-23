@@ -1,5 +1,5 @@
 {
- "_served_model": "us.anthropic.claude-fable-5-1",
+ "_served_model": "us.anthropic.claude-sonnet-5",
  "us.anthropic.claude-fable-5-1": {
   "alarm clock": {
    "prior": {
@@ -851,6 +851,42 @@
     "inputTokens": 194,
     "outputTokens": 45,
     "totalTokens": 239
+   }
+  }
+ },
+ "us.anthropic.claude-sonnet-5": {
+  "cutting board": {
+   "prior": {
+    "bathroom": 0.01,
+    "bedroom": 0.02,
+    "kitchen": 0.9,
+    "living room": 0.05
+   },
+   "reply": "```json\n{\"kitchen\": 0.9, \"living room\": 0.05, \"bedroom\": 0.02, \"bathroom\": 0.01}\n```",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 194,
+    "outputTokens": 50,
+    "totalTokens": 244
+   }
+  },
+  "spatula": {
+   "prior": {
+    "bathroom": 0.01,
+    "bedroom": 0.02,
+    "kitchen": 0.9,
+    "living room": 0.03
+   },
+   "reply": "```json\n{\"kitchen\": 0.9, \"living room\": 0.03, \"bedroom\": 0.02, \"bathroom\": 0.01}\n```",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 192,
+    "outputTokens": 50,
+    "totalTokens": 242
    }
   }
  },
