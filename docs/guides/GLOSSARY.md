@@ -147,6 +147,11 @@ push) or the fast test tier before a push to `dev`. *Defined:*
 `home_first_floor`, `complex_house`, and `procthor:val:<0-999>`.
 *Defined:* `docs/simulator/ARCHITECTURE.md`; `config/robot.yaml` (`sim_map`).
 
+**image token** -- one patch of an image as a vision-language model reads it:
+28 x 28 pixels for Qwen2.5-VL (32 x 32 for Qwen3-VL). The board's VE reads
+128-512 a frame. *Defined:* `brain/local_vlm.py` (`MIN_PIXELS`, `MAX_PIXELS`);
+3.214.F.
+
 **job** -- what a mission is for: `find` (a target, or a room) or `survey`
 (no target: map the house and name its rooms; ends `exhausted`, never `found`).
 *Defined:* `control/mission_runner.py` (`JOBS`, 3.70 Part A).
@@ -240,6 +245,10 @@ API the hardware will. *Defined:* `docs/simulator/ARCHITECTURE.md`.
 one frame (counted only as a backstop; the budget is time and battery).
 *Defined:* `docs/guides/PARALLEL-SESSIONS.md` rule 8;
 `docs/mission/ARCHITECTURE.md` ("The budget is time and battery").
+
+**teacher (model)** -- a larger model whose answers train a smaller one.
+Measured on our frames before any training uses it; none passed yet
+(3.214). *Defined:* `docs/plans/ros-alignment/3.214-teacher-probe.md`.
 
 **tiered** -- the policy value: local perception on every frame, the cloud
 only on triggers (mission start, candidate sighting, cold search, staleness,

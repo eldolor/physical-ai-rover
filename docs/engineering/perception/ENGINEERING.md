@@ -141,7 +141,8 @@ policy's `local_sighting_fn`) adds `box_frac`: the box over the size Qwen2.5-VL
 saw the frame at (`model_size()`, its processor's `smart_resize`: each side
 to a multiple of 28, the area held between the board engines' 128 and 512
 image tokens of 28 x 28 pixels each (3.80.I); 640x480 is seen as 644x476,
-1280x720 as 840x448), clipped to [0, 1].
+1280x720 as 840x448), clipped to [0, 1]. The model keeps Qwen2.5's full
+vocabulary; only its weights (4-bit) and the image bound are reduced (3.214.F).
 `direction(frame)` (3.80.F) posts to `/direction` with the same rules, and
 returns status `unsupported` on a 404 (a service from before 3.80.F).
 `healthy(timeout=PROBE_TIMEOUT)` (3.152; httpx phases summing to `PROBE_TIMEOUT_S`, 0.8 s, amendment 1) GETs the free `/health`
