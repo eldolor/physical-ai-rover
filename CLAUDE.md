@@ -141,7 +141,7 @@ board` lists open steps. **Whoever merges moves the section's line to
 
 **Waiting on the user**
 
-* **Deploys:** the twin is live from `dev` `06c76aa0` (2026-11-21). Cloud
+* **Deploys:** the twin is live from `dev` `123a6e49` (2026-11-23). Cloud
   sessions deploy the twin only (IAM `vision-picar-deployer`). The orchestrator does so unasked after
   a twin change lands; others ask (the user, 2026-11-21).
 * **The board's brain is `dev` `bdcf782c`** (2026-11-06, 3.155's unit, the
