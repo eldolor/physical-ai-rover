@@ -1,0 +1,63 @@
+{
+ "coverage": {
+  "expected": 491,
+  "missing": 0,
+  "errors": 0,
+  "whole": true,
+  "first_missing": [],
+  "first_errors": []
+ },
+ "parsed": {
+  "identity": 0.9246,
+  "grounding_in_view": 0.9945,
+  "in_view_asked": 183
+ },
+ "i299": {
+  "frames": 299,
+  "in_view": 74,
+  "yes": 55,
+  "false_yes": 1,
+  "missed": 20,
+  "mistakes": 21,
+  "precision": 0.9818,
+  "recall": 0.7297
+ },
+ "ve_i299": {
+  "frames": 299,
+  "in_view": 74,
+  "yes": 72,
+  "false_yes": 2,
+  "missed": 4,
+  "mistakes": 6,
+  "precision": 0.9722,
+  "recall": 0.9459
+ },
+ "teal_yes": 0,
+ "steering_gated": {
+  "s1": 60,
+  "answered": 28,
+  "right_all": 16,
+  "kept": 7,
+  "kept_right": 4,
+  "kept_share": 0.1167,
+  "kept_right_share": 0.5714,
+  "s2": 40,
+  "s2_boxes": 0
+ },
+ "steering_ungated": {
+  "s1": 60,
+  "answered": 60,
+  "right_all": 30,
+  "kept": 23,
+  "kept_right": 12,
+  "kept_share": 0.3833,
+  "kept_right_share": 0.5217,
+  "s2": 40,
+  "s2_boxes": 40
+ },
+ "criteria": {
+  "7 parseable on >= 95% in each mode": false,
+  "8 fewer mistakes than VE on I-299, precision >= 95%, teal 0": false,
+  "9 steering kept >= 70%, right >= 95% of kept, S2 boxes <= 2": false
+ }
+}
