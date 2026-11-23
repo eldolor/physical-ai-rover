@@ -37,7 +37,7 @@ def test_the_pilot_is_one_in_view_and_one_out_of_view_frame():
 
 
 def test_a_box_is_a_yes_and_an_empty_list_a_no():
-    t = b2.to_ask()[0]
+    t = next(x for x in b2.to_ask() if x["id"] not in b2.pilot_rows())
     box = {**t, "status": "answered", "frac_x": 0.4}
     none = {**t, "status": "answered", "frac_x": None}
     assert b2.answers([box])[t["id"]]["yes"] is True
@@ -99,3 +99,16 @@ def test_a_refusal_before_the_model_ran_is_not_counted_as_spend():
     assert not b2.billed(Throttle(), asked=True)
     assert b2.billed(Timeout(), asked=True)     # may have run: counted
     assert not b2.billed(Timeout(), asked=False)
+
+
+def test_b2_scores_pinned():
+    """The committed run (2,166 calls and the pilot, 2026-11-23), judged whole."""
+    out = b2.scores(b2.b1._load(b2.ROWS))
+    assert out["coverage"]["whole"] and out["coverage"]["answered"] == 2268
+    p = out["pooled"]
+    assert (p["false_yes"], p["missed"], p["yes"]) == (46, 17, 564)
+    assert out["lookalike_yes"] == {"teal": 8, "taupe": 0}
+    assert len(out["objects_with_more_false_yeses"]) == 5
+    assert list(out["bars"].values()) == [False, False, True, True] and not out["all_met"]
+    assert out["first_try_share"] == 1.0 and out["boxless_replies_not_an_empty_list"] == 0
+    assert out["agreement_with_72b"] == {"frames": 2268, "same": 2223}

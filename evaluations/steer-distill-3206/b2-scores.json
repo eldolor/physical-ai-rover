@@ -1,0 +1,186 @@
+{
+ "coverage": {
+  "expected": 2268,
+  "answered": 2268,
+  "reused_from_b1": 100,
+  "missing": 0,
+  "whole": true,
+  "first_missing": [],
+  "unresolved": []
+ },
+ "cost_usd": 1.0492,
+ "pooled": {
+  "frames": 2261,
+  "in_view": 535,
+  "yes": 564,
+  "false_yes": 46,
+  "missed": 17,
+  "mistakes": 63,
+  "precision": 0.9184,
+  "recall": 0.9682
+ },
+ "per_object": {
+  "a white phone charger cable": {
+   "frames": 176,
+   "in_view": 118,
+   "yes": 131,
+   "false_yes": 13,
+   "missed": 0,
+   "mistakes": 13,
+   "precision": 0.9008,
+   "recall": 1.0
+  },
+  "blue and yellow running shoes": {
+   "frames": 63,
+   "in_view": 38,
+   "yes": 40,
+   "false_yes": 2,
+   "missed": 0,
+   "mistakes": 2,
+   "precision": 0.95,
+   "recall": 1.0
+  },
+  "blue bottle": {
+   "frames": 242,
+   "in_view": 28,
+   "yes": 36,
+   "false_yes": 8,
+   "missed": 0,
+   "mistakes": 8,
+   "precision": 0.7778,
+   "recall": 1.0
+  },
+  "grey backpack": {
+   "frames": 211,
+   "in_view": 94,
+   "yes": 107,
+   "false_yes": 17,
+   "missed": 4,
+   "mistakes": 21,
+   "precision": 0.8411,
+   "recall": 0.9574
+  },
+  "red backpack": {
+   "frames": 678,
+   "in_view": 33,
+   "yes": 33,
+   "false_yes": 0,
+   "missed": 0,
+   "mistakes": 0,
+   "precision": 1.0,
+   "recall": 1.0
+  },
+  "woven laundry basket": {
+   "frames": 891,
+   "in_view": 224,
+   "yes": 217,
+   "false_yes": 6,
+   "missed": 13,
+   "mistakes": 19,
+   "precision": 0.9724,
+   "recall": 0.942
+  }
+ },
+ "ve_pooled": {
+  "frames": 2261,
+  "in_view": 535,
+  "yes": 508,
+  "false_yes": 26,
+  "missed": 53,
+  "mistakes": 79,
+  "precision": 0.9488,
+  "recall": 0.9009
+ },
+ "ve_per_object": {
+  "a white phone charger cable": {
+   "frames": 176,
+   "in_view": 118,
+   "yes": 128,
+   "false_yes": 12,
+   "missed": 2,
+   "mistakes": 14,
+   "precision": 0.9062,
+   "recall": 0.9831
+  },
+  "blue and yellow running shoes": {
+   "frames": 63,
+   "in_view": 38,
+   "yes": 33,
+   "false_yes": 1,
+   "missed": 6,
+   "mistakes": 7,
+   "precision": 0.9697,
+   "recall": 0.8421
+  },
+  "blue bottle": {
+   "frames": 242,
+   "in_view": 28,
+   "yes": 29,
+   "false_yes": 1,
+   "missed": 0,
+   "mistakes": 1,
+   "precision": 0.9655,
+   "recall": 1.0
+  },
+  "grey backpack": {
+   "frames": 211,
+   "in_view": 94,
+   "yes": 91,
+   "false_yes": 12,
+   "missed": 15,
+   "mistakes": 27,
+   "precision": 0.8681,
+   "recall": 0.8404
+  },
+  "red backpack": {
+   "frames": 678,
+   "in_view": 33,
+   "yes": 30,
+   "false_yes": 0,
+   "missed": 3,
+   "mistakes": 3,
+   "precision": 1.0,
+   "recall": 0.9091
+  },
+  "woven laundry basket": {
+   "frames": 891,
+   "in_view": 224,
+   "yes": 197,
+   "false_yes": 0,
+   "missed": 27,
+   "mistakes": 27,
+   "precision": 1.0,
+   "recall": 0.8795
+  }
+ },
+ "lookalike_yes": {
+  "teal": 8,
+  "taupe": 0
+ },
+ "objects_with_more_false_yeses": [
+  "a white phone charger cable",
+  "blue and yellow running shoes",
+  "blue bottle",
+  "grey backpack",
+  "woven laundry basket"
+ ],
+ "mistakes_against_3214_criterion_1": {
+  "mistakes": 63,
+  "bar": 59
+ },
+ "agreement_with_72b": {
+  "frames": 2268,
+  "same": 2223
+ },
+ "first_try_share": 1.0,
+ "never_replied": 0,
+ "boxless_replies_not_an_empty_list": 0,
+ "bars": {
+  "B2-1 no object with more false yeses than VE": false,
+  "B2-2 teal <= 1 and taupe 0": false,
+  "B2-3 in-view frames without a box <= 26": true,
+  "B2-4 answered on >= 99%": true
+ },
+ "judged_whole": true,
+ "all_met": false
+}
