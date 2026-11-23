@@ -2,11 +2,14 @@
 
 Orientation for a Claude Code session; Claude Code loads this file
 automatically. It states what is true now. Every per-phase record lives in
-the plan that built it (`docs/plans/`), and the long version of this file
--- the full status table, the Stage 0-5 narrative, the deleted-ECS notes,
-the UI-affordance tables -- is `docs/archive/CLAUDE-2026-10-06.md`,
-verbatim. Older reversals are in `docs/archive/CLAUDE-history-2026-09.md`.
+the plan that built it (`docs/plans/`); the long version of this file is
+`docs/archive/CLAUDE-2026-10-06.md`, older reversals
+`docs/archive/CLAUDE-history-2026-09.md`.
 **Where an archive disagrees with this file, this file governs.**
+
+**Questions for the user (the user, 2026-11-23), every session and worker:
+ask one at a time, each its own pop-up (AskUserQuestion) with your
+recommendation first; never several questions in a paragraph.**
 
 ---
 
@@ -139,8 +142,7 @@ board` lists open steps. **Whoever merges moves the section's line to
 **Waiting on the user**
 
 * **Deploys:** the twin is live from `dev` `06c76aa0` (2026-11-21). Cloud
-  sessions deploy the twin only (IAM `vision-picar-deployer`: S3 put,
-  invalidation, DescribeStacks). The orchestrator does so unasked after
+  sessions deploy the twin only (IAM `vision-picar-deployer`). The orchestrator does so unasked after
   a twin change lands; others ask (the user, 2026-11-21).
 * **The board's brain is `dev` `bdcf782c`** (2026-11-06, 3.155's unit, the
   user's go): update it only when asked (`tools/jetson/README.md`).
