@@ -208,7 +208,7 @@ def main_qwen() -> dict:  # pragma: no cover -- needs the GPU
          # The plain AWQ kernel: the second pilot loaded the model and then
          # died in vLLM's faster `awq_marlin` kernel (a CUDA illegal memory
          # access on its first forward pass).
-         "--quantization", "awq",
+         "--quantization", "awq", "--dtype", "float16",   # the plain kernel takes float16 only
          "--gpu-memory-utilization", "0.92"])
     base = f"http://127.0.0.1:{PORT}"
     for _ in range(360):                       # up to an hour: 43 GB to fetch and load
