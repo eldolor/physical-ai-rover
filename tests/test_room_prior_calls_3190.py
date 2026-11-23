@@ -79,8 +79,7 @@ B7_RUN_USD = 0.2315            # with the two refused-model pilots' one answer e
 
 
 def test_criterion_7_asked_fable_51_of_its_pinned_region_at_its_billed_rate():
-    assert b7.ACTIVE == "fable51" and b7.MODEL_ID == FABLE51
-    assert b7.REGION == "us-east-1" and b7.PRICE == (11.00, 55.00)
+    assert b7.MODELS["fable51"] == (FABLE51, "us-east-1", (11.00, 55.00))
     got = B7_REPLIES[FABLE51]
     assert sorted(got) == sorted(room_prior.target_key(t) for t in b7.ASK_ORDER)
     for e in got.values():
@@ -91,21 +90,21 @@ def test_criterion_7_asked_fable_51_of_its_pinned_region_at_its_billed_rate():
 
 
 def test_criterion_7_scores_4_to_6_as_recorded():
-    assert b7.score(B7_REPLIES) == B7_SCORED
+    assert b7.score(B7_REPLIES, "fable51") == B7_SCORED
     assert (B7_SCORED["criterion_4"]["valid"], B7_SCORED["criterion_4"]["met"]) == (40, True)
     assert (B7_SCORED["criterion_5"]["matched"], B7_SCORED["criterion_5"]["met"]) == (20, True)
     assert (B7_SCORED["criterion_6"]["informative"], B7_SCORED["criterion_6"]["met"]) == (40, True)
 
 
 def test_criterion_7_spend_stayed_under_the_cap():
-    s = b7.spend(B7_REPLIES)
+    s = b7.spend(B7_REPLIES, "fable51")
     assert s["calls"] == 49 and round(s["usd"], 4) == B7_SPENT_USD
-    assert round(s["usd_all"], 4) == B7_RUN_USD < b7.CAP_USD
+    assert round(s["usd_all"], 4) == B7_RUN_USD < b7.CAP_USD["fable51"]
 
 
 def test_criterion_7_arm_fable_meets_a_and_fails_b():
     rows = {a: json.loads((B7_ARMS / f"{a}-R.json").read_text()) for a in b7.ARMS}
-    rep = b7.score_arms(rows)
+    rep = b7.score_arms(rows, "fable51")
     assert rep == json.loads((B7_ARMS / "score.json").read_text())
     assert rep["a"]["met"] is True
     assert rep["a"]["paired_challenger_minus_none"]["ci95"] == [0.0249, 0.1187]
