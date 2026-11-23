@@ -3,22 +3,23 @@
 """
 evaluations/room-prior-3190/b7.py -- 3.190.B criterion 7 (amendment 5): the
 same question asked of another model (Sonnet 5.5 in amendment 5, stopped in
-its pilot; Claude Fable 5.2 in amendment 6, likewise; Claude Fable 5.1 in amendment 7,
-`ACTIVE`), then compared with
-Opus 5.5 on criterion 1's arm.
+its pilot; Claude Fable 5.2 in amendment 6, likewise; Claude Fable 5.1 in amendment 7;
+Claude Sonnet 5 in amendment 8, 3.190.G), then compared with Opus 5.5 on
+criterion 1's arm. The model is `B7_MODEL` (a `MODELS` key, default `ACTIVE`);
+each keeps its own score file, arms directory and cap.
 
     python evaluations/room-prior-3190/b7.py ask [N]     # paid: the next N of the 40, then the nine
     python evaluations/room-prior-3190/b7.py spend
-    python evaluations/room-prior-3190/b7.py score       # criteria 4-6 for ACTIVE (free) -> b7/score.json
+    python evaluations/room-prior-3190/b7.py score       # criteria 4-6 (free) -> score_path(key)
     python evaluations/room-prior-3190/b7.py run OUT     # free: opus / challenger / none arms, one commit
     python evaluations/room-prior-3190/b7.py arms OUT    # free: (a) and (b) -> OUT/score.json
 
 Only the model differs from B's Opus run: the question, the reply check, the
 token cap and effort are `calls.py`'s (the brain's `room_prior`). Replies are
 kept in the brain's cache shape (`b7/replies.json`, keyed by model id).
-Spend is priced at each model's list plus this account's 10% Bedrock
-mark-up (`MODELS`), and `ask` refuses a call that could take every model's
-spend here past CAP_USD.
+Spend is priced at each model's rate in `MODELS`, and `ask` refuses a call
+that could take the spend of the models `CAP_OVER[key]` names past
+`CAP_USD[key]`.
 """
 import json
 import os
@@ -49,12 +50,28 @@ MODELS = {
     "fable51": ("us.anthropic.claude-fable-5-1",
                 MODEL_REGIONS["us.anthropic.claude-fable-5-1"],
                 price_of("us.anthropic.claude-fable-5-1")),
+    # Amendment 8 (3.190.G, the user, 2026-11-23: a comparison run): Sonnet 5's
+    # profile from list-inference-profiles, /room's region (no pin), list
+    # $2/$10 + the account's 10% (derived; not in admin_prices.py).
+    "sonnet5": ("us.anthropic.claude-sonnet-5", "us-east-2", (2.20, 11.00)),
 }
-ACTIVE = "fable51"
+ACTIVE = os.environ.get("B7_MODEL", "sonnet5")
+if ACTIVE not in MODELS:
+    raise SystemExit(f"B7_MODEL={ACTIVE!r} is not one of {sorted(MODELS)}")
 MODEL_ID, REGION, PRICE = MODELS[ACTIVE]
-CAP_USD = 1.00                  # this run's cap, over every model asked here
+# Each run's cap, and whose calls count toward it. Amendment 7's $1.00 counted
+# every model asked before it; amendment 8's $0.50 counts Sonnet 5's alone.
+CAP_USD = {"fable51": 1.00, "sonnet5": 0.50}
+CAP_OVER = {"fable51": ("sonnet", "fable", "fable51"), "sonnet5": ("sonnet5",)}
 CACHE = os.path.join(HERE, "b7", "replies.json")
-SCORE = os.path.join(HERE, "b7", "score.json")
+
+
+def score_path(key: str = ACTIVE) -> str:
+    # Fable 5.1's file keeps its merged name.
+    return os.path.join(HERE, "b7", "score.json" if key == "fable51" else f"score-{key}.json")
+
+
+SCORE = score_path()
 ASK_ORDER = tuple(TARGETS) + PROCTHOR      # the 40 (pilot first), then the nine
 ARMS = ("opus", "challenger", "none")   # challenger = MODELS[ACTIVE]
 
@@ -78,13 +95,13 @@ def cost(usage, price=PRICE) -> float:
     return (u.get("inputTokens", 0) * price[0] + u.get("outputTokens", 0) * price[1]) / 1e6
 
 
-def spend(cache: dict, model_id: str = MODEL_ID) -> dict:
-    """One model's calls; `usd_all` is every model's, which CAP_USD bounds."""
-    prices = {mid: pr for mid, _, pr in MODELS.values()}
+def spend(cache: dict, key: str = ACTIVE) -> dict:
+    """One model's calls; `usd_all` is CAP_OVER[key]'s, which CAP_USD[key] bounds."""
+    model_id, _, price = MODELS[key]
     got = cache.get(model_id, {})
-    costs = [cost(e.get("usage"), prices[model_id]) for e in got.values()]
-    every = sum(cost(e.get("usage"), prices[mid])
-                for mid in prices for e in cache.get(mid, {}).values())
+    costs = [cost(e.get("usage"), price) for e in got.values()]
+    every = sum(cost(e.get("usage"), MODELS[k][2])
+                for k in CAP_OVER[key] for e in cache.get(MODELS[k][0], {}).values())
     return {"calls": len(costs), "usd": sum(costs), "dearest": max(costs, default=0.0),
             "usd_all": every,
             "in": sum((e.get("usage") or {}).get("inputTokens", 0) for e in got.values()),
@@ -112,8 +129,9 @@ def cmd_ask(limit: int) -> None:
     for t in todo:
         s = spend(cache)
         worst = s["dearest"] or (2000 * PRICE[0] + MAX_TOKENS * PRICE[1]) / 1e6
-        if s["usd_all"] + worst > CAP_USD:
-            print(f"STOP: ${s['usd_all']:.4f} spent, the next call could pass ${CAP_USD}", flush=True)
+        if s["usd_all"] + worst > CAP_USD[ACTIVE]:
+            print(f"STOP: ${s['usd_all']:.4f} spent, the next call could pass "
+                  f"${CAP_USD[ACTIVE]}", flush=True)
             return
         got[target_key(t)] = ask_one(client, t)
         cache[SERVED] = MODEL_ID
@@ -124,9 +142,10 @@ def cmd_ask(limit: int) -> None:
     print(json.dumps(spend(cache)), flush=True)
 
 
-def score(cache: dict) -> dict:
+def score(cache: dict, key: str = ACTIVE) -> dict:
     """Criteria 4-6 on the 40 only, by calls.score's own rules."""
-    got = cache.get(MODEL_ID, {})
+    model_id = MODELS[key][0]
+    got = cache.get(model_id, {})
     priors = {t: (got.get(target_key(t)) or {}).get("prior") for t in TARGETS}
     valid = sum(p is not None for p in priors.values())
     tops, matched = {}, 0
@@ -136,9 +155,9 @@ def score(cache: dict) -> dict:
         tops[t] = {"expected": want, "top": top, "rates": p}
         matched += top == want
     informative = [t for t, p in priors.items() if prior_is_informative(p)]
-    s = spend(cache)
+    s = spend(cache, key)
     return {
-        "model_id": MODEL_ID, "asked": sum(target_key(t) in got for t in TARGETS),
+        "model_id": model_id, "asked": sum(target_key(t) in got for t in TARGETS),
         "of": len(TARGETS),
         "criterion_4": {"valid": valid, "bar": 38, "met": valid >= 38},
         "criterion_5": {"matched": matched, "of": len(EXPECTED), "bar": 18,
@@ -155,22 +174,22 @@ def score(cache: dict) -> dict:
 
 # ---- criterion 1's arm (free) ----
 
-def challenger_prior() -> dict:
-    got = load().get(MODEL_ID, {})
+def challenger_prior(key: str = ACTIVE) -> dict:
+    got = load().get(MODELS[key][0], {})
     out = {}
     for t in PROCTHOR:
         p = (got.get(target_key(t)) or {}).get("prior")
         if p is None:
-            raise SystemExit(f"no parsed {ACTIVE} prior for {t!r}")
+            raise SystemExit(f"no parsed {key} prior for {t!r}")
         out[t] = dict(p)
     return out
 
 
-def arm_prior(arm: str) -> dict:
+def arm_prior(arm: str, key: str = ACTIVE) -> dict:
     if arm == "opus":
         return arms.arm_prior("cloud")
     if arm == "challenger":
-        return challenger_prior()
+        return challenger_prior(key)
     if arm == "none":
         return {}
     raise ValueError(f"unknown arm {arm!r}")
@@ -203,9 +222,9 @@ def cmd_run(out: str) -> None:
         print(arm, T.summary(rows), flush=True)
 
 
-def check(rows: dict) -> None:
+def check(rows: dict, key: str = ACTIVE) -> None:
     for arm, rs in rows.items():
-        want = arm_prior(arm)
+        want = arm_prior(arm, key)
         for r in rs:
             t = r.get("target")
             if t is None:
@@ -214,8 +233,8 @@ def check(rows: dict) -> None:
                 raise SystemExit(f"{arm} row {r['index']} read another prior -- not scoring")
 
 
-def score_arms(rows: dict) -> dict:
-    check(rows)
+def score_arms(rows: dict, key: str = ACTIVE) -> dict:
+    check(rows, key)
     s = {a: T.summary(rs) for a, rs in rows.items()}
     p_sn = arms.paired(rows["challenger"], rows["none"])
     p_on = arms.paired(rows["opus"], rows["none"])
@@ -224,7 +243,7 @@ def score_arms(rows: dict) -> dict:
          "goals_bar": s["none"]["median_goals_found"]}
     a["met"] = p_sn["ci95"][0] > 0 and a["goals"] <= a["goals_bar"]
     b = {"paired_challenger_minus_opus": p_so, "met": p_so["ci95"][0] > 0}
-    return {"model_id": MODEL_ID, "summary": s, "a": a, "b": b,
+    return {"model_id": MODELS[key][0], "summary": s, "a": a, "b": b,
             "beats_opus": a["met"] and b["met"],
             "reported": {"paired_opus_minus_none": p_on,
                          "by_category_challenger_minus_opus":
