@@ -178,3 +178,20 @@ def test_a_bad_download_is_not_kept(tmp_path, monkeypatch):
     with pytest.raises(ValueError, match="sha256"):
         procthor_import.fetch("assets", str(tmp_path))
     assert list(tmp_path.iterdir()) == []
+
+
+def test_the_unknown_map_error_names_each_splits_real_range():
+    """3.215.C criterion C2: the text said `procthor:train:<0-999>` while
+    `train.json.gz` holds 10,000 houses and the code takes any of them. The
+    range printed for a split is the range `build_world` accepts."""
+    import re
+
+    from sim.maps.procthor import houses
+    with pytest.raises(ValueError) as refused:
+        build_world("no_such_house")
+    said = dict(re.findall(r"procthor:(val|test|train):<0-(\d+)>", str(refused.value)))
+    assert set(said) == {"val", "test", "train"}, str(refused.value)
+    for split, last in said.items():
+        assert int(last) == len(houses(split)) - 1, (split, last)
+        with pytest.raises(ValueError, match="unknown SIM_MAP"):
+            build_world(f"procthor:{split}:{int(last) + 1}")

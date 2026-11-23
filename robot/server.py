@@ -149,10 +149,13 @@ _TWIN_ICONS_DIR = Path(__file__).resolve().parent.parent / "web-twin" / "icons"
 
 def require_secret(x_app_secret: str = Header(default="")):
     """Gate for movement/sensing routes once this server is reachable from
-    the public internet (the ECS Fargate deployment), not just a home LAN.
-    /health is deliberately excluded -- the ALB health check can't send
-    custom headers. Inert (no-op) when APP_SHARED_SECRET is unset, which is
-    how local dev and the test suite run."""
+    the public internet (today through `service/tunnel/`'s ngrok domain;
+    the ECS Fargate deployment it was written for was deleted 2026-09-05),
+    not just a home LAN. /health is deliberately excluded -- it was first
+    left open for a load balancer's health check, which cannot send custom
+    headers, and stays open on purpose. Inert (no-op) when
+    APP_SHARED_SECRET is unset, which is how local dev and the test suite
+    run."""
     expected = os.environ.get("APP_SHARED_SECRET")
     if expected and x_app_secret != expected:
         raise HTTPException(status_code=401, detail="Missing or invalid x-app-secret header.")
@@ -2154,9 +2157,13 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         `RobotInterface.get_scan()`. A backend with no lidar answers
         `usable: False`.
 
-        `stamp_unix` is when the scan was TAKEN (R5). The bridge stamps the
-        ROS scan with it (PLAN-ros-alignment.md 3.40), so SLAM pairs the scan
-        with the odometry of that moment -- see picar_bridge's _poll_scan()."""
+        `stamp_unix` is meant as when the scan was TAKEN (R5), but is the
+        time of this REQUEST: `time.time()` just before the backend is
+        asked, not the capture time of the scan it returns. The bridge
+        stamps the ROS scan with it (PLAN-ros-alignment.md 3.40), so SLAM
+        pairs the scan with the odometry of the request's moment -- see
+        picar_bridge's _poll_scan(). Stamping the capture time is 3.42 /
+        3.76 A4's fix, owed before nav2's speed is raised."""
         stamp = time.time()
         return {**robot.get_scan(max_range_m=max_range_m), "stamp_unix": stamp}
 

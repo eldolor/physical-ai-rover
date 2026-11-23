@@ -271,10 +271,8 @@ class ArrivalCheck:
     def _window(scan: dict, bearing_deg: float) -> list:
         """The returns of the beams within ARRIVAL_BEAM_HALF_DEG of the
         bearing, read as a MEDIAN by `_range_at` -- a missing return counting
-        as far. Scan angles are
-        the bearing -- a missing return counting as far. Scan angles are
-        body-frame, clockwise-positive, 0 ahead -- the same convention as a
-        perception bearing.
+        as far. Scan angles are body-frame, clockwise-positive, 0 ahead --
+        the same convention as a perception bearing.
 
         Median, not nearest, and criterion 2 is why: the first version took
         the minimum and declared `found` 95 cm from the backpack, stuck on
