@@ -208,7 +208,7 @@ met; the board's feed reaches the Jetson but it acts on nothing sent over serial
     reopens 3.81.D, in amendment 4's order.
 * 3.204.C: `inventory_edge_gate` on the Rover's scans.
 * Then, on its data: 3.140.B-J, 3.80.U (`evaluations/tiered-380/U/`),
-  3.116.D, room labels' accuracy (3.122, 3.70.S2), 3.50.D4b, 3.90.C-D,
+  3.116.D, 3.206.R, room labels' accuracy (3.122, 3.70.S2), 3.50.D4b, 3.90.C-D,
   3.74.C-D, 3.41 part B, 3.46.C, the sim-honesty section (3.76
   M1.5-M1.11), K3.4 and K5.2, `PLAN-ros-alignment.md` section 6's open
   decisions, and nav2's speed (6.9 (d): measured braking first).
