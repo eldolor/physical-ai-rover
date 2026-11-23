@@ -375,9 +375,19 @@
     "shutdown.notReceived": "The robot didn't get the request. Try again.",
     "shutdown.detail": "",
     "mission.batteryLow": "Couldn't start: the battery is low. Charge the robot first.",
-    "mission.batteryCheck": "Couldn't start: the robot is checking its battery. Try again in a moment."
+    "mission.batteryCheck": "Couldn't start: the robot is checking its battery. Try again in a moment.",
+    "health.watchdog": "the robot's own safety check has stopped running ({age}s since it last ran) — restart the robot",
+    "health.rosBridge": "the robot's navigation isn't answering — it may come back by itself",
+    "health.rosPosts": "the robot's navigation has stopped steering the wheels (last heard {age}s ago) — it needs a restart",
+    "health.rosPostsNoAge": "the robot's navigation has stopped steering the wheels — it needs a restart",
+    "health.tick": "a search is running but the autopilot has stopped responding ({since}s)"
   },
   "eng": {
+    "health.watchdog": "watchdog loop has not polled for {age}s (wakes every {interval}s) -- the guard is not running",
+    "health.rosBridge": "ROS is down under drive: ros -- the bridge is not answering",
+    "health.rosPosts": "ROS is down under drive: ros -- the wheel plugin's posts have stopped (last {age}s ago)",
+    "health.rosPostsNoAge": "ROS is down under drive: ros -- the wheel plugin's posts have stopped (no post age published)",
+    "health.tick": "a mission is running but no tick has completed for {since}s (deadline {deadline}s) -- the mission loop is not turning",
     "localvlm.up": "up",
     "localvlm.down": "down since {since}: questions go as with no local tier; /health probed {probes} times",
     "localvlm.off": "off (no tier_local_vlm_url)",

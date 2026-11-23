@@ -1712,6 +1712,143 @@ def test_a_stalled_watchdog_loop_reads_as_unhealthy(browser, twin_server):
     page.close()
 
 
+# ---------- 3.215.B: the page's verdict is the command's ----------
+
+
+def _health_page(browser, twin_server, *, engineer=True):
+    """One page whose two `/health` answers a test swaps between presses:
+    `bodies["robot"]` and `bodies["brain"]`. Returns (page, errors, bodies,
+    judge), where `judge()` presses Check health and returns the verdict
+    and the detail once the check has finished."""
+    from tests.health_cases import HEALTHY_BRAIN, HEALTHY_ROBOT
+    page, errors = open_twin(browser, twin_server, engineer=engineer)
+    bodies = {"robot": HEALTHY_ROBOT, "brain": HEALTHY_BRAIN}
+    page.route(re.compile(r".*:%s/health" % twin_server.rsplit(":", 1)[1]),
+               lambda route: route.fulfill(status=200, content_type="application/json",
+                                           body=_json(bodies["robot"])))
+    page.route("**/brain-stub/health", lambda route: route.fulfill(
+        status=200, content_type="application/json", body=_json(bodies["brain"])))
+    page.click("#btn-settings")
+    page.fill("#cfg-server-url", twin_server)
+    page.fill("#cfg-brain-url", twin_server + "/brain-stub")
+    verdict = page.locator("#system-health-verdict")
+
+    def judge():
+        page.click("#btn-health-check")
+        sync_api.expect(verdict).to_have_text(re.compile(r"^(OK|UNHEALTHY)"), timeout=8000)
+        return verdict.inner_text(), page.inner_text("#system-health-detail")
+
+    return page, errors, bodies, judge
+
+
+def _command_says(monkeypatch, body, half):
+    """`control/health.py`'s own answer for one `/health` body, without a
+    server: its status and its problems."""
+    from control import health
+    monkeypatch.setattr(health, "_get", lambda *a, **k: body)
+    check = health.check_robot if half == "robot" else health.check_brain
+    part = check("http://stub")
+    return part["status"], part["problems"]
+
+
+# One phrase per kind of problem, the same in the command's words and in
+# the page's Engineer voice: which problems a body provokes is compared
+# too, not only the verdict.
+HEALTH_PROBLEM_KINDS = ("watchdog loop has not polled", "the bridge is not answering",
+                        "posts have stopped", "the mission loop is not turning")
+
+
+def test_the_health_line_agrees_with_the_health_command(browser, twin_server, monkeypatch):
+    """3.215.B criterion B1. `control/health.py` is the definition of
+    unhealthy; the page re-implements it, and had drifted: it did not count
+    ROS down under `drive: ros`, and gave the tick deadline no slack. Every
+    body of `tests/health_cases.py` goes through both; the bar is 0
+    disagreements on the verdict and on which half is named."""
+    from tests.health_cases import BRAIN_CASES, HEALTHY_BRAIN, HEALTHY_ROBOT, ROBOT_CASES
+    page, errors, bodies, judge = _health_page(browser, twin_server)
+    differ, unhealthy = [], {"robot": 0, "brain": 0}
+    for half, cases in (("robot", ROBOT_CASES), ("brain", BRAIN_CASES)):
+        for name, body in cases:
+            bodies.update(robot=HEALTHY_ROBOT, brain=HEALTHY_BRAIN)
+            bodies[half] = body
+            command, problems = _command_says(monkeypatch, body, half)
+            unhealthy[half] += command != "ok"
+            want = "OK" if command == "ok" else "UNHEALTHY — " + half
+            got, detail = judge()
+            said = " | ".join(problems)
+            kinds = [k for k in HEALTH_PROBLEM_KINDS if (k in said) != (k in detail)]
+            if got != want or kinds:
+                differ.append((half, name, "command: " + command, said,
+                               "page: " + got, detail, kinds))
+    assert not differ, "%d disagreement(s):\n%s" % (
+        len(differ), "\n".join(map(str, differ)))
+    # The table is on both sides of the line for each half, or 0 means nothing.
+    assert unhealthy["robot"] >= 4 and unhealthy["brain"] >= 2, unhealthy
+    assert not errors, errors
+    page.close()
+
+
+def test_ros_down_under_drive_ros_says_which_half_of_ros(browser, twin_server):
+    """3.215.B criterion B4, Engineer mode: the command's two wordings,
+    because the remedy differs -- a dead bridge may answer again by itself;
+    a wheel plugin whose posts stopped needs the container restarted."""
+    from tests.health_cases import ROBOT_CASES
+    cases = dict(ROBOT_CASES)
+    page, errors, bodies, judge = _health_page(browser, twin_server)
+    bodies["robot"] = cases["drive: ros, the bridge down"]
+    got, detail = judge()
+    assert got == "UNHEALTHY — robot", got
+    assert "ROS is down under drive: ros" in detail and "bridge is not answering" in detail, detail
+    assert "brain: ok" in detail, detail
+    bodies["robot"] = cases["drive: ros, the bridge up and the posts stopped"]
+    got, detail = judge()
+    assert got == "UNHEALTHY — robot", got
+    assert "posts have stopped" in detail and "12.5s" in detail, detail
+    shots = os.environ.get("UI_SHOTS")
+    if shots:
+        page.locator("#system-health").scroll_into_view_if_needed()
+        page.screenshot(path=os.path.join(shots, "health-ros-down-390.png"))
+    # Both at once: neither problem hides the other.
+    bodies["robot"] = cases["ROS down and the watchdog gone, both"]
+    got, detail = judge()
+    assert "watchdog loop" in detail and "ROS is down" in detail, detail
+    # No post age published: said so, not "last null ago".
+    bodies["robot"] = cases["drive: ros, ros_up false and nothing said of the bridge"]
+    got, detail = judge()
+    assert "posts have stopped (no post age published)" in detail, detail
+    assert not errors, errors
+    page.close()
+
+
+def test_the_health_line_in_plain_words(browser, twin_server):
+    """3.215.B criterion B4, the default voice: a person at home reads what
+    is wrong without the build's vocabulary."""
+    from tests.health_cases import BRAIN_CASES, ROBOT_CASES
+    robot, brain = dict(ROBOT_CASES), dict(BRAIN_CASES)
+    page, errors, bodies, judge = _health_page(browser, twin_server, engineer=False)
+    bodies["robot"] = robot["drive: ros, the bridge down"]
+    bodies["brain"] = brain["a loop long gone"]
+    got, detail = judge()
+    assert got == "UNHEALTHY — robot, brain", got
+    for word in ("ROS", "watchdog", "tick", "bridge", "drive:"):
+        assert word not in detail, (word, detail)
+    assert "navigation" in detail and "autopilot" in detail, detail
+    shots = os.environ.get("UI_SHOTS")
+    if shots:
+        page.locator("#system-health").scroll_into_view_if_needed()
+        page.screenshot(path=os.path.join(shots, "health-plain-words-390.png"))
+    # A change of voice re-words the line that is on screen, from the same
+    # answers: Engineer mode on, then off again, with no second press.
+    page.evaluate("document.getElementById('cfg-debug-readouts').click()")
+    sync_api.expect(page.locator("#system-health-detail")).to_contain_text(
+        "ROS is down under drive: ros")
+    page.evaluate("document.getElementById('cfg-debug-readouts').click()")
+    sync_api.expect(page.locator("#system-health-detail")).to_contain_text("navigation")
+    assert "ROS" not in page.inner_text("#system-health-detail")
+    assert not errors, errors
+    page.close()
+
+
 # ---------- the tiered policy, and what makes it watchable (phase P2) ----------
 #
 # `PLAN-onboard-perception.md` 6.3 is the specification these cover, and its
