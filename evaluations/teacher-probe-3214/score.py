@@ -180,7 +180,7 @@ def complete(answers: dict, man: dict, model: str) -> dict:
     """A run is judged only whole: every task asked, none an error. A
     partial run's counts would be held against bars set for the full sets,
     and an error row reads as a "no"."""
-    want = {t["id"] for t in mf.tasks(man, model)}
+    want = {t["id"] for t in mf.tasks(man, "qwen" if model == "qwen" else "super")}
     missing = sorted(want - set(answers))
     errors = sorted(i for i in want & set(answers) if answers[i]["status"] == "error")
     return {"expected": len(want), "missing": len(missing), "errors": len(errors),
@@ -283,7 +283,7 @@ def main(model: str, rows_path: str) -> None:  # pragma: no cover -- needs a run
     rows = mf._jsonl(Path(rows_path))
     # A pilot's rows are scored into pilot-* files, never over the run's record.
     stem = model if len(rows) > 2 * FAIL_PILOT else f"pilot-{model}"
-    read = qwen_answer if model == "qwen" else super_answer
+    read = qwen_answer if model == "qwen" else super_answer      # super and super800 alike
     answers = {r["id"]: read(r) for r in rows}
     out = [{"id": r["id"], "key": r["key"], "target": r["target"], "mirror": r["mirror"],
             "visible": man["frames"][r["key"]]["visible"], **answers[r["id"]]} for r in rows]

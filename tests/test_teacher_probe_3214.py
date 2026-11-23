@@ -231,5 +231,9 @@ def test_a_jobs_links_travel_as_secrets_never_as_environment():
     assert pilot["environment"] == {"LIMIT": "5"} and pilot["timeoutSeconds"] == 2400
     full = launch.job_spec("qwen", links, "a100-large", 60, 0)
     assert full["secrets"]["RESULT_PUT_URL"] == "https://r.example/sig" and full["environment"] == {}
+    arm = launch.job_spec("super800", {**links, "super800": links["qwen"]}, "a100-large", 60, 0)
+    assert arm["environment"] == {"SUPER_PIXELS": "786432,819200"}     # amendment 4, nothing else
+    assert arm["command"] == launch.job_spec("super", {**links, "super": links["qwen"]},
+                                             "a100-large", 60, 0)["command"]
     shown = json.dumps({k: full[k] for k in full if k != "secrets"})
     assert ".example/sig" not in shown                  # no link outside the secrets

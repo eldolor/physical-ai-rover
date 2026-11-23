@@ -146,7 +146,7 @@ def stage(hours: float) -> dict:  # pragma: no cover -- needs AWS
     # Each staging has its own keys: a re-run never replaces an earlier run's rows.
     stamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
     links = {"stamp": stamp}
-    for model in ("qwen", "super"):
+    for model in ("qwen", "super", "super800"):          # super800: the same tasks, its own rows
         staged = [{**t, "url": get(RECORDINGS_BUCKET, f"{RECORDINGS_PREFIX}/{t['key']}")}
                   for t in tasks(manifest, model)]
         key = f"{STAGE_PREFIX}/{stamp}/staged-{model}.json"

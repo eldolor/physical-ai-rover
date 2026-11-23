@@ -48,6 +48,9 @@ BOOT = {
               "hydra-colorlog numpy pillow scipy pandas matplotlib; "
               f"{FETCH}; {PY312} /tmp/job.py super"),
 }
+BOOT["super800"] = BOOT["super"]
+# Amendment 4: 768-800 image tokens of 32 x 32 pixels.
+SUPER800_PIXELS = f"{768 * 1024},{800 * 1024}"
 STOP_USD = 12.0        # criterion 10: the section's whole spend
 
 
@@ -82,8 +85,11 @@ def job_spec(model: str, links: dict, flavor: str, timeout_min: int, limit: int)
     """The POST body (huggingface_hub's `_create_job_spec` shape)."""
     secrets = {"JOB_URL": links["JOB_URL"], "MANIFEST_URL": links[model]["MANIFEST_URL"],
                "RESULT_PUT_URL": links[model]["PILOT_PUT_URL" if limit else "RESULT_PUT_URL"]}
+    env = {"LIMIT": str(limit)} if limit else {}
+    if model == "super800":
+        env["SUPER_PIXELS"] = SUPER800_PIXELS
     return {"command": ["bash", "-c", BOOT[model]], "arguments": [],
-            "environment": {"LIMIT": str(limit)} if limit else {},
+            "environment": env,
             "secrets": secrets, "flavor": flavor, "timeoutSeconds": int(timeout_min * 60),
             "dockerImage": IMAGE}
 
