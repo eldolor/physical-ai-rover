@@ -528,7 +528,8 @@ job, on a phone.
    formula, before the sim's bands are trusted.
 
    **The speed-dependent stop is built (3.44, merged 2026-10-07):**
-   `required_clearance_cm()` keeps 20 cm up to ~0.39 m/s and grows above it
+   `required_clearance_cm()` keeps 20 cm up to ~0.34 m/s (corrected 2026-11-23 from ~0.39, by
+   `robot/safety.py`'s constants) and grows above it
    (25 cm at 0.4, 35.5 at 0.5), with criterion (b)'s sweep met at 0.4 and
    0.5 m/s in both sensing modes. Still open here: (a), (c), and (d) --
    `DECEL_M_S2` is a placeholder until stopping is measured on the car.
