@@ -177,8 +177,8 @@ board` lists open steps. **Whoever merges moves the section's line to
   ships. E: the Rover.
 * 3.202.C soak: waits on the desktop's exclusive lock.
 * ROS image: rebuild `:latest` and the Jetson's from `dev` after 3.211's `scaled_house` check.
-* 3.206 (the user, 2026-11-21): a frontier model's direction labels train
-  Qwen's steering (3.188). A free; B-C's calls: the user; D: 3.188.B.
+* 3.206 (amendment 4, 2026-11-23): Qwen3-VL-235B's boxes train Qwen's
+  box answer (3.188). A free; B2's check, C: the user; D: 3.188.B.
 * Not built: `brain/planner.py`, a Stage 1 vision re-run on the lit renderer.
 
 **The Rover** (in hand; state: 3.140's log: L0 begun, nothing
