@@ -1,0 +1,143 @@
+{
+ "model_id": "us.anthropic.claude-sonnet-5",
+ "summary": {
+  "opus": {
+   "n": 583,
+   "found": 574,
+   "exceptions": 0,
+   "capped": 0,
+   "median_goals_found": 5.0,
+   "median_metres_found": 15.6,
+   "mean_reward": 0.5243
+  },
+  "challenger": {
+   "n": 583,
+   "found": 576,
+   "exceptions": 0,
+   "capped": 0,
+   "median_goals_found": 5.0,
+   "median_metres_found": 15.9,
+   "mean_reward": 0.5059
+  },
+  "none": {
+   "n": 583,
+   "found": 575,
+   "exceptions": 0,
+   "capped": 0,
+   "median_goals_found": 5.0,
+   "median_metres_found": 19.2,
+   "mean_reward": 0.4234
+  }
+ },
+ "a": {
+  "paired_challenger_minus_none": {
+   "n": 583,
+   "mean": 0.0825,
+   "ci95": [
+    0.0322,
+    0.1339
+   ]
+  },
+  "goals": 5.0,
+  "goals_bar": 5.0,
+  "met": true
+ },
+ "b": {
+  "paired_challenger_minus_opus": {
+   "n": 583,
+   "mean": -0.0185,
+   "ci95": [
+    -0.0539,
+    0.0161
+   ]
+  },
+  "met": false
+ },
+ "beats_opus": false,
+ "reported": {
+  "paired_opus_minus_none": {
+   "n": 583,
+   "mean": 0.101,
+   "ci95": [
+    0.0546,
+    0.1485
+   ]
+  },
+  "by_category_challenger_minus_opus": {
+   "basketball": {
+    "n": 46,
+    "mean": 0.0839
+   },
+   "box": {
+    "n": 59,
+    "mean": 0.0203
+   },
+   "cart": {
+    "n": 29,
+    "mean": 0.0079
+   },
+   "dog bed": {
+    "n": 47,
+    "mean": 0.0514
+   },
+   "garbage bag": {
+    "n": 58,
+    "mean": 0.0968
+   },
+   "garbage can": {
+    "n": 149,
+    "mean": -0.0654
+   },
+   "house plant": {
+    "n": 82,
+    "mean": -0.1095
+   },
+   "laundry hamper": {
+    "n": 13,
+    "mean": -0.3958
+   },
+   "plunger": {
+    "n": 100,
+    "mean": -0.0023
+   }
+  },
+  "by_category_challenger_minus_none": {
+   "basketball": {
+    "n": 46,
+    "mean": 0.1813
+   },
+   "box": {
+    "n": 59,
+    "mean": 0.1249
+   },
+   "cart": {
+    "n": 29,
+    "mean": -0.024
+   },
+   "dog bed": {
+    "n": 47,
+    "mean": 0.0079
+   },
+   "garbage bag": {
+    "n": 58,
+    "mean": 0.2909
+   },
+   "garbage can": {
+    "n": 149,
+    "mean": 0.0061
+   },
+   "house plant": {
+    "n": 82,
+    "mean": -0.0796
+   },
+   "laundry hamper": {
+    "n": 13,
+    "mean": -0.2475
+   },
+   "plunger": {
+    "n": 100,
+    "mean": 0.2467
+   }
+  }
+ }
+}
