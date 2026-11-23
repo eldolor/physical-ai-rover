@@ -4249,10 +4249,18 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   // the case this has to catch, and it would report itself fine.
   //
   // **The rule about what may reach a verdict lives in control/health.py,
-  // not here.** This renders `ok` / `unhealthy` / `unreachable` per half
-  // and never invents a judgement of its own -- if it did, the page and
-  // the command that gates M11's rollback could disagree about the same
-  // robot, and the page is the one people would believe.
+  // not here.** The servers publish fields, not a verdict, so
+  // robotProblem() and brainProblem() below repeat that file's rules --
+  // and must repeat them exactly: if the page and the command that gates
+  // M11's rollback disagree about the same robot, the page is the one
+  // people would believe. They drifted once (3.215.B), so tests hold them
+  // together: tests/test_ui.py puts one table of /health bodies
+  // (tests/health_cases.py) through both, and tests/test_twin_health.py
+  // pins these two numbers to control/health.py's. Change a rule there,
+  // change it here in the same commit.
+  const WATCHDOG_POLL_SLACK = 10;   // control/health.py WATCHDOG_POLL_SLACK
+  const TICK_SLACK_S = 1.0;         // control/health.py TICK_SLACK_S
+
   async function probeHealth(url, secret) {
     if (!url) return { status: "not configured" };
     try {
@@ -4266,22 +4274,45 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   }
 
   function robotProblem(body) {
+    const problems = [];
     // Verdict input: the watchdog loop's own liveness. Absent on a server
     // older than M5, which cannot be judged on a field it does not
     // publish -- absent is not stale.
     const age = body.seconds_since_watchdog_poll;
     const interval = body.watchdog_poll_interval_s;
-    if (typeof age === "number" && interval && age > interval * 10) {
-      return "watchdog loop has not polled for " + age.toFixed(1) + "s";
+    if (typeof age === "number" && interval && age > interval * WATCHDOG_POLL_SLACK) {
+      problems.push(t("health.watchdog", { age: age.toFixed(1), interval: interval }));
     }
-    return null;
+    // Verdict input (handoff 4e): under drive: ros the ROS container is
+    // part of what was deployed, and with it down no mission can run. Said
+    // by half, because the remedy differs: a dead bridge may answer again
+    // by itself; a wheel plugin whose posts stopped needs the container
+    // restarted. `=== false` as the command's `is False`: a server that
+    // does not publish ros_up is not judged on it.
+    const drive = body.drive || {};
+    if (drive.mode === "ros" && drive.ros_up === false) {
+      if (drive.bridge_up === false) {
+        problems.push(t("health.rosBridge"));
+      } else {
+        const last = drive.ros_post_age_s;
+        problems.push(typeof last === "number"
+          ? t("health.rosPosts", { age: last.toFixed(1) })
+          : t("health.rosPostsNoAge"));
+      }
+    }
+    return problems.length ? problems.join("; ") : null;
   }
 
   function brainProblem(body) {
+    // Verdict input: a mission is running and no tick has completed within
+    // B3.3's deadline plus the loop's own sleep between ticks (3.76 N1):
+    // without the slack, a tick just inside the deadline read as a loop
+    // not turning before B3.3 itself fired.
     const since = body.seconds_since_last_tick;
     const deadline = body.tick_timeout_s;
-    if (body.mission_running && typeof since === "number" && deadline && since > deadline) {
-      return "a mission is running but has not ticked for " + since.toFixed(1) + "s";
+    if (body.mission_running && typeof since === "number" && deadline
+        && since > deadline + TICK_SLACK_S) {
+      return t("health.tick", { since: since.toFixed(1), deadline: deadline });
     }
     return null;
   }
@@ -4300,7 +4331,19 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       probeHealth(robotUrl, document.getElementById("cfg-server-secret").value.trim()),
       probeHealth(brainUrl, document.getElementById("cfg-brain-secret").value.trim()),
     ]);
+    lastHealthProbe = [robot, brain];
+    renderHealthLine(robot, brain);
+  }
 
+  // The last finished check's two answers, so a change of voice (Engineer
+  // mode) re-words the line from the same answers instead of leaving the
+  // other voice's words on screen (3.215.B). Null until a check finishes.
+  let lastHealthProbe = null;
+
+  function renderHealthLine(robot, brain) {
+    const verdictEl = document.getElementById("system-health-verdict");
+    const detailEl = document.getElementById("system-health-detail");
+    if (!verdictEl) return;
     const parts = [];
     const failed = [];
     [["robot", robot, robotProblem], ["brain", brain, brainProblem]].forEach(function (row) {
@@ -8087,6 +8130,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     renderBattery();
     renderHeaderMode();
     renderSchedules();
+    if (lastHealthProbe) renderHealthLine(lastHealthProbe[0], lastHealthProbe[1]);
   }
   applyDebugReadouts(prefGet(PREF.debugReadouts) === "1");
   debugToggleEl.addEventListener("change", function () {
