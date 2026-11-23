@@ -1,5 +1,41 @@
 {
- "_served_model": "us.anthropic.claude-fable-5-2",
+ "_served_model": "us.anthropic.claude-fable-5-1",
+ "us.anthropic.claude-fable-5-1": {
+  "cutting board": {
+   "prior": {
+    "bathroom": 0.005,
+    "bedroom": 0.01,
+    "kitchen": 0.65,
+    "living room": 0.03
+   },
+   "reply": "{\"kitchen\": 0.65, \"living room\": 0.03, \"bedroom\": 0.01, \"bathroom\": 0.005}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 196,
+    "outputTokens": 45,
+    "totalTokens": 241
+   }
+  },
+  "spatula": {
+   "prior": {
+    "bathroom": 0.005,
+    "bedroom": 0.01,
+    "kitchen": 0.75,
+    "living room": 0.03
+   },
+   "reply": "{\"kitchen\": 0.75, \"living room\": 0.03, \"bedroom\": 0.01, \"bathroom\": 0.005}",
+   "stop": "end_turn",
+   "usage": {
+    "cacheReadInputTokens": 0,
+    "cacheWriteInputTokens": 0,
+    "inputTokens": 194,
+    "outputTokens": 45,
+    "totalTokens": 239
+   }
+  }
+ },
  "us.anthropic.claude-fable-5-2": {
   "spatula": {
    "prior": {
