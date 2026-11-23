@@ -1,0 +1,3 @@
+opus {'n': 583, 'found': 574, 'exceptions': 0, 'capped': 0, 'median_goals_found': 5.0, 'median_metres_found': 15.6, 'mean_reward': 0.5243}
+challenger {'n': 583, 'found': 576, 'exceptions': 0, 'capped': 0, 'median_goals_found': 5.0, 'median_metres_found': 17.7, 'mean_reward': 0.4947}
+none {'n': 583, 'found': 575, 'exceptions': 0, 'capped': 0, 'median_goals_found': 5.0, 'median_metres_found': 19.2, 'mean_reward': 0.4234}

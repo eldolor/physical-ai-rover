@@ -65,3 +65,51 @@ def test_the_spend_stayed_under_the_cap():
     assert SCORED["spend"]["calls"] == 40
     assert SCORED["spend"]["usd"] == SPENT_USD
     assert SPENT_USD < calls.CAP_USD
+
+
+# ---- criterion 7 (amendments 5-7): the same 40, then criterion 1's arm, under Fable 5.1 ----
+import b7                                                       # noqa: E402
+
+B7_REPLIES = json.loads((HERE / "b7" / "replies.json").read_text())
+B7_SCORED = json.loads((HERE / "b7" / "score.json").read_text())
+B7_ARMS = HERE / "b7" / "arms"
+FABLE51 = "us.anthropic.claude-fable-5-1"
+B7_SPENT_USD = 0.2269          # Fable 5.1's 49 calls (the section file)
+B7_RUN_USD = 0.2315            # with the two refused-model pilots' one answer each
+
+
+def test_criterion_7_asked_fable_51_of_its_pinned_region_at_its_billed_rate():
+    assert b7.ACTIVE == "fable51" and b7.MODEL_ID == FABLE51
+    assert b7.REGION == "us-east-1" and b7.PRICE == (11.00, 55.00)
+    got = B7_REPLIES[FABLE51]
+    assert sorted(got) == sorted(room_prior.target_key(t) for t in b7.ASK_ORDER)
+    for e in got.values():
+        assert e["prior"] == room_prior.parse(e["reply"]) and e["stop"] == "end_turn"
+    # Each refused model's pilot left exactly its one answered call.
+    assert len(B7_REPLIES["us.anthropic.claude-sonnet-5-5"]) == 1
+    assert len(B7_REPLIES["us.anthropic.claude-fable-5-2"]) == 1
+
+
+def test_criterion_7_scores_4_to_6_as_recorded():
+    assert b7.score(B7_REPLIES) == B7_SCORED
+    assert (B7_SCORED["criterion_4"]["valid"], B7_SCORED["criterion_4"]["met"]) == (40, True)
+    assert (B7_SCORED["criterion_5"]["matched"], B7_SCORED["criterion_5"]["met"]) == (20, True)
+    assert (B7_SCORED["criterion_6"]["informative"], B7_SCORED["criterion_6"]["met"]) == (40, True)
+
+
+def test_criterion_7_spend_stayed_under_the_cap():
+    s = b7.spend(B7_REPLIES)
+    assert s["calls"] == 49 and round(s["usd"], 4) == B7_SPENT_USD
+    assert round(s["usd_all"], 4) == B7_RUN_USD < b7.CAP_USD
+
+
+def test_criterion_7_arm_fable_meets_a_and_fails_b():
+    rows = {a: json.loads((B7_ARMS / f"{a}-R.json").read_text()) for a in b7.ARMS}
+    rep = b7.score_arms(rows)
+    assert rep == json.loads((B7_ARMS / "score.json").read_text())
+    assert rep["a"]["met"] is True
+    assert rep["a"]["paired_challenger_minus_none"]["ci95"] == [0.0249, 0.1187]
+    assert rep["b"]["met"] is False
+    assert rep["b"]["paired_challenger_minus_opus"]["mean"] == -0.0296
+    assert rep["b"]["paired_challenger_minus_opus"]["ci95"] == [-0.0533, -0.0067]
+    assert rep["beats_opus"] is False
