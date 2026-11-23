@@ -10,6 +10,7 @@ scoring (`score.py`, with `p_localised` and `parse_box`) happens in the repo.
 
     python job.py qwen     # Qwen2.5-VL-72B-Instruct-AWQ behind vLLM
     python job.py super    # Alpamayo 2 Super, one camera, one frame
+                           # (SUPER_PIXELS=min,max: amendment 4's 800-token arm)
 
 Environment (job secrets; never logged):
   MANIFEST_URL    presigned GET: the staged task list (`manifest.py --stage`)
@@ -268,6 +269,11 @@ def main_super() -> dict:  # pragma: no cover -- needs the GPU
 
     model = Alpamayo2Super.from_pretrained(SUPER_MODEL, dtype=torch.bfloat16, device_map="cuda:0")
     model.eval()
+    pixels = os.environ.get("SUPER_PIXELS")
+    if pixels:                       # amendment 4: the pixel budget, nothing else
+        lo, hi = (int(v) for v in pixels.split(","))
+        model.config.min_pixels, model.config.max_pixels = lo, hi
+    log(f"pixels per image: {model.config.min_pixels}-{model.config.max_pixels}")
     ready = time.time() - t0
     log(f"loaded in {ready:.0f} s; GPU {torch.cuda.max_memory_allocated() / 2**30:.1f} GiB")
     mask = LogitsProcessorList([MaskDiscreteTrajectoryLogitsProcessor(
@@ -303,6 +309,7 @@ def main_super() -> dict:  # pragma: no cover -- needs the GPU
 
     stats = run(load_tasks(), ask, workers=1)
     return {**stats, "model": SUPER_MODEL, "repo": SUPER_COMMIT, "ready_s": round(ready),
+            "pixels": [model.config.min_pixels, model.config.max_pixels],
             "gpu_gib": round(torch.cuda.max_memory_allocated() / 2**30, 1)}
 
 
