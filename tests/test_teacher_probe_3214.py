@@ -122,6 +122,11 @@ def test_a_72b_reply_is_read_as_ves_is(score):
                                "lp": _reply("I", " cannot")})
     assert prose["status"] == "unparsed" and not prose["yes"]
     assert score.qwen_answer({"error": "HTTPError"})["status"] == "error"
+    # vLLM's raw pieces (the pilot's reply): a fenced list opened by "[Ċ".
+    fenced = score.qwen_answer({
+        "text": '```json\n[\n    {"bbox_2d": [556, 193, 648, 217]}\n]\n```', "mirror": False,
+        "size": [1280, 720], "lp": _reply("```", "json", "Ċ", "[Ċ", "ĠĠĠ", "Ġ{Ċ", 'Ġ"', "bbox")})
+    assert fenced["yes"] and fenced["score"] == 1.0
 
 
 def test_supers_replies_are_read_by_the_amendments(score):
