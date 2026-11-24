@@ -34,6 +34,9 @@ NAV_YAML = ROOT / "service" / "slam" / "src" / "picar_bringup" / "config" / "nav
 ORDER = ["T", "F", "T", "F", "T", "F"]       # interleaved, written before any run
 LOAD_MAX = 4.0                               # 3.79
 HALF_WIDTH_M = 0.1155                        # tests/demo_nav_goals.HALF_WIDTH_M
+# The goal comes back re-anchored to SLAM's current map (review): a few cm
+# off what was sent, and the six goals are metres apart.
+MATCH_M = 0.25
 
 
 def arm_yaml(arm, out):
@@ -75,7 +78,7 @@ class FirstPlan(threading.Thread):
                 r = self.client.get("/world/goal").json()
                 g = r.get("goal") or {}
                 if (r.get("plan") and g.get("x_m") is not None
-                        and math.dist((g["x_m"], g["y_m"]), (self.x, self.y)) < 0.05):
+                        and math.dist((g["x_m"], g["y_m"]), (self.x, self.y)) < MATCH_M):
                     self.plan = r["plan"]
                     return
             except Exception:  # noqa: BLE001 -- a slow reply: look again
@@ -100,22 +103,32 @@ def one_run(arm, k, out):
     from tests import demo_explore as de
     from tests import demo_nav_goals as nav
     assert nav.HOUSE == "scaled_house"
+    # The clients take PICAR_ROBOT_URL / PICAR_BRIDGE_URL, the stack its
+    # ports: both from `plan_section.py env`, or the run drives another robot.
+    assert (nav.client().base_url.port, nav.bridge().base_url.port) == (de.ROBOT, de.BRIDGE), \
+        "eval \"$(python tools/plan_section.py env)\" first"
     load = Load()
-    load.start()
+    poll = None
     try:
         de.stack("scaled_house", nav_yaml=arm_yaml(arm, out))
+        load.start()                 # review: not while the lock waits or the last run drains
         end = time.time() + 240
-        while time.time() < end:
+        while True:
             r = subprocess.run(["docker", "logs", de.CONTAINER], capture_output=True, text=True)
             if "nav2 active" in r.stdout + r.stderr:
                 break
+            if time.time() > end:
+                raise RuntimeError("nav2 did not come up in 240 s")
             time.sleep(2)
         param = subprocess.run(
             ["docker", "exec", de.CONTAINER, "bash", "-c",
              "source /opt/ros/humble/setup.bash && source /ws/install/setup.bash && "
              "ros2 param get /planner_server GridBased.use_astar"],
             capture_output=True, text=True).stdout.strip()
+        if param != f"Boolean value is: {arm == 'T'}":
+            raise RuntimeError(f"arm {arm}: planner_server says {param!r}")
         robot, br = nav.client(), nav.bridge()
+        poll = httpx.Client(base_url=robot.base_url, headers=robot.headers, timeout=10)
         end = time.time() + 35.0                     # as tests/test_nav_live.py
         while not br.get("/slam/pose").json().get("start_truth"):
             if time.time() > end:
@@ -125,8 +138,7 @@ def one_run(arm, k, out):
         br.post("/nav/stats/reset", json={})
         goals = []
         for name, x, y in nav.GOALS:
-            poller = FirstPlan(httpx.Client(base_url=robot.base_url, headers=robot.headers,
-                                            timeout=10), x, y)
+            poller = FirstPlan(poll, x, y)
             poller.start()
             res = nav.run_goal(robot, x, y)
             poller.done.set()
@@ -139,7 +151,10 @@ def one_run(arm, k, out):
         pre = nav.preempt(robot, br)
     finally:
         load.done.set()
-        load.join(1)
+        if load.is_alive():
+            load.join(1)
+        if poll is not None:
+            poll.close()
     load_max = max(load.samples) if load.samples else None
     return {"arm": arm, "run": k, "use_astar_param": param, "image": os.environ.get("ROS_IMAGE"),
             "load_max": load_max, "load_p50": statistics.median(load.samples) if load.samples else None,
@@ -202,7 +217,9 @@ def score(out):
                             for r in by["F"])
                and sum(s["succeeded"]["F"]) >= sum(s["succeeded"]["T"]) - 1 else "FAILED")
     # C2: no contact.
-    s["min_clearance"] = {a: [min(g["min_clearance_m"] for g in r["goals"]) for r in by[a]]
+    # A goal never sent (`not_sent`) has no clearance or time (review): it
+    # reads 0, so it fails C2 and C5 rather than crashing the score.
+    s["min_clearance"] = {a: [min(g.get("min_clearance_m", 0.0) for g in r["goals"]) for r in by[a]]
                           for a in by}
     s["C2"] = "MET" if all(c >= HALF_WIDTH_M for c in s["min_clearance"]["F"]) else "FAILED"
     # C3: smoothness, valid runs only.
@@ -233,8 +250,8 @@ def score(out):
     s["plan_len_ratio_median"] = round(_med(ratios), 3) if ratios else None
     s["metres_median"] = {a: _med([r["metres"] for r in by[a]]) for a in by}
     s["metres_ratio"] = round(s["metres_median"]["F"] / s["metres_median"]["T"], 3)
-    s["goal_seconds_median"] = {a: _med([sum(g["seconds"] for g in r["goals"]) for r in valid[a]])
-                                for a in by}
+    s["goal_seconds_median"] = {a: _med([sum(g.get("seconds", math.inf) for g in r["goals"])
+                                         for r in valid[a]]) for a in by}
     secs = s["goal_seconds_median"]
     s["seconds_ratio"] = round(secs["F"] / secs["T"], 3) if secs["F"] and secs["T"] else None
     timed = len(valid["F"]) >= 2 and len(valid["T"]) >= 2
