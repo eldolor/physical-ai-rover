@@ -182,11 +182,12 @@ board` lists open steps. **Whoever merges moves the section's line to
 * Not built: `brain/planner.py`, a Stage 1 vision re-run on the lit renderer.
 
 **The Rover** (in hand; state: 3.140's log: L0 begun, nothing
-met; the board's feed reaches the Jetson but it acts on nothing sent over serial; no motion until `mainType` reads 2, 3.140)
+met; this unit's board ignores serial: defective, replaced with the same kit by 12-08)
 
 * **Mounting:** the dev kit mounts directly (request 258472 answered,
-  3.140). Open: Waveshare 263625 and 263684, the board's receive path.
+  3.140). Open: Waveshare 265625.
 * **On arrival** (`HARDWARE-READINESS.md` section 5; 3.26):
+  * First, `JETSON-BOM.md` criterion 8 (the board hears both routes).
   * Disable Waveshare's stock app and its ROS nodes, which would hold the
     serial port and bypass safety.
   * Confirm the serial route (expected `/dev/ttyTHS1`); dump the stock

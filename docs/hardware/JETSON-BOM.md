@@ -6,7 +6,11 @@ Kit**.
 
 * **Jetson:** bought, measured and kept (2026-10-05).
 * **Rover:** ordered 2026-09-30, in hand (the user, 2026-11-21), with a
-  30-day return.
+  30-day return. **This unit is defective** (2026-11-23, 3.140's log): its
+  motor board never acts on serial, over the 40-pin or its own USB. The user
+  is replacing the product, not repairing it; Amazon's window closes
+  2026-12-08. The criteria were re-checked 2026-11-24 (sections 2-6, 9.2):
+  the replacement is the same kit, a new unit.
 * **Still conditional:**
   * a separate Jetson battery, decided by a stress test on arrival (9.5);
   * an adapter plate, if the devkit does not bolt onto the Rover's deck
@@ -62,12 +66,14 @@ Which camera feeds perception is still to be decided on recorded walks
 
 ---
 
-## 2-6. The kit search's requirements (closed 2026-09-30)
+## 2-6. The kit search's requirements (closed 2026-09-30; re-checked 2026-11-24)
 
 Sections 2-6 held what a kit had to replace, its hard constraints, its
 preferences, what kits leave out, and the totals to beat (~$944 all-in
-piecemeal). The search is closed; they are archived verbatim. The
-constraints still explain why the Rover was chosen:
+piecemeal). The search closed 2026-09-30 and is archived verbatim. It was
+re-run 2026-11-24 for the defective unit's replacement against these
+constraints, with 8-10 added from the first unit's bring-up (9.2, 9.4).
+The constraints still explain why the Rover was chosen:
 
 1. **3S power (11.1 V) or higher.** The Jetson takes 9-20 V straight from
    the pack, so 2S is below its floor. A 3S pack's protection cuts off at
@@ -85,6 +91,29 @@ constraints still explain why the Rover was chosen:
 7. **For skid steer:** an encoder per side at least, a controller that
    drives all four motors, an IMU, a footprint near 25 x 22 cm, and the
    track and wheelbase published.
+8. **The motor board must be shown to hear the host before the return
+   window is spent** (added 2026-11-24). Sending is not receiving: the
+   first unit streamed `T:1001` on both routes and acted on nothing sent to
+   it. On arrival, before any other bring-up, one read-only query
+   (`{"T":602}` on the Rover) must be answered over **each** host route,
+   USB and the 40-pin UART. A board that only answers over Wi-Fi fails.
+9. **Firmware can be read and flashed with the computer mounted**
+   (added 2026-11-24): a working auto-download circuit, or boot buttons
+   reachable without dismantling. The first unit's BOOT/EN sit under the
+   Jetson and its auto-download never held IO0 (esptool: "Wrong boot mode
+   detected (0x12)"), so the stock image could not be dumped (3.140).
+10. **The shipped board matches its published source and is configured
+   for the product sold** (added 2026-11-24). The first unit booted as
+   "UGV Beast" (`mainType` 3) on a Rover, set by its own `boot.mission`.
+   Check the type on the OLED or by query before any motion, and get the
+   schematic before buying: the ROS Driver's was public
+   (`files.waveshare.com/wiki/RaspRover/ROS_Driver_for_Robots.pdf`) and
+   showed its two host routes share one RX line (9.4).
+
+**Buying rule** (09-30, still holds): a US return address, with a window
+long enough to run 9.5 and criterion 8. Count vendor-support time against
+it: Waveshare's first technical answer took four days, and its tickets
+close themselves after 10 days pending.
 
 ---
 
@@ -151,6 +180,9 @@ this is the record.
 
 | date | event |
 |---|---|
+| 11-24 | Criteria re-checked for the replacement (sections 2-6, 8-10 added; 9.2): the same kit, a new unit. Cobra Flex still fails 7 and the buying rule; ROSOrin 3-4; Yahboom 2. |
+| 11-23 | **This unit is defective**: its ESP32 acts on nothing over serial (40-pin, USB, USB alone), obeys Wi-Fi. `mainType` set to 2 over Wi-Fi. The user replaces the product (Amazon window to 12-08); Waveshare asked (265625). 3.140's log. |
+| 11-08 | The Rover in hand; L0 bring-up begins (3.140). |
 | 10-07 | Waveshare's Amazon seller account re-answered the 25 W question: still "not verified"; at 25 W use cells of 4C or above. Nothing changes: the Jetson runs at 15 W, and the P26A cells are ~13C (9.3, 9.5). |
 | 10-06 | Waveshare's CAD read: the kit is modelled around its own carrier, not the Developer Kit. Fit unconfirmed; caliper check owed before Oct 19 (section 7). Asked support: request 258472. |
 | 10-05 | **Jetson KEPT.** Boots from the NVMe. G4 met on the fork firmware; headroom met with 3.37. |
@@ -167,7 +199,7 @@ this is the record.
 
 | candidate | price, no computer | verdict |
 |---|---|---|
-| **Waveshare UGV Rover PT Jetson Orin ROS2 Kit Acce** | $539.99 direct; $675.99 Amazon | **Ordered.** Closed loop, measured odometry to the host, open firmware, a protocol our code already speaks. Power is tight (9.5). 253 x 231 mm. |
+| **Waveshare UGV Rover PT Jetson Orin ROS2 Kit Acce** | $539.99 direct; $675.99 Amazon | **Ordered.** Closed loop, measured odometry to the host, open firmware, a protocol our code already speaks. Power is tight (9.5). 253 x 231 mm. **2026-11-24: the first unit is defective (serial RX); the replacement is the same kit**, the only candidate that meets 1-10 at the budget, and the lidar, OAK-D Lite and pan-tilt go back with it. |
 | Waveshare Cobra Flex | $319.99 direct | Runner-up: better drivetrain and power, but no IMU and DIY sensor mounts (9.6). |
 | Hiwonder ROSOrin Advanced | $529.99 direct, $579.99 Amazon | Rejected: no encoder data to the host, proprietary firmware, Jetson port cannot sustain 25 W. |
 | Waveshare UGV02 / UGV Beast / WAVE ROVER | $149.99 / $369.99+ / $89.99 | Every sensor to add / tracks slip on every turn / no encoders. |
@@ -208,7 +240,7 @@ The full table, with ASINs and the retailers swept, is in the archive copy.
   supply enough current** to support the board running continuously at full
   load (25W mode)."
 
-### 9.4 Three lessons the search taught
+### 9.4 Lessons the search, and the first unit, taught
 
 * **Closed loop is not "reports to the host".** The ROSOrin's four encoders
   hold wheel speed on the board and never reach the Jetson
@@ -217,6 +249,15 @@ The full table, with ASINs and the retailers swept, is in the archive copy.
   Get power claims in writing.
 * **"Jetson Orin kit" did not mean "takes the Developer Kit".** Measure the
   fit (section 7).
+* **A board that talks is not a board that listens** (2026-11-23). The
+  first Rover's feed arrived on both routes, its Wi-Fi page obeyed, and its
+  serial RX acted on nothing; criterion 8 now tests it first.
+* **On the ROS Driver, the 40-pin and the USB chip share the ESP32's RX**
+  (`U0RXD`, with the CH343's TXD through R33, "22R/1K", and a 10 k
+  pull-up; no switch). With 22 ohm fitted, the devkit's weak level-shifted
+  header TX may lose to the CH343's idle-high, so on a good unit try USB
+  first. The published firmware has no setting that turns serial off: the
+  loop reads `Serial` every pass (`ugv_base_ros` 2e7df97, `serialCtrl()`).
 
 ### 9.5 On the Rover's arrival
 
@@ -250,6 +291,9 @@ The full table, with ASINs and the retailers swept, is in the archive copy.
   the `v` field of `T:1001` (~12.6 V full; charge below ~10.5 V).
 
 **Checks within the 30-day return window:**
+- [ ] **First, criterion 8:** one `{"T":602}` answered over USB-C (the
+      right-hand port) and one over the 40-pin UART (`ttyTHS1`); the OLED
+      reads "UGV Rover" (`mainType` 2). Nothing else until both pass.
 - [ ] The 15 W stress test above.
 - [ ] **On the charger** (`PLAN-ros-alignment.md` 3.137.D): the UPS runs
       the full stack from the charger with the Jetson's input never under
@@ -274,7 +318,8 @@ The full table, with ASINs and the retailers swept, is in the archive copy.
   * the pan axis and the lens;
   * which way the D500's zero faces (CAD: turned 90 degrees, left), before
     the first scan is used.
-- [ ] Dump the stock ESP32 image (`esptool.py read_flash`).
+- [ ] Dump the stock ESP32 image (`esptool.py read_flash`); criterion 9
+      says whether that can be done with the Jetson mounted.
 - [ ] Only after the checks above, flash our fork (`firmware/ugv_base_ros/`,
       `build.sh`; GPL-3.0 allows it).
 
