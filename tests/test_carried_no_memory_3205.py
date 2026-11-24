@@ -198,6 +198,27 @@ def test_n8_the_live_find_scores_as_the_plan_records():
     assert (s1["load_max"], s1["load_ok"]) == (6.4, False)
 
 
+def test_n8_3205b_desktop_runs_score_as_recorded():
+    live = importlib.util.spec_from_file_location("carried_3205_live", EVAL / "live.py")
+    mod = importlib.util.module_from_spec(live)
+    live.loader.exec_module(mod)
+    # 3.205.B run 1, the one valid run: exhausted, resight fired, N8 met.
+    s = mod.score(EVAL / "live-b1.jsonl")
+    assert all(s["preconditions"].values()) and s["valid"] is True
+    assert s["N8"] == {"outcome": "exhausted", "found_m": 4.416, "contacts": 0, "wrong_found": False,
+                       "resight": 1, "met": True, "verdict": "MET"}
+    assert s["beside"]["target"] == "headphones" and s["beside"]["goals"] == 29
+    assert (s["load_max"], s["load_ok"]) == (3.68, True)
+    # Runs 2 and 3: outcomes held, the load over 4, so INVALID (load).
+    for name, out, found_m, load in (("live-b2.jsonl", "found", 0.817, 6.62),
+                                     ("live-b3.jsonl", "out_of_budget", 5.295, 4.05)):
+        s = mod.score(EVAL / name)
+        assert all(s["preconditions"].values()) and s["valid"] is False, name
+        assert s["N8"] == {"outcome": out, "found_m": found_m, "contacts": 0, "wrong_found": False,
+                           "resight": 0, "met": False, "verdict": "INVALID (load)"}, name
+        assert (s["load_max"], s["load_ok"]) == (load, False), name
+
+
 def test_n4d_n5_3192s_sweeps_identical_and_no_goal_in_a_zone():
     spec = importlib.util.spec_from_file_location("same_3192", EVAL / "same3192.py")
     mod = importlib.util.module_from_spec(spec)
