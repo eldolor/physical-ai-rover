@@ -60,3 +60,39 @@ def test_the_live_run_meets_b2_b3():
                 if json.loads(x).get("row") == "find")
     assert find["contacts"] == 0 and find["outcome"] != "failed"           # B3
     assert find["ret"]["state"] == "docked"
+
+
+def _path_shape():
+    spec = importlib.util.spec_from_file_location("navfn_path_shape_3211", HERE / "path_shape.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_the_path_shape_records_meet_c1_to_c6():
+    """3.211.C: scaled_house, three runs a side, T (A*) against F (Dijkstra)."""
+    s = _path_shape().score(HERE / "path-shape")
+    assert s["runs"] == s["valid"] == {"T": 3, "F": 3} and s["load_max"] <= 4.0
+    assert s["params"] == {"T": ["Boolean value is: True"], "F": ["Boolean value is: False"]}
+    assert s["succeeded"]["F"] == [6, 6, 6]
+    assert min(s["min_clearance"]["F"]) >= 0.1155
+    assert max(s["reversals_per_m"]["F"]) <= 1.0
+    assert s["plans"] == {"T": 18, "F": 18}
+    assert s["plan_len_ratio_median"] <= 1.02 and s["metres_ratio"] <= 1.05
+    assert s["seconds_ratio"] <= 1.10
+    assert [s[f"C{i}"] for i in range(1, 7)] == ["MET"] * 6
+
+
+def test_the_t_arm_differs_from_the_shipped_yaml_in_use_astar_alone(tmp_path):
+    t = _path_shape().arm_yaml("T", tmp_path).read_text().splitlines()
+    f = NAV_YAML.read_text().splitlines()
+    diff = [(a, b) for a, b in zip(f, t) if a != b]
+    assert len(f) == len(t) and len(diff) == 1 and "use_astar: true" in diff[0][1]
+    assert _path_shape().arm_yaml("F", tmp_path) is None
+
+
+def test_a_plan_is_scored_on_truth():
+    ps = _path_shape().plan_stats([[0.0, 0.0], [3.0, 4.0], [3.0, 5.0]], lambda x, y: x)
+    assert ps == {"plan_len_m": 6.0, "plan_min_clear_m": 0.0, "plan_median_clear_m": 3.0,
+                  "plan_points": 3}
+    assert _path_shape().plan_stats([[1.0, 1.0]], lambda x, y: x) is None

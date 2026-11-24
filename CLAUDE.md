@@ -587,8 +587,8 @@ file has the why)
   operator tests pass `engineer=False`) and seed a saved robot unless
   `first_run=True`.
 - **The shared `vision-picar-ros:latest`** was last rebuilt from `dev`
-  `ed6875b5` (3.136.G, 2026-11-04; the board's image owed); a bridge change
-  after that needs your own tag.
+  `aebbe919` (3.211.C, 2026-11-23: NavFn on Dijkstra; the board's image
+  owed); a bridge change after that needs your own tag.
 - **Live runs:** on Linux they need `PICAR_ROS_NETWORK=host`; a run at
   laptop load above ~4 is invalid (3.79). Run the ROS container with
   `-v picar-maps:/maps`, and start the robot on the dock (3.50.D). Maps
