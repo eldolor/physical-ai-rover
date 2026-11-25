@@ -218,4 +218,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.213](3.213-false-sighting-replaces-approach.md) | A false close-range sighting replaces a good approach |
 | [3.214](3.214-teacher-probe.md) | A larger open teacher for the local VLM: Qwen2.5-VL-72B and Alpamayo 2 Super measured on our frames first |
 | [3.215](3.215-review-faults.md) | Faults the spec review found: the arrival's local threshold, the twin's health line, stale comments |
+| [3.216](3.216-kill-mid-move-stop.md) | A robot-server death mid-move: the board stops inside the gap |
 <!-- /sections -->
