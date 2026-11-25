@@ -281,21 +281,10 @@ GOAL_ID_HEX = 12        # ros_pace.py's `_gid`: nav2's goal UUID, first 12 hex d
 AMENDMENT_9_FROM = 1794117600.0          # 2026-11-08 00:00 CST
 
 
-def approach_as_frontier(sent_rows: list) -> list:
-    """Amendment 9: explore's sends with each `approach` read as `frontier`."""
-    return [dict(r, sent=[[g, "frontier" if k == "approach" else k] for g, k in r.get("sent") or []])
-            for r in sent_rows]
-
-
 def amendment_9_applies(started) -> bool:
-    """Amendment 9 by the run's start (as `lat_score` keys it): an epoch, or
-    board_run's ISO stamp with its offset ('2026-11-07T10:43:51-0600')."""
-    if started is None:
-        return False
-    if isinstance(started, str):
-        import datetime
-        started = datetime.datetime.strptime(started, "%Y-%m-%dT%H:%M:%S%z").timestamp()
-    return float(started) >= AMENDMENT_9_FROM
+    """Amendment 9 by an epoch on the board's clock (`lat_score`'s
+    `run_start`, B's window start)."""
+    return started is not None and str(started) != "" and float(started) >= AMENDMENT_9_FROM
 
 
 def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel_rows=(),
@@ -322,7 +311,8 @@ def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel
 
     `as_frontier`: recorded kinds counted as frontier goals' (amendment 9:
     `("approach",)`). `aborted_by_kind` counts every ABORTED end by its
-    recorded kind (`None` for unmatched), before any reading."""
+    recorded kind (`"unmatched"` for a goal no send recorded), before any
+    reading."""
     kind = {}
     for r in sent_rows:
         for gid, k in r.get("sent") or []:
@@ -364,7 +354,8 @@ def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel
         out[st] += 1
         out["unmatched"] += k is None
         if st == "aborted":
-            out["aborted_by_kind"][k] = out["aborted_by_kind"].get(k, 0) + 1
+            kk = "unmatched" if k is None else k
+            out["aborted_by_kind"][kk] = out["aborted_by_kind"].get(kk, 0) + 1
             excused = any(tc <= t <= tc + CANCEL_TO_END_MAX_S and live_at(gid, tc)
                           for tc in cancels_by_id.get(gid[:GOAL_ID_HEX], []))
             out["aborted_frontier" if k == "frontier" or (k is not None and k in as_frontier)

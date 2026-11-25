@@ -791,18 +791,11 @@ def test_amendment_10_an_approach_abort_is_set_aside_after_amendment_9():
     assert runner.amended_nav_item(nav) == {"ok": 1, "n": 1}
 
 
-def test_amendment_10_keys_on_the_run_start_and_counts_cancelled_approach_aborts():
-    # Review: a window opening after the date in a run started before it is
-    # read without amendment 9 (as lat_score keys it); and an approach abort
-    # amendment 6 excused still counts in aborted_approach.
+def test_amendment_10_counts_an_approach_abort_amendment_6_excused():
+    # Review: an approach abort amendment 6 excused still counts in aborted_approach.
     ws = scorers.AMENDMENT_9_FROM + 60
     pace = [dict(r, t=r["t"] + ws) for r in _approach_abort()[0]]
-    nav, _, am9 = runner.steady_nav(pace, _approach_abort()[1], [], ws, ws + 100,
-                                    started="2026-11-07T23:59:00-0600")
-    assert not am9 and nav["aborted_other"] == 1
-    cancels = _cancels((1, A, ws + 14.9))
-    nav, _, am9 = runner.steady_nav(pace, _approach_abort()[1], cancels, ws, ws + 100,
-                                    started="2026-11-24T19:50:00-0600")
+    nav, _, am9 = runner.steady_nav(pace, _approach_abort()[1], _cancels((1, A, ws + 14.9)), ws, ws + 100)
     assert am9 and nav["aborted_approach"] == 1 and nav["aborted_frontier"] == 1
 
 

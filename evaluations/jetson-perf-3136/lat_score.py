@@ -185,9 +185,8 @@ def nav(d: Path, approach_as_frontier: bool = False) -> dict:
     kept = [dict(r, goals=[g for g in r.get("goals") or [] if g[0] not in person])
             if r.get("k") == "nav" else r for r in pace]
     sends = rows(d / "explore_sends.jsonl")
-    if approach_as_frontier:              # amendment 9
-        sends = scorers.approach_as_frontier(sends)
-    out = scorers.nav_goals_amended(kept, sends, cancel_rows=rows(d / "explore_cancels.jsonl"))
+    out = scorers.nav_goals_amended(kept, sends, cancel_rows=rows(d / "explore_cancels.jsonl"),
+                                    as_frontier=("approach",) if approach_as_frontier else ())  # amendment 9
     out["person"] = len(person)
     return out
 
@@ -197,7 +196,7 @@ def validity(run: Path) -> dict:
     late = sum(((s.get("wheel_loop") or {}).get("late_ticks") or 0) for s in stacks)
     no_wheel = [s["dir"] for s in stacks if not s.get("wheel_loop")]
     started = (run / "run_start").read_text().strip() if (run / "run_start").exists() else ""
-    am9 = bool(started) and float(started) >= AMENDMENT_9_FROM
+    am9 = scorers.amendment_9_applies(started)
     navs = {s["dir"]: nav(run / s["dir"], approach_as_frontier=am9) for s in stacks}
     succeeded = sum(n["succeeded"] for n in navs.values())
     aborted_other = sum(n["aborted_other"] for n in navs.values())

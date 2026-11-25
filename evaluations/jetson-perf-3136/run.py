@@ -276,17 +276,17 @@ def amended_nav_item(nav: dict) -> dict:
     return {"ok": nav["succeeded"], "n": nav["succeeded"] + nav["aborted_other"]}
 
 
-def steady_nav(pace: list, sends: list, cancels: list, ws, we, started=None):
+def steady_nav(pace: list, sends: list, cancels: list, ws, we):
     """nav2's goals in a window: (counts, amended, amendment 9 applied).
     Rows with no id at all are an older bridge's: no join happened, and
-    amendment 2's rule reads them. Amendment 10: a run that started at or
-    after amendment 9's date (`started`, board_run's stamp; the window's
-    start if absent) reads an aborted `approach` as a frontier goal's;
-    `aborted_approach` is how many approach aborts the window had."""
+    amendment 2's rule reads them. Amendment 10: a window that starts at or
+    after amendment 9's date (the board's clock, as `lat_score`'s run start)
+    reads an aborted `approach` as a frontier goal's; `aborted_approach` is
+    how many approach aborts the window had, whichever reading."""
     amended = any(e[0] for r in sends for e in r.get("sent") or [])
     if not amended:
         return scorers.nav_goals(pace, ws, we), False, False
-    am9 = scorers.amendment_9_applies(started if started is not None else ws)
+    am9 = scorers.amendment_9_applies(ws)
     nav = scorers.nav_goals_amended(pace, sends, ws, we, cancel_rows=cancels,
                                     as_frontier=("approach",) if am9 else ())
     nav["aborted_approach"] = nav["aborted_by_kind"].get("approach", 0)
@@ -311,7 +311,7 @@ def score_steady(out: Path, rec: dict) -> dict:
     sends = scorers.jsonl(b / "explore_sends.jsonl")
     # Amendment 6: the brain's own cancels, by goal id (absent before run 3).
     cancels = scorers.jsonl(b / "explore_cancels.jsonl")
-    nav, amended, am9 = steady_nav(pace, sends, cancels, ws, we, rec.get("started"))
+    nav, amended, am9 = steady_nav(pace, sends, cancels, ws, we)
     tc = validity.telemetry_counts(tele, ws, we)
     o0, o1 = _f(b / "oom_start"), _f(b / "oom_end")
     # Clipped: a ring buffer that wrapped never cancels a kill the counter saw.
@@ -403,7 +403,7 @@ def score_steady(out: Path, rec: dict) -> dict:
             "wheel": wheel, "nav2_goals": nav,
             "nav2_rule": (("amendments 5 and 9, by goal id" if am9 else "amendment 5, by goal id") if amended
                           else "amendment 2 (no goal ids recorded: every abort counts)"),
-            "amendment_9": am9, "desktop_lock": rec.get("desktop_lock", "exclusive"), "telemetry": tc, "dmesg_oom_kills": dmesg_ooms,
+            "amendment_9": am9, "desktop_lock": rec.get("desktop_lock"), "telemetry": tc, "dmesg_oom_kills": dmesg_ooms,
             "power_mode": pm, "validity": j,
             "desktop_load_max": max((x[1] for x in rec.get("desktop_load") or []), default=None),
             "missions": {"n": len(missions), "refused_starts": refused,
