@@ -1,0 +1,662 @@
+{
+ "soak": "soak3",
+ "partial": true,
+ "seed": 3204,
+ "git": "90c64259",
+ "house": "scaled_house",
+ "host": "desktop, desktop_lock exclusive",
+ "started": "2026-11-24T20:14:07-0600",
+ "cut": "SystemExit: signal 15 at 2026-11-25T00:15-0600, 4.0 h in: the Claude session host exited and took the background task's process tree with it; no reboot, no sleep, no OOM",
+ "load_1min": {
+  "n": 1444,
+  "median": 1.08,
+  "max": 2.21,
+  "above_4": 0
+ },
+ "cloud": "12 paid-route calls, all to the harness's local stub (127.0.0.1:11027); 0 to any cloud host",
+ "k3_contact_trace": {
+  "fault": 18,
+  "kind": "K3",
+  "forward_start_t": 104025.5,
+  "true_gap_at_start_cm": 34.67,
+  "robot_server_killed_t": 104025.8,
+  "gap_zero_t": 104026.86,
+  "setpoints_zero_t": 104027.34,
+  "zero_after_kill_s": 1.54,
+  "speed_mps": 0.3,
+  "after": "pinned at gap 0.0 cm for the remaining 5,808 s; every FORWARD refused (scan_footprint 0 cm)"
+ },
+ "score": {
+  "run": {
+   "started": "2026-11-24T20:14:07-0600",
+   "seed": 3204,
+   "house": "scaled_house",
+   "kinds": [
+    "K1",
+    "K2",
+    "K3",
+    "K4",
+    "K5",
+    "K6",
+    "K7",
+    "K8",
+    "K9",
+    "K10",
+    "K11"
+   ],
+   "plant": null,
+   "git": "90c642594ccb66d1d44fb1062794503394a7ffe4",
+   "host": "anshu-Legion-T5-28IMB05"
+  },
+  "end": {
+   "error": "SystemExit: signal 15",
+   "t_end": 109834.68,
+   "fired": 18,
+   "unfired": 4
+  },
+  "c1": {
+   "met": false,
+   "fired": 18,
+   "unfired": 4,
+   "by_kind": {
+    "K1": "0/1",
+    "K10": "2/2",
+    "K11": "2/2",
+    "K2": "1/2",
+    "K3": "2/2",
+    "K4": "1/1",
+    "K5": "1/1",
+    "K6": "0/1",
+    "K7": "2/2",
+    "K8": "2/2",
+    "K9": "2/2"
+   },
+   "fails": [
+    "18 faults fired (bar 40)",
+    "4 of 22 draws unfired (18%, bar 10%)",
+    "fault 2 K1: moved 24.27 cm in 6 s after the fault (bar 15)",
+    "fault 3 K6: moved 24.34 cm in 6 s after the fault (bar 15)",
+    "fault 6 K2: moved 23.68 cm in 6 s after the fault (bar 15)"
+   ],
+   "faults": [
+    {
+     "n": 1,
+     "kind": "K7",
+     "mission": "20261125t021658.301908z-red-backpack",
+     "measures": {
+      "mission_s": 1203.98,
+      "contacts": 0,
+      "travel_cm": 1525.06,
+      "end_reason": "time limit of 1200 s reached (1200.5 s)",
+      "outcome": "out_of_budget",
+      "how": "natural",
+      "hung": false,
+      "truth_hole_s": 0.04
+     },
+     "verdict": {
+      "pass": true,
+      "valid": true,
+      "reasons": []
+     }
+    },
+    {
+     "n": 2,
+     "kind": "K1",
+     "mission": "20261125t023700.574545z-red-backpack",
+     "measures": {
+      "forward_at_fault": true,
+      "wheels_zero_s": 0.823,
+      "travel_cm": 24.27,
+      "outcome": "idle",
+      "how": "fault",
+      "hung": false,
+      "truth_hole_s": 0.02
+     },
+     "verdict": {
+      "pass": false,
+      "valid": true,
+      "reasons": [
+       "moved 24.27 cm in 6 s after the fault (bar 15)"
+      ]
+     }
+    },
+    {
+     "n": 3,
+     "kind": "K6",
+     "mission": "20261125t024108.929731z-red-backpack",
+     "measures": {
+      "forward_at_fault": true,
+      "wheels_zero_s": 0.826,
+      "travel_cm": 24.34,
+      "outcome": "failed",
+      "how": "fault",
+      "hung": false,
+      "truth_hole_s": 0.02
+     },
+     "verdict": {
+      "pass": false,
+      "valid": true,
+      "reasons": [
+       "moved 24.34 cm in 6 s after the fault (bar 15)"
+      ]
+     }
+    },
+    {
+     "n": 4,
+     "kind": "K5",
+     "mission": "20261125t024401.400780z-red-backpack",
+     "measures": {
+      "forward_at_fault": true,
+      "wheels_zero_s": 0.209,
+      "travel_cm": 5.81,
+      "travel_stale_cm": 0.0,
+      "outcome": "failed",
+      "how": "fault",
+      "hung": false,
+      "truth_hole_s": 0.02
+     },
+     "verdict": {
+      "pass": true,
+      "valid": true,
+      "reasons": []
+     }
+    },
+    {
+     "n": 5,
+     "kind": "K9",
+     "mission": "20261125t025051.736602z-red-backpack",
+     "measures": {
+      "mission_s": 2.16,
+      "contacts": 0,
+      "travel_cm": 0.0,
+      "end_reason": "vision unavailable 3 times in a row: vision call failed: ConnectError: [Errno 111] Connection refused",
+      "outcome": "failed",
+      "how": "natural",
+      "hung": false,
+      "truth_hole_s": 0.02
+     },
+     "verdict": {
+      "pass": true,
+      "valid": true,
+      "reasons": []
+     }
+    },
+    {
+     "n": 6,
+     "kind": "K2",
+     "mission": "20261125t025053.903998z-red-backpack",
+     "measures": {
+      "forward_at_fault": true,
+      "wheels_zero_s": 0.807,
+      "travel_cm": 23.68,
+      "drive_after_cont": 0,
+      "outcome": "failed",
+      "how": "fault",
+      "hung": false,
+      "truth_hole_s": 0.02
+     },
+     "verdict": {
+      "pass": false,
+      "valid": true,
+      "reasons": [
+       "moved 23.68 cm in 6 s after the fault (bar 15)"
+      ]
+     }
+    },
+    {
+     "n": 7,
+     "kind": "K2",
+     "mission": "20261125t025542.326441z-red-backpack",
+     "measures": {
+      "forward_at_fault": true,
+      "wheels_zero_s": 0.493,
+      "travel_cm": 14.19,
+      "drive_after_cont": 0,
+      "outcome": "failed",
+      "how": "fault",
+      "hung": false,
+      "truth_hole_s": 0.02
+     },
+     "verdict": {
+      "pass": true,
+      "valid": true,
+      "reasons": []
+     }
+    },
+    {
+     "n": 8,
+     "kind": "K7",
+     "mission": "20261125t030251.898044z-red-backpack",
+     "measures": {
+      "mission_s": 1205.66,
+      "contacts": 0,
+      "travel_cm": 1438.34,
+      "end_reason": "time limit of 1200 s reached (1202.4 s)",
+      "outcome": "out_of_budget",
+      "how": "natural",
+      "hung": false,
+      "truth_hole_s": 0.021
+     },
+     "verdict": {
+      "pass": true,
+      "valid": true,
+      "reasons": []
+     }
+    },
+    {
+     "n": 9,
+     "kind": "K9",
+     "mission": "20261125t032520.507380z-red-backpack",
+     "measures": {
+      "mission_s": 2.21,
+      "contacts": 0,
+      "travel_cm": 0.0,
+      "end_reason": "vision unavailable 3 times in a row: vision call failed: ConnectError: [Errno 111] Connection refused",
+      "outcome": "failed",
+      "how": "natural",
+      "hung": false,
+      "truth_hole_s": 0.02
+     },
+     "verdict": {
+      "pass": true,
+      "valid": true,
+      "reasons": []
+     }
+    },
+    {
+     "n": 10,
+     "kind": "K8",
+     "mission": "20261125t032847.960459z-red-backpack",
+     "measures": {
+      "mission_s": 1200.39,
+      "contacts": 0,
+      "travel_cm": 13538.78,
+      "end_reason": "time limit of 1200 s reached (1200.0 s)",
+      "outcome": "out_of_budget",
+      "how": "natural",
+      "hung": false,
+      "truth_hole_s": 0.025,
+      "five_xx": 0
+     },
+     "verdict": {
+      "pass": true,
+      "valid": true,
+      "reasons": []
+     }
+    },
+    {
+     "n": 11,
+     "kind": "K4",
+     "mission": "20261125t034848.332990z-red-backpack",
+     "measures": {
+      "forward_at_fault": true,
+      "wheels_zero_s": 0.298,
+      "travel_cm": 7.77,
+      "travel_stale_cm": 0.0,
+      "outcome": "cancelled",
+      "how": "fault",
+      "hung": false,
+      "truth_hole_s": 0.021
+     },
+     "verdict": {
+      "pass": true,
+      "valid": true,
+      "reasons": []
+     }
+    },
+    {
+     "n": 12,
+     "kind": "K11",
+     "mission": "20261125t035656.723678z-red-backpack",
+     "measures": {
+      "mission_s": 4.63,
+      "contacts": 0,
+      "travel_cm": 0.0,
+      "travel_after_hang_cm": 0.0,
+      "wheels_zero_s": 0.004,
+      "end_reason": "brain loop hung: tick exceeded 3.0s",
+      "outcome": "failed",
+      "how": "natural",
+      "hung": false,
+      "truth_hole_s": 0.02
+     },
+     "verdict": {
+      "pass": true,
+      "valid": true,
+      "reasons": []
+     }
+    },
+    {
+     "n": 13,
+     "kind": "K3",
+     "mission": "20261125t035701.322159z-red-backpack",
+     "measures": {
+      "forward_at_fault": true,
+      "wheels_zero_s": 1.492,
+      "travel_cm": 44.1,
+      "outcome": "failed",
+      "how": "fault",
+      "hung": false,
+      "truth_hole_s": 0.021
+     },
+     "verdict": {
+      "pass": true,
+      "valid": true,
+      "reasons": []
+     }
+    },
+    {
+     "n": 14,
+     "kind": "K10",
+     "mission": "20261125t040356.094389z-red-backpack",
+     "measures": {
+      "mission_s": 61.38,
+      "contacts": 0,
+      "travel_cm": 0.0,
+      "end_reason": "vision unavailable 3 times in a row: vision timed out after 20.0s",
+      "outcome": "failed",
+      "how": "natural",
+      "hung": false,
+      "truth_hole_s": 0.021
+     },
+     "verdict": {
+      "pass": true,
+      "valid": true,
+      "reasons": []
+     }
+    },
+    {
+     "n": 15,
+     "kind": "K10",
+     "mission": "20261125t040834.505516z-red-backpack",
+     "measures": {
+      "mission_s": 61.35,
+      "contacts": 0,
+      "travel_cm": 0.0,
+      "end_reason": "vision unavailable 3 times in a row: vision timed out after 20.0s",
+      "outcome": "failed",
+      "how": "natural",
+      "hung": false,
+      "truth_hole_s": 0.02
+     },
+     "verdict": {
+      "pass": true,
+      "valid": true,
+      "reasons": []
+     }
+    },
+    {
+     "n": 16,
+     "kind": "K8",
+     "mission": "20261125t041211.540409z-red-backpack",
+     "measures": {
+      "mission_s": 1201.97,
+      "contacts": 0,
+      "travel_cm": 12146.54,
+      "end_reason": "time limit of 1200 s reached (1201.2 s)",
+      "outcome": "out_of_budget",
+      "how": "natural",
+      "hung": false,
+      "truth_hole_s": 0.029,
+      "five_xx": 0
+     },
+     "verdict": {
+      "pass": true,
+      "valid": true,
+      "reasons": []
+     }
+    },
+    {
+     "n": 17,
+     "kind": "K11",
+     "mission": "20261125t043543.249442z-red-backpack",
+     "measures": {
+      "mission_s": 4.58,
+      "contacts": 0,
+      "travel_cm": 0.0,
+      "travel_after_hang_cm": 0.0,
+      "wheels_zero_s": 0.0,
+      "end_reason": "brain loop hung: tick exceeded 3.0s",
+      "outcome": "failed",
+      "how": "natural",
+      "hung": false,
+      "truth_hole_s": 0.02
+     },
+     "verdict": {
+      "pass": true,
+      "valid": true,
+      "reasons": []
+     }
+    },
+    {
+     "n": 18,
+     "kind": "K3",
+     "mission": "20261125t043547.848028z-red-backpack",
+     "measures": {
+      "forward_at_fault": true,
+      "wheels_zero_s": 1.502,
+      "travel_cm": 30.1,
+      "outcome": "failed",
+      "how": "fault",
+      "hung": false,
+      "truth_hole_s": 0.021
+     },
+     "verdict": {
+      "pass": true,
+      "valid": true,
+      "reasons": []
+     }
+    }
+   ]
+  },
+  "c2": {
+   "met": false,
+   "contacts": 290406,
+   "truth_hole_s": 0.052,
+   "rows": 722651,
+   "hours": 4.01,
+   "fails": [
+    "290406 contact samples"
+   ]
+  },
+  "c3": {
+   "met": false,
+   "recovery_s_max": 47.83,
+   "recovery_s_median": 5.47,
+   "fails": [
+    "fault 18 K3: no recovery (StackError: the robot never drove forward in 79 s)",
+    "the run ended with an error: SystemExit: signal 15",
+    "/health at the end: None"
+   ]
+  },
+  "c4": {
+   "met": false,
+   "missions": 32,
+   "rate_set": 8,
+   "found": 0,
+   "rate": 0.0,
+   "outcomes": {
+    "out_of_budget": 8
+   },
+   "wrong_found": [],
+   "hung": [],
+   "target_moves": 0,
+   "target_moves_refused": 0,
+   "found_dist_m": [],
+   "mission_s_median": 1210.173999999999,
+   "fails": [
+    "(a) found 0/8 = 0.0 (bar 0.9)"
+   ],
+   "path_per_min": {
+    "clean": {
+     "n": 3,
+     "median_cm_per_min": 0.0
+    },
+    "recovery": {
+     "n": 1,
+     "median_cm_per_min": 0.0
+    }
+   }
+  },
+  "c5": {
+   "met": false,
+   "lives": [
+    {
+     "role": "body",
+     "pid": 1067587,
+     "span_s": 14417,
+     "missions": 32,
+     "rss_first_mb": 72.1,
+     "rss_last_mb": 109.5,
+     "rss_max_mb": 109.5,
+     "slope_mb_h": 9.35
+    },
+    {
+     "role": "sensors",
+     "pid": 1067619,
+     "span_s": 14417,
+     "missions": 32,
+     "rss_first_mb": 69.8,
+     "rss_last_mb": 70.0,
+     "rss_max_mb": 70.0,
+     "slope_mb_h": 0.01
+    },
+    {
+     "role": "sensors2",
+     "pid": 1067620,
+     "span_s": 14417,
+     "missions": 32,
+     "rss_first_mb": 69.8,
+     "rss_last_mb": 72.8,
+     "rss_max_mb": 72.8,
+     "slope_mb_h": 0.19
+    },
+    {
+     "role": "lidar",
+     "pid": 1067652,
+     "span_s": 14417,
+     "missions": 32,
+     "rss_first_mb": 41.3,
+     "rss_last_mb": 42.0,
+     "rss_max_mb": 42.0,
+     "slope_mb_h": 0.32
+    },
+    {
+     "role": "robot",
+     "pid": 1067664,
+     "span_s": 6381,
+     "missions": 18,
+     "rss_first_mb": 78.1,
+     "rss_last_mb": 84.1,
+     "rss_max_mb": 84.1,
+     "slope_mb_h": 1.45
+    },
+    {
+     "role": "brain",
+     "pid": 1067893,
+     "span_s": 1580,
+     "missions": 3,
+     "rss_first_mb": 86.1,
+     "rss_last_mb": 101.7,
+     "rss_max_mb": 101.7,
+     "slope_mb_h": null
+    },
+    {
+     "role": "proxy",
+     "pid": 1067579,
+     "span_s": 14417,
+     "missions": 32,
+     "rss_first_mb": 20.8,
+     "rss_last_mb": 23.9,
+     "rss_max_mb": 23.9,
+     "slope_mb_h": 0.49
+    },
+    {
+     "role": "brain",
+     "pid": 1076420,
+     "span_s": 12827,
+     "missions": 29,
+     "rss_first_mb": 82.6,
+     "rss_last_mb": 131.6,
+     "rss_max_mb": 131.6,
+     "slope_mb_h": 11.3
+    },
+    {
+     "role": "robot",
+     "pid": 1102863,
+     "span_s": 2215,
+     "missions": 10,
+     "rss_first_mb": 12.9,
+     "rss_last_mb": 82.9,
+     "rss_max_mb": 82.9,
+     "slope_mb_h": 33.72
+    },
+    {
+     "role": "stub",
+     "pid": 1103704,
+     "span_s": 60,
+     "missions": 1,
+     "rss_first_mb": 12.9,
+     "rss_last_mb": 12.9,
+     "rss_max_mb": 12.9,
+     "slope_mb_h": null
+    },
+    {
+     "role": "stub",
+     "pid": 1105132,
+     "span_s": 55,
+     "missions": 1,
+     "rss_first_mb": 12.9,
+     "rss_last_mb": 12.9,
+     "rss_max_mb": 12.9,
+     "slope_mb_h": null
+    },
+    {
+     "role": "robot",
+     "pid": 1115872,
+     "span_s": 5791,
+     "missions": 6,
+     "rss_first_mb": 12.8,
+     "rss_last_mb": 81.0,
+     "rss_max_mb": 81.0,
+     "slope_mb_h": 24.95
+    }
+   ],
+   "growth_mb": {
+    "body": 32.7,
+    "sensors": 0.0,
+    "sensors2": 0.3
+   },
+   "oom_kills": 0,
+   "fails": [
+    "robot pid 1102863: per-mission minimum RSS slope 33.72 MB/h (bar 20.0)",
+    "robot pid 1115872: per-mission minimum RSS slope 24.95 MB/h (bar 20.0)"
+   ]
+  },
+  "c6": {
+   "stop_latency_s": {
+    "K1": {
+     "n": 1,
+     "median": 0.823,
+     "max": 0.823
+    },
+    "K6": {
+     "n": 1,
+     "median": 0.826,
+     "max": 0.826
+    },
+    "K2": {
+     "n": 2,
+     "median": 0.65,
+     "max": 0.807
+    },
+    "K11": {
+     "n": 2,
+     "median": 0.002,
+     "max": 0.004
+    }
+   },
+   "late_ticks_seen_max": 0
+  }
+ }
+}
