@@ -1,0 +1,30 @@
+{
+ "silence_s": 90.1,
+ "acted_at": 1795587745.394705,
+ "bench_ended": {
+  "signalled": [
+   178739,
+   178748,
+   180286,
+   180381,
+   180478,
+   182805,
+   185808,
+   185809,
+   188474,
+   240120,
+   265896
+  ],
+  "survivors": []
+ },
+ "samplers_ended": [
+  178546,
+  178547,
+  266740
+ ],
+ "sampler_pids_skipped": [],
+ "survivors": [],
+ "board_lock": "taken",
+ "restore_actions": [],
+ "after_differences": []
+}
