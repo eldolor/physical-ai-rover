@@ -67,3 +67,29 @@ message.
 · `docs/3.207-held` `90c64259` · soak3 partial `ccf5ad13` · the skill's
 worker rule `ee1c5e53`. 3.190.C's Lambda was already deployed (2026-11-20
 16:12 UTC).
+
+## Since 13:30 UTC (added at the watcher's handover request)
+
+* **The Jetson is 3.136.B's for all of 2026-11-25** (the user: "continue using
+  the Jetson for other tests ... make sure you have the latest build deployed
+  ... I don't need the Jetson for anything else today"). Worker
+  session_01JbXvZq3Bpc6wRUGXLrrfCP was told: amendment 11 first (an aborted
+  `recall` goal counts like frontier/approach goals; the orchestrator under
+  delegation), then deploy the latest `dev` to the board (the user's word
+  counts as the "asked" CLAUDE.md 3b needs to move the brain checkout off
+  `bdcf782c`; the ROS image is rebuilt only if `service/slam` changed since
+  `86c56910`), then detached steady-state windows. It pushes each completed
+  window's records to `dev` on its own today (the orchestrator's standing go
+  for that step, that day). If the Jetson is off, it asks the user to power it
+  on (wall supply, Rover off). It was told to be lean with tokens.
+* **The orchestrator watcher** (the user, 2026-11-25): the scheduled task
+  `trig_01Gw14MUnfBaDXe2E5aC4bBs` (6:41, 12:41, 18:41 America/Chicago) wakes
+  the standing session session_01JbXvZrbEfSkEX29CCek4Pw ("Orchestrator
+  watcher", Sonnet). Sessions a schedule starts fresh lack the session tools,
+  so the watcher is a standing session. It tracks the live orchestrator by id
+  (the tags filter isn't available to it), asks for a handoff at 300K tokens,
+  starts the successor, and moves the tag `role:orchestrator` to it. **The new
+  orchestrator: tag yourself `role:orchestrator`** (the watcher's prompt says
+  so). Answer a watcher handover request by writing and pushing a handoff.
+* **The user decided to let the watcher do this handover** rather than start
+  one by hand. There was no other new decision.
