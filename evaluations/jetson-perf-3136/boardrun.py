@@ -123,12 +123,15 @@ def locked(argv: Sequence[str], why: str, desktop_mode: str = "exclusive",
     """Run `argv` (a python command line) under the desktop lock, then the
     board lock. Returns its exit code; 75 if either lock is busy. The board
     lock never waits (another session's hold refuses the run); the desktop
-    lock waits only with `desktop_wait`."""
-    if desktop_mode not in ("exclusive", "shared"):
+    lock waits only with `desktop_wait`. `desktop_mode="none"` takes the
+    board lock alone (3.136 amendment 10: a run nothing of which is measured
+    on the desktop)."""
+    if desktop_mode not in ("exclusive", "shared", "none"):
         raise ValueError(desktop_mode)
-    cmd = [PY, str(ROOT / "tools/desktop_lock.py"), desktop_mode,
-           *([] if desktop_wait else ["--no-wait"]), "--why", why, "--",
-           PY, str(ROOT / "tools/jetson/board_lock.py"), "run", "--why", why, "--", *argv]
+    board = [PY, str(ROOT / "tools/jetson/board_lock.py"), "run", "--why", why, "--", *argv]
+    cmd = board if desktop_mode == "none" else [
+        PY, str(ROOT / "tools/desktop_lock.py"), desktop_mode,
+        *([] if desktop_wait else ["--no-wait"]), "--why", why, "--", *board]
     return subprocess.call(cmd, cwd=ROOT)
 
 

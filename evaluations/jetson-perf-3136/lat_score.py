@@ -47,7 +47,7 @@ CONTACT_WINDOW_S = 3.0
 # Amendment 9 (the user, 2026-11-07): from the next run on, an `approach`
 # goal nav2 aborts counts as amendment 5 counts a frontier goal's. Runs that
 # started before this instant (runs 1-2) are read without it.
-AMENDMENT_9_FROM = 1794117600.0          # 2026-11-08 00:00 CST
+AMENDMENT_9_FROM = scorers.AMENDMENT_9_FROM       # 2026-11-08 00:00 CST
 TERMINAL = {"SUCCEEDED": "succeeded", "CANCELED": "canceled", "ABORTED": "aborted",
             4: "succeeded", 5: "canceled", 6: "aborted"}
 
@@ -186,8 +186,7 @@ def nav(d: Path, approach_as_frontier: bool = False) -> dict:
             if r.get("k") == "nav" else r for r in pace]
     sends = rows(d / "explore_sends.jsonl")
     if approach_as_frontier:              # amendment 9
-        sends = [dict(r, sent=[[g, "frontier" if k == "approach" else k] for g, k in r.get("sent") or []])
-                 for r in sends]
+        sends = scorers.approach_as_frontier(sends)
     out = scorers.nav_goals_amended(kept, sends, cancel_rows=rows(d / "explore_cancels.jsonl"))
     out["person"] = len(person)
     return out

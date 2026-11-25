@@ -275,6 +275,16 @@ def nav_goals(pace_rows: list, t0=None, t1=None) -> dict:
 
 
 GOAL_ID_HEX = 12        # ros_pace.py's `_gid`: nav2's goal UUID, first 12 hex digits
+# Amendment 9 (the user, 2026-11-07; B's scorer by amendment 10): from runs
+# that start at or after this instant, an `approach` goal nav2 aborts counts
+# as amendment 5 counts a frontier goal's.
+AMENDMENT_9_FROM = 1794117600.0          # 2026-11-08 00:00 CST
+
+
+def approach_as_frontier(sent_rows: list) -> list:
+    """Amendment 9: explore's sends with each `approach` read as `frontier`."""
+    return [dict(r, sent=[[g, "frontier" if k == "approach" else k] for g, k in r.get("sent") or []])
+            for r in sent_rows]
 
 
 def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel_rows=()) -> dict:

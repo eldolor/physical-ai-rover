@@ -763,3 +763,49 @@ def test_amendment_6_a_cancel_the_bridge_did_not_take_excuses_nothing():
     got = scorers.nav_goals_amended(pace, _sent((A, "approach"), (B, "view")), 0, 100,
                                     cancel_rows=_cancels((1, A, 14.9, False)))
     assert got["aborted_other"] == 1 and got["aborted_cancelled"] == 0
+
+
+# ---- amendment 10 (3.136.B): amendment 9 in B's scorer; the board lock alone ----
+
+def _approach_abort():
+    pace = [_nav(10.2, (A[:12], 2)), _nav(15.0, (A[:12], 6)),
+            _nav(20.3, (B[:12], 2)), _nav(25.0, (B[:12], 4))]
+    return pace, _sent((A, "approach"), (B, "view"))
+
+
+def test_amendment_10_an_approach_abort_invalidates_a_window_before_amendment_9():
+    pace, sends = _approach_abort()
+    ws = scorers.AMENDMENT_9_FROM - 1000
+    pace = [dict(r, t=r["t"] + ws) for r in pace]
+    nav, amended, am9 = runner.steady_nav(pace, sends, [], ws, ws + 100)
+    assert amended and not am9 and nav["aborted_other"] == 1
+    assert runner.amended_nav_item(nav)["ok"] != runner.amended_nav_item(nav)["n"]
+
+
+def test_amendment_10_an_approach_abort_is_set_aside_after_amendment_9():
+    pace, sends = _approach_abort()
+    ws = scorers.AMENDMENT_9_FROM
+    pace = [dict(r, t=r["t"] + ws) for r in pace]
+    nav, amended, am9 = runner.steady_nav(pace, sends, [], ws, ws + 100)
+    assert amended and am9 and nav["aborted_other"] == 0 and nav["aborted_approach"] == 1
+    assert runner.amended_nav_item(nav) == {"ok": 1, "n": 1}
+
+
+@pytest.mark.parametrize("kind", ["view", None])
+def test_amendment_10_other_aborts_still_invalidate_after_amendment_9(kind):
+    pace = [_nav(10.2, (A[:12], 2)), _nav(15.0, (A[:12], 6)),
+            _nav(20.3, (B[:12], 2)), _nav(25.0, (B[:12], 4))]
+    ws = scorers.AMENDMENT_9_FROM
+    pace = [dict(r, t=r["t"] + ws) for r in pace]
+    nav, _, am9 = runner.steady_nav(pace, _sent((A, kind), (B, "view")), [], ws, ws + 100)
+    assert am9 and nav["aborted_other"] == 1 and nav["aborted_approach"] == 0
+
+
+def test_amendment_10_locked_none_takes_the_board_lock_alone(monkeypatch):
+    seen = []
+    monkeypatch.setattr(br.subprocess, "call", lambda cmd, cwd=None: seen.append(cmd) or 0)
+    assert br.locked(["x"], "why", desktop_mode="none") == 0
+    assert not any("desktop_lock.py" in c for c in seen[0])
+    assert any("board_lock.py" in c for c in seen[0]) and seen[0][-1] == "x"
+    br.locked(["x"], "why")
+    assert any("desktop_lock.py" in c for c in seen[1])
