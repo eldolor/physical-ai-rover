@@ -169,7 +169,7 @@ def p5(run: Path) -> dict:
                   "trials": ts} for tag, ts in res.items()}
 
 
-def nav(d: Path, approach_as_frontier: bool = False) -> dict:
+def nav(d: Path, as_frontier: tuple = ()) -> dict:
     """Amendments 5-6 for one stack, with amendment 7: a goal nav2 ended
     ABORTED or CANCELED within PERSON_END_S after a person's act (a Stop, a
     verb, a D-pad hold) is the person's, counted neither way."""
@@ -186,7 +186,7 @@ def nav(d: Path, approach_as_frontier: bool = False) -> dict:
             if r.get("k") == "nav" else r for r in pace]
     sends = rows(d / "explore_sends.jsonl")
     out = scorers.nav_goals_amended(kept, sends, cancel_rows=rows(d / "explore_cancels.jsonl"),
-                                    as_frontier=("approach",) if approach_as_frontier else ())  # amendment 9
+                                    as_frontier=as_frontier)  # amendments 9 and 11
     out["person"] = len(person)
     return out
 
@@ -197,7 +197,8 @@ def validity(run: Path) -> dict:
     no_wheel = [s["dir"] for s in stacks if not s.get("wheel_loop")]
     started = (run / "run_start").read_text().strip() if (run / "run_start").exists() else ""
     am9 = scorers.amendment_9_applies(started)
-    navs = {s["dir"]: nav(run / s["dir"], approach_as_frontier=am9) for s in stacks}
+    am11 = scorers.amendment_11_applies(started)
+    navs = {s["dir"]: nav(run / s["dir"], as_frontier=scorers.frontier_kinds(started)) for s in stacks}
     succeeded = sum(n["succeeded"] for n in navs.values())
     aborted_other = sum(n["aborted_other"] for n in navs.values())
     f = lambda p: (run / p).read_text().strip() if (run / p).exists() else None  # noqa: E731
@@ -225,6 +226,7 @@ def validity(run: Path) -> dict:
             "max_dt_s": max((((s.get("wheel_loop") or {}).get("max_dt_s")) or 0 for s in stacks), default=None),
             "moving_ticks": sum(((s.get("wheel_loop") or {}).get("moving_ticks") or 0) for s in stacks),
             "oom_kills": oom, "power": power, "stacks": len(stacks), "amendment_9": am9,
+            "amendment_11": am11,
             "nav": {"succeeded": succeeded, "aborted_other": aborted_other,
                     "per_stack": navs}}
 

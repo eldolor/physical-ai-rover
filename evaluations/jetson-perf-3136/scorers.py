@@ -287,6 +287,25 @@ def amendment_9_applies(started) -> bool:
     return started is not None and str(started) != "" and float(started) >= AMENDMENT_9_FROM
 
 
+# Amendment 11 (3.136.B, 2026-11-25, the orchestrator under the user's
+# delegation): from runs that start at or after this instant, a `recall`
+# goal (3.172.C) nav2 aborts counts as amendment 5 counts a frontier goal's.
+AMENDMENT_11_FROM = 1795613400.0         # 2026-11-25 07:30 CST
+
+
+def amendment_11_applies(started) -> bool:
+    """Amendment 11 by an epoch on the board's clock, as amendment 9."""
+    return started is not None and str(started) != "" and float(started) >= AMENDMENT_11_FROM
+
+
+def frontier_kinds(started) -> tuple:
+    """The recorded kinds a run that started at `started` counts as
+    frontier goals' (`nav_goals_amended`'s `as_frontier`): amendment 9's
+    `approach`, amendment 11's `recall`."""
+    return (("approach",) if amendment_9_applies(started) else ()) + \
+        (("recall",) if amendment_11_applies(started) else ())
+
+
 def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel_rows=(),
                       as_frontier=()) -> dict:
     """`nav_goals()` with each ABORTED end split by its goal's kind --
@@ -310,7 +329,7 @@ def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel
     `aborted_other`.
 
     `as_frontier`: recorded kinds counted as frontier goals' (amendment 9:
-    `("approach",)`). `aborted_by_kind` counts every ABORTED end by its
+    `approach`, amendment 11: `recall`; `frontier_kinds()`). `aborted_by_kind` counts every ABORTED end by its
     recorded kind (`"unmatched"` for a goal no send recorded), before any
     reading."""
     kind = {}

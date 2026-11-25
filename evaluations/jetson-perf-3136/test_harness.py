@@ -817,3 +817,37 @@ def test_amendment_10_locked_none_takes_the_board_lock_alone(monkeypatch):
     assert any("board_lock.py" in c for c in seen[0]) and seen[0][-1] == "x"
     br.locked(["x"], "why")
     assert any("desktop_lock.py" in c for c in seen[1])
+
+
+# ---- amendment 11 (3.136.B): an aborted `recall` goal counts as a frontier one ----
+
+def _recall_abort(ws):
+    pace = [_nav(10.2, (A[:12], 2)), _nav(15.0, (A[:12], 6)),
+            _nav(20.3, (B[:12], 2)), _nav(25.0, (B[:12], 4))]
+    return [dict(r, t=r["t"] + ws) for r in pace], _sent((A, "recall"), (B, "view"))
+
+
+def test_amendment_11_a_recall_abort_invalidates_runs_4_and_5():
+    for ws in (1795571319.2, 1795586831.9):           # run 4's and run 5's window starts (board clock)
+        pace, sends = _recall_abort(ws)
+        nav, _, am9 = runner.steady_nav(pace, sends, [], ws, ws + 100)
+        assert am9 and not nav["amendment_11"]
+        assert nav["aborted_other"] == 1 and nav["aborted_recall"] == 1
+
+
+def test_amendment_11_a_recall_abort_is_set_aside_from_its_date():
+    ws = scorers.AMENDMENT_11_FROM
+    pace, sends = _recall_abort(ws)
+    nav, _, _ = runner.steady_nav(pace, sends, [], ws, ws + 100)
+    assert nav["amendment_11"] and nav["aborted_other"] == 0 and nav["aborted_recall"] == 1
+    assert runner.amended_nav_item(nav) == {"ok": 1, "n": 1}
+
+
+def test_amendment_11_keeps_amendment_9_and_other_aborts():
+    assert scorers.frontier_kinds(scorers.AMENDMENT_11_FROM) == ("approach", "recall")
+    assert scorers.frontier_kinds(scorers.AMENDMENT_9_FROM) == ("approach",)
+    assert scorers.frontier_kinds(None) == ()
+    ws = scorers.AMENDMENT_11_FROM
+    pace, _ = _recall_abort(ws)
+    nav, _, _ = runner.steady_nav(pace, _sent((A, "view"), (B, "view")), [], ws, ws + 100)
+    assert nav["aborted_other"] == 1 and nav["aborted_recall"] == 0

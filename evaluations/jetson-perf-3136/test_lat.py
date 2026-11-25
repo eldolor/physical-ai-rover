@@ -75,7 +75,7 @@ def test_amendment_9_counts_an_approach_abort_as_a_frontier_one(tmp_path):
         {"k": "nav", "t": 20.0, "goals": [["a" * 12, 6], ["c" * 12, 4]]}])
     jl(tmp_path / "explore_sends.jsonl", [{"sent": [["a" * 32, "approach"], ["c" * 32, "frontier"]]}])
     assert ls.nav(tmp_path)["aborted_other"] == 1                      # runs 1-2: as written
-    n = ls.nav(tmp_path, approach_as_frontier=True)
+    n = ls.nav(tmp_path, as_frontier=("approach",))
     assert n["aborted_other"] == 0 and n["aborted_frontier"] == 1
 
 
@@ -85,3 +85,11 @@ def test_amendment_9_applies_only_to_runs_after_2026_11_07(tmp_path):
     assert ls.validity(tmp_path)["amendment_9"] is False
     (tmp_path / "run_start").write_text("1795000000.0\n")             # the week of 11-23
     assert ls.validity(tmp_path)["amendment_9"] is True
+
+
+def test_amendment_11_applies_only_to_runs_from_2026_11_25(tmp_path):
+    (tmp_path / "stacks.jsonl").write_text("")
+    (tmp_path / "run_start").write_text("1795586831.9\n")             # run 5's window start
+    assert ls.validity(tmp_path)["amendment_11"] is False
+    (tmp_path / "run_start").write_text(f"{ls.scorers.AMENDMENT_11_FROM}\n")
+    assert ls.validity(tmp_path)["amendment_11"] is True

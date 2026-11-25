@@ -282,14 +282,18 @@ def steady_nav(pace: list, sends: list, cancels: list, ws, we):
     amendment 2's rule reads them. Amendment 10: a window that starts at or
     after amendment 9's date (the board's clock, as `lat_score`'s run start)
     reads an aborted `approach` as a frontier goal's; `aborted_approach` is
-    how many approach aborts the window had, whichever reading."""
+    how many approach aborts the window had, whichever reading. Amendment
+    11: from its own date, an aborted `recall` likewise (`amendment_11`,
+    `aborted_recall`)."""
     amended = any(e[0] for r in sends for e in r.get("sent") or [])
     if not amended:
         return scorers.nav_goals(pace, ws, we), False, False
     am9 = scorers.amendment_9_applies(ws)
     nav = scorers.nav_goals_amended(pace, sends, ws, we, cancel_rows=cancels,
-                                    as_frontier=("approach",) if am9 else ())
+                                    as_frontier=scorers.frontier_kinds(ws))
     nav["aborted_approach"] = nav["aborted_by_kind"].get("approach", 0)
+    nav["amendment_11"] = scorers.amendment_11_applies(ws)
+    nav["aborted_recall"] = nav["aborted_by_kind"].get("recall", 0)
     return nav, True, am9
 
 
@@ -401,9 +405,10 @@ def score_steady(out: Path, rec: dict) -> dict:
     return {"sha": rec.get("sha"), "stamps": st, "window_s": rows["P4"]["window_s"],
             "uptime_at_start_s": (rec.get("as_found") or {}).get("uptime_s"),
             "wheel": wheel, "nav2_goals": nav,
-            "nav2_rule": (("amendments 5 and 9, by goal id" if am9 else "amendment 5, by goal id") if amended
+            "nav2_rule": (("amendment" + ("s 5, 9 and 11" if nav.get("amendment_11") else "s 5 and 9" if am9 else " 5")
+                           + ", by goal id") if amended
                           else "amendment 2 (no goal ids recorded: every abort counts)"),
-            "amendment_9": am9, "desktop_lock": rec.get("desktop_lock"), "telemetry": tc, "dmesg_oom_kills": dmesg_ooms,
+            "amendment_9": am9, "amendment_11": bool(nav.get("amendment_11")), "desktop_lock": rec.get("desktop_lock"), "telemetry": tc, "dmesg_oom_kills": dmesg_ooms,
             "power_mode": pm, "validity": j,
             "desktop_load_max": max((x[1] for x in rec.get("desktop_load") or []), default=None),
             "missions": {"n": len(missions), "refused_starts": refused,
