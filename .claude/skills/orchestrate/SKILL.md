@@ -12,6 +12,13 @@ you plan, brief, check and merge. You choose how many workers run at once
 and how they are paced, **at most 2 at once** (the user, 2026-11-22), and spread
 the work so the weekly quota lasts all seven days.
 
+**One orchestrator, for code and documentation both** (the user,
+2026-11-25: two orchestrators contended for the weekly quota). There is no
+separate Documentation Orchestrator: documentation steps are chosen, briefed
+and checked here like any other, on Sonnet where they are mechanical. The
+last one's closing state and open list are in
+`docs/handoffs/HANDOFF-2026-11-25-docs-orchestrator-closed.md`.
+
 Arguments, if given (`/orchestrate <args>`): a quota reading ("42% used,
 resets Mon 09:00"), a cap on workers ("2 workers"), or steps to focus on
 ("3.175, 3.176"). Each overrides the default below.
