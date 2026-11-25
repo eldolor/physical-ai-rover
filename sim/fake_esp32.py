@@ -426,7 +426,9 @@ class FakeEsp32Http:
     the board never sees them and the client hears nothing for `hang_s` --
     what a dropped Wi-Fi exchange looks like from the host. That the real
     board's lost requests ARE lost on the way, not a busy board, is not
-    known (3.217 step B measures it). `refuse()` closes the port.
+    known (3.217 step B measures it). `late_next(n, late_s)` is the other
+    way a request goes wrong: the board acts on it, `late_s` late, after the
+    host has given up. `refuse()` closes the port.
 
     `received` is (monotonic time, command) for every command handled.
     """
@@ -438,6 +440,8 @@ class FakeEsp32Http:
         self.requests = 0
         self._lose = 0
         self._hang_s = 0.0
+        self._late = 0
+        self._late_s = 0.0
         self._conns = set()
         self._lock = threading.Lock()
         face = self
@@ -467,6 +471,12 @@ class FakeEsp32Http:
                     if lost:
                         face._lose -= 1
                     hang = face._hang_s
+                    late = face._late > 0
+                    if late:
+                        face._late -= 1
+                    late_s = face._late_s
+                if late:
+                    time.sleep(late_s)
                 if lost:
                     time.sleep(hang)
                     self.close_connection = True
@@ -490,8 +500,11 @@ class FakeEsp32Http:
                 self.send_header("Content-Type", "application/json")
                 self.send_header("Content-Length", str(len(body)))
                 self.end_headers()
-                self.wfile.write(body)
-                self.wfile.flush()
+                try:
+                    self.wfile.write(body)
+                    self.wfile.flush()
+                except OSError:
+                    self.close_connection = True    # the host gave up on this one
 
             def log_message(self, *args):
                 pass
@@ -507,6 +520,10 @@ class FakeEsp32Http:
     def lose_next(self, n: int = 1, hang_s: float = 1.0) -> None:
         with self._lock:
             self._lose, self._hang_s = n, hang_s
+
+    def late_next(self, n: int = 1, late_s: float = 0.15) -> None:
+        with self._lock:
+            self._late, self._late_s = n, late_s
 
     def wheel_commands(self):
         with self._lock:

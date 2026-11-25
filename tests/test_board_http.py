@@ -77,7 +77,8 @@ def test_the_windows_fit_inside_the_boards_heartbeat():
 
 
 @pytest.mark.parametrize("url", ["https://10.0.0.1", "http://", "http://u:p@10.0.0.1",
-                                 "http://10.0.0.1/js", "http://10.0.0.1/?x=1", "10.0.0.1"])
+                                 "http://10.0.0.1/js", "http://10.0.0.1/?x=1", "10.0.0.1",
+                                 "http://rover.local", "http://localhost:8080"])
 def test_only_a_bare_http_host_is_a_command_url(url):
     with pytest.raises(ValueError):
         HttpCommandSender(url)
@@ -145,6 +146,91 @@ def test_the_board_ends_on_the_last_command_issued():
         sender.close()
         face.close()
         board.close()
+
+
+def test_a_speed_the_host_gave_up_on_does_not_outlive_the_stop_after_it(car):
+    # Review: the board acts on request A 150 ms late, after the host timed
+    # out and delivered the stop. The stop is said again, so A runs for one
+    # repeat period, not until the heartbeat.
+    robot, board, face, _ = car
+    face.late_next(n=1, late_s=0.15)
+    robot.set_wheel_velocity(SPEED, SPEED)
+    time.sleep(0.02)
+    robot.stop()
+    assert _wait(lambda: board.setpoint != [0.0, 0.0], timeout=0.5), "A never landed late"
+    landed = time.monotonic()
+    assert _wait(lambda: board.setpoint == [0.0, 0.0], timeout=0.5, step=0.002)
+    assert time.monotonic() - landed < 0.12
+    assert not board.heartbeat_stopped, "the heartbeat, not the repeat, stopped it"
+
+
+def test_a_set_up_command_never_answered_cannot_hold_a_stop_or_let_a_speed_past():
+    # Review: set-up went first and was retried for ever, with the stop
+    # behind it.
+    body = MockRobot(build_scaled_world(), render=False)
+    board = FakeEsp32(body)
+    face = FakeEsp32Http(board)
+    sender = HttpCommandSender(face.url)
+    try:
+        assert sender.submit({"T": 1, "L": 0.2, "R": 0.2}) and sender.flush(1.0)
+        face.lose_next(n=10_000, hang_s=0.3)
+        sender.submit({"T": 136, "cmd": 200})
+        time.sleep(COMMAND_STALE_S + 0.1)
+        assert sender.submit({"T": 1, "L": 0.2, "R": 0.2}) is False     # no speed past it
+        face.lose_next(n=0)
+        # The stop that took its place lands although the set-up is still
+        # ahead of it in time.
+        assert _wait(lambda: board.setpoint == [0.0, 0.0], timeout=1.0)
+        assert sender.flush(2.0)
+        assert board.heartbeat_ms == 200
+    finally:
+        sender.close()
+        face.close()
+        board.close()
+
+
+def test_a_speed_that_waited_out_a_dead_route_is_sent_as_a_stop():
+    # Review: nobody re-sends it (the brain died), the route returns 0.6 s
+    # later, and the old speed would have driven.
+    body = MockRobot(build_scaled_world(), render=False)
+    board = FakeEsp32(body)
+    face = FakeEsp32Http(board)
+    sender = HttpCommandSender(face.url)
+    try:
+        face.lose_next(n=4, hang_s=0.2)
+        sender.submit({"T": 1, "L": 0.2, "R": 0.2})
+        assert sender.flush(3.0, settled=True)
+        speeds = [c for _, c in face.wheel_commands() if c["L"]]
+        assert speeds == [] and board.setpoint == [0.0, 0.0]
+        assert sender.status()["expired"] == 1
+    finally:
+        sender.close()
+        face.close()
+        board.close()
+
+
+def test_a_connection_the_board_closed_while_idle_is_not_a_failure(car):
+    robot, board, face, _ = car
+    assert _wait(lambda: robot.feedback_status()["command"]["sent"] >= 2)
+    with face._lock:
+        conns = list(face._conns)
+    for conn in conns:
+        conn.shutdown(2)
+    time.sleep(0.05)
+    robot.set_wheel_velocity(SPEED, SPEED)
+    assert _wait(lambda: board.setpoint != [0.0, 0.0], timeout=0.5)
+    robot.stop()
+    assert robot.feedback_status()["command"]["failed"] == 0
+
+
+def test_a_port_that_is_not_a_tty_leaves_no_sender_thread(tmp_path):
+    import threading
+    before = threading.active_count()
+    plain = tmp_path / "not-a-tty"
+    plain.write_text("")
+    with pytest.raises(Exception):
+        HardwareRobot(str(plain), command_url="http://127.0.0.1:9")
+    assert _wait(lambda: threading.active_count() == before, timeout=2.0)
 
 
 # ---- criterion 4: a dead route refuses motion and never traps a stop --------

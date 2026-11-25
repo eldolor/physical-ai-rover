@@ -14,7 +14,14 @@ waits on the network: one thread sends them, one at a time, in order.
 
 * **Wheel commands (`T:1`) are one slot, newest wins.** A stop is never
   queued behind older speeds, and an older speed is never sent after it.
-* **Set-up commands keep their order and go first.**
+* **A stop goes first, then set-up commands in their order, then a speed.**
+  A set-up command the board never answers therefore cannot hold a stop,
+  and while it waits it ages the route, so no speed is sent past it for
+  long: the heartbeat's set-up reaches the board before the board drives.
+* **A speed is judged again when it is sent.** One that waited longer than
+  `COMMAND_STALE_S` (the route was down) goes out as a zero.
+* **A request that waits on a stop already issued is not cut short**: the
+  stop follows it, at most one `COMMAND_TIMEOUT_S` later.
 * **A request that does not answer in `COMMAND_TIMEOUT_S` is abandoned**,
   its connection closed, and the newest wheel command sent on a new one.
   The board may still act on the abandoned request late, so after any
@@ -27,6 +34,7 @@ waits on the network: one thread sends them, one at a time, in order.
 
 import collections
 import http.client
+import ipaddress
 import json
 import threading
 import time
@@ -65,6 +73,13 @@ class HttpCommandSender:
                 or url.path not in ("", "/") or url.query or url.fragment):
             raise ValueError("the board's command URL must be http://<host>[:<port>] "
                              f"and nothing else, got {base_url!r}")
+        try:
+            # An address, never a name: resolving one is not bounded by the
+            # timeout, and a stop would wait on it (review, 3.217).
+            ipaddress.ip_address(url.hostname)
+        except ValueError:
+            raise ValueError("the board's command URL must name an IP address, "
+                             f"not a host name, got {base_url!r}") from None
         self.host, self.port = url.hostname, url.port or 80
         self.timeout_s = float(timeout_s)
         self._cond = threading.Condition()
@@ -78,6 +93,7 @@ class HttpCommandSender:
         self.failed = 0
         self.coalesced = 0          # wheel commands replaced before they were sent
         self.refused = 0            # non-zero wheel commands refused on a stale route
+        self.expired = 0            # ...and ones that went stale waiting, sent as a zero
         self.dropped = 0            # set-up commands lost to a full queue or a bad status
         self.last_error: Optional[str] = None
         self._conn: Optional[http.client.HTTPConnection] = None
@@ -123,11 +139,13 @@ class HttpCommandSender:
             self._cond.notify_all()
         return ok
 
-    def flush(self, timeout_s: float) -> bool:
-        """Wait until nothing is pending, or `timeout_s`."""
+    def flush(self, timeout_s: float, settled: bool = False) -> bool:
+        """Wait until nothing is pending, or `timeout_s`. `settled` also
+        waits out the repeats that follow a failure."""
         deadline = time.monotonic() + timeout_s
         with self._cond:
-            while self._age_locked(time.monotonic()) is not None:
+            while (self._age_locked(time.monotonic()) is not None
+                   or (settled and self._reassert and self._last_wheel is not None)):
                 left = deadline - time.monotonic()
                 if left <= 0:
                     return False
@@ -142,6 +160,7 @@ class HttpCommandSender:
                     "stale_after_s": COMMAND_STALE_S, "timeout_s": self.timeout_s,
                     "sent": self.sent, "failed": self.failed,
                     "coalesced": self.coalesced, "refused": self.refused,
+                    "expired": self.expired,
                     "dropped": self.dropped, "last_error": self.last_error}
 
     def close(self) -> None:
@@ -157,12 +176,18 @@ class HttpCommandSender:
         """The next command and its kind, or None when closing."""
         with self._cond:
             while self._running:
-                if self._setup:
+                stop_waits = self._wheel is not None and _is_zero(self._wheel[1])
+                if self._setup and not stop_waits:
                     since, obj = self._setup.popleft()
                     self._inflight_at = since
                     return "setup", obj
                 if self._wheel is not None:
                     (since, obj), self._wheel = self._wheel, None
+                    if not _is_zero(obj) and time.monotonic() - since > COMMAND_STALE_S:
+                        # It waited out a dead route: nobody may still want it.
+                        obj = dict(ZERO)
+                        self._last_wheel = obj
+                        self.expired += 1
                     self._inflight_at = since
                     return "wheel", obj
                 if self._reassert and self._last_wheel is not None:
@@ -170,6 +195,7 @@ class HttpCommandSender:
                         # Nothing newer in a period: say the newest again.
                         self._reassert -= 1
                         self._inflight_at = time.monotonic()
+                        self._cond.notify_all()         # flush(settled=True) counts these
                         return "again", self._last_wheel
                     continue
                 self._cond.wait(0.5)
@@ -184,11 +210,25 @@ class HttpCommandSender:
                 pass
 
     def _request(self, obj: dict) -> int:
-        if self._conn is None:
-            self._conn = http.client.HTTPConnection(self.host, self.port, timeout=self.timeout_s)
         path = "/js?json=" + urllib.parse.quote(json.dumps(obj, separators=(",", ":")))
-        self._conn.request("GET", path)
-        reply = self._conn.getresponse()
+        reused = self._conn is not None
+        try:
+            return self._exchange(path)
+        except (http.client.RemoteDisconnected, BrokenPipeError, ConnectionResetError):
+            # The board closed a connection that sat idle: not a lost
+            # command. Once more on a new one; a second failure is real.
+            self._drop_connection()
+            if not reused:
+                raise
+            return self._exchange(path)
+
+    def _exchange(self, path: str) -> int:
+        conn = self._conn
+        if conn is None:
+            conn = self._conn = http.client.HTTPConnection(self.host, self.port,
+                                                           timeout=self.timeout_s)
+        conn.request("GET", path)
+        reply = conn.getresponse()
         reply.read(65536)
         if not reply.isclosed():
             self._drop_connection()     # a body longer than we read: do not reuse
@@ -205,7 +245,7 @@ class HttpCommandSender:
                 status = self._request(obj)
                 heard = True
                 error = None if status == 200 else f"the board answered HTTP {status}"
-            except (OSError, http.client.HTTPException) as e:
+            except Exception as e:  # noqa: BLE001 -- a dead sender refuses motion with no reason given
                 self._drop_connection()
                 error = f"{type(e).__name__}: {e}"[:200]
             with self._cond:

@@ -188,15 +188,15 @@ class HardwareRobot(RobotInterface):
         self._http = HttpCommandSender(command_url) if command_url else None
         try:
             self._fd = os.open(port, os.O_RDWR | os.O_NOCTTY)
-        except OSError:
+            tty.setraw(self._fd)
+            attrs = termios.tcgetattr(self._fd)
+            speed = getattr(termios, f"B{baud}", termios.B115200)
+            attrs[4] = attrs[5] = speed
+            termios.tcsetattr(self._fd, termios.TCSANOW, attrs)
+        except BaseException:
             if self._http is not None:
-                self._http.close()
+                self._http.close()      # its thread, or it idles for good
             raise
-        tty.setraw(self._fd)
-        attrs = termios.tcgetattr(self._fd)
-        speed = getattr(termios, f"B{baud}", termios.B115200)
-        attrs[4] = attrs[5] = speed
-        termios.tcsetattr(self._fd, termios.TCSANOW, attrs)
         self._lock = threading.Lock()
         # 3.76 B1: deciding a wheel command and writing it are one step, so
         # the board's last command is always `_cmd`. Taken before `_lock`.
@@ -250,8 +250,8 @@ class HardwareRobot(RobotInterface):
         if self._http is not None:
             ok = self._http.submit(obj)
             if not ok:
-                self.link_error = ("the web route to the motor board is not delivering: "
-                                   f"{self._http.last_error}")
+                self.link_error = ("the web route to the motor board is not delivering"
+                                   + (f": {self._http.last_error}" if self._http.last_error else ""))
             return ok
         try:
             os.write(self._fd, (json.dumps(obj) + "\n").encode())
@@ -787,7 +787,10 @@ class HardwareRobot(RobotInterface):
             self._running = False
             self._reader_thread.join(timeout=1.0)
             if self._http is not None:
-                self._http.flush(0.3)       # the stop above, if the route is up
+                # The stop above and, after a failure, its repeats: a request
+                # given up on may still land after it. Past this the board's
+                # heartbeat is what stops the wheels.
+                self._http.flush(0.3, settled=True)
                 self._http.close()
             try:
                 os.close(self._fd)
