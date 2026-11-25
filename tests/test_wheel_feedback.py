@@ -64,8 +64,9 @@ def _silence(board):
 
 
 def test_the_feedback_window_sits_below_both_deadmen():
-    # Above it the server's 1 s watchdog or the board's 1.5 s heartbeat would
-    # act first, and this rule would never be the one that stops the wheels.
+    # Above it the server's 1 s watchdog would act first, and this rule would
+    # never be the one that stops the wheels. The board's heartbeat (200 ms
+    # since 3.216) watches the other direction, so the two are not ordered.
     assert 0.1 < FEEDBACK_STALE_S < 1.0
 
 
@@ -83,11 +84,15 @@ def test_silence_makes_wheels_and_odometry_unusable(car):
 
 def test_a_standing_command_is_zeroed_by_the_body_when_feedback_stops(car):
     robot, board, _ = car
+    # Since 3.216 the board's own heartbeat (200 ms) fires before this
+    # window (0.25 s) whenever nothing re-sends the command, as here: it is
+    # slowed so the stop measured is the HOST's.
+    board.heartbeat_ms = 1500
     robot.set_wheel_velocity(3.0, 3.0)
     assert _wait(lambda: board.setpoint != [0.0, 0.0], timeout=0.5)
     last = _silence(board)
     assert _wait(lambda: board.setpoint == [0.0, 0.0], timeout=1.0), board.setpoint
-    # The board's own heartbeat is 1.5 s; this is the host acting.
+    # The board's heartbeat (slowed above) did not act; the host did.
     assert time.monotonic() - last <= 0.4 + 0.05
     assert not board.heartbeat_stopped
 
