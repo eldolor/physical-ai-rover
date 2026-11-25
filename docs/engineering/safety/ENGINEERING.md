@@ -82,8 +82,10 @@ clamps at `<= need` and otherwise limits speed to `(clearance - need) /
 **The bar, `need` (3.44):** `required_clearance_cm(v, creep)` is
 `CREEP_MARGIN_CM` (3 cm) when `creep` and `|v| <= CREEP_M_S` (0.03 m/s),
 else `max(min_distance_cm, stop_distance_cm(v))` with
-`stop_distance_cm(v) = 3 + 100 (|v| x 0.15 + v^2 / (2 x 0.5))` cm -- 20 cm
-up to about 0.34 m/s, 25 at 0.4, 35.5 at 0.5, 48 at 0.6. `v` unknown
+`stop_distance_cm(v) = 3 + 100 (|v| x T_REACT_S + v^2 / (2 x 0.5))` cm,
+`T_REACT_S` 0.25 s since 3.216 (the board's 0.2 s heartbeat plus one period:
+a dead robot server's blind travel) -- 20 cm up to about 0.31 m/s, 29 at
+0.4, 40.5 at 0.5, 54 at 0.6 (25, 35.5 and 48 under 3.44's 0.15 s). `v` unknown
 (None): `min_distance_cm`. `creep` is true only while a straight verb
 ASKED at creep speed runs: `check_and_execute()` sets `_asked_v_m_s` and
 `_creep_asked` through `_asking()` for the verb's whole run and clears them
@@ -174,7 +176,7 @@ astern does not reverse".
 |---|---|
 | `check_and_execute(action, speed=, duration=, angle=)` | The body's result dict. Raises `SafetyViolation` on a veto, or when a guarded verb achieved under `VERB_MIN_MOVE_M` / `VERB_MIN_TURN_DEG`; `ValueError` on an unknown action. A straight verb's `speed` (default 50) sets its bar (3.44) |
 | `required_clearance_cm(v_m_s, creep=False)` | The straight-move bar in cm, as above |
-| `scan_hint_m()` | The range the vet's scans ask for: half the chassis length plus 1.5 x the bar at `MAX_LINEAR_M_S` (about 0.85 m) |
+| `scan_hint_m()` | The range the vet's scans ask for: half the chassis length plus 1.5 x the bar at `MAX_LINEAR_M_S` (about 0.94 m since 3.216; 0.85 m under 3.44) |
 | `vet_wheel_velocity(left_rad_s, right_rad_s)` | `(left, right, reason)`. `reason` is None when only slowed. Pass-through if the body's wheels are unusable (`robot/safety.py:1128`, the `usable` early return in `vet_wheel_velocity()`). A forward or reverse component on a blind body with wheels is clamped to zero with `ahead_not_observed` / `astern_not_observed` in the reason; the loop writes the clamped command back, so a scan that returns does not restart it -- only a new command drives (3.144); rotation is untouched |
 | `run_verb(plan)` | `carry_out_verb()`'s `{"done", "ended", "reason"}`, after the settle pass when the plan asks for one |
 | `forward_clearance()`, `reverse_clearance()` (both aged), `path_clearance()`, `footprint_clearance(direction, scan)`, `rear_clearance(scan)`, `pivot_scale(omega, scan)`, `pivot_blocked(omega, scan, exact)` | See above |
@@ -458,9 +460,9 @@ robot, so `/health` also carries:
 | `PIVOT_AGE_SAMPLES` | 4 | | `robot/safety.py` | Rotations checked across the turn a scan has missed (3.42) |
 | `PIVOT_NEAR_CM` | 21.3 | cm | `robot/safety.py` | `PIVOT_MARGIN_CM` + 20: a return farther from the chassis now is never looked ahead for (as before 3.141) |
 | `PIVOT_FILTER_SLACK_CM` | 1e-9 | cm | `robot/safety.py` | 3.141: the numpy pre-filter's slack; rounding is ~1e-15 cm, so it never hides a blocking return |
-| `SAFETY_SCAN_RANGE_M` | 0.6 | m | `robot/safety.py` | Scan hint floor. Effective `max(0.6, scan_hint_m())`, about 0.85 m since 3.44: the sim reports beams past the hint as nothing there, so a hint under the top speed's bar made the SIMULATOR blind where the car sees. A real lidar ignores it. Without a hint the sim cast 360 rays to 12 m, about 13 ms a period |
+| `SAFETY_SCAN_RANGE_M` | 0.6 | m | `robot/safety.py` | Scan hint floor. Effective `max(0.6, scan_hint_m())`, about 0.94 m since 3.216 (0.85 m from 3.44): the sim reports beams past the hint as nothing there, so a hint under the top speed's bar made the SIMULATOR blind where the car sees. A real lidar ignores it. Without a hint the sim cast 360 rays to 12 m, about 13 ms a period |
 | `CREEP_M_S` / `CREEP_MARGIN_CM` | 0.03 / 3.0 | m/s / cm | `robot/safety.py` | 3.44: a verb asked this slowly keeps only the corridor's side margin. 3.43's wedged robot stood 19.3 cm from what was behind it |
-| `T_REACT_S` | 0.25 | s | `robot/safety.py` | The longer of two blind times: the live veto's (one control period plus the R4 actuator chain, 40-150 ms: 0.15) and a dead robot server's (`BOARD_HEARTBEAT_S` + one period: 0.25; 3.216). Excludes the sensor's age, which `_aged()` already subtracts. 0.3 m/s still keeps exactly 20 cm; 0.4/0.5/0.6 m/s keep 29/40.5/54 cm (25/35.5/48 under 3.44) |
+| `T_REACT_S` | 0.25 | s | `robot/safety.py` | The longer of two blind times: the live veto's (`LIVE_REACT_S`, 0.15: one control period plus the R4 actuator chain, 40-150 ms) and a dead robot server's (`BOARD_HEARTBEAT_S` + one period: 0.25; 3.216). Excludes the sensor's age, which `_aged()` already subtracts. 0.3 m/s still keeps exactly 20 cm; 0.4/0.5/0.6 m/s keep 29/40.5/54 cm (25/35.5/48 under 3.44) |
 | `BOARD_HEARTBEAT_S` | 0.20 | s | `robot/safety.py` | The motor board's heartbeat, copied from `robot/hardware_robot.py`'s `HEARTBEAT_MS` (this module imports no backend); `tests/test_kill_stop.py` keeps them equal |
 | `DECEL_M_S2` | 0.5 | m/s^2 | `robot/safety.py` | **[PLACEHOLDER]** braking, until 6.9(d) measures it on the car |
 | `MAX_LINEAR_M_S` / `VERB_FULL_SPEED_M_S` | 0.6 / 0.6 | m/s | `robot/safety.py` | The chassis cap (controllers.yaml), for the scan hint; a verb's speed 100 (`moves_for()`'s two 0.30 m moves a second) |

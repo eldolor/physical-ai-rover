@@ -142,7 +142,7 @@ SAFETY_SCAN_RANGE_M = 0.6
 CREEP_M_S = 0.03
 CREEP_MARGIN_CM = 3.0       # the swept corridor's side margin (3.18)
 # Reaction time in the stopping distance -- the longer of two blind times:
-#   * the live veto's: one control period (0.05 s) plus the actuator path
+#   * the live veto's (`LIVE_REACT_S`): one control period (0.05 s) plus the actuator path
 #     (R4's bridge -> controller -> wheels chain, 40-150 ms; 0.10);
 #   * a dead robot server's (3.216): nothing vets a move then, and the board
 #     drives its last setpoint until its own heartbeat zeroes it, at most
@@ -154,8 +154,9 @@ CREEP_MARGIN_CM = 3.0       # the swept corridor's side margin (3.18)
 # would stop the robot further out than needed (the 2026-10-07 handoff).
 # `robot/hardware_robot.py`'s HEARTBEAT_MS, copied rather than imported (this
 # module imports no backend); tests/test_kill_stop.py keeps them equal.
+LIVE_REACT_S = 0.15
 BOARD_HEARTBEAT_S = 0.20
-T_REACT_S = max(0.15, BOARD_HEARTBEAT_S + VERB_PERIOD_S)
+T_REACT_S = max(LIVE_REACT_S, BOARD_HEARTBEAT_S + VERB_PERIOD_S)
 DECEL_M_S2 = 0.5            # [PLACEHOLDER] braking, until 6.9(d) measures it on the car
 MAX_LINEAR_M_S = 0.6        # the chassis cap (controllers.yaml), for the scan hint
 # A verb's `speed` 0-100 is a fraction of 2 moves of 0.30 m a second -- the

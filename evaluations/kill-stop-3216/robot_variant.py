@@ -12,6 +12,11 @@ fix is then measured as shipped (`sweep.py --shipped`).
   K3216_T_REACT_S      robot.safety.T_REACT_S (candidate b: the stop
                        distance's reaction time covers the board's own stop)
 
+The two are independent on purpose: since 3.216 the shipped `T_REACT_S` is
+derived from the shipped heartbeat once, at import, so a heartbeat
+candidate keeps the shipped stop distance unless `K3216_T_REACT_S` is given
+too (candidate (a) alone is exactly that).
+
     python evaluations/kill-stop-3216/robot_variant.py <port>
 """
 

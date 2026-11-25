@@ -14,7 +14,7 @@ live missions (criterion 4 only):
   the N longest are left out, N the number of kills; everything else is
   judged.
 
-    python evaluations/kill-stop-3216/analyse.py <dir> [--heartbeat-ms 1500]
+    python evaluations/kill-stop-3216/analyse.py <dir> [--heartbeat-ms N]   (default: the shipped HEARTBEAT_MS)
 """
 
 from __future__ import annotations
@@ -22,8 +22,12 @@ from __future__ import annotations
 import argparse
 import json
 import statistics
+import sys
 from collections import defaultdict
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from robot import hardware_robot  # noqa: E402
 
 G_BAR_CM = 3.0
 VOID_MAX = 0.25
@@ -97,7 +101,8 @@ def score(d: Path, heartbeat_ms: int) -> dict:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("dir")
-    ap.add_argument("--heartbeat-ms", type=int, default=1500)
+    ap.add_argument("--heartbeat-ms", type=int, default=hardware_robot.HEARTBEAT_MS,
+                    help="the heartbeat the run used (default: the shipped code's)")
     a = ap.parse_args(argv)
     print(json.dumps(score(Path(a.dir), a.heartbeat_ms), indent=1))
     return 0
