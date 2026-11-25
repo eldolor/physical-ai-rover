@@ -40,8 +40,8 @@ honest "unusable" default.
   contract never jumps, so a jump in `odl`/`odr` is taken as a reboot: the
   origin moves to absorb it and the set-up is sent again.
 * The board's own heartbeat (`T=136`) stops the motors when commands stop,
-  independently of this process: set to `HEARTBEAT_MS`, above the robot
-  server's watchdog so that one normally acts first.
+  independently of this process: set to `HEARTBEAT_MS`, four wheel periods,
+  so a dead robot server's last setpoint runs for at most that long (3.216).
 
 **No fresh feedback, no wheel motion** (3.34). With no frame for
 `FEEDBACK_STALE_S` -- a dropped link, or a board that hears commands but
@@ -91,14 +91,21 @@ EXTRAPOLATE_MAX_S = 0.10
 # The fastest a board crystal is taken to drift against the host (3.76 B7):
 # ESP32 crystals are specified at tens of ppm; 200 ppm leaves room.
 CLOCK_DRIFT_MAX = 200e-6
-# The board stops its own motors after this much silence. Longer than the
-# robot server's 1 s watchdog on purpose: the server should always act
-# first, and this is what acts if the server itself dies.
-HEARTBEAT_MS = 1500
+# The board stops its own motors after this much silence from THIS process:
+# what stops the wheels when the robot server dies, hangs or loses the line.
+# It is not ordered against the 1 s watchdog, which watches the brain: while
+# the server lives it re-sends a standing command every 50 ms wheel period,
+# so a brain silence never starves the board. Four periods (3.216: the
+# longest gap between sends while moving was 52 ms in every kill sweep);
+# 1.5 s until 3.216 let a kill mid-FORWARD drive 45 cm at 0.3 m/s into the
+# wall. robot/safety.py's stop distance holds the travel it allows
+# (`BOARD_HEARTBEAT_S`).
+HEARTBEAT_MS = 200
 # 3.34: no frame for this long and the wheels are no longer measured --
 # five of the board's 50 ms feedback intervals, so bunched and dropped lines
-# never trip it, and below both the robot server's 1 s watchdog and the
-# board's 1.5 s heartbeat, so it is the first of the three to act.
+# never trip it, and below the robot server's 1 s watchdog, so it acts
+# first. It watches the board-to-host direction; the board's heartbeat
+# watches host-to-board, so the two are not ordered (3.216).
 FEEDBACK_STALE_S = 0.25
 # A verb's speed: 2 moves per second at speed 100, as MockRobot's verbs.
 MOVE_M = 0.30

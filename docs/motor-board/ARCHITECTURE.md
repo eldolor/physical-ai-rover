@@ -115,11 +115,21 @@ mode, straight from the factory.
   was first written against it (3.16, superseded by 3.25).
 - **The board's twist command.** It does not feed the board's heartbeat.
 
-### D3. The board's heartbeat is a backstop, set longer than the server's watchdog
+### D3. The board's heartbeat is the backstop for a dead server, as short as the send cadence allows
 
-**Decision.** The host sets the board's heartbeat to a little longer than
-the robot server's watchdog. The server always acts first. The board stops
-the wheels on its own if the server itself dies.
+**Decision** (3.216, 2026-11-25; until then "a little longer than the
+watchdog"). The host sets the board's heartbeat to four wheel periods,
+200 ms. The board stops the wheels on its own if the robot server dies,
+hangs or loses the line. The heartbeat is not ordered against the server's
+watchdog: the two watch different links. The watchdog watches the brain.
+While the server lives it re-sends a standing command every 50 ms period,
+so a brain silence never starves the board. Nothing vets a move between the
+server's death and the heartbeat, so the safety layer's stop distance holds
+that blind travel (`docs/safety/ARCHITECTURE.md`).
+
+**Rejected:** a heartbeat longer than the watchdog (1.5 s, until 3.216). A
+kill mid-FORWARD at 0.3 m/s drove the chassis about 45 cm, into the wall,
+against a 20 cm bar (3.202's K3).
 
 **Rejected:** relying on the board's "emergency stop" command (`T:0`). The
 firmware source (`uart_ctrl.h` at `2e7df97`, the commit our fork pins)
@@ -253,7 +263,7 @@ for a camera frame with no camera driver fails rather than answering
 
 | Failure | What happens | Target |
 |---|---|---|
-| The robot process dies or the link is cut | The board's heartbeat zeroes the wheel speeds | Wheels stop within the heartbeat interval plus one board loop, with no host involvement |
+| The robot process dies or the link is cut | The board's heartbeat zeroes the wheel speeds | Wheels stop within the heartbeat interval (200 ms) plus one board loop, with no host involvement; in the simulator at most 0.217 s after the kill (3.216) |
 | Feedback lines are lost or arrive bunched | The odometer clamp corrects the integral | Each wheel within one odometer unit plus one encoder edge of the truth, at every frame (stock: worst 1.02 cm; fork: worst 0.047 cm, 30 s with 5% loss) |
 | The board reboots mid-drive | The origin moves and the set-up is re-sent | Reported travel moves by at most one unit; the heartbeat is restored within 0.5 s (8 of 8 runs on both firmwares) |
 | The board's clock wraps after 49.7 days | Read as a small step forward | No false reboot, no jump |

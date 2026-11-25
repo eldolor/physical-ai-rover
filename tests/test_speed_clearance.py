@@ -57,9 +57,11 @@ def test_a_creep_needs_three_centimetres_only_when_it_was_asked():
 
 def test_a_faster_move_needs_more_room():
     safety = SafetyController(None, 20.0)
-    assert safety.required_clearance_cm(0.4) == pytest.approx(25.0)
-    assert safety.required_clearance_cm(0.5) == pytest.approx(35.5)
-    assert safety.required_clearance_cm(0.6) == pytest.approx(48.0)
+    # 3.216: the reaction time covers the board's heartbeat after a robot
+    # server death (0.25 s; 25.0, 35.5 and 48.0 cm under 3.44's 0.15 s).
+    assert safety.required_clearance_cm(0.4) == pytest.approx(29.0)
+    assert safety.required_clearance_cm(0.5) == pytest.approx(40.5)
+    assert safety.required_clearance_cm(0.6) == pytest.approx(54.0)
     assert stop_distance_cm(0.0) == CREEP_MARGIN_CM
 
 

@@ -44,7 +44,7 @@ which has spaces; the firmware accepts either.
 
 | Command | When | Meaning |
 |---|---|---|
-| `{"T":136,"cmd":1500}` | At start, and after a reboot | Heartbeat: zero the wheel speeds after 1500 ms without a `T:1` or `T:11` |
+| `{"T":136,"cmd":200}` | At start, and after a reboot | Heartbeat: zero the wheel speeds after 200 ms without a `T:1` or `T:11` |
 | `{"T":131,"cmd":1}` | At start, and after a reboot | Continuous feedback on (already the stock boot default) |
 | `{"T":1,"L":<m/s>,"R":<m/s>}` | Every wheel command; re-sent by `advance()` while non-zero | Closed-loop wheel surface speeds, `rad/s x WHEEL_RADIUS_M`, rounded to 5 places. The host scales both speeds by one factor into the board's +/-`BOARD_MAX_WHEEL_M_S` (2.0) first, keeping their ratio, because the firmware drops an out-of-range `T:1` and keeps the OLD setpoint running (handoff 4j). A non-finite command is sent as a stop (3.76 M1: `NaN` compared false against the window and reached the board, which dropped it the same way). |
 
@@ -114,9 +114,9 @@ The shapes are owned by the body contract.
 | `SIM_BOARD_FIRMWARE` | `stock` | -- | `sim/fake_esp32.py`, in the body program | `fork` adds `odlt`, `odrt` and `ms`. It re-runs any suite over the fork. |
 | `SIM_BOARD_SILENT_S` | 0 | s | `sim/fake_esp32.py` (`silent_until`), in the body program | The fake board sends no feedback frame for this long after power-up, to reproduce the start-up race a ROS container started first must ride out (handoff 2a; `tests/test_startup_race.py`). |
 | `WHEEL_RADIUS_M`, `TRACK_WIDTH_M`, `COUNTS_PER_REV` | 0.040, 0.172, 660 | m, m, edges/rev | `robot/hardware_robot.py` | What the backend converts with: mainType 2's `WHEEL_D` / 2, `TRACK_WIDTH` and pulses (table above). The physical facts, their sources and every other copy are in the [platform engineering spec](../platform/ENGINEERING.md); `tests/test_wall_linters.py` and `tests/test_ros_driver_board.py` pin the copies equal. |
-| `FEEDBACK_STALE_S` | 0.25 | s | `robot/hardware_robot.py` | 3.34: no frame for this long and the wheels and odometry answer "unusable", a standing command is zeroed by this process, and a non-zero command or a verb raises `WheelFeedbackLost`. Five feedback intervals, below the server's 1.0 s watchdog and the board's 1.5 s heartbeat, so it acts first. |
+| `FEEDBACK_STALE_S` | 0.25 | s | `robot/hardware_robot.py` | 3.34: no frame for this long and the wheels and odometry answer "unusable", a standing command is zeroed by this process, and a non-zero command or a verb raises `WheelFeedbackLost`. Five feedback intervals, below the server's 1.0 s watchdog, so it acts first. It watches board-to-host; the heartbeat watches host-to-board, so the two are not ordered. |
 | `TRACK_SCRUB` env, else `hardware.track_scrub` | 1.0 | ratio | `robot/factory.py` | Skid steer's effective track over the geometric one. `[PLACEHOLDER]` until measured on the Rover. Pinned to 1.0 for the fake board (its sim body does not scrub). The ROS container reads the same `TRACK_SCRUB`. |
-| `HEARTBEAT_MS` | 1500 | ms | `robot/hardware_robot.py` | Longer than the robot server's 1.0 s `watchdog_timeout_s`, so the server acts first. The firmware default is 3000. |
+| `HEARTBEAT_MS` | 200 | ms | `robot/hardware_robot.py` | 3.216: four 50 ms wheel periods. The longest gap between sends while moving was 52 ms in every kill-sweep run. A dead robot server's last setpoint runs at most this long, and `robot/safety.py`'s `BOARD_HEARTBEAT_S` copies it into the stop distance. Not ordered against the 1.0 s watchdog, which watches the brain (1500, until 3.216). The firmware default is 3000. |
 | `REBOOT_JUMP_M` | 0.03 | m | `robot/hardware_robot.py` | On stock firmware, a reboot needs both odometers near zero AND the estimate this far outside their bucket. A rule on the distance alone fired falsely in 1 of 6 runs (3.25). |
 | `EXTRAPOLATE_MAX_S` | 0.10 | s | `robot/hardware_robot.py` | Two feedback intervals. Without carry-forward, a FORWARD overshot to 30.6-32.8 cm (3.25). |
 | `TENTH_MM`, `CM`, `MILLIS_WRAP` | 1e-4, 0.01, 2^32 | m, m, ms | `robot/hardware_robot.py` | Units. Millimetres left the at-rest estimate up to 1.26 degrees out (3.29). |
@@ -248,10 +248,10 @@ def frames(seconds):
         line = s.readline().decode(errors="replace").strip()
         if '"T":1001' in line:
             f = json.loads(line); print(round(time.monotonic() - t0, 2), f["L"], f["R"], f["odl"], f["odr"], f.get("ms"))
-send({"T": 136, "cmd": 1500}); send({"T": 131, "cmd": 1})
+send({"T": 136, "cmd": 200}); send({"T": 131, "cmd": 1})
 t0 = time.monotonic()
-for _ in range(10):                      # 2 s at 0.1 m/s, re-sent every 0.2 s
-    send({"T": 1, "L": 0.1, "R": 0.1}); frames(0.2)
+for _ in range(20):                      # 2 s at 0.1 m/s, re-sent every 0.1 s (under the 0.2 s heartbeat)
+    send({"T": 1, "L": 0.1, "R": 0.1}); frames(0.1)
 print("--- stopped sending T:1 ---")
 frames(2.5)
 send({"T": 1, "L": 0, "R": 0}); s.close()
@@ -262,11 +262,13 @@ Expected:
 - `T:1001` lines about every 50 ms, carrying `L`, `R`, `odl`, `odr` (plus
   `odlt`, `odrt`, `ms` once flashed with the fork).
 - While sending, `L` and `R` near 0.1 and the odometers climbing.
-- After "stopped sending", `L` and `R` still near 0.1 until about 1.5 s
-  later, then 0: the board's heartbeat (`T:136`) stopped the wheels on its
+- After "stopped sending", `L` and `R` still near 0.1 until about 0.2 s
+  later, then 0 (3.216's heartbeat): the board's heartbeat (`T:136`) stopped the wheels on its
   own. That is the check.
 - If the wheels never stop, the heartbeat is not being honoured: do not run
-  the car. If they stop at about 3 s, the `T:136` was lost and the firmware
+  the car. If the wheels stutter WHILE sending (stops between re-sends), the
+  firmware's loop does not check the heartbeat often enough for 200 ms:
+  3.216.D, do not run the car until it is settled. If they stop at about 3 s, the `T:136` was lost and the firmware
   default applied.
 - **Do not send `T:0` to stop the wheels.** It also drops the pan-tilt's
   torque and does not latch ([architecture](../../motor-board/ARCHITECTURE.md) D3). A `T:1` of zero
