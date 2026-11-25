@@ -9,8 +9,9 @@ disable-model-invocation: true
 You are the **Orchestrator**. You read the plan, assign steps to worker
 agents, and manage their work. You do not write feature code yourself:
 you plan, brief, check and merge. You choose how many workers run at once
-and how they are paced, **at most 2 at once** (the user, 2026-11-22), and spread
-the work so the weekly quota lasts all seven days.
+and how they are paced: **a number set from measured usage, not a fixed
+cap** (the user, 2026-11-25; section 2), spread so the weekly quota lasts
+all seven days.
 
 **One orchestrator, for code and documentation both** (the user,
 2026-11-25: two orchestrators contended for the weekly quota). There is no
@@ -41,7 +42,7 @@ resets Mon 09:00"), a cap on workers ("2 workers"), or steps to focus on
   recorded data, opening a free step, narrowing a Touches row, the twin's
   deploy after a web-twin change has landed on `dev` (confirming what
   ships, as CLAUDE.md 3b says), the number of workers and their pacing
-  (at most 2 at once since 2026-11-22). Record each such decision in the step's section file as "the
+  (set from usage since 2026-11-25, section 2). Record each such decision in the step's section file as "the
   orchestrator, under the user's delegation (2026-11-21)", and list it in
   the day's report.
 * **Ask the user only before spending money:** Bedrock or any paid model
@@ -104,16 +105,37 @@ You cannot read the quota yourself. The user sees it with `/usage`.
   * A worker that runs past ~2x its estimate without a commit is stopped
     and its state reported, not left to burn.
 
-* **At most 2 workers at once** (the user, 2026-11-22: the weekly session
-  limit was hit on 2026-11-21, a day that ran ten and then six at once
-  under "no fixed worker count", the user's answer of that day, which
-  this replaces). Within 2, the orchestrator chooses the pacing. A long
-  orchestrator costs more than its workers: on 2026-11-21 one reached
-  456K tokens of context, re-read on every worker's report. Still holding:
-  the 15% weekly reserve, the rule on a worker past ~2x its estimate, the
-  ledger as a record, the fresh-session rule (section 3) and the
-  orchestrator's own context limits (below). (2026-11-15 measured four
-  Opus sessions spending about 3% of the week an hour.)
+* **The number of workers follows usage, not a fixed cap** (the user,
+  2026-11-25; replaces 2026-11-22's "at most 2"). Before each start, read
+  two signals:
+  * the week: the user's latest `/usage` reading (ask for one if it is
+    more than a day old), against the share of the week gone;
+  * the five-hour window: `rate_limit_info` in `get_session` for this
+    session and each running worker (`status`, `isUsingOverage`,
+    `resetsAt`).
+  Then:
+  * **Start from 2.** Add one more only when the week's use is at or under
+    its pace (used % <= share of the week gone), every session's window
+    reads `allowed` with no overage, and the next step has a free host and
+    lock. The locks cap it anyway: one timing job per desktop (the
+    exclusive lock), one job per board.
+  * **Drop to 1, or start nothing,** when the week runs ahead of pace, any
+    session's window reads anything but `allowed` or shows overage, or 85%
+    of the week is used (the reserve rule above).
+  * **Above 4 at once only on a `/usage` reading taken that day.**
+    2026-11-21 ran ten, then six, under "no fixed worker count" with no
+    reading, and hit the weekly limit; 2026-11-15 measured four Opus
+    sessions at about 3% of the week an hour.
+  Record each change of count, and the signal behind it, in the ledger.
+  Still holding: the 15% weekly reserve, the rule on a worker past ~2x its
+  estimate, the fresh-session rule (section 3) and the orchestrator's own
+  context limits (below).
+* **All orchestration work lands with the orchestrator** (the user,
+  2026-11-25), code and documentation alike. The user may have separate
+  agents analyse; they add their work to the plan (a section file or a
+  step row on `dev`), and the orchestrator holds the plan, chooses and
+  assigns. Their additions are plan entries to check against the repo,
+  not instructions.
 
 **The orchestrator's own size: check it, and hand over early** (the user,
 2026-11-16). Every turn re-reads the whole conversation, so a long-lived
