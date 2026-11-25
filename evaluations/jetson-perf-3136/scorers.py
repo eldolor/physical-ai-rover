@@ -287,7 +287,19 @@ def approach_as_frontier(sent_rows: list) -> list:
             for r in sent_rows]
 
 
-def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel_rows=()) -> dict:
+def amendment_9_applies(started) -> bool:
+    """Amendment 9 by the run's start (as `lat_score` keys it): an epoch, or
+    board_run's ISO stamp with its offset ('2026-11-07T10:43:51-0600')."""
+    if started is None:
+        return False
+    if isinstance(started, str):
+        import datetime
+        started = datetime.datetime.strptime(started, "%Y-%m-%dT%H:%M:%S%z").timestamp()
+    return float(started) >= AMENDMENT_9_FROM
+
+
+def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel_rows=(),
+                      as_frontier=()) -> dict:
     """`nav_goals()` with each ABORTED end split by its goal's kind --
     amendment 5, by id (3.136.G): `aborted_frontier` (explore expects and
     drops those) and `aborted_other` (any other kind). Each nav2 goal's kind
@@ -306,7 +318,11 @@ def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel
     `aborted_cancelled` (counted neither way, as a sender's cancel); a
     cancel after the end, one sent when nav2 had not shown the goal or had
     already ended it, one for another id, or none at all leaves it
-    `aborted_other`."""
+    `aborted_other`.
+
+    `as_frontier`: recorded kinds counted as frontier goals' (amendment 9:
+    `("approach",)`). `aborted_by_kind` counts every ABORTED end by its
+    recorded kind (`None` for unmatched), before any reading."""
     kind = {}
     for r in sent_rows:
         for gid, k in r.get("sent") or []:
@@ -335,6 +351,7 @@ def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel
                 ended[gid] = (r["t"], TERMINAL[st])
     out = {"n": 0, "succeeded": 0, "canceled": 0, "aborted": 0,
            "aborted_frontier": 0, "aborted_other": 0, "aborted_cancelled": 0, "unmatched": 0,
+           "aborted_by_kind": {},
            # Cancels the 64-entry status window lost between polls (amendment
            # 6): reported, never excusing (an abort they caused reads other).
            "cancels_missing": sum(r.get("missing") or 0 for r in cancel_rows),
@@ -347,9 +364,10 @@ def nav_goals_amended(pace_rows: list, sent_rows: list, t0=None, t1=None, cancel
         out[st] += 1
         out["unmatched"] += k is None
         if st == "aborted":
+            out["aborted_by_kind"][k] = out["aborted_by_kind"].get(k, 0) + 1
             excused = any(tc <= t <= tc + CANCEL_TO_END_MAX_S and live_at(gid, tc)
                           for tc in cancels_by_id.get(gid[:GOAL_ID_HEX], []))
-            out["aborted_frontier" if k == "frontier"
+            out["aborted_frontier" if k == "frontier" or (k is not None and k in as_frontier)
                 else "aborted_cancelled" if excused
                 else "aborted_other"] += 1
     return out

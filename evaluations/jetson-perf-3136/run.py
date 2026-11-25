@@ -276,22 +276,20 @@ def amended_nav_item(nav: dict) -> dict:
     return {"ok": nav["succeeded"], "n": nav["succeeded"] + nav["aborted_other"]}
 
 
-def steady_nav(pace: list, sends: list, cancels: list, ws, we):
+def steady_nav(pace: list, sends: list, cancels: list, ws, we, started=None):
     """nav2's goals in a window: (counts, amended, amendment 9 applied).
     Rows with no id at all are an older bridge's: no join happened, and
-    amendment 2's rule reads them. Amendment 10: a window that starts at or
-    after amendment 9's date reads an aborted `approach` as a frontier goal's;
-    `aborted_approach` is how many aborts that excused."""
+    amendment 2's rule reads them. Amendment 10: a run that started at or
+    after amendment 9's date (`started`, board_run's stamp; the window's
+    start if absent) reads an aborted `approach` as a frontier goal's;
+    `aborted_approach` is how many approach aborts the window had."""
     amended = any(e[0] for r in sends for e in r.get("sent") or [])
     if not amended:
         return scorers.nav_goals(pace, ws, we), False, False
-    am9 = ws is not None and ws >= scorers.AMENDMENT_9_FROM
-    nav = scorers.nav_goals_amended(pace, sends, ws, we, cancel_rows=cancels)
-    if am9:
-        raw = nav
-        nav = scorers.nav_goals_amended(pace, scorers.approach_as_frontier(sends), ws, we,
-                                        cancel_rows=cancels)
-        nav["aborted_approach"] = raw["aborted_other"] - nav["aborted_other"]
+    am9 = scorers.amendment_9_applies(started if started is not None else ws)
+    nav = scorers.nav_goals_amended(pace, sends, ws, we, cancel_rows=cancels,
+                                    as_frontier=("approach",) if am9 else ())
+    nav["aborted_approach"] = nav["aborted_by_kind"].get("approach", 0)
     return nav, True, am9
 
 
@@ -313,7 +311,7 @@ def score_steady(out: Path, rec: dict) -> dict:
     sends = scorers.jsonl(b / "explore_sends.jsonl")
     # Amendment 6: the brain's own cancels, by goal id (absent before run 3).
     cancels = scorers.jsonl(b / "explore_cancels.jsonl")
-    nav, amended, am9 = steady_nav(pace, sends, cancels, ws, we)
+    nav, amended, am9 = steady_nav(pace, sends, cancels, ws, we, rec.get("started"))
     tc = validity.telemetry_counts(tele, ws, we)
     o0, o1 = _f(b / "oom_start"), _f(b / "oom_end")
     # Clipped: a ring buffer that wrapped never cancels a kill the counter saw.
@@ -405,7 +403,7 @@ def score_steady(out: Path, rec: dict) -> dict:
             "wheel": wheel, "nav2_goals": nav,
             "nav2_rule": (("amendments 5 and 9, by goal id" if am9 else "amendment 5, by goal id") if amended
                           else "amendment 2 (no goal ids recorded: every abort counts)"),
-            "amendment_9": am9, "telemetry": tc, "dmesg_oom_kills": dmesg_ooms,
+            "amendment_9": am9, "desktop_lock": rec.get("desktop_lock", "exclusive"), "telemetry": tc, "dmesg_oom_kills": dmesg_ooms,
             "power_mode": pm, "validity": j,
             "desktop_load_max": max((x[1] for x in rec.get("desktop_load") or []), default=None),
             "missions": {"n": len(missions), "refused_starts": refused,
@@ -425,6 +423,9 @@ def steady_inner(a) -> int:
     env = " ".join(f"{k}={shlex.quote(v)}" for k, v in (x.split("=", 1) for x in a.env or []))
     rec = board_run(a.label, f"{env} bash evaluations/jetson-perf-3136/steady.sh $OUT", out,
                     sha=a.sha, allow_sudo=True, stop_twin=True)
+    # Amendment 10: which desktop lock the run held, kept with its record.
+    rec["desktop_lock"] = "none" if a.no_desktop_lock else "exclusive"
+    (out / "record.json").write_text(json.dumps(rec, indent=1))
     summary = score_steady(out, rec)
     (out / "summary.json").write_text(json.dumps(summary, indent=1))
     print(json.dumps(summary, indent=1))
@@ -499,6 +500,8 @@ def main(argv=None) -> int:
                                 *([] if a.wait else ["--no-wait"]), "--why", "3.136.A planted delay",
                                 "--", PY, str(HERE / "plant.py")], cwd=ROOT)
     if a.cmd == "steady":
+        if a.wait and a.no_desktop_lock:
+            ap.error("--wait waits for the desktop lock; --no-desktop-lock takes none")
         sha = subprocess.run(["git", "rev-parse", a.sha], cwd=ROOT, capture_output=True, text=True,
                              check=True).stdout.strip()
         out = a.out or str(HERE / "board" / f"{a.label}-{time.strftime('%Y%m%d-%H%M')}")
@@ -506,6 +509,7 @@ def main(argv=None) -> int:
         # lock alone, amendment 10).
         return br.locked([PY, str(Path(__file__).resolve()), "_steady", "--sha", sha,
                           "--label", a.label, "--out", out,
+                          *(["--no-desktop-lock"] if a.no_desktop_lock else []),
                           *[x for e in (a.env or []) for x in ("--env", e)]],
                          f"3.136.B {a.label}", desktop_mode="none" if a.no_desktop_lock else "exclusive",
                          desktop_wait=a.wait)
