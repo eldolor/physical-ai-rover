@@ -16,7 +16,8 @@ verbs are posted to `/action` straight, the path a brain's verb takes.
 
 One run: the chassis placed in scaled_house's west room facing the west
 wall (FORWARD) or with its back to it (REVERSE), its true gap `need(v) +
-extra`, where need is the shipped vet's bar at that speed; a verb posted at
+6 cm + extra`, where need is the vet's bar at that speed for the code under
+test; a verb posted at
 `speed` for 3 s; once the board drives, the robot server is SIGKILLed after
 `frac` of the time the robot needs to cover `extra` (so kills land from far
 out to at the line); then 2.5 s watched. Measured from the truth: the least
@@ -48,6 +49,7 @@ sys.path.insert(0, str(ROOT))
 
 from stack import PORTS, PY, Stack, StackError, http  # noqa: E402
 
+from robot import safety  # noqa: E402
 from tests import footprint_sweep as fs  # noqa: E402
 
 CELL_M = 0.30
@@ -75,10 +77,12 @@ VERB_S = 3.0
 
 
 def need_cm(v: float) -> float:
-    """The SHIPPED vet's bar at v (min_distance 20 cm; 3.44's stop distance
-    with T_REACT 0.15 s, braking 0.5 m/s^2): where a run starts from, so a
-    candidate's change of bar moves the same start nearer or further."""
-    return max(20.0, 3.0 + 100.0 * (v * 0.15 + v * v / 1.0))
+    """The vet's bar at v for the code under test (amendment 3): the run's
+    `robot.safety.T_REACT_S` -- the shipped value, or the candidate's, set in
+    this process by `main()` -- through the shipped `stop_distance_cm()`,
+    and the 20 cm floor. A run starts from it, so a candidate that grows the
+    bar is tested at its own line rather than refused at the shipped one."""
+    return max(20.0, safety.stop_distance_cm(v))
 
 
 class KillStack(Stack):
@@ -233,6 +237,7 @@ def main(argv=None) -> int:
         variant["K3216_HEARTBEAT_MS"] = str(a.heartbeat_ms)
     if a.t_react:
         variant["K3216_T_REACT_S"] = str(a.t_react)
+        safety.T_REACT_S = a.t_react         # the starts follow the candidate's bar
     if a.shipped and variant:
         raise SystemExit("--shipped runs the shipped constants: no variant beside it")
     grid = [(d, s, e, f) for d in DIRS for s in (*SPEEDS, "wheels") for e in EXTRAS_CM for f in FRACS]
