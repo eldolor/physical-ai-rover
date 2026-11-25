@@ -52,6 +52,12 @@ layer, because the safety layer reads usable wheels as "this body really
 moves": answering unusable alone would have let commands through unvetted.
 A zero command and `stop()` are never refused, and never raise on a dead
 port -- the board's heartbeat is what stops it then.
+
+**A board that cannot hear serial** (3.217, a stopgap): with `command_url`
+set, every command goes to the board's web route through
+`robot/board_http.py` instead of down the port; feedback still arrives on
+the port. A route with a command undelivered for `COMMAND_STALE_S` refuses
+motion exactly as stale feedback does.
 """
 
 import collections
@@ -65,6 +71,7 @@ import time
 import tty
 from typing import Optional
 
+from robot.board_http import HttpCommandSender
 from robot.interface import (
     RobotInterface, WheelFeedbackLost, unusable_battery, unusable_grid,
     unusable_odometry, unusable_scan, unusable_wheels)
@@ -149,7 +156,8 @@ def _fork_keys(frame: dict):
 
 class HardwareRobot(RobotInterface):
     def __init__(self, port: str, sensors: Optional[RobotInterface] = None,
-                 baud: int = 115200, track_scrub: float = 1.0, lidar=None, camera=None):
+                 baud: int = 115200, track_scrub: float = 1.0, lidar=None, camera=None,
+                 command_url: Optional[str] = None):
         if not track_scrub > 0:
             raise ValueError(f"track_scrub must be positive, got {track_scrub!r}")
         self.port = port
@@ -176,7 +184,14 @@ class HardwareRobot(RobotInterface):
         # [PLACEHOLDER] 1.0 until measured on the Rover.
         self.track_scrub = float(track_scrub)
         self._track_m = TRACK_WIDTH_M * self.track_scrub
-        self._fd = os.open(port, os.O_RDWR | os.O_NOCTTY)
+        # 3.217: commands over the board's web route; None is the serial line.
+        self._http = HttpCommandSender(command_url) if command_url else None
+        try:
+            self._fd = os.open(port, os.O_RDWR | os.O_NOCTTY)
+        except OSError:
+            if self._http is not None:
+                self._http.close()
+            raise
         tty.setraw(self._fd)
         attrs = termios.tcgetattr(self._fd)
         speed = getattr(termios, f"B{baud}", termios.B115200)
@@ -229,7 +244,15 @@ class HardwareRobot(RobotInterface):
     def _send(self, obj: dict) -> bool:
         """Write one command; False (never an exception) if the line is
         gone, so a stop on a dead port still returns -- the board's
-        heartbeat stops the wheels then."""
+        heartbeat stops the wheels then. Over the web route (3.217) it is
+        False when the route is stale and `obj` was a non-zero wheel
+        command: a zero went in its place."""
+        if self._http is not None:
+            ok = self._http.submit(obj)
+            if not ok:
+                self.link_error = ("the web route to the motor board is not delivering: "
+                                   f"{self._http.last_error}")
+            return ok
         try:
             os.write(self._fd, (json.dumps(obj) + "\n").encode())
             return True
@@ -250,7 +273,8 @@ class HardwareRobot(RobotInterface):
         standing command outlives its feedback by at most that."""
         with self._write_lock:
             with self._lock:
-                if self._cmd == (0.0, 0.0) or self._fresh():
+                routed = self._http is None or not self._http.stale()
+                if self._cmd == (0.0, 0.0) or (self._fresh() and routed):
                     return
                 self._cmd = (0.0, 0.0)
                 self.stale_zeroed += 1
@@ -270,7 +294,9 @@ class HardwareRobot(RobotInterface):
                     "last_drop": self.last_drop,
                     "fork_firmware": self._last_ms is not None,
                     "track_scrub": self.track_scrub,
-                    "link_error": self.link_error}
+                    "link_error": self.link_error,
+                    "command_route": "serial" if self._http is None else "http",
+                    "command": None if self._http is None else self._http.status()}
 
     def _reader(self):
         # select() with a timeout rather than a bare blocking read: on macOS,
@@ -510,7 +536,9 @@ class HardwareRobot(RobotInterface):
             if moving and not sent:
                 with self._lock:
                     self._cmd = (0.0, 0.0)
-                raise WheelFeedbackLost(f"the serial line to the motor board failed: {self.link_error}")
+                raise WheelFeedbackLost(
+                    self.link_error if self._http is not None
+                    else f"the serial line to the motor board failed: {self.link_error}")
         return {"left_rad_s": left_rad_s, "right_rad_s": right_rad_s}
 
     def _no_feedback(self) -> str:
@@ -758,6 +786,9 @@ class HardwareRobot(RobotInterface):
         finally:
             self._running = False
             self._reader_thread.join(timeout=1.0)
+            if self._http is not None:
+                self._http.flush(0.3)       # the stop above, if the route is up
+                self._http.close()
             try:
                 os.close(self._fd)
             finally:

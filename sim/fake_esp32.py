@@ -38,16 +38,23 @@ since 3.137, optionally the board's 10 s refresh and a sag under motor
 start (`sim/battery.py`).
 
 The wheels it turns are a `MockRobot`'s: the body the rest of the sim sees.
+
+`FakeEsp32Http` (3.217) is the board's web route on the same firmware
+model: `GET /js?json=<command>` runs the command handler the serial line
+does (`http_server.h` hands the query to `jsonCmdReceiveHandler()`).
 """
 
+import http.server
 import json
 import math
 import os
 import random
 import select
+import socket
 import threading
 import time
 import tty
+import urllib.parse
 from typing import Optional
 
 from sim.battery import SimBattery
@@ -408,3 +415,119 @@ class FakeEsp32:
                 os.close(fd)
             except OSError:
                 pass
+
+
+class FakeEsp32Http:
+    """The board's web route (3.217): `GET /js?json=<command>` on a local
+    port, into the same `_handle()` the pty feeds.
+
+    `delay_s` holds every reply (a number, or a callable giving one per
+    request). `lose_next(n, hang_s)` loses the next `n` requests on the way:
+    the board never sees them and the client hears nothing for `hang_s` --
+    what a dropped Wi-Fi exchange looks like from the host. That the real
+    board's lost requests ARE lost on the way, not a busy board, is not
+    known (3.217 step B measures it). `refuse()` closes the port.
+
+    `received` is (monotonic time, command) for every command handled.
+    """
+
+    def __init__(self, board: FakeEsp32, delay_s=0.0):
+        self.board = board
+        self.delay_s = delay_s
+        self.received = []
+        self.requests = 0
+        self._lose = 0
+        self._hang_s = 0.0
+        self._conns = set()
+        self._lock = threading.Lock()
+        face = self
+
+        class Handler(http.server.BaseHTTPRequestHandler):
+            protocol_version = "HTTP/1.1"
+            # Headers and body in one segment: written apart they wait out
+            # Nagle against the client's delayed ACK, 40 ms a reply.
+            wbufsize = 65536
+
+            def setup(self):
+                super().setup()
+                with face._lock:
+                    face._conns.add(self.connection)
+
+            def finish(self):
+                with face._lock:
+                    face._conns.discard(self.connection)
+                super().finish()
+
+            def do_GET(self):  # noqa: N802 -- http.server's name
+                url = urllib.parse.urlsplit(self.path)
+                line = urllib.parse.parse_qs(url.query).get("json", [""])[0]
+                with face._lock:
+                    face.requests += 1
+                    lost = face._lose > 0
+                    if lost:
+                        face._lose -= 1
+                    hang = face._hang_s
+                if lost:
+                    time.sleep(hang)
+                    self.close_connection = True
+                    return
+                delay = face.delay_s() if callable(face.delay_s) else face.delay_s
+                if delay:
+                    time.sleep(delay)
+                if url.path != "/js":
+                    self.send_error(404)
+                    return
+                try:
+                    cmd = json.loads(line)
+                except ValueError:
+                    cmd = None
+                with face._lock:
+                    # One at a time, as the board's single web task.
+                    face.board._handle(line.encode())
+                    face.received.append((time.monotonic(), cmd))
+                body = b"{}"
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                self.wfile.flush()
+
+            def log_message(self, *args):
+                pass
+
+        self._server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        self._server.daemon_threads = True
+        self.url = f"http://127.0.0.1:{self._server.server_address[1]}"
+        self._thread = threading.Thread(target=self._server.serve_forever,
+                                        kwargs={"poll_interval": 0.05}, daemon=True)
+        self._thread.start()
+        self._open = True
+
+    def lose_next(self, n: int = 1, hang_s: float = 1.0) -> None:
+        with self._lock:
+            self._lose, self._hang_s = n, hang_s
+
+    def wheel_commands(self):
+        with self._lock:
+            return [(t, c) for t, c in self.received
+                    if isinstance(c, dict) and c.get("T") == 1]
+
+    def refuse(self) -> None:
+        """Close the port and every open connection: a kept-alive one dies
+        and a new one is refused from here on."""
+        if self._open:
+            self._open = False
+            self._server.shutdown()
+            self._server.server_close()
+            self._thread.join(timeout=1.0)
+            with self._lock:
+                conns = list(self._conns)
+            for conn in conns:
+                try:
+                    conn.shutdown(socket.SHUT_RDWR)
+                except OSError:
+                    pass
+
+    def close(self) -> None:
+        self.refuse()

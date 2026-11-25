@@ -2,7 +2,7 @@
 kind: architecture
 domain: motor-board
 status: current
-verified: 2026-10-02
+verified: 2026-11-25
 ---
 
 # Motor board -- architecture
@@ -249,12 +249,39 @@ for a camera frame with no camera driver fails rather than answering
 "unusable". Where the lidar driver lives is decided by the
 [ros architecture](../ros/ARCHITECTURE.md) (D3).
 
+### D10. A board that cannot hear serial may take commands over its web route, as a stopgap
+
+**Decision** (the user, 2026-11-25; `PLAN-ros-alignment.md` 3.217). The
+first Rover's board sends its feed but acts on nothing it receives over
+serial. Until a board that hears serial is in hand, a switch sends the
+host's commands to the board's own web route over Wi-Fi; feedback stays
+on serial. Serial remains the default and the route the project ships.
+
+**Why this shape.** The same backend, the same safety vet and the same
+set-up run either way: only the wire a command leaves on changes. The
+route obeys three rules. A command never waits on the network, so the
+wheel loop and a stop cannot be held by it. Only the newest wheel command
+is ever sent, so a stop is not queued behind older speeds. And a route
+that is not delivering refuses motion, as stale feedback does (3.34). The
+board's heartbeat stays the backstop at the same 200 ms, so the stop
+distance the safety layer assumes is unchanged.
+
+**Rejected:** a longer heartbeat to ride out Wi-Fi losses, without
+measuring first (it lengthens the stop distance after a dead server: D3);
+sending inside the caller (a request blocks for tens of milliseconds, a
+lost one for the whole timeout, inside the 50 ms wheel period).
+
+**What it does not give.** Timing measured over this route says nothing
+about the serial route. A request the host gave up on may still be acted
+on late.
+
 ## Contracts
 
 | Neighbour | Direction | Protocol | Ownership |
 |---|---|---|---|
 | Robot server | The server calls the backend | In-process body contract (owned by the body domain) | The backend owns the port and the odometry estimate. The server owns the decision to move (safety domain). |
 | Board firmware | Both ways | Serial: newline-delimited JSON, commands in, feedback frames out | The board owns the speed loop, the encoder counts and the heartbeat. The host owns the set-up and must re-send it after a reboot. |
+| Board firmware, web route (D10, a stopgap) | Host to board only | HTTP over Wi-Fi: one JSON command per request | The same commands and the same ownership as the serial row. Feedback never comes this way. |
 | ROS chain | None directly | -- | It reaches the board only as wheel-velocity posts to the robot server: see [ros](../ros/ARCHITECTURE.md). |
 | Simulator | The fake board drives a simulated body's wheels | In-process | The simulator owns the truth that tests judge against. |
 | Firmware fork | Applied to Waveshare's source at a pinned commit | A patch, plus a build with pinned toolchain versions | This project owns the patch. Waveshare owns the base. |
@@ -264,6 +291,7 @@ for a camera frame with no camera driver fails rather than answering
 | Failure | What happens | Target |
 |---|---|---|
 | The robot process dies or the link is cut | The board's heartbeat zeroes the wheel speeds | Wheels stop within the heartbeat interval (200 ms) plus one board loop, with no host involvement; in the simulator at most 0.217 s after the kill (3.216) |
+| The web route stops delivering (D10) | Motion is refused and the standing command zeroed; the board's heartbeat stops the wheels | Refused within 0.35 s; wheels stopped by the board within 200 ms plus one loop of the last delivered command (on the fake board; unproven on the Rover) |
 | Feedback lines are lost or arrive bunched | The odometer clamp corrects the integral | Each wheel within one odometer unit plus one encoder edge of the truth, at every frame (stock: worst 1.02 cm; fork: worst 0.047 cm, 30 s with 5% loss) |
 | The board reboots mid-drive | The origin moves and the set-up is re-sent | Reported travel moves by at most one unit; the heartbeat is restored within 0.5 s (8 of 8 runs on both firmwares) |
 | The board's clock wraps after 49.7 days | Read as a small step forward | No false reboot, no jump |

@@ -236,10 +236,15 @@ def _backend(config: dict) -> RobotInterface:
         if not port:
             raise ValueError("mode: hardware needs ROBOT_SERIAL (or hardware.serial_port) "
                              "-- the ESP32 driver board's serial device")
+        # 3.217, a stopgap: a board whose serial receive is dead takes its
+        # commands over its web route instead; feedback stays on `port`.
+        command_url = (os.environ.get("ROBOT_COMMAND_URL")
+                       or (config.get("hardware") or {}).get("command_url"))
         lidar = _lidar(config)
         camera = _camera(config)
         try:
             return HardwareRobot(port, track_scrub=_track_scrub(config),
+                                 **({"command_url": command_url} if command_url else {}),
                                  **({"lidar": lidar} if lidar else {}),
                                  **({"camera": camera} if camera else {}))
         except Exception:
