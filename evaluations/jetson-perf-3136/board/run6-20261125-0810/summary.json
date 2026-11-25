@@ -1,0 +1,200 @@
+{
+ "sha": "1cb77eecbd418316aaca3fd1c3a90799b64e3087",
+ "stamps": {
+  "window_start": 1795615934.328759,
+  "window_end": 1795617735.1520302,
+  "p1_start": 1795615934.340236,
+  "p1_end": 1795616534.3482637,
+  "p8_start": 1795616534.3540852,
+  "p8_end": 1795617049.59235,
+  "p2_start": 1795617090.070285,
+  "p2_end": 1795617690.080617
+ },
+ "window_s": 1800.8,
+ "uptime_at_start_s": 46523.59,
+ "wheel": {
+  "moving": 27495,
+  "late": 0,
+  "max_dt_s": 0.0934,
+  "max_dt_s_before": 0.0784
+ },
+ "nav2_goals": {
+  "n": 42,
+  "succeeded": 23,
+  "canceled": 11,
+  "aborted": 8,
+  "aborted_frontier": 8,
+  "aborted_other": 0,
+  "aborted_cancelled": 0,
+  "unmatched": 5,
+  "aborted_by_kind": {
+   "recall": 2,
+   "frontier": 6
+  },
+  "cancels_missing": 0,
+  "sends_missing": 0,
+  "aborted_approach": 0,
+  "amendment_11": true,
+  "aborted_recall": 2
+ },
+ "nav2_rule": "amendments 5, 9 and 11, by goal id",
+ "amendment_9": true,
+ "amendment_11": true,
+ "desktop_lock": "none",
+ "telemetry": {
+  "samples": 1556,
+  "temps": 1556,
+  "clocks": 1556,
+  "max_temp_c": 66.812,
+  "oom_kills": 0,
+  "mem_available_min_mb": 655,
+  "cpu_below_max_samples": 538,
+  "gpu_below_max_samples": 386
+ },
+ "dmesg_oom_kills": 0,
+ "power_mode": "NV Power Mode: 15W",
+ "validity": {
+  "valid": true,
+  "reasons": []
+ },
+ "desktop_load_max": 0.96,
+ "missions": {
+  "n": 5,
+  "refused_starts": 0,
+  "outcomes": {
+   "cancelled": 1,
+   "found": 4
+  },
+  "label_calls": 59
+ },
+ "cloud_calls": 0,
+ "rows": {
+  "P1": {
+   "n": 2398,
+   "p50_ms": 94,
+   "p90_ms": 148,
+   "mem_available_min_mb": 673,
+   "valid": true,
+   "reasons": [],
+   "met": true
+  },
+  "P2": {
+   "n": 2395,
+   "p50_ms": 97,
+   "p90_ms": 147,
+   "mem_available_min_mb": 827,
+   "valid": true,
+   "reasons": [],
+   "hazard_boxes_per_frame": 1.079,
+   "added_mem_mb": -154,
+   "met": true
+  },
+  "P8": {
+   "n": 299,
+   "p50": 1716.0828129999572,
+   "p90": 1949.1643250003108,
+   "max": 2108.5568640046404,
+   "statuses": {
+    "answered": 299
+   },
+   "answers_identical": true,
+   "flips": [],
+   "off": 0,
+   "missing": 0,
+   "valid": true,
+   "reasons": [],
+   "met": false
+  },
+  "P4": {
+   "late_ticks": 0,
+   "moving_ticks": 27495,
+   "max_dt_s_since_start": 0.0934,
+   "window_s": 1800.8,
+   "overlap": {
+    "all_spans": 0,
+    "all_s": 0,
+    "all_with_map_update": 0,
+    "per_group": {
+     "map_fetch": 1762,
+     "ve_question": 1191,
+     "perception": 7099,
+     "room_cut": 188
+    }
+   },
+   "valid": true,
+   "reasons": [],
+   "met": true
+  },
+  "P11": {
+   "controller": {
+    "spans": 77,
+    "intervals": 26269,
+    "executing_s": 1309.9,
+    "rate_hz": 20.055,
+    "mean_period_ms": 49.86,
+    "period_p50_ms": 49.989938735961914,
+    "period_p90_ms": 51.78999900817871
+   },
+   "ratio": 1.003,
+   "scan_lag": {
+    "n": 18009,
+    "p50_ms": 6.365537643432617,
+    "p90_ms": 11.40451431274414,
+    "max_ms": 126.68204307556152
+   },
+   "valid": true,
+   "reasons": [],
+   "met": true
+  },
+  "P12": {
+   "segment_by_caller": {
+    "goal_policy.py": {
+     "n": 56,
+     "p50_ms": 7.659912109375,
+     "p90_ms": 9.034872055053711,
+     "max_ms": 21.09813690185547
+    },
+    "room_labels.py": {
+     "n": 188,
+     "p50_ms": 8.571863174438477,
+     "p90_ms": 12.370109558105469,
+     "max_ms": 27.940034866333008
+    }
+   },
+   "segment": {
+    "n": 244,
+    "p50_ms": 8.240938186645508,
+    "p90_ms": 12.03608512878418,
+    "max_ms": 27.940034866333008
+   },
+   "walk": {
+    "n": 216,
+    "p50_ms": 7.57598876953125,
+    "p90_ms": 12.090921401977539,
+    "max_ms": 20.89095115661621
+   },
+   "pause_share": 0.0021,
+   "map_reply": {
+    "n": 1717,
+    "ok": 1717,
+    "p50_ms": 23.277244996279478,
+    "p90_ms": 131.0296370065771,
+    "full_replies": 877,
+    "bytes_max": 244373
+   },
+   "mappoll_on": true,
+   "explore_map_fetch": {
+    "n": 1762,
+    "p50_ms": 24.72090721130371,
+    "p90_ms": 143.68891716003418
+   },
+   "valid": true,
+   "reasons": [],
+   "met": true
+  }
+ },
+ "cmd_exit": 0,
+ "restore_actions": [],
+ "as_found_differences": [],
+ "left_as_found": true
+}

@@ -1,0 +1,20 @@
+== run 08:10:37 rev 1cb77eecb image vision-picar-ros:latest house procthor:val:12
+== NV Power Mode: 15W; boot 2026-11-24 19:14:42; uptime 46556.28 s
+== desktop: inactive; twin units: inactive inactive inactive
+== MemAvailable before anything: 5954 MB
+== VE ready 08:10:48; MemAvailable 2964 MB
+OK: robot and brain both running 1cb77eecb (log: /home/picar/.vision-picar-tunnel.log)
+WARNING: ngrok is not running -- the deployed twin cannot reach this machine. Start it with: ngrok start picar
+== stack up 08:11:03; MemAvailable 2400 MB
+== window_start 08:12:14
+== p1_start 08:12:14
+== p1_end 08:22:14
+== p8_start 08:22:14
+== p8_end 08:30:49
+== p2_start 08:31:30
+== p2_end 08:41:30
+== window_end 08:42:15
+== MemAvailable at the end 837 MB; VE alive
+== done 08:42:15
+vlm_restore 08:42:24: active (was active)
+== torn down 08:42:24; desktop: active
