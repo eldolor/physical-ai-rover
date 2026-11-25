@@ -126,6 +126,7 @@ section's own file has the numbers, failed criteria and review rounds.
   (`CameraUnavailable`, 3 in a row end `failed`, 0.5 s between,
   `status.camera_failures`); one 503 no longer fails a mission (27/27 in
   process; live, sensors stopped 4 s: `found` as the reference).
+* 3.216.A-C: a robot server killed mid-move stops inside the gap: the board's heartbeat is 200 ms (`HEARTBEAT_MS`, set by `T:136`, nothing flashed; was 1.5 s) and the stop distance's reaction time covers it (`T_REACT_S` = max(`LIVE_REACT_S` 0.15, heartbeat + one wheel period) = 0.25 s), so `required_clearance_cm` grows above 0.3 m/s (54.0 cm at 0.6 m/s). Kill sweep on ground truth: least gap after the kill 18.23 cm (bar 3; shipped 1.48), 24.7 % void; P2 100 %; P1 96.6 % FAILED (bar 97, the user accepted). The heartbeat watches the server-to-board link, the watchdog the brain-to-server link; they are not ordered. Open: a pivot at the kill is not covered (~17 degrees); 3.216.D on a working Rover board checks the firmware's 200 ms stop, the Jetson's send cadence (<= 100 ms) and measured braking.
 * 3.199: D5 refuses a person's goal within 0.125 m of a zone (`GOAL_CLEAR_M` against the drawn reach 0.120953 m; `no_go_zone`, `retryable`), so no goal lands in a drawn cell (7,200 goals: 0 in a cell, was 3,905; 28 failed to plan on `dev`); a brain goal and the D-pad are untouched (G1-G8 met).
 
 ## Missions

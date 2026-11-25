@@ -228,7 +228,7 @@ merges adds the section's line there, not here.
   `odl`/`odr`, 660 pulses/rev). Its `T:0` "e-stop" zeroes the wheel
   setpoints once (no latch: the next `T:1` drives) and drops the torque of
   every bus servo, the pan-tilt included; the host never sends it (M2.8,
-  settled against the firmware source 2026-10-18). The heartbeat (1.5 s) is
+  settled against the firmware source 2026-10-18). The heartbeat (200 ms, 3.216) is
   the board's only stop of its own.
 * **Tiered phone walks end `out_of_budget` (before 3.70, `max_steps`)
   even when they arrive.** Arrival
