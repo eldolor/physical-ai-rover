@@ -52,7 +52,10 @@ from tests import footprint_sweep as fs  # noqa: E402
 
 CELL_M = 0.30
 WALL_X_M = 1 * CELL_M                 # scaled_house: the west room's wall face, x = 1 cell
-ROW_Y_M = 4.5 * CELL_M                # the room's middle row: 1.05 m to either side wall
+# The row: 63 cm of true gap to the solid object at cell (2, 2) and to the
+# south wall alike, so through every run the least gap is the west wall's
+# (amendment 1: at row 4.5 the object's side gap, ~33 cm, was the least).
+ROW_Y_M = 5.5 * CELL_M
 HALF_LEN_M = fs.HALF_LENGTH * fs.CELL_CM / 100.0
 SPEEDS = (25, 50, 75, 100)            # 0.15, 0.30, 0.45, 0.60 m/s: every verb speed band
 # `/wheels` (a person's D-pad, nav2's twists) has no linear cap of its own
@@ -152,18 +155,15 @@ def one_run(st: KillStack, truth: Truth, action: str, speed, extra: float, frac:
     if not st.alive("robot"):
         st.start_robot()
     wait_ready(st)
-    for attempt in range(2):                 # placed, then moved once by what truth says
-        for _ in range(50):                  # a stopped board may still coast for a sample
-            code, placed = http("POST", f"{st.urls['body']}/k3216/place?x={x}&y={ROW_Y_M}&th={th}",
-                                secret=st.secret, timeout=2.0)
-            if code == 200:
-                break
-            time.sleep(0.1)
-        else:
-            rec["void"] = f"place refused: {placed}"
-            return rec
-        if attempt == 0 and isinstance(placed.get("gap_cm"), (int, float)):
-            x += (start_gap - placed["gap_cm"]) / 100.0      # away from the west wall either way
+    for _ in range(50):                      # a stopped board may still coast for a sample
+        code, placed = http("POST", f"{st.urls['body']}/k3216/place?x={x}&y={ROW_Y_M}&th={th}",
+                            secret=st.secret, timeout=2.0)
+        if code == 200:
+            break
+        time.sleep(0.1)
+    else:
+        rec["void"] = f"place refused: {placed}"
+        return rec
     time.sleep(0.6)                          # the sensors and the lidar see the new pose
     rec["start_gap_cm"] = st.now().get("gap_cm")
     answer = {}
