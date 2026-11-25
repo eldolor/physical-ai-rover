@@ -219,4 +219,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.214](3.214-teacher-probe.md) | A larger open teacher for the local VLM: Qwen2.5-VL-72B and Alpamayo 2 Super measured on our frames first |
 | [3.215](3.215-review-faults.md) | Faults the spec review found: the arrival's local threshold, the twin's health line, stale comments |
 | [3.216](3.216-kill-mid-move-stop.md) | A robot-server death mid-move: the board stops inside the gap |
+| [3.217](3.217-wifi-command-route.md) | The motor board's commands over Wi-Fi while its serial receive is dead (a stopgap) |
 <!-- /sections -->
