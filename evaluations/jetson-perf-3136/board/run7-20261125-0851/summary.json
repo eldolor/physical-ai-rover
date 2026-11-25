@@ -1,0 +1,214 @@
+{
+ "sha": "1cb77eecbd418316aaca3fd1c3a90799b64e3087",
+ "stamps": {
+  "window_start": 1795618415.1272554,
+  "window_end": 1795620215.9698308,
+  "p1_start": 1795618415.133926,
+  "p1_end": 1795619015.144539,
+  "p8_start": 1795619015.1546836,
+  "p8_end": 1795619545.226097,
+  "p2_start": 1795619586.871474,
+  "p2_end": 1795620186.8788376
+ },
+ "window_s": 1800.8,
+ "uptime_at_start_s": 49018.1,
+ "wheel": {
+  "moving": 26211,
+  "late": 1,
+  "max_dt_s": 0.1155,
+  "max_dt_s_before": 0.0705
+ },
+ "nav2_goals": {
+  "n": 50,
+  "succeeded": 28,
+  "canceled": 8,
+  "aborted": 14,
+  "aborted_frontier": 14,
+  "aborted_other": 0,
+  "aborted_cancelled": 0,
+  "unmatched": 4,
+  "aborted_by_kind": {
+   "recall": 1,
+   "frontier": 13
+  },
+  "cancels_missing": 0,
+  "sends_missing": 0,
+  "aborted_approach": 0,
+  "amendment_11": true,
+  "aborted_recall": 1
+ },
+ "nav2_rule": "amendments 5, 9 and 11, by goal id",
+ "amendment_9": true,
+ "amendment_11": true,
+ "desktop_lock": "none",
+ "telemetry": {
+  "samples": 1557,
+  "temps": 1557,
+  "clocks": 1557,
+  "max_temp_c": 66.875,
+  "oom_kills": 0,
+  "mem_available_min_mb": 692,
+  "cpu_below_max_samples": 549,
+  "gpu_below_max_samples": 398
+ },
+ "dmesg_oom_kills": 0,
+ "power_mode": "NV Power Mode: 15W",
+ "validity": {
+  "valid": false,
+  "reasons": [
+   "1 late wheel ticks"
+  ]
+ },
+ "desktop_load_max": 2.68,
+ "missions": {
+  "n": 4,
+  "refused_starts": 0,
+  "outcomes": {
+   "cancelled": 1,
+   "found": 3
+  },
+  "label_calls": 62
+ },
+ "cloud_calls": 0,
+ "rows": {
+  "P1": {
+   "n": 2398,
+   "p50_ms": 94,
+   "p90_ms": 146,
+   "mem_available_min_mb": 715,
+   "valid": false,
+   "reasons": [
+    "1 late wheel ticks"
+   ],
+   "met": true
+  },
+  "P2": {
+   "n": 2395,
+   "p50_ms": 98,
+   "p90_ms": 148,
+   "mem_available_min_mb": 883,
+   "valid": false,
+   "reasons": [
+    "1 late wheel ticks"
+   ],
+   "hazard_boxes_per_frame": 1.079,
+   "added_mem_mb": -168,
+   "met": true
+  },
+  "P8": {
+   "n": 299,
+   "p50": 1734.481837003841,
+   "p90": 1976.629523000156,
+   "max": 2155.1628560046083,
+   "statuses": {
+    "answered": 299
+   },
+   "answers_identical": true,
+   "flips": [],
+   "off": 0,
+   "missing": 0,
+   "valid": false,
+   "reasons": [
+    "1 late wheel ticks"
+   ],
+   "met": false
+  },
+  "P4": {
+   "late_ticks": 1,
+   "moving_ticks": 26211,
+   "max_dt_s_since_start": 0.1155,
+   "window_s": 1800.8,
+   "overlap": {
+    "all_spans": 0,
+    "all_s": 0,
+    "all_with_map_update": 0,
+    "per_group": {
+     "map_fetch": 1933,
+     "ve_question": 1257,
+     "perception": 7092,
+     "room_cut": 205
+    }
+   },
+   "valid": false,
+   "reasons": [
+    "1 late wheel ticks"
+   ],
+   "met": false
+  },
+  "P11": {
+   "controller": {
+    "spans": 49,
+    "intervals": 23689,
+    "executing_s": 1182.1,
+    "rate_hz": 20.04,
+    "mean_period_ms": 49.9,
+    "period_p50_ms": 49.996137619018555,
+    "period_p90_ms": 51.67508125305176
+   },
+   "ratio": 1.002,
+   "scan_lag": {
+    "n": 18009,
+    "p50_ms": 8.285284042358398,
+    "p90_ms": 13.819694519042969,
+    "max_ms": 111.6781234741211
+   },
+   "valid": false,
+   "reasons": [
+    "1 late wheel ticks"
+   ],
+   "met": true
+  },
+  "P12": {
+   "segment_by_caller": {
+    "goal_policy.py": {
+     "n": 68,
+     "p50_ms": 7.1659088134765625,
+     "p90_ms": 8.33582878112793,
+     "max_ms": 13.663053512573242
+    },
+    "room_labels.py": {
+     "n": 205,
+     "p50_ms": 8.147954940795898,
+     "p90_ms": 12.533903121948242,
+     "max_ms": 26.30305290222168
+    }
+   },
+   "segment": {
+    "n": 273,
+    "p50_ms": 7.812023162841797,
+    "p90_ms": 11.744022369384766,
+    "max_ms": 26.30305290222168
+   },
+   "walk": {
+    "n": 232,
+    "p50_ms": 6.705045700073242,
+    "p90_ms": 10.45989990234375,
+    "max_ms": 23.82206916809082
+   },
+   "pause_share": 0.0022,
+   "map_reply": {
+    "n": 1718,
+    "ok": 1718,
+    "p50_ms": 22.781048006436322,
+    "p90_ms": 126.62594800349325,
+    "full_replies": 929,
+    "bytes_max": 249682
+   },
+   "mappoll_on": true,
+   "explore_map_fetch": {
+    "n": 1933,
+    "p50_ms": 24.67799186706543,
+    "p90_ms": 142.78602600097656
+   },
+   "valid": false,
+   "reasons": [
+    "1 late wheel ticks"
+   ],
+   "met": true
+  }
+ },
+ "cmd_exit": 0,
+ "restore_actions": [],
+ "as_found_differences": [],
+ "left_as_found": true
+}
