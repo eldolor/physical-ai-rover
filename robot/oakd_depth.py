@@ -379,7 +379,7 @@ class DepthCamera:
                 if got is None:
                     if self._monotonic() - last_good > self.stall_s:
                         raise RuntimeError(f"no frame for {self.stall_s:g} s")
-                    self._sleep(0.005)
+                    self._sleep(0.01)
                     continue
                 depth, taken_at = got
                 t0 = time.perf_counter()
@@ -484,11 +484,12 @@ class DepthCamera:
 class OakdSource:
     """The OAK-D Lite through depthai 2.x: the mono pair at `resolution`,
     extended disparity (3.74 B4), left-right check, a 7x7 median, depth
-    aligned to the rectified right camera, `fps` frames a second. The
+    aligned to the rectified right camera, `fps` frames a second (10: at 15
+    the driver cost 29% of a core on the Jetson, past K6, 3.222 C). The
     frame's timestamp is the device's, synced by depthai to the host's
     steady clock (`time.monotonic()` on Linux)."""
 
-    def __init__(self, resolution: str = "THE_480_P", fps: float = 15.0,
+    def __init__(self, resolution: str = "THE_480_P", fps: float = 10.0,
                  device_id: Optional[str] = None):
         import depthai as dai
 
