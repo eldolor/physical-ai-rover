@@ -639,7 +639,6 @@ class MockRobot(RobotInterface):
         no JPEG encode, the same dict minus the three keys added here.
         """
         frame = self.world.frame_description()
-        frame["tilt_deg"] = self.tilt_deg       # 3.220.C (a reading; the render is level)
         if not self.render:
             return frame
         # Added *after* frame_description(), which logs the dict it built.
@@ -648,6 +647,9 @@ class MockRobot(RobotInterface):
             self.world, self.render_width, self.render_height
         )
         frame["media_type"] = renderer.MEDIA_TYPE
+        # 3.220.C: the tilt, a reading (the render is level). Only beside the
+        # picture: render=False keeps the grid facts exactly as they were.
+        frame["tilt_deg"] = self.tilt_deg
         frame["metadata"] = {
             "source": "sim",
             "render": {"w": self.render_width, "h": self.render_height},

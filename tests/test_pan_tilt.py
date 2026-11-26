@@ -478,7 +478,7 @@ def test_the_frame_reports_the_measured_tilt(rig):
 
 
 def test_the_sim_body_tilts_as_a_reading_within_the_limits():
-    body = MockRobot(build_starter_world(), render=False)
+    body = MockRobot(build_starter_world())       # the tilt rides beside the picture
     assert body.tilt_step(20)["tilt_deg"] == 20
     assert body.tilt_step(20)["tilt_deg"] == 30
     assert body.get_camera_frame()["tilt_deg"] == 30
