@@ -150,10 +150,39 @@ def test_a_wall_ends_the_floor_as_a_thing():
         assert abs(z["distance_cm"] - 70.0) <= 5.0
 
 
-def test_near_cm_is_where_the_floor_is_first_seen():
-    # A level lens 14 cm up whose half field down is atan(239.5/432).
-    assert GEOM.near_cm == pytest.approx(14.0 * 432.0 / 239.5, abs=0.5)
+def test_near_cm_is_where_the_floor_is_first_seen_in_the_worst_column():
+    """A level lens 14 cm up whose half field down is atan(239.5/432) first
+    sees floor 25.25 cm ahead; a column at the field's edge (inner edge
+    ~35.7 deg) only at 25.25 / cos 35.7 deg, and memory marks from near_cm
+    along every column (review)."""
+    f = 14.0 * 432.0 / 239.5
+    assert GEOM.near_cm == pytest.approx(f / math.cos(math.radians(36.5 - 73.0 / 96)), abs=0.6)
     assert GEOM.blocks(render())["drop"]["near_cm"] == pytest.approx(GEOM.near_cm, abs=0.1)
+
+
+def test_a_lone_unseen_last_row_is_not_an_edge():
+    """Review: the grazing far end often returns nothing; one row there
+    must not paint a sticky edge into the drop memory."""
+    depth = render()
+    far_rows = np.nonzero(np.isclose(GEOM._walk_range.max(axis=0), GEOM.far_cm, atol=8.0))[0]
+    row = GEOM._rows[GEOM._nrows // 2 + 1] if far_rows.size == 0 else GEOM._rows[far_rows.min()]
+    depth[row:row + GEOM._s, :] = 0
+    b = GEOM.blocks(depth)
+    assert all(z["status"] == ZONE_NO_TARGET for z in centre_zones(b["drop"]))
+
+
+def test_a_steep_mount_claims_no_floor_past_its_top_ray():
+    """Review: pitched 40 deg down, the top ray meets the floor well short of
+    100 cm; neither block may claim floor or clear past it."""
+    m = Mount(height_cm=14.0, pitch_deg=40.0, x_cm=9.5)
+    g = DepthGeometry(INTR, m)
+    # The centre's top ray: 40 - atan(239.5/432) = 11.0 deg below level.
+    top = 14.0 / math.tan(math.radians(40.0 - math.degrees(math.atan(239.5 / 432.0))))
+    # The edge columns lose the top rows to the field, so see less far still.
+    assert g.near_cm < g.far_cm <= top + 0.5 and g.max_range_cm == g.far_cm
+    b = g.blocks(render(mount=m))
+    assert b["drop"]["far_cm"] == pytest.approx(g.far_cm, abs=0.1)
+    assert b["floor"]["max_range_cm"] == pytest.approx(g.max_range_cm, abs=0.1)
 
 
 def test_pitched_mount_still_reads_true_ranges():
@@ -307,11 +336,48 @@ def test_a_device_clock_ahead_does_not_make_a_frame_younger():
         cam.close()
 
 
-def test_a_bad_mount_is_refused():
-    with pytest.raises(ValueError):
-        DepthGeometry(INTR, Mount(height_cm=0.0))
-    with pytest.raises(ValueError):
-        DepthGeometry(INTR, Mount(pitch_deg=float("nan")))
+def test_a_bad_mount_is_refused_where_it_is_built():
+    for bad in ({"height_cm": 0.0}, {"pitch_deg": float("nan")}, {"x_cm": float("inf")},
+                {"pitch_deg": 85.0}):
+        with pytest.raises(ValueError):
+            Mount(**bad)
+
+
+def test_a_stalled_stream_is_reopened():
+    """Review: a device that stays open and sends nothing recovers."""
+    cam = DepthCamera(lambda: FakeSource([]), mount=MOUNT, reopen_s=0.05, stall_s=0.1)
+    try:
+        assert _wait(lambda: cam.status()["opens"] >= 2)
+        assert "no frame" in cam.status()["last_error"]
+    finally:
+        cam.close()
+
+
+def test_frames_it_cannot_use_in_a_row_reopen_the_source():
+    bad = np.zeros((10, 10), np.uint16)
+    cam = DepthCamera(lambda: FakeSource([bad] * 20), mount=MOUNT, reopen_s=0.05)
+    try:
+        assert _wait(lambda: cam.status()["opens"] >= 2)
+    finally:
+        cam.close()
+
+
+def test_freshness_is_arrival_and_age_is_capped():
+    """Review: a device clock 10 s behind ours neither reads stale for good
+    nor ages an on-time frame by seconds."""
+    class Behind(FakeSource):
+        def read(self):
+            got = super().read()
+            return None if got is None else (got[0], got[1] - 10.0)
+
+    cam = DepthCamera(lambda: Behind([render()]), mount=MOUNT, stale_s=0.5)
+    try:
+        assert _wait(lambda: cam.status()["frames"] == 1)
+        age = cam.sensor_age_s()
+        assert age is not None and age <= 1.0
+        assert cam.blocks()["floor"]["zones"][COLS // 2]["status"] == ZONE_NO_TARGET
+    finally:
+        cam.close()
 
 
 # -- the wiring ---------------------------------------------------------------
@@ -394,6 +460,43 @@ def test_factory_reads_the_mount(monkeypatch):
     monkeypatch.delenv("DEPTH_HEIGHT_CM", raising=False)
     factory._depth({"hardware": {"depth_mount": {"height_cm": 14.0, "pitch_deg": 0.0}}})
     assert made["mount"] == Mount(height_cm=14.0, pitch_deg=0.0, x_cm=11.0, lateral_cm=0.0)
+
+
+def test_a_bad_depth_setting_closes_the_lidar_and_camera(monkeypatch):
+    """Review: _depth() raising must not leave the other readers holding
+    their devices."""
+    from robot import factory
+
+    closed = []
+
+    class Dev:
+        def __init__(self, name):
+            self.name = name
+
+        def close(self):
+            closed.append(self.name)
+
+    monkeypatch.setattr(factory, "_lidar", lambda c: Dev("lidar"))
+    monkeypatch.setattr(factory, "_camera", lambda c: Dev("camera"))
+    monkeypatch.setenv("ROBOT_SERIAL", "/dev/null-board")
+    monkeypatch.setenv("ROBOT_DEPTH", "kinect")
+    monkeypatch.delenv("SIM_MOTOR_BOARD", raising=False)
+    monkeypatch.delenv("ROBOT_COMMAND_URL", raising=False)
+    with pytest.raises(ValueError):
+        factory._backend({"mode": "hardware", "hardware": {}})
+    assert sorted(closed) == ["camera", "lidar"]
+
+
+def test_an_empty_yaml_mount_key_is_unset(monkeypatch):
+    from robot import factory, oakd_depth
+
+    made = {}
+    monkeypatch.setattr(oakd_depth, "DepthCamera", lambda source, mount: made.setdefault("m", mount))
+    monkeypatch.setenv("ROBOT_DEPTH", "oakd")
+    for env in ("DEPTH_HEIGHT_CM", "DEPTH_PITCH_DEG", "DEPTH_X_CM", "DEPTH_LATERAL_CM"):
+        monkeypatch.delenv(env, raising=False)
+    factory._depth({"hardware": {"depth_mount": {"height_cm": None}}})
+    assert made["m"] == Mount()
 
 
 def test_the_yaml_mount_is_the_measured_one():

@@ -77,8 +77,10 @@ def _depth(config: dict):
     given = hw.get("depth_mount") or {}
     fields = {"height_cm": "DEPTH_HEIGHT_CM", "pitch_deg": "DEPTH_PITCH_DEG",
               "x_cm": "DEPTH_X_CM", "lateral_cm": "DEPTH_LATERAL_CM"}
-    mount = Mount(**{k: float(os.environ.get(env) or given.get(k, getattr(Mount, k)))
-                     for k, env in fields.items()})   # "" is unset (3.76 N1)
+    # "" is unset (3.76 N1), and so is a yaml key left empty (None).
+    mount = Mount(**{k: float(os.environ.get(env) or (given.get(k) if given.get(k) is not None
+                                                      else getattr(Mount, k)))
+                     for k, env in fields.items()})
     return DepthCamera(OakdSource, mount=mount)
 
 
@@ -266,8 +268,9 @@ def _backend(config: dict) -> RobotInterface:
                                     secret=os.environ.get("APP_SHARED_SECRET", ""))
             lidar = _lidar(config)
             camera = _camera(config)
-            depth = _depth(config)
+            depth = None
             try:
+                depth = _depth(config)       # inside: a bad setting closes the others (review)
                 # 3.220: the fake board models the gimbal, so the sim drives
                 # it the car's way unless ROBOT_GIMBAL=0 says otherwise.
                 return HardwareRobot(sensors.board_path, sensors=sensors, track_scrub=1.0,
@@ -288,8 +291,9 @@ def _backend(config: dict) -> RobotInterface:
                        or (config.get("hardware") or {}).get("command_url"))
         lidar = _lidar(config)
         camera = _camera(config)
-        depth = _depth(config)
+        depth = None
         try:
+            depth = _depth(config)           # inside: a bad setting closes the others (review)
             # 3.220: off on a real board until its step (criterion 6) is run.
             return HardwareRobot(port, track_scrub=_track_scrub(config),
                                  **({"gimbal": True} if _gimbal(config, default=False) else {}),

@@ -66,6 +66,8 @@ DROP_FAR_CM = 100.0
 
 STALE_S = 0.5               # K5: unusable within 0.5 s
 REOPEN_S = 2.0
+STALL_S = 2.0               # nothing from an open device this long: reopen it
+BAD_FRAMES = 10             # unusable frames in a row: reopen
 
 _FLOOR, _THING, _BELOW, _NONE = 0, 1, 2, 3
 
@@ -79,6 +81,14 @@ class Mount:
     pitch_deg: float = 0.0
     x_cm: float = 9.5
     lateral_cm: float = 0.0
+
+    def __post_init__(self):
+        # Refused where it is built, so a bad setting fails start-up rather
+        # than the reader retrying it for ever (review).
+        if not (all(math.isfinite(v) for v in (self.height_cm, self.pitch_deg,
+                                               self.x_cm, self.lateral_cm))
+                and self.height_cm > 0 and abs(self.pitch_deg) < 80):
+            raise ValueError(f"unusable depth mount: {self!r}")
 
 
 @dataclass(frozen=True)
@@ -104,15 +114,16 @@ class Tuning:
 
 
 def unusable_blocks(mount: Mount, cols: int = COLS, fov_deg: float = FOV_DEG,
-                    near_cm: float = MIN_RANGE_CM) -> dict:
+                    near_cm: float = MIN_RANGE_CM, max_range_cm: float = MAX_RANGE_CM,
+                    far_cm: float = DROP_FAR_CM) -> dict:
     """Both blocks, every zone unusable: what a stale camera publishes."""
     zones = lambda: [{"status": ZONE_UNUSABLE, "distance_cm": None} for _ in range(cols)]  # noqa: E731
     return {
         "floor": {"cols": cols, "fov_deg": fov_deg, "pan_deg": 0.0,
                   "origin_x_cm": mount.x_cm, "min_range_cm": MIN_RANGE_CM,
-                  "max_range_cm": MAX_RANGE_CM, "zones": zones()},
+                  "max_range_cm": max_range_cm, "zones": zones()},
         "drop": {"cols": cols, "fov_deg": fov_deg, "pan_deg": 0.0,
-                 "origin_x_cm": mount.x_cm, "near_cm": near_cm, "far_cm": DROP_FAR_CM,
+                 "origin_x_cm": mount.x_cm, "near_cm": near_cm, "far_cm": far_cm,
                  "zones": zones()},
     }
 
@@ -124,9 +135,6 @@ class DepthGeometry:
 
     def __init__(self, intr: Intrinsics, mount: Mount = Mount(),
                  tuning: Tuning = Tuning(), cols: int = COLS, fov_deg: float = FOV_DEG):
-        if not (mount.height_cm > 0 and math.isfinite(mount.pitch_deg)
-                and math.isfinite(mount.x_cm) and math.isfinite(mount.lateral_cm)):
-            raise ValueError(f"unusable depth mount: {mount!r}")
         self.intr, self.mount, self.tuning = intr, mount, tuning
         self.cols, self.fov_deg = cols, fov_deg
         s = max(1, int(tuning.stride))
@@ -152,14 +160,28 @@ class DepthGeometry:
         down = down & (self._floor_col >= 0)        # inside the band's field
         # The floor seen nearest: the drop block's `near_cm` and where the
         # band's floor region starts.
-        finite = self._floor_range[np.isfinite(self._floor_range)]
-        self.near_cm = float(max(MIN_RANGE_CM, finite.min())) if finite.size else MIN_RANGE_CM
-        region = down & (self._floor_range >= self.near_cm) & (self._floor_range <= MAX_RANGE_CM)
+        # The worst column's (review): a column at the field's edge first sees
+        # floor further out than the centre's (range f / cos b), and the
+        # drop memory marks floor from `near_cm` along every column.
+        firsts = np.full(cols, np.inf)
+        np.minimum.at(firsts, self._floor_col[down], self._floor_range[down])
+        firsts = firsts[np.isfinite(firsts)]
+        self.near_cm = float(max(MIN_RANGE_CM, firsts.max())) if firsts.size else MIN_RANGE_CM
+        # And the farthest (review): a camera pitched down sees no floor past
+        # its top ray, so neither block may claim floor, or clear, past it.
+        # The worst column's again: the column that sees least far.
+        lasts = np.full(cols, -np.inf)
+        np.maximum.at(lasts, self._floor_col[down], self._floor_range[down])
+        lasts = lasts[np.isfinite(lasts)]
+        reach = float(lasts.min()) if lasts.size else 0.0
+        self.max_range_cm = min(MAX_RANGE_CM, reach)
+        self.far_cm = min(DROP_FAR_CM, reach)
+        region = down & (self._floor_range >= self.near_cm) & (self._floor_range <= self.max_range_cm)
         self._region = region
         self._region_count = np.bincount(self._floor_col[region].ravel(), minlength=cols)[:cols]
         # The drop walk: per column, its floor rows outward (bottom up),
         # within [near, far].
-        walk = down & (self._floor_range >= self.near_cm - 1e-6) & (self._floor_range <= DROP_FAR_CM)
+        walk = down & (self._floor_range >= self.near_cm - 1e-6) & (self._floor_range <= self.far_cm)
         self._walk = walk
         self._nrows = len(self._rows)
         key = self._floor_col * self._nrows + np.arange(self._nrows)[:, None]
@@ -202,7 +224,7 @@ class DepthGeometry:
         bearing = np.degrees(np.arctan2(r, f))
         col = self._col_of(bearing)
         near_thing = thing & (rng < MIN_RANGE_CM) & (col >= 0)
-        in_band = thing & (rng >= MIN_RANGE_CM) & (rng <= MAX_RANGE_CM) & (col >= 0)
+        in_band = thing & (rng >= MIN_RANGE_CM) & (rng <= self.max_range_cm) & (col >= 0)
         too_near = np.bincount(col[near_thing], minlength=cols)[:cols]
         seen = np.bincount(self._floor_col[self._region & valid], minlength=cols)[:cols]
         c_in, r_in, b_in = col[in_band], rng[in_band], bearing[in_band]
@@ -225,7 +247,7 @@ class DepthGeometry:
                 zones.append({"status": ZONE_UNUSABLE, "distance_cm": None})
         return {"cols": cols, "fov_deg": self.fov_deg, "pan_deg": 0.0,
                 "origin_x_cm": self.mount.x_cm, "min_range_cm": MIN_RANGE_CM,
-                "max_range_cm": MAX_RANGE_CM, "zones": zones}
+                "max_range_cm": round(self.max_range_cm, 1), "zones": zones}
 
     # -- the drop block -------------------------------------------------------
 
@@ -263,7 +285,9 @@ class DepthGeometry:
                 continue
             lab = label[k, rows]
             nonfloor = lab != _FLOOR
-            ends = nonfloor & np.append(nonfloor[1:], True)    # two in a row (or the last)
+            # Two in a row. A lone last row (the grazing far end) does not
+            # end the floor (review: one unseen row there made an edge).
+            ends = nonfloor & np.append(nonfloor[1:], False)
             if not ends.any():
                 zones.append({"status": ZONE_NO_TARGET, "distance_cm": None})
                 continue
@@ -281,7 +305,7 @@ class DepthGeometry:
                 zones.append({"status": ZONE_RANGE, "distance_cm": round(d, 1), "kind": "edge"})
         return {"cols": cols, "fov_deg": self.fov_deg, "pan_deg": 0.0,
                 "origin_x_cm": self.mount.x_cm, "near_cm": round(self.near_cm, 1),
-                "far_cm": DROP_FAR_CM, "zones": zones}
+                "far_cm": round(self.far_cm, 1), "zones": zones}
 
 
 class DepthCamera:
@@ -290,21 +314,31 @@ class DepthCamera:
     `open_source()` returns an object with `intrinsics()` -> `Intrinsics`,
     `read()` -> `(depth_mm, t_monotonic)` or None for nothing this time, and
     `close()`. Any of them may raise; the reader closes the source and opens
-    it again after `reopen_s`."""
+    it again after `reopen_s`. So does a source that delivers nothing for
+    `stall_s`, or `BAD_FRAMES` frames in a row it cannot use (review: a hung
+    stream on a device that stays open never recovered).
+
+    Freshness is judged on the frame's ARRIVAL on our clock; its age (for
+    `_aged()`) on its device timestamp, which can only make it older
+    (review: a device clock behind ours read stale for good, one ahead read
+    fresh frames that were late)."""
 
     def __init__(self, open_source: Callable[[], object], mount: Mount = Mount(),
                  tuning: Tuning = Tuning(), stale_s: float = STALE_S,
-                 reopen_s: float = REOPEN_S, monotonic: Callable[[], float] = time.monotonic,
-                 name: str = "depth"):
+                 reopen_s: float = REOPEN_S, stall_s: Optional[float] = None,
+                 monotonic: Callable[[], float] = time.monotonic, name: str = "depth"):
         self._open_source = open_source
         self.mount, self.tuning = mount, tuning
         self.stale_s, self.reopen_s = stale_s, reopen_s
+        self.stall_s = STALL_S if stall_s is None else stall_s
         self._monotonic = monotonic
         self.name = name
         self._lock = threading.Lock()
         self._blocks: Optional[dict] = None
-        self._taken_at: Optional[float] = None
-        self._near_cm = MIN_RANGE_CM
+        self._taken_at: Optional[float] = None       # the device's word, never after arrival
+        self._arrived_at: Optional[float] = None     # ours, for staleness
+        self._reach = {"near_cm": MIN_RANGE_CM, "max_range_cm": MAX_RANGE_CM,
+                       "far_cm": DROP_FAR_CM}
         self._frames = 0
         self._opens = 0
         self._failures = 0
@@ -316,49 +350,52 @@ class DepthCamera:
         self._thread.start()
 
     def _run(self) -> None:
-        geometry = None
+        geometry, last_good, bad = None, 0.0, 0
         while self._running:
-            if self._source is None:
-                try:
+            try:
+                if self._source is None:
                     self._source = self._open_source()
                     geometry = DepthGeometry(self._source.intrinsics(), self.mount, self.tuning)
                     with self._lock:
                         self._opens += 1
-                        self._near_cm = geometry.near_cm
-                except Exception as e:  # noqa: BLE001 -- a USB device may fail any way
-                    self._note_failure(f"open: {e}")
-                    self._close_source()
-                    self._sleep(self.reopen_s)
-                    continue
-            try:
+                        self._reach = {"near_cm": geometry.near_cm,
+                                       "max_range_cm": geometry.max_range_cm,
+                                       "far_cm": geometry.far_cm}
+                    last_good, bad = self._monotonic(), 0
                 got = self._source.read()
-            except Exception as e:  # noqa: BLE001
-                self._note_failure(f"read: {e}")
+                if got is None:
+                    if self._monotonic() - last_good > self.stall_s:
+                        raise RuntimeError(f"no frame for {self.stall_s:g} s")
+                    self._sleep(0.005)
+                    continue
+                depth, taken_at = got
+                t0 = time.perf_counter()
+                try:
+                    blocks = geometry.blocks(depth)
+                except Exception as e:  # noqa: BLE001 -- a bad frame says nothing
+                    bad += 1
+                    if bad >= BAD_FRAMES:
+                        raise RuntimeError(f"{bad} frames in a row unusable: {e}") from e
+                    self._note_failure(f"frame: {e}")
+                    continue
+                spent = time.perf_counter() - t0
+                now = self._monotonic()
+                taken = float(taken_at) if taken_at is not None else now
+                if not math.isfinite(taken):
+                    taken = now
+                with self._lock:
+                    recovered, self._last_error = self._last_error is not None, None
+                    self._blocks = blocks
+                    self._arrived_at, self._taken_at = now, min(taken, now)
+                    self._frames += 1
+                    self._compute_s = spent
+                last_good, bad = now, 0
+                if recovered:
+                    logger.warning("%s: delivering again", self.name)
+            except Exception as e:  # noqa: BLE001 -- a USB device may fail any way
+                self._note_failure(f"{'open' if self._source is None else 'read'}: {e}")
                 self._close_source()
                 self._sleep(self.reopen_s)
-                continue
-            if got is None:
-                self._sleep(0.005)
-                continue
-            depth, taken_at = got
-            t0 = time.perf_counter()
-            try:
-                blocks = geometry.blocks(depth)
-            except Exception as e:  # noqa: BLE001 -- a bad frame says nothing
-                self._note_failure(f"frame: {e}")
-                continue
-            spent = time.perf_counter() - t0
-            now = self._monotonic()
-            # A device clock ahead of ours must not make a frame younger than
-            # its arrival.
-            taken_at = min(float(taken_at), now) if taken_at is not None else now
-            with self._lock:
-                recovered, self._last_error = self._last_error is not None, None
-                self._blocks, self._taken_at = blocks, taken_at
-                self._frames += 1
-                self._compute_s = spent
-            if recovered:
-                logger.warning("%s: delivering again", self.name)
         self._close_source()
 
     def _note_failure(self, why: str) -> None:
@@ -383,7 +420,7 @@ class DepthCamera:
             time.sleep(min(0.05, seconds))
 
     def _fresh(self, now: float) -> bool:
-        return self._taken_at is not None and now - self._taken_at <= self.stale_s
+        return self._arrived_at is not None and now - self._arrived_at <= self.stale_s
 
     def blocks(self) -> dict:
         """The `floor` and `drop` blocks of `get_depth_grid()`: the newest
@@ -392,8 +429,8 @@ class DepthCamera:
         with self._lock:
             if self._fresh(now):
                 return self._blocks
-            near = self._near_cm
-        return unusable_blocks(self.mount, near_cm=near)
+            reach = dict(self._reach)
+        return unusable_blocks(self.mount, **reach)
 
     def sensor_age_s(self) -> Optional[float]:
         """The frame's age, while it is fresh; None when stale -- its blocks
@@ -401,7 +438,11 @@ class DepthCamera:
         the other sensors' clearances (`SafetyController._aged`)."""
         now = self._monotonic()
         with self._lock:
-            return max(0.0, now - self._taken_at) if self._fresh(now) else None
+            if not self._fresh(now):
+                return None
+            # At most `stale_s` old (+ since arrival): a device clock behind
+            # ours must not age a frame that came in on time by seconds.
+            return min(max(0.0, now - self._taken_at), now - self._arrived_at + self.stale_s)
 
     def status(self) -> dict:
         """For `/health` -- description, never a verdict (control/health.py)."""
@@ -420,6 +461,11 @@ class DepthCamera:
     def close(self) -> None:
         self._running = False
         self._thread.join(timeout=3.0)
+        if self._thread.is_alive():
+            # A reader inside a device open keeps it until the open returns;
+            # it closes the source itself then.
+            logger.warning("%s: reader still busy at close; the device may be held "
+                           "until its open returns", self.name)
 
 
 class OakdSource:
