@@ -1,0 +1,79 @@
+# Handoff 2026-11-26: the orchestrator, 2026-11-25 13:41 to 2026-11-26 ~19:00 UTC
+
+*Written by orchestrator session session_01JbXvZtrawirdFAztDifRZe (Opus)
+for the next one. Read the orchestrate skill first, then CLAUDE.md's top
+rule: questions one at a time, as pop-ups with a recommendation.*
+
+## Messaging: read workers yourself, never ask the user to relay
+
+* Every `send_message` INTO the orchestrator is refused
+  (`elevated_session_untrusted_device`), from desktop AND cloud workers
+  alike. Your own sends to workers work once the user approves your
+  `confirm_repository_trust` card (the first refused send gives the digest).
+* So read each worker's final message with `list_events` (kinds
+  `assistant`; big pages go to a file, slice it with python).
+* **The user was annoyed at being asked to copy-paste reports.** Every brief
+  must say: "never ask the user to relay; put the full report in your final
+  message." All live workers were told so on 11-26.
+* Scheduled tasks (`send_later`) into this session fail with ACCESS_DENIED,
+  so you can't wake yourself. Check workers when the user writes, or ask them.
+* An elevation test (option 1: a worker requests the approval card itself)
+  was sent to session_01JbXvZtLcPjAcreSkNdNCC1; read its final message for
+  the result before trying it on other workers.
+
+## Quota (the user's `/usage`, 2026-11-26 15:14 UTC)
+
+75% all models (Fable 77%); resets Sat 2026-11-28 13:00 UTC; about 73% of the
+week gone, so roughly on pace then. Since then the user asked for four Opus
+workers at once (D-pad, pan-tilt, Rover SLAM, OAK-D), so expect 85% or
+more. Hold the full reset (expires Dec 10) unless the user hits the limit
+with something urgent. Start nothing the user did not ask for; ask for a
+fresh reading.
+
+## Workers
+
+| Session | Where | Step | State at handoff |
+|---|---|---|---|
+| session_01JbXvZseoFYzBxGjPtGi2pB | desktop | 3.221 Rover SLAM | A on dev (mast leaves for ROS as `-inf`; `/scan` stamped with the revolution's capture time); map, pose and loop bars need the user driving |
+| session_01JbXvZsaDvSj96XhrRTX2bb | desktop | 3.222 OAK-D floor band | B and C on dev (`19c830e9`); depthai 2.33 on the board (the user's go); K6 met; floor-type bars B1/B3 need the user |
+| session_01JbXvZpojgrKUhwYUrTEzZy | cloud | 3.220 pan-tilt | B on dev (`08648aa8`), with the user's two added bars (panned badge, look hold); criterion 6 on the board waits on the user (`ROBOT_GIMBAL` off) |
+| session_01JbXvZr5cCmPoQubYu5Fs3n | desktop | 3.202.C soak4 | started 2026-11-25 20:01 UTC as systemd unit `picar-3202-soak4` with the K3 fix; NO report seen yet; asked to score and push |
+| session_01JbXvZtLcPjAcreSkNdNCC1 | cloud | 3.219 D-pad hold | done; running the elevation test above |
+| session_01JbXvZpmCPYJMyVXvkBMshe | desktop | 3.140 / 3.217 | Rover checks and the Wi-Fi command route; on Fable (costly); stands by |
+| session_01JbXvZssvXjcCCcNzQFTaYt, session_01JbXvZq3Bpc6wRUGXLrrfCP | desktop | 3.216, 3.136.B | done; can be retired |
+
+## Done 2026-11-25 to 26
+
+* **3.216** merged (`0ddd1152`): board heartbeat 200 ms, reaction 0.25 s;
+  least gap after a kill 18.23 cm (bar 3). A test it broke was fixed in
+  `3b31f877` by another session.
+* **3.219** D-pad hold (`4ae13b4e`) and **3.220** pan-tilt (`08648aa8`):
+  **twin deployed** twice by this orchestrator, last from `dev` `19c830e9`
+  (invalidation Completed; live app.js, twin.css, index.html, strings.js
+  match `dev`). Bucket `vision-picar-serverless-staticbucket-2jbqpgdcnvtv`,
+  distribution `E1VYDK2ACPS00K` (the deployer IAM can't list them).
+* **The board's service checkout is `107f430f`** (3.217, by git bundle, the
+  user's choice: the pre-push claim hook diffs against the board's stale
+  `dev` and refuses). 3.136.B released its claim for this (normal release).
+* **3.140:** Waveshare's FDT fix did not help; serial receive still deaf;
+  the FDT boot entry stays on the Jetson until Waveshare answers; reply sent
+  (it opened ticket 265905). Real D500 verified. Replacement decision by
+  about Dec 1; return window closes Dec 8.
+
+## Open, for the next orchestrator
+
+* The pre-push claim hook should skip pushes whose commits are all already
+  on `origin/dev` (board deploys). Not started.
+* 3.136.B needs one more valid steady-state window, on a fresh claim, once
+  the board is free.
+* CLAUDE.md is over its SOFT budget (38,015 > 38,000): a trim is due.
+* P8 (local VLM p90 ~1.95 s against 1.5 s) fails every 3.136 window: its own
+  section, if the user wants it.
+
+## For the user
+
+* `claim/3.207` on origin needs the user's `release --force` OK; ~48 stale
+  branches await review.
+* This session printed its AWS deployer keys into its own output by mistake
+  (nothing sent anywhere); rotating the `vision-picar-deployer` key is
+  the safe choice.
