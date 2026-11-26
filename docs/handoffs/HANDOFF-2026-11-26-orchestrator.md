@@ -37,6 +37,23 @@ rule: questions one at a time, as pop-ups with a recommendation.*
 * /usage 2026-11-26 18:59 UTC: 79% all models, 77% Fable, ~75% of the week
   gone: ahead of pace, so no new workers before the Sat 13:00 UTC reset.
 
+## The user's decisions, 2026-11-26 ~19:50 UTC (asked one at a time)
+
+* Not at the Rover today: 3.221 told to release the board lock ("Not yet").
+  Hands-on items wait: 3.221 B, 3.222 K1-K5/K7, 3.220 criterion 6, 3.219.B,
+  3.140 floor checks, the Waveshare jumper test.
+* AWS deployer key: leave it (no rotation).
+* `claim/3.207`: already a released record on origin; nothing to force.
+* ~48 old branches: after the reset, a Sonnet worker lists each branch's
+  unmerged commits; the user approves deletions from that list.
+* 3.202.C soak4: fix c1 first (a FORWARD move runs on after its driver
+  dies, 24-25 cm vs 15) in its own section on Opus after the reset, then
+  soak5; c3, c4a, c5 after.
+* P8 (local VLM p90 ~1.95 s vs 1.5): parked until the Rover drives itself.
+* After the Sat 11-28 13:00 UTC reset: 2 workers at once -- the c1 fix
+  (Opus) plus one Sonnet at a time on the CLAUDE.md trim, the pre-push
+  hook fix (skip pushes already on origin/dev) and the branch list.
+
 ## Quota (the user's `/usage`, 2026-11-26 15:14 UTC)
 
 75% all models (Fable 77%); resets Sat 2026-11-28 13:00 UTC; about 73% of the
