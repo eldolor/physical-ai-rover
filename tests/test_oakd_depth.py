@@ -560,8 +560,7 @@ def test_an_empty_yaml_mount_key_is_unset(monkeypatch):
     assert made["m"] == Mount()
 
 
-def test_the_yaml_mount_is_the_measured_one():
-    from robot.factory import load_config
-
-    assert load_config()["hardware"]["depth_mount"] == {
-        "height_cm": 14.0, "pitch_deg": 0.0, "x_cm": 9.5, "lateral_cm": 0.0}
+def test_the_default_mount_is_the_measured_one():
+    """The user's tape, 2026-11-26: config/robot.yaml is 3.140.B's, so the
+    measured mount is the default, and `hardware.depth_mount` only overrides."""
+    assert Mount() == Mount(height_cm=14.0, pitch_deg=0.0, x_cm=9.5, lateral_cm=0.0)

@@ -88,19 +88,6 @@ hardware:
   # ROBOT_CAMERA wins. Unset: no camera driver. [PLACEHOLDER] until the
   # Rover's udev names exist (HARDWARE-READINESS.md section 5).
   # camera_device: /dev/picar-camera
-  # 3.222: the OAK-D Lite's stereo depth as the floor band and drop block
-  # (robot/oakd_depth.py). `oakd` turns it on; env ROBOT_DEPTH wins. Unset:
-  # no depth driver, and the band and the drop guard stay off on the car.
-  # depth: oakd
-  # Where the lens sits, measured by the user with a tape 2026-11-26 (3.222):
-  # height above the floor, pitch (down-positive), ahead of the chassis
-  # centre, to the right of the centreline. Env DEPTH_HEIGHT_CM,
-  # DEPTH_PITCH_DEG, DEPTH_X_CM and DEPTH_LATERAL_CM win.
-  depth_mount:
-    height_cm: 14.0
-    pitch_deg: 0.0
-    x_cm: 9.5
-    lateral_cm: 0.0
 
 # World state -- the map and the robot's pose on it (PLAN-mapping.md N1).
 # Read by world/factory.py, which is robot/factory.py's sibling.

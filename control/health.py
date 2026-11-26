@@ -154,9 +154,6 @@ def check_robot(url: str, secret=None, timeout=DEFAULT_TIMEOUT_S) -> dict:
             "motor_board": body.get("motor_board"),
             # 3.90 A: the camera stream. Description, for the board's reason.
             "camera": body.get("camera"),
-            # 3.222: the depth camera. Description, for the board's reason:
-            # an unplugged OAK-D is the car's, and its blocks read unusable.
-            "depth": body.get("depth"),
             # 3.218: the lidar's self box (the car's own mast). Description:
             # a measured property of the car, not of this release.
             "lidar_self_box_cm": body.get("lidar_self_box_cm"),
