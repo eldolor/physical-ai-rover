@@ -29,7 +29,8 @@ rule: questions one at a time, as pop-ups with a recommendation.*
   from cloud and desktop workers alike, and `list_events` on it is refused.
   That is why the previous orchestrator could send but never receive.
 * Left unapproved, the orchestrator receives `send_message` from cloud
-  workers and the watcher (seen 2026-11-26: 3.219, 3.220, the watcher), and
+  AND desktop workers and the watcher (seen 2026-11-26: 3.219, 3.220, the
+  watcher, and desktop 3.221 at 20:50 UTC), and
   reads desktop workers with `list_events`. It cannot send to desktop
   sessions; brief new cloud workers instead. The user agreed (2026-11-26).
 * Scheduled tasks into an unapproved orchestrator work: an hourly worker
