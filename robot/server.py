@@ -405,6 +405,10 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
     trip_after_s = TRIP_FRACTION * float(config.get("brain", {}).get("tick_timeout_s", 30.0))
     min_distance = config.get("safety", {}).get("min_distance_cm", 20.0)
     sensor_to_bumper = config.get("safety", {}).get("sensor_to_bumper_cm", 0.0)
+    # 3.218: the part of the car its own lidar sees (the Rover's mast),
+    # measured on the car; unset everywhere else. Validated at start.
+    self_box_cm = (os.environ.get("ROBOT_LIDAR_SELF_BOX_CM")
+                   or config.get("safety", {}).get("lidar_self_box_cm"))
     # Same resolution get_robot() uses internally -- reported in /health so
     # a client can tell "wrong deployment" (e.g. Robot view's "drive via
     # brain" pointed at a mode: sim server) apart from "not reachable at
@@ -423,7 +427,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
     world_model = get_world(config_path, robot=robot) if config_path \
         else get_world(robot=robot)
     safety = SafetyController(robot, min_distance_cm=min_distance,
-                              sensor_to_bumper_cm=sensor_to_bumper)
+                              sensor_to_bumper_cm=sensor_to_bumper, self_box_cm=self_box_cm)
     # R4: under `drive: ros` every verb is velocities through the ROS
     # container (robot/ros_drive.py), which is then the one wheel writer.
     by_velocity = bool(getattr(robot, "drives_by_velocity", False))
@@ -432,7 +436,8 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
     # ROS wrapper through drive: direct's guarded path -- the same
     # SafetyController, re-vetted every period -- and autonomy is refused.
     fallback_safety = (SafetyController(robot.inner, min_distance_cm=min_distance,
-                                        sensor_to_bumper_cm=sensor_to_bumper)
+                                        sensor_to_bumper_cm=sensor_to_bumper,
+                                        self_box_cm=self_box_cm)
                        if by_velocity else None)
     state = {
         # True while a direct-mode verb is being carried out (3.22).
@@ -2866,6 +2871,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             # instead of a second hardcoded constant that can drift from
             # it (PLAN-sim-hardening.md definition of done, item 10).
             "min_distance_cm": min_distance,
+            # 3.218: the lidar's self box, or None -- description only.
+            "lidar_self_box_cm": (list(safety.self_box_cm)
+                                  if safety.self_box_cm is not None else None),
             "mode": mode,
             # Which house the simulator built, so a live test can ask the
             # SERVER what it is standing in rather than trusting its own

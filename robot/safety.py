@@ -115,6 +115,11 @@ LIDAR_TO_FRONT_BUMPER_CM = FOOTPRINT_LENGTH_M * 50.0 - LIDAR_X_M * 100.0
 # rated +/-3cm (RPLidar C1), so this is a hardware-day calibration item
 # alongside `CHASSIS_WIDTH_CM` -- R8, with the chassis in hand.
 FOOTPRINT_SIDE_MARGIN_CM = 3.0
+# 3.218: a self box -- the part of the robot the lidar sees (the Rover's
+# pan-tilt mast, right behind it) -- must lie inside the chassis outline by
+# at least this much on every side, or it could hide a real obstacle at the
+# edge of the body.
+SELF_BOX_EDGE_MIN_CM = 0.5
 # How far the safety layer asks the scan to look (a HINT: a real lidar
 # ignores it, the sim stops casting there). The corridor only needs the
 # leading edge plus `min_distance_cm` (~34cm to the corridor's far corner),
@@ -563,12 +568,37 @@ class _PivotRows:
         return None
 
 
+def self_box(value) -> Optional[Tuple[float, float, float, float]]:
+    """3.218: `(x_min, x_max, y_min, y_max)` in cm, body frame (x ahead,
+    y left), from a list or a "x0,x1,y0,y1" string; None for None or "".
+    Raises ValueError unless it is a real box inside the chassis outline by
+    `SELF_BOX_EDGE_MIN_CM` on every side."""
+    if value is None or value == "":
+        return None
+    parts = value.split(",") if isinstance(value, str) else list(value)
+    if len(parts) != 4:
+        raise ValueError(f"a lidar self box is x_min,x_max,y_min,y_max in cm, got {value!r}")
+    x0, x1, y0, y1 = (float(v) for v in parts)
+    if not all(math.isfinite(v) for v in (x0, x1, y0, y1)) or not (x0 < x1 and y0 < y1):
+        raise ValueError(f"a lidar self box needs x_min < x_max and y_min < y_max, got {value!r}")
+    hl = FOOTPRINT_LENGTH_M * 50.0 - SELF_BOX_EDGE_MIN_CM
+    hw = FOOTPRINT_WIDTH_M * 50.0 - SELF_BOX_EDGE_MIN_CM
+    if not (-hl <= x0 and x1 <= hl and -hw <= y0 and y1 <= hw):
+        raise ValueError(f"the lidar self box {value!r} is not inside the chassis outline "
+                         f"by {SELF_BOX_EDGE_MIN_CM} cm (x within +/-{hl:.2f}, y within +/-{hw:.2f})")
+    return (x0, x1, y0, y1)
+
+
 class SafetyController:
     def __init__(self, robot: RobotInterface, min_distance_cm: float = 20.0,
-                 sensor_to_bumper_cm: float = SENSOR_TO_BUMPER_CM):
+                 sensor_to_bumper_cm: float = SENSOR_TO_BUMPER_CM, self_box_cm=None):
         self.robot = robot
         self.min_distance_cm = min_distance_cm
         self.sensor_to_bumper_cm = sensor_to_bumper_cm
+        # 3.218: the part of the robot its own lidar sees. Returns in it are
+        # not obstacles to a FORWARD move; astern they mean the lidar cannot
+        # see behind the body (`astern_occluded`). None: no such part.
+        self.self_box_cm = self_box(self_box_cm)
         # The straight verb in progress, as ASKED (3.44): its speed, and
         # whether it was asked at creep speed. The wheel loop reads these on
         # another thread; plain attribute reads, set before the verb runs.
@@ -756,12 +786,28 @@ class SafetyController:
         # are a product, differences and comparisons -- the same IEEE
         # operations in numpy as in Python, so the same numbers.
         xs, ys = _ScanPoints.of(scan)
+        if direction > 0 and self.self_box_cm is not None:
+            # 3.218: the robot's own mast is behind the lidar and moves with
+            # the body; it is never in a forward corridor.
+            outside = ~self._in_self_box(xs, ys)
+            xs, ys = xs[outside], ys[outside]
         if not len(xs):
             return None, "scan_footprint_no_target"
         best = float(_corridor_rooms(direction * xs, np.abs(ys)).min())
         if best == math.inf:
             return None, "scan_footprint_no_target"
         return round(best, 1), "scan_footprint"
+
+    def _in_self_box(self, xs, ys):
+        x0, x1, y0, y1 = self.self_box_cm
+        return (xs >= x0) & (xs <= x1) & (ys >= y0) & (ys <= y1)
+
+    def _sees_self(self, scan: Optional[dict]) -> bool:
+        """3.218: whether this scan has a return inside the self box."""
+        if self.self_box_cm is None or not scan or not scan.get("usable"):
+            return False
+        xs, ys = _ScanPoints.of(scan)
+        return bool(self._in_self_box(xs, ys).any())
 
     def pivot_scale(self, omega_rad_s: float, scan: Optional[dict] = None
                     ) -> Tuple[float, Optional[str]]:
@@ -1013,6 +1059,10 @@ class SafetyController:
         scan = self._scan()
         if self._blind(scan):
             return 0.0, "astern_not_observed"
+        if self._sees_self(scan):
+            # 3.218: the body's own mast hides what is behind it. Refused as
+            # what it is, not as an obstacle at a distance.
+            return 0.0, "astern_occluded"
         return self._aged(self._nearer(self.rear_clearance(scan),
                                        self.footprint_clearance(-1, scan),
                                        self.drop_clearance(-1)), -1)

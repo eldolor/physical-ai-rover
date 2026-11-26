@@ -2,7 +2,7 @@
 kind: architecture
 domain: safety
 status: current
-verified: 2026-11-22
+verified: 2026-11-26
 ---
 
 # Safety -- architecture
@@ -201,6 +201,31 @@ forward-facing robot has the least idea what is there.
 **Trade-off accepted:** until rear sensing works on the car, it cannot back
 out of a dead end, and a guarded move that overshoots forward cannot correct
 itself backwards; it stops where it is. A person may still turn it.
+
+### The robot's own parts seen by its lidar are not obstacles ahead, and hide what is behind (3.218)
+
+**Decided by the user, 2026-11-26** (`PLAN-ros-alignment.md` 3.218). The
+Rover's lidar sees the pan-tilt mast right behind it, inside the chassis
+outline, in every scan. A measured "self box" in the body frame names that
+part. Returns inside it are not obstacles to a FORWARD move: the mast is
+behind the lidar and moves with the body. Astern they mean what they are:
+the lidar cannot see behind the body, so a reverse is refused as
+`astern_occluded`, the same rule as "A body that cannot see astern does
+not reverse". Turns are judged on what the lidar sees: the mast never
+blocked one (a return inside the outline does not close under rotation),
+and the blind arc behind it counts as clear beyond the mast.
+
+**Rejected:** removing the mast's returns from the scan. The scan format
+reads a missing return as clear, so the rear would read clear where it is
+hidden: "unobserved is not clear" broken at the source, for every reader.
+**Rejected (the user):** refusing turns near the unseen arc (search and
+explore turn in place constantly); raising the lidar above the mast (no
+blind arc, but parts and new measurements).
+
+**Trade-off accepted:** a turn can swing a rear corner into something the
+Rover never saw behind it. The box must lie wholly inside the outline,
+with a margin, so it can never hide a thing at the body's edge;
+it is a property of one car, measured on it, and unset everywhere else.
 
 ### A body whose scan stops does not go forward
 
