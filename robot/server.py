@@ -323,6 +323,11 @@ def _held(lock):
         lock.release()
 
 
+def _real(v) -> bool:
+    """A finite number, not a bool: a body method's answer that may be used."""
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+
+
 def watchdog_should_stop(last_command_at: float, now: float, timeout_s: float) -> bool:
     """Pure decision logic -- see module docstring for why this is
     tested separately from the async polling loop that calls it."""
@@ -2172,15 +2177,33 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         `RobotInterface.get_scan()`. A backend with no lidar answers
         `usable: False`.
 
-        `stamp_unix` is meant as when the scan was TAKEN (R5), but is the
-        time of this REQUEST: `time.time()` just before the backend is
-        asked, not the capture time of the scan it returns. The bridge
-        stamps the ROS scan with it (PLAN-ros-alignment.md 3.40), so SLAM
-        pairs the scan with the odometry of the request's moment -- see
-        picar_bridge's _poll_scan(). Stamping the capture time is 3.42 /
-        3.76 A4's fix, owed before nav2's speed is raised."""
+        `stamp_unix` is when the scan was TAKEN (R5; 3.221): the wall clock
+        now less the age of the revolution's midpoint, from a body that
+        knows it (`scan_capture_age_s()`: the real lidar, and the fake one
+        on a pty), with `stamp_source: "capture"`. A body that does not (the
+        simulator's instant scan) is stamped with this request's time,
+        `"request"`, as every scan was before 3.221. The bridge stamps the ROS
+        scan with it (3.40), so SLAM pairs the scan with the odometry of that
+        moment -- see picar_bridge's _poll_scan().
+
+        `lidar_self_box_cm` is the safety layer's self box (3.218) or None,
+        so the bridge can keep the robot's own mast out of the scan it gives
+        ROS (3.221). This scan itself is never masked: the veto reads it."""
+        age_of = getattr(robot, "scan_capture_age_s", None)
+        age_of = age_of if callable(age_of) else (lambda: None)
         stamp = time.time()
-        return {**robot.get_scan(max_range_m=max_range_m), "stamp_unix": stamp}
+        before = age_of()
+        scan = robot.get_scan(max_range_m=max_range_m)
+        after, now = age_of(), time.time()
+        source = "request"
+        if scan.get("usable") and _real(before) and _real(after) and after >= before:
+            # Read on both sides of the scan: the age only grows while one
+            # revolution is current, so a smaller age after means a new one
+            # landed in between and the scan could be either: request time.
+            stamp, source = now - after, "capture"
+        return {**scan, "stamp_unix": stamp, "stamp_source": source,
+                "lidar_self_box_cm": (list(safety.self_box_cm)
+                                      if safety.self_box_cm is not None else None)}
 
     @app.get(prefix + "/depth", dependencies=[Depends(require_secret)])
     def depth():

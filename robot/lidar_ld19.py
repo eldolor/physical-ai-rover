@@ -410,6 +410,18 @@ class Ld19Scanner:
                 return None
             return max(0.0, now - self._scan_oldest)
 
+    def capture_age_s(self) -> Optional[float]:
+        """How long ago the current scan was TAKEN: the age of its revolution's
+        midpoint, halfway between its oldest and newest point (3.221). The
+        robot server stamps `/scan` with it, so SLAM pairs the scan with the
+        odometry of that moment and not of the request. None with no usable
+        scan."""
+        now = self.clock()
+        with self._lock:
+            if not self._fresh(now):
+                return None
+            return max(0.0, now - (self._scan_oldest + self._scan_newest) / 2.0)
+
     def scan_time(self) -> Optional[float]:
         """When the current scan's OLDEST point was taken, on this scanner's
         clock (`time.monotonic` on the car) -- for a body that knows its own

@@ -9,26 +9,73 @@ container. These are the two places a picture can come out mirrored:
   * the project's bearings are CLOCKWISE-positive and ROS's are
     counter-clockwise (REP-103);
   * a beam with no return is None on our side and +inf on ROS's (REP-117).
+
+And one thing is taken out on the way (3.221): the returns from the robot's
+own body that the safety layer's self box names (the Rover's mast, 3.218)
+go to ROS as -inf, "too close to measure" (REP-117) -- below range_min, so
+slam_toolbox, the costmaps and collision_monitor neither mark nor clear on
+them. Never +inf: that is "no return", which reads as clear.
 """
 
 import math
 
+# The lidar ahead of base_link: the xacro's laser_x and robot/safety.py's
+# LIDAR_X_M (tests/test_wall_linters.py keeps the three equal).
+LASER_X_M = 0.040
 
-def ros_ranges(ours, start_deg, inc_deg):
+
+# Two capture stamps closer than this are one revolution read twice: the
+# D500 turns at 10 Hz, so distinct revolutions are ~100 ms apart, and one
+# revolution's stamp moves only by clock jitter between reads (3.221).
+SAME_REVOLUTION_S = 0.03
+
+
+def same_revolution(stamp, last):
+    """Whether a capture `stamp` repeats the revolution last sent at `last`
+    (None: nothing sent yet), or is older than it -- either way, not a new
+    scan. A clock stepped back by more than a second is a new start."""
+    if last is None:
+        return False
+    return -1.0 < stamp - last < SAME_REVOLUTION_S
+
+
+def in_self_box(r, bearing_deg, box_cm):
+    """Whether a return `r` metres away at our (clockwise) `bearing_deg` lies
+    inside `box_cm` = (x_min, x_max, y_min, y_max), cm, body frame (x ahead,
+    y left), edges included. The same arithmetic, in the same order, as
+    robot/safety.py's `scan_points_cm()` and `_in_self_box()`, so the beams
+    ROS loses are exactly the ones the veto calls the body's own."""
+    a = math.radians(bearing_deg)
+    x = r * 100.0 * math.cos(a) + LASER_X_M * 100.0
+    y = -r * 100.0 * math.sin(a)
+    x0, x1, y0, y1 = box_cm
+    return x0 <= x <= x1 and y0 <= y <= y1
+
+
+def ros_ranges(ours, start_deg, inc_deg, self_box_cm=None):
     """Our clockwise scan -> the ranges of a ROS LaserScan with the SAME
     angle_min / angle_increment, counter-clockwise.
 
     ROS beam j sits at start + j*inc, CCW-positive; the same direction in
     our clockwise convention is its negation, which is our beam
     ((-(start + j*inc)) - start) / inc, modulo the beam count.
+
+    `self_box_cm` (the robot server's `lidar_self_box_cm`, 3.221): a return
+    inside it is the robot's own body and becomes -inf. None: nothing is.
     """
     n = len(ours)
+    box = tuple(float(v) for v in self_box_cm) if self_box_cm else None
     out = []
     for j in range(n):
         ours_deg = -(start_deg + j * inc_deg)
         i = int(round((ours_deg - start_deg) / inc_deg)) % n
         r = ours[i]
-        out.append(math.inf if r is None else float(r))
+        if r is None:
+            out.append(math.inf)
+        elif box is not None and in_self_box(r, start_deg + i * inc_deg, box):
+            out.append(-math.inf)
+        else:
+            out.append(float(r))
     return out
 
 

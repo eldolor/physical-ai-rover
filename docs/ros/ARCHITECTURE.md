@@ -302,7 +302,7 @@ the wheels, one that skips arbitration (3.17).
 | Neighbour | Direction | Protocol | Ownership |
 |---|---|---|---|
 | Robot server, wheels | ROS's actuator plugin calls the server | HTTP/JSON: post a standing wheel velocity, read wheel state | The robot server owns the wheels, the veto and the watchdog. ROS is one driver among several. The plugin's steady posts are also ROS's heartbeat. |
-| Robot server, scan and truth | The bridge polls the server | HTTP/JSON | The body owns the scan. The bridge converts it to ROS's convention. The simulator's truth only anchors SLAM's frame and is never published into ROS. |
+| Robot server, scan and truth | The bridge polls the server | HTTP/JSON | The body owns the scan. The bridge converts it to ROS's convention, and gives ROS the robot's own body (the safety layer's self box, the Rover's mast) as "too close to measure", which ROS neither maps nor clears; the veto keeps its whole scan (3.221). Each scan is stamped with when it was taken. The simulator's truth only anchors SLAM's frame and is never published into ROS. |
 | Robot server, verbs | The server's ROS drive mode calls the bridge | HTTP/JSON: a twist for a named driver | The robot server decides who may drive. The bridge only maps a driver to a multiplexer input. |
 | World (SLAM backend) | It calls the bridge | HTTP/JSON in ROS's frame, tagged with a session | ROS owns the estimate, the grid and the goal's state. The world owns the conversion. See [world](../world/ARCHITECTURE.md). |
 | Brain | The bridge polls the brain | HTTP/JSON, read-only | The brain owns the mission. ROS only displays it. |

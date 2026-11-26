@@ -259,8 +259,15 @@ def _lidar_offset():
     """The lidar sits ahead of base_link (3.27). TF places every beam with
     the xacro's laser_x; robot/safety.py moves returns into the body frame
     with LIDAR_X_M, and the sim casts from it."""
+    import importlib.util
     from robot.safety import LIDAR_X_M
-    values = {"xacro laser_x": _xacro("laser_x"), "robot/safety.py LIDAR_X_M": LIDAR_X_M}
+    spec = importlib.util.spec_from_file_location(
+        "convert_wall", SLAM / "src/picar_bridge/picar_bridge/convert.py")
+    convert = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(convert)
+    values = {"xacro laser_x": _xacro("laser_x"), "robot/safety.py LIDAR_X_M": LIDAR_X_M,
+              # 3.221: the bridge masks the self box off the scan with it
+              "convert.py LASER_X_M": convert.LASER_X_M}
     return len(set(values.values())) == 1, values
 
 

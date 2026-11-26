@@ -121,6 +121,10 @@ def test_wheels_scan_and_truth_survive_the_socket(robot_and_world_over_asgi):
     # not what, so it is set aside here and checked for separately.
     over_the_wire = remote.get_scan()
     assert isinstance(over_the_wire.pop("stamp_unix"), float)
+    # 3.221: the route also says where the stamp came from and which self
+    # box the bridge should take off ROS's copy -- the route's, not the body's.
+    assert over_the_wire.pop("stamp_source") == "request"
+    assert over_the_wire.pop("lidar_self_box_cm") is None
     assert over_the_wire == local.get_scan()
     assert remote_world.get_truth() == local_world.get_truth()
 

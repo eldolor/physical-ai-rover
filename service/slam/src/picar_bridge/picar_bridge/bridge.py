@@ -267,6 +267,8 @@ class Bridge(Node):
         self.last_odom = None
         self.last_scan = None
         self.scan_count = 0
+        self._last_capture_stamp = None   # 3.221: the last revolution sent, by its capture time
+        self.scans_repeated = 0
         self.twists = {d: 0 for d in DRIVER_TOPICS}
         self.pan_rad = 0.0
         self.session = uuid.uuid4().hex[:8]
@@ -1326,6 +1328,13 @@ class Bridge(Node):
             # capture time only while they agree to within half a second, or
             # every scan would be filed in the future and dropped.
             if abs(cap - self.get_clock().now().nanoseconds * 1e-9) < 0.5:
+                if s.get("stamp_source") == "capture":
+                    if convert.same_revolution(cap, self._last_capture_stamp):
+                        # 3.221: a poll that found the revolution already sent.
+                        # Request stamps made one scan look like two.
+                        self.scans_repeated += 1
+                        return
+                    self._last_capture_stamp = cap
                 msg.header.stamp = Time(nanoseconds=int(cap * 1e9)).to_msg()
             else:
                 self.get_logger().warn("scan capture time is >0.5 s off this clock; "
@@ -1338,7 +1347,8 @@ class Bridge(Node):
         msg.range_min = float(s["range_min_m"])
         msg.range_max = float(s["range_max_m"])
         msg.scan_time = 1.0 / SCAN_HZ
-        ranges = convert.ros_ranges(ours, start, inc_deg)
+        # 3.221: the robot's own mast (the safety layer's self box) leaves as -inf
+        ranges = convert.ros_ranges(ours, start, inc_deg, s.get("lidar_self_box_cm"))
         msg.ranges = ranges
         self.scan_pub.publish(msg)
         with self.lock:
@@ -1997,7 +2007,8 @@ class Bridge(Node):
             return 200, {"ok": self.slam_state != "failed", "robot_url": self.robot_url,
                          "odom_age_s": None if not self.last_odom else time.time() - self.last_odom["at"],
                          "scan_age_s": None if not self.last_scan else time.time() - self.last_scan["at"],
-                         "scans_published": self.scan_count, "twists": dict(self.twists),
+                         "scans_published": self.scan_count,
+                         "scans_repeated": self.scans_repeated, "twists": dict(self.twists),
                          "pan_rad": self.pan_rad, "session": self.session,
                          "map_version": self.map_version,
                          "map_replies": dict(self.map_replies),
