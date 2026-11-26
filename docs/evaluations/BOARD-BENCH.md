@@ -241,6 +241,30 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 
 ## Runs
 
+### 2026-11-26, 3.222 C: the OAK-D depth driver's cost (K6), `43cac07f` (branch, not `dev`)
+
+Probe worktree from a git bundle; `picar-stack` running (sim mode,
+`4064a998`); this section's ports (1122x) for a split simulator (fake
+motor board, sim body: no real motion), the robot server with and without
+`ROBOT_DEPTH=oakd`, the virtual wheels spun in place through `/wheels` at
+10 Hz, 600 s per arm; Rover on a stand facing a near object; load 0.63 ->
+0.98 (valid, under 4). OAK-D at 480P, extended disparity, 10 fps.
+
+| | Driver off | Driver on | Delta | Bar (K6) |
+|---|---|---|---|---|
+| Robot server CPU, mean (% of one core) | 14.6 | 36.4 | **+21.8** | +<= 25: met |
+| CPU p95 (1 s samples) | 16.0 | 41.0 | | |
+| GPU (GR3D, tegrastats), mean / max | 0.0 / 0 | 0.0 / 0 | 0 (stereo on the Myriad X) | recorded |
+| RSS end (MB) | 73.0 | 210.7 | **+137.7** (203.9 -> 210.7 over the arm) | +<= 250: met |
+| Late wheel ticks | 0 / 11,708 | **0 / 10,826** (max dt 62.3 ms) | | 0: met |
+| Depth frames / failures | | 6,025 / 0, compute 9.2 ms | | |
+
+Pilot before it (not the record): at 15 fps, 20 s per arm, +29.4% of one
+core (15.2 -> 44.6), past the bar; the driver went to 10 fps. The
+geometry alone: 22.6 ms a frame before vectorising, 12.8 after (15 fps,
+probe). RSS grew 6.8 MB over the 10 minutes: a soak decides whether that
+levels off.
+
 ### 2026-11-07, 3.136.B run 3, `dev` `418ba187` (INVALID as written)
 
 `run.py steady --label run3 --env IMAGE=vision-picar-ros:plan-3.145` (the
