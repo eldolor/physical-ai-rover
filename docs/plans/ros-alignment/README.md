@@ -221,4 +221,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.216](3.216-kill-mid-move-stop.md) | A robot-server death mid-move: the board stops inside the gap |
 | [3.217](3.217-wifi-command-route.md) | The motor board's commands over Wi-Fi while its serial receive is dead (a stopgap) |
 | [3.218](3.218-lidar-self-box.md) | The lidar's own mast: a measured self box for forward moves (reverse stays blind) |
+| [3.219](3.219-dpad-hold.md) | Twin D-pad: press and hold to drive |
 <!-- /sections -->
