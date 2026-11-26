@@ -266,7 +266,7 @@ def _backend(config: dict) -> RobotInterface:
         try:
             # 3.220: off on a real board until its step (criterion 6) is run.
             return HardwareRobot(port, track_scrub=_track_scrub(config),
-                                 gimbal=_gimbal(config, default=False),
+                                 **({"gimbal": True} if _gimbal(config, default=False) else {}),
                                  **({"command_url": command_url} if command_url else {}),
                                  **({"lidar": lidar} if lidar else {}),
                                  **({"camera": camera} if camera else {}))

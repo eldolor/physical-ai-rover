@@ -257,8 +257,9 @@ board a gimbal goal, behind a switch that is off on the real board until
 is the board's measured angle, never the commanded one**: the firmware
 reports it in its feedback only in the gimbal module type, which the host
 turns on for the boot it is in (a RAM-only command), never by rewriting
-the board's saved boot mission. With no measured angle, a look moves
-nothing and the pan is unknown, not assumed. The safety layer never reads
+the board's saved boot mission. With no measured angle the pan is
+unknown, not assumed, and the camera frame is refused rather than read as
+facing ahead. The safety layer never reads
 the gimbal: on the Rover no safety sensor pans, and a sensor that does pan
 publishes its own pan (3.18).
 

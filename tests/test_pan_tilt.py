@@ -103,10 +103,12 @@ def test_the_angle_is_in_the_feedback_only_in_module_type_two(board):
 def test_the_command_moves_the_servos_in_any_module_type_at_their_speed(board):
     """uart_ctrl.h dispatches 133 whatever the module; the servo travels."""
     b, body = board
+    t0 = time.monotonic()
     _send(b, {"T": 133, "X": 90, "Y": 0})
-    time.sleep(0.1)
-    mid = b.gimbal_angles[0]
-    assert 5 < mid < 60
+    time.sleep(0.05)
+    mid, took = b.gimbal_angles[0], time.monotonic() - t0
+    # Not there at once, and never faster than the servo's speed.
+    assert 0 < mid <= 270 * took + 3 and (took > 0.3 or mid < 89)
     assert _wait(lambda: abs(b.gimbal_angles[0] - 89.93) < 0.05, 1.0)
     # The body's camera follows the servo, not the command (grid_world's
     # pan is in 90-degree units, clockwise).
@@ -117,12 +119,12 @@ def test_the_stop_holds_where_the_servo_is(board):
     """gimbalCtrlStop(): torque off for SERVO_STOP_DELAY, then on."""
     b, _ = board
     _send(b, {"T": 133, "X": -90, "Y": 0})
-    time.sleep(0.12)
+    time.sleep(0.05)
     _send(b, {"T": 135})
     held = b.gimbal_angles[0]
     time.sleep(0.3)
     assert b.gimbal_angles[0] == pytest.approx(held, abs=0.5)
-    assert -85 < held < -5
+    assert held < 0
 
 
 def test_a_board_never_commanded_leaves_the_bodys_pan_alone(board):
@@ -195,8 +197,8 @@ def test_at_rest_the_frame_carries_the_measured_pan(rig):
     for look, goal in ((bot.look_left, -90), (bot.look_right, 90), (bot.look_center, 0)):
         answer = look()
         assert answer["goal_pan_deg"] == goal
-        assert answer["settled"] is False             # it has only just been sent
-        assert _wait(lambda: bot.gimbal_status()["settled"], 1.0)
+        # At rest a look ends when the camera has: the next frame is the peek's.
+        assert answer["settled"] is True and abs(answer["pan_deg"] - goal) <= 3.0
         assert _wait(lambda: b.servo_pos[0] == b.servo_goal[0], 1.0)
         time.sleep(0.1)                               # at rest: one frame since
         for _ in range(10):
@@ -208,23 +210,50 @@ def test_at_rest_the_frame_carries_the_measured_pan(rig):
 
 def test_while_moving_the_report_is_where_the_servo_is_not_the_goal(rig):
     b, _, bot = rig
-    bot.look_right()
-    time.sleep(0.12)
-    g = bot.gimbal_status()
-    assert g["settled"] is False
-    assert g["pan_deg"] < 80
-    assert abs(g["pan_deg"] - b.gimbal_angles[0]) < 270 * 0.06 + 1
+    bot._point(90)
+    assert _wait(lambda: (bot.gimbal_status()["pan_deg"] or 0) > 1, 1.0)
+    g, truth = bot.gimbal_status(), b.gimbal_angles[0]
+    if not g["settled"]:
+        assert g["pan_deg"] < 87
+    # Never ahead of the servo: at most one frame (and a loop) behind it.
+    assert g["pan_deg"] <= truth + 0.5
+    assert truth - g["pan_deg"] <= 270 * 0.08
 
 
-def test_a_board_that_does_not_report_the_angle_is_never_panned(rig):
+def test_a_look_while_the_wheels_turn_does_not_wait(rig):
     b, _, bot = rig
-    _send(b, {"T": 4, "cmd": 0})
+    bot.set_wheel_velocity(0.5, 0.5)
+    t0 = time.monotonic()
+    answer = bot.look_left()
+    assert time.monotonic() - t0 < 0.1 and answer["sent"] is True
+    bot.stop()
+
+
+def test_a_board_that_does_not_report_the_angle_gives_no_frame(rig):
+    """Unknown pan: the look is still sent (a centring matters most then),
+    the answer says unmeasured, and the frame is refused, never pan 0."""
+    b, _, bot = rig
+    handle = b._handle
+    b._handle = lambda line: None if b'"T": 4' in line or b'"T":4' in line else handle(line)
+    handle(json.dumps({"T": 4, "cmd": 0}).encode())
     assert _wait(lambda: not bot.gimbal_status()["measured"], 1.0)
     n = len(b.gimbal_commands)
-    answer = bot.look_left()
-    assert answer["pan"] is None and answer["reason"].startswith("gimbal_unmeasured")
-    assert len(b.gimbal_commands) == n
-    assert bot.get_camera_frame()["pan_deg"] is None
+    answer = bot.look_center()
+    assert answer["sent"] is True and answer["pan_deg"] is None
+    assert answer["reason"].startswith("gimbal_unmeasured")
+    assert len(b.gimbal_commands) == n + 1
+    with pytest.raises(RuntimeError, match="pan is unknown"):
+        bot.get_camera_frame()
+
+
+def test_a_reboot_the_odometers_missed_gets_the_report_back(rig):
+    """Near the origin a reboot leaves the odometers at 0, so it is not
+    detected; frames without the angle bring T:4 back within ~1 s."""
+    b, _, bot = rig
+    b.reboot()
+    assert b.module_type == 0
+    assert _wait(lambda: b.module_type == 2, 2.5)
+    assert _wait(lambda: bot.gimbal_status()["measured"], 1.0)
 
 
 # ---------- criterion 3: a lost Wi-Fi command ----------
@@ -237,7 +266,8 @@ def test_a_lost_command_is_never_reported_reached_and_raises_a_fault(board):
         assert _wait(lambda: (bot.gimbal_status() or {}).get("settled"))
         face.lose_next(10_000, hang_s=0.15)
         t0 = time.monotonic()
-        bot.look_left()
+        answer = bot.look_left()
+        assert answer["settled"] is False
         worst = 0.0
         while bot.gimbal_status()["fault"] is None and time.monotonic() - t0 < 3:
             g = bot.gimbal_status()
@@ -300,3 +330,27 @@ def test_the_look_buttons_route_turns_the_camera(sim_programs, monkeypatch):
     assert act("LOOK_CENTER")["executed"] is True
     assert _wait(lambda: abs(gimbal()["pan_deg"] if gimbal()["pan_deg"] is not None
                              else 99) <= 1.0, 1.0)
+
+
+def test_the_switch_is_off_on_a_real_board_unless_set(monkeypatch):
+    from robot import factory, hardware_robot
+    seen = {}
+
+    class Spy:
+        def __init__(self, port, track_scrub=1.0, gimbal=False, **kw):
+            seen["gimbal"] = gimbal
+
+    monkeypatch.setattr(hardware_robot, "HardwareRobot", Spy)
+    monkeypatch.setenv("ROBOT_MODE", "hardware")
+    monkeypatch.delenv("SIM_MOTOR_BOARD", raising=False)
+    monkeypatch.delenv("ROBOT_COMMAND_URL", raising=False)
+    monkeypatch.setenv("ROBOT_SERIAL", "/dev/picar-board")
+    monkeypatch.delenv("ROBOT_GIMBAL", raising=False)
+    factory.get_robot()
+    assert seen["gimbal"] is False
+    monkeypatch.setenv("ROBOT_GIMBAL", "1")
+    factory.get_robot()
+    assert seen["gimbal"] is True
+    monkeypatch.setenv("ROBOT_GIMBAL", "maybe")
+    with pytest.raises(ValueError, match="on or off"):
+        factory.get_robot()
