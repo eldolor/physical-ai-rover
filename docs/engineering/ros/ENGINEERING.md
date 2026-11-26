@@ -183,9 +183,11 @@ capture time (the LD19 reader, real or the fake on a pty: `capture_unix`
 in its scan, the revolution's own midpoint on the wall clock, fixed when
 it completes) is stamped with it and `stamp_source: "capture"`; the
 simulator stays `"request"`. A capture stamp within
-`convert.SAME_REVOLUTION_S` (30 ms) either way of the last one sent is the
-same revolution polled again: it is not republished (`scans_repeated` in
-`/health`). One further back is a clock that stepped and is sent. A
+`convert.SAME_REVOLUTION_S` (30 ms) of the last one sent is the same
+revolution polled again, and one up to a second older would reach SLAM
+out of order: neither is republished (`scans_repeated` in `/health`). One
+further back is a clock that stepped and starts afresh, as does the
+fallback to odometry stamps. A
 malformed box from the robot server masks nothing (`convert.self_box()`).
 
 **The robot's own body (3.221).** The robot server's `/scan` names the

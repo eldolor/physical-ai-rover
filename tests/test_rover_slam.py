@@ -125,9 +125,10 @@ def test_a_revolution_read_twice_is_not_a_new_scan():
     assert convert.same_revolution(100.0004, 100.0)        # jitter
     assert convert.same_revolution(100.0, 100.0)           # the server fixes a stamp once
     assert not convert.same_revolution(100.1, 100.0)       # the next revolution
-    # Review: a clock stepped back, by any amount past jitter, is new -- never
-    # a run of dropped scans until the clock catches up.
-    assert not convert.same_revolution(99.95, 100.0)
+    # Review (second round): a stamp a little older would reach SLAM out of
+    # order: held off. A clock stepped back past a second is a new start.
+    assert convert.same_revolution(99.95, 100.0)
+    assert convert.same_revolution(99.2, 100.0)
     assert not convert.same_revolution(95.0, 100.0)
 
 

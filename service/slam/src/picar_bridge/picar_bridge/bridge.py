@@ -1323,7 +1323,7 @@ class Bridge(Node):
             return
         msg.header.stamp = tr.header.stamp
         cap = s.get("stamp_unix")
-        if isinstance(cap, (int, float)):
+        if isinstance(cap, (int, float)) and not isinstance(cap, bool) and math.isfinite(cap):
             # Two clocks (the robot server's and this container's): use the
             # capture time only while they agree to within half a second, or
             # every scan would be filed in the future and dropped.
@@ -1337,6 +1337,7 @@ class Bridge(Node):
                     self._last_capture_stamp = cap
                 msg.header.stamp = Time(nanoseconds=int(cap * 1e9)).to_msg()
             else:
+                self._last_capture_stamp = None   # 3.221: no stale "last" once the clocks agree again
                 self.get_logger().warn("scan capture time is >0.5 s off this clock; "
                                        "stamping with the newest odometry instead",
                                        throttle_duration_sec=10.0)

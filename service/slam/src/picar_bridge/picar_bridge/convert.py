@@ -31,13 +31,15 @@ SAME_REVOLUTION_S = 0.03
 
 
 def same_revolution(stamp, last):
-    """Whether a capture `stamp` repeats the revolution last sent at `last`
-    (None: nothing sent yet). Only a stamp within SAME_REVOLUTION_S either
-    way: one further back is a clock that stepped (NTP on a board with no
-    RTC), and dropping everything until it caught up would starve SLAM."""
+    """Whether a capture `stamp` is not a new scan after the one last sent at
+    `last` (None: nothing sent yet): the same revolution read again, or an
+    older stamp (a clock stepped back -- NTP on a board with no RTC), which
+    would reach slam_toolbox out of order. Up to a second back is held off
+    until the clock catches up; further back is a new start (review, 3.221:
+    publishing small steps back fed SLAM scans out of order)."""
     if last is None:
         return False
-    return abs(stamp - last) < SAME_REVOLUTION_S
+    return -1.0 < stamp - last < SAME_REVOLUTION_S
 
 
 def self_box(value):

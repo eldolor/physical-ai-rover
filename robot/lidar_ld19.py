@@ -377,7 +377,10 @@ class Ld19Scanner:
                 # 3.221: when THIS revolution was taken -- the midpoint of its
                 # own points (bins carried from the one before age the scan
                 # for the veto, not its stamp), on the wall clock, fixed once
-                # here so every read of it gives the same stamp.
+                # here so every read of it gives the same stamp. The offset is
+                # read afresh each revolution on purpose: the stamp must agree
+                # with the wall clock the odometry is stamped by, also after
+                # an NTP step (the bridge holds off a stamp that runs back).
                 mid = (rev[0][2] + rev[-1][2]) / 2.0
                 capture = self.wall() - (self.clock() - mid)
                 with self._lock:
