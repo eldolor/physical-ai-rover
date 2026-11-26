@@ -442,7 +442,7 @@ def test_a_body_with_no_gimbal_and_no_sensors_answers_the_contract(board):
 
 # ---------- amendment 2: the tilt ----------
 
-def test_tilt_steps_stay_inside_the_limits_and_left_right_keep_them(rig):
+def test_tilt_steps_stay_inside_the_limits_and_looks_level_them(rig):
     b, _, bot = rig
     for _ in range(8):
         answer = bot.tilt_step(5)
@@ -452,12 +452,15 @@ def test_tilt_steps_stay_inside_the_limits_and_left_right_keep_them(rig):
     assert all(TILT_LIMITS_DEG[0] <= c["Y"] <= TILT_LIMITS_DEG[1] for c in sent)
     assert [c["Y"] for c in sent[1:4]] == [5, 10, 15]
     assert all(c["X"] == 0 for c in sent)                  # the pan stays
-    bot.look_left()
+    bot.look_step(-20)                                      # a pan step keeps the tilt
     assert _wait(lambda: len(b.gimbal_commands) == len(sent) + 1)
     last = b.gimbal_commands[-1]
-    assert last["X"] == -90 and last["Y"] == 30            # left keeps the tilt
+    assert last["X"] == -20 and last["Y"] == 30
     assert _wait(lambda: abs(bot.gimbal_status()["tilt_deg"] - 29.93) < 0.5, 1.0)
-    for _ in range(14):
+    bot.look_left()                                         # a look levels it (the brain's peeks)
+    assert _wait(lambda: len(b.gimbal_commands) == len(sent) + 2)
+    assert b.gimbal_commands[-1]["X"] == -90 and b.gimbal_commands[-1]["Y"] == 0
+    for _ in range(8):
         bot.tilt_step(-5)
     assert _wait(lambda: len(b.gimbal_commands) == bot.gimbal_commands)
     assert b.gimbal_commands[-1]["Y"] == TILT_LIMITS_DEG[0]
@@ -493,3 +496,22 @@ def test_a_tilt_without_an_angle_is_refused():
     assert post({"action": "TILT_STEP"}).status_code == 422
     r = post({"action": "TILT_STEP", "angle": 10}).json()
     assert r["executed"] is True and r["result"]["tilt_deg"] == 10
+
+
+
+def test_a_tilt_never_moves_the_pan_nor_hides_its_fault(board):
+    b, body = board
+    face = FakeEsp32Http(b)
+    bot = HardwareRobot(b.path, sensors=body, gimbal=True, command_url=face.url)
+    try:
+        assert _wait(lambda: (bot.gimbal_status() or {}).get("settled"))
+        face.lose_next(10_000, hang_s=0.15)
+        bot.look_left()
+        fault = bot.gimbal_status()["fault"]
+        assert fault
+        bot.tilt_step(5)
+        assert bot.gimbal_status()["fault"] == fault        # still there
+        assert bot._pan_goal == -90                          # re-sent as it stands, not 0
+    finally:
+        bot.close()
+        face.close()

@@ -369,8 +369,10 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     el.hidden = parts.length === 0;
     if (parts.length) {
       el.textContent = parts.join(", ");
-      el.dataset.panDeg = String(pan);
-      el.dataset.tiltDeg = String(tilt);
+      if (typeof pan === "number") el.dataset.panDeg = String(pan);
+      else delete el.dataset.panDeg;
+      if (typeof tilt === "number") el.dataset.tiltDeg = String(tilt);
+      else delete el.dataset.tiltDeg;
     }
   }
 
@@ -2075,6 +2077,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   // 3.220.B: the held look's steps, strictly one after another.
   async function lookHoldLoop(gen, action) {
     const step = CAMERA_HOLD[action];
+    let lastGoal = null;
     while (gen === hold.gen && hold.driving) {
       const t0 = performance.now();
       hold.inFlight++;
@@ -2099,7 +2102,9 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
                    "rejected");
           const btn = hold.btn;
           holdEnd("refused");
-          if (hold.swallowBtn === btn) hold.swallowBtn = null;
+          // A look's release then sends the plain look (a different verb);
+          // a tilt's would only repeat the refused step, so it stays swallowed.
+          if (step.verb === "LOOK_STEP" && hold.swallowBtn === btn) hold.swallowBtn = null;
           return;
         }
         const goal = typeof res[step.goal] === "number" ? res[step.goal]
@@ -2108,7 +2113,11 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
         // a frame while a person holds a button).
         try { render(await fetchFrame()); } catch (frameErr) { /* the next frame redraws */ }
         if (gen !== hold.gen || !hold.driving) return;     // ended, or replaced, meanwhile
-        if (goal !== null && Math.abs(goal) >= step.limit - 0.5) {
+        // At the limit, or a goal that no longer moves (the robot clamped it:
+        // its limits are its own, not this table's).
+        const stuck = goal !== null && goal === lastGoal;
+        lastGoal = goal;
+        if (stuck || (goal !== null && Math.abs(goal) >= step.limit - 0.5)) {
           holdEnd("limit");
           return;
         }

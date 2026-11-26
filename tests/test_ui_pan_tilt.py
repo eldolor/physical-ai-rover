@@ -67,6 +67,7 @@ _FRAMES = """(() => {
 
 
 def _press(page, sel):
+    page.locator(sel).scroll_into_view_if_needed()      # a raw press needs it on screen
     x, y = _centre(page, sel)
     page.mouse.move(x, y)
     page.mouse.down()
@@ -268,14 +269,20 @@ def test_a_tilt_tap_is_one_step_and_the_badge_says_so(browser, private_twin_serv
     page.wait_for_function("() => !document.getElementById('pan-badge').hidden", timeout=5000)
     assert _tilt(url) == 5
     assert page.inner_text("#pan-badge").startswith("Camera tilted 5° up")
-    page.click("#btn-look-left")
+    _press(page, "#btn-look-left")              # a held pan keeps the tilt
+    page.wait_for_function("() => (document.getElementById('pan-badge').dataset.panDeg || 0) <= -10",
+                           timeout=5000)
+    page.mouse.up()
     page.wait_for_timeout(400)
-    assert _tilt(url) == 5                      # left keeps the tilt
+    assert _tilt(url) == 5
     badge = page.inner_text("#pan-badge")
-    assert "90° left" in badge and badge.endswith(", tilted 5° up (measured)"), badge
+    assert "left" in badge and badge.endswith(", tilted 5° up (measured)"), badge
     shots = os.environ.get("UI_SHOTS")
     if shots:
         page.screenshot(path=os.path.join(shots, "3220-tilt-badge.png"), full_page=False)
+    page.click("#btn-look-left")                # a look levels it (the brain's peeks)
+    page.wait_for_timeout(400)
+    assert _tilt(url) == 0
     page.click("#btn-look-center")
     page.wait_for_function("() => document.getElementById('pan-badge').hidden", timeout=5000)
     assert _tilt(url) == 0

@@ -576,14 +576,17 @@ class MockRobot(RobotInterface):
 
     # ---------- camera pan ----------
 
+    # 3.220.C: every look verb levels the tilt, as on the car.
     def look_left(self) -> dict:
+        self.tilt_deg = 0.0
         return {"action": "look_left", **self.world.look_left()}
 
     def look_right(self) -> dict:
+        self.tilt_deg = 0.0
         return {"action": "look_right", **self.world.look_right()}
 
     def look_center(self) -> dict:
-        self.tilt_deg = 0.0             # 3.220.C: centres and levels
+        self.tilt_deg = 0.0
         return {"action": "look_center", **self.world.look_center()}
 
     # 3.220.C: the sim camera's tilt. The renderer draws no tilt, so it is a

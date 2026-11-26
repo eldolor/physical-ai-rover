@@ -833,35 +833,44 @@ class HardwareRobot(RobotInterface):
         A new goal starts a new judgement: an old goal's fault is cleared.
 
         `pan_deg` None keeps the pan where it stands; with `relative` it is
-        a step. `tilt_deg` None keeps the tilt (3.220.C: a look left or right
-        leaves it); `tilt_step` is a tilt step."""
+        a step. `tilt_deg` None keeps the tilt (3.220.C: a pan step leaves
+        it; every look verb levels it); `tilt_step` is a tilt step."""
         with self._write_lock:
             with self._lock:
-                # A step adds to the last goal while that goal stands (so a
-                # hold's steps add up as the servo catches up), else to where
-                # the camera was measured: a goal that faulted is not where
-                # the camera is (3.220.B review). Read and written under one
-                # lock, so two steps never share a base.
-                stands = self._pan_goal is not None and self.gimbal_fault is None
-                pan_base = (self._pan_goal if stands
-                            else self._pan_meas if self._pan_meas is not None else 0.0)
-                tilt_base = (self._tilt_goal if stands or self._tilt_meas is None
-                             else self._tilt_meas)
                 if pan_deg is None:
-                    pan_deg = pan_base
-                elif relative:
-                    pan_deg = pan_base + float(pan_deg)
+                    # A tilt only (3.220.C review): the pan goal is re-sent as
+                    # it stands and its judgement (goal time, reached, fault)
+                    # is left alone. With no pan goal at all, nothing is sent:
+                    # X=0 would move a camera nobody asked to pan.
+                    if self._pan_goal is None:
+                        return False
+                    pan = self._pan_goal
+                else:
+                    if relative:
+                        # A step adds to the last goal while that goal stands
+                        # (so a hold's steps add up as the servo catches up),
+                        # else to where the camera was measured: a goal that
+                        # faulted is not where the camera is (3.220.B
+                        # review). Read and written under one lock, so two
+                        # steps never share a base.
+                        stands = self._pan_goal is not None and self.gimbal_fault is None
+                        base = (self._pan_goal if stands
+                                else self._pan_meas if self._pan_meas is not None else 0.0)
+                        pan_deg = base + float(pan_deg)
+                    pan = float(round(max(-PAN_LIMIT_DEG, min(PAN_LIMIT_DEG, float(pan_deg)))))
+                    self._pan_goal = pan
+                    self._pan_goal_at = time.monotonic()
+                    self._pan_reached = False
+                    self.gimbal_fault = None
+                # The tilt adds to its own last goal: it is never judged, so
+                # no measured offset is ever folded into it.
                 if tilt_step is not None:
-                    tilt_deg = tilt_base + float(tilt_step)
+                    tilt_deg = self._tilt_goal + float(tilt_step)
                 elif tilt_deg is None:
-                    tilt_deg = tilt_base
-                pan = float(round(max(-PAN_LIMIT_DEG, min(PAN_LIMIT_DEG, float(pan_deg)))))
+                    tilt_deg = self._tilt_goal
                 tilt = float(round(max(TILT_LIMITS_DEG[0],
                                        min(TILT_LIMITS_DEG[1], float(tilt_deg)))))
-                self._pan_goal, self._tilt_goal = pan, tilt
-                self._pan_goal_at = time.monotonic()
-                self._pan_reached = False
-                self.gimbal_fault = None
+                self._tilt_goal = tilt
                 self.gimbal_commands += 1
             return self._send({"T": 133, "X": int(PAN_SIGN * pan), "Y": int(TILT_SIGN * tilt),
                                "SPD": 0, "ACC": 0})
@@ -884,7 +893,17 @@ class HardwareRobot(RobotInterface):
         else:
             sent = self._point(side * LOOK_PAN_DEG if pan_deg is None else pan_deg,
                                tilt_deg=tilt_deg, relative=relative)
-        if sent and self._cmd == (0.0, 0.0):
+        if sent and self._cmd == (0.0, 0.0) and action == "tilt_step":
+            # A tilt only: wait briefly for the tilt, never for the pan's
+            # judgement (stale feedback would hold it the full pan timeout).
+            until = time.monotonic() + TILT_SETTLE_WAIT_S
+            while time.monotonic() < until:
+                g = self.gimbal_status()
+                if (g["tilt_deg"] is not None
+                        and abs(g["tilt_deg"] - g["goal_tilt_deg"]) <= PAN_SETTLED_DEG):
+                    break
+                time.sleep(0.01)
+        elif sent and self._cmd == (0.0, 0.0):
             # At rest, the look ends when the camera has (so the next frame
             # is the peek's, not mid-swing), bounded by the settle timeout.
             # Not while the wheels turn: the robot server holds motion_lock
@@ -911,8 +930,10 @@ class HardwareRobot(RobotInterface):
                              "angle (module type, or stale feedback)")
         return out
 
+    # 3.220.C (review): every look verb levels the tilt, because the brain's
+    # peeks assume a level camera; only the twin's pan steps keep it.
     def look_left(self) -> dict:
-        return self._look("look_left", -1)
+        return self._look("look_left", -1, tilt_deg=LOOK_TILT_DEG)
 
     def look_step(self, degrees: float) -> dict:
         """3.220.B: a step from the last goal sent (not the measured angle,
@@ -920,10 +941,9 @@ class HardwareRobot(RobotInterface):
         return self._look("look_step", 0, float(degrees), relative=True)
 
     def look_right(self) -> dict:
-        return self._look("look_right", 1)
+        return self._look("look_right", 1, tilt_deg=LOOK_TILT_DEG)
 
     def look_center(self) -> dict:
-        # 3.220.C: centres the pan and levels the tilt.
         return self._look("look_center", 0, tilt_deg=LOOK_TILT_DEG)
 
     def tilt_step(self, degrees: float) -> dict:
