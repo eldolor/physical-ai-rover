@@ -2885,6 +2885,10 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
             # only, like the lidar: an unplugged camera is not the release's.
             "camera": (robot.camera_status()
                        if callable(getattr(robot, "camera_status", None)) else None),
+            # 3.222: the depth camera -- frames, age, reconnects, the mount.
+            # Description only, like the camera.
+            "depth": (robot.depth_status()
+                      if callable(getattr(robot, "depth_status", None)) else None),
             # 3.137: the battery ladder -- its level, the last reading, the
             # countdown under Reserve, the power-off's steps. Description only
             # (control/health.py): a flat pack is the car's, not the release's.

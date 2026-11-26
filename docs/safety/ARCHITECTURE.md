@@ -161,6 +161,22 @@ bumper nothing would ever be clear, or everything would. Whether the
 Rover also needs IR cliff sensors is decided on its own stair edge
 (3.159.C).
 
+### On the car the depth camera is read by the robot server, and a dead one is blind, never absent (3.222)
+
+The OAK-D feeds two vetoes, so like the lidar it is read by the robot
+server itself, not through ROS, and turned into the same two blocks the
+simulator publishes: the safety layer cannot tell the car's band from the
+simulator's. A camera that stops delivering publishes both blocks with
+every zone unusable, never no block: no block would read as "this robot has
+no drop sensor" and switch the floor memory off, while an unusable block
+keeps it on, so the robot may drive only as far as floor it has already
+seen and then stops. Its age counts against the clearances only while it is
+fresh: a dead camera's readings are never compared, so its age must not
+shrink the lidar's. **Rejected:** a depth cone over the whole field as a
+fifth check; the lidar's corridor and the band already cover the strip the
+chassis sweeps, and a second veto over the same space only adds false
+stops.
+
 ### A turn is refused only when it closes on something
 
 A rectangle's corners swing beyond its sides when it pivots, so rotation is

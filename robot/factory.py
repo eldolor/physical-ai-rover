@@ -59,6 +59,29 @@ def _camera(config: dict):
     return CameraStream(lambda: OpenCvSource(device), encode=encode_jpeg, name="camera")
 
 
+def _depth(config: dict):
+    """3.222: the OAK-D Lite's depth as the floor band and the drop block
+    (`robot/oakd_depth.py`). `ROBOT_DEPTH=oakd` (or `hardware.depth`) turns
+    it on; the mount is `hardware.depth_mount`, each field overridable by
+    env. None: no depth driver, and the grid stays whatever the body
+    supplies (the sim's, or unusable)."""
+    hw = config.get("hardware") or {}
+    kind = os.environ.get("ROBOT_DEPTH") or hw.get("depth")
+    if not kind:
+        return None
+    if kind != "oakd":
+        raise ValueError(f"unknown depth camera {kind!r} (ROBOT_DEPTH / hardware.depth): "
+                         "the one driver is 'oakd'")
+    from robot.oakd_depth import DepthCamera, Mount, OakdSource
+
+    given = hw.get("depth_mount") or {}
+    fields = {"height_cm": "DEPTH_HEIGHT_CM", "pitch_deg": "DEPTH_PITCH_DEG",
+              "x_cm": "DEPTH_X_CM", "lateral_cm": "DEPTH_LATERAL_CM"}
+    mount = Mount(**{k: float(os.environ.get(env) or given.get(k, getattr(Mount, k)))
+                     for k, env in fields.items()})   # "" is unset (3.76 N1)
+    return DepthCamera(OakdSource, mount=mount)
+
+
 def _close_all(*devices) -> None:
     """A failed HardwareRobot leaves the camera and lidar readers it was
     given holding their devices; close them, each on its own."""
@@ -243,15 +266,17 @@ def _backend(config: dict) -> RobotInterface:
                                     secret=os.environ.get("APP_SHARED_SECRET", ""))
             lidar = _lidar(config)
             camera = _camera(config)
+            depth = _depth(config)
             try:
                 # 3.220: the fake board models the gimbal, so the sim drives
                 # it the car's way unless ROBOT_GIMBAL=0 says otherwise.
                 return HardwareRobot(sensors.board_path, sensors=sensors, track_scrub=1.0,
                                      gimbal=_gimbal(config, default=True),
                                      **({"lidar": lidar} if lidar else {}),
-                                     **({"camera": camera} if camera else {}))
+                                     **({"camera": camera} if camera else {}),
+                                     **({"depth": depth} if depth else {}))
             except Exception:
-                _close_all(camera, lidar)
+                _close_all(depth, camera, lidar)
                 raise
         port = os.environ.get("ROBOT_SERIAL") or (config.get("hardware") or {}).get("serial_port")
         if not port:
@@ -263,15 +288,17 @@ def _backend(config: dict) -> RobotInterface:
                        or (config.get("hardware") or {}).get("command_url"))
         lidar = _lidar(config)
         camera = _camera(config)
+        depth = _depth(config)
         try:
             # 3.220: off on a real board until its step (criterion 6) is run.
             return HardwareRobot(port, track_scrub=_track_scrub(config),
                                  **({"gimbal": True} if _gimbal(config, default=False) else {}),
                                  **({"command_url": command_url} if command_url else {}),
                                  **({"lidar": lidar} if lidar else {}),
-                                 **({"camera": camera} if camera else {}))
+                                 **({"camera": camera} if camera else {}),
+                                 **({"depth": depth} if depth else {}))
         except Exception:
-            _close_all(camera, lidar)     # their readers hold the devices (review)
+            _close_all(depth, camera, lidar)     # their readers hold the devices (review)
             raise
 
     raise ValueError(f"Unknown robot mode in config: {mode!r}")

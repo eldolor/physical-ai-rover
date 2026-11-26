@@ -965,8 +965,8 @@ class SafetyController:
 
         M3's rule holds: an unusable zone -- a dropout, or a thing inside
         the stereo's minimum range -- never enters the comparison.
-        `(None, "no_floor_band")` for a backend without a band (every real
-        body today); `(None, "floor_band_no_target")` when the corridor is
+        `(None, "no_floor_band")` for a backend without a band (a real body
+        without a depth driver, 3.222); `(None, "floor_band_no_target")` when the corridor is
         clear; `(None, "floor_band_unusable")` when no zone could be read
         (3.76 K1: blind is not clear) or the band itself cannot be."""
         if grid is None:
@@ -1103,7 +1103,8 @@ class SafetyController:
         (M3). The room is less a margin (the full bar less the creep bar),
         so no move keeps less than the full bar from a drop. `(None,
         "no_drop_sensor")` for a backend that has never published a block:
-        every real body today, and every house without a drop."""
+        a real body without a depth driver (3.222), and every house
+        without a drop."""
         guard = self._drop_guard()
         if grid is None:
             # Astern too: the camera looks ahead, but a first move that is a

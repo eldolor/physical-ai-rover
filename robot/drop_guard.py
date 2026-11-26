@@ -26,7 +26,9 @@ At start the robot's own disc (`SEED_RADIUS_CM`) is floor: it stands there,
 on the dock. Cells are forgotten `FORGET_M` of travel after they were seen
 (dead reckoning drifts with distance, not with time: a robot that waits a
 minute must not lose the strip under its bumper). A backend with no `drop`
-block reads `no_drop_sensor` and the guard is off: every real body today.
+block reads `no_drop_sensor` and the guard is off: a real body without a
+depth driver (3.222's `robot/oakd_depth.py` publishes one, unusable when
+stale, so the guard stays on).
 """
 
 from __future__ import annotations

@@ -197,7 +197,7 @@ def _fork_keys(frame: dict):
 class HardwareRobot(RobotInterface):
     def __init__(self, port: str, sensors: Optional[RobotInterface] = None,
                  baud: int = 115200, track_scrub: float = 1.0, lidar=None, camera=None,
-                 command_url: Optional[str] = None, gimbal: bool = False):
+                 depth=None, command_url: Optional[str] = None, gimbal: bool = False):
         if not track_scrub > 0:
             raise ValueError(f"track_scrub must be positive, got {track_scrub!r}")
         self.port = port
@@ -209,6 +209,10 @@ class HardwareRobot(RobotInterface):
         # 3.90 A: the camera as a stream (`robot/camera_stream.py`). When
         # present it is THE frame; without one the frame stays `sensors'`.
         self.camera = camera
+        # 3.222: the OAK-D's depth (`robot/oakd_depth.py`). When present its
+        # floor band and drop block are THE ones; without one the grid stays
+        # `sensors'`.
+        self.depth = depth
         # 3.42: (monotonic time, CCW heading in radians) per board frame, so
         # the turn since the lidar's scan was taken is the ENCODERS' answer,
         # not a rate times an age (which undercounts right after a turn slows).
@@ -915,7 +919,12 @@ class HardwareRobot(RobotInterface):
         return self.sensors.get_distance() if self.sensors else 0.0
 
     def get_depth_grid(self) -> dict:
-        return self.sensors.get_depth_grid() if self.sensors else unusable_grid()
+        grid = self.sensors.get_depth_grid() if self.sensors else unusable_grid()
+        if self.depth is None:
+            return grid
+        # 3.222: the camera's two blocks beside the body's grid. A stale
+        # camera's are present with every zone unusable, never absent.
+        return {**grid, **self.depth.blocks()}
 
     def get_scan(self, max_range_m=None) -> dict:
         if self.lidar is not None:
@@ -930,6 +939,10 @@ class HardwareRobot(RobotInterface):
         ages = []
         if self.lidar is not None:
             ages.append(self.lidar.sensor_age_s())
+        if self.depth is not None:
+            # 3.74 B4: the band's age, None while stale (its blocks are then
+            # unusable and never compared).
+            ages.append(self.depth.sensor_age_s())
         age_of = getattr(self.sensors, "sensor_age_s", None) if self.sensors else None
         if callable(age_of):
             ages.append(age_of())
@@ -967,6 +980,10 @@ class HardwareRobot(RobotInterface):
         """The camera stream, for `/health` -- description, never a verdict."""
         return self.camera.status() if self.camera is not None else None
 
+    def depth_status(self) -> Optional[dict]:
+        """The depth camera (3.222), for `/health` -- description, never a verdict."""
+        return self.depth.status() if self.depth is not None else None
+
     def close(self) -> None:
         try:
             self.stop()
@@ -986,8 +1003,12 @@ class HardwareRobot(RobotInterface):
                     if self.lidar is not None and hasattr(self.lidar, "close"):
                         self.lidar.close()
                 finally:
-                    if self.camera is not None:
-                        self.camera.close()
+                    try:
+                        if self.camera is not None:
+                            self.camera.close()
+                    finally:
+                        if self.depth is not None:
+                            self.depth.close()
 
     def __getattr__(self, name):
         # The sim's body extras (`world`, for the world model's truth) when
