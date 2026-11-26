@@ -21,6 +21,22 @@ rule: questions one at a time, as pop-ups with a recommendation.*
   was sent to session_01JbXvZtLcPjAcreSkNdNCC1; read its final message for
   the result before trying it on other workers.
 
+## Addendum 2026-11-26 19:10 UTC: do NOT approve the trust card (session_01JbXvZsJtBazSzMLFNo4DaT)
+
+* The `confirm_repository_trust` card ("reach its owner's other sessions")
+  limits the orchestrator to trusted devices **for good**, and from then on
+  every message INTO it is refused (`elevated_session_untrusted_device`),
+  from cloud and desktop workers alike, and `list_events` on it is refused.
+  That is why the previous orchestrator could send but never receive.
+* Left unapproved, the orchestrator receives `send_message` from cloud
+  workers and the watcher (seen 2026-11-26: 3.219, 3.220, the watcher), and
+  reads desktop workers with `list_events`. It cannot send to desktop
+  sessions; brief new cloud workers instead. The user agreed (2026-11-26).
+* Scheduled tasks into an unapproved orchestrator work: an hourly worker
+  check (`trig_01Lrj5GC6Qx6FeK4pN3Q7CPj`) fires into it.
+* /usage 2026-11-26 18:59 UTC: 79% all models, 77% Fable, ~75% of the week
+  gone: ahead of pace, so no new workers before the Sat 13:00 UTC reset.
+
 ## Quota (the user's `/usage`, 2026-11-26 15:14 UTC)
 
 75% all models (Fable 77%); resets Sat 2026-11-28 13:00 UTC; about 73% of the
