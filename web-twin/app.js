@@ -1795,15 +1795,26 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   // when the posts stop. No route of its own (CLAUDE.md rules 4, M4).
   const HOLD_START_MS = 300;
   const HOLD_REFRESH_MS = 250;        // well inside the 1 s watchdog
-  const HOLD_CLICK_SWALLOW_MS = 1000; // the click that trails a hold's release
   const HOLD_STRAIGHT_M_S = 0.30;     // a FORWARD verb's speed (speed 50)
   const HOLD_TURN_RAD_S = 1.2;        // a turn verb's body rate
   const HOLD_SIGNS = { FORWARD: [1, 1], REVERSE: [-1, -1], LEFT: [-1, 1], RIGHT: [1, -1] };
   const hold = {
     action: null, btn: null, pointerId: null, timer: null, refresh: null,
     driving: false, gen: 0, chain: Promise.resolve(), inFlight: 0,
-    startedAt: 0, endedAt: 0, geometry: null, geometryFor: null,
+    startedAt: 0, geometry: null, geometryFor: null, pending: 0,
+    // The button whose press drove: its trailing click is no tap, however
+    // long after the hold ended the finger lifts (review).
+    swallowBtn: null,
+    rosFor: null,       // a server that refused a hold `not_the_actuator`
   };
+
+  // Under `drive: ros` only ROS's actuator writes /wheels: a person's press
+  // stays a tap (its verb goes through the ROS chain).
+  function holdRefusedHere() {
+    const h = state.lastAuthorityHealth;
+    return hold.rosFor === state.serverUrl
+      || !!(h && h.drive && h.drive.mode === "ros");
+  }
 
   // The robot's wheel radius and track, from its own GET /wheels: the hold's
   // speeds are the verbs', in wheel rad/s. null for a body with no wheels it
@@ -1836,13 +1847,19 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   }
 
   function holdPost(gen, body) {
+    // At most one post waiting: over a slow tunnel a refresh behind a slow
+    // post would only queue a staler copy of the same command (review).
+    if (hold.pending > 0) return hold.chain;
+    hold.pending++;
     return holdEnqueue(async function () {
+      hold.pending--;
       if (gen !== hold.gen || !hold.driving) return;   // ended while queued
       hold.inFlight++;
       try {
         const r = await apiPost("/wheels", body, { "x-driver": DRIVER_DPAD });
         if (r.executed === false && gen === hold.gen) {
           logEntry(hold.action + " (held)", false, refusalText(r), r.reason);
+          if (r.reason === "not_the_actuator") hold.rosFor = state.serverUrl;
           holdEnd("refused");
         } else if (r.clamped && gen === hold.gen && !hold.vetoLogged) {
           hold.vetoLogged = true;
@@ -1861,7 +1878,9 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
           showToast(t(answered ? "drive.refused" : "drive.notSent",
                       {action: actionWords(hold.action), status: e.status, why: e.message || e}),
                     "err");
-          holdEnd("failed");
+          // Answered with an error: the robot can still take a zero. Never
+          // reached: it cannot, and the watchdog stops it.
+          holdEnd(answered ? "rejected" : "failed");
         }
       } finally {
         hold.inFlight--;
@@ -1880,10 +1899,10 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       target.releasePointerCapture(e.pointerId);
     }
     holdEnd("replaced");
+    hold.swallowBtn = null;
     hold.action = action;
     hold.btn = btn;
     hold.pointerId = e.pointerId;
-    hold.endedAt = 0;
     holdGeometry();
     hold.timer = setTimeout(holdBegin, HOLD_START_MS);
   }
@@ -1894,8 +1913,12 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     const g = await holdGeometry();
     // Released, cancelled or replaced while the geometry was read.
     if (hold.action !== action || hold.btn !== btn || hold.timer || hold.driving) return;
-    if (!g || !state.connected) { hold.action = null; return; }  // a tap, on release
+    if (!g || !state.connected || holdRefusedHere()) {
+      hold.action = null;              // a tap, on release
+      return;
+    }
     hold.driving = true;
+    hold.swallowBtn = btn;
     hold.vetoLogged = false;
     hold.gen++;
     hold.startedAt = performance.now();
@@ -1919,7 +1942,6 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     const action = hold.action, held = performance.now() - hold.startedAt;
     hold.driving = false;
     hold.gen++;
-    hold.endedAt = performance.now();
     clearInterval(hold.refresh);
     hold.refresh = null;
     if (hold.btn) hold.btn.classList.remove("holding");
@@ -1935,25 +1957,30 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
           return apiPost("/stop", {}, { "x-driver": DRIVER_DPAD }).catch(function () {});
         });
       }
-    } else if (why === "pagehide") {
-      // The page is going: a queued post may never run, so this one is not
-      // queued, and keepalive lets it outlive the page. The watchdog is the
-      // backstop if it is lost.
-      try {
-        fetch(state.serverUrl + "/wheels", {
-          method: "POST", keepalive: true, body: JSON.stringify(zero),
-          headers: authHeaders({ "Content-Type": "application/json", "x-driver": DRIVER_DPAD }),
-        }).catch(function () {});
-      } catch (e) { /* the watchdog stops it */ }
-    } else if (why !== "failed") {
-      // A refused hold holds nothing, and a failed one cannot reach the
-      // robot (the watchdog stops it); otherwise zero the wheels, after any
-      // drive post still queued.
+    } else {
+      if (why === "pagehide" || why === "hidden") {
+        // The page is going (closed, or a phone locked: `visibilitychange`
+        // comes before `pagehide`, so both send it): a queued post may never
+        // run, so this zero is not queued, and keepalive lets it outlive the
+        // page. Best effort: served cross-origin (the deployed twin to the
+        // tunnel) it needs a preflight a browser may drop at unload; then
+        // the queued zero below, or the watchdog (1 s), is the stop.
+        try {
+          fetch(state.serverUrl + "/wheels", {
+            method: "POST", keepalive: true, body: JSON.stringify(zero),
+            headers: authHeaders({ "Content-Type": "application/json", "x-driver": DRIVER_DPAD }),
+          }).catch(function () {});
+        } catch (e) { /* the watchdog stops it */ }
+      }
+      // Zero the wheels after any drive post still queued: a refused or
+      // failed hold too (a refusal need not have zeroed the last command; a
+      // zero from a driver not holding the robot is ignored, so it is never
+      // harmful). Unreachable, the watchdog stops it.
       holdEnqueue(function () {
         return apiPost("/wheels", zero, { "x-driver": DRIVER_DPAD }).catch(function () {});
       });
     }
-    if (why !== "refused" && why !== "failed") {
+    if (why !== "refused" && why !== "failed" && why !== "rejected") {
       logEntry(action + " held " + (held / 1000).toFixed(1) + " s", true, "", null);
     }
   }
@@ -1969,11 +1996,12 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   // The click that follows every release: a tap's verb, swallowed after a
   // hold. Keyboard activation never holds, so it is always a tap.
   function dpadClick(action) {
-    return function () {
+    return function (e) {
       // A click while still driving (a pointerup the page never saw) ends it.
       if (hold.driving) { holdEnd("release"); hold.pointerId = null; }
-      if (hold.endedAt && performance.now() - hold.endedAt < HOLD_CLICK_SWALLOW_MS) {
-        hold.endedAt = 0;
+      // Keyboard activation (detail 0) never held, so it is always a tap.
+      if (hold.swallowBtn === this && e && e.detail !== 0) {
+        hold.swallowBtn = null;
         return;
       }
       manualAction(action);
@@ -2012,6 +2040,8 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
 
   function setControlsEnabled(enabled) {
     if (!enabled) holdEnd("disconnected");   // 3.219
+    hold.geometryFor = null;                 // a restarted server may be another body
+    hold.rosFor = null;
     ["btn-forward", "btn-reverse", "btn-left", "btn-right", "btn-stop",
      "btn-look-left", "btn-look-right", "btn-look-center",
     ].forEach(function (id) {

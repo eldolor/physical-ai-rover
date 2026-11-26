@@ -40,12 +40,17 @@ def _moving(url):
     return left != 0 or right != 0
 
 
-def _until_zero(url, t0, limit=3.0):
-    """Seconds from `t0` until the robot reports its wheels at zero."""
+def _until_zero(url, t0, limit=3.0, page=None):
+    """Seconds from `t0` until the robot reports its wheels at zero. With
+    `page`, it waits inside Playwright, so the page's route handlers run (the
+    sync API serves them only during its own calls)."""
     while time.monotonic() - t0 < limit:
         if not _moving(url):
             return time.monotonic() - t0
-        time.sleep(0.02)
+        if page is not None:
+            page.wait_for_timeout(20)
+        else:
+            time.sleep(0.02)
     return math.inf
 
 
@@ -72,7 +77,8 @@ _RECORD = """(() => {
         if (opts && opts.method === 'POST' && /\\/(wheels|action|stop)$/.test(path)) {
             const h = opts.headers || {};
             window.__posts.push({route: path.slice(path.lastIndexOf('/')), t: performance.now(),
-                                 body: JSON.parse(opts.body || '{}'), driver: h['x-driver']});
+                                 body: JSON.parse(opts.body || '{}'), driver: h['x-driver'],
+                                 keepalive: !!opts.keepalive});
         }
         return real.apply(this, arguments);
     };
@@ -283,6 +289,11 @@ def test_hiding_the_page_stops_the_wheels(browser, private_twin_server):
         document.dispatchEvent(new Event('visibilitychange'));
     }""")
     _bound("page hidden", _until_zero(private_twin_server, t0), STOP_BOUND_S, private_twin_server)
+    # A phone locked or a tab closing: `visibilitychange` comes before
+    # `pagehide`, so the zero that outlives the page must go here (review).
+    zeros = [p for p in _posts(page) if p["route"] == "/wheels" and p["keepalive"]
+             and not (p["body"].get("left_rad_s") or p["body"].get("right_rad_s"))]
+    assert zeros, _posts(page)
     page.close()
 
 
@@ -428,4 +439,82 @@ def test_screenshot_of_a_hold_on_a_phone(browser, private_twin_server):
     page.screenshot(path=os.path.join(os.environ["UI_SHOTS"], "dpad-hold-390.png"))
     _touch(cdp, "touchEnd", [])
     assert _until_zero(url, time.monotonic()) <= STOP_BOUND_S
+    page.close()
+
+
+# ---- review (code-review, 2026-11-26) ----
+
+def test_lifting_long_after_stop_sends_no_verb(browser, private_twin_server):
+    """The finger left on FORWARD after STOP ended its hold lifts 2 s later:
+    no step may follow the STOP (a 1 s click window used to let one)."""
+    page, errors = _held(browser, private_twin_server)
+    time.sleep(0.5)
+    page.evaluate("() => document.getElementById('btn-stop').click()")
+    time.sleep(2.0)
+    page.mouse.up()
+    page.wait_for_timeout(800)
+    seen = _posts(page)
+    assert not [s for s in seen if s["route"] == "/action"], seen
+    assert not _moving(private_twin_server)
+    assert not errors, errors
+    page.close()
+
+
+def test_a_hold_refused_by_drive_ros_never_steps_and_later_presses_are_taps(
+        browser, private_twin_server):
+    """Under `drive: ros` the server refuses a person's /wheels
+    (`not_the_actuator`): the hold ends, its release sends no verb, and the
+    next long press is a tap (one verb) rather than another refused hold."""
+    page, errors = _open(browser, private_twin_server)
+    page.route("**/wheels", lambda r: r.fulfill(
+        status=200, content_type="application/json",
+        body=json.dumps({"executed": False, "reason": "not_the_actuator",
+                         "detail": "drive: ros -- only 'ros' writes the wheels"}))
+        if r.request.method == "POST" else r.continue_())
+    _record(page)
+    x, y = _centre(page, "#btn-forward")
+    page.mouse.move(x, y)
+    page.mouse.down()
+    page.wait_for_timeout(1500)
+    page.mouse.up()
+    page.wait_for_timeout(500)
+    seen = _posts(page)
+    assert [s for s in seen if s["route"] == "/wheels"], seen
+    assert not [s for s in seen if s["route"] == "/action"], seen
+    page.mouse.down()
+    page.wait_for_timeout(800)
+    page.mouse.up()
+    page.wait_for_timeout(800)
+    before = len([s for s in seen if s["route"] == "/wheels"])
+    seen = _posts(page)
+    assert len([s for s in seen if s["route"] == "/action"]) == 1, seen
+    assert len([s for s in seen if s["route"] == "/wheels"]) == before, seen
+    assert not errors, errors
+    page.close()
+
+
+def test_a_rejected_hold_post_still_zeroes_the_wheels(browser, private_twin_server):
+    """A post answered with an HTTP error: the server is there, so the page
+    sends the zero rather than leaving the last command to the watchdog."""
+    url = private_twin_server
+    page, errors = _held(browser, url)
+    time.sleep(0.4)
+    state = {"n": 0}
+
+    def fail_drive(route):
+        body = json.loads(route.request.post_data or "{}")
+        if body.get("left_rad_s") or body.get("right_rad_s"):
+            route.fulfill(status=500, content_type="application/json",
+                          body=json.dumps({"detail": "boom"}))
+            state["n"] += 1
+        else:
+            route.continue_()
+    t0 = time.monotonic()
+    page.route("**/wheels", lambda r: fail_drive(r) if r.request.method == "POST"
+               else r.continue_())
+    elapsed = _until_zero(url, t0, page=page)
+    print(f"\n[3.219 review] rejected post -> zero: {elapsed * 1000:.0f} ms after the route")
+    assert state["n"] >= 1
+    assert elapsed <= 0.25 + STOP_BOUND_S, elapsed  # the next refresh, then its zero
+    page.mouse.up()
     page.close()
