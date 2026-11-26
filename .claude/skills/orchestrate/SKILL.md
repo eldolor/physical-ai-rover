@@ -183,6 +183,30 @@ step (review fixes, a re-run, the push) stays with it. A session started
 by the orchestrator may ask the user to confirm the assignment: tell the
 user at once, since nothing starts until they tap.
 
+**Cloud or desktop: cloud by default** (the user, 2026-11-26). Start a
+worker on the desktop only when the step needs something that exists only
+at the user's home:
+
+* the Jetson or the Rover (on the home network; a cloud container cannot
+  reach them): board benches, `board_lock.py`, bundles to the board, any
+  Rover check;
+* a timing-sensitive run under the desktop's exclusive lock: live stack
+  runs, soaks, `ready --full` (CLAUDE.md 3c, the desktop lock);
+* the desktop's own state: the shared `vision-picar-ros:latest` image, the
+  `picar-maps` volume, `~/.vision-picar-local-secrets`;
+* the user present for a hands-on check (it runs through the session that
+  holds the board).
+
+Everything else starts in the cloud: code and tests the simulator can
+prove, docs, specs, reviews, the twin's deploy, paid calls once approved.
+**Split a step that has both:** the code half in a cloud worker, then only
+the hardware half (often one criterion) in a desktop session (3.220: built
+in the cloud; criterion 6 needs the board). Messaging: desktop and cloud
+workers can both `send_message` the orchestrator while it has not approved
+the trust card; the orchestrator cannot send to desktop sessions
+(`HANDOFF-2026-11-26-orchestrator.md`), so a desktop worker's brief must be
+complete when it starts.
+
 The worker claims its own step first (`python tools/plan_section.py claim
 <step>`; a section with no Steps table: `claim 3.N`), as its own session.
 If the claim is refused it stops and reports; never work around a refusal
