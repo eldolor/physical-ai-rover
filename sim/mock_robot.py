@@ -583,7 +583,23 @@ class MockRobot(RobotInterface):
         return {"action": "look_right", **self.world.look_right()}
 
     def look_center(self) -> dict:
+        self.tilt_deg = 0.0             # 3.220.C: centres and levels
         return {"action": "look_center", **self.world.look_center()}
+
+    # 3.220.C: the sim camera's tilt. The renderer draws no tilt, so it is a
+    # reading only (the twin's badge, the tilt buttons), within the car's
+    # limits; the picture stays level.
+    tilt_deg = 0.0
+    TILT_LIMITS_DEG = (-30.0, 30.0)
+
+    def tilt_step(self, degrees: float) -> dict:
+        lo, hi = self.TILT_LIMITS_DEG
+        self.tilt_deg = max(lo, min(hi, self.tilt_deg + float(degrees)))
+        self.world._record(f"TILT_STEP {degrees:+g}")
+        pan = round(float(self.world.pan) * 90.0, 4)
+        return {"action": "tilt_step", "pan": self.world.pan, "pan_deg": pan,
+                "goal_pan_deg": pan, "tilt_deg": self.tilt_deg,
+                "goal_tilt_deg": self.tilt_deg, "settled": True}
 
     def look_step(self, degrees: float) -> dict:
         """3.220.B: the pan by a step, within the same +/-90 deg the looks
@@ -620,6 +636,7 @@ class MockRobot(RobotInterface):
         no JPEG encode, the same dict minus the three keys added here.
         """
         frame = self.world.frame_description()
+        frame["tilt_deg"] = self.tilt_deg       # 3.220.C (a reading; the render is level)
         if not self.render:
             return frame
         # Added *after* frame_description(), which logs the dict it built.

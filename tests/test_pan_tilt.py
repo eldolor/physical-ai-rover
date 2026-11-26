@@ -284,7 +284,8 @@ def test_a_lost_command_is_never_reported_reached_and_raises_a_fault(board):
         face.lose_next(0)
         assert _wait(lambda: bot.gimbal_status()["settled"], 3.0)
         assert bot.gimbal_status()["fault"] is None
-        assert bot.gimbal_status()["pan_deg"] == pytest.approx(-89.93, abs=1.0)
+        # Settled is within 3 deg; the servo finishes its last ones a frame later.
+        assert _wait(lambda: abs((bot.gimbal_status()["pan_deg"] or 0) + 89.93) <= 1.0, 1.0)
     finally:
         bot.close()
         face.close()
@@ -437,3 +438,58 @@ def test_a_body_with_no_gimbal_and_no_sensors_answers_the_contract(board):
         assert a["action"] == "look_step" and a["pan"] is None and a["reason"]
     finally:
         bot.close()
+
+
+# ---------- amendment 2: the tilt ----------
+
+def test_tilt_steps_stay_inside_the_limits_and_left_right_keep_them(rig):
+    b, _, bot = rig
+    for _ in range(8):
+        answer = bot.tilt_step(5)
+    assert answer["goal_tilt_deg"] == TILT_LIMITS_DEG[1]
+    assert _wait(lambda: len(b.gimbal_commands) == bot.gimbal_commands)   # all on the board
+    sent = [c for c in b.gimbal_commands if c.get("T") == 133]
+    assert all(TILT_LIMITS_DEG[0] <= c["Y"] <= TILT_LIMITS_DEG[1] for c in sent)
+    assert [c["Y"] for c in sent[1:4]] == [5, 10, 15]
+    assert all(c["X"] == 0 for c in sent)                  # the pan stays
+    bot.look_left()
+    assert _wait(lambda: len(b.gimbal_commands) == len(sent) + 1)
+    last = b.gimbal_commands[-1]
+    assert last["X"] == -90 and last["Y"] == 30            # left keeps the tilt
+    assert _wait(lambda: abs(bot.gimbal_status()["tilt_deg"] - 29.93) < 0.5, 1.0)
+    for _ in range(14):
+        bot.tilt_step(-5)
+    assert _wait(lambda: len(b.gimbal_commands) == bot.gimbal_commands)
+    assert b.gimbal_commands[-1]["Y"] == TILT_LIMITS_DEG[0]
+    bot.look_center()
+    assert _wait(lambda: b.gimbal_commands[-1].get("Y") == 0 and b.gimbal_commands[-1]["X"] == 0)
+
+
+def test_the_frame_reports_the_measured_tilt(rig):
+    b, _, bot = rig
+    bot.tilt_step(-10)
+    assert _wait(lambda: b.servo_pos[1] == b.servo_goal[1], 1.0)
+    time.sleep(0.1)
+    assert bot.get_camera_frame()["tilt_deg"] == pytest.approx(b.gimbal_angles[1], abs=0.1)
+    assert b.gimbal_angles[1] == pytest.approx(-10, abs=0.1)
+
+
+def test_the_sim_body_tilts_as_a_reading_within_the_limits():
+    body = MockRobot(build_starter_world(), render=False)
+    assert body.tilt_step(20)["tilt_deg"] == 20
+    assert body.tilt_step(20)["tilt_deg"] == 30
+    assert body.get_camera_frame()["tilt_deg"] == 30
+    body.look_center()
+    assert body.get_camera_frame()["tilt_deg"] == 0
+
+
+def test_a_tilt_without_an_angle_is_refused():
+    from robot.server import CAMERA_ONLY, create_app
+    from tests.conftest import ASGI_BASE_URL, asgi_client
+    assert "TILT_STEP" in CAMERA_ONLY
+    client = asgi_client(create_app())
+    post = lambda body: client.post(ASGI_BASE_URL + "/action", json=body,
+                                    headers={"x-driver": "twin-dpad"})
+    assert post({"action": "TILT_STEP"}).status_code == 422
+    r = post({"action": "TILT_STEP", "angle": 10}).json()
+    assert r["executed"] is True and r["result"]["tilt_deg"] == 10

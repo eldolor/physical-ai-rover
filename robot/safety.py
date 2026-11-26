@@ -1480,6 +1480,8 @@ class SafetyController:
             "LOOK_CENTER": lambda: self.robot.look_center(),
             # 3.220.B: the twin's look hold; `angle` is the signed step.
             "LOOK_STEP": lambda: self.robot.look_step(kwargs.get("angle", 0)),
+            # 3.220.C: `angle` the signed tilt step, up positive.
+            "TILT_STEP": lambda: self.robot.tilt_step(kwargs.get("angle", 0)),
         }
         if action not in dispatch_table:
             raise ValueError(f"Unknown action: {action!r}")

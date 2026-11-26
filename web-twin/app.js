@@ -329,6 +329,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       // 3.220.B: where the camera points off the body, as the robot
       // MEASURED it (null or absent: not reported) -- never a command.
       panDeg: (typeof raw.pan_deg === "number" && isFinite(raw.pan_deg)) ? raw.pan_deg : null,
+      tiltDeg: (typeof raw.tilt_deg === "number" && isFinite(raw.tilt_deg)) ? raw.tilt_deg : null,
     };
     state.lastFrame = frame;
     renderPanBadge(frame);
@@ -354,12 +355,22 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     const el = document.getElementById("pan-badge");
     if (!el) return;
     const pan = frame ? frame.panDeg : null;
-    const show = typeof pan === "number" && Math.abs(pan) >= PAN_BADGE_MIN_DEG;
-    el.hidden = !show;
-    if (show) {
-      el.textContent = t(pan < 0 ? "camera.pannedLeft" : "camera.pannedRight",
-                         {deg: Math.round(Math.abs(pan))});
+    const tilt = frame ? frame.tiltDeg : null;
+    const parts = [];
+    if (typeof pan === "number" && Math.abs(pan) >= PAN_BADGE_MIN_DEG) {
+      parts.push(t(pan < 0 ? "camera.pannedLeft" : "camera.pannedRight",
+                   {deg: Math.round(Math.abs(pan))}));
+    }
+    if (typeof tilt === "number" && Math.abs(tilt) >= PAN_BADGE_MIN_DEG) {
+      // 3.220.C: the measured tilt, as the pan.
+      const key = (parts.length ? "camera.andTilted" : "camera.tilted") + (tilt > 0 ? "Up" : "Down");
+      parts.push(t(key, {deg: Math.round(Math.abs(tilt))}));
+    }
+    el.hidden = parts.length === 0;
+    if (parts.length) {
+      el.textContent = parts.join(", ");
       el.dataset.panDeg = String(pan);
+      el.dataset.tiltDeg = String(tilt);
     }
   }
 
@@ -1788,8 +1799,13 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
 
   async function manualAction(action) {
     if (!state.connected) return;
-    const extra = (action === "LEFT" || action === "RIGHT")
+    let extra = (action === "LEFT" || action === "RIGHT")
       ? { angle: state.turnStepDeg } : undefined;
+    if (action === "TILT_UP" || action === "TILT_DOWN") {
+      // 3.220.C: a tap is one tilt step; the robot has no tilt verb but that.
+      extra = { angle: CAMERA_HOLD[action].deg };
+      action = "TILT_STEP";
+    }
     // 3.132 F2: a Start waits out this press's hold on the robot, and a
     // STOP cancels a Start that is waiting.
     // A STOP claims nothing (it ends autonomy), so it is no hold to wait out.
@@ -1833,9 +1849,14 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   // 3.220.B: a held look pans in steps, one at a time and at most one per
   // LOOK_HOLD_STEP_MS (~6.7 a second, inside the 20 Hz the board's Wi-Fi
   // route held, 3.217), until release or the limit. A tap stays the verb.
-  const LOOK_STEP_DEG = { LOOK_LEFT: -10, LOOK_RIGHT: 10 };
+  // 3.220.C: the tilt buttons too, through the same hold (5 deg a step).
+  const CAMERA_HOLD = {
+    LOOK_LEFT: { verb: "LOOK_STEP", deg: -10, goal: "goal_pan_deg", now: "pan_deg", limit: 90 },
+    LOOK_RIGHT: { verb: "LOOK_STEP", deg: 10, goal: "goal_pan_deg", now: "pan_deg", limit: 90 },
+    TILT_UP: { verb: "TILT_STEP", deg: 5, goal: "goal_tilt_deg", now: "tilt_deg", limit: 30 },
+    TILT_DOWN: { verb: "TILT_STEP", deg: -5, goal: "goal_tilt_deg", now: "tilt_deg", limit: 30 },
+  };
   const LOOK_HOLD_STEP_MS = 150;
-  const LOOK_LIMIT_DEG = 90;
   const hold = {
     action: null, btn: null, pointerId: null, timer: null, refresh: null, look: false,
     driving: false, gen: 0, chain: Promise.resolve(), inFlight: 0,
@@ -1941,14 +1962,14 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     hold.action = action;
     hold.btn = btn;
     hold.pointerId = e.pointerId;
-    if (!(action in LOOK_STEP_DEG)) holdGeometry();
+    if (!(action in CAMERA_HOLD)) holdGeometry();
     hold.timer = setTimeout(holdBegin, HOLD_START_MS);
   }
 
   async function holdBegin() {
     hold.timer = null;
     const action = hold.action, btn = hold.btn;
-    if (action in LOOK_STEP_DEG) {
+    if (action in CAMERA_HOLD) {
       if (!state.connected) { hold.action = null; return; }
       hold.driving = true;
       hold.look = true;
@@ -2053,12 +2074,12 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
 
   // 3.220.B: the held look's steps, strictly one after another.
   async function lookHoldLoop(gen, action) {
-    const deg = LOOK_STEP_DEG[action];
+    const step = CAMERA_HOLD[action];
     while (gen === hold.gen && hold.driving) {
       const t0 = performance.now();
       hold.inFlight++;
       try {
-        const r = await sendAction("LOOK_STEP", DRIVER_DPAD, { angle: deg });
+        const r = await sendAction(step.verb, DRIVER_DPAD, { angle: step.deg });
         if (gen !== hold.gen) {
           // Ended while this step was out: show where it left the camera
           // (holdEnd left the frame to us while a step was in flight).
@@ -2081,13 +2102,13 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
           if (hold.swallowBtn === btn) hold.swallowBtn = null;
           return;
         }
-        const goal = typeof res.goal_pan_deg === "number" ? res.goal_pan_deg
-          : typeof res.pan_deg === "number" ? res.pan_deg : null;
+        const goal = typeof res[step.goal] === "number" ? res[step.goal]
+          : typeof res[step.now] === "number" ? res[step.now] : null;
         // The picture and the badge follow each step (nothing else fetches
         // a frame while a person holds a button).
         try { render(await fetchFrame()); } catch (frameErr) { /* the next frame redraws */ }
         if (gen !== hold.gen || !hold.driving) return;     // ended, or replaced, meanwhile
-        if (goal !== null && Math.abs(goal) >= LOOK_LIMIT_DEG - 0.5) {
+        if (goal !== null && Math.abs(goal) >= step.limit - 0.5) {
           holdEnd("limit");
           return;
         }
@@ -2170,7 +2191,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     hold.geometryFor = null;                 // a restarted server may be another body
     hold.rosFor = null;
     ["btn-forward", "btn-reverse", "btn-left", "btn-right", "btn-stop",
-     "btn-look-left", "btn-look-right", "btn-look-center",
+     "btn-look-left", "btn-look-right", "btn-look-center", "btn-tilt-up", "btn-tilt-down",
     ].forEach(function (id) {
       document.getElementById(id).disabled = !enabled;
     });
@@ -3437,6 +3458,8 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   document.getElementById("btn-stop").onclick = function () { manualAction("STOP"); };
   bindHoldButton("btn-look-left", "LOOK_LEFT");     // 3.220.B: hold to keep panning
   bindHoldButton("btn-look-right", "LOOK_RIGHT");
+  bindHoldButton("btn-tilt-up", "TILT_UP");         // 3.220.C: tap a step, hold to keep tilting
+  bindHoldButton("btn-tilt-down", "TILT_DOWN");
   document.getElementById("btn-look-center").onclick = function () { manualAction("LOOK_CENTER"); };
   document.getElementById("btn-random-house").onclick = randomHouse;
   document.getElementById("btn-remap").onclick = remapNow;

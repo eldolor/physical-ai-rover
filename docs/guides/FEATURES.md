@@ -752,6 +752,10 @@ finished map at mission start; N1's discovered map replaced it.)
   is still one look. While the camera points off the robot's heading, the
   camera view shows **Camera turned N° left/right**, from the angle the
   robot measured, never the one asked for; the D-pad never re-centres it.
+  **Tilt up and down** (3.220.C): the eye-and-arrow buttons under the look
+  buttons tilt the camera 5 degrees a tap, or keep tilting while held, up
+  to 30 degrees up or down; looking left or right keeps the tilt, and
+  look-center levels it. The badge adds "tilted N° up/down".
 - **Turn step (15° / 45° / 90°)** -- how far LEFT and RIGHT turn, sent as
   `/action`'s `angle`. Since R0 the pose is continuous, so this is how a phone
   reaches a heading that is not a compass point. Remembered across reloads;

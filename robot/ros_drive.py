@@ -453,6 +453,9 @@ class RosDriveRobot(RobotInterface):
     def look_step(self, degrees: float) -> dict:
         return self.inner.look_step(degrees)
 
+    def tilt_step(self, degrees: float) -> dict:
+        return self.inner.tilt_step(degrees)
+
     def look_right(self) -> dict:
         return self.inner.look_right()
 

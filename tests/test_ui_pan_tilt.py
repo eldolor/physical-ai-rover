@@ -252,3 +252,73 @@ def test_the_badge_does_not_outlive_a_refused_frame(browser, private_twin_server
     page.click("#btn-look-left")
     page.wait_for_function("() => document.getElementById('pan-badge').hidden", timeout=5000)
     page.close()
+
+
+# ---------- amendment 2: the tilt buttons ----------
+
+def _tilt(url):
+    return httpx.get(url + "/frame", timeout=5).json()["tilt_deg"]
+
+
+def test_a_tilt_tap_is_one_step_and_the_badge_says_so(browser, private_twin_server):
+    url = private_twin_server
+    page, errors = _open(browser, url)
+    _record(page)
+    page.click("#btn-tilt-up")
+    page.wait_for_function("() => !document.getElementById('pan-badge').hidden", timeout=5000)
+    assert _tilt(url) == 5
+    assert page.inner_text("#pan-badge").startswith("Camera tilted 5° up")
+    page.click("#btn-look-left")
+    page.wait_for_timeout(400)
+    assert _tilt(url) == 5                      # left keeps the tilt
+    badge = page.inner_text("#pan-badge")
+    assert "90° left" in badge and badge.endswith(", tilted 5° up (measured)"), badge
+    shots = os.environ.get("UI_SHOTS")
+    if shots:
+        page.screenshot(path=os.path.join(shots, "3220-tilt-badge.png"), full_page=False)
+    page.click("#btn-look-center")
+    page.wait_for_function("() => document.getElementById('pan-badge').hidden", timeout=5000)
+    assert _tilt(url) == 0
+    sent = [(p["body"].get("action"), p["body"].get("angle")) for p in _posts(page)
+            if p["route"] == "/action"]
+    assert sent[0] == ("TILT_STEP", 5)
+    assert not errors
+    page.close()
+
+
+def test_a_held_tilt_steps_to_the_limit_and_stops_there(browser, private_twin_server):
+    url = private_twin_server
+    page, _ = _open(browser, url)
+    _record(page)
+    _press(page, "#btn-tilt-down")
+    page.wait_for_timeout(2000)
+    assert _tilt(url) == -30
+    assert "holding" not in (page.get_attribute("#btn-tilt-down", "class") or "")
+    page.mouse.up()
+    page.wait_for_timeout(300)
+    steps = [p for p in _posts(page) if p["body"].get("action") == "TILT_STEP"]
+    assert len(steps) == 6 and all(p["body"]["angle"] == -5 for p in steps)
+    gaps = [b["t"] - a["t"] for a, b in zip(steps, steps[1:])]
+    assert min(gaps) >= STEP_MS - 5, gaps
+    page.close()
+
+
+def test_releasing_a_held_tilt_stops_it(browser, private_twin_server):
+    url = private_twin_server
+    page, _ = _open(browser, url)
+    _press(page, "#btn-tilt-up")
+    t0 = time.monotonic()
+    while _tilt(url) < 10 and time.monotonic() - t0 < 3:
+        time.sleep(0.03)
+    t0 = time.monotonic()
+    page.mouse.up()
+    last, last_change = _tilt(url), time.monotonic()
+    while time.monotonic() - last_change < 0.6:
+        time.sleep(0.03)
+        now = _tilt(url)
+        if now != last:
+            last, last_change = now, time.monotonic()
+    took = max(0.0, last_change - t0)
+    print(f"3.220.C stop: release {took:.3f} s")
+    assert took <= STOP_BOUND_S and 0 < last < 30
+    page.close()

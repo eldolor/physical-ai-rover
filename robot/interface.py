@@ -466,6 +466,12 @@ class RobotInterface(ABC):
         return {"action": "look_step", "pan": None,
                 "reason": "this body cannot pan the camera by steps"}
 
+    def tilt_step(self, degrees: float) -> dict:
+        """3.220.C: tilt the camera `degrees` (up positive) from where it was
+        last sent, within the body's limits. Not abstract, as `look_step`."""
+        return {"action": "tilt_step", "pan": None,
+                "reason": "this body cannot tilt the camera"}
+
     @abstractmethod
     def get_camera_frame(self) -> dict:
         """One camera frame. **Must carry pixels** -- phase S2.

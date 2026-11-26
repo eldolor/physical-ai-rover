@@ -177,7 +177,7 @@ Finite = Annotated[float, Field(allow_inf_nan=False)]
 # The verbs that move the body (`robot/safety.py`'s), as against LOOK_* (the
 # camera only) and STOP: a person's move ends a nav2 goal (3.97).
 BODY_MOVES = frozenset({"FORWARD", "REVERSE", "LEFT", "RIGHT"})
-CAMERA_ONLY = frozenset({"LOOK_LEFT", "LOOK_RIGHT", "LOOK_CENTER", "LOOK_STEP"})
+CAMERA_ONLY = frozenset({"LOOK_LEFT", "LOOK_RIGHT", "LOOK_CENTER", "LOOK_STEP", "TILT_STEP"})
 
 
 class ActionRequest(BaseModel):
@@ -190,8 +190,8 @@ class ActionRequest(BaseModel):
     def _step_names_its_angle(self):
         # 3.220.B: `angle` defaults to a turn's 90; a camera step sent without
         # one would swing the camera a full quarter turn (review).
-        if self.action == "LOOK_STEP" and "angle" not in self.model_fields_set:
-            raise ValueError("LOOK_STEP needs an explicit `angle`, the signed step in degrees")
+        if self.action in ("LOOK_STEP", "TILT_STEP") and "angle" not in self.model_fields_set:
+            raise ValueError(f"{self.action} needs an explicit `angle`, the signed step in degrees")
         return self
 
 
