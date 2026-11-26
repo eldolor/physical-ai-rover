@@ -164,8 +164,8 @@ def test_a_lone_unseen_last_row_is_not_an_edge():
     """Review: the grazing far end often returns nothing; one row there
     must not paint a sticky edge into the drop memory."""
     depth = render()
-    far_rows = np.nonzero(np.isclose(GEOM._walk_range.max(axis=0), GEOM.far_cm, atol=8.0))[0]
-    row = GEOM._rows[GEOM._nrows // 2 + 1] if far_rows.size == 0 else GEOM._rows[far_rows.min()]
+    walk = GEOM._order[COLS // 2]
+    row = GEOM._rows[walk[walk < GEOM._nrows][-1]]          # the centre's farthest row
     depth[row:row + GEOM._s, :] = 0
     b = GEOM.blocks(depth)
     assert all(z["status"] == ZONE_NO_TARGET for z in centre_zones(b["drop"]))

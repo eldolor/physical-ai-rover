@@ -180,19 +180,31 @@ class DepthGeometry:
         self._region = region
         self._region_count = np.bincount(self._floor_col[region].ravel(), minlength=cols)[:cols]
         # The drop walk: per column, its floor rows outward (bottom up),
-        # within [near, far].
+        # within [near, far], as one padded matrix of row indices so a frame
+        # is walked in a few array operations (3.222 C: a loop per column
+        # cost 23 ms a frame on the Jetson).
         walk = down & (self._floor_range >= self.near_cm - 1e-6) & (self._floor_range <= self.far_cm)
         self._walk = walk
-        self._nrows = len(self._rows)
-        key = self._floor_col * self._nrows + np.arange(self._nrows)[:, None]
-        self._walk_key = np.where(walk, key, -1)
-        size = cols * self._nrows
-        total = np.bincount(self._walk_key[walk].ravel(), minlength=size)[:size]
-        self._walk_total = total.reshape(cols, self._nrows)
-        rng = np.bincount(self._walk_key[walk].ravel(),
-                          weights=self._floor_range[walk].ravel(), minlength=size)[:size]
+        self._nrows = n = len(self._rows)
+        key = self._floor_col * n + np.arange(n)[:, None]
+        self._walk_keys = key[walk]
+        size = cols * n
+        total = np.bincount(self._walk_keys, minlength=size)[:size].reshape(cols, n)
+        rng = np.bincount(self._walk_keys, weights=self._floor_range[walk],
+                          minlength=size)[:size].reshape(cols, n)
         with np.errstate(invalid="ignore", divide="ignore"):
-            self._walk_range = (rng.reshape(cols, self._nrows) / self._walk_total)
+            walk_range = rng / total
+        outward = [np.nonzero(total[k] > 0)[0][::-1] for k in range(cols)]
+        width = max(1, max(len(o) for o in outward))
+        # Padding points at row `n`, a row that always reads floor, so it
+        # never ends a walk: a lone last row does not end the floor (review).
+        self._order = np.full((cols, width), n, dtype=np.intp)
+        for k, o in enumerate(outward):
+            self._order[k, :len(o)] = o
+        self._has_rows = np.array([len(o) > 0 for o in outward])
+        self._walk_total = total
+        self._order_range = np.take_along_axis(
+            np.concatenate([walk_range, np.full((cols, 1), np.nan)], axis=1), self._order, axis=1)
 
     def _col_of(self, bearing_deg):
         col = np.floor((bearing_deg + self.fov_deg / 2.0) / self.fov_deg * self.cols).astype(np.int32)
@@ -202,38 +214,44 @@ class DepthGeometry:
         """One frame's `floor` and `drop` blocks."""
         tn = self.tuning
         s = self._s
-        z = depth_mm[::s, ::s].astype(np.float32) / 10.0       # cm along the axis
+        z = depth_mm[::s, ::s].astype(np.float32) * np.float32(0.1)   # cm along the axis
         if z.shape != self._xn.shape:
             raise ValueError(f"depth frame {depth_mm.shape} is not {self.intr.height}x{self.intr.width}")
         valid = z > 0
         f = z * self._fwd
-        r = z * self._xn + self.mount.lateral_cm
         h = self.mount.height_cm + z * self._up
-        rng = np.hypot(f, r)
-        tol = tn.floor_tol_cm + tn.tol_per_m_cm * rng / 100.0
+        # The tolerance grows with the forward distance, not the range: at
+        # most the range, so never looser than designed.
+        tol = tn.floor_tol_cm + tn.tol_per_m_cm * 0.01 * f
         floor = valid & (np.abs(h) <= tol)
         thing = valid & (h > tol) & (h <= tn.max_height_cm) & (f > 0)
         below = valid & (h < -tn.drop_cm)
-        return {"floor": self._band(z, valid, thing, rng, f, r),
-                "drop": self._drop(valid, floor, thing, below, rng)}
+        # Range and bearing only where a thing stands (most pixels are floor).
+        tf = f[thing]
+        tr = z[thing] * self._xn[thing] + self.mount.lateral_cm
+        t_rng = np.hypot(tf, tr)
+        t_bear = np.degrees(np.arctan2(tr, tf))
+        return {"floor": self._band(valid, thing, t_rng, t_bear),
+                "drop": self._drop(valid, floor, thing, below, t_rng)}
 
     # -- the floor band -------------------------------------------------------
 
-    def _band(self, z, valid, thing, rng, f, r) -> dict:
+    def _band(self, valid, thing, t_rng, t_bear) -> dict:
         tn, cols = self.tuning, self.cols
-        bearing = np.degrees(np.arctan2(r, f))
-        col = self._col_of(bearing)
-        near_thing = thing & (rng < MIN_RANGE_CM) & (col >= 0)
-        in_band = thing & (rng >= MIN_RANGE_CM) & (rng <= self.max_range_cm) & (col >= 0)
+        col = self._col_of(t_bear)
+        inside = col >= 0
+        near_thing = inside & (t_rng < MIN_RANGE_CM)
+        in_band = inside & (t_rng >= MIN_RANGE_CM) & (t_rng <= self.max_range_cm)
         too_near = np.bincount(col[near_thing], minlength=cols)[:cols]
         seen = np.bincount(self._floor_col[self._region & valid], minlength=cols)[:cols]
-        c_in, r_in, b_in = col[in_band], rng[in_band], bearing[in_band]
+        c_in, r_in, b_in = col[in_band], t_rng[in_band], t_bear[in_band]
         order = np.lexsort((r_in, c_in))
         c_in, r_in, b_in = c_in[order], r_in[order], b_in[order]
         starts = np.searchsorted(c_in, np.arange(cols))
         counts = np.bincount(c_in, minlength=cols)[:cols]
-        zones = []
         k = max(1, int(tn.min_points))
+        enough = seen >= tn.min_seen * self._region_count
+        zones = []
         for i in range(cols):
             if too_near[i] >= k:
                 zones.append({"status": ZONE_UNUSABLE, "distance_cm": None})
@@ -241,7 +259,7 @@ class DepthGeometry:
                 j = starts[i] + k - 1
                 zones.append({"status": ZONE_RANGE, "distance_cm": round(float(r_in[j]), 1),
                               "bearing_deg": round(float(b_in[j]), 3) + 0.0})
-            elif self._region_count[i] and seen[i] >= tn.min_seen * self._region_count[i]:
+            elif self._region_count[i] and enough[i]:
                 zones.append({"status": ZONE_NO_TARGET, "distance_cm": None})
             else:
                 zones.append({"status": ZONE_UNUSABLE, "distance_cm": None})
@@ -251,57 +269,51 @@ class DepthGeometry:
 
     # -- the drop block -------------------------------------------------------
 
-    def _drop(self, valid, floor, thing, below, rng) -> dict:
+    def _drop(self, valid, floor, thing, below, t_rng) -> dict:
         cols, n = self.cols, self._nrows
         size = cols * n
-        walk = self._walk
-        key = self._walk_key[walk]
+        walk, keys = self._walk, self._walk_keys
 
-        def count(mask):
-            return np.bincount(key[mask[walk]], minlength=size)[:size].reshape(cols, n)
+        def count(mask, weights=None):
+            sel = mask[walk]
+            return np.bincount(keys[sel], weights=None if weights is None else weights,
+                               minlength=size)[:size].reshape(cols, n)
 
         total = self._walk_total
         n_valid, n_floor = count(valid), count(floor)
         n_thing, n_below = count(thing), count(below)
-        thing_rng = np.bincount(key[thing[walk]], weights=rng[walk][thing[walk]],
-                                minlength=size)[:size].reshape(cols, n)
+        # The things' ranges, summed per row (t_rng is over every thing;
+        # take the ones on walk rows).
+        thing_rng = count(thing, t_rng[walk[thing]])
         # A row's label: no return over half of it -> none; else the most
-        # common of floor, thing, below.
-        label = np.full((cols, n), -1, dtype=np.int8)        # -1: not a floor row here
-        has = total > 0
-        label[has] = _NONE
-        seen = has & (n_valid * 2 >= total)
+        # common of floor, thing, below; a returned row that is none of the
+        # three (between the tolerance and the drop threshold) is floor.
         stack = np.stack([n_floor, n_thing, n_below])
-        best = np.argmax(stack, axis=0).astype(np.int8)
-        label[seen] = best[seen]
-        # A valid row that is none of the three (between the floor
-        # tolerance and the drop threshold) reads as floor.
-        label[seen & (stack.max(axis=0) == 0)] = _FLOOR
+        label = np.argmax(stack, axis=0).astype(np.int8)
+        label[stack.max(axis=0) == 0] = _FLOOR
+        label[n_valid * 2 < total] = _NONE
+        label = np.concatenate([label, np.full((cols, 1), _FLOOR, np.int8)], axis=1)
+        lab = np.take_along_axis(label, self._order, axis=1)          # outward
+        nonfloor = lab != _FLOOR
+        ends = nonfloor[:, :-1] & nonfloor[:, 1:]                     # two in a row
+        found = ends.any(axis=1)
+        e = np.argmax(ends, axis=1)
+        rows = self._order[np.arange(cols), e]
+        kind = lab[np.arange(cols), e]
         zones = []
         for k in range(cols):
-            rows = np.nonzero(label[k] >= 0)[0][::-1]           # bottom up: outward
-            if rows.size == 0:
+            if not self._has_rows[k]:
                 zones.append({"status": ZONE_UNUSABLE, "distance_cm": None})
-                continue
-            lab = label[k, rows]
-            nonfloor = lab != _FLOOR
-            # Two in a row. A lone last row (the grazing far end) does not
-            # end the floor (review: one unseen row there made an edge).
-            ends = nonfloor & np.append(nonfloor[1:], False)
-            if not ends.any():
+            elif not found[k]:
                 zones.append({"status": ZONE_NO_TARGET, "distance_cm": None})
-                continue
-            e = int(np.argmax(ends))
-            row = rows[e]
-            if e == 0 and lab[0] == _NONE:
+            elif e[k] == 0 and kind[k] == _NONE:
                 # The first floor row unseen: it says nothing (M3).
                 zones.append({"status": ZONE_UNUSABLE, "distance_cm": None})
-                continue
-            if lab[e] == _THING:
-                d = float(thing_rng[k, row] / max(1, n_thing[k, row]))
+            elif kind[k] == _THING:
+                d = float(thing_rng[k, rows[k]] / max(1, n_thing[k, rows[k]]))
                 zones.append({"status": ZONE_RANGE, "distance_cm": round(d, 1), "kind": "thing"})
             else:
-                d = float(self._walk_range[k, row])
+                d = float(self._order_range[k, e[k]])
                 zones.append({"status": ZONE_RANGE, "distance_cm": round(d, 1), "kind": "edge"})
         return {"cols": cols, "fov_deg": self.fov_deg, "pan_deg": 0.0,
                 "origin_x_cm": self.mount.x_cm, "near_cm": round(self.near_cm, 1),
