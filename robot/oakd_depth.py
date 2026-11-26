@@ -150,6 +150,10 @@ class DepthGeometry:
         # Per unit depth: forward and up in the body frame.
         self._fwd = self._c - self._yn * self._sn
         self._up = -self._sn - self._yn * self._c
+        # Range per unit depth, for the tolerance, when the lens is centred
+        # (one multiply a pixel; review: the forward distance is tighter
+        # than designed at the field's edges).
+        self._rng_per_z = np.hypot(self._fwd, self._xn)
         # Where each ray meets the floor (rays at or above the horizon never do).
         down = self._up < -1e-6
         t = np.where(down, mount.height_cm / np.where(down, -self._up, 1.0), np.inf)
@@ -195,7 +199,9 @@ class DepthGeometry:
         with np.errstate(invalid="ignore", divide="ignore"):
             walk_range = rng / total
         outward = [np.nonzero(total[k] > 0)[0][::-1] for k in range(cols)]
-        width = max(1, max(len(o) for o in outward))
+        # At least two: a walk of one row (a degenerate mount) must not
+        # leave nothing to pair (review: argmax of an empty axis raised).
+        width = max(2, max(len(o) for o in outward))
         # Padding points at row `n`, a row that always reads floor, so it
         # never ends a walk: a lone last row does not end the floor (review).
         self._order = np.full((cols, width), n, dtype=np.intp)
@@ -220,17 +226,18 @@ class DepthGeometry:
         valid = z > 0
         f = z * self._fwd
         h = self.mount.height_cm + z * self._up
-        # The tolerance grows with the forward distance, not the range: at
-        # most the range, so never looser than designed.
-        tol = tn.floor_tol_cm + tn.tol_per_m_cm * 0.01 * f
+        if self.mount.lateral_cm == 0:
+            rng = z * self._rng_per_z
+        else:
+            rng = np.hypot(f, z * self._xn + self.mount.lateral_cm)
+        tol = tn.floor_tol_cm + tn.tol_per_m_cm * 0.01 * rng
         floor = valid & (np.abs(h) <= tol)
         thing = valid & (h > tol) & (h <= tn.max_height_cm) & (f > 0)
         below = valid & (h < -tn.drop_cm)
-        # Range and bearing only where a thing stands (most pixels are floor).
-        tf = f[thing]
-        tr = z[thing] * self._xn[thing] + self.mount.lateral_cm
-        t_rng = np.hypot(tf, tr)
-        t_bear = np.degrees(np.arctan2(tr, tf))
+        # Bearing only where a thing stands (most pixels are floor).
+        t_rng = rng[thing]
+        t_bear = np.degrees(np.arctan2(z[thing] * self._xn[thing] + self.mount.lateral_cm,
+                                       f[thing]))
         return {"floor": self._band(valid, thing, t_rng, t_bear),
                 "drop": self._drop(valid, floor, thing, below, t_rng)}
 
@@ -279,7 +286,6 @@ class DepthGeometry:
             return np.bincount(keys[sel], weights=None if weights is None else weights,
                                minlength=size)[:size].reshape(cols, n)
 
-        total = self._walk_total
         n_valid, n_floor = count(valid), count(floor)
         n_thing, n_below = count(thing), count(below)
         # The things' ranges, summed per row (t_rng is over every thing;
@@ -288,10 +294,21 @@ class DepthGeometry:
         # A row's label: no return over half of it -> none; else the most
         # common of floor, thing, below; a returned row that is none of the
         # three (between the tolerance and the drop threshold) is floor.
+        return self._walk_labels(self._row_labels(n_valid, n_floor, n_thing, n_below),
+                                 n_thing, thing_rng)
+
+    def _row_labels(self, n_valid, n_floor, n_thing, n_below):
+        """Each (column, row): none, floor, thing or below."""
+        total = self._walk_total
         stack = np.stack([n_floor, n_thing, n_below])
         label = np.argmax(stack, axis=0).astype(np.int8)
         label[stack.max(axis=0) == 0] = _FLOOR
         label[n_valid * 2 < total] = _NONE
+        return label
+
+    def _walk_labels(self, label, n_thing, thing_rng) -> dict:
+        """The drop block from the row labels: each column walked outward."""
+        cols = self.cols
         label = np.concatenate([label, np.full((cols, 1), _FLOOR, np.int8)], axis=1)
         lab = np.take_along_axis(label, self._order, axis=1)          # outward
         nonfloor = lab != _FLOOR
@@ -379,7 +396,7 @@ class DepthCamera:
                 if got is None:
                     if self._monotonic() - last_good > self.stall_s:
                         raise RuntimeError(f"no frame for {self.stall_s:g} s")
-                    self._sleep(0.01)
+                    self._sleep(0.005)
                     continue
                 depth, taken_at = got
                 t0 = time.perf_counter()

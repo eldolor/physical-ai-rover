@@ -185,6 +185,67 @@ def test_a_steep_mount_claims_no_floor_past_its_top_ray():
     assert b["floor"]["max_range_cm"] == pytest.approx(g.max_range_cm, abs=0.1)
 
 
+def _reference_walk(geom, label):
+    """The walk as a plain loop per column (the loop the padded gather
+    replaced): rows outward, floor ends at two non-floor rows in a row, a
+    lone last row does not end it, a first row unseen says nothing."""
+    from robot import oakd_depth as od
+
+    out = []
+    for k in range(geom.cols):
+        rows = np.nonzero(geom._walk_total[k] > 0)[0][::-1]
+        if rows.size == 0:
+            out.append(("unusable", None))
+            continue
+        lab = label[k, rows]
+        e = next((i for i in range(len(lab) - 1)
+                  if lab[i] != od._FLOOR and lab[i + 1] != od._FLOOR), None)
+        if e is None:
+            out.append(("no_target", None))
+        elif e == 0 and lab[0] == od._NONE:
+            out.append(("unusable", None))
+        else:
+            out.append(("range", "thing" if lab[e] == od._THING else "edge"))
+    return out
+
+
+def test_the_padded_walk_matches_a_plain_loop():
+    """Review: the gather must give the per-column loop's answers on mixed
+    columns -- floor, things, edges, unseen rows, every column length."""
+    rng = np.random.default_rng(3222)
+    from robot import oakd_depth as od
+
+    for geom in (GEOM, DepthGeometry(INTR, Mount(height_cm=14.0, pitch_deg=25.0))):
+        for _ in range(20):
+            label = rng.choice([od._FLOOR] * 6 + [od._THING, od._BELOW, od._NONE],
+                               size=geom._walk_total.shape).astype(np.int8)
+            n_thing = np.ones(geom._walk_total.shape)
+            got = geom._walk_labels(label, n_thing, n_thing * 50.0)["zones"]
+            want = _reference_walk(geom, label)
+            assert [(z["status"], z.get("kind")) for z in got] == want
+
+
+def test_a_walk_of_one_row_is_answered_not_raised():
+    """Review: a mount whose walk has one row per column left nothing to
+    pair; every frame raised and the camera reopened for ever."""
+    m = Mount(height_cm=14.0, pitch_deg=-40.0)
+    g = DepthGeometry(INTR, m)
+    b = g.blocks(render(mount=m))
+    assert len(b["drop"]["zones"]) == COLS
+
+
+def test_the_tolerance_grows_with_range_at_the_edges():
+    """Review: a 1 cm platform 45-60 cm ahead at ~31 deg off the axis lies
+    54-72 cm away. Under 2 cm per metre of RANGE it is inside the floor
+    tolerance (1.08-1.44 cm); per metre of forward distance (0.9-1.2 cm) the
+    near half would read as a thing."""
+    from robot.oakd_depth import Tuning
+
+    g = DepthGeometry(INTR, MOUNT, Tuning(floor_tol_cm=0.0, tol_per_m_cm=2.0, min_points=1))
+    b = g.blocks(render(boxes=[(45.0, 60.0, 25.0, 45.0, 1.0)]))
+    assert all(z["status"] != ZONE_RANGE for z in b["floor"]["zones"])
+
+
 def test_pitched_mount_still_reads_true_ranges():
     m = Mount(height_cm=14.0, pitch_deg=10.0, x_cm=9.5)
     g = DepthGeometry(INTR, m)
