@@ -189,6 +189,11 @@ out of order: neither is republished (`scans_repeated` in `/health`). One
 further back is a clock that stepped and starts afresh, as does the
 fallback to odometry stamps. A
 malformed box from the robot server masks nothing (`convert.self_box()`).
+The route's reply: the scan, `stamp_unix`, `stamp_source` (`capture` |
+`request`) and `lidar_self_box_cm` (or null); the body's `capture_unix` is
+consumed, not passed on. (The `/scan` row in the control-api spec still
+reads "request time": that file is fenced by 3.70.S2's open step, and is
+owed this line when it frees.)
 
 **The robot's own body (3.221).** The robot server's `/scan` names the
 safety layer's self box (`lidar_self_box_cm`, 3.218: the Rover's mast,
