@@ -239,7 +239,15 @@ button.is-busy { pointer-events: none; opacity: 0.8; }
 }
 #navigate-model-row select, #navigate-prompt-row select { width: 100%; max-width: none; }
 
-.fpv-wrap { display: flex; justify-content: center; margin-top: 8px; }
+.fpv-wrap { display: flex; justify-content: center; margin-top: 8px; position: relative; }
+/* 3.220.B: the camera is turned off the body's heading (its measured pan). */
+.pan-badge {
+  position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+  padding: 4px 10px; border-radius: 12px; font-size: 13px; font-weight: 600;
+  background: var(--surface-raised); color: var(--text); border: 1px solid var(--border-strong);
+  pointer-events: none; white-space: nowrap;
+}
+.pan-badge[hidden] { display: none; }
 #fpv-canvas { border-radius: 8px; display: block; }
 /* Phase M2. Sized to the canvas above it rather than to the card, so the
    zones line up with the columns of the view they measure -- a strip that

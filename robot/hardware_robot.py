@@ -831,14 +831,17 @@ class HardwareRobot(RobotInterface):
             return self._send({"T": 133, "X": int(PAN_SIGN * pan), "Y": int(tilt),
                                "SPD": 0, "ACC": 0})
 
-    def _look(self, action: str, side: int) -> dict:
+    def _look(self, action: str, side: int, pan_deg: Optional[float] = None) -> dict:
         if not self.gimbal:
             if self.sensors:
+                if action == "look_step":
+                    step = getattr(self.sensors, "look_step", None)
+                    return step(pan_deg) if step else RobotInterface.look_step(self, pan_deg)
                 return getattr(self.sensors, action)()
             return {"pan": None}
         # Sent whatever the feedback says (a centring matters most when the
         # angle is unknown); only the REPORTED angle is withheld then.
-        sent = self._point(side * LOOK_PAN_DEG)
+        sent = self._point(side * LOOK_PAN_DEG if pan_deg is None else pan_deg)
         if sent and self._cmd == (0.0, 0.0):
             # At rest, the look ends when the camera has (so the next frame
             # is the peek's, not mid-swing), bounded by the settle timeout.
@@ -859,6 +862,18 @@ class HardwareRobot(RobotInterface):
 
     def look_left(self) -> dict:
         return self._look("look_left", -1)
+
+    def look_step(self, degrees: float) -> dict:
+        """3.220.B: a step from the last goal sent (not the measured angle,
+        so a hold's steps add up while the servo catches up), clamped."""
+        if not self.gimbal:
+            return self._look("look_step", 0, degrees)
+        with self._lock:
+            base = (self._pan_goal if self._pan_goal is not None
+                    else self._pan_meas if self._pan_meas is not None else 0.0)
+        goal = max(-PAN_LIMIT_DEG, min(PAN_LIMIT_DEG, base + float(degrees)))
+        side = 0 if goal == 0 else (1 if goal > 0 else -1)
+        return self._look("look_step", side, goal)
 
     def look_right(self) -> dict:
         return self._look("look_right", 1)

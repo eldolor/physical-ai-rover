@@ -176,6 +176,7 @@ default shown.
 | `drive_forward(speed, duration)` / `reverse(speed, duration)` | dict with `action` named after the method | abstract |
 | `turn_left(angle)` / `turn_right(angle)` | dict with `action` | abstract |
 | `look_left()` / `look_right()` / `look_center()` | dict with `action` | abstract |
+| `look_step(degrees)` | dict with `action`, `pan` (None: this body cannot) | default says it cannot. 3.220.B: the camera `degrees` clockwise from the last goal, within the body's limits (+/-90); `MockRobot` (the sim's pan), `HardwareRobot` (the gimbal, else its `sensors'`), `RosDriveRobot` (its inner robot) |
 | `stop()` | dict; zeroes any standing wheel command and increments `stop_count` where the backend keeps one | abstract |
 | `get_camera_frame()` | `{"image_base64", "media_type", "room", "metadata", ...}`, plus `captured_at` where the pixels come from a real camera (3.90); may raise | abstract |
 | `get_distance()` | float, cm | abstract |

@@ -318,8 +318,12 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       // remapping is the only place the server's reply becomes the page's
       // frame object, so a key missed here is a key the whole UI lacks.
       imageBase64: raw.image_base64, mediaType: raw.media_type,
+      // 3.220.B: where the camera points off the body, as the robot
+      // MEASURED it (null or absent: not reported) -- never a command.
+      panDeg: (typeof raw.pan_deg === "number" && isFinite(raw.pan_deg)) ? raw.pan_deg : null,
     };
     state.lastFrame = frame;
+    renderPanBadge(frame);
     // Phase M2. Fired alongside the frame rather than awaited with it: the
     // strip is telemetry, and a robot whose depth route is slow or missing
     // must not slow down or break the picture. Its own failure is silent
@@ -329,6 +333,26 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     refreshOdometry();
     refreshWorld();
     return frame;
+  }
+
+  // ---------- 3.220.B: the camera-panned badge ----------
+  // Shown while the camera is off centre by at least PAN_BADGE_MIN_DEG (the
+  // robot's own "settled" tolerance), from the frame's measured pan only.
+  // Nothing here centres the camera: the D-pad drives the body, never the
+  // pan, and a person may want to drive while looking aside.
+  const PAN_BADGE_MIN_DEG = 3;
+
+  function renderPanBadge(frame) {
+    const el = document.getElementById("pan-badge");
+    if (!el) return;
+    const pan = frame ? frame.panDeg : null;
+    const show = typeof pan === "number" && Math.abs(pan) >= PAN_BADGE_MIN_DEG;
+    el.hidden = !show;
+    if (show) {
+      el.textContent = t(pan < 0 ? "camera.pannedLeft" : "camera.pannedRight",
+                         {deg: Math.round(Math.abs(pan))});
+      el.dataset.panDeg = String(pan);
+    }
   }
 
   // ---------- phase M2: the depth grid ----------
@@ -1798,8 +1822,14 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   const HOLD_STRAIGHT_M_S = 0.30;     // a FORWARD verb's speed (speed 50)
   const HOLD_TURN_RAD_S = 1.2;        // a turn verb's body rate
   const HOLD_SIGNS = { FORWARD: [1, 1], REVERSE: [-1, -1], LEFT: [-1, 1], RIGHT: [1, -1] };
+  // 3.220.B: a held look pans in steps, one at a time and at most one per
+  // LOOK_HOLD_STEP_MS (~6.7 a second, inside the 20 Hz the board's Wi-Fi
+  // route held, 3.217), until release or the limit. A tap stays the verb.
+  const LOOK_STEP_DEG = { LOOK_LEFT: -10, LOOK_RIGHT: 10 };
+  const LOOK_HOLD_STEP_MS = 150;
+  const LOOK_LIMIT_DEG = 90;
   const hold = {
-    action: null, btn: null, pointerId: null, timer: null, refresh: null,
+    action: null, btn: null, pointerId: null, timer: null, refresh: null, look: false,
     driving: false, gen: 0, chain: Promise.resolve(), inFlight: 0,
     startedAt: 0, geometry: null, geometryFor: null, pending: 0,
     // The button whose press drove: its trailing click is no tap, however
@@ -1903,13 +1933,25 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     hold.action = action;
     hold.btn = btn;
     hold.pointerId = e.pointerId;
-    holdGeometry();
+    if (!(action in LOOK_STEP_DEG)) holdGeometry();
     hold.timer = setTimeout(holdBegin, HOLD_START_MS);
   }
 
   async function holdBegin() {
     hold.timer = null;
     const action = hold.action, btn = hold.btn;
+    if (action in LOOK_STEP_DEG) {
+      if (!state.connected) { hold.action = null; return; }
+      hold.driving = true;
+      hold.look = true;
+      hold.swallowBtn = btn;
+      hold.gen++;
+      hold.startedAt = performance.now();
+      btn.classList.add("holding");
+      state.dpadInFlight++;            // 3.132 F2: a Start waits out a hold
+      lookHoldLoop(hold.gen, action);
+      return;
+    }
     const g = await holdGeometry();
     // Released, cancelled or replaced while the geometry was read.
     if (hold.action !== action || hold.btn !== btn || hold.timer || hold.driving) return;
@@ -1940,6 +1982,8 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       return;
     }
     const action = hold.action, held = performance.now() - hold.startedAt;
+    const look = hold.look;
+    hold.look = false;
     hold.driving = false;
     hold.gen++;
     clearInterval(hold.refresh);
@@ -1949,6 +1993,20 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     state.dpadInFlight--;
     state.dpadDoneAt = performance.now();
     const zero = { left_rad_s: 0.0, right_rad_s: 0.0 };
+    if (look) {
+      // A held look: no wheels to zero. Ending the generation is the stop --
+      // no further step is sent; one already sent finishes its 10 degrees.
+      if (why !== "refused" && why !== "failed" && why !== "rejected") {
+        logEntry(action + " held " + (held / 1000).toFixed(1) + " s", true, "", null);
+      }
+      if (why !== "pagehide" && why !== "hidden" && why !== "disconnected") {
+        // Where the camera ended up, once the last step has landed.
+        setTimeout(function () {
+          fetchFrame().then(render).catch(function () { /* the next frame redraws */ });
+        }, LOOK_HOLD_STEP_MS);
+      }
+      return;
+    }
     if (why === "stop") {
       // STOP's own /stop goes out at once. A drive post already in flight
       // can land after it: chase it with a second stop.
@@ -1982,6 +2040,52 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     }
     if (why !== "refused" && why !== "failed" && why !== "rejected") {
       logEntry(action + " held " + (held / 1000).toFixed(1) + " s", true, "", null);
+    }
+  }
+
+  // 3.220.B: the held look's steps, strictly one after another.
+  async function lookHoldLoop(gen, action) {
+    const deg = LOOK_STEP_DEG[action];
+    while (gen === hold.gen && hold.driving) {
+      const t0 = performance.now();
+      hold.inFlight++;
+      try {
+        const r = await sendAction("LOOK_STEP", DRIVER_DPAD, { angle: deg });
+        if (gen !== hold.gen) return;
+        if (r.executed === false) {
+          logEntry(action + " (held)", false, refusalText(r), r.reason);
+          holdEnd("refused");
+          return;
+        }
+        const res = r.result || {};
+        if (res.pan === null || res.pan === undefined) {
+          // The body cannot pan by steps (or did not send it): stop asking.
+          holdEnd("refused");
+          return;
+        }
+        const goal = typeof res.goal_pan_deg === "number" ? res.goal_pan_deg
+          : typeof res.pan_deg === "number" ? res.pan_deg : null;
+        // The picture and the badge follow each step (nothing else fetches
+        // a frame while a person holds a button).
+        try { render(await fetchFrame()); } catch (frameErr) { /* the next frame redraws */ }
+        if (goal !== null && Math.abs(goal) >= LOOK_LIMIT_DEG - 0.5) {
+          holdEnd("limit");
+          return;
+        }
+      } catch (e) {
+        if (gen === hold.gen) {
+          const answered = typeof e.status === "number";
+          logEntry(action + " (held)", false,
+                   (answered ? "refused: " : "not delivered: ") + (e.message || e),
+                   answered ? "rejected" : "unreachable");
+          holdEnd(answered ? "rejected" : "failed");
+        }
+        return;
+      } finally {
+        hold.inFlight--;
+      }
+      const wait = LOOK_HOLD_STEP_MS - (performance.now() - t0);
+      if (wait > 0) await new Promise(function (res) { setTimeout(res, wait); });
     }
   }
 
@@ -3308,8 +3412,8 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   window.addEventListener("blur", function () { holdEnd("blur"); });
   window.addEventListener("pagehide", function () { holdEnd("pagehide"); });
   document.getElementById("btn-stop").onclick = function () { manualAction("STOP"); };
-  document.getElementById("btn-look-left").onclick = function () { manualAction("LOOK_LEFT"); };
-  document.getElementById("btn-look-right").onclick = function () { manualAction("LOOK_RIGHT"); };
+  bindHoldButton("btn-look-left", "LOOK_LEFT");     // 3.220.B: hold to keep panning
+  bindHoldButton("btn-look-right", "LOOK_RIGHT");
   document.getElementById("btn-look-center").onclick = function () { manualAction("LOOK_CENTER"); };
   document.getElementById("btn-random-house").onclick = randomHouse;
   document.getElementById("btn-remap").onclick = remapNow;

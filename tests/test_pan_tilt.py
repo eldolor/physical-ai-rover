@@ -354,3 +354,42 @@ def test_the_switch_is_off_on_a_real_board_unless_set(monkeypatch):
     monkeypatch.setenv("ROBOT_GIMBAL", "maybe")
     with pytest.raises(ValueError, match="on or off"):
         factory.get_robot()
+
+
+# ---------- amendment 1, bar 8: the step a held look sends ----------
+
+def test_a_step_adds_to_the_last_goal_and_stops_at_the_limit(rig):
+    b, _, bot = rig
+    for _ in range(12):
+        answer = bot.look_step(-10)
+    assert answer["goal_pan_deg"] == -PAN_LIMIT_DEG
+    sent = [c["X"] for c in b.gimbal_commands if c.get("T") == 133]
+    assert min(sent) == -90 and all(abs(x) <= PAN_LIMIT_DEG for x in sent)
+    assert sent[1:4] == [-10, -20, -30]
+    assert _wait(lambda: abs(bot.gimbal_status()["pan_deg"] + 89.93) < 0.5, 1.0)
+
+
+def test_the_sim_body_steps_within_the_same_limits():
+    body = MockRobot(build_starter_world(), render=False)
+    assert body.look_step(45)["pan_deg"] == pytest.approx(45)
+    assert body.look_step(80)["pan_deg"] == pytest.approx(90)
+    assert body.get_camera_frame()["pan_deg"] == pytest.approx(90)
+
+
+def test_a_body_that_cannot_step_says_so(board):
+    b, _ = board
+    bot = HardwareRobot(b.path)
+    try:
+        assert bot.look_step(10)["pan"] is None
+    finally:
+        bot.close()
+
+
+def test_the_step_goes_through_the_vetted_action_route():
+    from robot.server import CAMERA_ONLY, create_app
+    from tests.conftest import ASGI_BASE_URL, asgi_client
+    assert "LOOK_STEP" in CAMERA_ONLY
+    client = asgi_client(create_app())
+    r = client.post(ASGI_BASE_URL + "/action", json={"action": "LOOK_STEP", "angle": -30},
+                    headers={"x-driver": "twin-dpad"}).json()
+    assert r["executed"] is True and r["result"]["pan_deg"] == pytest.approx(-30)

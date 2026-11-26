@@ -459,6 +459,13 @@ class RobotInterface(ABC):
     @abstractmethod
     def look_center(self) -> dict: ...
 
+    def look_step(self, degrees: float) -> dict:
+        """3.220.B: pan the camera `degrees` (clockwise positive) from where
+        it was last sent, within the body's limits -- the twin's look hold.
+        Not abstract: a body that cannot pan by steps says so, honestly."""
+        return {"action": "look_step", "pan": None,
+                "reason": "this body cannot pan the camera by steps"}
+
     @abstractmethod
     def get_camera_frame(self) -> dict:
         """One camera frame. **Must carry pixels** -- phase S2.

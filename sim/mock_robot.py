@@ -585,6 +585,15 @@ class MockRobot(RobotInterface):
     def look_center(self) -> dict:
         return {"action": "look_center", **self.world.look_center()}
 
+    def look_step(self, degrees: float) -> dict:
+        """3.220.B: the pan by a step, within the same +/-90 deg the looks
+        reach (grid_world's pan is in 90-degree units)."""
+        pan = max(-1.0, min(1.0, float(self.world.pan) + float(degrees) / 90.0))
+        self.world.pan = pan
+        self.world._record(f"LOOK_STEP {degrees:+g}")
+        return {"action": "look_step", "pan": pan, "pan_deg": round(pan * 90.0, 4),
+                "goal_pan_deg": round(pan * 90.0, 4), "settled": True}
+
     # ---------- sensing ----------
 
     def get_camera_frame(self) -> dict:

@@ -177,7 +177,7 @@ Finite = Annotated[float, Field(allow_inf_nan=False)]
 # The verbs that move the body (`robot/safety.py`'s), as against LOOK_* (the
 # camera only) and STOP: a person's move ends a nav2 goal (3.97).
 BODY_MOVES = frozenset({"FORWARD", "REVERSE", "LEFT", "RIGHT"})
-CAMERA_ONLY = frozenset({"LOOK_LEFT", "LOOK_RIGHT", "LOOK_CENTER"})
+CAMERA_ONLY = frozenset({"LOOK_LEFT", "LOOK_RIGHT", "LOOK_CENTER", "LOOK_STEP"})
 
 
 class ActionRequest(BaseModel):

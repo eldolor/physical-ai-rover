@@ -746,6 +746,12 @@ finished map at mission start; N1's discovered map replaced it.)
   finger, sliding it off the button, locking the phone, leaving the tab or
   pressing STOP stops the wheels, and a lost network stops them on the
   robot's 1 s watchdog.
+  **Hold a look button to keep panning** (3.220.B): look-left and
+  look-right held past 0.3 s turn the camera 10 degrees at a time (one step
+  at a time, at most one per 0.15 s) until released or at 90 degrees; a tap
+  is still one look. While the camera points off the robot's heading, the
+  camera view shows **Camera turned N° left/right**, from the angle the
+  robot measured, never the one asked for; the D-pad never re-centres it.
 - **Turn step (15° / 45° / 90°)** -- how far LEFT and RIGHT turn, sent as
   `/action`'s `angle`. Since R0 the pose is continuous, so this is how a phone
   reaches a heading that is not a compass point. Remembered across reloads;
