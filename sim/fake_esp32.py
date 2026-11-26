@@ -27,11 +27,12 @@ ROS Driver is closed loop in every mainType and reports what the encoders
 measured; that is the board the Rover ships with (Waveshare, 2026-09-30).
 
 What it models: the host commands T=0 / 1 / 11 / 13 / 130 / 131 / 136 /
-142 / 900; the heartbeat; the 1001 base-feedback frame with measured
+142 / 900; the pan-tilt (3.220: T=4 / 133 / 134 / 135 / 137, the module
+type, the servos' travel and the angle in the feedback); the heartbeat; the 1001 base-feedback frame with measured
 speeds and the `odl`/`odr` odometers; integer encoder counts; a reboot
 (`reboot()`); a lossy wire (`drop_rate`). What it does not: the PID's
 dynamics (it is ideal: the wheel reaches its setpoint within one board loop)
-including its `THRESHOLD_PWM` deadband, the IMU (zeros), the OLED, servos.
+including its `THRESHOLD_PWM` deadband, the IMU (zeros), the OLED, the arm's servos.
 Its battery (3.70 E4) holds 12.00 V unless given a drain: a straight line
 in time, not a discharge curve -- enough to cross a mission's floor -- and,
 since 3.137, optionally the board's 10 s refresh and a sag under motor
@@ -78,6 +79,42 @@ DEFAULT_HEARTBEAT_MS = 3000
 # "stock" is ugv_base_ros @ 2e7df97; "fork" adds firmware/ugv_base_ros/'s
 # patch (3.28).
 FIRMWARES = ("stock", "fork")
+
+# 3.220, gimbal_module.h. The bus servos' ticks: 4096 a turn, 2047 centred
+# (gimbalCtrlSimple(): pos = 2047 + map(X, 0, 360, 0, 4095)).
+SERVO_CENTRE = 2047
+SERVO_TICKS = 4095
+GIMBAL_X_RANGE = (-180, 180)     # constrainFloat(Xinput, -180, 180)
+GIMBAL_Y_RANGE = (-30, 90)       # constrainFloat(Yinput, -30, 90)
+STEADY_Y_RANGE = (-45, 90)       # gimbalSteadySet()
+# How fast a gimbal servo travels: the ST3215's no-load 0.222 s per 60 deg
+# at 12 V [V, Feetech's sheet] is 270 deg/s; SPD 0 is its top speed. [I]
+# that the camera's small load leaves it there.
+GIMBAL_DEG_PER_S = 270.0
+# json_cmd.h CMD_MODULE_TYPE: 0 nothing, 1 RoArm-M2, 2 Gimbal. This
+# project's Rover boots in 0 (its saved boot mission: {"T":900,"main":2,
+# "module":0}); SIM_BOARD_MODULE sets another.
+MODULE_GIMBAL = 2
+
+
+def _arduino_map(x, in_min, in_max, out_min, out_max) -> int:
+    """Arduino's `long map(long x, ...)`: the float argument is converted to
+    a long (truncated toward zero) and the division is C's (also toward
+    zero) -- so a goal is whole degrees, and not quite a tick per degree."""
+    num = (int(x) - in_min) * (out_max - out_min)
+    den = in_max - in_min
+    q = abs(num) // abs(den)
+    return (q if (num >= 0) == (den > 0) else -q) + out_min
+
+
+def _pan_angle(pos: float) -> float:
+    """panAngleCompute(): mapFloat(pos - 2047, 0, 4095, 0, 360)."""
+    return (pos - SERVO_CENTRE) * 360.0 / SERVO_TICKS
+
+
+def _tilt_angle(pos: float) -> float:
+    """tiltAngleCompute(): mapFloat(2047 - pos, 0, 4095, 0, 360)."""
+    return (SERVO_CENTRE - pos) * 360.0 / SERVO_TICKS
 DEFAULT_FEEDBACK_INTERVAL_MS = 50
 # The board's side of the wire: what may wait, unread by the host, before
 # whole lines start being lost (a USB-serial bridge's buffer, roughly).
@@ -110,7 +147,8 @@ class FakeEsp32:
 
     def __init__(self, body, main_type: int = 2, drop_rate: float = 0.0,
                  seed: int = 0, firmware: Optional[str] = None, millis_at_boot: int = 0,
-                 battery_v: Optional[float] = None, drain_v_per_s: Optional[float] = None):
+                 battery_v: Optional[float] = None, drain_v_per_s: Optional[float] = None,
+                 module_type: Optional[int] = None):
         # Unnamed, the firmware is SIM_BOARD_FIRMWARE's (default "stock"), so
         # any suite that builds a board can be re-run over the fork (3.28).
         firmware = firmware or os.environ.get("SIM_BOARD_FIRMWARE", "stock")
@@ -147,6 +185,18 @@ class FakeEsp32:
         self.lock = threading.Lock()
         self._raw_counts_at_boot = [0, 0]
         self._load_main_type(main_type)
+        # 3.220: the module type in the boot mission (T:900 writes it; T:4
+        # changes only the running one), and the gimbal's two servos, which
+        # are not the ESP32: a board reboot leaves them where they are.
+        self.saved_module = int(module_type if module_type is not None
+                                else os.environ.get("SIM_BOARD_MODULE", "0") or 0)
+        self.servo_pos = [float(SERVO_CENTRE), float(SERVO_CENTRE)]    # [pan, tilt]
+        self.servo_goal = [SERVO_CENTRE, SERVO_CENTRE]
+        self.gimbal_commands = []       # every gimbal command handled, for tests
+        # Whether a gimbal command has moved the servos since this board was
+        # made: only then does the board own the body's camera pan (before,
+        # the body server's /look still sets it, as it did before 3.220).
+        self.gimbal_driven = False
         self._boot()
         self._master, slave = os.openpty()
         tty.setraw(slave)
@@ -184,6 +234,9 @@ class FakeEsp32:
         self.pwm = [0, 0]
         self.use_pid = True                       # bool usePIDCompute = true;
         self.measured = [0.0, 0.0]                # speedGetA / speedGetB
+        self.module_type = self.saved_module      # setup(): mm_settings(mainType, moduleType)
+        self.steady = False                       # bool steadyMode = false;
+        self.steady_y = 0.0
         raw = self._raw_counts()
         self._raw_counts_at_boot = raw
         self._last_counts = [0, 0]
@@ -328,8 +381,61 @@ class FakeEsp32:
                 # CMD_FEEDBACK_FLOW_INTERVAL: feedbackFlowExtraDelay = abs(cmd)
                 self.feedback_interval_ms = abs(int(cmd.get("cmd", DEFAULT_FEEDBACK_INTERVAL_MS)))
             elif t == 900:
-                # CMD_MM_TYPE_SET -> mm_settings(main, module)
+                # CMD_MM_TYPE_SET -> mm_settings(main, module); saveMainTypeModuleTpye()
                 self._load_main_type(int(cmd.get("main", self.main_type)))
+                self.module_type = self.saved_module = int(cmd.get("module", 0))
+            elif t == 4:
+                # CMD_MODULE_TYPE -> changeModuleType(): RAM only, lost on reboot
+                self.module_type = int(cmd.get("cmd", 0))
+            elif t in (133, 134):
+                # CMD_GIMBAL_CTRL_SIMPLE / _MOVE: obeyed in any module type
+                # (uart_ctrl.h dispatches them unconditionally).
+                self.gimbal_commands.append(cmd)
+                self._gimbal_goal(cmd.get("X", 0), cmd.get("Y", 0))
+            elif t == 135:
+                # CMD_GIMBAL_CTRL_STOP -> gimbalCtrlStop(): torque off 3 ms,
+                # then on -- a servo re-enabled holds where it is.
+                self.gimbal_commands.append(cmd)
+                self.servo_goal = [round(p) for p in self.servo_pos]
+            elif t == 137:
+                # CMD_GIMBAL_STEADY -> gimbalSteadySet(s, y)
+                self.steady = bool(cmd.get("s"))
+                self.steady_y = max(STEADY_Y_RANGE[0], min(STEADY_Y_RANGE[1],
+                                                           float(cmd.get("y", 0))))
+
+    def _gimbal_goal(self, x, y):
+        """gimbalCtrlSimple() / gimbalCtrlMove(): clamp, then map to ticks.
+        ArduinoJson reads a missing or non-number field as 0."""
+        x = float(x) if _number(x) else 0.0
+        y = float(y) if _number(y) else 0.0
+        x = max(GIMBAL_X_RANGE[0], min(GIMBAL_X_RANGE[1], x))
+        y = max(GIMBAL_Y_RANGE[0], min(GIMBAL_Y_RANGE[1], y))
+        self.servo_goal = [SERVO_CENTRE + _arduino_map(x, 0, 360, 0, SERVO_TICKS),
+                           SERVO_CENTRE - _arduino_map(y, 0, 360, 0, SERVO_TICKS)]
+        self.gimbal_driven = True
+
+    @property
+    def gimbal_angles(self):
+        """(pan, tilt) in degrees as the firmware computes them from the
+        servos' positions: the truth the feedback reports."""
+        return _pan_angle(self.servo_pos[0]), _tilt_angle(self.servo_pos[1])
+
+    def _servos(self, dt: float):
+        """The two servos travel toward their goals at GIMBAL_DEG_PER_S, and
+        the body's camera follows the pan servo (the firmware's +X taken as
+        clockwise, as `robot/hardware_robot.py`'s PAN_SIGN)."""
+        if self.module_type == MODULE_GIMBAL and self.steady:
+            # ROS_Driver.ino moduleType_Gimbal() -> gimbalSteady(): the IMU's
+            # pitch is zero here.
+            self._gimbal_goal(0, self.steady_y)
+        step = GIMBAL_DEG_PER_S * dt * SERVO_TICKS / 360.0
+        for i in range(2):
+            gap = self.servo_goal[i] - self.servo_pos[i]
+            self.servo_pos[i] += max(-step, min(step, gap))
+        world = getattr(self.body, "world", None)
+        if self.gimbal_driven and world is not None and hasattr(world, "pan"):
+            # grid_world's pan is in units of PAN_ANGLE_RAD (90 deg).
+            world.pan = self.gimbal_angles[0] / 90.0
 
     def _touch(self):
         self.heartbeat_stopped = False
@@ -374,6 +480,10 @@ class FakeEsp32:
                  "mx": 0, "my": 0, "mz": 0,
                  "odl": odl, "odr": odr,
                  "v": int(self.battery_v() * 100)}   # int v_int = (int)(loadVoltage_V * 100);
+        if self.module_type == MODULE_GIMBAL:
+            # baseInfoFeedback(): case 2: pan/tilt from the servos' positions
+            pan, tilt = self.gimbal_angles
+            frame["pan"], frame["tilt"] = round(pan, 4), round(tilt, 4)
         if self.firmware == "fork":
             frame["odlt"], frame["odrt"] = self._odometers_tenth_mm(self.counts)
             frame["ms"] = self.millis()               # last_feedback_time = millis();
@@ -395,6 +505,7 @@ class FakeEsp32:
                 speeds = self._wheel_speeds()
                 self.body.set_wheel_velocity(speeds[0] / radius, speeds[1] / radius)
                 self.body.advance(dt)
+                self._servos(dt)
                 # getLeftSpeed(): speedGetA = plusesRate * (count - lastCount) / dt
                 # -- MEASURED, so a whole number of edges per loop.
                 counts = self.counts

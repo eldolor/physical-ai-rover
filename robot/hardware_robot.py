@@ -18,7 +18,8 @@ this exactly as they talk to `MockRobot`. The serial port belongs HERE, not
 to a ROS plugin, so `robot/safety.py` stays the last word on every path
 (3.15, 3.16).
 
-**The board is only the motors.** Camera, lidar and depth are other devices;
+**The board is the motors and the camera's pan-tilt** (3.220; only the
+motors until then). Camera, lidar and depth are other devices;
 until their drivers exist, `sensors` supplies them -- a real driver on the
 robot, the simulated body in the sim (`sim/fake_esp32.py` turns that body's
 wheels). With no `sensors` every sensing method answers the interface's
@@ -58,6 +59,14 @@ set, every command goes to the board's web route through
 `robot/board_http.py` instead of down the port; feedback still arrives on
 the port. A route with a command undelivered for `COMMAND_STALE_S` refuses
 motion exactly as stale feedback does.
+
+**The camera's pan-tilt** (3.220, behind `gimbal`): the gimbal's two bus
+servos hang off this board. A look sends one `T:133`; where the camera
+points is the board's MEASURED angle (`pan`/`tilt` in the `1001` frame,
+which the firmware reports only in module type 2 -- the set-up's `T:4`
+turns that on for this boot, never rewriting the boot mission), never the
+angle commanded. No fresh measured angle, or a goal not reached in
+`PAN_SETTLE_TIMEOUT_S`, and the pan is unknown (`None`), never a guess.
 """
 
 import collections
@@ -118,6 +127,30 @@ FEEDBACK_STALE_S = 0.25
 MOVE_M = 0.30
 MOVES_PER_SECOND_AT_FULL_SPEED = 2.0
 
+# 3.220: the pan-tilt. A look's pan, as the simulator's (grid_world's
+# PAN_ANGLE_RAD), so a peek means the same on both; it is also the URDF's
+# `pan_limit`, set by the camera's cable, and no command goes past it.
+# [PLACEHOLDER] until the board step (3.220 criterion 6).
+LOOK_PAN_DEG = 90.0
+PAN_LIMIT_DEG = 90.0
+# A look holds the camera level; any tilt is clamped here. -30 is the
+# firmware's own floor (gimbalCtrlSimple()); +30 [PLACEHOLDER].
+LOOK_TILT_DEG = 0.0
+TILT_LIMITS_DEG = (-30.0, 30.0)
+# The firmware's +X taken as clockwise (to the right), our `pan_deg`'s
+# sense. [PLACEHOLDER] +1 until a look is watched on the board.
+PAN_SIGN = 1
+# Measured within this of the goal: reached. The command is whole degrees
+# (Arduino's map() truncates) and a servo tick is 0.088 deg.
+PAN_SETTLED_DEG = 3.0
+# A goal not reached in this long: the command was lost (a Wi-Fi request
+# the board never ran) or the servo is not moving. A 90 deg swing takes the
+# ST3215 about 0.35 s at its top speed; the rest is the route's retries.
+PAN_SETTLE_TIMEOUT_S = 1.5
+# The module type whose feedback carries the gimbal's angle (json_cmd.h
+# CMD_MODULE_TYPE: 0 nothing, 1 RoArm, 2 Gimbal).
+GIMBAL_MODULE = 2
+
 
 # 3.28-3.29: our firmware fork adds `odlt`/`odrt` (the odometers in whole
 # tenths of a millimetre -- finer than one 0.38 mm encoder edge, so none is
@@ -145,6 +178,10 @@ def _bucket_centre(odo: int, unit: float = CM) -> float:
     return (lo + hi) / 2.0
 
 
+def _finite_number(v) -> bool:
+    return isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v)
+
+
 def _fork_keys(frame: dict):
     """(odometers in tenths of a mm, ms) if the frame is the fork's, else
     None. All three or none: a partial set is treated as stock."""
@@ -157,7 +194,7 @@ def _fork_keys(frame: dict):
 class HardwareRobot(RobotInterface):
     def __init__(self, port: str, sensors: Optional[RobotInterface] = None,
                  baud: int = 115200, track_scrub: float = 1.0, lidar=None, camera=None,
-                 command_url: Optional[str] = None):
+                 command_url: Optional[str] = None, gimbal: bool = False):
         if not track_scrub > 0:
             raise ValueError(f"track_scrub must be positive, got {track_scrub!r}")
         self.port = port
@@ -186,6 +223,17 @@ class HardwareRobot(RobotInterface):
         self._track_m = TRACK_WIDTH_M * self.track_scrub
         # 3.217: commands over the board's web route; None is the serial line.
         self._http = HttpCommandSender(command_url) if command_url else None
+        # 3.220: the pan-tilt, driven from here (off: the looks are `sensors'`).
+        self.gimbal = bool(gimbal)
+        self._pan_goal: Optional[float] = None      # deg, cw+, as last commanded
+        self._tilt_goal = LOOK_TILT_DEG
+        self._pan_goal_at: Optional[float] = None
+        self._pan_reached = False
+        self._pan_meas: Optional[float] = None      # deg, cw+, the board's measurement
+        self._tilt_meas: Optional[float] = None
+        self._pan_meas_at: Optional[float] = None
+        self.gimbal_fault: Optional[str] = None
+        self.gimbal_commands = 0
         try:
             self._fd = os.open(port, os.O_RDWR | os.O_NOCTTY)
             tty.setraw(self._fd)
@@ -238,6 +286,12 @@ class HardwareRobot(RobotInterface):
         after the board reboots, which forgets both."""
         self._send({"T": 136, "cmd": HEARTBEAT_MS})
         self._send({"T": 131, "cmd": 1})
+        if self.gimbal:
+            # 3.220: the angle in the feedback, for this boot only (T:4 is
+            # RAM; T:900 would rewrite the boot mission), and the camera
+            # level and ahead, so a restart never leaves it panned unknown.
+            self._send({"T": 4, "cmd": GIMBAL_MODULE})
+            self._point(0.0)
 
     # ---------- the wire ----------
 
@@ -296,6 +350,7 @@ class HardwareRobot(RobotInterface):
                     "track_scrub": self.track_scrub,
                     "link_error": self.link_error,
                     "command_route": "serial" if self._http is None else "http",
+                    "gimbal": self._gimbal_locked(time.monotonic()) if self.gimbal else None,
                     "command": None if self._http is None else self._http.status()}
 
     def _reader(self):
@@ -407,6 +462,11 @@ class HardwareRobot(RobotInterface):
             volts = v / 100.0 if isinstance(v, (int, float)) and not isinstance(v, bool) else None
             self._battery_v = (volts if volts is not None
                                and BATTERY_PLAUSIBLE_V[0] <= volts <= BATTERY_PLAUSIBLE_V[1] else None)
+            if self.gimbal:
+                pan, tilt = frame.get("pan"), frame.get("tilt")
+                if _finite_number(pan) and _finite_number(tilt):
+                    self._pan_meas, self._tilt_meas = PAN_SIGN * float(pan), float(tilt)
+                    self._pan_meas_at = now
             self._last_frame_at = now
             self.frames += 1
             if fork is not None:
@@ -705,24 +765,95 @@ class HardwareRobot(RobotInterface):
             self.set_wheel_velocity(0.0, 0.0)      # never raises: see _send()
         return {"action": "stop"}
 
-    # ---------- everything the board is not ----------
+    # ---------- the pan-tilt (3.220) ----------
+
+    def _gimbal_locked(self, now: float) -> dict:
+        """Where the camera points, as the board MEASURED it -- under `_lock`.
+        Settles the goal (reached, or a fault past `PAN_SETTLE_TIMEOUT_S`)."""
+        fresh = (self._pan_meas_at is not None and self._fresh()
+                 and now - self._pan_meas_at <= FEEDBACK_STALE_S)
+        if self._pan_goal is not None and not self._pan_reached:
+            if (fresh and abs(self._pan_meas - self._pan_goal) <= PAN_SETTLED_DEG
+                    and abs(self._tilt_meas - self._tilt_goal) <= PAN_SETTLED_DEG):
+                self._pan_reached, self.gimbal_fault = True, None
+            elif now - self._pan_goal_at > PAN_SETTLE_TIMEOUT_S and self.gimbal_fault is None:
+                self.gimbal_fault = (
+                    f"the camera did not reach pan {self._pan_goal:g} deg in "
+                    f"{PAN_SETTLE_TIMEOUT_S:g} s (measured "
+                    f"{'none' if not fresh else format(self._pan_meas, '.1f')}): "
+                    "a lost command or a servo that is not moving")
+        known = fresh and self.gimbal_fault is None
+        return {"pan_deg": round(self._pan_meas, 2) if known else None,
+                "tilt_deg": round(self._tilt_meas, 2) if known else None,
+                "measured": fresh,
+                "goal_pan_deg": self._pan_goal,
+                "settled": bool(known and self._pan_reached),
+                "fault": self.gimbal_fault,
+                "commands": self.gimbal_commands}
+
+    def gimbal_status(self) -> Optional[dict]:
+        """The camera's measured pan and tilt, or None with no gimbal."""
+        if not self.gimbal:
+            return None
+        with self._lock:
+            return self._gimbal_locked(time.monotonic())
+
+    def _point(self, pan_deg: float, tilt_deg: float = LOOK_TILT_DEG) -> bool:
+        """Send one gimbal goal, clamped to the limits (whole degrees: the
+        firmware truncates to them anyway). False if the line refused it."""
+        pan = max(-PAN_LIMIT_DEG, min(PAN_LIMIT_DEG, float(pan_deg)))
+        tilt = max(TILT_LIMITS_DEG[0], min(TILT_LIMITS_DEG[1], float(tilt_deg)))
+        pan, tilt = float(round(pan)), float(round(tilt))
+        with self._write_lock:
+            with self._lock:
+                self._pan_goal, self._tilt_goal = pan, tilt
+                self._pan_goal_at = time.monotonic()
+                self._pan_reached = False
+                self.gimbal_commands += 1
+            return self._send({"T": 133, "X": int(PAN_SIGN * pan), "Y": int(tilt),
+                               "SPD": 0, "ACC": 0})
+
+    def _look(self, action: str, side: int) -> dict:
+        if not self.gimbal:
+            if self.sensors:
+                return getattr(self.sensors, action)()
+            return {"pan": None}
+        with self._lock:
+            before = self._gimbal_locked(time.monotonic())
+        if not before["measured"]:
+            # Never move the camera to an angle nobody could then report.
+            return {"action": action, "pan": None, "pan_deg": None, "settled": False,
+                    "reason": "gimbal_unmeasured: the board is not reporting the "
+                              "camera's angle (module type, or stale feedback)"}
+        sent = self._point(side * LOOK_PAN_DEG)
+        with self._lock:
+            now = self._gimbal_locked(time.monotonic())
+        return {"action": action, "pan": side, "sent": sent, **now}
 
     def look_left(self) -> dict:
-        return self.sensors.look_left() if self.sensors else {"pan": None}
+        return self._look("look_left", -1)
 
     def look_right(self) -> dict:
-        return self.sensors.look_right() if self.sensors else {"pan": None}
+        return self._look("look_right", 1)
 
     def look_center(self) -> dict:
-        return self.sensors.look_center() if self.sensors else {"pan": None}
+        return self._look("look_center", 0)
 
     def get_camera_frame(self) -> dict:
         if self.camera is not None:
-            return self.camera.get_camera_frame()
-        if self.sensors is None:
+            frame = self.camera.get_camera_frame()
+        elif self.sensors is None:
             raise RuntimeError("no camera driver -- set ROBOT_CAMERA (3.90 A); "
-                               "the board is only the motors")
-        return self.sensors.get_camera_frame()
+                               "the board does not see")
+        else:
+            frame = self.sensors.get_camera_frame()
+        g = self.gimbal_status()
+        if g is not None:
+            # 3.220: the measured angle, or None -- never the commanded one.
+            frame = {**frame, "pan_deg": g["pan_deg"], "tilt_deg": g["tilt_deg"]}
+        return frame
+
+    # ---------- the sensors, which are not the board's ----------
 
     def get_distance(self) -> float:
         return self.sensors.get_distance() if self.sensors else 0.0

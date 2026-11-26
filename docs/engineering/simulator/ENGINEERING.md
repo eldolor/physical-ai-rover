@@ -191,7 +191,7 @@ Routes of the split simulator's programs (3.36; all but `/health` behind
 | Program, method, path | Response |
 |---|---|
 | body, `GET /health` | `{ok, identity, board_path, sim_map, state_shm, board_frames_out, state_publishes}` |
-| body, `POST /look/{side}` | Pans the camera (`left`, `right`, `center`; 404 otherwise) and publishes at once, so the next sensor read sees the pan |
+| body, `POST /look/{side}` | Pans the camera (`left`, `right`, `center`; 404 otherwise) and publishes at once, so the next sensor read sees the pan. Once the fake board has had a gimbal command (3.220: the robot server's default under `SIM_MOTOR_BOARD=fake`) the board's pan servo sets the pan every loop instead |
 | body, `GET /truth` | `MockWorld.get_truth()` over the body's house: what the robot server's `/world/truth` answers with |
 | body, `GET /sim/objects`, `POST /sim/objects/move` | As on the robot server (both compute it with `GridWorld.describe_objects()`) |
 | sensors, `GET /health` | `{ok, pid, house, seq}`; `ok: false` while no consistent snapshot is readable |

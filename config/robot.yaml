@@ -88,6 +88,11 @@ hardware:
   # ROBOT_CAMERA wins. Unset: no camera driver. [PLACEHOLDER] until the
   # Rover's udev names exist (HARDWARE-READINESS.md section 5).
   # camera_device: /dev/picar-camera
+  # 3.220: the robot server drives the camera's pan-tilt through the board
+  # (T:133), reading the angle back from its feedback (the set-up's T:4
+  # turns that on for this boot only). Env ROBOT_GIMBAL wins. Off on the
+  # real board until 3.220's board step; the fake board defaults it on.
+  # gimbal: false
 
 # World state -- the map and the robot's pose on it (PLAN-mapping.md N1).
 # Read by world/factory.py, which is robot/factory.py's sibling.

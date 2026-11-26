@@ -80,6 +80,24 @@ def _track_scrub(config: dict) -> float:
     return float(raw)
 
 
+def _gimbal(config: dict, default: bool) -> bool:
+    """3.220: whether the robot server drives the pan-tilt through the board.
+    ROBOT_GIMBAL ("1"/"0") wins over `hardware.gimbal`; "" is unset."""
+    raw = os.environ.get("ROBOT_GIMBAL") or None
+    if raw is None:
+        raw = (config.get("hardware") or {}).get("gimbal")
+    if raw is None:
+        return default
+    if isinstance(raw, bool):
+        return raw
+    text = str(raw).strip().lower()
+    if text in ("1", "true", "yes", "on"):
+        return True
+    if text in ("0", "false", "no", "off"):
+        return False
+    raise ValueError(f"ROBOT_GIMBAL / hardware.gimbal must be on or off, got {raw!r}")
+
+
 def get_robot(config_path: str | Path = _DEFAULT_CONFIG) -> RobotInterface:
     config = load_config(config_path)
     return _with_drive(_backend(config), config)
@@ -226,7 +244,10 @@ def _backend(config: dict) -> RobotInterface:
             lidar = _lidar(config)
             camera = _camera(config)
             try:
+                # 3.220: the fake board models the gimbal, so the sim drives
+                # it the car's way unless ROBOT_GIMBAL=0 says otherwise.
                 return HardwareRobot(sensors.board_path, sensors=sensors, track_scrub=1.0,
+                                     gimbal=_gimbal(config, default=True),
                                      **({"lidar": lidar} if lidar else {}),
                                      **({"camera": camera} if camera else {}))
             except Exception:
@@ -243,7 +264,9 @@ def _backend(config: dict) -> RobotInterface:
         lidar = _lidar(config)
         camera = _camera(config)
         try:
+            # 3.220: off on a real board until its step (criterion 6) is run.
             return HardwareRobot(port, track_scrub=_track_scrub(config),
+                                 gimbal=_gimbal(config, default=False),
                                  **({"command_url": command_url} if command_url else {}),
                                  **({"lidar": lidar} if lidar else {}),
                                  **({"camera": camera} if camera else {}))

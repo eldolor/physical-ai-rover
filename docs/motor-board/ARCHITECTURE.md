@@ -236,7 +236,7 @@ better than the board hides exactly what it exists to find.
 have: a close that hangs while a read is blocked, a reader too slow for the
 feedback rate, partial lines (3.16, 3.25).
 
-### D9. The board is only the motors
+### D9. The board is the motors and the camera's pan-tilt; every other sensor is not
 
 **Decision.** The camera, lidar and depth camera are separate devices, with
 their own drivers, and none of them is this domain's. The lidar driver
@@ -248,6 +248,19 @@ obstacle at zero range, which refuses every forward move, and a request
 for a camera frame with no camera driver fails rather than answering
 "unusable". Where the lidar driver lives is decided by the
 [ros architecture](../ros/ARCHITECTURE.md) (D3).
+
+**Revised 2026-11-26** (`PLAN-ros-alignment.md` 3.220; until then "the
+board is only the motors"). The camera's two pan-tilt servos hang off this
+board's servo bus, so the gimbal is this domain's: the look verbs send the
+board a gimbal goal, behind a switch that is off on the real board until
+3.220's board step has been run with the user. **Where the camera points
+is the board's measured angle, never the commanded one**: the firmware
+reports it in its feedback only in the gimbal module type, which the host
+turns on for the boot it is in (a RAM-only command), never by rewriting
+the board's saved boot mission. With no measured angle, a look moves
+nothing and the pan is unknown, not assumed. The safety layer never reads
+the gimbal: on the Rover no safety sensor pans, and a sensor that does pan
+publishes its own pan (3.18).
 
 ### D10. A board that cannot hear serial may take commands over its web route, as a stopgap
 
