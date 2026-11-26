@@ -86,6 +86,7 @@ def test_the_rover_box_is_inside_the_outline_by_the_margin():
 
 
 @pytest.mark.parametrize("bad", [(-7.1, 3.2, -11.2, 8.5), (-12.5, 0, 0, 1), (1, 0, 0, 1),
+                                 (-2, 5, -1, 1),      # reaches ahead of the lidar (x 4 cm)
                                  (0, 1, 0, float("nan")), (0, 1, 2), "a,b,c,d"])
 def test_a_box_outside_the_outline_or_malformed_is_refused(bad):
     with pytest.raises(ValueError):
@@ -116,7 +117,10 @@ def test_scans_with_nothing_in_the_box_give_identical_answers():
         boxed = SafetyController(_Body(ranges), self_box_cm=ROVER_BOX)
         for d in (+1, -1):
             assert plain.footprint_clearance(d) == boxed.footprint_clearance(d), (trial, d)
-        assert plain.reverse_clearance() == boxed.reverse_clearance(), trial
+        # Amendment 1 (2026-11-26, after the reviews, before re-running):
+        # with a box set, EVERY reverse is astern_occluded -- the mast hides
+        # the rear whether or not a scan caught a return off it.
+        assert boxed.reverse_clearance() == (0.0, "astern_occluded"), trial
         omega = rng.choice((-1.2, -0.4, 0.4, 1.2))
         assert plain.pivot_scale(omega) == boxed.pivot_scale(omega), trial
 
@@ -126,6 +130,92 @@ def test_scans_with_nothing_in_the_box_give_identical_answers():
 def test_reverse_is_refused_as_occluded_while_the_mast_is_seen():
     safety = SafetyController(_Body(_recorded("median_cm")), self_box_cm=ROVER_BOX)
     assert safety.reverse_clearance() == (0.0, "astern_occluded")
+
+
+def test_a_scan_that_missed_the_mast_still_refuses_reverse():
+    # Thermos finding 1: a revolution with no return off the mast read its
+    # shadow as clear astern.
+    safety = SafetyController(_Body([None] * 360), self_box_cm=ROVER_BOX)
+    assert safety.reverse_clearance() == (0.0, "astern_occluded")
+
+
+# ---- the brain's controller judges the scan as the server does --------------
+
+class _RemoteLike(_Body):
+    def __init__(self, ranges, box):
+        super().__init__(ranges)
+        self.box = box
+
+    def lidar_self_box_cm(self):
+        if isinstance(self.box, Exception):
+            raise self.box
+        return self.box
+
+
+def test_a_controller_without_a_box_asks_the_body():
+    # Code review finding 1: the brain's controller had no box and refused
+    # every forward move the server allowed.
+    ranges = _recorded("median_cm")
+    asked = SafetyController(_RemoteLike(ranges, list(ROVER_BOX)))
+    assert asked.self_box_cm == ROVER_BOX
+    assert asked.footprint_clearance(+1) == (None, "scan_footprint_no_target")
+
+
+@pytest.mark.parametrize("answer", [None, OSError("down"), [1, 2], "nonsense", (-2, 5, -1, 1)])
+def test_a_body_that_cannot_give_a_valid_box_gives_none(answer):
+    ranges = _recorded("median_cm")
+    safety = SafetyController(_RemoteLike(ranges, answer))
+    assert safety.self_box_cm is None
+    assert safety.footprint_clearance(+1) == (0.0, "scan_footprint")    # refuses more, not less
+
+
+def test_remote_robot_reads_the_box_from_health():
+    from control.remote_robot import RemoteRobot
+
+    robot = RemoteRobot.__new__(RemoteRobot)
+    robot._request = lambda method, path, json=None: {"lidar_self_box_cm": list(ROVER_BOX)}
+    assert robot.lidar_self_box_cm() == list(ROVER_BOX)
+
+    def down(*a, **k):
+        raise OSError("refused")
+    robot._request = down
+    assert robot.lidar_self_box_cm() is None
+
+
+# ---- the robot server: config, environment, refusal -------------------------
+
+def _server(monkeypatch, tmp_path, yaml_box=None, env=None):
+    import yaml
+    from fastapi.testclient import TestClient
+    import robot.server as server
+
+    cfg = yaml.safe_load((Path(__file__).resolve().parents[1] / "config/robot.yaml").read_text())
+    cfg["mode"] = "sim"
+    if yaml_box is not None:
+        cfg.setdefault("safety", {})["lidar_self_box_cm"] = yaml_box
+    path = tmp_path / "robot.yaml"
+    path.write_text(yaml.safe_dump(cfg))
+    monkeypatch.delenv("ROBOT_MODE", raising=False)
+    monkeypatch.delenv("APP_SHARED_SECRET", raising=False)
+    if env is None:
+        monkeypatch.delenv("ROBOT_LIDAR_SELF_BOX_CM", raising=False)
+    else:
+        monkeypatch.setenv("ROBOT_LIDAR_SELF_BOX_CM", env)
+    return TestClient(server.create_app(str(path)))
+
+
+def test_the_server_reports_the_box_and_an_empty_variable_switches_it_off(monkeypatch, tmp_path):
+    with _server(monkeypatch, tmp_path, yaml_box=list(ROVER_BOX)) as client:
+        assert client.get("/health").json()["lidar_self_box_cm"] == list(ROVER_BOX)
+    with _server(monkeypatch, tmp_path, yaml_box=list(ROVER_BOX), env="") as client:
+        assert client.get("/health").json()["lidar_self_box_cm"] is None
+    with _server(monkeypatch, tmp_path, env="-7.1,3.2,-10.7,8.5") as client:
+        assert client.get("/health").json()["lidar_self_box_cm"] == list(ROVER_BOX)
+
+
+def test_the_server_refuses_to_start_on_a_bad_box(monkeypatch, tmp_path):
+    with pytest.raises(ValueError):
+        _server(monkeypatch, tmp_path, env="-7.1,3.2,-11.5,8.5")
 
 
 # ---- criterion 5: turns are not blocked by the mast -------------------------

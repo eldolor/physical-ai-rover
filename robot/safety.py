@@ -568,11 +568,27 @@ class _PivotRows:
         return None
 
 
+def _body_self_box(robot):
+    """The self box a body reports (`lidar_self_box_cm()`), or None when it
+    reports none, cannot be asked, or reports something that is not a valid
+    box: the controller then sees the whole scan, which refuses more, never
+    less."""
+    probe = getattr(type(robot), "lidar_self_box_cm", None)
+    if not callable(probe):
+        return None
+    try:
+        return self_box(robot.lidar_self_box_cm())
+    except Exception:  # noqa: BLE001 -- an unreadable box is no box
+        return None
+
+
 def self_box(value) -> Optional[Tuple[float, float, float, float]]:
     """3.218: `(x_min, x_max, y_min, y_max)` in cm, body frame (x ahead,
     y left), from a list or a "x0,x1,y0,y1" string; None for None or "".
     Raises ValueError unless it is a real box inside the chassis outline by
-    `SELF_BOX_EDGE_MIN_CM` on every side."""
+    `SELF_BOX_EDGE_MIN_CM` on every side, and not ahead of the lidar: the
+    box is for what the lidar sees BEHIND it, so it can never mask the front
+    half of the body (review, 3.218)."""
     if value is None or value == "":
         return None
     parts = value.split(",") if isinstance(value, str) else list(value)
@@ -586,6 +602,9 @@ def self_box(value) -> Optional[Tuple[float, float, float, float]]:
     if not (-hl <= x0 and x1 <= hl and -hw <= y0 and y1 <= hw):
         raise ValueError(f"the lidar self box {value!r} is not inside the chassis outline "
                          f"by {SELF_BOX_EDGE_MIN_CM} cm (x within +/-{hl:.2f}, y within +/-{hw:.2f})")
+    if x1 > LIDAR_X_M * 100.0:
+        raise ValueError(f"the lidar self box {value!r} reaches ahead of the lidar "
+                         f"(x_max must be <= {LIDAR_X_M * 100.0:.1f} cm)")
     return (x0, x1, y0, y1)
 
 
@@ -596,8 +615,13 @@ class SafetyController:
         self.min_distance_cm = min_distance_cm
         self.sensor_to_bumper_cm = sensor_to_bumper_cm
         # 3.218: the part of the robot its own lidar sees. Returns in it are
-        # not obstacles to a FORWARD move; astern they mean the lidar cannot
-        # see behind the body (`astern_occluded`). None: no such part.
+        # not obstacles to a FORWARD move, and with one configured the lidar
+        # cannot see behind the body: every reverse is `astern_occluded`.
+        # None: no such part. Unnamed here, the body is asked: the brain's
+        # controller reaches the robot server's box through `RemoteRobot`
+        # (review: it refused every forward move the server allowed).
+        if self_box_cm is None:
+            self_box_cm = _body_self_box(robot)
         self.self_box_cm = self_box(self_box_cm)
         # The straight verb in progress, as ASKED (3.44): its speed, and
         # whether it was asked at creep speed. The wheel loop reads these on
@@ -801,13 +825,6 @@ class SafetyController:
     def _in_self_box(self, xs, ys):
         x0, x1, y0, y1 = self.self_box_cm
         return (xs >= x0) & (xs <= x1) & (ys >= y0) & (ys <= y1)
-
-    def _sees_self(self, scan: Optional[dict]) -> bool:
-        """3.218: whether this scan has a return inside the self box."""
-        if self.self_box_cm is None or not scan or not scan.get("usable"):
-            return False
-        xs, ys = _ScanPoints.of(scan)
-        return bool(self._in_self_box(xs, ys).any())
 
     def pivot_scale(self, omega_rad_s: float, scan: Optional[dict] = None
                     ) -> Tuple[float, Optional[str]]:
@@ -1059,9 +1076,11 @@ class SafetyController:
         scan = self._scan()
         if self._blind(scan):
             return 0.0, "astern_not_observed"
-        if self._sees_self(scan):
-            # 3.218: the body's own mast hides what is behind it. Refused as
-            # what it is, not as an obstacle at a distance.
+        if self.self_box_cm is not None:
+            # 3.218: the body's own mast hides what is behind it, in every
+            # scan, whether or not this one caught a return off it (review:
+            # a revolution that missed the mast read the shadow as clear).
+            # Refused as what it is, not as an obstacle at a distance.
             return 0.0, "astern_occluded"
         return self._aged(self._nearer(self.rear_clearance(scan),
                                        self.footprint_clearance(-1, scan),

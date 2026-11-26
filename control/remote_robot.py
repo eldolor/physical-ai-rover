@@ -284,6 +284,16 @@ class RemoteRobot(RobotInterface):
             return None
         return name if isinstance(name, str) else None
 
+    def lidar_self_box_cm(self):
+        """3.218: the robot server's lidar self box (its /health's
+        `lidar_self_box_cm`), so the brain's own controller judges the scan
+        as the server does. None when there is none or it cannot be read:
+        the brain's controller then refuses more, never less."""
+        try:
+            return self._request("GET", "/health").get("lidar_self_box_cm")
+        except Exception:  # noqa: BLE001 -- no box is the conservative answer
+            return None
+
     # ---------- camera pan ----------
 
     def look_left(self) -> dict:

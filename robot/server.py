@@ -407,8 +407,10 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
     sensor_to_bumper = config.get("safety", {}).get("sensor_to_bumper_cm", 0.0)
     # 3.218: the part of the car its own lidar sees (the Rover's mast),
     # measured on the car; unset everywhere else. Validated at start.
-    self_box_cm = (os.environ.get("ROBOT_LIDAR_SELF_BOX_CM")
-                   or config.get("safety", {}).get("lidar_self_box_cm"))
+    # An empty variable switches a yaml box off (review).
+    self_box_cm = os.environ.get("ROBOT_LIDAR_SELF_BOX_CM")
+    if self_box_cm is None:
+        self_box_cm = config.get("safety", {}).get("lidar_self_box_cm")
     # Same resolution get_robot() uses internally -- reported in /health so
     # a client can tell "wrong deployment" (e.g. Robot view's "drive via
     # brain" pointed at a mode: sim server) apart from "not reachable at

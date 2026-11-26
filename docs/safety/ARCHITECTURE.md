@@ -208,10 +208,13 @@ itself backwards; it stops where it is. A person may still turn it.
 Rover's lidar sees the pan-tilt mast right behind it, inside the chassis
 outline, in every scan. A measured "self box" in the body frame names that
 part. Returns inside it are not obstacles to a FORWARD move: the mast is
-behind the lidar and moves with the body. Astern they mean what they are:
-the lidar cannot see behind the body, so a reverse is refused as
-`astern_occluded`, the same rule as "A body that cannot see astern does
-not reverse". Turns are judged on what the lidar sees: the mast never
+behind the lidar and moves with the body. Astern the mast means what it
+is: the lidar cannot see behind the body, so with a self box set every
+reverse is refused as `astern_occluded`, even in a scan that happened to
+miss the mast -- the same rule as "A body that cannot see astern does not
+reverse". The brain's own safety check judges the scan with the same box,
+read from the robot server; when it cannot read one it uses none, which
+refuses more, never less. Turns are judged on what the lidar sees: the mast never
 blocked one (a return inside the outline does not close under rotation),
 and the blind arc behind it counts as clear beyond the mast.
 
