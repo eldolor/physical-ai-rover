@@ -304,7 +304,15 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     return data.distance_cm;
   }
   async function fetchFrame() {
-    const raw = await apiGet("/frame");
+    let raw;
+    try {
+      raw = await apiGet("/frame");
+    } catch (e) {
+      // 3.220.B: no frame, no measured pan to vouch for (a robot whose pan
+      // is unknown refuses the frame): the badge must not outlive it.
+      renderPanBadge(null);
+      throw e;
+    }
     // No facing / free-cells / doorway / position any more: the server
     // stopped sending them with the cell layer (PLAN-ros-alignment.md). The
     // pose is GET /world/pose and clearance is GET /depth, both drawn below
@@ -1999,11 +2007,11 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       if (why !== "refused" && why !== "failed" && why !== "rejected") {
         logEntry(action + " held " + (held / 1000).toFixed(1) + " s", true, "", null);
       }
-      if (why !== "pagehide" && why !== "hidden" && why !== "disconnected") {
-        // Where the camera ended up, once the last step has landed.
-        setTimeout(function () {
-          fetchFrame().then(render).catch(function () { /* the next frame redraws */ });
-        }, LOOK_HOLD_STEP_MS);
+      if (hold.inFlight === 0 && why !== "pagehide" && why !== "hidden"
+          && why !== "disconnected") {
+        // Where the camera ended up. With a step still out, its loop
+        // fetches the frame once that step has landed instead (review).
+        fetchFrame().then(render).catch(function () { /* the next frame redraws */ });
       }
       return;
     }
@@ -2051,7 +2059,12 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       hold.inFlight++;
       try {
         const r = await sendAction("LOOK_STEP", DRIVER_DPAD, { angle: deg });
-        if (gen !== hold.gen) return;
+        if (gen !== hold.gen) {
+          // Ended while this step was out: show where it left the camera
+          // (holdEnd left the frame to us while a step was in flight).
+          try { render(await fetchFrame()); } catch (frameErr) { /* the next frame redraws */ }
+          return;
+        }
         if (r.executed === false) {
           logEntry(action + " (held)", false, refusalText(r), r.reason);
           holdEnd("refused");
@@ -2059,8 +2072,13 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
         }
         const res = r.result || {};
         if (res.pan === null || res.pan === undefined) {
-          // The body cannot pan by steps (or did not send it): stop asking.
+          // The body cannot pan by steps, or the step was not sent: say so,
+          // and let the release's click send the plain look (review).
+          logEntry(action + " (held)", false, res.reason || "the camera step was not sent",
+                   "rejected");
+          const btn = hold.btn;
           holdEnd("refused");
+          if (hold.swallowBtn === btn) hold.swallowBtn = null;
           return;
         }
         const goal = typeof res.goal_pan_deg === "number" ? res.goal_pan_deg
@@ -2068,6 +2086,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
         // The picture and the badge follow each step (nothing else fetches
         // a frame while a person holds a button).
         try { render(await fetchFrame()); } catch (frameErr) { /* the next frame redraws */ }
+        if (gen !== hold.gen || !hold.driving) return;     // ended, or replaced, meanwhile
         if (goal !== null && Math.abs(goal) >= LOOK_LIMIT_DEG - 0.5) {
           holdEnd("limit");
           return;
@@ -2078,6 +2097,9 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
           logEntry(action + " (held)", false,
                    (answered ? "refused: " : "not delivered: ") + (e.message || e),
                    answered ? "rejected" : "unreachable");
+          showToast(t(answered ? "drive.refused" : "drive.notSent",
+                      {action: actionWords(action), status: e.status, why: e.message || e}),
+                    "err");
           holdEnd(answered ? "rejected" : "failed");
         }
         return;
@@ -2144,6 +2166,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
 
   function setControlsEnabled(enabled) {
     if (!enabled) holdEnd("disconnected");   // 3.219
+    if (!enabled) renderPanBadge(null);      // 3.220.B
     hold.geometryFor = null;                 // a restarted server may be another body
     hold.rosFor = null;
     ["btn-forward", "btn-reverse", "btn-left", "btn-right", "btn-stop",

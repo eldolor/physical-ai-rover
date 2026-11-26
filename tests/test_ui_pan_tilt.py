@@ -206,10 +206,49 @@ def test_hiding_the_page_stops_the_pan(browser, private_twin_server):
 
 
 def test_closing_the_tab_stops_the_pan(browser, private_twin_server):
-    holder = {}
-
     def close(page, x, y):
-        holder["closed"] = True
         page.close(run_before_unload=False)
     _, took = _held_then(browser, private_twin_server, close)
     _check("closed", took)
+
+
+# ---------- from the reviews ----------
+
+def test_a_body_that_cannot_step_still_looks_on_release(browser, private_twin_server):
+    """A held look whose step comes back `pan: null` says so, and the
+    release's click sends the plain look verb (it was swallowed)."""
+    url = private_twin_server
+    page, _ = _open(browser, url)
+    _record(page)
+
+    def cannot(route):
+        body = route.request.post_data_json or {}
+        if body.get("action") == "LOOK_STEP":
+            route.fulfill(status=200, content_type="application/json",
+                          body='{"executed": true, "result": {"action": "look_step", '
+                               '"pan": null, "reason": "this body cannot pan the camera by steps"}}')
+        else:
+            route.continue_()
+    page.route("**/action", cannot)
+    _press(page, "#btn-look-left")
+    page.wait_for_timeout(700)
+    page.mouse.up()
+    page.wait_for_timeout(500)
+    actions = [p["body"].get("action") for p in _posts(page) if p["route"] == "/action"]
+    assert actions == ["LOOK_STEP", "LOOK_LEFT"], actions
+    assert "LOOK_LEFT (held)" in page.inner_text("#log")
+    assert "cannot pan" in (page.get_attribute("#log .entry", "title") or "")
+    page.close()
+
+
+def test_the_badge_does_not_outlive_a_refused_frame(browser, private_twin_server):
+    url = private_twin_server
+    page, _ = _open(browser, url)
+    page.click("#btn-look-right")
+    page.wait_for_function("() => !document.getElementById('pan-badge').hidden", timeout=5000)
+    page.route("**/frame", lambda route: route.fulfill(
+        status=503, content_type="application/json",
+        body='{"detail": "the camera\'s pan is unknown"}'))
+    page.click("#btn-look-left")
+    page.wait_for_function("() => document.getElementById('pan-badge').hidden", timeout=5000)
+    page.close()

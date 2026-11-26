@@ -64,7 +64,8 @@ applies: 401 `Missing or invalid x-app-secret header.` when
 
 Actions: `FORWARD`, `REVERSE`, `LEFT`, `RIGHT`, `STOP`, `LOOK_LEFT`,
 `LOOK_RIGHT`, `LOOK_CENTER`, and `LOOK_STEP` (3.220.B: `angle` the signed
-step in degrees, clockwise positive; camera-only, the twin's look hold).
+step in degrees, clockwise positive, and required: without it, 422, never
+the turn's default 90; camera-only, the twin's look hold).
 
 ### Body sensing (all secret, all GET)
 

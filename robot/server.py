@@ -112,7 +112,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from robot.factory import get_robot, load_config
 from robot.identity import configure_logging, log_identity
@@ -185,6 +185,14 @@ class ActionRequest(BaseModel):
     speed: int = 50
     duration: Finite = 0.5
     angle: int = 90
+
+    @model_validator(mode="after")
+    def _step_names_its_angle(self):
+        # 3.220.B: `angle` defaults to a turn's 90; a camera step sent without
+        # one would swing the camera a full quarter turn (review).
+        if self.action == "LOOK_STEP" and "angle" not in self.model_fields_set:
+            raise ValueError("LOOK_STEP needs an explicit `angle`, the signed step in degrees")
+        return self
 
 
 class WheelsRequest(BaseModel):

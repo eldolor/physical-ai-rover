@@ -393,3 +393,47 @@ def test_the_step_goes_through_the_vetted_action_route():
     r = client.post(ASGI_BASE_URL + "/action", json={"action": "LOOK_STEP", "angle": -30},
                     headers={"x-driver": "twin-dpad"}).json()
     assert r["executed"] is True and r["result"]["pan_deg"] == pytest.approx(-30)
+
+
+def test_a_step_without_an_angle_is_refused_not_a_quarter_turn():
+    from robot.server import create_app
+    from tests.conftest import ASGI_BASE_URL, asgi_client
+    client = asgi_client(create_app())
+    r = client.post(ASGI_BASE_URL + "/action", json={"action": "LOOK_STEP"},
+                    headers={"x-driver": "twin-dpad"})
+    assert r.status_code == 422
+    frame = client.get(ASGI_BASE_URL + "/frame").json()
+    assert frame["pan_deg"] == 0
+
+
+def test_a_step_after_a_lost_goal_starts_from_where_the_camera_is(board):
+    """A goal that faulted is not where the camera is: the next step adds
+    to the measured angle, not to the goal that never arrived."""
+    b, body = board
+    face = FakeEsp32Http(b)
+    bot = HardwareRobot(b.path, sensors=body, gimbal=True, command_url=face.url)
+    try:
+        assert _wait(lambda: (bot.gimbal_status() or {}).get("settled"))
+        face.lose_next(10_000, hang_s=0.15)
+        bot.look_left()
+        assert bot.gimbal_status()["fault"]
+        # The lost command is still queued on the route: let it go, as lost.
+        with bot._http._cond:
+            bot._http._setup.clear()
+        face.lose_next(0)
+        answer = bot.look_step(10)
+        assert answer["goal_pan_deg"] == pytest.approx(10, abs=1)
+        assert _wait(lambda: bot.gimbal_status()["settled"], 2.0)
+    finally:
+        bot.close()
+        face.close()
+
+
+def test_a_body_with_no_gimbal_and_no_sensors_answers_the_contract(board):
+    b, _ = board
+    bot = HardwareRobot(b.path)
+    try:
+        a = bot.look_step(10)
+        assert a["action"] == "look_step" and a["pan"] is None and a["reason"]
+    finally:
+        bot.close()
