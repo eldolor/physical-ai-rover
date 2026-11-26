@@ -350,10 +350,11 @@ class DepthCamera:
         self._thread.start()
 
     def _run(self) -> None:
-        geometry, last_good, bad = None, 0.0, 0
+        geometry, last_good, bad, phase = None, 0.0, 0, "open"
         while self._running:
             try:
                 if self._source is None:
+                    phase = "open"
                     self._source = self._open_source()
                     geometry = DepthGeometry(self._source.intrinsics(), self.mount, self.tuning)
                     with self._lock:
@@ -361,7 +362,7 @@ class DepthCamera:
                         self._reach = {"near_cm": geometry.near_cm,
                                        "max_range_cm": geometry.max_range_cm,
                                        "far_cm": geometry.far_cm}
-                    last_good, bad = self._monotonic(), 0
+                    last_good, bad, phase = self._monotonic(), 0, "read"
                 got = self._source.read()
                 if got is None:
                     if self._monotonic() - last_good > self.stall_s:
@@ -393,7 +394,7 @@ class DepthCamera:
                 if recovered:
                     logger.warning("%s: delivering again", self.name)
             except Exception as e:  # noqa: BLE001 -- a USB device may fail any way
-                self._note_failure(f"{'open' if self._source is None else 'read'}: {e}")
+                self._note_failure(f"{phase}: {e}")
                 self._close_source()
                 self._sleep(self.reopen_s)
         self._close_source()
