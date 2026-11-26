@@ -324,10 +324,12 @@ class Ld19Scanner:
     footprint sweep drive it directly."""
 
     def __init__(self, yaw_deg: float = LIDAR_YAW_DEG, stale_s: float = STALE_S,
-                 clock: Callable[[], float] = time.monotonic):
+                 clock: Callable[[], float] = time.monotonic,
+                 wall: Callable[[], float] = time.time):
         self.yaw_deg = yaw_deg
         self.stale_s = stale_s
         self.clock = clock
+        self.wall = wall
         self.parser = Parser()
         self._assembler = Assembler()
         self._lock = threading.Lock()
@@ -335,6 +337,7 @@ class Ld19Scanner:
         self._scan: Optional[dict] = None
         self._scan_oldest: Optional[float] = None
         self._scan_newest: Optional[float] = None
+        self._capture_unix: Optional[float] = None
         self._last_packet_at: Optional[float] = None
         self.revolutions = 0
         self.revolutions_unusable = 0
@@ -371,10 +374,17 @@ class Ld19Scanner:
                     oldest = self._prev_oldest       # some bins are a revolution older
                 self._prev_bins = bin_points(rev, self.yaw_deg)
                 self._prev_oldest = rev[0][2]
+                # 3.221: when THIS revolution was taken -- the midpoint of its
+                # own points (bins carried from the one before age the scan
+                # for the veto, not its stamp), on the wall clock, fixed once
+                # here so every read of it gives the same stamp.
+                mid = (rev[0][2] + rev[-1][2]) / 2.0
+                capture = self.wall() - (self.clock() - mid)
                 with self._lock:
                     self._scan = scan if scan["usable"] else None
                     self._scan_oldest = oldest
                     self._scan_newest = rev[-1][2]
+                    self._capture_unix = capture
                     self.revolutions += 1
                     if not scan["usable"]:
                         self.revolutions_unusable += 1
@@ -398,7 +408,8 @@ class Ld19Scanner:
         with self._lock:
             if not self._fresh(now):
                 return unusable_scan()
-            return dict(self._scan, ranges_m=list(self._scan["ranges_m"]))
+            return dict(self._scan, ranges_m=list(self._scan["ranges_m"]),
+                        capture_unix=self._capture_unix)
 
     def sensor_age_s(self) -> Optional[float]:
         """How old the scan's OLDEST point is: the safety layer subtracts the
@@ -409,18 +420,6 @@ class Ld19Scanner:
             if not self._fresh(now):
                 return None
             return max(0.0, now - self._scan_oldest)
-
-    def capture_age_s(self) -> Optional[float]:
-        """How long ago the current scan was TAKEN: the age of its revolution's
-        midpoint, halfway between its oldest and newest point (3.221). The
-        robot server stamps `/scan` with it, so SLAM pairs the scan with the
-        odometry of that moment and not of the request. None with no usable
-        scan."""
-        now = self.clock()
-        with self._lock:
-            if not self._fresh(now):
-                return None
-            return max(0.0, now - (self._scan_oldest + self._scan_newest) / 2.0)
 
     def scan_time(self) -> Optional[float]:
         """When the current scan's OLDEST point was taken, on this scanner's

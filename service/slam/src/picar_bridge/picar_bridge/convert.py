@@ -24,19 +24,35 @@ import math
 LASER_X_M = 0.040
 
 
-# Two capture stamps closer than this are one revolution read twice: the
-# D500 turns at 10 Hz, so distinct revolutions are ~100 ms apart, and one
-# revolution's stamp moves only by clock jitter between reads (3.221).
+# Two capture stamps closer than this are one revolution read twice (3.221).
+# The robot server fixes a revolution's stamp once, so a repeat is equal; the
+# D500 turns at 10 Hz, so distinct revolutions are ~100 ms apart.
 SAME_REVOLUTION_S = 0.03
 
 
 def same_revolution(stamp, last):
     """Whether a capture `stamp` repeats the revolution last sent at `last`
-    (None: nothing sent yet), or is older than it -- either way, not a new
-    scan. A clock stepped back by more than a second is a new start."""
+    (None: nothing sent yet). Only a stamp within SAME_REVOLUTION_S either
+    way: one further back is a clock that stepped (NTP on a board with no
+    RTC), and dropping everything until it caught up would starve SLAM."""
     if last is None:
         return False
-    return -1.0 < stamp - last < SAME_REVOLUTION_S
+    return abs(stamp - last) < SAME_REVOLUTION_S
+
+
+def self_box(value):
+    """The bridge's reading of the robot server's `lidar_self_box_cm`: a
+    tuple of four finite numbers with x_min < x_max and y_min < y_max, else
+    None (no box: nothing masked). The robot server validates its box; this
+    only keeps a malformed one from raising inside the scan timer."""
+    try:
+        box = tuple(float(v) for v in value)
+    except (TypeError, ValueError):
+        return None
+    if len(box) != 4 or not all(math.isfinite(v) for v in box) \
+            or not (box[0] < box[1] and box[2] < box[3]):
+        return None
+    return box
 
 
 def in_self_box(r, bearing_deg, box_cm):
@@ -64,7 +80,7 @@ def ros_ranges(ours, start_deg, inc_deg, self_box_cm=None):
     inside it is the robot's own body and becomes -inf. None: nothing is.
     """
     n = len(ours)
-    box = tuple(float(v) for v in self_box_cm) if self_box_cm else None
+    box = self_box(self_box_cm) if self_box_cm else None
     out = []
     for j in range(n):
         ours_deg = -(start_deg + j * inc_deg)

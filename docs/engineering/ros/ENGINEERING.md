@@ -179,11 +179,14 @@ differ by 0.5 s or more.
 Until 3.221 `stamp_unix` was the time of the robot server's REQUEST, which
 matched capture only for the simulator's instant scan; a real D500
 revolution is 50-150 ms old when served. Since 3.221 a body that knows its
-capture time (the LD19 reader, real or the fake on a pty) is stamped with
-its revolution's midpoint and `stamp_source: "capture"`; the simulator
-stays `"request"`. A capture stamp within `convert.SAME_REVOLUTION_S`
-(30 ms) of the last one sent, or older, is the same revolution polled
-again: it is not republished (`scans_repeated` in `/health`).
+capture time (the LD19 reader, real or the fake on a pty: `capture_unix`
+in its scan, the revolution's own midpoint on the wall clock, fixed when
+it completes) is stamped with it and `stamp_source: "capture"`; the
+simulator stays `"request"`. A capture stamp within
+`convert.SAME_REVOLUTION_S` (30 ms) either way of the last one sent is the
+same revolution polled again: it is not republished (`scans_repeated` in
+`/health`). One further back is a clock that stepped and is sent. A
+malformed box from the robot server masks nothing (`convert.self_box()`).
 
 **The robot's own body (3.221).** The robot server's `/scan` names the
 safety layer's self box (`lidar_self_box_cm`, 3.218: the Rover's mast,
@@ -519,7 +522,7 @@ Always-run tests (no Docker; counts from `pytest --collect-only`,
 | `tests/test_ros_verb_safety.py` | 7 | G2 through `tests/ros_verb_sweep.py`: travel-to-contact at least 18.0 cm after every move (0/1440 under, closest 19.73), no contact, a verb achieving under 1 cm or 0.5 deg is a refusal (0/252 unrefused), clear turns 100% within 0.64 deg (worst 0.49). |
 | `tests/test_ros_fallback.py` | 10 | G3 offline: the pulse, the person-only fallback, autonomy refused, recovery with no restart. Handoff 1d: a dead bridge behind a live plugin marks ROS down, and ROS is back once the bridge answers; the plugin's posts move nothing meanwhile, and `/health` names which half is down (2026-10-03). |
 | `tests/test_bridge_convert.py`, `tests/test_bridge_keepalive.py`, `tests/test_brain_view.py` | 18, 7, 28 | The bridge's plain-Python parts. |
-| `tests/test_rover_slam.py` | 17 | 3.221: the mast leaves for ROS as `-inf`, exactly the beams `robot/safety.py` puts in its box (the 92 recorded, 10,000 seeded scans), none with no box; a revolution polled twice is sent once; `/scan`'s capture stamp, its fall-backs to the request time, the box it carries, its own ranges unmasked. |
+| `tests/test_rover_slam.py` | 24 | 3.221: the mast leaves for ROS as `-inf`, exactly the beams `robot/safety.py` puts in its box (the 92 recorded, 10,000 seeded scans), none with no box or a malformed one; a revolution polled twice is sent once, a clock stepped back is not a repeat; `/scan`'s capture stamp (the revolution's own midpoint, fixed once, carried bins not moving it), its fall-backs to the request time, the box it carries, its own ranges unmasked. |
 | `tests/test_bridge_map_version.py` | 13 | 3.124: a repeat of the held grid keeps `version` (and its cells list; `last_map` still replaced whole); any change of session, resolution, size, origin or cell, or no held map, bumps it; versions never go down; driven through `_on_map` on the stubbed bridge. |
 | `tests/test_bridge_map_304.py` | 19 | 3.126: the tag helpers (one If-None-Match rule with the robot server's, `*` included); the real handler over HTTP answers 304 only for the current tag while `ready`, never for a cleared map or a reload being judged, and counts `map_replies`; `RosWorld` through that handler and against a scripted bridge: sends its tag, reuses the kept reply on a 304, one full read after a 304 naming another tag, a retryable fault for a 304 to an untagged request, a 304 with no ETag taken as the tag sent, an older reply never replacing a newer kept one, an untagged (old) bridge read in full. |
 | `tests/test_nav2_ready_gate.py` | 16 | 3.105, red-first: goals held (503, retryable, nothing sent or cancelled) until nav2's lifecycle manager answers active; held again on an inactive answer, no manager, a failed call or an ask unanswered in `NAV2_ASK_TIMEOUT_S` (a late answer to it ignored, and dropped from rclpy); slam.state and nav2 re-read after `wait_for_server` and before the cancel (a re-map or reset meanwhile leaves the live goal alone), and again under the lock before the send; `/health` `nav2`; a re-map or nav2 reset during the cancel sends nothing; the manager's name is the launch file's. |

@@ -123,9 +123,19 @@ def test_a_box_edge_is_inside_as_safety_counts_it():
 def test_a_revolution_read_twice_is_not_a_new_scan():
     assert not convert.same_revolution(100.0, None)
     assert convert.same_revolution(100.0004, 100.0)        # jitter
-    assert convert.same_revolution(99.95, 100.0)           # older: not new either
+    assert convert.same_revolution(100.0, 100.0)           # the server fixes a stamp once
     assert not convert.same_revolution(100.1, 100.0)       # the next revolution
-    assert not convert.same_revolution(95.0, 100.0)        # a clock stepped back
+    # Review: a clock stepped back, by any amount past jitter, is new -- never
+    # a run of dropped scans until the clock catches up.
+    assert not convert.same_revolution(99.95, 100.0)
+    assert not convert.same_revolution(95.0, 100.0)
+
+
+@pytest.mark.parametrize("bad", [[1, 2, 3], [1, 2, 3, 4, 5], ["a", 2, 3, 4], {"x": 1},
+                                 [3, 1, 2, 4], [float("nan"), 1, 2, 3], 7])
+def test_a_malformed_box_masks_nothing_and_never_raises(bad):
+    ours = _recorded("median_cm")
+    assert convert.ros_ranges(ours, -180.0, 1.0, bad) == convert.ros_ranges(ours, -180.0, 1.0)
 
 
 # ---- criteria 2 and 6a: the robot server's /scan -----------------------------
@@ -169,27 +179,25 @@ def test_the_scan_carries_the_box_and_is_never_masked_itself(monkeypatch, tmp_pa
     assert MockRobot  # the same simulated body behind both
 
 
-def _ages(monkeypatch, *ages):
+def _capture(monkeypatch, value):
     from sim.mock_robot import MockRobot
-    seq = iter(ages)
-    monkeypatch.setattr(MockRobot, "scan_capture_age_s", lambda self: next(seq), raising=False)
+    real = MockRobot.get_scan
+    monkeypatch.setattr(MockRobot, "get_scan",
+                        lambda self, max_range_m=None: {**real(self, max_range_m),
+                                                        "capture_unix": value})
 
 
-def test_a_body_that_knows_its_capture_time_is_stamped_with_it(monkeypatch, tmp_path):
-    import time
-    _ages(monkeypatch, 0.040, 0.0405)
+def test_a_scan_that_carries_its_capture_time_is_stamped_with_it(monkeypatch, tmp_path):
+    _capture(monkeypatch, 1_800_000_000.25)
     with _server(monkeypatch, tmp_path) as client:
         s = client.get("/scan").json()
-        t1 = time.time()
-    assert s["stamp_source"] == "capture"
-    assert t1 - 0.0405 - 0.05 <= s["stamp_unix"] <= t1 - 0.0405 + 0.001
+    assert s["stamp_source"] == "capture" and s["stamp_unix"] == 1_800_000_000.25
+    assert "capture_unix" not in s                 # one stamp on the wire, not two
 
 
-@pytest.mark.parametrize("ages", [(0.09, 0.002),          # a revolution landed between
-                                  (None, 0.04), (0.04, None),
-                                  (0.04, float("nan")), (True, True)])
-def test_an_age_that_cannot_be_trusted_falls_back_to_the_request(monkeypatch, tmp_path, ages):
-    _ages(monkeypatch, *ages)
+@pytest.mark.parametrize("bad", [None, float("nan"), float("inf"), True, "1.0"])
+def test_a_capture_time_that_cannot_be_used_falls_back_to_the_request(monkeypatch, tmp_path, bad):
+    _capture(monkeypatch, bad)
     with _server(monkeypatch, tmp_path) as client:
         s = client.get("/scan").json()
     assert s["stamp_source"] == "request"
@@ -197,30 +205,33 @@ def test_an_age_that_cannot_be_trusted_falls_back_to_the_request(monkeypatch, tm
 
 # ---- criterion 6a: the lidar's capture age is the revolution's midpoint ------
 
-def test_the_capture_age_is_the_midpoint_of_the_revolution():
+def test_the_capture_time_is_this_revolutions_midpoint_and_fixed():
     from robot.lidar_ld19 import Ld19Scanner
     from tests.test_lidar_ld19 import _Clock, _feed_revolutions
     clock = _Clock()
-    s = Ld19Scanner(clock=clock)
-    assert s.capture_age_s() is None
+    offset = 1_700_000_000.0                       # wall = monotonic + offset
+    s = Ld19Scanner(clock=clock, wall=lambda: clock.t + offset)
     _feed_revolutions(s, clock, 3)
-    mid = (s._scan_oldest + s._scan_newest) / 2.0
-    assert abs(s.capture_age_s() - (clock.t - mid)) < 1e-3
-    assert 0.05 * 0.5 <= s.capture_age_s() <= 0.2
-    assert s.capture_age_s() < s.sensor_age_s()           # younger than the oldest point
+    scan = s.get_scan()
+    # this revolution's midpoint: about half a 10 Hz revolution before its newest point
+    assert 0.03 < s._scan_newest - (scan["capture_unix"] - offset) < 0.07
+    assert scan["capture_unix"] - offset > s._scan_oldest       # never the oldest point
+    clock.t += 0.05
+    assert s.get_scan()["capture_unix"] == scan["capture_unix"]   # a re-read: same stamp
     clock.t += 0.31
-    assert s.capture_age_s() is None                      # stale: no claim
+    assert "capture_unix" not in s.get_scan()                    # stale: no claim
 
 
-def test_the_hardware_body_reports_its_lidar_capture_age():
-    from robot.hardware_robot import HardwareRobot
-
-    class _Lidar:
-        def capture_age_s(self):
-            return 0.07
-
-    body = HardwareRobot.__new__(HardwareRobot)
-    body.lidar = None
-    assert body.scan_capture_age_s() is None
-    body.lidar = _Lidar()
-    assert body.scan_capture_age_s() == 0.07
+def test_carried_bins_do_not_move_the_stamp_back(monkeypatch):
+    """Review (3.221): a revolution that fills empty bins from the one before
+    is aged for the veto by the older one; its stamp stays its own."""
+    import robot.lidar_ld19 as ld
+    from tests.test_lidar_ld19 import _Clock, _feed_revolutions
+    real = ld.bin_scan
+    monkeypatch.setattr(ld, "bin_scan", lambda *a, **k: {**real(*a, **k), "carried": True})
+    clock = _Clock()
+    s = ld.Ld19Scanner(clock=clock, wall=lambda: clock.t)
+    _feed_revolutions(s, clock, 3)
+    scan = s.get_scan()
+    assert s._scan_oldest < s._scan_newest - 0.15      # the veto ages by the carried bins
+    assert s._scan_newest - 0.11 < scan["capture_unix"] < s._scan_newest  # the stamp: this revolution

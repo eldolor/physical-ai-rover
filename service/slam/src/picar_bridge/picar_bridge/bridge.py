@@ -1354,6 +1354,9 @@ class Bridge(Node):
         with self.lock:
             self.last_scan = {"angle_min_rad": msg.angle_min,
                               "angle_increment_rad": msg.angle_increment,
+                              # None for +inf (no return) AND for -inf (3.221:
+                              # the robot's own mast): the re-map watch and the
+                              # reload check skip None, never read it as free
                               "ranges_m": [None if math.isinf(r) else r for r in ranges],
                               # 3.50.D4: the stamp it was filed under, so the
                               # re-map watch lays it at that moment's pose

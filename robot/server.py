@@ -2177,30 +2177,24 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         `RobotInterface.get_scan()`. A backend with no lidar answers
         `usable: False`.
 
-        `stamp_unix` is when the scan was TAKEN (R5; 3.221): the wall clock
-        now less the age of the revolution's midpoint, from a body that
-        knows it (`scan_capture_age_s()`: the real lidar, and the fake one
-        on a pty), with `stamp_source: "capture"`. A body that does not (the
-        simulator's instant scan) is stamped with this request's time,
-        `"request"`, as every scan was before 3.221. The bridge stamps the ROS
-        scan with it (3.40), so SLAM pairs the scan with the odometry of that
-        moment -- see picar_bridge's _poll_scan().
+        `stamp_unix` is when the scan was TAKEN (R5; 3.221): the scan's own
+        `capture_unix`, from a body whose scan carries it (the real lidar,
+        and the fake one on a pty: its revolution's midpoint, fixed when the
+        revolution completed), with `stamp_source: "capture"`. A body whose
+        scan does not (the simulator's instant scan) is stamped with this
+        request's time, `"request"`, as every scan was before 3.221. The
+        bridge stamps the ROS scan with it (3.40), so SLAM pairs the scan
+        with the odometry of that moment -- see picar_bridge's _poll_scan().
 
         `lidar_self_box_cm` is the safety layer's self box (3.218) or None,
         so the bridge can keep the robot's own mast out of the scan it gives
         ROS (3.221). This scan itself is never masked: the veto reads it."""
-        age_of = getattr(robot, "scan_capture_age_s", None)
-        age_of = age_of if callable(age_of) else (lambda: None)
         stamp = time.time()
-        before = age_of()
-        scan = robot.get_scan(max_range_m=max_range_m)
-        after, now = age_of(), time.time()
+        scan = dict(robot.get_scan(max_range_m=max_range_m))   # popped below: never the body's own
+        capture = scan.pop("capture_unix", None)
         source = "request"
-        if scan.get("usable") and _real(before) and _real(after) and after >= before:
-            # Read on both sides of the scan: the age only grows while one
-            # revolution is current, so a smaller age after means a new one
-            # landed in between and the scan could be either: request time.
-            stamp, source = now - after, "capture"
+        if scan.get("usable") and _real(capture):
+            stamp, source = float(capture), "capture"
         return {**scan, "stamp_unix": stamp, "stamp_source": source,
                 "lidar_self_box_cm": (list(safety.self_box_cm)
                                       if safety.self_box_cm is not None else None)}

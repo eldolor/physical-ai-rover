@@ -703,6 +703,10 @@ class RobotInterface(ABC):
              "range_min_m": float, "range_max_m": float,
              "ranges_m": [float | None, ...]}  # one per beam
 
+        Optional: `"capture_unix": float`, the wall-clock time the scan was
+        taken (3.221: the real lidar's revolution midpoint). The robot server
+        stamps `/scan` with it; a scan without it is stamped with the request.
+
         **BODY state, which is why it is here and not on `WorldInterface`.**
         A scan is the robot's own reading -- how far everything is from ME --
         exactly as `get_depth_grid()` is; what it gets turned INTO (the map)

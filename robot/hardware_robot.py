@@ -936,12 +936,6 @@ class HardwareRobot(RobotInterface):
         ages = [a for a in ages if a is not None]
         return max(ages) if ages else None
 
-    def scan_capture_age_s(self) -> Optional[float]:
-        """How long ago the lidar's current scan was taken (its revolution's
-        midpoint, 3.221); None with no lidar or no usable scan, and the robot
-        server then stamps `/scan` with the request time."""
-        return self.lidar.capture_age_s() if self.lidar is not None else None
-
     def turn_since_scan(self) -> Optional[float]:
         """Radians the body has turned (CCW positive, REP-103) since the
         lidar's current scan began -- from the wheel encoders' heading
