@@ -223,4 +223,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.218](3.218-lidar-self-box.md) | The lidar's own mast: a measured self box for forward moves (reverse stays blind) |
 | [3.219](3.219-dpad-hold.md) | Twin D-pad: press and hold to drive |
 | [3.220](3.220-pan-tilt.md) | Pan-tilt camera control on the Rover |
+| [3.221](3.221-rover-slam.md) | SLAM on the real Rover, mapping while driven by hand |
 <!-- /sections -->
