@@ -738,6 +738,14 @@ finished map at mission start; N1's discovered map replaced it.)
   collision protection an AI decision does. Every command names its driver
   (`x-driver: twin-dpad`), and M4's authority order means a tap preempts a
   running mission.
+  **Press and hold to drive** (3.219): FORWARD, REVERSE, LEFT and RIGHT
+  drive for as long as they are held (past 0.3 s) and stop on release, like
+  Waveshare's own page; a quick tap is still one step. A hold is the
+  robot's standing wheel command (`POST /wheels`, the same arbitration and
+  safety, re-vetted 20 times a second), re-sent every 0.25 s; lifting the
+  finger, sliding it off the button, locking the phone, leaving the tab or
+  pressing STOP stops the wheels, and a lost network stops them on the
+  robot's 1 s watchdog.
 - **Turn step (15° / 45° / 90°)** -- how far LEFT and RIGHT turn, sent as
   `/action`'s `angle`. Since R0 the pose is continuous, so this is how a phone
   reaches a heading that is not a compass point. Remembered across reloads;

@@ -1762,6 +1762,8 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     // STOP cancels a Start that is waiting.
     // A STOP claims nothing (it ends autonomy), so it is no hold to wait out.
     const holds = action !== "STOP";
+    // 3.219: STOP ends a held press first, so no drive post follows it.
+    if (!holds) holdEnd("stop");
     if (!holds) state.personStops++;
     if (holds) state.dpadInFlight++;
     try {
@@ -1785,6 +1787,209 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     }
   }
 
+  // ---------- 3.219: press and hold to drive ----------
+  // A press held past HOLD_START_MS drives until it ends; a shorter one is a
+  // tap and stays today's one verb (its click). A hold is the robot's
+  // standing command, POST /wheels as `twin-dpad`: arbitrated (M4) and vetted
+  // like /action, re-vetted by the 20 Hz wheel loop, zeroed by the watchdog
+  // when the posts stop. No route of its own (CLAUDE.md rules 4, M4).
+  const HOLD_START_MS = 300;
+  const HOLD_REFRESH_MS = 250;        // well inside the 1 s watchdog
+  const HOLD_CLICK_SWALLOW_MS = 1000; // the click that trails a hold's release
+  const HOLD_STRAIGHT_M_S = 0.30;     // a FORWARD verb's speed (speed 50)
+  const HOLD_TURN_RAD_S = 1.2;        // a turn verb's body rate
+  const HOLD_SIGNS = { FORWARD: [1, 1], REVERSE: [-1, -1], LEFT: [-1, 1], RIGHT: [1, -1] };
+  const hold = {
+    action: null, btn: null, pointerId: null, timer: null, refresh: null,
+    driving: false, gen: 0, chain: Promise.resolve(), inFlight: 0,
+    startedAt: 0, endedAt: 0, geometry: null, geometryFor: null,
+  };
+
+  // The robot's wheel radius and track, from its own GET /wheels: the hold's
+  // speeds are the verbs', in wheel rad/s. null for a body with no wheels it
+  // can name (a phone, a replay): its presses stay taps.
+  function holdGeometry() {
+    if (hold.geometryFor !== state.serverUrl) {
+      hold.geometryFor = state.serverUrl;
+      hold.geometry = apiGet("/wheels").then(function (w) {
+        const r = w && w.wheel_radius_m, tr = w && w.track_width_m;
+        if (w && w.usable && r > 0 && tr > 0) return { r: r, track: tr };
+        hold.geometryFor = null;       // asked again next press (a board not yet heard)
+        return null;
+      }).catch(function () { hold.geometryFor = null; return null; });
+    }
+    return hold.geometry;
+  }
+
+  function holdSpeeds(action, g) {
+    const s = HOLD_SIGNS[action];
+    const w = (action === "FORWARD" || action === "REVERSE")
+      ? HOLD_STRAIGHT_M_S / g.r : HOLD_TURN_RAD_S * g.track / 2 / g.r;
+    return { left_rad_s: s[0] * w, right_rad_s: s[1] * w };
+  }
+
+  // Every hold post goes through one chain, so a release's zero can never
+  // overtake the drive post before it.
+  function holdEnqueue(fn) {
+    hold.chain = hold.chain.then(fn, fn).catch(function () {});
+    return hold.chain;
+  }
+
+  function holdPost(gen, body) {
+    return holdEnqueue(async function () {
+      if (gen !== hold.gen || !hold.driving) return;   // ended while queued
+      hold.inFlight++;
+      try {
+        const r = await apiPost("/wheels", body, { "x-driver": DRIVER_DPAD });
+        if (r.executed === false && gen === hold.gen) {
+          logEntry(hold.action + " (held)", false, refusalText(r), r.reason);
+          holdEnd("refused");
+        } else if (r.clamped && gen === hold.gen && !hold.vetoLogged) {
+          hold.vetoLogged = true;
+          logEntry(hold.action + " (held)", false, "SAFETY VETO — " + r.clamped,
+                   "safety_distance");
+          state.safetyFlashUntil = performance.now() + SAFETY_FLASH_MS;
+          renderTelemetry(state.lastFrame);
+          setTimeout(function () { renderTelemetry(state.lastFrame); }, SAFETY_FLASH_MS + 10);
+        }
+      } catch (e) {
+        if (gen === hold.gen) {
+          const answered = typeof e.status === "number";
+          logEntry(hold.action + " (held)", false,
+                   (answered ? "refused: " : "not delivered: ") + (e.message || e),
+                   answered ? "rejected" : "unreachable");
+          showToast(t(answered ? "drive.refused" : "drive.notSent",
+                      {action: actionWords(hold.action), status: e.status, why: e.message || e}),
+                    "err");
+          holdEnd("failed");
+        }
+      } finally {
+        hold.inFlight--;
+      }
+    });
+  }
+
+  function holdPress(e, action, btn) {
+    if (!state.connected || btn.disabled) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    // A touch pointer is captured implicitly by the element it landed on --
+    // the button's icon, as often as the button. Released, the finger
+    // sliding off fires pointerleave and ends the hold.
+    const target = e.target;
+    if (target && target.hasPointerCapture && target.hasPointerCapture(e.pointerId)) {
+      target.releasePointerCapture(e.pointerId);
+    }
+    holdEnd("replaced");
+    hold.action = action;
+    hold.btn = btn;
+    hold.pointerId = e.pointerId;
+    hold.endedAt = 0;
+    holdGeometry();
+    hold.timer = setTimeout(holdBegin, HOLD_START_MS);
+  }
+
+  async function holdBegin() {
+    hold.timer = null;
+    const action = hold.action, btn = hold.btn;
+    const g = await holdGeometry();
+    // Released, cancelled or replaced while the geometry was read.
+    if (hold.action !== action || hold.btn !== btn || hold.timer || hold.driving) return;
+    if (!g || !state.connected) { hold.action = null; return; }  // a tap, on release
+    hold.driving = true;
+    hold.vetoLogged = false;
+    hold.gen++;
+    hold.startedAt = performance.now();
+    btn.classList.add("holding");
+    state.dpadInFlight++;              // 3.132 F2: a Start waits out a hold
+    const gen = hold.gen, body = holdSpeeds(action, g);
+    holdPost(gen, body);
+    hold.refresh = setInterval(function () { holdPost(gen, body); }, HOLD_REFRESH_MS);
+  }
+
+  // Ends a press, held or not. `why`: release, cancel, leave, hidden, blur,
+  // pagehide, stop, refused, failed, replaced, disconnected.
+  function holdEnd(why) {
+    if (hold.timer) { clearTimeout(hold.timer); hold.timer = null; }
+    if (!hold.driving) {
+      // Never drove: a release is a tap (its click follows), anything else
+      // is nothing.
+      hold.action = null;
+      return;
+    }
+    const action = hold.action, held = performance.now() - hold.startedAt;
+    hold.driving = false;
+    hold.gen++;
+    hold.endedAt = performance.now();
+    clearInterval(hold.refresh);
+    hold.refresh = null;
+    if (hold.btn) hold.btn.classList.remove("holding");
+    hold.action = null;
+    state.dpadInFlight--;
+    state.dpadDoneAt = performance.now();
+    const zero = { left_rad_s: 0.0, right_rad_s: 0.0 };
+    if (why === "stop") {
+      // STOP's own /stop goes out at once. A drive post already in flight
+      // can land after it: chase it with a second stop.
+      if (hold.inFlight > 0) {
+        holdEnqueue(function () {
+          return apiPost("/stop", {}, { "x-driver": DRIVER_DPAD }).catch(function () {});
+        });
+      }
+    } else if (why === "pagehide") {
+      // The page is going: a queued post may never run, so this one is not
+      // queued, and keepalive lets it outlive the page. The watchdog is the
+      // backstop if it is lost.
+      try {
+        fetch(state.serverUrl + "/wheels", {
+          method: "POST", keepalive: true, body: JSON.stringify(zero),
+          headers: authHeaders({ "Content-Type": "application/json", "x-driver": DRIVER_DPAD }),
+        }).catch(function () {});
+      } catch (e) { /* the watchdog stops it */ }
+    } else if (why !== "failed") {
+      // A refused hold holds nothing, and a failed one cannot reach the
+      // robot (the watchdog stops it); otherwise zero the wheels, after any
+      // drive post still queued.
+      holdEnqueue(function () {
+        return apiPost("/wheels", zero, { "x-driver": DRIVER_DPAD }).catch(function () {});
+      });
+    }
+    if (why !== "refused" && why !== "failed") {
+      logEntry(action + " held " + (held / 1000).toFixed(1) + " s", true, "", null);
+    }
+  }
+
+  function holdPointerEnd(why) {
+    return function (e) {
+      if (hold.pointerId === null || e.pointerId !== hold.pointerId) return;
+      hold.pointerId = null;
+      holdEnd(why);
+    };
+  }
+
+  // The click that follows every release: a tap's verb, swallowed after a
+  // hold. Keyboard activation never holds, so it is always a tap.
+  function dpadClick(action) {
+    return function () {
+      // A click while still driving (a pointerup the page never saw) ends it.
+      if (hold.driving) { holdEnd("release"); hold.pointerId = null; }
+      if (hold.endedAt && performance.now() - hold.endedAt < HOLD_CLICK_SWALLOW_MS) {
+        hold.endedAt = 0;
+        return;
+      }
+      manualAction(action);
+    };
+  }
+
+  function bindHoldButton(id, action) {
+    const btn = document.getElementById(id);
+    btn.onclick = dpadClick(action);
+    btn.addEventListener("pointerdown", function (e) { holdPress(e, action, btn); });
+    btn.addEventListener("pointerup", holdPointerEnd("release"));
+    btn.addEventListener("pointercancel", holdPointerEnd("cancel"));
+    btn.addEventListener("pointerleave", holdPointerEnd("leave"));
+    btn.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+  }
+
   // ---------- R0: the D-pad's turn step ----------
   // The pose has been continuous since R0 (PLAN-ros-alignment.md), and the
   // server has always taken an `angle` -- it just rounded it to a quarter
@@ -1806,6 +2011,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   // ---------- connection ----------
 
   function setControlsEnabled(enabled) {
+    if (!enabled) holdEnd("disconnected");   // 3.219
     ["btn-forward", "btn-reverse", "btn-left", "btn-right", "btn-stop",
      "btn-look-left", "btn-look-right", "btn-look-center",
     ].forEach(function (id) {
@@ -3042,7 +3248,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   document.getElementById("btn-connect").onclick = function () { connect(); };
   document.getElementById("btn-health-check").onclick = function () { runHealthCheck(); };
 
-  document.getElementById("btn-forward").onclick = function () { manualAction("FORWARD"); };
+  bindHoldButton("btn-forward", "FORWARD");
   // R6: tap the SLAM map to send the robot there.
   (function () {
     var mapCanvas = document.getElementById("world-map");
@@ -3061,9 +3267,16 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       mapCanvas.addEventListener("pointercancel", nogoDragCancel);
     }
   })();
-  document.getElementById("btn-reverse").onclick = function () { manualAction("REVERSE"); };
-  document.getElementById("btn-left").onclick = function () { manualAction("LEFT"); };
-  document.getElementById("btn-right").onclick = function () { manualAction("RIGHT"); };
+  bindHoldButton("btn-reverse", "REVERSE");
+  bindHoldButton("btn-left", "LEFT");
+  bindHoldButton("btn-right", "RIGHT");
+  // 3.219: a hold ends with the page: hidden (a phone locked, an app
+  // switched), the window losing focus, the tab closed, any pointer up.
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden") holdEnd("hidden");
+  });
+  window.addEventListener("blur", function () { holdEnd("blur"); });
+  window.addEventListener("pagehide", function () { holdEnd("pagehide"); });
   document.getElementById("btn-stop").onclick = function () { manualAction("STOP"); };
   document.getElementById("btn-look-left").onclick = function () { manualAction("LOOK_LEFT"); };
   document.getElementById("btn-look-right").onclick = function () { manualAction("LOOK_RIGHT"); };
@@ -7942,6 +8155,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   let qrHideTimer = null, qrCountdownTimer = null;
 
   function switchTab(name, opts) {
+    holdEnd("tab");     // 3.219: the D-pad being held leaves with its tab
     document.querySelectorAll(".tab-page").forEach(function (el) {
       el.classList.toggle("active", el.dataset.tab === name);
     });

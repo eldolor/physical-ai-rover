@@ -121,6 +121,11 @@ canvas { border-radius: 6px; display: block; max-width: 100%; }
 
 .dpad { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 8px; }
 .dpad button { padding: 14px 0; }
+/* 3.219: a D-pad press is held to drive. A long press must not scroll the
+   page (a pointercancel), select text or open iOS's callout or a menu. */
+.dpad button { touch-action: none; user-select: none; -webkit-user-select: none;
+  -webkit-touch-callout: none; }
+.dpad button.holding { background: var(--accent-primary); color: var(--accent-primary-ink); }
 .dpad button svg { width: 20px; height: 20px; }
 .dpad .spacer { background: transparent; pointer-events: none; }
 
