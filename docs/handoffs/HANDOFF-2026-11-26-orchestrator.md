@@ -54,6 +54,10 @@ rule: questions one at a time, as pop-ups with a recommendation.*
 * After the Sat 11-28 13:00 UTC reset: 2 workers at once -- the c1 fix
   (Opus) plus one Sonnet at a time on the CLAUDE.md trim, the pre-push
   hook fix (skip pushes already on origin/dev) and the branch list.
+* 3.220 tilt in the simulator (the user, 2026-11-26 21:50 UTC): the simulated
+  camera picture should move with the tilt, not only the badge. After the
+  reset, a cloud Sonnet/Opus worker (3.220 amendment, bars first), keeping
+  the render=False frame the tests pin (`test_render_false_is_the_free_offline_path`).
 
 ## Quota (the user's `/usage`, 2026-11-26 15:14 UTC)
 
