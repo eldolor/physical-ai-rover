@@ -2778,7 +2778,9 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
         // 3.232: any reply from the robot server itself (JSON, whatever its
         // status: a wrong code's 401 too) is an answer. A tunnel's own page
         // for a robot that is gone (ngrok's offline 404) is HTML, and is not.
-        answered = /json/i.test(res.headers.get("content-type") || "");
+        // A gateway's own 502-504 is no answer, even in JSON (review).
+        answered = /json/i.test(res.headers.get("content-type") || "")
+          && res.status !== 502 && res.status !== 503 && res.status !== 504;
         if (res.ok) body = await res.json();
       } catch (e) { /* not answered: below */ }
       if (gen !== batteryGen || url !== state.serverUrl) return;
@@ -2870,7 +2872,11 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   function shutdownView(s) {
     // 3.232: still on, by its own word -- until it stops answering (the
     // power button, most likely; the phone cannot tell off from out of reach).
-    if (s.phase === "failed" || s.phase === "stub") return { view: s.quietAt == null ? s.phase : "gone" };
+    // Two misses, as the header counts them: one dropped request over a
+    // tunnel must not flip "press the power button" and back (review).
+    if (s.phase === "failed" || s.phase === "stub") {
+      return { view: state.robotQuiet ? "gone" : s.phase };
+    }
     if (s.quietAt == null) return { view: s.phase === "powering_off" ? "powering" : "stopping" };
     if (s.phase !== "powering_off") return { view: "unknown" };
     const left = Math.ceil(s.settleS - (Date.now() - s.quietAt) / 1000);
@@ -3314,10 +3320,11 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
         setConnStatus(el, "err", t("robot.quietLabel"),
                       when ? t("robot.quietDetail", {when: when}) : t("robot.quietDetailNever"));
       });
-    } else if (state.connected) {
+    } else if (state.connected && !state.connecting) {   // connect() owns it while it runs
       setConnStatus(el, "ok", "Connected", state.serverUrl);
     }
     renderHeaderConnStatus();
+    renderBattery();         // the stub card's "gone" follows robotQuiet
   }
 
   // No reading: the robot is off, out of reach, or answered something else

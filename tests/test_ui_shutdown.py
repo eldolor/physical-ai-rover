@@ -216,6 +216,34 @@ def test_the_stub_says_to_press_the_power_button_then_sees_it_go_quiet(browser, 
     page.context.close()
 
 
+def test_one_dropped_request_does_not_flip_the_stub(browser, twin_server):  # noqa: F811
+    """3.232 review: one miss over a tunnel flipped "press the power button"
+    to "stopped answering" and back; the card counts two, as the header."""
+    page, errors, _ = _page(browser, twin_server, battery=reply("stub"))
+    _banner(page, "press the power button")
+    dropped = []
+    page.unroute("**/battery")
+
+    def handle(route):
+        if not dropped:
+            dropped.append(1)
+            route.abort()
+            return
+        route.fulfill(status=200, content_type="application/json", body=_json(reply("stub")))
+    page.route("**/battery", handle)
+    page.wait_for_function("() => true")
+    for _ in range(40):                       # up to ~4 s for the drop to land
+        if dropped:
+            break
+        page.wait_for_timeout(100)
+    assert dropped
+    for _ in range(10):                       # the second ~1 s after it
+        assert "press the power button" in page.locator("#battery-title").inner_text()
+        page.wait_for_timeout(100)
+    assert not errors, errors
+    page.context.close()
+
+
 def _robot_status(page):
     return page.locator("#connection-status .conn-status-label")
 
