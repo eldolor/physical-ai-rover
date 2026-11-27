@@ -230,4 +230,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.225](3.225-battery-sag-reserve.md) | The home trip's battery prediction reads motor sag as drain |
 | [3.227](3.227-explore-real-detections.md) | Explore sees the target on real frames |
 | [3.228](3.228-trip-home-fails.md) | The trip home and frontier goals fail on the Rover: why |
+| [3.229](3.229-brain-self-box.md) | The brain's safety check gets the body's self box |
 <!-- /sections -->
