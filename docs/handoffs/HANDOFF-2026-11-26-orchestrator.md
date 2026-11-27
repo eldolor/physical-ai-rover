@@ -21,6 +21,18 @@ rule: questions one at a time, as pop-ups with a recommendation.*
   was sent to session_01JbXvZtLcPjAcreSkNdNCC1; read its final message for
   the result before trying it on other workers.
 
+## Update 2026-11-27 ~12:30 UTC: the trust card IS now approved (the user's choice)
+
+* The user approved the trust card so this orchestrator can message desktop
+  workers and start desktop sessions. Desktop sends now work (4 delivered).
+* Cost: every send_message INTO the orchestrator is refused again, from cloud
+  and desktop workers alike. Briefs must say: "put your full report in your
+  final message; the orchestrator reads it with list_events; never ask the
+  user to relay." The orchestrator checks workers when the user writes.
+* Its scheduled check (`trig_01Lrj5GC6Qx6FeK4pN3Q7CPj`) may now fail with
+  ACCESS_DENIED, as the old orchestrator's did; check `list_triggers`.
+* The addendum below describes the state before this change.
+
 ## Addendum 2026-11-26 19:10 UTC: do NOT approve the trust card (session_01JbXvZsJtBazSzMLFNo4DaT)
 
 * The `confirm_repository_trust` card ("reach its owner's other sessions")
