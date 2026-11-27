@@ -186,7 +186,7 @@ class HomeBudget:
         self.metres = 0.0
         self.driving_s = 0.0
         self._last = None               # (x, y, t)
-        self._samples = []              # distinct (t, v) battery samples
+        self._samples = []              # distinct (t, v, at_rest) battery samples
         self._path = None               # (L_home, x, y, t)
         self.last = {}
         self._prior_r = 0.0             # 3.156.D: the rate known before a charge
@@ -207,7 +207,9 @@ class HomeBudget:
         """A distinct sample (3.137's rule: a repeated reading is the board's
         last one again, not a new measurement). `at_rest` (3.225): the robot
         server's word that no wheel turned for 0.5 s before it was read;
-        None from a body that does not say."""
+        None from a body that does not say. A repeat that arrives at rest is
+        still dropped: it is the board's earlier measurement, which may have
+        been taken while the wheels turned."""
         if self._samples and self._samples[-1][1] == v:
             return
         self._samples.append((t, float(v), at_rest))
@@ -223,48 +225,65 @@ class HomeBudget:
         reading, so this is the nearest to the pack's own voltage."""
         return max(samples, key=lambda s: (s[1], -s[0]))
 
-    def _rested(self, t: Optional[float]):
-        """3.225: (anchor a, latest b, at_rest_pool) or None. The pool is the
-        readings taken at rest when the record has any, else every reading
-        (a body that does not say, or none at rest yet). `a` is the highest
-        in the record's first REST_WINDOW_S, `b` the highest in the last
-        REST_WINDOW_S before `t` (the latest, when none is that recent)."""
-        rest = [s for s in self._samples if s[2] is True]
-        pool = rest or self._samples
-        if not pool:
-            return None
-        now = pool[-1][0] if t is None else max(t, pool[-1][0])
+    def _ends(self, pool, now: float):
+        """`a`, the highest of `pool`'s first REST_WINDOW_S, and `b`, the
+        highest of its last REST_WINDOW_S before `now` (its latest, when none
+        is that recent)."""
         t0 = pool[0][0]
         a = self._highest([s for s in pool if s[0] < t0 + REST_WINDOW_S])
         recent = [s for s in pool if s[0] > now - REST_WINDOW_S]
-        b = self._highest(recent) if recent else pool[-1]
-        return a, b, bool(rest)
+        return a, (self._highest(recent) if recent else pool[-1])
+
+    def _pools(self, t: Optional[float]):
+        """3.225: (pools to measure a drain within, `now` for each window).
+        A body that reports `at_rest`: the readings at rest, and apart from
+        them the readings while moving -- a drain is measured only within
+        one kind (rest against rest, loaded against loaded), never across,
+        where the sag would read as drain. A body that does not say: every
+        reading, its windows ending at the last one (a repeat dropped as the
+        same measurement is no new time)."""
+        flagged = any(s[2] is not None for s in self._samples)
+        if not flagged:
+            return [self._samples], (self._samples[-1][0] if self._samples else None)
+        now = max(t, self._samples[-1][0]) if t is not None else self._samples[-1][0]
+        return ([[s for s in self._samples if s[2] is True],
+                 [s for s in self._samples if s[2] is False]], now)
 
     def drain_v_s(self, t: Optional[float] = None) -> float:
-        """V/s between two rested readings (3.225), `a` and `b` of
-        `_rested()`, at least DRAIN_SPAN_S apart. Before that, the rate known
+        """V/s between two of one kind's readings (3.225), `a` and `b` of
+        `_ends()`, at least DRAIN_SPAN_S apart; of the kinds that have one,
+        the rate whose `b` is the more recent. Before any, the rate known
         before the last charge (none: 0). Raw first-to-last read a motor's
         sag as drain (3.140's two first surveys)."""
-        r = self._rested(t)
-        if r is None:
+        if len(self._samples) < 2:
             return self._prior_r
-        a, b, _ = r
-        if b[0] - a[0] < DRAIN_SPAN_S:
-            return self._prior_r
-        return max(0.0, (a[1] - b[1]) / (b[0] - a[0]))
+        pools, now = self._pools(t)
+        best = None
+        for pool in pools:
+            if len(pool) < 2:
+                continue
+            a, b = self._ends(pool, now)
+            if b[0] - a[0] < DRAIN_SPAN_S:
+                continue
+            if best is None or b[0] > best[0]:
+                best = (b[0], max(0.0, (a[1] - b[1]) / (b[0] - a[0])))
+        return self._prior_r if best is None else best[1]
 
     def rested_v(self, t: Optional[float] = None) -> Optional[float]:
-        """3.225: the pack's voltage at `t`. From readings at rest, the
-        latest rested one projected forward by the drain; from a body that
-        does not say, the window's highest reading, unprojected (projecting
-        a sagged one would read its sag twice). None before any sample."""
-        r = self._rested(t)
-        if r is None:
+        """3.225: the pack's voltage at `t`. With readings at rest, the
+        latest rested one carried forward by the drain; otherwise (none at
+        rest yet, or a body that does not say) the window's highest reading,
+        unprojected: projecting a sagged one would read its sag twice, and
+        it errs low. None before any sample."""
+        if not self._samples:
             return None
-        _, b, at_rest = r
-        if not at_rest or t is None:
-            return b[1]
-        return b[1] - self.drain_v_s(t) * max(0.0, t - b[0])
+        pools, now = self._pools(t)
+        rest = pools[0]
+        if len(pools) == 2 and rest:
+            _, b = self._ends(rest, now)
+            return b[1] - self.drain_v_s(t) * max(0.0, now - b[0])
+        pool = pools[0] if len(pools) == 1 else pools[1]
+        return self._ends(pool, now)[1][1]
 
     def recharged(self) -> None:
         """3.156.D7g: the charge is not a drain; the rate stands until a new
