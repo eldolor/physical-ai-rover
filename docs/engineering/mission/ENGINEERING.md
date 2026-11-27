@@ -33,7 +33,18 @@ threads; where it and this file disagree, check the code.
 for `"explore"`, and for `"tiered"` with `tier_search="explore"` (3.80.G,
 `TIER_SEARCHES`; `self.explores` then also gates the navigator wrapper, its
 end at `_finish`, and the status's `explore` block). With no
-`vision_fn`, the frontier agent's own `sensed_scene()` is used.
+`vision_fn`, the frontier agent's own `sensed_scene()` is used. 3.227: an
+`"explore"` mission whose `vision_fn` carries `explore_sight_from ==
+"perception"` (`brain/explore_sight.py` `PerceptionSight`, built by the
+brain server's `_explore_sight_fn()` for a find on a real camera, or under
+`explore_sight: perception`) gets `sight_from="perception"`, and the runner
+hands it the agent's `sensed_scene` (`bind_base()`) once the agent exists.
+A tick whose arrival readout carries `identity.no_identity_tier` (that
+policy's undecided identity: it has no tier) is kept as
+`_untiered_arrival` and ends the mission `arrived_unconfirmed` after the
+found check, with the arrival frame and no call made;
+`late_confirmation_pending()` is False for it (no cloud to ask again, 3.53
+never starts).
 
 **Threads** (`AGENT-HARNESS.md` section 7):
 
@@ -466,7 +477,9 @@ which only supplies both pipelines. `POST /mission/start` with `policy` `vision`
    - **Simulated.** It wraps the cloud step in
      `tiered_vision_fn_for(..., pipeline=FrameReportedPipeline(target))`.
      No model is loaded.
-   - **Real camera.** It builds `pipeline_for(target, **overrides)`. A
+   - **Real camera.** It builds `pipeline_for(target, **overrides)`
+     (`_perception_pipeline(target, config, who)`, shared with plain
+     explore since 3.227). A
      non-empty or non-zero `perception_*` key overrides the module default.
      `PerceptionUnavailable` becomes a 400 `The tiered policy cannot start:
      ...`, and any other exception from `pipeline_for()` becomes a 400 `The
@@ -482,6 +495,18 @@ which only supplies both pipelines. `POST /mission/start` with `policy` `vision`
 
 The heavy imports happen in step 4, on the start path, so a missing install
 is a refusal and never a B3.2 vision failure three ticks in.
+
+**Plain explore's perception (3.227).** For `policy` `explore` with `job`
+`find` and a target, after the navigator check: if `explore_sight` is
+`perception`, or `_frames_are_simulated(robot)` is false, the `vision_fn`
+is `_explore_sight_fn(target, config, simulated)` -- a `PerceptionSight`
+over `FrameReportedPipeline` (simulated, with `geometry_identity` under
+`sim_arrival_confirm: geometry`) or over `_perception_pipeline(target,
+config, "explore policy")` (a 400 `The explore policy cannot start: ...`
+naming the pip command when the install is missing). A simulated camera
+under `auto`, and every survey, build nothing (dev's `sensed_scene`). Any
+refusal after the build (room labels, the room prior, the runner) closes
+it (`_close_quietly`).
 
 ### Terminal paths
 
@@ -1053,6 +1078,7 @@ The `brain:` block of `config/robot.yaml`, read by
 | `find_room_label_max_calls` | 20 | 20 | calls | brain_server (the runner's `room_label_max_calls` for a find that asks) | 3.116.B: asks per find mission (3.116.A: a median of 5, p90 13 on 583 houses). 0 = no cap; a negative or fractional value is refused at load. A find's metrics row records it, null when the mission asks nothing |
 | `find_prior_timeout_s` | 4.0 | 4.0 | s | brain_server (`_room_prior_at_start()`) | 3.190.C: the longest a start waits for `/room-prior`. Refused at load unless a number in (0, 30]. The routine is the policy spec's ("A find's cloud room prior") |
 | `explore_goal_policy` | `rooms` | `rooms` | -- | brain_server (`MissionRunner(explore_goal_policy=...)`, the room-prior gate), `load_brain_config` | 3.65 phase 2, 3.96; `rooms` the default since 3.125: how explore picks its next goal -- `rule`, `learned`, `network` or `rooms`; env `EXPLORE_GOAL_POLICY`. Refused at load unless one of the four. The chooser is the [policy spec](../policy/ENGINEERING.md)'s ("Explore's learned goal choice"); here it gates `find_room_labels`, a room hint and the room prior, which act under `rooms` only. The runner's own default is `rule` |
+| `explore_sight` | `auto` | `auto` | -- | brain_server (`_explore_sight_fn()`) | 3.227: a plain explore find's sightings -- `auto` (the frame's detections on a simulated camera, on-board perception on any other) or `perception` (everywhere); env `EXPLORE_SIGHT`. Refused at load unless one of the two. The policy spec's `explore_sight` row |
 | `sim_arrival_confirm` | `geometry` | `geometry` | -- | brain_server (`_tiered_vision_fn()`) | 3.98: how a tiered mission on the simulator's frames confirms its arrival -- `geometry` (the sim's ground truth, no paid call) or `cloud` (one real call); env `SIM_ARRIVAL_CONFIRM`. Refused at load unless one of the two. Real frames always ask. The policy spec's `sim_arrival_confirm` row |
 | `room_label_timeout_s` | 15 | 15.0 | s | brain_server | 3.70 S2: the `/room` call's HTTP timeout, held to half of `tick_timeout_s` at use (not refused at load, 3.56's reason) |
 | `room_label_max_calls` | 60 | 60 | calls | runner | 3.70 S2: asks per survey; `spacing`'s 9 sim surveys' median (29) x 2, rounded up to the most any of 100 ProcTHOR surveys asked (60). Each is a paid call on the car. Reaching it leaves the rest unlabelled. 0 = no cap. Published on the brain's `/health` (null for 0) so the phone states it before a survey (3.70 S5) |

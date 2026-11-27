@@ -58,6 +58,7 @@ from typing import Callable, Optional, Sequence, Tuple
 from brain.agent import ObjectSearchAgent, _held_no_route, _takes_local_ok
 from brain.arrival import SOURCE_LOCAL
 from brain.explore import OWN_GOAL_TOLERANCE_M, ExploreAgent  # one tolerance for both (3.76)
+from brain.explore_sight import NO_IDENTITY_TIER
 from brain.choice_log import BY_PERSON, GoalAsk
 from brain import dock as docking
 from control import nogo_store
@@ -1219,6 +1220,10 @@ class MissionRunner:
                 extra["ask"] = GoalAsk(clock=lambda: self.clock(),
                                        timeout_s=explore_ask_timeout_s)
                 extra["choice_sink"] = self._record_choice
+            if policy == "explore" and getattr(vision_fn, "explore_sight_from", None) == "perception":
+                # 3.227: the plain policy on frames with no detections -- its
+                # sightings from on-board perception (brain/explore_sight.py).
+                extra["sight_from"] = "perception"
             if policy == "tiered":
                 extra["sight_from"] = "perception"
                 # 3.80.O: the agent's vision_fn is the guarded wrapper below,
@@ -1255,6 +1260,13 @@ class MissionRunner:
             # The UNGATED agent method is fine here: a scene only reads
             # sensors, and `_HaltGate` exists to stop moves, not reads.
             self.vision_fn = self.agent.sensed_scene
+        elif callable(getattr(self.vision_fn, "bind_base", None)):
+            # 3.227: perception for plain explore adds to the agent's own
+            # sensor scene, which exists only now (same reason as above).
+            self.vision_fn.bind_base(self.agent.sensed_scene)
+        # 3.227: an arrival plain explore cannot judge (no identity tier):
+        # the readout and frame it ends `arrived_unconfirmed` on.
+        self._untiered_arrival: Optional[tuple] = None
 
         self._lock = threading.RLock()
         self._running = False
@@ -1642,6 +1654,9 @@ class MissionRunner:
             self._tier = scene.get("_tier") or self._tier
             self._perception = scene.get("_perception") or self._perception
             self._arrival = scene.get("_arrival") or self._arrival
+            arrival_now = scene.get("_arrival") or {}
+            if (arrival_now.get("identity") or {}).get(NO_IDENTITY_TIER):
+                self._untiered_arrival = (arrival_now, result.frame)
             # WHICH frame this decision was made on.
             #
             # Under teleop the twin pushes frames on its own timer and polls
@@ -1700,6 +1715,19 @@ class MissionRunner:
                 self._finish_preempted(e)
                 return False
             self._finish(FOUND if self.memory.found else ROOM_REACHED, self.memory.summary())
+            return False
+        if self._untiered_arrival is not None and link_end is None:
+            # 3.227: the arrival rule held and nothing on this policy can say
+            # whose object it is -- never `found` on perception alone (3.47).
+            # No call was made, and none will be (late_confirmation_pending).
+            readout, frame = self._untiered_arrival
+            self._finish(ARRIVED_UNCONFIRMED, (
+                f"arrived (lidar {readout.get('range_m')} m, streak "
+                f"{readout.get('streak')}) but identity unconfirmed: "
+                f"{(readout.get('identity') or {}).get('reason')}"),
+                arrival={**readout, "state": "unconfirmed",
+                         "reason": "arrived; this policy has no identity tier"},
+                tier_stats=self._policy_stats(), arrival_frame=frame)
             return False
         if link_end is not None:
             # 3.208: a completed tick that lost a (swallowed) read spent the
@@ -3261,6 +3289,8 @@ class MissionRunner:
             return (self.finished.is_set()
                     and self._outcome == ARRIVED_UNCONFIRMED
                     and self._arrival_frame is not None
+                    # 3.227: an untiered arrival had no cloud to wait for.
+                    and self._untiered_arrival is None
                     and (self._late is None or self._late["state"] == "waiting"))
 
     def late_update(self, **fields) -> Optional[dict]:

@@ -1,0 +1,311 @@
+{
+ "arm": "B",
+ "missions": 21,
+ "found": 0,
+ "arrived_unconfirmed": 0,
+ "arrived_unconfirmed_at_target": 0,
+ "arrived_unconfirmed_away": 0,
+ "ended_at_target": 1,
+ "sighted_missions": 0,
+ "outcomes": {
+  "exhausted": 21
+ },
+ "median_sim_s": 93.5,
+ "wall_s": 100,
+ "rows": [
+  {
+   "arm": "B",
+   "house": "home_first_floor",
+   "outcome": "exhausted",
+   "sim_s": 156.7,
+   "goals": 77,
+   "end_target_m": 13.96,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (9 on the map: 9 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:0",
+   "outcome": "exhausted",
+   "sim_s": 100.9,
+   "goals": 48,
+   "end_target_m": 3.0,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:2",
+   "outcome": "exhausted",
+   "sim_s": 156.4,
+   "goals": 75,
+   "end_target_m": 4.81,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (3 on the map: 3 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:3",
+   "outcome": "exhausted",
+   "sim_s": 93.5,
+   "goals": 44,
+   "end_target_m": 3.31,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (3 on the map: 3 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:4",
+   "outcome": "exhausted",
+   "sim_s": 62.6,
+   "goals": 30,
+   "end_target_m": 1.27,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (1 on the map: 1 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:5",
+   "outcome": "exhausted",
+   "sim_s": 40.8,
+   "goals": 19,
+   "end_target_m": 2.85,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (0 on the map: 0 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:9",
+   "outcome": "exhausted",
+   "sim_s": 216.1,
+   "goals": 103,
+   "end_target_m": 3.91,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:10",
+   "outcome": "exhausted",
+   "sim_s": 80.4,
+   "goals": 38,
+   "end_target_m": 9.83,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (1 on the map: 1 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:11",
+   "outcome": "exhausted",
+   "sim_s": 125.0,
+   "goals": 59,
+   "end_target_m": 10.82,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:12",
+   "outcome": "exhausted",
+   "sim_s": 162.0,
+   "goals": 78,
+   "end_target_m": 11.88,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:13",
+   "outcome": "exhausted",
+   "sim_s": 65.2,
+   "goals": 31,
+   "end_target_m": 3.0,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (0 on the map: 0 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:15",
+   "outcome": "exhausted",
+   "sim_s": 190.3,
+   "goals": 91,
+   "end_target_m": 13.18,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (1 on the map: 1 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:17",
+   "outcome": "exhausted",
+   "sim_s": 66.7,
+   "goals": 32,
+   "end_target_m": 7.41,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:18",
+   "outcome": "exhausted",
+   "sim_s": 93.4,
+   "goals": 44,
+   "end_target_m": 10.61,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (1 on the map: 1 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:21",
+   "outcome": "exhausted",
+   "sim_s": 69.6,
+   "goals": 33,
+   "end_target_m": 2.12,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (0 on the map: 0 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:26",
+   "outcome": "exhausted",
+   "sim_s": 40.2,
+   "goals": 19,
+   "end_target_m": 0.6,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (1 on the map: 1 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:27",
+   "outcome": "exhausted",
+   "sim_s": 18.5,
+   "goals": 9,
+   "end_target_m": 2.97,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (3 on the map: 3 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:32",
+   "outcome": "exhausted",
+   "sim_s": 214.0,
+   "goals": 102,
+   "end_target_m": 1.08,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:34",
+   "outcome": "exhausted",
+   "sim_s": 190.6,
+   "goals": 90,
+   "end_target_m": 11.13,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (3 on the map: 3 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:36",
+   "outcome": "exhausted",
+   "sim_s": 87.0,
+   "goals": 42,
+   "end_target_m": 2.4,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "B",
+   "house": "procthor:val:37",
+   "outcome": "exhausted",
+   "sim_s": 129.7,
+   "goals": 62,
+   "end_target_m": 2.47,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (1 on the map: 1 reached twice, 0 set aside or dropped)"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,312 @@
+{
+ "arm": "S",
+ "missions": 21,
+ "found": 20,
+ "arrived_unconfirmed": 0,
+ "arrived_unconfirmed_at_target": 0,
+ "arrived_unconfirmed_away": 0,
+ "ended_at_target": 20,
+ "sighted_missions": 17,
+ "outcomes": {
+  "exhausted": 1,
+  "found": 20
+ },
+ "median_sim_s": 18.5,
+ "wall_s": 32,
+ "rows": [
+  {
+   "arm": "S",
+   "house": "home_first_floor",
+   "outcome": "found",
+   "sim_s": 38.3,
+   "goals": 19,
+   "end_target_m": 0.67,
+   "sighted": 2,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Breakfast, dining room, family room, foyer, hall, kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:0",
+   "outcome": "found",
+   "sim_s": 12.4,
+   "goals": 6,
+   "end_target_m": 0.67,
+   "sighted": 2,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Bedroom, bedroom 2, kitchen searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:2",
+   "outcome": "found",
+   "sim_s": 40.0,
+   "goals": 20,
+   "end_target_m": 0.67,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Bathroom, bathroom 2, bathroom 3, bedroom, bedroom 2, bedroom 3, living room 2, living room 3 searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:3",
+   "outcome": "found",
+   "sim_s": 13.4,
+   "goals": 5,
+   "end_target_m": 0.58,
+   "sighted": 2,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Bedroom, bedroom 2 searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:4",
+   "outcome": "found",
+   "sim_s": 18.2,
+   "goals": 9,
+   "end_target_m": 0.6,
+   "sighted": 2,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Bathroom, bedroom, kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:5",
+   "outcome": "found",
+   "sim_s": 4.4,
+   "goals": 2,
+   "end_target_m": 0.6,
+   "sighted": 2,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:9",
+   "outcome": "found",
+   "sim_s": 50.0,
+   "goals": 25,
+   "end_target_m": 0.67,
+   "sighted": 1,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Bathroom 3, bedroom 2, bedroom 3, bedroom 4, kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:10",
+   "outcome": "found",
+   "sim_s": 18.3,
+   "goals": 9,
+   "end_target_m": 0.6,
+   "sighted": 2,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Bathroom, bedroom, kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:11",
+   "outcome": "found",
+   "sim_s": 16.3,
+   "goals": 8,
+   "end_target_m": 0.67,
+   "sighted": 2,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Bedroom, kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:12",
+   "outcome": "found",
+   "sim_s": 70.3,
+   "goals": 35,
+   "end_target_m": 0.42,
+   "sighted": 1,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Bathroom, bathroom 2, bathroom 3, bedroom, bedroom 2, bedroom 3, kitchen, living room, living room 2, living room 3 searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:13",
+   "outcome": "found",
+   "sim_s": 16.0,
+   "goals": 8,
+   "end_target_m": 0.6,
+   "sighted": 2,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Bedroom, kitchen searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:15",
+   "outcome": "found",
+   "sim_s": 40.0,
+   "goals": 20,
+   "end_target_m": 0.67,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Bedroom, living room, living room 2, living room 3 searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:17",
+   "outcome": "found",
+   "sim_s": 16.3,
+   "goals": 8,
+   "end_target_m": 0.67,
+   "sighted": 2,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:18",
+   "outcome": "found",
+   "sim_s": 36.0,
+   "goals": 18,
+   "end_target_m": 0.67,
+   "sighted": 2,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Bathroom, bedroom, kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:21",
+   "outcome": "found",
+   "sim_s": 4.4,
+   "goals": 2,
+   "end_target_m": 0.67,
+   "sighted": 2,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Bathroom, bedroom searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:26",
+   "outcome": "found",
+   "sim_s": 40.1,
+   "goals": 19,
+   "end_target_m": 0.6,
+   "sighted": 2,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Bedroom, kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:27",
+   "outcome": "exhausted",
+   "sim_s": 18.5,
+   "goals": 9,
+   "end_target_m": 2.97,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (3 on the map: 3 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:32",
+   "outcome": "found",
+   "sim_s": 76.3,
+   "goals": 38,
+   "end_target_m": 0.6,
+   "sighted": 1,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Bathroom 2, bathroom 3, bedroom, bedroom 2, bedroom 3, kitchen, living room, living room 2, living room 3 searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:34",
+   "outcome": "found",
+   "sim_s": 12.0,
+   "goals": 6,
+   "end_target_m": 0.85,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:36",
+   "outcome": "found",
+   "sim_s": 31.5,
+   "goals": 15,
+   "end_target_m": 0.67,
+   "sighted": 2,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Bathroom, bedroom, kitchen, living room searched. Found."
+   ]
+  },
+  {
+   "arm": "S",
+   "house": "procthor:val:37",
+   "outcome": "found",
+   "sim_s": 42.3,
+   "goals": 21,
+   "end_target_m": 0.67,
+   "sighted": 2,
+   "close_ins": 0,
+   "sight_from": "frame",
+   "tail": [
+    "mission ended (found): Bathroom 2, bedroom 2, kitchen, living room searched. Found."
+   ]
+  }
+ ]
+}

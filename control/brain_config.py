@@ -213,6 +213,11 @@ DEFAULTS = {
     # `cloud`: one real call on the render, as before -- for a run that means
     # to test the cloud (Stage 1's lit renderer). Real frames always ask.
     "sim_arrival_confirm": "geometry",
+    # 3.227: where a plain explore find's sightings come from. `auto`: the
+    # simulator's detections on a simulated camera (dev's behaviour), on-board
+    # perception (brain/explore_sight.py) on any other. `perception`: on-board
+    # perception everywhere (the simulator's through FrameReportedPipeline).
+    "explore_sight": "auto",
     # 3.70 E4 (decided by the user 2026-10-11): a mission's budget is a time
     # limit and a battery floor; the step count is only a backstop derived
     # from the limit (control/mission_runner.py's derived_max_steps()).
@@ -499,6 +504,8 @@ def load_brain_config(config_path=None) -> dict:
         merged["recharge_resume"] = os.environ["RECHARGE_RESUME"].strip() == "1"
     if os.environ.get("TIER_SEARCH", "").strip():
         merged["tier_search"] = os.environ["TIER_SEARCH"].strip()
+    if os.environ.get("EXPLORE_SIGHT", "").strip():
+        merged["explore_sight"] = os.environ["EXPLORE_SIGHT"].strip()
     if os.environ.get("SIM_ARRIVAL_CONFIRM", "").strip():
         merged["sim_arrival_confirm"] = os.environ["SIM_ARRIVAL_CONFIRM"].strip()
     # 3.80.F: the criterion-2 arms switch these per stack.
@@ -620,6 +627,9 @@ def load_brain_config(config_path=None) -> dict:
     if merged["sim_arrival_confirm"] not in ("geometry", "cloud"):
         raise ValueError(f"brain.sim_arrival_confirm must be 'geometry' or 'cloud'; "
                          f"got {merged['sim_arrival_confirm']!r}")
+    if merged["explore_sight"] not in ("auto", "perception"):
+        raise ValueError(f"brain.explore_sight must be 'auto' or 'perception'; "
+                         f"got {merged['explore_sight']!r}")
     if merged["tier_search"] not in ("cloud", "explore"):
         raise ValueError(f"brain.tier_search must be 'cloud' or 'explore'; "
                          f"got {merged['tier_search']!r}")

@@ -542,32 +542,7 @@ def _tiered_vision_fn(target: str, cloud_vision_fn, config: dict,
                 from brain.arrival import geometry_identity
                 kwargs["sim_identity_fn"] = functools.partial(geometry_identity, target=target)
             return tiered_vision_fn_for(target, cloud_vision_fn, pipeline=pipeline, **kwargs)
-        pipeline_kwargs = {}
-        if config["perception_detector"]:
-            pipeline_kwargs["weights"] = config["perception_detector"]
-        if config["perception_clip_model"]:
-            pipeline_kwargs["clip_model"] = config["perception_clip_model"]
-        if config["perception_match_probability"]:
-            pipeline_kwargs["match_probability"] = float(config["perception_match_probability"])
-        if config["perception_match_margin"]:
-            pipeline_kwargs["match_margin"] = float(config["perception_match_margin"])
-        if config["perception_crop_path"]:
-            pipeline_kwargs["crop_path"] = config["perception_crop_path"]
-        if config["perception_floor_mask"]:
-            pipeline_kwargs["floor_mask"] = True
-        try:
-            from brain.perceive import pipeline_for
-
-            pipeline = pipeline_for(target, **pipeline_kwargs)
-        except PerceptionUnavailable as e:
-            # Re-raised as ValueError because start_mission() maps that to a
-            # 400 with the message intact, and the message is the useful part:
-            # it names the pip command.
-            raise ValueError(f"The tiered policy cannot start: {e}") from e
-        except Exception as e:  # noqa: BLE001 -- a bad weights file, a dead download
-            raise ValueError(
-                f"The tiered policy could not load its perception models: {e}"
-            ) from e
+        pipeline = _perception_pipeline(target, config, "tiered policy")
         return tiered_vision_fn_for(target, cloud_vision_fn, pipeline=pipeline, **kwargs)
     except BaseException:
         # A refused build (perception's models failed to load) keeps no
@@ -575,6 +550,61 @@ def _tiered_vision_fn(target: str, cloud_vision_fn, config: dict,
         if local is not None:
             _close_quietly(local)
         raise
+
+
+def _perception_pipeline(target: str, config: dict, who: str):
+    """YOLOE + CLIP for one mission's target, from the `perception_*` keys --
+    the tiered policy's pipeline, and since 3.227 plain explore's on a real
+    camera. Loaded here, at the start, for the reasons `_tiered_vision_fn`
+    gives; a missing install or a dead load is a ValueError (the start's 400)
+    naming `who`."""
+    pipeline_kwargs = {}
+    if config["perception_detector"]:
+        pipeline_kwargs["weights"] = config["perception_detector"]
+    if config["perception_clip_model"]:
+        pipeline_kwargs["clip_model"] = config["perception_clip_model"]
+    if config["perception_match_probability"]:
+        pipeline_kwargs["match_probability"] = float(config["perception_match_probability"])
+    if config["perception_match_margin"]:
+        pipeline_kwargs["match_margin"] = float(config["perception_match_margin"])
+    if config["perception_crop_path"]:
+        pipeline_kwargs["crop_path"] = config["perception_crop_path"]
+    if config["perception_floor_mask"]:
+        pipeline_kwargs["floor_mask"] = True
+    try:
+        from brain.perceive import pipeline_for
+
+        return pipeline_for(target, **pipeline_kwargs)
+    except PerceptionUnavailable as e:
+        # Re-raised as ValueError because start_mission() maps that to a
+        # 400 with the message intact, and the message is the useful part:
+        # it names the pip command.
+        raise ValueError(f"The {who} cannot start: {e}") from e
+    except Exception as e:  # noqa: BLE001 -- a bad weights file, a dead download
+        raise ValueError(
+            f"The {who} could not load its perception models: {e}"
+        ) from e
+
+
+def _explore_sight_fn(target: str, config: dict, simulated: bool):
+    """3.227: plain explore's eyes on frames with no detections
+    (brain/explore_sight.py). On a real camera, the tiered policy's YOLOE +
+    CLIP (one copy: a mission is tiered or explore, never both) and no
+    identity tier -- an arrival ends `arrived_unconfirmed`. In the simulator
+    (`explore_sight: perception` only), the frame's reported detections
+    (1.12: no detector runs on a render) and, under
+    `sim_arrival_confirm: geometry`, the geometry's identity (3.98)."""
+    from brain.explore_sight import PerceptionSight
+
+    if simulated:
+        from brain.perceive import FrameReportedPipeline
+
+        identity = None
+        if config["sim_arrival_confirm"] == "geometry":
+            from brain.arrival import geometry_identity
+            identity = functools.partial(geometry_identity, target=target)
+        return PerceptionSight(FrameReportedPipeline(target), identity_fn=identity)
+    return PerceptionSight(_perception_pipeline(target, config, "explore policy"))
 
 
 def _close_quietly(obj) -> None:
@@ -960,6 +990,15 @@ def create_app(
                         simulated=_frames_are_simulated(robot), confirm_vision_fn=confirm_fn,
                         local_secret=_local_vlm_secret(config, secret))
 
+            if (req.policy == "explore" and req.job != "survey"
+                    and (req.target_object or "").strip()):
+                # 3.227: a plain explore find sees with on-board perception
+                # on a real camera (`auto`), or everywhere (`perception`); a
+                # simulated camera under `auto` keeps the frame's detections.
+                simulated = _frames_are_simulated(robot)
+                if config["explore_sight"] == "perception" or not simulated:
+                    vision_fn = _explore_sight_fn(req.target_object, config, simulated)
+
             # 3.70 S2's car half: a survey's rooms named by the cloud's /room,
             # one paid call an ask, only when the config says so. Its timeout
             # is held to half the tick's, and the runner skips an ask that
@@ -990,6 +1029,7 @@ def create_app(
         except BaseException:
             if navigator is not None:
                 navigator.close()      # a refused start keeps no client open
+            _close_quietly(vision_fn)  # 3.227: nor perception's models
             raise
 
         # 3.190.C: one bounded cloud question at most, for a find's room
@@ -1001,6 +1041,7 @@ def create_app(
         except BaseException:
             if navigator is not None:
                 navigator.close()      # a refused start keeps no client open
+            _close_quietly(vision_fn)  # 3.227: nor perception's models
             raise
 
         kwargs = dict(

@@ -1,0 +1,312 @@
+{
+ "arm": "R",
+ "missions": 21,
+ "found": 0,
+ "arrived_unconfirmed": 19,
+ "arrived_unconfirmed_at_target": 19,
+ "arrived_unconfirmed_away": 0,
+ "ended_at_target": 20,
+ "sighted_missions": 20,
+ "outcomes": {
+  "arrived_unconfirmed": 19,
+  "exhausted": 2
+ },
+ "median_sim_s": 18.6,
+ "wall_s": 41,
+ "rows": [
+  {
+   "arm": "R",
+   "house": "home_first_floor",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 38.7,
+   "goals": 19,
+   "end_target_m": 0.54,
+   "sighted": 4,
+   "close_ins": 1,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.385 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:0",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 12.8,
+   "goals": 6,
+   "end_target_m": 0.55,
+   "sighted": 5,
+   "close_ins": 2,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.4 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:2",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 40.6,
+   "goals": 20,
+   "end_target_m": 0.55,
+   "sighted": 3,
+   "close_ins": 1,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.4 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:3",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 13.7,
+   "goals": 5,
+   "end_target_m": 0.51,
+   "sighted": 5,
+   "close_ins": 1,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.37 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:4",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 18.5,
+   "goals": 9,
+   "end_target_m": 0.5,
+   "sighted": 4,
+   "close_ins": 1,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.355 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:5",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 4.8,
+   "goals": 2,
+   "end_target_m": 0.5,
+   "sighted": 5,
+   "close_ins": 2,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.355 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:9",
+   "outcome": "exhausted",
+   "sim_s": 212.4,
+   "goals": 100,
+   "end_target_m": 0.67,
+   "sighted": 11,
+   "close_ins": 0,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:10",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 18.6,
+   "goals": 9,
+   "end_target_m": 0.5,
+   "sighted": 5,
+   "close_ins": 2,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.355 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:11",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 16.7,
+   "goals": 8,
+   "end_target_m": 0.55,
+   "sighted": 5,
+   "close_ins": 2,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.4 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:12",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 70.4,
+   "goals": 35,
+   "end_target_m": 0.42,
+   "sighted": 5,
+   "close_ins": 3,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.22 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:13",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 16.4,
+   "goals": 8,
+   "end_target_m": 0.5,
+   "sighted": 5,
+   "close_ins": 2,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.355 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:15",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 40.6,
+   "goals": 20,
+   "end_target_m": 0.55,
+   "sighted": 3,
+   "close_ins": 1,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.4 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:17",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 16.7,
+   "goals": 8,
+   "end_target_m": 0.55,
+   "sighted": 4,
+   "close_ins": 1,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.4 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:18",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 36.5,
+   "goals": 18,
+   "end_target_m": 0.55,
+   "sighted": 5,
+   "close_ins": 2,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.4 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:21",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 4.8,
+   "goals": 2,
+   "end_target_m": 0.55,
+   "sighted": 5,
+   "close_ins": 2,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.4 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:26",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 40.4,
+   "goals": 19,
+   "end_target_m": 0.5,
+   "sighted": 5,
+   "close_ins": 2,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.355 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:27",
+   "outcome": "exhausted",
+   "sim_s": 18.5,
+   "goals": 9,
+   "end_target_m": 2.97,
+   "sighted": 0,
+   "close_ins": 0,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (exhausted): no reachable frontier left (3 on the map: 3 reached twice, 0 set aside or dropped)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:32",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 76.7,
+   "goals": 38,
+   "end_target_m": 0.5,
+   "sighted": 5,
+   "close_ins": 3,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.355 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:34",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 14.8,
+   "goals": 7,
+   "end_target_m": 0.55,
+   "sighted": 5,
+   "close_ins": 2,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.4 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:36",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 32.2,
+   "goals": 15,
+   "end_target_m": 0.55,
+   "sighted": 6,
+   "close_ins": 2,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.4 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  },
+  {
+   "arm": "R",
+   "house": "procthor:val:37",
+   "outcome": "arrived_unconfirmed",
+   "sim_s": 42.8,
+   "goals": 21,
+   "end_target_m": 0.54,
+   "sighted": 6,
+   "close_ins": 3,
+   "sight_from": "perception",
+   "tail": [
+    "mission ended (arrived_unconfirmed): arrived (lidar 0.385 m, streak 2) but identity unconfirmed: the explore policy has no identity tier (tiered with tier_search 'explore' confirms identity)"
+   ]
+  }
+ ]
+}

@@ -427,6 +427,11 @@ brain:
   # for a run that means to test it). Real frames always ask the tiers.
   # SIM_ARRIVAL_CONFIRM overrides.
   sim_arrival_confirm: geometry
+  # 3.227 -- a plain explore find's sightings: `auto` (the simulator's
+  # detections on a simulated camera, YOLOE + CLIP on any other; a real
+  # arrival ends `arrived_unconfirmed`, this policy has no identity tier) or
+  # `perception` (on-board perception everywhere). EXPLORE_SIGHT overrides.
+  explore_sight: auto
 
   # 3.70 E4: a mission's budget -- a time limit (seconds) and a battery floor
   # (volts, the motor board's `v`). It ends `out_of_budget` at either. The
