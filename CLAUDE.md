@@ -208,7 +208,7 @@ met; this unit's board ignores serial: defective, replaced with the same kit by 
     one change of target; below 500 MB (or trending there inside 1,200 s)
     reopens 3.81.D, in amendment 4's order.
 * 3.204.C: `inventory_edge_gate` on the Rover's scans.
-* 3.220 criterion 6 (the user present): 2026-11-26 try failed 2 bars, the board reads no gimbal servo; `ROBOT_GIMBAL` stays off.
+* 3.223: the board drives the pan-tilt but never reads it (3.220 criterion 6 not met: signs, clearance, self box met; frame rate and settle failed); `ROBOT_GIMBAL` stays off.
 * Then, on its data: 3.140.B-J, 3.80.U (`evaluations/tiered-380/U/`),
   3.116.D, 3.206.R, room labels' accuracy (3.122, 3.70.S2), 3.50.D4b, 3.90.C-D,
   3.74.C-D, 3.41 part B, 3.46.C, the sim-honesty section (3.76

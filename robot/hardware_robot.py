@@ -135,16 +135,19 @@ LOOK_PAN_DEG = 90.0
 PAN_LIMIT_DEG = 90.0
 # Level: what the set-up and look-center send (3.220.C: left and right keep
 # the tilt). Every tilt is clamped here: -30 is the firmware's own floor
-# (gimbalCtrlSimple()); +30 [PLACEHOLDER].
+# (gimbalCtrlSimple()); +30 clears the chassis by eye on the board (3.220
+# criterion 6, 2026-11-26).
 LOOK_TILT_DEG = 0.0
 TILT_LIMITS_DEG = (-30.0, 30.0)
-# The firmware's +Y taken as up. [PLACEHOLDER] +1 until a tilt is watched.
+# The firmware's +Y is up: watched on the board, Y=+15 tilted the camera up
+# (3.220 criterion 6, 2026-11-26).
 TILT_SIGN = 1
 # How long a look at rest waits for the tilt to arrive, at most (never a
 # fault: the tilt is reported, not judged). 5 deg takes the servo ~20 ms.
 TILT_SETTLE_WAIT_S = 0.3
-# The firmware's +X taken as clockwise (to the right), our `pan_deg`'s
-# sense. [PLACEHOLDER] +1 until a look is watched on the board.
+# The firmware's +X is clockwise (to the right), our `pan_deg`'s sense:
+# watched on the board, X=+30 turned the camera right (3.220 criterion 6,
+# 2026-11-26).
 PAN_SIGN = 1
 # Measured within this of the goal: reached. The command is whole degrees
 # (Arduino's map() truncates) and a servo tick is 0.088 deg.
