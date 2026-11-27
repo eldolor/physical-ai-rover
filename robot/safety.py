@@ -792,7 +792,8 @@ class SafetyController:
         need = self.required_clearance_cm(MAX_LINEAR_M_S)
         return FOOTPRINT_LENGTH_M / 2 + 1.5 * need / 100.0
 
-    def footprint_clearance(self, direction: int = 1, scan: Optional[dict] = None
+    def footprint_clearance(self, direction: int = 1, scan: Optional[dict] = None,
+                            mask_self_box: bool = False
                             ) -> Tuple[Optional[float], str]:
         """Room in the corridor the chassis sweeps -- 3.18.
 
@@ -817,9 +818,11 @@ class SafetyController:
         # are a product, differences and comparisons -- the same IEEE
         # operations in numpy as in Python, so the same numbers.
         xs, ys = _ScanPoints.of(scan)
-        if direction > 0 and self.self_box_cm is not None:
+        if (direction > 0 or mask_self_box) and self.self_box_cm is not None:
             # 3.218: the robot's own mast is behind the lidar and moves with
-            # the body; it is never in a forward corridor.
+            # the body; it is never in a forward corridor. 3.224: astern too
+            # when retracing, so a return the lidar DOES see behind or
+            # beside the body still binds, and the mast itself does not.
             outside = ~self._in_self_box(xs, ys)
             xs, ys = xs[outside], ys[outside]
         if not len(xs):
@@ -1094,7 +1097,14 @@ class SafetyController:
             room = self._retrace_room()
             if room <= 0.0:
                 return 0.0, "astern_occluded"
-            return self._nearer((room, "retrace"), self.drop_clearance(-1))
+            # What the lidar does see astern still binds (review): the
+            # corridor astern with the mast's own returns masked. The track
+            # has no sensor age, so the room is not aged; the corridor is.
+            corridor = self._aged(self.footprint_clearance(-1, scan, mask_self_box=True), -1)
+            near, source = self._nearer((room, "retrace"), corridor, self.drop_clearance(-1))
+            # Tagged whichever is nearer: the move is a retrace into the
+            # unseen rear either way, and the speed cap keys on the tag.
+            return near, source if source == "retrace" else f"{source} (retrace)"
         return self._aged(self._nearer(self.rear_clearance(scan),
                                        self.footprint_clearance(-1, scan),
                                        self.drop_clearance(-1)), -1)
@@ -1106,17 +1116,24 @@ class SafetyController:
         if self._retrace is None:
             return
         # Duck-typed bodies (test doubles) may lack either: unusable, as the
-        # interface's defaults answer.
-        get_wheels = getattr(self.robot, "get_wheel_state", None)
-        get_odo = getattr(self.robot, "get_odometry", None)
-        wheels = get_wheels() if get_wheels is not None else {}
-        odo = get_odo() if get_odo is not None else {}
+        # interface's defaults answer. Any failure to read them (a remote
+        # body's lost request, a malformed reading) is an unknown motion:
+        # the track is dropped, and the clearance that asked goes on as it
+        # did before 3.224 (review: it must never raise from here).
         travel = heading = None
-        if wheels.get("usable") and wheels.get("left") and wheels.get("right"):
-            travel = ((wheels["left"]["position_rad"] + wheels["right"]["position_rad"]) / 2.0
-                      * wheels["wheel_radius_m"])
-        if odo.get("usable"):
-            heading = odo.get("heading_deg")
+        try:
+            get_wheels = getattr(self.robot, "get_wheel_state", None)
+            get_odo = getattr(self.robot, "get_odometry", None)
+            wheels = (get_wheels() if get_wheels is not None else None) or {}
+            odo = (get_odo() if get_odo is not None else None) or {}
+            if wheels.get("usable") and wheels.get("left") and wheels.get("right"):
+                travel = ((float(wheels["left"]["position_rad"])
+                           + float(wheels["right"]["position_rad"])) / 2.0
+                          * float(wheels["wheel_radius_m"]))
+            if odo.get("usable") and odo.get("heading_deg") is not None:
+                heading = float(odo["heading_deg"])
+        except Exception:
+            travel = heading = None
         self._retrace.update(time.monotonic(), travel, heading)
 
     def _retrace_room(self) -> float:
@@ -1268,7 +1285,7 @@ class SafetyController:
                 room_m_s = (clearance - need) / 100.0 / VERB_PERIOD_S
                 if abs(v) > room_m_s:
                     v = math.copysign(room_m_s, v)
-                if v < 0 and source == "retrace":
+                if v < 0 and "retrace" in source:
                     from robot.retrace import RETRACE_V_M_S
                     v = max(v, -RETRACE_V_M_S)       # 3.224: backing out slowly
         scale, pivot = self.pivot_scale(omega)

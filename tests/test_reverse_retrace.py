@@ -276,3 +276,91 @@ def test_the_verb_path_backs_out_on_its_track_only():
     behind = min(px * ux + py * uy for px, py in track) - (fx * ux + fy * uy)
     assert behind <= BAR_CM, behind
     assert 0.0 < back <= MAX_BACK_CM + BAR_CM, back
+
+
+# ---- review fixes ------------------------------------------------------------
+
+def test_motion_across_an_unwatched_gap_starts_the_track_afresh():
+    from robot.retrace import GAP_S
+    track = RetraceTrack()
+    t, s = _straight(track, 40)
+    track.update(t + GAP_S + 0.5, s + 0.10, 0.0)     # 10 cm nobody watched
+    assert track.room_cm(t + GAP_S + 0.5) == 0.0
+
+
+def test_an_idle_gap_keeps_the_track():
+    track = RetraceTrack()
+    t, s = _straight(track, 40)
+    track.update(t + 30.0, s, 0.0)                    # standing still, asked later
+    assert track.room_cm(t + 30.0) == pytest.approx(40.0, abs=1.0)
+
+
+class _TrackBody:
+    """A body with a scan, wheels and odometry the test moves by hand."""
+
+    def __init__(self):
+        self.s, self.heading, self.ranges, self.fail = 0.0, 0.0, [None] * 360, False
+
+    def get_scan(self, max_range_m=None):
+        return {"usable": True, "angle_min_deg": -180.0, "angle_increment_deg": 1.0,
+                "range_min_m": 0.02, "range_max_m": 12.0, "ranges_m": list(self.ranges)}
+
+    def get_wheel_state(self):
+        if self.fail:
+            raise RuntimeError("lost request")
+        p = self.s / 0.04
+        return {"usable": True, "left": {"position_rad": p}, "right": {"position_rad": p},
+                "wheel_radius_m": 0.04, "track_width_m": 0.172}
+
+    def get_odometry(self):
+        return {"usable": True, "distance_m": abs(self.s), "heading_deg": self.heading}
+
+    def get_depth_grid(self):
+        return {"usable": False}
+
+    def get_distance(self):
+        return 0.0
+
+
+def _driven(body, safety, cm):
+    for _ in range(int(cm)):
+        body.s += 0.01
+        safety.forward_clearance()
+
+
+def test_a_return_the_lidar_sees_astern_still_binds():
+    body = _TrackBody()
+    safety = SafetyController(body, 20.0, self_box_cm=ROVER_BOX)
+    _driven(body, safety, 50)
+    near, src = safety.reverse_clearance()
+    assert src == "retrace" and near == pytest.approx(50.0, abs=1.0)
+    # Something now seen 30 cm behind the lidar, dead astern-left (outside
+    # the mast's box): the corridor astern binds, and it is still a retrace.
+    body.ranges[180 - 160] = 0.30                   # bearing -160 deg
+    near, src = safety.reverse_clearance()
+    assert near < 30.0 and src.endswith("(retrace)"), (near, src)
+
+
+def test_a_failed_reading_drops_the_track_and_never_raises():
+    body = _TrackBody()
+    safety = SafetyController(body, 20.0, self_box_cm=ROVER_BOX)
+    _driven(body, safety, 50)
+    body.fail = True
+    safety.forward_clearance()                      # must not raise
+    assert safety.reverse_clearance() == (0.0, "astern_occluded")
+
+
+def test_the_speed_cap_holds_when_drop_astern_is_nearer(monkeypatch):
+    world = build_world("scaled_house")
+    x, y = fs.starts("scaled_house", 1, 7)[0]
+    world.x, world.y, world.theta = x, y, 0.0
+    robot = MockRobot(world, render=False)
+    safety = SafetyController(robot, 20.0, self_box_cm=ROVER_BOX)
+    w = fs.SPEED_M_S / WHEEL_RADIUS_M
+    _drive(robot, safety, world, w, w, 4.5)
+    monkeypatch.setattr(safety, "drop_clearance", lambda *a, **k: (30.0, "drop_unseen_astern"))
+    fast = -0.4 / WHEEL_RADIUS_M
+    l, r, _why = safety.vet_wheel_velocity(fast, fast)
+    v = (l + r) / 2.0 * WHEEL_RADIUS_M
+    assert safety.reverse_clearance()[1] == "drop_unseen_astern (retrace)"
+    assert -RETRACE_V_M_S - 1e-9 <= v < 0.0

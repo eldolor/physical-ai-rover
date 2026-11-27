@@ -32,6 +32,10 @@ JUMP_M = 0.5
 # 20 times a second); a heading change of a degree still records one.
 MIN_STEP_M = 0.005
 MAX_SAMPLES = 2000
+# Motion seen across a gap longer than this was not watched (review: the
+# fallback controller's track across a ROS spell, the brain's sparse asks,
+# an idle reboot): its shape is unknown, so the track starts afresh there.
+GAP_S = 0.5
 
 
 def _wrap_deg(a: float) -> float:
@@ -45,11 +49,13 @@ class RetraceTrack:
         self._lock = threading.Lock()
         self._poses: deque = deque(maxlen=MAX_SAMPLES)
         self._s: Optional[float] = None       # the last signed wheel travel, m
+        self._t: Optional[float] = None       # when the last sample came, kept or not
 
     def reset(self) -> None:
         with self._lock:
             self._poses.clear()
             self._s = None
+            self._t = None
 
     def update(self, t: float, travel_m: Optional[float], heading_deg: Optional[float]) -> None:
         """One sample: `travel_m` the signed mean wheel travel since start
@@ -61,15 +67,20 @@ class RetraceTrack:
             self.reset()
             return
         with self._lock:
-            if self._s is None or not self._poses or abs(travel_m - self._s) > JUMP_M:
+            last_t, self._t = self._t, t
+            fresh = self._s is None or not self._poses or abs(travel_m - self._s) > JUMP_M
+            if not fresh:
+                ds = travel_m - self._s
+                _, x, y, h0 = self._poses[-1]
+                turn = _wrap_deg(heading_deg - h0)
+                moved = abs(ds) >= MIN_STEP_M or abs(turn) >= 1.0
+                if not moved:
+                    return
+                fresh = last_t is None or t - last_t > GAP_S
+            if fresh:
                 self._poses.clear()
                 self._poses.append((t, 0.0, 0.0, heading_deg))
                 self._s = travel_m
-                return
-            ds = travel_m - self._s
-            _, x, y, h0 = self._poses[-1]
-            turn = _wrap_deg(heading_deg - h0)
-            if abs(ds) < MIN_STEP_M and abs(turn) < 1.0:
                 return
             mid = math.radians(h0 + turn / 2.0)
             self._poses.append((t, x + ds * math.cos(mid), y + ds * math.sin(mid), heading_deg))

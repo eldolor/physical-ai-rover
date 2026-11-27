@@ -276,8 +276,12 @@ def test_the_brain_process_never_loads_the_simulator():
     # `world.nogo` (3.161) is a person's no-go zones as geometry, which the
     # robot server, the bridge's sender and explore all read: pure Python
     # (numpy imported where a map is masked), and it can reach no backend.
+    # `robot.retrace` (3.224) is imported lazily by `robot.safety` when a
+    # controller has a self box -- the brain's does, read from the server:
+    # stdlib only, it reaches no backend. Listed so the pin says what a live
+    # brain loads.
     assert set(loaded) <= {
-        "robot", "robot.interface", "robot.safety", "robot.identity",
+        "robot", "robot.interface", "robot.safety", "robot.identity", "robot.retrace",
         "world", "world.interface", "world.bridge_faults", "world.nogo",
     }, loaded
 
