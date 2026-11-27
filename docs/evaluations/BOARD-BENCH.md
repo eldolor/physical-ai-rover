@@ -241,6 +241,16 @@ smoke (2026-11-01, F13 only, not scored) is in `board/smoke/`.
 
 ## Runs
 
+### 2026-11-27, 3.222 C: the band's age at the vet (K7), `dev` `19c830e9` -- FAILED
+
+Probe worktree; `picar-stack` active; the board up 7 min (rebooted
+before), load 0.15; no motion; OAK-D 480P, extended disparity, 10 fps.
+`DepthCamera.sensor_age_s()` sampled at random moments (0-60 ms gaps),
+120 s: **p50 111.2 / p95 155.6 / p99 161.2 / max 168.5 ms** (bar p95
+<= 150: **failed**); 3,988 samples, 0 stale, 1,201 frames, 0 failures,
+compute 9.6 ms a frame. At 15 fps (probe, 2026-11-26) the age at arrival
+was p50 51.3 / p95 52.5 ms, but K6 failed there.
+
 ### 2026-11-26, 3.222 C: the OAK-D depth driver's cost (K6), `43cac07f` (branch, not `dev`)
 
 Probe worktree from a git bundle; `picar-stack` running (sim mode,
