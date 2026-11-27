@@ -985,10 +985,14 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                 reading = {}
             v = reading.get("v") if reading.get("usable") else None
             v = float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else None
-            batt["v"], batt["reading"] = v, reading
             if wheels_turning():
                 batt["moved_at"] = now
             at_rest = batt["moved_at"] is None or now - batt["moved_at"] >= BATTERY_REST_S
+            # 3.225: `at_rest` travels inside the reading it describes (one
+            # dict, swapped whole: `GET /battery` never pairs a reading with
+            # another poll's flag), so the brain's trip-home budget can tell
+            # the pack from a sag.
+            batt["v"], batt["reading"] = v, ({**reading, "at_rest": at_rest} if reading else {})
             event = ladder.observe(v, now, at_rest)
             if event is None:
                 return
@@ -2166,7 +2170,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         """
         battery_poll(force=not batt["reading"])
         status = battery_status()
-        reading = batt["reading"] or {"usable": False, "v": None}
+        reading = batt["reading"] or {"usable": False, "v": None, "at_rest": None}
         return {**reading, "level": status["level"], "ladder": status}
 
     @app.get(prefix + "/scan", dependencies=[Depends(require_secret)])

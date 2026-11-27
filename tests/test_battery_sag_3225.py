@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 # Copyright (C) 2026 Anshu Gaind
 """3.225: the home trip's battery reserve reads the pack, not the motors'
-sag. Criteria 1-2 (`docs/plans/ros-alignment/3.225-battery-sag-reserve.md`)."""
+sag. Criteria 1-2 and 5-6 (`docs/plans/ros-alignment/3.225-battery-sag-reserve.md`;
+criterion 7 is in `tests/test_battery_ladder.py`)."""
 import json
 from pathlib import Path
 
@@ -28,13 +29,14 @@ class FixedTrip(HomeBudget):
 
 
 def first_battery_reserve(samples, t_home_s, until_s=None):
-    """Replay (t, v) as the runner does (each reading observed, then the
-    reserve asked); the first battery reserve as (t, reason), or None."""
+    """Replay (t, v) or (t, v, at_rest) as the runner does (each reading
+    observed, then the reserve asked); the first battery reserve as
+    (t, reason), or None."""
     b = FixedTrip(t_home_s)
-    for t, v in samples:
+    for t, v, *rest in samples:
         if until_s is not None and t > until_s:
             break
-        b.observe_battery(v, t)
+        b.observe_battery(v, t, rest[0] if rest else None)
         why = b.reserve_reason(lambda: None, POSE, t, None, v, FLOOR_V)
         if why and why.startswith("battery"):
             return t, why
@@ -96,3 +98,52 @@ def test_the_rested_voltage_is_the_windows_highest_reading():
     assert b.rested_v() == 11.8
     b.observe_battery(11.5, 70.0)                   # 11.8 has left the window
     assert b.rested_v() == 11.5
+
+
+def test_driving_without_a_pause_is_not_a_drain():
+    """Criterion 5 (amendment 1, the review's case): readings at rest at
+    11.2 V for 10 s, then every reading 0.5 V low and not at rest, the true
+    drain 0.0006 V/s: no reserve within 1,200 s. The window rule alone
+    (no `at_rest`) ended this at ~90 s."""
+    samples = [(t, round(11.2 - 0.0006 * t - (0.5 if t > 10 else 0.0), 3), t <= 10)
+               for t in range(0, 1200, 6)]
+    assert first_battery_reserve(samples, 60.0) is None
+
+
+def test_a_real_drain_at_rest_ends_the_search_within_one_sample():
+    """Criterion 6: criterion 2's pack with its sagged readings marked not
+    at rest: the reserve fires within 12 s after the noise-free prediction
+    crosses 10.6 V, never before it crosses 10.65 V."""
+    samples = [(t, round(rested(t) - (0.5 if i % 2 else 0.0), 3), not i % 2)
+               for i, t in enumerate(range(0, 1200, 12))]
+
+    def crosses(level):
+        return next(t / 10 for t in range(12000) if rested(t / 10) - K * 0.002 * 60.0 < level)
+
+    hit = first_battery_reserve(samples, 60.0)
+    assert hit is not None
+    assert crosses(10.65) <= hit[0] <= crosses(10.6) + 12, (hit, crosses(10.6))
+
+
+def test_the_rested_voltage_at_rest_is_projected_to_now():
+    """Amendment 1: the latest reading at rest, carried forward by the
+    drain; the window ends at the time asked, not the last sample."""
+    b = HomeBudget(DOCK)
+    b.observe_battery(11.6, 0.0, True)
+    b.observe_battery(11.0, 30.0, False)            # a sag: never counted
+    b.observe_battery(11.48, 60.0, True)
+    assert b.drain_v_s(60.0) == pytest.approx(0.002)
+    assert b.rested_v(90.0) == pytest.approx(11.48 - 0.002 * 30)
+
+
+def test_a_fresh_rate_after_a_charge_is_measured_not_inherited():
+    """Review 1: the recharge test passes on its prior rate by chance;
+    here the new span's rate differs from the prior one."""
+    b = HomeBudget(DOCK)
+    b.observe_battery(12.0, 0.0)
+    b.observe_battery(11.4, 60.0)
+    assert b.drain_v_s() == pytest.approx(0.01)
+    b.recharged()
+    b.observe_battery(12.2, 100.0)
+    b.observe_battery(12.1, 200.0)
+    assert b.drain_v_s() == pytest.approx(0.001)

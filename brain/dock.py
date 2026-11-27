@@ -203,12 +203,14 @@ class HomeBudget:
                 self.driving_s += min(MAX_GAP_S, max(0.0, t - self._last[2]))
         self._last = (x, y, t)
 
-    def observe_battery(self, v: float, t: float) -> None:
+    def observe_battery(self, v: float, t: float, at_rest: Optional[bool] = None) -> None:
         """A distinct sample (3.137's rule: a repeated reading is the board's
-        last one again, not a new measurement)."""
+        last one again, not a new measurement). `at_rest` (3.225): the robot
+        server's word that no wheel turned for 0.5 s before it was read;
+        None from a body that does not say."""
         if self._samples and self._samples[-1][1] == v:
             return
-        self._samples.append((t, float(v)))
+        self._samples.append((t, float(v), at_rest))
 
     def v_obs(self) -> float:
         if self.driving_s < EARLY_DRIVE_S:
@@ -217,31 +219,52 @@ class HomeBudget:
 
     @staticmethod
     def _highest(samples):
-        """The highest sample, the earliest of equals: the pack's own reading."""
+        """The highest sample, the earliest of equals: a sag only lowers a
+        reading, so this is the nearest to the pack's own voltage."""
         return max(samples, key=lambda s: (s[1], -s[0]))
 
-    def rested_v(self) -> Optional[float]:
-        """3.225: the pack's voltage now, the highest distinct sample within
-        the last REST_WINDOW_S (a reading taken while the motors pull is
-        lower; none is higher). None before any sample."""
-        if not self._samples:
+    def _rested(self, t: Optional[float]):
+        """3.225: (anchor a, latest b, at_rest_pool) or None. The pool is the
+        readings taken at rest when the record has any, else every reading
+        (a body that does not say, or none at rest yet). `a` is the highest
+        in the record's first REST_WINDOW_S, `b` the highest in the last
+        REST_WINDOW_S before `t` (the latest, when none is that recent)."""
+        rest = [s for s in self._samples if s[2] is True]
+        pool = rest or self._samples
+        if not pool:
             return None
-        t1 = self._samples[-1][0]
-        return self._highest([s for s in self._samples if s[0] > t1 - REST_WINDOW_S])[1]
+        now = pool[-1][0] if t is None else max(t, pool[-1][0])
+        t0 = pool[0][0]
+        a = self._highest([s for s in pool if s[0] < t0 + REST_WINDOW_S])
+        recent = [s for s in pool if s[0] > now - REST_WINDOW_S]
+        b = self._highest(recent) if recent else pool[-1]
+        return a, b, bool(rest)
 
-    def drain_v_s(self) -> float:
-        """V/s between two rested readings (3.225): the highest sample in the
-        record's first REST_WINDOW_S and the highest in its last, at least
-        DRAIN_SPAN_S apart. Before that, the rate known before the last
-        charge (none: 0). Raw first-to-last read a motor's sag as drain."""
-        if len(self._samples) < 2:
+    def drain_v_s(self, t: Optional[float] = None) -> float:
+        """V/s between two rested readings (3.225), `a` and `b` of
+        `_rested()`, at least DRAIN_SPAN_S apart. Before that, the rate known
+        before the last charge (none: 0). Raw first-to-last read a motor's
+        sag as drain (3.140's two first surveys)."""
+        r = self._rested(t)
+        if r is None:
             return self._prior_r
-        t0, t1 = self._samples[0][0], self._samples[-1][0]
-        a = self._highest([s for s in self._samples if s[0] < t0 + REST_WINDOW_S])
-        b = self._highest([s for s in self._samples if s[0] > t1 - REST_WINDOW_S])
+        a, b, _ = r
         if b[0] - a[0] < DRAIN_SPAN_S:
             return self._prior_r
         return max(0.0, (a[1] - b[1]) / (b[0] - a[0]))
+
+    def rested_v(self, t: Optional[float] = None) -> Optional[float]:
+        """3.225: the pack's voltage at `t`. From readings at rest, the
+        latest rested one projected forward by the drain; from a body that
+        does not say, the window's highest reading, unprojected (projecting
+        a sagged one would read its sag twice). None before any sample."""
+        r = self._rested(t)
+        if r is None:
+            return None
+        _, b, at_rest = r
+        if not at_rest or t is None:
+            return b[1]
+        return b[1] - self.drain_v_s(t) * max(0.0, t - b[0])
 
     def recharged(self) -> None:
         """3.156.D7g: the charge is not a drain; the rate stands until a new
@@ -280,13 +303,13 @@ class HomeBudget:
             self.last = {"l_home_m": round(L, 2), "at_dock": True}
             return None     # at the dock: nothing to drive home (a short limit is not a reserve)
         th = self.t_home(L)
-        r = self.drain_v_s()
+        r = self.drain_v_s(t)
         self.last = {"l_home_m": round(L, 2), "t_home_s": round(th, 1),
                      "v_obs_m_s": round(self.v_obs(), 3), "drain_v_s": round(r, 5)}
         if left_s is not None and th > left_s:
             return f"time: {left_s:.0f} s left, the trip home {th:.0f} s ({L:.1f} m)"
         if v_now is not None and floor_v:
-            rested = self.rested_v()
+            rested = self.rested_v(t)
             v_now = rested if rested is not None else v_now     # 3.225: not a sagged reading
             at_dock = v_now - K * r * th
             self.last["v_at_dock"] = round(at_dock, 2)

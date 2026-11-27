@@ -1903,7 +1903,9 @@ class MissionRunner:
             return False
         self._battery_v = float(v)
         if self._home is not None:
-            self._home.observe_battery(self._battery_v, now)
+            at_rest = reading.get("at_rest")         # 3.225: the robot server's word, or absent
+            self._home.observe_battery(self._battery_v, now,
+                                       at_rest if isinstance(at_rest, bool) else None)
         # 3.137: the robot server's ladder has already applied its own
         # distinct-samples rule; at Reserve or Power-off the mission ends now.
         self._battery_level = reading.get("level")

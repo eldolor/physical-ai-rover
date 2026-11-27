@@ -322,6 +322,23 @@ def test_a_sag_while_driving_stops_reads_again_and_clears(served):
     assert r.get("reason") not in (BATTERY_CHECK, BATTERY_RESERVE), r
 
 
+def test_the_battery_route_says_whether_its_reading_was_taken_at_rest(served):
+    """3.225 criterion 7: `at_rest` travels with the reading it describes:
+    false within BATTERY_REST_S of a wheel command, true after it."""
+    client, bat, body, reading, _ = served
+    r = client.post("/wheels", json={"left_rad_s": 2.0, "right_rad_s": 2.0},
+                    headers={"x-driver": "twin-dpad"}).json()
+    assert r["executed"] is True
+    reading(11.5, rest=False)
+    b = client.get("/battery").json()
+    assert (b["v"], b["at_rest"]) == (11.5, False)
+    client.post("/wheels", json={"left_rad_s": 0.0, "right_rad_s": 0.0},
+                headers={"x-driver": "twin-dpad"})
+    reading(11.7)                       # 0.6 s of sim time with the wheels stopped
+    b = client.get("/battery").json()
+    assert (b["v"], b["at_rest"]) == (11.7, True)
+
+
 def test_power_off_refuses_everyone_and_runs_its_steps_in_order_once(served):
     client, bat, body, reading, log = served
     drive_to(reading, 9.95)
