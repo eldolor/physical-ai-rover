@@ -1196,7 +1196,14 @@ how far it got, on every tab and across a reload:
   power-off began.
 * **The robot couldn't power itself off** -- it stopped and saved its work, but
   it is still on, and the button is a hard cut.
-* **Nothing was powered off** -- a simulator.
+* **Stopped. Now press the power button** -- this robot can't switch its own
+  power off (the simulator, or the board running in simulator mode), so it is
+  still on; it has stopped and saved its work.
+* **The robot has stopped answering** -- after that, once it goes quiet (two
+  missed reads): most likely off, and the light has the last word (3.232).
+
+A connected robot that stops answering reads **Not answering** in the header
+and in Settings, with when it last answered, until it answers again (3.232).
 
 The route refuses without the robot's access code; a robot with no access code
 set refuses it outright wherever it could really power off.

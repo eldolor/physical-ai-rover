@@ -218,28 +218,56 @@ def test_the_stub_says_to_press_the_power_button_then_sees_it_go_quiet(browser, 
 
 def test_one_dropped_request_does_not_flip_the_stub(browser, twin_server):  # noqa: F811
     """3.232 review: one miss over a tunnel flipped "press the power button"
-    to "stopped answering" and back; the card counts two, as the header."""
+    to "stopped answering" and back; the card counts two, as the header.
+    The title is sampled from the drop until a later answer has landed."""
     page, errors, _ = _page(browser, twin_server, battery=reply("stub"))
     _banner(page, "press the power button")
-    dropped = []
+    seen = {"dropped": False, "served_after": 0}
     page.unroute("**/battery")
 
     def handle(route):
-        if not dropped:
-            dropped.append(1)
+        if not seen["dropped"]:
+            seen["dropped"] = True
             route.abort()
             return
+        seen["served_after"] += 1
         route.fulfill(status=200, content_type="application/json", body=_json(reply("stub")))
     page.route("**/battery", handle)
-    page.wait_for_function("() => true")
-    for _ in range(40):                       # up to ~4 s for the drop to land
-        if dropped:
+    titles = []
+    for _ in range(120):                      # up to ~6 s
+        titles.append(page.locator("#battery-title").inner_text())
+        if seen["served_after"] >= 2:         # a second answer after the drop
             break
-        page.wait_for_timeout(100)
-    assert dropped
-    for _ in range(10):                       # the second ~1 s after it
-        assert "press the power button" in page.locator("#battery-title").inner_text()
-        page.wait_for_timeout(100)
+        page.wait_for_timeout(50)
+    assert seen["dropped"] and seen["served_after"] >= 2, seen
+    assert all("press the power button" in x for x in titles), set(titles)
+    assert not errors, errors
+    page.context.close()
+
+
+def test_a_failed_power_off_gone_quiet_still_says_it_is_on(browser, twin_server):  # noqa: F811
+    """3.232 review: a failed power-off's robot is running; a quiet phone may
+    only have lost it, so the card never says "most likely off"."""
+    page, errors, _ = _page(browser, twin_server, battery=reply("failed"))
+    _banner(page, "couldn't power itself off")
+    _route_battery(page, None)
+    sync_api.expect(_robot_status(page)).to_have_text("Not answering", timeout=8000)
+    text = page.locator("#battery-banner").inner_text()
+    assert "couldn't power itself off" in text and "most likely off" not in text, text
+    assert not errors, errors
+    page.context.close()
+
+
+def test_a_reload_with_the_robot_off_still_sees_it_go_quiet(browser, twin_server):  # noqa: F811
+    """3.232 review: after a reload with the robot off, connect() fails; the
+    stub card must still turn to "stopped answering"."""
+    page, errors, _ = _page(browser, twin_server, battery=reply("stub"))
+    _banner(page, "press the power button")
+    _route_battery(page, None)
+    page.route("**/frame", lambda route: route.abort())
+    page.reload(wait_until="networkidle")
+    text = _banner(page, "stopped answering", timeout=10000)
+    assert "light" in text, text
     assert not errors, errors
     page.context.close()
 
@@ -271,13 +299,35 @@ def test_a_robot_that_stops_answering_says_so_and_comes_back(browser, twin_serve
     page.context.close()
 
 
-def test_a_robot_that_refuses_is_still_answering(browser, twin_server):  # noqa: F811
-    """3.232 criterion 4: a 401 (a wrong code) is the robot answering."""
+def test_a_reconnect_from_not_answering_says_connecting(browser, twin_server):  # noqa: F811
+    """3.232 review: Connect pressed while "Not answering" read "Not
+    answering" in the header for the whole attempt."""
+    page, errors, _ = _page(browser, twin_server)
+    _route_battery(page, None)
+    sync_api.expect(_robot_status(page)).to_have_text("Not answering", timeout=8000)
+    held = []
+    page.route("**/frame", lambda route: held.append(route))      # answered later
+    page.click("#btn-connect")
+    page.click('.tab-btn[data-tab="home"]')
+    sync_api.expect(page.locator("#header-conn-text")).to_have_text("Connecting\u2026",
+                                                                   timeout=3000)
+    for route in held:
+        route.abort()
+    assert not errors, errors
+    page.context.close()
+
+
+@pytest.mark.parametrize("status,ctype,body", [
+    (401, "application/json", '{"detail": "Missing or invalid x-app-secret header."}'),
+    (500, "text/plain; charset=utf-8", "Internal Server Error"),     # Starlette's own
+])
+def test_a_robot_that_refuses_is_still_answering(browser, twin_server, status, ctype, body):  # noqa: F811
+    """3.232 criterion 4: a 401 (a wrong code), or the server's own
+    plain-text 500, is the robot answering."""
     page, errors, _ = _page(browser, twin_server)
     page.unroute("**/battery")
     page.route("**/battery", lambda route: route.fulfill(
-        status=401, content_type="application/json",
-        body=_json({"detail": "Missing or invalid x-app-secret header."})))
+        status=status, content_type=ctype, body=body))
     page.wait_for_timeout(8000)       # two misses would have shown by now
     sync_api.expect(_robot_status(page)).to_have_text("Connected")
     assert not errors, errors

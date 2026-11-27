@@ -2292,9 +2292,9 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
 
     let label, connected, connecting = false, needsSetup = false, actionable = false, quiet = false;
     if (tab === "home" || tab === "drive") {
-      quiet = !!(state.connected && state.robotQuiet);     // 3.232
-      connected = state.connected && !quiet;
-      connecting = state.connecting && !state.connected;
+      quiet = !!(state.connected && state.robotQuiet && !state.connecting);     // 3.232
+      connected = state.connected && !state.robotQuiet;
+      connecting = state.connecting && (!state.connected || state.robotQuiet);
       label = quiet ? t("robot.quietLabel") : connected ? "Connected"
         : connecting ? "Connecting\u2026" : "Not connected";
       actionable = !connected && !connecting;
@@ -2720,6 +2720,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
   function batteryInterval() {
     if (shutdownCurrent()) return BATTERY_POLL_NEAR_MS;
     if (state.robotMisses === 1) return BATTERY_POLL_NEAR_MS;   // 3.232: ask again soon
+    if (state.robotQuiet) return BATTERY_POLL_OK_MS;            // and see it come back
     const b = state.battery;
     if (!b) return BATTERY_POLL_UNANSWERED_MS;
     return b.level === "reserve" || b.level === "poweroff" ? BATTERY_POLL_NEAR_MS
@@ -2775,12 +2776,14 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       try {
         const res = await fetch(url + "/battery",
           { headers: authHeaders(), signal: ctl.signal, cache: "no-store" });
-        // 3.232: any reply from the robot server itself (JSON, whatever its
-        // status: a wrong code's 401 too) is an answer. A tunnel's own page
-        // for a robot that is gone (ngrok's offline 404) is HTML, and is not.
-        // A gateway's own 502-504 is no answer, even in JSON (review).
-        answered = /json/i.test(res.headers.get("content-type") || "")
-          && res.status !== 502 && res.status !== 503 && res.status !== 504;
+        // 3.232: any reply from the robot server itself is an answer,
+        // whatever its status (a wrong code's 401, an unhandled error's
+        // plain-text 500). Not: a gateway's 502-504, or a tunnel's HTML 404
+        // for a robot that is gone (ngrok's offline page; the robot server's
+        // own 404 is JSON). ngrok's error header is not readable cross-origin.
+        const html = /html/i.test(res.headers.get("content-type") || "");
+        answered = res.status !== 502 && res.status !== 503 && res.status !== 504
+          && !(res.status === 404 && html);
         if (res.ok) body = await res.json();
       } catch (e) { /* not answered: below */ }
       if (gen !== batteryGen || url !== state.serverUrl) return;
@@ -2870,13 +2873,14 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
 
   // Which of the banner's states this is, and the seconds left to wait.
   function shutdownView(s) {
-    // 3.232: still on, by its own word -- until it stops answering (the
-    // power button, most likely; the phone cannot tell off from out of reach).
-    // Two misses, as the header counts them: one dropped request over a
-    // tunnel must not flip "press the power button" and back (review).
-    if (s.phase === "failed" || s.phase === "stub") {
-      return { view: state.robotQuiet ? "gone" : s.phase };
-    }
+    // 3.232: the stub's robot is still on, by its own word, until it stops
+    // answering (the power button, most likely; the phone cannot tell off
+    // from out of reach). Two misses, as the header counts them: one dropped
+    // request must not flip the card and back. A failed power-off keeps its
+    // "still on, a hard cut" warning: a quiet robot there may be only a lost
+    // connection to one that is running (review).
+    if (s.phase === "stub") return { view: state.robotQuiet ? "gone" : "stub" };
+    if (s.phase === "failed") return { view: "failed" };
     if (s.quietAt == null) return { view: s.phase === "powering_off" ? "powering" : "stopping" };
     if (s.phase !== "powering_off") return { view: "unknown" };
     const left = Math.ceil(s.settleS - (Date.now() - s.quietAt) / 1000);
@@ -3299,17 +3303,21 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
       return;
     }
     state.robotMisses = (state.robotMisses || 0) + 1;
-    if (state.robotMisses >= ROBOT_QUIET_MISSES && state.connected && !state.connecting
-        && !state.robotQuiet) {
+    // A shutdown under way counts too: after a reload with the robot off,
+    // connect() fails and the stub card must still see it go quiet (review).
+    if (state.robotMisses >= ROBOT_QUIET_MISSES && (state.connected || shutdownCurrent())
+        && !state.connecting && !state.robotQuiet) {
       state.robotQuiet = true;
       renderRobotQuiet();
     }
   }
 
   function robotHeardWhen() {
-    return state.robotHeardAt
-      ? new Date(state.robotHeardAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
-      : null;
+    if (!state.robotHeardAt) return null;
+    const d = new Date(state.robotHeardAt);
+    const time = d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    return d.toDateString() === new Date().toDateString() ? time
+      : d.toLocaleDateString([], { month: "short", day: "numeric" }) + ", " + time;
   }
 
   function renderRobotQuiet() {
