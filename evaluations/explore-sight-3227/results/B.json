@@ -10,8 +10,9 @@
  "outcomes": {
   "exhausted": 21
  },
+ "cloud_calls": 0,
  "median_sim_s": 93.5,
- "wall_s": 100,
+ "wall_s": 101,
  "rows": [
   {
    "arm": "B",
@@ -22,6 +23,7 @@
    "end_target_m": 13.96,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (9 on the map: 9 reached twice, 0 set aside or dropped)"
@@ -36,6 +38,7 @@
    "end_target_m": 3.0,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
@@ -50,6 +53,7 @@
    "end_target_m": 4.81,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (3 on the map: 3 reached twice, 0 set aside or dropped)"
@@ -64,6 +68,7 @@
    "end_target_m": 3.31,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (3 on the map: 3 reached twice, 0 set aside or dropped)"
@@ -78,6 +83,7 @@
    "end_target_m": 1.27,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (1 on the map: 1 reached twice, 0 set aside or dropped)"
@@ -92,6 +98,7 @@
    "end_target_m": 2.85,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (0 on the map: 0 reached twice, 0 set aside or dropped)"
@@ -106,6 +113,7 @@
    "end_target_m": 3.91,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
@@ -120,6 +128,7 @@
    "end_target_m": 9.83,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (1 on the map: 1 reached twice, 0 set aside or dropped)"
@@ -134,6 +143,7 @@
    "end_target_m": 10.82,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
@@ -148,6 +158,7 @@
    "end_target_m": 11.88,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
@@ -162,6 +173,7 @@
    "end_target_m": 3.0,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (0 on the map: 0 reached twice, 0 set aside or dropped)"
@@ -176,6 +188,7 @@
    "end_target_m": 13.18,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (1 on the map: 1 reached twice, 0 set aside or dropped)"
@@ -190,6 +203,7 @@
    "end_target_m": 7.41,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
@@ -204,6 +218,7 @@
    "end_target_m": 10.61,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (1 on the map: 1 reached twice, 0 set aside or dropped)"
@@ -218,6 +233,7 @@
    "end_target_m": 2.12,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (0 on the map: 0 reached twice, 0 set aside or dropped)"
@@ -232,6 +248,7 @@
    "end_target_m": 0.6,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (1 on the map: 1 reached twice, 0 set aside or dropped)"
@@ -246,6 +263,7 @@
    "end_target_m": 2.97,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (3 on the map: 3 reached twice, 0 set aside or dropped)"
@@ -260,6 +278,7 @@
    "end_target_m": 1.08,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (4 on the map: 4 reached twice, 0 set aside or dropped)"
@@ -274,6 +293,7 @@
    "end_target_m": 11.13,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (3 on the map: 3 reached twice, 0 set aside or dropped)"
@@ -288,6 +308,7 @@
    "end_target_m": 2.4,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (2 on the map: 2 reached twice, 0 set aside or dropped)"
@@ -302,6 +323,7 @@
    "end_target_m": 2.47,
    "sighted": 0,
    "close_ins": 0,
+   "cloud_calls": 0,
    "sight_from": "frame",
    "tail": [
     "mission ended (exhausted): no reachable frontier left (1 on the map: 1 reached twice, 0 set aside or dropped)"

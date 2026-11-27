@@ -33,8 +33,11 @@ from sim.mock_robot import MockRobot  # noqa: E402
 from sim.mock_world import MockWorld  # noqa: E402
 from tests.test_explore import FakeNav  # noqa: E402
 
-sys.path.insert(0, str(ROOT / "evaluations/tiered-380/E"))
-from pilot import SWEEP_HOUSES  # noqa: E402
+# evaluations/tiered-380/E/pilot.py's SWEEP_HOUSES (3.80.G's 21), copied so
+# importing this module puts nothing else on sys.path.
+SWEEP_HOUSES = ["home_first_floor"] + [f"procthor:val:{i}" for i in
+                                       (0, 2, 3, 4, 5, 9, 10, 11, 12, 13, 15, 17, 18,
+                                        21, 26, 27, 32, 34, 36, 37)]
 
 TARGET = "red backpack"
 CELL_M = 0.3
@@ -45,28 +48,37 @@ OUT = Path(__file__).with_name("results")
 class StandInRobot(MockRobot):
     """A real camera's frames: no `detections`, no `objects_visible`, and a
     provenance that is not `sim`. The stripped detections are kept on the
-    robot (never in the frame) for the perception stand-in alone."""
+    robot (never in the frame), by the frame's own `standin_seq`, for the
+    perception stand-in alone -- so another read between the step's frame
+    and its perception (an inventory or label frame) cannot swap them."""
 
-    last_truth = None
+    def __init__(self, *a, **k):
+        super().__init__(*a, **k)
+        self.truth: dict = {}
+        self._seq = 0
 
     def get_camera_frame(self):
         frame = super().get_camera_frame()
-        self.last_truth = {"detections": frame.pop("detections", None)}
+        self._seq += 1
+        self.truth[self._seq] = {"detections": frame.pop("detections", None)}
+        self.truth.pop(self._seq - 64, None)
         frame.pop("objects_visible", None)
-        frame["metadata"] = {**(frame.get("metadata") or {}), "source": "stand-in"}
+        frame["metadata"] = {**(frame.get("metadata") or {}), "source": "stand-in",
+                             "standin_seq": self._seq}
         return frame
 
 
 class StandInPipeline(FrameReportedPipeline):
     """The detector replaced by truth, the consumer real (1.12): perceives the
-    detections the stand-in robot stripped from the frame it just served."""
+    detections the stand-in robot stripped from this very frame."""
 
     def __init__(self, robot, target):
         super().__init__(target)
         self.robot = robot
 
     def perceive(self, frame):
-        return super().perceive(self.robot.last_truth or {})
+        seq = (frame.get("metadata") or {}).get("standin_seq")
+        return super().perceive(self.robot.truth.get(seq) or {})
 
 
 def target_m(grid):
@@ -108,6 +120,7 @@ def run(arm, house):
             "goals": s["explore"]["goals_sent"], "end_target_m": round(target_m(grid), 2),
             "sighted": len(getattr(agent, "_sighted", ()) or ()),
             "close_ins": getattr(agent, "close_ins", 0),
+            "cloud_calls": s["budget"]["cloud_calls"] or 0,
             "sight_from": getattr(agent, "sight_from", None),
             "tail": s["log_tail"][-1:]}
 
@@ -125,6 +138,7 @@ def summary(rows):
             "sighted_missions": sum(r["sighted"] > 0 for r in rows),
             "outcomes": {o: sum(r["outcome"] == o for r in rows)
                          for o in sorted({r["outcome"] for r in rows})},
+            "cloud_calls": sum(r["cloud_calls"] for r in rows),
             "median_sim_s": statistics.median(r["sim_s"] for r in rows)}
 
 

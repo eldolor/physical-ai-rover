@@ -3,8 +3,9 @@
 """3.227: plain explore sees the target on frames with no `detections`
 (brain/explore_sight.py; docs/plans/ros-alignment/3.227-explore-real-detections.md)."""
 
+import importlib.util
 import json
-import sys
+import statistics
 from pathlib import Path
 
 import pytest
@@ -18,7 +19,16 @@ from tests.test_brain_server import _StubNavigator
 
 ROOT = Path(__file__).resolve().parents[1]
 SWEEP = ROOT / "evaluations/explore-sight-3227"
-sys.path.insert(0, str(SWEEP))
+
+
+def _sweep():
+    """The sweep module under a name of its own, with sys.path untouched
+    (eighteen evaluations have a `sweep.py`)."""
+    spec = importlib.util.spec_from_file_location("explore_sight_3227_sweep",
+                                                  SWEEP / "sweep.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
 
 
 # ---------- the vision_fn ----------
@@ -77,8 +87,7 @@ def test_close_closes_the_pipeline():
 # ---------- through MissionRunner, on a real-camera stand-in ----------
 
 def _run(arm, house):
-    import sweep
-    return sweep.run(arm, house)
+    return _sweep().run(arm, house)
 
 
 def test_dev_explore_on_real_frames_never_sees_the_target():
@@ -91,7 +100,7 @@ def test_dev_explore_on_real_frames_never_sees_the_target():
 def test_explore_on_real_frames_arrives_and_ends_unconfirmed():
     """Arm R: the same house, perception's sightings; at the target, never
     `found`, no late confirmation pending (no cloud on this policy)."""
-    import sweep
+    sweep = _sweep()
     from control.mission_runner import MissionRunner
     from sim.maps import build_world
     from sim.mock_world import MockWorld
@@ -132,6 +141,13 @@ def test_the_recorded_sweep_meets_section_a():
     assert f["found"] == 20
     assert r["arrived_unconfirmed_at_target"] == 19 >= int(0.9 * f["found"])    # 3
     assert r["found"] == 0 and r["arrived_unconfirmed_away"] == 0               # 4
+    assert r["cloud_calls"] == 0
+    fr = {x["house"]: x for x in f["rows"]}
+    both = [x for x in r["rows"] if fr[x["house"]]["outcome"] == "found"
+            and x["outcome"] == "arrived_unconfirmed" and x["end_target_m"] <= 0.9]
+    ratio = (statistics.median(x["sim_s"] for x in both)
+             / statistics.median(fr[x["house"]]["sim_s"] for x in both))
+    assert len(both) == 19 and ratio <= 1.5                                     # 5
 
 
 # ---------- the brain server's choice, at the start ----------
@@ -180,7 +196,7 @@ def test_a_real_camera_find_sees_with_the_tiers_pipeline(tmp_path, monkeypatch):
         return pipe
 
     monkeypatch.setattr(perceive, "pipeline_for", pipeline_for)
-    monkeypatch.setattr(bs, "_frames_are_simulated", lambda robot: False)
+    monkeypatch.setattr(bs, "_frame_source", lambda robot: "")
     app, _ = _app(tmp_path, monkeypatch, perception_match_probability=0.85)
     with TestClient(app) as client:
         resp = client.post("/mission/start", json=FIND)
@@ -201,7 +217,7 @@ def test_a_real_camera_find_with_no_perception_install_is_refused(tmp_path, monk
         raise PerceptionUnavailable("pip install -r requirements-perception.txt")
 
     monkeypatch.setattr(perceive, "pipeline_for", missing)
-    monkeypatch.setattr(bs, "_frames_are_simulated", lambda robot: False)
+    monkeypatch.setattr(bs, "_frame_source", lambda robot: "")
     app, closes = _app(tmp_path, monkeypatch)
     with TestClient(app) as client:
         resp = client.post("/mission/start", json=FIND)
@@ -212,12 +228,29 @@ def test_a_real_camera_find_with_no_perception_install_is_refused(tmp_path, monk
     assert runner is None or runner.status()["outcome"] in (None, "idle")
 
 
+def test_a_failed_camera_probe_keeps_devs_frame_source(tmp_path, monkeypatch):
+    """Review: one failed read at the start loads no model and refuses
+    nothing -- dev's source stands."""
+    import brain.perceive as perceive
+    import control.brain_server as bs
+    monkeypatch.setattr(perceive, "pipeline_for",
+                        lambda *a, **k: pytest.fail("a failed probe loads no model"))
+    monkeypatch.setattr(bs, "_frame_source", lambda robot: None)
+    app, _ = _app(tmp_path, monkeypatch)
+    with TestClient(app) as client:
+        resp = client.post("/mission/start", json=FIND)
+        runner = app.state.brain_state["runner"]
+        client.post("/mission/stop")
+    assert resp.status_code == 200, resp.text
+    assert runner.agent.sight_from == "frame"
+
+
 def test_a_real_camera_survey_loads_nothing(tmp_path, monkeypatch):
     import brain.perceive as perceive
     import control.brain_server as bs
     monkeypatch.setattr(perceive, "pipeline_for",
                         lambda *a, **k: pytest.fail("a survey has no target to perceive"))
-    monkeypatch.setattr(bs, "_frames_are_simulated", lambda robot: False)
+    monkeypatch.setattr(bs, "_frame_source", lambda robot: "")
     app, _ = _app(tmp_path, monkeypatch)
     with TestClient(app) as client:
         resp = client.post("/mission/start", json={"job": "survey", "policy": "explore"})
@@ -234,7 +267,7 @@ def test_a_refused_start_after_the_build_closes_the_pipeline(tmp_path, monkeypat
     import control.brain_server as bs
     pipe = _Pipe()
     monkeypatch.setattr(perceive, "pipeline_for", lambda *a, **k: pipe)
-    monkeypatch.setattr(bs, "_frames_are_simulated", lambda robot: False)
+    monkeypatch.setattr(bs, "_frame_source", lambda robot: "")
     monkeypatch.setattr(bs, "rooms_prior_informative", lambda target: True)
     app, _ = _app(tmp_path, monkeypatch, find_room_labels="cloud")
     with TestClient(app) as client:

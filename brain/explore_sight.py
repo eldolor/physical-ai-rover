@@ -35,7 +35,7 @@ class PerceptionSight:
     # Read by MissionRunner: run explore with `sight_from: perception`.
     explore_sight_from = "perception"
 
-    def __init__(self, pipeline, identity_fn: Optional[Callable[[dict], dict]] = None):
+    def __init__(self, pipeline, identity_fn: Optional[Callable[[dict], Optional[bool]]] = None):
         self.pipeline = pipeline
         self.identity_fn = identity_fn
         self._base: Optional[Callable[[dict], dict]] = None
@@ -74,14 +74,6 @@ class PerceptionSight:
                 NO_IDENTITY_TIER: True, "tier": "none",
                 "reason": "the explore policy has no identity tier (tiered with "
                           "tier_search 'explore' confirms identity)"}
-
-    def models(self) -> dict:
-        """What looked, for status: the pipeline's detector and scorer names."""
-        def name(m):
-            return getattr(m, "weights", None) or getattr(m, "model_name", None) or (
-                type(m).__name__ if m is not None else None)
-        return {"detector": name(getattr(self.pipeline, "detector", None)),
-                "scorer": name(getattr(self.pipeline, "scorer", None))}
 
     def close(self) -> None:
         close = getattr(self.pipeline, "close", None)

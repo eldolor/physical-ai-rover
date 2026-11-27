@@ -497,14 +497,18 @@ The heavy imports happen in step 4, on the start path, so a missing install
 is a refusal and never a B3.2 vision failure three ticks in.
 
 **Plain explore's perception (3.227).** For `policy` `explore` with `job`
-`find` and a target, after the navigator check: if `explore_sight` is
-`perception`, or `_frames_are_simulated(robot)` is false, the `vision_fn`
+`find` and a target, after the navigator check: the probe frame's
+`metadata.source` (`_frame_source()`, None when the read failed). If
+`explore_sight` is `perception`, or the source was read and is not `sim`,
+the `vision_fn`
 is `_explore_sight_fn(target, config, simulated)` -- a `PerceptionSight`
 over `FrameReportedPipeline` (simulated, with `geometry_identity` under
 `sim_arrival_confirm: geometry`) or over `_perception_pipeline(target,
 config, "explore policy")` (a 400 `The explore policy cannot start: ...`
 naming the pip command when the install is missing). A simulated camera
-under `auto`, and every survey, build nothing (dev's `sensed_scene`). Any
+under `auto`, a probe that failed under `auto` (logged; unlike the tiered
+policy's "assume a real camera", review 2026-11-27), and every survey build
+nothing (dev's `sensed_scene`). Any
 refusal after the build (room labels, the room prior, the runner) closes
 it (`_close_quietly`).
 

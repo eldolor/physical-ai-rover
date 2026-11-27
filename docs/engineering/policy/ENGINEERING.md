@@ -776,8 +776,8 @@ logged and counted in `stats.cloud_errors`, not raised into B3.2).
 **Plain explore on real frames (3.227).** `brain.explore_sight` (env
 `EXPLORE_SIGHT`, `auto` | `perception`, default `auto`). The brain server
 decides once, at a find's start (a survey has no target and is unchanged),
-from frame provenance (`_frames_are_simulated()`): under `auto` a
-simulated camera keeps the `frame` mode exactly (3.227 criterion 1: 21 of 21
+from frame provenance (`_frame_source()`): under `auto` a simulated camera,
+or a probe that failed, keeps the `frame` mode exactly (3.227 criterion 1: 21 of 21
 houses identical); any other camera, and every camera under `perception`,
 gets `PerceptionSight` (`brain/explore_sight.py`) as the `vision_fn`, so the
 runner builds `ExploreAgent(sight_from="perception")` and everything above
