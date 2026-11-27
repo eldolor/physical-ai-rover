@@ -166,9 +166,6 @@ board` lists open steps. **Whoever merges moves the section's line to
 * The tour's goal 6, the garage exit, fails 0/3 (3.57, 3.67, 3.68).
 * 3.70: the live survey ran out of time; room labels 46 of 90 (bar 95%);
   S4 and M1-M3 wait on missions on a saved map.
-* **Explore reads `frame["detections"]`, which only the simulator
-  provides** (3.76 E): on the car explore cannot see the target until
-  perception on real frames is built.
 * 3.175-3.178 (the user, 2026-11-12: features from similar products,
   bars first): 3.175 a moved target's memory; 3.176 a find in plain words
   (the model arm asks first); 3.178 a watch list (needs the Rover's frames).
