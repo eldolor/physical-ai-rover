@@ -669,6 +669,17 @@ class _HaltGate(RobotInterface):
         through the gate (3.22's criterion 3)."""
         return getattr(self._robot, "stop_count", 0)
 
+    def lidar_self_box_cm(self):
+        """3.229 (3.228 F1): the wrapped body's lidar self box (3.218), so
+        the agent's controller -- and `ReturnTrip`, built on it -- judges
+        the scan as the robot server does. Without it `_body_self_box()`
+        found no method on the gate, the brain's controller had no box, and
+        on the Rover the mast read as an obstacle at 0.0 cm: every escape
+        and back-off was refused in the brain. None when the body reports
+        none (a read, so never gated); `self_box()` still validates it."""
+        probe = getattr(type(self._robot), "lidar_self_box_cm", None)
+        return self._robot.lidar_self_box_cm() if callable(probe) else None
+
     def look_left(self) -> dict:
         self._guard("look_left")
         return self._robot.look_left()

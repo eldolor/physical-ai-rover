@@ -1018,6 +1018,12 @@ cancelled_by)` (`stopped` -> `cancelled`/`stop`, `preempted` ->
   `turn_right`, `look_left`, `look_right`, `look_center`,
   `set_wheel_velocity`; plus `verb_plan()` (guarded) and `verb_done()` /
   `stop_count` (forwarded) since 3.32. Raises `MissionHalted`.
+  `lidar_self_box_cm()` (3.229, 3.228 F1) passes the body's 3.218 self box
+  through, None when the body has none: the agent's `SafetyController` (and
+  `ReturnTrip`, built on `agent.safety`) reads it off the gate with
+  `_body_self_box()`, so it judges the scan as the robot server does.
+  Without it the brain read the Rover's mast as an obstacle at 0.0 cm and
+  refused every escape and back-off.
 - `_GatedNavigator` (3.76 C1-C4), what `explore` gets in place of the
   navigator: `set_goal` answers `{"accepted": false, "reason":
   "mission_ended"}` once the mission has ended, cancels a goal accepted
@@ -1284,6 +1290,7 @@ tests/test_mission_guarded_verbs.py -q`.
 | `tests/test_arrival_reconfirm.py` (26) | 3.53: once the cloud is back, exactly one paid call on all 12 clear starts for a cloud that sees the target and one that does not; the outcome unchanged; no robot method called; free and bounded probing (`expired`); two paid attempts, half a window apart, then `failed`, and a server-side outage that clears in the window `confirmed`; a cancel never pays, also when it lands between the probe and the call; a cap refusal counts no paid call; a hung call is never doubled (a second attempt only once it has ended, 3.76 G1); only an unconfirmed arrival records anything; the metrics row re-sent, not added; through `brain_server`, a new mission drops it, a refused start and a Stop after the ending (also one in the loop's last sleep) do not; the brain's own loop asks |
 | `tests/test_review_376g.py` (14) | 3.76 G1, G4: a late answer that outlived its guard is used once it lands (not paid twice, not held to the retry), also on the last attempt, in the window's last interval, and when it lands at the guard itself; its error landing during a probe is not counted twice, and the attempt then due is sent at once; a last call ending in an error ends the check with that error; a call ending after a cancel ships its cost; a call out all window with the cloud never up is `expired`; a confirmation still out delays the ask without ending the window or blocking a probe; a window that ends with nothing out is not "still in flight"; the cloud watch's `age_s` survives a wall-clock step |
 | `tests/test_robot_contract.py` | `_HaltGate` passes the body conformance suite as a backend |
+| `tests/test_brain_self_box_3229.py` (7) | 3.229: built through `MissionRunner` on the sim with the Rover's mast in every scan and its box reported, the brain's forward and reverse clearances equal the server's (274.5 cm `depth_grid`, 0.0 `astern_occluded`); explore's escape sends its FORWARD and its REVERSE is refused only as `astern_occluded`; the return's back-off likewise, and its nudge is sent; a body with no box is unchanged; an unreadable box is no box |
 | `tests/test_review_376c.py` (13) | 3.76 batch C: Stop ends explore's own nav2 goal (not a person's), also one accepted as Stop lands on another thread; no goal after the end; a person at the D-pad ends explore; explore waits on `ros` just after its goal; "took over" parsed; one start at a time while building, and a Stop during the build means no start; unreachable or 401 robot named at start |
 | `tests/test_review_376k2.py` (8) | 3.76 K2: a Stop during the arrival's waits (a trigger call still out, the last confirmation) sends no cloud confirmation; a start refused (400, 403) or stopped during its build leaves a person's Stop latched, a started one lifts it; a start during a stopped build's discard gets the 409; a late call ending at its guard after a cancel still ships its cost (a guard) |
 | `tests/test_review_376n1.py` (14) | 3.76 N1: a guarded verb on the wall clock stops at an aged line (a guard); feedback lost on the verb's last read keeps a stopped or completed verb's outcome, and a short end reads `no_feedback`; the tick-hang drill centres the camera and counts each tick once; a deadline of 0 is refused; a tick inside its deadline is not a loop not turning; the ROS world follows the drive's bridge URL; an empty `TRACK_SCRUB` is unset |
@@ -1291,7 +1298,8 @@ tests/test_mission_guarded_verbs.py -q`.
 | `tests/test_offline_mode.py` (15) | 3.49, with every socket connect refused and the real HTTP cloud client: the robot server loads no cloud client (a subprocess's `sys.modules`, and every file under `robot/`); `frontier`/`explore` still `found`; tiered (sync, async) searches from out of sight and ends `found` on the sim's geometry (3.98, the brain's default) and, with the confirmation left to the cloud, `arrived_unconfirmed` at the target; `vision` fails without moving; no offline tiered run `failed`; a hanging cloud parks for at most budget x timeout + 1 s; the twin references no external host |
 
 **Checklist for a change here:** a new movement method on `RobotInterface`
-must be added to `_HaltGate.MOVEMENT`; a new sensing method must be passed
+must be added to `_HaltGate.MOVEMENT`; a new sensing method, or a body
+attribute `robot/safety.py` probes (`lidar_self_box_cm`, 3.229), must be passed
 through explicitly (inheriting the interface's default would make every
 mission report the sensor missing); a new terminal path must go through
 `_finish()`; a new `brain:` key goes into `DEFAULTS` in the same commit as
