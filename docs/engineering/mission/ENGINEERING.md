@@ -505,10 +505,12 @@ is `_explore_sight_fn(target, config, simulated)` -- a `PerceptionSight`
 over `FrameReportedPipeline` (simulated, with `geometry_identity` under
 `sim_arrival_confirm: geometry`) or over `_perception_pipeline(target,
 config, "explore policy")` (a 400 `The explore policy cannot start: ...`
-naming the pip command when the install is missing). A simulated camera
-under `auto`, a probe that failed under `auto` (logged; unlike the tiered
-policy's "assume a real camera", review 2026-11-27), and every survey build
-nothing (dev's `sensed_scene`). Any
+naming the pip command when the install is missing). A probe that failed
+(no frame, or not a dict) refuses the start with a 400 that says to try
+again, in either mode, before any model loads (unlike the tiered policy's
+"assume a real camera": a render must not reach a detector, and a real
+camera must not run blind; reviews 2026-11-27). A simulated camera under
+`auto`, and every survey, build nothing (dev's `sensed_scene`). Any
 refusal after the build (room labels, the room prior, the runner) closes
 it (`_close_quietly`).
 

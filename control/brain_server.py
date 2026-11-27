@@ -401,14 +401,17 @@ def _frames_are_simulated(robot: RobotInterface) -> bool:
 
 def _frame_source(robot: RobotInterface) -> Optional[str]:
     """3.227: the probe frame's `metadata.source` ("sim" for the simulator,
-    "" for a camera that names none), or None when the frame could not be
-    read. `_frames_are_simulated` folds None into "a real camera" for the
-    tiered policy; plain explore's `auto` keeps dev's source instead."""
+    "" for a camera that names none), or None when no frame could be read.
+    `_frames_are_simulated` folds None into "a real camera" for the tiered
+    policy; plain explore's find refuses its start on None instead."""
     try:
         frame = robot.get_camera_frame()
     except Exception:  # noqa: BLE001 -- answered None, see the docstring
         return None
-    return str((frame.get("metadata") or {}).get("source") or "")
+    if not isinstance(frame, dict):
+        return None
+    meta = frame.get("metadata")
+    return str((meta if isinstance(meta, dict) else {}).get("source") or "")
 
 
 # sim/renderer.py's FPV_FOV, in degrees. Copied, not imported: control/ never
@@ -1008,15 +1011,17 @@ def create_app(
                 # on a real camera (`auto`), or everywhere (`perception`); a
                 # simulated camera under `auto` keeps the frame's detections.
                 source = _frame_source(robot)
-                if config["explore_sight"] == "perception" or source not in ("sim", None):
+                if source is None:
+                    # Review: a probe that failed says nothing about the
+                    # camera. Loading models (a render's, 1.12) or running a
+                    # find that can never see (a real camera's) are both
+                    # wrong; the start is refused and can be tried again.
+                    raise ValueError("The explore policy could not read the camera at "
+                                     "start, so it cannot tell a simulated camera from a "
+                                     "real one; try the start again.")
+                if config["explore_sight"] == "perception" or source != "sim":
                     vision_fn = _explore_sight_fn(req.target_object, config,
                                                   simulated=source == "sim")
-                elif source is None:
-                    # Review: a probe that failed says nothing about the
-                    # camera; dev's frame source stands (no model loaded on
-                    # a render, no start refused on one read).
-                    logger.warning("explore_sight auto: the camera probe failed at start; "
-                                   "sightings stay on the frame's detections this mission")
 
             # 3.70 S2's car half: a survey's rooms named by the cloud's /room,
             # one paid call an ask, only when the config says so. Its timeout

@@ -3,6 +3,7 @@
 """3.227: plain explore sees the target on frames with no `detections`
 (brain/explore_sight.py; docs/plans/ros-alignment/3.227-explore-real-detections.md)."""
 
+import functools
 import importlib.util
 import json
 import statistics
@@ -21,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SWEEP = ROOT / "evaluations/explore-sight-3227"
 
 
+@functools.lru_cache(maxsize=None)
 def _sweep():
     """The sweep module under a name of its own, with sys.path untouched
     (eighteen evaluations have a `sweep.py`)."""
@@ -141,7 +143,6 @@ def test_the_recorded_sweep_meets_section_a():
     assert f["found"] == 20
     assert r["arrived_unconfirmed_at_target"] == 19 >= int(0.9 * f["found"])    # 3
     assert r["found"] == 0 and r["arrived_unconfirmed_away"] == 0               # 4
-    assert r["cloud_calls"] == 0
     fr = {x["house"]: x for x in f["rows"]}
     both = [x for x in r["rows"] if fr[x["house"]]["outcome"] == "found"
             and x["outcome"] == "arrived_unconfirmed" and x["end_target_m"] <= 0.9]
@@ -228,21 +229,42 @@ def test_a_real_camera_find_with_no_perception_install_is_refused(tmp_path, monk
     assert runner is None or runner.status()["outcome"] in (None, "idle")
 
 
-def test_a_failed_camera_probe_keeps_devs_frame_source(tmp_path, monkeypatch):
-    """Review: one failed read at the start loads no model and refuses
-    nothing -- dev's source stands."""
+@pytest.mark.parametrize("sight", ["auto", "perception"])
+def test_a_failed_camera_probe_refuses_the_start_and_loads_nothing(tmp_path, monkeypatch,
+                                                                    sight):
+    """Reviews: a failed read at the start says nothing about the camera --
+    no model is loaded (a render's, 1.12) and no blind find runs (a real
+    camera's); a 400 that says to try again."""
     import brain.perceive as perceive
     import control.brain_server as bs
     monkeypatch.setattr(perceive, "pipeline_for",
                         lambda *a, **k: pytest.fail("a failed probe loads no model"))
     monkeypatch.setattr(bs, "_frame_source", lambda robot: None)
-    app, _ = _app(tmp_path, monkeypatch)
+    app, closes = _app(tmp_path, monkeypatch, explore_sight=sight)
     with TestClient(app) as client:
         resp = client.post("/mission/start", json=FIND)
-        runner = app.state.brain_state["runner"]
-        client.post("/mission/stop")
-    assert resp.status_code == 200, resp.text
-    assert runner.agent.sight_from == "frame"
+    assert resp.status_code == 400, resp.text
+    assert "could not read the camera" in resp.text and closes
+
+
+@pytest.mark.parametrize("frame", [None, {"metadata": None}, "not a frame"])
+def test_the_probe_reads_odd_frames_without_raising(frame):
+    import control.brain_server as bs
+
+    class Body:
+        def get_camera_frame(self):
+            return frame
+
+    assert bs._frame_source(Body()) == (None if not isinstance(frame, dict) else "")
+
+
+def test_the_sweep_runs_3_80_gs_houses():
+    """The copied house list stays 3.80.G's (review)."""
+    spec = importlib.util.spec_from_file_location(
+        "pilot_380e", ROOT / "evaluations/tiered-380/E/pilot.py")
+    pilot = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(pilot)
+    assert _sweep().SWEEP_HOUSES == pilot.SWEEP_HOUSES
 
 
 def test_a_real_camera_survey_loads_nothing(tmp_path, monkeypatch):

@@ -25,7 +25,8 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT))
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 from brain.perceive import FrameReportedPipeline  # noqa: E402
 from control.mission_runner import MissionRunner  # noqa: E402
 from sim.maps import build_world  # noqa: E402
@@ -78,7 +79,10 @@ class StandInPipeline(FrameReportedPipeline):
 
     def perceive(self, frame):
         seq = (frame.get("metadata") or {}).get("standin_seq")
-        return super().perceive(self.robot.truth.get(seq) or {})
+        if seq not in self.robot.truth:
+            # A lost hand-off is a harness bug, never "perception saw nothing".
+            raise AssertionError(f"no stand-in truth for frame seq {seq!r}")
+        return super().perceive(self.robot.truth[seq])
 
 
 def target_m(grid):
