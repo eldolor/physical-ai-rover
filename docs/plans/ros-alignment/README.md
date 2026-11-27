@@ -226,6 +226,6 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.221](3.221-rover-slam.md) | SLAM on the real Rover, mapping while driven by hand |
 | [3.222](3.222-oakd-floor-band.md) | OAK-D Lite depth driver and floor band on the Rover |
 | [3.223](3.223-gimbal-servo-reads.md) | The board drives the pan-tilt servos but never reads them |
-| [3.225](3.225-battery-sag-reserve.md) | The home trip's battery prediction reads motor sag as drain |
 | [3.224](3.224-reverse-retrace.md) | Reverse along the Rover's own track: backing out over ground it just drove |
+| [3.225](3.225-battery-sag-reserve.md) | The home trip's battery prediction reads motor sag as drain |
 <!-- /sections -->
