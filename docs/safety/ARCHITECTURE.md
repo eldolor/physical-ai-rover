@@ -228,7 +228,13 @@ behind the lidar and moves with the body. Astern the mast means what it
 is: the lidar cannot see behind the body, so with a self box set every
 reverse is refused as `astern_occluded`, even in a scan that happened to
 miss the mast -- the same rule as "A body that cannot see astern does not
-reverse". The brain's own safety check judges the scan with the same box,
+reverse". **One exception, decided by the user 2026-11-26 (3.224): ground
+the body itself just drove across.** It occupied that ground moments ago,
+so a reverse may go back along its own recent track -- straight, within
+3 cm of the line and 10 deg of the heading, no older than 120 s, at most
+50 cm of track a back-out, slowly on the ROS path -- with the end of the
+track treated as a wall. The accepted risk is something that moved in
+behind since (a person, a pet). The brain's own safety check judges the scan with the same box,
 read from the robot server; when it cannot read one it uses none, which
 refuses more, never less. Turns are judged on what the lidar sees: the mast never
 blocked one (a return inside the outline does not close under rotation),

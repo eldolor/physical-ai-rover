@@ -623,6 +623,13 @@ class SafetyController:
         if self_box_cm is None:
             self_box_cm = _body_self_box(robot)
         self.self_box_cm = self_box(self_box_cm)
+        # 3.224: with the rear hidden, the body's own recent track is the
+        # only ground known clear astern (robot/retrace.py). Kept only with
+        # a self box: without one nothing about reverse changes.
+        self._retrace = None
+        if self.self_box_cm is not None:
+            from robot.retrace import RetraceTrack     # lazy: the brain's imports are pinned
+            self._retrace = RetraceTrack()
         # The straight verb in progress, as ASKED (3.44): its speed, and
         # whether it was asked at creep speed. The wheel loop reads these on
         # another thread; plain attribute reads, set before the verb runs.
@@ -1048,6 +1055,7 @@ class SafetyController:
         the board: the cone cannot see the chassis' corners or what is
         under its view. So `path_not_observed` is now a body WITHOUT wheels'
         answer only (one whose FORWARD moves nothing, or a person)."""
+        self._retrace_sample()
         if grid is None:
             get_grid = getattr(self.robot, "get_depth_grid", None)
             grid = get_grid() if get_grid is not None else None
@@ -1080,11 +1088,43 @@ class SafetyController:
             # 3.218: the body's own mast hides what is behind it, in every
             # scan, whether or not this one caught a return off it (review:
             # a revolution that missed the mast read the shadow as clear).
-            # Refused as what it is, not as an obstacle at a distance.
-            return 0.0, "astern_occluded"
+            # Refused as what it is, not as an obstacle at a distance --
+            # unless the body just drove over the ground behind it (3.224):
+            # then that track's length is the room, a wall at its end.
+            room = self._retrace_room()
+            if room <= 0.0:
+                return 0.0, "astern_occluded"
+            return self._nearer((room, "retrace"), self.drop_clearance(-1))
         return self._aged(self._nearer(self.rear_clearance(scan),
                                        self.footprint_clearance(-1, scan),
                                        self.drop_clearance(-1)), -1)
+
+    def _retrace_sample(self) -> None:
+        """3.224: one sample of the body's track (signed wheel travel and
+        heading), with a self box only. Unusable wheels or odometry drop
+        the track: an unknown motion cannot be retraced."""
+        if self._retrace is None:
+            return
+        # Duck-typed bodies (test doubles) may lack either: unusable, as the
+        # interface's defaults answer.
+        get_wheels = getattr(self.robot, "get_wheel_state", None)
+        get_odo = getattr(self.robot, "get_odometry", None)
+        wheels = get_wheels() if get_wheels is not None else {}
+        odo = get_odo() if get_odo is not None else {}
+        travel = heading = None
+        if wheels.get("usable") and wheels.get("left") and wheels.get("right"):
+            travel = ((wheels["left"]["position_rad"] + wheels["right"]["position_rad"]) / 2.0
+                      * wheels["wheel_radius_m"])
+        if odo.get("usable"):
+            heading = odo.get("heading_deg")
+        self._retrace.update(time.monotonic(), travel, heading)
+
+    def _retrace_room(self) -> float:
+        """3.224: how far back the body may go on its own track, cm."""
+        if self._retrace is None:
+            return 0.0
+        self._retrace_sample()
+        return self._retrace.room_cm(time.monotonic())
 
     def _drop_guard(self):
         # Imported here: the brain process imports this module, and its
@@ -1228,6 +1268,9 @@ class SafetyController:
                 room_m_s = (clearance - need) / 100.0 / VERB_PERIOD_S
                 if abs(v) > room_m_s:
                     v = math.copysign(room_m_s, v)
+                if v < 0 and source == "retrace":
+                    from robot.retrace import RETRACE_V_M_S
+                    v = max(v, -RETRACE_V_M_S)       # 3.224: backing out slowly
         scale, pivot = self.pivot_scale(omega)
         if pivot:
             omega *= scale

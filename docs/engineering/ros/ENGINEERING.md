@@ -205,7 +205,7 @@ slam_toolbox, costmap_2d and `collision_monitor` drop a range below
 `range_min`: such a beam neither marks nor clears, so the space behind the
 mast stays unknown in ROS. It is never `+inf`, which means "no return" and
 can be raytraced as free. The robot server's own scan is not masked: the
-veto still reads the mast, and REVERSE stays `astern_occluded`. No box
+veto still reads the mast, and REVERSE stays `astern_occluded` except back along the body's own track (3.224, `retrace`). No box
 (the default): the ROS scan is unchanged.
 
 **TF tree.**
