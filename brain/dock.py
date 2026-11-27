@@ -36,6 +36,9 @@ V_FLOOR_M_S = 0.05
 V_EARLY_M_S = 0.10
 EARLY_DRIVE_S = 30.0
 DRAIN_SPAN_S = 60.0
+# 3.225: a motor's sag only ever lowers a reading, so the pack's own voltage
+# over a window is the window's highest sample.
+REST_WINDOW_S = 60.0
 BATTERY_MARGIN_V = 0.1
 REPLAN_M = 0.5
 REPLAN_S = 30.0
@@ -212,15 +215,33 @@ class HomeBudget:
             return V_EARLY_M_S
         return max(V_FLOOR_M_S, self.metres / self.driving_s)
 
+    @staticmethod
+    def _highest(samples):
+        """The highest sample, the earliest of equals: the pack's own reading."""
+        return max(samples, key=lambda s: (s[1], -s[0]))
+
+    def rested_v(self) -> Optional[float]:
+        """3.225: the pack's voltage now, the highest distinct sample within
+        the last REST_WINDOW_S (a reading taken while the motors pull is
+        lower; none is higher). None before any sample."""
+        if not self._samples:
+            return None
+        t1 = self._samples[-1][0]
+        return self._highest([s for s in self._samples if s[0] > t1 - REST_WINDOW_S])[1]
+
     def drain_v_s(self) -> float:
-        """V/s over distinct samples at least DRAIN_SPAN_S apart; before
-        that the rate known before the last charge (none: 0)."""
+        """V/s between two rested readings (3.225): the highest sample in the
+        record's first REST_WINDOW_S and the highest in its last, at least
+        DRAIN_SPAN_S apart. Before that, the rate known before the last
+        charge (none: 0). Raw first-to-last read a motor's sag as drain."""
         if len(self._samples) < 2:
             return self._prior_r
-        (t0, v0), (t1, v1) = self._samples[0], self._samples[-1]
-        if t1 - t0 < DRAIN_SPAN_S:
+        t0, t1 = self._samples[0][0], self._samples[-1][0]
+        a = self._highest([s for s in self._samples if s[0] < t0 + REST_WINDOW_S])
+        b = self._highest([s for s in self._samples if s[0] > t1 - REST_WINDOW_S])
+        if b[0] - a[0] < DRAIN_SPAN_S:
             return self._prior_r
-        return max(0.0, (v0 - v1) / (t1 - t0))
+        return max(0.0, (a[1] - b[1]) / (b[0] - a[0]))
 
     def recharged(self) -> None:
         """3.156.D7g: the charge is not a drain; the rate stands until a new
@@ -265,6 +286,8 @@ class HomeBudget:
         if left_s is not None and th > left_s:
             return f"time: {left_s:.0f} s left, the trip home {th:.0f} s ({L:.1f} m)"
         if v_now is not None and floor_v:
+            rested = self.rested_v()
+            v_now = rested if rested is not None else v_now     # 3.225: not a sagged reading
             at_dock = v_now - K * r * th
             self.last["v_at_dock"] = round(at_dock, 2)
             if at_dock < floor_v + BATTERY_MARGIN_V:

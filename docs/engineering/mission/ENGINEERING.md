@@ -682,14 +682,21 @@ or Reserve still propagates from the cancel and from each verb.
   tick, only with a dock and a navigator): `HomeBudget` keeps this mission's
   driving speed (metres over seconds of ticks that moved 1 cm or more, a
   gap between reads counting 10 s at most, a verb running up to 7 s; 0.10
-  m/s before 30 s of driving, never under 0.05) and drain rate (distinct
-  battery samples 60 s or more apart). Within 0.5 m of the dock there is no reserve (`at_dock`): nothing to
+  m/s before 30 s of driving, never under 0.05) and drain rate. Since 3.225
+  the battery half reads the pack, not the motors' sag (a sag only lowers a
+  reading): `rested_v()` is the highest distinct sample in the last 60 s
+  (`REST_WINDOW_S`), and the drain runs between the highest sample in the
+  record's first 60 s and that one, 60 s or more apart (`DRAIN_SPAN_S`;
+  before that, the rate known before the last charge, else 0). 3.140's two
+  first surveys ended at ~100 s on one sagged sample read as a 22 V/h drain
+  by the old first-to-last rule. The runner's floor check and the robot
+  server's ladder still read raw voltages. Within 0.5 m of the dock there is no reserve (`at_dock`): nothing to
   drive home, so a short limit is not ended at once. `T_home = 1.5 * L_home / v + 30 s`,
   `L_home` the path home on the brain's map (`reach` from the dock at
   `PASS_CLEARANCE_M`, recomputed after 0.5 m or 30 s; 1.5 x the straight line
   when the map does not connect them). The search ends `out_of_budget`,
   `return reserve -- time: ...` when `T_home` exceeds the time left, or
-  `-- battery: ...` when `v_now - 1.5 * r * T_home` is under
+  `-- battery: ...` when `rested_v - 1.5 * r * T_home` is under
   `battery_floor_v + 0.1`. `status.budget.home` carries the last prediction.
 * `status.return`: `state` (`returning`, `docked`, `failed`, `cancelled`,
   `skipped`), `reason`, `after` (the decided outcome), `decided_at_s`,
@@ -1224,6 +1231,7 @@ tests/test_mission_guarded_verbs.py -q`.
 | `tests/test_tick_within.py` (6) | the mission loop's tick await: a cancel landing as the tick ends is raised, not lost, and a tick failing in that turn is logged (red only on Python 3.10 with `wait_for`), a cancel mid-tick and a deadline cancel the wait, results and errors come back, and `brain_server` never calls `asyncio.wait_for` |
 | `tests/test_dock_return.py` (25) | 3.156.B (C8's red-first): a return after `found`, a survey's end, `exhausted`, `out_of_budget`, `arrived_unconfirmed`, `blocked`, docked on the true pose; none after a person or a fault or at Reserve; `no_nav2` skipped with no straight-line verbs; off is today's end; a Stop / D-pad / Reserve during the return keeps the outcome; the time and battery reserves end the search early and dock; `HomeBudget`'s units; `exact_verbs`; the config's keys; review 1: the search goal cancelled at the switch, a Stop during the return an intervention, an abort visible, no reserve at the dock, an approach that cannot close ends; review 2: an autonomous takeover mid-return a fault, not a D-pad |
 | `tests/test_dock_saved.py` (25) | 3.156.E D1/G2 (red first, 10 of 24 failed on `dev`; the 25th, the real bridge reply read by `RosWorld`, pins the field across the wall): the bridge's `/slam/pose` carries a matched reload's dock (the saved one, the origin when unreadable) and none on a fall-back, a fresh map or before ready; `RosWorld` converts it through the anchor (the car, the sim) and drops one on no saved frame or unreadable; `dock_from_pose` takes it as `saved_map`, else the start pose as `dev`; the runner records it |
+| `tests/test_battery_sag_3225.py` (5) | 3.225 (red first, 4 failed on `dev`): 3.140's two surveys of 2026-11-26 replayed at their own `T_home` end on no battery reserve; a real 0.002 V/s drain under a 0.5 V sag on alternate readings still ends the search within 72 s of the true crossing and not early; rested-then-driving with no pause is not a drain; `rested_v()` is the window's highest reading |
 | `tests/test_dock_navigator.py` (18) | 3.156.E D2/G4 (red first, 6 failed on `dev`): a frontier mission goes home on a return-only navigator, no goal before the end, the agent never holds it, its end leaves the keepout marks (explore's still clears them), off holds none, no navigator `no_nav2`, the time reserve now ends it early; the brain server builds it only with the return on and a world that takes goals, starts anyway otherwise, warns on a refused secret, asks no server for an in-process robot; a return that sent goals clears its marks; G4's four pinned rows |
 | `tests/test_resume_recharge.py` (28) | 3.156.D (red first): a battery end charges and resumes with what it kept; time never charges; `no_charge`, `left_dock`, `no_time`, the wall limit, a failed return, the fourth charge; a Stop and a D-pad while charging; off is off; a never-charged `SimBattery` exact |
 | `tests/test_camera_budget_3153.py` (6) | 3.153: one failed frame read mid-mission keeps the outcome (red before), the car stopped on that tick and the count reset; a camera never back ends `failed` after exactly 3 with no move; only consecutive failures count; any other robot error still ends at once; a Stop during a failed read is unchanged; a read failing at once waits `CAMERA_RETRY_S` between tries |
