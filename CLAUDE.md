@@ -144,7 +144,7 @@ board` lists open steps. **Whoever merges moves the section's line to
 * **Deploys:** the twin is live from `dev` `a444892a` (2026-11-26: 3.219, 3.220 with tilt). Cloud
   sessions deploy the twin only (IAM `vision-picar-deployer`). The orchestrator does so unasked after
   a twin change lands; others ask (the user, 2026-11-21).
-* **The board's brain is `dev` `ea9a5e4f`** (2026-11-27, by git bundle, the
+* **The board's brain is `dev` `1f6ef3be`** (2026-11-27, 3.229.B, by git bundle, the
   user's go): update it only when asked (`tools/jetson/README.md`).
 
 **Decided, each waiting on its trigger** (the user, 2026-11-07)
