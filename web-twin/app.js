@@ -2290,11 +2290,13 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     dot.classList.toggle("hidden", tab === "settings");
     renderHeaderMode();
 
-    let label, connected, connecting = false, needsSetup = false, actionable = false;
+    let label, connected, connecting = false, needsSetup = false, actionable = false, quiet = false;
     if (tab === "home" || tab === "drive") {
-      connected = state.connected;
+      quiet = !!(state.connected && state.robotQuiet);     // 3.232
+      connected = state.connected && !quiet;
       connecting = state.connecting && !state.connected;
-      label = connected ? "Connected" : connecting ? "Connecting\u2026" : "Not connected";
+      label = quiet ? t("robot.quietLabel") : connected ? "Connected"
+        : connecting ? "Connecting\u2026" : "Not connected";
       actionable = !connected && !connecting;
     } else {
       // Guide me and Robot view need one thing: somewhere to send the image.
@@ -2308,6 +2310,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     dot.classList.toggle("connected", connected);
     dot.classList.toggle("connecting", connecting);
     dot.classList.toggle("needs-setup", needsSetup);
+    dot.classList.toggle("quiet", quiet);
     dot.classList.toggle("actionable", actionable);
     text.textContent = label;
     dot.setAttribute("aria-label", actionable ? label + " \u2014 open settings" : label);
@@ -2398,6 +2401,9 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     try {
       const frame = await fetchFrame();
       state.connected = true;
+      state.robotQuiet = false;          // 3.232: it just answered
+      state.robotMisses = 0;
+      state.robotHeardAt = Date.now();
       setControlsEnabled(true);
       loadHouseName();
       startWatchdogPolling();
@@ -2713,6 +2719,7 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
 
   function batteryInterval() {
     if (shutdownCurrent()) return BATTERY_POLL_NEAR_MS;
+    if (state.robotMisses === 1) return BATTERY_POLL_NEAR_MS;   // 3.232: ask again soon
     const b = state.battery;
     if (!b) return BATTERY_POLL_UNANSWERED_MS;
     return b.level === "reserve" || b.level === "poweroff" ? BATTERY_POLL_NEAR_MS
@@ -2733,6 +2740,12 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     state.batteryTimerId = null;
     const url = state.serverUrl;
     if (!state.shutdown || state.shutdown.url !== url) state.shutdown = shutdownLoad(url);
+    if (state.robotHeardUrl !== url) {     // 3.232: another robot's silence is not this one's
+      state.robotHeardUrl = url;
+      state.robotMisses = 0;
+      state.robotHeardAt = null;
+      state.robotQuiet = false;
+    }
     // What is known before the first answer: this server's remembered
     // Power-off, or nothing (another server's level is not this one's).
     if (!state.battery || state.battery.url !== url) {
@@ -2758,20 +2771,25 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     const ctl = new AbortController();
     const timer = setTimeout(function () { ctl.abort(); }, BATTERY_FETCH_TIMEOUT_MS);
     try {
-      let body = null;
+      let body = null, answered = false;
       try {
         const res = await fetch(url + "/battery",
           { headers: authHeaders(), signal: ctl.signal, cache: "no-store" });
+        // 3.232: any reply from the robot server itself (JSON, whatever its
+        // status: a wrong code's 401 too) is an answer. A tunnel's own page
+        // for a robot that is gone (ngrok's offline 404) is HTML, and is not.
+        answered = /json/i.test(res.headers.get("content-type") || "");
         if (res.ok) body = await res.json();
       } catch (e) { /* not answered: below */ }
       if (gen !== batteryGen || url !== state.serverUrl) return;
+      robotHeard(answered);
       // A reading names one of the ladder's levels; anything else (a server
       // before 3.137, a level this page does not know) is no reading.
       if (body && typeof body === "object"
           && Object.prototype.hasOwnProperty.call(BATTERY_LEVELS, body.level)) {
         applyBattery(url, body);
       } else {
-        batteryUnanswered(url);
+        batteryUnanswered(url, answered);
       }
     } finally {
       clearTimeout(timer);
@@ -2850,7 +2868,9 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
 
   // Which of the banner's states this is, and the seconds left to wait.
   function shutdownView(s) {
-    if (s.phase === "failed" || s.phase === "stub") return { view: s.phase };
+    // 3.232: still on, by its own word -- until it stops answering (the
+    // power button, most likely; the phone cannot tell off from out of reach).
+    if (s.phase === "failed" || s.phase === "stub") return { view: s.quietAt == null ? s.phase : "gone" };
     if (s.quietAt == null) return { view: s.phase === "powering_off" ? "powering" : "stopping" };
     if (s.phase !== "powering_off") return { view: "unknown" };
     const left = Math.ceil(s.settleS - (Date.now() - s.quietAt) / 1000);
@@ -3255,10 +3275,55 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
     shutdownSend();
   };
 
+  // ---------- 3.232: a connected robot that stops answering ----------
+  //
+  // "Connected" used to be set once, at Connect, and never taken back: a
+  // robot switched off still read Connected. The battery poll reads the
+  // robot every 1-15 s on every tab, so it is the liveness check too. One
+  // miss asks again within a second (a dropped request over a tunnel is not
+  // a dead robot); the second reads "Not answering" in the header and in
+  // Settings, until the robot answers again.
+  const ROBOT_QUIET_MISSES = 2;
+
+  function robotHeard(answered) {
+    if (answered) {
+      state.robotMisses = 0;
+      state.robotHeardAt = Date.now();
+      if (state.robotQuiet) { state.robotQuiet = false; renderRobotQuiet(); }
+      return;
+    }
+    state.robotMisses = (state.robotMisses || 0) + 1;
+    if (state.robotMisses >= ROBOT_QUIET_MISSES && state.connected && !state.connecting
+        && !state.robotQuiet) {
+      state.robotQuiet = true;
+      renderRobotQuiet();
+    }
+  }
+
+  function robotHeardWhen() {
+    return state.robotHeardAt
+      ? new Date(state.robotHeardAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+      : null;
+  }
+
+  function renderRobotQuiet() {
+    const el = document.getElementById("connection-status");
+    if (state.robotQuiet) {
+      const when = robotHeardWhen();
+      setVoicedConnStatus(el, function () {
+        setConnStatus(el, "err", t("robot.quietLabel"),
+                      when ? t("robot.quietDetail", {when: when}) : t("robot.quietDetailNever"));
+      });
+    } else if (state.connected) {
+      setConnStatus(el, "ok", "Connected", state.serverUrl);
+    }
+    renderHeaderConnStatus();
+  }
+
   // No reading: the robot is off, out of reach, or answered something else
   // (a wrong secret, an error). See the rules above.
-  function batteryUnanswered(url) {
-    shutdownQuiet(url);
+  function batteryUnanswered(url, answered) {
+    if (!answered) shutdownQuiet(url);     // 3.232: an answer, even a refusal, is not quiet
     const b = state.battery && state.battery.url === url ? state.battery : null;
     if (prefGet(PREF.batteryPoweroff) === url && (!b || b.level !== "poweroff")) {
       state.battery = remembered(url);

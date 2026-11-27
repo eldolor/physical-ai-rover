@@ -196,10 +196,62 @@ def test_a_failed_power_off_says_it_is_still_on(browser, twin_server):  # noqa: 
     page.context.close()
 
 
-def test_the_stub_says_nothing_was_powered_off(browser, twin_server):  # noqa: F811
+def test_the_stub_says_to_press_the_power_button_then_sees_it_go_quiet(browser, twin_server):  # noqa: F811
+    """3.232 criteria 1-2: the stub's robot is still on (the board runs
+    `mode: sim` and is a real computer), so the card says what to do, then
+    changes once the power button has been pressed and the robot is quiet."""
     page, errors, _ = _page(browser, twin_server, battery=reply("stub"))
-    text = _banner(page, "Nothing was powered off")
+    text = _banner(page, "press the power button")
+    assert "still on" in text and "simulator" not in text.lower(), text
     _not_safe(text)
+    assert not jargon_hits(text), text
+    _battery_shot(page, "shutdown-stub-390.png")
+    _route_battery(page, None)
+    text = _banner(page, "stopped answering")
+    assert "light" in text, text
+    _not_safe(text)
+    assert not jargon_hits(text), text
+    _battery_shot(page, "shutdown-gone-390.png")
+    assert not errors, errors
+    page.context.close()
+
+
+def _robot_status(page):
+    return page.locator("#connection-status .conn-status-label")
+
+
+def test_a_robot_that_stops_answering_says_so_and_comes_back(browser, twin_server):  # noqa: F811
+    """3.232 criterion 3: "Connected" was set once, at Connect, and never
+    taken back. A tunnel's offline page (HTML, not the robot) is no answer."""
+    page, errors, _ = _page(browser, twin_server)
+    sync_api.expect(_robot_status(page)).to_have_text("Connected", timeout=6000)
+    page.unroute("**/battery")
+    page.route("**/battery", lambda route: route.fulfill(
+        status=404, content_type="text/html", body="<html>endpoint offline</html>"))
+    sync_api.expect(_robot_status(page)).to_have_text("Not answering", timeout=8000)
+    detail = page.locator("#connection-status .conn-status-detail").inner_text()
+    assert "last answered at" in detail and "switched off" in detail, detail
+    _battery_shot(page, "robot-quiet-settings-390.png")
+    page.click('.tab-btn[data-tab="home"]')
+    sync_api.expect(page.locator("#header-conn-text")).to_have_text("Not answering")
+    _battery_shot(page, "robot-quiet-header-390.png")
+    _route_battery(page, IDLE)
+    sync_api.expect(page.locator("#header-conn-text")).to_have_text("Connected", timeout=20000)
+    page.click("#btn-settings")
+    sync_api.expect(_robot_status(page)).to_have_text("Connected")
+    assert not errors, errors
+    page.context.close()
+
+
+def test_a_robot_that_refuses_is_still_answering(browser, twin_server):  # noqa: F811
+    """3.232 criterion 4: a 401 (a wrong code) is the robot answering."""
+    page, errors, _ = _page(browser, twin_server)
+    page.unroute("**/battery")
+    page.route("**/battery", lambda route: route.fulfill(
+        status=401, content_type="application/json",
+        body=_json({"detail": "Missing or invalid x-app-secret header."})))
+    page.wait_for_timeout(8000)       # two misses would have shown by now
+    sync_api.expect(_robot_status(page)).to_have_text("Connected")
     assert not errors, errors
     page.context.close()
 

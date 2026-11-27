@@ -968,6 +968,9 @@ header .header-text { min-width: 0; }
 .conn-dot.hidden { display: none; }
 .conn-dot.needs-setup { color: var(--accent-alert); }
 .conn-dot.needs-setup .dot { background: var(--accent-alert); }
+/* 3.232: connected once, not answering now */
+.conn-dot.quiet { color: var(--accent-alert); }
+.conn-dot.quiet .dot { background: var(--accent-alert); }
 .conn-dot .dot {
   width: 7px; height: 7px; border-radius: 50%; background: var(--text-dim);
   transition: background 0.2s;
