@@ -130,7 +130,8 @@ MOVES_PER_SECOND_AT_FULL_SPEED = 2.0
 # 3.220: the pan-tilt. A look's pan, as the simulator's (grid_world's
 # PAN_ANGLE_RAD), so a peek means the same on both; it is also the URDF's
 # `pan_limit`, set by the camera's cable, and no command goes past it.
-# [PLACEHOLDER] until the board step (3.220 criterion 6).
+# At +/-90 nothing touches and the cable stays slack, by eye on the board
+# (3.220 criterion 6, 2026-11-26).
 LOOK_PAN_DEG = 90.0
 PAN_LIMIT_DEG = 90.0
 # Level: what the set-up and look-center send (3.220.C: left and right keep
@@ -140,14 +141,14 @@ PAN_LIMIT_DEG = 90.0
 LOOK_TILT_DEG = 0.0
 TILT_LIMITS_DEG = (-30.0, 30.0)
 # The firmware's +Y is up: watched on the board, Y=+15 tilted the camera up
-# (3.220 criterion 6, 2026-11-26).
+# (3.220 criterion 6, 2026-11-26). Commands only: reads wait on 3.223.
 TILT_SIGN = 1
 # How long a look at rest waits for the tilt to arrive, at most (never a
 # fault: the tilt is reported, not judged). 5 deg takes the servo ~20 ms.
 TILT_SETTLE_WAIT_S = 0.3
 # The firmware's +X is clockwise (to the right), our `pan_deg`'s sense:
 # watched on the board, X=+30 turned the camera right (3.220 criterion 6,
-# 2026-11-26).
+# 2026-11-26). Proven for commands only: the read side waits on 3.223.
 PAN_SIGN = 1
 # Measured within this of the goal: reached. The command is whole degrees
 # (Arduino's map() truncates) and a servo tick is 0.088 deg.

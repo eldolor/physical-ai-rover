@@ -133,11 +133,11 @@ The shapes are owned by the body contract.
 | `REASSERT_SENDS`, `REASSERT_PERIOD_S` | 3, 0.05 | count, s | `robot/board_http.py` | After a failure the newest wheel command is repeated, because the board may act late on a request the host gave up on. |
 | `RETRY_PAUSE_S`, `SETUP_QUEUE_MAX` | 0.02, 32 | s, count | `robot/board_http.py` | A refused connection fails at once: the pause keeps the retry loop off a core. The set-up is two commands; the cap only bounds a route that never comes up. |
 | `HEARTBEAT_MS` | 200 | ms | `robot/hardware_robot.py` | 3.216: four 50 ms wheel periods. The longest gap between sends while moving was 52 ms in every kill-sweep run. A dead robot server's last setpoint runs at most this long, and `robot/safety.py`'s `BOARD_HEARTBEAT_S` copies it into the stop distance. Not ordered against the 1.0 s watchdog, which watches the brain (1500, until 3.216). The firmware default is 3000. |
-| `ROBOT_GIMBAL` or `hardware.gimbal` | off on a real board, on under `SIM_MOTOR_BOARD=fake` | on/off | `robot/factory.py` | 3.220: the robot server drives the pan-tilt. Not in the shipped yaml (it belongs to 3.140.B's open step). Off on the real board until 3.220's board step (criterion 6) has been run with the user. Anything but on/off raises. |
-| `LOOK_PAN_DEG`, `PAN_LIMIT_DEG` | 90, 90 | deg | `robot/hardware_robot.py` | A look's pan, as the simulator's `PAN_ANGLE_RAD`, and the most any command asks: the URDF's `pan_limit`, set by the camera cable. `[PLACEHOLDER]` until the board step. |
-| `LOOK_TILT_DEG`, `TILT_LIMITS_DEG` | 0, (-30, +30) | deg | `robot/hardware_robot.py` | A look holds the camera level; -30 is the firmware's own floor, +30 `[PLACEHOLDER]`. |
-| `PAN_SIGN` | +1 | -- | `robot/hardware_robot.py` | The firmware's +X is clockwise (right): watched on the board, 3.220 criterion 6 (2026-11-26). |
-| `TILT_SIGN`, `TILT_SETTLE_WAIT_S` | +1, 0.3 | --, s | `robot/hardware_robot.py` | 3.220.C: the firmware's +Y is up (watched on the board, 3.220 criterion 6); how long a look at rest waits for the tilt, which is reported and never judged (its offset on the real board is unmeasured). |
+| `ROBOT_GIMBAL` or `hardware.gimbal` | off on a real board, on under `SIM_MOTOR_BOARD=fake` | on/off | `robot/factory.py` | 3.220: the robot server drives the pan-tilt. Not in the shipped yaml (it belongs to 3.140.B's open step). Off on the real board while the board cannot read the servos (3.220 criterion 6 not met; 3.223): on, every frame is refused and the web command route times out. Anything but on/off raises. |
+| `LOOK_PAN_DEG`, `PAN_LIMIT_DEG` | 90, 90 | deg | `robot/hardware_robot.py` | A look's pan, as the simulator's `PAN_ANGLE_RAD`, and the most any command asks: the URDF's `pan_limit`, set by the camera cable. Clear by eye at +/-90 on the board (3.220 criterion 6). |
+| `LOOK_TILT_DEG`, `TILT_LIMITS_DEG` | 0, (-30, +30) | deg | `robot/hardware_robot.py` | A look holds the camera level; -30 is the firmware's own floor; +30 and -30 clear by eye on the board (3.220 criterion 6). |
+| `PAN_SIGN` | +1 | -- | `robot/hardware_robot.py` | The firmware's +X is clockwise (right): watched on the board, 3.220 criterion 6 (2026-11-26), for commands; the read side waits on 3.223. |
+| `TILT_SIGN`, `TILT_SETTLE_WAIT_S` | +1, 0.3 | --, s | `robot/hardware_robot.py` | 3.220.C: the firmware's +Y is up (watched on the board for commands, 3.220 criterion 6; reads wait on 3.223); how long a look at rest waits for the tilt, which is reported and never judged (its offset on the real board is unmeasured). |
 | `PAN_SETTLED_DEG`, `PAN_SETTLE_TIMEOUT_S` | 3.0, 1.5 | deg, s | `robot/hardware_robot.py` | Measured within 3 deg of the goal is reached (the command is whole degrees). Not reached in 1.5 s is a fault: a 90-degree swing takes about 0.35 s at the servo's top speed; the rest is the web route's retries. |
 | `REBOOT_JUMP_M` | 0.03 | m | `robot/hardware_robot.py` | On stock firmware, a reboot needs both odometers near zero AND the estimate this far outside their bucket. A rule on the distance alone fired falsely in 1 of 6 runs (3.25). |
 | `EXTRAPOLATE_MAX_S` | 0.10 | s | `robot/hardware_robot.py` | Two feedback intervals. Without carry-forward, a FORWARD overshot to 30.6-32.8 cm (3.25). |
@@ -392,9 +392,10 @@ Checklist for a change:
   loop slows to ~219 ms and the web route times out. So `gimbal` stays off
   on the Rover: with it on, every frame is refused (no measured pan) and
   the wheels' command route goes down. The signs, the limits by eye and
-  the lidar's self box with the camera panned are proven there. A servo that stops
-  answering reports its last position (firmware), which is caught only
-  when a later goal is not reached.
+  the lidar's self box with the camera panned are proven there; 3.223
+  takes up the reads. Separately, once reads work: a servo that stops
+  answering mid-run keeps its last position (firmware), which is caught
+  only when a later goal is not reached.
 - **The web route is unproven on the board** (3.217). Its tests are
   against the fake. Not known: whether an HTTP `T:1` feeds the board's
   heartbeat, whether the board's unanswered requests are lost on the way
