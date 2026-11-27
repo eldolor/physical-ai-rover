@@ -56,6 +56,24 @@ resets Mon 09:00"), a cap on workers ("2 workers"), or steps to focus on
   session. Those stay the user's alone (CLAUDE.md 3c); plan around them.
 * Where this block and sections 1-2 below disagree, this block governs.
 
+## Standing decision: evaluations are the orchestrator's (the user, 2026-11-27)
+
+* **The user, 2026-11-27: "I want to make sure that the orchestrator
+  manages any evaluation that's been done."** Every evaluation -- a model
+  measured on the pinned frames, a teacher probe, a label set, a replay, a
+  fine-tune and its judging -- is scheduled, briefed, tracked and closed by
+  the orchestrator, including those another session started. Their
+  follow-up steps go on the orchestrator's list like any other.
+* A session that ran evaluation work hands it over in a
+  `docs/handoffs/` file on `dev` (messages into the orchestrator are
+  refused, `HANDOFF-2026-11-26-orchestrator.md`), names the open steps
+  and their waits, and releases its claims. The orchestrator reads it.
+* The list of evaluations handed over on 2026-11-27 is
+  `docs/handoffs/HANDOFF-2026-11-27-evaluations.md`.
+* Spending stays the user's (the block above): a step whose spend the user
+  already approved in its section file may start on that approval; anything
+  new is asked first.
+
 ## 1. Choose the work
 
 From the board, keep a step only if **all** hold:
