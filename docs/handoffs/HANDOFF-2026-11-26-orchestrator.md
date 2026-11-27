@@ -58,6 +58,13 @@ rule: questions one at a time, as pop-ups with a recommendation.*
   camera picture should move with the tilt, not only the badge. After the
   reset, a cloud Sonnet/Opus worker (3.220 amendment, bars first), keeping
   the render=False frame the tests pin (`test_render_false_is_the_free_offline_path`).
+* 3.220 criterion 6 tried 2026-11-26 23:50 UTC (desktop worker
+  session_01JbXvZqFxmC12BwnSYkjNWh, record 5ee9a9c8): NOT met. No gimbal servo
+  answers (pan/tilt read -179.96/+179.96 = position 0); T:4 cmd 2 slows the
+  board's frames to 219 ms and breaks the Wi-Fi command route. Board on dev
+  1cc08cee, ROBOT_GIMBAL off. Next: the user checks the pan-tilt cable and
+  power; then a host guard (pan -180 and tilt +180 together -> T:4 cmd 0 and a
+  fault), the worker's suggestion, as a cloud step.
 
 ## Quota (the user's `/usage`, 2026-11-26 15:14 UTC)
 
