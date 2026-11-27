@@ -291,7 +291,12 @@ class RemoteRobot(RobotInterface):
         the brain's controller then refuses more, never less."""
         try:
             return self._request("GET", "/health").get("lidar_self_box_cm")
-        except Exception:  # noqa: BLE001 -- no box is the conservative answer
+        except Exception as e:  # noqa: BLE001 -- no box is the conservative answer
+            # 3.229 review: read once, as the mission's controller is built;
+            # a failure here runs the whole mission with no box (on the
+            # Rover, every escape refused at 0.0 cm), so it must not be silent.
+            logger.warning("lidar self box unreadable (%s): the brain's safety check "
+                           "runs without one this mission", e)
             return None
 
     # ---------- camera pan ----------

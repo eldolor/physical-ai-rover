@@ -134,4 +134,15 @@ def test_the_gate_passes_the_body_answer_and_the_controller_still_checks_it(answ
 
     body = Body(build_world("scaled_house"), render=False)
     gate = _HaltGate(body, lambda: True)
+    if isinstance(answer, Exception):
+        with pytest.raises(type(answer)):               # the body's answer, not swallowed
+            gate.lidar_self_box_cm()
+    else:
+        assert gate.lidar_self_box_cm() == answer
     assert SafetyController(gate).self_box_cm is None   # an unreadable box is no box
+
+
+def test_the_gate_answers_the_body_box_even_after_the_mission_ends():
+    # A read, never gated: a controller built after the end still gets it.
+    body = _MastBody(build_world("scaled_house"), render=False)
+    assert _HaltGate(body, lambda: False).lidar_self_box_cm() == list(ROVER_BOX)
