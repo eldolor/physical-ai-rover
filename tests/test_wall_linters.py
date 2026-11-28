@@ -74,7 +74,11 @@ CONSUMER_DIRS = PROJECT_DIRS + ("tests", "web-twin")
 # within world/nogo.py GOAL_CLEAR_M of a zone, which must cover the cells the
 # bridge draws; the refusal is the robot server's (a person's goal, before
 # arbitration), the drawing the bridge's, so the margin exists on both sides.
-MAX_DUPLICATES = 13
+# 2026-11-28 (3.237.A): fourteen -- the pan-tilt camera's mounting. The sim
+# decides which low things the camera's picture holds from the lens's place,
+# height and pitch (`sim/grid_world.py` CAMERA_*), which TF places from the
+# xacro; one concept, four numbers, checked together.
+MAX_DUPLICATES = 14
 # 2026-09-27: thirteen method+path pairs (R4-R6). A fourteenth is a decision.
 # 14 since 3.68: POST /nav/keepout, the one way the robot server's refusals
 # reach nav2's planner (a wedge it cannot otherwise hear of).
@@ -291,7 +295,22 @@ def _nogo_goal_margin():
     return reach <= GOAL_CLEAR_M <= reach + 0.005, values
 
 
+def _camera_mount():
+    """3.237.A: the sim's camera view (which low things a frame holds) and
+    TF's camera frame come from the same mounting: the pan axis `pan_x`
+    behind base_link, the lens `camera_x` ahead of it, the lens off the
+    floor (base_link at `wheel_radius`, then `pan_z` + `camera_up`: the
+    xacro's own "0.210 m off the floor"), the wedge `camera_pitch`."""
+    from sim import grid_world as g
+    xacro = (_xacro("pan_x"), _xacro("camera_x"), round(_xacro("wheel_radius") + _xacro("pan_z") + _xacro("camera_up"), 6),
+             round(math.degrees(_xacro("camera_pitch")), 1))
+    sim = (g.CAMERA_PAN_X_M, g.CAMERA_LENS_X_M, g.CAMERA_Z_M, g.CAMERA_MOUNT_PITCH_DEG)
+    return xacro == sim, {"xacro pan_x, camera_x, wheel_radius + pan_z + camera_up, camera_pitch (deg)": xacro,
+                          "sim/grid_world.py CAMERA_*": sim}
+
+
 DUPLICATES = {
+    "pan-tilt camera mounting (sim view vs TF)": _camera_mount,
     "no-go goal margin (D5 vs the drawn mask)": _nogo_goal_margin,
     "lidar mounting offset": _lidar_offset,
     "wheel radius": _wheel_radius,
@@ -309,7 +328,7 @@ DUPLICATES = {
 
 # The value each registered physical constant carries, so the unlisted-
 # duplicate detector knows these are accounted for.
-REGISTERED_VALUES = {0.172, 0.253, 0.231, 0.1265, 0.1155, 0.0425}
+REGISTERED_VALUES = {0.172, 0.253, 0.231, 0.1265, 0.1155, 0.0425, 0.048, 0.009}
 
 
 def test_duplicates_are_within_budget():
