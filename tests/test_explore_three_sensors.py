@@ -129,6 +129,30 @@ def test_the_recorded_baseline_is_b0s():
     assert (lidar["coverage_median"], veto["coverage_median"]) == (0.5953, 0.5621)
 
 
+def test_the_recorded_arms_are_bs():
+    """B as recorded in results/B/ (the plan's B table): no arm meets
+    B1-B4. Arm 2 meets B1 (19.6 % of arm 1's contacts), B2 and B3's rate
+    and fails B3's median time to find as written; arms 3 and 4 fail B1."""
+    load = lambda a: json.loads((SWEEP / "results" / "B" / f"{a}.json").read_text())  # noqa: E731
+    a = {k: load(k) for k in ("B1", "BV", "B2", "B3", "B4")}
+    for r in a.values():
+        assert r["missions"] == 110 and r["left_out_error_or_capped"] == 0
+        assert r["other_contacts"] == 0                                   # B1's tall half
+    assert [a[k]["low_contacts"] for k in ("B1", "BV", "B2", "B3", "B4")] == [363, 180, 71, 260, 124]
+    one = a["B1"]
+    c = {k: a[k]["low_contacts"] / one["low_contacts"] for k in ("B2", "B3", "B4")}
+    assert c["B2"] <= 0.20 and c["B3"] > 0.20 and c["B4"] > 0.10          # B1
+    for k in ("B2", "B3"):                                                # B2 met
+        assert a[k]["coverage_median"] >= one["coverage_median"] - 0.03
+        assert a[k]["coverage_300_median"] >= one["coverage_300_median"] - 0.05
+    assert a["B4"]["coverage_median"] < one["coverage_median"] - 0.03     # B2 failed
+    for k in ("B2", "B3", "B4"):                                          # B3's rate met
+        assert a[k]["find_rate"] >= one["find_rate"] - 0.05
+    limit = 1.15 * one["find_time_median_s"]                              # B3's time
+    assert (a["B2"]["find_time_median_s"] > limit, a["B3"]["find_time_median_s"] <= limit,
+            a["B4"]["find_time_median_s"] > limit) == (True, True, True)
+
+
 # ---------- 3.237.A ----------
 
 def hazard_fingerprint(steps: int = 300, seed: int = 3237) -> str:
