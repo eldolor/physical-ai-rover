@@ -211,9 +211,12 @@ def judge(revs):
                 visit = None
         if in_view:
             if visit is None and out_run >= 2:
-                visit = {"scans": 0, "first_track": None}
+                visit = {"scans": 0, "first_track": None, "disc_moving_scans": 0}
             if visit is not None:
                 visit["scans"] += 1
+                if visit["scans"] <= FIRST_TRACK_SCANS and rev["v"] is not None \
+                        and math.hypot(*rev["v"]) > 0.3:
+                    visit["disc_moving_scans"] += 1
                 if matched and visit["first_track"] is None:
                     visit["first_track"] = visit["scans"]
             out_run = 0
