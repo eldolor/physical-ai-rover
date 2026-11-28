@@ -60,24 +60,31 @@ def scan(discs=(), pose=(0.0, 0.0, 0.0), room_r=ROOM_R, walls=()):
             "ranges_m": ranges}
 
 
-def run(tracker, frames, dt=0.1):
-    """frames: [(discs, pose)]; returns the movers after each scan."""
+PREROLL = 12                # scans of the empty room first: the free-space test's history
+
+
+def run(tracker, frames, dt=0.1, preroll=PREROLL, static=()):
+    """frames: [(discs, pose)] after `preroll` scans of the room and the
+    `static` discs from the first frame's pose; returns the movers after
+    each of `frames`."""
     out = []
+    for k in range(preroll):
+        tracker.update(scan(static, frames[0][1]), frames[0][1], k * dt)
     for k, (discs, pose) in enumerate(frames):
-        out.append(tracker.update(scan(discs, pose), pose, k * dt))
+        out.append(tracker.update(scan(discs, pose), pose, (preroll + k) * dt))
     return out
 
 
 def test_a_still_scene_has_no_mover():
     tr = MoverTracker()
-    frames = [([(1.5, 0.5, 0.15), (-1.0, -1.2, 0.15)], (0.0, 0.0, 0.0))] * 30
-    assert all(m == [] for m in run(tr, frames))
+    still = [(1.5, 0.5, 0.15), (-1.0, -1.2, 0.15)]
+    assert all(m == [] for m in run(tr, [(still, (0.0, 0.0, 0.0))] * 30, static=still))
 
 
 def test_a_still_scene_from_a_moving_robot_has_no_mover():
     tr = MoverTracker()
     frames = [([(2.0, 0.6, 0.15)], (0.02 * k, 0.0, 0.01 * k)) for k in range(30)]
-    assert all(m == [] for m in run(tr, frames))
+    assert all(m == [] for m in run(tr, frames, static=[(2.0, 0.6, 0.15)]))
 
 
 def test_a_crossing_disc_is_tracked_within_three_scans_with_its_velocity():
@@ -112,10 +119,26 @@ def test_a_wall_is_not_a_cluster_and_a_hidden_edge_is_refused():
 
 def test_the_centre_is_estimated_not_the_near_face():
     for d in (0.5, 1.0, 3.0):
-        (x, y, _n, _e, _b), = clusters(scan_points(scan(discs=[(d, 0.0, 0.15)])["ranges_m"]))
+        (x, y, *_rest), = clusters(scan_points(scan(discs=[(d, 0.0, 0.15)])["ranges_m"]))
         # Within 6 cm: at 3 m the 1-degree bins miss the disc's edges, so its
         # width reads short (the centroid of the returns was 10 cm short).
         assert abs(x - d) < 0.06 and abs(y) < 0.02
+
+
+def test_a_static_object_revealed_by_a_moving_robot_is_not_a_mover():
+    # A post hidden behind a nearer one comes into view as the robot moves
+    # sideways; its first sightings were never free space.
+    tr = MoverTracker(revolution_s=0.0)
+    posts = [(1.0, 0.0, 0.05), (2.5, 0.0, 0.15)]
+    frames = [(posts, (0.0, 0.05 * k, 0.0)) for k in range(30)]
+    assert all(m == [] for m in run(tr, frames, static=posts))
+
+
+def test_without_history_nothing_is_moving():
+    tr = MoverTracker(revolution_s=0.0)
+    out = run(tr, [([(1.5, -1.5 + 0.12 * k, 0.15)], (0.0, 0.0, 0.0)) for k in range(4)],
+              preroll=0)
+    assert all(m == [] for m in out)
 
 
 def test_each_cluster_is_stamped_when_the_beam_crossed_it():
@@ -127,14 +150,14 @@ def test_each_cluster_is_stamped_when_the_beam_crossed_it():
     MoverTracker().update(scan(discs=[(1.5, 0.0, 0.15)]), pose, 10.0)
     # Body bearing 0 is lidar angle 90 (yaw -90): a quarter turn in, so
     # 0.025 s before the revolution's midpoint.
-    assert seen == [pytest.approx(10.0 - 0.025, abs=0.002)]
+    assert seen[0] == pytest.approx(10.0 - 0.025, abs=0.002)   # then the capture pose, for the history
 
 
 def test_an_unusable_scan_ages_tracks_out():
     tr = MoverTracker(revolution_s=0.0)
     run(tr, [([(1.5, -1.5 + 0.12 * k, 0.15)], (0.0, 0.0, 0.0)) for k in range(6)])
     assert tr.movers()
-    t = 0.6
+    t = (PREROLL + 5) * 0.1
     for _ in range(4):
         t += 0.1
         assert tr.update({"usable": False}, (0.0, 0.0, 0.0), t) == []
@@ -144,7 +167,7 @@ def test_an_unusable_scan_ages_tracks_out():
 def test_a_coasting_track_is_not_reported_as_seen():
     tr = MoverTracker(revolution_s=0.0)
     run(tr, [([(1.5, -1.5 + 0.12 * k, 0.15)], (0.0, 0.0, 0.0)) for k in range(6)])
-    assert tr.update(scan(), (0.0, 0.0, 0.0), 0.6) == []
+    assert tr.update(scan(), (0.0, 0.0, 0.0), (PREROLL + 6) * 0.1) == []
     assert len(tr.coasting()) == 1
 
 
