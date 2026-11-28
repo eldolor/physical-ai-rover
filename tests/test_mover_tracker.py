@@ -261,3 +261,34 @@ PINNED = {'B1': {'missions': 24,
         'velocity_met': True,
         'first_track_met': False,
         'velocity_error_p90_at_2.5': 0.8675}}
+
+
+REVIEWED = RECORD.replace("b-sweep.json", "b-sweep-reviewed.json")
+
+
+@pytest.mark.skipif(not os.path.exists(REVIEWED), reason="B's reviewed run not recorded")
+def test_b_reviewed_record_pinned():
+    """The run that governs (the reviewed tracker): B1 FAILED, B2's velocity
+    met, B2's time to first track FAILED."""
+    with open(REVIEWED) as f:
+        v = json.load(f)["verdict"]
+    assert v["seed"] == 0
+    got = {"B1": v["B1"], "B2": {k: v["B2"][k] for k in PINNED_REVIEWED["B2"]}}
+    assert got == PINNED_REVIEWED
+    assert not v["B1"]["met"] and v["B2"]["velocity_met"] and not v["B2"]["first_track_met"]
+
+
+PINNED_REVIEWED = {'B1': {'missions': 24,
+        'driving_min': 58.0,
+        'false_moving_tracks': 8,
+        'per_10_min': 1.379,
+        'met': False},
+ 'B2': {'missions': 72,
+        'velocity_error_samples': 36146,
+        'velocity_error_median_m_s': 0.0384,
+        'velocity_error_p90_m_s': 0.1741,
+        'visits_judged': 5156,
+        'visits_first_track_le_3': 2331,
+        'velocity_met': True,
+        'first_track_met': False,
+        'velocity_error_p90_at_2.5': 0.8783}}

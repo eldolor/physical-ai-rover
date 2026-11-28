@@ -171,10 +171,17 @@ tests and `tests/mover_track_sweep.py`.
   only tracks seen in the latest scan; `coasting()` the rest.
 
 Measured in 3.234.B (offline, A's missions through the fake lidar's
-timing): 0.86 false moving tracks per 10 minutes of driving, velocity error
-median 0.038 m/s and p90 0.138 m/s; a track within 3 scans of a mover
-coming into view for only 44 % of visits (failed). Cost in the cloud
-container: p90 0.21 ms a scan; the Jetson's figure is B3's, open.
+timing; the reviewed tracker): **1.38 false moving tracks per 10 minutes of
+driving (B1 failed, bar 1)**; velocity error median 0.038 m/s, p90
+0.174 m/s pooled (0.087 / 0.204 / 0.878 m/s at 0.5 / 1.2 / 2.5 m/s); a track
+within 3 scans of a mover coming into view for only 45 % of visits
+(failed). Cost in the cloud container: p90 0.25 ms a scan; the Jetson's
+figure is B3's, open.
+
+* **The caller's contract (for C):** `pose(t)` must answer up to the
+  revolution's last point (`capture_unix + 0.05 s`); feed each revolution
+  once (a repeat `capture_unix` is ignored); pass the driver's real period
+  as `revolution_s` when it is known.
 
 ### Driving without a lidar
 
@@ -637,7 +644,12 @@ order; record the table in the plan entry.
   after it comes into view (p90 7; 984 of 5,156 visits never): one that
   appears where the lidar could not see, recedes or stands waits for the
   free-space test, and a turning revolution is skipped. Odometry was the
-  simulator's truth in B; wheel slip is the Rover's (3.234.D).
+  simulator's truth in B; wheel slip is the Rover's (3.234.D). Bins the
+  driver carried from the previous revolution or filled from neighbours
+  are stamped as this revolution's (the scan dict does not mark them). A
+  mover on the revolution's seam (body bearing -90) is two half clusters,
+  and one within about 15 cm of a wall merges with it and is not tracked:
+  coverage lost, never a move permitted.
 
 - **The battery ladder (3.137).** With the robot server dead nothing reads
   the pack, and the pack's own cutoff is the backstop (3.135 F14's atomic
