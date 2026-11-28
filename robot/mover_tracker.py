@@ -47,13 +47,16 @@ WINDOW = 4                  # observations in the velocity fit
 MOVING_M_S = 0.3            # B1's threshold for a moving track
 MAX_SPEED_M_S = 4.0         # faster than this is a mis-association, not a pet
 REVOLUTION_S = 0.1          # the D500 at 10 Hz (sim.fake_lidar.RATE_HZ)
+FREE_M = 0.15               # free space: an earlier beam reached this far past the point
+FREE_BACK_S = (0.5, 1.0)    # ... in the scan nearest each of these ages
+HISTORY = 14                # scans kept for the free-space test
 COAST_S = 0.25              # a track unmatched this long is dropped
 RESET_M = 0.03              # an observation this far off the prediction ...
 RESET_FRAC = 0.15            # ... plus this share of the predicted step restarts the fit
 
 
 class Track:
-    __slots__ = ("id", "obs", "x", "y", "vx", "vy", "t", "born", "hits", "seen")
+    __slots__ = ("id", "obs", "x", "y", "vx", "vy", "t", "born", "hits", "seen", "free")
 
     def __init__(self, tid: int, t: float, x: float, y: float):
         self.id = tid
@@ -61,6 +64,7 @@ class Track:
         self.x, self.y, self.vx, self.vy, self.t, self.born = x, y, 0.0, 0.0, t, t
         self.hits = 1
         self.seen = 0               # the tracker's scan count when last observed
+        self.free = False           # an observation stood where an earlier beam passed clear
 
     @property
     def speed(self) -> float:
@@ -68,7 +72,8 @@ class Track:
 
     @property
     def moving(self) -> bool:
-        return self.hits >= CONFIRM and MOVING_M_S < self.speed <= MAX_SPEED_M_S
+        return (self.free and self.hits >= CONFIRM
+                and MOVING_M_S < self.speed <= MAX_SPEED_M_S)
 
     def predict(self, t: float) -> tuple:
         dt = t - self.t
@@ -126,9 +131,10 @@ def scan_points(ranges: Sequence[Optional[float]], angle_min_deg: float = -180.0
 
 def clusters(pts: List[Optional[tuple]], angle_min_deg: float = -180.0,
              increment_deg: float = 1.0, lidar_x_m: float = LIDAR_X_M) -> List[tuple]:
-    """(x, y, n, extent, bin) in the body frame for each segment of person
-    or pet size whose edges are not hidden by a nearer neighbour; `bin` is
-    its middle bin index (fractional).
+    """(x, y, n, extent, bin, near_x, near_y) in the body frame for each
+    segment of person or pet size whose edges are not hidden by a nearer
+    neighbour; `bin` is its middle bin index (fractional), (near_x, near_y)
+    its nearest return.
 
     (x, y) is the object's estimated CENTRE: along the middle bearing, at
     the nearest return plus half the width. The centroid of the returns
@@ -166,14 +172,16 @@ def clusters(pts: List[Optional[tuple]], angle_min_deg: float = -180.0,
         if extent > MAX_EXTENT_M:
             continue
         before, after = pts[(seg[0] - 1) % n], pts[(seg[-1] + 1) % n]
-        near = min(pts[i][0] for i in seg)
+        k_near = min(seg, key=lambda i: pts[i][0])
+        near = pts[k_near][0]
         if ((before is not None and before[0] < near - OCCLUDED_M)
                 or (after is not None and after[0] < near - OCCLUDED_M)):
             continue
         mid = (seg[0] + ((seg[-1] - seg[0]) % n) / 2.0) % n
         b = math.radians(angle_min_deg + mid * increment_deg)
         r = near + extent / 2.0
-        out.append((lidar_x_m + r * math.cos(b), -r * math.sin(b), len(seg), extent, mid))
+        out.append((lidar_x_m + r * math.cos(b), -r * math.sin(b), len(seg), extent, mid,
+                    pts[k_near][1], pts[k_near][2]))
     return out
 
 
@@ -186,7 +194,17 @@ class MoverTracker:
     `REVOLUTION_S`, so a cluster at body bearing b was taken at
     `capture + (((b - yaw) mod 360) / 360 - 0.5) * REVOLUTION_S`. Stamped at
     the midpoint, a pet at 2.5 m/s whose bearing swings across the
-    revolution reads up to half a revolution's travel (12 cm) off."""
+    revolution reads up to half a revolution's travel (12 cm) off.
+
+    **A track is moving only once it stood in free space**: one of its
+    observations' nearest return lies where the scan about 0.5 s or 1 s
+    earlier had its beam pass at least `FREE_M` beyond. A static surface
+    seen from a moving robot was there before (the old beam stopped at it),
+    and so was anything an occlusion has just revealed (the old beam
+    stopped short); a person or pet walks into space the lidar saw empty.
+    The centre estimate of a static object wobbles as the view changes;
+    without this test that wobble made 49 moving tracks per 10 minutes of
+    driving on the development starts."""
 
     def __init__(self, yaw_deg: float = LIDAR_YAW_DEG, revolution_s: float = REVOLUTION_S):
         self.yaw_deg, self.revolution_s = yaw_deg, revolution_s
@@ -194,6 +212,7 @@ class MoverTracker:
         self._next_id = 1
         self.scans = 0
         self.t = None
+        self._history: List[tuple] = []     # (t, pose, ranges, angle_min_deg, increment_deg)
 
     def update(self, scan: dict, pose: Union[tuple, Callable[[float], tuple]],
                t: float) -> List[Track]:
@@ -209,19 +228,50 @@ class MoverTracker:
             a0 = scan.get("angle_min_deg", -180.0)
             inc = scan.get("angle_increment_deg", 1.0)
             pts = scan_points(scan["ranges_m"], a0, inc)
-            for bx, by, _n, _e, mid in clusters(pts, a0, inc):
+            olds = self._olds(t)
+            for bx, by, _n, _e, mid, nx, ny in clusters(pts, a0, inc):
                 frac = ((a0 + mid * inc - self.yaw_deg) % 360.0) / 360.0
                 tk = t + (frac - 0.5) * self.revolution_s
                 px, py, yaw = pose(tk) if callable(pose) else pose
                 c, s = math.cos(yaw), math.sin(yaw)
-                dets.append((tk, px + bx * c - by * s, py + bx * s + by * c))
+                free = any(self._was_free(old, px + nx * c - ny * s, py + nx * s + ny * c)
+                           for old in olds)
+                dets.append((tk, px + bx * c - by * s, py + bx * s + by * c, free))
+            p0 = pose(t) if callable(pose) else pose
+            self._history.append((t, p0, scan["ranges_m"], a0, inc))
+            del self._history[:-HISTORY]
         self._associate(dets, t)
         return self.movers()
+
+    def _olds(self, t: float) -> List[tuple]:
+        """The kept scans nearest each age in `FREE_BACK_S` (within 0.15 s:
+        a dropped scan or two), none while the history is short."""
+        out = []
+        for back in FREE_BACK_S:
+            best = min(self._history, key=lambda h: abs(t - back - h[0]), default=None)
+            if best is not None and abs(t - back - best[0]) <= 0.15 and best not in out:
+                out.append(best)
+        return out
+
+    def _was_free(self, old: tuple, x: float, y: float) -> bool:
+        """The odometry point (x, y) lay at least `FREE_M` short of where
+        `old`'s beams through it (its bin and both neighbours) stopped. A
+        bin with no return counts as clear to the lidar's reach."""
+        _t, (px, py, yaw), ranges, a0, inc = old
+        lx, ly = px + LIDAR_X_M * math.cos(yaw), py + LIDAR_X_M * math.sin(yaw)
+        d = math.hypot(x - lx, y - ly)
+        bearing = math.degrees(yaw - math.atan2(y - ly, x - lx))     # clockwise positive
+        i = int(round(((bearing - a0 + 180.0) % 360.0 - 180.0) / inc)) % len(ranges)
+        for j in (i - 1, i, i + 1):
+            r = ranges[j % len(ranges)]
+            if r is not None and r < d + FREE_M:
+                return False
+        return True
 
     def _associate(self, dets: List[tuple], t: float) -> None:
         pairs = []
         for ti, tr in enumerate(self.tracks):
-            for di, (tk, dx, dy) in enumerate(dets):
+            for di, (tk, dx, dy, _f) in enumerate(dets):
                 qx, qy = tr.predict(tk)
                 d = math.hypot(dx - qx, dy - qy)
                 if d <= GATE_M:
@@ -233,13 +283,16 @@ class MoverTracker:
                 continue
             used_t.add(ti)
             used_d.add(di)
-            self.tracks[ti].add(*dets[di])
+            tk, dx, dy, free = dets[di]
+            self.tracks[ti].add(tk, dx, dy)
             self.tracks[ti].seen = self.scans
+            self.tracks[ti].free |= free
         self.tracks = [tr for tr in self.tracks if t - tr.t <= COAST_S]
-        for di, (tk, dx, dy) in enumerate(dets):
+        for di, (tk, dx, dy, free) in enumerate(dets):
             if di not in used_d:
                 tr = Track(self._next_id, tk, dx, dy)
                 tr.seen = self.scans
+                tr.free = free
                 self.tracks.append(tr)
                 self._next_id += 1
 
