@@ -111,6 +111,7 @@ CROSS_MAX_COS = math.cos(math.radians(45))
 # Standing still between legs, and how finely a leg is integrated.
 DWELL_S = 1.0
 SUBSTEP_S = 0.02
+MAX_SPEED_M_S = 5.0
 # A disc never comes closer than this to the chassis: it stops, as a
 # person would rather than walk through a robot, and its leg ends there.
 # Contact is the robot's doing or nobody's.
@@ -147,8 +148,11 @@ class DiscMover:
     def __init__(self, name: str, speed_m_s: float, seed: int = 0,
                  radius_m: float = DISC_RADIUS_M, start_s: float = 0.0):
         import random
-        if speed_m_s <= 0:
-            raise ValueError(f"disc mover {name!r}: speed must be positive")
+        # Bounded so a sub-step (20 ms) never carries the disc further than
+        # its own radius: the contact and wall rules are checked at each
+        # sub-step's end, and a faster disc could step through the chassis.
+        if not 0 < speed_m_s <= MAX_SPEED_M_S:
+            raise ValueError(f"disc mover {name!r}: speed must be in (0, {MAX_SPEED_M_S}] m/s")
         self.name, self.speed_m_s, self.radius_m = name, float(speed_m_s), float(radius_m)
         self.rng = random.Random(f"disc-mover-{name}-{seed}")
         self.x = self.y = None          # cells; None until the first leg

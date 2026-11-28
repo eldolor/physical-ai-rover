@@ -101,10 +101,14 @@ either. While a disc is placed, `solid_cells` (and `lidar_solid_cells`)
 return a `renderer.SolidWithDiscs`: the same cells, plus `.discs`.
 `cast_ray()`, `cast_ray_exact()` and `cast_ray_drop()` take the nearer of
 their cell answer and `ray_disc_hit()`, and `footprint_overlaps()` checks the
-rectangle against each disc, so the scan, the depth grid, the drop cast,
-collision and the map all see it with no code of their own. With no disc
-mover every one of them takes the old path, to the bit. The camera does not
-draw a disc, and the split body (3.36) does not carry one. `GridWorld.log`, the event lines tests read,
+rectangle against each disc, so the scan, the depth grid, the drop cast and
+collision all see it with no code of their own. With no disc mover every
+one of them takes the old path, to the bit. Three things do not see a
+disc: the camera (`_visible_objects` reads `objects`), `MockWorld`'s map
+(`_observe()` marches its own rays against cells), and the split body
+(3.36), which publishes cells only -- so `robot/factory.py` refuses a disc
+mover with `SIM_MOTOR_BOARD=fake` or `SIM_LIDAR=fake`. Speed is capped at
+`MAX_SPEED_M_S` (5 m/s), under one radius a sub-step. `GridWorld.log`, the event lines tests read,
 keeps the last `LOG_KEEP` (2,000).
 
 **Collision.** `translate()` caps travel with a head-on ray from the centre
@@ -269,6 +273,7 @@ differs, both are given.
 | `LEG_START_M` | 1.0-3.0 | m from the robot's centre | `sim/movers.py` | Where a disc's leg starts: someone coming round a corner |
 | `CROSS_AHEAD_M`, `CROSS_MAX_COS` | 0.5 m, cos 45 deg | -- | `sim/movers.py` | A crossing leg aims this far ahead along the heading, from within 45 degrees of square to it |
 | `DWELL_S`, `CONTACT_M` | 1.0 s, 0.01 m | -- | `sim/movers.py` | Standing between legs; a disc stops this short of the chassis |
+| `MAX_SPEED_M_S` | 5.0 | m/s | `sim/movers.py`, `sim/maps/__init__.py` | A 20 ms sub-step stays under the disc's radius |
 | `SIM_BODY_URL`, `SIM_SENSORS_URL` (env) | none; `service/tunnel/run.sh` sets `http://127.0.0.1:8002` and `http://127.0.0.1:8003,http://127.0.0.1:8004` | URL | `robot/factory.py` -> `SimBodyClient` | 3.36. Required with `SIM_MOTOR_BOARD=fake`. Sensors comma-separated: the first serves the safety bundle, the last full scans and frames |
 | `SIM_BODY_SHM` (env) | `picar_sim_body` | name | `sim/body_server.py`, `sim/sensor_server.py` | The shared-memory block. Every program of one stack uses the same name; tests use a unique one per `SimPrograms` |
 | `PUBLISH_S` | 0.005 | s | `sim/body_server.py` | Twice the board loop's rate, so a sensor never casts from a state more than one board step old |
@@ -445,7 +450,7 @@ a vision run) are the
 [architecture spec's open questions](../../simulator/ARCHITECTURE.md#open-questions)
 and are not repeated here. These are the implementation gaps:
 
-- **3.30's movers hop whole cells** and never approach the robot. 3.234.A's disc movers do, but the camera does not draw them and the split body (3.36) does not carry them.
+- **3.30's movers hop whole cells** and never approach the robot. 3.234.A's disc movers do, but the camera and `MockWorld`'s map do not see them, and the split body (3.36) refuses them.
 - **The D500's +90 degree mounting yaw is not modelled.** The sim publishes
   the scan with zero dead ahead (3.27, a hardware-day item).
 - **The starter house's doors are tight for the UGV Rover.** The body

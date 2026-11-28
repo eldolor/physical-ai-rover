@@ -157,3 +157,25 @@ def test_a3_one_mission_reruns_to_the_bit():
             row["drive"], [r for r in rec["rows"] if r["house"] == row["house"]
                            and r["drive"] == "verbs" and r["speed"] == 2.5].index(row))
     assert json.loads(json.dumps(mission(args))) == row
+
+
+def test_speed_is_bounded():
+    for bad in ("approach:inf", "approach:nan", "approach:1e9", "approach:5.1"):
+        with pytest.raises(ValueError):
+            build_movers("scaled_house", bad)
+    with pytest.raises(ValueError):
+        DiscMover("person", float("inf"))
+    assert build_movers("scaled_house", "approach:5")[0].speed_m_s == 5.0
+
+
+@pytest.mark.parametrize("var", ["SIM_MOTOR_BOARD", "SIM_LIDAR"])
+def test_the_split_body_refuses_a_disc_mover(monkeypatch, var):
+    """Its sensor programs read a replica without discs: refused, not half-seen."""
+    from robot.factory import _sim_world
+    monkeypatch.setenv("SIM_MOVERS", "approach:1.2")
+    monkeypatch.setenv("SIM_MAP", "scaled_house")
+    monkeypatch.setenv(var, "fake")
+    with pytest.raises(ValueError, match="one process"):
+        _sim_world({})
+    monkeypatch.delenv(var)
+    assert _sim_world({}).disc_movers

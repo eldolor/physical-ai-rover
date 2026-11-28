@@ -166,7 +166,18 @@ def _sim_world(config: dict):
     house = os.environ.get("SIM_MAP") or config.get("sim_map") or "starter_house"
     world = build_world(house)
     if os.environ.get("SIM_MOVERS"):
-        for mover in build_movers(house, os.environ["SIM_MOVERS"]):
+        from sim.movers import DiscMover
+        movers = build_movers(house, os.environ["SIM_MOVERS"])
+        # 3.234.A: a disc mover lives in this process's world only -- the
+        # split body's sensor programs and the fake lidar read a replica
+        # that carries cells, not discs, so the veto would be blind to an
+        # obstacle the body stops at. Refused rather than half-seen.
+        if (any(isinstance(m, DiscMover) for m in movers)
+                and (os.environ.get("SIM_MOTOR_BOARD") == "fake"
+                     or os.environ.get("SIM_LIDAR") == "fake")):
+            raise ValueError(f"SIM_MOVERS={os.environ['SIM_MOVERS']!r}: disc movers run in "
+                             "one process only, not with SIM_MOTOR_BOARD=fake or SIM_LIDAR=fake")
+        for mover in movers:
             world.add_mover(mover)
     return world
 

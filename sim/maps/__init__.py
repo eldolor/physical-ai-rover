@@ -86,7 +86,7 @@ def build_movers(house: str, scenario: str):
     `SIM_MOVERS` names the scenario; each house lists its own in `MOVERS`."""
     import importlib
     from sim.maps.procthor import parse_split_name
-    from sim.movers import APPROACH_SCENARIO, DiscMover
+    from sim.movers import APPROACH_SCENARIO, MAX_SPEED_M_S, DiscMover
     # 3.234.A: `approach:<m/s>[:<seed>]` -- one disc mover that walks at the
     # robot and across its route, in any house (`sim.movers.DiscMover`).
     if scenario.split(":")[0] == APPROACH_SCENARIO:
@@ -94,11 +94,11 @@ def build_movers(house: str, scenario: str):
         try:
             speed = float(parts[1])
             seed = int(parts[2]) if len(parts) > 2 else 0
-            if len(parts) > 3 or not speed > 0:
+            if len(parts) > 3 or not 0 < speed <= MAX_SPEED_M_S:
                 raise ValueError
         except (IndexError, ValueError):
             raise ValueError(f"SIM_MOVERS={scenario!r}: {APPROACH_SCENARIO}:<m/s>[:<seed>], "
-                             "a positive speed") from None
+                             f"a speed in (0, {MAX_SPEED_M_S}]") from None
         return [DiscMover("person", speed, seed=seed)]
     # Every ProcTHOR house is one module, and none has movers.
     # A variant (3.74's `complex_house_hazards`) shares its house's movers.
