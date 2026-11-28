@@ -138,7 +138,31 @@ def test_wedged_reads_the_bar_and_the_turn_room():
     ranges[180 + 90] = 0.20
     side = SafetyController(_Body(ranges=ranges), 20.0)
     assert docking.turn_room_cm(side) < docking.TURN_MARGIN_CM
-    assert docking.wedged(side) is True
+    # Review: a wall beside the body with the way ahead open is not wedged.
+    assert docking.no_turn_room(side) is True and docking.wedged(side) is False
+
+
+def test_a_malformed_scan_is_unknown_not_an_error():
+    class _Bad(_Body):
+        def get_scan(self, max_range_m=None):
+            return {"usable": True, "ranges_m": [0.1] * 360}     # no angles
+    safety = SafetyController(_Body(), 20.0)
+    safety.robot = _Bad()
+    assert docking.turn_room_cm(safety) is None and docking.no_turn_room(safety) is False
+
+
+@pytest.mark.parametrize("answer", ["yes", 1, OSError("down")])
+def test_the_gate_wants_exactly_true(answer):
+    from control.mission_runner import _HaltGate
+
+    class _Odd(_Body):
+        def vets_moves_on_server(self):
+            if isinstance(answer, Exception):
+                raise answer
+            return answer
+    gate = _HaltGate(_Odd(), lambda: True)
+    assert gate.vets_moves_on_server() is False
+    assert SafetyController(gate, 20.0).defer_astern_occluded is False
 
 
 class _Nav:
@@ -203,13 +227,25 @@ def test_an_unmoved_abort_while_wedged_backs_out():
 
 
 def test_a_refused_escape_reverse_ends_the_escape():
-    body = _Body(near_m=0.12)           # no server: astern_occluded refused here
+    body = _Body(near_m=0.20)           # no server: astern_occluded refused here
     nav = _Nav([])
     trip = _trip(body, nav)
+    assert docking.wedged(trip.safety)
     trip.step()
     assert body.done == [] and "escape REVERSE refused" in trip.log[-1]
+    # Bug pass: a refused first REVERSE queues `_back_off`'s creep forward
+    # (once per place), then the goal.
+    assert trip._moves == ["nudge"]
+    trip.step()
+    assert body.done == [("FORWARD", docking.NUDGE_SPEED, docking.NUDGE_S)]
     trip.step()
     assert len(nav.goals) == 1
+
+
+def test_a_blind_forward_reading_is_not_wedged():
+    safety = SafetyController(_Body(near_m=0.12), 20.0)
+    safety.forward_clearance = lambda grid=None: (0.0, "ahead_not_observed")
+    assert docking.wedged(safety) is False
 
 
 def test_off_means_no_wedge_check(monkeypatch):
@@ -241,6 +277,11 @@ def test_the_reserve_counts_the_escape_only_when_wedged_and_close():
                                  is_wedged=is_wedged(False)) is None
     why = budget.reserve_reason(lambda: {}, pose, 0.0, left, None, None, is_wedged=is_wedged(True))
     assert "back out first" in why and budget.last["escape_s"] == docking.ESCAPE_RESERVE_S
+
+
+    def boom():
+        raise OSError("scan lost")
+    assert budget.reserve_reason(lambda: {}, pose, 0.0, left, None, None, is_wedged=boom) is None
 
 
 # ---- the sweep, one seed each way (B1's numbers are in the section file) -----

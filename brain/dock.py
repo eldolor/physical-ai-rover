@@ -84,13 +84,14 @@ MAX_HOLDS = 20              # polls a move waits for the mission's own cancelled
 # `Collision Ahead`). At creep speed because a track is short: a nook entered
 # to the 20 cm bar leaves ~10 cm of it, which a REVERSE at CREEP_SPEED (20,
 # 0.12 m/s: a 20 cm bar) can never use (3.229.B: refused at 0.7 cm `retrace`).
-# Wedged: forward under the safety bar, or no room to turn -- a scan return
-# within the chassis' corner radius plus TURN_MARGIN_CM of its centre.
+# Wedged: forward under the safety bar AND no room to turn -- a scan return
+# within the chassis' corner radius plus TURN_MARGIN_CM of its centre. The
+# escape then backs out while there is no room to turn.
 # 0 turns the escape off (and its reserve). ESCAPE_RESERVE_S: what the time
 # reserve adds for it when the robot is wedged at the decision.
 ESCAPE_BACKS = 3
 ESCAPE_BACK_S = 3.3          # NUDGE_S's ~10 cm at NUDGE_SPEED
-TURN_MARGIN_CM = 10.0       # amended from 5 after the 8-seed smoke run (section B)
+TURN_MARGIN_CM = 10.0       # 5 before the 8-seed smoke run (section B's amendment 1)
 UNMOVED_M = 0.15            # an abort with the robot moved less is the start's problem
 ESCAPE_RESERVE_S = 15.0
 # 3.198 D2. A residual the creep's moves cannot close (under `drive: ros` a
@@ -209,26 +210,44 @@ def turn_room_cm(safety) -> Optional[float]:
     corner = math.hypot(FOOTPRINT_LENGTH_M * 50.0, FOOTPRINT_WIDTH_M * 50.0)
     box = getattr(safety, "self_box_cm", None)
     near = None
-    for x, y in scan_points_cm(scan):
-        if box is not None and box[0] <= x <= box[1] and box[2] <= y <= box[3]:
-            continue
-        d = math.hypot(x, y)
-        near = d if near is None or d < near else near
+    try:
+        for x, y in scan_points_cm(scan):
+            if box is not None and box[0] <= x <= box[1] and box[2] <= y <= box[3]:
+                continue
+            d = math.hypot(x, y)
+            near = d if near is None or d < near else near
+    except Exception:  # noqa: BLE001 -- a malformed scan (review): unknown, never an end
+        return None
     return None if near is None else near - corner
 
 
-def wedged(safety) -> bool:
-    """3.228.B: forward under the safety bar, or no room to turn on the
-    spot (`turn_room_cm` under TURN_MARGIN_CM): a start nav2 may not plan
-    or turn from. False when either reading is unknown."""
-    try:
-        f, _ = safety.forward_clearance()
-    except Exception:  # noqa: BLE001 -- unknown: not wedged on a guess
-        f = None
-    if f is not None and f < safety.min_distance_cm:
-        return True
+def no_turn_room(safety) -> bool:
+    """3.228.B: a scan return inside the corner radius plus TURN_MARGIN_CM
+    (room for a turn and a drive out to the side). False when unknown."""
     room = turn_room_cm(safety)
     return room is not None and room < TURN_MARGIN_CM
+
+
+def wedged(safety) -> bool:
+    """3.228.B: forward under the safety bar AND no room to turn on the
+    spot (`no_turn_room`): a start nav2 may not plan or turn from. Both,
+    so a wall beside the body or a narrow corridor alone is not wedged
+    (review). False when either reading is unknown."""
+    try:
+        f, source = safety.forward_clearance()
+        bar = safety.min_distance_cm
+    except Exception:  # noqa: BLE001 -- unknown: not wedged on a guess
+        return False
+    if source in ("ahead_not_observed", "path_not_observed"):
+        return False    # bug pass: a blind reading is not a measured wall ahead
+    return f is not None and f < bar and no_turn_room(safety)
+
+
+def _asked(is_wedged) -> bool:
+    try:
+        return is_wedged() is True
+    except Exception:  # noqa: BLE001 -- review: an unknown is not wedged, never an end
+        return False
 
 
 class HomeBudget:
@@ -385,7 +404,7 @@ class HomeBudget:
         if left_s is not None and th > left_s:
             return f"time: {left_s:.0f} s left, the trip home {th:.0f} s ({L:.1f} m)"
         if (left_s is not None and ESCAPE_BACKS > 0 and is_wedged is not None
-                and th + ESCAPE_RESERVE_S > left_s and is_wedged()):
+                and th + ESCAPE_RESERVE_S > left_s and _asked(is_wedged)):
             self.last["escape_s"] = ESCAPE_RESERVE_S
             return (f"time: {left_s:.0f} s left, the trip home {th:.0f} s ({L:.1f} m) "
                     f"plus {ESCAPE_RESERVE_S:.0f} s to back out first (wedged)")
@@ -630,7 +649,7 @@ class ReturnTrip:
         """One REVERSE of the escape, while the robot stays wedged. Ends at
         the first refusal (the server's retrace track used up, or something
         astern) or once the robot is free; the goal follows either way."""
-        if not wedged(self.safety):
+        if not no_turn_room(self.safety):
             self._escaping = 0
             self.log.append("free to turn: on to the goal")
             return None
@@ -640,12 +659,17 @@ class ReturnTrip:
             # name; the escape's count retries it instead, MAX_HOLDS polls at most.
             self._moves = [m for m in self._moves if m != "escape"]
             if self._holds > MAX_HOLDS:
-                self._escaping = 0
+                self._escaping = self._holds = 0     # review: the next move waits afresh
             return None
         self.reversals += 1
         if self.refused > before:
+            first = self._escaping == ESCAPE_BACKS
             self._escaping = 0
             self.log.append("escape REVERSE refused: on to the goal from here")
+            if first and NUDGE_S > 0 and self._nudge_here():
+                # Bug pass: as `_back_off`'s refusal, one bounded creep forward
+                # (once per place) before the goal is sent again.
+                self._moves.append("nudge")
         else:
             self._escaping -= 1
         return None

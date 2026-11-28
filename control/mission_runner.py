@@ -685,7 +685,12 @@ class _HaltGate(RobotInterface):
         agent's controller passes an `astern_occluded` REVERSE to the robot
         server that re-vets it. False for a body that does not say so."""
         probe = getattr(type(self._robot), "vets_moves_on_server", None)
-        return bool(self._robot.vets_moves_on_server()) if callable(probe) else False
+        if not callable(probe):
+            return False
+        try:
+            return self._robot.vets_moves_on_server() is True    # review: exactly True
+        except Exception:  # noqa: BLE001 -- unknown: the brain refuses, as before
+            return False
 
     def look_left(self) -> dict:
         self._guard("look_left")

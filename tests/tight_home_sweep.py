@@ -46,6 +46,14 @@ TICK_CAP = 3000
 SEEDS = 40
 
 
+def _escape_default():
+    import brain.dock
+    return brain.dock.ESCAPE_BACKS
+
+
+ESCAPE_BACKS_DEFAULT = _escape_default()     # the shipped value, before any arm sets it
+
+
 def corner_radius_cells():
     from robot.safety import FOOTPRINT_LENGTH_M, FOOTPRINT_WIDTH_M
     return math.hypot(FOOTPRINT_LENGTH_M / 2, FOOTPRINT_WIDTH_M / 2) / CELL
@@ -185,17 +193,21 @@ def nooks(seeds):
     return out
 
 
-def run_one(args):
+def _quiet():
     import logging
     logging.disable(logging.WARNING)
+
+
+def run_one(args):
     import brain.dock as docking
     from control.mission_runner import MissionRunner
     from sim.maps import build_world
     from sim.mock_world import MockWorld
+    from robot.safety import SafetyViolation
     from tests.footprint_sweep import truth
     arm, seed, (c, d) = args
     after = arm == "after"
-    docking.ESCAPE_BACKS = 3 if after else 0
+    docking.ESCAPE_BACKS = ESCAPE_BACKS_DEFAULT if after else 0
     grid = build_world(HOUSE)
     p = (-d[1], d[0])
     for o in ((c[0] + d[0], c[1] + d[1]), (c[0] + p[0], c[1] + p[1]), (c[0] - p[0], c[1] - p[1])):
@@ -226,7 +238,7 @@ def run_one(args):
         nav.safety._retrace_sample()
         try:
             nav.safety.check_and_execute("FORWARD", speed=50, duration=1.0)
-        except Exception:  # noqa: BLE001 -- refused at the bar: as deep as it goes
+        except SafetyViolation:          # refused at the bar: as deep as it goes
             break
     nook = {"x": round(grid.x, 3), "y": round(grid.y, 3), "can_spin": can_spin(grid),
             "in_nook": math.hypot(grid.x - (c[0] + 0.5), grid.y - (c[1] + 0.5)) < 0.75}
@@ -278,9 +290,10 @@ def main(argv):
     workers = int(argv[4]) if len(argv) > 4 else 1
     arms = ("before", "after") if arm == "both" else (arm,)
     cases = [(a, i, n) for a in arms for i, n in enumerate(nooks(seeds))]
+    _quiet()                    # here, not in run_one: the suite runs it in process (review)
     if workers > 1:
         from multiprocessing import Pool
-        with Pool(workers) as pool:
+        with Pool(workers, initializer=_quiet) as pool:
             rows = pool.map(run_one, cases)
     else:
         rows = [run_one(x) for x in cases]
