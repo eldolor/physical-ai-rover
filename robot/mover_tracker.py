@@ -52,6 +52,7 @@ FREE_M = 0.15               # free space: an earlier beam reached this far past 
 FREE_BACK_S = (0.5, 1.0)    # ... in the scan nearest either of these ages
 TURN_MAX_DEG = 3.0          # a revolution in which the body turned more is not tracked
 HISTORY_S = max(FREE_BACK_S) + 0.2   # how far back scans are kept for it
+CLOCK_STEP_S = 0.5          # a capture time this far behind the last: the clock stepped back
 COAST_S = 0.25              # a track unmatched this long is dropped
 RESET_M = 0.03              # an observation this far off the prediction ...
 RESET_FRAC = 0.15           # ... plus this share of the predicted step restarts the fit
@@ -239,13 +240,22 @@ class MoverTracker:
         frame, or a function of time giving it (each cluster is placed from
         the pose when the beam crossed it). Returns the moving tracks seen
         in this scan. An unusable scan ages the tracks and adds nothing.
+        `pose` must answer up to `t + revolution / 2` (the revolution's last
+        point): the turn check and the late clusters ask for it, so a caller
+        whose odometry ends at `t` must wait for it or extrapolate. A
+        revolution read twice (the same `t`) is ignored; a clock that steps
+        back more than `CLOCK_STEP_S` restarts the tracker.
         `revolution_s` overrides the nominal period for this scan (the
         driver knows the lidar's real speed; C's wiring passes it)."""
         rev_s = self.revolution_s if revolution_s is None else revolution_s
+        if self.t is not None and t <= self.t:
+            if t >= self.t - CLOCK_STEP_S:
+                return self.movers()        # the same revolution read again: no new data
+            self.__init__(self.yaw_deg, self.revolution_s)   # the clock stepped back: start over
         self.scans += 1
         self.t = t
         dets = []
-        if scan.get("usable") and not self._turning(pose, t, rev_s):
+        if scan.get("usable") and scan.get("ranges_m") and not self._turning(pose, t, rev_s):
             a0 = scan.get("angle_min_deg", -180.0)
             inc = scan.get("angle_increment_deg", 1.0)
             pts = scan_points(scan["ranges_m"], a0, inc)
@@ -290,7 +300,8 @@ class MoverTracker:
     def _was_free(self, old: tuple, x: float, y: float) -> bool:
         """The odometry point (x, y) lay at least `FREE_M` short of where
         `old`'s beams through it (its bin and both neighbours) stopped. A
-        bin with no return counts as clear to the lidar's reach."""
+        bin with no return is NOT clear: on a real lidar it may be a dark
+        or shiny surface, and once a track is free it stays free."""
         _t, (px, py, yaw), ranges, a0, inc = old
         lx, ly = px + LIDAR_X_M * math.cos(yaw), py + LIDAR_X_M * math.sin(yaw)
         d = math.hypot(x - lx, y - ly)
@@ -298,7 +309,7 @@ class MoverTracker:
         i = int(round(((bearing - a0 + 180.0) % 360.0 - 180.0) / inc)) % len(ranges)
         for j in (i - 1, i, i + 1):
             r = ranges[j % len(ranges)]
-            if r is not None and r < d + FREE_M:
+            if r is None or r < d + FREE_M:
                 return False
         return True
 
