@@ -109,3 +109,20 @@ def test_an_unknown_arm_is_refused():
         assert "unknown arm" in str(e)
     else:
         raise AssertionError("arm 'l' ran")
+
+
+def test_the_recorded_baseline_is_b0s():
+    """B0 as recorded in results/ (the plan's B0 table): the gate passed
+    (arm 1's median >= 0.5 low contacts a survey) and the veto alone short
+    of B1's 80 % fall."""
+    load = lambda a: json.loads((SWEEP / "results" / f"{a}.json").read_text())  # noqa: E731
+    lidar, veto = load("L"), load("V")
+    for arm in (lidar, veto):
+        assert arm["missions"] == 110 and arm["left_out_error_or_capped"] == 0
+        assert arm["other_contacts"] == 0
+    assert lidar["low_contacts_survey_median"] >= 0.5                    # the gate
+    assert (lidar["low_contacts"], veto["low_contacts"]) == (319, 148)
+    assert 0.2 < veto["low_contacts"] / lidar["low_contacts"] < 0.5      # -54 %: short of B1
+    assert (lidar["refusals_floor_band"], veto["refusals_floor_band"] > 0) == (0, True)
+    assert (lidar["find_rate"], veto["find_rate"]) == (0.4545, 0.4)
+    assert (lidar["coverage_median"], veto["coverage_median"]) == (0.5953, 0.5621)
