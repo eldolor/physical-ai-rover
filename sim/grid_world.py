@@ -203,7 +203,7 @@ LIDAR_Z_M = 0.120
 # 3.237.A: the pan-tilt camera's vertical view, which decides whether a LOW
 # thing is in the picture (a tall one reaches past the horizon, so some of
 # it is in any view the tilt range allows). Lens height: the xacro's
-# `pan_z` + `camera_up` (CAD), 0.210 m off the floor. Mount pitch: the
+# `pan_z` + `camera_up` over base_link at `wheel_radius` (CAD), 0.210 m off the floor. Mount pitch: the
 # xacro's `camera_pitch`, a 15 deg downward wedge, [PLACEHOLDER] ("10-20
 # deg, unmodelled"). Vertical field: the sim camera's 60 deg horizontal
 # (`renderer.FPV_FOV`) on a 4:3 frame, [PLACEHOLDER] until 3.231.A1.
