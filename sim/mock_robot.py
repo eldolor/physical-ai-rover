@@ -42,6 +42,7 @@ existing demo stay exactly as fast and as exact as they always were:
 
 import logging
 import math
+import os
 import time
 from typing import Optional
 
@@ -246,6 +247,7 @@ class MockRobot(RobotInterface):
         freshly switched on there. Only the robot server's sim-only route
         calls it, never while anything drives."""
         self.stop()
+        world.camera_tilt_deg = self.world.camera_tilt_deg    # 3.237.A: the tilt stays put
         self.world = world
         self._path_m = 0.0
         self._heading0 = world.heading_deg
@@ -589,10 +591,18 @@ class MockRobot(RobotInterface):
         self.tilt_deg = 0.0
         return {"action": "look_center", **self.world.look_center()}
 
-    # 3.220.C: the sim camera's tilt. The renderer draws no tilt, so it is a
-    # reading only (the twin's badge, the tilt buttons), within the car's
-    # limits; the picture stays level.
-    tilt_deg = 0.0
+    # 3.220.C: the sim camera's tilt. The renderer draws no tilt, so the
+    # picture stays level; within the car's limits. 3.237.A: the tilt lives
+    # on the world (`GridWorld.camera_tilt_deg`), whose detections of low
+    # things honour it (`GridWorld.floor_in_view()`).
+    @property
+    def tilt_deg(self) -> float:
+        return self.world.camera_tilt_deg
+
+    @tilt_deg.setter
+    def tilt_deg(self, degrees: float) -> None:
+        self.world.camera_tilt_deg = float(degrees)
+
     TILT_LIMITS_DEG = (-30.0, 30.0)
 
     def tilt_step(self, degrees: float) -> dict:
@@ -771,7 +781,10 @@ class MockRobot(RobotInterface):
         pan_deg = math.degrees(renderer.normalize_angle(base_angle - self.world.theta))
         return {"rows": 1, "cols": cols, "pan_deg": round(pan_deg, 4),
                 "fov_deg": math.degrees(renderer.FPV_FOV), "zones": zones,
-                "floor": self._floor_band(FLOOR_BAND_COLS, cell_cm),
+                # 3.237.A: SIM_FLOOR_BAND=0 withholds the band, as a body
+                # without a depth driver does (the Rover today: `no_floor_band`).
+                **({"floor": self._floor_band(FLOOR_BAND_COLS, cell_cm)}
+                   if os.environ.get("SIM_FLOOR_BAND", "1") != "0" else {}),
                 **({"drop": self._drop_block(cell_cm)} if self.drop_sensor else {})}
 
     def _floor_sensor(self):
