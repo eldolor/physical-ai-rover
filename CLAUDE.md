@@ -149,8 +149,7 @@ board` lists open steps. **Whoever merges moves the section's line to
 
 **Decided, each waiting on its trigger** (the user, 2026-11-07)
 
-* **3.42 / 3.76 A4:** fix `/scan`'s stamp (the request time) before
-  raising nav2's speed (`HANDOFF-2026-10-07-lidar-and-speed.md`).
+* **3.236:** B braking on the Rover; C speed by clearance after B.
 * **3.56:** re-check the 8 s arrival deadline after 500+ real calls.
 
 **Open now** (claim first)
@@ -176,6 +175,7 @@ board` lists open steps. **Whoever merges moves the section's line to
 * ROS image: rebuild `:latest` and the Jetson's from `dev` after 3.211's `scaled_house` check.
 * 3.206 (amendment 4, 2026-11-23): Qwen3-VL-235B's boxes train Qwen's
   box answer (3.188). A free; B2's check, C: the user; D: 3.188.B.
+* 3.234: B2 next, then C. 3.228.C: the desktop.
 * Not built: `brain/planner.py`, a Stage 1 vision re-run on the lit renderer.
 
 **The Rover** (in hand; state: 3.140's log: L0 begun, nothing
