@@ -1,0 +1,38 @@
+{
+  "summary": {
+    "seconds": 60.0,
+    "load": false,
+    "cores": 4,
+    "replies": 598,
+    "unusable": 0,
+    "sources": [
+      "capture"
+    ],
+    "not_capture": 0,
+    "distinct_revolutions": 538,
+    "one_stamp_per_revolution": true,
+    "err_ms": {
+      "median": 1.0737180709838867,
+      "p95_abs": 1.6703605651855469,
+      "max_abs": 2.605438232421875,
+      "min": 0.152587890625,
+      "max": 2.605438232421875
+    },
+    "request_stamp_err_ms": {
+      "median": 97.02908992767334,
+      "min": 49.08490180969238,
+      "max": 151.3819694519043
+    },
+    "age_ms": {
+      "min_lo": 47.940731048583984,
+      "max_hi": 155.4410457611084,
+      "outside_0_250": 0
+    },
+    "gap_ms": {
+      "median": 100.04258155822754,
+      "min": 98.6783504486084,
+      "max": 201.29823684692383
+    },
+    "jitter": true
+  }
+}
