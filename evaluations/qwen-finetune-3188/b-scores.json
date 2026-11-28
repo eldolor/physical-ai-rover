@@ -1,0 +1,329 @@
+{
+ "coverage": {
+  "stock": {
+   "expected": 2468,
+   "missing": 0,
+   "errors": 0,
+   "whole": true,
+   "first_missing": []
+  },
+  "fold-1": {
+   "expected": 212,
+   "missing": 212,
+   "errors": 0,
+   "whole": false,
+   "first_missing": [
+    "a-white-phone-charger-ca-20260921-203250/frame-0000.jpg",
+    "a-white-phone-charger-ca-20260921-203250/frame-0001.jpg",
+    "a-white-phone-charger-ca-20260921-203250/frame-0002.jpg"
+   ]
+  },
+  "fold-2": {
+   "expected": 87,
+   "missing": 87,
+   "errors": 0,
+   "whole": false,
+   "first_missing": [
+    "blue-shoes-20260907-152528/frame-0000.jpg",
+    "blue-shoes-20260907-152528/frame-0001.jpg",
+    "blue-shoes-20260907-152528/frame-0002.jpg"
+   ]
+  },
+  "fold-3": {
+   "expected": 255,
+   "missing": 255,
+   "errors": 0,
+   "whole": false,
+   "first_missing": [
+    "blue-bottle-20260907-142454/frame-0000.jpg",
+    "blue-bottle-20260907-142454/frame-0001.jpg",
+    "blue-bottle-20260907-142454/frame-0002.jpg"
+   ]
+  },
+  "fold-4": {
+   "expected": 243,
+   "missing": 243,
+   "errors": 0,
+   "whole": false,
+   "first_missing": [
+    "grey-backpack-20260921-203627/frame-0000.jpg",
+    "grey-backpack-20260921-203627/frame-0001.jpg",
+    "grey-backpack-20260921-203627/frame-0002.jpg"
+   ]
+  },
+  "fold-5": {
+   "expected": 701,
+   "missing": 701,
+   "errors": 0,
+   "whole": false,
+   "first_missing": [
+    "red-backpack-20260907-144856/frame-0000.jpg",
+    "red-backpack-20260907-144856/frame-0001.jpg",
+    "red-backpack-20260907-144856/frame-0002.jpg"
+   ]
+  },
+  "fold-6": {
+   "expected": 970,
+   "missing": 970,
+   "errors": 0,
+   "whole": false,
+   "first_missing": [
+    "woven-laundry-basket-20260908-215140/frame-0000.jpg",
+    "woven-laundry-basket-20260908-215140/frame-0001.jpg",
+    "woven-laundry-basket-20260908-215140/frame-0002.jpg"
+   ]
+  },
+  "fold-all": {
+   "expected": 441,
+   "missing": 441,
+   "errors": 0,
+   "whole": false,
+   "first_missing": [
+    "a-white-phone-charger-ca-20260921-203250/frame-0009.jpg",
+    "a-white-phone-charger-ca-20260921-203250/frame-0009.jpg#mirror",
+    "a-white-phone-charger-ca-20260921-203250/frame-0010.jpg"
+   ]
+  }
+ },
+ "cost": {
+  "gpu_usd": 0.71,
+  "teacher_usd_per_kept_label": 0.0065,
+  "jobs": [
+   {
+    "id": "6b0ae7d96c5d61fff18ce93b",
+    "run": "stock",
+    "folds": null,
+    "stage": "COMPLETED",
+    "running_secs": 1017,
+    "usd": 0.7083
+   }
+  ]
+ },
+ "stock": {
+  "pooled": {
+   "frames": 2261,
+   "in_view": 535,
+   "yes": 388,
+   "false_yes": 7,
+   "missed": 154,
+   "mistakes": 161,
+   "precision": 0.982,
+   "recall": 0.7121
+  },
+  "per_object": {
+   "a white phone charger cable": {
+    "frames": 176,
+    "in_view": 118,
+    "yes": 117,
+    "false_yes": 5,
+    "missed": 6,
+    "mistakes": 11,
+    "precision": 0.9573,
+    "recall": 0.9492
+   },
+   "blue and yellow running shoes": {
+    "frames": 63,
+    "in_view": 38,
+    "yes": 31,
+    "false_yes": 1,
+    "missed": 8,
+    "mistakes": 9,
+    "precision": 0.9677,
+    "recall": 0.7895
+   },
+   "blue bottle": {
+    "frames": 242,
+    "in_view": 28,
+    "yes": 25,
+    "false_yes": 0,
+    "missed": 3,
+    "mistakes": 3,
+    "precision": 1.0,
+    "recall": 0.8929
+   },
+   "grey backpack": {
+    "frames": 211,
+    "in_view": 94,
+    "yes": 25,
+    "false_yes": 1,
+    "missed": 70,
+    "mistakes": 71,
+    "precision": 0.96,
+    "recall": 0.2553
+   },
+   "red backpack": {
+    "frames": 678,
+    "in_view": 33,
+    "yes": 27,
+    "false_yes": 0,
+    "missed": 6,
+    "mistakes": 6,
+    "precision": 1.0,
+    "recall": 0.8182
+   },
+   "woven laundry basket": {
+    "frames": 891,
+    "in_view": 224,
+    "yes": 163,
+    "false_yes": 0,
+    "missed": 61,
+    "mistakes": 61,
+    "precision": 1.0,
+    "recall": 0.7277
+   }
+  },
+  "teal_yes": 0,
+  "taupe_yes": 0,
+  "ve_pooled": {
+   "frames": 2261,
+   "in_view": 535,
+   "yes": 508,
+   "false_yes": 26,
+   "missed": 53,
+   "mistakes": 79,
+   "precision": 0.9488,
+   "recall": 0.9009
+  }
+ },
+ "stock_steering": {
+  "own": {
+   "frames": 163,
+   "right": 97,
+   "silent": 64,
+   "wrong_side": 2,
+   "right_share": 0.5951,
+   "half_width_95": 0.0754
+  },
+  "own_border": {
+   "frames": 34,
+   "right": 31,
+   "silent": 3,
+   "wrong_side": 0,
+   "right_share": 0.9118,
+   "half_width_95": 0.0953
+  },
+  "local": {
+   "frames": 163,
+   "right": 134,
+   "silent": 24,
+   "wrong_side": 5,
+   "right_share": 0.8221,
+   "half_width_95": 0.0587
+  },
+  "local_border": {
+   "frames": 34,
+   "right": 34,
+   "silent": 0,
+   "wrong_side": 0,
+   "right_share": 1.0,
+   "half_width_95": 0.0
+  },
+  "mirror": {
+   "frames": 163,
+   "consistent": 89,
+   "share": 0.546,
+   "both_words": true
+  },
+  "local_per_object": {
+   "a white phone charger cable": {
+    "frames": 27,
+    "right": 23,
+    "silent": 2,
+    "wrong_side": 2,
+    "right_share": 0.8519,
+    "half_width_95": 0.134
+   },
+   "blue and yellow running shoes": {
+    "frames": 22,
+    "right": 17,
+    "silent": 5,
+    "wrong_side": 0,
+    "right_share": 0.7727,
+    "half_width_95": 0.1751
+   },
+   "blue bottle": {
+    "frames": 12,
+    "right": 11,
+    "silent": 1,
+    "wrong_side": 0,
+    "right_share": 0.9167,
+    "half_width_95": 0.1564
+   },
+   "grey backpack": {
+    "frames": 30,
+    "right": 26,
+    "silent": 1,
+    "wrong_side": 3,
+    "right_share": 0.8667,
+    "half_width_95": 0.1216
+   },
+   "red backpack": {
+    "frames": 14,
+    "right": 14,
+    "silent": 0,
+    "wrong_side": 0,
+    "right_share": 1.0,
+    "half_width_95": 0.0
+   },
+   "woven laundry basket": {
+    "frames": 58,
+    "right": 43,
+    "silent": 15,
+    "wrong_side": 0,
+    "right_share": 0.7414,
+    "half_width_95": 0.1127
+   }
+  },
+  "a_per_object": {
+   "a white phone charger cable": {
+    "frames": 27,
+    "right": 24,
+    "silent": 1,
+    "wrong_side": 2,
+    "right_share": 0.8889,
+    "half_width_95": 0.1185
+   },
+   "blue and yellow running shoes": {
+    "frames": 22,
+    "right": 18,
+    "silent": 4,
+    "wrong_side": 0,
+    "right_share": 0.8182,
+    "half_width_95": 0.1612
+   },
+   "blue bottle": {
+    "frames": 12,
+    "right": 12,
+    "silent": 0,
+    "wrong_side": 0,
+    "right_share": 1.0,
+    "half_width_95": 0.0
+   },
+   "grey backpack": {
+    "frames": 30,
+    "right": 27,
+    "silent": 0,
+    "wrong_side": 3,
+    "right_share": 0.9,
+    "half_width_95": 0.1074
+   },
+   "red backpack": {
+    "frames": 14,
+    "right": 14,
+    "silent": 0,
+    "wrong_side": 0,
+    "right_share": 1.0,
+    "half_width_95": 0.0
+   },
+   "woven laundry basket": {
+    "frames": 58,
+    "right": 44,
+    "silent": 14,
+    "wrong_side": 0,
+    "right_share": 0.7586,
+    "half_width_95": 0.1101
+   }
+  }
+ },
+ "note": "a fold run is not whole: the fold criteria are not judged"
+}

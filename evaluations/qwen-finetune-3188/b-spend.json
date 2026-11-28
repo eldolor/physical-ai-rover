@@ -1,0 +1,23 @@
+{
+ "stop_usd": 10.0,
+ "jobs": [
+  {
+   "id": "6b0ae7d96c5d61fff18ce93b",
+   "run": "stock",
+   "folds": null,
+   "stamp": "20261128T144024Z",
+   "result": "stock",
+   "flavor": "a100-large",
+   "per_min": 0.041667,
+   "timeout_min": 40,
+   "worst_usd": 1.6667,
+   "started": "2026-11-28T14:40:25Z",
+   "running_secs": 1017,
+   "usd": 0.7083,
+   "stage": "COMPLETED",
+   "job_sha256": "2726cccf377768a8a57d27df640ed72b58c5718b6f27c9546f38d6970b4d481b",
+   "message": null
+  }
+ ],
+ "spent_usd": 0.71
+}
