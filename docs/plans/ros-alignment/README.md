@@ -234,4 +234,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.230](3.230-mat-edge-stuck.md) | The Rover stuck at a mat's edge: traction, not an obstacle |
 | [3.231](3.231-floor-obstacles-camera.md) | Floor obstacles from the pan-tilt camera and local perception, on the Rover |
 | [3.232](3.232-twin-liveness.md) | The twin says when the robot or brain stops answering, and the shutdown card says what to do next |
+| [3.234](3.234-mover-prediction.md) | Predicting where people and pets will be: a short-horizon mover tracker in the safety veto |
 <!-- /sections -->
