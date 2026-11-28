@@ -106,9 +106,12 @@ class Timeline:
         return ax + f * (bx - ax), ay + f * (by - ay), r, a[5]
 
 
-def replay(house, samples, tracker_cls=None):
+def scans_of(house, samples):
+    """The revolutions `get_scan()` gives over a recorded timeline, with
+    the ground truth beside each: [{"scan", "t", "disc_pts", "disc", "v"}].
+    The expensive half (every point cast), kept apart so tracker revisions
+    can be replayed against the same scans (`--cache`)."""
     from robot.lidar_ld19 import RANGE_MAX_M, LIDAR_YAW_DEG, Ld19Scanner
-    from robot.mover_tracker import MoverTracker
     from robot.safety import LIDAR_X_M
     from sim import renderer
     from sim.fake_lidar import Emitter
@@ -142,8 +145,7 @@ def replay(house, samples, tracker_cls=None):
     clock = [0.0]
     scanner = Ld19Scanner(clock=lambda: clock[0], wall=lambda: clock[0])
     emitter = Emitter(cast_mm, t0=samples[0][0])
-    tracker = (tracker_cls or MoverTracker)()
-    revs, cost = [], []
+    out = []
     t_end = samples[-1][0]
     t = samples[0][0]
     while t < t_end:
@@ -162,11 +164,9 @@ def replay(house, samples, tracker_cls=None):
             t_old = 2 * mid - t_new
             disc_pts = sum(1 for th, d in hits if d and t_old <= th <= t_new)
             del hits[:bisect.bisect_left([h[0] for h in hits], t_old)]
-            c0 = time.perf_counter()
-            movers = tracker.update(scan, lambda tk: to_odom(*tl.pose(tk)), mid)
-            cost.append(time.perf_counter() - c0)
-            rev = {"t": mid, "movers": [(m.id, m.x, m.y, m.vx, m.vy) for m in movers],
-                   "disc_pts": disc_pts, "disc": None, "v": None}
+            rev = {"scan": {k: scan[k] for k in ("usable", "ranges_m", "angle_min_deg",
+                                                  "angle_increment_deg")},
+                   "t": mid, "disc_pts": disc_pts, "disc": None, "v": None}
             d = tl.disc(mid)
             if d:
                 dx, dy, _ = to_odom(d[0], d[1], 0.0)
@@ -175,8 +175,28 @@ def replay(house, samples, tracker_cls=None):
                 if a and b and a[3] == b[3] == d[3] and t_new > t_old:
                     rev["v"] = ((b[0] - a[0]) * CELL_M / (t_new - t_old),
                                 -(b[1] - a[1]) * CELL_M / (t_new - t_old))
-            revs.append(rev)
+            out.append(rev)
+    return out
+
+
+def track(scans, samples, tracker_cls=None):
+    """The tracker over `scans_of()`'s revolutions: per revolution its
+    movers and the ground truth, and the tracker's cost per scan (s)."""
+    from robot.mover_tracker import MoverTracker
+    tl = Timeline(samples)
+    tracker = (tracker_cls or MoverTracker)()
+    revs, cost = [], []
+    for s in scans:
+        c0 = time.perf_counter()
+        movers = tracker.update(s["scan"], lambda tk: to_odom(*tl.pose(tk)), s["t"])
+        cost.append(time.perf_counter() - c0)
+        revs.append({"t": s["t"], "movers": [(m.id, m.x, m.y, m.vx, m.vy) for m in movers],
+                     "disc_pts": s["disc_pts"], "disc": s["disc"], "v": s["v"]})
     return revs, cost
+
+
+def replay(house, samples, tracker_cls=None):
+    return track(scans_of(house, samples), samples, tracker_cls)
 
 
 def driving_s(samples):
@@ -233,9 +253,34 @@ def judge(revs):
     return {"false_tracks": len(all_ids - disc_ids), "errors": errors, "visits": visits}
 
 
-def run_one(args):
+CACHE_DIR = None             # --cache DIR: each mission's timeline and scans kept there
+
+
+def recorded(args):
+    """(row, samples, scans) for one mission, from `CACHE_DIR` when it is
+    there (development only: a measurement runs without it)."""
+    import gzip
+    import hashlib
+    import os
+    import pickle
+    path = None
+    if CACHE_DIR:
+        path = os.path.join(CACHE_DIR, hashlib.sha1(repr(args).encode()).hexdigest() + ".pkl.gz")
+        if os.path.exists(path):
+            with gzip.open(path, "rb") as f:
+                return pickle.load(f)
     row, samples = record(args)
-    revs, cost = replay(args[0], samples)
+    out = (row, samples, scans_of(args[0], samples))
+    if path:
+        with gzip.open(path + ".tmp", "wb", compresslevel=3) as f:
+            pickle.dump(out, f)
+        os.replace(path + ".tmp", path)
+    return out
+
+
+def run_one(args, tracker_cls=None):
+    row, samples, scans = recorded(args)
+    revs, cost = track(scans, samples, tracker_cls)
     j = judge(revs)
     keep = {k: row[k] for k in ("house", "speed", "drive", "outcome", "sim_s")}
     keep.update(start=args[-1], driving_s=round(driving_s(samples), 2), scans=len(revs),
@@ -316,18 +361,25 @@ def sweep_args(seed):
 
 
 def main(argv):
-    """out.json [--dev] [--quick] [--procs N]. B3 on the board runs
+    """out.json [--dev | --seed N] [--quick] [--procs N] [--cache DIR]. B3 on the board runs
     `--quick --procs 1`: one replay beside the stack, so the cost measured
     is the tracker's, not a harness filling every core."""
     import json
     import multiprocessing as mp
     flags = [a for a in argv if a.startswith("--")]
     procs = mp.cpu_count()
+    for opt in ("--procs", "--seed", "--cache"):
+        if opt in argv:
+            flags.append(argv[argv.index(opt) + 1])
     if "--procs" in argv:
         procs = int(argv[argv.index("--procs") + 1])
-        flags.append(argv[argv.index("--procs") + 1])
     out_path = next(a for a in argv if a not in flags)
     seed = 1 if "--dev" in argv else 0
+    if "--seed" in argv:
+        seed = int(argv[argv.index("--seed") + 1])
+    if "--cache" in argv:
+        global CACHE_DIR
+        CACHE_DIR = argv[argv.index("--cache") + 1]
     b1, b2 = sweep_args(seed)
     if "--quick" in argv:
         b1, b2 = b1[1::4], b2[1::9]
