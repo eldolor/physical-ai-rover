@@ -254,18 +254,22 @@ def judge(revs):
 
 
 CACHE_DIR = None             # --cache DIR: each mission's timeline and scans kept there
+CACHE_VERSION = 1            # bump when the recording or the scans' making changes
 
 
 def recorded(args):
     """(row, samples, scans) for one mission, from `CACHE_DIR` when it is
-    there (development only: a measurement runs without it)."""
+    there (development only: a measurement runs without it). The key is
+    the mission's args and `CACHE_VERSION`, not the simulator's code: bump
+    it, or empty the directory, after changing how missions or scans are
+    made. `CACHE_DIR` reaches pool workers by fork (Linux)."""
     import gzip
     import hashlib
     import os
     import pickle
     path = None
     if CACHE_DIR:
-        path = os.path.join(CACHE_DIR, hashlib.sha1(repr(args).encode()).hexdigest() + ".pkl.gz")
+        path = os.path.join(CACHE_DIR, hashlib.sha1(repr((CACHE_VERSION, args)).encode()).hexdigest() + ".pkl.gz")
         if os.path.exists(path):
             with gzip.open(path, "rb") as f:
                 return pickle.load(f)

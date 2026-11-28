@@ -651,7 +651,14 @@ order; record the table in the plan entry.
 - **The mover tracker (3.234.B, B2).** A mover that appears where the
   lidar could not see, recedes or stands waits for the free-space test,
   and one seen first while the body turns waits for a third observation
-  (B2's numbers are in the section above). Odometry was the
+  (both measured in the section above). After a pivot the free-space
+  history holds no scan for up to about 1 s (a turning revolution is not
+  kept), so a mover first seen then waits for it: C must read "no mover"
+  in that window as unknown, not clear. Turning revolutions are placed by
+  odometry: yaw lag on the Rover would shift a static object sideways, and
+  the confirmed tier (unlike the early one) accepts free evidence from a
+  turning revolution; 3.234.D's empty room (D1) is where that is judged.
+  Odometry was the
   simulator's truth in B; wheel slip is the Rover's (3.234.D). Bins the
   driver carried from the previous revolution or filled from neighbours
   are stamped as this revolution's (the scan dict does not mark them). A

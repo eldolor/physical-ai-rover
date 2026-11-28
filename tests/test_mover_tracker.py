@@ -159,8 +159,10 @@ def test_a_static_object_revealed_by_a_moving_robot_is_not_a_mover():
     assert all(m == [] for m in run(tr, frames, static=posts))
 
 
-def test_without_history_nothing_is_moving():
+def test_without_history_nothing_is_moving_on_the_first_two_scans():
     # The free-space test asks scans 0.2-1 s old: none on the first two.
+    # (On the third the observation is free against the first scan, and
+    # the fit has three observations: moving, as it should be.)
     tr = MoverTracker(revolution_s=0.0)
     out = run(tr, [([(1.5, -1.5 + 0.12 * k, 0.15)], (0.0, 0.0, 0.0)) for k in range(4)],
               preroll=0)
@@ -237,7 +239,7 @@ def test_two_free_observations_on_a_turning_body_are_not_an_early_mover():
     tr = MoverTracker()
     tr.update(scan(), (0.0, 0.0, 0.0), 0.0)
     tr.update(scan(), (0.0, 0.0, 0.0), 0.3)
-    turn = _turning(30.0)                       # 3 degrees a revolution: not steady
+    turn = _turning(20.0)                       # 2 degrees a revolution: not steady
     for k, t in enumerate((0.6, 0.7)):
         tr.update(scan([(1.5, -1.5 + 0.12 * k, 0.15)], turn(t)), turn, t)
     assert tr.movers() == [] and any(len(x.obs) == 2 and x.free for x in tr.tracks)
@@ -288,6 +290,20 @@ def test_a_clock_stepped_back_starts_over():
     assert tr.tracks
     tr.update(scan(), (0.0, 0.0, 0.0), -5.0)
     assert tr.tracks == [] and tr.scans == 1
+
+
+def test_a_stamp_that_is_not_a_number_is_ignored():
+    tr = MoverTracker(revolution_s=0.0)
+    run(tr, [([(1.5, -1.5 + 0.12 * k, 0.15)], (0.0, 0.0, 0.0)) for k in range(6)])
+    t, scans = tr.t, tr.scans
+    tr.update(scan(), (0.0, 0.0, 0.0), float("nan"))
+    assert tr.t == t and tr.scans == scans
+
+
+def test_an_unusable_scan_never_asks_the_pose():
+    def pose(t):
+        raise AssertionError("asked")
+    MoverTracker().update({"usable": False}, pose, 1.0)
 
 
 def test_an_empty_usable_scan_is_harmless():

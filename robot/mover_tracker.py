@@ -80,8 +80,8 @@ class Track:
         self.x, self.y, self.vx, self.vy, self.t, self.born = x, y, 0.0, 0.0, t, t
         self.hits = 1
         self.seen = 0               # the tracker's scan count when last observed
-        self.free = False           # an observation of the current fit stood in free space
-        self.free_n = 0             # observations of the current fit that did, the body steady
+        self.free = False           # an observation since the fit's last restart stood in free space
+        self.free_n = 0             # observations since then that did, the body steady
 
     @property
     def speed(self) -> float:
@@ -280,6 +280,8 @@ class MoverTracker:
         `revolution_s` overrides the nominal period for this scan (the
         driver knows the lidar's real speed; C's wiring passes it)."""
         rev_s = self.revolution_s if revolution_s is None else revolution_s
+        if not math.isfinite(t):
+            return self.movers()            # no usable stamp: nothing to place it by
         if self.t is not None and t <= self.t:
             if t >= self.t - CLOCK_STEP_S:
                 return self.movers()        # the same revolution read again: no new data
@@ -287,8 +289,8 @@ class MoverTracker:
         self.scans += 1
         self.t = t
         dets = []
-        turn = self._turn_deg(pose, t, rev_s)
         if scan.get("usable") and scan.get("ranges_m"):
+            turn = self._turn_deg(pose, t, rev_s)
             a0 = scan.get("angle_min_deg", -180.0)
             inc = scan.get("angle_increment_deg", 1.0)
             pts = scan_points(scan["ranges_m"], a0, inc)
@@ -306,7 +308,7 @@ class MoverTracker:
             h = rev_s / 2.0
             p3 = tuple(pose(t + k * h) for k in (-1, 0, 1)) if callable(pose) else (pose,) * 3
             if turn <= HISTORY_TURN_DEG:
-                self._history.append((t, p3, scan["ranges_m"], a0, inc, rev_s))
+                self._history.append((t, p3, list(scan["ranges_m"]), a0, inc, rev_s))
             self._history = [h for h in self._history if t - h[0] <= HISTORY_S]
         self._associate(dets, t)
         return self.movers()
@@ -330,7 +332,8 @@ class MoverTracker:
         """The odometry point (x, y) lay at least `FREE_M` short of where
         `old`'s beams through it (its bin and both neighbours) stopped. A
         bin with no return is NOT clear: on a real lidar it may be a dark
-        or shiny surface, and once a track is free it stays free. The beam
+        or shiny surface, and a fit freed once stays free until it
+        restarts. The beam
         is cast from the pose at its own instant (the revolution's three
         kept poses, interpolated), found in two passes: the bin from the
         midpoint pose, then again from that bin's pose."""
