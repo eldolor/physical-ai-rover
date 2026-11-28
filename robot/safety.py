@@ -568,6 +568,20 @@ class _PivotRows:
         return None
 
 
+def _body_vets_moves(robot) -> bool:
+    """3.228.B: True only when the body says it vets every move again behind
+    this controller (`vets_moves_on_server()`: `RemoteRobot`, whose moves the
+    robot server re-vets). Anything else, or a failure to ask, is False: the
+    controller then refuses as it always did."""
+    probe = getattr(type(robot), "vets_moves_on_server", None)
+    if not callable(probe):
+        return False
+    try:
+        return robot.vets_moves_on_server() is True
+    except Exception:  # noqa: BLE001 -- unknown: refuse here, as before
+        return False
+
+
 def _body_self_box(robot):
     """The self box a body reports (`lidar_self_box_cm()`), or None when it
     reports none, cannot be asked, or reports something that is not a valid
@@ -630,6 +644,13 @@ class SafetyController:
         if self.self_box_cm is not None:
             from robot.retrace import RetraceTrack     # lazy: the brain's imports are pinned
             self._retrace = RetraceTrack()
+        # 3.228.B (3.229 follow-up (d)): a body that vets every move again
+        # behind this controller (the robot server over HTTP, `RemoteRobot`)
+        # is handed an `astern_occluded` REVERSE instead of having it refused
+        # here: the server samples its retrace track at 20 Hz, this controller
+        # only per vet, so a retrace the server allows was refused here. Only
+        # that one refusal; the server keeps the last word (rule 4).
+        self.defer_astern_occluded = _body_vets_moves(robot)
         # The straight verb in progress, as ASKED (3.44): its speed, and
         # whether it was asked at creep speed. The wheel loop reads these on
         # another thread; plain attribute reads, set before the verb runs.
@@ -1351,7 +1372,10 @@ class SafetyController:
 
         if action in REVERSE_ACTIONS:
             distance, source = self.reverse_clearance()
-            if distance is not None and distance < need:
+            if source == "astern_occluded" and self.defer_astern_occluded:
+                logger.info("%s astern_occluded here: passed to the robot server, "
+                            "which vets it against its own retrace track", action)
+            elif distance is not None and distance < need:
                 self.robot.stop()
                 msg = (f"Blocked {action}: rear clearance={distance}cm < "
                        f"min={need:g}cm ({source})")
