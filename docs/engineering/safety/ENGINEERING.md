@@ -457,15 +457,17 @@ its connection open). `do_action()` registers an AUTONOMOUS driver's verb
 sent -- so the disconnect uvicorn also reports once a response completes
 never finds one. Each watchdog wake, before the verb skip,
 `end_verbs_of_gone_callers()` calls `robot.stop()` (outside `verbs_lock`) for
-a registered verb whose Event is set **while that driver still holds the
-robot**, every wake until the verb ends (a verb still waiting for
+a registered verb whose Event is set **while it is still the newest verb
+arbitrated** (`state["verb_seq"]`, counted in `do_action()` at arbitration), every wake until the verb ends (a verb still waiting for
 `motion_lock` reads its baseline after a first stop)
-(`state["driver"]`; a person's verb already arbitrated is never cut), which
+(a person's verb, or this driver's next one, already arbitrated is never cut), which
 ends the verb through its stop baseline (3.84) as `/stop` does, and records
 `last_stop_reason` `driver_gone` once. A client that gives up on its own call
 (a `RemoteRobot` read timeout, 10 s, against a verb of up to `VERB_MAX_S` plus
 its wait) closes the socket too and is treated the same: nobody waits for that
-verb's answer. A person's verb, and `twin-local-brain`'s (rank 10, not
+verb's answer, as is a tunnel that closes an idle upstream (a `teleop` phone's
+verb ends early: the safe side). The twin labels the reason by its name
+(`DRIVER GONE`, a fault colour; no `REFUSAL_LABEL` entry yet). A person's verb, and `twin-local-brain`'s (rank 10, not
 `is_autonomy()`), are not registered. Not covered: a frozen brain (`SIGSTOP`) or a proxy that holds the connection --
 the verb runs out and the timeout above stops the robot. Pinned by
 `tests/test_verb_caller_gone.py` on ground truth over a real socket.

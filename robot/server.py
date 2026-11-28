@@ -522,9 +522,11 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         # robot is held by whoever last won arbitration, however long the verb.
         "verbs_running": 0,
         # 3.147: the autonomous verbs being carried out, each as
-        # [driver, caller-gone Event, handled]; the watchdog loop ends one
+        # [driver, caller-gone Event, recorded, verb_seq]; the watchdog loop ends one
         # whose caller hung up.
         "verb_callers": [],
+        # 3.147: counts arbitrated verbs; an entry above ends only its own.
+        "verb_seq": 0,
         "last_command_at": time.monotonic(),
         "wheel_posts": 0,
         # 3.24 G3: when the actuator plugin last posted /wheels -- ROS's pulse.
@@ -678,8 +680,10 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         with verbs_lock:
             ended, first = None, False
             for caller in state["verb_callers"]:
-                driver, gone, recorded = caller
-                if gone.is_set() and state["driver"] == driver:
+                driver, gone, recorded, seq = caller
+                # Still the newest verb arbitrated (review): not a person's
+                # verb, nor this driver's next one, waiting on the lock.
+                if gone.is_set() and state["verb_seq"] == seq:
                     ended, first = driver, first or not recorded
                     caller[2] = True
         if ended is None:
@@ -1522,6 +1526,9 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         state["last_command_at"] = now
         state["driver"] = driver
         state["driver_at"] = now
+        with verbs_lock:
+            state["verb_seq"] += 1          # 3.147
+            seq = state["verb_seq"]
         if driver_priority(driver) == DRIVER_AUTONOMOUS:
             state["autonomous_at"] = now
         with goal_gen_lock:
@@ -1537,7 +1544,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         # 3.147: an autonomous verb whose caller hangs up is ended by the
         # watchdog loop (a killed brain's socket closes; a busy one's stays).
         gone = CALLER_GONE.get() if is_autonomy(driver) else None
-        caller = [driver, gone, False] if gone is not None else None
+        caller = [driver, gone, False, seq] if gone is not None else None
         if caller is not None:
             with verbs_lock:
                 state["verb_callers"].append(caller)
