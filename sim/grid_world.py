@@ -64,7 +64,7 @@ from typing import Optional
 # how a robot starts driving through a wall it can see.
 from sim import renderer
 from robot.safety import FOOTPRINT_LENGTH_M, FOOTPRINT_WIDTH_M
-from sim.movers import MOVER_KEEPOUT_M, point_to_cell_cells as movers_point_to_cell
+from sim.movers import DiscMover, MOVER_KEEPOUT_M, point_to_cell_cells as movers_point_to_cell
 
 logger = logging.getLogger("grid_world")
 
@@ -293,6 +293,12 @@ class GridWorld:
         # unchanged by it to the last bit.
         self.sim_time = 0.0
         self.movers = []
+        # 3.234.A: continuous disc movers (`sim.movers.DiscMover`), opt-in
+        # and apart from `movers`/`objects`. `_discs` is their placed discs
+        # as one tuple, REBOUND (never mutated) by `advance_time()`, for the
+        # same reason as `objects`: the scan reads it from another thread.
+        self.disc_movers = []
+        self._discs = ()
         # Bounded (3.76 M1): every depth grid, distance read and frame lands
         # here -- 20 Hz under the wheel loop's vet, for the life of a robot
         # server -- and only tests read it.
@@ -385,7 +391,14 @@ class GridWorld:
         moves, since 2026-09-26 (`PLAN-ros-alignment.md` 3.9: "objects must
         be treated as solid to emulate the real world"). A real backpack
         stops a robot and returns a lidar beam; until then the robot drove
-        onto it and lost it under its own footprint."""
+        onto it and lost it under its own footprint.
+
+        3.234.A: with a disc mover placed, the set also carries its disc
+        (`renderer.SolidWithDiscs`), which every ray cast and the chassis
+        check stop at. With none, the plain frozenset, to the bit."""
+        discs = self._discs
+        if discs:
+            return renderer.SolidWithDiscs(self.objects, discs)
         return frozenset(self.objects)
 
     @property
@@ -416,6 +429,9 @@ class GridWorld:
         heights, which is every house but `complex_house_hazards`."""
         if not self.low_cells:
             return self.solid_cells
+        discs = self._discs
+        if discs:
+            return renderer.SolidWithDiscs(self._low_cache[2], discs)
         return self._low_cache[2]
 
     # ---------- things that move (PLAN-ros-alignment.md 3.30) ----------
@@ -464,7 +480,12 @@ class GridWorld:
         self._record(f"MOVED {objects[dst]} {src} -> {dst}")
 
     def add_mover(self, mover) -> None:
-        """Put a `sim.movers.Mover` at the start of its path."""
+        """Put a `sim.movers.Mover` at the start of its path -- or a
+        `sim.movers.DiscMover` (3.234.A), which places itself at its first
+        leg."""
+        if isinstance(mover, DiscMover):
+            self.disc_movers.append(mover)
+            return
         for cell in mover.path:
             if not self._is_passable(*cell):
                 raise ValueError(f"mover {mover.name!r}: {cell} is not floor")
@@ -493,6 +514,10 @@ class GridWorld:
             while not mover.done and mover.next_hop_at <= self.sim_time + 1e-9:
                 mover.next_hop_at += mover.hop_s
                 self._hop(mover)
+        if self.disc_movers:
+            for mover in self.disc_movers:
+                mover.advance(self, dt)
+            self._discs = tuple(d for d in (m.disc() for m in self.disc_movers) if d)
 
     def _hop(self, mover) -> None:
         dst = mover.next_cell
@@ -622,6 +647,11 @@ class GridWorld:
         ys = [c[1] for c in corners]
         c_u, c_n = x * ux + y * uy, x * nx + y * ny
         solid = self.solid_cells if solid is None else solid
+        # 3.234.A: a disc mover's disc, against the same rectangle.
+        for px, py, r in getattr(solid, "discs", ()):
+            a, b = (px - x) * ux + (py - y) * uy, (px - x) * nx + (py - y) * ny
+            if math.hypot(max(abs(a) - hl, 0.0), max(abs(b) - hw, 0.0)) < r:
+                return True
         for cy in range(math.floor(min(ys)), math.floor(max(ys)) + 1):
             for cx in range(math.floor(min(xs)), math.floor(max(xs)) + 1):
                 if (cx, cy) not in solid and not (

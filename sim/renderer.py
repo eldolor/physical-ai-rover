@@ -138,6 +138,41 @@ def _cell_at(layout, x: int, y: int) -> str:
     return layout[y][x]
 
 
+class SolidWithDiscs(frozenset):
+    """3.234.A: a `solid` cell set that also carries continuous discs --
+    `(x, y, r)` in cells, the opt-in disc movers (`sim.movers.DiscMover`).
+    A frozenset in every other respect, so a reader that asks only "is this
+    cell solid" is unchanged; the three ray casts below also stop at a
+    disc. Only `GridWorld.solid_cells` builds one, and only while a disc
+    mover is placed: with none, `solid` is the plain frozenset it always was."""
+
+    def __new__(cls, cells, discs):
+        self = super().__new__(cls, cells)
+        self.discs = tuple(discs)
+        return self
+
+
+def ray_disc_hit(px: float, py: float, angle: float, discs) -> float:
+    """The distance, in cells, along the ray to the first disc it enters
+    (inf if none). A disc the ray starts inside is skipped, as a ray skips
+    its own cell."""
+    dx, dy = math.cos(angle), math.sin(angle)
+    best = math.inf
+    for cx, cy, r in discs:
+        ox, oy = px - cx, py - cy
+        c = ox * ox + oy * oy - r * r
+        if c <= 0:
+            continue
+        b = ox * dx + oy * dy
+        disc = b * b - c
+        if b >= 0 or disc < 0:
+            continue
+        t = -b - math.sqrt(disc)
+        if 0 < t < best:
+            best = t
+    return best
+
+
 def normalize_angle(a: float) -> float:
     while a > math.pi:
         a -= 2 * math.pi
@@ -161,6 +196,14 @@ def cast_ray(layout, px: float, py: float, angle: float, solid=None,
     objects as billboards rather than as grey wall blocks. None keeps the
     wall-only behaviour, so the picture is unchanged.
     """
+    discs = getattr(solid, "discs", None)
+    if discs:
+        return min(_cast_ray_cells(layout, px, py, angle, solid, max_dist),
+                   ray_disc_hit(px, py, angle, discs))
+    return _cast_ray_cells(layout, px, py, angle, solid, max_dist)
+
+
+def _cast_ray_cells(layout, px, py, angle, solid, max_dist):
     dx, dy = math.cos(angle), math.sin(angle)
     dist = 0.0
     while dist < max_dist:
@@ -189,6 +232,14 @@ def cast_ray_exact(layout, px: float, py: float, angle: float, solid=None,
     visits a handful of cells where the march takes ~40 steps a metre, which
     is the other reason it exists: the safety scan runs every control period.
     """
+    discs = getattr(solid, "discs", None)
+    if discs:
+        return min(_cast_ray_exact_cells(layout, px, py, angle, solid, max_dist),
+                   ray_disc_hit(px, py, angle, discs))
+    return _cast_ray_exact_cells(layout, px, py, angle, solid, max_dist)
+
+
+def _cast_ray_exact_cells(layout, px, py, angle, solid, max_dist):
     dx, dy = math.cos(angle), math.sin(angle)
     cx, cy = math.floor(px), math.floor(py)
     own = (cx, cy)
@@ -218,6 +269,15 @@ def cast_ray_drop(layout, px: float, py: float, angle: float, solid=None,
     `solid` cell, `(None, max_dist)` when floor runs to the reach.
     `cast_ray_exact()`'s traversal, so a range is never overstated; a ray
     starting over a drop sees no floor at all (0.0, an edge)."""
+    discs = getattr(solid, "discs", None)
+    if discs:
+        kind, t = _cast_ray_drop_cells(layout, px, py, angle, solid, max_dist)
+        hit = ray_disc_hit(px, py, angle, discs)
+        return ("thing", hit) if hit < t else (kind, t)
+    return _cast_ray_drop_cells(layout, px, py, angle, solid, max_dist)
+
+
+def _cast_ray_drop_cells(layout, px, py, angle, solid, max_dist):
     cx, cy = math.floor(px), math.floor(py)
     if _cell_at(layout, cx, cy) == "v":
         return "edge", 0.0
