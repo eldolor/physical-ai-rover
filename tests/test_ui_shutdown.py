@@ -268,6 +268,10 @@ def test_a_reload_with_the_robot_off_still_sees_it_go_quiet(browser, twin_server
     page.reload(wait_until="networkidle")
     text = _banner(page, "stopped answering", timeout=10000)
     assert "light" in text, text
+    # Thermos: connect() failed, so Settings keeps its own failure words.
+    page.click("#btn-settings")
+    status = _robot_status(page).inner_text()
+    assert status != "Not answering", status
     assert not errors, errors
     page.context.close()
 

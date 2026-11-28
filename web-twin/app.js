@@ -3322,7 +3322,10 @@ import { createLastSeen, lastSeenView } from "./js/last_seen.js";
 
   function renderRobotQuiet() {
     const el = document.getElementById("connection-status");
-    if (state.robotQuiet) {
+    // Settings' badge says "Not answering" only of a connected robot: when
+    // connect() failed (a reload with the robot off), its own failure stays,
+    // and nothing would put it back (Thermos). The stub card still counts.
+    if (state.robotQuiet && state.connected) {
       const when = robotHeardWhen();
       setVoicedConnStatus(el, function () {
         setConnStatus(el, "err", t("robot.quietLabel"),
