@@ -233,4 +233,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.229](3.229-brain-self-box.md) | The brain's safety check gets the body's self box |
 | [3.230](3.230-mat-edge-stuck.md) | The Rover stuck at a mat's edge: traction, not an obstacle |
 | [3.231](3.231-floor-obstacles-camera.md) | Floor obstacles from the pan-tilt camera and local perception, on the Rover |
+| [3.233](3.233-obstacles-3d-gap.md) | What a 3-D house shows that the 2-D sim's obstacle checks miss |
 <!-- /sections -->
