@@ -48,7 +48,8 @@ MOVING_M_S = 0.3            # B1's threshold for a moving track
 MAX_SPEED_M_S = 4.0         # faster than this is a mis-association, not a pet
 REVOLUTION_S = 0.1          # the D500 at 10 Hz (sim.fake_lidar.RATE_HZ)
 FREE_M = 0.15               # free space: an earlier beam reached this far past the point
-FREE_BACK_S = (0.5, 1.0)    # ... in the scan nearest each of these ages
+FREE_BACK_S = (0.5, 1.0)    # ... in the scan nearest either of these ages
+TURN_MAX_DEG = 3.0          # a revolution in which the body turned more is not tracked
 HISTORY = 14                # scans kept for the free-space test
 COAST_S = 0.25              # a track unmatched this long is dropped
 RESET_M = 0.03              # an observation this far off the prediction ...
@@ -224,7 +225,7 @@ class MoverTracker:
         self.scans += 1
         self.t = t
         dets = []
-        if scan.get("usable"):
+        if scan.get("usable") and not self._turning(pose, t):
             a0 = scan.get("angle_min_deg", -180.0)
             inc = scan.get("angle_increment_deg", 1.0)
             pts = scan_points(scan["ranges_m"], a0, inc)
@@ -242,6 +243,18 @@ class MoverTracker:
             del self._history[:-HISTORY]
         self._associate(dets, t)
         return self.movers()
+
+    def _turning(self, pose, t: float) -> bool:
+        """The body turned more than `TURN_MAX_DEG` across this revolution.
+        The driver bins each point by the lidar's angle alone, so a turning
+        body's scan is smeared (40 degrees a revolution at the simulator's
+        pivot rate): such a scan neither feeds a track nor becomes history
+        for the free-space test, and the tracks coast across it."""
+        if not callable(pose):
+            return False
+        h = self.revolution_s / 2.0
+        d = pose(t + h)[2] - pose(t - h)[2]
+        return abs(math.degrees((d + math.pi) % (2 * math.pi) - math.pi)) > TURN_MAX_DEG
 
     def _olds(self, t: float) -> List[tuple]:
         """The kept scans nearest each age in `FREE_BACK_S` (within 0.15 s:
