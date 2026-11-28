@@ -179,12 +179,17 @@ tests and `tests/mover_track_sweep.py`.
   latest scan; `coasting()` the rest.
 
 Measured in 3.234.B (offline, A's missions through the fake lidar's
-timing; the reviewed tracker): **1.38 false moving tracks per 10 minutes of
-driving (B1 failed, bar 1)**; velocity error median 0.038 m/s, p90
-0.174 m/s pooled (0.087 / 0.204 / 0.878 m/s at 0.5 / 1.2 / 2.5 m/s); a track
-within 3 scans of a mover coming into view for only 45 % of visits
-(failed). Cost in the cloud container: p90 0.25 ms a scan; the Jetson's
-figure is B3's, open.
+timing; the reviewed tracker, seed 0): 1.38 false moving tracks per 10
+minutes of driving (B1 failed, bar 1); velocity error median 0.038 m/s, p90
+0.174 m/s; a track within 3 scans of a mover coming into view for 45 % of
+visits (failed). **The revision measured in 3.234.B2** (fresh seed 2, the
+tracker this file describes): **1.44 false moving tracks per 10 minutes
+(B1 failed)**; velocity error median 0.040 m/s, p90 0.196 m/s pooled
+(0.094 / 0.225 / 0.811 m/s at 0.5 / 1.2 / 2.5 m/s); a track within 3 scans
+for **75.6 % of visits (failed; bar every visit)**, median 3 and p90 5 scans
+once tracked, 162 of 4,585 visits never. Cost in the cloud container: p90
+0.49 ms a scan (B: 0.25 ms; the free-space test reads up to 9 old scans);
+the Jetson's figure is B3's, open.
 
 * **The caller's contract (for C):** `pose(t)` must answer up to the
   revolution's last point (`capture_unix + 0.05 s`); feed each revolution
