@@ -150,7 +150,10 @@ def test_each_cluster_is_stamped_when_the_beam_crossed_it():
     MoverTracker().update(scan(discs=[(1.5, 0.0, 0.15)]), pose, 10.0)
     # Body bearing 0 is lidar angle 90 (yaw -90): a quarter turn in, so
     # 0.025 s before the revolution's midpoint.
-    assert seen[0] == pytest.approx(10.0 - 0.025, abs=0.002)   # then the capture pose, for the history
+    # The other calls are the turn check (capture -+ half a revolution) and
+    # the capture pose kept for the free-space history.
+    assert [t for t in seen if t not in (9.95, 10.0, 10.05)] == [
+        pytest.approx(10.0 - 0.025, abs=0.002)]
 
 
 def test_an_unusable_scan_ages_tracks_out():
