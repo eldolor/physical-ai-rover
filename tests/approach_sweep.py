@@ -229,8 +229,10 @@ def starts(house, n=STARTS, seed=0):
     return out
 
 
-def mission(args):
-    """One mission with one disc mover; the A2 books and the outcome."""
+def mission(args, hook=None):
+    """One mission with one disc mover; the A2 books and the outcome.
+    `hook(robot)`, if given, is called once the robot is built (3.234.B
+    records its timeline through it)."""
     from control.mission_runner import MissionRunner
     from sim.mock_world import MockWorld
     house, x, y, heading, target, speed, drive, seed = args
@@ -241,6 +243,8 @@ def mission(args):
             world.add_mover(m)
     robot = MockRobot(world, render=False)
     inst = Instrument(robot) if speed else None
+    if hook:
+        hook(robot)
     common = dict(world=MockWorld(world), mission_time_limit_s=MISSION_LIMIT_S,
                   clock=lambda: world.sim_time, idle=robot.pass_time, target_object=target)
     if drive == "ros":
