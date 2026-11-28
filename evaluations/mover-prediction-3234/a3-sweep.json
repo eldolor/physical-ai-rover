@@ -1,0 +1,4143 @@
+{
+ "verdict": {
+  "verbs": {
+   "missions": 36,
+   "approaches_20": 0,
+   "approaches_20_robot_share_ge_half": 0,
+   "approaches_30": 39,
+   "missions_with_20": 0,
+   "contacts": 0,
+   "closest_robot_T_m": 0.2108,
+   "arrival_rate": 0.028,
+   "median_sim_s": 13.7,
+   "capped": 0,
+   "approaches_20_at_0.5": 0,
+   "approaches_20_at_1.2": 0,
+   "approaches_20_at_2.5": 0
+  },
+  "ros": {
+   "missions": 36,
+   "approaches_20": 19,
+   "approaches_20_robot_share_ge_half": 0,
+   "approaches_30": 270,
+   "missions_with_20": 11,
+   "contacts": 0,
+   "closest_robot_T_m": 0.0297,
+   "arrival_rate": 0.389,
+   "median_sim_s": 209.65,
+   "capped": 0,
+   "approaches_20_at_0.5": 1,
+   "approaches_20_at_1.2": 5,
+   "approaches_20_at_2.5": 13
+  },
+  "all": {
+   "missions": 72,
+   "approaches_20": 19,
+   "approaches_20_robot_share_ge_half": 0,
+   "approaches_30": 309,
+   "missions_with_20": 11,
+   "contacts": 0,
+   "closest_robot_T_m": 0.0297,
+   "arrival_rate": 0.208,
+   "median_sim_s": 54.75,
+   "capped": 0,
+   "approaches_20_at_0.5": 1,
+   "approaches_20_at_1.2": 5,
+   "approaches_20_at_2.5": 13
+  },
+  "gate_open": true
+ },
+ "rows": [
+  {
+   "house": "starter_house",
+   "x": 8.5,
+   "y": 3.5,
+   "heading": 180,
+   "target": "red backpack",
+   "speed": 0.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 13.5,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2944,
+     "t": 10.13,
+     "robot_share": 0.435,
+     "speed": 0.5,
+     "travel_inside_m": 0.015
+    }
+   ],
+   "closest_robot_T_m": 0.2944,
+   "closest_any_m": 0.0085,
+   "contacts": 0,
+   "legs": {
+    "approach": 3,
+    "cross": 0
+   },
+   "mover_stops": 1
+  },
+  {
+   "house": "starter_house",
+   "x": 8.5,
+   "y": 3.5,
+   "heading": 180,
+   "target": "red backpack",
+   "speed": 0.5,
+   "drive": "ros",
+   "outcome": "exhausted",
+   "found": false,
+   "sim_s": 202.4,
+   "ticks": 427,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2195,
+     "t": 1.65,
+     "robot_share": 0.218,
+     "speed": 0.5,
+     "travel_inside_m": 0.028
+    },
+    {
+     "T_m": 0.2351,
+     "t": 7.95,
+     "robot_share": 0.304,
+     "speed": 0.5,
+     "travel_inside_m": 0.019
+    },
+    {
+     "T_m": 0.216,
+     "t": 25.4,
+     "robot_share": 0.135,
+     "speed": 0.5,
+     "travel_inside_m": 0.03
+    },
+    {
+     "T_m": 0.2366,
+     "t": 126.82,
+     "robot_share": 0.127,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2377,
+     "t": 139.55,
+     "robot_share": 0.19,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2173,
+     "t": 142.1,
+     "robot_share": 0.233,
+     "speed": 0.5,
+     "travel_inside_m": 0.014
+    }
+   ],
+   "closest_robot_T_m": 0.216,
+   "closest_any_m": 0.0074,
+   "contacts": 0,
+   "legs": {
+    "approach": 51,
+    "cross": 12
+   },
+   "mover_stops": 52
+  },
+  {
+   "house": "starter_house",
+   "x": 8.5,
+   "y": 3.5,
+   "heading": 180,
+   "target": "red backpack",
+   "speed": 1.2,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 17.8,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [],
+   "closest_robot_T_m": null,
+   "closest_any_m": 0.008,
+   "contacts": 0,
+   "legs": {
+    "approach": 9,
+    "cross": 0
+   },
+   "mover_stops": 6
+  },
+  {
+   "house": "starter_house",
+   "x": 8.5,
+   "y": 3.5,
+   "heading": 180,
+   "target": "red backpack",
+   "speed": 1.2,
+   "drive": "ros",
+   "outcome": "exhausted",
+   "found": false,
+   "sim_s": 52.4,
+   "ticks": 71,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2215,
+     "t": 0.8,
+     "robot_share": 0.08,
+     "speed": 1.2,
+     "travel_inside_m": 0.016
+    },
+    {
+     "T_m": 0.2207,
+     "t": 2.8,
+     "robot_share": 0.104,
+     "speed": 1.2,
+     "travel_inside_m": 0.02
+    }
+   ],
+   "closest_robot_T_m": 0.2207,
+   "closest_any_m": 0.0077,
+   "contacts": 0,
+   "legs": {
+    "approach": 22,
+    "cross": 5
+   },
+   "mover_stops": 22
+  },
+  {
+   "house": "starter_house",
+   "x": 8.5,
+   "y": 3.5,
+   "heading": 180,
+   "target": "red backpack",
+   "speed": 2.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 15.9,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [],
+   "closest_robot_T_m": null,
+   "closest_any_m": 0.0129,
+   "contacts": 0,
+   "legs": {
+    "approach": 8,
+    "cross": 2
+   },
+   "mover_stops": 9
+  },
+  {
+   "house": "starter_house",
+   "x": 8.5,
+   "y": 3.5,
+   "heading": 180,
+   "target": "red backpack",
+   "speed": 2.5,
+   "drive": "ros",
+   "outcome": "exhausted",
+   "found": false,
+   "sim_s": 188.8,
+   "ticks": 448,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2892,
+     "t": 2.75,
+     "robot_share": 0.075,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2993,
+     "t": 17.63,
+     "robot_share": 0.074,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2405,
+     "t": 32.23,
+     "robot_share": 0.098,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2187,
+     "t": 87.14,
+     "robot_share": 0.098,
+     "speed": 2.5,
+     "travel_inside_m": 0.06
+    },
+    {
+     "T_m": 0.2071,
+     "t": 119.91,
+     "robot_share": 0.067,
+     "speed": 2.5,
+     "travel_inside_m": 0.015
+    }
+   ],
+   "closest_robot_T_m": 0.2071,
+   "closest_any_m": 0.0081,
+   "contacts": 0,
+   "legs": {
+    "approach": 118,
+    "cross": 7
+   },
+   "mover_stops": 118
+  },
+  {
+   "house": "starter_house",
+   "x": 3.5,
+   "y": 7.5,
+   "heading": 0,
+   "target": "refrigerator",
+   "speed": 0.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 32.7,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2443,
+     "t": 6.33,
+     "robot_share": 0.228,
+     "speed": 0.5,
+     "travel_inside_m": 0.03
+    },
+    {
+     "T_m": 0.2303,
+     "t": 19.38,
+     "robot_share": 0.374,
+     "speed": 0.5,
+     "travel_inside_m": 0.03
+    },
+    {
+     "T_m": 0.2108,
+     "t": 24.43,
+     "robot_share": 0.379,
+     "speed": 0.5,
+     "travel_inside_m": 0.038
+    }
+   ],
+   "closest_robot_T_m": 0.2108,
+   "closest_any_m": 0.0088,
+   "contacts": 0,
+   "legs": {
+    "approach": 5,
+    "cross": 3
+   },
+   "mover_stops": 5
+  },
+  {
+   "house": "starter_house",
+   "x": 3.5,
+   "y": 7.5,
+   "heading": 0,
+   "target": "refrigerator",
+   "speed": 0.5,
+   "drive": "ros",
+   "outcome": "found",
+   "found": true,
+   "sim_s": 9.5,
+   "ticks": 8,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [],
+   "closest_robot_T_m": null,
+   "closest_any_m": 0.0299,
+   "contacts": 0,
+   "legs": {
+    "approach": 2,
+    "cross": 0
+   },
+   "mover_stops": 0
+  },
+  {
+   "house": "starter_house",
+   "x": 3.5,
+   "y": 7.5,
+   "heading": 0,
+   "target": "refrigerator",
+   "speed": 1.2,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 25.2,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2475,
+     "t": 1.68,
+     "robot_share": 0.141,
+     "speed": 1.2,
+     "travel_inside_m": 0.015
+    },
+    {
+     "T_m": 0.2743,
+     "t": 6.37,
+     "robot_share": 0.195,
+     "speed": 1.2,
+     "travel_inside_m": 0.015
+    }
+   ],
+   "closest_robot_T_m": 0.2475,
+   "closest_any_m": 0.0097,
+   "contacts": 0,
+   "legs": {
+    "approach": 7,
+    "cross": 3
+   },
+   "mover_stops": 7
+  },
+  {
+   "house": "starter_house",
+   "x": 3.5,
+   "y": 7.5,
+   "heading": 0,
+   "target": "refrigerator",
+   "speed": 1.2,
+   "drive": "ros",
+   "outcome": "found",
+   "found": true,
+   "sim_s": 11.3,
+   "ticks": 11,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2124,
+     "t": 3.5,
+     "robot_share": 0.154,
+     "speed": 1.2,
+     "travel_inside_m": 0.018
+    }
+   ],
+   "closest_robot_T_m": 0.2124,
+   "closest_any_m": 0.0082,
+   "contacts": 0,
+   "legs": {
+    "approach": 4,
+    "cross": 1
+   },
+   "mover_stops": 4
+  },
+  {
+   "house": "starter_house",
+   "x": 3.5,
+   "y": 7.5,
+   "heading": 0,
+   "target": "refrigerator",
+   "speed": 2.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 7.3,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2358,
+     "t": 7.2,
+     "robot_share": 0.069,
+     "speed": 2.5,
+     "travel_inside_m": 0.015
+    }
+   ],
+   "closest_robot_T_m": 0.2358,
+   "closest_any_m": 0.0129,
+   "contacts": 0,
+   "legs": {
+    "approach": 3,
+    "cross": 2
+   },
+   "mover_stops": 4
+  },
+  {
+   "house": "starter_house",
+   "x": 3.5,
+   "y": 7.5,
+   "heading": 0,
+   "target": "refrigerator",
+   "speed": 2.5,
+   "drive": "ros",
+   "outcome": "exhausted",
+   "found": false,
+   "sim_s": 123.9,
+   "ticks": 243,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2472,
+     "t": 28.88,
+     "robot_share": 0.085,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.267,
+     "t": 58.31,
+     "robot_share": 0.07,
+     "speed": 2.5,
+     "travel_inside_m": 0.03
+    },
+    {
+     "T_m": 0.2339,
+     "t": 61.31,
+     "robot_share": 0.081,
+     "speed": 2.5,
+     "travel_inside_m": 0.08
+    },
+    {
+     "T_m": 0.2298,
+     "t": 81.96,
+     "robot_share": 0.052,
+     "speed": 2.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2951,
+     "t": 83.16,
+     "robot_share": 0.074,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2157,
+     "t": 99.81,
+     "robot_share": 0.021,
+     "speed": 2.5,
+     "travel_inside_m": 0.053
+    }
+   ],
+   "closest_robot_T_m": 0.2157,
+   "closest_any_m": 0.0084,
+   "contacts": 0,
+   "legs": {
+    "approach": 67,
+    "cross": 16
+   },
+   "mover_stops": 67
+  },
+  {
+   "house": "starter_house",
+   "x": 8.5,
+   "y": 2.5,
+   "heading": 0,
+   "target": "sofa",
+   "speed": 0.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 35.6,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2585,
+     "t": 18.85,
+     "robot_share": 0.189,
+     "speed": 0.5,
+     "travel_inside_m": 0.03
+    },
+    {
+     "T_m": 0.2521,
+     "t": 26.58,
+     "robot_share": 0.153,
+     "speed": 0.5,
+     "travel_inside_m": 0.03
+    }
+   ],
+   "closest_robot_T_m": 0.2521,
+   "closest_any_m": 0.0112,
+   "contacts": 0,
+   "legs": {
+    "approach": 5,
+    "cross": 3
+   },
+   "mover_stops": 3
+  },
+  {
+   "house": "starter_house",
+   "x": 8.5,
+   "y": 2.5,
+   "heading": 0,
+   "target": "sofa",
+   "speed": 0.5,
+   "drive": "ros",
+   "outcome": "exhausted",
+   "found": false,
+   "sim_s": 132.4,
+   "ticks": 222,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2374,
+     "t": 2.45,
+     "robot_share": 0.123,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2134,
+     "t": 21.88,
+     "robot_share": 0.134,
+     "speed": 0.5,
+     "travel_inside_m": 0.045
+    },
+    {
+     "T_m": 0.2486,
+     "t": 24.41,
+     "robot_share": 0.235,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.225,
+     "t": 63.99,
+     "robot_share": 0.285,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.0678,
+     "t": 127.71,
+     "robot_share": 0.237,
+     "speed": 0.5,
+     "travel_inside_m": 0.0225
+    }
+   ],
+   "closest_robot_T_m": 0.0678,
+   "closest_any_m": 0.0079,
+   "contacts": 0,
+   "legs": {
+    "approach": 36,
+    "cross": 5
+   },
+   "mover_stops": 35
+  },
+  {
+   "house": "starter_house",
+   "x": 8.5,
+   "y": 2.5,
+   "heading": 0,
+   "target": "sofa",
+   "speed": 1.2,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 13.9,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2338,
+     "t": 12.12,
+     "robot_share": 0.196,
+     "speed": 1.2,
+     "travel_inside_m": 0.015
+    }
+   ],
+   "closest_robot_T_m": 0.2338,
+   "closest_any_m": 0.0081,
+   "contacts": 0,
+   "legs": {
+    "approach": 6,
+    "cross": 1
+   },
+   "mover_stops": 5
+  },
+  {
+   "house": "starter_house",
+   "x": 8.5,
+   "y": 2.5,
+   "heading": 0,
+   "target": "sofa",
+   "speed": 1.2,
+   "drive": "ros",
+   "outcome": "exhausted",
+   "found": false,
+   "sim_s": 119.3,
+   "ticks": 221,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2187,
+     "t": 3.6,
+     "robot_share": 0.122,
+     "speed": 1.2,
+     "travel_inside_m": 0.018
+    },
+    {
+     "T_m": 0.2859,
+     "t": 37.12,
+     "robot_share": 0.14,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.281,
+     "t": 44.32,
+     "robot_share": 0.05,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.21,
+     "t": 52.27,
+     "robot_share": 0.094,
+     "speed": 1.2,
+     "travel_inside_m": 0.013
+    },
+    {
+     "T_m": 0.2341,
+     "t": 55.82,
+     "robot_share": 0.159,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    }
+   ],
+   "closest_robot_T_m": 0.21,
+   "closest_any_m": 0.0081,
+   "contacts": 0,
+   "legs": {
+    "approach": 47,
+    "cross": 12
+   },
+   "mover_stops": 50
+  },
+  {
+   "house": "starter_house",
+   "x": 8.5,
+   "y": 2.5,
+   "heading": 0,
+   "target": "sofa",
+   "speed": 2.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 3.6,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [],
+   "closest_robot_T_m": null,
+   "closest_any_m": 0.013,
+   "contacts": 0,
+   "legs": {
+    "approach": 3,
+    "cross": 0
+   },
+   "mover_stops": 3
+  },
+  {
+   "house": "starter_house",
+   "x": 8.5,
+   "y": 2.5,
+   "heading": 0,
+   "target": "sofa",
+   "speed": 2.5,
+   "drive": "ros",
+   "outcome": "exhausted",
+   "found": false,
+   "sim_s": 127.4,
+   "ticks": 146,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2483,
+     "t": 85.34,
+     "robot_share": 0.088,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2501,
+     "t": 88.39,
+     "robot_share": 0.069,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2702,
+     "t": 91.64,
+     "robot_share": 0.037,
+     "speed": 2.5,
+     "travel_inside_m": 0.039
+    },
+    {
+     "T_m": 0.2474,
+     "t": 104.11,
+     "robot_share": -0.009,
+     "speed": 2.5,
+     "travel_inside_m": 0.02
+    }
+   ],
+   "closest_robot_T_m": 0.2474,
+   "closest_any_m": 0.0087,
+   "contacts": 0,
+   "legs": {
+    "approach": 70,
+    "cross": 14
+   },
+   "mover_stops": 70
+  },
+  {
+   "house": "scaled_house",
+   "x": 14.5,
+   "y": 2.5,
+   "heading": 270,
+   "target": "bed",
+   "speed": 0.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 22.7,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [],
+   "closest_robot_T_m": null,
+   "closest_any_m": 0.0089,
+   "contacts": 0,
+   "legs": {
+    "approach": 3,
+    "cross": 2
+   },
+   "mover_stops": 2
+  },
+  {
+   "house": "scaled_house",
+   "x": 14.5,
+   "y": 2.5,
+   "heading": 270,
+   "target": "bed",
+   "speed": 0.5,
+   "drive": "ros",
+   "outcome": "exhausted",
+   "found": false,
+   "sim_s": 278.3,
+   "ticks": 432,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2326,
+     "t": 25.09,
+     "robot_share": 0.091,
+     "speed": 0.5,
+     "travel_inside_m": 0.021
+    },
+    {
+     "T_m": 0.0525,
+     "t": 57.56,
+     "robot_share": 0.017,
+     "speed": 0.5,
+     "travel_inside_m": 0.024
+    },
+    {
+     "T_m": 0.291,
+     "t": 64.26,
+     "robot_share": 0.014,
+     "speed": 0.5,
+     "travel_inside_m": 0.0105
+    }
+   ],
+   "closest_robot_T_m": 0.0525,
+   "closest_any_m": 0.0076,
+   "contacts": 0,
+   "legs": {
+    "approach": 47,
+    "cross": 20
+   },
+   "mover_stops": 51
+  },
+  {
+   "house": "scaled_house",
+   "x": 14.5,
+   "y": 2.5,
+   "heading": 270,
+   "target": "bed",
+   "speed": 1.2,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 20.2,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2492,
+     "t": 16.0,
+     "robot_share": 0.215,
+     "speed": 1.2,
+     "travel_inside_m": 0.015
+    }
+   ],
+   "closest_robot_T_m": 0.2492,
+   "closest_any_m": 0.01,
+   "contacts": 0,
+   "legs": {
+    "approach": 6,
+    "cross": 4
+   },
+   "mover_stops": 8
+  },
+  {
+   "house": "scaled_house",
+   "x": 14.5,
+   "y": 2.5,
+   "heading": 270,
+   "target": "bed",
+   "speed": 1.2,
+   "drive": "ros",
+   "outcome": "exhausted",
+   "found": false,
+   "sim_s": 352.8,
+   "ticks": 703,
+   "capped": false,
+   "approaches_20": [
+    {
+     "T_m": 0.1766,
+     "t": 263.57,
+     "robot_share": 0.054,
+     "speed": 1.2,
+     "travel_inside_m": 0.024
+    }
+   ],
+   "approaches_30": [
+    {
+     "T_m": 0.2565,
+     "t": 3.2,
+     "robot_share": 0.099,
+     "speed": 1.2,
+     "travel_inside_m": 0.03
+    },
+    {
+     "T_m": 0.2188,
+     "t": 40.08,
+     "robot_share": 0.143,
+     "speed": 1.2,
+     "travel_inside_m": 0.03
+    },
+    {
+     "T_m": 0.0318,
+     "t": 51.35,
+     "robot_share": 0.081,
+     "speed": 1.2,
+     "travel_inside_m": 0.0195
+    },
+    {
+     "T_m": 0.2908,
+     "t": 73.48,
+     "robot_share": 0.143,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.255,
+     "t": 140.97,
+     "robot_share": 0.061,
+     "speed": 1.2,
+     "travel_inside_m": 0.03
+    },
+    {
+     "T_m": 0.2659,
+     "t": 149.92,
+     "robot_share": 0.144,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.1766,
+     "t": 263.32,
+     "robot_share": 0.042,
+     "speed": 1.2,
+     "travel_inside_m": 0.0315
+    },
+    {
+     "T_m": 0.2429,
+     "t": 276.53,
+     "robot_share": 0.153,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    }
+   ],
+   "closest_robot_T_m": 0.0318,
+   "closest_any_m": 0.008,
+   "contacts": 0,
+   "legs": {
+    "approach": 125,
+    "cross": 30
+   },
+   "mover_stops": 131
+  },
+  {
+   "house": "scaled_house",
+   "x": 14.5,
+   "y": 2.5,
+   "heading": 270,
+   "target": "bed",
+   "speed": 2.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 11.5,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2343,
+     "t": 5.28,
+     "robot_share": 0.081,
+     "speed": 2.5,
+     "travel_inside_m": 0.049
+    },
+    {
+     "T_m": 0.257,
+     "t": 10.59,
+     "robot_share": 0.116,
+     "speed": 2.5,
+     "travel_inside_m": 0.015
+    }
+   ],
+   "closest_robot_T_m": 0.2343,
+   "closest_any_m": 0.0105,
+   "contacts": 0,
+   "legs": {
+    "approach": 4,
+    "cross": 3
+   },
+   "mover_stops": 5
+  },
+  {
+   "house": "scaled_house",
+   "x": 14.5,
+   "y": 2.5,
+   "heading": 270,
+   "target": "bed",
+   "speed": 2.5,
+   "drive": "ros",
+   "outcome": "exhausted",
+   "found": false,
+   "sim_s": 257.1,
+   "ticks": 421,
+   "capped": false,
+   "approaches_20": [
+    {
+     "T_m": 0.1578,
+     "t": 27.73,
+     "robot_share": 0.013,
+     "speed": 2.5,
+     "travel_inside_m": 0.033
+    },
+    {
+     "T_m": 0.0298,
+     "t": 179.37,
+     "robot_share": 0.022,
+     "speed": 2.5,
+     "travel_inside_m": 0.0205
+    },
+    {
+     "T_m": 0.0451,
+     "t": 213.36,
+     "robot_share": 0.02,
+     "speed": 2.5,
+     "travel_inside_m": 0.0175
+    }
+   ],
+   "approaches_30": [
+    {
+     "T_m": 0.1578,
+     "t": 27.73,
+     "robot_share": 0.013,
+     "speed": 2.5,
+     "travel_inside_m": 0.033
+    },
+    {
+     "T_m": 0.2471,
+     "t": 43.12,
+     "robot_share": 0.045,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2981,
+     "t": 75.4,
+     "robot_share": 0.094,
+     "speed": 2.5,
+     "travel_inside_m": 0.015
+    },
+    {
+     "T_m": 0.2414,
+     "t": 122.99,
+     "robot_share": 0.009,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.0298,
+     "t": 179.02,
+     "robot_share": 0.015,
+     "speed": 2.5,
+     "travel_inside_m": 0.0355
+    },
+    {
+     "T_m": 0.0451,
+     "t": 213.36,
+     "robot_share": 0.02,
+     "speed": 2.5,
+     "travel_inside_m": 0.0175
+    }
+   ],
+   "closest_robot_T_m": 0.0298,
+   "closest_any_m": 0.0073,
+   "contacts": 0,
+   "legs": {
+    "approach": 111,
+    "cross": 44
+   },
+   "mover_stops": 112
+  },
+  {
+   "house": "scaled_house",
+   "x": 6.5,
+   "y": 11.5,
+   "heading": 180,
+   "target": "red backpack",
+   "speed": 0.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 4.6,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [],
+   "closest_robot_T_m": null,
+   "closest_any_m": 0.0103,
+   "contacts": 0,
+   "legs": {
+    "approach": 1,
+    "cross": 0
+   },
+   "mover_stops": 1
+  },
+  {
+   "house": "scaled_house",
+   "x": 6.5,
+   "y": 11.5,
+   "heading": 180,
+   "target": "red backpack",
+   "speed": 0.5,
+   "drive": "ros",
+   "outcome": "found",
+   "found": true,
+   "sim_s": 95.6,
+   "ticks": 84,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2515,
+     "t": 18.9,
+     "robot_share": 0.232,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2379,
+     "t": 84.67,
+     "robot_share": 0.21,
+     "speed": 0.5,
+     "travel_inside_m": 0.018
+    },
+    {
+     "T_m": 0.2241,
+     "t": 87.47,
+     "robot_share": 0.241,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2368,
+     "t": 90.12,
+     "robot_share": 0.236,
+     "speed": 0.5,
+     "travel_inside_m": 0.019
+    }
+   ],
+   "closest_robot_T_m": 0.2241,
+   "closest_any_m": 0.0077,
+   "contacts": 0,
+   "legs": {
+    "approach": 22,
+    "cross": 3
+   },
+   "mover_stops": 21
+  },
+  {
+   "house": "scaled_house",
+   "x": 6.5,
+   "y": 11.5,
+   "heading": 180,
+   "target": "red backpack",
+   "speed": 1.2,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 4.6,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [],
+   "closest_robot_T_m": null,
+   "closest_any_m": 0.0175,
+   "contacts": 0,
+   "legs": {
+    "approach": 2,
+    "cross": 0
+   },
+   "mover_stops": 2
+  },
+  {
+   "house": "scaled_house",
+   "x": 6.5,
+   "y": 11.5,
+   "heading": 180,
+   "target": "red backpack",
+   "speed": 1.2,
+   "drive": "ros",
+   "outcome": "found",
+   "found": true,
+   "sim_s": 95.3,
+   "ticks": 80,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2364,
+     "t": 21.4,
+     "robot_share": 0.094,
+     "speed": 1.2,
+     "travel_inside_m": 0.016
+    }
+   ],
+   "closest_robot_T_m": 0.2364,
+   "closest_any_m": 0.0081,
+   "contacts": 0,
+   "legs": {
+    "approach": 32,
+    "cross": 10
+   },
+   "mover_stops": 38
+  },
+  {
+   "house": "scaled_house",
+   "x": 6.5,
+   "y": 11.5,
+   "heading": 180,
+   "target": "red backpack",
+   "speed": 2.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 4.6,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [],
+   "closest_robot_T_m": null,
+   "closest_any_m": 0.0128,
+   "contacts": 0,
+   "legs": {
+    "approach": 3,
+    "cross": 0
+   },
+   "mover_stops": 3
+  },
+  {
+   "house": "scaled_house",
+   "x": 6.5,
+   "y": 11.5,
+   "heading": 180,
+   "target": "red backpack",
+   "speed": 2.5,
+   "drive": "ros",
+   "outcome": "found",
+   "found": true,
+   "sim_s": 120.5,
+   "ticks": 110,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.265,
+     "t": 5.7,
+     "robot_share": 0.074,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.243,
+     "t": 11.9,
+     "robot_share": 0.069,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2799,
+     "t": 15.2,
+     "robot_share": 0.074,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2266,
+     "t": 18.35,
+     "robot_share": 0.071,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2338,
+     "t": 45.45,
+     "robot_share": 0.02,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.269,
+     "t": 62.2,
+     "robot_share": 0.172,
+     "speed": 2.5,
+     "travel_inside_m": 0.04
+    },
+    {
+     "T_m": 0.2457,
+     "t": 99.08,
+     "robot_share": -0.011,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2445,
+     "t": 111.43,
+     "robot_share": 0.104,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2966,
+     "t": 114.43,
+     "robot_share": 0.087,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    }
+   ],
+   "closest_robot_T_m": 0.2266,
+   "closest_any_m": 0.0073,
+   "contacts": 0,
+   "legs": {
+    "approach": 55,
+    "cross": 19
+   },
+   "mover_stops": 54
+  },
+  {
+   "house": "scaled_house",
+   "x": 2.5,
+   "y": 5.5,
+   "heading": 0,
+   "target": "refrigerator",
+   "speed": 0.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 64.1,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2167,
+     "t": 1.48,
+     "robot_share": 0.249,
+     "speed": 0.5,
+     "travel_inside_m": 0.029
+    },
+    {
+     "T_m": 0.2367,
+     "t": 4.07,
+     "robot_share": 0.066,
+     "speed": 0.5,
+     "travel_inside_m": 0.031
+    },
+    {
+     "T_m": 0.2343,
+     "t": 17.99,
+     "robot_share": -0.091,
+     "speed": 0.5,
+     "travel_inside_m": 0.03
+    },
+    {
+     "T_m": 0.2427,
+     "t": 45.29,
+     "robot_share": 0.383,
+     "speed": 0.5,
+     "travel_inside_m": 0.03
+    }
+   ],
+   "closest_robot_T_m": 0.2167,
+   "closest_any_m": 0.0082,
+   "contacts": 0,
+   "legs": {
+    "approach": 10,
+    "cross": 6
+   },
+   "mover_stops": 9
+  },
+  {
+   "house": "scaled_house",
+   "x": 2.5,
+   "y": 5.5,
+   "heading": 0,
+   "target": "refrigerator",
+   "speed": 0.5,
+   "drive": "ros",
+   "outcome": "found",
+   "found": true,
+   "sim_s": 87.8,
+   "ticks": 79,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2159,
+     "t": 12.1,
+     "robot_share": 0.116,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2453,
+     "t": 62.03,
+     "robot_share": 0.221,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    }
+   ],
+   "closest_robot_T_m": 0.2159,
+   "closest_any_m": 0.0081,
+   "contacts": 0,
+   "legs": {
+    "approach": 14,
+    "cross": 10
+   },
+   "mover_stops": 17
+  },
+  {
+   "house": "scaled_house",
+   "x": 2.5,
+   "y": 5.5,
+   "heading": 0,
+   "target": "refrigerator",
+   "speed": 1.2,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 12.6,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2342,
+     "t": 2.68,
+     "robot_share": 0.178,
+     "speed": 1.2,
+     "travel_inside_m": 0.015
+    }
+   ],
+   "closest_robot_T_m": 0.2342,
+   "closest_any_m": 0.0092,
+   "contacts": 0,
+   "legs": {
+    "approach": 6,
+    "cross": 0
+   },
+   "mover_stops": 5
+  },
+  {
+   "house": "scaled_house",
+   "x": 2.5,
+   "y": 5.5,
+   "heading": 0,
+   "target": "refrigerator",
+   "speed": 1.2,
+   "drive": "ros",
+   "outcome": "found",
+   "found": true,
+   "sim_s": 107.8,
+   "ticks": 94,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.073,
+     "t": 75.53,
+     "robot_share": 0.05,
+     "speed": 1.2,
+     "travel_inside_m": 0.0195
+    },
+    {
+     "T_m": 0.2589,
+     "t": 98.26,
+     "robot_share": 0.094,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    }
+   ],
+   "closest_robot_T_m": 0.073,
+   "closest_any_m": 0.008,
+   "contacts": 0,
+   "legs": {
+    "approach": 35,
+    "cross": 15
+   },
+   "mover_stops": 38
+  },
+  {
+   "house": "scaled_house",
+   "x": 2.5,
+   "y": 5.5,
+   "heading": 0,
+   "target": "refrigerator",
+   "speed": 2.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 0.5,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [],
+   "closest_robot_T_m": null,
+   "closest_any_m": 0.013,
+   "contacts": 0,
+   "legs": {
+    "approach": 1,
+    "cross": 0
+   },
+   "mover_stops": 1
+  },
+  {
+   "house": "scaled_house",
+   "x": 2.5,
+   "y": 5.5,
+   "heading": 0,
+   "target": "refrigerator",
+   "speed": 2.5,
+   "drive": "ros",
+   "outcome": "exhausted",
+   "found": false,
+   "sim_s": 329.1,
+   "ticks": 382,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2532,
+     "t": 1.8,
+     "robot_share": 0.079,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2852,
+     "t": 11.6,
+     "robot_share": 0.031,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.289,
+     "t": 71.5,
+     "robot_share": 0.067,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2917,
+     "t": 93.33,
+     "robot_share": 0.038,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2992,
+     "t": 98.78,
+     "robot_share": 0.086,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2076,
+     "t": 147.93,
+     "robot_share": 0.06,
+     "speed": 2.5,
+     "travel_inside_m": 0.1
+    },
+    {
+     "T_m": 0.2893,
+     "t": 188.0,
+     "robot_share": 0.016,
+     "speed": 2.5,
+     "travel_inside_m": 0.015
+    },
+    {
+     "T_m": 0.2845,
+     "t": 197.96,
+     "robot_share": 0.065,
+     "speed": 2.5,
+     "travel_inside_m": 0.015
+    },
+    {
+     "T_m": 0.2133,
+     "t": 202.83,
+     "robot_share": 0.011,
+     "speed": 2.5,
+     "travel_inside_m": 0.011
+    },
+    {
+     "T_m": 0.2324,
+     "t": 302.39,
+     "robot_share": null,
+     "speed": 2.5,
+     "travel_inside_m": 0.07
+    }
+   ],
+   "closest_robot_T_m": 0.2076,
+   "closest_any_m": 0.0072,
+   "contacts": 0,
+   "legs": {
+    "approach": 167,
+    "cross": 43
+   },
+   "mover_stops": 168
+  },
+  {
+   "house": "home_first_floor",
+   "x": 45.5,
+   "y": 39.5,
+   "heading": 0,
+   "target": "armchair",
+   "speed": 0.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 76.1,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [],
+   "closest_robot_T_m": null,
+   "closest_any_m": 0.0095,
+   "contacts": 0,
+   "legs": {
+    "approach": 9,
+    "cross": 5
+   },
+   "mover_stops": 2
+  },
+  {
+   "house": "home_first_floor",
+   "x": 45.5,
+   "y": 39.5,
+   "heading": 0,
+   "target": "armchair",
+   "speed": 0.5,
+   "drive": "ros",
+   "outcome": "found",
+   "found": true,
+   "sim_s": 185.1,
+   "ticks": 174,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2371,
+     "t": 157.48,
+     "robot_share": 0.245,
+     "speed": 0.5,
+     "travel_inside_m": 0.026
+    },
+    {
+     "T_m": 0.2385,
+     "t": 160.43,
+     "robot_share": 0.242,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    }
+   ],
+   "closest_robot_T_m": 0.2371,
+   "closest_any_m": 0.0078,
+   "contacts": 0,
+   "legs": {
+    "approach": 28,
+    "cross": 13
+   },
+   "mover_stops": 30
+  },
+  {
+   "house": "home_first_floor",
+   "x": 45.5,
+   "y": 39.5,
+   "heading": 0,
+   "target": "armchair",
+   "speed": 1.2,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 12.8,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.241,
+     "t": 6.68,
+     "robot_share": 0.218,
+     "speed": 1.2,
+     "travel_inside_m": 0.015
+    }
+   ],
+   "closest_robot_T_m": 0.241,
+   "closest_any_m": 0.0128,
+   "contacts": 0,
+   "legs": {
+    "approach": 3,
+    "cross": 3
+   },
+   "mover_stops": 5
+  },
+  {
+   "house": "home_first_floor",
+   "x": 45.5,
+   "y": 39.5,
+   "heading": 0,
+   "target": "armchair",
+   "speed": 1.2,
+   "drive": "ros",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 601.6,
+   "ticks": 726,
+   "capped": false,
+   "approaches_20": [
+    {
+     "T_m": 0.1427,
+     "t": 167.1,
+     "robot_share": 0.033,
+     "speed": 1.2,
+     "travel_inside_m": 0.0315
+    }
+   ],
+   "approaches_30": [
+    {
+     "T_m": 0.2296,
+     "t": 43.65,
+     "robot_share": 0.094,
+     "speed": 1.2,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2373,
+     "t": 81.4,
+     "robot_share": 0.088,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.1427,
+     "t": 167.0,
+     "robot_share": 0.03,
+     "speed": 1.2,
+     "travel_inside_m": 0.0345
+    },
+    {
+     "T_m": 0.2495,
+     "t": 274.46,
+     "robot_share": -0.018,
+     "speed": 1.2,
+     "travel_inside_m": 0.017
+    },
+    {
+     "T_m": 0.2515,
+     "t": 557.04,
+     "robot_share": 0.092,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.279,
+     "t": 581.79,
+     "robot_share": 0.092,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2621,
+     "t": 585.89,
+     "robot_share": 0.143,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    }
+   ],
+   "closest_robot_T_m": 0.1427,
+   "closest_any_m": 0.0078,
+   "contacts": 0,
+   "legs": {
+    "approach": 222,
+    "cross": 46
+   },
+   "mover_stops": 233
+  },
+  {
+   "house": "home_first_floor",
+   "x": 45.5,
+   "y": 39.5,
+   "heading": 0,
+   "target": "armchair",
+   "speed": 2.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 8.3,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2297,
+     "t": 1.85,
+     "robot_share": 0.102,
+     "speed": 2.5,
+     "travel_inside_m": 0.015
+    }
+   ],
+   "closest_robot_T_m": 0.2297,
+   "closest_any_m": 0.0089,
+   "contacts": 0,
+   "legs": {
+    "approach": 3,
+    "cross": 3
+   },
+   "mover_stops": 5
+  },
+  {
+   "house": "home_first_floor",
+   "x": 45.5,
+   "y": 39.5,
+   "heading": 0,
+   "target": "armchair",
+   "speed": 2.5,
+   "drive": "ros",
+   "outcome": "found",
+   "found": true,
+   "sim_s": 216.3,
+   "ticks": 191,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2203,
+     "t": 5.8,
+     "robot_share": 0.077,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2477,
+     "t": 9.35,
+     "robot_share": 0.057,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2381,
+     "t": 22.1,
+     "robot_share": 0.003,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2574,
+     "t": 35.7,
+     "robot_share": 0.031,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.254,
+     "t": 41.5,
+     "robot_share": 0.02,
+     "speed": 2.5,
+     "travel_inside_m": 0.05
+    },
+    {
+     "T_m": 0.2812,
+     "t": 46.45,
+     "robot_share": 0.074,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2863,
+     "t": 58.35,
+     "robot_share": 0.065,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.298,
+     "t": 65.35,
+     "robot_share": 0.042,
+     "speed": 2.5,
+     "travel_inside_m": 0.012
+    },
+    {
+     "T_m": 0.275,
+     "t": 72.55,
+     "robot_share": 0.021,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2325,
+     "t": 110.85,
+     "robot_share": -0.002,
+     "speed": 2.5,
+     "travel_inside_m": 0.016
+    },
+    {
+     "T_m": 0.2164,
+     "t": 127.03,
+     "robot_share": 0.045,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2692,
+     "t": 182.15,
+     "robot_share": 0.071,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2354,
+     "t": 188.55,
+     "robot_share": 0.02,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2646,
+     "t": 202.75,
+     "robot_share": 0.067,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    }
+   ],
+   "closest_robot_T_m": 0.2164,
+   "closest_any_m": 0.008,
+   "contacts": 0,
+   "legs": {
+    "approach": 81,
+    "cross": 46
+   },
+   "mover_stops": 89
+  },
+  {
+   "house": "home_first_floor",
+   "x": 48.5,
+   "y": 44.5,
+   "heading": 270,
+   "target": "bookcase",
+   "speed": 0.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 5.3,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [],
+   "closest_robot_T_m": null,
+   "closest_any_m": 0.0093,
+   "contacts": 0,
+   "legs": {
+    "approach": 1,
+    "cross": 0
+   },
+   "mover_stops": 0
+  },
+  {
+   "house": "home_first_floor",
+   "x": 48.5,
+   "y": 44.5,
+   "heading": 270,
+   "target": "bookcase",
+   "speed": 0.5,
+   "drive": "ros",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 601.3,
+   "ticks": 550,
+   "capped": false,
+   "approaches_20": [
+    {
+     "T_m": 0.0317,
+     "t": 577.79,
+     "robot_share": 0.033,
+     "speed": 0.5,
+     "travel_inside_m": 0.0105
+    }
+   ],
+   "approaches_30": [
+    {
+     "T_m": 0.2384,
+     "t": 60.7,
+     "robot_share": 0.063,
+     "speed": 0.5,
+     "travel_inside_m": 0.019
+    },
+    {
+     "T_m": 0.2165,
+     "t": 68.3,
+     "robot_share": 0.239,
+     "speed": 0.5,
+     "travel_inside_m": 0.03
+    },
+    {
+     "T_m": 0.214,
+     "t": 79.0,
+     "robot_share": 0.252,
+     "speed": 0.5,
+     "travel_inside_m": 0.029
+    },
+    {
+     "T_m": 0.252,
+     "t": 104.98,
+     "robot_share": 0.086,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2108,
+     "t": 146.53,
+     "robot_share": 0.231,
+     "speed": 0.5,
+     "travel_inside_m": 0.028
+    },
+    {
+     "T_m": 0.2252,
+     "t": 150.93,
+     "robot_share": 0.24,
+     "speed": 0.5,
+     "travel_inside_m": 0.028
+    },
+    {
+     "T_m": 0.2474,
+     "t": 183.83,
+     "robot_share": 0.042,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2505,
+     "t": 389.87,
+     "robot_share": -0.041,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2705,
+     "t": 497.59,
+     "robot_share": 0.215,
+     "speed": 0.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.0317,
+     "t": 577.64,
+     "robot_share": 0.03,
+     "speed": 0.5,
+     "travel_inside_m": 0.015
+    },
+    {
+     "T_m": 0.2453,
+     "t": 585.98,
+     "robot_share": 0.085,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    }
+   ],
+   "closest_robot_T_m": 0.0317,
+   "closest_any_m": 0.0078,
+   "contacts": 0,
+   "legs": {
+    "approach": 105,
+    "cross": 31
+   },
+   "mover_stops": 112
+  },
+  {
+   "house": "home_first_floor",
+   "x": 48.5,
+   "y": 44.5,
+   "heading": 270,
+   "target": "bookcase",
+   "speed": 1.2,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 44.9,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2315,
+     "t": 24.8,
+     "robot_share": 0.202,
+     "speed": 1.2,
+     "travel_inside_m": 0.017
+    },
+    {
+     "T_m": 0.2875,
+     "t": 41.28,
+     "robot_share": 0.131,
+     "speed": 1.2,
+     "travel_inside_m": 0.015
+    }
+   ],
+   "closest_robot_T_m": 0.2315,
+   "closest_any_m": 0.009,
+   "contacts": 0,
+   "legs": {
+    "approach": 13,
+    "cross": 5
+   },
+   "mover_stops": 13
+  },
+  {
+   "house": "home_first_floor",
+   "x": 48.5,
+   "y": 44.5,
+   "heading": 270,
+   "target": "bookcase",
+   "speed": 1.2,
+   "drive": "ros",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 600.5,
+   "ticks": 603,
+   "capped": false,
+   "approaches_20": [
+    {
+     "T_m": 0.1998,
+     "t": 353.92,
+     "robot_share": 0.2,
+     "speed": 1.2,
+     "travel_inside_m": 0.013
+    }
+   ],
+   "approaches_30": [
+    {
+     "T_m": 0.2218,
+     "t": 66.8,
+     "robot_share": 0.081,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.235,
+     "t": 107.08,
+     "robot_share": 0.14,
+     "speed": 1.2,
+     "travel_inside_m": 0.013
+    },
+    {
+     "T_m": 0.266,
+     "t": 108.78,
+     "robot_share": 0.073,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2698,
+     "t": 116.93,
+     "robot_share": 0.102,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2453,
+     "t": 125.53,
+     "robot_share": 0.099,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2462,
+     "t": 317.34,
+     "robot_share": -0.023,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2788,
+     "t": 345.92,
+     "robot_share": -0.001,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.1998,
+     "t": 353.87,
+     "robot_share": 0.2,
+     "speed": 1.2,
+     "travel_inside_m": 0.028
+    },
+    {
+     "T_m": 0.2468,
+     "t": 361.47,
+     "robot_share": 0.077,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.23,
+     "t": 401.81,
+     "robot_share": 0.201,
+     "speed": 1.2,
+     "travel_inside_m": 0.019
+    },
+    {
+     "T_m": 0.2161,
+     "t": 437.56,
+     "robot_share": 0.106,
+     "speed": 1.2,
+     "travel_inside_m": 0.012
+    },
+    {
+     "T_m": 0.2296,
+     "t": 484.21,
+     "robot_share": 0.095,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.226,
+     "t": 529.79,
+     "robot_share": 0.062,
+     "speed": 1.2,
+     "travel_inside_m": 0.017
+    }
+   ],
+   "closest_robot_T_m": 0.1998,
+   "closest_any_m": 0.0074,
+   "contacts": 0,
+   "legs": {
+    "approach": 191,
+    "cross": 65
+   },
+   "mover_stops": 217
+  },
+  {
+   "house": "home_first_floor",
+   "x": 48.5,
+   "y": 44.5,
+   "heading": 270,
+   "target": "bookcase",
+   "speed": 2.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 24.3,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2425,
+     "t": 3.76,
+     "robot_share": 0.106,
+     "speed": 2.5,
+     "travel_inside_m": 0.015
+    },
+    {
+     "T_m": 0.2666,
+     "t": 5.13,
+     "robot_share": 0.044,
+     "speed": 2.5,
+     "travel_inside_m": 0.015
+    },
+    {
+     "T_m": 0.2806,
+     "t": 15.09,
+     "robot_share": 0.1,
+     "speed": 2.5,
+     "travel_inside_m": 0.015
+    }
+   ],
+   "closest_robot_T_m": 0.2425,
+   "closest_any_m": 0.0076,
+   "contacts": 0,
+   "legs": {
+    "approach": 9,
+    "cross": 6
+   },
+   "mover_stops": 10
+  },
+  {
+   "house": "home_first_floor",
+   "x": 48.5,
+   "y": 44.5,
+   "heading": 270,
+   "target": "bookcase",
+   "speed": 2.5,
+   "drive": "ros",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 600.5,
+   "ticks": 613,
+   "capped": false,
+   "approaches_20": [
+    {
+     "T_m": 0.0301,
+     "t": 414.46,
+     "robot_share": 0.01,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.0683,
+     "t": 574.71,
+     "robot_share": 0.019,
+     "speed": 2.5,
+     "travel_inside_m": 0.0145
+    }
+   ],
+   "approaches_30": [
+    {
+     "T_m": 0.2716,
+     "t": 8.95,
+     "robot_share": 0.008,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2222,
+     "t": 19.0,
+     "robot_share": 0.005,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2191,
+     "t": 25.85,
+     "robot_share": 0.074,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2396,
+     "t": 53.05,
+     "robot_share": 0.0,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2471,
+     "t": 56.6,
+     "robot_share": 0.032,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2792,
+     "t": 63.95,
+     "robot_share": 0.073,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2616,
+     "t": 97.42,
+     "robot_share": 0.075,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2742,
+     "t": 110.89,
+     "robot_share": 0.072,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2251,
+     "t": 113.79,
+     "robot_share": 0.072,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2694,
+     "t": 164.29,
+     "robot_share": 0.255,
+     "speed": 2.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2321,
+     "t": 207.21,
+     "robot_share": 0.046,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2287,
+     "t": 227.76,
+     "robot_share": 0.048,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2622,
+     "t": 246.41,
+     "robot_share": 0.061,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2714,
+     "t": 266.09,
+     "robot_share": 0.033,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.1465,
+     "t": 293.39,
+     "robot_share": 0.029,
+     "speed": 2.5,
+     "travel_inside_m": 0.0165
+    },
+    {
+     "T_m": 0.0301,
+     "t": 414.46,
+     "robot_share": 0.01,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2346,
+     "t": 509.2,
+     "robot_share": 0.076,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2582,
+     "t": 522.16,
+     "robot_share": -0.306,
+     "speed": 2.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2609,
+     "t": 544.63,
+     "robot_share": 0.067,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2832,
+     "t": 546.48,
+     "robot_share": 0.043,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.0683,
+     "t": 574.71,
+     "robot_share": 0.019,
+     "speed": 2.5,
+     "travel_inside_m": 0.0145
+    }
+   ],
+   "closest_robot_T_m": 0.0301,
+   "closest_any_m": 0.0081,
+   "contacts": 0,
+   "legs": {
+    "approach": 267,
+    "cross": 79
+   },
+   "mover_stops": 282
+  },
+  {
+   "house": "home_first_floor",
+   "x": 27.5,
+   "y": 4.5,
+   "heading": 270,
+   "target": "breakfast table",
+   "speed": 0.5,
+   "drive": "verbs",
+   "outcome": "found",
+   "found": true,
+   "sim_s": 41.3,
+   "ticks": 53,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [],
+   "closest_robot_T_m": null,
+   "closest_any_m": 0.0082,
+   "contacts": 0,
+   "legs": {
+    "approach": 7,
+    "cross": 2
+   },
+   "mover_stops": 2
+  },
+  {
+   "house": "home_first_floor",
+   "x": 27.5,
+   "y": 4.5,
+   "heading": 270,
+   "target": "breakfast table",
+   "speed": 0.5,
+   "drive": "ros",
+   "outcome": "found",
+   "found": true,
+   "sim_s": 312.3,
+   "ticks": 276,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2398,
+     "t": 77.46,
+     "robot_share": 0.241,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2565,
+     "t": 90.64,
+     "robot_share": 0.222,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2301,
+     "t": 225.62,
+     "robot_share": 0.165,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2209,
+     "t": 245.49,
+     "robot_share": 0.154,
+     "speed": 0.5,
+     "travel_inside_m": 0.029
+    }
+   ],
+   "closest_robot_T_m": 0.2209,
+   "closest_any_m": 0.0074,
+   "contacts": 0,
+   "legs": {
+    "approach": 48,
+    "cross": 18
+   },
+   "mover_stops": 49
+  },
+  {
+   "house": "home_first_floor",
+   "x": 27.5,
+   "y": 4.5,
+   "heading": 270,
+   "target": "breakfast table",
+   "speed": 1.2,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 54.1,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2409,
+     "t": 9.78,
+     "robot_share": 0.2,
+     "speed": 1.2,
+     "travel_inside_m": 0.015
+    },
+    {
+     "T_m": 0.2913,
+     "t": 39.41,
+     "robot_share": 0.179,
+     "speed": 1.2,
+     "travel_inside_m": 0.015
+    },
+    {
+     "T_m": 0.2909,
+     "t": 44.44,
+     "robot_share": 0.2,
+     "speed": 1.2,
+     "travel_inside_m": 0.015
+    }
+   ],
+   "closest_robot_T_m": 0.2409,
+   "closest_any_m": 0.0081,
+   "contacts": 0,
+   "legs": {
+    "approach": 14,
+    "cross": 8
+   },
+   "mover_stops": 18
+  },
+  {
+   "house": "home_first_floor",
+   "x": 27.5,
+   "y": 4.5,
+   "heading": 270,
+   "target": "breakfast table",
+   "speed": 1.2,
+   "drive": "ros",
+   "outcome": "found",
+   "found": true,
+   "sim_s": 201.9,
+   "ticks": 196,
+   "capped": false,
+   "approaches_20": [
+    {
+     "T_m": 0.0297,
+     "t": 164.44,
+     "robot_share": 0.053,
+     "speed": 1.2,
+     "travel_inside_m": 0.0115
+    }
+   ],
+   "approaches_30": [
+    {
+     "T_m": 0.2545,
+     "t": 19.52,
+     "robot_share": 0.074,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2738,
+     "t": 67.98,
+     "robot_share": 0.133,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.21,
+     "t": 79.13,
+     "robot_share": 0.094,
+     "speed": 1.2,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.0385,
+     "t": 153.91,
+     "robot_share": 0.055,
+     "speed": 1.2,
+     "travel_inside_m": 0.0345
+    },
+    {
+     "T_m": 0.0297,
+     "t": 164.27,
+     "robot_share": 0.051,
+     "speed": 1.2,
+     "travel_inside_m": 0.0265
+    }
+   ],
+   "closest_robot_T_m": 0.0297,
+   "closest_any_m": 0.0074,
+   "contacts": 0,
+   "legs": {
+    "approach": 61,
+    "cross": 19
+   },
+   "mover_stops": 61
+  },
+  {
+   "house": "home_first_floor",
+   "x": 27.5,
+   "y": 4.5,
+   "heading": 270,
+   "target": "breakfast table",
+   "speed": 2.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 9.3,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [],
+   "closest_robot_T_m": null,
+   "closest_any_m": 0.0091,
+   "contacts": 0,
+   "legs": {
+    "approach": 3,
+    "cross": 3
+   },
+   "mover_stops": 5
+  },
+  {
+   "house": "home_first_floor",
+   "x": 27.5,
+   "y": 4.5,
+   "heading": 270,
+   "target": "breakfast table",
+   "speed": 2.5,
+   "drive": "ros",
+   "outcome": "found",
+   "found": true,
+   "sim_s": 116.2,
+   "ticks": 125,
+   "capped": false,
+   "approaches_20": [
+    {
+     "T_m": 0.0305,
+     "t": 52.86,
+     "robot_share": 0.026,
+     "speed": 2.5,
+     "travel_inside_m": 0.018
+    }
+   ],
+   "approaches_30": [
+    {
+     "T_m": 0.2256,
+     "t": 16.74,
+     "robot_share": 0.017,
+     "speed": 2.5,
+     "travel_inside_m": 0.082
+    },
+    {
+     "T_m": 0.0305,
+     "t": 52.81,
+     "robot_share": 0.024,
+     "speed": 2.5,
+     "travel_inside_m": 0.0195
+    },
+    {
+     "T_m": 0.2318,
+     "t": 106.44,
+     "robot_share": 0.084,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2403,
+     "t": 107.84,
+     "robot_share": 0.074,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    }
+   ],
+   "closest_robot_T_m": 0.0305,
+   "closest_any_m": 0.0089,
+   "contacts": 0,
+   "legs": {
+    "approach": 50,
+    "cross": 18
+   },
+   "mover_stops": 50
+  },
+  {
+   "house": "complex_house",
+   "x": 29.5,
+   "y": 19.5,
+   "heading": 90,
+   "target": "armchair",
+   "speed": 0.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 55.4,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2814,
+     "t": 0.8,
+     "robot_share": 0.359,
+     "speed": 0.5,
+     "travel_inside_m": 0.015
+    },
+    {
+     "T_m": 0.2297,
+     "t": 21.75,
+     "robot_share": 0.376,
+     "speed": 0.5,
+     "travel_inside_m": 0.03
+    },
+    {
+     "T_m": 0.2227,
+     "t": 34.58,
+     "robot_share": 0.271,
+     "speed": 0.5,
+     "travel_inside_m": 0.045
+    },
+    {
+     "T_m": 0.2177,
+     "t": 49.22,
+     "robot_share": 0.377,
+     "speed": 0.5,
+     "travel_inside_m": 0.045
+    }
+   ],
+   "closest_robot_T_m": 0.2177,
+   "closest_any_m": 0.0077,
+   "contacts": 0,
+   "legs": {
+    "approach": 6,
+    "cross": 4
+   },
+   "mover_stops": 4
+  },
+  {
+   "house": "complex_house",
+   "x": 29.5,
+   "y": 19.5,
+   "heading": 90,
+   "target": "armchair",
+   "speed": 0.5,
+   "drive": "ros",
+   "outcome": "found",
+   "found": true,
+   "sim_s": 203.0,
+   "ticks": 194,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2524,
+     "t": 14.35,
+     "robot_share": 0.175,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2467,
+     "t": 120.5,
+     "robot_share": 0.241,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2418,
+     "t": 186.82,
+     "robot_share": 0.166,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    }
+   ],
+   "closest_robot_T_m": 0.2418,
+   "closest_any_m": 0.0081,
+   "contacts": 0,
+   "legs": {
+    "approach": 39,
+    "cross": 9
+   },
+   "mover_stops": 40
+  },
+  {
+   "house": "complex_house",
+   "x": 29.5,
+   "y": 19.5,
+   "heading": 90,
+   "target": "armchair",
+   "speed": 1.2,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 20.2,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2271,
+     "t": 0.45,
+     "robot_share": 0.192,
+     "speed": 1.2,
+     "travel_inside_m": 0.015
+    },
+    {
+     "T_m": 0.2206,
+     "t": 19.99,
+     "robot_share": 0.199,
+     "speed": 1.2,
+     "travel_inside_m": 0.03
+    }
+   ],
+   "closest_robot_T_m": 0.2206,
+   "closest_any_m": 0.0087,
+   "contacts": 0,
+   "legs": {
+    "approach": 6,
+    "cross": 3
+   },
+   "mover_stops": 4
+  },
+  {
+   "house": "complex_house",
+   "x": 29.5,
+   "y": 19.5,
+   "heading": 90,
+   "target": "armchair",
+   "speed": 1.2,
+   "drive": "ros",
+   "outcome": "found",
+   "found": true,
+   "sim_s": 429.7,
+   "ticks": 521,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2758,
+     "t": 18.15,
+     "robot_share": 0.138,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2089,
+     "t": 231.06,
+     "robot_share": 0.136,
+     "speed": 1.2,
+     "travel_inside_m": 0.015
+    },
+    {
+     "T_m": 0.2514,
+     "t": 247.31,
+     "robot_share": 0.104,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2271,
+     "t": 259.51,
+     "robot_share": 0.088,
+     "speed": 1.2,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.0349,
+     "t": 339.08,
+     "robot_share": 0.18,
+     "speed": 1.2,
+     "travel_inside_m": 0.0345
+    },
+    {
+     "T_m": 0.2376,
+     "t": 382.83,
+     "robot_share": 0.09,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2144,
+     "t": 421.1,
+     "robot_share": 0.097,
+     "speed": 1.2,
+     "travel_inside_m": 0.018
+    },
+    {
+     "T_m": 0.2525,
+     "t": 424.95,
+     "robot_share": 0.096,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    }
+   ],
+   "closest_robot_T_m": 0.0349,
+   "closest_any_m": 0.0074,
+   "contacts": 0,
+   "legs": {
+    "approach": 169,
+    "cross": 25
+   },
+   "mover_stops": 171
+  },
+  {
+   "house": "complex_house",
+   "x": 29.5,
+   "y": 19.5,
+   "heading": 90,
+   "target": "armchair",
+   "speed": 2.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 0.3,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2954,
+     "t": 0.25,
+     "robot_share": 0.103,
+     "speed": 2.5,
+     "travel_inside_m": 0.015
+    }
+   ],
+   "closest_robot_T_m": 0.2954,
+   "closest_any_m": 0.0085,
+   "contacts": 0,
+   "legs": {
+    "approach": 1,
+    "cross": 0
+   },
+   "mover_stops": 0
+  },
+  {
+   "house": "complex_house",
+   "x": 29.5,
+   "y": 19.5,
+   "heading": 90,
+   "target": "armchair",
+   "speed": 2.5,
+   "drive": "ros",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 600.2,
+   "ticks": 707,
+   "capped": false,
+   "approaches_20": [
+    {
+     "T_m": 0.0298,
+     "t": 241.08,
+     "robot_share": 0.024,
+     "speed": 2.5,
+     "travel_inside_m": 0.019
+    },
+    {
+     "T_m": 0.0299,
+     "t": 262.61,
+     "robot_share": 0.011,
+     "speed": 2.5,
+     "travel_inside_m": 0.0145
+    },
+    {
+     "T_m": 0.0417,
+     "t": 540.09,
+     "robot_share": 0.009,
+     "speed": 2.5,
+     "travel_inside_m": 0.018
+    },
+    {
+     "T_m": 0.0302,
+     "t": 541.39,
+     "robot_share": 0.02,
+     "speed": 2.5,
+     "travel_inside_m": 0.0205
+    }
+   ],
+   "approaches_30": [
+    {
+     "T_m": 0.2375,
+     "t": 21.55,
+     "robot_share": 0.057,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2853,
+     "t": 25.15,
+     "robot_share": 0.034,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2584,
+     "t": 100.62,
+     "robot_share": 0.069,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2789,
+     "t": 122.57,
+     "robot_share": 0.088,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2409,
+     "t": 152.93,
+     "robot_share": 0.049,
+     "speed": 2.5,
+     "travel_inside_m": 0.024
+    },
+    {
+     "T_m": 0.0298,
+     "t": 241.03,
+     "robot_share": 0.022,
+     "speed": 2.5,
+     "travel_inside_m": 0.0205
+    },
+    {
+     "T_m": 0.0299,
+     "t": 262.61,
+     "robot_share": 0.011,
+     "speed": 2.5,
+     "travel_inside_m": 0.0145
+    },
+    {
+     "T_m": 0.289,
+     "t": 290.73,
+     "robot_share": 0.064,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2568,
+     "t": 297.28,
+     "robot_share": 0.033,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2662,
+     "t": 304.88,
+     "robot_share": 0.018,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2523,
+     "t": 308.93,
+     "robot_share": 0.043,
+     "speed": 2.5,
+     "travel_inside_m": 0.022
+    },
+    {
+     "T_m": 0.2483,
+     "t": 321.98,
+     "robot_share": 0.025,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2764,
+     "t": 372.44,
+     "robot_share": 0.034,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2308,
+     "t": 383.89,
+     "robot_share": 0.025,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2622,
+     "t": 408.34,
+     "robot_share": 0.075,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2896,
+     "t": 420.81,
+     "robot_share": -0.024,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2811,
+     "t": 452.26,
+     "robot_share": 0.073,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2809,
+     "t": 485.63,
+     "robot_share": 0.006,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.0417,
+     "t": 540.09,
+     "robot_share": 0.009,
+     "speed": 2.5,
+     "travel_inside_m": 0.018
+    },
+    {
+     "T_m": 0.0302,
+     "t": 541.34,
+     "robot_share": 0.018,
+     "speed": 2.5,
+     "travel_inside_m": 0.022
+    }
+   ],
+   "closest_robot_T_m": 0.0298,
+   "closest_any_m": 0.0079,
+   "contacts": 0,
+   "legs": {
+    "approach": 286,
+    "cross": 78
+   },
+   "mover_stops": 291
+  },
+  {
+   "house": "complex_house",
+   "x": 27.5,
+   "y": 27.5,
+   "heading": 270,
+   "target": "bathtub",
+   "speed": 0.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 10.5,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [],
+   "closest_robot_T_m": null,
+   "closest_any_m": 0.013,
+   "contacts": 0,
+   "legs": {
+    "approach": 3,
+    "cross": 0
+   },
+   "mover_stops": 0
+  },
+  {
+   "house": "complex_house",
+   "x": 27.5,
+   "y": 27.5,
+   "heading": 270,
+   "target": "bathtub",
+   "speed": 0.5,
+   "drive": "ros",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 600.2,
+   "ticks": 575,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2702,
+     "t": 10.6,
+     "robot_share": 0.266,
+     "speed": 0.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2505,
+     "t": 53.47,
+     "robot_share": 0.013,
+     "speed": 0.5,
+     "travel_inside_m": 0.012
+    },
+    {
+     "T_m": 0.038,
+     "t": 71.24,
+     "robot_share": 0.196,
+     "speed": 0.5,
+     "travel_inside_m": 0.0435
+    },
+    {
+     "T_m": 0.2144,
+     "t": 170.46,
+     "robot_share": 0.237,
+     "speed": 0.5,
+     "travel_inside_m": 0.03
+    },
+    {
+     "T_m": 0.2139,
+     "t": 193.51,
+     "robot_share": 0.149,
+     "speed": 0.5,
+     "travel_inside_m": 0.03
+    },
+    {
+     "T_m": 0.2491,
+     "t": 247.79,
+     "robot_share": 0.249,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2552,
+     "t": 266.74,
+     "robot_share": 0.24,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2131,
+     "t": 270.29,
+     "robot_share": 0.238,
+     "speed": 0.5,
+     "travel_inside_m": 0.03
+    },
+    {
+     "T_m": 0.2124,
+     "t": 441.77,
+     "robot_share": 0.292,
+     "speed": 0.5,
+     "travel_inside_m": 0.026
+    },
+    {
+     "T_m": 0.237,
+     "t": 453.62,
+     "robot_share": 0.244,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2136,
+     "t": 540.56,
+     "robot_share": 0.09,
+     "speed": 0.5,
+     "travel_inside_m": 0.015
+    },
+    {
+     "T_m": 0.2107,
+     "t": 574.96,
+     "robot_share": 0.291,
+     "speed": 0.5,
+     "travel_inside_m": 0.033
+    },
+    {
+     "T_m": 0.2148,
+     "t": 583.85,
+     "robot_share": 0.039,
+     "speed": 0.5,
+     "travel_inside_m": 0.045
+    },
+    {
+     "T_m": 0.2446,
+     "t": 594.87,
+     "robot_share": 0.363,
+     "speed": 0.5,
+     "travel_inside_m": 0.03
+    }
+   ],
+   "closest_robot_T_m": 0.038,
+   "closest_any_m": 0.0075,
+   "contacts": 0,
+   "legs": {
+    "approach": 128,
+    "cross": 30
+   },
+   "mover_stops": 130
+  },
+  {
+   "house": "complex_house",
+   "x": 27.5,
+   "y": 27.5,
+   "heading": 270,
+   "target": "bathtub",
+   "speed": 1.2,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 22.0,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2815,
+     "t": 4.44,
+     "robot_share": 0.192,
+     "speed": 1.2,
+     "travel_inside_m": 0.015
+    },
+    {
+     "T_m": 0.2419,
+     "t": 16.98,
+     "robot_share": -0.261,
+     "speed": 1.2,
+     "travel_inside_m": 0.064
+    }
+   ],
+   "closest_robot_T_m": 0.2419,
+   "closest_any_m": 0.0086,
+   "contacts": 0,
+   "legs": {
+    "approach": 7,
+    "cross": 3
+   },
+   "mover_stops": 9
+  },
+  {
+   "house": "complex_house",
+   "x": 27.5,
+   "y": 27.5,
+   "heading": 270,
+   "target": "bathtub",
+   "speed": 1.2,
+   "drive": "ros",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 601.0,
+   "ticks": 591,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2941,
+     "t": 63.99,
+     "robot_share": -0.021,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.276,
+     "t": 126.12,
+     "robot_share": 0.017,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2315,
+     "t": 152.05,
+     "robot_share": 0.179,
+     "speed": 1.2,
+     "travel_inside_m": 0.019
+    },
+    {
+     "T_m": 0.2408,
+     "t": 292.85,
+     "robot_share": -0.02,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2192,
+     "t": 319.03,
+     "robot_share": 0.109,
+     "speed": 1.2,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2803,
+     "t": 335.08,
+     "robot_share": 0.041,
+     "speed": 1.2,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2144,
+     "t": 447.63,
+     "robot_share": 0.135,
+     "speed": 1.2,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.286,
+     "t": 451.68,
+     "robot_share": 0.12,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2553,
+     "t": 455.93,
+     "robot_share": 0.086,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.233,
+     "t": 596.08,
+     "robot_share": 0.186,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    }
+   ],
+   "closest_robot_T_m": 0.2144,
+   "closest_any_m": 0.0073,
+   "contacts": 0,
+   "legs": {
+    "approach": 220,
+    "cross": 50
+   },
+   "mover_stops": 226
+  },
+  {
+   "house": "complex_house",
+   "x": 27.5,
+   "y": 27.5,
+   "heading": 270,
+   "target": "bathtub",
+   "speed": 2.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 16.5,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2502,
+     "t": 7.08,
+     "robot_share": 0.111,
+     "speed": 2.5,
+     "travel_inside_m": 0.015
+    }
+   ],
+   "closest_robot_T_m": 0.2502,
+   "closest_any_m": 0.01,
+   "contacts": 0,
+   "legs": {
+    "approach": 10,
+    "cross": 2
+   },
+   "mover_stops": 11
+  },
+  {
+   "house": "complex_house",
+   "x": 27.5,
+   "y": 27.5,
+   "heading": 270,
+   "target": "bathtub",
+   "speed": 2.5,
+   "drive": "ros",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 603.4,
+   "ticks": 613,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2661,
+     "t": 10.1,
+     "robot_share": 0.072,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2228,
+     "t": 64.04,
+     "robot_share": 0.071,
+     "speed": 2.5,
+     "travel_inside_m": 0.055
+    },
+    {
+     "T_m": 0.2377,
+     "t": 215.2,
+     "robot_share": 0.074,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2411,
+     "t": 221.55,
+     "robot_share": 0.074,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2602,
+     "t": 224.5,
+     "robot_share": 0.075,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2519,
+     "t": 227.3,
+     "robot_share": 0.091,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.1915,
+     "t": 281.61,
+     "robot_share": 0.026,
+     "speed": 2.5,
+     "travel_inside_m": 0.095
+    },
+    {
+     "T_m": 0.2433,
+     "t": 299.14,
+     "robot_share": 0.072,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2688,
+     "t": 300.44,
+     "robot_share": 0.09,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2434,
+     "t": 310.24,
+     "robot_share": 0.016,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2676,
+     "t": 313.14,
+     "robot_share": 0.084,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2305,
+     "t": 325.64,
+     "robot_share": 0.014,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2715,
+     "t": 329.34,
+     "robot_share": 0.019,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2274,
+     "t": 371.05,
+     "robot_share": 0.05,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2543,
+     "t": 480.11,
+     "robot_share": 0.084,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2807,
+     "t": 506.41,
+     "robot_share": 0.046,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2898,
+     "t": 514.81,
+     "robot_share": 0.074,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2902,
+     "t": 556.66,
+     "robot_share": 0.043,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    }
+   ],
+   "closest_robot_T_m": 0.1915,
+   "closest_any_m": 0.0076,
+   "contacts": 0,
+   "legs": {
+    "approach": 287,
+    "cross": 82
+   },
+   "mover_stops": 299
+  },
+  {
+   "house": "complex_house",
+   "x": 53.5,
+   "y": 17.5,
+   "heading": 0,
+   "target": "bed",
+   "speed": 0.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 12.6,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [],
+   "closest_robot_T_m": null,
+   "closest_any_m": 0.0865,
+   "contacts": 0,
+   "legs": {
+    "approach": 2,
+    "cross": 1
+   },
+   "mover_stops": 0
+  },
+  {
+   "house": "complex_house",
+   "x": 53.5,
+   "y": 17.5,
+   "heading": 0,
+   "target": "bed",
+   "speed": 0.5,
+   "drive": "ros",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 600.1,
+   "ticks": 592,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2358,
+     "t": 13.8,
+     "robot_share": 0.194,
+     "speed": 0.5,
+     "travel_inside_m": 0.026
+    },
+    {
+     "T_m": 0.2845,
+     "t": 232.66,
+     "robot_share": 0.227,
+     "speed": 0.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2351,
+     "t": 271.66,
+     "robot_share": -0.069,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2867,
+     "t": 274.36,
+     "robot_share": 0.252,
+     "speed": 0.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.248,
+     "t": 356.37,
+     "robot_share": -0.013,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2543,
+     "t": 455.07,
+     "robot_share": 0.232,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2411,
+     "t": 476.75,
+     "robot_share": 0.241,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2418,
+     "t": 492.35,
+     "robot_share": 0.239,
+     "speed": 0.5,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2306,
+     "t": 538.3,
+     "robot_share": 0.241,
+     "speed": 0.5,
+     "travel_inside_m": 0.022
+    }
+   ],
+   "closest_robot_T_m": 0.2306,
+   "closest_any_m": 0.0072,
+   "contacts": 0,
+   "legs": {
+    "approach": 129,
+    "cross": 34
+   },
+   "mover_stops": 139
+  },
+  {
+   "house": "complex_house",
+   "x": 53.5,
+   "y": 17.5,
+   "heading": 0,
+   "target": "bed",
+   "speed": 1.2,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 6.9,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [],
+   "closest_robot_T_m": null,
+   "closest_any_m": 0.0127,
+   "contacts": 0,
+   "legs": {
+    "approach": 3,
+    "cross": 1
+   },
+   "mover_stops": 3
+  },
+  {
+   "house": "complex_house",
+   "x": 53.5,
+   "y": 17.5,
+   "heading": 0,
+   "target": "bed",
+   "speed": 1.2,
+   "drive": "ros",
+   "outcome": "exhausted",
+   "found": false,
+   "sim_s": 587.5,
+   "ticks": 610,
+   "capped": false,
+   "approaches_20": [
+    {
+     "T_m": 0.1501,
+     "t": 475.64,
+     "robot_share": 0.035,
+     "speed": 1.2,
+     "travel_inside_m": 0.03
+    }
+   ],
+   "approaches_30": [
+    {
+     "T_m": 0.2413,
+     "t": 38.7,
+     "robot_share": 0.133,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2679,
+     "t": 74.52,
+     "robot_share": 0.062,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2086,
+     "t": 113.99,
+     "robot_share": 0.077,
+     "speed": 1.2,
+     "travel_inside_m": 0.018
+    },
+    {
+     "T_m": 0.0948,
+     "t": 169.05,
+     "robot_share": 0.094,
+     "speed": 1.2,
+     "travel_inside_m": 0.012
+    },
+    {
+     "T_m": 0.2084,
+     "t": 212.6,
+     "robot_share": 0.139,
+     "speed": 1.2,
+     "travel_inside_m": 0.025
+    },
+    {
+     "T_m": 0.2512,
+     "t": 244.25,
+     "robot_share": 0.111,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2626,
+     "t": 385.27,
+     "robot_share": 0.092,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2216,
+     "t": 387.22,
+     "robot_share": 0.136,
+     "speed": 1.2,
+     "travel_inside_m": 0.012
+    },
+    {
+     "T_m": 0.2461,
+     "t": 392.67,
+     "robot_share": 0.096,
+     "speed": 1.2,
+     "travel_inside_m": 0.02
+    },
+    {
+     "T_m": 0.2672,
+     "t": 394.22,
+     "robot_share": 0.131,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.1501,
+     "t": 475.49,
+     "robot_share": 0.03,
+     "speed": 1.2,
+     "travel_inside_m": 0.0345
+    },
+    {
+     "T_m": 0.2296,
+     "t": 525.28,
+     "robot_share": 0.105,
+     "speed": 1.2,
+     "travel_inside_m": 0.01
+    }
+   ],
+   "closest_robot_T_m": 0.0948,
+   "closest_any_m": 0.0077,
+   "contacts": 0,
+   "legs": {
+    "approach": 215,
+    "cross": 56
+   },
+   "mover_stops": 232
+  },
+  {
+   "house": "complex_house",
+   "x": 53.5,
+   "y": 17.5,
+   "heading": 0,
+   "target": "bed",
+   "speed": 2.5,
+   "drive": "verbs",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 6.4,
+   "ticks": 149,
+   "capped": false,
+   "approaches_20": [],
+   "approaches_30": [
+    {
+     "T_m": 0.2171,
+     "t": 4.99,
+     "robot_share": 0.104,
+     "speed": 2.5,
+     "travel_inside_m": 0.015
+    }
+   ],
+   "closest_robot_T_m": 0.2171,
+   "closest_any_m": 0.0075,
+   "contacts": 0,
+   "legs": {
+    "approach": 4,
+    "cross": 1
+   },
+   "mover_stops": 4
+  },
+  {
+   "house": "complex_house",
+   "x": 53.5,
+   "y": 17.5,
+   "heading": 0,
+   "target": "bed",
+   "speed": 2.5,
+   "drive": "ros",
+   "outcome": "out_of_budget",
+   "found": false,
+   "sim_s": 601.5,
+   "ticks": 594,
+   "capped": false,
+   "approaches_20": [
+    {
+     "T_m": 0.0471,
+     "t": 277.19,
+     "robot_share": 0.021,
+     "speed": 2.5,
+     "travel_inside_m": 0.013
+    },
+    {
+     "T_m": 0.1867,
+     "t": 564.91,
+     "robot_share": 0.049,
+     "speed": 2.5,
+     "travel_inside_m": 0.0135
+    },
+    {
+     "T_m": 0.1848,
+     "t": 567.61,
+     "robot_share": 0.063,
+     "speed": 2.5,
+     "travel_inside_m": 0.0165
+    }
+   ],
+   "approaches_30": [
+    {
+     "T_m": 0.2343,
+     "t": 149.57,
+     "robot_share": 0.078,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2843,
+     "t": 152.72,
+     "robot_share": 0.006,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.247,
+     "t": 156.67,
+     "robot_share": 0.018,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2356,
+     "t": 159.77,
+     "robot_share": 0.036,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2354,
+     "t": 176.05,
+     "robot_share": 0.052,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2317,
+     "t": 212.96,
+     "robot_share": 0.072,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.219,
+     "t": 234.61,
+     "robot_share": 0.062,
+     "speed": 2.5,
+     "travel_inside_m": 0.09
+    },
+    {
+     "T_m": 0.2163,
+     "t": 275.49,
+     "robot_share": 0.095,
+     "speed": 2.5,
+     "travel_inside_m": 0.015
+    },
+    {
+     "T_m": 0.0471,
+     "t": 277.19,
+     "robot_share": 0.021,
+     "speed": 2.5,
+     "travel_inside_m": 0.013
+    },
+    {
+     "T_m": 0.2471,
+     "t": 304.86,
+     "robot_share": 0.107,
+     "speed": 2.5,
+     "travel_inside_m": 0.015
+    },
+    {
+     "T_m": 0.2905,
+     "t": 337.69,
+     "robot_share": 0.182,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2608,
+     "t": 431.22,
+     "robot_share": 0.066,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.2275,
+     "t": 542.23,
+     "robot_share": -0.014,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    },
+    {
+     "T_m": 0.1867,
+     "t": 564.31,
+     "robot_share": 0.025,
+     "speed": 2.5,
+     "travel_inside_m": 0.0315
+    },
+    {
+     "T_m": 0.1848,
+     "t": 567.11,
+     "robot_share": 0.034,
+     "speed": 2.5,
+     "travel_inside_m": 0.0315
+    },
+    {
+     "T_m": 0.2409,
+     "t": 577.81,
+     "robot_share": 0.078,
+     "speed": 2.5,
+     "travel_inside_m": 0.01
+    }
+   ],
+   "closest_robot_T_m": 0.0471,
+   "closest_any_m": 0.0075,
+   "contacts": 0,
+   "legs": {
+    "approach": 304,
+    "cross": 69
+   },
+   "mover_stops": 309
+  }
+ ]
+}

@@ -31,7 +31,7 @@ sensor reads queued behind the board loop. See "The split simulator" below.
 | `sim/renderer.py` | The raycaster. `cast_ray()` (fixed-step march), `cast_ray_exact()` (Amanatides and Woo grid traversal, 3.18), `wall_profile()`, `visible_bearing()` (3.32), `render()` / `render_jpeg()` / `render_world_base64()`. Carries the fidelity note at the top of the file |
 | `sim/mock_robot.py` | `MockRobot`, the sim backend of the body contract. Wheel primitive `set_wheel_velocity()` / `step()` / `get_wheel_state()`. Verbs `drive_forward()` / `reverse()` / `turn_left()` / `turn_right()` via `verb_plan()` + `carry_out_verb()` + `verb_done()`. Sensors `get_camera_frame()`, `get_depth_grid()`, `get_scan()`, `get_odometry()`, `get_distance()`. Time: `pass_time()` and `advance()` |
 | `sim/sensors.py` | `DistanceSensorModel` (S5): Gaussian noise, dropout, range clamp and read latency on `get_distance()`, plus per-zone dropout on the depth grid |
-| `sim/movers.py` | `Mover` (a named solid object on a closed path of 4-adjacent cells), `MOVER_KEEPOUT_M`, `point_to_cell_cells()` |
+| `sim/movers.py` | `Mover` (a named solid object on a closed path of 4-adjacent cells), `MOVER_KEEPOUT_M`, `point_to_cell_cells()`. 3.234.A: `DiscMover`, a continuous 0.15 m disc that walks straight legs at the robot and across its route (`SIM_MOVERS=approach:<m/s>[:<seed>]`), and its constants |
 | `sim/body_server.py` | 3.36's physics program (FastAPI app `sim.body_server:app`). Builds the house, `MockRobot` and `FakeEsp32` with `robot.factory.build_fake_body()`, so it reads `SIM_MAP`, `SIM_MOVERS`, `SIM_BOARD_FIRMWARE` and `SIM_BOARD_SILENT_S` as the in-process build did. Owns kinematics, collision, movers, furniture moves, the camera pan and the board's pty. A thread publishes the body state every `PUBLISH_S`, under the board's lock, so a snapshot is one instant |
 | `sim/body_state.py` | The shared-memory snapshot, `StateWriter` (the body program, the one writer) and `StateReader` (each sensor program). Pose, pan, sim clock, house name and the objects (re-encoded only when the dict is replaced). A sequence number (odd mid-write) and a CRC32 of the payload: a reader retries until both sides of its copy show the same even sequence and the CRC matches, which is what makes it safe on the Jetson's weakly ordered Arm cores without a cross-process lock. Attaches without the resource tracker (`track=False` on 3.13, an unregister on 3.10), so a sensor program exiting never unlinks the body's block |
 | `sim/sensor_server.py` | 3.36's sensor program (`sim.sensor_server:app`). Each process keeps a replica `MockRobot` of the house, moves it to the latest snapshot, and casts with the same methods the in-process sim uses, so a reading is the reading the body would have produced at that pose. Stateless apart from the snapshot, so several run side by side |
@@ -90,7 +90,21 @@ encoders from what was **achieved**. A blocked wheel does not count. After
 the motion, `GridWorld.advance_time(dt)` lets due movers hop -- never onto
 a cell under the chassis rectangle where it stands (3.76 M1: a cell no
 nearer the centre can lie under a corner, and an overlapping pose switches
-the footprint's checks off). `GridWorld.log`, the event lines tests read,
+the footprint's checks off).
+
+**Disc movers (3.234.A).** `GridWorld.disc_movers` is apart from `movers`
+and `objects`. `advance_time()` advances each `DiscMover` in 20 ms sub-steps
+and rebinds `_discs`, the placed discs as one tuple. A disc stops 1 cm
+short of the chassis rectangle (its leg ends) and never overlaps a wall or
+object cell, so it never walks into the robot; it does not slow for it
+either. While a disc is placed, `solid_cells` (and `lidar_solid_cells`)
+return a `renderer.SolidWithDiscs`: the same cells, plus `.discs`.
+`cast_ray()`, `cast_ray_exact()` and `cast_ray_drop()` take the nearer of
+their cell answer and `ray_disc_hit()`, and `footprint_overlaps()` checks the
+rectangle against each disc, so the scan, the depth grid, the drop cast,
+collision and the map all see it with no code of their own. With no disc
+mover every one of them takes the old path, to the bit. The camera does not
+draw a disc, and the split body (3.36) does not carry one. `GridWorld.log`, the event lines tests read,
 keeps the last `LOG_KEEP` (2,000).
 
 **Collision.** `translate()` caps travel with a head-on ray from the centre
@@ -217,7 +231,7 @@ differs, both are given.
 | Key or constant | Default | Unit | Read in | Why that value |
 |---|---|---|---|---|
 | `SIM_MAP` (env) | `starter_house` | name | `robot/factory.py` (`_sim_world()`); the live suites and sweeps in `tests/` read it too | Most tests were measured in the starter house. `scaled_house` for nav2 and R1 sweeps; `home_first_floor` for the furnished house; `complex_house` for 3.46's inventory sweep; `procthor:val:<0-999>` for sweeps across many generated houses (3.66); `procthor:test:<n>` and `procthor:train:<n>` for houses a tuning run has not seen, and for a large training set (`sim/maps/procthor.py`) |
-| `SIM_MOVERS` (env) | unset | scenario name | `robot/factory.py` | Off means off (3.30 criterion 4). Only `scaled_house` defines one, `hallway_crossing` |
+| `SIM_MOVERS` (env) | unset | scenario name | `robot/factory.py` | Off means off (3.30 criterion 4). Only `scaled_house` defines named ones (`hallway_crossing`, `kitchen_door_sitter`). `approach:<m/s>[:<seed>]` works in any house (3.234.A) |
 | `SIM_LIDAR_DROP`, `SIM_LIDAR_CORRUPT` (env) | 0, 0 | probability per byte, 0-1 | `sim/fake_lidar.py` `main()`, as the defaults of `--drop` and `--corrupt` (a flag wins; `service/tunnel/run.sh` passes neither, so the variables reach it through the inherited environment) | `LossyLine`, the UART the fake D500 writes through (3.42 criterion 3): each byte is dropped with probability `drop`, else (`drop` + `corrupt` together) has one random bit flipped with probability `corrupt`, from a seeded `random.Random` (`--seed`, default 0). 0 and 0 pass every byte unchanged. Both unset, the fake lidar is clean. `tests/test_lidar_ld19.py` drives `LossyLine` directly (1% drop and 1% corrupt) against the driver |
 | `PROCTHOR_CACHE` (env) | `~/.cache/vision-picar/procthor` | path | `tools/procthor_import.py` `main()` (a hand-run tool, never the suite) | Where the importer keeps the pinned ProcTHOR source files it downloads (the split's and the asset database's, named by their URLs' basenames; made if missing). A cached file is reused, and checked against its pinned sha256 on every run; a file that fails is deleted and the run raises `ValueError`, so a truncated download is fetched again. The output, `sim/maps/procthor_data/<split>.json.gz`, is written where `OUT_DIR` says, not here. `tests/test_procthor_houses.py` pins the fetch's sha check |
 | `SIM_START_TURN_DEG` (env) | unset | degrees, clockwise | `sim/maps/__init__.py` `build_world` | 3.197: turns the robot's start heading, so SLAM's map frame (the robot's start) and every no-go zone the bridge draws lie at a slant to the costmap's lattice, as the Rover's start heading will put them. A test hook for live runs; unset changes nothing |
@@ -251,6 +265,10 @@ differs, both are given.
 | `SIM_PERCEPTION_RANGE_CELLS` | 3.0 | cells | `sim/grid_world.py` | Arrival radius for `objects_visible` only. Detections go to the horizon |
 | `MOVER_KEEPOUT_M` | 0.20 | m | `sim/movers.py`, `sim/grid_world.py` | Beyond the chassis turning circle. Same as `min_distance_cm`, so a mover never appears inside the stop line |
 | `Mover.hop_s` | 1.0 | s of sim time | `sim/movers.py` | One 30 cm hop a second, a walking person |
+| `DISC_RADIUS_M` | 0.15 | m | `sim/movers.py` | 3.234.A: a pet's body, or a person's two legs as one |
+| `LEG_START_M` | 1.0-3.0 | m from the robot's centre | `sim/movers.py` | Where a disc's leg starts: someone coming round a corner |
+| `CROSS_AHEAD_M`, `CROSS_MAX_COS` | 0.5 m, cos 45 deg | -- | `sim/movers.py` | A crossing leg aims this far ahead along the heading, from within 45 degrees of square to it |
+| `DWELL_S`, `CONTACT_M` | 1.0 s, 0.01 m | -- | `sim/movers.py` | Standing between legs; a disc stops this short of the chassis |
 | `SIM_BODY_URL`, `SIM_SENSORS_URL` (env) | none; `service/tunnel/run.sh` sets `http://127.0.0.1:8002` and `http://127.0.0.1:8003,http://127.0.0.1:8004` | URL | `robot/factory.py` -> `SimBodyClient` | 3.36. Required with `SIM_MOTOR_BOARD=fake`. Sensors comma-separated: the first serves the safety bundle, the last full scans and frames |
 | `SIM_BODY_SHM` (env) | `picar_sim_body` | name | `sim/body_server.py`, `sim/sensor_server.py` | The shared-memory block. Every program of one stack uses the same name; tests use a unique one per `SimPrograms` |
 | `PUBLISH_S` | 0.005 | s | `sim/body_server.py` | Twice the board loop's rate, so a sensor never casts from a state more than one board step old |
@@ -386,6 +404,7 @@ docstring. It renders the starter house from (5.5, 7.5) facing east to
 | `tests/test_review_376m2.py` (15) | 3.76 M2: an inventory read leaves the safety bundle and gets its own range; a slow reply is aged from its snapshot (or its ask without one); every house's room cells are floor and in one room, and every free cell of the default house has one; an overlapping teleop push returns its own number, and the teleop log is bounded; a replay plays frames by number; the fake board keeps reading after a bad line and refuses a boolean speed |
 | `tests/test_movers.py` | 3.30 criteria 1 and 4: a move is seen at once by scan, collision and map; movers are deterministic and keep out; with no movers the object table is untouched by time |
 | `tests/test_mover_safety.py` | 3.30 criterion 2 on a sample (scaled house, 2 starts, 8 headings), and that the same sample FAILS with the clamp off |
+| `tests/test_disc_movers.py` | 3.234.A: a disc mover approaches and crosses, never overlaps the chassis or a wall, is seen by the scan, the depth grid and collision, and is deterministic; with none, `solid_cells` is a plain frozenset; the travel-to-contact instrument on hand-built cases; A3's sweep numbers pinned |
 | `tests/test_footprint_safety.py`, `tests/test_pivot_safety.py` | 3.18 and 3.19 bars on ground truth, run through the sim's rectangle collision |
 | `tests/test_cad_geometry.py` | 3.27: the scan is cast from the lidar 4 cm ahead, judged on beam endpoints against the layout |
 | `tests/test_home_map.py` | The home's outline and garage still match the appraisal (1483.05 and 428.24 sq ft); every room is reachable around the furniture |
@@ -426,7 +445,7 @@ a vision run) are the
 [architecture spec's open questions](../../simulator/ARCHITECTURE.md#open-questions)
 and are not repeated here. These are the implementation gaps:
 
-- **Movers hop whole cells** and never approach the robot.
+- **3.30's movers hop whole cells** and never approach the robot. 3.234.A's disc movers do, but the camera does not draw them and the split body (3.36) does not carry them.
 - **The D500's +90 degree mounting yaw is not modelled.** The sim publishes
   the scan with zero dead ahead (3.27, a hardware-day item).
 - **The starter house's doors are tight for the UGV Rover.** The body
