@@ -86,3 +86,27 @@ at a time, as pop-ups with a recommendation), then this file, then
    `frame`, sim, or paid cloud).
 * The board's brain is dev `1f6ef3be` since 3.229.B (sim mode); the pack
   needs charging before the next run.
+
+## Added 2026-11-28 02:25 UTC (after the first write)
+
+* 3.232 (the twin says when the robot stops answering; the shutdown card
+  says to press the power button) is on dev `dff0ff10` and the orchestrator
+  DEPLOYED the twin (invalidation Completed; live app.js, strings.js,
+  twin.css, index.html == dff0ff10). Owed: its MERGED-STATE line (next docs
+  job) and the user's live check on the board (power on, Shut down, press
+  the button: the card and header should say it stopped answering in ~5 s).
+* The user said yes to a **"speed on the car" section**, queued after
+  3.230.A: (1) the `/scan` timestamp fix in the cloud (the bridge stamps
+  now - age; 3b's decided trigger); (2) a desktop brief to measure braking
+  per speed band on the Rover (6.9 (d); `DECEL_M_S2` is a placeholder);
+  (3) speed by clearance (6.9 (a), (c)). Keep 0.2 m/s near things until
+  3.222 passes. Today: nav2 0.20 m/s, the FORWARD verb 0.3 m/s, the
+  controller cap 0.6 m/s; 3.44's speed-dependent stop holds 20 cm to
+  ~0.34 m/s.
+* New sections from other sessions: 3.233 (claimed), 3.234 (a mover
+  tracker in the safety veto), 3.235 (frontier gain on the Rover's maps).
+* The orchestrator session was cleared by the user and re-read this file;
+  same session id, so the every-3-hours check (`trig_01Rf9ZkRvmDmE5mPBmJBsq26`)
+  still fires into it: keep it, do not recreate it. Remove the
+  `handover:requested` tag from this session.
+* Pending for the user tonight: charge the pack.
