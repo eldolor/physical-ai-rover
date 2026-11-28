@@ -132,7 +132,8 @@ def died_mid_verb(url, body_url, action, driver="brain"):
     # The last moment the body was still moving, after the close.
     moving_until = t_close
     for (ta, a), (tb, b) in zip(samples, samples[1:]):
-        if math.dist(xy(a), xy(b)) > 0.001 or abs(a["heading_deg"] - b["heading_deg"]) > 0.2:
+        if (math.dist(xy(a), xy(b)) > 0.001
+                or abs(((a["heading_deg"] - b["heading_deg"] + 180) % 360) - 180) > 0.2):
             moving_until = tb
     turn = abs(((rest["heading_deg"] - at_close["heading_deg"] + 180) % 360) - 180)
     return math.dist(xy(at_close), xy(rest)), turn, moving_until - t_close
