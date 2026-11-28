@@ -9,14 +9,10 @@
   },
   "fold-1": {
    "expected": 212,
-   "missing": 212,
+   "missing": 0,
    "errors": 0,
-   "whole": false,
-   "first_missing": [
-    "a-white-phone-charger-ca-20260921-203250/frame-0000.jpg",
-    "a-white-phone-charger-ca-20260921-203250/frame-0001.jpg",
-    "a-white-phone-charger-ca-20260921-203250/frame-0002.jpg"
-   ]
+   "whole": true,
+   "first_missing": []
   },
   "fold-2": {
    "expected": 87,
@@ -86,7 +82,7 @@
   }
  },
  "cost": {
-  "gpu_usd": 0.71,
+  "gpu_usd": 1.75,
   "teacher_usd_per_kept_label": 0.0065,
   "jobs": [
    {
@@ -96,6 +92,14 @@
     "stage": "COMPLETED",
     "running_secs": 1017,
     "usd": 0.7083
+   },
+   {
+    "id": "6b0aec0d54072e8b716de180",
+    "run": "pilot",
+    "folds": "1",
+    "stage": "COMPLETED",
+    "running_secs": 1444,
+    "usd": 1.0417
    }
   ]
  },

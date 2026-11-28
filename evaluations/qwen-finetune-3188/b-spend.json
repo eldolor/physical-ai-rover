@@ -17,7 +17,24 @@
    "stage": "COMPLETED",
    "job_sha256": "2726cccf377768a8a57d27df640ed72b58c5718b6f27c9546f38d6970b4d481b",
    "message": null
+  },
+  {
+   "id": "6b0aec0d54072e8b716de180",
+   "run": "pilot",
+   "folds": "1",
+   "stamp": "20261128T144024Z",
+   "result": "pilot",
+   "flavor": "a100-large",
+   "per_min": 0.041667,
+   "timeout_min": 60,
+   "worst_usd": 2.5,
+   "started": "2026-11-28T14:58:21Z",
+   "running_secs": 1444,
+   "usd": 1.0417,
+   "stage": "COMPLETED",
+   "job_sha256": "2726cccf377768a8a57d27df640ed72b58c5718b6f27c9546f38d6970b4d481b",
+   "message": null
   }
  ],
- "spent_usd": 0.71
+ "spent_usd": 1.75
 }
