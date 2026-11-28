@@ -2,8 +2,8 @@
 # Copyright (C) 2026 Anshu Gaind
 """3.237 criterion A2 (`docs/plans/ros-alignment/3.237-explore-three-sensors.md`,
 amendment 1): each sensor sees the low things its geometry lets it, judged
-by the test's own geometry, over 500 seeded poses in six houses (~80 s, two
-full scans a pose: a slow-tier file)."""
+by the test's own geometry, over seeded poses in six houses: 100 a house in
+the fast tier (~15 s), 500 with PICAR_A2_POSES=500 (the recorded run, ~70 s)."""
 
 import json
 

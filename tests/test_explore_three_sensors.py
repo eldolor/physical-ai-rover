@@ -9,6 +9,7 @@ import functools
 import importlib.util
 import json
 import math
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -161,7 +162,10 @@ def hazard_fingerprint(steps: int = 300, seed: int = 3237) -> str:
 
 HAZARD_PINNED = "d4be857d0a0f68edcc485b7d8996b1d1be1b12cb2c0f9069b3923f938dd51967"   # dev, before A
 SCATTERED = [f"procthor:val:{i}" for i in (0, 2, 3, 4, 5)]
-POSES = 500
+# A2's recorded run is 500 poses a house (3,000 in all, the plan's table);
+# the fast tier runs 100 a house (~15 s). PICAR_A2_POSES=500 repeats the
+# recorded run. The bar (100 % agreement) is the same at either count.
+POSES = int(os.environ.get("PICAR_A2_POSES", "100"))
 LENS_M, MOUNT_DOWN_DEG = 0.210, 15.0                       # the xacro, read here
 PAN_X_M, LENS_X_M = -0.009, 0.048                          # pan axis, lens ahead of it
 
