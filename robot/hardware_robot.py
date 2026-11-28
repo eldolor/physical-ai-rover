@@ -214,12 +214,14 @@ def open_serial(port: str, baud: int = 115200) -> int:
     every byte it receives is echoed back out at 9600, the output never
     drains, and the robot server hung in `set_termios` before binding :8000.
     Here nothing waits: the open is `O_NONBLOCK` (no wait for a carrier
-    either), pending output is discarded with `tcflush` (never waits), and
-    the baud, raw mode and `CLOCAL` go in one `TCSANOW` call (never waits).
-    Input received at the wrong baud is then flushed, and `O_NONBLOCK` is
-    cleared, so the reader's `select()` + `os.read()` and `_send()`'s
+    either), the baud, raw mode and `CLOCAL` go in one `TCSANOW` call
+    (never waits), then `tcflush` (never waits) discards the echo backlog
+    and what arrived at the old baud. The settings are read back (a refused
+    one raises), and `O_NONBLOCK` is cleared, so the reader's `select()` + `os.read()` and `_send()`'s
     `os.write()` behave as they always have."""
-    speed = getattr(termios, f"B{baud}", termios.B115200)
+    speed = getattr(termios, f"B{baud}", None)
+    if speed is None:
+        raise ValueError(f"no termios speed for {baud} baud")
     fd = os.open(port, os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK)
     try:
         iflag, oflag, cflag, lflag, _, _, cc = termios.tcgetattr(fd)
@@ -240,10 +242,17 @@ def open_serial(port: str, baud: int = 115200) -> int:
         cc = list(cc)
         cc[termios.VMIN] = 1
         cc[termios.VTIME] = 0
-        termios.tcflush(fd, termios.TCOFLUSH)       # the echo backlog
         termios.tcsetattr(fd, termios.TCSANOW,
                           [iflag, oflag, cflag, lflag, speed, speed, cc])
-        termios.tcflush(fd, termios.TCIFLUSH)       # bytes read at the old baud
+        # After the set, so no echo can queue behind the flush: the echo
+        # backlog would otherwise go out ahead of the first `T:136`.
+        termios.tcflush(fd, termios.TCIOFLUSH)
+        # tcsetattr succeeds if ANY change took; check the ones the link needs.
+        got = termios.tcgetattr(fd)
+        if (got[4] != speed or got[5] != speed
+                or got[2] & termios.CSIZE != termios.CS8
+                or got[3] & (termios.ECHO | termios.ICANON)):
+            raise OSError(f"{port}: the port refused raw {baud} 8N1")
         flags = fcntl.fcntl(fd, fcntl.F_GETFL)
         fcntl.fcntl(fd, fcntl.F_SETFL, flags & ~os.O_NONBLOCK)
     except BaseException:

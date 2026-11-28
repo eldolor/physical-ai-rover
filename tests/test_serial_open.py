@@ -29,12 +29,16 @@ from sim.mock_robot import MockRobot
 BOUND_S = 1.0       # criterion 1: the open configures within this, under the model
 
 
+class _Calls(list):
+    release = None
+
+
 @pytest.fixture
 def never_drains(monkeypatch):
     """A line whose output never drains: every draining call waits until
     teardown. Returns the list of calls that waited."""
     release = threading.Event()
-    waited = []
+    waited = _Calls()
     real_set, real_drain = termios.tcsetattr, termios.tcdrain
 
     def tcsetattr(fd, when, attrs):
@@ -51,6 +55,7 @@ def never_drains(monkeypatch):
     for mod in (termios, tty):      # tty does `from termios import *`
         monkeypatch.setattr(mod, "tcsetattr", tcsetattr, raising=False)
         monkeypatch.setattr(mod, "tcdrain", tcdrain, raising=False)
+    waited.release = release.set   # wake the waiters before closing their fd
     yield waited
     release.set()
 
@@ -108,12 +113,14 @@ def _in_thread(fn):
 def test_the_model_reproduces_the_hang_on_the_old_path(board, never_drains):
     """What dev did before 3.238: `tty.setraw()` waits for good."""
     fd = os.open(board.path, os.O_RDWR | os.O_NOCTTY)
+    t, out, _ = _in_thread(lambda: tty.setraw(fd))
     try:
-        t, out, _ = _in_thread(lambda: tty.setraw(fd))
         assert t.is_alive(), "setraw returned: the model no longer models the drain"
         assert ("tcsetattr", termios.TCSAFLUSH) in never_drains
     finally:
-        never_drains.clear()
+        never_drains.release()
+        t.join(BOUND_S)
+        os.close(fd)
 
 
 def test_a_port_that_never_drains_configures_within_the_bound(board, never_drains):
@@ -149,6 +156,29 @@ def test_open_serial_leaves_a_blocking_raw_port(board):
 
 
 @pytest.mark.skipif(not os.path.isdir("/proc/self/fd"), reason="needs /proc")
+def test_an_unknown_baud_is_refused_not_replaced(board):
+    with pytest.raises(ValueError):
+        open_serial(board.path, 11520)
+
+
+@pytest.mark.skipif(not os.path.isdir("/proc/self/fd"), reason="needs /proc")
+def test_a_refused_setting_raises_and_closes_the_fd(board, monkeypatch):
+    real = termios.tcgetattr
+    calls = []
+
+    def stays_at_9600(fd):
+        a = real(fd)
+        calls.append(1)
+        if len(calls) > 1:          # the read-back
+            a[4] = a[5] = termios.B9600
+        return a
+    monkeypatch.setattr(hw.termios, "tcgetattr", stays_at_9600)
+    before = set(os.listdir("/proc/self/fd"))
+    with pytest.raises(OSError):
+        open_serial(board.path)
+    assert set(os.listdir("/proc/self/fd")) <= before
+
+
 def test_a_failed_set_up_closes_the_fd(board, monkeypatch):
     def refuse(fd, when, attrs):
         raise termios.error(5, "Input/output error")
