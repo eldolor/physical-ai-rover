@@ -44,6 +44,7 @@ import math
 
 import httpx
 import numpy as np
+import threading
 import time
 from typing import Callable, Optional, Protocol, Union
 
@@ -61,6 +62,7 @@ from brain.goal_policy import LinearGoalPolicy
 from brain.goal_policy import features as goal_features
 from brain.goal_policy import goal_context
 from brain.goal_policy import ROOM_FEATURES, ROOM_RES_M, RoomGoalPolicy, hint_matches, room_type
+from brain import hazards as hazards_mod
 from brain.memory import MissionMemory
 from robot.interface import VERB_MAX_TAG, ZONE_UNUSABLE, Preempted, RobotInterface
 from robot.safety import CREEP_MARGIN_CM, FOOTPRINT_LENGTH_M, SafetyViolation, verb_speed_m_s
@@ -247,6 +249,11 @@ VIEW_BEARING_MIN_M = 0.3
 VIEW_REUSE_BUDGET = 4
 
 
+def _is_hazard(z: dict) -> bool:
+    """3.231.C1: a zone `brain/hazards.py` made, not a person's."""
+    return str(z.get("id", "")).startswith(hazards_mod.ID_PREFIX)
+
+
 def leave_clearance_m(min_distance_cm: float) -> float:
     """3.45: the room a frontier or view goal keeps from anything occupied on
     the map -- the chassis' half-length plus the safety layer's stopping
@@ -323,6 +330,22 @@ class ExploreAgent(MissionAgent):
         self.zone_leaves = 0           # leave_zone goals sent (D4)
         self._zones_rev = 0            # bumped by each set_zones (a cache key)
         self._masked = None            # (map_id, map_version, zones_rev, masked map)
+        # 3.231.C1 / 3.237 (amendment 2): low things on the floor as short-
+        # lived zones beside the person's (`brain/hazards.py`). None is off and
+        # changes nothing; `hazard_sources` names what feeds the list:
+        # "camera" (detections of a hazard class) and/or "floor_band".
+        self.hazards: Optional[hazards_mod.HazardList] = None
+        self.hazard_sources: tuple = ()
+        self.hazard_classes: tuple = hazards_mod.HAZARD_CLASSES
+        self._user_zones: list = []
+        self._hazard_zones: list = []      # the tick thread's last copy (review: set_zones runs elsewhere)
+        self._hazard_rev = None
+        self.hazard_refusals = 0           # goals refused beside a hazard, apart from zone_refusals
+        self._hazard_failed = False
+        self._hazard_blind = False
+        # set_zones runs on MissionRunner's HTTP thread, the hazards' publish
+        # on the tick's: both compose `zones` under this (bug pass).
+        self._zones_lock = threading.Lock()
         self._floor_of = None          # 3.192: (this choice's masked map, its floor map)
         self._floor_grid = None        # 3.192: (key, floor cells, int8 grid), one per map
         self._no_way_out = False       # zone_no_way_out logged for this stretch
@@ -552,6 +575,8 @@ class ExploreAgent(MissionAgent):
                 pass        # 3.76: found is found; a goal that is not ours is not ours to end
             return "STOP", True, "target found"
         self._note_seen()
+        if self.hazards is not None:
+            self._update_hazards(frame, now)
         # 3.70 E3: the room it stands in counts as entered BEFORE it chooses,
         # or its first room goal would be the room it is already in.
         pose = self._pose()
@@ -749,10 +774,17 @@ class ExploreAgent(MissionAgent):
                 # 3.161 D3: no goal into a zone, whatever chose it (an approach,
                 # a recall, a room goal). The place counts as failed, so it is
                 # not offered again at once.
-                self.zone_refusals += 1
+                z = nogo.zone_at(self.zones, x_m, y_m, nogo.HALF_WIDTH_M)
+                hazard = z is not None and _is_hazard(z)
+                if hazard:
+                    self.hazard_refusals += 1        # 3.231.C1: apart from a person's (review)
+                else:
+                    self.zone_refusals += 1
                 self.retry.fail(x_m, y_m, now)
-                self.last_event = f"goal not sent ({kind}): inside a no-go zone"
-                self._event("goal_in_zone", kind=kind, goal=[round(x_m, 2), round(y_m, 2)])
+                self.last_event = (f"goal not sent ({kind}): "
+                                   f"{'beside a hazard' if hazard else 'inside a no-go zone'}")
+                self._event("goal_at_hazard" if hazard else "goal_in_zone", kind=kind,
+                            goal=[round(x_m, 2), round(y_m, 2)])
                 return "WAIT", False, self.last_event
             if moved != (x_m, y_m):
                 info["moved_from_zone"] = [round(x_m, 2), round(y_m, 2)]
@@ -857,10 +889,66 @@ class ExploreAgent(MissionAgent):
         return m["cells"][j * m["width"] + i] == CELL_FREE
 
     def set_zones(self, zones) -> None:
-        """3.161: the zones for the map the robot is on (house frame)."""
-        self.zones = list(zones or ())
+        """3.161: the zones for the map the robot is on (house frame). With
+        hazards on (3.231.C1), the live hazards' zones ride beside them."""
+        with self._zones_lock:
+            self._user_zones = list(zones or ())
+            self._compose_zones()
+
+    def _compose_zones(self) -> None:
+        """A person's zones and the tick thread's last copy of the hazards'
+        (the runner's thread never touches the list itself, review); under
+        `_zones_lock`."""
+        self.zones = self._user_zones + list(self._hazard_zones)
         self._zones_rev += 1
         self._masked = None
+
+    def _update_hazards(self, frame: dict, now: float) -> None:
+        """3.231.C1 / 3.237: feed the hazard list from this tick's sources
+        and, when its set changed (a hazard added or expired), put its zones
+        beside the person's. Steers only: nothing here moves the robot, and
+        a reading that cannot be used marks nothing this tick (review)."""
+        new = []
+        pose = self._pose()
+        if pose.get("usable"):
+            try:
+                if "camera" in self.hazard_sources:
+                    # The target is never its own hazard (review: a find for
+                    # slippers would wall off what it came for).
+                    target = (self.memory.target_object or "").strip().lower()
+                    classes = [c for c in self.hazard_classes if c.lower() != target]
+                    if "detections" not in frame and not self._hazard_blind:
+                        # Bug pass: a frame with no detections (3.227's
+                        # perception frames) feeds no camera hazard; said once.
+                        self._hazard_blind = True
+                        self._event("hazard_camera_blind", sight_from=self.sight_from)
+                    for label, x, y in hazards_mod.detection_points(frame, pose, self._pan(),
+                                                                    classes):
+                        if self.hazards.add(x, y, now, "camera", label):
+                            new.append(("camera", label, x, y))
+                if "floor_band" in self.hazard_sources:
+                    band = self._grid().get("floor")
+                    # A hinted scan: the band reaches 1.5 m, and the hint's
+                    # exact cast never overstates a range (review).
+                    scan = (self.robot.get_scan(max_range_m=hazards_mod.SCAN_HINT_M)
+                            if band else None)
+                    for x, y in hazards_mod.band_points(band, scan, pose):
+                        if self.hazards.add(x, y, now, "floor_band", confirm=True):
+                            new.append(("floor_band", "", x, y))
+            except Exception as exc:  # noqa: BLE001 -- steering only: no mark this tick
+                if not self._hazard_failed:
+                    self._hazard_failed = True
+                    logger.warning("hazards: a reading could not be used (%s); none marked", exc)
+                    self._event("hazard_error", reason=str(exc)[:120])
+        for source, label, x, y in new:
+            self._event("hazard", source=source, label=label, x_m=round(x, 3), y_m=round(y, 3))
+        # Expiry also changes the set, with or without a pose (review).
+        zones = self.hazards.zones(now)
+        if self.hazards.rev != self._hazard_rev:
+            self._hazard_rev = self.hazards.rev
+            with self._zones_lock:           # a person's zones as they are now (bug pass)
+                self._hazard_zones = zones
+                self._compose_zones()
 
     def _leave_zone(self, m: dict, pose: dict, now: float, leave: float):
         """3.161 D4: the robot stands in a zone (grown by its half-width) --
@@ -1405,6 +1493,12 @@ class ExploreAgent(MissionAgent):
             # room features (and the find's room labels source) and
             # `known_near` read `floor`, the map without the zones.
             zones = self.zones
+            if self._hazard_zones:
+                # 3.231.C1 (review): a hazard the robot already stands near
+                # (the band marks from 20 cm) is left off the mask, never a
+                # leave_zone goal: a person's zones alone send it out.
+                zones = [z for z in zones if not (
+                    _is_hazard(z) and nogo.inside(z, pose["x_m"], pose["y_m"], nogo.HALF_WIDTH_M))]
             if nogo.zone_at(zones, pose["x_m"], pose["y_m"], nogo.HALF_WIDTH_M) is not None:
                 out = self._leave_zone(m, pose, now, leave)
                 if out is not None:
@@ -2722,9 +2816,15 @@ class ExploreAgent(MissionAgent):
         every caller asks."""
         m = self._pan_memo
         if m is None or m[0] != self._ticks:
-            self._pan_memo = m = (self._ticks,
-                                  (self.robot.get_depth_grid() or {}).get("pan_deg") or 0.0)
+            grid = self.robot.get_depth_grid() or {}
+            self._pan_memo = m = (self._ticks, grid.get("pan_deg") or 0.0, grid)
         return m[1]
+
+    def _grid(self) -> dict:
+        """This tick's depth grid, the one `_pan()` read (3.237 review: one
+        read a tick, live each is an HTTP round trip)."""
+        self._pan()
+        return self._pan_memo[2]
 
     def _sighting_now(self, frame: dict) -> Optional[tuple]:
         """The target's position in the house frame, if the camera sees it

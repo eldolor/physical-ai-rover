@@ -31,7 +31,14 @@ on the desktop, wrap the command in `python tools/desktop_lock.py shared`.
 Arms (B0): `L` lidar only (the floor block withheld from the safety layer, as
 the Rover today: `no_floor_band`); `V` today's sim (the floor band's veto).
 
-    python evaluations/explore3-3237/sweep.py L V
+Arms (B, amendment 2), on A's scatter (`SIM_LOW_SCATTER=8:0`) and
+`SIM_FLOOR_BAND`: `B1` lidar only; `BV` the veto alone (reference); `B2` the
+veto and the band's low points as hazard zones; `B3` the camera's hazard
+detections as zones, no band; `B4` all three. `LidarNav` avoids hazard zones'
+cells (grown by the half-width), as nav2 would with 3.231.C2's keepouts.
+
+    python evaluations/explore3-3237/sweep.py L V            # B0 (recorded)
+    python evaluations/explore3-3237/sweep.py B1 BV B2 B3 B4  # B -> results/B/
 """
 
 import json
@@ -66,7 +73,12 @@ LIMIT_S = 1200.0
 CONTACT_CM, LEAVE_CM = 1.0, 3.0
 LOW_BELOW_M = 0.120              # the lidar's plane: laser_z in the xacro, 12 cm
 TICK_CAP = 5000
-ARMS = ("L", "V")
+ARMS = ("L", "V", "B1", "BV", "B2", "B3", "B4")
+# B's arms: (floor band published, hazard sources)
+B_ARMS = {"B1": (False, ()), "BV": (True, ()), "B2": (True, ("floor_band",)),
+          "B3": (False, ("camera",)), "B4": (True, ("camera", "floor_band"))}
+B_SCATTER = "8:0"
+B_OUT = Path(__file__).with_name("results") / "B"
 AT_TARGET_M = 0.9
 CAM_FOV = math.radians(60.0)     # the sim camera's (renderer.FPV_FOV), stated here
 CAM_RANGE = 14.0                 # cells (renderer.FPV_MAX_DIST)
@@ -116,17 +128,29 @@ def scatter(world, house, start):
     world.object_heights = dict(LOW_HEIGHTS_M)
 
 
-def house_world(house):
+def house_world(house, b=False):
+    """B0: the harness's own scatter. B: A's (`SIM_LOW_SCATTER`), on every
+    house but the hazard house (which holds every scatter label already)."""
+    import os
+    if b:
+        if house.startswith("procthor"):
+            os.environ["SIM_LOW_SCATTER"] = B_SCATTER
+        else:
+            os.environ.pop("SIM_LOW_SCATTER", None)
+        try:
+            return build_world(house)
+        finally:
+            os.environ.pop("SIM_LOW_SCATTER", None)
     world = build_world(house)
     if house.startswith("procthor"):
         scatter(world, house, (world.robot_x, world.robot_y))
     return world
 
 
-def starts(house):
+def starts(house, b=False):
     """STARTS seeded (x, y, heading): a free cell's centre with nothing
     within the chassis' circumscribed circle, at least 1 m from the target."""
-    world = house_world(house)
+    world = house_world(house, b)
     rng = random.Random(f"3237-starts-{house}")
     targets = [c for c, n in world.objects.items() if n == TARGET]
     occupied = set(world.objects)
@@ -168,8 +192,9 @@ class Judge:
     """Ground truth after every integration step: contact events with low
     things and with anything else, and the camera's coverage."""
 
-    def __init__(self, world, low, tall):
-        self.world, self.low, self.tall = world, low, tall
+    def __init__(self, world, low, tall, robot=None):
+        self.world, self.low, self.tall, self.robot = world, low, tall, robot
+        self.by_motion = {"forward": 0, "astern": 0, "pivot": 0, "still": 0}
         self.touching: dict = {}
         self.low_events = self.other_events = 0
         self.seen: set = set()
@@ -192,6 +217,7 @@ class Judge:
                     self.touching[c] = True
                     if is_low:
                         self.low_events += 1
+                        self.by_motion[self._motion()] += 1
                     else:
                         self.other_events += 1
                 elif was and g >= LEAVE_CM:
@@ -202,6 +228,17 @@ class Judge:
         if w.sim_time >= self.next_seen:
             self.next_seen = w.sim_time + SEEN_EVERY_S
             self._look()
+
+    def _motion(self):
+        """What the wheels were commanded at the contact (the judge reads
+        the command, not any sensor)."""
+        left, right = getattr(self, "cmd", (0.0, 0.0))
+        v, w = (left + right) / 2.0, right - left
+        if abs(v) < 0.05 and abs(w) < 0.05:
+            return "still"
+        if abs(v) < 0.25 * abs(w):
+            return "pivot"
+        return "forward" if v > 0 else "astern"
 
     def _look(self):
         """Floor cells in the camera's view, rays stopped by walls and tall
@@ -221,6 +258,9 @@ class Judge:
 
 
 def build_robot(arm, world):
+    import os
+    if arm in B_ARMS:
+        os.environ["SIM_FLOOR_BAND"] = "1" if B_ARMS[arm][0] else "0"
     robot = MockRobot(world, render=False)
     if arm == "L":
         grid_fn = robot.get_depth_grid
@@ -234,7 +274,7 @@ def build_robot(arm, world):
     return robot
 
 
-def lidar_nav(robot):
+def lidar_nav(robot, zones_fn=None):
     base = _vetted_nav_class()
 
     class LidarNav(base):
@@ -254,9 +294,29 @@ def lidar_nav(robot):
                 return out
             self.safety.vet_wheel_velocity = counted
 
+        def _hazard_cells(self):
+            """Cells whose centre lies in a hazard zone grown by the
+            half-width (nav2's keepout with its inflation), cached by the
+            zones' ids."""
+            zones = [z for z in (zones_fn() if zones_fn else ())
+                     if str(z.get("id", "")).startswith("hazard-")]
+            key = tuple(z["id"] for z in zones)
+            if getattr(self, "_hz", (None,))[0] != key:
+                grow, cells = 0.12, set()
+                for z in zones:
+                    for j in range(int((z["y0"] - grow) / 0.3), int((z["y1"] + grow) / 0.3) + 1):
+                        for i in range(int((z["x0"] - grow) / 0.3), int((z["x1"] + grow) / 0.3) + 1):
+                            cx, cy = (i + 0.5) * 0.3, (j + 0.5) * 0.3
+                            if (z["x0"] - grow <= cx <= z["x1"] + grow
+                                    and z["y0"] - grow <= cy <= z["y1"] + grow):
+                                cells.add((i, j))
+                self._hz = (key, cells)
+            return self._hz[1]
+
         def _path(self, a, b):
             g, prev, q = self.grid, {a: None}, deque([a])
             solid = g.lidar_solid_cells
+            keep = self._hazard_cells()
             while q:
                 c = q.popleft()
                 if c == b:
@@ -266,10 +326,29 @@ def lidar_nav(robot):
                         c = prev[c]
                     return out[::-1]
                 for n in ((c[0] + 1, c[1]), (c[0] - 1, c[1]), (c[0], c[1] + 1), (c[0], c[1] - 1)):
-                    if n not in prev and g._cell(*n) != CELL_WALL and n not in solid:
+                    if (n not in prev and g._cell(*n) != CELL_WALL and n not in solid
+                            and n not in keep):
                         prev[n] = c
                         q.append(n)
             return None
+
+        def get_goal(self):
+            """VettedNav's drive, with nav2's answer to a keepout (review): a
+            goal whose cell is in a hazard zone, or that no path reaches
+            around them now (a hazard marked mid-goal), is aborted -- never
+            driven to in a straight line, which VettedNav's fallback did."""
+            if self.goal and self.goal["state"] == "active":
+                g = self.grid
+                to = (math.floor(self.goal["x_m"] / 0.3), math.floor(self.goal["y_m"] / 0.3))
+                if to in self._hazard_cells() or self._path((g.robot_x, g.robot_y), to) is None:
+                    self.calls.append(("get",))
+                    self.robot.set_wheel_velocity(0.0, 0.0)
+                    self.robot.pass_time(1.0)
+                    self.goal["state"] = "aborted"
+                    return {"goal": self.goal, "plan": []}
+            # Hazards change only on explore's ticks, between polls, so the
+            # check above covers the whole poll's drive.
+            return super().get_goal()
     return LidarNav(robot)
 
 
@@ -286,7 +365,8 @@ def _run(args):
     from control.mission_runner import MissionRunner
     from sim.mock_world import MockWorld
     arm, house, x, y, heading, job = args
-    world = house_world(house)
+    b = arm in B_ARMS
+    world = house_world(house, b)
     world.x, world.y = x, y
     world.theta = math.radians(heading - 90)
     low = set(low_of(world))
@@ -294,21 +374,41 @@ def _run(args):
     start = (math.floor(x), math.floor(y))
     floor = reachable(world, start, set(world.objects))
     robot = build_robot(arm, world)
-    judge = Judge(world, low, tall)
+    judge = Judge(world, low, tall, robot)
+    looks = {"n": 0, "s": 0.0}
+    for verb in ("look_left", "look_right", "look_center", "look_step", "tilt_step"):
+        fn = getattr(robot, verb)
+
+        def timed(*a, _fn=fn, **k):
+            t0 = world.sim_time
+            out = _fn(*a, **k)
+            looks["n"] += 1
+            looks["s"] += world.sim_time - t0
+            return out
+        setattr(robot, verb, timed)
     step = robot.step
 
     def checked(dt):
+        # The command in effect for this step (review: the veto or the nav
+        # loop may zero it within the step that touched).
+        judge.cmd = (robot._cmd_left_rad_s, robot._cmd_right_rad_s)
         out = step(dt)
         judge.check()
         return out
     robot.step = checked
-    nav = lidar_nav(robot)
+    holder = {}
+    nav = lidar_nav(robot, zones_fn=lambda: getattr(holder.get("agent"), "zones", ()))
     kw = {"job": "survey"} if job == "survey" else {"target_object": TARGET}
     runner = MissionRunner(robot, policy="explore", navigator=nav, world=MockWorld(world),
                            mission_time_limit_s=LIMIT_S, clock=lambda: world.sim_time,
                            idle=robot.pass_time, **kw)
     t0 = time.time()
     runner.start()
+    holder["agent"] = runner.agent
+    if b and B_ARMS[arm][1]:
+        from brain.hazards import HazardList
+        runner.agent.hazards = HazardList()
+        runner.agent.hazard_sources = B_ARMS[arm][1]
     ticks = 0
     while runner.tick() and ticks < TICK_CAP:
         ticks += 1
@@ -324,6 +424,10 @@ def _run(args):
             "coverage": round(len(judge.seen & floor) / len(floor), 4),
             "coverage_300": round(len(at300 & floor) / len(floor), 4),
             "ticks": ticks, "capped": ticks >= TICK_CAP,
+            "low_by_motion": judge.by_motion,
+            "looks": looks["n"], "look_s": round(looks["s"], 1),
+            "hazards": (dict(runner.agent.hazards.added)
+                        if getattr(runner.agent, "hazards", None) is not None else None),
             "refusals_floor_band": nav.refusals["floor_band"],
             "refusals_other": nav.refusals["other"], "wall_s": round(time.time() - t0, 1)}
 
@@ -344,6 +448,10 @@ def summary(all_rows):
             "other_contacts": sum(r["other_contacts"] for r in rows),
             "find_rate": round(len(hit) / len(finds), 4) if finds else None,
             "find_time_median_s": med([r["sim_s"] for r in hit]),
+            "look_share_median": med([r.get("look_s", 0.0) / r["sim_s"] for r in rows
+                                      if r["sim_s"] and "look_s" in r]),
+            "low_by_motion": {k: sum((r.get("low_by_motion") or {}).get(k, 0) for r in rows)
+                              for k in ("forward", "astern", "pivot", "still")},
             "coverage_median": med([r["coverage"] for r in surveys]),
             "coverage_300_median": med([r["coverage_300"] for r in surveys]),
             "outcomes": {o: sum(r["outcome"] == o for r in rows)
@@ -352,14 +460,16 @@ def summary(all_rows):
 
 def main(*arms):
     logging.disable(logging.WARNING)
-    OUT.mkdir(exist_ok=True)
-    jobs = [(h, *s) for h in HOUSES for s in starts(h)]
     for arm in arms:
         if arm not in ARMS:
             raise SystemExit(f"unknown arm {arm!r}: one of {ARMS}")
     for arm in arms or ("L",):
+        b = arm in B_ARMS
+        out_dir = B_OUT if b else OUT
+        out_dir.mkdir(parents=True, exist_ok=True)
+        jobs = [(h, *s) for h in HOUSES for s in starts(h, b)]
         t = time.time()
-        log = OUT / f"{arm}.jsonl"
+        log = out_dir / f"{arm}.jsonl"
         log.write_text("")
         tasks = [(arm, h, x, y, hd, job) for h, x, y, hd in jobs for job in ("find", "survey")]
         with Pool(4) as pool:
@@ -370,7 +480,7 @@ def main(*arms):
                     f.write(json.dumps(r) + "\n")
                 print(json.dumps(r), flush=True)
         out = {"arm": arm, **summary(rows), "wall_s": round(time.time() - t), "rows": rows}
-        (OUT / f"{arm}.json").write_text(json.dumps(out, indent=1) + "\n")
+        (out_dir / f"{arm}.json").write_text(json.dumps(out, indent=1) + "\n")
         print(json.dumps({k: v for k, v in out.items() if k != "rows"}), flush=True)
 
 
