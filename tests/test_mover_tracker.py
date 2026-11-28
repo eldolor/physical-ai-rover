@@ -187,7 +187,24 @@ def test_b_record_pinned():
     v = json.load(open(RECORD))["verdict"]
     assert v["seed"] == 0
     assert v["B1"]["missions"] == 24 and v["B2"]["missions"] == 72
-    assert v == PINNED
+    # The cost is this host's timing, not a result: never pinned.
+    got = {"B1": v["B1"], "B2": {k: v["B2"][k] for k in PINNED["B2"]}}
+    assert got == PINNED
+    assert v["B1"]["met"] and v["B2"]["velocity_met"]       # B1, B2's velocity: met
+    assert not v["B2"]["first_track_met"]                    # B2's time to first track: FAILED
 
 
-PINNED = None
+PINNED = {'B1': {'missions': 24,
+        'driving_min': 58.0,
+        'false_moving_tracks': 5,
+        'per_10_min': 0.862,
+        'met': True},
+ 'B2': {'missions': 72,
+        'velocity_error_samples': 35532,
+        'velocity_error_median_m_s': 0.0375,
+        'velocity_error_p90_m_s': 0.1377,
+        'visits_judged': 5156,
+        'visits_first_track_le_3': 2289,
+        'velocity_met': True,
+        'first_track_met': False,
+        'velocity_error_p90_at_2.5': 0.8675}}

@@ -143,6 +143,39 @@ power-off from `GET /battery` with its floor set. `poweroff_cmd` defaults to
 simulator and `SIM_MOTOR_BOARD=fake` get the logged stub, so a desktop drain
 test cannot power off the desktop.
 
+### The mover tracker (3.234.B; nothing in the veto reads it yet)
+
+`robot/mover_tracker.py`'s `MoverTracker` tracks people and pets on the
+lidar's scan, in the robot server's process space (rule 3), for 3.234.C to
+add as predicted points to the swept-corridor check, behind a key, where a
+prediction may only shrink clearance. In B it is imported only by its
+tests and `tests/mover_track_sweep.py`.
+
+* **Input:** `get_scan()`'s dict, its `capture_unix`, and the odometry
+  pose as a function of time (x, y, yaw; right-handed, metres).
+* **Clusters:** bins split at a range jump (12 cm plus 6 cm a metre); at
+  least 2 returns, at most 80 cm wide, and neither edge hidden by a nearer
+  bin. The centre is the nearest return plus half the width along the
+  middle bearing (the returns' centroid sits on the near face).
+* **Time:** each cluster is stamped when the beam crossed it, from its
+  bearing (a revolution runs lidar angle 0-360 in 0.1 s; yaw -90), and
+  placed from the pose at that instant. A revolution in which the body
+  turned more than 3 degrees is skipped; tracks coast across it.
+* **Tracks:** nearest-neighbour association within 50 cm of the
+  prediction; velocity is a least-squares slope over up to 4 observations,
+  restarted from the newest when one falls off the line (3 cm plus 15 % of
+  the predicted step); dropped after 0.25 s unseen.
+* **Moving** = 3 observations in the current fit, speed 0.3-4 m/s, and at
+  least one observation whose nearest return lay where the scan 0.5 or
+  1 s earlier saw at least 15 cm further (free space). `movers()` reports
+  only tracks seen in the latest scan; `coasting()` the rest.
+
+Measured in 3.234.B (offline, A's missions through the fake lidar's
+timing): 0.86 false moving tracks per 10 minutes of driving, velocity error
+median 0.038 m/s and p90 0.138 m/s; a track within 3 scans of a mover
+coming into view for only 44 % of visits (failed). Cost in the cloud
+container: p90 0.21 ms a scan; the Jetson's figure is B3's, open.
+
 ### Driving without a lidar
 
 The canonical statement of what a body that moves but has no scan may do;
@@ -599,6 +632,12 @@ first; run the sweeps, not just the pinned samples; run the suite in module
 order; record the table in the plan entry.
 
 ## Known gaps
+
+- **The mover tracker (3.234.B).** A mover is tracked a median 3 scans
+  after it comes into view (p90 7; 984 of 5,156 visits never): one that
+  appears where the lidar could not see, recedes or stands waits for the
+  free-space test, and a turning revolution is skipped. Odometry was the
+  simulator's truth in B; wheel slip is the Rover's (3.234.D).
 
 - **The battery ladder (3.137).** With the robot server dead nothing reads
   the pack, and the pack's own cutoff is the backstop (3.135 F14's atomic

@@ -53,7 +53,7 @@ TURN_MAX_DEG = 3.0          # a revolution in which the body turned more is not 
 HISTORY = 14                # scans kept for the free-space test
 COAST_S = 0.25              # a track unmatched this long is dropped
 RESET_M = 0.03              # an observation this far off the prediction ...
-RESET_FRAC = 0.15            # ... plus this share of the predicted step restarts the fit
+RESET_FRAC = 0.15           # ... plus this share of the predicted step restarts the fit
 
 
 class Track:
