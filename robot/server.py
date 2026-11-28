@@ -268,11 +268,16 @@ class CallerWatch:
         listener = None
 
         async def listen():
-            while True:
-                message = await receive()
-                if message["type"] == "http.disconnect":
-                    gone.set()
-                    return
+            try:
+                while True:
+                    message = await receive()
+                    if message["type"] == "http.disconnect":
+                        gone.set()
+                        return
+            except asyncio.CancelledError:
+                raise
+            except Exception:  # noqa: BLE001 -- a torn-down cycle: nothing to hear
+                return
 
         async def body_receive():
             nonlocal listener
@@ -661,24 +666,32 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
 
     def end_verbs_of_gone_callers(now: float) -> None:
         """3.147: an autonomous verb whose caller hung up (3.135.B F6: a brain
-        killed mid-verb) is ended by a stop -- the stop `/stop` and the
-        watchdog make, which ends the verb through its stop baseline (3.84).
-        Only while that driver still holds the robot: a person's verb already
-        arbitrated is never cut by it. Once per verb."""
+        killed mid-verb, or a client that gave up on its own call) is ended by
+        a stop -- the stop `/stop` and the watchdog make, which ends the verb
+        through its stop baseline (3.84). Only while that driver still holds
+        the robot: a person's verb already arbitrated is never cut by it.
+
+        **Every wake while the verb is registered**, not once (review): a
+        verb still waiting for `motion_lock` reads its baseline after a first
+        stop and would then drive its whole length. Recorded once per verb.
+        `robot.stop()` runs outside `verbs_lock`, as `/stop`'s does."""
         with verbs_lock:
-            ended = None
+            ended, first = None, False
             for caller in state["verb_callers"]:
-                driver, gone, handled = caller
-                if not handled and gone.is_set() and state["driver"] == driver:
+                driver, gone, recorded = caller
+                if gone.is_set() and state["driver"] == driver:
+                    ended, first = driver, first or not recorded
                     caller[2] = True
-                    ended = driver
-            if ended is None:
-                return
-            robot.stop()
+        if ended is None:
+            return
+        robot.stop()
+        if not first:
+            return
         with goal_gen_lock:
             state["last_stop_reason"] = {
                 "reason": DRIVER_GONE,
-                "detail": f"{ended} hung up mid-verb (its connection closed) -- the verb was ended",
+                "detail": (f"{ended}'s connection closed mid-verb (the brain died, or its "
+                           "call gave up) -- the verb was ended"),
                 "driver": ended, "at": now}
         logger.warning(f"{ended} hung up mid-verb: the verb was ended")
 

@@ -392,6 +392,7 @@ SLOW_FILES = [
     "test_lidar_safety.py", "test_pan_safety.py", "test_procthor_sweep.py", "test_ros_driver_board.py",
     "test_ros_verb_safety.py", "test_settle_pass.py", "test_sim_fingerprint.py", "test_speed_clearance.py",
     "test_startup_race.py", "test_wheel_feedback.py",
+    "test_verb_caller_gone.py",       # 3.147: the fake board on a real socket (~75 s)
     "test_survey_sweep.py",
     "test_explore_reseen_sweep.py",    # 3.210: one ProcTHOR find in process (~25 s)
     "test_explore_supersede_sweep.py", # 3.213: one ProcTHOR find in process (~50 s)
