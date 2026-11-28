@@ -103,8 +103,9 @@ return a `renderer.SolidWithDiscs`: the same cells, plus `.discs`.
 their cell answer and `ray_disc_hit()`, and `footprint_overlaps()` checks the
 rectangle against each disc, so the scan, the depth grid, the drop cast and
 collision all see it with no code of their own. With no disc mover every
-one of them takes the old path, to the bit. Three things do not see a
-disc: the camera (`_visible_objects` reads `objects`), `MockWorld`'s map
+one of them takes the old path, to the bit. Four things do not see a
+disc: the camera (`_visible_objects` reads `objects`), the twin's
+`GET /sim/objects` (`describe_objects()` lists `objects`), `MockWorld`'s map
 (`_observe()` marches its own rays against cells), and the split body
 (3.36), which publishes cells only -- so `robot/factory.py` refuses a disc
 mover with `SIM_MOTOR_BOARD=fake` or `SIM_LIDAR=fake`. Speed is capped at

@@ -201,7 +201,8 @@ class DiscMover:
     def _new_leg(self, world) -> bool:
         first = "approach" if (self.legs["approach"] + self.legs["cross"]) % 2 == 0 else "cross"
         # A crossing that does not fit here (a hallway, side on) becomes an
-        # approach this time, so a house never leaves the disc standing.
+        # approach this time. If neither fits, the disc stands where its last
+        # leg ended -- a doorway, perhaps -- and tries again each `DWELL_S`.
         return any(self._try_leg(world, kind)
                    for kind in ((first,) if first == "approach" else ("cross", "approach")))
 
