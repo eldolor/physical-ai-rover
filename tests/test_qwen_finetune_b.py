@@ -203,3 +203,30 @@ def test_a_reply_is_read_as_ves_is(bs):
     assert bs.box_third(got) == "RIGHT"
     assert bs.box_third({**got, "yes": False}) is None
     assert bs.answer({**row, "error": "boom"})["status"] == "error"
+
+
+def test_a_result_link_takes_one_job_and_a_rerun_gets_its_own(launch, bm):
+    jobs = [{"stamp": "s1", "result": "rest", "usd": 1.0, "worst_usd": 2.0}]
+    with pytest.raises(SystemExit):
+        launch.check_result_link(jobs, "s1", "rest")
+    launch.check_result_link(jobs, "s1", "rerun-1")
+    launch.check_result_link(jobs, "s2", "rest")
+    assert {"stock", "pilot", "rest", "rerun-1"} <= set(bm.RESULT_LINKS)
+    links = {"stamp": "s", "JOB_URL": "J", "MANIFEST_URL": "M", "runs": {"rest": "R", "rerun-1": "X"}}
+    spec = launch.job_spec("rest", links, "a100-large", 9, "4,5", "rerun-1")
+    assert spec["secrets"]["RESULT_PUT_URL"] == "X" and spec["environment"] == {"FOLDS": "4,5"}
+
+
+def test_a_label_past_the_image_is_clipped_before_it_is_mirrored(bm):
+    box = bm.clipped([578.7, -3, 841.2, 223], (1280, 720))
+    assert box == [578.7, 0, 840, 223]
+    assert bm.answer(bm.mirrored_box(box, (1280, 720))) == '[{"bbox_2d": [0, 0, 261, 223]}]'
+
+
+def test_a_later_run_adds_to_the_answers_never_over_them(bs):
+    a1 = {"model": "stock", "id": "k", "status": "answered", "yes": True}
+    err = {**a1, "status": "error"}
+    assert bs.merged([err], [a1]) == [a1]
+    assert bs.merged([a1], [{**a1, "id": "j"}])[1] == a1
+    with pytest.raises(ValueError):
+        bs.merged([a1], [{**a1, "yes": False}])

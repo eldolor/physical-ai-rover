@@ -89,6 +89,19 @@ def load_rows(paths: list) -> list:
     return list(out.values())
 
 
+def merged(old: list, new: list) -> list:
+    """The committed answers with a new run's added: a new answer replaces
+    an old one only where the old one was an error; any other clash is a
+    model answering a task twice, refused."""
+    out = {(x["model"], x["id"]): x for x in old}
+    for x in new:
+        k = (x["model"], x["id"])
+        if k in out and out[k]["status"] != "error" and out[k] != x:
+            raise ValueError(f"{k} is already answered differently in {ANSWERS.name}")
+        out[k] = x
+    return sorted(out.values(), key=lambda x: (x["model"], x["id"]))
+
+
 def by_model(answers: list) -> dict:
     out = defaultdict(dict)
     for x in answers:
@@ -123,6 +136,11 @@ def scores(answers: list, spend: Optional[dict] = None) -> dict:
     for f, rec in b["folds"].items():
         cover[f"fold-{f}"] = whole(got.get(f"fold-{f}", {}), rec["asked"])
     out = {"coverage": cover}
+    if spend:
+        out["cost"] = {"gpu_usd": spend.get("spent_usd"),
+                       "teacher_usd_per_kept_label": round(TEACHER_USD / 314, 4),
+                       "jobs": [{k: j.get(k) for k in ("id", "run", "folds", "stage", "running_secs", "usd")}
+                                for j in spend.get("jobs", [])]}
     fold_whole = all(cover[f"fold-{f}"]["whole"] for f in folds)
     if not cover["stock"]["whole"]:
         out["note"] = "the stock run is not whole: nothing is judged"
@@ -189,11 +207,6 @@ def scores(answers: list, spend: Optional[dict] = None) -> dict:
             "steering": steering(lambda k: allm.get(k), lambda k: allm.get(k + "#mirror")),
             "teal_yes_seen_walk": sum(allm[k]["yes"] for k in teal),
             "taupe_yes": sum(allm[k]["yes"] for k in taupe)}
-    if spend:
-        out["cost"] = {"gpu_usd": spend.get("spent_usd"),
-                       "teacher_usd_per_kept_label": round(TEACHER_USD / 314, 4),
-                       "jobs": [{k: j.get(k) for k in ("id", "run", "stage", "running_secs", "usd")}
-                                for j in spend.get("jobs", [])]}
     return out
 
 
@@ -237,9 +250,8 @@ def steering(direct, mirrored) -> dict:
 def main(argv=None) -> None:
     paths = list(argv if argv is not None else sys.argv[1:])
     if paths:
-        answers = [answer(r) for r in load_rows(paths)]
-        answers.sort(key=lambda x: (x["model"], x["id"]))
-        ANSWERS.write_text("".join(json.dumps(x) + "\n" for x in answers))
+        ANSWERS.write_text("".join(json.dumps(x) + "\n" for x in merged(
+            mf._jsonl(ANSWERS) if ANSWERS.exists() else [], [answer(r) for r in load_rows(paths)])))
     answers = mf._jsonl(ANSWERS)
     spend = json.loads((HERE / "b-spend.json").read_text()) if (HERE / "b-spend.json").exists() else None
     out = scores(answers, spend)

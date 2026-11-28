@@ -61,6 +61,8 @@ SPLIT = HERE / "split.json"
 # Fold numbers follow split.json's object order; "all" is the all-objects model.
 FOLDS = ("1", "2", "3", "4", "5", "6", "all")
 TAUPE_FOLD_OBJECT = "red backpack"
+# One result link per job: a re-run never writes over an earlier run's rows.
+RESULT_LINKS = ("stock", "pilot", "rest", "rerun-1", "rerun-2", "rerun-3")
 
 
 def objects() -> list:
@@ -73,10 +75,16 @@ def fold_object(fold: str):
 
 
 def answer(box) -> str:
-    """The reply the student is trained to give: VE's own format."""
+    """The reply the student is trained to give: VE's own format, whole pixels."""
     if box is None:
         return "[]"
-    return json.dumps([{"bbox_2d": [int(v) for v in box]}])
+    return json.dumps([{"bbox_2d": [int(round(v)) for v in box]}])
+
+
+def clipped(box: list, size: tuple) -> list:
+    """A box in the student's pixels, each edge clipped to the image it sees."""
+    w, h = model_size(*size)
+    return [min(w, max(0, box[0])), min(h, max(0, box[1])), min(w, max(0, box[2])), min(h, max(0, box[3]))]
 
 
 def mirrored_box(box: list, size: tuple) -> list:
@@ -107,7 +115,7 @@ def build() -> dict:
             if not lab or not lab["kept"]:
                 left_out["in view, no kept label"] += 1
                 continue
-            box = lab["label"]
+            box = clipped(lab["label"], sizes[key])
         else:
             box = None
         pool.append({"key": key, "target": row["target"], "object": s3214.object_of(key),
@@ -208,7 +216,7 @@ def stage(hours: float, b: dict) -> dict:  # pragma: no cover -- needs AWS
                   Body=(HERE / "b_job.py").read_bytes())
     links = {"stamp": stamp, "JOB_URL": get(mf.DEPLOY_BUCKET, f"{base}/b_job.py"),
              "MANIFEST_URL": get(mf.DEPLOY_BUCKET, f"{base}/staged.json"), "runs": {}}
-    for run in ("stock", "pilot", *FOLDS, "rest"):
+    for run in RESULT_LINKS:
         links["runs"][run] = put(f"{base}/rows-{run}.jsonl")
     return links
 

@@ -256,8 +256,11 @@ class Runner:  # pragma: no cover -- needs the GPU
             enc, labels = self.encode_train(batch, frames)
             with torch.autocast(DEVICE, dtype=torch.bfloat16):
                 loss = model(**enc, labels=labels).loss
-            (loss / ACCUMULATE).backward()
-            losses.append(float(loss))
+            # A short last group (an odd count of micro-batches) is averaged
+            # over what it holds, not halved.
+            group = min(ACCUMULATE, len(micro) - (m // ACCUMULATE) * ACCUMULATE)
+            (loss / group).backward()
+            losses.append(loss.item())
             if (m + 1) % ACCUMULATE == 0 or m + 1 == len(micro):
                 torch.nn.utils.clip_grad_norm_(
                     [p for p in model.parameters() if p.requires_grad], MAX_GRAD_NORM)
@@ -340,16 +343,24 @@ def main(mode: str) -> dict:  # pragma: no cover -- needs the GPU
         stats["uploaded"] = put(result, rows_body(rows))
     for f in folds:
         fold = manifest["folds"][f]
-        st = runner.train(f, fold["train"], frames)
-        st["adapter_bytes"] = runner.save_adapter(manifest["adapter_put"][f])
-        e0 = time.time()
-        got = runner.ask(fold["asked"], frames, f"fold-{f}")
-        st.update(asked=len(got), errors=sum("error" in r for r in got), ask_s=round(time.time() - e0, 1))
-        rows += got
+        try:
+            st = runner.train(f, fold["train"], frames)
+            st["adapter_bytes"] = runner.save_adapter(manifest["adapter_put"][f])
+            e0 = time.time()
+            got = runner.ask(fold["asked"], frames, f"fold-{f}")
+            st.update(asked=len(got), errors=sum("error" in r for r in got),
+                      ask_s=round(time.time() - e0, 1))
+            rows += got
+            runner.drop_adapter()
+        except Exception as e:  # noqa: BLE001 -- recorded; the folds after it are not paid for
+            stats["folds"][f] = {"error": f"{type(e).__name__}: {str(e)[:300]}"}
+            stats["stopped_at"] = f
+            log(f"fold {f} FAILED: {stats['folds'][f]['error']}; stopping")
+            stats["uploaded"] = put(result, rows_body(rows))
+            break
         stats["folds"][f] = st
         stats["uploaded"] = put(result, rows_body(rows))
         log(f"fold {f} done: " + json.dumps(st))
-        runner.drop_adapter()
     if not stats.get("uploaded"):
         for r in rows:            # the fallback: the rows in the log itself
             log("ROW " + json.dumps(r))

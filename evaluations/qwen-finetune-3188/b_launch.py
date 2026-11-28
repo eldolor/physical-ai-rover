@@ -71,14 +71,23 @@ def bill_of(running_secs: float, per_min: float) -> float:
     return round(math.ceil(running_secs / 60) * per_min, 4)
 
 
-def job_spec(run: str, links: dict, flavor: str, timeout_min: int, folds: str = "") -> dict:
+def job_spec(run: str, links: dict, flavor: str, timeout_min: int, folds: str = "",
+             result: str = "") -> dict:
     mode, default = RUNS[run]
     secrets = {"JOB_URL": links["JOB_URL"], "MANIFEST_URL": links["MANIFEST_URL"],
-               "RESULT_PUT_URL": links["runs"][run]}
+               "RESULT_PUT_URL": links["runs"][result or run]}
     env = {"FOLDS": folds or default} if mode == "train" else {}
     return {"command": ["bash", "-c", f"set -e; {FETCH}; python /tmp/b_job.py {mode}"],
             "arguments": [], "environment": env, "secrets": secrets, "flavor": flavor,
             "timeoutSeconds": int(timeout_min * 60), "dockerImage": IMAGE}
+
+
+def check_result_link(jobs: list, stamp: str, result: str) -> None:
+    """Each staged result link takes one job: the job's preflight empties
+    it, so a second job on it would erase rows already paid for."""
+    if any(j.get("stamp") == stamp and j.get("result") == result for j in jobs):
+        sys.exit(f"refused: staging {stamp}'s result link {result!r} is already used; "
+                 "pass --result rerun-N (or stage again)")
 
 
 def check_budget(jobs: list, worst: float) -> None:
@@ -94,17 +103,23 @@ def start(args) -> None:  # pragma: no cover -- a paid call
     jobs = ledger()
     print(f"{args.run} on {args.flavor}: ${per_min * 60:.2f}/h, timeout {args.timeout_min} min "
           f"=> at most ${worst:.2f}; spent or held so far ${spent(jobs):.2f} of ${STOP_USD:.0f}")
+    result = args.result or args.run
+    check_result_link(jobs, links["stamp"], result)
     check_budget(jobs, worst)
-    spec = job_spec(args.run, links, args.flavor, args.timeout_min, args.folds)
+    spec = job_spec(args.run, links, args.flavor, args.timeout_min, args.folds, result)
+    # Held BEFORE the post: a job created whose reply is lost still counts.
+    row = {"id": None, "run": args.run, "folds": spec["environment"].get("FOLDS"),
+           "stamp": links["stamp"], "result": result, "flavor": args.flavor, "per_min": per_min,
+           "timeout_min": args.timeout_min, "worst_usd": worst,
+           "started": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+           "running_secs": None, "usd": None, "stage": "posting"}
+    jobs.append(row)
+    write_ledger(jobs)
     with L.call("POST", f"/jobs/{L.namespace()}", spec) as r:
         info = json.loads(r.read())
-    jobs.append({"id": info.get("id"), "run": args.run, "folds": spec["environment"].get("FOLDS"),
-                 "stamp": links["stamp"], "flavor": args.flavor, "per_min": per_min,
-                 "timeout_min": args.timeout_min, "worst_usd": worst,
-                 "started": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-                 "running_secs": None, "usd": None, "stage": None})
+    row.update(id=info.get("id"), stage=(info.get("status") or {}).get("stage"))
     write_ledger(jobs)
-    print("job", info.get("id"), (info.get("status") or {}).get("stage"))
+    print("job", row["id"], row["stage"])
 
 
 def bill(args) -> None:  # pragma: no cover
@@ -116,7 +131,9 @@ def bill(args) -> None:  # pragma: no cover
     row = next((j for j in jobs if j["id"] == args.job), None)
     if row is None:
         sys.exit(f"{args.job} is not in the ledger")
-    secs = (info.get("durations") or {}).get("runningSecs") or 0
+    secs = (info.get("durations") or {}).get("runningSecs")
+    if not isinstance(secs, (int, float)):
+        sys.exit(f"{args.job}: the jobs API gave no runningSecs; the worst case stays held")
     row.update(running_secs=secs, usd=bill_of(secs, row["per_min"]), stage=stage,
                message=(info.get("status") or {}).get("message"))
     write_ledger(jobs)
@@ -139,6 +156,7 @@ def main(argv=None) -> None:
     s.add_argument("--flavor", default="a100-large")
     s.add_argument("--timeout-min", type=int, required=True)
     s.add_argument("--folds", default="", help="train runs: override the run's folds (a re-run)")
+    s.add_argument("--result", default="", help="the staged result link (default: the run's name)")
     s.set_defaults(fn=start)
     for name, fn in (("status", L.status), ("logs", L.logs), ("cancel", L.cancel), ("bill", bill)):
         p = sub.add_parser(name)
