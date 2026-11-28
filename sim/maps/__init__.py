@@ -32,12 +32,96 @@ def _stamp_stairs(world, house: str):
     return world
 
 
+# 3.237.A: SIM_LOW_SCATTER=<n>:<seed> lays n low things (3.74's labels and
+# heights) on any house's free floor, the same cells for the same seed.
+SCATTER_LABELS = ("cable", "sock", "shoe", "toy", "slippers", "towel", "pet bowl", "toy car")
+SCATTER_KEEP_M = 1.0     # never within this of the start
+
+
 def build_world(name: str = "starter_house"):
     """The named house. It carries its own name (`map_name`), so whoever
     holds the world -- robot/server.py's /health -- reports the house that
-    was BUILT, not what an environment variable says now."""
+    was BUILT, not what an environment variable says now. With
+    SIM_LOW_SCATTER set, low things scattered on its floor (3.237.A)."""
+    world = _build_world(name)
+    spec = os.environ.get("SIM_LOW_SCATTER")
+    if spec:
+        try:
+            n, seed = (int(p) for p in spec.split(":"))
+            if n < 0:
+                raise ValueError
+        except ValueError:
+            raise ValueError(f"SIM_LOW_SCATTER={spec!r}: <count>:<seed>") from None
+        scatter_low(world, n, f"{name}:{seed}")
+    return world
+
+
+def _reachable(world, start, blocked) -> set:
+    from collections import deque
+    h, w = len(world.layout), len(world.layout[0])
+    seen, q = {start}, deque([start])
+    while q:
+        x, y = q.popleft()
+        for n in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+            if (n not in seen and 0 <= n[0] < w and 0 <= n[1] < h
+                    and world.layout[n[1]][n[0]] in ".D" and n not in blocked):
+                seen.add(n)
+                q.append(n)
+    return seen
+
+
+def scatter_low(world, n: int, seed: str) -> list:
+    """Lay `n` low things on free floor cells reachable from the start:
+    never within SCATTER_KEEP_M of it, never on an object, and never where
+    one would cut off a cell it does not itself cover (a doorway one cell
+    wide), so no house is made impossible. A label the house already uses
+    for a tall thing is skipped, so nothing standing becomes low. Returns
+    the cells, in the order laid."""
+    import random
+    from sim.maps.complex_house import LOW_HEIGHTS_M
+    # A label the house already uses, low or tall, is skipped (review): a
+    # tall one would be lowered, and a copy of a low one could stand in for
+    # a find's target.
+    labels = [lb for lb in SCATTER_LABELS if lb not in set(world.objects.values())]
+    if not labels:
+        raise ValueError("SIM_LOW_SCATTER: this house already uses every scatter label")
+    start = (world.robot_x, world.robot_y)
+    objects = dict(world.objects)
+    floor = _reachable(world, start, set(objects))
+    rng = random.Random(f"3237-scatter-{seed}")
+    candidates = sorted(floor)
+    rng.shuffle(candidates)
+    laid = []
+    for cell in candidates:
+        if len(laid) == n:
+            break
+        if math.dist(cell, start) * 0.30 < SCATTER_KEEP_M:
+            continue
+        # Open floor only: the cell and its eight neighbours plain floor
+        # with nothing on them, so no thing narrows a doorway or a one-cell
+        # passage the chassis must swing through (review: a cell flood fill
+        # alone passes a shoe beside a door).
+        if any(not (0 <= cell[1] + j < len(world.layout) and 0 <= cell[0] + i < len(world.layout[0]))
+               or world.layout[cell[1] + j][cell[0] + i] != "." or (cell[0] + i, cell[1] + j) in objects
+               for i in (-1, 0, 1) for j in (-1, 0, 1)):
+            continue
+        if _reachable(world, start, set(objects) | {cell}) != floor - {cell}:
+            continue
+        objects[cell] = labels[len(laid) % len(labels)]
+        floor = floor - {cell}
+        laid.append(cell)
+    if len(laid) < n:
+        raise ValueError(f"SIM_LOW_SCATTER: only {len(laid)} of {n} cells qualify")
+    heights = dict(world.object_heights or {})
+    heights.update({lb: LOW_HEIGHTS_M[lb] for lb in labels})
+    world.objects = objects          # replaced, never mutated (3.30)
+    world.object_heights = heights
+    return laid
+
+
+def _build_world(name: str):
     if name.endswith("_stairs") and name[:-len("_stairs")] in STAIRS:
-        world = _stamp_stairs(build_world(name[:-len("_stairs")]), name[:-len("_stairs")])
+        world = _stamp_stairs(_build_world(name[:-len("_stairs")]), name[:-len("_stairs")])
         world.map_name = name
         return world
     if name == "starter_house":

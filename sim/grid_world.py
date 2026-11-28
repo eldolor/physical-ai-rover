@@ -200,6 +200,21 @@ SIM_PERCEPTION_RANGE_CELLS = 3.0
 # on the car with the rest of the xacro's `[CAD]` values.
 LIDAR_Z_M = 0.120
 
+# 3.237.A: the pan-tilt camera's vertical view, which decides whether a LOW
+# thing is in the picture (a tall one reaches past the horizon, so some of
+# it is in any view the tilt range allows). Lens height: the xacro's
+# `pan_z` + `camera_up` (CAD), 0.210 m off the floor. Mount pitch: the
+# xacro's `camera_pitch`, a 15 deg downward wedge, [PLACEHOLDER] ("10-20
+# deg, unmodelled"). Vertical field: the sim camera's 60 deg horizontal
+# (`renderer.FPV_FOV`) on a 4:3 frame, [PLACEHOLDER] until 3.231.A1.
+CAMERA_Z_M = 0.210
+# The lens's place: the pan axis `pan_x` (-0.009 m) behind the centre, the
+# lens `camera_x` (0.048 m) ahead of that axis along the camera (both CAD).
+CAMERA_PAN_X_M = -0.009
+CAMERA_LENS_X_M = 0.048
+CAMERA_MOUNT_PITCH_DEG = 15.0
+CAMERA_VFOV_DEG = 2.0 * math.degrees(math.atan(math.tan(math.radians(30.0)) * 3.0 / 4.0))
+
 
 class LowObjectDetector:
     """A stand-in for the hazard detector (3.74 part A): the sim's
@@ -400,6 +415,34 @@ class GridWorld:
         if discs:
             return renderer.SolidWithDiscs(self.objects, discs)
         return frozenset(self.objects)
+
+    # 3.237.A: the commanded tilt (up positive, 3.220.C; `MockRobot.tilt_deg`
+    # reads and writes it here) and the mount's pitch, down positive.
+    camera_tilt_deg = 0.0
+    camera_mount_pitch_deg = CAMERA_MOUNT_PITCH_DEG
+
+    def floor_in_view(self, px: float, py: float) -> bool:
+        """Whether the floor point (`px`, `py`), in cells, is inside the
+        camera's vertical field at its pitch (the mount less the tilt). For
+        a pitched pinhole camera a floor point's vertical angle off the axis
+        is atan(h / f) - pitch, where f is its distance from the lens ALONG
+        the camera's horizontal axis -- the sideways offset does not enter
+        (review). Nearer than the field's lower edge, or past its upper edge
+        when that edge points below the horizon, the floor is not in the
+        picture, and neither is a low thing lying there (3.237.A)."""
+        cell_m = 0.30
+        body, view = self.theta, self.view_angle()
+        lx = (self.x + CAMERA_PAN_X_M / cell_m * math.cos(body)
+              + CAMERA_LENS_X_M / cell_m * math.cos(view))
+        ly = (self.y + CAMERA_PAN_X_M / cell_m * math.sin(body)
+              + CAMERA_LENS_X_M / cell_m * math.sin(view))
+        forward_m = ((px - lx) * math.cos(view) + (py - ly) * math.sin(view)) * cell_m
+        if forward_m <= 0.0:
+            return False                     # behind the lens
+        depression = math.degrees(math.atan2(CAMERA_Z_M, forward_m))
+        pitch = self.camera_mount_pitch_deg - self.camera_tilt_deg
+        half = CAMERA_VFOV_DEG / 2.0
+        return pitch - half <= depression <= pitch + half
 
     @property
     def low_cells(self) -> frozenset:
@@ -832,11 +875,16 @@ class GridWorld:
         # Everything in the picture, beyond the robot's own footprint (an
         # object sharing its cell is underneath it, and the renderer's own
         # test -- angle to a point at distance zero -- calls it dead ahead).
+        # 3.237.A: a low thing only where the camera's view meets the floor,
+        # as in `detections` (review).
+        low = self.low_cells
         in_view = [
             obj
             for obj in reversed(renderer._visible_objects(
                 self.layout, self.objects, self.x, self.y, self.view_angle()))
             if ROBOT_HALF_CELL < obj["dist"] <= renderer.FPV_MAX_DIST
+            and (obj["cell"] not in low
+                 or self.floor_in_view(obj["cell"][0] + 0.5, obj["cell"][1] + 0.5))
         ]
         frame = {
             "room": self.room_at(self.robot_x, self.robot_y),
@@ -888,8 +936,12 @@ class GridWorld:
                 continue
             others = {c for c in self.objects if c != cell and c not in low}
             b = renderer.visible_bearing(self.layout, self.x, self.y, view, cell, solid=others)
+            # 3.237.A: a low thing only where the camera's view meets the
+            # floor -- judged after the stand-in detector's draw, so its
+            # seeded stream is the same as before the gate (review).
             if b is not None and (self.low_detector is None or cell not in low
-                                  or self.low_detector.keep()):
+                                  or self.low_detector.keep()) and (
+                    cell not in low or self.floor_in_view(cell[0] + 0.5, cell[1] + 0.5)):
                 # `+ 0.0`: a bearing that rounds to zero is 0.0, never -0.0.
                 # ARM's libm lands a hair below zero where x86 lands above,
                 # and -0.0 changed the sim's fingerprint on the Jetson.
