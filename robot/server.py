@@ -91,6 +91,7 @@ running event loop and is exercised by actually running the server (see
 README), not in the automated unit suite.
 """
 
+import contextvars
 import gc
 import hmac
 import json
@@ -234,6 +235,61 @@ class TeleopFrameRequest(BaseModel):
 # server's own poll, and hardcoding a second copy of 0.1 in control/health.py
 # is how the two would drift apart.
 WATCHDOG_POLL_INTERVAL_S = 0.1
+
+# 3.147: the reason a verb was ended because its autonomous caller hung up.
+DRIVER_GONE = "driver_gone"
+# 3.147: set, per `POST /action`, by `CallerWatch` to an Event that is set
+# when the caller's connection closes before the answer is sent. Read by the
+# endpoint (a threadpool thread gets a copy of the request's context).
+CALLER_GONE: contextvars.ContextVar = contextvars.ContextVar("caller_gone", default=None)
+
+
+class CallerWatch:
+    """3.147: pure ASGI middleware that hears a `POST /action` caller hang up.
+
+    A brain killed mid-verb (3.135.B F6) has its sockets closed by its
+    kernel; the server, waiting on nothing from it, never noticed, and the
+    watchdog skips a running verb. Once the app has read the whole body, a
+    task waits on the server's next message, which is `http.disconnect` when
+    the connection closes -- or when the answer has been sent, by which time
+    the verb is over and no longer registered (see `do_action`). Any other
+    route passes through untouched."""
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if (scope["type"] != "http" or scope.get("method") != "POST"
+                or not scope.get("path", "").endswith("/action")):
+            await self.app(scope, receive, send)
+            return
+        gone = threading.Event()
+        token = CALLER_GONE.set(gone)
+        listener = None
+
+        async def listen():
+            while True:
+                message = await receive()
+                if message["type"] == "http.disconnect":
+                    gone.set()
+                    return
+
+        async def body_receive():
+            nonlocal listener
+            message = await receive()
+            if (message["type"] == "http.request" and not message.get("more_body")
+                    and listener is None):
+                listener = asyncio.ensure_future(listen())
+            elif message["type"] == "http.disconnect":
+                gone.set()
+            return message
+
+        try:
+            await self.app(scope, body_receive, send)
+        finally:
+            CALLER_GONE.reset(token)
+            if listener is not None:
+                listener.cancel()
 # 3.164: the share of the brain's `tick_timeout_s` a mission must be silent
 # for to read as hung: above every healthy wait (the longest, a cloud call, is
 # 20 s of 30), and below B3.3's deadline by more than a tick's work before a
@@ -460,6 +516,10 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         # 3.76 A1: verbs being carried out on any path. While one runs, the
         # robot is held by whoever last won arbitration, however long the verb.
         "verbs_running": 0,
+        # 3.147: the autonomous verbs being carried out, each as
+        # [driver, caller-gone Event, handled]; the watchdog loop ends one
+        # whose caller hung up.
+        "verb_callers": [],
         "last_command_at": time.monotonic(),
         "wheel_posts": 0,
         # 3.24 G3: when the actuator plugin last posted /wheels -- ROS's pulse.
@@ -599,6 +659,29 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                                       "quiet_s": round(quiet, 3), "at": now}
         logger.warning(f"watchdog trip: {by} silent for {quiet:.1f}s mid-mission")
 
+    def end_verbs_of_gone_callers(now: float) -> None:
+        """3.147: an autonomous verb whose caller hung up (3.135.B F6: a brain
+        killed mid-verb) is ended by a stop -- the stop `/stop` and the
+        watchdog make, which ends the verb through its stop baseline (3.84).
+        Only while that driver still holds the robot: a person's verb already
+        arbitrated is never cut by it. Once per verb."""
+        with verbs_lock:
+            ended = None
+            for caller in state["verb_callers"]:
+                driver, gone, handled = caller
+                if not handled and gone.is_set() and state["driver"] == driver:
+                    caller[2] = True
+                    ended = driver
+            if ended is None:
+                return
+            robot.stop()
+        with goal_gen_lock:
+            state["last_stop_reason"] = {
+                "reason": DRIVER_GONE,
+                "detail": f"{ended} hung up mid-verb (its connection closed) -- the verb was ended",
+                "driver": ended, "at": now}
+        logger.warning(f"{ended} hung up mid-verb: the verb was ended")
+
     async def watchdog_loop():
         while True:
             await asyncio.sleep(WATCHDOG_POLL_INTERVAL_S)
@@ -634,6 +717,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
                                 f"driving, is ended")
             if not held:
                 note_hang(now)      # 3.164
+            end_verbs_of_gone_callers(now)      # 3.147: before the verb skip
             # A verb in progress is a busy brain, not a silent one: it is
             # bounded, re-vetted every period, and /stop still ends it (3.22).
             if state["verb_active"]:
@@ -1285,6 +1369,7 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         allow_methods=["GET", "POST", "OPTIONS"],
         allow_headers=["*"],
     )
+    app.add_middleware(CallerWatch)     # 3.147: outermost, sees the socket's end
 
     @app.get(prefix + "/")
     def twin_ui():
@@ -1436,10 +1521,20 @@ def create_app(config_path: Optional[str] = None) -> FastAPI:
         if body:
             with verbs_lock:
                 batt["body_verbs"] += 1
+        # 3.147: an autonomous verb whose caller hangs up is ended by the
+        # watchdog loop (a killed brain's socket closes; a busy one's stays).
+        gone = CALLER_GONE.get() if is_autonomy(driver) else None
+        caller = [driver, gone, False] if gone is not None else None
+        if caller is not None:
+            with verbs_lock:
+                state["verb_callers"].append(caller)
         try:
             with verb_running(driver, stamped=stamp):
                 outcome = _carry_out(req, driver, now, stops)
         finally:
+            if caller is not None:
+                with verbs_lock:
+                    state["verb_callers"].remove(caller)
             if body and not (isinstance(outcome, dict) and not outcome.get("executed")
                              and outcome.get("reason") in REFUSED_UNMOVED):
                 # Stamped whatever else the outcome: a verb cut short, or one

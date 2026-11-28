@@ -445,6 +445,26 @@ a silent ROS input is dropped first by `twist_mux` (0.25 s,
 `robot.stop()` runs on the event loop and must not block; `RosDriveRobot`'s
 does not wait on the bridge ([body engineering](../body/ENGINEERING.md)).
 
+**A verb whose autonomous caller hung up (3.147).** The verb skip above
+let a FORWARD run to its end after its brain was killed (3.135.B F6, ~24 cm).
+`CallerWatch`, the outermost ASGI middleware, puts a `threading.Event` in the
+`CALLER_GONE` contextvar for every `POST /action` and, once the app has read
+the whole body, waits on the server's next message: `http.disconnect` sets
+the Event (a killed process's kernel closes its sockets; a busy brain keeps
+its connection open). `do_action()` registers an AUTONOMOUS driver's verb
+(`is_autonomy()`) in `state["verb_callers"]` for the length of
+`_carry_out()`, on every drive path, and removes it before the answer is
+sent -- so the disconnect uvicorn also reports once a response completes
+never finds one. Each watchdog wake, before the verb skip,
+`end_verbs_of_gone_callers()` calls `robot.stop()` once for a registered verb
+whose Event is set **while that driver still holds the robot**
+(`state["driver"]`; a person's verb already arbitrated is never cut), which
+ends the verb through its stop baseline (3.84) as `/stop` does, and records
+`last_stop_reason` `driver_gone`. A person's verb is not registered. Not
+covered: a frozen brain (`SIGSTOP`) or a proxy that holds the connection --
+the verb runs out and the timeout above stops the robot. Pinned by
+`tests/test_verb_caller_gone.py` on ground truth over a real socket.
+
 **Refusal reasons** (body `{"executed": false, "reason", "detail"}`,
 counted in `/health` `refusal_counts`, last one in `last_refusal`):
 `safety_distance`, `preempted`, `ros_unavailable`, `not_the_actuator`,
@@ -462,7 +482,8 @@ replaced by the watchdog's record about a second after whatever stopped the
 robot, so `/health` also carries:
 
 * `last_stop_reason`: the last refusal that was not the watchdog, or a
-  person's Stop (`person_stop`). Same fields as `last_refusal`.
+  person's Stop (`person_stop`), or a verb ended because its caller hung up
+  (`driver_gone`, 3.147). Same fields as `last_refusal`.
 * `watchdog`: `mission_live`, `last_fired` (`during`: `goal`, `mission` or
   null; once per silence), `trip`, `trip_after_s`. A mission is opened by a
   brain's `/autonomy/resume` and closed by `/autonomy/relatch`, a person's
