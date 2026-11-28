@@ -117,6 +117,31 @@ def test_a_wall_is_not_a_cluster_and_a_hidden_edge_is_refused():
     assert len(found) == 1 and math.hypot(found[0][0] - 0.6, found[0][1]) < 0.1
 
 
+def test_a_room_open_only_at_a_door_is_not_a_cluster():
+    # The wall ring is broken only at a 30 cm door: end to end it is
+    # door-wide, along its returns it is the room.
+    s = scan(room_r=2.0)
+    for i in range(360):
+        b = math.radians(-180.0 + i)
+        if abs(math.degrees(math.atan2(-math.sin(b) * 2.0, mt.LIDAR_X_M + 2.0 * math.cos(b)))) < 4.3:
+            s["ranges_m"][i] = 3.5                   # through the door
+    assert clusters(scan_points(s["ranges_m"])) == []
+    old, mt.MAX_PATH_M = mt.MAX_PATH_M, 99.0
+    try:                                             # the path test is what refuses it
+        assert len(clusters(scan_points(s["ranges_m"]))) == 1
+    finally:
+        mt.MAX_PATH_M = old
+
+
+def test_a_cluster_never_spans_the_revolution_seam():
+    # Body bearing -90 (yaw -90) is lidar angle 0: the bins either side
+    # were taken a revolution apart, so a disc there is two clusters.
+    s = scan(discs=[(mt.LIDAR_X_M, 1.0, 0.15)])     # on the left: bearing -90
+    pts = scan_points(s["ranges_m"])
+    assert len(clusters(pts)) == 1
+    assert len(clusters(pts, seam=90)) == 2
+
+
 def test_the_centre_is_estimated_not_the_near_face():
     for d in (0.5, 1.0, 3.0):
         (x, y, *_rest), = clusters(scan_points(scan(discs=[(d, 0.0, 0.15)])["ranges_m"]))
@@ -184,7 +209,8 @@ RECORD = os.path.join(os.path.dirname(__file__), "..", "evaluations",
 
 @pytest.mark.skipif(not os.path.exists(RECORD), reason="B's sweep not recorded yet")
 def test_b_record_pinned():
-    v = json.load(open(RECORD))["verdict"]
+    with open(RECORD) as f:
+        v = json.load(f)["verdict"]
     assert v["seed"] == 0
     assert v["B1"]["missions"] == 24 and v["B2"]["missions"] == 72
     # The cost is this host's timing, not a result: never pinned.
