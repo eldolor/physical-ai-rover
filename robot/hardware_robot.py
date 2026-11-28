@@ -70,6 +70,7 @@ angle commanded. No fresh measured angle, or a goal not reached in
 """
 
 import collections
+import fcntl
 import json
 import math
 import os
@@ -77,7 +78,6 @@ import select
 import termios
 import threading
 import time
-import tty
 from typing import Optional
 
 from robot.board_http import HttpCommandSender
@@ -204,6 +204,54 @@ def _fork_keys(frame: dict):
     return None
 
 
+def open_serial(port: str, baud: int = 115200) -> int:
+    """Open `port` raw at `baud` (8N1, no echo, no flow control) and return
+    a blocking fd, without ever waiting on the line (3.238).
+
+    `tty.setraw()` applies its settings with `TCSAFLUSH`, which first waits
+    for the port's output to drain. After a boot `/dev/ttyTHS1` is at its
+    defaults (9600 baud, echo on) while the board streams frames at 115200:
+    every byte it receives is echoed back out at 9600, the output never
+    drains, and the robot server hung in `set_termios` before binding :8000.
+    Here nothing waits: the open is `O_NONBLOCK` (no wait for a carrier
+    either), pending output is discarded with `tcflush` (never waits), and
+    the baud, raw mode and `CLOCAL` go in one `TCSANOW` call (never waits).
+    Input received at the wrong baud is then flushed, and `O_NONBLOCK` is
+    cleared, so the reader's `select()` + `os.read()` and `_send()`'s
+    `os.write()` behave as they always have."""
+    speed = getattr(termios, f"B{baud}", termios.B115200)
+    fd = os.open(port, os.O_RDWR | os.O_NOCTTY | os.O_NONBLOCK)
+    try:
+        iflag, oflag, cflag, lflag, _, _, cc = termios.tcgetattr(fd)
+        # cfmakeraw(3), plus no software flow control, which would put
+        # XON/XOFF bytes into the JSON or stall a write on a stray XOFF.
+        iflag &= ~(termios.IGNBRK | termios.BRKINT | termios.PARMRK
+                   | termios.ISTRIP | termios.INLCR | termios.IGNCR
+                   | termios.ICRNL | termios.IXON | termios.IXOFF
+                   | termios.IXANY | termios.INPCK)
+        oflag &= ~termios.OPOST
+        lflag &= ~(termios.ECHO | termios.ECHONL | termios.ICANON
+                   | termios.ISIG | termios.IEXTEN)
+        # 8N1, receiver on, modem lines ignored, no hardware flow control
+        # (the board's UART has no RTS/CTS: on, a write would wait for good).
+        cflag &= ~(termios.CSIZE | termios.PARENB | termios.CSTOPB
+                   | getattr(termios, "CRTSCTS", 0))
+        cflag |= termios.CS8 | termios.CREAD | termios.CLOCAL
+        cc = list(cc)
+        cc[termios.VMIN] = 1
+        cc[termios.VTIME] = 0
+        termios.tcflush(fd, termios.TCOFLUSH)       # the echo backlog
+        termios.tcsetattr(fd, termios.TCSANOW,
+                          [iflag, oflag, cflag, lflag, speed, speed, cc])
+        termios.tcflush(fd, termios.TCIFLUSH)       # bytes read at the old baud
+        flags = fcntl.fcntl(fd, fcntl.F_GETFL)
+        fcntl.fcntl(fd, fcntl.F_SETFL, flags & ~os.O_NONBLOCK)
+    except BaseException:
+        os.close(fd)
+        raise
+    return fd
+
+
 class HardwareRobot(RobotInterface):
     def __init__(self, port: str, sensors: Optional[RobotInterface] = None,
                  baud: int = 115200, track_scrub: float = 1.0, lidar=None, camera=None,
@@ -253,12 +301,7 @@ class HardwareRobot(RobotInterface):
         self.gimbal_commands = 0
         self._module_sent_at = 0.0
         try:
-            self._fd = os.open(port, os.O_RDWR | os.O_NOCTTY)
-            tty.setraw(self._fd)
-            attrs = termios.tcgetattr(self._fd)
-            speed = getattr(termios, f"B{baud}", termios.B115200)
-            attrs[4] = attrs[5] = speed
-            termios.tcsetattr(self._fd, termios.TCSANOW, attrs)
+            self._fd = open_serial(port, baud)
         except BaseException:
             if self._http is not None:
                 self._http.close()      # its thread, or it idles for good
