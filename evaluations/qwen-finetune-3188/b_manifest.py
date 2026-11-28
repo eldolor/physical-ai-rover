@@ -163,6 +163,11 @@ def s3214_sizes() -> dict:
             for r in mf._jsonl(ROOT / "evaluations/tier-calibration-392/perception.jsonl")}
 
 
+def job_sha256() -> str:
+    """What the launcher compares before a start: the staged job is the committed one."""
+    return hashlib.sha256((HERE / "b_job.py").read_bytes()).hexdigest()
+
+
 def digest(obj) -> str:
     """sha256 (12 hex) of a JSON value, keys sorted: pins a run's inputs."""
     return hashlib.sha256(json.dumps(obj, sort_keys=True).encode()).hexdigest()[:12]
@@ -214,7 +219,7 @@ def stage(hours: float, b: dict) -> dict:  # pragma: no cover -- needs AWS
                   Body=json.dumps(staged).encode())
     s3.put_object(Bucket=mf.DEPLOY_BUCKET, Key=f"{STAGE_PREFIX}/{stamp}/b_job.py",
                   Body=(HERE / "b_job.py").read_bytes())
-    links = {"stamp": stamp, "JOB_URL": get(mf.DEPLOY_BUCKET, f"{base}/b_job.py"),
+    links = {"stamp": stamp, "job_sha256": job_sha256(), "JOB_URL": get(mf.DEPLOY_BUCKET, f"{base}/b_job.py"),
              "MANIFEST_URL": get(mf.DEPLOY_BUCKET, f"{base}/staged.json"), "runs": {}}
     for run in RESULT_LINKS:
         links["runs"][run] = put(f"{base}/rows-{run}.jsonl")

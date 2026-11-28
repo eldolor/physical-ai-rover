@@ -30,11 +30,13 @@ printed.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import math
 import sys
 import time
+import urllib.error
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -49,6 +51,7 @@ STOP_USD = 10.0          # criterion 6: the whole of B stops at $10 (the user, 2
 IMAGE = L.IMAGE
 FETCH = ("python -c \"import os,urllib.request;"
          "open('/tmp/b_job.py','wb').write(urllib.request.urlopen(os.environ['JOB_URL']).read())\"")
+MAX_TIMEOUT_MIN = 240
 RUNS = {"stock": ("stock", ""), "pilot": ("train", "1"), "rest": ("train", "2,3,4,5,6,all")}
 ENDED = {"COMPLETED", "ERROR", "CANCELED", "CANCELLED", "DELETED", "TIMEOUT"}
 
@@ -90,6 +93,12 @@ def check_result_link(jobs: list, stamp: str, result: str) -> None:
                  "pass --result rerun-N (or stage again)")
 
 
+def check_job_hash(links: dict) -> None:
+    """The job staged with these links must be the b_job.py in this tree."""
+    if links.get("job_sha256") != hashlib.sha256((HERE / "b_job.py").read_bytes()).hexdigest():
+        sys.exit("refused: the staged b_job.py is not this tree's: stage again")
+
+
 def check_budget(jobs: list, worst: float) -> None:
     if spent(jobs) + worst > STOP_USD:
         sys.exit(f"refused: ${spent(jobs):.2f} spent or held + ${worst:.2f} worst case "
@@ -103,6 +112,9 @@ def start(args) -> None:  # pragma: no cover -- a paid call
     jobs = ledger()
     print(f"{args.run} on {args.flavor}: ${per_min * 60:.2f}/h, timeout {args.timeout_min} min "
           f"=> at most ${worst:.2f}; spent or held so far ${spent(jobs):.2f} of ${STOP_USD:.0f}")
+    if not 1 <= args.timeout_min <= MAX_TIMEOUT_MIN:
+        sys.exit(f"refused: --timeout-min must be 1-{MAX_TIMEOUT_MIN}")
+    check_job_hash(links)
     result = args.result or args.run
     check_result_link(jobs, links["stamp"], result)
     check_budget(jobs, worst)
@@ -115,9 +127,16 @@ def start(args) -> None:  # pragma: no cover -- a paid call
            "running_secs": None, "usd": None, "stage": "posting"}
     jobs.append(row)
     write_ledger(jobs)
-    with L.call("POST", f"/jobs/{L.namespace()}", spec) as r:
-        info = json.loads(r.read())
-    row.update(id=info.get("id"), stage=(info.get("status") or {}).get("stage"))
+    try:
+        with L.call("POST", f"/jobs/{L.namespace()}", spec) as r:
+            info = json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        # A definite refusal: no job exists, so the hold and the link are freed.
+        jobs.remove(row)
+        write_ledger(jobs)
+        sys.exit(f"the jobs API refused the start: HTTP {e.code}")
+    row.update(id=info.get("id"), stage=(info.get("status") or {}).get("stage"),
+               job_sha256=links["job_sha256"])
     write_ledger(jobs)
     print("job", row["id"], row["stage"])
 

@@ -132,6 +132,31 @@ def lp_entry(i: int, token: str, logprob: float, top: list) -> dict:
             "top_logprobs": [{"token": t, "logprob": lp} for t, lp in top] if i < TOP_FOR else []}
 
 
+def seen_size(width: int, height: int) -> tuple:
+    """`brain.local_vlm.model_size`, copied (the job imports nothing from the
+    repo; tests/test_qwen_finetune_b.py pins the two equal)."""
+    h = max(28, round(height / 28) * 28)
+    w = max(28, round(width / 28) * 28)
+    if h * w > MAX_PIXELS:
+        beta = math.sqrt(height * width / MAX_PIXELS)
+        h = max(28, math.floor(height / beta / 28) * 28)
+        w = max(28, math.floor(width / beta / 28) * 28)
+    elif h * w < MIN_PIXELS:
+        beta = math.sqrt(MIN_PIXELS / (height * width))
+        h = math.ceil(height * beta / 28) * 28
+        w = math.ceil(width * beta / 28) * 28
+    return w, h
+
+
+def check_grid(grids: list, sizes: list) -> None:
+    """Every image as the processor cut it (`image_grid_thw`, 14 px patches)
+    must be the size the labels and the scorer assume, or the boxes are
+    mis-scaled: refuse."""
+    for (t, gh, gw), size in zip(grids, sizes):
+        if (gw * 14, gh * 14) != seen_size(*size):
+            raise RuntimeError(f"processor saw {gw * 14}x{gh * 14}, labels assume {seen_size(*size)}")
+
+
 def plan_steps(n_samples: int) -> tuple:
     """(optimizer steps, warmup steps) for one fold's training."""
     steps = math.ceil(n_samples * EPOCHS / (MICRO_BATCH * ACCUMULATE))
@@ -191,6 +216,7 @@ class Runner:  # pragma: no cover -- needs the GPU
                 ims = [pil(frames[t["key"]], t["mirror"]) for t in batch]
                 enc = self.proc(text=[self.prompt_text(t["target"]) for t in batch], images=ims,
                                 padding=True, return_tensors="pt").to(DEVICE)
+                check_grid(enc["image_grid_thw"].tolist(), [im.size for im in ims])
                 with torch.inference_mode():
                     out = self.model.generate(
                         **enc, do_sample=False, max_new_tokens=MAX_TOKENS,
@@ -243,6 +269,13 @@ class Runner:  # pragma: no cover -- needs the GPU
         trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
         log(f"fold {fold}: LoRA on {len(names)} modules, {trainable} trainable parameters")
 
+        # Every row's reply checked against its whole row's tokens before a
+        # paid step is taken (the image tokens come before the text and
+        # cannot touch the boundary, so the text alone settles it).
+        for t in train:
+            text = self.prompt_text(t["target"]) + t["answer"] + "<|im_end|>"
+            reply_labels(self.tok(text, add_special_tokens=False)["input_ids"],
+                         self.tok(t["answer"] + "<|im_end|>", add_special_tokens=False)["input_ids"])
         order = list(train)
         random.Random(SEED).shuffle(order)
         steps, warmup = plan_steps(len(order))
@@ -281,8 +314,9 @@ class Runner:  # pragma: no cover -- needs the GPU
     def encode_train(self, batch: list, frames: dict):
         torch = self.torch
         texts = [self.prompt_text(t["target"]) + t["answer"] + "<|im_end|>" for t in batch]
-        enc = self.proc(text=texts, images=[pil(frames[t["key"]], t["mirror"]) for t in batch],
-                        padding=True, return_tensors="pt")
+        ims = [pil(frames[t["key"]], t["mirror"]) for t in batch]
+        enc = self.proc(text=texts, images=ims, padding=True, return_tensors="pt")
+        check_grid(enc["image_grid_thw"].tolist(), [im.size for im in ims])
         labels = torch.full_like(enc["input_ids"], -100)
         for b, t in enumerate(batch):
             reply = self.tok(t["answer"] + "<|im_end|>", add_special_tokens=False)["input_ids"]
@@ -337,7 +371,11 @@ def main(mode: str) -> dict:  # pragma: no cover -- needs the GPU
     rows, stats = [], {"mode": mode, "fetch_s": round(fetched), "ready_s": round(ready), "folds": {}}
     if mode == "stock":
         e0 = time.time()
-        rows = runner.ask(manifest["stock"], frames, "stock")
+        try:
+            rows = runner.ask(manifest["stock"], frames, "stock")
+        except Exception as e:  # noqa: BLE001 -- the reason in the DONE line
+            stats["stock"] = {"error": f"{type(e).__name__}: {str(e)[:300]}"}
+            return stats
         stats["stock"] = {"asked": len(rows), "errors": sum("error" in r for r in rows),
                           "ask_s": round(time.time() - e0, 1)}
         stats["uploaded"] = put(result, rows_body(rows))

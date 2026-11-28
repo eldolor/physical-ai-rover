@@ -182,6 +182,7 @@ def test_the_scorer_reproduces_the_recorded_baselines(bs):
     assert not out["criteria_3188"]["5 teal 0 of 34, taupe 0 of 7"]          # VE: teal 1
     assert not out["criteria_3206"]["5 local order right >= 90% and above A by its half-width"]
     assert out["criteria_3206"]["8 no object's local order right count below A's"]
+    assert out["all_objects_reported"]["taupe_yes"] == 0
 
 
 def test_a_partial_run_judges_nothing(bs):
@@ -230,3 +231,18 @@ def test_a_later_run_adds_to_the_answers_never_over_them(bs):
     assert bs.merged([a1], [{**a1, "id": "j"}])[1] == a1
     with pytest.raises(ValueError):
         bs.merged([a1], [{**a1, "yes": False}])
+
+
+def test_the_job_checks_the_size_the_labels_assume(job):
+    from brain.local_vlm import model_size
+    for size in ((1280, 720), (640, 480), (1920, 1080), (300, 200), (720, 1280)):
+        assert job.seen_size(*size) == model_size(*size)
+    job.check_grid([[1, 32, 60]], [(1280, 720)])          # 840 x 448
+    with pytest.raises(RuntimeError):
+        job.check_grid([[1, 32, 58]], [(1280, 720)])
+
+
+def test_a_start_refuses_a_stale_job_and_a_bad_timeout(launch, bm):
+    with pytest.raises(SystemExit):
+        launch.check_job_hash({"job_sha256": "0" * 64})
+    launch.check_job_hash({"job_sha256": bm.job_sha256()})

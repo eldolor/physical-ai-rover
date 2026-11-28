@@ -201,7 +201,7 @@ def scores(answers: list, spend: Optional[dict] = None) -> dict:
                 for o in st["a_per_object"]),
         "9 3.188's criteria 1-5": all(crit_3188.values()),
     }
-    if "all" in got and cover["fold-all"]["whole"]:
+    if "fold-all" in got and cover["fold-all"]["whole"]:
         allm = got["fold-all"]
         out["all_objects_reported"] = {
             "steering": steering(lambda k: allm.get(k), lambda k: allm.get(k + "#mirror")),
