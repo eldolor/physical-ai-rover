@@ -73,7 +73,11 @@ class Track:
 
     @property
     def moving(self) -> bool:
-        return (self.free and self.hits >= CONFIRM
+        # CONFIRM observations in the CURRENT fit, not over the track's
+        # life: after a restart a two-point slope over one scan turned 4 cm
+        # of centre noise into 0.4 m/s (most of the development starts'
+        # false tracks).
+        return (self.free and len(self.obs) >= CONFIRM
                 and MOVING_M_S < self.speed <= MAX_SPEED_M_S)
 
     def predict(self, t: float) -> tuple:
