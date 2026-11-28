@@ -181,6 +181,33 @@ def test_each_cluster_is_stamped_when_the_beam_crossed_it():
         pytest.approx(10.0 - 0.025, abs=0.002)]
 
 
+def test_the_lidar_offset_is_the_vetoes():
+    from robot.safety import LIDAR_X_M
+    assert mt.LIDAR_X_M == LIDAR_X_M
+
+
+def test_a_revolution_read_twice_adds_nothing():
+    tr = MoverTracker(revolution_s=0.0)
+    frames = [([(1.5, -1.5 + 0.12 * k, 0.15)], (0.0, 0.0, 0.0)) for k in range(2)]
+    run(tr, frames)
+    hits = [t.hits for t in tr.tracks]
+    t = (PREROLL + 1) * 0.1
+    tr.update(scan(*frames[1]), frames[1][1], t)
+    assert [x.hits for x in tr.tracks] == hits
+
+
+def test_a_clock_stepped_back_starts_over():
+    tr = MoverTracker(revolution_s=0.0)
+    run(tr, [([(1.5, -1.5 + 0.12 * k, 0.15)], (0.0, 0.0, 0.0)) for k in range(6)])
+    assert tr.tracks
+    tr.update(scan(), (0.0, 0.0, 0.0), -5.0)
+    assert tr.tracks == [] and tr.scans == 1
+
+
+def test_an_empty_usable_scan_is_harmless():
+    assert MoverTracker().update({"usable": True, "ranges_m": []}, (0.0, 0.0, 0.0), 0.0) == []
+
+
 def test_an_unusable_scan_ages_tracks_out():
     tr = MoverTracker(revolution_s=0.0)
     run(tr, [([(1.5, -1.5 + 0.12 * k, 0.15)], (0.0, 0.0, 0.0)) for k in range(6)])
