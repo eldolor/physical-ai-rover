@@ -247,6 +247,16 @@ def p90(xs):
     return xs[min(len(xs) - 1, int(math.ceil(0.9 * len(xs))) - 1)] if xs else None
 
 
+def slim(row):
+    """A row as recorded: its error samples as count, median and p90; its
+    per-scan costs dropped (the verdict holds their summary)."""
+    r = {k: v for k, v in row.items() if k not in ("errors", "cost_ms")}
+    e = row["errors"]
+    r.update(errors_n=len(e), error_median=round(statistics.median(e), 4) if e else None,
+             error_p90=p90(e))
+    return r
+
+
 def verdict(b1_rows, b2_rows):
     drive_min = sum(r["driving_s"] for r in b1_rows) / 60.0
     false1 = sum(r["false_tracks"] for r in b1_rows)
@@ -313,8 +323,8 @@ def main(argv):
     v = verdict(b1_rows, b2_rows)
     v["seed"] = seed
     with open(argv[0], "w") as f:
-        json.dump({"verdict": v, "b1": [dict(r, cost_ms=None) for r in b1_rows],
-                   "b2": [dict(r, cost_ms=None) for r in b2_rows]}, f, indent=1)
+        json.dump({"verdict": v, "b1": [slim(r) for r in b1_rows],
+                   "b2": [slim(r) for r in b2_rows]}, f, indent=1)
     print(json.dumps(v, indent=1))
 
 
