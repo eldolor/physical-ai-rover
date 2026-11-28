@@ -93,7 +93,7 @@ def test_a_crossing_disc_is_tracked_within_three_scans_with_its_velocity():
     frames = [([(1.5, -1.5 + v[1] * 0.1 * k, 0.15)], (0.0, 0.0, 0.0)) for k in range(20)]
     out = run(tr, frames)
     first = next(k for k, m in enumerate(out) if m)
-    assert first <= 2                           # the third scan, counting from 1
+    assert first <= 1                           # the second scan (3.234.B2's early tier)
     for m in out[first:]:
         assert len(m) == 1
         assert math.hypot(m[0].vx - v[0], m[0].vy - v[1]) < 0.1
@@ -160,10 +160,96 @@ def test_a_static_object_revealed_by_a_moving_robot_is_not_a_mover():
 
 
 def test_without_history_nothing_is_moving():
+    # The free-space test asks scans 0.2-1 s old: none on the first two.
     tr = MoverTracker(revolution_s=0.0)
     out = run(tr, [([(1.5, -1.5 + 0.12 * k, 0.15)], (0.0, 0.0, 0.0)) for k in range(4)],
               preroll=0)
+    assert out[0] == [] and out[1] == []
+
+
+def _turning(rate_dps, x0=0.0):
+    """A pose function: turning in place at `rate_dps` about (x0, 0)."""
+    return lambda t: (x0, 0.0, math.radians(rate_dps) * t)
+
+
+def scan_timed(discs_at, pose, t, rev_s=0.1):
+    """A revolution as the lidar takes it: each bin cast from the pose and
+    the discs at the instant its beam swept it (lidar angle 0 at
+    `t - rev_s / 2`), as `MoverTracker` stamps it."""
+    ranges = []
+    for i in range(360):
+        b = -180.0 + i
+        tb = t + (((b - mt.LIDAR_YAW_DEG) % 360.0) / 360.0 - 0.5) * rev_s
+        px, py, yaw = pose(tb)
+        ox, oy = px + mt.LIDAR_X_M * math.cos(yaw), py + mt.LIDAR_X_M * math.sin(yaw)
+        a = yaw - math.radians(b)
+        dx, dy = math.cos(a), math.sin(a)
+        hits = [_ray_circle(ox, oy, dx, dy, 0.0, 0.0, ROOM_R)]
+        hits += [_ray_circle(ox, oy, dx, dy, cx, cy, r) for cx, cy, r in discs_at(tb)]
+        ranges.append(round(min(h for h in hits if h is not None), 4))
+    return {"usable": True, "angle_min_deg": -180.0, "angle_increment_deg": 1.0,
+            "ranges_m": ranges}
+
+
+def _feed(tr, discs_at, pose, t0, n, static=()):
+    """n revolutions at 10 Hz from t0, swept in time (`scan_timed`);
+    discs_at(t) -> the moving discs at t."""
+    out = []
+    for k in range(n):
+        t = t0 + 0.1 * k
+        sc = scan_timed(lambda tb: list(static) + discs_at(tb), pose, t)
+        out.append(tr.update(sc, pose, t))
+    return out
+
+
+def test_a_mover_is_tracked_while_the_body_turns():
+    # 3.234.B2: B skipped every revolution turning over 3 degrees; a pet
+    # crossing during a turn went unseen. Steady first (the free-space
+    # history), then a 57 deg/s turn (an arc's rate) while it crosses.
+    tr = MoverTracker()
+    still = lambda t: (0.0, 0.0, 0.0)
+    _feed(tr, lambda t: [], still, 0.0, 12)
+    turn = lambda t: (0.0, 0.0, math.radians(57.0) * (t - 1.2))
+    out = _feed(tr, lambda t: [(1.5, -1.5 + 1.2 * (t - 1.2), 0.15)], turn, 1.2, 8)
+    first = next(k for k, m in enumerate(out) if m)
+    assert first <= 2
+    m = out[-1][0]
+    assert math.hypot(m.vx, m.vy - 1.2) < 0.15
+
+
+def test_a_still_scene_from_a_turning_body_has_no_mover():
+    tr = MoverTracker()
+    still = [(1.5, 0.5, 0.15), (-1.0, -1.2, 0.15), (0.3, 2.0, 0.2)]
+    out = _feed(tr, lambda t: [], _turning(57.0), 0.0, 40, static=still)
+    out += _feed(tr, lambda t: [], _turning(400.0), 4.0, 20, static=still)
     assert all(m == [] for m in out)
+
+
+def test_a_pivot_revolution_is_not_kept_for_the_free_space_test():
+    tr = MoverTracker()
+    tr.update(scan(), lambda t: (0.0, 0.0, math.radians(400.0) * t), 1.0)
+    assert tr._history == []                    # 40 degrees a revolution
+    tr.update(scan(), lambda t: (0.0, 0.0, math.radians(20.0) * t), 1.1)
+    assert len(tr._history) == 1                # 2 degrees: kept
+
+
+def test_two_free_observations_on_a_turning_body_are_not_an_early_mover():
+    tr = MoverTracker()
+    tr.update(scan(), (0.0, 0.0, 0.0), 0.0)
+    tr.update(scan(), (0.0, 0.0, 0.0), 0.3)
+    turn = _turning(30.0)                       # 3 degrees a revolution: not steady
+    for k, t in enumerate((0.6, 0.7)):
+        tr.update(scan([(1.5, -1.5 + 0.12 * k, 0.15)], turn(t)), turn, t)
+    assert tr.movers() == [] and any(len(x.obs) == 2 and x.free for x in tr.tracks)
+
+
+def test_a_restarted_fit_must_stand_in_free_space_again():
+    tr = mt.Track(1, 0.0, 0.0, 0.0)
+    tr.add(0.1, 0.05, 0.0, free=True)
+    tr.add(0.2, 0.10, 0.0)
+    assert tr.free
+    tr.add(0.3, 0.60, 0.0)                      # far off the prediction: a restart
+    assert len(tr.obs) == 1 and not tr.free and tr.free_n == 0
 
 
 def test_each_cluster_is_stamped_when_the_beam_crossed_it():
