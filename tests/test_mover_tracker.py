@@ -93,7 +93,7 @@ def test_a_crossing_disc_is_tracked_within_three_scans_with_its_velocity():
     frames = [([(1.5, -1.5 + v[1] * 0.1 * k, 0.15)], (0.0, 0.0, 0.0)) for k in range(20)]
     out = run(tr, frames)
     first = next(k for k, m in enumerate(out) if m)
-    assert first <= 2                           # the third scan, counting from 1
+    assert first <= 1                           # the second scan (3.234.B2's early tier)
     for m in out[first:]:
         assert len(m) == 1
         assert math.hypot(m[0].vx - v[0], m[0].vy - v[1]) < 0.1
@@ -159,11 +159,99 @@ def test_a_static_object_revealed_by_a_moving_robot_is_not_a_mover():
     assert all(m == [] for m in run(tr, frames, static=posts))
 
 
-def test_without_history_nothing_is_moving():
+def test_without_history_nothing_is_moving_on_the_first_two_scans():
+    # The free-space test asks scans 0.2-1 s old: none on the first two.
+    # (On the third the observation is free against the first scan, and
+    # the fit has three observations: moving, as it should be.)
     tr = MoverTracker(revolution_s=0.0)
     out = run(tr, [([(1.5, -1.5 + 0.12 * k, 0.15)], (0.0, 0.0, 0.0)) for k in range(4)],
               preroll=0)
+    assert out[0] == [] and out[1] == []
+
+
+def _turning(rate_dps, x0=0.0):
+    """A pose function: turning in place at `rate_dps` about (x0, 0)."""
+    return lambda t: (x0, 0.0, math.radians(rate_dps) * t)
+
+
+def scan_timed(discs_at, pose, t, rev_s=0.1):
+    """A revolution as the lidar takes it: each bin cast from the pose and
+    the discs at the instant its beam swept it (lidar angle 0 at
+    `t - rev_s / 2`), as `MoverTracker` stamps it."""
+    ranges = []
+    for i in range(360):
+        b = -180.0 + i
+        tb = t + (((b - mt.LIDAR_YAW_DEG) % 360.0) / 360.0 - 0.5) * rev_s
+        px, py, yaw = pose(tb)
+        ox, oy = px + mt.LIDAR_X_M * math.cos(yaw), py + mt.LIDAR_X_M * math.sin(yaw)
+        a = yaw - math.radians(b)
+        dx, dy = math.cos(a), math.sin(a)
+        hits = [_ray_circle(ox, oy, dx, dy, 0.0, 0.0, ROOM_R)]
+        hits += [_ray_circle(ox, oy, dx, dy, cx, cy, r) for cx, cy, r in discs_at(tb)]
+        ranges.append(round(min(h for h in hits if h is not None), 4))
+    return {"usable": True, "angle_min_deg": -180.0, "angle_increment_deg": 1.0,
+            "ranges_m": ranges}
+
+
+def _feed(tr, discs_at, pose, t0, n, static=()):
+    """n revolutions at 10 Hz from t0, swept in time (`scan_timed`);
+    discs_at(t) -> the moving discs at t."""
+    out = []
+    for k in range(n):
+        t = t0 + 0.1 * k
+        sc = scan_timed(lambda tb: list(static) + discs_at(tb), pose, t)
+        out.append(tr.update(sc, pose, t))
+    return out
+
+
+def test_a_mover_is_tracked_while_the_body_turns():
+    # 3.234.B2: B skipped every revolution turning over 3 degrees; a pet
+    # crossing during a turn went unseen. Steady first (the free-space
+    # history), then a 57 deg/s turn (an arc's rate) while it crosses.
+    tr = MoverTracker()
+    still = lambda t: (0.0, 0.0, 0.0)
+    _feed(tr, lambda t: [], still, 0.0, 12)
+    turn = lambda t: (0.0, 0.0, math.radians(57.0) * (t - 1.2))
+    out = _feed(tr, lambda t: [(1.5, -1.5 + 1.2 * (t - 1.2), 0.15)], turn, 1.2, 8)
+    first = next(k for k, m in enumerate(out) if m)
+    assert first <= 2
+    m = out[-1][0]
+    assert math.hypot(m.vx, m.vy - 1.2) < 0.15
+
+
+def test_a_still_scene_from_a_turning_body_has_no_mover():
+    tr = MoverTracker()
+    still = [(1.5, 0.5, 0.15), (-1.0, -1.2, 0.15), (0.3, 2.0, 0.2)]
+    out = _feed(tr, lambda t: [], _turning(57.0), 0.0, 40, static=still)
+    out += _feed(tr, lambda t: [], _turning(400.0), 4.0, 20, static=still)
     assert all(m == [] for m in out)
+
+
+def test_a_pivot_revolution_is_not_kept_for_the_free_space_test():
+    tr = MoverTracker()
+    tr.update(scan(), lambda t: (0.0, 0.0, math.radians(400.0) * t), 1.0)
+    assert tr._history == []                    # 40 degrees a revolution
+    tr.update(scan(), lambda t: (0.0, 0.0, math.radians(20.0) * t), 1.1)
+    assert len(tr._history) == 1                # 2 degrees: kept
+
+
+def test_two_free_observations_on_a_turning_body_are_not_an_early_mover():
+    tr = MoverTracker()
+    tr.update(scan(), (0.0, 0.0, 0.0), 0.0)
+    tr.update(scan(), (0.0, 0.0, 0.0), 0.3)
+    turn = _turning(20.0)                       # 2 degrees a revolution: not steady
+    for k, t in enumerate((0.6, 0.7)):
+        tr.update(scan([(1.5, -1.5 + 0.12 * k, 0.15)], turn(t)), turn, t)
+    assert tr.movers() == [] and any(len(x.obs) == 2 and x.free for x in tr.tracks)
+
+
+def test_a_restarted_fit_must_stand_in_free_space_again():
+    tr = mt.Track(1, 0.0, 0.0, 0.0)
+    tr.add(0.1, 0.05, 0.0, free=True)
+    tr.add(0.2, 0.10, 0.0)
+    assert tr.free
+    tr.add(0.3, 0.60, 0.0)                      # far off the prediction: a restart
+    assert len(tr.obs) == 1 and not tr.free and tr.free_n == 0
 
 
 def test_each_cluster_is_stamped_when_the_beam_crossed_it():
@@ -202,6 +290,20 @@ def test_a_clock_stepped_back_starts_over():
     assert tr.tracks
     tr.update(scan(), (0.0, 0.0, 0.0), -5.0)
     assert tr.tracks == [] and tr.scans == 1
+
+
+def test_a_stamp_that_is_not_a_number_is_ignored():
+    tr = MoverTracker(revolution_s=0.0)
+    run(tr, [([(1.5, -1.5 + 0.12 * k, 0.15)], (0.0, 0.0, 0.0)) for k in range(6)])
+    t, scans = tr.t, tr.scans
+    tr.update(scan(), (0.0, 0.0, 0.0), float("nan"))
+    assert tr.t == t and tr.scans == scans
+
+
+def test_an_unusable_scan_never_asks_the_pose():
+    def pose(t):
+        raise AssertionError("asked")
+    MoverTracker().update({"usable": False}, pose, 1.0)
 
 
 def test_an_empty_usable_scan_is_harmless():
@@ -292,3 +394,37 @@ PINNED_REVIEWED = {'B1': {'missions': 24,
         'velocity_met': True,
         'first_track_met': False,
         'velocity_error_p90_at_2.5': 0.8783}}
+
+
+B2_RECORD = RECORD.replace("b-sweep.json", "b2-sweep.json")
+
+
+@pytest.mark.skipif(not os.path.exists(B2_RECORD), reason="B2's sweep not recorded")
+def test_b2_record_pinned():
+    """3.234.B2's one measurement, on fresh seed 2 (amendment 4): B1
+    FAILED, B2's velocity met, B2's time to first track FAILED (75.6 % of
+    visits against B's 45.2 %)."""
+    with open(B2_RECORD) as f:
+        v = json.load(f)["verdict"]
+    assert v["seed"] == 2
+    got = {"B1": v["B1"], "B2": {k: v["B2"][k] for k in PINNED_B2["B2"]}}
+    assert got == PINNED_B2
+    assert not v["B1"]["met"] and v["B2"]["velocity_met"] and not v["B2"]["first_track_met"]
+
+
+PINNED_B2 = {'B1': {'missions': 24,
+        'driving_min': 48.53,
+        'false_moving_tracks': 7,
+        'per_10_min': 1.442,
+        'met': False},
+ 'B2': {'missions': 72,
+        'velocity_error_samples': 46737,
+        'velocity_error_median_m_s': 0.0401,
+        'velocity_error_p90_m_s': 0.1956,
+        'visits_judged': 4585,
+        'visits_first_track_le_3': 3465,
+        'first_track_share': 0.7557,
+        'first_track_p90_scans': 6,
+        'velocity_met': True,
+        'first_track_met': False,
+        'velocity_error_p90_at_2.5': 0.8109}}

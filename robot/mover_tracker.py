@@ -20,8 +20,10 @@ only shrink clearance.
            something nearer (a hidden edge slides as the robot moves)
         -> nearest-neighbour association against each track's prediction
         -> velocity: a least-squares slope over the last `WINDOW` scans
-        -> `moving` once a track has `CONFIRM` observations and speed over
-           `MOVING_M_S`
+        -> `moving` at speed over `MOVING_M_S` once the current fit has
+           `CONFIRM` observations, one of them in free space, or (early)
+           `EARLY_CONFIRM` observations, `EARLY_FREE` of them in free space
+           while the body was steady
 
 Frames: the odometry frame is right-handed, metres and radians (x forward
 at the start, y left, yaw counter-clockwise). The body frame is x forward,
@@ -49,17 +51,28 @@ MOVING_M_S = 0.3            # B1's threshold for a moving track
 MAX_SPEED_M_S = 4.0         # faster than this is a mis-association, not a pet
 REVOLUTION_S = 0.1          # the D500 at 10 Hz (sim.fake_lidar.RATE_HZ)
 FREE_M = 0.15               # free space: an earlier beam reached this far past the point
-FREE_BACK_S = (0.5, 1.0)    # ... in the scan nearest either of these ages
-TURN_MAX_DEG = 3.0          # a revolution in which the body turned more is not tracked
-HISTORY_S = max(FREE_BACK_S) + 0.2   # how far back scans are kept for it
+FREE_WINDOW_S = (0.2, 1.0)  # ... in any kept scan of an age in this window (3.234.B2)
+STEADY_TURN_DEG = 1.0       # a revolution in which the body turned no more is steady
+EARLY_CONFIRM = 2           # observations before a track may be `moving` early: when ...
+EARLY_FREE = 2              # ... this many of them stood in free space in steady revolutions
+HISTORY_TURN_DEG = 3.0      # a revolution turning more is not kept for the free-space test
+HISTORY_S = max(FREE_WINDOW_S) + 0.2   # how far back scans are kept for it
 CLOCK_STEP_S = 0.5          # a capture time this far behind the last: the clock stepped back
 COAST_S = 0.25              # a track unmatched this long is dropped
 RESET_M = 0.03              # an observation this far off the prediction ...
 RESET_FRAC = 0.15           # ... plus this share of the predicted step restarts the fit
 
 
+def _lerp_pose(poses: tuple, frac: float) -> tuple:
+    """The pose `frac` (0-1) of the way through a revolution, from its
+    poses at the start, middle and end."""
+    a, b, f = (poses[0], poses[1], frac * 2.0) if frac < 0.5 else (poses[1], poses[2], frac * 2.0 - 1.0)
+    dyaw = (b[2] - a[2] + math.pi) % (2 * math.pi) - math.pi
+    return a[0] + f * (b[0] - a[0]), a[1] + f * (b[1] - a[1]), a[2] + f * dyaw
+
+
 class Track:
-    __slots__ = ("id", "obs", "x", "y", "vx", "vy", "t", "born", "hits", "seen", "free")
+    __slots__ = ("id", "obs", "x", "y", "vx", "vy", "t", "born", "hits", "seen", "free", "free_n")
 
     def __init__(self, tid: int, t: float, x: float, y: float):
         self.id = tid
@@ -67,7 +80,8 @@ class Track:
         self.x, self.y, self.vx, self.vy, self.t, self.born = x, y, 0.0, 0.0, t, t
         self.hits = 1
         self.seen = 0               # the tracker's scan count when last observed
-        self.free = False           # an observation stood where an earlier beam passed clear
+        self.free = False           # an observation since the fit's last restart stood in free space
+        self.free_n = 0             # observations since then that did, the body steady
 
     @property
     def speed(self) -> float:
@@ -75,18 +89,24 @@ class Track:
 
     @property
     def moving(self) -> bool:
-        # CONFIRM observations in the CURRENT fit, not over the track's
-        # life: after a restart a two-point slope over one scan turned 4 cm
-        # of centre noise into 0.4 m/s (most of the development starts'
-        # false tracks).
-        return (self.free and len(self.obs) >= CONFIRM
-                and MOVING_M_S < self.speed <= MAX_SPEED_M_S)
+        # Observations in the CURRENT fit, not over the track's life: after
+        # a restart a two-point slope over one scan turned 4 cm of centre
+        # noise into 0.4 m/s (most of B's development starts' false
+        # tracks). The free-space evidence is the current fit's too (3.234.B2):
+        # a static object's track, freed once by a quirk, later wobbled into
+        # a 'mover'. The early tier asks two free observations, both taken
+        # while the body was steady: on a turning body's revolutions a static
+        # object's two-point slope was the false alarm.
+        n = len(self.obs)
+        confirmed = self.free and n >= CONFIRM
+        early = n >= EARLY_CONFIRM and self.free_n >= EARLY_FREE
+        return (confirmed or early) and MOVING_M_S < self.speed <= MAX_SPEED_M_S
 
     def predict(self, t: float) -> tuple:
         dt = t - self.t
         return self.x + self.vx * dt, self.y + self.vy * dt
 
-    def add(self, t: float, x: float, y: float) -> None:
+    def add(self, t: float, x: float, y: float, free: bool = False, steady: bool = True) -> None:
         # A mover that stops or turns leaves the straight line the window
         # fits: an observation off the prediction by more than noise plus a
         # share of the step restarts the fit FROM THIS observation. The
@@ -98,7 +118,11 @@ class Track:
         if len(self.obs) >= 2 and math.hypot(x - qx, y - qy) > RESET_M + RESET_FRAC * step:
             self.obs = [(t, x, y)]
             self.x, self.y, self.t, self.vx, self.vy = x, y, t, 0.0, 0.0
+            self.free = free
+            self.free_n = int(free and steady)
             return
+        self.free |= free
+        self.free_n += int(free and steady)
         self.obs.append((t, x, y))
         del self.obs[:-WINDOW]
         self.x, self.y, self.t = x, y, t
@@ -216,14 +240,22 @@ class MoverTracker:
     revolution reads up to half a revolution's travel (12 cm) off.
 
     **A track is moving only once it stood in free space**: one of its
-    observations' nearest return lies where the scan about 0.5 s or 1 s
-    earlier had its beam pass at least `FREE_M` beyond. A static surface
-    seen from a moving robot was there before (the old beam stopped at it),
-    and so was anything an occlusion has just revealed (the old beam
-    stopped short); a person or pet walks into space the lidar saw empty.
-    The centre estimate of a static object wobbles as the view changes;
-    without this test that wobble made 49 moving tracks per 10 minutes of
-    driving on the development starts."""
+    current fit's observations' nearest return lies where a kept scan
+    0.2-1 s earlier (`FREE_WINDOW_S`) had its beam pass at least `FREE_M`
+    beyond. A static surface seen from a moving robot was there before (the
+    old beam stopped at it), and so was anything an occlusion has just
+    revealed (the old beam stopped short); a person or pet walks into space
+    the lidar saw empty. The centre estimate of a static object wobbles as
+    the view changes; without this test that wobble made 49 moving tracks
+    per 10 minutes of driving on B's development starts.
+
+    **A turning body's revolutions are tracked, de-rotated** (3.234.B2):
+    each cluster is placed from the pose when the beam crossed it. B
+    skipped every revolution that turned more than 3 degrees, which left
+    a mover unseen through every turn. Such a revolution is still not KEPT
+    for the free-space test (`HISTORY_TURN_DEG`): at a pivot's 40 degrees a
+    revolution, a beam grazing a corner read as clear and freed the corner
+    on the development starts."""
 
     def __init__(self, yaw_deg: float = LIDAR_YAW_DEG, revolution_s: float = REVOLUTION_S):
         self.yaw_deg, self.revolution_s = yaw_deg, revolution_s
@@ -231,7 +263,7 @@ class MoverTracker:
         self._next_id = 1
         self.scans = 0
         self.t = None
-        self._history: List[tuple] = []     # (t, pose, ranges, angle_min_deg, increment_deg)
+        self._history: List[tuple] = []     # (t, poses, ranges, angle_min_deg, increment_deg, rev_s)
 
     def update(self, scan: dict, pose: Union[tuple, Callable[[float], tuple]],
                t: float, revolution_s: Optional[float] = None) -> List[Track]:
@@ -241,13 +273,15 @@ class MoverTracker:
         the pose when the beam crossed it). Returns the moving tracks seen
         in this scan. An unusable scan ages the tracks and adds nothing.
         `pose` must answer up to `t + revolution / 2` (the revolution's last
-        point): the turn check and the late clusters ask for it, so a caller
+        point): the turn measure and the late clusters ask for it, so a caller
         whose odometry ends at `t` must wait for it or extrapolate. A
         revolution read twice (the same `t`) is ignored; a clock that steps
         back more than `CLOCK_STEP_S` restarts the tracker.
         `revolution_s` overrides the nominal period for this scan (the
         driver knows the lidar's real speed; C's wiring passes it)."""
         rev_s = self.revolution_s if revolution_s is None else revolution_s
+        if not math.isfinite(t):
+            return self.movers()            # no usable stamp: nothing to place it by
         if self.t is not None and t <= self.t:
             if t >= self.t - CLOCK_STEP_S:
                 return self.movers()        # the same revolution read again: no new data
@@ -255,11 +289,13 @@ class MoverTracker:
         self.scans += 1
         self.t = t
         dets = []
-        if scan.get("usable") and scan.get("ranges_m") and not self._turning(pose, t, rev_s):
+        if scan.get("usable") and scan.get("ranges_m"):
+            turn = self._turn_deg(pose, t, rev_s)
             a0 = scan.get("angle_min_deg", -180.0)
             inc = scan.get("angle_increment_deg", 1.0)
             pts = scan_points(scan["ranges_m"], a0, inc)
             olds = self._olds(t)
+            steady = turn <= STEADY_TURN_DEG
             seam = int(round(((self.yaw_deg - a0) % 360.0) / inc)) % len(pts)
             for bx, by, _n, _e, mid, nx, ny in clusters(pts, a0, inc, seam=seam):
                 frac = ((a0 + mid * inc - self.yaw_deg) % 360.0) / 360.0
@@ -268,47 +304,52 @@ class MoverTracker:
                 c, s = math.cos(yaw), math.sin(yaw)
                 free = any(self._was_free(old, px + nx * c - ny * s, py + nx * s + ny * c)
                            for old in olds)
-                dets.append((tk, px + bx * c - by * s, py + bx * s + by * c, free))
-            p0 = pose(t) if callable(pose) else pose
-            self._history.append((t, p0, scan["ranges_m"], a0, inc))
+                dets.append((tk, px + bx * c - by * s, py + bx * s + by * c, free, steady))
+            h = rev_s / 2.0
+            p3 = tuple(pose(t + k * h) for k in (-1, 0, 1)) if callable(pose) else (pose,) * 3
+            if turn <= HISTORY_TURN_DEG:
+                self._history.append((t, p3, list(scan["ranges_m"]), a0, inc, rev_s))
             self._history = [h for h in self._history if t - h[0] <= HISTORY_S]
         self._associate(dets, t)
         return self.movers()
 
-    def _turning(self, pose, t: float, revolution_s: float) -> bool:
-        """The body turned more than `TURN_MAX_DEG` across this revolution.
-        The driver bins each point by the lidar's angle alone, so a turning
-        body's scan is smeared (40 degrees a revolution at the simulator's
-        pivot rate): such a scan neither feeds a track nor becomes history
-        for the free-space test, and the tracks coast across it."""
+    def _turn_deg(self, pose, t: float, revolution_s: float) -> float:
+        """How far (degrees, unsigned) the body turned across this
+        revolution: 0 for a fixed pose."""
         if not callable(pose):
-            return False
+            return 0.0
         h = revolution_s / 2.0
         d = pose(t + h)[2] - pose(t - h)[2]
-        return abs(math.degrees((d + math.pi) % (2 * math.pi) - math.pi)) > TURN_MAX_DEG
+        return abs(math.degrees((d + math.pi) % (2 * math.pi) - math.pi))
 
     def _olds(self, t: float) -> List[tuple]:
-        """The kept scans nearest each age in `FREE_BACK_S` (within 0.15 s:
-        a dropped scan or two), none while the history is short."""
-        out = []
-        for back in FREE_BACK_S:
-            best = min(self._history, key=lambda h: abs(t - back - h[0]), default=None)
-            if best is not None and abs(t - back - best[0]) <= 0.15 and best not in out:
-                out.append(best)
-        return out
+        """The kept scans the free-space test asks: every one whose age
+        lies in `FREE_WINDOW_S`."""
+        lo, hi = FREE_WINDOW_S
+        return [h for h in self._history if lo - 1e-6 <= t - h[0] <= hi + 1e-6]
 
     def _was_free(self, old: tuple, x: float, y: float) -> bool:
         """The odometry point (x, y) lay at least `FREE_M` short of where
         `old`'s beams through it (its bin and both neighbours) stopped. A
         bin with no return is NOT clear: on a real lidar it may be a dark
-        or shiny surface, and once a track is free it stays free."""
-        _t, (px, py, yaw), ranges, a0, inc = old
-        lx, ly = px + LIDAR_X_M * math.cos(yaw), py + LIDAR_X_M * math.sin(yaw)
+        or shiny surface, and a fit freed once stays free until it
+        restarts. The beam
+        is cast from the pose at its own instant (the revolution's three
+        kept poses, interpolated), found in two passes: the bin from the
+        midpoint pose, then again from that bin's pose."""
+        t0, poses, ranges, a0, inc, rev_s = old
+        n = len(ranges)
+        pose = poses[1]
+        for _ in range(2):
+            px, py, yaw = pose
+            lx, ly = px + LIDAR_X_M * math.cos(yaw), py + LIDAR_X_M * math.sin(yaw)
+            bearing = math.degrees(yaw - math.atan2(y - ly, x - lx))     # clockwise positive
+            i = int(round(((bearing - a0 + 180.0) % 360.0 - 180.0) / inc)) % n
+            frac = ((a0 + i * inc - self.yaw_deg) % 360.0) / 360.0
+            pose = _lerp_pose(poses, frac)
         d = math.hypot(x - lx, y - ly)
-        bearing = math.degrees(yaw - math.atan2(y - ly, x - lx))     # clockwise positive
-        i = int(round(((bearing - a0 + 180.0) % 360.0 - 180.0) / inc)) % len(ranges)
         for j in (i - 1, i, i + 1):
-            r = ranges[j % len(ranges)]
+            r = ranges[j % n]
             if r is None or r < d + FREE_M:
                 return False
         return True
@@ -316,7 +357,7 @@ class MoverTracker:
     def _associate(self, dets: List[tuple], t: float) -> None:
         pairs = []
         for ti, tr in enumerate(self.tracks):
-            for di, (tk, dx, dy, _f) in enumerate(dets):
+            for di, (tk, dx, dy, _f, _s) in enumerate(dets):
                 qx, qy = tr.predict(tk)
                 d = math.hypot(dx - qx, dy - qy)
                 if d <= GATE_M:
@@ -328,16 +369,16 @@ class MoverTracker:
                 continue
             used_t.add(ti)
             used_d.add(di)
-            tk, dx, dy, free = dets[di]
-            self.tracks[ti].add(tk, dx, dy)
+            tk, dx, dy, free, steady = dets[di]
+            self.tracks[ti].add(tk, dx, dy, free, steady)
             self.tracks[ti].seen = self.scans
-            self.tracks[ti].free |= free
         self.tracks = [tr for tr in self.tracks if t - tr.t <= COAST_S]
-        for di, (tk, dx, dy, free) in enumerate(dets):
+        for di, (tk, dx, dy, free, steady) in enumerate(dets):
             if di not in used_d:
                 tr = Track(self._next_id, tk, dx, dy)
                 tr.seen = self.scans
                 tr.free = free
+                tr.free_n = int(free and steady)
                 self.tracks.append(tr)
                 self._next_id += 1
 

@@ -143,7 +143,7 @@ power-off from `GET /battery` with its floor set. `poweroff_cmd` defaults to
 simulator and `SIM_MOTOR_BOARD=fake` get the logged stub, so a desktop drain
 test cannot power off the desktop.
 
-### The mover tracker (3.234.B; nothing in the veto reads it yet)
+### The mover tracker (3.234.B, revised in 3.234.B2; nothing in the veto reads it yet)
 
 `robot/mover_tracker.py`'s `MoverTracker` tracks people and pets on the
 lidar's scan, in the robot server's process space (rule 3), for 3.234.C to
@@ -159,24 +159,37 @@ tests and `tests/mover_track_sweep.py`.
   middle bearing (the returns' centroid sits on the near face).
 * **Time:** each cluster is stamped when the beam crossed it, from its
   bearing (a revolution runs lidar angle 0-360 in 0.1 s; yaw -90), and
-  placed from the pose at that instant. A revolution in which the body
-  turned more than 3 degrees is skipped; tracks coast across it.
+  placed from the pose at that instant, so a turning body's revolution is
+  tracked de-rotated (B skipped any that turned over 3 degrees; B2 tracks
+  them all).
 * **Tracks:** nearest-neighbour association within 50 cm of the
   prediction; velocity is a least-squares slope over up to 4 observations,
   restarted from the newest when one falls off the line (3 cm plus 15 % of
   the predicted step); dropped after 0.25 s unseen.
-* **Moving** = 3 observations in the current fit, speed 0.3-4 m/s, and at
-  least one observation whose nearest return lay where the scan 0.5 or
-  1 s earlier saw at least 15 cm further (free space). `movers()` reports
-  only tracks seen in the latest scan; `coasting()` the rest.
+* **Free space:** an observation whose nearest return lay where any kept
+  scan 0.2-1 s older saw at least 15 cm further, on its bin and both
+  neighbours (each old beam cast from the pose at its own instant,
+  interpolated from the revolution's start, middle and end poses). A
+  revolution that turned more than 3 degrees is not kept for this test (at
+  a pivot's 40 degrees a revolution a beam grazing a corner read as clear).
+* **Moving** = speed 0.3-4 m/s and, in the current fit (a restart clears
+  both): 3 observations with at least one free, or 2 observations both
+  free and both taken while the body turned no more than 1 degree in the
+  revolution (the early tier). `movers()` reports only tracks seen in the
+  latest scan; `coasting()` the rest.
 
 Measured in 3.234.B (offline, A's missions through the fake lidar's
-timing; the reviewed tracker): **1.38 false moving tracks per 10 minutes of
-driving (B1 failed, bar 1)**; velocity error median 0.038 m/s, p90
-0.174 m/s pooled (0.087 / 0.204 / 0.878 m/s at 0.5 / 1.2 / 2.5 m/s); a track
-within 3 scans of a mover coming into view for only 45 % of visits
-(failed). Cost in the cloud container: p90 0.25 ms a scan; the Jetson's
-figure is B3's, open.
+timing; the reviewed tracker, seed 0): 1.38 false moving tracks per 10
+minutes of driving (B1 failed, bar 1); velocity error median 0.038 m/s, p90
+0.174 m/s; a track within 3 scans of a mover coming into view for 45 % of
+visits (failed). **The revision measured in 3.234.B2** (fresh seed 2, the
+tracker this file describes): **1.44 false moving tracks per 10 minutes
+(B1 failed)**; velocity error median 0.040 m/s, p90 0.196 m/s pooled
+(0.094 / 0.225 / 0.811 m/s at 0.5 / 1.2 / 2.5 m/s); a track within 3 scans
+for **75.6 % of visits (failed; bar every visit)**, median 3 and p90 5 scans
+once tracked, 162 of 4,585 visits never. Cost in the cloud container: p90
+0.49 ms a scan (B: 0.25 ms; the free-space test reads up to 9 old scans);
+the Jetson's figure is B3's, open.
 
 * **The caller's contract (for C):** `pose(t)` must answer up to the
   revolution's last point (`capture_unix + 0.05 s`); feed each revolution
@@ -640,10 +653,17 @@ order; record the table in the plan entry.
 
 ## Known gaps
 
-- **The mover tracker (3.234.B).** A mover is tracked a median 3 scans
-  after it comes into view (p90 7; 984 of 5,156 visits never): one that
-  appears where the lidar could not see, recedes or stands waits for the
-  free-space test, and a turning revolution is skipped. Odometry was the
+- **The mover tracker (3.234.B, B2).** A mover that appears where the
+  lidar could not see, recedes or stands waits for the free-space test,
+  and one seen first while the body turns waits for a third observation
+  (both measured in the section above). After a pivot the free-space
+  history holds no scan for up to about 1 s (a turning revolution is not
+  kept), so a mover first seen then waits for it: C must read "no mover"
+  in that window as unknown, not clear. Turning revolutions are placed by
+  odometry: yaw lag on the Rover would shift a static object sideways, and
+  the confirmed tier (unlike the early one) accepts free evidence from a
+  turning revolution; 3.234.D's empty room (D1) is where that is judged.
+  Odometry was the
   simulator's truth in B; wheel slip is the Rover's (3.234.D). Bins the
   driver carried from the previous revolution or filled from neighbours
   are stamped as this revolution's (the scan dict does not mark them). A
