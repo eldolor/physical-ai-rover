@@ -39,6 +39,7 @@ MAX_RANGE_M = 6.0           # beyond this a mover is no hazard inside the horizo
 JUMP_M = 0.12               # a range jump this large between adjacent bins splits a segment
 JUMP_PER_M = 0.06           # ... plus this per metre of range (bins spread out with range)
 MAX_EXTENT_M = 0.8          # wider than a person's shoulders: a wall or furniture
+MAX_PATH_M = 1.2            # longer along its returns than this: a wall that folds back
 MIN_POINTS = 2
 OCCLUDED_M = 0.10           # a neighbour bin this much nearer hides the cluster's edge
 GATE_M = 0.5                # association gate around a track's prediction
@@ -50,7 +51,7 @@ REVOLUTION_S = 0.1          # the D500 at 10 Hz (sim.fake_lidar.RATE_HZ)
 FREE_M = 0.15               # free space: an earlier beam reached this far past the point
 FREE_BACK_S = (0.5, 1.0)    # ... in the scan nearest either of these ages
 TURN_MAX_DEG = 3.0          # a revolution in which the body turned more is not tracked
-HISTORY = 14                # scans kept for the free-space test
+HISTORY_S = max(FREE_BACK_S) + 0.2   # how far back scans are kept for it
 COAST_S = 0.25              # a track unmatched this long is dropped
 RESET_M = 0.03              # an observation this far off the prediction ...
 RESET_FRAC = 0.15           # ... plus this share of the predicted step restarts the fit
@@ -135,7 +136,8 @@ def scan_points(ranges: Sequence[Optional[float]], angle_min_deg: float = -180.0
 
 
 def clusters(pts: List[Optional[tuple]], angle_min_deg: float = -180.0,
-             increment_deg: float = 1.0, lidar_x_m: float = LIDAR_X_M) -> List[tuple]:
+             increment_deg: float = 1.0, lidar_x_m: float = LIDAR_X_M,
+             seam: Optional[int] = None) -> List[tuple]:
     """(x, y, n, extent, bin, near_x, near_y) in the body frame for each
     segment of person or pet size whose edges are not hidden by a nearer
     neighbour; `bin` is its middle bin index (fractional), (near_x, near_y)
@@ -145,7 +147,12 @@ def clusters(pts: List[Optional[tuple]], angle_min_deg: float = -180.0,
     the nearest return plus half the width. The centroid of the returns
     sits on the near face, and how far in front of the centre depends on
     the range (a near disc shows a narrower arc, densely sampled), so a
-    pet that stops in front of the robot kept 'moving' as the bias grew."""
+    pet that stops in front of the robot kept 'moving' as the bias grew.
+
+    A segment never joins across bin `seam` (the revolution's first bin):
+    the bins either side were taken a whole revolution apart. A segment
+    longer along its returns than `MAX_PATH_M` is refused even if its ends
+    are close: a room's wall broken only at a door is door-wide end to end."""
     n = len(pts)
     if n == 0:
         return []
@@ -155,6 +162,8 @@ def clusters(pts: List[Optional[tuple]], angle_min_deg: float = -180.0,
         if a is not None and b is not None:
             gap = math.hypot(a[1] - b[1], a[2] - b[2])
             joined[i] = gap <= JUMP_M + JUMP_PER_M * min(a[0], b[0])
+    if seam is not None:
+        joined[seam % n] = False
     if all(joined):
         return []                   # one closed ring: a room, no object
     start = next(i for i in range(n) if not joined[i])
@@ -175,6 +184,10 @@ def clusters(pts: List[Optional[tuple]], angle_min_deg: float = -180.0,
         first, last = pts[seg[0]], pts[seg[-1]]
         extent = math.hypot(first[1] - last[1], first[2] - last[2])
         if extent > MAX_EXTENT_M:
+            continue
+        path = sum(math.hypot(pts[i][1] - pts[j][1], pts[i][2] - pts[j][2])
+                   for i, j in zip(seg, seg[1:]))
+        if path > MAX_PATH_M:
             continue
         before, after = pts[(seg[0] - 1) % n], pts[(seg[-1] + 1) % n]
         k_near = min(seg, key=lambda i: pts[i][0])
@@ -220,23 +233,27 @@ class MoverTracker:
         self._history: List[tuple] = []     # (t, pose, ranges, angle_min_deg, increment_deg)
 
     def update(self, scan: dict, pose: Union[tuple, Callable[[float], tuple]],
-               t: float) -> List[Track]:
+               t: float, revolution_s: Optional[float] = None) -> List[Track]:
         """`t` is the scan's capture time (its revolution's midpoint, the
         driver's `capture_unix`); `pose` is (x, y, yaw) in the odometry
         frame, or a function of time giving it (each cluster is placed from
         the pose when the beam crossed it). Returns the moving tracks seen
-        in this scan. An unusable scan ages the tracks and adds nothing."""
+        in this scan. An unusable scan ages the tracks and adds nothing.
+        `revolution_s` overrides the nominal period for this scan (the
+        driver knows the lidar's real speed; C's wiring passes it)."""
+        rev_s = self.revolution_s if revolution_s is None else revolution_s
         self.scans += 1
         self.t = t
         dets = []
-        if scan.get("usable") and not self._turning(pose, t):
+        if scan.get("usable") and not self._turning(pose, t, rev_s):
             a0 = scan.get("angle_min_deg", -180.0)
             inc = scan.get("angle_increment_deg", 1.0)
             pts = scan_points(scan["ranges_m"], a0, inc)
             olds = self._olds(t)
-            for bx, by, _n, _e, mid, nx, ny in clusters(pts, a0, inc):
+            seam = int(round(((self.yaw_deg - a0) % 360.0) / inc)) % len(pts)
+            for bx, by, _n, _e, mid, nx, ny in clusters(pts, a0, inc, seam=seam):
                 frac = ((a0 + mid * inc - self.yaw_deg) % 360.0) / 360.0
-                tk = t + (frac - 0.5) * self.revolution_s
+                tk = t + (frac - 0.5) * rev_s
                 px, py, yaw = pose(tk) if callable(pose) else pose
                 c, s = math.cos(yaw), math.sin(yaw)
                 free = any(self._was_free(old, px + nx * c - ny * s, py + nx * s + ny * c)
@@ -244,11 +261,11 @@ class MoverTracker:
                 dets.append((tk, px + bx * c - by * s, py + bx * s + by * c, free))
             p0 = pose(t) if callable(pose) else pose
             self._history.append((t, p0, scan["ranges_m"], a0, inc))
-            del self._history[:-HISTORY]
+            self._history = [h for h in self._history if t - h[0] <= HISTORY_S]
         self._associate(dets, t)
         return self.movers()
 
-    def _turning(self, pose, t: float) -> bool:
+    def _turning(self, pose, t: float, revolution_s: float) -> bool:
         """The body turned more than `TURN_MAX_DEG` across this revolution.
         The driver bins each point by the lidar's angle alone, so a turning
         body's scan is smeared (40 degrees a revolution at the simulator's
@@ -256,7 +273,7 @@ class MoverTracker:
         for the free-space test, and the tracks coast across it."""
         if not callable(pose):
             return False
-        h = self.revolution_s / 2.0
+        h = revolution_s / 2.0
         d = pose(t + h)[2] - pose(t - h)[2]
         return abs(math.degrees((d + math.pi) % (2 * math.pi) - math.pi)) > TURN_MAX_DEG
 

@@ -156,7 +156,10 @@ def replay(house, samples, tracker_cls=None):
             if not scan.get("usable"):
                 continue
             mid = scan["capture_unix"]
-            t_old, t_new = scanner.scan_time(), scanner._scan_newest
+            # This revolution's own span (scan_time() is older when bins
+            # were carried from the revolution before).
+            t_new = scanner._scan_newest
+            t_old = 2 * mid - t_new
             disc_pts = sum(1 for th, d in hits if d and t_old <= th <= t_new)
             del hits[:bisect.bisect_left([h[0] for h in hits], t_old)]
             c0 = time.perf_counter()
@@ -278,7 +281,9 @@ def verdict(b1_rows, b2_rows):
                "visits_judged": len(long_visits),
                "visits_first_track_le_3": met,
                "first_track_share": round(met / len(long_visits), 4) if long_visits else None,
-               "first_track_p90_scans": p90(ftt) if ftt else None,
+               # None: the p90 visit was never tracked (no Infinity in the JSON).
+               "first_track_p90_scans": (p90(ftt) if p90(ftt) != math.inf else None)
+               if ftt else None,
                "unmatched_moving_tracks": sum(r["false_tracks"] for r in b2_rows)},
         "cost_cloud_indication_ms": {"scans": len(cost),
                                      "median": round(statistics.median(cost), 4) if cost else None,
@@ -311,18 +316,30 @@ def sweep_args(seed):
 
 
 def main(argv):
+    """out.json [--dev] [--quick] [--procs N]. B3 on the board runs
+    `--quick --procs 1`: one replay beside the stack, so the cost measured
+    is the tracker's, not a harness filling every core."""
     import json
     import multiprocessing as mp
+    flags = [a for a in argv if a.startswith("--")]
+    procs = mp.cpu_count()
+    if "--procs" in argv:
+        procs = int(argv[argv.index("--procs") + 1])
+        flags.append(argv[argv.index("--procs") + 1])
+    out_path = next(a for a in argv if a not in flags)
     seed = 1 if "--dev" in argv else 0
     b1, b2 = sweep_args(seed)
     if "--quick" in argv:
         b1, b2 = b1[1::4], b2[1::9]
-    with mp.Pool(max(1, mp.cpu_count())) as pool:
-        rows = pool.map(run_one, b1 + b2, chunksize=1)
+    if procs <= 1:
+        rows = [run_one(a) for a in b1 + b2]
+    else:
+        with mp.Pool(procs) as pool:
+            rows = pool.map(run_one, b1 + b2, chunksize=1)
     b1_rows, b2_rows = rows[:len(b1)], rows[len(b1):]
     v = verdict(b1_rows, b2_rows)
     v["seed"] = seed
-    with open(argv[0], "w") as f:
+    with open(out_path, "w") as f:
         json.dump({"verdict": v, "b1": [slim(r) for r in b1_rows],
                    "b2": [slim(r) for r in b2_rows]}, f, indent=1)
     print(json.dumps(v, indent=1))
