@@ -284,6 +284,12 @@ class RemoteRobot(RobotInterface):
             return None
         return name if isinstance(name, str) else None
 
+    def vets_moves_on_server(self) -> bool:
+        """3.228.B: every move this body makes is a POST /action that the
+        robot server vets again with its own controller (rule 4), so the
+        brain's controller may pass it an `astern_occluded` REVERSE."""
+        return True
+
     def lidar_self_box_cm(self):
         """3.218: the robot server's lidar self box (its /health's
         `lidar_self_box_cm`), so the brain's own controller judges the scan

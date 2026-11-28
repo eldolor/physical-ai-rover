@@ -680,6 +680,18 @@ class _HaltGate(RobotInterface):
         probe = getattr(type(self._robot), "lidar_self_box_cm", None)
         return self._robot.lidar_self_box_cm() if callable(probe) else None
 
+    def vets_moves_on_server(self) -> bool:
+        """3.228.B: the wrapped body's answer (`RemoteRobot`: True), so the
+        agent's controller passes an `astern_occluded` REVERSE to the robot
+        server that re-vets it. False for a body that does not say so."""
+        probe = getattr(type(self._robot), "vets_moves_on_server", None)
+        if not callable(probe):
+            return False
+        try:
+            return self._robot.vets_moves_on_server() is True    # review: exactly True
+        except Exception:  # noqa: BLE001 -- unknown: the brain refuses, as before
+            return False
+
     def look_left(self) -> dict:
         self._guard("look_left")
         return self._robot.look_left()
@@ -1879,8 +1891,10 @@ class MissionRunner:
         left = (self.mission_time_limit_s - (elapsed - paused)
                 if self.mission_time_limit_s and elapsed is not None else None)
         v_now = self._battery_v if self.battery_floor_v else None
+        safety = getattr(self.agent, "safety", None)
+        is_wedged = (lambda: docking.wedged(safety)) if safety is not None else None
         return self._home.reserve_reason(self.world.get_map, pose, now, left, v_now,
-                                         self.battery_floor_v)
+                                         self.battery_floor_v, is_wedged=is_wedged)
 
     def _ask(self) -> Optional[GoalAsk]:
         return getattr(self.agent, "ask", None) if self.explores else None

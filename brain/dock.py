@@ -75,6 +75,25 @@ STUCK_ROUNDS = 3
 NUDGE_SPEED = 5             # 0.03 m/s: the creep bar
 NUDGE_S = 3.3               # about 10 cm: brain/explore.py's NUDGE_S, and why
 MAX_HOLDS = 20              # polls a move waits for the mission's own cancelled goal to let go
+# 3.228.B (F4). A trip home that starts wedged, or whose goal is aborted with
+# the robot unmoved, first backs out: up to ESCAPE_BACKS guarded REVERSEs of
+# ESCAPE_BACK_S at NUDGE_SPEED (the creep bar, 3 cm; ~0.10 m each), while it
+# stays wedged. On the Rover the robot server passes a REVERSE only along its
+# own retrace track (3.224), so this backs the robot out the way it drove in
+# (3.229.B: every plan failed from such a start, 5 of 6 spins exited
+# `Collision Ahead`). At creep speed because a track is short: a nook entered
+# to the 20 cm bar leaves ~10 cm of it, which a REVERSE at CREEP_SPEED (20,
+# 0.12 m/s: a 20 cm bar) can never use (3.229.B: refused at 0.7 cm `retrace`).
+# Wedged: forward under the safety bar AND no room to turn -- a scan return
+# within the chassis' corner radius plus TURN_MARGIN_CM of its centre. The
+# escape then backs out while there is no room to turn.
+# 0 turns the escape off (and its reserve). ESCAPE_RESERVE_S: what the time
+# reserve adds for it when the robot is wedged at the decision.
+ESCAPE_BACKS = 3
+ESCAPE_BACK_S = 3.3          # NUDGE_S's ~10 cm at NUDGE_SPEED
+TURN_MARGIN_CM = 10.0       # 5 before the 8-seed smoke run (section B's amendment 1)
+UNMOVED_M = 0.15            # an abort with the robot moved less is the start's problem
+ESCAPE_RESERVE_S = 15.0
 # 3.198 D2. A residual the creep's moves cannot close (under `drive: ros` a
 # straight verb is whole 0.30 m moves) is closed by a nav2 goal aimed past the
 # dock by how short of its last goal nav2 stopped, at most FINE_AIM_MAX_M; at
@@ -175,6 +194,60 @@ def home_path_m(m: dict, dock: dict, x_m: float, y_m: float) -> Optional[float]:
             if 0 <= x < r.w and 0 <= y < r.h and not math.isnan(d[y, x]):
                 best = min(best, d[y, x] + math.hypot(dx, dy))
     return None if best == math.inf else best * m["resolution_m"]
+
+
+def turn_room_cm(safety) -> Optional[float]:
+    """3.228.B: how far the nearest scan return lies beyond the circle the
+    chassis' corners sweep in a turn on the spot, in cm (the self box's own
+    returns left out). None: no usable scan."""
+    from robot.safety import FOOTPRINT_LENGTH_M, FOOTPRINT_WIDTH_M, scan_points_cm
+    try:
+        scan = safety.robot.get_scan() or {}
+    except Exception:  # noqa: BLE001 -- unknown: not judged wedged on a guess
+        return None
+    if not scan.get("usable"):
+        return None
+    corner = math.hypot(FOOTPRINT_LENGTH_M * 50.0, FOOTPRINT_WIDTH_M * 50.0)
+    box = getattr(safety, "self_box_cm", None)
+    near = None
+    try:
+        for x, y in scan_points_cm(scan):
+            if box is not None and box[0] <= x <= box[1] and box[2] <= y <= box[3]:
+                continue
+            d = math.hypot(x, y)
+            near = d if near is None or d < near else near
+    except Exception:  # noqa: BLE001 -- a malformed scan (review): unknown, never an end
+        return None
+    return None if near is None else near - corner
+
+
+def no_turn_room(safety) -> bool:
+    """3.228.B: a scan return inside the corner radius plus TURN_MARGIN_CM
+    (room for a turn and a drive out to the side). False when unknown."""
+    room = turn_room_cm(safety)
+    return room is not None and room < TURN_MARGIN_CM
+
+
+def wedged(safety) -> bool:
+    """3.228.B: forward under the safety bar AND no room to turn on the
+    spot (`no_turn_room`): a start nav2 may not plan or turn from. Both,
+    so a wall beside the body or a narrow corridor alone is not wedged
+    (review). False when either reading is unknown."""
+    try:
+        f, source = safety.forward_clearance()
+        bar = safety.min_distance_cm
+    except Exception:  # noqa: BLE001 -- unknown: not wedged on a guess
+        return False
+    if source in ("ahead_not_observed", "path_not_observed"):
+        return False    # bug pass: a blind reading is not a measured wall ahead
+    return f is not None and f < bar and no_turn_room(safety)
+
+
+def _asked(is_wedged) -> bool:
+    try:
+        return is_wedged() is True
+    except Exception:  # noqa: BLE001 -- review: an unknown is not wedged, never an end
+        return False
 
 
 class HomeBudget:
@@ -313,8 +386,11 @@ class HomeBudget:
         return K * L / self.v_obs() + T_DOCK_S
 
     def reserve_reason(self, get_map, pose: dict, t: float, left_s: Optional[float],
-                       v_now: Optional[float], floor_v: Optional[float]) -> Optional[str]:
-        """Why the search must end now to get home, or None."""
+                       v_now: Optional[float], floor_v: Optional[float],
+                       is_wedged: Optional[Callable[[], bool]] = None) -> Optional[str]:
+        """Why the search must end now to get home, or None. `is_wedged`
+        (3.228.B): asked only when the time left is within ESCAPE_RESERVE_S
+        of the trip; wedged, the trip home's escape is counted too."""
         if not pose or not pose.get("usable"):
             return None
         L = self.path_m(get_map, pose, t)
@@ -327,6 +403,11 @@ class HomeBudget:
                      "v_obs_m_s": round(self.v_obs(), 3), "drain_v_s": round(r, 5)}
         if left_s is not None and th > left_s:
             return f"time: {left_s:.0f} s left, the trip home {th:.0f} s ({L:.1f} m)"
+        if (left_s is not None and ESCAPE_BACKS > 0 and is_wedged is not None
+                and th + ESCAPE_RESERVE_S > left_s and _asked(is_wedged)):
+            self.last["escape_s"] = ESCAPE_RESERVE_S
+            return (f"time: {left_s:.0f} s left, the trip home {th:.0f} s ({L:.1f} m) "
+                    f"plus {ESCAPE_RESERVE_S:.0f} s to back out first (wedged)")
         if v_now is not None and floor_v:
             rested = self.rested_v(t)
             v_now = rested if rested is not None else v_now     # 3.225: not a sagged reading
@@ -414,11 +495,16 @@ class ReturnTrip:
         self._nav_stop_m = None         # how far from its goal nav2 ended the last one
         self._asked_m = None            # what the last creep asked for
         self._quantum_m = None          # a creep's whole move, once one moved more than asked
+        self._escape_checked = ESCAPE_BACKS <= 0   # 3.228.B: the start's wedge check, once
+        self._escaping = 0              # escape REVERSEs left to try
+        self.escapes = 0                # escapes begun (the start's and after unmoved aborts)
+        self._goal_from = None          # where the current goal was sent from
 
     def summary(self) -> dict:
         return {"phase": self.state, "actions": self.actions, "reversals": self.reversals,
                 "metres": round(self.metres, 2), "elapsed_s": round(self.clock() - self.t0, 1),
-                "goal_id": self.goal_id, "direct": self.direct, "fine_goals": self.fine_tries}
+                "goal_id": self.goal_id, "direct": self.direct, "fine_goals": self.fine_tries,
+                "escapes": self.escapes}
 
     def _pose(self) -> dict:
         p = self.get_pose() or {}
@@ -434,6 +520,12 @@ class ReturnTrip:
             return FAILED, f"timeout: not docked in {self.max_s:.0f} s"
         if self.nav is None:
             return SKIPPED, "no_nav2"
+        if not self._escape_checked and self.state == "goal":
+            self._escape_checked = True
+            if wedged(self.safety):
+                self._begin_escape("wedged at the start")
+        if self._escaping > 0 and not self._moves:
+            return self._escape_step()
         if self._moves:
             if self._moves.pop(0) == "back":
                 self._back_off()
@@ -464,6 +556,8 @@ class ReturnTrip:
         if reply.get("accepted"):
             self.tries += 1
             self.goal_id = reply.get("goal_id")
+            p = self._pose()
+            self._goal_from = (p["x_m"], p["y_m"]) if p.get("usable") else None
             self.state, self.goal_sent_at = "driving", self.clock()
             # 3.172: this goal's own stall clock; a refusal before it says nothing of the turns after.
             self._still, self.refused, self._holds, self._wait_from = None, 0, 0, self.clock()
@@ -532,7 +626,52 @@ class ReturnTrip:
         else:
             self.log.append(f"goal {st}; backing off and trying again")
             self.state = "goal"
+        if self._unmoved(pose) and wedged(self.safety):
+            # 3.228.B: the goal never got the robot going and it is wedged:
+            # back out (the escape) rather than one short back-off.
+            self._begin_escape(f"goal {st} with the robot unmoved")
+            return None
         self._back_off()
+        return None
+
+    def _unmoved(self, pose: dict) -> bool:
+        if ESCAPE_BACKS <= 0 or self._goal_from is None or not pose.get("usable"):
+            return False
+        return math.hypot(pose["x_m"] - self._goal_from[0],
+                          pose["y_m"] - self._goal_from[1]) < UNMOVED_M
+
+    def _begin_escape(self, why: str) -> None:
+        self.escapes += 1
+        self._escaping = ESCAPE_BACKS
+        self.log.append(f"{why}; backing out before the goal")
+
+    def _escape_step(self) -> None:
+        """One REVERSE of the escape, while the robot stays wedged. Ends at
+        the first refusal (the server's retrace track used up, or something
+        astern) or once the robot is free; the goal follows either way."""
+        if not no_turn_room(self.safety):
+            self._escaping = 0
+            self.log.append("free to turn: on to the goal")
+            return None
+        before = self.refused
+        if not self._move("escape", "REVERSE", speed=NUDGE_SPEED, duration=ESCAPE_BACK_S):
+            # Held by the mission's own cancelled goal: `_move` queued it by
+            # name; the escape's count retries it instead, MAX_HOLDS polls at most.
+            self._moves = [m for m in self._moves if m != "escape"]
+            if self._holds > MAX_HOLDS:
+                self._escaping = self._holds = 0     # review: the next move waits afresh
+            return None
+        self.reversals += 1
+        if self.refused > before:
+            first = self._escaping == ESCAPE_BACKS
+            self._escaping = 0
+            self.log.append("escape REVERSE refused: on to the goal from here")
+            if first and NUDGE_S > 0 and self._nudge_here():
+                # Bug pass: as `_back_off`'s refusal, one bounded creep forward
+                # (once per place) before the goal is sent again.
+                self._moves.append("nudge")
+        else:
+            self._escaping -= 1
         return None
 
     def _back_off(self) -> None:

@@ -567,6 +567,26 @@ reason `no_motion`, at the next stall, instead of waiting out `RETURN_MAX_S`. A
 refusal because the just-cancelled goal still holds the robot is a wait
 (`MAX_HOLDS` polls), not a person's preemption. Every move goes through the agent's `SafetyController`; a person's Stop, a preemption
 or Reserve still propagates from the cancel and from each verb.
+
+**A tight-spot start (3.228.B, F4).** `wedged(safety)` is true when the
+forward clearance is under the safety bar, or no room to turn on the spot:
+`turn_room_cm()` (the nearest scan return, the self box's own left out, less
+the chassis' corner radius, 17.1 cm) under `TURN_MARGIN_CM` (10 cm; room for
+a turn and a drive out to the side). Unknown readings are not wedged. The
+trip's first step checks it once; wedged, and again when a goal ends
+aborted with the robot moved under `UNMOVED_M` (0.15 m) since it was sent,
+`ReturnTrip` backs out before the goal (`escapes` in its summary): up to
+`ESCAPE_BACKS` (3) guarded REVERSEs at `NUDGE_SPEED` for `ESCAPE_BACK_S`
+(3.3 s, ~10 cm each), while it stays wedged, ending at the first refusal.
+At creep speed because the robot server passes a REVERSE only along its
+retrace track (3.224), and a nook entered to the 20 cm bar leaves ~10 cm of
+it, which a REVERSE at `CREEP_SPEED` (a 20 cm bar) never uses. A wait on the
+mission's own cancelled goal retries the same REVERSE (`MAX_HOLDS`).
+`ESCAPE_BACKS = 0` turns all of it off. The time reserve counts it:
+`reserve_reason(..., is_wedged=)` adds `ESCAPE_RESERVE_S` (15 s) to the
+trip when the time left is within that of `T_home` and `is_wedged()` (the
+runner passes `wedged(agent.safety)`, asked only in that window) says so;
+`last["escape_s"]` records it.
 * **The dock** (`status.dock`, `{x_m, y_m, theta, source}`) is read from the
   world's pose at `start()` by `dock_from_pose()`: the pose's `dock` when it
   carries a readable one, `source: saved_map` (3.156.E: under `world: ros` on
@@ -1023,7 +1043,10 @@ cancelled_by)` (`stopped` -> `cancelled`/`stop`, `preempted` ->
   `ReturnTrip`, built on `agent.safety`) reads it off the gate with
   `_body_self_box()`, so it judges the scan as the robot server does.
   Without it the brain read the Rover's mast as an obstacle at 0.0 cm and
-  refused every escape and back-off.
+  refused every escape and back-off. `vets_moves_on_server()` (3.228.B)
+  passes the body's answer through (False when it has none): `RemoteRobot`
+  says True, so the agent's controller hands an `astern_occluded` REVERSE to
+  the robot server (`robot/safety.py`'s `defer_astern_occluded`).
 - `_GatedNavigator` (3.76 C1-C4), what `explore` gets in place of the
   navigator: `set_goal` answers `{"accepted": false, "reason":
   "mission_ended"}` once the mission has ended, cancels a goal accepted
@@ -1290,6 +1313,7 @@ tests/test_mission_guarded_verbs.py -q`.
 | `tests/test_arrival_reconfirm.py` (26) | 3.53: once the cloud is back, exactly one paid call on all 12 clear starts for a cloud that sees the target and one that does not; the outcome unchanged; no robot method called; free and bounded probing (`expired`); two paid attempts, half a window apart, then `failed`, and a server-side outage that clears in the window `confirmed`; a cancel never pays, also when it lands between the probe and the call; a cap refusal counts no paid call; a hung call is never doubled (a second attempt only once it has ended, 3.76 G1); only an unconfirmed arrival records anything; the metrics row re-sent, not added; through `brain_server`, a new mission drops it, a refused start and a Stop after the ending (also one in the loop's last sleep) do not; the brain's own loop asks |
 | `tests/test_review_376g.py` (14) | 3.76 G1, G4: a late answer that outlived its guard is used once it lands (not paid twice, not held to the retry), also on the last attempt, in the window's last interval, and when it lands at the guard itself; its error landing during a probe is not counted twice, and the attempt then due is sent at once; a last call ending in an error ends the check with that error; a call ending after a cancel ships its cost; a call out all window with the cloud never up is `expired`; a confirmation still out delays the ask without ending the window or blocking a probe; a window that ends with nothing out is not "still in flight"; the cloud watch's `age_s` survives a wall-clock step |
 | `tests/test_robot_contract.py` | `_HaltGate` passes the body conformance suite as a backend |
+| `tests/test_tight_home_3228.py` (16) | 3.228.B: an in-process body still refuses `astern_occluded`, a body the server re-vets gets that REVERSE, and only that (a short `retrace` and a forward refusal stay); only a plain True defers; the gate and `RemoteRobot` pass the answer; `wedged()` reads the bar and the turn room; a wedged start backs out at creep speed before the goal (`ESCAPE_BACKS` at most), an open one goes straight to it, an unmoved abort while wedged backs out, a refused escape REVERSE ends the escape, off means no check; the reserve counts the escape only when wedged and within `ESCAPE_RESERVE_S`; one sweep nook (`tests/tight_home_sweep.py`) fails before (`nav2_aborted`, the planner) and docks after, with no contact |
 | `tests/test_brain_self_box_3229.py` (8) | 3.229: built through `MissionRunner` on the sim with the Rover's mast in every scan and its box reported, the brain's forward and reverse clearances equal the server's (274.5 cm `depth_grid`, 0.0 `astern_occluded`); explore's escape sends its FORWARD and its REVERSE is refused only as `astern_occluded`; the return's back-off likewise, and its nudge is sent; a body with no box is unchanged; the gate returns (or raises) the body's own answer, ungated, and an unreadable box is no box |
 | `tests/test_review_376c.py` (13) | 3.76 batch C: Stop ends explore's own nav2 goal (not a person's), also one accepted as Stop lands on another thread; no goal after the end; a person at the D-pad ends explore; explore waits on `ros` just after its goal; "took over" parsed; one start at a time while building, and a Stop during the build means no start; unreachable or 401 robot named at start |
 | `tests/test_review_376k2.py` (8) | 3.76 K2: a Stop during the arrival's waits (a trigger call still out, the last confirmation) sends no cloud confirmation; a start refused (400, 403) or stopped during its build leaves a person's Stop latched, a started one lifts it; a start during a stopped build's discard gets the 409; a late call ending at its guard after a cancel still ships its cost (a guard) |
