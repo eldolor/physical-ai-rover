@@ -237,4 +237,5 @@ numbered 3.18 here. New sections: `python tools/plan_section.py new`
 | [3.234](3.234-mover-prediction.md) | Predicting where people and pets will be: a short-horizon mover tracker in the safety veto |
 | [3.235](3.235-frontier-gain-on-rover-data.md) | Frontier gain: does a frontier's predicted gain hold on the Rover's real maps? |
 | [3.236](3.236-scan-stamp-speed.md) | Speed on the car |
+| [3.237](3.237-explore-three-sensors.md) | Explore with lidar, depth and the pan-tilt camera |
 <!-- /sections -->
