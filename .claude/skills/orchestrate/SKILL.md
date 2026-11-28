@@ -123,11 +123,18 @@ You cannot read the quota yourself. The user sees it with `/usage`.
   * A worker that runs past ~2x its estimate without a commit is stopped
     and its state reported, not left to burn.
 
+* **The orchestrator chooses the number of workers, on its own judgement
+  and the usage data** (the user, 2026-11-28: "Use your discretion and
+  usage data for the number of workers"). No fixed count and no question
+  to the user: the defaults below are guidance for that judgement, not a
+  cap. A count the user names for the moment ("start X now") overrides
+  them; then return to judgement.
 * **The number of workers follows usage, not a fixed cap** (the user,
   2026-11-25; replaces 2026-11-22's "at most 2"). Before each start, read
   two signals:
-  * the week: the user's latest `/usage` reading (ask for one if it is
-    more than a day old), against the share of the week gone;
+  * the week: the user's latest `/usage` reading (when the user shares
+    one; since 2026-11-28 do not ask, the user auto-approves the
+    orchestrator's recommendations), against the share of the week gone;
   * the five-hour window: `rate_limit_info` in `get_session` for this
     session and each running worker (`status`, `isUsingOverage`,
     `resetsAt`).
