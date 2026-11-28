@@ -2,7 +2,7 @@
 
 *(Retitled 2026-11-15 by the user. This file began on 2026-09-25 as the plan to adopt ROS 2 properly, "ROS 2, proved on the sim's data", and has been the project's governing plan since; its 3.N sections now cover everything from perception to the phone app. The file and its section folder keep the name `ros-alignment`, because about 1,000 references and the claim tool use that path.)*
 
-**Open steps (2026-11-28, `plan_section.py board --all` on `dev` a20225fd):** 15 free, 60 waiting (on the Rover or the user), 9 blocked, 5 claimed by running sessions (3.147, 3.233, 3.234.B2-D), 2 unreadable (3.236.B-C: their Waits cells hold text; 3.236's session holds them); 322 done, 6 dropped. Free steps a cloud session can do: 3.230.A (the mat stall's diagnosis from 3.229.B's trace) and 3.236.A if still open; 3.178.B and 3.187.E wait on the user's call. Not cloud-doable: 3.188.B (paid GPU host), 3.70.S2 and 3.116.D and 3.91.C's criterion 9 (the car), 3.135/3.136/3.137/3.151 (the Jetson), 3.140.B (the Rover). Updated at merge.
+**Open steps (2026-11-28, `plan_section.py board --all` on `dev` 380d422e):** 15 free, 61 waiting (on the Rover or the user), 10 blocked, 6 claimed by running sessions (3.147, 3.233, 3.234.B2-D, 3.237), 0 unreadable; 322 done, 6 dropped. Free steps a cloud session can do: 3.230.A (the mat stall's diagnosis from 3.229.B's trace) and 3.236.A if still open; 3.178.B and 3.187.E wait on the user's call. Not cloud-doable: 3.188.B (paid GPU host), 3.70.S2 and 3.116.D and 3.91.C's criterion 9 (the car), 3.135/3.136/3.137/3.151 (the Jetson), 3.140.B (the Rover). Updated at merge.
 
 *(Retitled 2026-10-01: it was "with the twin still doing the proving", from
 the watched-on-a-phone rule retired the day it was written -- see section 0.)*
